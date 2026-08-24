@@ -45,6 +45,7 @@
     "scripts": {
         "test": "node bin/eliware-test.mjs",
         "lint": "node bin/eliware-test.mjs --lint",
+        "typecheck": "tsc --noEmit",
         "pack": "npm pack --dry-run"
     },
     "jest": {
@@ -63,7 +64,8 @@
         "oxlint": "latest"
     },
     "devDependencies": {
-        "@types/jest": "latest"
+        "@types/jest": "latest",
+        "typescript": "latest"
     },
     "engines": {
         "node": ">=26"

@@ -25,6 +25,7 @@ repositories.
 3. Set `test` to `eliware-test` and `lint` to `eliware-test --lint`.
 4. Run `npm install` and review the lockfile.
 5. Run specialized smoke, integration, regression, and E2E checks separately.
+6. Run `npm run typecheck` when the project ships TypeScript declarations.
 
 ## Validation
 
@@ -32,6 +33,7 @@ repositories.
 node bin/eliware-test.mjs
 npm test
 npm run lint
+npm run typecheck
 npm audit --omit=dev --audit-level=moderate
 npm pack --dry-run
 ```

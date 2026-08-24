@@ -1,8 +1,10 @@
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+import { dirname, resolve } from 'node:path';
 
-const packageRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
+function resolveFromConsumer(cwd, specifier) {
+  return createRequire(resolve(cwd, 'package.json')).resolve(specifier);
+}
 
 export function runProcess(command, argumentsList, options) {
   const result = spawnSync(command, argumentsList, {
@@ -17,9 +19,12 @@ export function runProcess(command, argumentsList, options) {
 }
 
 export function runJest(argumentsList, options) {
-  return runProcess(process.execPath, ['--experimental-vm-modules', resolve(packageRoot, 'node_modules/jest/bin/jest.js'), ...argumentsList], options);
+  const jestPackage = resolveFromConsumer(options.cwd, 'jest/package.json');
+  const jestPath = resolve(dirname(jestPackage), 'bin/jest.js');
+  return runProcess(process.execPath, ['--experimental-vm-modules', jestPath, ...argumentsList], options);
 }
 
 export function runOxlint(argumentsList, options) {
-  return runProcess(process.execPath, [resolve(packageRoot, 'node_modules/oxlint/bin/oxlint'), ...argumentsList], options);
+  const oxlintPackage = resolveFromConsumer(options.cwd, 'oxlint/package.json');
+  return runProcess(process.execPath, [resolve(dirname(oxlintPackage), 'bin/oxlint'), ...argumentsList], options);
 }
