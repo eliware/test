@@ -2,12 +2,6 @@ name: CI
 
 on:
   workflow_dispatch:
-    inputs:
-      publish:
-        description: 'Publish the checked-out package to npm'
-        required: false
-        default: false
-        type: boolean
   push:
     tags:
       - 'v*'
@@ -36,7 +30,7 @@ jobs:
       - run: npm pack --dry-run
   publish:
     needs: validate
-    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && inputs.publish == true)
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
