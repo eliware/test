@@ -12,6 +12,7 @@ describe('runner orchestration', () => {
     const run = async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; };
     await expect(runToolkit({ ...base, write: output(messages), runTest: run, runLintCommand: run, runnerArguments: ['-t', 'ok'] })).resolves.toBe(0);
     expect(calls).toHaveLength(2);
+    expect(calls[0]).toEqual(expect.arrayContaining(['--detectOpenHandles']));
     expect(messages.join('')).toContain('Tests passed');
   });
 

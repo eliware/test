@@ -7,7 +7,7 @@ export async function runToolkit({ cwd, runnerArguments, write, runTest, runLint
   await rm(resolve(cwd, 'coverage/coverage-final.json'), { force: true });
   await rm(resolve(cwd, 'coverage/coverage.json'), { force: true });
   await rm(resolve(cwd, 'coverage.json'), { force: true });
-  const test = await runTest(['--coverage', '--runInBand', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...runnerArguments], { cwd });
+  const test = await runTest(['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...runnerArguments], { cwd });
   if (test.code !== 0) {
     write(`Tests failed (exit ${test.code})\n${test.output}`);
     return test.code;

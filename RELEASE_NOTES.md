@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.0.2
+
+- Enabled Jest's `--detectOpenHandles` option in the default test command.
+- Added regression coverage confirming the option is forwarded to Jest.
+
 ## 1.0.1
 
 - Fixed Jest and Oxlint resolution for consumers after a normal `npm ci`,
