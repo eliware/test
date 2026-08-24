@@ -1,0 +1,41 @@
+{
+  "name": "@eliware/test",
+  "version": "1.0.0",
+  "description": "Shared baseline test tooling for Eliware Node.js projects",
+  "keywords": ["eliware", "testing", "jest", "oxlint", "coverage", "tooling"],
+  "license": "UNLICENSED",
+  "author": "Eliware",
+  "repository": {"type": "git", "url": "git+ssh://git@github.com/eliware/test.git"},
+  "bugs": {"url": "https://github.com/eliware/test/issues"},
+  "homepage": "https://github.com/eliware/test#readme",
+  "type": "module",
+  "bin": {
+    "eliware-test": "./bin/eliware-test.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs"
+    }
+  },
+  "files": ["bin", "src", "index.mjs", "index.d.ts", "README.md", "LICENSE", "RELEASE_NOTES.md"],
+  "publishConfig": {"access": "public"},
+  "scripts": {
+    "test": "node bin/eliware-test.mjs",
+    "lint": "node bin/eliware-test.mjs --lint",
+    "pack": "npm pack --dry-run"
+  },
+  "jest": {
+    "collectCoverageFrom": ["src/**/*.mjs"],
+    "coverageReporters": ["text"],
+    "testPathIgnorePatterns": ["/test-fixtures/"]
+  },
+  "dependencies": {
+    "jest": "latest",
+    "oxlint": "latest"
+  },
+  "devDependencies": {
+    "@types/jest": "latest"
+  },
+  "engines": {"node": ">=26"}
+}
