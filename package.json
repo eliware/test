@@ -1,6 +1,6 @@
 {
     "name": "@eliware/test",
-    "version": "1.0.3",
+    "version": "2.0.0",
     "description": "Shared baseline test tooling for Eliware Node.js projects",
     "keywords": [
         "eliware",
@@ -61,7 +61,7 @@
     },
     "dependencies": {
         "jest": "latest",
-        "oxlint": "latest"
+        "oxlint": "^1.80.0"
     },
     "devDependencies": {
         "@types/jest": "latest",
