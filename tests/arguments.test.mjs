@@ -18,6 +18,7 @@ describe('parseArguments', () => {
 
   test('formats coverage gaps', () => {
     expect(formatCoverageGaps([{ file: 'bar.mjs', metrics: ['90', '100', '100', '100'] }])).toContain('bar.mjs');
+    expect(formatCoverageGaps([{ file: 'detail.mjs', statements: [], branches: [{ start: { line: 2 } }], functions: [{}], lines: [2] }])).toContain('anonymous');
     expect(formatCoverageGaps([])).toBe('');
   });
 
@@ -34,7 +35,26 @@ describe('parseArguments', () => {
     const json = { 'src/branch.mjs': { statementMap: { 0: { start: { line: 2 } } }, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: { 0: { name: 'branch', locations: [{ start: { line: 1 } }] } }, f: { 0: 0 } } };
     const gaps = parseCoverageJson(json);
     expect(gaps[0].lines).toEqual([2]);
-    expect(formatCoverageGaps(gaps)).toContain('functions: branch');
+    expect(formatCoverageGaps(gaps)).toContain('Uncovered functions: branch at unknown');
+  });
+
+  test('formats JSON gaps with percentages and actionable locations', () => {
+    const gaps = parseCoverageJson({
+      'src/detail.mjs': {
+        statementMap: { 0: { start: { line: 8, column: 2 } } },
+        s: { 0: 0 },
+        branchMap: { 0: { type: 'if', locations: [{ start: { line: 12, column: 4 } }] } },
+        b: { 0: [0] },
+        fnMap: { 0: { name: 'choose', loc: { start: { line: 4, column: 0 } } } },
+        f: { 0: 0 }
+      }
+    });
+    const output = formatCoverageGaps(gaps);
+    expect(output).toContain('0% | 0% | 0% | 0% | uncovered lines: 8, 12');
+    expect(output).toContain('Uncovered statements: 8:2');
+    expect(output).toContain('Uncovered branches: 12:4 (if, uncovered)');
+    expect(output).toContain('Uncovered functions: choose at 4');
+    expect(output).toContain('Fix: add or extend tests');
   });
 
   test('accepts complete JSON coverage and skips default-argument branches', () => {

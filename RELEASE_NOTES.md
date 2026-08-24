@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.0.3
+
+- Expanded JSON coverage diagnostics with per-metric percentages, uncovered
+  lines, exact locations, function names, and test-fix guidance.
+
 ## 1.0.2
 
 - Enabled Jest's `--detectOpenHandles` option in the default test command.

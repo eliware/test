@@ -15,4 +15,6 @@ test('reports a passing fixture with a coverage gap', async () => {
   expect(code).toBe(1);
   expect(messages.join('')).toContain('branch.mjs');
   expect(messages.join('')).toContain('Coverage gaps');
+  expect(messages.join('')).toContain('Uncovered branches:');
+  expect(messages.join('')).toContain('Fix: add or extend tests');
 });

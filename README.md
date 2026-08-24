@@ -39,6 +39,10 @@ lint errors, and lint warnings fail the command.
 
 `npm run lint` runs only bundled Oxlint against the consuming repository.
 
+When JSON coverage reports a gap, the output includes the four per-file
+percentages, comma-delimited uncovered lines, exact statement and branch
+locations, uncovered function names and locations, and a test-focused fix hint.
+
 Arguments after `npm test --` are forwarded to Jest:
 
 ```text
