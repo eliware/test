@@ -1,6 +1,6 @@
 {
     "name": "@eliware/test",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Shared baseline test tooling for Eliware Node.js projects",
     "keywords": [
         "eliware",
