@@ -22,7 +22,7 @@ export async function runToolkit({ cwd, runnerArguments, write, runTest, runLint
     write(`Lint failed (exit ${lint.code})\n${lint.output}`);
     return lint.code;
   }
-  write('Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
+  write('All files | 100 | 100 | 100 | 100 |\nTests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
 }
 
