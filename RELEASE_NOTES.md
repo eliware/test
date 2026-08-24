@@ -1,5 +1,12 @@
 # Release notes
 
+## 1.0.1
+
+- Fixed Jest and Oxlint resolution for consumers after a normal `npm ci`,
+  including npm-hoisted dependency layouts on Windows and Linux.
+- Added declaration typechecking and aligned package documentation with the
+  current Eliware conventions.
+
 ## Unreleased
 
 - Scaffolded the `@eliware/test` package and CLI entrypoint.
