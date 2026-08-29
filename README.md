@@ -61,6 +61,16 @@ npm test -- -t "rejects invalid options"
 Smoke, integration, regression, end-to-end, and other project-specific tests
 remain defined by the consuming project.
 
+## Secondary Knit validation
+
+This repository includes `.knit/deploy.yaml` and `.knit/validate.sh` for a
+second, Linux-side validation path. Knit validates the exact webhook commit in
+a disposable worktree and runs install, test, lint, typecheck, audit, and pack
+checks. The script is bounded to five minutes per remote command, cleans up its
+worktree on success or failure, and fails closed when `KNIT_COMMIT_SHA` is
+missing or malformed. Keep this workflow validation-only; release and
+deployment actions should remain separate.
+
 ## Recommended `.gitignore` entries
 
 The test command generates coverage reports and may leave local package or test
@@ -98,6 +108,11 @@ npm run lint
 npm audit --omit=dev --audit-level=moderate
 npm pack --dry-run
 ```
+
+This package intentionally uses `node bin/eliware-test.mjs` for its own
+`test` and `lint` scripts so it can validate the local runner implementation
+before that runner is published. Consuming repositories must use the standard
+`eliware-test` and `eliware-test --lint` commands described above.
 
 See [`spec.md`](spec.md) for the implementation contract and
 [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for changes.
