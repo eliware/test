@@ -49,5 +49,5 @@ npm pack --dry-run
 Use `eliware-test --help` for the supported command forms. When invoking via
 npm, pass Jest options after `npm test --`.
 
-Follow the legacy pre-release and release runbooks before publication. Never
+Follow the pre-release and release runbooks before publication. Never
 tag, publish, push, or deploy without explicit authorization.

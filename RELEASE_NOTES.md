@@ -1,6 +1,6 @@
 # Release notes
 
-## 2.1.1 (planned)
+## 2.1.1
 
 - Improved command-line usability with `--help`/`-h`, direct-invocation
   separator handling, and clear rejection of invalid lint combinations.
@@ -10,7 +10,7 @@
   Jest argument forwarding.
 - Added regression coverage for focused arguments and Windows npm shims.
 
-## 2.1.0 (planned)
+## 2.1.0
 
 - Added exact-commit secondary validation through Knit using a disposable
   worktree, bounded execution, cleanup, and the full local validation suite.
