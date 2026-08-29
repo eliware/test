@@ -7,8 +7,8 @@ not been completed.
 ## Package and consumer contract
 
 - [DONE] Scoped package name `@eliware/test`.
-- [DONE] Initial package version `1.0.0`; current release line is `2.1.1`, with
-  `2.1.2` planned as the next release.
+- [DONE] Initial package version `1.0.0`; current release line is `2.1.2`, with
+  `2.1.3` planned as the next release.
 - [DONE] Native ESM and `.mjs` implementation.
 - [DONE] Bundled Jest and Oxlint runtime dependencies.
 - [DONE] CLI executable and public exports/declarations.
@@ -28,6 +28,7 @@ not been completed.
 - [DONE] Validate focused paths before invoking Jest to prevent accidental broad-suite runs.
 - [DONE] Support direct-invocation separators and reject invalid lint combinations.
 - [DONE] Provide `--help` and `-h` usage guidance.
+- [DONE] Provide `--version` and `-v` package version reporting.
 - [DONE] Provide opt-in forwarded-argument diagnostics with `ELIWARE_TEST_DEBUG=1`.
 - [DONE] Return nonzero codes for test, coverage, and lint failures.
 - [DONE] Preserve failed-test diagnostics.

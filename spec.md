@@ -104,6 +104,9 @@ starting Jest. A missing focused path must fail clearly and must not result in
 an accidental full-suite run. `--help` and `-h` must print concise usage
 guidance without running tests or lint.
 
+`--version` and `-v` must print the version declared in `package.json` and exit
+successfully without running tests, coverage, or lint.
+
 When all forwarded arguments are test paths, the runner must invoke Jest with
 `--runTestsByPath` so multiple focused files are selected exactly and no
 unrelated suites are admitted by pattern matching.

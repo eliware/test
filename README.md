@@ -43,6 +43,9 @@ Use `eliware-test --help` or `eliware-test -h` for command and invocation
 examples. Jest arguments must follow npm's `--` separator, for example
 `npm test -- --runInBand`.
 
+Use `eliware-test --version` or `eliware-test -v` to print the installed
+package version without running tests or lint.
+
 Lint automatically excludes `.git`, `node_modules`, `coverage`, `.nyc_output`,
 `test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
 files produce a warning with recommended entries but do not fail the run.

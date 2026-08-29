@@ -1,6 +1,12 @@
 # Release notes
 
-## 2.1.2 (planned)
+## 2.1.3 (planned)
+
+- Added `eliware-test --version` and `eliware-test -v` to report the package
+  version directly from `package.json` without running the test suite.
+- Added regression coverage for both version flags.
+
+## 2.1.2
 
 - Fixed multi-file focused test execution by using Jest's strict
   `--runTestsByPath` mode for file-only selections.
