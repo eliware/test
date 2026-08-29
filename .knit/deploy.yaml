@@ -6,4 +6,5 @@ on:
         cwd: /usr/src/eliware/test
         timeoutMs: 300000
         commands:
+          - git pull --ff-only
           - .knit/validate.sh
