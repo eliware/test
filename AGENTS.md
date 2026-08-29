@@ -18,6 +18,8 @@ repositories.
   workspace paths in user-facing output.
 - Keep forwarded-argument diagnostics opt-in through `ELIWARE_TEST_DEBUG=1`;
   do not add debug output to normal runs.
+- Preserve focused test paths and reject missing paths before invoking Jest;
+  never silently fall back to the full suite.
 - Exclude dependency, VCS, coverage, build, and test-result directories from
   discovery and linting by default.
 - Enforce statements, branches, functions, and lines independently.
@@ -43,6 +45,9 @@ npm run typecheck
 npm audit --omit=dev --audit-level=moderate
 npm pack --dry-run
 ```
+
+Use `eliware-test --help` for the supported command forms. When invoking via
+npm, pass Jest options after `npm test --`.
 
 Follow the legacy pre-release and release runbooks before publication. Never
 tag, publish, push, or deploy without explicit authorization.

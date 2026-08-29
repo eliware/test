@@ -7,8 +7,8 @@ not been completed.
 ## Package and consumer contract
 
 - [DONE] Scoped package name `@eliware/test`.
-- [DONE] Initial package version `1.0.0`; current release line is `2.0.0`, with
-  `2.1.0` planned as the next release.
+- [DONE] Initial package version `1.0.0`; current release line is `2.1.0`, with
+  `2.1.1` planned as the next release.
 - [DONE] Native ESM and `.mjs` implementation.
 - [DONE] Bundled Jest and Oxlint runtime dependencies.
 - [DONE] CLI executable and public exports/declarations.

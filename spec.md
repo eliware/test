@@ -99,6 +99,11 @@ npm test -- -t "rejects invalid options"
 Focused runs still use coverage and the same failure rules. The standalone
 lint command remains available when only linting is needed.
 
+The wrapper must validate supplied focused file or directory paths before
+starting Jest. A missing focused path must fail clearly and must not result in
+an accidental full-suite run. `--help` and `-h` must print concise usage
+guidance without running tests or lint.
+
 ## Cross-platform requirements
 
 The implementation must use Node.js APIs and child-process argument arrays.

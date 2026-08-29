@@ -39,6 +39,10 @@ lint errors, and lint warnings fail the command.
 
 `npm run lint` runs only bundled Oxlint against the consuming repository.
 
+Use `eliware-test --help` or `eliware-test -h` for command and invocation
+examples. Jest arguments must follow npm's `--` separator, for example
+`npm test -- --runInBand`.
+
 Lint automatically excludes `.git`, `node_modules`, `coverage`, `.nyc_output`,
 `test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
 files produce a warning with recommended entries but do not fail the run.
@@ -61,6 +65,10 @@ Arguments after `npm test --` are forwarded to Jest:
 npm test -- tests/client.test.mjs
 npm test -- -t "rejects invalid options"
 ```
+
+When a focused test path is supplied, the wrapper verifies that the path exists
+before starting Jest. A missing path fails with a focused-path error instead of
+silently running the full suite.
 
 Smoke, integration, regression, end-to-end, and other project-specific tests
 remain defined by the consuming project.

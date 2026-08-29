@@ -1,5 +1,15 @@
 # Release notes
 
+## 2.1.1 (planned)
+
+- Improved command-line usability with `--help`/`-h`, direct-invocation
+  separator handling, and clear rejection of invalid lint combinations.
+- Added focused-test path validation to prevent an invalid path from silently
+  running the broad suite.
+- Added opt-in `ELIWARE_TEST_DEBUG=1` diagnostics for troubleshooting exact
+  Jest argument forwarding.
+- Added regression coverage for focused arguments and Windows npm shims.
+
 ## 2.1.0 (planned)
 
 - Added exact-commit secondary validation through Knit using a disposable
