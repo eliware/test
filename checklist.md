@@ -25,6 +25,10 @@ not been completed.
 - [DONE] Run lint only with `--lint`.
 - [DONE] Treat lint warnings as failures.
 - [DONE] Forward focused test arguments.
+- [DONE] Validate focused paths before invoking Jest to prevent accidental broad-suite runs.
+- [DONE] Support direct-invocation separators and reject invalid lint combinations.
+- [DONE] Provide `--help` and `-h` usage guidance.
+- [DONE] Provide opt-in forwarded-argument diagnostics with `ELIWARE_TEST_DEBUG=1`.
 - [DONE] Return nonzero codes for test, coverage, and lint failures.
 - [DONE] Preserve failed-test diagnostics.
 - [DONE] Suppress routine passing output and emit minimal success output.
@@ -50,6 +54,7 @@ not been completed.
 - [DONE] Test command orchestration and stage failure propagation.
 - [DONE] Test coverage filtering and exact JSON reporting.
 - [DONE] Test concise success and failure diagnostics.
+- [DONE] Test exact focused-argument forwarding and Windows npm shim behavior.
 - [DONE] Test ANSI and CRLF handling.
 - [DONE] Add excluded intentionally failing fixture.
 - [DONE] Add excluded passing coverage-gap fixture.

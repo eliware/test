@@ -1,4 +1,4 @@
-import { parseArguments } from '../src/arguments.mjs';
+import { HELP_TEXT, parseArguments } from '../src/arguments.mjs';
 import { formatCoverageGaps, parseCoverage, parseCoverageJson } from '../src/coverage.mjs';
 
 describe('parseArguments', () => {
@@ -6,9 +6,23 @@ describe('parseArguments', () => {
     expect(parseArguments(['--lint'])).toEqual({ lint: true, runnerArguments: [] });
   });
 
+  test('recognizes long and short help options', () => {
+    expect(parseArguments(['--help'])).toEqual({ help: true, lint: false, runnerArguments: [] });
+    expect(parseArguments(['-h'])).toEqual({ help: true, lint: false, runnerArguments: [] });
+    expect(HELP_TEXT).toContain('npm test -- <Jest arguments>');
+  });
+
   test('forwards focused runner arguments unchanged', () => {
     const argumentsList = ['tests/client.test.mjs', '-t', 'rejects invalid options'];
     expect(parseArguments(argumentsList)).toEqual({ lint: false, runnerArguments: argumentsList });
+  });
+
+  test('accepts a direct-invocation separator before Jest arguments', () => {
+    expect(parseArguments(['--', '--runInBand'])).toEqual({ lint: false, runnerArguments: ['--runInBand'] });
+  });
+
+  test('rejects lint combined with runner arguments', () => {
+    expect(() => parseArguments(['--lint', 'tests/client.test.mjs'])).toThrow('cannot be combined');
   });
 
   test('parses ANSI and CRLF coverage, retaining only incomplete files', () => {

@@ -16,6 +16,8 @@ repositories.
 - Preserve useful failure diagnostics and keep successful output concise.
 - Bound subprocess output, deduplicate repeated diagnostics, and normalize
   workspace paths in user-facing output.
+- Keep forwarded-argument diagnostics opt-in through `ELIWARE_TEST_DEBUG=1`;
+  do not add debug output to normal runs.
 - Exclude dependency, VCS, coverage, build, and test-result directories from
   discovery and linting by default.
 - Enforce statements, branches, functions, and lines independently.

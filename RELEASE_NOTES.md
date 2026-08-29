@@ -11,6 +11,8 @@
   consuming repository lacks `.gitignore`.
 - Documented the self-test script exception and the consumer migration
   contract.
+- Added clearer argument UX with help output, separator handling, focused-path
+  validation, and opt-in debug reporting for forwarded Jest arguments.
 
 ## 1.0.3
 

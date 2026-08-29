@@ -1,4 +1,5 @@
 import { runJest, runOxlint, runProcess } from '../src/process.mjs';
+import { access } from 'node:fs/promises';
 
 describe('process helpers', () => {
   test('captures a successful child process', async () => {
@@ -24,5 +25,13 @@ describe('process helpers', () => {
   test('provides bundled Jest and Oxlint wrappers', async () => {
     expect(await runJest(['--version'], { cwd: process.cwd(), env: process.env })).toMatchObject({ code: 0 });
     expect(await runOxlint(['--version'], { cwd: process.cwd(), env: process.env })).toMatchObject({ code: 0 });
+  });
+
+  test('forwards arguments through the Windows npm cmd shim', async () => {
+    if (process.platform !== 'win32') return;
+    try { await access('node_modules/.bin/eliware-test.cmd'); } catch { return; }
+    const result = await runProcess(process.env.ComSpec, ['/d', '/c', 'node_modules\\.bin\\eliware-test.cmd --lint tests/example.test.mjs'], { cwd: process.cwd(), env: process.env });
+    expect(result.code).toBe(1);
+    expect(result.output).toContain('cannot be combined');
   });
 });

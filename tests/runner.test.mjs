@@ -18,10 +18,63 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('Tests passed');
   });
 
+  test('forwards focused Jest arguments in their original order', async () => {
+    const calls = [];
+    const runTest = async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; };
+    await expect(runToolkit({
+      ...base,
+      runTest,
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['tests/runner.test.mjs', '--runInBand', '-t', 'keeps this exact order']
+    })).resolves.toBe(0);
+    expect(calls[0].slice(-4)).toEqual(['tests/runner.test.mjs', '--runInBand', '-t', 'keeps this exact order']);
+  });
+
   test('reports test failures', async () => {
     const messages = [];
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 2, output: 'failed test' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
     expect(messages.join('')).toContain('Tests failed');
+  });
+
+  test('rejects a missing focused path before running the broad suite', async () => {
+    const messages = [];
+    let testCalls = 0;
+    await expect(runToolkit({
+      ...base,
+      write: output(messages),
+      runTest: async () => { testCalls += 1; return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['tests/does-not-exist.test.mjs']
+    })).resolves.toBe(1);
+    expect(testCalls).toBe(0);
+    expect(messages.join('')).toContain('Focused test path not found');
+  });
+
+  test('reports forwarded arguments only when debug mode is enabled', async () => {
+    const messages = [];
+    const previous = process.env.ELIWARE_TEST_DEBUG;
+    process.env.ELIWARE_TEST_DEBUG = '1';
+    try {
+      await expect(runToolkit({
+        ...base,
+        write: output(messages),
+        runTest: async () => ({ code: 0, output: completeCoverage }),
+        runLintCommand: async () => ({ code: 0, output: '' }),
+        runnerArguments: ['-t', 'focused test']
+      })).resolves.toBe(0);
+      await expect(runToolkit({
+        ...base,
+        write: output(messages),
+        runTest: async () => ({ code: 0, output: completeCoverage }),
+        runLintCommand: async () => ({ code: 0, output: '' }),
+        runnerArguments: []
+      })).resolves.toBe(0);
+    } finally {
+      if (previous === undefined) delete process.env.ELIWARE_TEST_DEBUG;
+      else process.env.ELIWARE_TEST_DEBUG = previous;
+    }
+    expect(messages.join('')).toContain('Debug: Jest arguments: "-t" "focused test"');
+    expect(messages.join('')).toContain('Debug: Jest arguments: (none)');
   });
 
   test('preserves failed test diagnostics in runner output', async () => {

@@ -5,6 +5,14 @@ import { oxlintExclusionArguments } from './workspace.mjs';
 
 export async function runToolkit({ cwd, runnerArguments, write, runTest, runLintCommand }) {
   await warnIfMissingGitignore(cwd, write);
+  const missingFocusedPath = await findMissingFocusedPath(cwd, runnerArguments);
+  if (missingFocusedPath) {
+    write(`Focused test path not found: ${missingFocusedPath}\nUse a path relative to the consuming repository.\n`);
+    return 1;
+  }
+  if (process.env.ELIWARE_TEST_DEBUG === '1') {
+    write(`Debug: Jest arguments: ${runnerArguments.map((argument) => JSON.stringify(argument)).join(' ') || '(none)'}\n`);
+  }
   await rm(resolve(cwd, 'coverage/coverage-final.json'), { force: true });
   await rm(resolve(cwd, 'coverage/coverage.json'), { force: true });
   await rm(resolve(cwd, 'coverage.json'), { force: true });
@@ -25,6 +33,21 @@ export async function runToolkit({ cwd, runnerArguments, write, runTest, runLint
   }
   write('All files | 100 | 100 | 100 | 100 |\nTests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
+}
+
+async function findMissingFocusedPath(cwd, argumentsList) {
+  const candidate = argumentsList.find((argument) =>
+    !argument.startsWith('-') && (argument.includes('/') || argument.includes('\\') || /\.(?:c|m)?js$/.test(argument))
+  );
+  if (!candidate) return '';
+  try {
+    await access(resolve(cwd, candidate));
+    return '';
+  } catch (error) {
+    /* istanbul ignore next -- non-ENOENT filesystem errors are exceptional. */
+    if (error.code !== 'ENOENT') throw error;
+    return candidate;
+  }
 }
 
 async function readCoverageGaps(cwd, output) {

@@ -75,6 +75,10 @@ default. Child-process output must be streamed and bounded; truncation must be
 explicit, repeated diagnostics deduplicated, and absolute coverage paths
 normalized to concise workspace-relative paths.
 
+Argument forwarding diagnostics may be enabled with `ELIWARE_TEST_DEBUG=1` and
+must report the exact Jest arguments without changing execution. Debug output
+is disabled by default so routine agent and CI output remains bounded.
+
 ## Standalone lint behavior
 
 `eliware-test --lint` runs only Oxlint from the consuming repository. It must
