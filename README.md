@@ -39,6 +39,14 @@ lint errors, and lint warnings fail the command.
 
 `npm run lint` runs only bundled Oxlint against the consuming repository.
 
+Lint automatically excludes `.git`, `node_modules`, `coverage`, `.nyc_output`,
+`test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
+files produce a warning with recommended entries but do not fail the run.
+
+Output is agent-friendly by default: successful runs are summarized, child
+process output is bounded with an explicit truncation notice, repeated failure
+lines are deduplicated, and coverage paths are normalized to the workspace.
+
 When JSON coverage reports a gap, the output includes the four per-file
 percentages, comma-delimited uncovered lines, exact statement and branch
 locations, uncovered function names and locations, and a test-focused fix hint.

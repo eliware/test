@@ -1,4 +1,5 @@
 import { runLint, runToolkit } from '../src/runner.mjs';
+import { runOxlint } from '../src/process.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const output = (messages) => (message) => messages.push(message);
@@ -13,6 +14,7 @@ describe('runner orchestration', () => {
     await expect(runToolkit({ ...base, write: output(messages), runTest: run, runLintCommand: run, runnerArguments: ['-t', 'ok'] })).resolves.toBe(0);
     expect(calls).toHaveLength(2);
     expect(calls[0]).toEqual(expect.arrayContaining(['--detectOpenHandles']));
+    expect(calls[1]).toEqual(expect.arrayContaining(['--ignore-pattern', 'node_modules', '--ignore-pattern', 'coverage']));
     expect(messages.join('')).toContain('Tests passed');
   });
 
@@ -27,6 +29,12 @@ describe('runner orchestration', () => {
     const diagnostics = 'FAIL tests/example.test.mjs\nExpected: 2\nReceived: 1\n at example.test.mjs:8:4';
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: diagnostics }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
     expect(messages.join('')).toContain(diagnostics);
+  });
+
+  test('deduplicates repeated failure diagnostics', async () => {
+    const messages = [];
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: 'FAIL example\nFAIL example\n' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toBe('Tests failed (exit 1)\nFAIL example\n');
   });
 
   test('reports coverage gaps and skips lint', async () => {
@@ -83,6 +91,20 @@ describe('runner orchestration', () => {
     await expect(runLint({ cwd: process.cwd(), write: output(messages), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
     await expect(runLint({ cwd: process.cwd(), write: output(messages), runLintCommand: async () => ({ code: 1, output: 'bad lint' }) })).resolves.toBe(1);
     expect(messages.join('')).toContain('Lint passed');
+  });
+
+  test('warns when the workspace has no .gitignore without failing', async () => {
+    const cwd = `${process.cwd()}/test-fixtures/coverage-gap`;
+    const messages = [];
+    await expect(runLint({ cwd, write: output(messages), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+    expect(messages.join('')).toContain('Warning: .gitignore is missing');
+  });
+
+  test('excludes invalid dependency and generated files from real linting', async () => {
+    const messages = [];
+    const cwd = `${process.cwd()}/test-fixtures/exclusions`;
+    await expect(runLint({ cwd, write: output(messages), runLintCommand: runOxlint })).resolves.toBe(0);
+    expect(messages.join('')).toContain('Lint passed: 0 warnings');
   });
 
 });

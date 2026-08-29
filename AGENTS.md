@@ -14,6 +14,10 @@ repositories.
 - Use Node.js child-process APIs and argument arrays; do not use shell
   pipelines, `grep`, shell quoting, or platform-specific executable assumptions.
 - Preserve useful failure diagnostics and keep successful output concise.
+- Bound subprocess output, deduplicate repeated diagnostics, and normalize
+  workspace paths in user-facing output.
+- Exclude dependency, VCS, coverage, build, and test-result directories from
+  discovery and linting by default.
 - Enforce statements, branches, functions, and lines independently.
 - Do not hide real coverage gaps with ignore comments.
 

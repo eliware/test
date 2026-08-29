@@ -68,6 +68,13 @@ Tests passed: 184 | Coverage: 100×4 | Lint: 0 warnings
 
 The tool must never trade away failure information merely to reduce output.
 
+The runner must warn when the workspace lacks `.gitignore`, but must continue
+running. Discovery and linting must exclude `.git`, `node_modules`, `coverage`,
+`.nyc_output`, `test-results`, `dist`, `build`, and package archives by
+default. Child-process output must be streamed and bounded; truncation must be
+explicit, repeated diagnostics deduplicated, and absolute coverage paths
+normalized to concise workspace-relative paths.
+
 ## Standalone lint behavior
 
 `eliware-test --lint` runs only Oxlint from the consuming repository. It must

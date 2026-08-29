@@ -57,6 +57,17 @@ describe('parseArguments', () => {
     expect(output).toContain('Fix: add or extend tests');
   });
 
+  test('bounds oversized JSON coverage details', () => {
+    const entries = Array.from({ length: 25 }, (_, index) => ({ start: { line: index + 1 } }));
+    const output = formatCoverageGaps([{ file: 'large.mjs', metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, statements: entries, branches: entries, functions: entries, lines: entries.map((entry) => entry.start.line) }]);
+    expect(output).toContain('(+5 more omitted)');
+  });
+
+  test('normalizes absolute Windows coverage paths', () => {
+    const output = formatCoverageGaps([{ file: 'C:\\project\\src\\gap.mjs', metrics: ['90', '100', '100', '90'], statements: [], branches: [], functions: [], lines: [] }], 'C:\\project');
+    expect(output).toContain('src/gap.mjs | 90 | 100 | 100 | 90');
+  });
+
   test('accepts complete JSON coverage and skips default-argument branches', () => {
     const json = { 'src/complete.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: { 0: { type: 'default-arg', locations: [{ start: { line: 1 } }] } }, b: { 0: [0] }, fnMap: { 0: { name: 'complete', loc: { start: { line: 1 } } } }, f: { 0: 1 } } };
     expect(parseCoverageJson(json)).toEqual([]);

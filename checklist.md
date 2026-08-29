@@ -56,6 +56,11 @@ not been completed.
 
 ## Documentation and hygiene
 
+- [DONE] Warn when `.gitignore` is missing without failing the run.
+- [DONE] Centralize and apply standard workspace exclusions.
+- [DONE] Bound and deduplicate agent-facing subprocess diagnostics.
+- [DONE] Normalize coverage paths for concise output.
+
 - [DONE] README includes setup, migration, commands, coverage, test tiers, and ignore guidance.
 - [DONE] AGENTS.md includes contributor and migration standards.
 - [DONE] `.gitignore` excludes coverage and generated local artifacts.

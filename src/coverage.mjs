@@ -1,4 +1,5 @@
 const coverageLine = /^\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)(?:\s*\|\s*([^|]+?))?\s*\|?\s*$/;
+const MAX_COVERAGE_DETAILS = 20;
 
 function metricHasGap(value) {
   const match = value.match(/(\d+)\s*\/\s*(\d+)/);
@@ -66,20 +67,28 @@ export function parseCoverageJson(json) {
   return gaps;
 }
 
-export function formatCoverageGaps(gaps) {
+export function formatCoverageGaps(gaps, root = '') {
   if (gaps.length === 0) return '';
   return ['Coverage gaps:', 'File | Statements | Branches | Functions | Lines', ...gaps.map((gap) => {
-    if (Array.isArray(gap.metrics)) return `${gap.file} | ${gap.metrics.join(' | ')}`;
+    const file = root && /^[A-Za-z]:[\\/]|^\//.test(gap.file)
+      ? gap.file.replaceAll('\\', '/').replace(`${root.replaceAll('\\', '/')}/`, '')
+      : gap.file.replaceAll('\\', '/');
+    if (Array.isArray(gap.metrics)) return `${file} | ${gap.metrics.join(' | ')}`;
     const location = (entry) => entry?.start?.line ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ''}` : 'unknown';
     const statements = gap.statements.map(location).join(', ') || '-';
     const branches = gap.branches.map((entry) => `${location(entry)} (${entry.type ?? 'branch'}, uncovered)`).join(', ') || '-';
     const functions = gap.functions.map((fn) => `${fn?.name ?? 'anonymous'} at ${location(fn)}`).join(', ') || '-';
     const metrics = gap.metrics ?? { statements: '-', branches: '-', functions: '-', lines: '-' };
+    const details = (items, formatter) => {
+      const visible = items.slice(0, MAX_COVERAGE_DETAILS).map(formatter).join(', ') || '-';
+      const omitted = items.length - MAX_COVERAGE_DETAILS;
+      return omitted > 0 ? `${visible} (+${omitted} more omitted)` : visible;
+    };
     return [
-      `${gap.file} | ${metrics.statements}% | ${metrics.branches}% | ${metrics.functions}% | ${metrics.lines}% | uncovered lines: ${gap.lines.join(', ') || '-'}`,
-      `  Uncovered statements: ${statements}`,
-      `  Uncovered branches: ${branches}`,
-      `  Uncovered functions: ${functions}`,
+      `${file} | ${metrics.statements}% | ${metrics.branches}% | ${metrics.functions}% | ${metrics.lines}% | uncovered lines: ${gap.lines.join(', ') || '-'}`,
+      `  Uncovered statements: ${details(gap.statements, location)}`,
+      `  Uncovered branches: ${details(gap.branches, (entry) => `${location(entry)} (${entry.type ?? 'branch'}, uncovered)`)}`,
+      `  Uncovered functions: ${details(gap.functions, (fn) => `${fn?.name ?? 'anonymous'} at ${location(fn)}`)}`,
       '  Fix: add or extend tests that execute each listed statement, branch, and function path.'
     ].join('\n');
   })].join('\n');

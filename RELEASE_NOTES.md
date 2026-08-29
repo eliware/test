@@ -4,6 +4,8 @@
 
 - Expanded JSON coverage diagnostics with per-metric percentages, uncovered
   lines, exact locations, function names, and test-fix guidance.
+- Added safe workspace exclusions, missing-`.gitignore` warnings, bounded
+  subprocess output, deduplicated failures, and normalized coverage paths.
 
 ## 1.0.2
 
