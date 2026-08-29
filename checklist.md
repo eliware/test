@@ -7,7 +7,8 @@ not been completed.
 ## Package and consumer contract
 
 - [DONE] Scoped package name `@eliware/test`.
-- [DONE] Initial package version `1.0.0`; current release line is `2.1.1`.
+- [DONE] Initial package version `1.0.0`; current release line is `2.1.1`, with
+  `2.1.2` planned as the next release.
 - [DONE] Native ESM and `.mjs` implementation.
 - [DONE] Bundled Jest and Oxlint runtime dependencies.
 - [DONE] CLI executable and public exports/declarations.
@@ -54,6 +55,7 @@ not been completed.
 - [DONE] Test coverage filtering and exact JSON reporting.
 - [DONE] Test concise success and failure diagnostics.
 - [DONE] Test exact focused-argument forwarding and Windows npm shim behavior.
+- [DONE] Test strict multi-file focused selection with Jest path mode.
 - [DONE] Test ANSI and CRLF handling.
 - [DONE] Add excluded intentionally failing fixture.
 - [DONE] Add excluded passing coverage-gap fixture.

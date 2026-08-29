@@ -20,6 +20,8 @@ repositories.
   do not add debug output to normal runs.
 - Preserve focused test paths and reject missing paths before invoking Jest;
   never silently fall back to the full suite.
+- Use strict path selection when an invocation contains only focused test
+  paths, and keep the selection behavior covered by regression tests.
 - Exclude dependency, VCS, coverage, build, and test-result directories from
   discovery and linting by default.
 - Enforce statements, branches, functions, and lines independently.

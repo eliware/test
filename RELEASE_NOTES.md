@@ -1,5 +1,12 @@
 # Release notes
 
+## 2.1.2 (planned)
+
+- Fixed multi-file focused test execution by using Jest's strict
+  `--runTestsByPath` mode for file-only selections.
+- Added regression coverage confirming focused paths do not run unrelated
+  suites.
+
 ## 2.1.1
 
 - Improved command-line usability with `--help`/`-h`, direct-invocation

@@ -68,7 +68,8 @@ npm test -- -t "rejects invalid options"
 
 When a focused test path is supplied, the wrapper verifies that the path exists
 before starting Jest. A missing path fails with a focused-path error instead of
-silently running the full suite.
+silently running the full suite. When every forwarded argument is a test path,
+the wrapper uses Jest's strict `--runTestsByPath` mode so only those files run.
 
 Smoke, integration, regression, end-to-end, and other project-specific tests
 remain defined by the consuming project.

@@ -1,6 +1,6 @@
 {
     "name": "@eliware/test",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "description": "Shared baseline Jest, coverage, and Oxlint tooling for Eliware Node.js projects",
     "keywords": [
         "eliware",
