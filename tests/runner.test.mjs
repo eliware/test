@@ -14,6 +14,7 @@ describe('runner orchestration', () => {
     await expect(runToolkit({ ...base, write: output(messages), runTest: run, runLintCommand: run, runnerArguments: ['-t', 'ok'] })).resolves.toBe(0);
     expect(calls).toHaveLength(2);
     expect(calls[0]).toEqual(expect.arrayContaining(['--detectOpenHandles']));
+    expect(calls[0]).not.toEqual(expect.arrayContaining(['--runTestsByPath']));
     expect(calls[1]).toEqual(expect.arrayContaining(['--ignore-pattern', 'node_modules', '--ignore-pattern', 'coverage']));
     expect(messages.join('')).toContain('Tests passed');
   });
@@ -28,6 +29,17 @@ describe('runner orchestration', () => {
       runnerArguments: ['tests/runner.test.mjs', '--runInBand', '-t', 'keeps this exact order']
     })).resolves.toBe(0);
     expect(calls[0].slice(-4)).toEqual(['tests/runner.test.mjs', '--runInBand', '-t', 'keeps this exact order']);
+  });
+
+  test('uses strict Jest path selection for file-only focus', async () => {
+    const calls = [];
+    await expect(runToolkit({
+      ...base,
+      runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['tests/runner.test.mjs', 'tests/arguments.test.mjs']
+    })).resolves.toBe(0);
+    expect(calls[0]).toEqual(expect.arrayContaining(['--runTestsByPath', 'tests/runner.test.mjs', 'tests/arguments.test.mjs']));
   });
 
   test('reports test failures', async () => {

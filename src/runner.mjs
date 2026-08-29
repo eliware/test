@@ -16,7 +16,8 @@ export async function runToolkit({ cwd, runnerArguments, write, runTest, runLint
   await rm(resolve(cwd, 'coverage/coverage-final.json'), { force: true });
   await rm(resolve(cwd, 'coverage/coverage.json'), { force: true });
   await rm(resolve(cwd, 'coverage.json'), { force: true });
-  const test = await runTest(['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...runnerArguments], { cwd });
+  const focusedPathMode = runnerArguments.length > 0 && runnerArguments.every(isTestPath);
+  const test = await runTest(['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...(focusedPathMode ? ['--runTestsByPath'] : []), ...runnerArguments], { cwd });
   if (test.code !== 0) {
     write(formatFailure('Tests', test));
     return test.code;
@@ -33,6 +34,10 @@ export async function runToolkit({ cwd, runnerArguments, write, runTest, runLint
   }
   write('All files | 100 | 100 | 100 | 100 |\nTests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
+}
+
+function isTestPath(argument) {
+  return !argument.startsWith('-') && /(?:[\\/]tests?[\\/]|\.(?:c|m)?js)$/.test(argument);
 }
 
 async function findMissingFocusedPath(cwd, argumentsList) {
