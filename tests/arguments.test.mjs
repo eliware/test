@@ -12,6 +12,11 @@ describe('parseArguments', () => {
     expect(HELP_TEXT).toContain('npm test -- <Jest arguments>');
   });
 
+  test('recognizes long and short version options', () => {
+    expect(parseArguments(['--version'])).toEqual({ version: true, lint: false, runnerArguments: [] });
+    expect(parseArguments(['-v'])).toEqual({ version: true, lint: false, runnerArguments: [] });
+  });
+
   test('forwards focused runner arguments unchanged', () => {
     const argumentsList = ['tests/client.test.mjs', '-t', 'rejects invalid options'];
     expect(parseArguments(argumentsList)).toEqual({ lint: false, runnerArguments: argumentsList });

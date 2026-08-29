@@ -1,6 +1,7 @@
 export const HELP_TEXT = `Usage:
   eliware-test                         Run Jest with coverage, then lint
   eliware-test --lint                  Run lint only
+  eliware-test --version              Show the package version
   npm test -- <Jest arguments>         Forward arguments to Jest
 
 Examples:
@@ -11,6 +12,9 @@ Examples:
 `;
 
 export function parseArguments(argumentsList = []) {
+  if (argumentsList.includes('--version') || argumentsList.includes('-v')) {
+    return { version: true, lint: false, runnerArguments: [] };
+  }
   if (argumentsList.includes('--help') || argumentsList.includes('-h')) {
     return { help: true, lint: false, runnerArguments: [] };
   }
