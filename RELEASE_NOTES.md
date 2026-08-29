@@ -1,5 +1,17 @@
 # Release notes
 
+## 2.1.0 (planned)
+
+- Added exact-commit secondary validation through Knit using a disposable
+  worktree, bounded execution, cleanup, and the full local validation suite.
+- Improved agent-facing diagnostics with bounded subprocess output,
+  deduplicated failures, normalized coverage paths, and detailed JSON coverage
+  gap reporting.
+- Added default workspace exclusions and a non-failing warning when a
+  consuming repository lacks `.gitignore`.
+- Documented the self-test script exception and the consumer migration
+  contract.
+
 ## 1.0.3
 
 - Expanded JSON coverage diagnostics with per-metric percentages, uncovered

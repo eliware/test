@@ -105,6 +105,7 @@ or configuration committed to version control.
 npm install
 npm test
 npm run lint
+npm run typecheck
 npm audit --omit=dev --audit-level=moderate
 npm pack --dry-run
 ```

@@ -68,6 +68,7 @@ not been completed.
 - [DONE] Release notes include the implementation changes.
 - [DONE] Ubuntu/Windows CI workflow is defined.
 - [DONE] Local audit and package dry-run checks pass.
-- [HALF-DONE] Worktree is prepared but not committed/pushed.
+- [HALF-DONE] Current documentation changes are prepared but not yet
+  committed/pushed.
 - [NOT STARTED] Pre-release handoff verification on latest Ubuntu/Windows CI runs.
 - [NOT STARTED] Release authorization, tagging, publishing, or deployment.
