@@ -63,7 +63,7 @@
         ]
     },
     "dependencies": {
-        "jest": "latest",
+        "jest": "^30.5.0",
         "oxlint": "^1.80.0"
     },
     "devDependencies": {
