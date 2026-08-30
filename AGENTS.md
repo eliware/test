@@ -25,6 +25,8 @@ repositories.
 - Exclude dependency, VCS, coverage, build, and test-result directories from
   discovery and linting by default.
 - Enforce statements, branches, functions, and lines independently.
+- Support `--ignore-100x4` only as an explicit coverage-enforcement opt-out;
+  tests, lint, and coverage collection still run.
 - Do not hide real coverage gaps with ignore comments.
 
 ## Consumer migration
@@ -51,6 +53,7 @@ npm pack --dry-run
 Use `eliware-test --help` for the supported command forms. When invoking via
 npm, pass Jest options after `npm test --`. Use `eliware-test --version` to
 verify the installed package version without starting validation.
+Use `eliware-test --ignore-100x4` only for diagnostic or transitional runs.
 
 Follow the pre-release and release runbooks before publication. Never
 tag, publish, push, or deploy without explicit authorization.

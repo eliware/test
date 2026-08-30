@@ -258,3 +258,13 @@ The package must provide a README describing installation, migration, consumer
 commands, focused tests, coverage/lint behavior, generated artifacts, and the
 separation of project-specific test tiers. It must also provide `AGENTS.md`
 with contributor, package, validation, and migration guidance.
+
+## Explicit coverage opt-out
+
+`eliware-test --ignore-100x4` runs the normal test and lint stages while
+skipping coverage-gap enforcement. Coverage remains collected and successful
+output identifies `Coverage: ignored`. This opt-out is explicit and is not the
+standard CI behavior.
+
+Unsupported wrapper options must fail before Jest starts with a concise,
+actionable error and must never silently broaden a focused invocation.

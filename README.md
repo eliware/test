@@ -46,6 +46,11 @@ examples. Jest arguments must follow npm's `--` separator, for example
 Use `eliware-test --version` or `eliware-test -v` to print the installed
 package version without running tests or lint.
 
+Use `eliware-test --ignore-100x4` for diagnostic or transitional runs when
+tests and lint should run but coverage enforcement should be skipped. Coverage
+is still collected and the success summary reports `Coverage: ignored`; the
+normal CI baseline must continue enforcing 100×4 coverage.
+
 Lint automatically excludes `.git`, `node_modules`, `coverage`, `.nyc_output`,
 `test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
 files produce a warning with recommended entries but do not fail the run.

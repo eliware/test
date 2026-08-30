@@ -1,6 +1,12 @@
 # Release notes
 
-## 2.1.3 (planned)
+## 2.1.4 (planned)
+
+- Added explicit `--ignore-100x4` coverage-enforcement opt-out for diagnostic
+  and transitional runs while retaining test, lint, and coverage collection.
+- Added regression coverage for parsing and executing the coverage opt-out.
+
+## 2.1.3
 
 - Added `eliware-test --version` and `eliware-test -v` to report the package
   version directly from `package.json` without running the test suite.

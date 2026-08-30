@@ -7,8 +7,7 @@ not been completed.
 ## Package and consumer contract
 
 - [DONE] Scoped package name `@eliware/test`.
-- [DONE] Initial package version `1.0.0`; current release line is `2.1.2`, with
-  `2.1.3` planned as the next release.
+- [DONE] Initial package version `1.0.0`; current released version is `2.1.3`.
 - [DONE] Native ESM and `.mjs` implementation.
 - [DONE] Bundled Jest and Oxlint runtime dependencies.
 - [DONE] CLI executable and public exports/declarations.
@@ -31,6 +30,7 @@ not been completed.
 - [DONE] Provide `--version` and `-v` package version reporting.
 - [DONE] Provide opt-in forwarded-argument diagnostics with `ELIWARE_TEST_DEBUG=1`.
 - [DONE] Return nonzero codes for test, coverage, and lint failures.
+- [DONE] Support explicit `--ignore-100x4` coverage-enforcement opt-out.
 - [DONE] Preserve failed-test diagnostics.
 - [DONE] Suppress routine passing output and emit minimal success output.
 - [DONE] Report only coverage-gap files.
@@ -75,8 +75,8 @@ not been completed.
 - [DONE] Release notes include the implementation changes.
 - [DONE] Ubuntu/Windows CI workflow is defined.
 - [DONE] Local audit and package dry-run checks pass.
-- [HALF-DONE] Current package metadata has an uncommitted local change; the
-  released source and documentation changes are committed and pushed.
+- [HALF-DONE] `2.1.4` documentation and implementation changes are local and
+  require the normal commit, CI, and release process.
 - [DONE] Pre-release handoff verification on the latest Ubuntu/Windows CI run.
 - [DONE] Release authorization, tagging, publishing, and deployment completed
   for `2.1.3`.
