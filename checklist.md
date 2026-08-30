@@ -78,5 +78,5 @@ not been completed.
 - [DONE] `2.1.4` documentation and implementation changes are committed,
   pushed, published, and verified through preflight.
 - [DONE] Pre-release handoff verification on the latest Ubuntu/Windows CI run.
-- [DONE] Release authorization, tagging, publishing, and deployment completed
-  for `2.1.4`.
+- [DONE] `2.1.4` release handoff, tagging, npm publication, and registry
+  verification completed; deployment is not applicable to this library.
