@@ -1,6 +1,6 @@
 # Release notes
 
-## 2.1.4 (planned)
+## 2.1.4
 
 - Added explicit `--ignore-100x4` coverage-enforcement opt-out for diagnostic
   and transitional runs while retaining test, lint, and coverage collection.

@@ -7,7 +7,7 @@ not been completed.
 ## Package and consumer contract
 
 - [DONE] Scoped package name `@eliware/test`.
-- [DONE] Initial package version `1.0.0`; current released version is `2.1.3`.
+- [DONE] Initial package version `1.0.0`; current released version is `2.1.4`.
 - [DONE] Native ESM and `.mjs` implementation.
 - [DONE] Bundled Jest and Oxlint runtime dependencies.
 - [DONE] CLI executable and public exports/declarations.
@@ -75,8 +75,8 @@ not been completed.
 - [DONE] Release notes include the implementation changes.
 - [DONE] Ubuntu/Windows CI workflow is defined.
 - [DONE] Local audit and package dry-run checks pass.
-- [HALF-DONE] `2.1.4` documentation and implementation changes are local and
-  require the normal commit, CI, and release process.
+- [DONE] `2.1.4` documentation and implementation changes are committed,
+  pushed, published, and verified through preflight.
 - [DONE] Pre-release handoff verification on the latest Ubuntu/Windows CI run.
 - [DONE] Release authorization, tagging, publishing, and deployment completed
-  for `2.1.3`.
+  for `2.1.4`.
