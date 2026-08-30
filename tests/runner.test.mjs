@@ -111,6 +111,12 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('Coverage gaps');
   });
 
+  test('runs lint while ignoring coverage enforcement when requested', async () => {
+    const messages = [];
+    await expect(runToolkit({ ...base, ignoreCoverage: true, write: output(messages), runTest: async () => ({ code: 0, output: ' foo.mjs | 0 | 0 | 0 | 0 |' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+    expect(messages.join('')).toContain('Coverage: ignored');
+  });
+
   test('reads generated JSON coverage when available', async () => {
     const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
     await mkdir(`${cwd}/coverage`, { recursive: true });

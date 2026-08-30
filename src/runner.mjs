@@ -3,7 +3,7 @@ import { access, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
 
-export async function runToolkit({ cwd, runnerArguments, write, runTest, runLintCommand }) {
+export async function runToolkit({ cwd, runnerArguments, ignoreCoverage = false, write, runTest, runLintCommand }) {
   await warnIfMissingGitignore(cwd, write);
   const missingFocusedPath = await findMissingFocusedPath(cwd, runnerArguments);
   if (missingFocusedPath) {
@@ -22,7 +22,7 @@ export async function runToolkit({ cwd, runnerArguments, write, runTest, runLint
     write(formatFailure('Tests', test));
     return test.code;
   }
-  const gaps = await readCoverageGaps(cwd, test.output);
+  const gaps = ignoreCoverage ? [] : await readCoverageGaps(cwd, test.output);
   if (gaps.length > 0) {
     write(`${formatCoverageGaps(gaps, cwd)}\n`);
     return 1;
@@ -32,7 +32,7 @@ export async function runToolkit({ cwd, runnerArguments, write, runTest, runLint
     write(formatFailure('Lint', lint));
     return lint.code;
   }
-  write('All files | 100 | 100 | 100 | 100 |\nTests passed | Coverage: 100×4 | Lint: 0 warnings\n');
+  write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'All files | 100 | 100 | 100 | 100 |\nTests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
 }
 

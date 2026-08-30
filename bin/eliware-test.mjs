@@ -17,7 +17,7 @@ try {
   const common = { cwd: process.cwd(), write: (message) => process.stdout.write(message), runLintCommand: undefined };
   process.exitCode = options.lint
     ? await runLint({ ...common, runLintCommand: runOxlint })
-    : await runToolkit({ ...common, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint });
+    : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint });
   }
 } catch (error) {
   process.stderr.write(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);

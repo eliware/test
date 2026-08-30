@@ -60,7 +60,7 @@ not been completed.
 - [DONE] Test ANSI and CRLF handling.
 - [DONE] Add excluded intentionally failing fixture.
 - [DONE] Add excluded passing coverage-gap fixture.
-- [HALF-DONE] Add explicit cross-platform CI execution evidence.
+- [DONE] Add explicit cross-platform CI execution evidence.
 
 ## Documentation and hygiene
 
@@ -75,7 +75,8 @@ not been completed.
 - [DONE] Release notes include the implementation changes.
 - [DONE] Ubuntu/Windows CI workflow is defined.
 - [DONE] Local audit and package dry-run checks pass.
-- [HALF-DONE] Current documentation changes are prepared but not yet
-  committed/pushed.
-- [NOT STARTED] Pre-release handoff verification on latest Ubuntu/Windows CI runs.
-- [NOT STARTED] Release authorization, tagging, publishing, or deployment.
+- [HALF-DONE] Current package metadata has an uncommitted local change; the
+  released source and documentation changes are committed and pushed.
+- [DONE] Pre-release handoff verification on the latest Ubuntu/Windows CI run.
+- [DONE] Release authorization, tagging, publishing, and deployment completed
+  for `2.1.3`.

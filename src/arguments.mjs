@@ -2,6 +2,7 @@ export const HELP_TEXT = `Usage:
   eliware-test                         Run Jest with coverage, then lint
   eliware-test --lint                  Run lint only
   eliware-test --version              Show the package version
+  eliware-test --ignore-100x4          Run tests without coverage enforcement
   npm test -- <Jest arguments>         Forward arguments to Jest
 
 Examples:
@@ -19,9 +20,12 @@ export function parseArguments(argumentsList = []) {
     return { help: true, lint: false, runnerArguments: [] };
   }
   const lint = argumentsList.includes('--lint');
-  const runnerArguments = argumentsList.filter((argument) => argument !== '--lint');
+  const ignoreCoverage = argumentsList.includes('--ignore-100x4');
+  const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4'].includes(argument));
   if (lint && runnerArguments.length > 0) {
-    throw new Error('`--lint` cannot be combined with Jest arguments; run `eliware-test --lint` separately.');
+    throw new Error('`--lint` cannot be combined with test arguments; run `eliware-test --lint` separately.');
   }
-  return { lint, runnerArguments: runnerArguments[0] === '--' ? runnerArguments.slice(1) : runnerArguments };
+  const parsed = { lint, runnerArguments: runnerArguments[0] === '--' ? runnerArguments.slice(1) : runnerArguments };
+  if (ignoreCoverage) parsed.ignoreCoverage = true;
+  return parsed;
 }

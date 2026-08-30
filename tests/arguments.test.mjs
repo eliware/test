@@ -17,6 +17,10 @@ describe('parseArguments', () => {
     expect(parseArguments(['-v'])).toEqual({ version: true, lint: false, runnerArguments: [] });
   });
 
+  test('parses the explicit coverage opt-out', () => {
+    expect(parseArguments(['--ignore-100x4'])).toEqual({ lint: false, ignoreCoverage: true, runnerArguments: [] });
+  });
+
   test('forwards focused runner arguments unchanged', () => {
     const argumentsList = ['tests/client.test.mjs', '-t', 'rejects invalid options'];
     expect(parseArguments(argumentsList)).toEqual({ lint: false, runnerArguments: argumentsList });
