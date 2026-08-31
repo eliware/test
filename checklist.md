@@ -8,6 +8,8 @@ not been completed.
 
 - [DONE] Scoped package name `@eliware/test`.
 - [DONE] Initial package version `1.0.0`; current released version is `2.1.4`.
+- [HALF-DONE] Planned release `2.2.0` metadata and release notes are prepared;
+  publication and release verification remain outstanding.
 - [DONE] Native ESM and `.mjs` implementation.
 - [DONE] Bundled Jest and Oxlint runtime dependencies.
 - [DONE] CLI executable and public exports/declarations.
