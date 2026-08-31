@@ -82,6 +82,11 @@ the wrapper uses Jest's strict `--runTestsByPath` mode so only those files run.
 Smoke, integration, regression, end-to-end, and other project-specific tests
 remain defined by the consuming project.
 
+For focused paths that follow the standard mirrored layout, coverage is scoped
+to matching source files (`tests/foo.test.mjs` maps to `src/foo.mjs`). This
+prevents imported modules from appearing as focused-run coverage gaps. If a
+focused path cannot be mapped unambiguously, the full coverage gate is kept.
+
 ## Secondary Knit validation
 
 This repository includes `.knit/deploy.yaml` and `.knit/validate.sh` for a

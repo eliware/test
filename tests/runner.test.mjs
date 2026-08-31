@@ -42,6 +42,35 @@ describe('runner orchestration', () => {
     expect(calls[0]).toEqual(expect.arrayContaining(['--runTestsByPath', 'tests/runner.test.mjs', 'tests/arguments.test.mjs']));
   });
 
+  test('limits focused coverage to mirrored source files', async () => {
+    const calls = [];
+    await expect(runToolkit({
+      ...base,
+      runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['tests/runner.test.mjs']
+    })).resolves.toBe(0);
+    expect(calls[0]).toEqual(expect.arrayContaining(['--collectCoverageFrom', 'src/runner.mjs']));
+  });
+
+  test('keeps broad coverage when focused paths cannot map to source files', async () => {
+    const calls = [];
+    await expect(runToolkit({
+      ...base,
+      runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['index.mjs']
+    })).resolves.toBe(0);
+    expect(calls[0]).not.toEqual(expect.arrayContaining(['--collectCoverageFrom']));
+    await expect(runToolkit({
+      ...base,
+      runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['test-fixtures/coverage-gap/tests/branch.test.mjs']
+    })).resolves.toBe(0);
+    expect(calls[1]).not.toEqual(expect.arrayContaining(['--collectCoverageFrom']));
+  });
+
   test('reports test failures', async () => {
     const messages = [];
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 2, output: 'failed test' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);

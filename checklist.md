@@ -57,6 +57,8 @@ not been completed.
 - [DONE] Test concise success and failure diagnostics.
 - [DONE] Test exact focused-argument forwarding and Windows npm shim behavior.
 - [DONE] Test strict multi-file focused selection with Jest path mode.
+- [DONE] Scope mirrored focused coverage and retain broad enforcement for
+  unmappable focused paths.
 - [DONE] Test ANSI and CRLF handling.
 - [DONE] Add excluded intentionally failing fixture.
 - [DONE] Add excluded passing coverage-gap fixture.

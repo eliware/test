@@ -22,6 +22,8 @@ repositories.
   never silently fall back to the full suite.
 - Use strict path selection when an invocation contains only focused test
   paths, and keep the selection behavior covered by regression tests.
+- Scope coverage to mirrored focused source files when they map unambiguously;
+  retain broad enforcement for unmappable paths.
 - Exclude dependency, VCS, coverage, build, and test-result directories from
   discovery and linting by default.
 - Enforce statements, branches, functions, and lines independently.

@@ -1,5 +1,13 @@
 # Release notes
 
+## 2.1.5 (planned)
+
+- Scoped coverage enforcement for mirrored focused test paths to matching
+  source files, avoiding misleading gaps from imported modules.
+- Retained the full coverage gate when focused paths cannot be mapped
+  unambiguously.
+- Added regression coverage for scoped and fallback behavior.
+
 ## 2.1.4
 
 - Added explicit `--ignore-100x4` coverage-enforcement opt-out for diagnostic

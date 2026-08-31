@@ -221,6 +221,12 @@ be reused for a new run.
 Coverage-gap output should identify the affected file and exact uncovered
 locations, while successful output remains minimal.
 
+For file-only focused runs following the standard mirrored layout, the runner
+must pass matching `src` files through `--collectCoverageFrom`, limiting
+coverage enforcement to selected source files rather than imported
+dependencies. If any selected path cannot be mapped unambiguously, the runner
+must retain the broad coverage scope instead of weakening enforcement.
+
 ## Intentional validation fixtures
 
 The toolkit may retain excluded fixtures for regression testing its diagnostics:

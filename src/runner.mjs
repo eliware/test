@@ -17,7 +17,8 @@ export async function runToolkit({ cwd, runnerArguments, ignoreCoverage = false,
   await rm(resolve(cwd, 'coverage/coverage.json'), { force: true });
   await rm(resolve(cwd, 'coverage.json'), { force: true });
   const focusedPathMode = runnerArguments.length > 0 && runnerArguments.every(isTestPath);
-  const test = await runTest(['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...(focusedPathMode ? ['--runTestsByPath'] : []), ...runnerArguments], { cwd });
+  const focusedCoverage = focusedPathMode ? await focusedCoverageArguments(cwd, runnerArguments) : [];
+  const test = await runTest(['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...focusedCoverage, ...(focusedPathMode ? ['--runTestsByPath'] : []), ...runnerArguments], { cwd });
   if (test.code !== 0) {
     write(formatFailure('Tests', test));
     return test.code;
@@ -38,6 +39,31 @@ export async function runToolkit({ cwd, runnerArguments, ignoreCoverage = false,
 
 function isTestPath(argument) {
   return !argument.startsWith('-') && /(?:[\\/]tests?[\\/]|\.(?:c|m)?js)$/.test(argument);
+}
+
+async function focusedCoverageArguments(cwd, testPaths) {
+  const sourcePaths = await Promise.all(testPaths.map((testPath) => sourcePathForTest(cwd, testPath)));
+  if (sourcePaths.some((sourcePath) => !sourcePath)) return [];
+  return sourcePaths.flatMap((sourcePath) => ['--collectCoverageFrom', sourcePath]);
+}
+
+async function sourcePathForTest(cwd, testPath) {
+  const normalized = testPath.replaceAll('\\', '/').replace(/^\.\//, '');
+  const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
+  if (!marker) return '';
+  const sourceRelative = marker[2]
+    .replace(/\.(?:test|spec)(?=\.[^.]+$)/i, '')
+    .replace(/\.[^.]+$/, '');
+  for (const candidate of [`src/${sourceRelative}.mjs`, `src/${sourceRelative}/index.mjs`]) {
+    try {
+      await access(resolve(cwd, candidate));
+      return candidate;
+    } catch (error) {
+      /* istanbul ignore next -- non-ENOENT filesystem errors are exceptional. */
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
+  return '';
 }
 
 async function findMissingFocusedPath(cwd, argumentsList) {
