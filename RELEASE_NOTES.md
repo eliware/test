@@ -1,5 +1,21 @@
 # Release notes
 
+## 2.3.0
+
+- Focused test paths now execute only the requested files and fail closed when
+  a requested path is missing, preventing an accidental full-suite run.
+- Focused coverage now maps unambiguously mirrored test paths to their source
+  files, while unmappable selections retain broad coverage enforcement.
+- Protected wrapper-managed Jest flags now fail early with actionable guidance
+  instead of being forwarded ambiguously.
+- Test failures now report failure diagnostics without additional coverage
+  noise, and subprocess output remains bounded to keep agent-facing output
+  concise.
+- Hardened coverage parsing for malformed JSON and sparse statement maps while
+  preserving detailed gap diagnostics.
+- Added regression coverage for focused selection, argument validation,
+  coverage handling, failure output, and subprocess behavior.
+
 ## 2.2.0
 
 - Focused test paths following the standard mirrored layout now scope coverage
@@ -76,7 +92,7 @@
 - Added declaration typechecking and aligned package documentation with the
   current Eliware conventions.
 
-## Unreleased
+## 1.0.0
 
 - Scaffolded the `@eliware/test` package and CLI entrypoint.
 - Added bundled Jest/Oxlint orchestration, focused-test forwarding, concise

@@ -7,8 +7,8 @@ not been completed.
 ## Package and consumer contract
 
 - [DONE] Scoped package name `@eliware/test`.
-- [DONE] Initial package version `1.0.0`; current released version is `2.1.4`.
-- [HALF-DONE] Planned release `2.2.0` metadata and release notes are prepared;
+- [DONE] Initial package version `1.0.0`; current released version is `2.2.0`.
+- [HALF-DONE] Release `2.3.0` implementation and release notes are prepared;
   publication and release verification remain outstanding.
 - [DONE] Native ESM and `.mjs` implementation.
 - [DONE] Bundled Jest and Oxlint runtime dependencies.
@@ -37,7 +37,7 @@ not been completed.
 - [DONE] Suppress routine passing output and emit minimal success output.
 - [DONE] Report only coverage-gap files.
 - [DONE] Use Node child-process APIs and argument arrays.
-- [HALF-DONE] Complete independent Linux and Windows execution verification.
+- [DONE] Complete independent Linux and Windows execution verification.
 
 ## Coverage
 
@@ -79,8 +79,8 @@ not been completed.
 - [DONE] Release notes include the implementation changes.
 - [DONE] Ubuntu/Windows CI workflow is defined.
 - [DONE] Local audit and package dry-run checks pass.
-- [DONE] `2.1.4` documentation and implementation changes are committed,
+- [DONE] `2.2.0` documentation and implementation changes are committed,
   pushed, published, and verified through preflight.
 - [DONE] Pre-release handoff verification on the latest Ubuntu/Windows CI run.
-- [DONE] `2.1.4` release handoff, tagging, npm publication, and registry
+- [DONE] `2.2.0` release handoff, tagging, npm publication, and registry
   verification completed; deployment is not applicable to this library.

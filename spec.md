@@ -72,7 +72,7 @@ The tool must never trade away failure information merely to reduce output.
 The runner must warn when the workspace lacks `.gitignore`, but must continue
 running. Discovery and linting must exclude `.git`, `node_modules`, `coverage`,
 `.nyc_output`, `test-results`, `dist`, `build`, and package archives by
-default. Child-process output must be streamed and bounded; truncation must be
+default. Child-process output must be captured and bounded; truncation must be
 explicit, repeated diagnostics deduplicated, and absolute coverage paths
 normalized to concise workspace-relative paths.
 
