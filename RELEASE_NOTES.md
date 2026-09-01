@@ -7,6 +7,10 @@
   imported modules.
 - Unmappable focused paths retain the full coverage gate rather than weakening
   enforcement.
+- Test failures now suppress coverage parsing and coverage-table output so the
+  failure diagnostics remain the only actionable result.
+- Protected wrapper-managed Jest flags now fail early with an actionable
+  message, and subprocess capture remains bounded throughout execution.
 - Added regression coverage for scoped and fallback behavior, with documentation
   for the focused coverage contract.
 

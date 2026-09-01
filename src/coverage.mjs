@@ -35,6 +35,7 @@ function percentage(counts) {
 export function parseCoverageJson(json) {
   const gaps = [];
   for (const [file, data] of Object.entries(json)) {
+    if (!data || typeof data !== 'object' || !data.statementMap) continue;
     const statements = locationsForCounts(data.statementMap, data.s);
     const branches = Object.entries(data.b ?? {}).flatMap(([id, counts]) => {
       if (data.branchMap[id]?.type === 'default-arg') return [];

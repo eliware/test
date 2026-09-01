@@ -40,8 +40,9 @@ lint errors, and lint warnings fail the command.
 `npm run lint` runs only bundled Oxlint against the consuming repository.
 
 Use `eliware-test --help` or `eliware-test -h` for command and invocation
-examples. Jest arguments must follow npm's `--` separator, for example
-`npm test -- --runInBand`.
+examples. Supported Jest filters must follow npm's `--` separator, for example
+`npm test -- -t "focused test name"`. Wrapper-managed flags such as
+`--runInBand` and `--coverage` are rejected because the tool controls them.
 
 Use `eliware-test --version` or `eliware-test -v` to print the installed
 package version without running tests or lint.

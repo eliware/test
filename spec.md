@@ -57,9 +57,10 @@ The default `eliware-test` command must:
 9. Fail if tests, coverage, or lint fail.
 10. Return a nonzero exit code for any failed stage.
 
-The complete test runner output may be captured internally so the normal
-command remains focused on actionable gaps. On failure, enough diagnostics must
-remain available to identify the failed stage and reproduce it. A successful
+The complete test runner output is captured internally and bounded so the
+normal command remains focused on actionable gaps; it is emitted after each
+stage completes rather than streamed verbatim. On failure, enough diagnostics
+must remain available to identify the failed stage and reproduce it. A successful
 run with no gaps should ideally be one or two lines, for example:
 
 ```text
@@ -274,3 +275,6 @@ standard CI behavior.
 
 Unsupported wrapper options must fail before Jest starts with a concise,
 actionable error and must never silently broaden a focused invocation.
+
+Wrapper-managed flags such as `--coverage`, `--runInBand`, `--silent`, and
+`--coverageReporters` are rejected because the baseline owns those guarantees.

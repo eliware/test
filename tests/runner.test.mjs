@@ -26,9 +26,9 @@ describe('runner orchestration', () => {
       ...base,
       runTest,
       runLintCommand: async () => ({ code: 0, output: '' }),
-      runnerArguments: ['tests/runner.test.mjs', '--runInBand', '-t', 'keeps this exact order']
+      runnerArguments: ['tests/runner.test.mjs', '-t', 'keeps this exact order']
     })).resolves.toBe(0);
-    expect(calls[0].slice(-4)).toEqual(['tests/runner.test.mjs', '--runInBand', '-t', 'keeps this exact order']);
+    expect(calls[0].slice(-3)).toEqual(['tests/runner.test.mjs', '-t', 'keeps this exact order']);
   });
 
   test('uses strict Jest path selection for file-only focus', async () => {
@@ -77,6 +77,12 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('Tests failed');
   });
 
+  test('rejects managed flags at the runner boundary', async () => {
+    const messages = [];
+    await expect(runToolkit({ ...base, write: output(messages), runnerArguments: ['--coverage=false'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toContain('Unsupported Jest option');
+  });
+
   test('rejects a missing focused path before running the broad suite', async () => {
     const messages = [];
     let testCalls = 0;
@@ -123,6 +129,16 @@ describe('runner orchestration', () => {
     const diagnostics = 'FAIL tests/example.test.mjs\nExpected: 2\nReceived: 1\n at example.test.mjs:8:4';
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: diagnostics }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
     expect(messages.join('')).toContain(diagnostics);
+  });
+
+  test('omits coverage output when tests fail', async () => {
+    const messages = [];
+    const outputWithCoverage = 'FAIL tests/example.test.mjs\nExpected: 2\nReceived: 1\nCoverage report\nFile | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\nsrc/example.mjs | 80% | 90% | 100% | 80% | 4';
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: outputWithCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toContain('FAIL tests/example.test.mjs');
+    expect(messages.join('')).toContain('Received: 1');
+    expect(messages.join('')).not.toContain('Coverage report');
+    expect(messages.join('')).not.toContain('src/example.mjs');
   });
 
   test('deduplicates repeated failure diagnostics', async () => {

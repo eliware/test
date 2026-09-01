@@ -13,6 +13,7 @@ export function runProcess(command, argumentsList, options) {
   return new Promise((resolveResult) => {
     let output = '';
     let settled = false;
+    // Intentional: the caller supplies the trusted consumer environment so npm and tool config resolve normally.
     const child = spawn(command, argumentsList, { cwd: options.cwd, env: options.env, windowsHide: true });
     const settle = (result) => {
       if (!settled) {
@@ -20,8 +21,9 @@ export function runProcess(command, argumentsList, options) {
         resolveResult(result);
       }
     };
-    child.stdout.on('data', (chunk) => { output += chunk.toString(); });
-    child.stderr.on('data', (chunk) => { output += chunk.toString(); });
+    const capture = (chunk) => { output = boundOutput(output + chunk.toString()); };
+    child.stdout.on('data', capture);
+    child.stderr.on('data', capture);
     child.on('error', (error) => settle({ code: 1, output: `${error.message}\n` }));
     /* istanbul ignore next -- a normal child process always provides an exit code. */
     child.on('close', (code) => settle({ code: code ?? 1, output: boundOutput(output) }));

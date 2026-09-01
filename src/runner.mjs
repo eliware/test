@@ -5,6 +5,11 @@ import { oxlintExclusionArguments } from './workspace.mjs';
 
 export async function runToolkit({ cwd, runnerArguments, ignoreCoverage = false, write, runTest, runLintCommand }) {
   await warnIfMissingGitignore(cwd, write);
+  const protectedArgument = runnerArguments.find(isProtectedArgument);
+  if (protectedArgument) {
+    write(`Unsupported Jest option: ${protectedArgument} is managed by eliware-test; remove it and use a supported filter.\n`);
+    return 1;
+  }
   const missingFocusedPath = await findMissingFocusedPath(cwd, runnerArguments);
   if (missingFocusedPath) {
     write(`Focused test path not found: ${missingFocusedPath}\nUse a path relative to the consuming repository.\n`);
@@ -38,7 +43,12 @@ export async function runToolkit({ cwd, runnerArguments, ignoreCoverage = false,
 }
 
 function isTestPath(argument) {
-  return !argument.startsWith('-') && /(?:[\\/]tests?[\\/]|\.(?:c|m)?js)$/.test(argument);
+  return !argument.startsWith('-') && !/[*!?\[\]{}]/.test(argument) && /(?:[\\/]tests?[\\/]|\.(?:c|m)?js)$/.test(argument);
+}
+
+function isProtectedArgument(argument) {
+  return ['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath']
+    .some((name) => argument === name || argument.startsWith(`${name}=`));
 }
 
 async function focusedCoverageArguments(cwd, testPaths) {
@@ -68,7 +78,7 @@ async function sourcePathForTest(cwd, testPath) {
 
 async function findMissingFocusedPath(cwd, argumentsList) {
   const candidate = argumentsList.find((argument) =>
-    !argument.startsWith('-') && (argument.includes('/') || argument.includes('\\') || /\.(?:c|m)?js$/.test(argument))
+    !argument.startsWith('-') && !/[*!?\[\]{}]/.test(argument) && (argument.includes('/') || argument.includes('\\') || /\.(?:c|m)?js$/.test(argument))
   );
   if (!candidate) return '';
   try {
@@ -102,7 +112,7 @@ export async function runLint({ cwd, write, runLintCommand }) {
 }
 
 function formatFailure(stage, result) {
-  const lines = result.output.split(/\r?\n/);
+  const lines = result.output.split(/\r?\n/).filter((line) => stage !== 'Tests' || !isCoverageNoise(line));
   const seen = new Set();
   const diagnostics = lines.filter((line) => {
     if (!line.trim() || !seen.has(line)) {
@@ -112,6 +122,14 @@ function formatFailure(stage, result) {
     return false;
   }).join('\n');
   return `${stage} failed (exit ${result.code})\n${diagnostics}`;
+}
+
+function isCoverageNoise(line) {
+  const clean = line.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, '').trim();
+  return clean === 'Coverage report' || clean === 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #'
+    || /^-+(?:\s*\|\s*-+)+$/.test(clean)
+    || /^All files\s*\|/.test(clean)
+    || /\|\s*\d+(?:\.\d+)?%?(?:\s*\(\d+\/\d+\))?\s*\|/.test(clean);
 }
 
 async function warnIfMissingGitignore(cwd, write) {

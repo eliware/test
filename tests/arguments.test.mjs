@@ -27,11 +27,16 @@ describe('parseArguments', () => {
   });
 
   test('accepts a direct-invocation separator before Jest arguments', () => {
-    expect(parseArguments(['--', '--runInBand'])).toEqual({ lint: false, runnerArguments: ['--runInBand'] });
+    expect(parseArguments(['--', '-t', 'focused'])).toEqual({ lint: false, runnerArguments: ['-t', 'focused'] });
   });
 
   test('rejects lint combined with runner arguments', () => {
     expect(() => parseArguments(['--lint', 'tests/client.test.mjs'])).toThrow('cannot be combined');
+  });
+
+  test('rejects wrapper-managed Jest flags with an actionable message', () => {
+    expect(() => parseArguments(['--runInBand'])).toThrow('managed by eliware-test');
+    expect(() => parseArguments(['--coverage=false'])).toThrow('managed by eliware-test');
   });
 
   test('parses ANSI and CRLF coverage, retaining only incomplete files', () => {
@@ -97,6 +102,9 @@ describe('parseArguments', () => {
   });
 
   test('handles sparse JSON coverage maps', () => {
+    expect(parseCoverageJson({ 'null-entry': null, 'scalar-entry': 'invalid', 'missing-map': {} })).toEqual([]);
+    expect(parseCoverageJson({ 'src/valid.mjs': { statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 1 } } }, s: { 0: 1, 1: 1 }, b: undefined, fnMap: {}, f: undefined } })).toEqual([]);
+    expect(parseCoverageJson({ 'src/no-statements.mjs': { statementMap: {}, s: undefined, b: undefined, fnMap: {}, f: undefined } })).toEqual([]);
     expect(parseCoverageJson({ 'src/sparse.mjs': { s: undefined, b: undefined, f: undefined } })).toEqual([]);
     expect(parseCoverageJson({ 'src/branch.mjs': { statementMap: {}, s: {}, branchMap: { 0: { type: 'cond-expr', locations: [] } }, b: { 0: [0] }, fnMap: {}, f: {} } })).toEqual([]);
     const gaps = parseCoverageJson({ 'src/missing.mjs': { statementMap: {}, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: { 0: {} }, f: { 0: 0 } } });

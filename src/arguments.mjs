@@ -7,7 +7,7 @@ export const HELP_TEXT = `Usage:
 
 Examples:
   npm test -- tests/foo.test.mjs
-  npm test -- --runInBand
+  npm test -- -t "focused test name"
   npx eliware-test -- tests/foo.test.mjs
   .\\node_modules\\.bin\\eliware-test.cmd -- tests/foo.test.mjs
 `;
@@ -22,6 +22,8 @@ export function parseArguments(argumentsList = []) {
   const lint = argumentsList.includes('--lint');
   const ignoreCoverage = argumentsList.includes('--ignore-100x4');
   const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4'].includes(argument));
+  const protectedArgument = runnerArguments.find((argument) => ['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath'].some((name) => argument === name || argument.startsWith(`${name}=`)));
+  if (protectedArgument) throw new Error(`${protectedArgument} is managed by eliware-test; remove it and use the wrapper command directly.`);
   if (lint && runnerArguments.length > 0) {
     throw new Error('`--lint` cannot be combined with test arguments; run `eliware-test --lint` separately.');
   }
