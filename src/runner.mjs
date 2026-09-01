@@ -77,7 +77,7 @@ async function sourcePathForTest(cwd, testPath) {
 }
 
 async function findMissingFocusedPath(cwd, argumentsList) {
-  const candidate = argumentsList.find((argument) =>
+  const candidate = positionalArguments(argumentsList).find((argument) =>
     !argument.startsWith('-') && !/[*!?\[\]{}]/.test(argument) && (argument.includes('/') || argument.includes('\\') || /\.(?:c|m)?js$/.test(argument))
   );
   if (!candidate) return '';
@@ -89,6 +89,24 @@ async function findMissingFocusedPath(cwd, argumentsList) {
     if (error.code !== 'ENOENT') throw error;
     return candidate;
   }
+}
+
+function positionalArguments(argumentsList) {
+  const values = [];
+  const valueOptions = new Set(['-t', '--testNamePattern', '--config', '--selectProjects', '--projects', '--runTestsByPath']);
+  for (let index = 0; index < argumentsList.length; index += 1) {
+    const argument = argumentsList[index];
+    if (argument === '--') {
+      values.push(...argumentsList.slice(index + 1));
+      break;
+    }
+    if (valueOptions.has(argument)) {
+      index += 1;
+      continue;
+    }
+    if (!argument.startsWith('-')) values.push(argument);
+  }
+  return values;
 }
 
 async function readCoverageGaps(cwd, output) {

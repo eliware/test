@@ -105,6 +105,7 @@ describe('parseArguments', () => {
     expect(parseCoverageJson({ 'null-entry': null, 'scalar-entry': 'invalid', 'missing-map': {} })).toEqual([]);
     expect(parseCoverageJson({ 'src/valid.mjs': { statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 1 } } }, s: { 0: 1, 1: 1 }, b: undefined, fnMap: {}, f: undefined } })).toEqual([]);
     expect(parseCoverageJson({ 'src/no-statements.mjs': { statementMap: {}, s: undefined, b: undefined, fnMap: {}, f: undefined } })).toEqual([]);
+    expect(parseCoverageJson({ 'src/no-line.mjs': { statementMap: { 0: {} }, s: { 0: 0 }, b: undefined, fnMap: {}, f: undefined } })).toHaveLength(1);
     expect(parseCoverageJson({ 'src/sparse.mjs': { s: undefined, b: undefined, f: undefined } })).toEqual([]);
     expect(parseCoverageJson({ 'src/branch.mjs': { statementMap: {}, s: {}, branchMap: { 0: { type: 'cond-expr', locations: [] } }, b: { 0: [0] }, fnMap: {}, f: {} } })).toEqual([]);
     const gaps = parseCoverageJson({ 'src/missing.mjs': { statementMap: {}, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: { 0: {} }, f: { 0: 0 } } });

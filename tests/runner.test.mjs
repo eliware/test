@@ -69,6 +69,18 @@ describe('runner orchestration', () => {
       runnerArguments: ['test-fixtures/coverage-gap/tests/branch.test.mjs']
     })).resolves.toBe(0);
     expect(calls[1]).not.toEqual(expect.arrayContaining(['--collectCoverageFrom']));
+    await expect(runToolkit({
+      ...base,
+      runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['--', 'tests/runner.test.mjs']
+    })).resolves.toBe(0);
+    await expect(runToolkit({
+      ...base,
+      runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['--watch']
+    })).resolves.toBe(0);
   });
 
   test('reports test failures', async () => {

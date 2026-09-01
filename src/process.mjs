@@ -14,7 +14,7 @@ export function runProcess(command, argumentsList, options) {
     let output = '';
     let settled = false;
     // Intentional: the caller supplies the trusted consumer environment so npm and tool config resolve normally.
-    const child = spawn(command, argumentsList, { cwd: options.cwd, env: options.env, windowsHide: true });
+    const child = spawn(command, argumentsList, { cwd: options.cwd, env: { ...process.env, ...options.env }, windowsHide: true });
     const settle = (result) => {
       if (!settled) {
         settled = true;

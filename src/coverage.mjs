@@ -22,7 +22,7 @@ export function parseCoverage(text) {
 }
 
 function locationsForCounts(map, counts) {
-  return Object.entries(counts ?? {}).filter(([, count]) => count === 0).map(([id]) => map[id]);
+  return Object.entries(counts ?? {}).filter(([, count]) => count === 0).map(([id]) => map?.[id]).filter(Boolean);
 }
 
 function percentage(counts) {
@@ -47,7 +47,7 @@ export function parseCoverageJson(json) {
       const line = data.statementMap?.[id]?.start?.line;
       if (line) lineCounts.set(line, Math.max(lineCounts.get(line) ?? 0, count));
     });
-    const lines = new Set([...statements, ...branches].flatMap((location) => location ? [location.start.line] : []));
+    const lines = new Set([...statements, ...branches].flatMap((location) => location?.start?.line ? [location.start.line] : []));
     if (statements.length || branches.length || functions.length) {
       /* istanbul ignore next -- JSON coverage fixtures exercise this path externally. */
       gaps.push({
