@@ -63,8 +63,8 @@
         ]
     },
     "dependencies": {
-        "jest": "^30.5.0",
-        "oxlint": "^1.80.0"
+        "jest": "^30.5.1",
+        "oxlint": "^1.81.0"
     },
     "devDependencies": {
         "@types/jest": "latest",
