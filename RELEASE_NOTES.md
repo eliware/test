@@ -1,5 +1,15 @@
 # Release notes
 
+## 2.3.1
+
+- Fixed zero-valued text coverage metrics being treated as complete, ensuring
+  fallback coverage reports still enforce the 100×4 gate.
+- Fixed valid but unusable coverage JSON falling through to a false success by
+  falling back to text coverage when no instrumented entries are present.
+- Enforced Oxlint warnings as failures with `--deny-warnings` in both combined
+  and lint-only commands.
+- Added regression coverage for empty coverage JSON and zero-valued metrics.
+
 ## 2.3.0
 
 - Focused test paths now execute only the requested files and fail closed when

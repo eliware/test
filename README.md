@@ -67,6 +67,8 @@ and should not be enabled in routine CI output.
 When JSON coverage reports a gap, the output includes the four per-file
 percentages, comma-delimited uncovered lines, exact statement and branch
 locations, uncovered function names and locations, and a test-focused fix hint.
+Malformed or empty coverage JSON is ignored so the runner falls back to the
+Jest text report instead of accidentally treating missing coverage as complete.
 
 Arguments after `npm test --` are forwarded to Jest:
 

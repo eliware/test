@@ -219,6 +219,10 @@ locations, branch locations, and function names. If no usable JSON exists, the
 tool falls back to the standard Jest text table. Stale generated JSON must not
 be reused for a new run.
 
+Zero-valued numeric metrics in the text table are coverage gaps. A valid JSON
+document with no instrumented file entries is not usable coverage and must not
+override a usable text report.
+
 Coverage-gap output should identify the affected file and exact uncovered
 locations, while successful output remains minimal.
 
