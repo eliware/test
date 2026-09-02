@@ -7,7 +7,7 @@ function metricHasGap(value) {
   const percentage = value.match(/(\d+(?:\.\d+)?)\s*%/);
   if (percentage) return Number(percentage[1]) < 100;
   const numeric = value.trim().match(/^\d+(?:\.\d+)?$/);
-  return numeric ? Number(numeric[0]) > 0 && Number(numeric[0]) < 100 : false;
+  return numeric ? Number(numeric[0]) < 100 : false;
 }
 
 export function parseCoverage(text) {

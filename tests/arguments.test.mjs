@@ -55,6 +55,10 @@ describe('parseArguments', () => {
     expect(parseCoverage(' percent.mjs | 99% | 100% | 100% | 100% |')).toHaveLength(1);
   });
 
+  test('treats zero numeric coverage as a gap', () => {
+    expect(parseCoverage(' empty.mjs | 0 | 0 | 0 | 0 |')).toHaveLength(1);
+  });
+
   test('ignores headings, separators, complete rows, and empty input', () => {
     expect(parseCoverage('File | % Stmts | % Branch | % Funcs | % Lines | Uncovered\n-----\nAll files | 100 | 100 | 100 | 100 |\n')).toEqual([]);
   });
