@@ -15,7 +15,7 @@ describe('runner orchestration', () => {
     expect(calls).toHaveLength(2);
     expect(calls[0]).toEqual(expect.arrayContaining(['--detectOpenHandles']));
     expect(calls[0]).not.toEqual(expect.arrayContaining(['--runTestsByPath']));
-    expect(calls[1]).toEqual(expect.arrayContaining(['--ignore-pattern', 'node_modules', '--ignore-pattern', 'coverage']));
+    expect(calls[1]).toEqual(expect.arrayContaining(['--deny-warnings', '--ignore-pattern', 'node_modules', '--ignore-pattern', 'coverage']));
     expect(messages.join('')).toContain('Tests passed');
   });
 
@@ -195,6 +195,18 @@ describe('runner orchestration', () => {
       return { code: 0, output: completeCoverage };
     };
     await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+  });
+
+  test('falls back to text when generated JSON has no coverage entries', async () => {
+    const cwd = `${process.cwd()}/test-fixtures/json-empty`;
+    await mkdir(`${cwd}/coverage`, { recursive: true });
+    const messages = [];
+    const runTest = async () => {
+      await writeFile(`${cwd}/coverage/coverage-final.json`, '{}');
+      return { code: 0, output: ' gap.mjs | 99 | 100 | 100 | 100 |' };
+    };
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toContain('gap.mjs');
   });
 
   test('surfaces unexpected coverage-file read errors', async () => {

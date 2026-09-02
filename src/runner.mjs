@@ -33,7 +33,7 @@ export async function runToolkit({ cwd, runnerArguments, ignoreCoverage = false,
     write(`${formatCoverageGaps(gaps, cwd)}\n`);
     return 1;
   }
-  const lint = await runLintCommand(['oxlint', '.', ...oxlintExclusionArguments()], { cwd });
+  const lint = await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd });
   if (lint.code !== 0) {
     write(formatFailure('Lint', lint));
     return lint.code;
@@ -43,7 +43,7 @@ export async function runToolkit({ cwd, runnerArguments, ignoreCoverage = false,
 }
 
 function isTestPath(argument) {
-  return !argument.startsWith('-') && !/[*!?\[\]{}]/.test(argument) && /(?:[\\/]tests?[\\/]|\.(?:c|m)?js)$/.test(argument);
+  return !argument.startsWith('-') && !/[*!?[\]{}]/.test(argument) && /(?:[\\/]tests?[\\/]|\.(?:c|m)?js)$/.test(argument);
 }
 
 function isProtectedArgument(argument) {
@@ -78,7 +78,7 @@ async function sourcePathForTest(cwd, testPath) {
 
 async function findMissingFocusedPath(cwd, argumentsList) {
   const candidate = positionalArguments(argumentsList).find((argument) =>
-    !argument.startsWith('-') && !/[*!?\[\]{}]/.test(argument) && (argument.includes('/') || argument.includes('\\') || /\.(?:c|m)?js$/.test(argument))
+    !argument.startsWith('-') && !/[*!?[\]{}]/.test(argument) && (argument.includes('/') || argument.includes('\\') || /\.(?:c|m)?js$/.test(argument))
   );
   if (!candidate) return '';
   try {
@@ -112,7 +112,8 @@ function positionalArguments(argumentsList) {
 async function readCoverageGaps(cwd, output) {
   for (const name of ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json']) {
     try {
-      return parseCoverageJson(JSON.parse(await readFile(resolve(cwd, name), 'utf8')));
+      const json = JSON.parse(await readFile(resolve(cwd, name), 'utf8'));
+      if (hasUsableCoverage(json)) return parseCoverageJson(json);
     } catch (error) {
       /* istanbul ignore next -- unexpected filesystem errors are tested through the public promise. */
       if (error.code !== 'ENOENT' && error.name !== 'SyntaxError') throw error;
@@ -123,10 +124,15 @@ async function readCoverageGaps(cwd, output) {
 
 export async function runLint({ cwd, write, runLintCommand }) {
   await warnIfMissingGitignore(cwd, write);
-  const lint = await runLintCommand(['oxlint', '.', ...oxlintExclusionArguments()], { cwd });
+  const lint = await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd });
   if (lint.code !== 0) write(formatFailure('Lint', lint));
   else write('Lint passed: 0 warnings\n');
   return lint.code;
+}
+
+function hasUsableCoverage(json) {
+  return Boolean(json && typeof json === 'object' && Object.values(json).some((data) =>
+    data && typeof data === 'object' && data.statementMap && typeof data.statementMap === 'object'));
 }
 
 function formatFailure(stage, result) {
@@ -143,7 +149,8 @@ function formatFailure(stage, result) {
 }
 
 function isCoverageNoise(line) {
-  const clean = line.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, '').trim();
+  const ansiPattern = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, 'g');
+  const clean = line.replace(ansiPattern, '').trim();
   return clean === 'Coverage report' || clean === 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #'
     || /^-+(?:\s*\|\s*-+)+$/.test(clean)
     || /^All files\s*\|/.test(clean)

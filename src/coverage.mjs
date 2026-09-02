@@ -76,9 +76,6 @@ export function formatCoverageGaps(gaps, root = '') {
       : gap.file.replaceAll('\\', '/');
     if (Array.isArray(gap.metrics)) return `${file} | ${gap.metrics.join(' | ')}`;
     const location = (entry) => entry?.start?.line ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ''}` : 'unknown';
-    const statements = gap.statements.map(location).join(', ') || '-';
-    const branches = gap.branches.map((entry) => `${location(entry)} (${entry.type ?? 'branch'}, uncovered)`).join(', ') || '-';
-    const functions = gap.functions.map((fn) => `${fn?.name ?? 'anonymous'} at ${location(fn)}`).join(', ') || '-';
     const metrics = gap.metrics ?? { statements: '-', branches: '-', functions: '-', lines: '-' };
     const details = (items, formatter) => {
       const visible = items.slice(0, MAX_COVERAGE_DETAILS).map(formatter).join(', ') || '-';
