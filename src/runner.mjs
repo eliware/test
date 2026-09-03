@@ -13,6 +13,8 @@ import { runBuildStage, runLintStage, runPackageStages, runTypecheckStage } from
 import { findMonolithViolations } from './monolith/validate.mjs';
 import { formatMonolithViolations } from './monolith/diagnostics.mjs';
 import { MONOLITH_EXIT_CODE } from './monolith/constants.mjs';
+import { createStageContext, normalizeRunnerArguments } from './runner/orchestration/context.mjs';
+import { runValidationPipeline } from './runner/orchestration/pipeline.mjs';
 
 export async function runToolkit(options) {
   return runToolkitUnlocked(options);
@@ -24,7 +26,7 @@ async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, igno
   }
   const disableInBand = runnerArguments.includes('--no-runInBand');
   const effectiveRunInBand = runInBand && !disableInBand;
-  const normalizedRunnerArguments = runnerArguments.filter((argument) => argument !== '--runInBand' && argument !== '--no-runInBand' && argument !== '--');
+  const normalizedRunnerArguments = normalizeRunnerArguments(runnerArguments);
   try {
     if (!await checkWorkspace(cwd, write, accessPath, findIstanbulIgnores)) return EXIT_CODES.ISTANBUL_POLICY;
   } catch (error) {
@@ -91,15 +93,14 @@ async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, igno
   let buildScript;
   try { buildScript = await configuredBuildScript(cwd, readFilePath); }
   catch (error) { write(`Build configuration failed: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
-  const stageContext = { cwd, sanitizeEnv, write, runBuild, runTypecheck, runLintCommand, runAudit, runPack };
-  const buildCode = await runBuildStage(stageContext, buildScript);
-  if (buildCode !== 0) return buildCode;
-  const typecheckCode = await runTypecheckStage(stageContext, await configuredScript(cwd, 'typecheck', readFilePath));
-  if (typecheckCode !== 0) return typecheckCode;
-  const lintCode = await runLintStage(stageContext);
-  if (lintCode !== 0) return lintCode;
-  const packageCode = await runPackageStages(stageContext);
-  if (packageCode !== 0) return packageCode;
+  const stageContext = createStageContext({ cwd, sanitizeEnv, write, runBuild, runTypecheck, runLintCommand, runAudit, runPack });
+  const validationCode = await runValidationPipeline(stageContext, [
+    (context) => runBuildStage(context, buildScript),
+    async (context) => runTypecheckStage(context, await configuredScript(cwd, 'typecheck', readFilePath)),
+    runLintStage,
+    runPackageStages
+  ]);
+  if (validationCode !== 0) return validationCode;
   if (enforceMonolithLimits) try {
     const monolithViolations = await findMonolith(cwd);
     if (monolithViolations.length > 0) {
