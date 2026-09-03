@@ -1,5 +1,17 @@
 # Release notes
 
+## 3.0.0
+
+- Tightened focused-test handling so only conventional test and spec paths use
+  strict `--runTestsByPath` selection; source-like paths retain Jest semantics.
+- Added an opt-in sanitized child-process environment through the internal
+  process helper while preserving the trusted inherited-environment default.
+- Made near-complete annotated coverage values fail closed, completed parser
+  declarations, and added regression coverage for rounding and delegated Jest
+  option values.
+- Clarified coverage fallback freshness, bounded parsing, orchestration API
+  stability, output ownership, and accepted percentage grammar.
+
 ## 2.4.0
 
 - Added detailed Istanbul JSON coverage-gap diagnostics with uncovered lines,

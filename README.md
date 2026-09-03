@@ -2,7 +2,7 @@
 
 ## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test)[![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE)[![build status](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/nodejs.yml)
 
-Shared baseline test, coverage, and lint tooling for Eliware Node.js projects. The package bundles Jest and Oxlint so consuming repositories do not need direct Jest or Oxlint dependencies.
+Shared Jest testing, coverage enforcement, and Oxlint validation for Eliware Node.js projects. The package bundles Jest and Oxlint so consuming repositories do not need direct Jest or Oxlint dependencies.
 
 ---
 
@@ -29,6 +29,8 @@ Shared baseline test, coverage, and lint tooling for Eliware Node.js projects. T
 - Focused test-path validation and strict `--runTestsByPath` handling.
 - Detailed coverage-gap diagnostics with uncovered lines, branches, statements, and functions.
 - Optional diagnostic coverage bypass through `--ignore-100x4`.
+- Fail-closed coverage validation for annotated and malformed reports.
+- Explicit focused-test selection and optional sanitized child-process environments.
 - Native ESM package with a repository-local CLI.
 
 ## Requirements
