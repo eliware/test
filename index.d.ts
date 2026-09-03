@@ -40,10 +40,26 @@ export function formatCoverageGaps(gaps: CoverageGap[], root?: string): string;
 /** Parse Istanbul JSON coverage and return actionable gaps. */
 export function parseCoverageJson(json: Record<string, unknown>): JsonCoverageGap[];
 
-/** Advanced orchestration API; consumers normally use the CLI. This seam is versioned with the package. */
-export function runLint(options: { cwd: string; write: (message: string) => void; sanitizeEnv?: boolean; runLintCommand: (argumentsList: string[], options: { cwd: string; inheritEnv: boolean }) => Promise<{ code?: number; output?: string } | null>; accessPath?: (path: string) => Promise<void> }): Promise<number>;
-/** Advanced orchestration API; collaborators are injected for composition/testing. */
-export function runToolkit(options: { cwd: string; runnerArguments: string[]; write: (message: string) => void; runTest: (argumentsList: string[], options: { cwd: string; runInBand: boolean; inheritEnv: boolean }) => Promise<{ code?: number; output?: string } | null>; runLintCommand: (argumentsList: string[], options: { cwd: string; inheritEnv: boolean }) => Promise<{ code?: number; output?: string } | null>; runInBand?: boolean; ignoreCoverage?: boolean; sanitizeEnv?: boolean; accessPath?: (path: string) => Promise<void>; removePath?: (path: string, options: { force: boolean }) => Promise<void>; readFilePath?: (path: string, encoding: string) => Promise<string> }): Promise<number>;
+export interface ProcessResult { code?: number; output?: string }
+export interface ProcessOptions { cwd: string; inheritEnv: boolean }
+export interface LintOptions {
+  cwd: string; write: (message: string) => void; sanitizeEnv?: boolean;
+  runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
+  accessPath?: (path: string) => Promise<void>;
+}
+export interface ToolkitOptions {
+  cwd: string; runnerArguments: string[]; write: (message: string) => void;
+  runTest: (argumentsList: string[], options: ProcessOptions & { runInBand: boolean }) => Promise<ProcessResult | null>;
+  runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
+  runInBand?: boolean; ignoreCoverage?: boolean; sanitizeEnv?: boolean;
+  accessPath?: (path: string) => Promise<void>;
+  removePath?: (path: string, options: { force: boolean }) => Promise<void>;
+  readFilePath?: (path: string, encoding: string) => Promise<string>;
+}
+/** Advanced orchestration API; consumers normally use the CLI. */
+export function runLint(options: LintOptions): Promise<number>;
+/** Advanced orchestration API; consumers normally use the CLI. */
+export function runToolkit(options: ToolkitOptions): Promise<number>;
 /** Find Istanbul ignore directives outside pure barrel modules. */
 export function findIstanbulIgnoreViolations(cwd: string): Promise<Array<{ file: string; line: number }>>;
 export const EXIT_CODES: Readonly<{
