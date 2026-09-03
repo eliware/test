@@ -284,8 +284,9 @@ Failures in those checks return distinct exit codes `15` and `16` respectively.
 Exit code `0` means all validation completed successfully.
 
 The repository's own `npm test` command is the package self-test. It always
-exercises tests, coverage, and lint; it does not claim to exercise the
-consumer-only audit, pack, or build stages. In a consuming repository, the
+exercises tests, coverage, and lint; its concise output does not enumerate the
+consumer-only audit, pack, or build stages even when the executable dispatches
+them. In a consuming repository, the
 published CLI wires audit and pack on every successful validation, while build
 runs only when that consumer defines a non-empty `scripts.build` command.
 

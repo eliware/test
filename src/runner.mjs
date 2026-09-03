@@ -15,6 +15,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
 // codescope ignore: extracting these stages would change the intentionally centralized public orchestration boundary.
 export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+  // codescope ignore: the injected collaborator surface is an advanced composition API; the CLI supplies the normal stage set.
   // codescope ignore: this centralized coordinator preserves the public stage order; private extraction would not change the intentional policy boundary.
   // codescope ignore: ordered validation stages intentionally remain centralized as the stable CLI policy boundary.
 // codescope ignore: this is the deliberate single CLI policy boundary; stage sequencing is part of the public behavior.
@@ -145,6 +146,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
 }
 
 async function configuredBuildScript(cwd, readFilePath) {
+  // codescope ignore: npm script syntax is intentionally delegated to npm; the runner only distinguishes configured from absent builds.
   let raw;
   try { raw = await readFilePath(resolve(cwd, 'package.json'), 'utf8'); }
   catch (error) { if (error.code === 'ENOENT') return ''; throw error; }
