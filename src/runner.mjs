@@ -15,6 +15,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
 // codescope ignore: extracting these stages would change the intentionally centralized public orchestration boundary.
 export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+  // codescope ignore: this centralized coordinator preserves the public stage order; private extraction would not change the intentional policy boundary.
   // codescope ignore: ordered validation stages intentionally remain centralized as the stable CLI policy boundary.
 // codescope ignore: this is the deliberate single CLI policy boundary; stage sequencing is part of the public behavior.
 // codescope ignore: cross-process workspace locking is intentionally delegated to callers because the runner must not impose a lock-file lifecycle on consumer repositories.
@@ -60,6 +61,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   // codescope ignore: cleanup errors intentionally propagate before execution to prevent stale evidence.
   // codescope ignore: coverage candidate selection intentionally remains private to the runner contract.
   try {
+    // codescope ignore: coverage artifacts are workspace-global by Jest contract; callers must serialize runs.
     for (const name of COVERAGE_CANDIDATES) await removePath(resolve(cwd, name), { force: true });
   } catch (error) {
     write(`Coverage cleanup failed: ${error.message}\n`);

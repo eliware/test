@@ -647,6 +647,32 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('9');
   });
 
+  test('selects a real coverage-final JSON artifact over text fallback', async () => {
+    const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
+    await mkdir(`${cwd}/coverage`, { recursive: true });
+    await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({
+      [`${cwd.replaceAll('\\', '/')}/src/generated.mjs`]: {
+        statementMap: { 0: { start: { line: 7, column: 0 }, end: { line: 7, column: 1 } } },
+        s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {}
+      }
+    }));
+    const messages = [];
+    try {
+      await expect(runToolkit({ ...base, cwd, write: output(messages), runTest: async () => {
+        await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({
+          [`${cwd.replaceAll('\\', '/')}/src/generated.mjs`]: {
+            statementMap: { 0: { start: { line: 7, column: 0 }, end: { line: 7, column: 1 } } },
+            s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {}
+          }
+        }));
+        return { code: 0, output: completeCoverage };
+      }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(11);
+    } finally {
+      await rm(`${cwd}/coverage`, { recursive: true, force: true });
+    }
+    expect(messages.join('')).toContain('generated.mjs');
+  });
+
   test.each([
     { l: { 1: 1, 2: 0 }, expected: 11 },
     { l: { bad: 1 }, expected: 0 },

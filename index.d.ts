@@ -54,6 +54,7 @@ export interface LintOptions {
   accessPath?: (path: string) => Promise<void>;
 }
 export interface ToolkitOptions {
+  /** Advanced composition seam; the CLI supplies process collaborators and callers may omit optional validation stages. */
   cwd: string; runnerArguments: string[]; write: (message: string) => void;
   runTest: (argumentsList: string[], options: ProcessOptions & { runInBand: boolean }) => Promise<CollaboratorResult>;
   runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
@@ -61,6 +62,7 @@ export interface ToolkitOptions {
   accessPath?: (path: string) => Promise<void>;
   removePath?: (path: string, options: { force: boolean }) => Promise<void>;
   readFilePath?: (path: string, encoding: string) => Promise<string>;
+  findIstanbulIgnores?: (cwd: string) => Promise<Array<{ file: string; line: number }>>;
 }
 /** Advanced orchestration API; consumers normally use the CLI. */
 export function runLint(options: LintOptions): Promise<number>;

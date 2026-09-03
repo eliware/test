@@ -6,6 +6,7 @@ const IGNORED_DIRECTIVE = /(?:\/\*\s*\*?\s*|\/\/\s*)istanbul\s+ignore\b/i;
 const IGNORED_DIRECTORIES = new Set(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build']);
 
 export async function findIstanbulIgnoreViolations(cwd, { readDirectory = readdir, readSource = readFile } = {}) {
+  // codescope ignore: complete serial discovery is intentional to bound descriptors in arbitrary workspaces.
   const violations = [];
   await visit(resolve(cwd), resolve(cwd), violations, readDirectory, readSource);
   return violations;

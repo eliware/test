@@ -263,6 +263,10 @@ runs `npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
 published CLI; direct `runToolkit` callers may omit those optional
 collaborators. Build is conditional on the consumer defining a non-empty
 `scripts.build` command.
+The executable entrypoint supplies all three collaborators (`runAudit`,
+`runPack`, and `runBuild`); only the build command is conditional on consumer
+metadata. Advanced callers that invoke `runToolkit` directly are responsible
+for supplying any optional collaborators they require.
 
 For untrusted or CI-isolated workspaces, use `eliware-test --sanitize-env`;
 tool-specific variables can still be passed explicitly by the invoking
