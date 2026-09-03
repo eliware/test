@@ -1,6 +1,6 @@
 import { formatCoverageGaps, parseCoverage, parseCoverageJson } from './coverage.mjs';
 import { MANAGED_OPTIONS, VALUE_OPTIONS } from './arguments.mjs';
-import { access, readFile, rm } from 'node:fs/promises';
+import { access, open, readFile, rm, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
 import { findIstanbulIgnoreViolations, isPureBarrelFile } from './istanbul.mjs';
@@ -8,7 +8,29 @@ import { EXIT_CODES } from './exit-codes.mjs';
 
 const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
-export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+export async function runToolkit(options) {
+  if (typeof options?.cwd !== 'string' || typeof options.write !== 'function') throw new TypeError('runToolkit requires cwd and write');
+  if (process.env.JEST_WORKER_ID !== undefined && process.env.ELIWARE_TEST_FORCE_LOCK !== '1') return runToolkitUnlocked(options);
+  const lockPath = resolve(options.cwd, '.eliware-test.lock');
+  let lock;
+  try {
+    lock = await open(lockPath, 'wx');
+  } catch (error) {
+    if (error.code === 'EEXIST') {
+      options.write('Validation already running for this workspace; serialize invocations.\n');
+      return EXIT_CODES.WORKSPACE_SETUP;
+    }
+    throw error;
+  }
+  try {
+    return await runToolkitUnlocked(options);
+  } finally {
+    await lock.close();
+    await unlink(lockPath);
+  }
+}
+
+async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   if (typeof cwd !== 'string' || !Array.isArray(runnerArguments) || typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runToolkit requires cwd, runnerArguments, write, runTest, and runLintCommand');
   }
