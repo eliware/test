@@ -9,6 +9,7 @@ import { formatFailure, hasLintWarnings } from './runner/diagnostics.mjs';
 import { findMissingFocusedPath, focusedCoverageArguments, isTestPath } from './runner/focused-path-stage.mjs';
 import { COVERAGE_CANDIDATES, pureBarrelSuggestions, readCoverageGaps } from './runner/coverage-stage.mjs';
 import { checkWorkspace, configuredBuildScript } from './runner/workspace-stage.mjs';
+import { runBuildStage, runLintStage, runPackageStages } from './runner/validation-stages.mjs';
 
 export async function runToolkit(options) {
   return runToolkitUnlocked(options);
@@ -87,40 +88,13 @@ async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, igno
   let buildScript;
   try { buildScript = await configuredBuildScript(cwd, readFilePath); }
   catch (error) { write(`Build configuration failed: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
-  if (buildScript && runBuild) {
-    let build;
-    try { build = (await runBuild(['run', 'build'], { cwd, inheritEnv: !sanitizeEnv })) ?? {}; }
-    catch (error) { write(`Build failed to start: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
-    build = { ...build, output: typeof build.output === 'string' ? build.output : '', code: Number.isInteger(build.code) ? build.code : 1 };
-    if (build.code !== 0) { write(formatFailure('Build', build)); return EXIT_CODES.BUILD_FAILURE; }
-  }
-  let lint;
-  try {
-    lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd, inheritEnv: !sanitizeEnv })) ?? {};
-  } catch (error) {
-    write(`Lint failed to start: ${error.message}\n`);
-    return EXIT_CODES.LINT_START;
-  }
-  lint = { ...lint, output: typeof lint.output === 'string' ? lint.output : '', code: Number.isInteger(lint.code) ? lint.code : 1 };
-  if (lint.code !== 0 || hasLintWarnings(lint.output)) {
-    write(formatFailure('Lint', lint));
-    return EXIT_CODES.LINT_FAILURE;
-  }
-  for (const [label, command, code] of [['Audit', runAudit, EXIT_CODES.AUDIT_FAILURE], ['Pack', runPack, EXIT_CODES.PACK_FAILURE]]) {
-    if (!command) continue;
-    let result;
-    try {
-      result = (await command(label === 'Audit' ? ['audit', '--omit=dev', '--audit-level=moderate', '--ignore-scripts'] : ['pack', '--dry-run', '--ignore-scripts'], { cwd, inheritEnv: !sanitizeEnv })) ?? {};
-    } catch (error) {
-      write(`${label} failed to start: ${error.message}\n`);
-      return code;
-    }
-    const normalized = { ...result, output: typeof result.output === 'string' ? result.output : '', code: Number.isInteger(result.code) ? result.code : 1 };
-    if (normalized.code !== 0) {
-      write(formatFailure(label, normalized));
-      return code;
-    }
-  }
+  const stageContext = { cwd, sanitizeEnv, write, runBuild, runLintCommand, runAudit, runPack };
+  const buildCode = await runBuildStage(stageContext, buildScript);
+  if (buildCode !== 0) return buildCode;
+  const lintCode = await runLintStage(stageContext);
+  if (lintCode !== 0) return lintCode;
+  const packageCode = await runPackageStages(stageContext);
+  if (packageCode !== 0) return packageCode;
   write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
 }
