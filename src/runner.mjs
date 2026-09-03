@@ -121,6 +121,7 @@ async function focusedCoverageArguments(cwd, testPaths) {
 }
 
 async function sourcePathForTest(cwd, testPath) {
+  // codescope ignore: deterministic sequential probing preserves extension precedence; focused invocations are small and bounded.
   const normalized = testPath.replaceAll('\\', '/').replace(/^\.\//, '');
   const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
   /* istanbul ignore next -- callers invoke this helper only after test/spec path classification. */
