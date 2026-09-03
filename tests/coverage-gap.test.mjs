@@ -40,6 +40,21 @@ test('fails closed when an uncovered statement has malformed line metadata', () 
   expect(gaps[0].metrics.lines).toBe(0);
 });
 
+test('keeps authoritative line metrics independent from malformed statement counters', () => {
+  const gaps = parseCoverageJson({
+    'src/authoritative-lines.mjs': {
+      statementMap: { 0: { start: { line: 4 } } },
+      s: { 0: 'invalid' },
+      l: { 4: 1 },
+      branchMap: {}, b: {}, fnMap: {}, f: {}
+    }
+  });
+  expect(gaps[0].statements).toHaveLength(1);
+  expect(gaps[0].metrics.statements).toBe(0);
+  expect(gaps[0].lines).toEqual([]);
+  expect(gaps[0].metrics.lines).toBe(100);
+});
+
 test('reports uncovered branches when branch metadata is missing', () => {
   const gaps = parseCoverageJson({
     'src/missing-branch-map.mjs': {
