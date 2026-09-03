@@ -168,7 +168,7 @@ function positionalArguments(argumentsList) {
   // codescope ignore: parser and path-selection metadata are separate contracts; this local list intentionally covers only documented value-taking options.
   // codescope ignore: this local option metadata intentionally covers only documented value-taking options used by focused-path discovery.
   const values = [];
-  const valueOptions = new Set(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--runTestsByPath', '--env', '--watchPathIgnorePatterns', '--moduleNameMapper']);
+  const valueOptions = new Set(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--runTestsByPath', '--env', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile']);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
     if (valueOptions.has(argument)) {

@@ -405,6 +405,12 @@ describe('runner orchestration', () => {
     expect(calls[0]).toContain('--config=tests/not-a-focused-path.mjs');
   });
 
+  test('does not misclassify separated output-file option values as focused paths', async () => {
+    const calls = [];
+    await expect(runToolkit({ ...base, runnerArguments: ['--outputFile', 'reports/result.mjs'], runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+    expect(calls[0]).toContain('reports/result.mjs');
+  });
+
   test('reports forwarded arguments only when debug mode is enabled', async () => {
     const messages = [];
     const previous = process.env.ELIWARE_TEST_DEBUG;
