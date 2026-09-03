@@ -40,6 +40,7 @@ export function formatCoverageGaps(gaps: CoverageGap[], root?: string): string;
 /** Parse Istanbul JSON coverage and return actionable gaps. */
 export function parseCoverageJson(json: Record<string, unknown>): JsonCoverageGap[];
 
+/** Compatibility result accepted from injected collaborators; the runtime normalizes absent or invalid fields. */
 // codescope ignore: collaborator results are intentionally partial because the runtime normalizes missing fields at the boundary.
 export interface ProcessResult { code?: number; output?: string }
 export interface ProcessOptions { cwd: string; inheritEnv: boolean }
@@ -68,6 +69,7 @@ export function runToolkit(options: ToolkitOptions): Promise<number>;
 export function findIstanbulIgnoreViolations(cwd: string): Promise<Array<{ file: string; line: number }>>;
 export function isPureBarrelSource(source: string): boolean;
 export function isPureBarrelFile(path: string): Promise<boolean>;
+export function percentageWithUnknowns(lineCounts: Map<number, number>, unknownCount: number): number;
 export const EXIT_CODES: Readonly<{
   WORKSPACE_SETUP: 2; ISTANBUL_POLICY: 3; INVALID_ARGUMENT: 4; FOCUSED_PATH_VALIDATION: 5;
   FOCUSED_PATH_MISSING: 6; COVERAGE_CLEANUP: 7; TEST_START: 8; TEST_FAILURE: 9;

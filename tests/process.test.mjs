@@ -72,8 +72,7 @@ describe('process helpers', () => {
 
   test('provides an npm wrapper', async () => {
     await expect(runNpm(['--version'], { cwd: process.cwd(), env: process.env })).resolves.toMatchObject({ code: 0 });
-    expect(npmInvocation('win32', ['--version'])[0]).toBe(process.execPath);
-    expect(npmInvocation('linux', ['--version'])[0]).toBe(process.execPath);
+    expect(npmInvocation(['--version'])[0]).toBe(process.execPath);
   });
 
   test('forwards arguments through the Windows npm cmd shim', async () => {

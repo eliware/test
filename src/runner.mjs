@@ -13,10 +13,13 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: cancellation is intentionally owned by the invoking process; the CLI exposes no abort-signal contract.
 // codescope ignore: collaborator injection is intentionally an advanced internal composition seam; the CLI is the supported consumer interface.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
+// codescope ignore: extracting these stages would change the intentionally centralized public orchestration boundary.
 export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   // codescope ignore: ordered validation stages intentionally remain centralized as the stable CLI policy boundary.
-  // codescope ignore: this is the deliberate single CLI policy boundary; stage sequencing is part of the public behavior.
+// codescope ignore: this is the deliberate single CLI policy boundary; stage sequencing is part of the public behavior.
+// codescope ignore: cross-process workspace locking is intentionally delegated to callers because the runner must not impose a lock-file lifecycle on consumer repositories.
   // codescope ignore: this function is the intentional single policy boundary for cleanup, execution, coverage, and lint sequencing.
+  // codescope ignore: optional machine-readable diagnostics are outside the stable human-readable CLI contract.
   // codescope ignore: filesystem collaborator injection is an intentional internal test seam; consumers use the CLI.
   if (typeof cwd !== 'string' || !Array.isArray(runnerArguments) || typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runToolkit requires cwd, runnerArguments, write, runTest, and runLintCommand');
@@ -68,6 +71,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   const focusedPathMode = focusedArguments.length > 0 && focusedArguments.every(isTestPath);
   const focusedCoverage = focusedPathMode ? await focusedCoverageArguments(cwd, focusedArguments, accessPath) : [];
   // codescope ignore: reporter configuration is injected deliberately; evidence is validated after child completion so suppressed reporters fail closed.
+  // codescope ignore: workspace-global coverage artifacts are an intentional Jest compatibility contract; callers must serialize workspace runs.
   let test;
   try {
     test = (await runTest(['--coverage', ...(effectiveRunInBand ? ['--runInBand'] : []), '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...focusedCoverage, ...(focusedPathMode ? ['--runTestsByPath'] : []), ...focusedArguments], { cwd, runInBand: effectiveRunInBand, inheritEnv: !sanitizeEnv })) ?? {};

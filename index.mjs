@@ -11,6 +11,7 @@ export { formatCoverageGaps, parseCoverage, parseCoverageJson } from './src/cove
 export { runLint, runToolkit } from './src/runner.mjs';
 export { findIstanbulIgnoreViolations } from './src/istanbul.mjs';
 export { isPureBarrelFile, isPureBarrelSource } from './src/istanbul.mjs';
+export { percentageWithUnknowns } from './src/coverage.mjs';
 export { EXIT_CODES } from './src/exit-codes.mjs';
 // codescope ignore: advanced exports intentionally use collaborator injection as an internal composition seam; the CLI is the supported API.
 // codescope ignore: process helpers are intentionally internal; consumers compose through runToolkit/runLint.

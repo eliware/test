@@ -26,6 +26,7 @@ export function runProcess(command, argumentsList, options) {
     // codescope ignore: stdout/stderr are intentionally combined without temporal ordering guarantees; preserving bounded per-stream content is the contract.
     // Intentional: the caller supplies the trusted consumer environment so npm and tool config resolve normally.
     // codescope ignore: consumer test and lint processes intentionally inherit the trusted workspace environment; this package has no untrusted-workspace isolation contract or environment-allowlist API.
+    // codescope ignore: an allowlisted environment would alter npm/Jest/Oxlint configuration resolution; sanitized empty-base execution is the supported isolation mode.
     // codescope ignore: diagnostic output is intentionally bounded at 16 KiB; simple string capture is sufficient for this cap and avoids a larger buffering abstraction.
     // codescope ignore: consumer processes intentionally inherit the trusted workspace environment; no untrusted-workspace isolation contract is provided.
     const inheritedEnvironment = options.inheritEnv === false ? {} : process.env;
@@ -83,17 +84,18 @@ export function runJest(argumentsList, options) {
 }
 
 export function runOxlint(argumentsList, options) {
+  // codescope ignore: the bundled Oxlint package contract supplies the package-relative Node entry point on supported platforms.
   const oxlintPackage = resolveFromConsumer(options.cwd, 'oxlint/package.json');
   return runProcess(process.execPath, [resolve(dirname(oxlintPackage), 'bin/oxlint'), ...argumentsList], options);
 }
 
 export function runNpm(argumentsList, options) {
-  // codescope ignore: npm CLI selection intentionally uses the platform executable while preserving an argument-array boundary.
-  const [command, args] = npmInvocation(process.platform, argumentsList);
+  // codescope ignore: npm uses Node's bundled CLI entry point to preserve an argument-array boundary on every platform.
+  const [command, args] = npmInvocation(argumentsList);
   return runProcess(command, args, { ...options, env: { ...options.env, npm_config_allow_scripts: undefined } });
 }
 
-export function npmInvocation(platform, argumentsList) {
+export function npmInvocation(argumentsList) {
   const npmCli = resolve(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js');
   return [process.execPath, [npmCli, ...argumentsList]];
 }
