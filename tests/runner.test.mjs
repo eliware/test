@@ -593,7 +593,6 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toBe('Tests failed (exit 1)\nFAIL example\n');
   });
 
-  // codescope ignore: injected collaborators cover runner sequencing; the real lint executor is validated by the CLI/lint tests.
   test('reports coverage gaps and skips lint', async () => {
     const messages = [];
     let lintCalls = 0;
@@ -640,7 +639,6 @@ describe('runner orchestration', () => {
     }
   });
 
-  // codescope ignore: representative malformed-counter tests cover the authoritative candidate-validation boundary; direct parser tests cover mixed malformed entries.
   test('reads generated JSON coverage when available', async () => {
     const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
     await mkdir(`${cwd}/coverage`, { recursive: true });

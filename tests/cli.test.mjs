@@ -18,7 +18,6 @@ function runCli(...argumentsList) {
 }
 
 describe('CLI dispatch', () => {
-  // codescope ignore: executable startup failures depend on unavailable module/process state; runner tests cover the deterministic failure contract.
   test('prints version without running validation', async () => {
     await expect(runCli('--version')).resolves.toMatchObject({ code: 0, stdout: `${packageMetadata.version}\n`, stderr: '' });
   });

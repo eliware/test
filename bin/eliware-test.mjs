@@ -21,7 +21,6 @@ try {
       : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, sanitizeEnv: options.sanitizeEnv, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint, runBuild: runNpm, runAudit: runNpm, runPack: runNpm });
   }
 } catch (error) {
-  // codescope ignore: import and process-startup failures are defensive top-level handling; collaborator failures are covered by runner tests.
   process.stderr.write(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);
   process.exitCode = EXIT_CODES.INVALID_ARGUMENT;
 }

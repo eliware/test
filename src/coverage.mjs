@@ -7,13 +7,10 @@ function isCoveredCount(value) {
 }
 
 export function metricHasGap(value) {
-  // codescope ignore: signed and non-finite text metrics are intentionally malformed gaps; JSON counters are validated separately.
   if (typeof value !== 'string') return true;
   if (value.length > 2048) return true;
-  // codescope ignore: Jest counter ratios are integer counters; fractional ratios intentionally fall through as malformed gaps.
   const match = value.trim().match(/^(\d+)\s*\/\s*(\d+)$/);
   if (match) {
-    // codescope ignore: malformed ratios, including covered > total, intentionally fail closed as coverage gaps.
     const covered = BigInt(match[1]);
     const total = BigInt(match[2]);
     if (total <= 0n || covered > total) return true;
@@ -45,8 +42,6 @@ function isExactHundred(value) {
 }
 
 function percentageHundredths(value) {
-  // codescope ignore: callers validate the complete numeric percentage grammar before this helper; malformed suffixes cannot reach it.
-  // codescope ignore: annotated values intentionally use the same two-decimal rounding policy as plain percentages; extra producer precision is accepted only when it matches that rounded value.
   const [whole, fraction = ''] = value.split('.');
   if (whole.length > 3) return null;
   if (BigInt(whole) > 100n || (whole === '100' && /[1-9]/.test(fraction))) return null;
@@ -54,16 +49,10 @@ function percentageHundredths(value) {
   let hundredths = BigInt(whole) * 100n + BigInt(fraction.slice(0, 2).padEnd(2, '0'));
   if (fraction.length > 2 && fraction[2] >= '5') hundredths += 1n;
   if (hundredths === 10000n && whole !== '100') return null;
-  // codescope ignore: the earlier 100-with-nonzero-fraction guard makes a rounded result above 10000 unreachable.
   return hundredths;
 }
 
 export function parseCoverage(text) {
-  // codescope ignore: the fixed 16 KiB capture cap makes whole-buffer parsing a bounded performance tradeoff.
-  // codescope ignore: the input is capped before parsing; whole-buffer splitting is the specified bounded-parser implementation.
-  // codescope ignore: streaming parsing is intentionally deferred; child output is bounded before this parser runs.
-  // codescope ignore: the input is bounded before parsing, so splitting the complete buffer is an intentional low-cost diagnostic tradeoff.
-  // codescope ignore: bounded coverage text is intentionally parsed with whole-buffer split/flatMap for simple implementation.
   return text.split(/\r?\n/).flatMap((line) => {
     const cleanLine = line.replace(ANSI_PATTERN, '');
     const match = cleanLine.match(coverageLine);
@@ -74,18 +63,13 @@ export function parseCoverage(text) {
 }
 
 function locationsForCounts(map, counts) {
-  // codescope ignore: missing Istanbul location metadata is rendered as unknown rather than rejected.
   return Object.entries(counts ?? {}).filter(([, count]) => !isCoveredCount(count)).map(([id]) => map?.[id] ?? {});
 }
 
 function percentage(counts) {
-  // codescope ignore: JSON counters arrive as JavaScript numbers, so extreme counter precision is inherently limited by the producer/parser representation.
-  // codescope ignore: Istanbul branch counters are arrays by contract; flattening them here intentionally shares the metric calculation with scalar counters.
-  // codescope ignore: Istanbul counters are execution counts; every finite positive count is covered.
   if (counts === undefined || counts === null) return 0;
   // Malformed scalar maps are not valid coverage evidence and must not look complete.
   if (typeof counts !== 'object' || Array.isArray(counts)) return 0;
-  // codescope ignore: malformed counters are intentionally counted as uncovered so enforcement fails closed.
   let total = 0;
   let covered = 0;
   for (const count of Object.values(Object(counts))) {
@@ -99,10 +83,7 @@ function percentage(counts) {
   return Math.round((covered / total) * 10000) / 100;
 }
 
-// codescope ignore: direct consumers intentionally receive best-effort partial diagnostics without a separate strict-parser API.
 export function parseCoverageJson(json) {
-  // codescope ignore: Istanbul `l` counters are authoritative for line coverage; statement metrics remain independently validated.
-  // codescope ignore: best-effort parser output intentionally has no malformed-entry status channel; the runner owns strict evidence validation.
   if (!json || typeof json !== 'object' || Array.isArray(json)) return [];
   const gaps = [];
   for (const [file, data] of Object.entries(json)) {
@@ -112,11 +93,9 @@ export function parseCoverageJson(json) {
       if (!Array.isArray(counts)) return [];
       const branch = data.branchMap?.[id];
       if (branch?.type === 'default-arg') return [];
-      // codescope ignore: missing or malformed Istanbul branch metadata still yields one best-effort gap per uncovered counter.
       if (!branch || typeof branch !== 'object') return counts.filter((count) => !isCoveredCount(count)).map(() => ({ type: 'branch' }));
       return counts.flatMap((count, index) => {
         const location = branch.locations?.[index];
-        // codescope ignore: direct parser callers intentionally receive best-effort malformed branch diagnostics; runner validation rejects malformed candidates.
         if (isCoveredCount(count)) return [];
         return [{ ...location, type: branch.type ?? 'branch' }];
       });
@@ -124,7 +103,6 @@ export function parseCoverageJson(json) {
     const functionCounters = data.f === undefined || data.f === null
       ? {}
       : (typeof data.f === 'object' && !Array.isArray(data.f) ? data.f : null);
-    // codescope ignore: mixed malformed function-counter entries are intentionally reported as uncovered diagnostics by the best-effort parser.
     const functions = functionCounters === null
       ? [{ type: 'function', name: 'unknown' }]
       : Object.entries(functionCounters).filter(([, count]) => !Number.isFinite(count) || count <= 0).map(([id]) => {
@@ -151,7 +129,6 @@ export function parseCoverageJson(json) {
         && statement.start && typeof statement.start === 'object' && !Array.isArray(statement.start)
         ? statement.start : undefined;
       const line = statementStart?.line;
-      // codescope ignore: malformed statement counters conservatively count as uncovered lines.
       if (typeof line === 'number' && Number.isFinite(line) && !data.l) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
       if (data.l) {
         if (!Number.isFinite(count)) hasUnmappedStatement = true;
@@ -186,7 +163,6 @@ export function parseCoverageJson(json) {
 }
 
 export function percentageWithUnknowns(lineCounts, unknownCount) {
-  // codescope ignore: coverage reports are capped before parsing; direct iteration is the intentional low-allocation path.
   if (!Number.isFinite(unknownCount) || !Number.isInteger(unknownCount) || unknownCount < 0) {
     throw new TypeError('unknownCount must be a finite non-negative integer');
   }
@@ -198,7 +174,6 @@ export function percentageWithUnknowns(lineCounts, unknownCount) {
 
 
 export function formatCoverageGaps(gaps, root = '') {
-  // codescope ignore: malformed direct formatter inputs are normalized to an empty diagnostic list rather than exposed as public TypeErrors.
   const entries = Array.isArray(gaps) ? gaps : [];
   if (entries.length === 0) return '';
   return ['Coverage gaps:', 'File | Statements | Branches | Functions | Lines', ...entries.map((gap) => {
@@ -208,7 +183,6 @@ export function formatCoverageGaps(gaps, root = '') {
     const file = normalizedRoot && /^[A-Za-z]:[\\/]|^\//.test(normalizedFile) && normalizedFile.startsWith(rootPrefix)
       ? normalizedFile.slice(rootPrefix.length)
       : normalizedFile;
-    // codescope ignore: legacy text-gap arrays and detailed JSON-gap objects intentionally share this formatter with distinct output shapes.
     if (Array.isArray(gap.metrics)) return `${file} | ${gap.metrics.join(' | ')}`;
     const location = (entry) => entry?.start?.line ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ''}` : 'unknown';
     const metrics = gap.metrics ?? { statements: '-', branches: '-', functions: '-', lines: '-' };

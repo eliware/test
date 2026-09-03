@@ -6,15 +6,12 @@ const IGNORED_DIRECTIVE = /(?:\/\*\s*\*?\s*|\/\/\s*)istanbul\s+ignore\b/i;
 const IGNORED_DIRECTORIES = new Set(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build']);
 
 export async function findIstanbulIgnoreViolations(cwd, { readDirectory = readdir, readSource = readFile } = {}) {
-  // codescope ignore: complete serial discovery is intentional to bound descriptors in arbitrary workspaces.
   const violations = [];
   await visit(resolve(cwd), resolve(cwd), violations, readDirectory, readSource);
   return violations;
 }
 
 async function visit(root, directory, violations, readDirectory, readSource) {
-  // codescope ignore: serial traversal intentionally bounds descriptor pressure in arbitrary consumer workspaces.
-  // codescope ignore: serial traversal is intentional to bound file-descriptor pressure in arbitrary consumer workspaces.
   for (const entry of await readDirectory(directory, { withFileTypes: true })) {
     if (entry.isDirectory()) {
       if (!IGNORED_DIRECTORIES.has(entry.name)) await visit(root, resolve(directory, entry.name), violations, readDirectory, readSource);
