@@ -298,6 +298,21 @@ test('ignores unmapped covered statements for line gaps', () => {
     const gaps = parseCoverageJson({ 'src/missing.mjs': { statementMap: {}, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: { 0: {} }, f: { 0: 0 } } });
     expect(formatCoverageGaps(gaps)).toContain('functions: anonymous');
   });
+
+  test('enforces divergent Istanbul line counters', () => {
+    const gaps = parseCoverageJson({ 'src/lines.mjs': {
+      statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 },
+      branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1, 2: 0 }
+    } });
+    expect(gaps[0].lines).toEqual([2]);
+    expect(gaps[0].metrics.lines).toBe(50);
+    expect(parseCoverageJson({ 'src/invalid-lines.mjs': {
+      statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: []
+    } })).toEqual([]);
+    expect(parseCoverageJson({ 'src/invalid-line-count.mjs': {
+      statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 2: 'bad' }
+    } })).toEqual([]);
+  });
 });
 
 test('counts mixed mapped and unmapped uncovered statements as a line gap', () => {

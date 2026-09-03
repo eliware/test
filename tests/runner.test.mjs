@@ -543,6 +543,26 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('9');
   });
 
+  test.each([
+    { l: { 1: 1, 2: 0 }, expected: 11 },
+    { l: { bad: 1 }, expected: 0 },
+    { l: ['invalid'], expected: 0 }
+  ])('validates optional Istanbul line maps: %p', async ({ l, expected }) => {
+    const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
+    await mkdir(`${cwd}/coverage`, { recursive: true });
+    await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/lines.mjs': {
+      statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l
+    }}));
+    const messages = [];
+    const code = await runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest: async () => {
+      await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/lines.mjs': {
+        statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l
+      }}));
+      return { code: 0, output: completeCoverage };
+    }, runLintCommand: async () => ({ code: 0, output: '' }) });
+    expect(code).toBe(expected);
+  });
+
   test('runs lint after complete JSON coverage succeeds', async () => {
     const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
     await mkdir(`${cwd}/coverage`, { recursive: true });

@@ -286,7 +286,9 @@ function hasUsableCoverage(json) {
     const branchCountsValid = Object.values(data.b).every((counts) => Array.isArray(counts) && counts.every((count) => Number.isFinite(count)));
     // codescope ignore: finite numeric counters, including negative values, are intentionally structurally usable and reported as uncovered.
     const functionCountsValid = Object.values(data.f).every((count) => Number.isFinite(count));
-    return statementKeysMatch && statementCountsValid && branchCountsValid && functionCountsValid;
+    const lineCountsValid = data.l === undefined || (data.l && typeof data.l === 'object' && !Array.isArray(data.l)
+      && Object.entries(data.l).every(([line, count]) => Number.isInteger(Number(line)) && Number(line) > 0 && Number.isFinite(count)));
+    return statementKeysMatch && statementCountsValid && branchCountsValid && functionCountsValid && lineCountsValid;
   });
 }
 

@@ -135,6 +135,12 @@ export function parseCoverageJson(json) {
       return { ...(location && typeof location === 'object' && !Array.isArray(location) ? location : {}), name: typeof fn.name === 'string' ? fn.name : (metadata && typeof metadata === 'object' ? 'anonymous' : 'unknown') };
       });
     const lineCounts = new Map();
+    if (data.l && typeof data.l === 'object' && !Array.isArray(data.l)) {
+      for (const [line, count] of Object.entries(data.l)) {
+        const lineNumber = Number(line);
+        if (Number.isInteger(lineNumber) && lineNumber > 0 && Number.isFinite(count)) lineCounts.set(lineNumber, isCoveredCount(count) ? 1 : 0);
+      }
+    }
     let hasUnmappedStatement = false;
     Object.entries(data.statementMap).forEach(([id, statement]) => {
       const statementCounts = data.s && (typeof data.s === 'object' || typeof data.s === 'function') ? data.s : {};
