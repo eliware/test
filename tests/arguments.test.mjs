@@ -317,6 +317,13 @@ test('ignores unmapped covered statements for line gaps', () => {
       statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 2: 'bad' }
     } })).toEqual([]);
   });
+
+  test('keeps empty line diagnostics finite', () => {
+    const gaps = parseCoverageJson({ 'src/empty-lines.mjs': {
+      statementMap: {}, s: {}, branchMap: {}, b: {}, fnMap: {}, f: {}, l: {}
+    } });
+    expect(gaps).toEqual([]);
+  });
 });
 
 test('counts mixed mapped and unmapped uncovered statements as a line gap', () => {

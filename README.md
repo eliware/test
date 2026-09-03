@@ -69,11 +69,20 @@ Run `npm install` after editing `package.json` so the lockfile stays synchronize
 
 `npm run lint` runs only bundled Oxlint against the consuming repository. Runs
 sharing one consumer working directory must be serialized because each run
-cleans and reads that workspace's coverage artifacts.
+cleans and reads that workspace's coverage artifacts; the tool deliberately
+does not create a cross-process lock. Use CI job/workspace serialization when
+parallel invocations are possible.
 
 Pass `eliware-test --sanitize-env` to run Jest and Oxlint with an empty base
 environment; explicitly supplied tool variables are still forwarded. The
 default inherits the consumer environment for normal npm and tool resolution.
+
+Coverage text parsing remains whole-buffer because captured output is capped at
+16 KiB. The orchestration function and injected APIs are intentionally kept as
+advanced composition seams; the CLI is the stable consumer interface. Named
+TypeScript interfaces document those seams, while direct parser diagnostics are
+best-effort. Empty or malformed line data is handled with finite metrics, and
+unmappable focused paths intentionally retain broad coverage enforcement.
 
 The wrapper suppresses successful child-process output that it controls; npm
 lifecycle notices and non-failing workspace warnings may still be printed.
