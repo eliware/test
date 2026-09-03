@@ -1,6 +1,6 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test)[![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE)[![build status](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions)
+## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test)[![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE)[![build status](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/nodejs.yml)
 
 Shared baseline test, coverage, and lint tooling for Eliware Node.js projects. The package bundles Jest and Oxlint so consuming repositories do not need direct Jest or Oxlint dependencies.
 
@@ -62,8 +62,6 @@ In an existing consuming project, remove `jest`, `oxlint`, and related direct te
 Run `npm install` after editing `package.json` so the lockfile stays synchronized.
 
 ## Commands
-
-Maintainers can share and reuse the optional [Codescope remediation routine](docs/codescope-owner-workflow.md). It defines the one-scan-per-iteration rule, remediation and disposition criteria, validation gates, pause behavior, and cumulative reporting.
 
 `npm test` runs the consuming repository's unfiltered Jest suite with coverage, reports only coverage gaps or failures, then runs bundled Oxlint. Successful child output controlled by this package is intentionally suppressed and replaced by a minimal summary; npm may still print its own lifecycle notices, and the package may print a missing `.gitignore` warning before that summary; gap runs emit detailed diagnostics. Captured child-process output is bounded in JavaScript characters and marked when truncated. Test failures, coverage gaps, lint errors, and lint warnings fail the command. Supplying extension-qualified focused file paths runs only those selected tests; paths combined with Jest name/config filters use Jest's normal filter semantics. The repository's own Windows-specific shim test is conditional when a Windows shim is unavailable; consumer CI should provide the required platform checks.
 

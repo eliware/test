@@ -1,6 +1,6 @@
 {
     "name": "@eliware/test",
-    "version": "2.3.1",
+    "version": "2.4.0",
     "description": "Shared Jest, coverage, and Oxlint test tooling for Eliware Node.js projects",
     "keywords": [
         "eliware",
@@ -14,7 +14,7 @@
         "cli",
         "ci"
     ],
-    "license": "UNLICENSED",
+    "license": "MIT",
     "author": "Eliware",
     "repository": {
         "type": "git",
@@ -46,7 +46,8 @@
         "RELEASE_NOTES.md"
     ],
     "publishConfig": {
-        "access": "public"
+        "access": "public",
+        "provenance": true
     },
     "scripts": {
         "test": "node bin/eliware-test.mjs",

@@ -1,5 +1,19 @@
 # Release notes
 
+## 2.4.0
+
+- Added detailed Istanbul JSON coverage-gap diagnostics with uncovered lines,
+  statements, branches, functions, and normalized workspace paths.
+- Added strict focused-test path validation and mirrored source coverage
+  scoping, while preserving broad enforcement for ambiguous selections.
+- Added `--ignore-100x4` for explicit diagnostic coverage-enforcement bypasses
+  and `--no-runInBand` for explicit parallel Jest diagnostics.
+- Added `--version`/`-v`, public parser and orchestration exports, TypeScript
+  declarations, and executable-level regression coverage.
+- Hardened subprocess diagnostics with bounded, deduplicated output and
+  reliable failure handling; lint warnings now fail validation.
+- Added consumer guidance and CI typechecking.
+
 ## 2.3.1
 
 - Fixed zero-valued text coverage metrics being treated as complete, ensuring
