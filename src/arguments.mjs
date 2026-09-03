@@ -1,3 +1,7 @@
+/* istanbul ignore file */
+/* Compatibility barrel for the decomposed argument modules. */
+export { HELP_TEXT, MANAGED_OPTIONS, VALUE_OPTIONS, parseArguments } from './arguments/parser.mjs';
+/*
 export const HELP_TEXT = `Usage:
   eliware-test                         Run Jest with coverage, then lint
   eliware-test --lint                  Run lint only
@@ -39,3 +43,4 @@ export function parseArguments(argumentsList = []) {
   if (ignoreMonolithLimits) parsed.ignoreMonolithLimits = true;
   return parsed;
 }
+*/
