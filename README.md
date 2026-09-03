@@ -114,7 +114,7 @@ do not promise ordering between the two child-process streams.
 Coverage-gap details are rendered outside the child capture bound, with each
 detail category limited to 20 displayed entries.
 
-For troubleshooting argument forwarding, set `ELIWARE_TEST_DEBUG=1` to show the exact Jest arguments received by the wrapper. This is disabled by default and should not be enabled in routine CI output. Annotated coverage percentages are compared after rounding to two decimal places; the displayed percentage must match the raw counter ratio at that precision. Percentage-only values must be exactly `100%` (optionally followed only by zeroes) to be complete.
+For troubleshooting argument forwarding, set `ELIWARE_TEST_DEBUG=1` to show the exact Jest arguments received by the wrapper. This is disabled by default and should not be enabled in routine CI output. Annotated coverage percentages are compared after rounding to two decimal places; the displayed percentage must match the raw counter ratio at that precision, but an annotated value below 100% remains a gap even if it rounds to 100%. Percentage-only values must be exactly `100%` (optionally followed only by zeroes) to be complete.
 Accepted percentage syntax is numeric digits with an optional decimal point and
 digits, optionally followed by a raw-counter annotation such as `(4/5)`;
 malformed suffixes are rejected as coverage gaps.

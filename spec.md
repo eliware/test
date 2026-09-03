@@ -87,8 +87,8 @@ Annotated displayed percentages must equal the raw ratio rounded to two decimal
 places; additional fractional digits are rounded before comparison. A
 percentage-only value is complete only when it is exactly `100%` (optionally
 followed only by zeroes). Contradictory annotations are coverage gaps.
-For example, `99.995% (1/1)` rounds to `100.00%` and is complete when its raw
-counters are complete.
+For example, `99.995% (1/1)` remains a gap because its displayed value is below
+100%, even though it rounds to `100.00%`.
 Only numeric percentage syntax is accepted; malformed suffixes are coverage
 gaps. Direct JSON parsing remains best-effort and does not expose a separate
 malformed-entry status channel.

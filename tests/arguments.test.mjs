@@ -154,7 +154,7 @@ describe('parseArguments', () => {
     expect(metricHasGap('80.000% (4/5)')).toBe(true);
     expect(metricHasGap('100.000% (1/1)')).toBe(false);
     expect(metricHasGap('100.0000% (1/1)')).toBe(false);
-    expect(metricHasGap('99.995% (1/1)')).toBe(false);
+    expect(metricHasGap('99.995% (1/1)')).toBe(true);
     expect(metricHasGap('66.667% (2/3)')).toBe(true);
     expect(metricHasGap('33.333% (1/3)')).toBe(true);
     expect(metricHasGap('99.99% (1/1)')).toBe(true);

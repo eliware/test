@@ -51,9 +51,9 @@ function percentageHundredths(value) {
   if (whole.length > 3) return null;
   if (BigInt(whole) > 100n || (whole === '100' && /[1-9]/.test(fraction))) return null;
   if (fraction.length > 1024) return null;
-  if (whole === '99' && fraction.length > 2 && fraction.startsWith('99') && fraction[2] >= '9') return null;
   let hundredths = BigInt(whole) * 100n + BigInt(fraction.slice(0, 2).padEnd(2, '0'));
   if (fraction.length > 2 && fraction[2] >= '5') hundredths += 1n;
+  if (hundredths === 10000n && whole !== '100') return null;
   // codescope ignore: the earlier 100-with-nonzero-fraction guard makes a rounded result above 10000 unreachable.
   return hundredths;
 }
