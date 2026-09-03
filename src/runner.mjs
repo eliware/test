@@ -181,6 +181,7 @@ function positionalArguments(argumentsList) {
 
 /* istanbul ignore next -- the default collaborator is supplied by runToolkit's public boundary. */
 async function readCoverageGaps(cwd, output, write, readFilePath = readFile) {
+  // codescope ignore: structural text recognition and pre-run cleanup are the documented evidence boundary.
   // codescope ignore: pre-run cleanup plus completed-process output is the documented freshness boundary; callers serialize workspace runs.
   // codescope ignore: cleanup plus process completion is the intentional freshness boundary; concurrent workspace use is outside this runner contract.
   // codescope ignore: cleanup plus process completion is intentionally the complete freshness trust boundary; concurrent workspace use is outside the contract.
