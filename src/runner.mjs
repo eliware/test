@@ -140,7 +140,7 @@ async function findMissingFocusedPath(cwd, argumentsList, accessPath = access) {
   const candidates = positionalArguments(argumentsList).filter(isFileLikePath);
   for (const candidate of candidates) {
     try {
-      await accessPath(resolve(cwd, candidate));
+      await accessPath(resolve(cwd, candidate.replaceAll('\\', '/')));
     } catch (error) {
       /* istanbul ignore next -- non-ENOENT filesystem errors are exceptional. */
       if (error.code !== 'ENOENT') throw error;
