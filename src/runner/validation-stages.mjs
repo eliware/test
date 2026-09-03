@@ -1,7 +1,10 @@
+export { runBuildStage } from './validation/build.mjs';
+export { runLintStage } from './validation/lint.mjs';
+export { runPackageStages } from './validation/package.mjs';
 import { EXIT_CODES } from '../exit-codes.mjs';
-import { formatFailure, hasLintWarnings } from './diagnostics.mjs';
-import { oxlintExclusionArguments } from '../workspace.mjs';
+import { formatFailure } from './diagnostics.mjs';
 
+/* Legacy implementations moved to validation/*.mjs.
 export async function runBuildStage(context, buildScript) {
   if (!buildScript || !context.runBuild) return 0;
   let result;
@@ -44,6 +47,17 @@ export async function runPackageStages(context) {
     if (normalized.code !== 0) { context.write(formatFailure(label, normalized)); return code; }
   }
   return 0;
+}
+*/
+
+export async function runTypecheckStage(context, typecheckScript) {
+  if (!typecheckScript || !context.runTypecheck) return 0;
+  let result;
+  try { result = (await context.runTypecheck(['run', 'typecheck'], { cwd: context.cwd, inheritEnv: !context.sanitizeEnv })) ?? {}; }
+  catch (error) { context.write(`Typecheck failed to start: ${error.message}\n`); return EXIT_CODES.TYPECHECK_FAILURE; }
+  const normalized = normalizeResult(result);
+  if (normalized.code !== 0) context.write(formatFailure('Typecheck', normalized));
+  return normalized.code === 0 ? 0 : EXIT_CODES.TYPECHECK_FAILURE;
 }
 
 function normalizeResult(result) {

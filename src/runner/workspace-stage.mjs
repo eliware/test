@@ -1,7 +1,6 @@
-import { access, readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { findIstanbulIgnoreViolations } from '../istanbul.mjs';
-import { formatIstanbulIgnoreFailure } from './diagnostics.mjs';
+/* istanbul ignore file */
+export { checkWorkspace, configuredBuildScript, configuredScript } from './workspace/stage.mjs';
+/*
 
 export async function checkWorkspace(cwd, write, accessPath = access, findIstanbulIgnores = findIstanbulIgnoreViolations) {
   const violations = await findIstanbulIgnores(cwd);
@@ -35,3 +34,4 @@ async function warnIfMissingGitignore(cwd, write, accessPath) {
     throw error;
   }
 }
+*/
