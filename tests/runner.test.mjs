@@ -530,6 +530,13 @@ describe('runner orchestration', () => {
     expect(calls[0]).toContain('reports/result.mjs');
   });
 
+  test.each(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--env', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile'])('forwards existing test-looking values for %s without focused-path preflight', async (option) => {
+    const calls = [];
+    const existingValue = 'src/module.mjs';
+    await expect(runToolkit({ ...base, runnerArguments: [option, existingValue], runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+    expect(calls[0]).toEqual(expect.arrayContaining([option, existingValue]));
+  });
+
   test('reports forwarded arguments only when debug mode is enabled', async () => {
     const messages = [];
     const previous = process.env.ELIWARE_TEST_DEBUG;

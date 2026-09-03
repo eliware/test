@@ -216,7 +216,7 @@ async function sourcePathForTest(cwd, testPath, accessPath = access) {
 
 async function findMissingFocusedPath(cwd, argumentsList, accessPath = access) {
   // codescope ignore: only extension-qualified or path-qualified arguments are file selections; Jest's bare arguments remain delegated filters.
-  const candidates = positionalArguments(argumentsList).filter(isFileLikePath);
+  const candidates = positionalArguments(argumentsList).filter(isTestPath);
   for (const candidate of candidates) {
     try {
       await accessPath(resolve(cwd, candidate.replaceAll('\\', '/')));

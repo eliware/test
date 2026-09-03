@@ -264,6 +264,10 @@ published CLI; direct `runToolkit` callers may omit those optional
 collaborators. Build is conditional on the consumer defining a non-empty
 `scripts.build` command.
 
+For untrusted or CI-isolated workspaces, use `eliware-test --sanitize-env`;
+tool-specific variables can still be passed explicitly by the invoking
+integration while the inherited ambient environment is excluded.
+
 When the consuming `package.json` defines a non-empty `scripts.build` command,
 `npm test` runs `npm run build` after coverage and before lint. Build failures
 return exit code `17`.
