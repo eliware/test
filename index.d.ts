@@ -65,6 +65,8 @@ export function runLint(options: LintOptions): Promise<number>;
 export function runToolkit(options: ToolkitOptions): Promise<number>;
 /** Find Istanbul ignore directives outside pure barrel modules. */
 export function findIstanbulIgnoreViolations(cwd: string): Promise<Array<{ file: string; line: number }>>;
+export function isPureBarrelSource(source: string): boolean;
+export function isPureBarrelFile(path: string): Promise<boolean>;
 export const EXIT_CODES: Readonly<{
   WORKSPACE_SETUP: 2; ISTANBUL_POLICY: 3; INVALID_ARGUMENT: 4; FOCUSED_PATH_VALIDATION: 5;
   FOCUSED_PATH_MISSING: 6; COVERAGE_CLEANUP: 7; TEST_START: 8; TEST_FAILURE: 9;

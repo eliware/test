@@ -22,16 +22,25 @@ async function visit(root, directory, violations, readDirectory, readSource) {
     const path = resolve(directory, entry.name);
     const source = await readSource(path, 'utf8');
     const match = source.match(IGNORED_DIRECTIVE);
-    if (match && !isPureBarrel(source)) {
+    if (match && !isPureBarrelSource(source)) {
       const line = source.slice(0, match.index).split(/\r?\n/).length;
       violations.push({ file: relative(root, path).replaceAll('\\', '/'), line });
     }
   }
 }
 
-function isPureBarrel(source) {
+export function isPureBarrelSource(source) {
   const withoutComments = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*(?=\r?$)/gm, '$1').trim();
   if (!withoutComments) return false;
   const statements = withoutComments.split(';').map((statement) => statement.trim()).filter(Boolean);
   return statements.length > 0 && statements.every((statement) => /^(?:import\b|export\s+(?:(?:type\s+)?(?:\{|\*)))[\s\S]*$/u.test(statement));
+}
+
+export async function isPureBarrelFile(path, readSource = readFile) {
+  try {
+    return isPureBarrelSource(await readSource(path, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return false;
+    throw error;
+  }
 }

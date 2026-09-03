@@ -1,4 +1,4 @@
-import { findIstanbulIgnoreViolations } from '../src/istanbul.mjs';
+import { findIstanbulIgnoreViolations, isPureBarrelFile, isPureBarrelSource } from '../src/istanbul.mjs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -16,6 +16,15 @@ afterEach(async () => {
 test('allows Istanbul ignores in pure barrel files', async () => {
   await writeFile(join(fixture, 'index.mjs'), `/* ${'istanbul ignore file'} */\nexport { value } from "./value.mjs";\n`);
   await expect(findIstanbulIgnoreViolations(fixture)).resolves.toEqual([]);
+});
+
+test('classifies barrel sources and handles missing files', async () => {
+  expect(isPureBarrelSource('export { value } from "./value.mjs";')).toBe(true);
+  expect(isPureBarrelSource('export const value = 1;')).toBe(false);
+  await expect(isPureBarrelFile(join(fixture, 'missing.mjs'))).resolves.toBe(false);
+  await expect(isPureBarrelFile(join(fixture, 'denied.mjs'), async () => { throw Object.assign(new Error('denied'), { code: 'EACCES' }); })).rejects.toThrow('denied');
+  await writeFile(join(fixture, 'barrel.mjs'), 'export * from "./value.mjs";\n');
+  await expect(isPureBarrelFile(join(fixture, 'barrel.mjs'))).resolves.toBe(true);
 });
 
 test('reports Istanbul ignores in executable modules with line numbers', async () => {

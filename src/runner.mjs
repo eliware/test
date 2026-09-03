@@ -3,7 +3,7 @@ import { MANAGED_OPTIONS } from './arguments.mjs';
 import { access, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
-import { findIstanbulIgnoreViolations } from './istanbul.mjs';
+import { findIstanbulIgnoreViolations, isPureBarrelFile } from './istanbul.mjs';
 import { EXIT_CODES } from './exit-codes.mjs';
 
 // codescope ignore: coverage candidate selection intentionally remains private to the runner contract.
@@ -89,7 +89,8 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
     }
   }
   if (gaps.length > 0) {
-    write(`${formatCoverageGaps(gaps, cwd)}\n`);
+    const barrelSuggestions = await pureBarrelSuggestions(cwd, gaps, readFilePath);
+    write(`${formatCoverageGaps(gaps, cwd)}${barrelSuggestions}\n`);
     return EXIT_CODES.COVERAGE_GAP;
   }
   let lint;
@@ -121,6 +122,28 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   }
   write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
+}
+
+async function pureBarrelSuggestions(cwd, gaps, readFilePath) {
+  const suggestions = [];
+  for (const gap of gaps) {
+    if (!isZeroCoverageGap(gap)) continue;
+    const file = gap.file;
+    const candidates = [resolve(cwd, file), resolve(cwd, 'src', file)];
+    for (const candidate of candidates) {
+      if (await isPureBarrelFile(candidate, readFilePath)) {
+        suggestions.push(`Pure barrel detected: ${file}. Consider adding an Istanbul ignore directive to this barrel.`);
+        break;
+      }
+    }
+  }
+  return suggestions.length > 0 ? `\n\n${suggestions.join('\n')}` : '';
+}
+
+function isZeroCoverageGap(gap) {
+  const metrics = gap?.metrics;
+  if (Array.isArray(metrics)) return metrics.length === 4 && metrics.every((metric) => /^0(?:\.0+)?%?$/.test(String(metric).trim()));
+  return metrics && ['statements', 'branches', 'functions', 'lines'].every((metric) => metrics[metric] === 0);
 }
 
 function isTestPath(argument) {

@@ -10,6 +10,7 @@ export { formatCoverageGaps, parseCoverage, parseCoverageJson } from './src/cove
 // codescope ignore: these orchestration exports are intentionally advanced public seams; the CLI remains the supported stable API.
 export { runLint, runToolkit } from './src/runner.mjs';
 export { findIstanbulIgnoreViolations } from './src/istanbul.mjs';
+export { isPureBarrelFile, isPureBarrelSource } from './src/istanbul.mjs';
 export { EXIT_CODES } from './src/exit-codes.mjs';
 // codescope ignore: advanced exports intentionally use collaborator injection as an internal composition seam; the CLI is the supported API.
 // codescope ignore: process helpers are intentionally internal; consumers compose through runToolkit/runLint.

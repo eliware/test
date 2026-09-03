@@ -217,5 +217,5 @@ export function formatCoverageGaps(gaps, root = '') {
       `  Uncovered functions: ${details(gap.functions, (fn) => `${fn?.name ?? 'anonymous'} at ${location(fn)}`)}`,
       '  Fix: add or extend tests that execute each listed statement, branch, and function path.'
     ].join('\n');
-  })].join('\n');
+  }), '', 'Remediation: Add tests to improve coverage. Refactor the implementation if necessary to ensure proper testability. Remove any truly unreachable branches. Istanbul ignore directives are authorized only in pure barrel files.'].join('\n');
 }

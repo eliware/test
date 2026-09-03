@@ -70,6 +70,19 @@ describe('runner orchestration', () => {
     expect(calls).toEqual([['audit', '--omit=dev', '--audit-level=moderate', '--ignore-scripts'], ['pack', '--dry-run', '--ignore-scripts']]);
   });
 
+  test('suggests an Istanbul ignore for an all-zero pure barrel', async () => {
+    const messages = [];
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n src/index.mjs | 0 | 0 | 0 | 0 |' }), runLintCommand: async () => ({ code: 0, output: '' }), readFilePath: async () => 'export { value } from "./value.mjs";' })).resolves.toBe(11);
+    expect(messages.join('')).toContain('Pure barrel detected: src/index.mjs');
+    expect(messages.join('')).toContain('Istanbul ignore directives are authorized only in pure barrel files');
+  });
+
+  test('does not suggest an ignore for an all-zero executable module', async () => {
+    const messages = [];
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n src/module.mjs | 0 | 0 | 0 | 0 |' }), runLintCommand: async () => ({ code: 0, output: '' }), readFilePath: async () => 'export const value = 1;' })).resolves.toBe(11);
+    expect(messages.join('')).not.toContain('Pure barrel detected');
+  });
+
   test.each([
     ['audit', { code: 1, output: 'audit failed' }, 15],
     ['pack', { code: 1, output: 'pack failed' }, 16]
