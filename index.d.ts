@@ -39,7 +39,7 @@ export function formatCoverageGaps(gaps: CoverageGap[], root?: string): string;
 /** Parse Istanbul JSON coverage and return actionable gaps. */
 export function parseCoverageJson(json: Record<string, unknown>): JsonCoverageGap[];
 
-/** Advanced orchestration API; consumers normally use the CLI. */
+/** Advanced orchestration API; consumers normally use the CLI. This seam is versioned with the package. */
 export function runLint(options: { cwd: string; write: (message: string) => void; runLintCommand: (argumentsList: string[], options: { cwd: string }) => Promise<{ code?: number; output?: string } | null>; accessPath?: (path: string) => Promise<void> }): Promise<number>;
 /** Advanced orchestration API; collaborators are injected for composition/testing. */
 export function runToolkit(options: { cwd: string; runnerArguments: string[]; write: (message: string) => void; runTest: (argumentsList: string[], options: { cwd: string; runInBand: boolean }) => Promise<{ code?: number; output?: string } | null>; runLintCommand: (argumentsList: string[], options: { cwd: string }) => Promise<{ code?: number; output?: string } | null>; runInBand?: boolean; ignoreCoverage?: boolean; accessPath?: (path: string) => Promise<void>; removePath?: (path: string, options: { force: boolean }) => Promise<void>; readFilePath?: (path: string, encoding: string) => Promise<string> }): Promise<number>;
