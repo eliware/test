@@ -176,8 +176,10 @@ These are supported, documented limitations rather than hidden quality gates:
 
 - Coverage artifacts are workspace-global because they follow Jest's standard
   report locations. Concurrent runs sharing a workspace are unsupported;
-  callers must serialize them. The runner creates no cross-process lock,
-  per-run artifact directory, or ownership token.
+  callers are serialized by an exclusive `.eliware-test.lock` in the workspace.
+  A lock left by an interrupted process may require manual removal after
+  confirming that no validation is active; per-run artifact directories and
+  ownership tokens are not provided.
 - Istanbul policy discovery is complete and serial to bound descriptor pressure
   in arbitrary consumer workspaces. No parallel traversal or startup bound is
   promised.
@@ -203,7 +205,7 @@ This package does not promise or implement:
 
 - project-specific smoke, integration, regression, end-to-end, deployment, or
   product workflows;
-- automatic cross-process locking or concurrent coverage isolation;
+- concurrent coverage isolation beyond the workspace lock;
 - an inherited-environment allowlist or secret-redaction policy for consumer
   code;
 - arbitrary Jest option discovery beyond the shared supported metadata;

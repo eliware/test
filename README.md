@@ -72,8 +72,9 @@ the runner's Istanbul-ignore policy scan and workspace setup check. Those
 checks may reject the run or emit a missing-`.gitignore` warning before Oxlint
 runs; no Jest tests or coverage collection are performed. Runs sharing one consumer working directory must be serialized because each run
 cleans and reads that workspace's coverage artifacts; the tool deliberately
-does not create a cross-process lock. Use CI job/workspace serialization when
-parallel invocations are possible.
+serializes concurrent validations with a workspace lock. If a process is
+interrupted, verify that no validation is active before removing a stale
+`.eliware-test.lock`.
 
 Pass `eliware-test --sanitize-env` to run Jest and Oxlint with an empty base
 environment; explicitly supplied tool variables are still forwarded. The

@@ -10,7 +10,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 
 export async function runToolkit(options) {
   if (typeof options?.cwd !== 'string' || typeof options.write !== 'function') throw new TypeError('runToolkit requires cwd and write');
-  if (process.env.JEST_WORKER_ID !== undefined && process.env.ELIWARE_TEST_FORCE_LOCK !== '1') return runToolkitUnlocked(options);
+  if (options.lock === false) return runToolkitUnlocked(options);
   const lockPath = resolve(options.cwd, '.eliware-test.lock');
   let lock;
   try {
@@ -26,7 +26,7 @@ export async function runToolkit(options) {
     return await runToolkitUnlocked(options);
   } finally {
     await lock.close();
-    await unlink(lockPath);
+    await unlink(lockPath).catch(() => undefined);
   }
 }
 

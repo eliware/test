@@ -6,7 +6,7 @@ import { mkdir, rm, writeFile } from 'node:fs/promises';
 const output = (messages) => (message) => messages.push(message);
 const completeCoverage = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n foo.mjs | 100 | 100 | 100 | 100 |';
 const gapCoverage = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n gap.mjs | 99 | 100 | 100 | 100 |';
-const base = { cwd: process.cwd(), runnerArguments: [], write: () => {} };
+const base = { cwd: process.cwd(), runnerArguments: [], write: () => {}, lock: false };
 
 test('defines the complete Oxlint workspace exclusion contract', () => {
   expect(STANDARD_EXCLUSIONS).toEqual(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build', '*.tgz']);
@@ -35,7 +35,7 @@ describe('runner orchestration', () => {
   });
 
   test('rejects incomplete runner collaborators', async () => {
-    await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {} })).rejects.toThrow('requires cwd');
+    await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {}, lock: false })).rejects.toThrow('requires cwd');
     await expect(runToolkit({ write: () => {} })).rejects.toThrow('requires cwd');
   });
 
@@ -45,16 +45,18 @@ describe('runner orchestration', () => {
     const lockPath = `${cwd}/.eliware-test.lock`;
     await writeFile(lockPath, 'active');
     const messages = [];
-    const previousForceLock = process.env.ELIWARE_TEST_FORCE_LOCK;
-    process.env.ELIWARE_TEST_FORCE_LOCK = '1';
     try {
-      await expect(runToolkit({ ...base, cwd, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
+      await expect(runToolkit({ ...base, cwd, lock: true, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
     } finally {
-      if (previousForceLock === undefined) delete process.env.ELIWARE_TEST_FORCE_LOCK;
-      else process.env.ELIWARE_TEST_FORCE_LOCK = previousForceLock;
       await rm(lockPath, { force: true });
     }
     expect(messages.join('')).toContain('serialize invocations');
+  });
+
+  test('does not fail validation when lock cleanup races with an external removal', async () => {
+    const cwd = `${process.cwd()}/test-fixtures/lock`;
+    await mkdir(cwd, { recursive: true });
+    await expect(runToolkit({ ...base, cwd, lock: true, runTest: async () => { await rm(`${cwd}/.eliware-test.lock`, { force: true }); return { code: 0, output: completeCoverage }; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
   });
 
   test('uses the lock around a non-Jest-worker invocation', async () => {
@@ -63,7 +65,7 @@ describe('runner orchestration', () => {
     const previousWorker = process.env.JEST_WORKER_ID;
     delete process.env.JEST_WORKER_ID;
     try {
-      await expect(runToolkit({ ...base, cwd, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+      await expect(runToolkit({ ...base, cwd, lock: true, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
     } finally {
       if (previousWorker === undefined) delete process.env.JEST_WORKER_ID;
       else process.env.JEST_WORKER_ID = previousWorker;
@@ -74,7 +76,7 @@ describe('runner orchestration', () => {
     const previousWorker = process.env.JEST_WORKER_ID;
     delete process.env.JEST_WORKER_ID;
     try {
-      await expect(runToolkit({ ...base, cwd: `${process.cwd()}/missing-lock-workspace`, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow();
+      await expect(runToolkit({ ...base, cwd: `${process.cwd()}/missing-lock-workspace`, lock: true, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow();
     } finally {
       if (previousWorker === undefined) delete process.env.JEST_WORKER_ID;
       else process.env.JEST_WORKER_ID = previousWorker;
