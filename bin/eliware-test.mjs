@@ -4,6 +4,7 @@ import { HELP_TEXT, parseArguments } from '../src/arguments.mjs';
 import packageMetadata from '../package.json' with { type: 'json' };
 import { runJest, runOxlint } from '../src/process.mjs';
 import { runLint, runToolkit } from '../src/runner.mjs';
+import { EXIT_CODES } from '../src/exit-codes.mjs';
 
 try {
   const options = parseArguments(process.argv.slice(2));
@@ -22,5 +23,5 @@ try {
 } catch (error) {
   // codescope ignore: import and process-startup failures are defensive top-level handling; collaborator failures are covered by runner tests.
   process.stderr.write(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);
-  process.exitCode = 1;
+  process.exitCode = EXIT_CODES.INVALID_ARGUMENT;
 }

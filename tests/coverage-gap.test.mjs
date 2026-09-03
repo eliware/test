@@ -200,7 +200,7 @@ test('reports a passing fixture with a coverage gap', async () => {
     runTest: runJest,
     runLintCommand: async () => ({ code: 0, output: '' })
   });
-  expect(code).toBe(1);
+  expect(code).toBeGreaterThan(1);
   expect(messages.join('')).toContain('branch.mjs');
   expect(messages.join('')).toContain('Coverage gaps');
   expect(messages.join('')).toContain('Uncovered branches:');

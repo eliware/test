@@ -207,6 +207,30 @@ See [`spec.md`](spec.md) for the implementation contract and [`RELEASE_NOTES.md`
 
 ## Errors / Troubleshooting
 
+### Exit codes
+
+The wrapper uses stable, distinct exit codes for its failure categories. A
+Jest or Oxlint child-process exit code is retained in the diagnostic text but
+does not replace the wrapper code.
+
+| Code | Failure |
+| ---: | --- |
+| 2 | Workspace setup |
+| 3 | Istanbul-ignore policy violation |
+| 4 | Invalid or unsupported argument |
+| 5 | Focused-path validation |
+| 6 | Focused test path missing |
+| 7 | Coverage cleanup |
+| 8 | Jest failed to start |
+| 9 | Jest test failure |
+| 10 | Coverage report failure |
+| 11 | Coverage gap |
+| 12 | Oxlint failed to start |
+| 13 | Oxlint failure or warning |
+| 14 | Unexpected CLI/internal failure |
+
+Exit code `0` means validation completed successfully.
+
 Run `eliware-test --help` to inspect supported options. Use `ELIWARE_TEST_DEBUG=1` only when diagnosing argument forwarding, and verify that focused test paths exist before retrying a filtered run.
 
 Advanced `runToolkit` callers should pass the same argument list they intend

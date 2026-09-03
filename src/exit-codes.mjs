@@ -1,0 +1,16 @@
+/** Stable eliware-test wrapper exit codes; child-process codes remain diagnostics. */
+export const EXIT_CODES = Object.freeze({
+  WORKSPACE_SETUP: 2,
+  ISTANBUL_POLICY: 3,
+  INVALID_ARGUMENT: 4,
+  FOCUSED_PATH_VALIDATION: 5,
+  FOCUSED_PATH_MISSING: 6,
+  COVERAGE_CLEANUP: 7,
+  TEST_START: 8,
+  TEST_FAILURE: 9,
+  COVERAGE_FAILURE: 10,
+  COVERAGE_GAP: 11,
+  LINT_START: 12,
+  LINT_FAILURE: 13,
+  INTERNAL: 14
+});

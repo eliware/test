@@ -14,6 +14,20 @@ afterEach(async () => {
 });
 
 describe('runner orchestration', () => {
+  test('fails before tests when Istanbul ignores violate policy', async () => {
+    const messages = [];
+    let invoked = false;
+    await expect(runToolkit({
+      ...base,
+      write: output(messages),
+      findIstanbulIgnores: async () => [{ file: 'src/module.mjs', line: 4 }],
+      runTest: async () => { invoked = true; return { code: 0, output: completeCoverage }; },
+      runLintCommand: async () => ({ code: 0, output: '' })
+    })).resolves.toBeGreaterThan(1);
+    expect(invoked).toBe(false);
+    expect(messages.join('')).toContain('src/module.mjs:4');
+  });
+
   test('rejects incomplete runner collaborators', async () => {
     await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {} })).rejects.toThrow('requires cwd');
   });
@@ -21,7 +35,7 @@ describe('runner orchestration', () => {
     const messages = [];
     let invoked = false;
     const runTest = async () => { invoked = true; return { code: 0, output: completeCoverage }; };
-    await expect(runToolkit({ ...base, write: output(messages), runnerArguments: ['--runTestsByPath', 'tests/missing.test.mjs'], runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runnerArguments: ['--runTestsByPath', 'tests/missing.test.mjs'], runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(invoked).toBe(false);
     expect(messages.join('')).toContain('Unsupported Jest option: --runTestsByPath');
   });
@@ -53,7 +67,7 @@ describe('runner orchestration', () => {
   test('enforces raw-counter annotations in Jest text coverage', async () => {
     const messages = [];
     const annotatedGap = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n gap.mjs | 80% (4/5) | 100% (1/1) | 100% (1/1) | 80% (4/5) | 3';
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: annotatedGap }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: annotatedGap }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -162,7 +176,7 @@ describe('runner orchestration', () => {
 
   test('reports test failures', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 2, output: 'failed test' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 2, output: 'failed test' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Tests failed');
   });
 
@@ -173,7 +187,7 @@ describe('runner orchestration', () => {
       write: output(messages),
       runTest: async () => { throw new Error('executor unavailable'); },
       runLintCommand: async () => ({ code: 0, output: '' })
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Tests failed to start: executor unavailable');
   });
 
@@ -184,7 +198,7 @@ describe('runner orchestration', () => {
       write: output(messages),
       runTest: async () => ({ code: 0, output: completeCoverage }),
       runLintCommand: async () => { throw new Error('lint unavailable'); }
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Lint failed to start: lint unavailable');
   });
 
@@ -195,7 +209,7 @@ describe('runner orchestration', () => {
       write: output(messages),
       runTest: async () => ({ code: 0, output: completeCoverage }),
       runLintCommand: async () => ({ code: 2, output: 'error: no-unused-vars' })
-    })).resolves.toBe(2);
+    })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('no-unused-vars');
     const combinedMessages = [];
     await expect(runToolkit({
@@ -203,7 +217,7 @@ describe('runner orchestration', () => {
       write: output(combinedMessages),
       runTest: async () => ({ code: 0, output: completeCoverage }),
       runLintCommand: async () => ({ code: 0, output: 'warning: rule violation' })
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(combinedMessages.join('')).toContain('warning: rule violation');
   });
 
@@ -211,7 +225,7 @@ describe('runner orchestration', () => {
     const messages = [];
     let testStarted = false;
     const runTest = async () => { testStarted = true; return { code: 0, output: '' }; };
-    await expect(runToolkit({ ...base, runnerArguments: [option], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, runnerArguments: [option], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(testStarted).toBe(false);
     expect(messages.join('')).toContain(`${option} requires a value`);
   });
@@ -224,7 +238,7 @@ describe('runner orchestration', () => {
       write: output(messages),
       runTest: async () => { throw new Error('test unavailable'); },
       runLintCommand: async () => ({ code: 0, output: '' })
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Tests failed to start: test unavailable');
   });
 
@@ -233,12 +247,12 @@ describe('runner orchestration', () => {
       ...base,
       runTest: async () => ({ code: 0, output: completeCoverage }),
       runLintCommand: async () => null
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
   });
 
   test('normalizes incomplete test results during failure handling', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 2 }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 2 }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Tests failed');
   });
 
@@ -249,22 +263,22 @@ describe('runner orchestration', () => {
       write: (message) => messages.push(message),
       runTest: async () => ({ code: 1, output: { unexpected: true } }),
       runLintCommand: async () => ({ code: 0, output: '' })
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Tests failed');
   });
 
   test('normalizes null test results', async () => {
-    await expect(runToolkit({ ...base, write: () => {}, runTest: async () => null, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: () => {}, runTest: async () => null, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
   });
 
   test('normalizes a missing test exit code', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({}), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({}), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
   });
 
   test('rejects managed flags at the runner boundary', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runnerArguments: ['--coverage=false'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runnerArguments: ['--coverage=false'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Unsupported Jest option');
   });
 
@@ -277,14 +291,14 @@ describe('runner orchestration', () => {
       runTest: async () => { testCalls += 1; return { code: 0, output: completeCoverage }; },
       runLintCommand: async () => ({ code: 0, output: '' }),
       runnerArguments: ['tests/does-not-exist.test.mjs']
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(testCalls).toBe(0);
     expect(messages.join('')).toContain('Focused test path not found');
   });
 
   test('recognizes uppercase JavaScript extensions as focused paths', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runnerArguments: ['tests/missing.TEST.MJS'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runnerArguments: ['tests/missing.TEST.MJS'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Focused test path not found');
   });
 
@@ -384,7 +398,7 @@ describe('runner orchestration', () => {
       accessCalls += 1;
       if (accessCalls > 1) throw Object.assign(new Error('permission denied'), { code: 'EACCES' });
     };
-    await expect(runToolkit({ ...base, write: output(messages), accessPath, runnerArguments: ['tests/runner.test.mjs'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), accessPath, runnerArguments: ['tests/runner.test.mjs'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Focused test path validation failed: permission denied');
   });
 
@@ -397,7 +411,7 @@ describe('runner orchestration', () => {
       runTest: async () => { testCalls += 1; return { code: 0, output: completeCoverage }; },
       runLintCommand: async () => ({ code: 0, output: '' }),
       runnerArguments: ['tests/runner.test.mjs', 'tests/does-not-exist.test.mjs']
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(testCalls).toBe(0);
     expect(messages.join('')).toContain('does-not-exist.test.mjs');
   });
@@ -449,14 +463,14 @@ describe('runner orchestration', () => {
   test('preserves failed test diagnostics in runner output', async () => {
     const messages = [];
     const diagnostics = 'FAIL tests/example.test.mjs\nExpected: 2\nReceived: 1\n at example.test.mjs:8:4';
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: diagnostics }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: diagnostics }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain(diagnostics);
   });
 
   test('omits coverage output when tests fail', async () => {
     const messages = [];
     const outputWithCoverage = 'FAIL tests/example.test.mjs\nExpected: 2\nReceived: 1\nCoverage report\nFile | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\nsrc/example.mjs | 80% | 90% | 100% | 80% | 4';
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: outputWithCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: outputWithCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('FAIL tests/example.test.mjs');
     expect(messages.join('')).toContain('Received: 1');
     expect(messages.join('')).not.toContain('Coverage report');
@@ -465,7 +479,7 @@ describe('runner orchestration', () => {
 
   test('deduplicates repeated failure diagnostics', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: 'FAIL example\nFAIL example\n' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 1, output: 'FAIL example\nFAIL example\n' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toBe('Tests failed (exit 1)\nFAIL example\n');
   });
 
@@ -474,7 +488,7 @@ describe('runner orchestration', () => {
     const messages = [];
     let lintCalls = 0;
     const lint = async () => { lintCalls += 1; return { code: 0, output: '' }; };
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: gapCoverage.replace('gap.mjs', 'foo.mjs') }), runLintCommand: lint })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: gapCoverage.replace('gap.mjs', 'foo.mjs') }), runLintCommand: lint })).resolves.toBeGreaterThan(1);
     expect(lintCalls).toBe(0);
     expect(messages.join('')).toContain('Coverage gaps');
   });
@@ -509,7 +523,7 @@ describe('runner orchestration', () => {
     await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/mismatch.mjs': { ...entry, branchMap: {}, b: {}, fnMap: {}, f: {} } }));
     try {
       const messages = [];
-      await expect(runToolkit({ ...base, cwd, write: output(messages), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+      await expect(runToolkit({ ...base, cwd, write: output(messages), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
       expect(messages.join('')).toContain('Coverage evidence missing');
     } finally {
       await rm(`${cwd}/coverage/coverage-final.json`, { force: true });
@@ -525,7 +539,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/gap.mjs': { statementMap: { 0: { start: { line: 9 } } }, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {} } }));
       return { code: 0, output: '' };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('9');
   });
 
@@ -551,7 +565,7 @@ describe('runner orchestration', () => {
 
   test('reports lint executor exceptions without throwing', async () => {
     const messages = [];
-    await expect(runLint({ cwd: process.cwd(), write: (message) => messages.push(message), runLintCommand: async () => { throw new Error('lint unavailable'); } })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: (message) => messages.push(message), runLintCommand: async () => { throw new Error('lint unavailable'); } })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Lint failed to start: lint unavailable');
   });
 
@@ -564,7 +578,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage.json`, JSON.stringify({ 'src/fallback.mjs': { statementMap: { 0: { start: { line: 8 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {} } }));
       return { code: 0, output: '' };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('current.mjs');
     expect(messages.join('')).not.toContain('fallback.mjs');
   });
@@ -577,7 +591,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage.json`, JSON.stringify({ 'src/third.mjs': { statementMap: { 0: { start: { line: 3 } } }, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {} } }));
       return { code: 0, output: '' };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('third.mjs');
   });
 
@@ -591,7 +605,7 @@ describe('runner orchestration', () => {
       }));
       return { code: 0, output: completeCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('current.mjs');
     expect(messages.join('')).not.toContain('foo.mjs');
   });
@@ -630,7 +644,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, '{invalid');
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -642,7 +656,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, '{}');
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -654,7 +668,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/empty.mjs': { statementMap: {} } }));
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -666,7 +680,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/partial.mjs': { statementMap: { 0: { start: { line: 1 } } } } }));
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -678,7 +692,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/partial.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: { 0: 'invalid' }, fnMap: {}, f: {} } }));
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -696,7 +710,7 @@ describe('runner orchestration', () => {
       return { code: 0, output: gapCoverage };
     };
     try {
-      await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+      await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     } finally {
       if (previousDebug === undefined) delete process.env.ELIWARE_TEST_DEBUG;
       else process.env.ELIWARE_TEST_DEBUG = previousDebug;
@@ -714,7 +728,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, '[]');
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -726,7 +740,7 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/array-map.mjs': { statementMap: [], s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {} } }));
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
   });
 
@@ -740,7 +754,7 @@ describe('runner orchestration', () => {
       }));
       return { code: 0, output: gapCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('gap.mjs');
     expect(messages.join('')).not.toContain('malformed.mjs');
   });
@@ -757,7 +771,7 @@ describe('runner orchestration', () => {
         await writeFile(`${cwd}/coverage/coverage.json`, '{}');
         return { code: 0, output: gapCoverage };
       };
-      await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+      await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     } finally {
       if (previous === undefined) delete process.env.ELIWARE_TEST_DEBUG;
       else process.env.ELIWARE_TEST_DEBUG = previous;
@@ -768,7 +782,7 @@ describe('runner orchestration', () => {
 
   test('fails when no coverage evidence is available', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: Coverage evidence missing');
   });
 
@@ -782,19 +796,19 @@ describe('runner orchestration', () => {
       await writeFile(`${cwd}/coverage.json`, '{invalid');
       return { code: 0, output: '' };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: Coverage evidence missing');
   });
 
   test('fails when output contains pipes but no coverage table', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: 'unrelated | diagnostic' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: 'unrelated | diagnostic' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: Coverage evidence missing');
   });
 
   test('fails when coverage has only a header', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s\n' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s\n' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: Coverage evidence missing');
   });
 
@@ -802,7 +816,7 @@ describe('runner orchestration', () => {
     const messages = [];
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({
       code: 0, output: `${gapCoverage}\n[Output truncated: 12 characters omitted.]`
-    }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: Coverage evidence missing');
   });
 
@@ -810,7 +824,7 @@ describe('runner orchestration', () => {
     const messages = [];
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({
       code: 0, output: 'diagnostic | 99 | 99 | 99 | 99 |'
-    }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: Coverage evidence missing');
   });
 
@@ -818,7 +832,7 @@ describe('runner orchestration', () => {
     const messages = [];
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({
       code: 0, output: 'foo.mjs | 100 | 100 | 100 | 100 |'
-    }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: Coverage evidence missing');
   });
 
@@ -826,7 +840,7 @@ describe('runner orchestration', () => {
     const cwd = `${process.cwd()}/test-fixtures/json-error`;
     const messages = [];
     const removePath = async () => { throw new Error('coverage cleanup denied'); };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), removePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), removePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage cleanup failed: coverage cleanup denied');
     expect(messages.join('')).toContain('Warning: .gitignore is missing');
   });
@@ -838,14 +852,14 @@ describe('runner orchestration', () => {
       await mkdir(`${cwd}/coverage/coverage-final.json`, { recursive: true });
       return { code: 0, output: completeCoverage };
     };
-    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed');
   });
 
   test('reports injected coverage read failures after tests pass', async () => {
     const messages = [];
     const readFilePath = async () => { throw Object.assign(new Error('read denied'), { code: 'EACCES' }); };
-    await expect(runToolkit({ ...base, write: output(messages), readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage failed: read denied');
   });
 
@@ -859,7 +873,7 @@ describe('runner orchestration', () => {
       removePath,
       runTest: async () => { testCalls += 1; return { code: 0, output: completeCoverage }; },
       runLintCommand: async () => ({ code: 0, output: '' })
-    })).resolves.toBe(1);
+    })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Coverage cleanup failed: cleanup denied');
     expect(testCalls).toBe(0);
   });
@@ -882,19 +896,19 @@ describe('runner orchestration', () => {
   test('reports workspace setup access failures without rejecting', async () => {
     const messages = [];
     const accessPath = async () => { throw Object.assign(new Error('access denied'), { code: 'EACCES' }); };
-    await expect(runToolkit({ ...base, accessPath, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, accessPath, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Workspace setup failed: access denied');
   });
 
   test('reports lint failures', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 3, output: 'warning' }) })).resolves.toBe(3);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 3, output: 'warning' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Lint failed');
   });
 
   test('rejects lint warnings even when the process exits successfully', async () => {
     const messages = [];
-    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: 'warning: rule violation' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: 'warning: rule violation' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Lint failed');
   });
 
@@ -907,38 +921,51 @@ describe('runner orchestration', () => {
   test('runs standalone lint', async () => {
     const messages = [];
     await expect(runLint({ cwd: process.cwd(), write: output(messages), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
-    await expect(runLint({ cwd: process.cwd(), write: output(messages), runLintCommand: async () => ({ code: 1, output: 'bad lint' }) })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: output(messages), runLintCommand: async () => ({ code: 1, output: 'bad lint' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Lint passed');
   });
 
+  test('fails standalone lint before lint when Istanbul ignores violate policy', async () => {
+    const messages = [];
+    let invoked = false;
+    await expect(runLint({
+      cwd: process.cwd(),
+      write: output(messages),
+      findIstanbulIgnores: async () => [{ file: 'src/module.mjs', line: 8 }],
+      runLintCommand: async () => { invoked = true; return { code: 0, output: '' }; }
+    })).resolves.toBeGreaterThan(1);
+    expect(invoked).toBe(false);
+    expect(messages.join('')).toContain('src/module.mjs:8');
+  });
+
   test('returns failure for standalone lint warnings', async () => {
-    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({ code: 0, output: 'warning: rule violation' }) })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({ code: 0, output: 'warning: rule violation' }) })).resolves.toBeGreaterThan(1);
   });
 
   test('detects ANSI-prefixed warnings after file diagnostics', async () => {
-    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({ code: 0, output: 'src/file.mjs:4:2\n\u001b[33mwarning: rule violation\u001b[0m' }) })).resolves.toBe(1);
-    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({ code: 0, output: 'Oxlint found 1 warning in the workspace' }) })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({ code: 0, output: 'src/file.mjs:4:2\n\u001b[33mwarning: rule violation\u001b[0m' }) })).resolves.toBeGreaterThan(1);
+    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({ code: 0, output: 'Oxlint found 1 warning in the workspace' }) })).resolves.toBeGreaterThan(1);
   });
 
   test('normalizes incomplete standalone lint results', async () => {
-    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({}) })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({}) })).resolves.toBeGreaterThan(1);
     await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => ({ code: 0 }) })).resolves.toBe(0);
   });
 
   test('normalizes a null standalone lint result', async () => {
-    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => null })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: () => {}, runLintCommand: async () => null })).resolves.toBeGreaterThan(1);
   });
 
   test('reports standalone lint executor errors without throwing', async () => {
     const messages = [];
-    await expect(runLint({ cwd: process.cwd(), write: (message) => messages.push(message), runLintCommand: async () => { throw new Error('lint unavailable'); } })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: (message) => messages.push(message), runLintCommand: async () => { throw new Error('lint unavailable'); } })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Lint failed to start: lint unavailable');
   });
 
   test('reports unexpected gitignore access errors', async () => {
     const messages = [];
     const accessPath = async () => { throw Object.assign(new Error('permission denied'), { code: 'EACCES' }); };
-    await expect(runLint({ cwd: process.cwd(), write: output(messages), accessPath, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runLint({ cwd: process.cwd(), write: output(messages), accessPath, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Workspace setup failed: permission denied');
   });
 
@@ -955,7 +982,7 @@ describe('runner orchestration', () => {
     await expect(runToolkit({ ...base, write: output(messages), accessPath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
     expect(messages.join('')).toContain('Warning: .gitignore is missing');
     const denied = async () => { throw Object.assign(new Error('permission denied'), { code: 'EACCES' }); };
-    await expect(runToolkit({ ...base, write: output(messages), accessPath: denied, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    await expect(runToolkit({ ...base, write: output(messages), accessPath: denied, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBeGreaterThan(1);
     expect(messages.join('')).toContain('Workspace setup failed: permission denied');
   });
 

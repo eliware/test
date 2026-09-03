@@ -3,6 +3,8 @@ import { MANAGED_OPTIONS } from './arguments.mjs';
 import { access, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
+import { findIstanbulIgnoreViolations } from './istanbul.mjs';
+import { EXIT_CODES } from './exit-codes.mjs';
 
 // codescope ignore: coverage candidate selection intentionally remains private to the runner contract.
 // codescope ignore: coverage candidate selection intentionally remains a private, fixed runner policy rather than a public configuration surface.
@@ -11,7 +13,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: cancellation is intentionally owned by the invoking process; the CLI exposes no abort-signal contract.
 // codescope ignore: collaborator injection is intentionally an advanced internal composition seam; the CLI is the supported consumer interface.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
-export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, write, runTest, runLintCommand, accessPath = access, removePath = rm, readFilePath = readFile }) {
+export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, write, runTest, runLintCommand, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   // codescope ignore: this function is the intentional single policy boundary for cleanup, execution, coverage, and lint sequencing.
   // codescope ignore: filesystem collaborator injection is an intentional internal test seam; consumers use the CLI.
   if (typeof cwd !== 'string' || !Array.isArray(runnerArguments) || typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
@@ -21,26 +23,31 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   const effectiveRunInBand = runInBand && !disableInBand;
   const normalizedRunnerArguments = runnerArguments.filter((argument) => argument !== '--runInBand' && argument !== '--no-runInBand' && argument !== '--');
   try {
+    const violations = await findIstanbulIgnores(cwd);
+    if (violations.length > 0) {
+      write(formatIstanbulIgnoreFailure(violations));
+      return EXIT_CODES.ISTANBUL_POLICY;
+    }
     await warnIfMissingGitignore(cwd, write, accessPath);
   } catch (error) {
     write(`Workspace setup failed: ${error.message}\n`);
-    return 1;
+    return EXIT_CODES.WORKSPACE_SETUP;
   }
   const protectedArgument = normalizedRunnerArguments.find(isProtectedArgument);
   if (protectedArgument) {
     write(`Unsupported Jest option: ${protectedArgument} is managed by eliware-test; remove it and use a supported filter.\n`);
-    return 1;
+    return EXIT_CODES.INVALID_ARGUMENT;
   }
   let missingFocusedPath;
   try {
     missingFocusedPath = await findMissingFocusedPath(cwd, normalizedRunnerArguments, accessPath);
   } catch (error) {
     write(`Focused test path validation failed: ${error.message}\n`);
-    return 1;
+    return EXIT_CODES.FOCUSED_PATH_VALIDATION;
   }
   if (missingFocusedPath) {
     write(`Focused test path not found: ${missingFocusedPath}\nUse a path relative to the consuming repository.\n`);
-    return 1;
+    return EXIT_CODES.FOCUSED_PATH_MISSING;
   }
   if (process.env.ELIWARE_TEST_DEBUG === '1') {
     write(`Debug: Jest arguments: ${normalizedRunnerArguments.map((argument) => JSON.stringify(argument)).join(' ') || '(none)'}\n`);
@@ -51,7 +58,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
     for (const name of COVERAGE_CANDIDATES) await removePath(resolve(cwd, name), { force: true });
   } catch (error) {
     write(`Coverage cleanup failed: ${error.message}\n`);
-    return 1;
+    return EXIT_CODES.COVERAGE_CLEANUP;
   }
   const focusedArguments = normalizedRunnerArguments;
   // codescope ignore: extension-qualified paths are intentionally delegated to Jest's strict file selection; callers supply test files.
@@ -64,12 +71,12 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
     test = (await runTest(['--coverage', ...(effectiveRunInBand ? ['--runInBand'] : []), '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...focusedCoverage, ...(focusedPathMode ? ['--runTestsByPath'] : []), ...focusedArguments], { cwd, runInBand: effectiveRunInBand })) ?? {};
   } catch (error) {
     write(`Tests failed to start: ${error.message}\n`);
-    return 1;
+    return EXIT_CODES.TEST_START;
   }
   const testResult = { ...test, output: typeof test.output === 'string' ? test.output : '', code: Number.isInteger(test.code) ? test.code : 1 };
   if (testResult.code !== 0) {
     write(formatFailure('Tests', testResult));
-    return testResult.code;
+    return EXIT_CODES.TEST_FAILURE;
   }
   let gaps = [];
   if (!ignoreCoverage) {
@@ -77,24 +84,24 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
     gaps = await readCoverageGaps(cwd, testResult.output, write, readFilePath);
     } catch (error) {
       write(`Coverage failed: ${error.message}\n`);
-      return 1;
+      return EXIT_CODES.COVERAGE_FAILURE;
     }
   }
   if (gaps.length > 0) {
     write(`${formatCoverageGaps(gaps, cwd)}\n`);
-    return 1;
+    return EXIT_CODES.COVERAGE_GAP;
   }
   let lint;
   try {
     lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd })) ?? {};
   } catch (error) {
     write(`Lint failed to start: ${error.message}\n`);
-    return 1;
+    return EXIT_CODES.LINT_START;
   }
   lint = { ...lint, output: typeof lint.output === 'string' ? lint.output : '', code: Number.isInteger(lint.code) ? lint.code : 1 };
   if (lint.code !== 0 || hasLintWarnings(lint.output)) {
     write(formatFailure('Lint', lint));
-    return lint.code || 1;
+    return EXIT_CODES.LINT_FAILURE;
   }
   write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
@@ -221,15 +228,20 @@ function hasTextCoverageEvidence(output) {
   return header && row;
 }
 
-export async function runLint({ cwd, write, runLintCommand, accessPath = access }) {
+export async function runLint({ cwd, write, runLintCommand, accessPath = access, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   if (typeof cwd !== 'string' || typeof write !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runLint requires cwd, write, and runLintCommand');
   }
   try {
+    const violations = await findIstanbulIgnores(cwd);
+    if (violations.length > 0) {
+      write(formatIstanbulIgnoreFailure(violations));
+      return EXIT_CODES.ISTANBUL_POLICY;
+    }
     await warnIfMissingGitignore(cwd, write, accessPath);
   } catch (error) {
     write(`Workspace setup failed: ${error.message}\n`);
-    return 1;
+    return EXIT_CODES.WORKSPACE_SETUP;
   }
   // codescope ignore: coverage loading intentionally belongs to runner orchestration.
   let lint;
@@ -237,13 +249,18 @@ export async function runLint({ cwd, write, runLintCommand, accessPath = access 
     lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd })) ?? {};
   } catch (error) {
     write(`Lint failed to start: ${error.message}\n`);
-    return 1;
+    return EXIT_CODES.LINT_START;
   }
   const exitCode = Number.isInteger(lint.code) ? lint.code : 1;
   const lintOutput = typeof lint.output === 'string' ? lint.output : '';
   if (exitCode !== 0 || hasLintWarnings(lintOutput)) write(formatFailure('Lint', { ...lint, code: exitCode, output: lintOutput }));
   else write('Lint passed: 0 warnings\n');
-  return exitCode !== 0 ? exitCode : (hasLintWarnings(lintOutput) ? 1 : 0);
+  return exitCode !== 0 || hasLintWarnings(lintOutput) ? EXIT_CODES.LINT_FAILURE : 0;
+}
+
+function formatIstanbulIgnoreFailure(violations) {
+  const details = violations.map(({ file, line }) => `  ${file}:${line}`).join('\n');
+  return `Istanbul ignore directives are only allowed in pure barrel files:\n${details}\n`;
 }
 
 function hasLintWarnings(output) {

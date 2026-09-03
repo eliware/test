@@ -28,11 +28,11 @@ describe('CLI dispatch', () => {
   });
 
   test('rejects invalid wrapper arguments through the top-level error path', async () => {
-    await expect(runCli('--coverage')).resolves.toMatchObject({ code: 1, stderr: expect.stringContaining('managed by eliware-test') });
+    await expect(runCli('--coverage')).resolves.toMatchObject({ code: 4, stderr: expect.stringContaining('managed by eliware-test') });
   });
 
   test('dispatches the default validation command', async () => {
-    await expect(runCli('tests/missing-cli-test.mjs')).resolves.toMatchObject({ code: 1, stdout: expect.stringContaining('Focused test path not found') });
+    await expect(runCli('tests/missing-cli-test.mjs')).resolves.toMatchObject({ code: 6, stdout: expect.stringContaining('Focused test path not found') });
   });
 
   test('dispatches a successful default command in a dedicated fixture workspace', async () => {
@@ -72,7 +72,7 @@ describe('CLI dispatch', () => {
   }, 15000);
 
   test('preserves focused-path failures with the explicit coverage opt-out', async () => {
-    await expect(runCli('--ignore-100x4', 'tests/does-not-exist-cli.test.mjs')).resolves.toMatchObject({ code: 1, stdout: expect.stringContaining('Focused test path not found') });
+    await expect(runCli('--ignore-100x4', 'tests/does-not-exist-cli.test.mjs')).resolves.toMatchObject({ code: 6, stdout: expect.stringContaining('Focused test path not found') });
   }, 15000);
 
 });
