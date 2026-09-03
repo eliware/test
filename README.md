@@ -70,11 +70,11 @@ Run `npm install` after editing `package.json` so the lockfile stays synchronize
 `npm run lint` invokes bundled Oxlint against the consuming repository after
 the runner's Istanbul-ignore policy scan and workspace setup check. Those
 checks may reject the run or emit a missing-`.gitignore` warning before Oxlint
-runs; no Jest tests or coverage collection are performed. Runs sharing one consumer working directory must be serialized because each run
-cleans and reads that workspace's coverage artifacts; the tool deliberately
-serializes concurrent validations with a workspace lock. If a process is
-interrupted, verify that no validation is active before removing a stale
-`.eliware-test.lock`.
+runs; no Jest tests or coverage collection are performed. Each validation
+cleans and reads coverage artifacts in its current worktree. Concurrent
+developers or jobs must use separate Git worktrees or workspaces; overlapping
+validations in one worktree are unsupported and are not coordinated by the
+tool.
 
 Pass `eliware-test --sanitize-env` to run Jest and Oxlint with an empty base
 environment; explicitly supplied tool variables are still forwarded. The
@@ -271,9 +271,7 @@ by the published source entrypoint; the concise self-test summary does not
 independently prove that each stage ran. The executable entrypoint supplies all three collaborators (`runAudit`,
 `runPack`, and `runBuild`); only the build command is conditional on consumer
 metadata. Advanced callers that invoke `runToolkit` directly are responsible
-for supplying any optional collaborators they require. Its `lock` option is an
-advanced test/composition seam: the default is enabled, while `lock: false`
-is only appropriate for an already isolated injected harness.
+for supplying any optional collaborators they require.
 
 For untrusted or CI-isolated workspaces, use `eliware-test --sanitize-env`;
 tool-specific variables can still be passed explicitly by the invoking

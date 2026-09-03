@@ -61,8 +61,6 @@ export interface ToolkitOptions {
   runTest: (argumentsList: string[], options: ProcessOptions & { runInBand: boolean }) => Promise<CollaboratorResult>;
   runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
   runInBand?: boolean; ignoreCoverage?: boolean; sanitizeEnv?: boolean;
-  /** Disable workspace locking only for isolated injected test harnesses. */
-  lock?: boolean;
   accessPath?: (path: string) => Promise<void>;
   removePath?: (path: string, options: { force: boolean }) => Promise<void>;
   readFilePath?: (path: string, encoding: string) => Promise<string>;

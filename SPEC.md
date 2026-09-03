@@ -191,14 +191,10 @@ The supported concurrency model is one active validation per worktree:
   results if another process deletes, rewrites, or reads the same coverage
   files concurrently. CI and other automation requiring parallel validation
   must allocate separate workspaces or worktrees.
-- The `.eliware-test.lock` file is only a defensive guard against accidental
-  overlapping `eliware-test` invocations. It is not a replacement for
-  worktree isolation, and it does not coordinate arbitrary Jest processes.
-- The lock contains the owner PID and creation timestamp. After an abrupt
-  termination, inspect that metadata, confirm that no validation is active,
-  and remove only the stale lock in that worktree. Automatic stale-lock
-  deletion is intentionally not provided because it could remove a live
-  invocation's lock.
+- The runner does not create a lock or coordinate concurrent processes. A
+  caller that needs parallel validation must allocate separate worktrees or
+  workspaces; same-worktree overlap is an operational error outside this
+  package's contract.
 
 This contract addresses workspace ownership; it does not attempt to fix or
 extend Jest's internal worker concurrency behavior.
@@ -232,8 +228,8 @@ This package does not promise or implement:
 
 - project-specific smoke, integration, regression, end-to-end, deployment, or
   product workflows;
-- same-worktree concurrent validation, cross-process Jest coordination, and
-  per-run temporary coverage isolation;
+- same-worktree concurrent validation, cross-process Jest coordination, lock
+  management, and per-run temporary coverage isolation;
 - an inherited-environment allowlist or secret-redaction policy for consumer
   code;
 - arbitrary Jest option discovery beyond the shared supported metadata;

@@ -8,4 +8,3 @@ pnpm-debug.log*
 *.tgz
 .nyc_output/
 test-results/
-.eliware-test.lock

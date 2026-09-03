@@ -7,7 +7,7 @@ import { dirname } from 'node:path';
 const output = (messages) => (message) => messages.push(message);
 const completeCoverage = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n foo.mjs | 100 | 100 | 100 | 100 |';
 const gapCoverage = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n gap.mjs | 99 | 100 | 100 | 100 |';
-const base = { cwd: process.cwd(), runnerArguments: [], write: () => {}, lock: false };
+const base = { cwd: process.cwd(), runnerArguments: [], write: () => {} };
 
 test('defines the complete Oxlint workspace exclusion contract', () => {
   expect(STANDARD_EXCLUSIONS).toEqual(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build', '*.tgz']);
@@ -15,7 +15,7 @@ test('defines the complete Oxlint workspace exclusion contract', () => {
 });
 
 afterEach(async () => {
-  for (const fixture of ['json-coverage', 'json-fallback', 'json-stale', 'json-empty', 'json-empty-map', 'json-no-counters', 'json-malformed', 'json-multi-malformed', 'json-array-root', 'json-counter-boundary', 'json-ignore-coverage', 'json-debug-fallback', 'json-error', 'lock']) {
+  for (const fixture of ['json-coverage', 'json-fallback', 'json-stale', 'json-empty', 'json-empty-map', 'json-no-counters', 'json-malformed', 'json-multi-malformed', 'json-array-root', 'json-counter-boundary', 'json-ignore-coverage', 'json-debug-fallback', 'json-error']) {
     await rm(`${process.cwd()}/test-fixtures/${fixture}/coverage`, { recursive: true, force: true });
   }
 });
@@ -36,81 +36,10 @@ describe('runner orchestration', () => {
   });
 
   test('rejects incomplete runner collaborators', async () => {
-    await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {}, lock: false })).rejects.toThrow('requires cwd');
+    await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {} })).rejects.toThrow('requires cwd');
     await expect(runToolkit({ write: () => {} })).rejects.toThrow('requires cwd');
   });
 
-  test('rejects overlapping toolkit invocations with a workspace lock', async () => {
-    const cwd = `${process.cwd()}/test-fixtures/lock`;
-    await mkdir(cwd, { recursive: true });
-    const lockPath = `${cwd}/.eliware-test.lock`;
-    await writeFile(lockPath, 'active');
-    const messages = [];
-    try {
-      await expect(runToolkit({ ...base, cwd, lock: true, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
-    } finally {
-      await rm(lockPath, { force: true });
-    }
-    expect(messages.join('')).toContain('serialize invocations');
-  });
-
-  test('does not fail validation when lock cleanup races with an external removal', async () => {
-    const cwd = `${process.cwd()}/test-fixtures/lock`;
-    await mkdir(cwd, { recursive: true });
-    await expect(runToolkit({ ...base, cwd, lock: true, runTest: async () => { await rm(`${cwd}/.eliware-test.lock`, { force: true }); return { code: 0, output: completeCoverage }; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
-  });
-
-  test('reports the owner metadata from an active lock', async () => {
-    const cwd = `${process.cwd()}/test-fixtures/lock`;
-    await mkdir(cwd, { recursive: true });
-    const lockPath = `${cwd}/.eliware-test.lock`;
-    await writeFile(lockPath, JSON.stringify({ pid: 12345, createdAt: '2026-09-03T00:00:00.000Z' }));
-    const messages = [];
-    try {
-      await expect(runToolkit({ ...base, cwd, lock: true, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
-    } finally {
-      await rm(lockPath, { force: true });
-    }
-    expect(messages.join('')).toContain('pid 12345');
-  });
-
-  test('falls back when lock metadata has no numeric owner', async () => {
-    const cwd = `${process.cwd()}/test-fixtures/lock`;
-    await mkdir(cwd, { recursive: true });
-    const lockPath = `${cwd}/.eliware-test.lock`;
-    await writeFile(lockPath, JSON.stringify({ pid: 'unknown' }));
-    const messages = [];
-    try {
-      await expect(runToolkit({ ...base, cwd, lock: true, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
-    } finally {
-      await rm(lockPath, { force: true });
-    }
-    expect(messages.join('')).toContain('owner unknown');
-  });
-
-  test('uses the lock around a non-Jest-worker invocation', async () => {
-    const cwd = `${process.cwd()}/test-fixtures/lock`;
-    await mkdir(cwd, { recursive: true });
-    const previousWorker = process.env.JEST_WORKER_ID;
-    delete process.env.JEST_WORKER_ID;
-    try {
-      await expect(runToolkit({ ...base, cwd, lock: true, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
-    } finally {
-      if (previousWorker === undefined) delete process.env.JEST_WORKER_ID;
-      else process.env.JEST_WORKER_ID = previousWorker;
-    }
-  });
-
-  test('reports lock setup errors for an unavailable workspace', async () => {
-    const previousWorker = process.env.JEST_WORKER_ID;
-    delete process.env.JEST_WORKER_ID;
-    try {
-      await expect(runToolkit({ ...base, cwd: `${process.cwd()}/missing-lock-workspace`, lock: true, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow();
-    } finally {
-      if (previousWorker === undefined) delete process.env.JEST_WORKER_ID;
-      else process.env.JEST_WORKER_ID = previousWorker;
-    }
-  });
   test('validates separated runTestsByPath values at the runner boundary', async () => {
     const messages = [];
     let invoked = false;
