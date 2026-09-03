@@ -260,7 +260,8 @@ does not replace the wrapper code.
 After tests, coverage, and lint pass, the CLI-wired consumer invocation also
 runs `npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
 `npm pack --dry-run --ignore-scripts`. These stages are always supplied by the
-published CLI; build is conditional on the consumer defining a non-empty
+published CLI; direct `runToolkit` callers may omit those optional
+collaborators. Build is conditional on the consumer defining a non-empty
 `scripts.build` command.
 
 When the consuming `package.json` defines a non-empty `scripts.build` command,

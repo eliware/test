@@ -191,7 +191,7 @@ export function percentageWithUnknowns(lineCounts, unknownCount) {
   }
   const mapped = Object.values(Object.fromEntries(lineCounts));
   const total = mapped.length + unknownCount;
-  if (total === 0) return 0;
+  if (total === 0) return 100;
   return Math.round((mapped.filter(isCoveredCount).length / total) * 10000) / 100;
 }
 

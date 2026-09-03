@@ -221,3 +221,9 @@ test('reports a passing fixture with a coverage gap', async () => {
   expect(messages.join('')).toContain('Uncovered branches:');
   expect(messages.join('')).toContain('Fix: add or extend tests');
 });
+
+test('executes both outcomes of the coverage-gap fixture branch', async () => {
+  const { branch } = await import('../test-fixtures/coverage-gap/src/branch.mjs');
+  expect(branch(true)).toBe('taken');
+  expect(branch(false)).toBe('not taken');
+});
