@@ -170,18 +170,43 @@ package/runtime entrypoint contracts, preserving argument-array boundaries on
 Windows and Unix-like systems. CI, rather than an unavailable local shim, is
 the authoritative source of required Windows evidence.
 
-## 8. Intentional limitations
+## 8. Concurrency and shared workspace artifacts
+
+`@eliware/test` uses the consumer's current worktree as its validation
+workspace. Jest's standard coverage locations remain in that worktree so the
+developer or agent can inspect `coverage/` and related reports immediately
+after the command finishes. The runner does not move coverage artifacts to a
+temporary directory, merge artifacts from different runs, or provide a
+separate Jest concurrency model.
+
+The supported concurrency model is one active validation per worktree:
+
+- Concurrent developers or agents must use separate Git worktrees. Separate
+  worktrees provide separate coverage directories and separate workspace
+  state, so their validations do not contend with one another.
+- A validation owns the worktree-local coverage artifacts for the duration of
+  its run. Do not launch overlapping `eliware-test` validations, or an
+  independent Jest validation, against the same worktree.
+- Same-worktree overlap is unsupported. The runner does not guarantee correct
+  results if another process deletes, rewrites, or reads the same coverage
+  files concurrently. CI and other automation requiring parallel validation
+  must allocate separate workspaces or worktrees.
+- The `.eliware-test.lock` file is only a defensive guard against accidental
+  overlapping `eliware-test` invocations. It is not a replacement for
+  worktree isolation, and it does not coordinate arbitrary Jest processes.
+- The lock contains the owner PID and creation timestamp. After an abrupt
+  termination, inspect that metadata, confirm that no validation is active,
+  and remove only the stale lock in that worktree. Automatic stale-lock
+  deletion is intentionally not provided because it could remove a live
+  invocation's lock.
+
+This contract addresses workspace ownership; it does not attempt to fix or
+extend Jest's internal worker concurrency behavior.
+
+## 9. Intentional limitations
 
 These are supported, documented limitations rather than hidden quality gates:
 
-- Coverage artifacts are workspace-global because they follow Jest's standard
-  report locations. Concurrent runs sharing a workspace are unsupported;
-  callers are serialized by an exclusive `.eliware-test.lock` in the workspace.
-  The lock contains the owner PID and creation timestamp. A lock left by an
-  interrupted process may require manual removal: first inspect the JSON,
-  confirm that the PID is not an active validation process, and then remove
-  only that workspace's `.eliware-test.lock`. Per-run artifact directories and
-  automatic stale-lock deletion are not provided.
 - Istanbul policy discovery is complete and serial to bound descriptor pressure
   in arbitrary consumer workspaces. No parallel traversal or startup bound is
   promised.
@@ -201,13 +226,14 @@ These are supported, documented limitations rather than hidden quality gates:
   not emitted by consumer code; unrelated output that reproduces the Jest table
   shape is outside the threat model.
 
-## 9. Explicitly out of scope
+## 10. Explicitly out of scope
 
 This package does not promise or implement:
 
 - project-specific smoke, integration, regression, end-to-end, deployment, or
   product workflows;
-- concurrent coverage isolation beyond the workspace lock;
+- same-worktree concurrent validation, cross-process Jest coordination, and
+  per-run temporary coverage isolation;
 - an inherited-environment allowlist or secret-redaction policy for consumer
   code;
 - arbitrary Jest option discovery beyond the shared supported metadata;
@@ -221,7 +247,7 @@ This package does not promise or implement:
 - proving that fallback text coverage originated from a specific reporter rather
   than the completed child invocation's bounded output.
 
-## 10. Fixtures, artifacts, migration, and release
+## 11. Fixtures, artifacts, migration, and release
 
 Diagnostic fixtures may intentionally contain failing tests or uncovered
 branches, but they are excluded from the normal full suite and invoked only by
