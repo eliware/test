@@ -52,6 +52,7 @@
     },
     "scripts": {
         "test": "node bin/eliware-test.mjs",
+        "test:timing": "node bin/eliware-test.mjs --debug-timing",
         "lint": "node bin/eliware-test.mjs --lint",
         "typecheck": "tsc --noEmit",
         "pack": "npm pack --dry-run"
@@ -64,7 +65,8 @@
             "text"
         ],
         "testPathIgnorePatterns": [
-            "/test-fixtures/"
+            "/test-fixtures/",
+            "/old-test/"
         ]
     },
     "dependencies": {

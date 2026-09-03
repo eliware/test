@@ -1,2 +1,0 @@
-import { focusedCoverageArguments } from '../../../src/runner/focused-path/stage.mjs';
-test('creates focused coverage arguments', async () => { await expect(focusedCoverageArguments('C:/repo', ['tests/a.test.mjs'], async (path) => { if (path.replaceAll('\\', '/').endsWith('src/a.mjs')) return; throw Object.assign(new Error('missing'), { code: 'ENOENT' }); })).resolves.toEqual(['--collectCoverageFrom', 'src/a.mjs']); });

@@ -1,0 +1,124 @@
+import { access, readFile, rm } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { EXIT_CODES } from '../exit-codes/codes.mjs';
+import { MANAGED_OPTIONS } from '../arguments/classify-arguments.mjs';
+import { normalizeArguments } from '../arguments/normalize-arguments.mjs';
+import { validateFocusedPaths } from '../testing/validate-focused-paths.mjs';
+import { resolveFocusedCoverage } from '../testing/focused-coverage/resolve-selection.mjs';
+import { buildJestArguments } from '../testing/build-jest-arguments.mjs';
+import { runJest } from '../testing/run-jest.mjs';
+import { formatFailure } from '../diagnostics/format-failure.mjs';
+import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
+import { configuredScript } from '../validation/common/configured-script.mjs';
+import { detectBuildScript } from '../validation/build/detect-script.mjs';
+import { runBuild } from '../validation/build/run-build.mjs';
+import { detectTypecheckScript } from '../validation/typecheck/detect-script.mjs';
+import { runTypecheck } from '../validation/typecheck/run-typecheck.mjs';
+import { runOxlint } from '../validation/lint/run-oxlint.mjs';
+import { detectWarnings } from '../validation/lint/detect-warnings.mjs';
+import { runAudit } from '../validation/package/run-audit.mjs';
+import { runPack } from '../validation/package/run-pack.mjs';
+import { detectViolations } from '../monolith/detect-violations.mjs';
+import { formatMonolithViolations } from '../diagnostics/format-monolith-violations.mjs';
+import { runChildProcess } from '../processes/run-child-process.mjs';
+import { readCoverage } from '../coverage/read-coverage.mjs';
+import { formatGaps } from '../coverage/format-gaps.mjs';
+import { createTiming } from '../diagnostics/timing.mjs';
+import { formatTestTimings } from '../diagnostics/format-test-timings.mjs';
+
+const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
+
+/**
+ * Public toolkit API. The application pipeline owns execution; this boundary
+ * validates the minimum caller contract and preserves the numeric exit code.
+ */
+export async function runToolkit(options) {
+  if (!options || typeof options !== 'object') throw new TypeError('runToolkit options are required');
+  if (typeof options.cwd !== 'string' || !Array.isArray(options.runnerArguments)) throw new TypeError('runToolkit requires cwd and runnerArguments');
+  const { cwd, runnerArguments, write, runTest = runJest, runLintCommand, runBuild: build,
+    runTypecheck: typecheck, runAudit: audit, runPack: pack,
+    runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
+    enforceMonolithLimits = false, sanitizeEnv = false, accessPath = access,
+    removePath = rm, readFilePath = readFile,
+    findIstanbulIgnores, findMonolith = detectViolations,
+    inspectWorkspace: inspect = (options.runTest && !findIstanbulIgnores ? async () => true : inspectWorkspace) } = options;
+  const timing = createTiming(options.debugTiming, write);
+  if (typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
+    throw new TypeError('runToolkit requires cwd, runnerArguments, write, runTest, and runLintCommand');
+  }
+  const disableInBand = runnerArguments.includes('--no-runInBand');
+  const timingOutput = options.debugTiming ? resolve(cwd, '.eliware-test-timings.json') : undefined;
+  if (!await inspect(cwd, write, accessPath, findIstanbulIgnores)) return EXIT_CODES.ISTANBUL_POLICY;
+  timing.step('Workspace inspection', 'tests');
+  const args = normalizeArguments(runnerArguments);
+  const protectedArgument = args.find((argument) => MANAGED_OPTIONS.some((name) => argument === name || argument.startsWith(`${name}=`)));
+  if (protectedArgument) { write(`Unsupported Jest option: ${protectedArgument} is managed by eliware-test; remove it and use a supported filter.\n`); return EXIT_CODES.INVALID_ARGUMENT; }
+  const missing = await validateFocusedPaths(cwd, args, accessPath);
+  if (missing) { write(`Focused test path not found: ${missing}\nUse a path relative to the consuming repository.\n`); return EXIT_CODES.FOCUSED_PATH_MISSING; }
+  for (const candidate of COVERAGE_CANDIDATES) await removePath(resolve(cwd, candidate), { force: true });
+  const focusedPathMode = args.some((arg) => /(?:^|[\\/])tests?[\\/].+\.(?:mjs|js|cjs|jsx|ts|tsx)$/.test(arg));
+  const focusedCoverage = focusedPathMode ? await resolveFocusedCoverage(cwd, args, accessPath) : [];
+  if (timingOutput) await removePath(timingOutput, { force: true });
+  let test;
+  try { test = await runTest(buildJestArguments({ runnerArguments: args, runInBand: runInBand && !disableInBand, focusedCoverage, focusedPathMode, timingOutput }), { cwd, runInBand: runInBand && !disableInBand, inheritEnv: !sanitizeEnv }); }
+  catch (error) { write(`Tests failed to start: ${error.message}\n`); return EXIT_CODES.TEST_START; }
+  const testResult = { ...test, code: Number.isInteger(test?.code) ? test.code : 1, output: typeof test?.output === 'string' ? test.output : '' };
+  if (timingOutput) {
+    try { write(formatTestTimings(JSON.parse(await readFile(timingOutput, 'utf8')))); } catch { /* Jest may fail before producing a report. */ }
+    await removePath(timingOutput, { force: true });
+  }
+  if (testResult.code !== 0) { write(formatFailure('Tests', testResult)); return EXIT_CODES.TEST_FAILURE; }
+  timing.step('Tests', 'coverage');
+  if (!ignoreCoverage) {
+    const coverageGaps = await readCoverage(cwd, testResult.output, write, readFilePath);
+    if (coverageGaps.length) {
+      write(formatGaps(coverageGaps, cwd));
+      return EXIT_CODES.COVERAGE_GAP;
+    }
+  }
+  timing.step('Coverage', 'build');
+  const context = { cwd, sanitizeEnv, write, runBuild: build, runTypecheck: typecheck, runLintCommand, runAudit: audit, runPack: pack };
+  const buildScript = await detectBuildScript(cwd, readFilePath);
+  const typecheckScript = await configuredScript(cwd, 'typecheck', readFilePath);
+  let code = 0;
+  if (buildScript && typeof build === 'function') {
+    try { code = resultCode(await build(context, buildScript)); }
+    catch (error) { write(`Build failed to start: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
+    if (code) return EXIT_CODES.BUILD_FAILURE;
+  }
+  if (typecheckScript && typeof typecheck === 'function') {
+    try { code = resultCode(await typecheck(context, typecheckScript)); }
+    catch (error) { write(`Typecheck failed to start: ${error.message}\n`); return EXIT_CODES.TYPECHECK_FAILURE; }
+    if (code) return EXIT_CODES.TYPECHECK_FAILURE;
+  }
+  const lint = resultCode(await runLintCommand({ cwd, write, sanitizeEnv }));
+  if (lint) return lint;
+  timing.step('Lint', 'package checks');
+  code = resultCode(await (typeof audit === 'function' ? audit(context) : runAudit(context))); if (code) return code;
+  code = resultCode(await (typeof pack === 'function' ? pack(context) : runPack(context))); if (code) return code;
+  timing.step('Package checks', 'monolith validation');
+  if (enforceMonolithLimits) {
+    try {
+      const violations = await findMonolith(cwd);
+      if (violations.length) {
+        write(formatMonolithViolations(violations));
+        if (!ignoreMonolithLimits) return EXIT_CODES.MONOLITH_LIMIT;
+        write('Monolith limits ignored for this diagnostic/refactoring run.\n');
+      }
+    } catch (error) {
+      write(`Monolith validation failed: ${error.message}\n`);
+      return EXIT_CODES.MONOLITH_LIMIT;
+    }
+  }
+  write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
+  return 0;
+}
+
+function resultCode(result) {
+  if (Number.isInteger(result)) return result;
+  return Number.isInteger(result?.code) ? result.code : 1;
+}
+
+async function runNpm(argumentsList, options) {
+  return runChildProcess(process.execPath, [process.env.npm_execpath ?? 'npm', ...argumentsList], options);
+}

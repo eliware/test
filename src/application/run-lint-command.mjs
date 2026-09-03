@@ -1,0 +1,41 @@
+import { assertLintOptions, assertExitCode } from '../public/contracts.mjs';
+import { EXIT_CODES } from '../exit-codes/codes.mjs';
+import { formatFailure } from '../diagnostics/format-failure.mjs';
+import { detectWarnings } from '../validation/lint/detect-warnings.mjs';
+import { runOxlint } from '../validation/lint/run-oxlint.mjs';
+import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
+import { createTiming } from '../diagnostics/timing.mjs';
+
+/** Run the standalone lint command and return the package exit code. */
+export async function runLintCommand(options) {
+  assertLintOptions(options);
+  const { cwd, write, sanitizeEnv = false } = options;
+  const timing = createTiming(options.debugTiming, write);
+  try {
+    if (!await inspectWorkspace(cwd, write, options.accessPath, options.findIstanbulIgnores)) {
+      return EXIT_CODES.ISTANBUL_POLICY;
+    }
+  } catch (error) {
+    write(`Workspace setup failed: ${error.message}\n`);
+    return EXIT_CODES.WORKSPACE_SETUP;
+  }
+  timing.step('Workspace inspection', 'lint');
+
+  let result;
+  try {
+    result = (await runOxlint({ cwd, inheritEnv: !sanitizeEnv, write })) ?? {};
+  } catch (error) {
+    write(`Lint failed to start: ${error.message}\n`);
+    return EXIT_CODES.LINT_START;
+  }
+
+  const code = Number.isInteger(result.code) ? result.code : 1;
+  const output = typeof result.output === 'string' ? result.output : '';
+  if (code !== 0 || detectWarnings(output)) {
+    write(formatFailure('Lint', { ...result, code, output }));
+    return assertExitCode(EXIT_CODES.LINT_FAILURE, 'runLintCommand');
+  }
+  timing.step('Lint', 'complete');
+  write('Lint passed: 0 warnings\n');
+  return assertExitCode(0, 'runLintCommand');
+}
