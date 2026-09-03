@@ -478,9 +478,15 @@ describe('runner orchestration', () => {
     await writeFile(`${cwd}/src/ambiguous.ts`, '');
     await writeFile(`${cwd}/src/ambiguous.mjs`, '');
     const calls = [];
+    const previousDebug = process.env.ELIWARE_TEST_DEBUG;
+    process.env.ELIWARE_TEST_DEBUG = '1';
     try {
-      await expect(runToolkit({ cwd, runnerArguments: ['tests/ambiguous.test.ts'], write: () => {}, runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+      const messages = [];
+      await expect(runToolkit({ cwd, runnerArguments: ['tests/ambiguous.test.ts'], write: output(messages), runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+      expect(messages.join('')).toContain('broad coverage enforcement retained');
     } finally {
+      if (previousDebug === undefined) delete process.env.ELIWARE_TEST_DEBUG;
+      else process.env.ELIWARE_TEST_DEBUG = previousDebug;
       await rm(`${cwd}/tests/ambiguous.test.ts`, { force: true });
       await rm(`${cwd}/src/ambiguous.ts`, { force: true });
       await rm(`${cwd}/src/ambiguous.mjs`, { force: true });

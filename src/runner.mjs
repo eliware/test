@@ -72,6 +72,9 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   // codescope ignore: focused multi-file scope is fully covered by injected argument assertions; Jest remains the delegated execution boundary.
   const focusedPathMode = focusedArguments.length > 0 && focusedArguments.every(isTestPath);
   const focusedCoverage = focusedPathMode ? await focusedCoverageArguments(cwd, focusedArguments, accessPath) : [];
+  if (focusedPathMode && focusedCoverage.length === 0 && process.env.ELIWARE_TEST_DEBUG === '1') {
+    write('Debug: Focused source mapping was ambiguous or unavailable; broad coverage enforcement retained.\n');
+  }
   // codescope ignore: reporter configuration is injected deliberately; evidence is validated after child completion so suppressed reporters fail closed.
   // codescope ignore: workspace-global coverage artifacts are an intentional Jest compatibility contract; callers must serialize workspace runs.
   let test;
