@@ -181,6 +181,11 @@ separate Jest concurrency model.
 
 The supported concurrency model is one active validation per worktree:
 
+Creation and allocation of worktrees, and assurance that validations do not
+overlap within a worktree, are the responsibility of the end user or their
+CI/automation system. `@eliware/test` does not create worktrees or coordinate
+runs.
+
 - Concurrent developers or agents must use separate Git worktrees. Separate
   worktrees provide separate coverage directories and separate workspace
   state, so their validations do not contend with one another.
