@@ -40,22 +40,23 @@ export function formatCoverageGaps(gaps: CoverageGap[], root?: string): string;
 /** Parse Istanbul JSON coverage and return actionable gaps. */
 export function parseCoverageJson(json: Record<string, unknown>): JsonCoverageGap[];
 
+/** Normalized result produced by a process collaborator. */
+export interface ProcessResult { code: number; output: string }
 /** Compatibility result accepted from injected collaborators; the runtime normalizes absent or invalid fields. */
-// codescope ignore: collaborator results are intentionally partial because the runtime normalizes missing fields at the boundary.
-export interface ProcessResult { code?: number; output?: string }
+export type CollaboratorResult = Partial<ProcessResult> | null;
 export interface ProcessOptions { cwd: string; inheritEnv: boolean }
 export interface LintOptions {
   cwd: string; write: (message: string) => void; sanitizeEnv?: boolean;
-  runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
-  runAudit?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
-  runPack?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
-  runBuild?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
+  runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
+  runAudit?: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
+  runPack?: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
+  runBuild?: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
   accessPath?: (path: string) => Promise<void>;
 }
 export interface ToolkitOptions {
   cwd: string; runnerArguments: string[]; write: (message: string) => void;
-  runTest: (argumentsList: string[], options: ProcessOptions & { runInBand: boolean }) => Promise<ProcessResult | null>;
-  runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
+  runTest: (argumentsList: string[], options: ProcessOptions & { runInBand: boolean }) => Promise<CollaboratorResult>;
+  runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
   runInBand?: boolean; ignoreCoverage?: boolean; sanitizeEnv?: boolean;
   accessPath?: (path: string) => Promise<void>;
   removePath?: (path: string, options: { force: boolean }) => Promise<void>;

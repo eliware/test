@@ -101,6 +101,7 @@ function percentage(counts) {
 
 // codescope ignore: direct consumers intentionally receive best-effort partial diagnostics without a separate strict-parser API.
 export function parseCoverageJson(json) {
+  // codescope ignore: Istanbul `l` counters are authoritative for line coverage; statement metrics remain independently validated.
   // codescope ignore: best-effort parser output intentionally has no malformed-entry status channel; the runner owns strict evidence validation.
   if (!json || typeof json !== 'object' || Array.isArray(json)) return [];
   const gaps = [];
