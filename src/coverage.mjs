@@ -135,6 +135,7 @@ export function parseCoverageJson(json) {
       return { ...(location && typeof location === 'object' && !Array.isArray(location) ? location : {}), name: typeof fn.name === 'string' ? fn.name : (metadata && typeof metadata === 'object' ? 'anonymous' : 'unknown') };
       });
     const lineCounts = new Map();
+    let unmappedLineCount = 0;
     if (data.l && typeof data.l === 'object' && !Array.isArray(data.l)) {
       for (const [line, count] of Object.entries(data.l)) {
         const lineNumber = Number(line);
@@ -151,7 +152,10 @@ export function parseCoverageJson(json) {
       const line = statementStart?.line;
       // codescope ignore: malformed statement counters conservatively count as uncovered lines.
       if (typeof line === 'number' && Number.isFinite(line)) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
-      else if (!isCoveredCount(count)) hasUnmappedStatement = true;
+      else {
+        unmappedLineCount += 1;
+        if (!isCoveredCount(count)) hasUnmappedStatement = true;
+      }
     });
     Object.entries(data.s ?? {}).forEach(([id, count]) => {
       if (!(id in data.statementMap) && !isCoveredCount(count)) hasUnmappedStatement = true;
@@ -169,12 +173,18 @@ export function parseCoverageJson(json) {
           statements: percentage(data.s),
           branches: percentage(data.b),
           functions: percentage(data.f),
-          lines: lineGap ? 0 : (lineCounts.size > 0 ? percentage(Object.fromEntries(lineCounts)) : 100)
+          lines: lineCounts.size > 0 ? percentageWithUnknowns(lineCounts, unmappedLineCount) : (lineGap ? 0 : 100)
         }
       });
     }
   }
   return gaps;
+}
+
+function percentageWithUnknowns(lineCounts, unknownCount) {
+  const mapped = Object.values(Object.fromEntries(lineCounts));
+  const total = mapped.length + unknownCount;
+  return Math.round((mapped.filter(isCoveredCount).length / total) * 10000) / 100;
 }
 
 
