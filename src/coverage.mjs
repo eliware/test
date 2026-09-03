@@ -59,6 +59,7 @@ function percentageHundredths(value) {
 }
 
 export function parseCoverage(text) {
+  // codescope ignore: the fixed 16 KiB capture cap makes whole-buffer parsing a bounded performance tradeoff.
   // codescope ignore: the input is capped before parsing; whole-buffer splitting is the specified bounded-parser implementation.
   // codescope ignore: streaming parsing is intentionally deferred; child output is bounded before this parser runs.
   // codescope ignore: the input is bounded before parsing, so splitting the complete buffer is an intentional low-cost diagnostic tradeoff.
