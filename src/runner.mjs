@@ -100,7 +100,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
 }
 
 function isTestPath(argument) {
-  return isFileLikePath(argument);
+  return isFileLikePath(argument) && /(?:^|[\\/])(?:tests?|spec)(?:[\\/]|$)/i.test(argument);
 }
 
 function isFileLikePath(argument) {
