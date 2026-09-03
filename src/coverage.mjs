@@ -152,6 +152,7 @@ export function parseCoverageJson(json) {
       const line = statementStart?.line;
       // codescope ignore: malformed statement counters conservatively count as uncovered lines.
       if (typeof line === 'number' && Number.isFinite(line) && !data.l) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
+      if (data.l && !Number.isFinite(count)) hasUnmappedStatement = true;
       else {
         unmappedLineCount += 1;
         if (!isCoveredCount(count)) hasUnmappedStatement = true;
@@ -173,7 +174,7 @@ export function parseCoverageJson(json) {
           statements: percentage(data.s),
           branches: percentage(data.b),
           functions: percentage(data.f),
-          lines: lineCounts.size > 0 ? percentageWithUnknowns(lineCounts, unmappedLineCount) : (lineGap ? 0 : 100)
+          lines: lineGap ? 0 : (lineCounts.size > 0 ? percentageWithUnknowns(lineCounts, unmappedLineCount) : 100)
         }
       });
     }

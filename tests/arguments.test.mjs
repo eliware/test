@@ -57,7 +57,7 @@ describe('parseArguments', () => {
     expect(parseCoverageJson({ 'src/partial.mjs': {
       statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 2 } } }, s: { 0: 1, 1: 2 },
       branchMap: { 0: { type: 'if', locations: [{ start: { line: 3 } }, { start: { line: 3 } }] } }, b: { 0: [1, 0] }, fnMap: {}, f: {}
-    } })[0].metrics).toEqual({ statements: 100, branches: 50, functions: 100, lines: 100 });
+    } })[0].metrics).toEqual({ statements: 100, branches: 50, functions: 100, lines: 50 });
   });
 
   test('counts mixed and empty branch counter arrays consistently', () => {
@@ -323,7 +323,14 @@ test('ignores unmapped covered statements for line gaps', () => {
       statementMap: { 0: { start: { line: 1 } } }, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1 }
     } });
     expect(gaps[0].lines).toEqual([]);
-    expect(gaps[0].metrics.lines).toBe(50);
+    expect(gaps[0].metrics.lines).toBe(0);
+  });
+
+  test('does not let malformed statement counters hide an l-map line gap', () => {
+    const gaps = parseCoverageJson({ 'src/inconsistent-lines.mjs': {
+      statementMap: { 0: { start: { line: 1 } } }, s: { 0: 'invalid' }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1 }
+    } });
+    expect(gaps[0].metrics.lines).toBe(0);
   });
 
   test.each([
@@ -349,7 +356,7 @@ test('counts mixed mapped and unmapped uncovered statements as a line gap', () =
     statementMap: { 0: { start: { line: 4 } }, 1: {} },
     s: { 0: 1, 1: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {}
   } });
-  expect(gaps[0].metrics.lines).toBe(50);
+  expect(gaps[0].metrics.lines).toBe(0);
 });
 
 test('treats statement-map entries missing counters as uncovered lines', () => {
@@ -358,7 +365,7 @@ test('treats statement-map entries missing counters as uncovered lines', () => {
     s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}
   } });
   expect(gaps[0].lines).toEqual([11]);
-  expect(gaps[0].metrics.lines).toBe(50);
+  expect(gaps[0].metrics.lines).toBe(0);
 });
 
 test('handles a statement map with no counter map conservatively', () => {
