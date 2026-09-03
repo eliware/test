@@ -254,9 +254,14 @@ does not replace the wrapper code.
 
 After tests, coverage, and lint pass, `npm test` also runs
 `npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
-`npm pack --dry-run --ignore-scripts`.
+`npm pack --dry-run --ignore-scripts`; both stages are wired by the CLI and
+covered by orchestration tests.
 Failures in those checks return distinct exit codes `15` and `16` respectively.
 Exit code `0` means all validation completed successfully.
+
+When an Istanbul `l` map is present, it is authoritative for line coverage;
+statement locations are not allowed to contradict it. Focused runs whose
+source cannot be mapped intentionally retain broad coverage enforcement.
 
 Run `eliware-test --help` to inspect supported options. Use `ELIWARE_TEST_DEBUG=1` only when diagnosing argument forwarding, and verify that focused test paths exist before retrying a filtered run.
 

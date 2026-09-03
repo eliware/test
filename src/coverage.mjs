@@ -151,7 +151,7 @@ export function parseCoverageJson(json) {
         ? statement.start : undefined;
       const line = statementStart?.line;
       // codescope ignore: malformed statement counters conservatively count as uncovered lines.
-      if (typeof line === 'number' && Number.isFinite(line)) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
+      if (typeof line === 'number' && Number.isFinite(line) && !data.l) lineCounts.set(line, isCoveredCount(count) ? 1 : 0);
       else {
         unmappedLineCount += 1;
         if (!isCoveredCount(count)) hasUnmappedStatement = true;

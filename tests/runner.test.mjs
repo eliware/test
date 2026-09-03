@@ -202,6 +202,15 @@ describe('runner orchestration', () => {
       runnerArguments: ['test-fixtures/coverage-gap/tests/branch.test.mjs']
     })).resolves.toBe(0);
     expect(calls[1]).not.toEqual(expect.arrayContaining(['--collectCoverageFrom']));
+    const messages = [];
+    await expect(runToolkit({
+      ...base,
+      write: output(messages),
+      runTest: async () => ({ code: 0, output: gapCoverage.replace('gap.mjs', 'src/imported.mjs') }),
+      runLintCommand: async () => ({ code: 0, output: '' }),
+      runnerArguments: ['index.mjs']
+    })).resolves.toBe(11);
+    expect(messages.join('')).toContain('src/imported.mjs');
     await expect(runToolkit({
       ...base,
       runTest: async (args) => { calls.push(args); return { code: 0, output: completeCoverage }; },

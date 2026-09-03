@@ -309,13 +309,21 @@ test('ignores unmapped covered statements for line gaps', () => {
       branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1, 2: 0 }
     } });
     expect(gaps[0].lines).toEqual([2]);
-    expect(gaps[0].metrics.lines).toBe(50);
+    expect(gaps[0].metrics.lines).toBe(33.33);
     expect(parseCoverageJson({ 'src/invalid-lines.mjs': {
       statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: []
     } })).toEqual([]);
     expect(parseCoverageJson({ 'src/invalid-line-count.mjs': {
       statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 2: 'bad' }
     } })).toEqual([]);
+  });
+
+  test('treats Istanbul line counters as authoritative', () => {
+    const gaps = parseCoverageJson({ 'src/authoritative-lines.mjs': {
+      statementMap: { 0: { start: { line: 1 } } }, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1 }
+    } });
+    expect(gaps[0].lines).toEqual([]);
+    expect(gaps[0].metrics.lines).toBe(50);
   });
 
   test('keeps empty line diagnostics finite', () => {
