@@ -85,9 +85,17 @@ limit; terminal process-error text may be included within the final bounded
 diagnostic without preserving exact original omission accounting. Direct
 coverage-parser calls are
 best-effort diagnostics; malformed or incomplete JSON is not authoritative,
-and the runner falls back to a validated text report or fails closed.
+and the runner falls back to a validated text report or fails closed. JSON
+coverage uses Istanbul `l` line counters when present; without `l`, line
+coverage is derived from statement locations. Malformed `l` maps are rejected
+as unusable evidence.
 
 Use `eliware-test --help` or `eliware-test -h` for command and invocation examples. When invoking through npm, put Jest filters after npm's `--` separator; direct `eliware-test` calls receive those filters as ordinary arguments:
+
+The package entry point also exports parser and orchestration functions for
+advanced integrations. Those functions are a typed composition surface and
+require injected process collaborators; ordinary consumers should use the
+CLI scripts above, whose defaults and exit-code contract are stable.
 
 ```text
 npm test -- -t "focused test name"
