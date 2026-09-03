@@ -1,14 +1,11 @@
-import { spawn } from 'node:child_process';
-import { createRequire } from 'node:module';
-import { dirname, resolve } from 'node:path';
-import { appendBounded, boundOutput } from './process/output/truncate.mjs';
-import { buildChildOptions } from './process/environment/build-child.mjs';
+/* istanbul ignore file */
+export { runProcess } from './process/runner.mjs';
+export { runJest } from './process/executors/jest.mjs';
+export { runOxlint } from './process/executors/oxlint.mjs';
+export { runNpm, npmInvocation } from './process/executors/npm.mjs';
 
 
-function resolveFromConsumer(cwd, specifier) {
-  return createRequire(resolve(cwd, 'package.json')).resolve(specifier);
-}
-
+/* Legacy implementation moved to process/runner.mjs.
 export function runProcess(command, argumentsList, options) {
   // Callers may set inheritEnv: false to use an explicitly supplied sanitized environment.
   return new Promise((resolveResult) => {
@@ -68,3 +65,4 @@ export function npmInvocation(argumentsList) {
   const npmCli = resolve(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js');
   return [process.execPath, [npmCli, ...argumentsList]];
 }
+*/

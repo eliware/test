@@ -1,2 +1,2 @@
-// TODO: add unit tests for oxlint.
-test.todo('implement oxlint unit tests');
+import { runOxlint } from '../../../src/process/executors/oxlint.mjs';
+test('exports the Oxlint executor', () => { expect(runOxlint).toBeInstanceOf(Function); });

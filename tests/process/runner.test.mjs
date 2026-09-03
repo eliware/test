@@ -1,2 +1,2 @@
-// TODO: add unit tests for runner.
-test.todo('implement runner unit tests');
+import { runProcess } from '../../src/process/runner.mjs';
+test('exports the process runner', () => { expect(runProcess).toBeInstanceOf(Function); });

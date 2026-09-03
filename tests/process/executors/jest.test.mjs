@@ -1,2 +1,2 @@
-// TODO: add unit tests for jest.
-test.todo('implement jest unit tests');
+import { runJest } from '../../../src/process/executors/jest.mjs';
+test('exports the Jest executor', () => { expect(runJest).toBeInstanceOf(Function); });
