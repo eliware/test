@@ -3,6 +3,7 @@ export const HELP_TEXT = `Usage:
   eliware-test --lint                  Run lint only
   eliware-test --version              Show the package version
   eliware-test --ignore-100x4          Run tests without coverage enforcement
+  eliware-test --sanitize-env          Run child tools with a minimal environment
   npm test -- <Jest arguments>         Forward arguments to Jest
   npm test -- --no-runInBand           Allow Jest's default parallel execution
 
@@ -20,7 +21,8 @@ export function parseArguments(argumentsList = []) {
   const lint = argumentsList.includes('--lint');
   const ignoreCoverage = argumentsList.includes('--ignore-100x4');
   const disableInBand = argumentsList.includes('--no-runInBand');
-  const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4', '--runInBand', '--no-runInBand'].includes(argument));
+  const sanitizeEnv = argumentsList.includes('--sanitize-env');
+  const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4', '--runInBand', '--no-runInBand', '--sanitize-env'].includes(argument));
   // codescope ignore: documented Jest filters are intentionally delegated; only wrapper-owned options are rejected here.
   const protectedArgument = runnerArguments.find((argument) => MANAGED_OPTIONS.some((name) => argument === name || argument.startsWith(`${name}=`)));
   if (protectedArgument) throw new Error(`${protectedArgument} is managed by eliware-test; remove it and use the wrapper command directly.`);
@@ -33,5 +35,6 @@ export function parseArguments(argumentsList = []) {
   const parsed = { lint, runnerArguments: runnerArguments[0] === '--' ? runnerArguments.slice(1) : runnerArguments };
   if (disableInBand) parsed.runInBand = false;
   if (ignoreCoverage) parsed.ignoreCoverage = true;
+  if (sanitizeEnv) parsed.sanitizeEnv = true;
   return parsed;
 }

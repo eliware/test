@@ -13,7 +13,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: cancellation is intentionally owned by the invoking process; the CLI exposes no abort-signal contract.
 // codescope ignore: collaborator injection is intentionally an advanced internal composition seam; the CLI is the supported consumer interface.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
-export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, write, runTest, runLintCommand, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   // codescope ignore: this function is the intentional single policy boundary for cleanup, execution, coverage, and lint sequencing.
   // codescope ignore: filesystem collaborator injection is an intentional internal test seam; consumers use the CLI.
   if (typeof cwd !== 'string' || !Array.isArray(runnerArguments) || typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
@@ -68,7 +68,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   // codescope ignore: reporter configuration is injected deliberately; evidence is validated after child completion so suppressed reporters fail closed.
   let test;
   try {
-    test = (await runTest(['--coverage', ...(effectiveRunInBand ? ['--runInBand'] : []), '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...focusedCoverage, ...(focusedPathMode ? ['--runTestsByPath'] : []), ...focusedArguments], { cwd, runInBand: effectiveRunInBand })) ?? {};
+    test = (await runTest(['--coverage', ...(effectiveRunInBand ? ['--runInBand'] : []), '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...focusedCoverage, ...(focusedPathMode ? ['--runTestsByPath'] : []), ...focusedArguments], { cwd, runInBand: effectiveRunInBand, inheritEnv: !sanitizeEnv })) ?? {};
   } catch (error) {
     write(`Tests failed to start: ${error.message}\n`);
     return EXIT_CODES.TEST_START;
@@ -93,7 +93,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   }
   let lint;
   try {
-    lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd })) ?? {};
+    lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd, inheritEnv: !sanitizeEnv })) ?? {};
   } catch (error) {
     write(`Lint failed to start: ${error.message}\n`);
     return EXIT_CODES.LINT_START;
@@ -228,7 +228,7 @@ function hasTextCoverageEvidence(output) {
   return header && row;
 }
 
-export async function runLint({ cwd, write, runLintCommand, accessPath = access, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+export async function runLint({ cwd, write, runLintCommand, sanitizeEnv = false, accessPath = access, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   if (typeof cwd !== 'string' || typeof write !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runLint requires cwd, write, and runLintCommand');
   }
@@ -246,7 +246,7 @@ export async function runLint({ cwd, write, runLintCommand, accessPath = access,
   // codescope ignore: coverage loading intentionally belongs to runner orchestration.
   let lint;
   try {
-    lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd })) ?? {};
+    lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd, inheritEnv: !sanitizeEnv })) ?? {};
   } catch (error) {
     write(`Lint failed to start: ${error.message}\n`);
     return EXIT_CODES.LINT_START;

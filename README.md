@@ -71,6 +71,10 @@ Run `npm install` after editing `package.json` so the lockfile stays synchronize
 sharing one consumer working directory must be serialized because each run
 cleans and reads that workspace's coverage artifacts.
 
+Pass `eliware-test --sanitize-env` to run Jest and Oxlint with an empty base
+environment; explicitly supplied tool variables are still forwarded. The
+default inherits the consumer environment for normal npm and tool resolution.
+
 The wrapper suppresses successful child-process output that it controls; npm
 lifecycle notices and non-failing workspace warnings may still be printed.
 

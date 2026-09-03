@@ -21,6 +21,10 @@ describe('parseArguments', () => {
     expect(parseArguments(['--ignore-100x4'])).toEqual({ lint: false, ignoreCoverage: true, runnerArguments: [] });
   });
 
+  test('parses the explicit environment sanitization opt-out', () => {
+    expect(parseArguments(['--sanitize-env'])).toEqual({ lint: false, sanitizeEnv: true, runnerArguments: [] });
+  });
+
   test('forwards focused runner arguments unchanged', () => {
     const argumentsList = ['tests/client.test.mjs', '-t', 'rejects invalid options'];
     expect(parseArguments(argumentsList)).toEqual({ lint: false, runnerArguments: argumentsList });
