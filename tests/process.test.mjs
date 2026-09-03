@@ -6,6 +6,11 @@ describe('process helpers', () => {
     await expect(runProcess(process.execPath, ['-e', 'process.stdout.write("ok")'], { cwd: process.cwd(), env: process.env })).resolves.toEqual({ code: 0, output: 'ok' });
   });
 
+  test('supports an explicitly sanitized environment', async () => {
+    const result = await runProcess(process.execPath, ['-e', 'process.stdout.write(process.env.ELIWARE_TEST_SECRET ?? "missing")'], { cwd: process.cwd(), inheritEnv: false, env: { ELIWARE_TEST_SECRET: 'safe' } });
+    expect(result).toMatchObject({ code: 0, output: 'safe' });
+  });
+
   test('captures a failed child process', async () => {
     await expect(runProcess(process.execPath, ['-e', 'process.exitCode=4'], { cwd: process.cwd(), env: process.env })).resolves.toMatchObject({ code: 4 });
   });

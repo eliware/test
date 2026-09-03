@@ -34,7 +34,8 @@ export function runProcess(command, argumentsList, options) {
     // codescope ignore: consumer test and lint processes intentionally inherit the trusted workspace environment; this package has no untrusted-workspace isolation contract or environment-allowlist API.
     // codescope ignore: diagnostic output is intentionally bounded at 16 KiB; simple string capture is sufficient for this cap and avoids a larger buffering abstraction.
     // codescope ignore: consumer processes intentionally inherit the trusted workspace environment; no untrusted-workspace isolation contract is provided.
-    const child = spawn(command, argumentsList, { cwd: options.cwd, env: { ...process.env, ...options.env }, windowsHide: true });
+    const inheritedEnvironment = options.inheritEnv === false ? {} : process.env;
+    const child = spawn(command, argumentsList, { cwd: options.cwd, env: { ...inheritedEnvironment, ...options.env }, windowsHide: true });
     const settle = (result) => {
       /* istanbul ignore next -- close/error races are defensive and cannot be scheduled deterministically. */
       if (!settled) {
