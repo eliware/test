@@ -1,12 +1,13 @@
-import { formatCoverageGaps, parseCoverage, parseCoverageJson } from './coverage.mjs';
-import { MANAGED_OPTIONS, VALUE_OPTIONS } from './arguments.mjs';
+import { formatCoverageGaps } from './coverage.mjs';
+import { MANAGED_OPTIONS } from './arguments.mjs';
 import { access, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
-import { findIstanbulIgnoreViolations, isPureBarrelFile } from './istanbul.mjs';
+import { findIstanbulIgnoreViolations } from './istanbul.mjs';
 import { EXIT_CODES } from './exit-codes.mjs';
-
-const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
+import { formatFailure, formatIstanbulIgnoreFailure, hasLintWarnings } from './runner/diagnostics.mjs';
+import { findMissingFocusedPath, focusedCoverageArguments, isTestPath } from './runner/focused-path-stage.mjs';
+import { COVERAGE_CANDIDATES, pureBarrelSuggestions, readCoverageGaps } from './runner/coverage-stage.mjs';
 
 export async function runToolkit(options) {
   return runToolkitUnlocked(options);
@@ -136,131 +137,11 @@ async function configuredBuildScript(cwd, readFilePath) {
   return typeof packageJson?.scripts?.build === 'string' && packageJson.scripts.build.trim() ? packageJson.scripts.build : '';
 }
 
-async function pureBarrelSuggestions(cwd, gaps, readFilePath) {
-  const suggestions = [];
-  for (const gap of gaps) {
-    if (!isZeroCoverageGap(gap)) continue;
-    const file = gap.file;
-    const candidates = [resolve(cwd, file), resolve(cwd, 'src', file)];
-    for (const candidate of candidates) {
-      if (await isPureBarrelFile(candidate, readFilePath)) {
-        suggestions.push(`Pure barrel detected: ${file}. Consider adding an Istanbul ignore directive to this barrel.`);
-        break;
-      }
-    }
-  }
-  return suggestions.length > 0 ? `\n\n${suggestions.join('\n')}` : '';
-}
-
-function isZeroCoverageGap(gap) {
-  const metrics = gap?.metrics;
-  if (Array.isArray(metrics)) return metrics.length === 4 && metrics.every((metric) => /^0(?:\.0+)?%?$/.test(String(metric).trim()));
-  return metrics && ['statements', 'branches', 'functions', 'lines'].every((metric) => metrics[metric] === 0);
-}
-
-function isTestPath(argument) {
-  return isFileLikePath(argument) && /(?:^|[\\/])(?:tests?|spec)(?:[\\/]|$)/i.test(argument);
-}
-
-function isFileLikePath(argument) {
-  return !argument.startsWith('-') && !/[*!?[\]{}]/.test(argument)
-    && /(?:\.(?:c|m)?js|jsx|tsx|cts|mts|ts)$/i.test(argument);
-}
-
 function isProtectedArgument(argument) {
   return MANAGED_OPTIONS
     .some((name) => argument === name || argument.startsWith(`${name}=`));
 }
 
-async function focusedCoverageArguments(cwd, testPaths, accessPath = access) {
-  const uniquePaths = [...new Set(testPaths)];
-  const sourcePaths = await Promise.all(uniquePaths.map((testPath) => sourcePathForTest(cwd, testPath, accessPath)));
-  if (sourcePaths.some((sourcePath) => !sourcePath)) return [];
-  return [...new Set(sourcePaths)].flatMap((sourcePath) => ['--collectCoverageFrom', sourcePath]);
-}
-
-async function sourcePathForTest(cwd, testPath, accessPath = access) {
-  const normalized = testPath.replaceAll('\\', '/').replace(/^\.\//, '');
-  const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
-  const sourceRelative = marker[2]
-    .replace(/\.(?:test|spec)(?=\.[^.]+$)/i, '')
-    .replace(/\.[^.]+$/, '');
-  const testExtension = marker[2].slice(marker[2].lastIndexOf('.') + 1).toLowerCase();
-  const sourceExtensions = [testExtension, ...['js', 'mjs', 'cjs', 'ts', 'mts', 'cts', 'jsx', 'tsx'].filter((extension) => extension !== testExtension)];
-  const matches = [];
-  for (const sourceExtension of sourceExtensions) {
-    for (const candidate of [`src/${sourceRelative}.${sourceExtension}`, `src/${sourceRelative}/index.${sourceExtension}`]) {
-      try {
-        await accessPath(resolve(cwd, candidate));
-        matches.push(candidate);
-      } catch (error) {
-        if (error.code !== 'ENOENT') throw error;
-      }
-    }
-  }
-  return matches.length === 1 ? matches[0] : '';
-}
-
-async function findMissingFocusedPath(cwd, argumentsList, accessPath = access) {
-  const candidates = positionalArguments(argumentsList).filter(isTestPath);
-  for (const candidate of candidates) {
-    try {
-      await accessPath(resolve(cwd, candidate.replaceAll('\\', '/')));
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-      return candidate;
-    }
-  }
-  return '';
-}
-
-function positionalArguments(argumentsList) {
-  const values = [];
-  const valueOptions = new Set(VALUE_OPTIONS);
-  for (let index = 0; index < argumentsList.length; index += 1) {
-    const argument = argumentsList[index];
-    if (valueOptions.has(argument)) {
-      if (index + 1 >= argumentsList.length) throw new Error(`${argument} requires a value.`);
-      index += 1;
-      continue;
-    }
-    if (!argument.startsWith('-')) values.push(argument);
-  }
-  return values;
-}
-
-async function readCoverageGaps(cwd, output, write, readFilePath = readFile) {
-  for (const name of COVERAGE_CANDIDATES) {
-    let raw;
-    try {
-      raw = await readFilePath(resolve(cwd, name), 'utf8');
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-      continue;
-    }
-    try {
-      const json = JSON.parse(raw);
-      if (hasUsableCoverage(json)) return parseCoverageJson(json);
-      if (process.env.ELIWARE_TEST_DEBUG === '1') write(`Debug: Coverage candidate unusable: ${name}\n`);
-    } catch {
-      if (process.env.ELIWARE_TEST_DEBUG === '1') write(`Debug: Coverage candidate malformed: ${name}\n`);
-      continue;
-    }
-  }
-  if (process.env.ELIWARE_TEST_DEBUG === '1') write('Debug: Coverage source: validated text fallback after unusable JSON candidates.\n');
-  const textGaps = parseCoverage(output);
-  if (!hasTextCoverageEvidence(output)) throw new Error('Coverage evidence missing: Jest produced no usable JSON or text coverage report.');
-  return textGaps;
-}
-
-function hasTextCoverageEvidence(output) {
-  if (output.includes('[Output truncated:')) return false;
-  const lines = output.split(/\r?\n/);
-  const header = lines.some((line) => /^\s*File\s*\|\s*%\s*Stmts\s*\|\s*%\s*Branch\s*\|\s*%\s*Funcs\s*\|\s*%\s*Lines\s*\|/i.test(line));
-  const metric = '\\d+(?:\\.\\d+)?(?:%\\s*\\(\\d+\\s*\\/\\s*\\d+\\))?';
-  const row = lines.some((line) => new RegExp(`^\\s*[^|]+\\.(?:[cm]?[jt]s|jsx|tsx)\\s*\\|\\s*${metric}\\s*\\|\\s*${metric}\\s*\\|\\s*${metric}\\s*\\|\\s*${metric}(?:\\s*\\|.*)?\\s*$`).test(line));
-  return header && row;
-}
 
 export async function runLint({ cwd, write, runLintCommand, sanitizeEnv = false, accessPath = access, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   if (typeof cwd !== 'string' || typeof write !== 'function' || typeof runLintCommand !== 'function') {
@@ -291,55 +172,6 @@ export async function runLint({ cwd, write, runLintCommand, sanitizeEnv = false,
   return exitCode !== 0 || hasLintWarnings(lintOutput) ? EXIT_CODES.LINT_FAILURE : 0;
 }
 
-function formatIstanbulIgnoreFailure(violations) {
-  const details = violations.map(({ file, line }) => `  ${file}:${line}`).join('\n');
-  return `Istanbul ignore directives are only allowed in pure barrel files:\n${details}\n`;
-}
-
-function hasLintWarnings(output) {
-  const ansiPattern = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, 'g');
-  return output.split(/\r?\n/).some((line) => /(?:\b(?:warning|warn)\s*:|\b(?:oxlint|lint)\b.*\b(?:warning|warn)\b|\b(?:warning|warn)\b.*\b(?:found|violation|error)\b)/i.test(line.replace(ansiPattern, '')));
-}
-
-function hasUsableCoverage(json) {
-  const entries = json && typeof json === 'object' && !Array.isArray(json) ? Object.values(json) : [];
-  return entries.length > 0 && entries.every((data) => {
-    if (!data || typeof data !== 'object' || !data.statementMap || typeof data.statementMap !== 'object' || Array.isArray(data.statementMap)
-      || Object.keys(data.statementMap).length === 0 || !data.s || typeof data.s !== 'object'
-      || Object.keys(data.s).length === 0 || !data.b || typeof data.b !== 'object'
-      || !data.f || typeof data.f !== 'object') return false;
-    const statementCountsValid = Object.values(data.s).every((count) => Number.isFinite(count));
-    const statementKeysMatch = Object.keys(data.s).length === Object.keys(data.statementMap).length
-      && Object.keys(data.s).every((key) => Object.hasOwn(data.statementMap, key));
-    const branchCountsValid = Object.values(data.b).every((counts) => Array.isArray(counts) && counts.every((count) => Number.isFinite(count)));
-    const functionCountsValid = Object.values(data.f).every((count) => Number.isFinite(count));
-    const lineCountsValid = data.l === undefined || (data.l && typeof data.l === 'object' && !Array.isArray(data.l)
-      && Object.entries(data.l).every(([line, count]) => Number.isInteger(Number(line)) && Number(line) > 0 && Number.isFinite(count)));
-    return statementKeysMatch && statementCountsValid && branchCountsValid && functionCountsValid && lineCountsValid;
-  });
-}
-
-function formatFailure(stage, result) {
-  const lines = result.output.split(/\r?\n/).filter((line) => stage !== 'Tests' || !isCoverageNoise(line));
-  const seen = new Set();
-  const diagnostics = lines.filter((line) => {
-    if (!line.trim() || !seen.has(line)) {
-      seen.add(line);
-      return true;
-    }
-    return false;
-  }).join('\n');
-  return `${stage} failed (exit ${result.code})\n${diagnostics}`;
-}
-
-function isCoverageNoise(line) {
-  const ansiPattern = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, 'g');
-  const clean = line.replace(ansiPattern, '').trim();
-  return clean === 'Coverage report' || clean === 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #'
-    || /^-+(?:\s*\|\s*-+)+$/.test(clean)
-    || /^All files\s*\|/.test(clean)
-    || /\|\s*\d+(?:\.\d+)?%?(?:\s*\(\d+\/\d+\))?\s*\|/.test(clean);
-}
 
 async function warnIfMissingGitignore(cwd, write, accessPath) {
   try {
