@@ -12,6 +12,18 @@ describe('process helpers', () => {
     expect(result).toMatchObject({ code: 0, output: 'safe' });
   });
 
+  test('inherits the consumer environment by default for direct-Jest compatibility', async () => {
+    const name = 'ELIWARE_TEST_COMPATIBILITY_MARKER';
+    const previous = process.env[name];
+    process.env[name] = 'present';
+    try {
+      await expect(runProcess(process.execPath, ['-e', `process.stdout.write(process.env.${name})`], { cwd: process.cwd() })).resolves.toEqual({ code: 0, output: 'present' });
+    } finally {
+      if (previous === undefined) delete process.env[name];
+      else process.env[name] = previous;
+    }
+  });
+
   test('handles child error and late stream events safely', async () => {
     const child = new EventEmitter();
     child.stdout = new EventEmitter();

@@ -113,10 +113,11 @@ before relying on detailed behavior or limitations.
 
 ## Security
 
-The default mode uses the consumer's environment so project tooling works as
-expected. Do not run it against an untrusted workspace while sensitive
-credentials are available. Use `eliware-test --sanitize-env` when isolation is
-needed.
+The default mode intentionally uses the consumer's full environment, matching
+direct `npm test` and Jest behavior. This package does not change Jest or try
+to overcome its limitations. Do not run it against an untrusted workspace
+while sensitive credentials are available. Use `eliware-test --sanitize-env`
+when isolation is needed.
 
 ## Support
 

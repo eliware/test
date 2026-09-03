@@ -1,5 +1,10 @@
 #!/usr/bin/env node
 
+// Compatibility contract: this is a drop-in replacement for ordinary npm
+// test commands that invoke Jest directly. It intentionally does not change
+// Jest's behavior or attempt to overcome Jest limitations. If a project works
+// when Jest is invoked directly, this wrapper should preserve that behavior.
+
 import { HELP_TEXT, parseArguments } from '../src/arguments.mjs';
 import packageMetadata from '../package.json' with { type: 'json' };
 import { runJest, runNpm, runOxlint } from '../src/process.mjs';

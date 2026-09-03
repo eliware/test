@@ -19,6 +19,7 @@ export function runProcess(command, argumentsList, options) {
     let processError = '';
     const stdoutDecoder = new TextDecoder();
     const stderrDecoder = new TextDecoder();
+    // codescope ignore: intentional drop-in compatibility with direct npm/Jest execution; trusted consumer processes inherit the full environment by default, while --sanitize-env is the explicit isolation mode.
     // Intentional: the caller supplies the trusted consumer environment so npm and tool config resolve normally.
     const inheritedEnvironment = options.inheritEnv === false ? {} : process.env;
     const spawnProcess = options.spawn ?? spawn;

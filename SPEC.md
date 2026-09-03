@@ -160,10 +160,14 @@ Discovery and linting exclude `.git`, `node_modules`, `coverage`, `.nyc_output`,
 `test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
 produces a warning with recommended entries but does not fail validation.
 
-The default child environment is inherited so npm, Jest, Oxlint, and consumer
-configuration resolve normally. Consumers must not run default mode against an
-untrusted workspace while secrets are present. `--sanitize-env` is the
-supported isolation mode; an environment allowlist is not part of this release.
+The default child environment is inherited intentionally to preserve drop-in
+compatibility with a direct `npm test` command that invokes Jest. If a project
+works when Jest is invoked directly, this package should pass the same ambient
+environment through; it does not change Jest behavior, compensate for Jest
+limitations, or provide a new security boundary. Consumers must not run the
+default mode against an untrusted workspace while secrets are present.
+`--sanitize-env` is the explicit opt-in isolation mode. An environment
+allowlist and automatic secret redaction are not part of this release.
 
 Bundled Oxlint and npm invocations use Node's executable and supported
 package/runtime entrypoint contracts, preserving argument-array boundaries on
