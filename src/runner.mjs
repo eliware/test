@@ -5,9 +5,10 @@ import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
 import { findIstanbulIgnoreViolations } from './istanbul.mjs';
 import { EXIT_CODES } from './exit-codes.mjs';
-import { formatFailure, formatIstanbulIgnoreFailure, hasLintWarnings } from './runner/diagnostics.mjs';
+import { formatFailure, hasLintWarnings } from './runner/diagnostics.mjs';
 import { findMissingFocusedPath, focusedCoverageArguments, isTestPath } from './runner/focused-path-stage.mjs';
 import { COVERAGE_CANDIDATES, pureBarrelSuggestions, readCoverageGaps } from './runner/coverage-stage.mjs';
+import { checkWorkspace, configuredBuildScript } from './runner/workspace-stage.mjs';
 
 export async function runToolkit(options) {
   return runToolkitUnlocked(options);
@@ -21,12 +22,7 @@ async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, igno
   const effectiveRunInBand = runInBand && !disableInBand;
   const normalizedRunnerArguments = runnerArguments.filter((argument) => argument !== '--runInBand' && argument !== '--no-runInBand' && argument !== '--');
   try {
-    const violations = await findIstanbulIgnores(cwd);
-    if (violations.length > 0) {
-      write(formatIstanbulIgnoreFailure(violations));
-      return EXIT_CODES.ISTANBUL_POLICY;
-    }
-    await warnIfMissingGitignore(cwd, write, accessPath);
+    if (!await checkWorkspace(cwd, write, accessPath, findIstanbulIgnores)) return EXIT_CODES.ISTANBUL_POLICY;
   } catch (error) {
     write(`Workspace setup failed: ${error.message}\n`);
     return EXIT_CODES.WORKSPACE_SETUP;
@@ -129,31 +125,16 @@ async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, igno
   return 0;
 }
 
-async function configuredBuildScript(cwd, readFilePath) {
-  let raw;
-  try { raw = await readFilePath(resolve(cwd, 'package.json'), 'utf8'); }
-  catch (error) { if (error.code === 'ENOENT') return ''; throw error; }
-  const packageJson = JSON.parse(raw);
-  return typeof packageJson?.scripts?.build === 'string' && packageJson.scripts.build.trim() ? packageJson.scripts.build : '';
-}
-
 function isProtectedArgument(argument) {
   return MANAGED_OPTIONS
     .some((name) => argument === name || argument.startsWith(`${name}=`));
 }
-
-
 export async function runLint({ cwd, write, runLintCommand, sanitizeEnv = false, accessPath = access, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   if (typeof cwd !== 'string' || typeof write !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runLint requires cwd, write, and runLintCommand');
   }
   try {
-    const violations = await findIstanbulIgnores(cwd);
-    if (violations.length > 0) {
-      write(formatIstanbulIgnoreFailure(violations));
-      return EXIT_CODES.ISTANBUL_POLICY;
-    }
-    await warnIfMissingGitignore(cwd, write, accessPath);
+    if (!await checkWorkspace(cwd, write, accessPath, findIstanbulIgnores)) return EXIT_CODES.ISTANBUL_POLICY;
   } catch (error) {
     write(`Workspace setup failed: ${error.message}\n`);
     return EXIT_CODES.WORKSPACE_SETUP;
@@ -170,17 +151,4 @@ export async function runLint({ cwd, write, runLintCommand, sanitizeEnv = false,
   if (exitCode !== 0 || hasLintWarnings(lintOutput)) write(formatFailure('Lint', { ...lint, code: exitCode, output: lintOutput }));
   else write('Lint passed: 0 warnings\n');
   return exitCode !== 0 || hasLintWarnings(lintOutput) ? EXIT_CODES.LINT_FAILURE : 0;
-}
-
-
-async function warnIfMissingGitignore(cwd, write, accessPath) {
-  try {
-    await accessPath(resolve(cwd, '.gitignore'));
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      write('Warning: .gitignore is missing. Recommended entries: node_modules/, coverage/, test-results/, and *.tgz.\n');
-      return;
-    }
-    throw error;
-  }
 }
