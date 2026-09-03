@@ -1,6 +1,10 @@
 export interface ParsedArguments {
   lint: boolean;
   runnerArguments: string[];
+  help?: boolean;
+  version?: boolean;
+  ignoreCoverage?: boolean;
+  runInBand?: boolean;
 }
 
 /** Parse wrapper flags and the Jest arguments delegated by the CLI. */
