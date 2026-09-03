@@ -42,6 +42,10 @@ user-facing examples; this file resolves contract ambiguities.
 8. Run Oxlint with warnings denied.
 9. Run npm audit and npm pack through the CLI-wired collaborators.
 
+Build therefore runs after coverage and before lint; audit and pack run after
+lint. Audit and pack are wired by the executable, while direct advanced
+`runToolkit` callers may omit them.
+
 Stages stop at the first applicable failure. Direct advanced `runToolkit`
 callers may omit optional build, audit, or pack collaborators; the executable
 CLI supplies them. The package self-test proves tests, coverage, and lint; its
@@ -106,8 +110,10 @@ Stale candidates are removed before Jest runs. Missing, malformed, empty, or
 structurally unusable candidates advance to the next candidate; other read
 errors fail. The first usable candidate is authoritative and candidates are
 not merged. If none is usable, completed bounded Jest output is used only when
-it contains a structurally valid coverage table; otherwise validation fails
-closed.
+it contains a structurally valid coverage table. That completed child output,
+after pre-run candidate cleanup, is the intentional text-fallback trust
+boundary; provenance beyond the completed invocation is not claimed. Otherwise
+validation fails closed.
 
 JSON diagnostics are best-effort, while runner evidence validation is strict.
 Malformed counters are reported conservatively as uncovered. When an Istanbul
@@ -186,6 +192,9 @@ These are supported, documented limitations rather than hidden quality gates:
   unavailable; Windows CI supplies platform evidence.
 - Coverage text parsing is whole-buffer because captured input is bounded; no
   streaming parser or byte-level output limit is promised.
+- Text fallback cannot independently prove that a structurally valid table was
+  not emitted by consumer code; unrelated output that reproduces the Jest table
+  shape is outside the threat model.
 
 ## 9. Explicitly out of scope
 
@@ -204,6 +213,8 @@ This package does not promise or implement:
 - making incomplete JSON authoritative over a valid text report;
 - proving Windows behavior locally when its shim is unavailable; or
 - validating consumer build-script syntax before npm runs it.
+- proving that fallback text coverage originated from a specific reporter rather
+  than the completed child invocation's bounded output.
 
 ## 10. Fixtures, artifacts, migration, and release
 
