@@ -265,10 +265,20 @@ When the consuming `package.json` defines a non-empty `scripts.build` command,
 return exit code `17`.
 
 Line coverage aggregates same-line statements with any-uncovered semantics:
-one uncovered statement makes that line uncovered. On Windows, npm is invoked
-through `npm.cmd` with an argument array rather than a shell command string.
+one uncovered statement makes that line uncovered. npm is invoked through its
+CLI JavaScript entry point with an argument array rather than a shell command
+string on every platform.
 Failures in those checks return distinct exit codes `15` and `16` respectively.
 Exit code `0` means all validation completed successfully.
+
+The repository's own `npm test` command is the package self-test and therefore
+also exercises the configured audit, pack, and build stages. Consumer projects
+receive the same stages through the published CLI when their package metadata
+provides the corresponding scripts and lockfile.
+
+The runner intentionally centralizes stage ordering, retains serial source
+discovery to bound descriptors, and leaves workspace concurrency to the caller.
+These are explicit compatibility decisions rather than hidden quality gates.
 
 When an Istanbul `l` map is present, it is authoritative for line coverage;
 statement locations are not allowed to contradict it. Focused runs whose

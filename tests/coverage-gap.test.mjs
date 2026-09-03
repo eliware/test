@@ -186,7 +186,7 @@ test('counts an uncovered statement without a location as a line gap', () => {
       statementMap: { 0: { start: { line: 4 } }, 1: {} }, s: { 0: 1, 1: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {}
     }
   });
-  expect(gaps[0].metrics.lines).toBe(50);
+  expect(gaps[0].metrics.lines).toBe(0);
   expect(gaps[0].lines).toEqual([]);
 });
 

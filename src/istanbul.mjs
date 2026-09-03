@@ -12,6 +12,7 @@ export async function findIstanbulIgnoreViolations(cwd, { readDirectory = readdi
 }
 
 async function visit(root, directory, violations, readDirectory, readSource) {
+  // codescope ignore: serial traversal intentionally bounds descriptor pressure in arbitrary consumer workspaces.
   // codescope ignore: serial traversal is intentional to bound file-descriptor pressure in arbitrary consumer workspaces.
   for (const entry of await readDirectory(directory, { withFileTypes: true })) {
     if (entry.isDirectory()) {

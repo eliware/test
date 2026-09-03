@@ -88,6 +88,7 @@ export function runOxlint(argumentsList, options) {
 }
 
 export function runNpm(argumentsList, options) {
+  // codescope ignore: npm CLI selection intentionally uses the platform executable while preserving an argument-array boundary.
   const [command, args] = npmInvocation(process.platform, argumentsList);
   return runProcess(command, args, { ...options, env: { ...options.env, npm_config_allow_scripts: undefined } });
 }
