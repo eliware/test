@@ -1,381 +1,235 @@
-# Eliware standard testing toolkit
+# `@eliware/test` specification
 
-## Purpose
+## 1. Scope and status
 
-`@eliware/test` provides the shared baseline test tooling for Eliware Node.js
-projects and libraries. It keeps routine test, coverage, and lint behavior
-consistent across Linux and Windows while allowing each project to retain its
-own smoke, integration, regression, end-to-end, and other specialized tests.
+`@eliware/test` is the shared baseline for routine Jest execution, coverage
+enforcement, and Oxlint validation in Eliware Node.js projects. It is a
+development tool, not a replacement for project-specific smoke, integration,
+regression, end-to-end, deployment, or product tests.
 
-This package is a development standard, not a replacement for project-specific
-testing. A project must still define and run any tests required by its own
-runtime, API, deployment, or product behavior.
+This document is the normative contract for the published CLI. Statements
+using **must** or **must not** are requirements. **Intentional limitations**
+describe supported behavior that is deliberately constrained. **Out of scope**
+identifies behavior this package does not promise. The README provides
+user-facing examples; this file resolves contract ambiguities.
 
-Reducing routine test output is a primary design goal. These commands run
-frequently during AI-assisted development, so repetitive passing test output
-and already-complete coverage reports waste substantial context and token
-budget. The default output should be concise enough to remain useful in an
-interactive development session.
+## 2. Supported environment and package contract
 
-## Required project commands
+- Source and tests use native ESM and `.mjs` files; Node.js 26 or newer is
+  required.
+- Jest and Oxlint are runtime dependencies and are resolved from the consumer
+  workspace using their package contracts.
+- The package exposes the `eliware-test` executable and `@eliware/test` module.
+- Package metadata, lockfile, exports, declarations, README, release notes,
+  and packed-file allowlist must remain synchronized.
+- Consumers use `eliware-test` for `test` and `eliware-test --lint` for `lint`.
+  This repository invokes `node bin/eliware-test.mjs` because npm does not link
+  a package's own `bin` entry while running its scripts.
+- Process execution uses Node child-process APIs and argument arrays, not Unix
+  pipelines, shell quoting, `grep`, or platform-specific executable names.
 
-Projects adopting this toolkit use these scripts:
+## 3. CLI commands and lifecycle
 
-```json
-{
-  "scripts": {
-    "test": "eliware-test",
-    "lint": "eliware-test --lint"
-  }
-}
-```
+`eliware-test` runs these stages in order:
 
-`npm test` is the normal development and CI baseline. It runs the full unit
-test suite with coverage, reports only coverage gaps, and then runs lint. When
-everything passes and no gaps exist, it should print a short success summary,
-not the individual passing test names, verbose Jest report, or full coverage
-table.
+1. Scan the workspace for disallowed Istanbul-ignore directives.
+2. Check workspace setup and warn, without failing, when `.gitignore` is absent.
+3. Validate wrapper-managed and focused-path arguments.
+4. Remove stale coverage candidates.
+5. Run Jest with coverage.
+6. Select and validate coverage evidence.
+7. Run `npm run build` only when the consumer has a non-empty `scripts.build`.
+8. Run Oxlint with warnings denied.
+9. Run npm audit and npm pack through the CLI-wired collaborators.
 
-`npm run lint` runs lint only. It must fail on both lint errors and warnings.
-The baseline invokes Jest with `--runInBand` by default. An explicit
-`--no-runInBand` argument may disable that setting for a diagnostic run.
-Concurrent invocations that share one consumer working directory are not
-supported; callers must serialize runs per workspace so coverage cleanup and
-artifact selection remain unambiguous.
+Stages stop at the first applicable failure. Direct advanced `runToolkit`
+callers may omit optional build, audit, or pack collaborators; the executable
+CLI supplies them. The package self-test proves tests, coverage, and lint; its
+concise output is not evidence that consumer-only stages were visually printed.
 
-## Combined test behavior
+`--lint` runs only workspace policy, setup, and Oxlint. It rejects warnings and
+test arguments. `--help`/`-h` and `--version`/`-v` are terminal modes and do not
+run validation. Version output comes from `package.json`.
 
-The default `eliware-test` command must:
+Stable wrapper exit codes are: workspace setup `2`, Istanbul policy `3`,
+invalid argument `4`, focused-path validation `5`, missing focused path `6`,
+coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
+`10`, coverage gap `11`, lint startup `12`, lint failure `13`, internal failure
+`14`, audit failure `15`, pack failure `16`, and build failure `17`.
 
-1. Run the repository's configured Jest test suite with coverage enabled.
-2. Suppress individual passing test names, passing suite details, snapshots,
-   timing noise, and the full coverage table during successful runs.
-3. Preserve concise failure diagnostics, including the failed test names,
-   assertion messages, relevant stack traces, and the failing stage.
-4. Display a concise table containing only files with a statement, branch,
-   function, or line coverage value below 100%.
-5. Omit every file already at 100% statements, branches, functions, and lines.
-6. Fail when any coverage gap exists.
-7. Run Oxlint with warnings treated as failures.
-8. Suppress passing lint details and print only warnings/errors or a compact
-   success result.
-9. Fail if tests, coverage, or lint fail.
-10. Return a nonzero exit code for any failed stage.
+## 4. Arguments and focused tests
 
-Child-process output, including truncation metadata, is captured internally and
-bounded to 16 KiB of JavaScript string length (UTF-16 code units) so the
-normal command remains focused on actionable gaps; successful stages emit only
-a concise summary rather than streaming output verbatim. A missing consumer
-`.gitignore` may produce its non-failing warning before that summary. On failure, enough diagnostics
-must remain available to identify the failed stage and reproduce it. A successful
-run with no gaps should ideally be one or two lines, for example:
+- Wrapper-owned options (`--coverage`, `--detectOpenHandles`, `--silent`,
+  `--coverageReporters`, and `--runTestsByPath`) are rejected because the
+  baseline owns those guarantees.
+- `--runInBand` is accepted and normalized to the default. `--no-runInBand`
+  explicitly opts out for diagnostic runs.
+- `--ignore-100x4` skips enforcement only; tests, coverage collection, lint,
+  build, audit, and pack behavior otherwise remain unchanged.
+- `--sanitize-env` runs child tools with an empty base environment while
+  retaining explicitly supplied tool variables.
+- A standalone `--` separator is removed once before Jest invocation.
+- One shared metadata list defines supported Jest value options; their values
+  are never treated as positional focused paths.
+- Existing paths under conventional `tests/`, `test/`, or `spec/` directories
+  are checked before Jest starts. Missing paths fail clearly and never fall
+  back to the full suite. Bare filters and source-like arguments remain Jest's
+  responsibility.
+- When all positional selections are conventional test paths, the wrapper
+  passes `--runTestsByPath`. Mixed path/name/config filters retain Jest
+  semantics.
+
+## 5. Coverage enforcement
+
+Every in-scope implementation file must reach 100% statements, branches,
+functions, and lines independently. Coverage is a regression guard, not proof
+of behavioral correctness.
+
+### Text coverage
+
+The parser recognizes the standard Jest table, including CRLF and ANSI output,
+and reports only incomplete files. Zero-valued metrics are gaps. Percentage-only
+values are complete only when exactly `100%` (optional zeroes may follow).
+Annotated values must agree with their raw counter ratio after rounding to two
+decimal places; a displayed value below 100% remains a gap even if its ratio
+rounds to 100%. Malformed annotations and ratios fail closed as gaps.
+
+### Istanbul JSON coverage
+
+Candidates are considered in order:
+
+1. `coverage/coverage-final.json`
+2. `coverage/coverage.json`
+3. `coverage.json`
+
+Stale candidates are removed before Jest runs. Missing, malformed, empty, or
+structurally unusable candidates advance to the next candidate; other read
+errors fail. The first usable candidate is authoritative and candidates are
+not merged. If none is usable, completed bounded Jest output is used only when
+it contains a structurally valid coverage table; otherwise validation fails
+closed.
+
+JSON diagnostics are best-effort, while runner evidence validation is strict.
+Malformed counters are reported conservatively as uncovered. When an Istanbul
+`l` map exists, it is authoritative for line coverage. Statement, branch,
+function, and line metrics remain independent; malformed statement data does
+not rewrite valid `l` line data. An empty line map with no unknown lines has no
+measurable denominator and is complete for that metric. Multiple statements on
+one line make that line uncovered when any statement is uncovered.
+
+Focused file-only runs following the mirrored layout map `tests/foo.test.mjs`
+to `src/foo.mjs` only when exactly one supported source candidate exists. Zero
+or multiple candidates retain broad coverage enforcement. Debug mode reports
+this fallback; normal output remains concise.
+
+Coverage-gap diagnostics include normalized paths, four percentages, uncovered
+lines, statement/branch locations, function names and locations, and an
+actionable testing hint. Pure barrel files may be identified as suggestions;
+executable files must not be hidden with Istanbul-ignore comments.
+
+## 6. Output and diagnostics
+
+Successful child output controlled by the wrapper is suppressed and replaced by
+a concise summary. npm lifecycle notices and non-failing workspace warnings
+may still appear. Failures preserve the stage, useful test names, assertions,
+stacks, lint findings, and coverage details.
+
+Captured child diagnostics are bounded to 16 KiB of JavaScript string length,
+not bytes. Truncation is explicit, repeated failure lines are deduplicated,
+and absolute coverage paths are normalized relative to the workspace. Coverage
+gap details are rendered separately from the child-output bound. stdout and
+stderr are captured independently and combined without a promise of exact
+cross-stream temporal ordering. Decoder replacement is allowed for printable
+diagnostics.
+
+`ELIWARE_TEST_DEBUG=1` enables exact forwarded-Jest-argument and selected
+coverage-fallback diagnostics. Debug output is disabled by default. Bounded
+human-readable text plus the exit code is the stable diagnostics contract;
+structured diagnostics are not currently exposed.
+
+## 7. Workspace policy and process trust
+
+Discovery and linting exclude `.git`, `node_modules`, `coverage`, `.nyc_output`,
+`test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
+produces a warning with recommended entries but does not fail validation.
+
+The default child environment is inherited so npm, Jest, Oxlint, and consumer
+configuration resolve normally. Consumers must not run default mode against an
+untrusted workspace while secrets are present. `--sanitize-env` is the
+supported isolation mode; an environment allowlist is not part of this release.
+
+Bundled Oxlint and npm invocations use Node's executable and supported
+package/runtime entrypoint contracts, preserving argument-array boundaries on
+Windows and Unix-like systems. CI, rather than an unavailable local shim, is
+the authoritative source of required Windows evidence.
+
+## 8. Intentional limitations
+
+These are supported, documented limitations rather than hidden quality gates:
+
+- Coverage artifacts are workspace-global because they follow Jest's standard
+  report locations. Concurrent runs sharing a workspace are unsupported;
+  callers must serialize them. The runner creates no cross-process lock,
+  per-run artifact directory, or ownership token.
+- Istanbul policy discovery is complete and serial to bound descriptor pressure
+  in arbitrary consumer workspaces. No parallel traversal or startup bound is
+  promised.
+- `runToolkit` and `runLint` centralize stage sequencing and expose injected
+  filesystem/process seams for tests and composition. The CLI is the supported
+  consumer API.
+- Advanced collaborators may return incomplete results because runtime
+  normalization occurs at the boundary. These are typed composition seams, not
+  normal consumer setup.
+- Build-script syntax and executable availability are delegated to npm. The
+  runner detects only whether a non-empty build script is configured.
+- The local Windows npm-shim test is conditional when its generated shim is
+  unavailable; Windows CI supplies platform evidence.
+- Coverage text parsing is whole-buffer because captured input is bounded; no
+  streaming parser or byte-level output limit is promised.
+
+## 9. Explicitly out of scope
+
+This package does not promise or implement:
+
+- project-specific smoke, integration, regression, end-to-end, deployment, or
+  product workflows;
+- automatic cross-process locking or concurrent coverage isolation;
+- an inherited-environment allowlist or secret-redaction policy for consumer
+  code;
+- arbitrary Jest option discovery beyond the shared supported metadata;
+- structured diagnostics, machine-readable output, or an abort-signal API;
+- semantic merging of multiple coverage candidates;
+- coverage correctness beyond supplied producer evidence;
+- narrowing ambiguous focused source mappings by guessing a source;
+- making incomplete JSON authoritative over a valid text report;
+- proving Windows behavior locally when its shim is unavailable; or
+- validating consumer build-script syntax before npm runs it.
+
+## 10. Fixtures, artifacts, migration, and release
+
+Diagnostic fixtures may intentionally contain failing tests or uncovered
+branches, but they are excluded from the normal full suite and invoked only by
+explicit regression tests. Generated `coverage/`, `coverage.json`,
+`.nyc_output/`, `test-results/`, build output, package archives, and debug logs
+should be ignored. Ignoring generated output must never conceal a coverage gap.
+
+Consumer migration removes direct Jest/Oxlint development dependencies unless
+separately required, installs `@eliware/test`, updates `test` and `lint`, runs
+npm install, reviews the lockfile, and keeps specialized test tiers separate.
+TypeScript projects run typecheck when they ship declarations.
+
+The normal validation set is:
 
 ```text
-Tests passed | Coverage: 100×4 | Lint: 0 warnings
+node bin/eliware-test.mjs
+npm test
+npm run lint
+npm run typecheck
+npm audit --omit=dev --audit-level=moderate
+npm pack --dry-run
 ```
 
-The tool must never trade away failure information merely to reduce output.
-Generated coverage-gap details are rendered after capture and are not included
-in the child-output bound.
-Terminal process-error text may be included in the final bounded diagnostic;
-the truncation marker describes the bounded diagnostic buffer, not exact
-original omission accounting after that append.
-Text coverage metrics may include Jest raw-counter annotations such as
-`80% (4/5)`; the parser validates both the displayed percentage and the raw
-counter ratio.
-Annotated displayed percentages must equal the raw ratio rounded to two decimal
-places; additional fractional digits are rounded before comparison. A
-percentage-only value is complete only when it is exactly `100%` (optionally
-followed only by zeroes). Contradictory annotations are coverage gaps.
-For example, `99.995% (1/1)` remains a gap because its displayed value is below
-100%, even though it rounds to `100.00%`.
-Only numeric percentage syntax is accepted; malformed suffixes are coverage
-gaps. Direct JSON parsing remains best-effort and does not expose a separate
-malformed-entry status channel.
-The supported output contract is concise human-readable text; no structured
-diagnostic API is exposed.
-
-The public module exports include advanced orchestration functions intended for
-internal composition and testing. They require injected collaborators; normal
-consumers use the CLI.
-
-The runner must warn when the workspace lacks `.gitignore`, but must continue
-running. Discovery and linting must exclude `.git`, `node_modules`, `coverage`,
-`.nyc_output`, `test-results`, `dist`, `build`, and package archives by
-default. Child-process output must be captured and bounded to 16 KiB of
-JavaScript string length including truncation metadata; truncation must be explicit, repeated diagnostics
-deduplicated, and absolute coverage paths normalized to concise
-workspace-relative paths. The bound is intentionally not a byte-level limit.
-
-Child stdout and stderr are captured independently and combined for bounded
-diagnostics as data arrives. The runner does not promise to reconstruct exact
-cross-stream temporal ordering; preserving complete, bounded failure context
-and the per-stream content is the supported diagnostic contract.
-
-The advanced orchestration API exposes collaborator seams for tests and
-composition, but the supported consumer interface is the CLI. Process helpers
-remain private, and structured diagnostic objects are intentionally out of
-scope; the stable output contract is bounded human-readable text and the exit
-code. Child processes inherit the consumer environment by design, so callers
-must not invoke the tool against an untrusted workspace while secrets are
-present.
-
-Coverage evidence is read only from the documented candidate paths generated by
-the configured Jest run; alternate consumer-specific report locations are not
-part of the supported contract.
-
-When JSON candidates are unavailable, the bounded completed Jest output is the
-text fallback trust boundary. Structural coverage-table recognition is
-intentional; unrelated output that deliberately reproduces the documented Jest
-table shape is outside the runner's threat model.
-
-Coverage ratio parsing must accept integer counters of arbitrary decimal
-length with a positive total and a covered count no greater than the total;
-malformed ratios are gaps. Annotated percentages are compared after rounding
-to two decimal places.
-
-Argument forwarding diagnostics may be enabled with `ELIWARE_TEST_DEBUG=1` and
-must report the exact Jest arguments without changing execution. Debug output
-is disabled by default so routine agent and CI output remains bounded.
-
-## Standalone lint behavior
-
-`eliware-test --lint` runs only Oxlint from the consuming repository. It must
-use the repository's source tree as the lint target and must reject warnings;
-there is no warning-tolerant mode in the standard baseline.
-
-## Focused tests
-
-Arguments after `npm test --` are forwarded to the unit-test runner so a
-developer can run a focused test without invoking the entire suite, for
-example:
-
-```text
-npm test -- tests/client.test.mjs
-npm test -- -t "rejects invalid options"
-```
-
-Focused runs still use coverage and the same failure rules. The standalone
-lint command remains available when only linting is needed.
-
-The wrapper must validate supplied focused file-like paths before starting
-Jest. A missing path must fail clearly and must not result in an accidental
-full-suite run; ambiguous bare Jest arguments remain delegated to Jest.
-`--help` and `-h` must print concise usage
-guidance without running tests or lint.
-
-`--version` and `-v` must print the version declared in `package.json` and exit
-successfully without running tests, coverage, or lint.
-
-When all forwarded arguments are test paths, the runner must invoke Jest with
-`--runTestsByPath` so multiple focused files are selected exactly and no
-unrelated suites are admitted by pattern matching.
-
-The runner normalizes a standalone `--` separator once before focused-path
-validation and Jest invocation. This keeps advanced orchestration calls and CLI
-calls consistent; wrapper-owned options remain under the runner's control.
-
-## Cross-platform requirements
-
-The implementation must use Node.js APIs and child-process argument arrays.
-It must not depend on Unix shell pipelines, `grep`, shell quoting, or platform-
-specific executable names. It must work with npm's Windows command resolution,
-Windows CRLF output, Linux LF output, and ANSI-formatted runner output.
-
-Coverage parsing must recognize the standard Jest text table and determine
-gaps from all four metrics: statements, branches, functions, and lines. A
-summary that is numerically 100% but has raw uncovered counters must not be
-treated as complete.
-
-When multiple statements share a source line, that line is uncovered if any
-statement on it is uncovered; this keeps the displayed line list consistent
-with the statement-level diagnostic.
-
-## Coverage standard
-
-Every in-scope, non-barrel implementation file must reach:
-
-- 100% statements;
-- 100% branches;
-- 100% functions; and
-- 100% lines.
-
-Coverage is a regression feedback mechanism and an AI-development guardrail.
-It does not prove that behavior is correct and does not replace meaningful
-integration, regression, smoke, or end-to-end tests.
-
-## Project-specific tests
-
-The toolkit must not require or invent project-specific commands such as:
-
-- `test:unit`;
-- `test:smoke`;
-- `test:integration`;
-- `test:regression`; or
-- `test:e2e`.
-
-Projects that need those checks may define their own scripts and CI jobs. Their
-release and deployment procedures must document and run the applicable checks
-in addition to this baseline.
-
-## CI and release expectations
-
-CI must run the baseline on both Ubuntu and Windows. Lint warnings are failures
-and must block publication. Release validation must confirm the latest required
-Ubuntu and Windows checks passed before publishing.
-The repository CI workflow is the authoritative source for that cross-platform
-evidence; local platform-conditional tests do not replace those required jobs.
-
-The toolkit itself must test its command orchestration, failure propagation,
-coverage filtering, argument forwarding, ANSI/CRLF handling, and
-Windows/Linux process invocation behavior where the relevant platform shim is
-available; the required cross-platform evidence is supplied by CI.
-
-## Bundled baseline distribution
-
-`@eliware/test` is the single bundled baseline tool. Consumer repositories must
-not need direct Jest or Oxlint dependencies for the standard workflow.
-
-The package must:
-
-- use the scoped name `@eliware/test`;
-- declare the authoritative package version in `package.json` and synchronize
-  it with the lockfile for each release;
-- declare Jest and Oxlint as runtime dependencies bundled by the package;
-- expose the `eliware-test` executable;
-- include complete npm metadata, keywords, repository information, licensing,
-  and an explicit packed-file allowlist;
-- keep package metadata and the lockfile synchronized.
-
-The consumer standard scripts are:
-
-```json
-{
-  "scripts": {
-    "test": "eliware-test",
-    "lint": "eliware-test --lint"
-  }
-}
-```
-
-The toolkit repository may invoke its own executable through
-`node bin/eliware-test.mjs` because npm does not link a package's own `bin`
-entry during that package's scripts. Its `npm test` and `npm run lint` commands
-must nevertheless exercise the same self-entrypoint and behavior.
-
-## Existing-project migration
-
-Migration documentation must instruct project owners to:
-
-1. Remove direct Jest and Oxlint development dependencies unless they are
-   required by runtime code or a separate documented workflow.
-2. Install `@eliware/test` as a development dependency.
-3. Replace the standard `test` script with `eliware-test`.
-4. Replace the standard `lint` script with `eliware-test --lint`.
-5. Run `npm install` and review the synchronized lockfile.
-6. Keep smoke, integration, regression, and end-to-end checks project-defined
-   and separate from the baseline commands.
-
-## Generated coverage JSON
-
-After a successful Jest run, the toolkit should look for generated Istanbul/Jest
-JSON coverage in this order:
-
-1. `coverage/coverage-final.json`;
-2. `coverage/coverage.json`;
-3. `coverage.json`.
-
-Malformed or unusable candidates are skipped in this order; a candidate is
-usable only when every instrumented file and numeric counter map is valid. A
-missing candidate (`ENOENT`) also advances to the next candidate, while other
-filesystem read errors fail the run. The first usable current-run candidate
-wins, and text coverage is the final fallback.
-
-When available, JSON is the authoritative source for exact uncovered statement
-locations, branch locations, and function names. If no usable JSON exists, the
-tool falls back to the standard Jest text table. Stale generated JSON at the
-documented candidate paths must not be reused for a new run; callers must
-serialize runs in a workspace.
-
-Zero-valued numeric metrics in the text table are coverage gaps. A valid JSON
-document with no instrumented file entries is not usable coverage and must not
-override a usable text report. Non-finite or malformed counters are treated as
-uncovered consistently in direct parsing, while malformed JSON candidates are
-rejected as unusable. When `ELIWARE_TEST_DEBUG=1`, the runner reports that it
-selected the validated text fallback after unusable JSON candidates; normal
-output remains concise.
-
-Coverage-gap output should identify the affected file and exact uncovered
-locations, while successful output remains minimal.
-
-Captured child-process failure diagnostics are bounded to 16 KiB of JavaScript
-string length; formatted coverage-gap details are rendered outside that
-capture bound. The
-runner may therefore mark diagnostics as truncated when a child process emits
-more output; it must preserve the stage and enough leading diagnostics to
-identify the failure. Direct JSON parsing is diagnostic-only and best-effort;
-incomplete or unusable JSON must not be treated as authoritative coverage.
-
-If no usable coverage evidence is available, the runner must fail closed with
-an actionable coverage error rather than treat the run as complete.
-
-For file-only focused runs following the standard mirrored layout, the runner
-must pass matching `src` files through `--collectCoverageFrom`, limiting
-coverage enforcement to selected source files rather than imported
-dependencies. If any selected path cannot be mapped unambiguously, the runner
-must retain the broad coverage scope instead of weakening enforcement.
-
-## Intentional validation fixtures
-
-The toolkit may retain excluded fixtures for regression testing its diagnostics:
-
-- an intentionally failing test fixture verifies failed-test output;
-- a passing test with an uncovered branch verifies coverage-gap output.
-
-These fixtures must be excluded from the normal full suite and invoked only by
-explicit regression tests or validation commands. Their existence must not
-make the standard self-test fail.
-
-## Generated artifacts and repository hygiene
-
-Consumer repositories should ignore generated artifacts including:
-
-```gitignore
-node_modules/
-dist/
-build/
-coverage/
-.nyc_output/
-test-results/
-*.tgz
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-```
-
-Source tests, lockfiles, configuration, and intentionally shipped fixtures
-must remain trackable. Ignoring coverage output must never be used to conceal
-coverage gaps.
-
-## Documentation and contributor guidance
-
-The package must provide a README describing installation, migration, consumer
-commands, focused tests, coverage/lint behavior, generated artifacts, and the
-separation of project-specific test tiers. It must also provide `AGENTS.md`
-with contributor, package, validation, and migration guidance.
-
-## Explicit coverage opt-out
-
-`eliware-test --ignore-100x4` runs the normal test and lint stages while
-skipping coverage-gap enforcement. Coverage remains collected and successful
-output identifies `Coverage: ignored`. This opt-out is explicit and is not the
-standard CI behavior.
-
-Unsupported wrapper options must fail before Jest starts with a concise,
-actionable error and must never silently broaden a focused invocation.
-
-Wrapper-managed flags such as `--coverage`, `--silent`, and
-`--coverageReporters` are rejected because the baseline owns those guarantees.
-`--runInBand` is silently accepted and normalized to the default; use
-`--no-runInBand` for the explicit opt-out.
+CI must provide Ubuntu and Windows coverage. Lint warnings block publication,
+and release validation confirms required platform checks, package metadata,
+packed files, audit, typecheck, and self-test results before publication. No
+tag, publish, push, or deployment is implied by this specification.
