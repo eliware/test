@@ -29,18 +29,10 @@
     "bin": {
         "eliware-test": "./bin/eliware-test.mjs"
     },
-    "exports": {
-        ".": {
-            "types": "./index.d.ts",
-            "import": "./index.mjs"
-        }
-    },
     "files": [
         "bin",
         "src",
         "docs",
-        "index.mjs",
-        "index.d.ts",
         "README.md",
         "SPEC.md",
         "LICENSE",
@@ -54,7 +46,6 @@
         "test": "node bin/eliware-test.mjs",
         "test:timing": "node bin/eliware-test.mjs --debug-timing",
         "lint": "node bin/eliware-test.mjs --lint",
-        "typecheck": "tsc --noEmit",
         "pack": "npm pack --dry-run"
     },
     "jest": {

@@ -115,9 +115,8 @@ Use `eliware-test --help` for supported command forms. When invoking through
 npm, put Jest arguments after npm's `--` separator. Set
 `ELIWARE_TEST_DEBUG=1` only when troubleshooting argument forwarding.
 
-The package's stable interface is the CLI. The exported parser and orchestration
-functions are intended for advanced integrations and tests. See [`SPEC.md`](SPEC.md)
-before relying on detailed behavior or limitations.
+The package's stable interface is the CLI. See [`SPEC.md`](SPEC.md) for the
+complete behavior contract and limitations.
 
 ## Security
 

@@ -19,9 +19,9 @@ user-facing examples; this file resolves contract ambiguities.
   required.
 - Jest and Oxlint are runtime dependencies and are resolved from the consumer
   workspace using their package contracts.
-- The package exposes the `eliware-test` executable and `@eliware/test` module.
-- Package metadata, lockfile, exports, declarations, README, release notes,
-  and packed-file allowlist must remain synchronized.
+- The package exposes the `eliware-test` executable.
+- Package metadata, lockfile, README, release notes, and packed-file allowlist
+  must remain synchronized.
 - Consumers use `eliware-test` for `test` and `eliware-test --lint` for `lint`.
   This repository invokes `node bin/eliware-test.mjs` because npm does not link
   a package's own `bin` entry while running its scripts.
@@ -43,12 +43,10 @@ user-facing examples; this file resolves contract ambiguities.
 9. Run npm audit and npm pack through the CLI-wired collaborators.
 
 Build therefore runs after coverage and before lint; audit and pack run after
-lint. Audit and pack are wired by the executable, while direct advanced
-`runToolkit` callers may omit them.
+lint. Audit and pack are wired by the executable.
 
-Stages stop at the first applicable failure. Direct advanced `runToolkit`
-callers may omit optional build, audit, or pack collaborators; the executable
-CLI supplies them. The package self-test proves tests, coverage, and lint; its
+Stages stop at the first applicable failure. The package self-test proves
+tests, coverage, and lint; its
 concise output is not evidence that consumer-only stages were visually printed.
 
 `--lint` runs only workspace policy, setup, and Oxlint. It rejects warnings and
@@ -237,9 +235,8 @@ These are supported, documented limitations rather than hidden quality gates:
 - Istanbul policy discovery is complete and serial to bound descriptor pressure
   in arbitrary consumer workspaces. No parallel traversal or startup bound is
   promised.
-- `runToolkit` and `runLint` centralize stage sequencing and expose injected
-  filesystem/process seams for tests and composition. The CLI is the supported
-  consumer API.
+- The CLI centralizes stage sequencing and uses injected filesystem/process
+  seams internally. The CLI is the supported consumer API.
 - Advanced collaborators may return incomplete results because runtime
   normalization occurs at the boundary. These are typed composition seams, not
   normal consumer setup.
