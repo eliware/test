@@ -309,7 +309,7 @@ test('ignores unmapped covered statements for line gaps', () => {
       branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1, 2: 0 }
     } });
     expect(gaps[0].lines).toEqual([2]);
-    expect(gaps[0].metrics.lines).toBe(33.33);
+    expect(gaps[0].metrics.lines).toBe(50);
     expect(parseCoverageJson({ 'src/invalid-lines.mjs': {
       statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: []
     } })).toEqual([]);
@@ -323,14 +323,14 @@ test('ignores unmapped covered statements for line gaps', () => {
       statementMap: { 0: { start: { line: 1 } } }, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1 }
     } });
     expect(gaps[0].lines).toEqual([]);
-    expect(gaps[0].metrics.lines).toBe(0);
+    expect(gaps[0].metrics.lines).toBe(100);
   });
 
   test('does not let malformed statement counters hide an l-map line gap', () => {
     const gaps = parseCoverageJson({ 'src/inconsistent-lines.mjs': {
       statementMap: { 0: { start: { line: 1 } } }, s: { 0: 'invalid' }, branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: 1 }
     } });
-    expect(gaps[0].metrics.lines).toBe(0);
+    expect(gaps[0].metrics.lines).toBe(100);
   });
 
   test.each([
@@ -348,6 +348,13 @@ test('ignores unmapped covered statements for line gaps', () => {
     } });
     expect(gaps).toEqual([]);
     expect(percentageWithUnknowns(new Map(), 0)).toBe(0);
+  });
+
+  test('keeps mapped covered statements at 100% without an l map', () => {
+    const gaps = parseCoverageJson({ 'src/covered-line.mjs': {
+      statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {}
+    } });
+    expect(gaps).toEqual([]);
   });
 });
 
