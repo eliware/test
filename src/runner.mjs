@@ -13,7 +13,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: cancellation is intentionally owned by the invoking process; the CLI exposes no abort-signal contract.
 // codescope ignore: collaborator injection is intentionally an advanced internal composition seam; the CLI is the supported consumer interface.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
-export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   // codescope ignore: this is the deliberate single CLI policy boundary; stage sequencing is part of the public behavior.
   // codescope ignore: this function is the intentional single policy boundary for cleanup, execution, coverage, and lint sequencing.
   // codescope ignore: filesystem collaborator injection is an intentional internal test seam; consumers use the CLI.
@@ -103,6 +103,21 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   if (lint.code !== 0 || hasLintWarnings(lint.output)) {
     write(formatFailure('Lint', lint));
     return EXIT_CODES.LINT_FAILURE;
+  }
+  for (const [label, command, code] of [['Audit', runAudit, EXIT_CODES.AUDIT_FAILURE], ['Pack', runPack, EXIT_CODES.PACK_FAILURE]]) {
+    if (!command) continue;
+    let result;
+    try {
+      result = (await command(label === 'Audit' ? ['audit', '--omit=dev', '--audit-level=moderate', '--ignore-scripts'] : ['pack', '--dry-run', '--ignore-scripts'], { cwd, inheritEnv: !sanitizeEnv })) ?? {};
+    } catch (error) {
+      write(`${label} failed to start: ${error.message}\n`);
+      return code;
+    }
+    const normalized = { ...result, output: typeof result.output === 'string' ? result.output : '', code: Number.isInteger(result.code) ? result.code : 1 };
+    if (normalized.code !== 0) {
+      write(formatFailure(label, normalized));
+      return code;
+    }
   }
   write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;

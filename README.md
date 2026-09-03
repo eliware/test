@@ -252,7 +252,11 @@ does not replace the wrapper code.
 | 13 | Oxlint failure or warning |
 | 14 | Unexpected CLI/internal failure |
 
-Exit code `0` means validation completed successfully.
+After tests, coverage, and lint pass, `npm test` also runs
+`npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
+`npm pack --dry-run --ignore-scripts`.
+Failures in those checks return distinct exit codes `15` and `16` respectively.
+Exit code `0` means all validation completed successfully.
 
 Run `eliware-test --help` to inspect supported options. Use `ELIWARE_TEST_DEBUG=1` only when diagnosing argument forwarding, and verify that focused test paths exist before retrying a filtered run.
 

@@ -12,5 +12,7 @@ export const EXIT_CODES = Object.freeze({
   COVERAGE_GAP: 11,
   LINT_START: 12,
   LINT_FAILURE: 13,
-  INTERNAL: 14
+  INTERNAL: 14,
+  AUDIT_FAILURE: 15,
+  PACK_FAILURE: 16
 });

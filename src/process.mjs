@@ -86,3 +86,9 @@ export function runOxlint(argumentsList, options) {
   const oxlintPackage = resolveFromConsumer(options.cwd, 'oxlint/package.json');
   return runProcess(process.execPath, [resolve(dirname(oxlintPackage), 'bin/oxlint'), ...argumentsList], options);
 }
+
+export function runNpm(argumentsList, options) {
+  const command = process.env.ComSpec ?? 'npm';
+  const args = process.env.ComSpec ? ['/d', '/s', '/c', 'npm', ...argumentsList] : argumentsList;
+  return runProcess(command, args, { ...options, env: { ...options.env, npm_config_allow_scripts: undefined } });
+}

@@ -64,6 +64,35 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('Tests passed');
   });
 
+  test('runs audit and pack after lint', async () => {
+    const calls = [];
+    await expect(runToolkit({ ...base, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }), runAudit: async (args) => { calls.push(args); return { code: 0, output: '' }; }, runPack: async (args) => { calls.push(args); return { code: 0, output: '' }; } })).resolves.toBe(0);
+    expect(calls).toEqual([['audit', '--omit=dev', '--audit-level=moderate', '--ignore-scripts'], ['pack', '--dry-run', '--ignore-scripts']]);
+  });
+
+  test.each([
+    ['audit', { code: 1, output: 'audit failed' }, 15],
+    ['pack', { code: 1, output: 'pack failed' }, 16]
+  ])('blocks failed %s verification', async (stage, result, expected) => {
+    const runAudit = async () => stage === 'audit' ? result : { code: 0, output: '' };
+    const runPack = async () => stage === 'pack' ? result : { code: 0, output: '' };
+    await expect(runToolkit({ ...base, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }), runAudit, runPack })).resolves.toBe(expected);
+  });
+
+  test.each([
+    ['audit', 15],
+    ['pack', 16]
+  ])('reports %s verification startup failures', async (stage, expected) => {
+    const failing = async () => { throw new Error(`${stage} unavailable`); };
+    const runAudit = stage === 'audit' ? failing : async () => ({ code: 0, output: '' });
+    const runPack = stage === 'pack' ? failing : async () => ({ code: 0, output: '' });
+    await expect(runToolkit({ ...base, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }), runAudit, runPack })).resolves.toBe(expected);
+  });
+
+  test('fails when audit or pack returns an incomplete result', async () => {
+    await expect(runToolkit({ ...base, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }), runAudit: async () => null, runPack: async () => ({ code: 0, output: '' }) })).resolves.toBe(15);
+  });
+
   test('enforces raw-counter annotations in Jest text coverage', async () => {
     const messages = [];
     const annotatedGap = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n gap.mjs | 80% (4/5) | 100% (1/1) | 100% (1/1) | 80% (4/5) | 3';

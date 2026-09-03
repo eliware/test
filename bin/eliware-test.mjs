@@ -2,7 +2,7 @@
 
 import { HELP_TEXT, parseArguments } from '../src/arguments.mjs';
 import packageMetadata from '../package.json' with { type: 'json' };
-import { runJest, runOxlint } from '../src/process.mjs';
+import { runJest, runNpm, runOxlint } from '../src/process.mjs';
 import { runLint, runToolkit } from '../src/runner.mjs';
 import { EXIT_CODES } from '../src/exit-codes.mjs';
 
@@ -18,7 +18,7 @@ try {
     const common = { cwd: process.cwd(), write: (message) => process.stdout.write(message) };
     process.exitCode = options.lint
       ? await runLint({ ...common, sanitizeEnv: options.sanitizeEnv, runLintCommand: runOxlint })
-      : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, sanitizeEnv: options.sanitizeEnv, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint });
+      : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, sanitizeEnv: options.sanitizeEnv, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint, runAudit: runNpm, runPack: runNpm });
   }
 } catch (error) {
   // codescope ignore: import and process-startup failures are defensive top-level handling; collaborator failures are covered by runner tests.

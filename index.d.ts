@@ -46,6 +46,8 @@ export interface ProcessOptions { cwd: string; inheritEnv: boolean }
 export interface LintOptions {
   cwd: string; write: (message: string) => void; sanitizeEnv?: boolean;
   runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
+  runAudit?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
+  runPack?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
   accessPath?: (path: string) => Promise<void>;
 }
 export interface ToolkitOptions {
@@ -66,5 +68,5 @@ export function findIstanbulIgnoreViolations(cwd: string): Promise<Array<{ file:
 export const EXIT_CODES: Readonly<{
   WORKSPACE_SETUP: 2; ISTANBUL_POLICY: 3; INVALID_ARGUMENT: 4; FOCUSED_PATH_VALIDATION: 5;
   FOCUSED_PATH_MISSING: 6; COVERAGE_CLEANUP: 7; TEST_START: 8; TEST_FAILURE: 9;
-  COVERAGE_FAILURE: 10; COVERAGE_GAP: 11; LINT_START: 12; LINT_FAILURE: 13; INTERNAL: 14;
+  COVERAGE_FAILURE: 10; COVERAGE_GAP: 11; LINT_START: 12; LINT_FAILURE: 13; INTERNAL: 14; AUDIT_FAILURE: 15; PACK_FAILURE: 16;
 }>;
