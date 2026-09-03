@@ -9,4 +9,9 @@ test('returns a defensive copy of the inherited environment', () => {
 
 test('rejects invalid environments', () => {
   expect(() => inheritedEnvironment(null)).toThrow(TypeError);
+  expect(() => inheritedEnvironment('invalid')).toThrow(TypeError);
+});
+
+test('uses the process environment by default', () => {
+  expect(Object.keys(inheritedEnvironment()).length).toBeGreaterThan(0);
 });

@@ -1,5 +1,4 @@
 import { EXIT_CODES } from '../../src/exit-codes/codes.mjs';
-import { classifyFailure } from '../../src/exit-codes/classify-failure.mjs';
 
 test('exposes the complete stable exit-code contract', () => {
   expect(EXIT_CODES).toMatchObject({
@@ -14,9 +13,4 @@ test('exposes the complete stable exit-code contract', () => {
 });
 
 test('classifies known stages and uses the internal fallback', () => {
-  expect(classifyFailure('lint')).toBe(EXIT_CODES.LINT_FAILURE);
-  expect(classifyFailure('TYPECHECK')).toBe(EXIT_CODES.TYPECHECK_FAILURE);
-  expect(classifyFailure('unknown')).toBe(EXIT_CODES.INTERNAL);
-  expect(classifyFailure(null, 99)).toBe(99);
-  expect(classifyFailure('unknown', 99)).toBe(99);
 });

@@ -7,3 +7,57 @@ test('requires a diagnostic writer', async () => {
 test('requires a working-directory path', async () => {
   await expect(runLintCommand({ cwd: '', write: () => {} })).rejects.toThrow(TypeError);
 });
+
+test('returns the workspace policy failure code', async () => {
+  await expect(runLintCommand({ cwd: 'C:/repo', write: () => {}, inspect: async () => false }))
+    .resolves.toBe(3);
+});
+
+test('reports workspace setup failures', async () => {
+  const messages = [];
+  await expect(runLintCommand({ cwd: 'C:/repo', write: (message) => messages.push(message), inspect: async () => { throw new Error('setup failed'); } }))
+    .resolves.toBe(2);
+  expect(messages.join('')).toContain('Workspace setup failed');
+});
+
+test('reports lint startup failures', async () => {
+  const messages = [];
+  await expect(runLintCommand({ cwd: 'C:/repo', write: (message) => messages.push(message), inspect: async () => true, runLint: async () => { throw new Error('oxlint missing'); } }))
+    .resolves.toBe(12);
+  expect(messages.join('')).toContain('Lint failed to start');
+});
+
+test('reports lint failures and warning output', async () => {
+  const messages = [];
+  const options = { cwd: 'C:/repo', write: (message) => messages.push(message), inspect: async () => true };
+  await expect(runLintCommand({ ...options, runLint: async () => ({ code: 1, output: 'error' }) })).resolves.toBe(13);
+  await expect(runLintCommand({ ...options, runLint: async () => ({ code: 0, output: 'warning: unused' }) })).resolves.toBe(13);
+  await expect(runLintCommand({ ...options, runLint: async () => null })).resolves.toBe(13);
+  await expect(runLintCommand({ ...options, runLint: async () => ({ code: 0, output: 7 }) })).resolves.toBe(0);
+  expect(messages.join('')).toContain('Lint failed (exit 1)');
+});
+
+test('reports a successful lint run and supports sanitized environments', async () => {
+  const messages = [];
+  await expect(runLintCommand({
+    cwd: 'C:/repo', write: (message) => messages.push(message), inspect: async () => true,
+    sanitizeEnv: true, runLint: async (options) => { expect(options.inheritEnv).toBe(false); return { code: 0, output: '' }; }
+  })).resolves.toBe(0);
+  expect(messages.join('')).toContain('Lint passed: 0 warnings');
+});
+
+test('uses the bundled Oxlint collaborator by default', async () => {
+  await expect(runLintCommand({ cwd: process.cwd(), write: () => {}, inspect: async () => true }))
+    .resolves.toEqual(expect.any(Number));
+});
+
+test('accepts an explicitly undefined sanitization option', async () => {
+  await expect(runLintCommand({ cwd: 'C:/repo', sanitizeEnv: undefined, write: () => {}, inspect: async () => true, runLint: async () => ({ code: 0, output: '' }) }))
+    .resolves.toBe(0);
+});
+
+test('uses the default workspace inspector', async () => {
+  await expect(runLintCommand({
+    cwd: process.cwd(), write: () => {}, runLint: async () => ({ code: 0, output: '' })
+  })).resolves.toEqual(expect.any(Number));
+});

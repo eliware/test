@@ -1,5 +1,4 @@
 import { access } from 'node:fs/promises';
-import { resolve } from 'node:path';
 import { findIstanbulIgnoreViolations } from './policy/istanbul-ignore-policy.mjs';
 import { checkGitignorePolicy } from './policy/gitignore-policy.mjs';
 

@@ -9,3 +9,17 @@ test('skips option values', () => {
   expect(VALUE_OPTIONS).toContain('--config');
   expect(extractFocusedPaths(['-t', 'tests/a.test.mjs', 'tests/b.test.mjs'])).toEqual(['tests/b.test.mjs']);
 });
+
+test('rejects malformed argument lists and missing option values', () => {
+  expect(() => extractFocusedPaths(null)).toThrow(TypeError);
+  expect(() => extractFocusedPaths(['--config'])).toThrow('--config requires a value.');
+  expect(extractFocusedPaths(['--watch'])).toEqual([]);
+});
+
+test('rejects non-concrete test path candidates', () => {
+  expect(isFocusedTestPath(null)).toBe(false);
+  expect(isFocusedTestPath('-tests/a.test.mjs')).toBe(false);
+  expect(isFocusedTestPath('tests/*.test.mjs')).toBe(false);
+  expect(isFocusedTestPath('tests/a.txt')).toBe(false);
+  expect(isFocusedTestPath('src/a.test.mjs')).toBe(false);
+});

@@ -2,6 +2,12 @@ import { runTypecheck } from '../../../src/validation/typecheck/run-typecheck.mj
 
 const context = (overrides = {}) => ({ cwd: 'C:/repo', sanitizeEnv: false, write: () => {}, ...overrides });
 
+test('requires a context object and skips unconfigured checks', async () => {
+  await expect(runTypecheck(null, 'typecheck')).rejects.toThrow('requires a context');
+  await expect(runTypecheck(context(), '')).resolves.toBe(0);
+  await expect(runTypecheck(context(), 'typecheck')).resolves.toBe(0);
+});
+
 test('runs configured typecheck successfully', async () => {
   const calls = [];
   await expect(runTypecheck(context({ runTypecheck: async (...args) => { calls.push(args); return { code: 0, output: '' }; } }), 'typecheck')).resolves.toBe(0);

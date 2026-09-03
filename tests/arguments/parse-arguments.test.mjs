@@ -2,6 +2,12 @@ import { HELP_TEXT, parseArguments } from '../../src/arguments/parse-arguments.m
 import { formatCoverageGaps, metricHasGap, parseCoverage, parseCoverageJson, percentageWithUnknowns } from '../../src/coverage/coverage.mjs';
 
 describe('parseArguments', () => {
+  test('uses empty arguments by default and enables timing when requested', () => {
+    expect(parseArguments()).toEqual({ lint: false, runnerArguments: [] });
+    expect(parseArguments(['--debug-timing'])).toEqual({ lint: false, debugTiming: true, runnerArguments: [] });
+    expect(() => parseArguments(null)).toThrow(TypeError);
+  });
+
   test('detects standalone lint mode', () => {
     expect(parseArguments(['--lint'])).toEqual({ lint: true, runnerArguments: [] });
   });
@@ -408,5 +414,3 @@ test('reports malformed function counters as a safe coverage gap', () => {
   expect(() => parseCoverageJson(json)).not.toThrow();
   expect(parseCoverageJson(json)[0].functions).toEqual([{ type: 'function', name: 'unknown' }]);
 });
-
-

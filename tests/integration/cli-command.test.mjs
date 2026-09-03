@@ -7,7 +7,7 @@ function runCli(...argumentsList) {
   const cwd = argumentsList[0]?.cwd ?? resolve('test-fixtures/cli-success');
   const cliArguments = argumentsList[0]?.cwd ? argumentsList.slice(1) : argumentsList;
   return new Promise((resolveResult) => {
-    const child = spawn(process.execPath, [resolve('test2/bin/eliware-test.mjs'), ...cliArguments], { cwd });
+    const child = spawn(process.execPath, [resolve('bin/eliware-test.mjs'), ...cliArguments], { cwd });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (chunk) => { stdout += chunk; });

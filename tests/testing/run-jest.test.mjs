@@ -5,5 +5,18 @@ test('exports the Jest executor', () => {
 });
 
 test('rejects malformed invocation options', async () => {
+  await expect(runJest(null, { cwd: process.cwd() })).rejects.toThrow('argument array');
   await expect(runJest([], {})).rejects.toThrow('requires cwd');
+});
+
+test('runs Jest with in-band execution by default', async () => {
+  await expect(runJest(['--version'], { cwd: process.cwd() }))
+    .resolves.toMatchObject({ code: 0, output: expect.stringMatching(/\d+\./) });
+});
+
+test('preserves explicit execution mode choices', async () => {
+  await expect(runJest(['--version', '--runInBand'], { cwd: process.cwd() }))
+    .resolves.toMatchObject({ code: 0 });
+  await expect(runJest(['--version'], { cwd: process.cwd(), runInBand: false }))
+    .resolves.toMatchObject({ code: 0 });
 });

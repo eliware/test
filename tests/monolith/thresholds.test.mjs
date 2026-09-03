@@ -12,5 +12,8 @@ test('detects only counts above the threshold', () => {
 
 test('rejects unknown categories and invalid counts', () => {
   expect(() => thresholdFor('unknown')).toThrow(TypeError);
+  expect(() => thresholdFor(null)).toThrow(TypeError);
   expect(() => exceedsThreshold(-1, 'test')).toThrow(TypeError);
+  expect(() => thresholdFor('source', { source: 0, test: 1 })).toThrow('Invalid monolith threshold');
+  expect(exceedsThreshold(6, 'source', { source: 5, test: 5 })).toBe(true);
 });

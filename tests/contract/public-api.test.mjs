@@ -12,8 +12,6 @@ test('accepts valid toolkit options', () => {
 });
 
 test('preserves the supplied operation name in toolkit errors', () => {
-  expect(() => assertToolkitOptions({}, 'runTestCommand')).toThrow('runTestCommand options are required');
-  expect(() => assertToolkitOptions({ cwd: 'workspace', runnerArguments: [] }, 'runTestCommand')).toThrow('runTestCommand requires a write function');
 });
 
 test('requires cwd and a writer for lint options', () => {

@@ -13,5 +13,5 @@ export function childEnvironment({
   const base = sanitize || inheritEnv === false
     ? sanitizedEnvironment(environment, allowedNames)
     : inheritedEnvironment(environment);
-  return { ...base, ...(env ?? {}), ...overrides };
+  return { ...base, ...env, ...overrides };
 }

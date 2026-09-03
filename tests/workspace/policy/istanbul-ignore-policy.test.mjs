@@ -34,7 +34,10 @@ test('reports Istanbul ignores in executable modules with line numbers', async (
 
 test('scans supported source extensions and skips generated directories', async () => {
   await mkdir(join(fixture, 'coverage'), { recursive: true });
+  await mkdir(join(fixture, 'nested'), { recursive: true });
   await writeFile(join(fixture, 'coverage', 'generated.mjs'), `/* ${directive('istanbul', 'ignore', 'file')} */\n`);
+  await writeFile(join(fixture, 'nested', 'clean.mjs'), 'export const value = 1;\n');
+  await writeFile(join(fixture, 'notes.txt'), `/* ${directive('istanbul', 'ignore', 'file')} */\n`);
   await writeFile(join(fixture, 'module.ts'), `/* ${directive('istanbul', 'ignore', 'else')} */\nexport const value = 1;\n`);
   await expect(findIstanbulIgnoreViolations(fixture)).resolves.toEqual([{ file: 'module.ts', line: 1 }]);
 });
@@ -47,5 +50,3 @@ test('does not classify comment-only files or executable exports as pure barrels
     { file: 'value.mjs', line: 1 }
   ]);
 });
-
-

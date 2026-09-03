@@ -18,7 +18,7 @@ export function runChildProcess(command, argumentsList = [], options = {}) {
     const capture = createOutputCapture();
     let settled = false;
     let processError = '';
-    const finish = (code, errorMessage = '') => {
+    const finish = (code, errorMessage) => {
       if (settled) return;
       settled = true;
       resolveResult({ code, output: capture.finish(errorMessage) });

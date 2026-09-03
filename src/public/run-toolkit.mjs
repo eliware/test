@@ -11,20 +11,13 @@ import { formatFailure } from '../diagnostics/format-failure.mjs';
 import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
 import { configuredScript } from '../validation/common/configured-script.mjs';
 import { detectBuildScript } from '../validation/build/detect-script.mjs';
-import { runBuild } from '../validation/build/run-build.mjs';
-import { detectTypecheckScript } from '../validation/typecheck/detect-script.mjs';
-import { runTypecheck } from '../validation/typecheck/run-typecheck.mjs';
-import { runOxlint } from '../validation/lint/run-oxlint.mjs';
-import { detectWarnings } from '../validation/lint/detect-warnings.mjs';
-import { runAudit } from '../validation/package/run-audit.mjs';
-import { runPack } from '../validation/package/run-pack.mjs';
 import { detectViolations } from '../monolith/detect-violations.mjs';
 import { formatMonolithViolations } from '../diagnostics/format-monolith-violations.mjs';
-import { runChildProcess } from '../processes/run-child-process.mjs';
 import { readCoverage } from '../coverage/read-coverage.mjs';
 import { formatGaps } from '../coverage/format-gaps.mjs';
 import { createTiming } from '../diagnostics/timing.mjs';
 import { formatTestTimings } from '../diagnostics/format-test-timings.mjs';
+import { runChildProcess } from '../processes/run-child-process.mjs';
 
 const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
@@ -64,7 +57,7 @@ export async function runToolkit(options) {
   catch (error) { write(`Tests failed to start: ${error.message}\n`); return EXIT_CODES.TEST_START; }
   const testResult = { ...test, code: Number.isInteger(test?.code) ? test.code : 1, output: typeof test?.output === 'string' ? test.output : '' };
   if (timingOutput) {
-    try { write(formatTestTimings(JSON.parse(await readFile(timingOutput, 'utf8')))); } catch { /* Jest may fail before producing a report. */ }
+    try { write(formatTestTimings(JSON.parse(await readFilePath(timingOutput, 'utf8')))); } catch { /* Jest may fail before producing a report. */ }
     await removePath(timingOutput, { force: true });
   }
   if (testResult.code !== 0) { write(formatFailure('Tests', testResult)); return EXIT_CODES.TEST_FAILURE; }
@@ -77,7 +70,7 @@ export async function runToolkit(options) {
     }
   }
   timing.step('Coverage', 'build');
-  const context = { cwd, sanitizeEnv, write, runBuild: build, runTypecheck: typecheck, runLintCommand, runAudit: audit, runPack: pack };
+  const context = { cwd, sanitizeEnv, write, runBuild: build, runTypecheck: typecheck, runLintCommand, runAudit: audit, runPack: pack, runChildProcess };
   const buildScript = await detectBuildScript(cwd, readFilePath);
   const typecheckScript = await configuredScript(cwd, 'typecheck', readFilePath);
   let code = 0;
@@ -94,8 +87,14 @@ export async function runToolkit(options) {
   const lint = resultCode(await runLintCommand({ cwd, write, sanitizeEnv }));
   if (lint) return lint;
   timing.step('Lint', 'package checks');
-  code = resultCode(await (typeof audit === 'function' ? audit(context) : runAudit(context))); if (code) return code;
-  code = resultCode(await (typeof pack === 'function' ? pack(context) : runPack(context))); if (code) return code;
+  if (typeof audit === 'function') {
+    code = resultCode(await audit(context));
+    if (code) return code;
+  }
+  if (typeof pack === 'function') {
+    code = resultCode(await pack(context));
+    if (code) return code;
+  }
   timing.step('Package checks', 'monolith validation');
   if (enforceMonolithLimits) {
     try {
@@ -117,8 +116,4 @@ export async function runToolkit(options) {
 function resultCode(result) {
   if (Number.isInteger(result)) return result;
   return Number.isInteger(result?.code) ? result.code : 1;
-}
-
-async function runNpm(argumentsList, options) {
-  return runChildProcess(process.execPath, [process.env.npm_execpath ?? 'npm', ...argumentsList], options);
 }

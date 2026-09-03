@@ -6,3 +6,9 @@ test('creates focused coverage arguments for mapped files', async () => {
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
   })).resolves.toEqual(['--collectCoverageFrom', 'src/a.mjs']);
 });
+
+test('returns no coverage arguments when focused tests have no source mapping', async () => {
+  await expect(resolveFocusedCoverage('C:/repo', ['tests/unknown.test.mjs'], async () => {
+    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+  })).resolves.toEqual([]);
+});
