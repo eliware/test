@@ -88,7 +88,7 @@ test('reports a function-only coverage gap', () => {
       fnMap: { 0: { loc: { start: { line: 2 } }, name: 'missed' } }, f: { 0: 0 }
     }
   });
-  expect(gaps[0].metrics.functions).toBe(0);
+    expect(gaps[0].metrics.functions).toBe(0);
   expect(gaps[0].functions[0].name).toBe('missed');
 });
 
@@ -111,6 +111,7 @@ test('treats malformed scalar metric maps as uncovered', () => {
   });
   expect(gaps[0].metrics.branches).toBe(0);
   expect(gaps[0].metrics.functions).toBe(0);
+  expect(gaps[0].branches).toEqual([{ type: 'branch' }]);
 });
 
 test('uses a generic type for uncovered branches without type metadata', () => {

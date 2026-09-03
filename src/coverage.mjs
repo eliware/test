@@ -89,8 +89,10 @@ export function parseCoverageJson(json) {
   for (const [file, data] of Object.entries(json)) {
     if (!data || typeof data !== 'object' || !data.statementMap) continue;
     const statements = locationsForCounts(data.statementMap, data.s);
-    const branches = Object.entries(data.b ?? {}).flatMap(([id, counts]) => {
-      if (!Array.isArray(counts)) return [];
+    const branches = data.b !== undefined && (typeof data.b !== 'object' || Array.isArray(data.b))
+      ? [{ type: 'branch' }]
+      : Object.entries(data.b ?? {}).flatMap(([id, counts]) => {
+      if (!Array.isArray(counts)) return [{ type: 'branch' }];
       const branch = data.branchMap?.[id];
       if (branch?.type === 'default-arg') return [];
       if (!branch || typeof branch !== 'object') return counts.filter((count) => !isCoveredCount(count)).map(() => ({ type: 'branch' }));
@@ -99,7 +101,7 @@ export function parseCoverageJson(json) {
         if (isCoveredCount(count)) return [];
         return [{ ...location, type: branch.type ?? 'branch' }];
       });
-    });
+      });
     const functionCounters = data.f === undefined || data.f === null
       ? {}
       : (typeof data.f === 'object' && !Array.isArray(data.f) ? data.f : null);
