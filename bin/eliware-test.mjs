@@ -23,7 +23,7 @@ try {
     const common = { cwd: process.cwd(), write: (message) => process.stdout.write(message) };
     process.exitCode = options.lint
       ? await runLint({ ...common, sanitizeEnv: options.sanitizeEnv, runLintCommand: runOxlint })
-      : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, ignoreMonolithLimits: options.ignoreMonolithLimits, enforceMonolithLimits: true, sanitizeEnv: options.sanitizeEnv, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint, runBuild: runNpm, runAudit: runNpm, runPack: runNpm });
+      : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, ignoreMonolithLimits: options.ignoreMonolithLimits, enforceMonolithLimits: true, sanitizeEnv: options.sanitizeEnv, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint, runBuild: runNpm, runTypecheck: runNpm, runAudit: runNpm, runPack: runNpm });
   }
 } catch (error) {
   process.stderr.write(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);

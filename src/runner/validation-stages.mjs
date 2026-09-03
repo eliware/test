@@ -12,6 +12,16 @@ export async function runBuildStage(context, buildScript) {
   return normalized.code === 0 ? 0 : EXIT_CODES.BUILD_FAILURE;
 }
 
+export async function runTypecheckStage(context, typecheckScript) {
+  if (!typecheckScript || !context.runTypecheck) return 0;
+  let result;
+  try { result = (await context.runTypecheck(['run', 'typecheck'], { cwd: context.cwd, inheritEnv: !context.sanitizeEnv })) ?? {}; }
+  catch (error) { context.write(`Typecheck failed to start: ${error.message}\n`); return EXIT_CODES.TYPECHECK_FAILURE; }
+  const normalized = normalizeResult(result);
+  if (normalized.code !== 0) context.write(formatFailure('Typecheck', normalized));
+  return normalized.code === 0 ? 0 : EXIT_CODES.TYPECHECK_FAILURE;
+}
+
 export async function runLintStage(context) {
   let result;
   try { result = (await context.runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd: context.cwd, inheritEnv: !context.sanitizeEnv })) ?? {}; }

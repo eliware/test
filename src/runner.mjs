@@ -8,8 +8,8 @@ import { EXIT_CODES } from './exit-codes.mjs';
 import { formatFailure, hasLintWarnings } from './runner/diagnostics.mjs';
 import { findMissingFocusedPath, focusedCoverageArguments, isTestPath } from './runner/focused-path-stage.mjs';
 import { COVERAGE_CANDIDATES, pureBarrelSuggestions, readCoverageGaps } from './runner/coverage-stage.mjs';
-import { checkWorkspace, configuredBuildScript } from './runner/workspace-stage.mjs';
-import { runBuildStage, runLintStage, runPackageStages } from './runner/validation-stages.mjs';
+import { checkWorkspace, configuredBuildScript, configuredScript } from './runner/workspace-stage.mjs';
+import { runBuildStage, runLintStage, runPackageStages, runTypecheckStage } from './runner/validation-stages.mjs';
 import { findMonolithViolations } from './monolith/validate.mjs';
 import { formatMonolithViolations } from './monolith/diagnostics.mjs';
 import { MONOLITH_EXIT_CODE } from './monolith/constants.mjs';
@@ -18,7 +18,7 @@ export async function runToolkit(options) {
   return runToolkitUnlocked(options);
 }
 
-async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false, enforceMonolithLimits = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations, findMonolith = findMonolithViolations }) {
+async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false, enforceMonolithLimits = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runTypecheck, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations, findMonolith = findMonolithViolations }) {
   if (typeof cwd !== 'string' || !Array.isArray(runnerArguments) || typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runToolkit requires cwd, runnerArguments, write, runTest, and runLintCommand');
   }
@@ -91,9 +91,11 @@ async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, igno
   let buildScript;
   try { buildScript = await configuredBuildScript(cwd, readFilePath); }
   catch (error) { write(`Build configuration failed: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
-  const stageContext = { cwd, sanitizeEnv, write, runBuild, runLintCommand, runAudit, runPack };
+  const stageContext = { cwd, sanitizeEnv, write, runBuild, runTypecheck, runLintCommand, runAudit, runPack };
   const buildCode = await runBuildStage(stageContext, buildScript);
   if (buildCode !== 0) return buildCode;
+  const typecheckCode = await runTypecheckStage(stageContext, await configuredScript(cwd, 'typecheck', readFilePath));
+  if (typecheckCode !== 0) return typecheckCode;
   const lintCode = await runLintStage(stageContext);
   if (lintCode !== 0) return lintCode;
   const packageCode = await runPackageStages(stageContext);

@@ -57,7 +57,11 @@ describe('runner orchestration', () => {
   });
 
   test('continues after an enabled monolith check with no violations', async () => {
-    await expect(runToolkit({ ...base, enforceMonolithLimits: true, findMonolith: async () => [], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+    await expect(runToolkit({ ...base, enforceMonolithLimits: true, findMonolith: async () => [], runTypecheck: async () => ({ code: 0, output: '' }), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+  });
+
+  test('stops when configured typecheck fails', async () => {
+    await expect(runToolkit({ ...base, runTypecheck: async () => ({ code: 1, output: 'type error' }), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(19);
   });
 
   test('validates separated runTestsByPath values at the runner boundary', async () => {
