@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import packageMetadata from '../package.json' with { type: 'json' };
 
 function runCli(...argumentsList) {
-  const cwd = argumentsList[0]?.cwd ?? process.cwd();
+  const cwd = argumentsList[0]?.cwd ?? resolve('test-fixtures/cli-success');
   const cliArguments = argumentsList[0]?.cwd ? argumentsList.slice(1) : argumentsList;
   return new Promise((resolveResult) => {
     const child = spawn(process.execPath, [resolve('bin/eliware-test.mjs'), ...cliArguments], { cwd });
@@ -63,7 +63,7 @@ describe('CLI dispatch', () => {
   }, 15000);
 
   test('dispatches the explicit coverage opt-out', async () => {
-    await expect(runCli('--ignore-100x4', 'tests/arguments.test.mjs')).resolves.toMatchObject({ code: 0, stdout: expect.stringContaining('Coverage: ignored') });
+    await expect(runCli('--ignore-100x4', 'tests/passing.test.mjs')).resolves.toMatchObject({ code: 0, stdout: expect.stringContaining('Coverage: ignored') });
   }, 15000);
 
   test('accepts the CLI in-band opt-out', async () => {
