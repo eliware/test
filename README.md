@@ -228,7 +228,7 @@ This package intentionally uses `node bin/eliware-test.mjs` for its own `test` a
 The package's own scripts exercise the local CLI; a consuming repository's
 scripts exercise that repository's Jest suite and lint target.
 
-See [`spec.md`](spec.md) for the implementation contract and [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for changes.
+See [`SPEC.md`](SPEC.md) for the implementation contract and [`RELEASE_NOTES.md`](RELEASE_NOTES.md) for changes.
 
 ## Errors / Troubleshooting
 
