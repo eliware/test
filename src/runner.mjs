@@ -93,7 +93,9 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
     write(`${formatCoverageGaps(gaps, cwd)}${barrelSuggestions}\n`);
     return EXIT_CODES.COVERAGE_GAP;
   }
-  const buildScript = await configuredBuildScript(cwd, readFilePath);
+  let buildScript;
+  try { buildScript = await configuredBuildScript(cwd, readFilePath); }
+  catch (error) { write(`Build configuration failed: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
   if (buildScript && runBuild) {
     let build;
     try { build = (await runBuild(['run', 'build'], { cwd, inheritEnv: !sanitizeEnv })) ?? {}; }

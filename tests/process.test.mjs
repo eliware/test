@@ -1,4 +1,4 @@
-import { runJest, runNpm, runOxlint, runProcess } from '../src/process.mjs';
+import { npmInvocation, runJest, runNpm, runOxlint, runProcess } from '../src/process.mjs';
 import { access } from 'node:fs/promises';
 import { EventEmitter } from 'node:events';
 
@@ -71,29 +71,9 @@ describe('process helpers', () => {
   });
 
   test('provides an npm wrapper', async () => {
-    const original = process.env.ComSpec;
-    try {
-      delete process.env.ComSpec;
-      const child = new EventEmitter();
-      child.stdout = new EventEmitter();
-      child.stderr = new EventEmitter();
-      const result = runNpm(['--version'], { cwd: process.cwd(), env: process.env, spawn: () => child });
-      child.emit('close', 0);
-      await expect(result).resolves.toMatchObject({ code: 0 });
-      process.env.ComSpec = 'cmd.exe';
-      const windowsChild = new EventEmitter();
-      windowsChild.stdout = new EventEmitter();
-      windowsChild.stderr = new EventEmitter();
-      const windowsResult = runNpm(['--version'], { cwd: process.cwd(), env: process.env, spawn: (command, args) => {
-        expect(command).toBe('cmd.exe');
-        expect(args).toEqual(['/d', '/s', '/c', 'npm', '--version']);
-        return windowsChild;
-      } });
-      windowsChild.emit('close', 0);
-      await expect(windowsResult).resolves.toMatchObject({ code: 0 });
-    } finally {
-      process.env.ComSpec = original;
-    }
+    await expect(runNpm(['--version'], { cwd: process.cwd(), env: process.env })).resolves.toMatchObject({ code: 0 });
+    expect(npmInvocation('win32', ['--version'])[0]).toBe(process.execPath);
+    expect(npmInvocation('linux', ['--version'])[0]).toBe(process.execPath);
   });
 
   test('forwards arguments through the Windows npm cmd shim', async () => {

@@ -326,6 +326,15 @@ test('ignores unmapped covered statements for line gaps', () => {
     expect(gaps[0].metrics.lines).toBe(50);
   });
 
+  test.each([
+    [{ 0: { start: { line: 4 } }, 1: { start: { line: 4 } } }, { 0: 0, 1: 1 }],
+    [{ 0: { start: { line: 4 } }, 1: { start: { line: 4 } } }, { 0: 1, 1: 0 }]
+  ])('uses any-uncovered semantics for same-line statements', (statementMap, s) => {
+    const gaps = parseCoverageJson({ 'src/same-line.mjs': { statementMap, s, branchMap: {}, b: {}, fnMap: {}, f: {} } });
+    expect(gaps[0].lines).toEqual([4]);
+    expect(gaps[0].metrics.lines).toBe(0);
+  });
+
   test('keeps empty line diagnostics finite', () => {
     const gaps = parseCoverageJson({ 'src/empty-lines.mjs': {
       statementMap: {}, s: {}, branchMap: {}, b: {}, fnMap: {}, f: {}, l: {}

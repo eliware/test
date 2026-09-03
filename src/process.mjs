@@ -88,7 +88,11 @@ export function runOxlint(argumentsList, options) {
 }
 
 export function runNpm(argumentsList, options) {
-  const command = process.env.ComSpec ?? 'npm';
-  const args = process.env.ComSpec ? ['/d', '/s', '/c', 'npm', ...argumentsList] : argumentsList;
+  const [command, args] = npmInvocation(process.platform, argumentsList);
   return runProcess(command, args, { ...options, env: { ...options.env, npm_config_allow_scripts: undefined } });
+}
+
+export function npmInvocation(platform, argumentsList) {
+  const npmCli = resolve(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js');
+  return [process.execPath, [npmCli, ...argumentsList]];
 }

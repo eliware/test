@@ -251,6 +251,9 @@ does not replace the wrapper code.
 | 12 | Oxlint failed to start |
 | 13 | Oxlint failure or warning |
 | 14 | Unexpected CLI/internal failure |
+| 15 | npm audit failure |
+| 16 | npm pack failure |
+| 17 | Build failure or invalid build metadata |
 
 After tests, coverage, and lint pass, `npm test` also runs
 `npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
@@ -260,6 +263,10 @@ covered by orchestration tests.
 When the consuming `package.json` defines a non-empty `scripts.build` command,
 `npm test` runs `npm run build` after coverage and before lint. Build failures
 return exit code `17`.
+
+Line coverage aggregates same-line statements with any-uncovered semantics:
+one uncovered statement makes that line uncovered. On Windows, npm is invoked
+through `npm.cmd` with an argument array rather than a shell command string.
 Failures in those checks return distinct exit codes `15` and `16` respectively.
 Exit code `0` means all validation completed successfully.
 

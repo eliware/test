@@ -107,7 +107,7 @@ describe('runner orchestration', () => {
       if (path.endsWith('package.json')) throw Object.assign(new Error('metadata denied'), { code: 'EACCES' });
       return '';
     };
-    await expect(runToolkit({ ...base, write: output(messages), readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow('metadata denied');
+    await expect(runToolkit({ ...base, write: output(messages), readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(17);
   });
 
   test('suggests an Istanbul ignore for an all-zero pure barrel', async () => {
