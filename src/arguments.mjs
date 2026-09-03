@@ -3,6 +3,7 @@ export const HELP_TEXT = `Usage:
   eliware-test --lint                  Run lint only
   eliware-test --version              Show the package version
   eliware-test --ignore-100x4          Run tests without coverage enforcement
+  eliware-test --ignore-monolith-limits Run tests while refactoring large files
   eliware-test --sanitize-env          Run child tools with a minimal environment
   npm test -- <Jest arguments>         Forward arguments to Jest
   npm test -- --no-runInBand           Allow Jest's default parallel execution
@@ -20,9 +21,10 @@ export const VALUE_OPTIONS = Object.freeze(['-t', '--testNamePattern', '--config
 export function parseArguments(argumentsList = []) {
   const lint = argumentsList.includes('--lint');
   const ignoreCoverage = argumentsList.includes('--ignore-100x4');
+  const ignoreMonolithLimits = argumentsList.includes('--ignore-monolith-limits');
   const disableInBand = argumentsList.includes('--no-runInBand');
   const sanitizeEnv = argumentsList.includes('--sanitize-env');
-  const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4', '--runInBand', '--no-runInBand', '--sanitize-env'].includes(argument));
+  const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4', '--ignore-monolith-limits', '--runInBand', '--no-runInBand', '--sanitize-env'].includes(argument));
   const protectedArgument = runnerArguments.find((argument) => MANAGED_OPTIONS.some((name) => argument === name || argument.startsWith(`${name}=`)));
   if (protectedArgument) throw new Error(`${protectedArgument} is managed by eliware-test; remove it and use the wrapper command directly.`);
   if (argumentsList.includes('--version') || argumentsList.includes('-v')) return { version: true, lint: false, runnerArguments: [] };
@@ -34,5 +36,6 @@ export function parseArguments(argumentsList = []) {
   if (disableInBand) parsed.runInBand = false;
   if (ignoreCoverage) parsed.ignoreCoverage = true;
   if (sanitizeEnv) parsed.sanitizeEnv = true;
+  if (ignoreMonolithLimits) parsed.ignoreMonolithLimits = true;
   return parsed;
 }

@@ -21,6 +21,10 @@ describe('parseArguments', () => {
     expect(parseArguments(['--ignore-100x4'])).toEqual({ lint: false, ignoreCoverage: true, runnerArguments: [] });
   });
 
+  test('parses the explicit monolith-limit bypass', () => {
+    expect(parseArguments(['--ignore-monolith-limits'])).toEqual({ lint: false, ignoreMonolithLimits: true, runnerArguments: [] });
+  });
+
   test('parses the explicit environment sanitization opt-out', () => {
     expect(parseArguments(['--sanitize-env'])).toEqual({ lint: false, sanitizeEnv: true, runnerArguments: [] });
   });

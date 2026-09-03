@@ -59,7 +59,29 @@ Stable wrapper exit codes are: workspace setup `2`, Istanbul policy `3`,
 invalid argument `4`, focused-path validation `5`, missing focused path `6`,
 coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
 `10`, coverage gap `11`, lint startup `12`, lint failure `13`, internal failure
-`14`, audit failure `15`, pack failure `16`, and build failure `17`.
+`14`, audit failure `15`, pack failure `16`, build failure `17`, and monolith
+limit failure `18`.
+
+## 5. Implementation and test file-size limits
+
+The normal CLI run enforces focused-file decomposition limits:
+
+- source modules under `src/` may contain at most 300 lines;
+- test files under `test/` or `tests/` may contain at most 600 lines;
+- pure import/export barrels and generated files are exempt;
+- any other exemption must be explicitly configured with a non-empty glob
+  pattern and justification under `eliwareTest.monolithLimits.exemptions`.
+
+Every violation is reported with its normalized path, line count, threshold,
+and required action: decompose the file into focused modules and add the
+corresponding mirrored tests. Every violation fails with exit code 18, and
+the diagnostic lists all violations.
+
+`eliware-test --ignore-monolith-limits` is a temporary refactoring bypass. It
+still runs Jest, coverage, lint, build, audit, and pack and reports their
+failures; it only suppresses the size-limit failure. CI, release, and normal
+validation must not use this bypass, but developers may use it while
+decomposing existing violations.
 
 ## 4. Arguments and focused tests
 

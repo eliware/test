@@ -10,12 +10,15 @@ import { findMissingFocusedPath, focusedCoverageArguments, isTestPath } from './
 import { COVERAGE_CANDIDATES, pureBarrelSuggestions, readCoverageGaps } from './runner/coverage-stage.mjs';
 import { checkWorkspace, configuredBuildScript } from './runner/workspace-stage.mjs';
 import { runBuildStage, runLintStage, runPackageStages } from './runner/validation-stages.mjs';
+import { findMonolithViolations } from './monolith/validate.mjs';
+import { formatMonolithViolations } from './monolith/diagnostics.mjs';
+import { MONOLITH_EXIT_CODE } from './monolith/constants.mjs';
 
 export async function runToolkit(options) {
   return runToolkitUnlocked(options);
 }
 
-async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false, enforceMonolithLimits = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations, findMonolith = findMonolithViolations }) {
   if (typeof cwd !== 'string' || !Array.isArray(runnerArguments) || typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runToolkit requires cwd, runnerArguments, write, runTest, and runLintCommand');
   }
@@ -95,6 +98,17 @@ async function runToolkitUnlocked({ cwd, runnerArguments, runInBand = true, igno
   if (lintCode !== 0) return lintCode;
   const packageCode = await runPackageStages(stageContext);
   if (packageCode !== 0) return packageCode;
+  if (enforceMonolithLimits) try {
+    const monolithViolations = await findMonolith(cwd);
+    if (monolithViolations.length > 0) {
+      write(formatMonolithViolations(monolithViolations));
+      if (!ignoreMonolithLimits) return MONOLITH_EXIT_CODE;
+      write('Monolith limits ignored for this diagnostic/refactoring run.\n');
+    }
+  } catch (error) {
+    write(`Monolith validation failed: ${error.message}\n`);
+    return MONOLITH_EXIT_CODE;
+  }
   write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
 }

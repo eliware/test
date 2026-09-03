@@ -60,7 +60,7 @@ export interface ToolkitOptions {
   cwd: string; runnerArguments: string[]; write: (message: string) => void;
   runTest: (argumentsList: string[], options: ProcessOptions & { runInBand: boolean }) => Promise<CollaboratorResult>;
   runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<CollaboratorResult>;
-  runInBand?: boolean; ignoreCoverage?: boolean; sanitizeEnv?: boolean;
+  runInBand?: boolean; ignoreCoverage?: boolean; ignoreMonolithLimits?: boolean; sanitizeEnv?: boolean;
   accessPath?: (path: string) => Promise<void>;
   removePath?: (path: string, options: { force: boolean }) => Promise<void>;
   readFilePath?: (path: string, encoding: string) => Promise<string>;
@@ -78,5 +78,5 @@ export function percentageWithUnknowns(lineCounts: Map<number, number>, unknownC
 export const EXIT_CODES: Readonly<{
   WORKSPACE_SETUP: 2; ISTANBUL_POLICY: 3; INVALID_ARGUMENT: 4; FOCUSED_PATH_VALIDATION: 5;
   FOCUSED_PATH_MISSING: 6; COVERAGE_CLEANUP: 7; TEST_START: 8; TEST_FAILURE: 9;
-  COVERAGE_FAILURE: 10; COVERAGE_GAP: 11; LINT_START: 12; LINT_FAILURE: 13; INTERNAL: 14; AUDIT_FAILURE: 15; PACK_FAILURE: 16; BUILD_FAILURE: 17;
+  COVERAGE_FAILURE: 10; COVERAGE_GAP: 11; LINT_START: 12; LINT_FAILURE: 13; INTERNAL: 14; AUDIT_FAILURE: 15; PACK_FAILURE: 16; BUILD_FAILURE: 17; MONOLITH_LIMIT: 18;
 }>;

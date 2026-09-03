@@ -40,6 +40,26 @@ describe('runner orchestration', () => {
     await expect(runToolkit({ write: () => {} })).rejects.toThrow('requires cwd');
   });
 
+  test('runs the monolith gate only when explicitly enabled', async () => {
+    await expect(runToolkit({ ...base, enforceMonolithLimits: true, ignoreMonolithLimits: true, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }), runAudit: async () => ({ code: 0, output: '' }), runPack: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+  });
+
+  test('fails with the monolith exit code and reports all violations', async () => {
+    const messages = [];
+    await expect(runToolkit({ ...base, enforceMonolithLimits: true, write: output(messages), findMonolith: async () => [{ file: 'src/large.mjs', lines: 301, threshold: 300 }], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(18);
+    expect(messages.join('')).toContain('src/large.mjs');
+  });
+
+  test('reports monolith validator failures with the dedicated exit code', async () => {
+    const messages = [];
+    await expect(runToolkit({ ...base, enforceMonolithLimits: true, write: output(messages), findMonolith: async () => { throw new Error('bad config'); }, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(18);
+    expect(messages.join('')).toContain('bad config');
+  });
+
+  test('continues after an enabled monolith check with no violations', async () => {
+    await expect(runToolkit({ ...base, enforceMonolithLimits: true, findMonolith: async () => [], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+  });
+
   test('validates separated runTestsByPath values at the runner boundary', async () => {
     const messages = [];
     let invoked = false;

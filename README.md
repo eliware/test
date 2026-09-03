@@ -55,6 +55,14 @@ default worker behavior. Use `eliware-test --ignore-100x4` only for diagnostic
 or transitional runs; tests and lint still run, but coverage enforcement is
 skipped.
 
+Source modules are limited to 300 lines and test files to 600 lines. Pure
+barrels, generated files, and explicitly justified configuration exemptions
+are excluded. Violations fail with stable exit code 18 and must be decomposed
+with mirrored tests. During refactoring, use
+`eliware-test --ignore-monolith-limits`; it still runs the suite and other
+validation, but CI and release runs must enforce the limit. See `SPEC.md` for
+the full contract.
+
 When several people or jobs work at the same time, give each one a separate
 Git worktree or workspace. Coverage reports stay in the current worktree so
 they can be inspected after the run. Do not run overlapping validations in
