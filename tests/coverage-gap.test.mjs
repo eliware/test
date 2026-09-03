@@ -167,7 +167,9 @@ test.each([NaN, Infinity, null])('treats malformed statement counter %p consiste
 });
 
 test('handles missing statement counters and unmapped counter entries', () => {
-  expect(parseCoverageJson({ 'src/missing-counters.mjs': { statementMap: { 0: {} }, s: null, b: {}, f: {} } })).toHaveLength(1);
+  const missingCounters = parseCoverageJson({ 'src/missing-counters.mjs': { statementMap: { 0: {} }, s: null, b: {}, f: {} } });
+  expect(missingCounters).toHaveLength(1);
+  expect(missingCounters[0].statements).toEqual([{ type: 'statement' }]);
   expect(parseCoverageJson({ 'src/unmapped-counter.mjs': { statementMap: {}, s: { 0: 0 }, b: {}, f: {} } })[0].lines).toEqual([]);
   const functionCounters = Object.assign(() => {}, { 0: 0 });
   expect(parseCoverageJson({ 'src/function-counter-function.mjs': { statementMap: {}, s: {}, b: {}, f: functionCounters } })).toHaveLength(1);

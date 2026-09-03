@@ -116,7 +116,8 @@ boundary; provenance beyond the completed invocation is not claimed. Otherwise
 validation fails closed.
 
 JSON diagnostics are best-effort, while runner evidence validation is strict.
-Malformed counters are reported conservatively as uncovered. When an Istanbul
+Malformed or missing counter maps are reported conservatively as explicit
+unknown uncovered diagnostics. When an Istanbul
 `l` map exists, it is authoritative for line coverage. Statement, branch,
 function, and line metrics remain independent; malformed statement data does
 not rewrite valid `l` line data. An empty line map with no unknown lines has no

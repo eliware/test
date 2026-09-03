@@ -88,7 +88,9 @@ export function parseCoverageJson(json) {
   const gaps = [];
   for (const [file, data] of Object.entries(json)) {
     if (!data || typeof data !== 'object' || !data.statementMap) continue;
-    const statements = locationsForCounts(data.statementMap, data.s);
+    const statements = data.s !== undefined && data.s !== null && typeof data.s === 'object' && !Array.isArray(data.s)
+      ? locationsForCounts(data.statementMap, data.s)
+      : [{ type: 'statement' }];
     const branches = data.b !== undefined && (typeof data.b !== 'object' || Array.isArray(data.b))
       ? [{ type: 'branch' }]
       : Object.entries(data.b ?? {}).flatMap(([id, counts]) => {
