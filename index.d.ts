@@ -31,7 +31,7 @@ export type CoverageGap = TextCoverageGap | JsonCoverageGap;
 /** Parse the Jest text coverage table and return files below 100×4. */
 export function parseCoverage(text: string): TextCoverageGap[];
 /** Format detailed coverage diagnostics for human-readable CLI output. */
-export function formatCoverageGaps(gaps: CoverageGap[]): string;
+export function formatCoverageGaps(gaps: CoverageGap[], root?: string): string;
 /** Parse Istanbul JSON coverage and return actionable gaps. */
 export function parseCoverageJson(json: Record<string, unknown>): JsonCoverageGap[];
 

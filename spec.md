@@ -62,8 +62,8 @@ The default `eliware-test` command must:
 9. Fail if tests, coverage, or lint fail.
 10. Return a nonzero exit code for any failed stage.
 
-Child-process output, including truncation metadata, is captured internally and bounded to 16 KiB of
-JavaScript string length (UTF-16 code units) so the
+Child-process output, including truncation metadata, is captured internally and
+bounded to 16 KiB of JavaScript string length (UTF-16 code units) so the
 normal command remains focused on actionable gaps; successful stages emit only
 a concise summary rather than streaming output verbatim. A missing consumer
 `.gitignore` may produce its non-failing warning before that summary. On failure, enough diagnostics
@@ -342,6 +342,8 @@ Consumer repositories should ignore generated artifacts including:
 
 ```gitignore
 node_modules/
+dist/
+build/
 coverage/
 .nyc_output/
 test-results/

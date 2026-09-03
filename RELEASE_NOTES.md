@@ -12,6 +12,12 @@
   declarations, and executable-level regression coverage.
 - Hardened subprocess diagnostics with bounded, deduplicated output and
   reliable failure handling; lint warnings now fail validation.
+- Clarified coverage semantics: annotated percentages use two-decimal raw-ratio
+  rounding, while percentage-only values must be exactly 100%; malformed
+  function metadata is handled safely as best-effort diagnostics.
+- Normalized workspace-setup failures across combined and lint-only commands,
+  expanded Jest value-option handling, and documented focused-path mapping and
+  coverage-artifact boundaries.
 - Added consumer guidance and CI typechecking.
 
 ## 2.3.1
