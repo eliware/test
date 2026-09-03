@@ -275,11 +275,10 @@ Failures in those checks return distinct exit codes `15` and `16` respectively.
 Exit code `0` means all validation completed successfully.
 
 The repository's own `npm test` command is the package self-test. It always
-exercises tests, coverage, and lint; audit, pack, and build are conditional
-stages. Audit and pack run when their collaborators are wired by the CLI, and
-build runs only when the consuming package defines a non-empty `scripts.build`
-command. Consumer projects receive those conditional stages through the
-published CLI when their package metadata provides the corresponding inputs.
+exercises tests, coverage, and lint; it does not claim to exercise the
+consumer-only audit, pack, or build stages. In a consuming repository, the
+published CLI wires audit and pack on every successful validation, while build
+runs only when that consumer defines a non-empty `scripts.build` command.
 
 The runner intentionally centralizes stage ordering, retains serial source
 discovery to bound descriptors, and leaves workspace concurrency to the caller.
@@ -287,6 +286,10 @@ These are explicit compatibility decisions rather than hidden quality gates.
 The default process mode inherits the trusted consumer environment; use the
 sanitized mode for untrusted workspaces. An allowlisted environment mode and
 workspace lock are intentionally outside the current API contract.
+The exported parser and orchestration functions are advanced, injection-based
+composition seams; the CLI is the supported stable API. Human-readable output
+is the current stable diagnostics format; structured diagnostics are a future
+feature rather than part of this release contract.
 
 When an Istanbul `l` map is present, it is authoritative for line coverage;
 statement locations are not allowed to contradict it. Focused runs whose
