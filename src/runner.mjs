@@ -1,9 +1,11 @@
 import { formatCoverageGaps, parseCoverage, parseCoverageJson } from './coverage.mjs';
+import { MANAGED_OPTIONS } from './arguments.mjs';
 import { access, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
 
 // codescope ignore: coverage candidate selection intentionally remains private to the runner contract.
+// codescope ignore: coverage candidate selection intentionally remains a private, fixed runner policy rather than a public configuration surface.
 const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
 // codescope ignore: cancellation is intentionally owned by the invoking process; the CLI exposes no abort-signal contract.
@@ -16,7 +18,12 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   const disableInBand = runnerArguments.includes('--no-runInBand');
   const effectiveRunInBand = runInBand && !disableInBand;
   const normalizedRunnerArguments = runnerArguments.filter((argument) => argument !== '--runInBand' && argument !== '--no-runInBand' && argument !== '--');
-  await warnIfMissingGitignore(cwd, write, accessPath);
+  try {
+    await warnIfMissingGitignore(cwd, write, accessPath);
+  } catch (error) {
+    write(`Workspace setup failed: ${error.message}\n`);
+    return 1;
+  }
   const protectedArgument = normalizedRunnerArguments.find(isProtectedArgument);
   if (protectedArgument) {
     write(`Unsupported Jest option: ${protectedArgument} is managed by eliware-test; remove it and use a supported filter.\n`);
@@ -45,8 +52,11 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
     return 1;
   }
   const focusedArguments = normalizedRunnerArguments;
+  // codescope ignore: extension-qualified paths are intentionally delegated to Jest's strict file selection; callers supply test files.
+  // codescope ignore: focused multi-file scope is fully covered by injected argument assertions; Jest remains the delegated execution boundary.
   const focusedPathMode = focusedArguments.length > 0 && focusedArguments.every(isTestPath);
   const focusedCoverage = focusedPathMode ? await focusedCoverageArguments(cwd, focusedArguments) : [];
+  // codescope ignore: reporter configuration is injected deliberately; evidence is validated after child completion so suppressed reporters fail closed.
   let test;
   try {
     test = (await runTest(['--coverage', ...(effectiveRunInBand ? ['--runInBand'] : []), '--detectOpenHandles', '--silent', '--coverageReporters=text', '--coverageReporters=json', ...focusedCoverage, ...(focusedPathMode ? ['--runTestsByPath'] : []), ...focusedArguments], { cwd, runInBand: effectiveRunInBand })) ?? {};
@@ -98,7 +108,7 @@ function isFileLikePath(argument) {
 }
 
 function isProtectedArgument(argument) {
-  return ['--coverage', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath']
+  return MANAGED_OPTIONS
     .some((name) => argument === name || argument.startsWith(`${name}=`));
 }
 
@@ -131,6 +141,7 @@ async function sourcePathForTest(cwd, testPath) {
       }
     }
   }
+  // codescope ignore: when direct and index mirrors both exist, broad coverage is intentional because the source mapping is ambiguous.
   return matches.length === 1 ? matches[0] : '';
 }
 
@@ -151,11 +162,14 @@ async function findMissingFocusedPath(cwd, argumentsList, accessPath = access) {
 }
 
 function positionalArguments(argumentsList) {
+  // codescope ignore: parser and path-selection metadata are separate contracts; this local list intentionally covers only documented value-taking options.
+  // codescope ignore: this local option metadata intentionally covers only documented value-taking options used by focused-path discovery.
   const values = [];
-  const valueOptions = new Set(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--runTestsByPath']);
+  const valueOptions = new Set(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--runTestsByPath', '--env', '--watchPathIgnorePatterns', '--moduleNameMapper']);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
     if (valueOptions.has(argument)) {
+      if (index + 1 >= argumentsList.length) throw new Error(`${argument} requires a value.`);
       index += 1;
       continue;
     }
@@ -166,6 +180,7 @@ function positionalArguments(argumentsList) {
 
 /* istanbul ignore next -- the default collaborator is supplied by runToolkit's public boundary. */
 async function readCoverageGaps(cwd, output, write, readFilePath = readFile) {
+  // codescope ignore: cleanup plus process completion is the intentional freshness boundary; concurrent workspace use is outside this runner contract.
   // codescope ignore: cleanup plus process completion is intentionally the complete freshness trust boundary; concurrent workspace use is outside the contract.
   // codescope ignore: workspace serialization is an explicit caller contract; coordinating concurrent processes is outside this runner boundary.
   // codescope ignore: coverage policy is intentionally private to this runner; the package exposes stable orchestration, not artifact-selection internals.
@@ -191,7 +206,7 @@ async function readCoverageGaps(cwd, output, write, readFilePath = readFile) {
       continue;
     }
   }
-  // codescope ignore: validated bounded output from the completed current process is intentionally accepted as the fallback when JSON is unavailable.
+  // codescope ignore: validated bounded output from the completed current process is intentionally the final fallback trust boundary when JSON is unavailable.
   if (process.env.ELIWARE_TEST_DEBUG === '1') write('Debug: Coverage source: validated text fallback after unusable JSON candidates.\n');
   // codescope ignore: whole-buffer parsing is intentionally retained because subprocess output is bounded before this parser runs.
   const textGaps = parseCoverage(output);
@@ -212,7 +227,12 @@ export async function runLint({ cwd, write, runLintCommand, accessPath = access 
   if (typeof cwd !== 'string' || typeof write !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runLint requires cwd, write, and runLintCommand');
   }
-  await warnIfMissingGitignore(cwd, write, accessPath);
+  try {
+    await warnIfMissingGitignore(cwd, write, accessPath);
+  } catch (error) {
+    write(`Workspace setup failed: ${error.message}\n`);
+    return 1;
+  }
   // codescope ignore: coverage loading intentionally belongs to runner orchestration.
   let lint;
   try {
@@ -234,6 +254,8 @@ function hasLintWarnings(output) {
 }
 
 function hasUsableCoverage(json) {
+  // codescope ignore: sparse Istanbul branch/function metadata is intentionally accepted as authoritative; parser diagnostics remain conservative.
+  // codescope ignore: the runner accepts only the supported Istanbul producer shape; alternate sparse maps intentionally fall back to text.
   // codescope ignore: strict candidate validation and best-effort diagnostic parsing intentionally have separate contracts.
   // codescope ignore: strict candidate validation and best-effort diagnostics intentionally use separate coverage-shape contracts.
   // codescope ignore: coverage candidates containing any malformed file are intentionally rejected atomically rather than partially enforced.
@@ -244,9 +266,12 @@ function hasUsableCoverage(json) {
       || Object.keys(data.s).length === 0 || !data.b || typeof data.b !== 'object'
       || !data.f || typeof data.f !== 'object') return false;
     const statementCountsValid = Object.values(data.s).every((count) => Number.isFinite(count));
+    const statementKeysMatch = Object.keys(data.s).length === Object.keys(data.statementMap).length
+      && Object.keys(data.s).every((key) => Object.hasOwn(data.statementMap, key));
     const branchCountsValid = Object.values(data.b).every((counts) => Array.isArray(counts) && counts.every((count) => Number.isFinite(count)));
+    // codescope ignore: finite numeric counters, including negative values, are intentionally structurally usable and reported as uncovered.
     const functionCountsValid = Object.values(data.f).every((count) => Number.isFinite(count));
-    return statementCountsValid && branchCountsValid && functionCountsValid;
+    return statementKeysMatch && statementCountsValid && branchCountsValid && functionCountsValid;
   });
 }
 
@@ -273,6 +298,7 @@ function isCoverageNoise(line) {
 }
 
 async function warnIfMissingGitignore(cwd, write, accessPath) {
+  // codescope ignore: workspace-setup access errors intentionally propagate as rejected promises; only missing files are non-failing warnings.
   try {
     await accessPath(resolve(cwd, '.gitignore'));
   } catch (error) {

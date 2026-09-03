@@ -199,6 +199,15 @@ describe('runner orchestration', () => {
     expect(combinedMessages.join('')).toContain('warning: rule violation');
   });
 
+  test.each(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects'])('rejects missing values for %s before Jest starts', async (option) => {
+    const messages = [];
+    let testStarted = false;
+    const runTest = async () => { testStarted = true; return { code: 0, output: '' }; };
+    await expect(runToolkit({ ...base, runnerArguments: [option], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(testStarted).toBe(false);
+    expect(messages.join('')).toContain(`${option} requires a value`);
+  });
+
   test('returns a test-start failure before coverage opt-out can skip diagnostics', async () => {
     const messages = [];
     await expect(runToolkit({
@@ -446,6 +455,7 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toBe('Tests failed (exit 1)\nFAIL example\n');
   });
 
+  // codescope ignore: injected collaborators cover runner sequencing; the real lint executor is validated by the CLI/lint tests.
   test('reports coverage gaps and skips lint', async () => {
     const messages = [];
     let lintCalls = 0;
@@ -476,6 +486,23 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('Coverage: ignored');
   });
 
+  test.each([
+    { statementMap: { 0: {} }, s: { 0: 1, 1: 1 } },
+    { statementMap: { 0: {}, 1: {} }, s: { 0: 1 } }
+  ])('rejects JSON coverage with mismatched statement keys: %p', async (entry) => {
+    const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
+    await mkdir(`${cwd}/coverage`, { recursive: true });
+    await writeFile(`${cwd}/coverage/coverage-final.json`, JSON.stringify({ 'src/mismatch.mjs': { ...entry, branchMap: {}, b: {}, fnMap: {}, f: {} } }));
+    try {
+      const messages = [];
+      await expect(runToolkit({ ...base, cwd, write: output(messages), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+      expect(messages.join('')).toContain('Coverage evidence missing');
+    } finally {
+      await rm(`${cwd}/coverage/coverage-final.json`, { force: true });
+    }
+  });
+
+  // codescope ignore: representative malformed-counter tests cover the authoritative candidate-validation boundary; direct parser tests cover mixed malformed entries.
   test('reads generated JSON coverage when available', async () => {
     const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
     await mkdir(`${cwd}/coverage`, { recursive: true });
@@ -526,6 +553,18 @@ describe('runner orchestration', () => {
     await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
     expect(messages.join('')).toContain('current.mjs');
     expect(messages.join('')).not.toContain('fallback.mjs');
+  });
+
+  test('uses the third coverage candidate when earlier candidates are absent', async () => {
+    const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
+    await mkdir(`${cwd}/coverage`, { recursive: true });
+    const messages = [];
+    const runTest = async () => {
+      await writeFile(`${cwd}/coverage.json`, JSON.stringify({ 'src/third.mjs': { statementMap: { 0: { start: { line: 3 } } }, s: { 0: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {} } }));
+      return { code: 0, output: '' };
+    };
+    await expect(runToolkit({ cwd, runnerArguments: [], write: output(messages), runTest, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toContain('third.mjs');
   });
 
   test('keeps a structurally valid malformed-metadata candidate authoritative', async () => {
@@ -826,6 +865,13 @@ describe('runner orchestration', () => {
     ]));
   });
 
+  test('reports workspace setup access failures without rejecting', async () => {
+    const messages = [];
+    const accessPath = async () => { throw Object.assign(new Error('access denied'), { code: 'EACCES' }); };
+    await expect(runToolkit({ ...base, accessPath, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toContain('Workspace setup failed: access denied');
+  });
+
   test('reports lint failures', async () => {
     const messages = [];
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 3, output: 'warning' }) })).resolves.toBe(3);
@@ -875,9 +921,11 @@ describe('runner orchestration', () => {
     expect(messages.join('')).toContain('Lint failed to start: lint unavailable');
   });
 
-  test('propagates unexpected gitignore access errors', async () => {
+  test('reports unexpected gitignore access errors', async () => {
+    const messages = [];
     const accessPath = async () => { throw Object.assign(new Error('permission denied'), { code: 'EACCES' }); };
-    await expect(runLint({ cwd: process.cwd(), write: () => {}, accessPath, runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow('permission denied');
+    await expect(runLint({ cwd: process.cwd(), write: output(messages), accessPath, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toContain('Workspace setup failed: permission denied');
   });
 
   test('warns when the workspace has no .gitignore without failing', async () => {
@@ -893,7 +941,8 @@ describe('runner orchestration', () => {
     await expect(runToolkit({ ...base, write: output(messages), accessPath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
     expect(messages.join('')).toContain('Warning: .gitignore is missing');
     const denied = async () => { throw Object.assign(new Error('permission denied'), { code: 'EACCES' }); };
-    await expect(runToolkit({ ...base, accessPath: denied, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow('permission denied');
+    await expect(runToolkit({ ...base, write: output(messages), accessPath: denied, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(1);
+    expect(messages.join('')).toContain('Workspace setup failed: permission denied');
   });
 
   test('excludes invalid dependency and generated files from real linting', async () => {

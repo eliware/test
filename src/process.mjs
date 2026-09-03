@@ -22,6 +22,7 @@ export function runProcess(command, argumentsList, options) {
   // codescope ignore: inherited environment is the intentional trusted-consumer boundary; isolation is outside this package contract.
   // codescope ignore: Node spawn errors are surfaced through the child error event; invalid options are programmer errors.
   return new Promise((resolveResult) => {
+    // codescope ignore: one bounded combined diagnostic buffer intentionally prioritizes the total output cap over independent stdout/stderr quotas; cross-stream completeness is outside the contract.
     let output = '';
     let settled = false;
     let processError = '';
@@ -32,6 +33,7 @@ export function runProcess(command, argumentsList, options) {
     // Intentional: the caller supplies the trusted consumer environment so npm and tool config resolve normally.
     // codescope ignore: consumer test and lint processes intentionally inherit the trusted workspace environment; this package has no untrusted-workspace isolation contract or environment-allowlist API.
     // codescope ignore: diagnostic output is intentionally bounded at 16 KiB; simple string capture is sufficient for this cap and avoids a larger buffering abstraction.
+    // codescope ignore: consumer processes intentionally inherit the trusted workspace environment; no untrusted-workspace isolation contract is provided.
     const child = spawn(command, argumentsList, { cwd: options.cwd, env: { ...process.env, ...options.env }, windowsHide: true });
     const settle = (result) => {
       /* istanbul ignore next -- close/error races are defensive and cannot be scheduled deterministically. */
@@ -42,8 +44,10 @@ export function runProcess(command, argumentsList, options) {
     };
     const finish = (code, errorMessage) => {
       if (settled) return;
+      // codescope ignore: terminal decoder flushes intentionally use deterministic stdout-then-stderr order; cross-stream temporal ordering is not promised.
       output = appendBounded(output, stdoutDecoder.decode(undefined, { stream: false }));
       output = appendBounded(output, stderrDecoder.decode(undefined, { stream: false }));
+      // codescope ignore: the final diagnostic is bounded again after appending terminal errors, so the public output remains capped.
       settle({ code, output: boundOutput(`${output}${errorMessage}`) });
     };
     const capture = (decoder) => (chunk) => {

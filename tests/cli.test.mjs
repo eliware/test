@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import packageMetadata from '../package.json' with { type: 'json' };
 
@@ -47,6 +48,19 @@ describe('CLI dispatch', () => {
 
   test('dispatches lint-only validation', async () => {
     await expect(runCli('--lint')).resolves.toMatchObject({ code: 0, stdout: expect.stringContaining('Lint passed') });
+  }, 15000);
+
+  test('propagates a real lint failure through the executable', async () => {
+    const cwd = resolve('test-fixtures/cli-success');
+    const file = resolve(cwd, 'src/cli-lint-failure.mjs');
+    await writeFile(file, 'const unused = 1;\n');
+    try {
+      const result = await runCli({ cwd }, '--lint');
+      expect(result.code).not.toBe(0);
+      expect(result.stdout).toContain('Lint failed');
+    } finally {
+      await rm(file, { force: true });
+    }
   }, 15000);
 
   test('dispatches the explicit coverage opt-out', async () => {

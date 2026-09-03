@@ -77,13 +77,21 @@ Tests passed | Coverage: 100×4 | Lint: 0 warnings
 The tool must never trade away failure information merely to reduce output.
 Generated coverage-gap details are rendered after capture and are not included
 in the child-output bound.
+Terminal process-error text may be included in the final bounded diagnostic;
+the truncation marker describes the bounded diagnostic buffer, not exact
+original omission accounting after that append.
 Text coverage metrics may include Jest raw-counter annotations such as
 `80% (4/5)`; the parser validates both the displayed percentage and the raw
 counter ratio.
-The displayed percentage must equal the raw ratio rounded to two decimal
-places; displayed values may contain additional fractional digits, which are
-rounded to two decimal places before comparison. Contradictory annotations are
-coverage gaps.
+Annotated displayed percentages must equal the raw ratio rounded to two decimal
+places; additional fractional digits are rounded before comparison. A
+percentage-only value is complete only when it is exactly `100%` (optionally
+followed only by zeroes). Contradictory annotations are coverage gaps.
+For example, `99.995% (1/1)` rounds to `100.00%` and is complete when its raw
+counters are complete.
+Only numeric percentage syntax is accepted; malformed suffixes are coverage
+gaps. Direct JSON parsing remains best-effort and does not expose a separate
+malformed-entry status channel.
 The supported output contract is concise human-readable text; no structured
 diagnostic API is exposed.
 
@@ -285,8 +293,9 @@ wins, and text coverage is the final fallback.
 
 When available, JSON is the authoritative source for exact uncovered statement
 locations, branch locations, and function names. If no usable JSON exists, the
-tool falls back to the standard Jest text table. Stale generated JSON must not
-be reused for a new run.
+tool falls back to the standard Jest text table. Stale generated JSON at the
+documented candidate paths must not be reused for a new run; callers must
+serialize runs in a workspace.
 
 Zero-valued numeric metrics in the text table are coverage gaps. A valid JSON
 document with no instrumented file entries is not usable coverage and must not
@@ -299,7 +308,9 @@ output remains concise.
 Coverage-gap output should identify the affected file and exact uncovered
 locations, while successful output remains minimal.
 
-Failure diagnostics are bounded to 16 KiB of JavaScript string length. The
+Captured child-process failure diagnostics are bounded to 16 KiB of JavaScript
+string length; formatted coverage-gap details are rendered outside that
+capture bound. The
 runner may therefore mark diagnostics as truncated when a child process emits
 more output; it must preserve the stage and enough leading diagnostics to
 identify the failure. Direct JSON parsing is diagnostic-only and best-effort;

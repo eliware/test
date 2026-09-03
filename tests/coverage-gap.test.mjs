@@ -150,6 +150,20 @@ test.each([NaN, Infinity, null])('treats malformed statement counter %p consiste
   expect(gaps[0].metrics.lines).toBe(0);
 });
 
+test('falls back safely for malformed function locations', () => {
+  const gaps = parseCoverageJson({
+    'src/malformed-function-location.mjs': {
+      statementMap: {}, s: {}, branchMap: {}, b: {},
+      fnMap: { 0: { loc: {}, locations: [{ start: { line: 7 } }] }, 1: { loc: {}, locations: 'invalid' } },
+      f: { 0: 0, 1: 0 }
+    }
+  });
+  expect(gaps[0].functions).toEqual([
+    { start: { line: 7 }, name: 'anonymous' },
+    { name: 'anonymous' }
+  ]);
+});
+
 test.each([NaN, 'invalid'])('treats malformed unmapped statement counter %p as a line gap', (count) => {
   const gaps = parseCoverageJson({
     'src/malformed-unmapped-counter.mjs': {

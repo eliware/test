@@ -125,6 +125,9 @@ describe('parseArguments', () => {
     expect(formatCoverageGaps([{ file: 'bar.mjs', metrics: ['90', '100', '100', '100'] }])).toContain('bar.mjs');
     expect(formatCoverageGaps([{ file: 'detail.mjs', statements: [], branches: [{ start: { line: 2 } }], functions: [{}], lines: [2] }])).toContain('anonymous');
     expect(formatCoverageGaps([])).toBe('');
+    expect(formatCoverageGaps(null)).toBe('');
+    expect(formatCoverageGaps([{ file: 42, metrics: ['0', '0', '0', '0'] }])).toContain('unknown');
+    expect(formatCoverageGaps([{ file: 'x.mjs', metrics: ['0'] }], 42)).toContain('x.mjs');
   });
 
   test('formats partial diagnostic gap objects safely', () => {
@@ -155,9 +158,22 @@ describe('parseArguments', () => {
     expect(metricHasGap('66.667% (2/3)')).toBe(true);
     expect(metricHasGap('33.333% (1/3)')).toBe(true);
     expect(metricHasGap('99.99% (1/1)')).toBe(true);
+    expect(metricHasGap('99.995%')).toBe(true);
+    expect(metricHasGap('99.999%')).toBe(true);
+    expect(metricHasGap('99.999% (1/1)')).toBe(true);
+    expect(metricHasGap('99.994%')).toBe(true);
     expect(metricHasGap('80.005% (4/5)')).toBe(true);
+    expect(metricHasGap(`66.${'6'.repeat(2000)}% (2/3)`)).toBe(true);
+    expect(metricHasGap(`${'9'.repeat(10000)}% (1/1)`)).toBe(true);
     expect(metricHasGap('101% (1/1)')).toBe(true);
+    expect(metricHasGap('1000% (1/1)')).toBe(true);
+    expect(metricHasGap('100.001% (1/1)')).toBe(true);
+    expect(metricHasGap('100.01%')).toBe(true);
+    expect(metricHasGap('100.01% (1/1)')).toBe(true);
     expect(metricHasGap('-1% (0/0)')).toBe(true);
+    expect(metricHasGap('100.00x%')).toBe(true);
+    expect(metricHasGap('100.%')).toBe(true);
+    expect(metricHasGap('100.00abc%')).toBe(true);
     expect(metricHasGap('80.001% (4/5)')).toBe(true);
     expect(metricHasGap('100 % (1/1)')).toBe(false);
     expect(metricHasGap('100% (9007199254740992/9007199254740993)')).toBe(true);

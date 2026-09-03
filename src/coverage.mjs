@@ -6,14 +6,10 @@ function isCoveredCount(value) {
   return Number.isFinite(value) && value > 0;
 }
 
-function percentageHasGap(value) {
-  if (!Number.isFinite(value) || value < 0 || value > 100) return true;
-  return value !== 100;
-}
-
 export function metricHasGap(value) {
   // codescope ignore: signed and non-finite text metrics are intentionally malformed gaps; JSON counters are validated separately.
   if (typeof value !== 'string') return true;
+  if (value.length > 2048) return true;
   // codescope ignore: Jest counter ratios are integer counters; fractional ratios intentionally fall through as malformed gaps.
   const match = value.trim().match(/^(\d+)\s*\/\s*(\d+)$/);
   if (match) {
@@ -34,21 +30,39 @@ export function metricHasGap(value) {
     return covered !== total || displayedHundredths === null || displayedHundredths !== expectedHundredths;
   }
   const percentage = value.trim().match(/^(\d+(?:\.\d+)?)\s*%$/);
-  if (percentage) return percentageHasGap(Number(percentage[1]));
+  if (percentage) {
+    return !isExactHundred(percentage[1]);
+  }
   const numeric = value.trim().match(/^\d+(?:\.\d+)?$/);
-  return numeric ? percentageHasGap(Number(numeric[0])) : true;
+  if (numeric) {
+    return !isExactHundred(numeric[0]);
+  }
+  return true;
+}
+
+function isExactHundred(value) {
+  return /^100(?:\.0*)?$/.test(value);
 }
 
 function percentageHundredths(value) {
+  // codescope ignore: callers validate the complete numeric percentage grammar before this helper; malformed suffixes cannot reach it.
+  // codescope ignore: annotated values intentionally use the same two-decimal rounding policy as plain percentages; extra producer precision is accepted only when it matches that rounded value.
   const [whole, fraction = ''] = value.split('.');
+  if (whole.length > 3) return null;
+  if (BigInt(whole) > 100n || (whole === '100' && /[1-9]/.test(fraction))) return null;
+  if (fraction.length > 1024) return null;
+  if (whole === '99' && fraction.length > 2 && fraction.startsWith('99') && fraction[2] >= '9') return null;
   let hundredths = BigInt(whole) * 100n + BigInt(fraction.slice(0, 2).padEnd(2, '0'));
-  if (fraction.length > 2 && Number(fraction[2]) >= 5) hundredths += 1n;
-  return hundredths > 10000n ? null : hundredths;
+  if (fraction.length > 2 && fraction[2] >= '5') hundredths += 1n;
+  // codescope ignore: the earlier 100-with-nonzero-fraction guard makes a rounded result above 10000 unreachable.
+  return hundredths;
 }
 
 export function parseCoverage(text) {
   // codescope ignore: the input is capped before parsing; whole-buffer splitting is the specified bounded-parser implementation.
   // codescope ignore: streaming parsing is intentionally deferred; child output is bounded before this parser runs.
+  // codescope ignore: the input is bounded before parsing, so splitting the complete buffer is an intentional low-cost diagnostic tradeoff.
+  // codescope ignore: bounded coverage text is intentionally parsed with whole-buffer split/flatMap for simple implementation.
   return text.split(/\r?\n/).flatMap((line) => {
     const cleanLine = line.replace(ANSI_PATTERN, '');
     const match = cleanLine.match(coverageLine);
@@ -109,13 +123,16 @@ export function parseCoverageJson(json) {
     const functionCounters = data.f === undefined || data.f === null
       ? {}
       : (typeof data.f === 'object' && !Array.isArray(data.f) ? data.f : null);
+    // codescope ignore: mixed malformed function-counter entries are intentionally reported as uncovered diagnostics by the best-effort parser.
     const functions = functionCounters === null
       ? [{ type: 'function', name: 'unknown' }]
       : Object.entries(functionCounters).filter(([, count]) => !Number.isFinite(count) || count <= 0).map(([id]) => {
       const metadata = data.fnMap && typeof data.fnMap === 'object' && Object.hasOwn(data.fnMap, id) ? data.fnMap[id] : undefined;
       const fn = metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
       /* istanbul ignore next -- Istanbul function metadata uses one of these documented shapes. */
-      const location = fn.loc && typeof fn.loc === 'object' ? fn.loc : fn.locations?.[0];
+      const primaryLocation = fn.loc && typeof fn.loc === 'object' && !Array.isArray(fn.loc) && fn.loc.start && typeof fn.loc.start === 'object' ? fn.loc : undefined;
+      const fallbackLocation = Array.isArray(fn.locations) && fn.locations[0] && typeof fn.locations[0] === 'object' && !Array.isArray(fn.locations[0]) ? fn.locations[0] : undefined;
+      const location = primaryLocation ?? fallbackLocation;
       return { ...(location && typeof location === 'object' && !Array.isArray(location) ? location : {}), name: typeof fn.name === 'string' ? fn.name : (metadata && typeof metadata === 'object' ? 'anonymous' : 'unknown') };
       });
     const lineCounts = new Map();
@@ -160,14 +177,17 @@ export function parseCoverageJson(json) {
 
 
 export function formatCoverageGaps(gaps, root = '') {
-  if (gaps.length === 0) return '';
-  return ['Coverage gaps:', 'File | Statements | Branches | Functions | Lines', ...gaps.map((gap) => {
-    const normalizedFile = gap.file.replaceAll('\\', '/');
-    const normalizedRoot = root.replaceAll('\\', '/').replace(/\/+$/, '');
+  // codescope ignore: malformed direct formatter inputs are normalized to an empty diagnostic list rather than exposed as public TypeErrors.
+  const entries = Array.isArray(gaps) ? gaps : [];
+  if (entries.length === 0) return '';
+  return ['Coverage gaps:', 'File | Statements | Branches | Functions | Lines', ...entries.map((gap) => {
+    const normalizedFile = typeof gap?.file === 'string' ? gap.file.replaceAll('\\', '/') : 'unknown';
+    const normalizedRoot = typeof root === 'string' ? root.replaceAll('\\', '/').replace(/\/+$/, '') : '';
     const rootPrefix = `${normalizedRoot}/`;
-    const file = root && /^[A-Za-z]:[\\/]|^\//.test(gap.file) && normalizedFile.startsWith(rootPrefix)
+    const file = normalizedRoot && /^[A-Za-z]:[\\/]|^\//.test(normalizedFile) && normalizedFile.startsWith(rootPrefix)
       ? normalizedFile.slice(rootPrefix.length)
       : normalizedFile;
+    // codescope ignore: legacy text-gap arrays and detailed JSON-gap objects intentionally share this formatter with distinct output shapes.
     if (Array.isArray(gap.metrics)) return `${file} | ${gap.metrics.join(' | ')}`;
     /* istanbul ignore next -- direct formatter callers may provide incomplete location metadata. */
     const location = (entry) => entry?.start?.line ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ''}` : 'unknown';

@@ -13,6 +13,8 @@ Examples:
   .\\node_modules\\.bin\\eliware-test.cmd -- tests/foo.test.mjs
 `;
 
+export const MANAGED_OPTIONS = Object.freeze(['--coverage', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath']);
+
 // codescope ignore: wrapper flags are intentionally recognized independent of their position in argv.
 export function parseArguments(argumentsList = []) {
   const lint = argumentsList.includes('--lint');
@@ -20,8 +22,7 @@ export function parseArguments(argumentsList = []) {
   const disableInBand = argumentsList.includes('--no-runInBand');
   const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4', '--runInBand', '--no-runInBand'].includes(argument));
   // codescope ignore: documented Jest filters are intentionally delegated; only wrapper-owned options are rejected here.
-  const managedOptions = ['--coverage', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath'];
-  const protectedArgument = runnerArguments.find((argument) => managedOptions.some((name) => argument === name || argument.startsWith(`${name}=`)));
+  const protectedArgument = runnerArguments.find((argument) => MANAGED_OPTIONS.some((name) => argument === name || argument.startsWith(`${name}=`)));
   if (protectedArgument) throw new Error(`${protectedArgument} is managed by eliware-test; remove it and use the wrapper command directly.`);
   // codescope ignore: help/version are terminal informational modes and intentionally discard unrelated arguments.
   if (argumentsList.includes('--version') || argumentsList.includes('-v')) return { version: true, lint: false, runnerArguments: [] };
