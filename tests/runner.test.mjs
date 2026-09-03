@@ -221,7 +221,7 @@ describe('runner orchestration', () => {
     expect(combinedMessages.join('')).toContain('warning: rule violation');
   });
 
-  test.each(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects'])('rejects missing values for %s before Jest starts', async (option) => {
+  test.each(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile'])('rejects missing values for %s before Jest starts', async (option) => {
     const messages = [];
     let testStarted = false;
     const runTest = async () => { testStarted = true; return { code: 0, output: '' }; };

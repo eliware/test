@@ -1,5 +1,5 @@
 import { HELP_TEXT, parseArguments } from '../src/arguments.mjs';
-import { formatCoverageGaps, metricHasGap, parseCoverage, parseCoverageJson } from '../src/coverage.mjs';
+import { formatCoverageGaps, metricHasGap, parseCoverage, parseCoverageJson, percentageWithUnknowns } from '../src/coverage.mjs';
 
 describe('parseArguments', () => {
   test('detects standalone lint mode', () => {
@@ -323,6 +323,7 @@ test('ignores unmapped covered statements for line gaps', () => {
       statementMap: {}, s: {}, branchMap: {}, b: {}, fnMap: {}, f: {}, l: {}
     } });
     expect(gaps).toEqual([]);
+    expect(percentageWithUnknowns(new Map(), 0)).toBe(0);
   });
 });
 

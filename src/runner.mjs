@@ -14,6 +14,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: collaborator injection is intentionally an advanced internal composition seam; the CLI is the supported consumer interface.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
 export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+  // codescope ignore: this is the deliberate single CLI policy boundary; stage sequencing is part of the public behavior.
   // codescope ignore: this function is the intentional single policy boundary for cleanup, execution, coverage, and lint sequencing.
   // codescope ignore: filesystem collaborator injection is an intentional internal test seam; consumers use the CLI.
   if (typeof cwd !== 'string' || !Array.isArray(runnerArguments) || typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
@@ -184,6 +185,7 @@ function positionalArguments(argumentsList) {
 }
 
 async function readCoverageGaps(cwd, output, write, readFilePath = readFile) {
+  // codescope ignore: coverage files are workspace-global by contract; callers must serialize invocations.
   // codescope ignore: structural text recognition and pre-run cleanup are the documented evidence boundary.
   // codescope ignore: pre-run cleanup plus completed-process output is the documented freshness boundary; callers serialize workspace runs.
   // codescope ignore: cleanup plus process completion is the intentional freshness boundary; concurrent workspace use is outside this runner contract.

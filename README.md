@@ -76,6 +76,8 @@ parallel invocations are possible.
 Pass `eliware-test --sanitize-env` to run Jest and Oxlint with an empty base
 environment; explicitly supplied tool variables are still forwarded. The
 default inherits the consumer environment for normal npm and tool resolution.
+Use the sanitized mode in CI when the workspace or its dependencies are not
+fully trusted.
 
 Coverage text parsing remains whole-buffer because captured output is capped at
 16 KiB. The orchestration function and injected APIs are intentionally kept as

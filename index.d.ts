@@ -40,6 +40,7 @@ export function formatCoverageGaps(gaps: CoverageGap[], root?: string): string;
 /** Parse Istanbul JSON coverage and return actionable gaps. */
 export function parseCoverageJson(json: Record<string, unknown>): JsonCoverageGap[];
 
+// codescope ignore: collaborator results are intentionally partial because the runtime normalizes missing fields at the boundary.
 export interface ProcessResult { code?: number; output?: string }
 export interface ProcessOptions { cwd: string; inheritEnv: boolean }
 export interface LintOptions {

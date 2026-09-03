@@ -13,7 +13,7 @@ function resolveFromConsumer(cwd, specifier) {
 
 export function runProcess(command, argumentsList, options) {
   // Callers may set inheritEnv: false to use an explicitly supplied sanitized environment.
-  // codescope ignore: inherited environment is the intentional trusted-consumer boundary; isolation is outside this package contract.
+  // codescope ignore: inherited environment is the intentional trusted-consumer boundary; --sanitize-env provides the opt-in least-privilege mode.
   // codescope ignore: Node spawn errors are surfaced through the child error event; invalid options are programmer errors.
   return new Promise((resolveResult) => {
     // codescope ignore: one bounded combined diagnostic buffer intentionally prioritizes the total output cap over independent stdout/stderr quotas; cross-stream completeness is outside the contract.
