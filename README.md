@@ -257,10 +257,11 @@ does not replace the wrapper code.
 | 16 | npm pack failure |
 | 17 | Build failure or invalid build metadata |
 
-After tests, coverage, and lint pass, `npm test` also runs
-`npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
-`npm pack --dry-run --ignore-scripts`; both stages are wired by the CLI and
-covered by orchestration tests.
+After tests, coverage, and lint pass, the CLI-wired consumer invocation also
+runs `npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
+`npm pack --dry-run --ignore-scripts`. These stages are always supplied by the
+published CLI; build is conditional on the consumer defining a non-empty
+`scripts.build` command.
 
 When the consuming `package.json` defines a non-empty `scripts.build` command,
 `npm test` runs `npm run build` after coverage and before lint. Build failures

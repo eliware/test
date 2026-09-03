@@ -348,6 +348,9 @@ test('ignores unmapped covered statements for line gaps', () => {
     } });
     expect(gaps).toEqual([]);
     expect(percentageWithUnknowns(new Map(), 0)).toBe(0);
+    expect(() => percentageWithUnknowns(new Map(), -1)).toThrow('finite non-negative integer');
+    expect(() => percentageWithUnknowns(new Map(), 1.5)).toThrow('finite non-negative integer');
+    expect(() => percentageWithUnknowns(new Map(), Infinity)).toThrow('finite non-negative integer');
   });
 
   test('keeps mapped covered statements at 100% without an l map', () => {

@@ -186,6 +186,9 @@ export function parseCoverageJson(json) {
 }
 
 export function percentageWithUnknowns(lineCounts, unknownCount) {
+  if (!Number.isFinite(unknownCount) || !Number.isInteger(unknownCount) || unknownCount < 0) {
+    throw new TypeError('unknownCount must be a finite non-negative integer');
+  }
   const mapped = Object.values(Object.fromEntries(lineCounts));
   const total = mapped.length + unknownCount;
   if (total === 0) return 0;

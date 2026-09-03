@@ -1,11 +1,17 @@
 import { runLint, runToolkit } from '../src/runner.mjs';
 import { runOxlint } from '../src/process.mjs';
+import { STANDARD_EXCLUSIONS, oxlintExclusionArguments } from '../src/workspace.mjs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 
 const output = (messages) => (message) => messages.push(message);
 const completeCoverage = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n foo.mjs | 100 | 100 | 100 | 100 |';
 const gapCoverage = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n gap.mjs | 99 | 100 | 100 | 100 |';
 const base = { cwd: process.cwd(), runnerArguments: [], write: () => {} };
+
+test('defines the complete Oxlint workspace exclusion contract', () => {
+  expect(STANDARD_EXCLUSIONS).toEqual(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build', '*.tgz']);
+  expect(oxlintExclusionArguments()).toEqual(STANDARD_EXCLUSIONS.flatMap((pattern) => ['--ignore-pattern', pattern]));
+});
 
 afterEach(async () => {
   for (const fixture of ['json-coverage', 'json-fallback', 'json-stale', 'json-empty', 'json-empty-map', 'json-no-counters', 'json-malformed', 'json-multi-malformed', 'json-array-root', 'json-counter-boundary', 'json-ignore-coverage', 'json-debug-fallback', 'json-error']) {
