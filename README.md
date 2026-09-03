@@ -69,6 +69,9 @@ Run `npm install` after editing `package.json` so the lockfile stays synchronize
 sharing one consumer working directory must be serialized because each run
 cleans and reads that workspace's coverage artifacts.
 
+The wrapper suppresses successful child-process output that it controls; npm
+lifecycle notices and non-failing workspace warnings may still be printed.
+
 Captured child-process diagnostics are bounded to 16 KiB and may include a
 truncation marker when a child process emits more output. Generated coverage
 gap details are rendered separately and are not included in that capture
