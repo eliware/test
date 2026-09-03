@@ -175,6 +175,13 @@ test('handles missing statement counters and unmapped counter entries', () => {
   expect(parseCoverageJson({ 'src/function-counter-function.mjs': { statementMap: {}, s: {}, b: {}, f: functionCounters } })).toHaveLength(1);
 });
 
+test('reports an uncovered statement whose counter has no mapped location', () => {
+  const gaps = parseCoverageJson({ 'src/unmapped-statement.mjs': {
+    statementMap: { 0: { start: { line: 1 } } }, s: { 1: 0 }, b: {}, fnMap: {}, f: {}
+  } });
+  expect(gaps[0].statements).toEqual([{}]);
+});
+
 test('falls back safely for malformed function locations', () => {
   const gaps = parseCoverageJson({
     'src/malformed-function-location.mjs': {
