@@ -122,6 +122,14 @@ describe('runner orchestration', () => {
     expect(calls[0]).toEqual(expect.arrayContaining(['--collectCoverageFrom', 'src/runner.mjs']));
   });
 
+  test('propagates non-missing source mapping access errors', async () => {
+    const accessPath = async (path) => {
+      if (path.endsWith('runner.test.mjs') || path.endsWith('.gitignore')) return;
+      throw Object.assign(new Error('source access denied'), { code: 'EACCES' });
+    };
+    await expect(runToolkit({ ...base, accessPath, runnerArguments: ['tests/runner.test.mjs'], runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow('source access denied');
+  });
+
   test('keeps broad coverage when focused paths cannot map to source files', async () => {
     const calls = [];
     await expect(runToolkit({

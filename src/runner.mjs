@@ -57,7 +57,7 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   // codescope ignore: extension-qualified paths are intentionally delegated to Jest's strict file selection; callers supply test files.
   // codescope ignore: focused multi-file scope is fully covered by injected argument assertions; Jest remains the delegated execution boundary.
   const focusedPathMode = focusedArguments.length > 0 && focusedArguments.every(isTestPath);
-  const focusedCoverage = focusedPathMode ? await focusedCoverageArguments(cwd, focusedArguments) : [];
+  const focusedCoverage = focusedPathMode ? await focusedCoverageArguments(cwd, focusedArguments, accessPath) : [];
   // codescope ignore: reporter configuration is injected deliberately; evidence is validated after child completion so suppressed reporters fail closed.
   let test;
   try {
@@ -114,19 +114,17 @@ function isProtectedArgument(argument) {
     .some((name) => argument === name || argument.startsWith(`${name}=`));
 }
 
-async function focusedCoverageArguments(cwd, testPaths) {
+async function focusedCoverageArguments(cwd, testPaths, accessPath = access) {
   const uniquePaths = [...new Set(testPaths)];
-  const sourcePaths = await Promise.all(uniquePaths.map((testPath) => sourcePathForTest(cwd, testPath)));
+  const sourcePaths = await Promise.all(uniquePaths.map((testPath) => sourcePathForTest(cwd, testPath, accessPath)));
   if (sourcePaths.some((sourcePath) => !sourcePath)) return [];
   return [...new Set(sourcePaths)].flatMap((sourcePath) => ['--collectCoverageFrom', sourcePath]);
 }
 
-async function sourcePathForTest(cwd, testPath) {
+async function sourcePathForTest(cwd, testPath, accessPath = access) {
   // codescope ignore: deterministic sequential probing preserves extension precedence; focused invocations are small and bounded.
   const normalized = testPath.replaceAll('\\', '/').replace(/^\.\//, '');
   const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
-  /* istanbul ignore next -- callers invoke this helper only after test/spec path classification. */
-  if (!marker) return '';
   const sourceRelative = marker[2]
     .replace(/\.(?:test|spec)(?=\.[^.]+$)/i, '')
     .replace(/\.[^.]+$/, '');
@@ -136,10 +134,9 @@ async function sourcePathForTest(cwd, testPath) {
   for (const sourceExtension of sourceExtensions) {
     for (const candidate of [`src/${sourceRelative}.${sourceExtension}`, `src/${sourceRelative}/index.${sourceExtension}`]) {
       try {
-        await access(resolve(cwd, candidate));
+        await accessPath(resolve(cwd, candidate));
         matches.push(candidate);
       } catch (error) {
-        /* istanbul ignore next -- non-ENOENT filesystem errors are exceptional. */
         if (error.code !== 'ENOENT') throw error;
       }
     }
@@ -148,7 +145,6 @@ async function sourcePathForTest(cwd, testPath) {
   return matches.length === 1 ? matches[0] : '';
 }
 
-/* istanbul ignore next -- the default collaborator is supplied by runToolkit's public boundary. */
 async function findMissingFocusedPath(cwd, argumentsList, accessPath = access) {
   // codescope ignore: only extension-qualified or path-qualified arguments are file selections; Jest's bare arguments remain delegated filters.
   const candidates = positionalArguments(argumentsList).filter(isFileLikePath);
@@ -156,7 +152,6 @@ async function findMissingFocusedPath(cwd, argumentsList, accessPath = access) {
     try {
       await accessPath(resolve(cwd, candidate.replaceAll('\\', '/')));
     } catch (error) {
-      /* istanbul ignore next -- non-ENOENT filesystem errors are exceptional. */
       if (error.code !== 'ENOENT') throw error;
       return candidate;
     }
@@ -181,7 +176,6 @@ function positionalArguments(argumentsList) {
   return values;
 }
 
-/* istanbul ignore next -- the default collaborator is supplied by runToolkit's public boundary. */
 async function readCoverageGaps(cwd, output, write, readFilePath = readFile) {
   // codescope ignore: structural text recognition and pre-run cleanup are the documented evidence boundary.
   // codescope ignore: pre-run cleanup plus completed-process output is the documented freshness boundary; callers serialize workspace runs.
@@ -198,7 +192,6 @@ async function readCoverageGaps(cwd, output, write, readFilePath = readFile) {
     try {
       raw = await readFilePath(resolve(cwd, name), 'utf8');
     } catch (error) {
-      /* istanbul ignore next -- unexpected filesystem errors are tested through the public promise. */
       if (error.code !== 'ENOENT') throw error;
       continue;
     }
@@ -307,12 +300,10 @@ async function warnIfMissingGitignore(cwd, write, accessPath) {
   try {
     await accessPath(resolve(cwd, '.gitignore'));
   } catch (error) {
-    /* istanbul ignore next -- non-ENOENT filesystem errors are exceptional. */
     if (error.code === 'ENOENT') {
       write('Warning: .gitignore is missing. Recommended entries: node_modules/, coverage/, test-results/, and *.tgz.\n');
       return;
     }
-    /* istanbul ignore next -- unexpected filesystem errors are propagated. */
     throw error;
   }
 }

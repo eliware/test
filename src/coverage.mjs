@@ -82,7 +82,6 @@ function percentage(counts) {
   // codescope ignore: JSON counters arrive as JavaScript numbers, so extreme counter precision is inherently limited by the producer/parser representation.
   // codescope ignore: Istanbul branch counters are arrays by contract; flattening them here intentionally shares the metric calculation with scalar counters.
   // codescope ignore: Istanbul counters are execution counts; every finite positive count is covered.
-  /* istanbul ignore next -- sparse coverage JSON may omit a metric map. */
   if (counts === undefined || counts === null) return 0;
   // Malformed scalar maps are not valid coverage evidence and must not look complete.
   if (typeof counts !== 'object' || Array.isArray(counts)) return 0;
@@ -130,7 +129,6 @@ export function parseCoverageJson(json) {
       : Object.entries(functionCounters).filter(([, count]) => !Number.isFinite(count) || count <= 0).map(([id]) => {
       const metadata = data.fnMap && typeof data.fnMap === 'object' && Object.hasOwn(data.fnMap, id) ? data.fnMap[id] : undefined;
       const fn = metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
-      /* istanbul ignore next -- Istanbul function metadata uses one of these documented shapes. */
       const primaryLocation = fn.loc && typeof fn.loc === 'object' && !Array.isArray(fn.loc) && fn.loc.start && typeof fn.loc.start === 'object' ? fn.loc : undefined;
       const fallbackLocation = Array.isArray(fn.locations) && fn.locations[0] && typeof fn.locations[0] === 'object' && !Array.isArray(fn.locations[0]) ? fn.locations[0] : undefined;
       const location = primaryLocation ?? fallbackLocation;
@@ -138,9 +136,7 @@ export function parseCoverageJson(json) {
       });
     const lineCounts = new Map();
     let hasUnmappedStatement = false;
-    /* istanbul ignore next -- malformed top-level statement maps are normalized defensively. */
-    Object.entries(data.statementMap ?? {}).forEach(([id, statement]) => {
-      /* istanbul ignore next -- Object normalization deliberately handles absent malformed coverage maps. */
+    Object.entries(data.statementMap).forEach(([id, statement]) => {
       const statementCounts = data.s && (typeof data.s === 'object' || typeof data.s === 'function') ? data.s : {};
       const count = statementCounts[id];
       const statementStart = statement && typeof statement === 'object' && Object.hasOwn(statement, 'start')
@@ -151,9 +147,8 @@ export function parseCoverageJson(json) {
       if (typeof line === 'number' && Number.isFinite(line)) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
       else if (!isCoveredCount(count)) hasUnmappedStatement = true;
     });
-    /* istanbul ignore next -- Object normalization deliberately handles absent malformed coverage maps. */
     Object.entries(data.s ?? {}).forEach(([id, count]) => {
-      if (!(id in (data.statementMap ?? {})) && !isCoveredCount(count)) hasUnmappedStatement = true;
+      if (!(id in data.statementMap) && !isCoveredCount(count)) hasUnmappedStatement = true;
     });
     const lines = new Set([...lineCounts].filter(([, count]) => count === 0).map(([line]) => line));
     const lineGap = hasUnmappedStatement;
@@ -190,7 +185,6 @@ export function formatCoverageGaps(gaps, root = '') {
       : normalizedFile;
     // codescope ignore: legacy text-gap arrays and detailed JSON-gap objects intentionally share this formatter with distinct output shapes.
     if (Array.isArray(gap.metrics)) return `${file} | ${gap.metrics.join(' | ')}`;
-    /* istanbul ignore next -- direct formatter callers may provide incomplete location metadata. */
     const location = (entry) => entry?.start?.line ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ''}` : 'unknown';
     const metrics = gap.metrics ?? { statements: '-', branches: '-', functions: '-', lines: '-' };
     const details = (items, formatter) => {
@@ -203,7 +197,6 @@ export function formatCoverageGaps(gaps, root = '') {
       `${file} | ${metrics.statements}% | ${metrics.branches}% | ${metrics.functions}% | ${metrics.lines}% | uncovered lines: ${(Array.isArray(gap.lines) ? gap.lines : []).join(', ') || '-'}`,
       `  Uncovered statements: ${details(gap.statements, location)}`,
       `  Uncovered branches: ${details(gap.branches, (entry) => `${location(entry)} (${entry.type ?? 'branch'}, uncovered)`)}`,
-      /* istanbul ignore next -- direct formatter callers may provide incomplete function metadata. */
       `  Uncovered functions: ${details(gap.functions, (fn) => `${fn?.name ?? 'anonymous'} at ${location(fn)}`)}`,
       '  Fix: add or extend tests that execute each listed statement, branch, and function path.'
     ].join('\n');

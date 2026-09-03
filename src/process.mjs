@@ -8,14 +8,7 @@ const TRUNCATION_PREFIX = '\n[Output truncated: ';
 const TRUNCATION_SUFFIX = ' characters omitted.]\n';
 
 function resolveFromConsumer(cwd, specifier) {
-  try {
-    return createRequire(import.meta.url).resolve(specifier);
-  } catch (error) {
-    /* istanbul ignore next -- consumer resolution is only a compatibility fallback. */
-    if (error.code !== 'MODULE_NOT_FOUND') throw error;
-    /* istanbul ignore next -- bundled runtime dependencies normally resolve first. */
-    return createRequire(resolve(cwd, 'package.json')).resolve(specifier);
-  }
+  return createRequire(resolve(cwd, 'package.json')).resolve(specifier);
 }
 
 export function runProcess(command, argumentsList, options) {
@@ -36,13 +29,11 @@ export function runProcess(command, argumentsList, options) {
     // codescope ignore: diagnostic output is intentionally bounded at 16 KiB; simple string capture is sufficient for this cap and avoids a larger buffering abstraction.
     // codescope ignore: consumer processes intentionally inherit the trusted workspace environment; no untrusted-workspace isolation contract is provided.
     const inheritedEnvironment = options.inheritEnv === false ? {} : process.env;
-    const child = spawn(command, argumentsList, { cwd: options.cwd, env: { ...inheritedEnvironment, ...options.env }, windowsHide: true });
+    const spawnProcess = options.spawn ?? spawn;
+    const child = spawnProcess(command, argumentsList, { cwd: options.cwd, env: { ...inheritedEnvironment, ...options.env }, windowsHide: true });
     const settle = (result) => {
-      /* istanbul ignore next -- close/error races are defensive and cannot be scheduled deterministically. */
-      if (!settled) {
-        settled = true;
-        resolveResult(result);
-      }
+      settled = true;
+      resolveResult(result);
     };
     const finish = (code, errorMessage) => {
       if (settled) return;
@@ -54,7 +45,6 @@ export function runProcess(command, argumentsList, options) {
     };
     const capture = (decoder) => (chunk) => {
       // codescope ignore: the global diagnostic cap intentionally permits uneven stdout/stderr retention under sustained dual-stream output.
-      /* istanbul ignore next -- stream events after settlement are a defensive race guard. */
       if (!settled) output = appendBounded(output, decoder.decode(chunk, { stream: true }));
     };
     child.stdout.on('data', capture(stdoutDecoder));
@@ -63,7 +53,6 @@ export function runProcess(command, argumentsList, options) {
       processError = `${error.message}\n`;
       finish(1, processError);
     });
-    /* istanbul ignore next -- a normal child process always provides an exit code. */
     child.on('close', (code) => {
       finish(processError ? 1 : (Number.isInteger(code) && code >= 0 ? code : 1), processError);
     });

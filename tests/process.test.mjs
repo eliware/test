@@ -1,5 +1,6 @@
 import { runJest, runOxlint, runProcess } from '../src/process.mjs';
 import { access } from 'node:fs/promises';
+import { EventEmitter } from 'node:events';
 
 describe('process helpers', () => {
   test('captures a successful child process', async () => {
@@ -9,6 +10,27 @@ describe('process helpers', () => {
   test('supports an explicitly sanitized environment', async () => {
     const result = await runProcess(process.execPath, ['-e', 'process.stdout.write(process.env.ELIWARE_TEST_SECRET ?? "missing")'], { cwd: process.cwd(), inheritEnv: false, env: { ELIWARE_TEST_SECRET: 'safe' } });
     expect(result).toMatchObject({ code: 0, output: 'safe' });
+  });
+
+  test('handles child error and late stream events safely', async () => {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    const resultPromise = runProcess('ignored', [], { cwd: process.cwd(), spawn: () => child });
+    child.emit('error', new Error('spawn failed'));
+    child.stdout.emit('data', Buffer.from('late'));
+    child.stderr.emit('data', Buffer.from('late error'));
+    child.emit('close', null);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1, output: expect.stringContaining('spawn failed') });
+  });
+
+  test('normalizes a signal-terminated child close', async () => {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    const resultPromise = runProcess('ignored', [], { cwd: process.cwd(), spawn: () => child });
+    child.emit('close', null);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
   });
 
   test('captures a failed child process', async () => {
