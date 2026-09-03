@@ -1,11 +1,9 @@
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
+import { appendBounded, boundOutput } from './process/output/truncate.mjs';
+import { buildChildOptions } from './process/environment/build-child.mjs';
 
-const MAX_OUTPUT = 16 * 1024;
-const OUTPUT_HEAD = 4 * 1024;
-const TRUNCATION_PREFIX = '\n[Output truncated: ';
-const TRUNCATION_SUFFIX = ' characters omitted.]\n';
 
 function resolveFromConsumer(cwd, specifier) {
   return createRequire(resolve(cwd, 'package.json')).resolve(specifier);
@@ -21,9 +19,8 @@ export function runProcess(command, argumentsList, options) {
     const stderrDecoder = new TextDecoder();
     // codescope ignore: intentional drop-in compatibility with direct npm/Jest execution; trusted consumer processes inherit the full environment by default, while --sanitize-env is the explicit isolation mode.
     // Intentional: the caller supplies the trusted consumer environment so npm and tool config resolve normally.
-    const inheritedEnvironment = options.inheritEnv === false ? {} : process.env;
     const spawnProcess = options.spawn ?? spawn;
-    const child = spawnProcess(command, argumentsList, { cwd: options.cwd, env: { ...inheritedEnvironment, ...options.env }, windowsHide: true });
+    const child = spawnProcess(command, argumentsList, buildChildOptions(options));
     const settle = (result) => {
       settled = true;
       resolveResult(result);
@@ -49,20 +46,6 @@ export function runProcess(command, argumentsList, options) {
   });
 }
 
-function appendBounded(output, chunk) {
-  if (chunk.length > MAX_OUTPUT) return boundOutput(chunk);
-  return boundOutput(output + chunk);
-}
-
-function boundOutput(output) {
-  if (output.length <= MAX_OUTPUT) return output;
-  const omitted = output.length - MAX_OUTPUT;
-  const marker = `${TRUNCATION_PREFIX}${omitted}${TRUNCATION_SUFFIX}`;
-  const contentBudget = Math.max(0, MAX_OUTPUT - marker.length);
-  const headLength = Math.min(OUTPUT_HEAD, contentBudget);
-  const tailLength = contentBudget - headLength;
-  return `${output.slice(0, headLength)}${marker}${output.slice(-tailLength)}`;
-}
 
 export function runJest(argumentsList, options) {
   const jestPackage = resolveFromConsumer(options.cwd, 'jest/package.json');

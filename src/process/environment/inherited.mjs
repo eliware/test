@@ -1,4 +1,3 @@
-/* istanbul ignore file */
-/* eslint-disable unicorn/no-empty-file */
-// TODO: implement this module.
-export {};
+export function inheritedEnvironment(options) {
+  return options.inheritEnv === false ? {} : process.env;
+}
