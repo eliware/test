@@ -12,6 +12,10 @@ test('passes sanitized environment mode to typecheck', async () => {
   expect(options.inheritEnv).toBe(false);
 });
 
+test('normalizes an empty typecheck result as failure', async () => {
+  await expect(runTypecheckStage({ cwd: 'C:/repo', runTypecheck: async () => undefined, write: () => {} }, 'typecheck')).resolves.toBe(19);
+});
+
 test('fails clearly when typecheck fails or cannot start', async () => {
   const messages = [];
   await expect(runTypecheckStage({ cwd: 'C:/repo', runTypecheck: async () => ({ code: 1, output: 'bad' }), write: (message) => messages.push(message) }, 'typecheck')).resolves.toBe(19);
