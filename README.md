@@ -159,7 +159,9 @@ Strict file-only selection applies to conventional paths containing `tests`,
 `test`, or `spec`; other Jest file paths remain delegated to Jest's normal
 selection semantics.
 
-The exported orchestration functions are advanced composition APIs that require injected collaborators for testing; consuming projects should use the CLI commands above.
+The exported orchestration functions are advanced, injection-based composition
+APIs and are versioned with the package; consuming projects should use the CLI
+commands above for the stable interface.
 
 ## Recommended `.gitignore` Entries
 
