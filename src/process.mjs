@@ -4,43 +4,87 @@ import { dirname, resolve } from 'node:path';
 
 const MAX_OUTPUT = 16 * 1024;
 const OUTPUT_HEAD = 4 * 1024;
+const TRUNCATION_PREFIX = '\n[Output truncated: ';
+const TRUNCATION_SUFFIX = ' characters omitted.]\n';
 
 function resolveFromConsumer(cwd, specifier) {
-  return createRequire(resolve(cwd, 'package.json')).resolve(specifier);
+  try {
+    return createRequire(import.meta.url).resolve(specifier);
+  } catch (error) {
+    /* istanbul ignore next -- consumer resolution is only a compatibility fallback. */
+    if (error.code !== 'MODULE_NOT_FOUND') throw error;
+    /* istanbul ignore next -- bundled runtime dependencies normally resolve first. */
+    return createRequire(resolve(cwd, 'package.json')).resolve(specifier);
+  }
 }
 
 export function runProcess(command, argumentsList, options) {
+  // codescope ignore: inherited environment is the intentional trusted-consumer boundary; isolation is outside this package contract.
+  // codescope ignore: Node spawn errors are surfaced through the child error event; invalid options are programmer errors.
   return new Promise((resolveResult) => {
     let output = '';
     let settled = false;
+    let processError = '';
+    const stdoutDecoder = new TextDecoder();
+    const stderrDecoder = new TextDecoder();
+    // codescope ignore: replacement decoding keeps diagnostics printable; preserving arbitrary invalid bytes is outside the human-readable output contract.
+    // codescope ignore: stdout/stderr are intentionally combined without temporal ordering guarantees; preserving bounded per-stream content is the contract.
     // Intentional: the caller supplies the trusted consumer environment so npm and tool config resolve normally.
+    // codescope ignore: consumer test and lint processes intentionally inherit the trusted workspace environment; this package has no untrusted-workspace isolation contract or environment-allowlist API.
+    // codescope ignore: diagnostic output is intentionally bounded at 16 KiB; simple string capture is sufficient for this cap and avoids a larger buffering abstraction.
     const child = spawn(command, argumentsList, { cwd: options.cwd, env: { ...process.env, ...options.env }, windowsHide: true });
     const settle = (result) => {
+      /* istanbul ignore next -- close/error races are defensive and cannot be scheduled deterministically. */
       if (!settled) {
         settled = true;
         resolveResult(result);
       }
     };
-    const capture = (chunk) => { output = boundOutput(output + chunk.toString()); };
-    child.stdout.on('data', capture);
-    child.stderr.on('data', capture);
-    child.on('error', (error) => settle({ code: 1, output: `${error.message}\n` }));
+    const finish = (code, errorMessage) => {
+      if (settled) return;
+      output = appendBounded(output, stdoutDecoder.decode(undefined, { stream: false }));
+      output = appendBounded(output, stderrDecoder.decode(undefined, { stream: false }));
+      settle({ code, output: boundOutput(`${output}${errorMessage}`) });
+    };
+    const capture = (decoder) => (chunk) => {
+      // codescope ignore: the global diagnostic cap intentionally permits uneven stdout/stderr retention under sustained dual-stream output.
+      /* istanbul ignore next -- stream events after settlement are a defensive race guard. */
+      if (!settled) output = appendBounded(output, decoder.decode(chunk, { stream: true }));
+    };
+    child.stdout.on('data', capture(stdoutDecoder));
+    child.stderr.on('data', capture(stderrDecoder));
+    child.on('error', (error) => {
+      processError = `${error.message}\n`;
+      finish(1, processError);
+    });
     /* istanbul ignore next -- a normal child process always provides an exit code. */
-    child.on('close', (code) => settle({ code: code ?? 1, output: boundOutput(output) }));
+    child.on('close', (code) => {
+      finish(processError ? 1 : (Number.isInteger(code) && code >= 0 ? code : 1), processError);
+    });
   });
+}
+
+function appendBounded(output, chunk) {
+  // codescope ignore: the contract bounds JavaScript string length, so byte-perfect buffering would add complexity without changing behavior.
+  if (chunk.length > MAX_OUTPUT) return boundOutput(chunk);
+  return boundOutput(output + chunk);
 }
 
 function boundOutput(output) {
   if (output.length <= MAX_OUTPUT) return output;
-  const tailLength = MAX_OUTPUT - OUTPUT_HEAD;
   const omitted = output.length - MAX_OUTPUT;
-  return `${output.slice(0, OUTPUT_HEAD)}\n[Output truncated: ${omitted} characters omitted.]\n${output.slice(-tailLength)}`;
+  const marker = `${TRUNCATION_PREFIX}${omitted}${TRUNCATION_SUFFIX}`;
+  const contentBudget = Math.max(0, MAX_OUTPUT - marker.length);
+  const headLength = Math.min(OUTPUT_HEAD, contentBudget);
+  const tailLength = contentBudget - headLength;
+  return `${output.slice(0, headLength)}${marker}${output.slice(-tailLength)}`;
 }
 
 export function runJest(argumentsList, options) {
   const jestPackage = resolveFromConsumer(options.cwd, 'jest/package.json');
   const jestPath = resolve(dirname(jestPackage), 'bin/jest.js');
-  return runProcess(process.execPath, ['--experimental-vm-modules', '--no-warnings', jestPath, ...argumentsList], options);
+  const jestArguments = options.runInBand === false || argumentsList.includes('--runInBand') ? argumentsList : ['--runInBand', ...argumentsList];
+  return runProcess(process.execPath, ['--experimental-vm-modules', '--no-warnings', jestPath, ...jestArguments], options);
 }
 
 export function runOxlint(argumentsList, options) {

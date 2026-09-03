@@ -37,9 +37,11 @@
     "files": [
         "bin",
         "src",
+        "docs",
         "index.mjs",
         "index.d.ts",
         "README.md",
+        "spec.md",
         "LICENSE",
         "RELEASE_NOTES.md"
     ],

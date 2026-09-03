@@ -30,6 +30,8 @@ repositories.
 - Treat zero-valued text coverage and missing usable JSON coverage as gaps;
   fall back to the Jest text report when JSON has no instrumented entries.
 - Invoke Oxlint with warnings denied so warning-level findings fail validation.
+- Run Jest in-band by default; support `--no-runInBand` as an explicit
+  diagnostic opt-out.
 - Support `--ignore-100x4` only as an explicit coverage-enforcement opt-out;
   tests, lint, and coverage collection still run.
 - Do not hide real coverage gaps with ignore comments.

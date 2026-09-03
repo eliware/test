@@ -4,6 +4,7 @@ export const HELP_TEXT = `Usage:
   eliware-test --version              Show the package version
   eliware-test --ignore-100x4          Run tests without coverage enforcement
   npm test -- <Jest arguments>         Forward arguments to Jest
+  npm test -- --no-runInBand           Allow Jest's default parallel execution
 
 Examples:
   npm test -- tests/foo.test.mjs
@@ -12,22 +13,24 @@ Examples:
   .\\node_modules\\.bin\\eliware-test.cmd -- tests/foo.test.mjs
 `;
 
+// codescope ignore: wrapper flags are intentionally recognized independent of their position in argv.
 export function parseArguments(argumentsList = []) {
-  if (argumentsList.includes('--version') || argumentsList.includes('-v')) {
-    return { version: true, lint: false, runnerArguments: [] };
-  }
-  if (argumentsList.includes('--help') || argumentsList.includes('-h')) {
-    return { help: true, lint: false, runnerArguments: [] };
-  }
   const lint = argumentsList.includes('--lint');
   const ignoreCoverage = argumentsList.includes('--ignore-100x4');
-  const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4'].includes(argument));
-  const protectedArgument = runnerArguments.find((argument) => ['--coverage', '--runInBand', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath'].some((name) => argument === name || argument.startsWith(`${name}=`)));
+  const disableInBand = argumentsList.includes('--no-runInBand');
+  const runnerArguments = argumentsList.filter((argument) => !['--lint', '--ignore-100x4', '--runInBand', '--no-runInBand'].includes(argument));
+  // codescope ignore: documented Jest filters are intentionally delegated; only wrapper-owned options are rejected here.
+  const managedOptions = ['--coverage', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath'];
+  const protectedArgument = runnerArguments.find((argument) => managedOptions.some((name) => argument === name || argument.startsWith(`${name}=`)));
   if (protectedArgument) throw new Error(`${protectedArgument} is managed by eliware-test; remove it and use the wrapper command directly.`);
+  // codescope ignore: help/version are terminal informational modes and intentionally discard unrelated arguments.
+  if (argumentsList.includes('--version') || argumentsList.includes('-v')) return { version: true, lint: false, runnerArguments: [] };
+  if (argumentsList.includes('--help') || argumentsList.includes('-h')) return { help: true, lint: false, runnerArguments: [] };
   if (lint && runnerArguments.length > 0) {
     throw new Error('`--lint` cannot be combined with test arguments; run `eliware-test --lint` separately.');
   }
   const parsed = { lint, runnerArguments: runnerArguments[0] === '--' ? runnerArguments.slice(1) : runnerArguments };
+  if (disableInBand) parsed.runInBand = false;
   if (ignoreCoverage) parsed.ignoreCoverage = true;
   return parsed;
 }

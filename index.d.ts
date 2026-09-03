@@ -3,8 +3,39 @@ export interface ParsedArguments {
   runnerArguments: string[];
 }
 
+/** Parse wrapper flags and the Jest arguments delegated by the CLI. */
 export function parseArguments(argumentsList?: readonly string[]): ParsedArguments;
-export interface CoverageGap { file: string; metrics: string[]; }
-export function parseCoverage(text: string): CoverageGap[];
+export interface TextCoverageGap {
+  file: string;
+  metrics: string[];
+}
+export interface CoverageLocation {
+  start?: { line?: number; column?: number };
+  end?: { line?: number; column?: number };
+  [key: string]: unknown;
+}
+export interface JsonCoverageGap {
+  file: string;
+  statements: CoverageLocation[];
+  branches: CoverageLocation[];
+  functions: Array<CoverageLocation & { name: string }>;
+  lines: number[];
+  metrics: {
+    statements: number;
+    branches: number;
+    functions: number;
+    lines: number;
+  };
+}
+export type CoverageGap = TextCoverageGap | JsonCoverageGap;
+/** Parse the Jest text coverage table and return files below 100×4. */
+export function parseCoverage(text: string): TextCoverageGap[];
+/** Format detailed coverage diagnostics for human-readable CLI output. */
 export function formatCoverageGaps(gaps: CoverageGap[]): string;
-export function parseCoverageJson(json: Record<string, unknown>): CoverageGap[];
+/** Parse Istanbul JSON coverage and return actionable gaps. */
+export function parseCoverageJson(json: Record<string, unknown>): JsonCoverageGap[];
+
+/** Advanced orchestration API; consumers normally use the CLI. */
+export function runLint(options: { cwd: string; write: (message: string) => void; runLintCommand: (argumentsList: string[], options: { cwd: string }) => Promise<{ code?: number; output?: string } | null>; accessPath?: (path: string) => Promise<void> }): Promise<number>;
+/** Advanced orchestration API; collaborators are injected for composition/testing. */
+export function runToolkit(options: { cwd: string; runnerArguments: string[]; write: (message: string) => void; runTest: (argumentsList: string[], options: { cwd: string; runInBand: boolean }) => Promise<{ code?: number; output?: string } | null>; runLintCommand: (argumentsList: string[], options: { cwd: string }) => Promise<{ code?: number; output?: string } | null>; runInBand?: boolean; ignoreCoverage?: boolean; accessPath?: (path: string) => Promise<void>; removePath?: (path: string, options: { force: boolean }) => Promise<void>; readFilePath?: (path: string, encoding: string) => Promise<string> }): Promise<number>;

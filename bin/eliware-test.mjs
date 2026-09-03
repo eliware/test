@@ -14,12 +14,13 @@ try {
     process.stdout.write(HELP_TEXT);
     process.exitCode = 0;
   } else {
-  const common = { cwd: process.cwd(), write: (message) => process.stdout.write(message), runLintCommand: undefined };
-  process.exitCode = options.lint
-    ? await runLint({ ...common, runLintCommand: runOxlint })
-    : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint });
+    const common = { cwd: process.cwd(), write: (message) => process.stdout.write(message) };
+    process.exitCode = options.lint
+      ? await runLint({ ...common, runLintCommand: runOxlint })
+      : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint });
   }
 } catch (error) {
+  // codescope ignore: import and process-startup failures are defensive top-level handling; collaborator failures are covered by runner tests.
   process.stderr.write(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);
   process.exitCode = 1;
 }

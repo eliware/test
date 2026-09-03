@@ -71,7 +71,7 @@
 
 ## 2.1.0
 
-- Added exact-commit secondary validation through Knit using a disposable
+- Added exact-commit secondary validation guidance using a disposable
   worktree, bounded execution, cleanup, and the full local validation suite.
 - Improved agent-facing diagnostics with bounded subprocess output,
   deduplicated failures, normalized coverage paths, and detailed JSON coverage
