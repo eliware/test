@@ -67,8 +67,10 @@ Run `npm install` after editing `package.json` so the lockfile stays synchronize
 
 `npm test` runs the consuming repository's unfiltered Jest suite with coverage, reports only coverage gaps or failures, then runs bundled Oxlint. Successful child output controlled by this package is intentionally suppressed and replaced by a minimal summary; npm may still print its own lifecycle notices, and the package may print a missing `.gitignore` warning before that summary; gap runs emit detailed diagnostics. Captured child-process output is bounded in JavaScript characters and marked when truncated. Generated coverage-gap details are rendered separately and are not subject to that capture bound. Test failures, coverage gaps, lint errors, and lint warnings fail the command. Supplying extension-qualified focused file paths runs only those selected tests; paths combined with Jest name/config filters use Jest's normal filter semantics. The repository's own Windows-specific shim test is conditional when a Windows shim is unavailable; consumer CI should provide the required platform checks.
 
-`npm run lint` runs only bundled Oxlint against the consuming repository. Runs
-sharing one consumer working directory must be serialized because each run
+`npm run lint` invokes bundled Oxlint against the consuming repository after
+the runner's Istanbul-ignore policy scan and workspace setup check. Those
+checks may reject the run or emit a missing-`.gitignore` warning before Oxlint
+runs; no Jest tests or coverage collection are performed. Runs sharing one consumer working directory must be serialized because each run
 cleans and reads that workspace's coverage artifacts; the tool deliberately
 does not create a cross-process lock. Use CI job/workspace serialization when
 parallel invocations are possible.
