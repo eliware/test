@@ -1,2 +1,2 @@
-// TODO: add unit tests for walker.
-test.todo('implement walker unit tests');
+import { walkWorkspace } from '../../../src/workspace/discovery/walker.mjs';
+test('walks files and excludes standard directories', async () => { const seen = []; await walkWorkspace('C:/repo', async (path) => seen.push(path), { readDirectory: async (path) => path.endsWith('repo') ? [{ name: 'coverage', isDirectory: () => true }, { name: 'src', isDirectory: () => true }, { name: 'unknown', isDirectory: () => false, isFile: () => false }] : path.endsWith('src') ? [{ name: 'nested', isDirectory: () => true }] : [{ name: 'a.mjs', isDirectory: () => false, isFile: () => true }] }); expect(seen).toHaveLength(1); });

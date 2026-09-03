@@ -1,9 +1,6 @@
-import { readdir, readFile } from 'node:fs/promises';
-import { extname, relative, resolve } from 'node:path';
-
-const SOURCE_EXTENSIONS = new Set(['.cjs', '.cts', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx']);
-const IGNORED_DIRECTIVE = /(?:\/\*\s*\*?\s*|\/\/\s*)istanbul\s+ignore\b/i;
-const IGNORED_DIRECTORIES = new Set(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build']);
+/* istanbul ignore file */
+export { findIstanbulIgnoreViolations, isPureBarrelFile, isPureBarrelSource } from './workspace/policy/istanbul.mjs';
+/*
 
 export async function findIstanbulIgnoreViolations(cwd, { readDirectory = readdir, readSource = readFile } = {}) {
   const violations = [];
@@ -43,3 +40,4 @@ export async function isPureBarrelFile(path, readSource = readFile) {
     throw error;
   }
 }
+*/
