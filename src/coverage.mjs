@@ -63,7 +63,7 @@ export function parseCoverage(text) {
 }
 
 function locationsForCounts(map, counts) {
-  return Object.entries(counts ?? {}).filter(([, count]) => !isCoveredCount(count)).map(([id]) => map?.[id] ?? {});
+  return Object.entries(counts).filter(([, count]) => !isCoveredCount(count)).map(([id]) => map[id] ?? {});
 }
 
 function percentage(counts) {
