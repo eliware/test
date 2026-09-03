@@ -161,6 +161,8 @@ describe('parseArguments', () => {
     expect(metricHasGap('99.995%')).toBe(true);
     expect(metricHasGap('99.999%')).toBe(true);
     expect(metricHasGap('99.999% (1/1)')).toBe(true);
+    expect(metricHasGap('99.996% (1/1)')).toBe(true);
+    expect(metricHasGap('99.997% (1/1)')).toBe(true);
     expect(metricHasGap('99.994%')).toBe(true);
     expect(metricHasGap('80.005% (4/5)')).toBe(true);
     expect(metricHasGap(`66.${'6'.repeat(2000)}% (2/3)`)).toBe(true);
