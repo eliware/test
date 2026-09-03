@@ -18,7 +18,7 @@ try {
     const common = { cwd: process.cwd(), write: (message) => process.stdout.write(message) };
     process.exitCode = options.lint
       ? await runLint({ ...common, sanitizeEnv: options.sanitizeEnv, runLintCommand: runOxlint })
-      : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, sanitizeEnv: options.sanitizeEnv, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint, runAudit: runNpm, runPack: runNpm });
+      : await runToolkit({ ...common, ignoreCoverage: options.ignoreCoverage, sanitizeEnv: options.sanitizeEnv, runInBand: options.runInBand, runnerArguments: options.runnerArguments, runTest: runJest, runLintCommand: runOxlint, runBuild: runNpm, runAudit: runNpm, runPack: runNpm });
   }
 } catch (error) {
   // codescope ignore: import and process-startup failures are defensive top-level handling; collaborator failures are covered by runner tests.

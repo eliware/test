@@ -13,7 +13,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 // codescope ignore: cancellation is intentionally owned by the invoking process; the CLI exposes no abort-signal contract.
 // codescope ignore: collaborator injection is intentionally an advanced internal composition seam; the CLI is the supported consumer interface.
 // codescope ignore: this single policy boundary intentionally owns setup, execution, evidence, lint, and presentation for the CLI.
-export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
+export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignoreCoverage = false, sanitizeEnv = false, write, runTest, runLintCommand, runBuild, runAudit, runPack, accessPath = access, removePath = rm, readFilePath = readFile, findIstanbulIgnores = findIstanbulIgnoreViolations }) {
   // codescope ignore: this is the deliberate single CLI policy boundary; stage sequencing is part of the public behavior.
   // codescope ignore: this function is the intentional single policy boundary for cleanup, execution, coverage, and lint sequencing.
   // codescope ignore: filesystem collaborator injection is an intentional internal test seam; consumers use the CLI.
@@ -93,6 +93,14 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
     write(`${formatCoverageGaps(gaps, cwd)}${barrelSuggestions}\n`);
     return EXIT_CODES.COVERAGE_GAP;
   }
+  const buildScript = await configuredBuildScript(cwd, readFilePath);
+  if (buildScript && runBuild) {
+    let build;
+    try { build = (await runBuild(['run', 'build'], { cwd, inheritEnv: !sanitizeEnv })) ?? {}; }
+    catch (error) { write(`Build failed to start: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
+    build = { ...build, output: typeof build.output === 'string' ? build.output : '', code: Number.isInteger(build.code) ? build.code : 1 };
+    if (build.code !== 0) { write(formatFailure('Build', build)); return EXIT_CODES.BUILD_FAILURE; }
+  }
   let lint;
   try {
     lint = (await runLintCommand(['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()], { cwd, inheritEnv: !sanitizeEnv })) ?? {};
@@ -122,6 +130,14 @@ export async function runToolkit({ cwd, runnerArguments, runInBand = true, ignor
   }
   write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
+}
+
+async function configuredBuildScript(cwd, readFilePath) {
+  let raw;
+  try { raw = await readFilePath(resolve(cwd, 'package.json'), 'utf8'); }
+  catch (error) { if (error.code === 'ENOENT') return ''; throw error; }
+  const packageJson = JSON.parse(raw);
+  return typeof packageJson?.scripts?.build === 'string' && packageJson.scripts.build.trim() ? packageJson.scripts.build : '';
 }
 
 async function pureBarrelSuggestions(cwd, gaps, readFilePath) {

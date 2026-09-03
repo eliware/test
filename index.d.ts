@@ -48,6 +48,7 @@ export interface LintOptions {
   runLintCommand: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
   runAudit?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
   runPack?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
+  runBuild?: (argumentsList: string[], options: ProcessOptions) => Promise<ProcessResult | null>;
   accessPath?: (path: string) => Promise<void>;
 }
 export interface ToolkitOptions {
@@ -70,5 +71,5 @@ export function isPureBarrelFile(path: string): Promise<boolean>;
 export const EXIT_CODES: Readonly<{
   WORKSPACE_SETUP: 2; ISTANBUL_POLICY: 3; INVALID_ARGUMENT: 4; FOCUSED_PATH_VALIDATION: 5;
   FOCUSED_PATH_MISSING: 6; COVERAGE_CLEANUP: 7; TEST_START: 8; TEST_FAILURE: 9;
-  COVERAGE_FAILURE: 10; COVERAGE_GAP: 11; LINT_START: 12; LINT_FAILURE: 13; INTERNAL: 14; AUDIT_FAILURE: 15; PACK_FAILURE: 16;
+  COVERAGE_FAILURE: 10; COVERAGE_GAP: 11; LINT_START: 12; LINT_FAILURE: 13; INTERNAL: 14; AUDIT_FAILURE: 15; PACK_FAILURE: 16; BUILD_FAILURE: 17;
 }>;

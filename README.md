@@ -256,6 +256,10 @@ After tests, coverage, and lint pass, `npm test` also runs
 `npm audit --omit=dev --audit-level=moderate --ignore-scripts` and
 `npm pack --dry-run --ignore-scripts`; both stages are wired by the CLI and
 covered by orchestration tests.
+
+When the consuming `package.json` defines a non-empty `scripts.build` command,
+`npm test` runs `npm run build` after coverage and before lint. Build failures
+return exit code `17`.
 Failures in those checks return distinct exit codes `15` and `16` respectively.
 Exit code `0` means all validation completed successfully.
 

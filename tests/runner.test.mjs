@@ -70,6 +70,46 @@ describe('runner orchestration', () => {
     expect(calls).toEqual([['audit', '--omit=dev', '--audit-level=moderate', '--ignore-scripts'], ['pack', '--dry-run', '--ignore-scripts']]);
   });
 
+  test.each([
+    [{ code: 0, output: '' }, 0],
+    [{ code: 2, output: 'build failed' }, 17]
+  ])('runs a configured build and blocks failure', async (result, expected) => {
+    const calls = [];
+    const messages = [];
+    const readFilePath = async (path) => path.endsWith('package.json') ? '{"scripts":{"build":"node build.mjs"}}' : '';
+    await expect(runToolkit({ ...base, write: output(messages), readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runBuild: async (args) => { calls.push(args); return result; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(expected);
+    expect(calls).toEqual([['run', 'build']]);
+  });
+
+  test('reports a configured build startup failure', async () => {
+    const messages = [];
+    const readFilePath = async (path) => path.endsWith('package.json') ? '{"scripts":{"build":"node build.mjs"}}' : '';
+    await expect(runToolkit({ ...base, write: output(messages), readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runBuild: async () => { throw new Error('build unavailable'); }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(17);
+    expect(messages.join('')).toContain('Build failed to start');
+  });
+
+  test('skips an unavailable build collaborator and handles missing build metadata', async () => {
+    const readFilePath = async (path) => {
+      if (path.endsWith('package.json')) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+      return '';
+    };
+    await expect(runToolkit({ ...base, readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+  });
+
+  test('normalizes incomplete build results', async () => {
+    const readFilePath = async (path) => path.endsWith('package.json') ? '{"scripts":{"build":"build"}}' : '';
+    await expect(runToolkit({ ...base, readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runBuild: async () => null, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(17);
+  });
+
+  test('fails when package metadata cannot be read', async () => {
+    const messages = [];
+    const readFilePath = async (path) => {
+      if (path.endsWith('package.json')) throw Object.assign(new Error('metadata denied'), { code: 'EACCES' });
+      return '';
+    };
+    await expect(runToolkit({ ...base, write: output(messages), readFilePath, runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).rejects.toThrow('metadata denied');
+  });
+
   test('suggests an Istanbul ignore for an all-zero pure barrel', async () => {
     const messages = [];
     await expect(runToolkit({ ...base, write: output(messages), runTest: async () => ({ code: 0, output: 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n src/index.mjs | 0 | 0 | 0 | 0 |' }), runLintCommand: async () => ({ code: 0, output: '' }), readFilePath: async () => 'export { value } from "./value.mjs";' })).resolves.toBe(11);
