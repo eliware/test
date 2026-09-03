@@ -2,6 +2,7 @@ import { runLint, runToolkit } from '../src/runner.mjs';
 import { runOxlint } from '../src/process.mjs';
 import { STANDARD_EXCLUSIONS, oxlintExclusionArguments } from '../src/workspace.mjs';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { dirname } from 'node:path';
 
 const output = (messages) => (message) => messages.push(message);
 const completeCoverage = 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\n foo.mjs | 100 | 100 | 100 | 100 |';
@@ -57,6 +58,34 @@ describe('runner orchestration', () => {
     const cwd = `${process.cwd()}/test-fixtures/lock`;
     await mkdir(cwd, { recursive: true });
     await expect(runToolkit({ ...base, cwd, lock: true, runTest: async () => { await rm(`${cwd}/.eliware-test.lock`, { force: true }); return { code: 0, output: completeCoverage }; }, runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+  });
+
+  test('reports the owner metadata from an active lock', async () => {
+    const cwd = `${process.cwd()}/test-fixtures/lock`;
+    await mkdir(cwd, { recursive: true });
+    const lockPath = `${cwd}/.eliware-test.lock`;
+    await writeFile(lockPath, JSON.stringify({ pid: 12345, createdAt: '2026-09-03T00:00:00.000Z' }));
+    const messages = [];
+    try {
+      await expect(runToolkit({ ...base, cwd, lock: true, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
+    } finally {
+      await rm(lockPath, { force: true });
+    }
+    expect(messages.join('')).toContain('pid 12345');
+  });
+
+  test('falls back when lock metadata has no numeric owner', async () => {
+    const cwd = `${process.cwd()}/test-fixtures/lock`;
+    await mkdir(cwd, { recursive: true });
+    const lockPath = `${cwd}/.eliware-test.lock`;
+    await writeFile(lockPath, JSON.stringify({ pid: 'unknown' }));
+    const messages = [];
+    try {
+      await expect(runToolkit({ ...base, cwd, lock: true, write: output(messages), runTest: async () => ({ code: 0, output: completeCoverage }), runLintCommand: async () => ({ code: 0, output: '' }) })).resolves.toBe(2);
+    } finally {
+      await rm(lockPath, { force: true });
+    }
+    expect(messages.join('')).toContain('owner unknown');
   });
 
   test('uses the lock around a non-Jest-worker invocation', async () => {
@@ -463,11 +492,13 @@ describe('runner orchestration', () => {
   test.each([
     ['tests\\mapped.test.js', 'src/mapped.js'],
     ['spec/mapped.spec.js', 'src/mapped.js'],
-    ['test/mapped.test.js', 'src/mapped.js']
+    ['test/mapped.test.js', 'src/mapped.js'],
+    ['tests\\nested\\deep.name.test.mjs', 'src/nested/deep.name.mjs'],
+    ['spec/nested/deep.name.spec.ts', 'src/nested/deep.name.ts']
   ])('maps conventional focused path %s across separators', async (testPath, sourcePath) => {
     const cwd = `${process.cwd()}/test-fixtures/json-coverage`;
-    await mkdir(`${cwd}/${testPath.split(/[\\/]/)[0]}`, { recursive: true });
-    await mkdir(`${cwd}/src`, { recursive: true });
+    await mkdir(`${cwd}/${dirname(testPath.replaceAll('\\', '/'))}`, { recursive: true });
+    await mkdir(`${cwd}/${dirname(sourcePath)}`, { recursive: true });
     await writeFile(`${cwd}/${testPath.replaceAll('\\', '/')}`, '');
     await writeFile(`${cwd}/${sourcePath}`, '');
     const calls = [];

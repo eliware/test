@@ -266,11 +266,14 @@ collaborators. Build is conditional on the consumer defining a non-empty
 `scripts.build` command.
 
 The complete lifecycle is tests → coverage → optional build → lint → audit →
-pack. The concise self-test summary does not enumerate every successful stage.
-The executable entrypoint supplies all three collaborators (`runAudit`,
+pack. This ordering and the CLI's three npm stage collaborators are guaranteed
+by the published source entrypoint; the concise self-test summary does not
+independently prove that each stage ran. The executable entrypoint supplies all three collaborators (`runAudit`,
 `runPack`, and `runBuild`); only the build command is conditional on consumer
 metadata. Advanced callers that invoke `runToolkit` directly are responsible
-for supplying any optional collaborators they require.
+for supplying any optional collaborators they require. Its `lock` option is an
+advanced test/composition seam: the default is enabled, while `lock: false`
+is only appropriate for an already isolated injected harness.
 
 For untrusted or CI-isolated workspaces, use `eliware-test --sanitize-env`;
 tool-specific variables can still be passed explicitly by the invoking

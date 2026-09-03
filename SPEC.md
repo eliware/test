@@ -177,9 +177,11 @@ These are supported, documented limitations rather than hidden quality gates:
 - Coverage artifacts are workspace-global because they follow Jest's standard
   report locations. Concurrent runs sharing a workspace are unsupported;
   callers are serialized by an exclusive `.eliware-test.lock` in the workspace.
-  A lock left by an interrupted process may require manual removal after
-  confirming that no validation is active; per-run artifact directories and
-  ownership tokens are not provided.
+  The lock contains the owner PID and creation timestamp. A lock left by an
+  interrupted process may require manual removal: first inspect the JSON,
+  confirm that the PID is not an active validation process, and then remove
+  only that workspace's `.eliware-test.lock`. Per-run artifact directories and
+  automatic stale-lock deletion are not provided.
 - Istanbul policy discovery is complete and serial to bound descriptor pressure
   in arbitrary consumer workspaces. No parallel traversal or startup bound is
   promised.

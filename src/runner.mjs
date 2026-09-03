@@ -1,6 +1,6 @@
 import { formatCoverageGaps, parseCoverage, parseCoverageJson } from './coverage.mjs';
 import { MANAGED_OPTIONS, VALUE_OPTIONS } from './arguments.mjs';
-import { access, open, readFile, rm, unlink } from 'node:fs/promises';
+import { access, open, readFile, rm, unlink, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
 import { findIstanbulIgnoreViolations, isPureBarrelFile } from './istanbul.mjs';
@@ -15,9 +15,15 @@ export async function runToolkit(options) {
   let lock;
   try {
     lock = await open(lockPath, 'wx');
+    await writeFile(lockPath, JSON.stringify({ pid: process.pid, createdAt: new Date().toISOString() }) + '\n');
   } catch (error) {
     if (error.code === 'EEXIST') {
-      options.write('Validation already running for this workspace; serialize invocations.\n');
+      let details = 'owner unknown';
+      try {
+        const metadata = JSON.parse(await readFile(lockPath, 'utf8'));
+        if (Number.isInteger(metadata.pid)) details = `pid ${metadata.pid}`;
+      } catch {}
+      options.write(`Validation already running for this workspace (${details}); serialize invocations. If no run is active, inspect and remove the stale .eliware-test.lock file.\n`);
       return EXIT_CODES.WORKSPACE_SETUP;
     }
     throw error;
