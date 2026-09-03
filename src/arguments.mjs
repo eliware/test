@@ -15,6 +15,7 @@ Examples:
 `;
 
 export const MANAGED_OPTIONS = Object.freeze(['--coverage', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath']);
+export const VALUE_OPTIONS = Object.freeze(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--runTestsByPath', '--env', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile']);
 
 // codescope ignore: wrapper flags are intentionally recognized independent of their position in argv.
 export function parseArguments(argumentsList = []) {

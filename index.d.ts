@@ -10,6 +10,8 @@ export interface ParsedArguments {
 
 /** Parse wrapper flags and the Jest arguments delegated by the CLI. */
 export function parseArguments(argumentsList?: readonly string[]): ParsedArguments;
+/** Jest options whose following argument is a value and not a positional test path. */
+export const VALUE_OPTIONS: readonly string[];
 export interface TextCoverageGap {
   file: string;
   metrics: string[];

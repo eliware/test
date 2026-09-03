@@ -3,6 +3,7 @@
 // codescope ignore: machine-readable diagnostics are intentionally outside the current human-readable output contract.
 // codescope ignore: parser and orchestration exports are intentionally advanced composition seams; the CLI is the supported consumer boundary.
 export { parseArguments } from './src/arguments.mjs';
+export { VALUE_OPTIONS } from './src/arguments.mjs';
 // codescope ignore: advanced parser/orchestration exports intentionally rely on package typecheck and public API tests for declaration parity.
 // codescope ignore: parser and orchestration exports are explicitly advanced composition seams; their declarations are maintained for TypeScript consumers, while the CLI remains the stable consumer boundary.
 export { formatCoverageGaps, parseCoverage, parseCoverageJson } from './src/coverage.mjs';

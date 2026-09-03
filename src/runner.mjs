@@ -1,5 +1,5 @@
 import { formatCoverageGaps, parseCoverage, parseCoverageJson } from './coverage.mjs';
-import { MANAGED_OPTIONS } from './arguments.mjs';
+import { MANAGED_OPTIONS, VALUE_OPTIONS } from './arguments.mjs';
 import { access, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { oxlintExclusionArguments } from './workspace.mjs';
@@ -234,7 +234,7 @@ function positionalArguments(argumentsList) {
   // codescope ignore: parser and path-selection metadata are separate contracts; this local list intentionally covers only documented value-taking options.
   // codescope ignore: this local option metadata intentionally covers only documented value-taking options used by focused-path discovery.
   const values = [];
-  const valueOptions = new Set(['-t', '--testNamePattern', '--config', '--rootDir', '--testMatch', '--testPathPattern', '--selectProjects', '--projects', '--runTestsByPath', '--env', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile']);
+  const valueOptions = new Set(VALUE_OPTIONS);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
     if (valueOptions.has(argument)) {
