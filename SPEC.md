@@ -180,6 +180,7 @@ limitations, or provide a new security boundary. Consumers must not run the
 default mode against an untrusted workspace while secrets are present.
 Child tools receive the consumer's inherited environment, matching direct npm
 and Jest invocation behavior.
+There is no sanitized or secret-redacting mode in this release.
 
 Bundled Oxlint and npm invocations use Node's executable and supported
 package/runtime entrypoint contracts, preserving argument-array boundaries on
@@ -220,6 +221,10 @@ runs.
 This contract addresses workspace ownership; it does not attempt to fix or
 extend Jest's internal worker concurrency behavior.
 
+The toolkit intentionally keeps stage sequencing in one orchestration boundary;
+its injected seams are the supported isolation mechanism for individual stage
+tests, not a promise of separately published stage modules.
+
 ## 9. Intentional limitations
 
 These are supported, documented limitations rather than hidden quality gates:
@@ -258,6 +263,8 @@ This package does not promise or implement:
 - proving Windows behavior locally when its shim is unavailable; or
 - proving that fallback text coverage originated from a specific reporter rather
   than the completed child invocation's bounded output.
+- preserving cross-stream temporal ordering in combined child diagnostics; and
+- exposing structured stage-result hooks for automation.
 
 ## 11. Fixtures, artifacts, migration, and release
 
