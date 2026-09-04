@@ -8,6 +8,11 @@ may still appear. Failures preserve useful test names, assertions, stacks, lint
 findings, and coverage details.
 
 Captured child diagnostics are bounded to 16 KiB of JavaScript string length.
+
+When a child exceeds its timeout, the runner sends `SIGTERM`, waits briefly,
+sends `SIGKILL`, waits briefly again, and sends a final `SIGKILL`. It then
+continues with the timeout result; if the child never closes, diagnostics
+explicitly report that an unkillable child process remains.
 Truncation is explicit, repeated failure lines are deduplicated, and absolute
 coverage paths are normalized relative to the workspace. stdout and stderr are
 captured independently. `ELIWARE_TEST_DEBUG=1` enables exact forwarded-Jest

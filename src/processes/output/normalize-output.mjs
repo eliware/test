@@ -2,8 +2,10 @@ const ANSI_ESCAPE = new RegExp(`[${String.fromCharCode(27)}\\u009B][[\\]()#;?]*(
 const PATH_TOKEN = /[A-Za-z0-9]/;
 
 function redactWorkspacePath(output, cwd, caseInsensitive) {
-  const needle = caseInsensitive ? cwd.toLowerCase() : cwd;
-  const comparable = caseInsensitive ? output.toLowerCase() : output;
+  const comparableOutput = caseInsensitive ? output.replaceAll('\\', '/') : output;
+  const comparableCwd = caseInsensitive ? cwd.replaceAll('\\', '/') : cwd;
+  const needle = caseInsensitive ? comparableCwd.toLowerCase() : comparableCwd;
+  const comparable = caseInsensitive ? comparableOutput.toLowerCase() : comparableOutput;
   let result = '';
   let cursor = 0;
   while (cursor < output.length) {

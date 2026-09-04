@@ -17,14 +17,13 @@ provides the stable navigation entrypoint.
 ## Scope summary
 
 `@eliware/test` is the shared baseline for routine Jest execution, coverage
-enforcement, and Oxlint validation in Eliware Node.js projects. It is a
-development tool, not a replacement for project-specific smoke, integration,
-regression, end-to-end, deployment, or product tests.
+enforcement, and Oxlint validation in Eliware Node.js projects.
 
 The stable consumer interface is the `eliware-test` CLI. Consumers use
-`eliware-test` for `test` and `eliware-test --lint` for `lint`. This repository
-invokes `node bin/eliware-test.mjs` because npm does not link a package's own
-`bin` entry while running its scripts.
+`eliware-test` for `test` and `eliware-test --lint` for `lint`; the intended
+integration is replacing the consumer project's `npm test` command with this
+CLI. This repository invokes `node bin/eliware-test.mjs` because npm does not link a
+package's own `bin` entry while running its scripts.
 
 The contract requires Node.js 26 or newer, native ESM, bundled Jest and
 Oxlint runtime dependencies, Node child-process APIs with argument arrays,

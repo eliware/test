@@ -1,4 +1,4 @@
-import { access, readFile, rm, stat } from 'node:fs/promises';
+import { access, readFile, rename, rm, stat } from 'node:fs/promises';
 import { detectViolations } from '../monolith/detect-violations.mjs';
 import { runJest } from '../testing/run-jest.mjs';
 import { runLintCommand as defaultRunLintCommand } from '../application/run-lint-command.mjs';
@@ -10,14 +10,15 @@ export function resolveToolkitOptions(options) {
   const {
     cwd, runnerArguments, write, runTest = runJest, runLintCommand = defaultRunLintCommand,
     runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
+    workers = 6,
     enforceMonolithLimits = false, accessPath = access, removePath = rm, readFilePath = readFile, statPath = stat,
     findIstanbulIgnores, findMonolith = detectViolations,
-    findSourceTestMapping = findSourceTestMappingDrifts,
+    findSourceTestMapping = findSourceTestMappingDrifts, renamePath = rename,
     inspectWorkspace = defaultInspectWorkspace,
   } = options;
   return {
     cwd, runnerArguments, write, runTest, runLintCommand, runInBand, ignoreCoverage,
-    ignoreMonolithLimits, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath,
-    findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace,
+    ignoreMonolithLimits, workers, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath,
+    findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath,
   };
 }

@@ -7,6 +7,6 @@ export function uncoveredBranches(branchMap, id, counts) {
   if (!branch || typeof branch !== 'object') return counts.filter((count) => !isCoveredCount(count)).map(() => ({ type: 'branch' }));
   return counts.flatMap((count, index) => {
     const location = branch.locations?.[index];
-    return isCoveredCount(count) ? [] : [{ ...location, type: branch.type ?? 'branch' }];
+    return isCoveredCount(count) ? [] : [{ ...(location ?? { unknown: true }), type: branch.type ?? 'branch' }];
   });
 }

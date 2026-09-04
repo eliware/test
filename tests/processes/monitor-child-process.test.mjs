@@ -51,8 +51,9 @@ test('settles and terminates a child that never closes', async () => {
     child.kill = jest.fn();
     const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
     jest.advanceTimersByTime(10);
-    await expect(resultPromise).resolves.toEqual({ code: 1, output: 'Child process timed out after 10 ms\n' });
-    expect(child.kill).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(2000);
+    await expect(resultPromise).resolves.toEqual({ code: 1, output: 'Child process timed out after 10 ms\nChild process remained alive after SIGKILL\n' });
+    expect(child.kill).toHaveBeenCalledTimes(3);
   } finally {
     jest.useRealTimers();
   }
@@ -66,16 +67,106 @@ test('settles timeout without a kill method', async () => {
     child.stderr = new EventEmitter();
     const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
     jest.advanceTimersByTime(10);
+    jest.advanceTimersByTime(2000);
     await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+    jest.advanceTimersByTime(1000);
   } finally {
     jest.useRealTimers();
   }
+});
+
+test('stops escalation when SIGTERM closes the child', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+    child.kill = jest.fn(() => child.emit('close', null));
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(10);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+    expect(child.kill).toHaveBeenCalledWith('SIGTERM');
+  } finally { jest.useRealTimers(); }
+});
+
+test('contains kill failures after timeout settlement', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+    child.kill = jest.fn(() => { throw new Error('kill failed'); });
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(10);
+    jest.advanceTimersByTime(2000);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+  } finally { jest.useRealTimers(); }
+});
+
+test('forces a second termination attempt after timeout', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+    child.kill = jest.fn();
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(10);
+    jest.advanceTimersByTime(2000);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+    expect(child.kill).toHaveBeenCalledWith('SIGKILL');
+  } finally { jest.useRealTimers(); }
+});
+
+test('stops escalation when the first forced kill closes the child', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+    child.kill = jest.fn((signal) => { if (signal === 'SIGKILL') child.emit('close', null); });
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(1010);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+    expect(child.kill).toHaveBeenCalledTimes(2);
+  } finally { jest.useRealTimers(); }
+});
+
+test('skips a forced kill when the child closes during the wait', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+    child.kill = jest.fn();
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(510);
+    child.emit('close', null);
+    jest.advanceTimersByTime(1000);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+    expect(child.kill).toHaveBeenCalledTimes(1);
+  } finally { jest.useRealTimers(); }
+});
+
+test('skips the final kill when the child closes after the first forced kill', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+    child.kill = jest.fn();
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(1010);
+    child.emit('close', null);
+    jest.advanceTimersByTime(1000);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+    expect(child.kill).toHaveBeenCalledTimes(2);
+  } finally { jest.useRealTimers(); }
 });
 
 test('normalizes a child without output streams', async () => {
   await expect(monitorChildProcess(new EventEmitter(), createOutputCapture())).resolves.toEqual({
     code: 1, output: 'Invalid child process interface\n',
   });
+});
+
+test('rejects invalid timeout values', async () => {
+  const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+  await expect(monitorChildProcess(child, createOutputCapture(), { timeoutMs: 0 })).resolves.toEqual({ code: 1, output: 'Invalid child process timeout\n' });
 });
 
 test('normalizes listener setup failures', async () => {

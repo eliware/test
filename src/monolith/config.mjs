@@ -10,9 +10,10 @@ export async function readMonolithConfig(cwd, readFilePath = readFile) {
       source: configured.source ?? DEFAULT_THRESHOLDS.source,
       test: configured.tests ?? DEFAULT_THRESHOLDS.test,
       exemptions: configured.exemptions ?? [],
+      origin: 'package',
     });
   } catch (error) {
-    if (error.code === 'ENOENT') return { ...DEFAULT_THRESHOLDS, exemptions: [] };
+    if (error.code === 'ENOENT') return { ...DEFAULT_THRESHOLDS, exemptions: [], origin: 'missing-package' };
     throw error;
   }
 }

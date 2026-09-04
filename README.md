@@ -48,7 +48,8 @@ eliware-test --version          Print the installed version
 
 Advanced options include `--no-runInBand` for diagnostic worker behavior and
 `--ignore-monolith-limits` for temporary refactoring runs. Both are supported
-diagnostic options; normal validation should use their defaults.
+diagnostic options; normal validation should use their defaults. Use
+`--workers=N` to override the default six monolith-scan measurement workers.
 
 Tests run with coverage and are followed by linting. A successful run prints a
 short summary; failures include actionable diagnostics. The normal baseline
@@ -59,7 +60,10 @@ default worker behavior. Use `eliware-test --ignore-100x4` only for diagnostic
 or transitional runs; tests and lint still run, but coverage enforcement is
 skipped.
 
-Source modules are limited to 100 lines and test files to 200 lines. Pure
+Production modules under `src/` are limited to 100 lines. Both `test/` and
+`tests/` participate in the 200-line test-size policy. Only the canonical
+`tests/` root participates in strict mirrored architecture validation, which pairs
+`src/**/*.mjs` with `tests/**/*.test.mjs`. Pure
 barrels, generated files, and explicitly justified configuration exemptions
 are excluded from size limits. Their mapping and discovery treatment follows
 the explicit architecture policy. Violations fail with stable exit code 15 and must be decomposed
@@ -72,13 +76,16 @@ Generated-file treatment across source/test mapping, Istanbul-ignore policy,
 and monolith checks is part of the architecture contract. Generated files are
 exempt from monolith size limits only; they remain subject to source/test
 mapping and Istanbul-ignore policy discovery unless a directory-level exclusion
-applies. See `spec/cli.md` for the complete rule.
+applies. See [`SPEC.md`](SPEC.md) for the complete rule and its linked detail.
 
 The CLI is the normal policy-enforcing entrypoint. Code importing the public
 `runToolkit` API uses the direct-call contract instead: it does not inherit CLI
 argument parsing, and callers must provide documented options explicitly.
-Architecture preflight ordering and CLI/API parity are tracked in
-`known_issues_checklist.md`.
+Architecture preflight ordering and CLI/API behavior are defined by `SPEC.md`.
+The strict source/test mapping intentionally covers only source `.mjs` files
+and their `.test.mjs` mirrors under the `src/` and `tests/` roots; focused-path
+recognition supports additional Jest file extensions but does not expand the
+architecture bijection.
 
 Configuration exemptions belong in the consuming package's `package.json` and
 must include both a glob pattern and a non-empty reason:
@@ -111,8 +118,10 @@ one worktree.
 
 ## Recommended `.gitignore` entries
 
-The test command creates local coverage artifacts. Consumer
-repositories should normally ignore:
+The test command creates local coverage artifacts. Consumer repositories
+should normally ignore the generated files and directories below. These
+ignore rules affect version control only; `eliware-test` still reads its
+coverage candidates and enforces coverage at runtime:
 
 ```gitignore
 node_modules/
@@ -147,9 +156,17 @@ deploy without explicit authorization.
 Use `eliware-test --help` for supported command forms. When invoking through
 npm, put Jest arguments after npm's `--` separator. Set
 `ELIWARE_TEST_DEBUG=1` only when troubleshooting argument forwarding.
+`--help` and `--version` are terminal modes and take precedence over any
+other arguments supplied in the same invocation.
 
-The package's stable interface is the CLI. See [`SPEC.md`](SPEC.md) for the
-complete behavior contract and limitations.
+The package's stable interface is the CLI. See [`SPEC.md`](SPEC.md), whose
+overview links the detailed `spec/` sections, for the complete behavior
+contract and limitations.
+
+Direct `runToolkit` calls use the documented option defaults, including
+`enforceMonolithLimits: false`; the CLI enables that gate explicitly. The
+direct API otherwise follows the documented defaults and returns numeric
+pipeline outcomes.
 
 ## Security
 

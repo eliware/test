@@ -20,20 +20,18 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
       let fresh = true;
       if (startedAt) {
         try { fresh = (await statPath(reportPath)).mtimeMs >= startedAt; }
-        catch (error) { if (error.code !== 'ENOENT') throw error; }
+        catch (error) { if (error.code === 'ENOENT') { /* injected virtual files may not expose stat metadata */ } else throw error; }
       }
-      if (fresh && selectUsableReport([{ usable: isUsableCoverageReport(json), report: json }])) return parseJsonReport(json);
-      if (fresh && !isUsableCoverageReport(json)) malformedReport = name;
+      const usable = isUsableCoverageReport(json);
+      if (fresh && selectUsableReport([{ usable, report: json }])) return parseJsonReport(json);
+      if (!usable && !malformedReport) malformedReport = name;
     } catch (error) {
       if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
     }
   }
-  if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
   const gaps = parseTextReport(testOutput);
-  // Injected test runners may intentionally omit coverage output; treat that
-  // as an empty report so later validation stages can still be exercised.
   if (!hasTextCoverageEvidence(testOutput)) {
-    if (testOutput.trim() === '') return [];
+    if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
     throw new Error('Coverage evidence missing: Jest produced no usable JSON or text coverage report.');
   }
   debugOutput(write, 'Coverage fallback', 'using Jest text coverage');

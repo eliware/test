@@ -8,11 +8,11 @@ export function runChildProcess(command, argumentsList = [], options = {}) {
   assertChildProcessArguments(command, argumentsList, options);
 
   const capture = createOutputCapture();
-    let child;
-    try {
-      child = spawnChild(command, argumentsList, options);
-    } catch (error) {
-      return Promise.resolve({ code: 1, output: capture.finish(`${error.message}\n`) });
-    }
-    return monitorChildProcess(child, capture, options);
+  let child;
+  try {
+    child = spawnChild(command, argumentsList, options);
+  } catch (error) {
+    return Promise.resolve({ code: 1, output: capture.finish(`${error.message}\n`) });
+  }
+  return monitorChildProcess(child, capture, options);
 }

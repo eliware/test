@@ -30,10 +30,12 @@ test('formats incomplete diagnostic objects safely', () => {
   const output = formatGaps([
     { file: 'partial.mjs', metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines: 'invalid', statements: null, branches: null, functions: null },
     { file: 'missing.mjs' },
+    { file: 'unknown.mjs', metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, statements: [{ unknown: true }] },
     { file: 'columns.mjs', metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, statements: [{ start: { line: 2, column: 3 } }], branches: [{ start: { line: 4 }, type: null }], functions: [{ name: 'run', start: { line: 5 } }] }
   ]);
   expect(output).toContain('uncovered lines: -');
   expect(output).toContain('Uncovered statements: -');
+  expect(output).toContain('unknown (metadata missing)');
   expect(output).toContain('2:3');
   expect(output).toContain('4 (branch, uncovered)');
 });

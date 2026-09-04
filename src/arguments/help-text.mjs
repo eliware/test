@@ -4,6 +4,7 @@ export const HELP_TEXT = `Usage:
   eliware-test --version              Show the package version
   eliware-test --ignore-100x4          Run tests with coverage, skip enforcement, then lint
   eliware-test --ignore-monolith-limits Run tests while refactoring large files
+  eliware-test --workers=6            Set monolith-scan measurement workers
   eliware-test --debug-timing          Show elapsed time between pipeline steps
   npm test -- <Jest arguments>         Forward arguments to Jest
   npm test -- --no-runInBand           Allow Jest's default parallel execution

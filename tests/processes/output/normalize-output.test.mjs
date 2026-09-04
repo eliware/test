@@ -22,6 +22,10 @@ test('escapes workspace path characters and matches case-insensitively', () => {
   );
 });
 
+test('redacts mixed Windows separators', () => {
+  expect(normalizeOutput('C:\\Repo\\file.mjs', 'c:/repo')).toBe('<workspace>\\file.mjs');
+});
+
 test('redacts only workspace path boundaries with platform-aware matching', () => {
   expect(normalizeOutput('/work/failure /workspace/failure /workshop/failure', '/work'))
     .toBe('<workspace>/failure /workspace/failure /workshop/failure');

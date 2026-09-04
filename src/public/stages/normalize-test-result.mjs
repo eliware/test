@@ -2,7 +2,7 @@
 export function normalizeTestResult(result) {
   return {
     ...result,
-    code: Number.isInteger(result?.code) ? result.code : 1,
+    code: Number.isInteger(result?.code) && result.code >= 0 ? result.code : 1,
     output: typeof result?.output === 'string' ? result.output : '',
   };
 }

@@ -16,6 +16,11 @@ test('supports diagnostic execution and timing output', () => {
   ]);
 });
 
+test('uses the isolated coverage directory supplied by the runner', () => {
+  expect(buildJestArguments({ coverageDirectory: 'coverage/.eliware-test-coverage' })).toContainEqual('--coverageDirectory');
+  expect(buildJestArguments({ coverageDirectory: 'coverage/.eliware-test-coverage' })).toContainEqual('coverage/.eliware-test-coverage');
+});
+
 test('rejects malformed argument collections', () => {
   expect(() => buildJestArguments({ runnerArguments: null })).toThrow(TypeError);
   expect(() => buildJestArguments({ focusedCoverage: null })).toThrow(TypeError);

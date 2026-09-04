@@ -17,3 +17,9 @@ test('reports checker failures as workspace setup errors', async () => {
   await expect(validateArchitecture('repo', write, async () => { throw new Error('unreadable'); })).resolves.toBe(2);
   expect(write.mock.calls[0][0]).toContain('unreadable');
 });
+
+test('reports malformed checker results as workspace setup errors', async () => {
+  const write = jest.fn();
+  await expect(validateArchitecture('repo', write, async () => ({ missingTests: null }))).resolves.toBe(2);
+  expect(write.mock.calls[0][0]).toContain('invalid result');
+});

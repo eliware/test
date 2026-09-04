@@ -1,5 +1,5 @@
 import { validateCoverage } from '../../../src/public/stages/coverage.mjs';
-test('passes when coverage has no gaps', async () => expect(await validateCoverage('.', '', () => {}, async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); })).toBe(0));
+test('fails closed when coverage evidence is missing', async () => expect(await validateCoverage('.', '', () => {}, async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); })).toBe(10));
 
 test('reports coverage gaps', async () => {
   const messages = [];

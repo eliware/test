@@ -27,31 +27,48 @@ describe('coverage facade', () => {
     expect(parseCoverageJson(null)).toEqual([]);
     expect(parseCoverageJson([])).toEqual([]);
     expect(parseCoverageJson('invalid')).toEqual([]);
-    expect(parseCoverageJson({ nullEntry: null, scalarEntry: 'invalid', empty: {} })).toEqual([]);
+    expect(parseCoverageJson({ nullEntry: null, scalarEntry: 'invalid' })).toEqual([]);
+    expect(() => parseCoverageJson({ 'src/unknown.mjs': { unexpected: true } })).toThrow('Malformed coverage entry');
   });
 
-  test('skips entries with inconsistent metric maps and counters', () => {
+  test('enforces lines for an explicit nonempty line map with an uncovered unmappable statement', () => {
     const gaps = parseCoverageJson({
+      'src/line-map.mjs': { statementMap: { 0: {} }, s: { 0: 0 }, l: { 1: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {} },
+    });
+    expect(gaps[0].metrics.lines).toBe(0);
+  });
+
+  test('reports uncovered lines from an authoritative line map', () => {
+    const gaps = parseCoverageJson({
+      'src/mapped-line.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, l: { 1: 0 }, branchMap: {}, b: {}, fnMap: {}, f: {} },
+    });
+    expect(gaps[0].metrics.lines).toBe(0);
+    expect(gaps[0].lines).toEqual([1]);
+  });
+
+  test('rejects entries with inconsistent metric maps and counters', () => {
+    expect(() => parseCoverageJson({
       'src/malformed.mjs': {
         statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 },
         branchMap: {}, b: { 0: 'invalid' }, fnMap: {}, f: 'invalid'
       }
-    });
-    expect(gaps).toEqual([]);
+    })).toThrow('Malformed coverage entry');
   });
 
-  test('skips entries with missing maps or malformed counters', () => {
-    expect(parseCoverageJson({
+  test('rejects entries with missing maps or malformed counters', () => {
+    expect(() => parseCoverageJson({
       'src/missing.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 0 }, b: undefined, fnMap: {}, f: undefined }
-    })).toEqual([]);
-    expect(parseCoverageJson({
+    })).toThrow('Malformed coverage entry');
+    expect(() => parseCoverageJson({
       'src/bad-branches.mjs': { statementMap: {}, s: {}, b: 'invalid', fnMap: {}, f: {} }
-    })).toEqual([]);
+    })).toThrow('Malformed coverage entry');
     expect(parseCoverageJson({
       'src/empty.mjs': { statementMap: {}, s: {}, b: {}, fnMap: {}, f: {} }
     })).toEqual([]);
-    expect(parseCoverageJson({
+    expect(() => parseCoverageJson({ 'src/unknown.mjs': {} })).toThrow('Malformed coverage entry');
+    expect(() => parseCoverageJson({
       'src/no-statement-counters.mjs': { statementMap: { 0: { start: { line: 1 } } }, b: {}, fnMap: {}, f: {} }
-    })).toEqual([]);
+    })).toThrow('Malformed coverage entry');
   });
+
 });

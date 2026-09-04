@@ -7,3 +7,7 @@ test('normalizes missing result fields', () => {
 test('preserves valid result fields', () => {
   expect(normalizeTestResult({ code: 0, output: 'ok' })).toEqual({ code: 0, output: 'ok' });
 });
+
+test('normalizes negative child codes', () => {
+  expect(normalizeTestResult({ code: -1 })).toMatchObject({ code: 1 });
+});

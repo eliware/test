@@ -9,6 +9,15 @@ test('handles version and help modes', async () => {
   expect(output.join('')).toContain('eliware-test');
 });
 
+test('forwards the monolith opt-out from CLI parsing to the toolkit', async () => {
+  let received;
+  await expect(runCli(['--ignore-monolith-limits'], {
+    runToolkit: async (options) => { received = options; return 0; },
+    write: () => {}
+  })).resolves.toBe(0);
+  expect(received).toMatchObject({ ignoreMonolithLimits: true, enforceMonolithLimits: true });
+});
+
 test('dispatches lint and toolkit modes', async () => {
   const calls = [];
   const runLint = async (options) => { calls.push(['lint', options]); return 12; };

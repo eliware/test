@@ -65,7 +65,7 @@ test('fails before tests when Istanbul policy is violated', async () => {
   expect(messages.join('')).toContain('src/module.mjs:4');
 });
 
-test('reports mapping drift after developer tests run', async () => {
+test('fails before tests when source/test mapping drifts', async () => {
   let invoked = false;
   const messages = [];
   await expect(runToolkit({
@@ -73,14 +73,14 @@ test('reports mapping drift after developer tests run', async () => {
     findSourceTestMapping: async () => ({ missingTests: ['new-module'], orphanTests: ['old-module'] }),
     runTest: async () => { invoked = true; return { code: 0, output: '' }; }, runLintCommand: async () => 0,
   })).resolves.toBe(16);
-  expect(invoked).toBe(true);
+  expect(invoked).toBe(false);
   expect(messages.join('')).toContain('Missing test pair');
   expect(messages.join('')).toContain('Test without source pair');
 });
 
 test('enforces the monolith gate only when explicitly enabled', async () => {
   const messages = [];
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], enforceMonolithLimits: true, write: (message) => messages.push(message), findMonolith: async () => [{ file: 'src/large.mjs', lines: 301, threshold: 300 }], runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 })).resolves.toBe(15);
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, enforceMonolithLimits: true, write: (message) => messages.push(message), findMonolith: async () => [{ file: 'src/large.mjs', lines: 301, threshold: 300 }], runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 })).resolves.toBe(15);
   expect(messages.join('')).toContain('src/large.mjs');
 });
 
@@ -164,10 +164,15 @@ test('continues when monolith limits are explicitly ignored', async () => {
 
 test('rejects protected Jest options before running tests', async () => { const messages = []; await expect(runToolkit({ cwd: process.cwd(), runnerArguments: ['--coverage'], write: (message) => messages.push(message), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 })).resolves.toBe(4); expect(messages.join('')).toContain('Unsupported Jest option'); });
 
-test('returns timing cleanup failure when timing artifact removal fails', async () => {
+test('keeps timing cleanup failure non-fatal to diagnostics', async () => {
   const messages = [];
   let removals = 0;
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], debugTiming: true, write: (message) => messages.push(message), removePath: async (_path) => { removals += 1; if (removals > 4) throw new Error('locked'); }, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
-    .resolves.toBe(7);
-  expect(messages.join('')).toContain('Coverage cleanup failed: locked');
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], debugTiming: true, write: (message) => messages.push(message), removePath: async (_path) => { removals += 1; if (removals > 8) throw new Error('locked'); }, renamePath: async () => {}, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
+    .resolves.toBe(10);
+  expect(messages.join('')).toContain('Coverage validation failed');
+});
+
+test('returns the normalized test failure before post-test validation', async () => {
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: () => {}, runTest: async () => ({ code: 9, output: 'failed' }), runLintCommand: async () => 0 }))
+    .resolves.toBe(9);
 });

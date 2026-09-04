@@ -16,11 +16,22 @@ test('returns public outcomes for policy, argument, preparation, and cleanup fai
   await expect(runToolkitPreflight(context({ removePath: async () => { throw new Error('locked'); } }))).resolves.toMatchObject({ exitCode: 7 });
 });
 
-test('reports mapping drift but continues workspace inspection', async () => {
+test('fails after workspace policy when mapping drifts', async () => {
   let inspected = false;
   await expect(runToolkitPreflight(context({
     inspect: async () => { inspected = true; return true; },
     findSourceTestMapping: async () => ({ missingTests: ['missing'], orphanTests: [] }),
-  }))).resolves.toMatchObject({ architecture: 16, args: [], preparation: expect.any(Object) });
+  }))).resolves.toEqual({ exitCode: 16 });
   expect(inspected).toBe(true);
+});
+
+test('runs policy before reporting mapping drift', async () => {
+  const order = [];
+  await expect(runToolkitPreflight(context({
+    inspect: async () => { order.push('policy'); return true; },
+    findSourceTestMapping: async () => { order.push('mapping'); return { missingTests: ['missing'], orphanTests: [] }; },
+    removePath: async () => { order.push('cleanup'); },
+  }))).resolves.toEqual({ exitCode: 16 });
+  expect(order[0]).toBe('policy');
+  expect(order.at(-1)).toBe('mapping');
 });

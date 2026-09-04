@@ -112,7 +112,10 @@ test('bounds large trees with a stable file-limit failure', async () => {
 test('ignores repeated directory entries', async () => {
   const root = resolve('cycle-repo');
   const readDirectory = async (directory) => {
-    if (directory === resolve(root, 'src')) return [{ name: 'loop', isDirectory: () => true, isFile: () => false }];
+    if (directory === resolve(root, 'src')) return [
+      { name: 'loop', isDirectory: () => true, isFile: () => false },
+      { name: 'loop', isDirectory: () => true, isFile: () => false },
+    ];
     if (directory === resolve(root, 'src/loop')) return [{ name: '..', isDirectory: () => true, isFile: () => false }];
     return [];
   };

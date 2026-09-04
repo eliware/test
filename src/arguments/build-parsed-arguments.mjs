@@ -5,5 +5,6 @@ export function buildParsedArguments(runnerArguments, options) {
   if (options.ignoreCoverage) parsed.ignoreCoverage = true;
   if (options.ignoreMonolithLimits) parsed.ignoreMonolithLimits = true;
   if (options.debugTiming) parsed.debugTiming = true;
+  if (options.workers !== undefined) parsed.workers = options.workers;
   return parsed;
 }

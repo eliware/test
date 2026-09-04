@@ -6,6 +6,9 @@ import { formatMappingDrifts } from '../../architecture/format-mapping-drifts.mj
 export async function validateArchitecture(cwd, write, findMapping = findSourceTestMappingDrifts) {
   try {
     const drifts = await findMapping(cwd);
+    if (!drifts || !Array.isArray(drifts.missingTests) || !Array.isArray(drifts.orphanTests)) {
+      throw new TypeError('mapping collaborator returned an invalid result');
+    }
     if (drifts.missingTests.length || drifts.orphanTests.length) {
       write(formatMappingDrifts(drifts));
       return EXIT_CODES.ARCHITECTURE_MAPPING;

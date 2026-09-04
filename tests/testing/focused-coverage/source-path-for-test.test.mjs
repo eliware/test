@@ -23,6 +23,10 @@ test('rejects test paths outside the workspace', async () => {
   await expect(sourcePathForTest('C:/repo', 'C:/other/tests/a.test.mjs', accessPath)).resolves.toBe('');
 });
 
+test('rejects non-test filename suffixes', async () => {
+  await expect(sourcePathForTest('/repo', 'tests/a.fixture.mjs', async () => {})).resolves.toBe('');
+});
+
 test('propagates unexpected source access failures', async () => {
   await expect(sourcePathForTest('/repo', 'tests/a.test.mjs', async () => {
     throw Object.assign(new Error('denied'), { code: 'EACCES' });

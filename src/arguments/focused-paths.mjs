@@ -1,9 +1,27 @@
 /** Jest options whose following token is a value rather than a test path. */
 export const VALUE_OPTIONS = Object.freeze([
-  '-t', '--testNamePattern', '--config', '--rootDir', '--testMatch',
+  '-t', '-e', '-w', '--testNamePattern', '--config', '--rootDir', '--testMatch',
   '--testPathPattern', '--selectProjects', '--projects', '--runTestsByPath',
-  '--env', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile'
+  '--env', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile',
+  '--testPathIgnorePatterns', '--testPathPatterns', '--modulePathIgnorePatterns', '--transform',
+  '--transformIgnorePatterns', '--coveragePathIgnorePatterns', '--reporters',
+  '--coverageThreshold', '--testEnvironmentOptions', '--resolver', '--preset',
+  '--setupFiles', '--setupFilesAfterEnv', '--snapshotResolver', '--testSequencer',
+  '--testRegex', '--filter', '--dependencyExtractor', '--globalSetup',
+  '--globalTeardown', '--testEnvironment', '--maxWorkers', '--maxConcurrency',
+  '--slowTestThreshold', '--bail', '--changedSince', '--findRelatedTests'
 ]);
+const VALUE_OPTION_SUFFIXES = Object.freeze([
+  'Pattern', 'Patterns', 'Path', 'Paths', 'File', 'Files', 'Dir', 'Directory',
+  'Environment', 'Workers', 'Concurrency', 'Threshold', 'Reporters', 'Resolver',
+  'Preset', 'Setup', 'Transform', 'Project', 'Projects', 'Since', 'Filter',
+  'Extractor', 'Mapper', 'Sequencer'
+]);
+
+function consumesFollowingValue(optionName) {
+  return VALUE_OPTIONS.includes(optionName)
+    || (optionName.startsWith('--') && VALUE_OPTION_SUFFIXES.some((suffix) => optionName.endsWith(suffix)));
+}
 
 /** Extract positional arguments that identify focused test files. */
 export function extractFocusedPaths(argumentsList) {
@@ -12,10 +30,14 @@ export function extractFocusedPaths(argumentsList) {
   const valueOptions = new Set(VALUE_OPTIONS);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
+    if (typeof argument !== 'string') continue;
     const optionName = argument.split('=', 1)[0];
-    if (valueOptions.has(optionName)) {
+    if (valueOptions.has(optionName) || consumesFollowingValue(optionName)) {
       if (optionName === argument) {
         if (index + 1 >= argumentsList.length) throw new Error(`${argument} requires a value.`);
+        if (typeof argumentsList[index + 1] === 'string' && argumentsList[index + 1].startsWith('-')) {
+          throw new Error(`${argument} requires a value before ${argumentsList[index + 1]}.`);
+        }
         index += 1;
       }
       continue;

@@ -31,6 +31,12 @@ test('accepts a valid report written during the current run', async () => {
     .resolves.toEqual([]);
 });
 
+test('accepts a report exactly at the run timestamp after cleanup', async () => {
+  const report = JSON.stringify({ 'src/current.mjs': complete });
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async () => ({ mtimeMs: 100 }), 100))
+    .resolves.toEqual([]);
+});
+
 test('accepts injected reports when freshness metadata is unavailable', async () => {
   const report = JSON.stringify({ 'src/current.mjs': complete });
   const missing = Object.assign(new Error('metadata unavailable'), { code: 'ENOENT' });
@@ -57,12 +63,44 @@ test('reports a structurally malformed JSON report explicitly', async () => {
   await expect(readCoverage('C:/repo', text, () => {}, async (path) => {
     if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  })).rejects.toThrow('Coverage report is malformed: coverage/coverage-final.json');
+  })).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+});
+
+test('reports malformed JSON when production output has no text fallback', async () => {
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => {
+    if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
+    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+  }, async () => ({ mtimeMs: Date.now() }), Date.now() - 1)).rejects.toThrow('Coverage report is malformed');
+});
+
+test('falls through a fresh malformed candidate to a later usable report', async () => {
+  const report = JSON.stringify({ 'src/current.mjs': complete });
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => {
+    if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
+    if (path.endsWith('coverage.json')) return report;
+    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+  }, async () => ({ mtimeMs: Date.now() }))).resolves.toEqual([]);
 });
 
 test('rejects unusable nonempty coverage evidence', async () => {
   await expect(readCoverage('C:/repo', 'test output', () => {}, async () => '{bad')).rejects.toThrow('Coverage evidence missing');
-  await expect(readCoverage('C:/repo', '', () => {}, async () => '{bad')).resolves.toEqual([]);
+  await expect(readCoverage('C:/repo', '', () => {}, async () => '{bad')).rejects.toThrow('Coverage evidence missing');
+});
+
+test('rejects malformed coverage with empty output', async () => {
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json')
+    ? JSON.stringify({ 'src/bad.mjs': { statementMap: {} } })
+    : '', async () => ({ mtimeMs: 0 }))).rejects.toThrow('Coverage report is malformed');
+});
+
+test('fails closed for empty production-run coverage evidence', async () => {
+  await expect(readCoverage('C:/repo', '', () => {}, async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }, async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }, Date.now()))
+    .rejects.toThrow('Coverage evidence missing');
+});
+
+test('fails closed for empty coverage evidence when freshness is omitted', async () => {
+  await expect(readCoverage('C:/repo', '', () => {}, async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }))
+    .rejects.toThrow('Coverage evidence missing');
 });
 
 test('preserves genuine coverage read failures', async () => {
@@ -84,5 +122,5 @@ test('reports text fallback only in debug mode', async () => {
 });
 
 test('supports default diagnostic and file-reader collaborators', async () => {
-  await expect(readCoverage('C:/path-that-does-not-exist', '')).resolves.toEqual([]);
+  await expect(readCoverage('C:/path-that-does-not-exist', '')).rejects.toThrow('Coverage evidence missing');
 });

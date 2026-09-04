@@ -6,5 +6,9 @@ import { isWrapperOption } from './classify-arguments.mjs';
  */
 export function normalizeArguments(argumentsList = []) {
   if (!Array.isArray(argumentsList)) throw new TypeError('normalizeArguments requires an argument array');
-  return argumentsList.filter((argument) => !isWrapperOption(argument) && argument !== '--');
+  let separatorRemoved = false;
+  return argumentsList.filter((argument) => {
+    if (argument === '--' && !separatorRemoved) { separatorRemoved = true; return false; }
+    return !isWrapperOption(argument);
+  });
 }

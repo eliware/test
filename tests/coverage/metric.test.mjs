@@ -12,11 +12,15 @@ test('rejects malformed or oversized values without coercion', () => {
   expect(metricHasGap('101')).toBe(true);
   expect(metricHasGap('100.00abc%')).toBe(true);
   expect(metricHasGap(`66.${'6'.repeat(2000)}% (2/3)`)).toBe(true);
+  expect(metricHasGap('100% (-1/1)')).toBe(true);
+  expect(metricHasGap('100% (1/-1)')).toBe(true);
+  expect(metricHasGap(`100% (${'1'.repeat(257)}/${'1'.repeat(257)})`)).toBe(true);
+  expect(metricHasGap(`${'1'.repeat(257)}/${'1'.repeat(257)}`)).toBe(true);
 });
 
 test('checks annotated percentages against exact counters', () => {
   expect(metricHasGap('80% (4/5)')).toBe(true);
-  expect(metricHasGap('99.995% (1/1)')).toBe(true);
+  expect(metricHasGap('99.995% (1/1)')).toBe(false);
   expect(metricHasGap('100.0000% (1/1)')).toBe(false);
   expect(metricHasGap('100% (9007199254740992/9007199254740993)')).toBe(true);
 });

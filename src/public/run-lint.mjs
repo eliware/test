@@ -1,4 +1,5 @@
 import { runLintCommand as defaultRunLintCommand } from '../application/run-lint-command.mjs';
+import { EXIT_CODES } from '../exit-codes/codes.mjs';
 
 /** Public lint API backed by the application lint command. */
 export async function runLint(options, dependencies = {}) {
@@ -6,7 +7,13 @@ export async function runLint(options, dependencies = {}) {
   if (typeof options.cwd !== 'string') throw new TypeError('runLint requires cwd');
   if (typeof options.write !== 'function') throw new TypeError('runLint requires a write function');
   const defaultCommand = dependencies.defaultRunLintCommand ?? defaultRunLintCommand;
-  const result = await (options.runLintCommand ?? defaultCommand)(options);
+  let result;
+  try {
+    result = await (options.runLintCommand ?? defaultCommand)(options);
+  } catch (error) {
+    options.write(`Lint failed: ${error instanceof Error ? error.message : String(error)}\n`);
+    return EXIT_CODES.INTERNAL;
+  }
   if (!Number.isInteger(result)) throw new TypeError('runLint must return an integer exit code');
   return result;
 }

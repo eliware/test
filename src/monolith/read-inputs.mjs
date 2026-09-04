@@ -4,6 +4,6 @@ import { scanMonolithFiles } from './scan-files.mjs';
 
 export async function readMonolithInputs(cwd, options = {}) {
   const config = await readMonolithConfig(cwd, options.readFilePath ?? readFile);
-  const files = await scanMonolithFiles(cwd, options.readDirectory, options.readSource ?? readFile);
+  const files = await scanMonolithFiles(cwd, options.readDirectory, options.readSource ?? readFile, options.workers);
   return { config, files };
 }

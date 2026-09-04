@@ -1,5 +1,5 @@
 import { access } from 'node:fs/promises';
-import { isAbsolute, relative, resolve, win32 } from 'node:path';
+import { relative, resolve, win32 } from 'node:path';
 
 const WINDOWS_ABSOLUTE = /^(?:[A-Za-z]:[\\/]|[/\\]{2})/;
 
@@ -12,11 +12,12 @@ function relativeTestPath(cwd, testPath) {
 /** Resolve one focused test path to its single mirrored source path. */
 export async function sourcePathForTest(cwd, testPath, accessPath = access) {
   if (typeof testPath !== 'string') return '';
-  const normalized = (isAbsolute(testPath) || WINDOWS_ABSOLUTE.test(testPath) ? relativeTestPath(cwd, testPath) : testPath)
+  const normalized = (testPath.startsWith('/') || WINDOWS_ABSOLUTE.test(testPath) ? relativeTestPath(cwd, testPath) : testPath)
     .replaceAll('\\', '/').replace(/^\.\//, '');
   if (normalized === '..' || normalized.startsWith('../') || normalized.startsWith('/')) return '';
   const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
   if (!marker) return '';
+  if (!/\.(?:test|spec)\.[^.]+$/i.test(marker[2])) return '';
   const sourceRelative = marker[2].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, '').replace(/\.[^.]+$/, '');
   const testExtension = marker[2].slice(marker[2].lastIndexOf('.') + 1).toLowerCase();
   const extensions = [testExtension, ...['js', 'mjs', 'cjs', 'ts', 'mts', 'cts', 'jsx', 'tsx'].filter((extension) => extension !== testExtension)];

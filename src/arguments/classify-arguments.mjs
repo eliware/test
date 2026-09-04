@@ -3,7 +3,7 @@ import { isManagedOption } from './managed-options.mjs';
 
 
 /** Identify arguments consumed by the wrapper itself. */
-export function isWrapperOption(argument) { return WRAPPER_OPTIONS.includes(argument); }
+export function isWrapperOption(argument) { return WRAPPER_OPTIONS.includes(argument) || typeof argument === 'string' && /^--workers=\d+$/.test(argument); }
 
 /** Identify Jest arguments controlled by the wrapper. */
 export { isManagedOption };

@@ -18,3 +18,15 @@ test('uses an injected default command without launching the real linter', async
     { defaultRunLintCommand: async () => 0 },
   )).resolves.toBe(0);
 });
+
+test('normalizes delegated lint failures to the internal exit code', async () => {
+  const messages = [];
+  await expect(runLint({ cwd: 'C:/repo', write: (message) => messages.push(message), runLintCommand: async () => { throw new Error('lint unavailable'); } })).resolves.toBe(14);
+  expect(messages.join('')).toContain('lint unavailable');
+});
+
+test('formats non-Error delegated lint failures', async () => {
+  const messages = [];
+  await expect(runLint({ cwd: 'C:/repo', write: (message) => messages.push(message), runLintCommand: async () => { throw 'lint unavailable'; } })).resolves.toBe(14);
+  expect(messages.join('')).toContain('lint unavailable');
+});

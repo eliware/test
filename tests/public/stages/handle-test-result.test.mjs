@@ -12,6 +12,10 @@ test('formats test failure and returns public code', () => {
   expect(write.mock.calls[0][0]).toContain('Tests failed');
 });
 
+test('preserves an already normalized test failure code', () => {
+  expect(handleTestResult({ code: 9, output: 'boom' }, () => {})).toBe(9);
+});
+
 test('returns null for successful tests', () => {
   expect(handleTestResult({ code: 0, output: '' }, () => {})).toBeNull();
 });

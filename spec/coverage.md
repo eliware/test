@@ -10,9 +10,20 @@ The parser recognizes the standard Jest table, including CRLF and ANSI output,
 and reports only incomplete files. Zero-valued metrics are gaps. Percentage-only
 values are complete only when exactly `100%` (optional zeroes may follow).
 Annotated values must agree with their raw counter ratio after rounding to two
-decimal places. Malformed annotations and ratios fail closed as gaps.
+decimal places. Malformed annotations and ratios fail closed as gaps. Bare and
+annotated ratio counters are limited to 256 decimal digits before BigInt
+conversion.
 
 ## Istanbul JSON coverage
+
+Each run writes Jest coverage to an isolated temporary directory. After Jest
+finishes, the runner validates that directory and promotes it to the
+consumer's `coverage/` directory so the generated reports remain available
+for inspection without accepting stale pre-run artifacts. Promotion moves the
+completed directory into place using a rename-based replacement rather than
+copying its contents. Promotion failures return the dedicated coverage-cleanup
+outcome and clean up or restore temporary filesystem state on a best-effort
+basis.
 
 Candidates are considered in order:
 
@@ -23,7 +34,10 @@ Candidates are considered in order:
 Stale candidates are removed before Jest runs. Missing, malformed, empty, or
 structurally unusable candidates advance to the next candidate; other read
 errors fail. The first usable candidate is authoritative and candidates are
-not merged. If none is usable, completed bounded Jest output is used only when
+not merged. The selected Jest aggregate is the producer's complete in-scope
+source set for that invocation; this package does not independently enumerate
+consumer source files or infer that omitted files are uncovered. If none is
+usable, completed bounded Jest output is used only when
 it contains a structurally valid coverage table; otherwise validation fails
 closed.
 
@@ -31,7 +45,9 @@ Malformed or missing counter maps are reported conservatively as explicit
 unknown uncovered diagnostics. An Istanbul `l` map is authoritative for line
 coverage. Statement, branch, function, and line metrics remain independent.
 Multiple statements on one line make that line uncovered when any statement is
-uncovered.
+uncovered. Without an `l` map, only statements lacking a valid positive start
+line count as unmapped; valid statement locations contribute their observed
+counts to the line metric.
 
 ## Focused coverage and diagnostics
 

@@ -4,11 +4,9 @@ import { prepareTests } from './stages/prepare-tests.mjs';
 import { handleTestPreparation } from './stages/handle-test-preparation.mjs';
 import { cleanupCoverage } from './stages/cleanup.mjs';
 import { validateArchitecture } from './stages/validate-architecture.mjs';
-
-const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
+import { COVERAGE_CANDIDATES } from '../coverage/read-coverage.mjs';
 
 export async function runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, findIstanbulIgnores, inspect, debugTiming, findSourceTestMapping, timing }) {
-  const architecture = await validateArchitecture(cwd, write, findSourceTestMapping);
   if (!await inspect(cwd, write, accessPath, findIstanbulIgnores)) return { exitCode: EXIT_CODES.ISTANBUL_POLICY };
   timing.step('Workspace inspection', 'tests');
   const { args, protectedArgument } = validateRunnerArguments(runnerArguments);
@@ -20,5 +18,7 @@ export async function runToolkitPreflight({ cwd, runnerArguments, write, accessP
   const preparationOutcome = handleTestPreparation(preparation, write);
   if (preparationOutcome !== null) return { exitCode: preparationOutcome };
   if (!await cleanupCoverage(cwd, removePath, COVERAGE_CANDIDATES, write)) return { exitCode: EXIT_CODES.COVERAGE_CLEANUP };
-  return { architecture, args, preparation };
+  const architecture = await validateArchitecture(cwd, write, findSourceTestMapping);
+  if (architecture) return { exitCode: architecture };
+  return { args, preparation };
 }

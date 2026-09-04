@@ -1,7 +1,7 @@
 import { executeTests } from './stages/tests.mjs';
 import { handleTestResult } from './stages/handle-test-result.mjs';
 
-export async function runToolkitExecution({ cwd, args, runInBand, disableInBand, preparation, runTest, readFilePath, removePath, write }) {
+export async function runToolkitExecution({ cwd, args, runInBand, disableInBand, preparation, runTest, readFilePath, removePath, accessPath, renamePath, write }) {
   const testResult = await executeTests({
     cwd,
     args,
@@ -12,6 +12,8 @@ export async function runToolkitExecution({ cwd, args, runInBand, disableInBand,
     runTest,
     readFilePath,
     removePath,
+    accessPath,
+    renamePath,
     write,
   });
   return { testResult, outcome: handleTestResult(testResult, write, cwd) };

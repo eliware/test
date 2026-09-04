@@ -1,4 +1,4 @@
-import { walkFiles } from '../../src/workspace/walk-files.mjs';
+import { WALK_LIMITS, walkFiles } from '../../src/workspace/walk-files.mjs';
 
 test('validates the workspace, visitor, and options', async () => {
   await expect(walkFiles('')).rejects.toThrow(TypeError);
@@ -31,4 +31,20 @@ test('uses the default directory reader', async () => {
   const seen = [];
   await walkFiles('test-fixtures/exclusions', async (path) => seen.push(path));
   expect(seen.some((path) => path.endsWith('valid.mjs'))).toBe(true);
+});
+
+test('skips symlinks and bounds traversal', async () => {
+  await expect(walkFiles('C:/repo', () => {}, { readDirectory: async (path) => path.endsWith('repo')
+    ? [{ name: 'link', isDirectory: () => true, isSymbolicLink: () => true }]
+    : [{ name: 'next', isDirectory: () => true }] })).resolves.toBeUndefined();
+  await expect(walkFiles('C:/repo', () => {}, { readDirectory: async () => [{ name: 'next', isDirectory: () => true }] })).rejects.toThrow(`depth limit (${WALK_LIMITS.maxDepth})`);
+});
+
+test('ignores repeated directories and bounds files', async () => {
+  await expect(walkFiles('C:/repo', () => {}, { readDirectory: async (path) => path.endsWith('repo')
+    ? [{ name: 'loop', isDirectory: () => true }]
+    : [{ name: '..', isDirectory: () => true }] })).resolves.toBeUndefined();
+  await expect(walkFiles('C:/repo', () => {}, { readDirectory: async (path) => path.endsWith('repo')
+    ? Array.from({ length: WALK_LIMITS.maxFiles + 1 }, (_, index) => ({ name: `f${index}`, isDirectory: () => false, isFile: () => true }))
+    : [] })).rejects.toThrow(`file limit (${WALK_LIMITS.maxFiles})`);
 });

@@ -1,5 +1,6 @@
 import { normalizeCoveragePath } from '../../src/coverage/normalize-path.mjs';
 test('normalizes workspace paths', () => expect(normalizeCoveragePath('C:\\repo\\src\\a.mjs', 'C:\\repo')).toBe('src/a.mjs'));
+test('normalizes a report path equal to the workspace root', () => expect(normalizeCoveragePath('C:\\repo', 'C:\\repo')).toBe(''));
 test('preserves unrelated and malformed paths', () => {
   expect(normalizeCoveragePath('C:/other/a.mjs', 'C:/repo')).toBe('C:/other/a.mjs');
   expect(normalizeCoveragePath('c:/REPO/src/a.mjs', 'C:\\repo')).toBe('src/a.mjs');
