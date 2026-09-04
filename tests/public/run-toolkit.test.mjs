@@ -88,6 +88,13 @@ test('normalizes structured and incomplete lint results', async () => {
   await expect(runToolkit({ ...base, runLintCommand: async () => ({}) })).resolves.toBe(1);
 });
 
+test('returns a stable coverage failure when coverage reading fails', async () => {
+  const messages = [];
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: (message) => messages.push(message), runTest: async () => ({ code: 0, output: '' }), readFilePath: async () => { throw new Error('coverage unavailable'); }, runLintCommand: async () => 0 }))
+    .resolves.toBe(10);
+  expect(messages.join('')).toContain('Coverage validation failed');
+});
+
 test('omits in-band execution when explicitly disabled', async () => {
   const calls = [];
   await expect(runToolkit({ cwd: process.cwd(), runnerArguments: ['--no-runInBand'], ignoreCoverage: true, write: () => {}, runTest: async (args) => { calls.push(args); return { code: 0, output: '' }; }, runLintCommand: async () => 0 })).resolves.toBe(0);

@@ -67,7 +67,9 @@ export async function runToolkit(options) {
   if (testResult.code !== 0) { write(formatFailure('Tests', testResult)); return EXIT_CODES.TEST_FAILURE; }
   timing.step('Tests', 'coverage');
   if (!ignoreCoverage) {
-    const coverageGaps = await readCoverage(cwd, testResult.output, write, readFilePath);
+    let coverageGaps;
+    try { coverageGaps = await readCoverage(cwd, testResult.output, write, readFilePath); }
+    catch (error) { write(`Coverage validation failed: ${error.message}\n`); return EXIT_CODES.COVERAGE_FAILURE; }
     if (coverageGaps.length) {
       write(formatGaps(coverageGaps, cwd));
       return EXIT_CODES.COVERAGE_GAP;
