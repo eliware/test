@@ -14,6 +14,7 @@ export async function sourcePathForTest(cwd, testPath, accessPath = access) {
   if (typeof testPath !== 'string') return '';
   const normalized = (isAbsolute(testPath) || WINDOWS_ABSOLUTE.test(testPath) ? relativeTestPath(cwd, testPath) : testPath)
     .replaceAll('\\', '/').replace(/^\.\//, '');
+  if (normalized === '..' || normalized.startsWith('../') || normalized.startsWith('/')) return '';
   const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
   if (!marker) return '';
   const sourceRelative = marker[2].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, '').replace(/\.[^.]+$/, '');

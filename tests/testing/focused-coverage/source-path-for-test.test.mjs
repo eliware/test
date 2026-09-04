@@ -14,3 +14,9 @@ test('normalizes relative and workspace-absolute test paths', async () => {
   await expect(sourcePathForTest('c:\\REPO', 'C:/repo/tests/a.test.mjs', accessPath)).resolves.toBe('src/a.mjs');
   await expect(sourcePathForTest('/repo', '/repo/tests/a.test.mjs', accessPath)).resolves.toBe('src/a.mjs');
 });
+
+test('rejects test paths outside the workspace', async () => {
+  const accessPath = async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); };
+  await expect(sourcePathForTest('/repo', '../tests/a.test.mjs', accessPath)).resolves.toBe('');
+  await expect(sourcePathForTest('C:/repo', 'C:/other/tests/a.test.mjs', accessPath)).resolves.toBe('');
+});
