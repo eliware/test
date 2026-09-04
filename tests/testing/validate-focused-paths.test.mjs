@@ -45,3 +45,21 @@ test('validates Windows and UNC paths on a non-Windows host', async () => {
   await expect(validateFocusedPaths('\\\\server\\share', ['\\\\server\\share\\tests\\a.test.mjs'], accessPath, file)).resolves.toBe('');
   expect(accessed).toHaveLength(2);
 });
+
+test('rejects a focused symlink that resolves outside the workspace', async () => {
+  const realpathPath = async (path) => path.endsWith('link.test.mjs') ? '/outside/real.test.mjs' : path;
+  await expect(validateFocusedPaths('/repo', ['tests/link.test.mjs'], async () => {}, async () => ({ isFile: () => true }), realpathPath))
+    .resolves.toBe('tests/link.test.mjs');
+});
+
+test('propagates realpath failures', async () => {
+  const failure = Object.assign(new Error('realpath denied'), { code: 'EACCES' });
+  await expect(validateFocusedPaths('/repo', ['tests/a.test.mjs'], async () => {}, async () => ({ isFile: () => true }), async () => { throw failure; }))
+    .rejects.toBe(failure);
+  let calls = 0;
+  await expect(validateFocusedPaths('/repo', ['tests/a.test.mjs'], async () => {}, async () => ({ isFile: () => true }), async () => {
+    calls += 1;
+    if (calls === 2) throw failure;
+    return '/repo';
+  })).rejects.toBe(failure);
+});

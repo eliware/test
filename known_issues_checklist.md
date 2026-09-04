@@ -36,11 +36,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     report replacement is incomplete.
   - Define freshness/ownership semantics and test stale-candidate behavior.
 
-- [ ] **P2 — Focused symlinks may escape workspace containment**
-  - Location: `src/testing/validate-focused-paths.mjs:5-22`
-  - Lexical containment can pass a symlink that resolves outside the workspace.
-  - Define symlink policy and test realpath containment where appropriate.
-
 - [ ] **P2 — Mapping traversal is not fully bounded or deterministic**
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
   - In addition to exclusions, traversal needs cycle/repeated-entry protection,

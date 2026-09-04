@@ -1,4 +1,4 @@
-import { access, stat } from 'node:fs/promises';
+import { access, realpath, stat } from 'node:fs/promises';
 import { resolve, win32 } from 'node:path';
 import { extractFocusedPaths } from '../arguments/focused-paths.mjs';
 
@@ -16,7 +16,7 @@ function isInsideWorkspace(cwd, path) {
 }
 
 /** Return the first focused test path that does not exist in the workspace. */
-export async function validateFocusedPaths(cwd, argumentsList, accessPath, statPath = stat) {
+export async function validateFocusedPaths(cwd, argumentsList, accessPath, statPath = stat, realpathPath = realpath) {
   if (typeof cwd !== 'string') throw new TypeError('validateFocusedPaths requires cwd');
   if (!Array.isArray(argumentsList)) throw new TypeError('validateFocusedPaths requires an argument array');
   const checkAccess = accessPath ?? access;
@@ -24,6 +24,15 @@ export async function validateFocusedPaths(cwd, argumentsList, accessPath, statP
     try {
       const path = resolveCandidate(cwd, candidate.replaceAll('\\', '/'));
       if (!isInsideWorkspace(cwd, path)) return candidate;
+      const physicalWorkspace = await realpathPath(cwd).catch((error) => {
+        if (error.code === 'ENOENT' || (WINDOWS_ABSOLUTE.test(cwd) && error.code === 'UNKNOWN')) return resolve(cwd);
+        throw error;
+      });
+      const physicalPath = await realpathPath(path).catch((error) => {
+        if (error.code === 'ENOENT' || (WINDOWS_ABSOLUTE.test(cwd) && error.code === 'UNKNOWN')) return path;
+        throw error;
+      });
+      if (!isInsideWorkspace(physicalWorkspace, physicalPath)) return candidate;
       await checkAccess(path);
       if (!(await statPath(path)).isFile()) return candidate;
     }
