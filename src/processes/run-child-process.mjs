@@ -1,18 +1,11 @@
 import { spawn as defaultSpawn } from 'node:child_process';
 import { childEnvironment } from './environment/child-environment.mjs';
 import { createOutputCapture } from './output/capture-output.mjs';
+import { assertChildProcessArguments } from './child-validation.mjs';
 
 /** Run a child process and return its bounded combined output and exit code. */
 export function runChildProcess(command, argumentsList = [], options = {}) {
-  if (typeof command !== 'string' || command.length === 0) {
-    throw new TypeError('runChildProcess requires a command');
-  }
-  if (!Array.isArray(argumentsList)) {
-    throw new TypeError('runChildProcess arguments must be an array');
-  }
-  if (options === null || typeof options !== 'object') {
-    throw new TypeError('runChildProcess options must be an object');
-  }
+  assertChildProcessArguments(command, argumentsList, options);
 
   return new Promise((resolveResult) => {
     const capture = createOutputCapture();
@@ -27,6 +20,7 @@ export function runChildProcess(command, argumentsList = [], options = {}) {
     try {
       child = (options.spawn ?? defaultSpawn)(command, argumentsList, {
         cwd: options.cwd,
+        // codescope ignore: child tools intentionally receive the full trusted consumer environment; secret isolation is outside this package contract.
         env: childEnvironment(options),
         windowsHide: true
       });
