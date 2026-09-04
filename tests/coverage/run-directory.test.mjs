@@ -102,7 +102,7 @@ test('reports but does not fail when old-directory cleanup fails', async () => {
   let removes = 0;
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {
     removes += 1;
-    if (removes === 1) throw new Error('cleanup locked');
+    throw new Error('cleanup locked');
   }, async () => {}, (error) => warnings.push(error.message))).resolves.toBe(true);
   expect(warnings).toEqual(['cleanup locked']);
 });

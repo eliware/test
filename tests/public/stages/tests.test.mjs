@@ -22,7 +22,7 @@ test('returns coverage cleanup failure when startup cleanup fails', async () => 
 test('reports a nonfatal cleanup warning after promotion', async () => {
   const messages = [];
   let removes = 0;
-  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async () => { removes += 1; if (removes === 2) throw new Error('cleanup locked'); }, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
+  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async () => { removes += 1; if (removes >= 2) throw new Error('cleanup locked'); }, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
     .resolves.toMatchObject({ code: 0 });
   expect(messages).toContain('Coverage cleanup warning: cleanup locked\n');
 });

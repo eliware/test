@@ -2,7 +2,6 @@ import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseJsonReport } from './parse-json-report.mjs';
 import { parseTextReport } from './parse-text-report.mjs';
-import { selectUsableReport } from './select-usable-report.mjs';
 import { hasTextCoverageEvidence } from './text-evidence.mjs';
 import { isUsableCoverageReport } from './is-usable-coverage-report.mjs';
 import { debugOutput } from '../diagnostics/debug-output.mjs';
@@ -12,24 +11,26 @@ export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/co
 export async function readCoverage(cwd, testOutput, write, readFilePath = readFile, statPath = stat, startedAt = 0) {
   if (typeof cwd !== 'string') throw new TypeError('readCoverage requires cwd');
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
-  let malformedReport;
-  for (const name of COVERAGE_CANDIDATES) {
+  const reports = await Promise.all(COVERAGE_CANDIDATES.map(async (name) => {
     try {
       const reportPath = resolve(cwd, name);
       const json = JSON.parse(await readFilePath(reportPath, 'utf8'));
       let fresh = true;
       if (startedAt) {
         try { fresh = (await statPath(reportPath)).mtimeMs >= startedAt; }
-        catch (error) { if (error.code === 'ENOENT') { /* injected virtual files may not expose stat metadata */ } else throw error; }
+        catch (error) { if (error.code !== 'ENOENT') throw error; }
       }
       const usable = isUsableCoverageReport(json);
-      if (!usable && !malformedReport) malformedReport = name;
-      if (fresh && selectUsableReport([{ usable, report: json }])) return parseJsonReport(json);
+      return { name, json, usable, malformed: !usable, fresh };
     } catch (error) {
-      if (error instanceof SyntaxError) { malformedReport ??= name; continue; }
-      if (error.code !== 'ENOENT') throw error;
+      if (error instanceof SyntaxError) return { name, malformed: true };
+      if (error.code === 'ENOENT') return { name };
+      throw error;
     }
-  }
+  }));
+  const malformedReport = reports.find(({ malformed }) => malformed)?.name;
+  const selected = reports.find(({ usable, fresh }) => fresh && usable);
+  if (selected) return parseJsonReport(selected.json);
   const gaps = parseTextReport(testOutput);
   if (!hasTextCoverageEvidence(testOutput)) {
     if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);

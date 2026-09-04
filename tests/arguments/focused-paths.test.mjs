@@ -13,8 +13,9 @@ test.each(['-e', '-w'])('skips test-looking values for short option %s', (option
   expect(extractFocusedPaths([option, 'tests/value.test.mjs', 'tests/actual.test.mjs'])).toEqual(['tests/actual.test.mjs']);
 });
 
-test('skips values for pattern-shaped Jest options not yet listed explicitly', () => {
-  expect(extractFocusedPaths(['--futureTestPattern', 'tests/value.test.mjs', 'tests/actual.test.mjs'])).toEqual(['tests/actual.test.mjs']);
+test('does not guess that unknown options consume values', () => {
+  expect(extractFocusedPaths(['--futureTestPattern', 'tests/value.test.mjs', 'tests/actual.test.mjs']))
+    .toEqual(['tests/value.test.mjs', 'tests/actual.test.mjs']);
 });
 
 test('skips equals-form option values', () => {

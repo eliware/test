@@ -47,8 +47,8 @@ eliware-test --version          Print the installed version
 ```
 
 Do not run overlapping validations in the same worktree. Coverage promotion
-uses shared workspace artifacts and concurrent runs can replace each other's
-reports; use separate worktrees for concurrent jobs.
+uses shared workspace artifacts; overlapping results are unsupported and may
+be nondeterministic. Use separate worktrees for concurrent jobs.
 
 Advanced options include `--no-runInBand` for diagnostic worker behavior and
 `--ignore-monolith-limits` for temporary refactoring runs. Both are supported

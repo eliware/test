@@ -9,7 +9,10 @@ export async function runLint(options, dependencies = {}) {
   const defaultCommand = dependencies.defaultRunLintCommand ?? defaultRunLintCommand;
   let result;
   try {
-    result = await (options.runLintCommand ?? defaultCommand)(options);
+    const commandOptions = (({ cwd, write, inspect, runLint, runChildProcess }) => ({
+      cwd, write, inspect, runLint, runChildProcess
+    }))(options);
+    result = await (options.runLintCommand ?? defaultCommand)(commandOptions);
   } catch (error) {
     options.write(`Lint failed: ${error instanceof Error ? error.message : String(error)}\n`);
     return EXIT_CODES.INTERNAL;

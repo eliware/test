@@ -34,15 +34,18 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       finish(1, `${error.message}\n`);
       return;
     }
+    const terminate = (signal) => {
+      try { child.kill?.(signal); } catch { /* continue escalation */ }
+    };
     timeout = setTimeout(() => {
-      try { child.kill?.('SIGTERM'); } catch { /* continue escalation */ }
+      terminate('SIGTERM');
       if (closed) return;
       forceKill = setTimeout(() => {
         if (closed) return;
-        try { child.kill?.('SIGKILL'); } catch { /* continue escalation */ }
+        terminate('SIGKILL');
         finalKill = setTimeout(() => {
           if (closed) return;
-          try { child.kill?.('SIGKILL'); } catch { /* report zombie below */ }
+          terminate('SIGKILL');
           finish(1, `Child process timed out after ${timeoutMs} ms\nChild process remained alive after SIGKILL\n`);
         }, 1000);
         finalKill.unref?.();

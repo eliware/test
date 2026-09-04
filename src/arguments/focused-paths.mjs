@@ -11,16 +11,8 @@ export const VALUE_OPTIONS = Object.freeze([
   '--globalTeardown', '--testEnvironment', '--maxWorkers', '--maxConcurrency',
   '--slowTestThreshold', '--bail', '--changedSince', '--findRelatedTests'
 ]);
-const VALUE_OPTION_SUFFIXES = Object.freeze([
-  'Pattern', 'Patterns', 'Path', 'Paths', 'File', 'Files', 'Dir', 'Directory',
-  'Environment', 'Workers', 'Concurrency', 'Threshold', 'Reporters', 'Resolver',
-  'Preset', 'Setup', 'Transform', 'Project', 'Projects', 'Since', 'Filter',
-  'Extractor', 'Mapper', 'Sequencer'
-]);
-
 function consumesFollowingValue(optionName) {
-  return VALUE_OPTIONS.includes(optionName)
-    || (optionName.startsWith('--') && VALUE_OPTION_SUFFIXES.some((suffix) => optionName.endsWith(suffix)));
+  return VALUE_OPTIONS.includes(optionName);
 }
 
 /** Extract positional arguments that identify focused test files. */
