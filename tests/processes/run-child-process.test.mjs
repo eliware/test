@@ -69,6 +69,11 @@ test('normalizes missing commands to a failed result', async () => {
     .resolves.toMatchObject({ code: 1, output: expect.stringContaining('missing-eliware-command') });
 });
 
+test('normalizes synchronous spawn failures', async () => {
+  await expect(runChildProcess('ignored', [], { spawn: () => { throw new Error('spawn failed synchronously'); } }))
+    .resolves.toEqual({ code: 1, output: 'spawn failed synchronously\n' });
+});
+
 test('terminates processes that exceed the configured timeout', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

@@ -25,11 +25,17 @@ export function runChildProcess(command, argumentsList = [], options = {}) {
       if (timeout) clearTimeout(timeout);
       resolveResult({ code, output: capture.finish(errorMessage) });
     };
-    const child = (options.spawn ?? defaultSpawn)(command, argumentsList, {
-      cwd: options.cwd,
-      env: childEnvironment(options),
-      windowsHide: true
-    });
+    let child;
+    try {
+      child = (options.spawn ?? defaultSpawn)(command, argumentsList, {
+        cwd: options.cwd,
+        env: childEnvironment(options),
+        windowsHide: true
+      });
+    } catch (error) {
+      finish(1, `${error.message}\n`);
+      return;
+    }
     if (Number.isFinite(options.timeoutMs) && options.timeoutMs > 0) {
       timeout = setTimeout(() => {
         processError = `Process timed out after ${options.timeoutMs}ms\n`;
