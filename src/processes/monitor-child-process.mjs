@@ -21,7 +21,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
     child.on('close', (code) => finish(processError ? 1 : (Number.isInteger(code) && code >= 0 ? code : 1), processError));
     timeout = setTimeout(() => {
       finish(1, `Child process timed out after ${timeoutMs} ms\n`);
-      child.kill();
+      if (typeof child.kill === 'function') child.kill();
     }, timeoutMs);
   });
 }

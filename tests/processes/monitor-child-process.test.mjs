@@ -59,6 +59,20 @@ test('settles and terminates a child that never closes', async () => {
   }
 });
 
+test('settles timeout without a kill method', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(10);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
 test('does not duplicate an error already captured on stderr', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
