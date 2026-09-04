@@ -1,0 +1,2 @@
+export function filterMonolithViolations(files, config) { return files.filter((entry) => !entry.generated && !entry.pureBarrel && !matchesExemption(entry.file, config.exemptions)).filter((entry) => entry.lines > config[entry.kind]).map((entry) => ({ ...entry, threshold: config[entry.kind] })); }
+function matchesExemption(file, exemptions) { return exemptions.some(({ pattern }) => new RegExp(`^${pattern.split('*').map((part) => part.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*')}$`).test(file)); }

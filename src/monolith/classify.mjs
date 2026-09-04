@@ -1,0 +1,3 @@
+import { extname } from 'node:path';
+export function classifyMonolithFile(file) { if (!['.js', '.mjs', '.cjs', '.ts', '.mts', '.cts', '.jsx', '.tsx'].includes(extname(file).toLowerCase())) return ''; if (/(?:^|\/)(?:tests?|spec)(?:\/|$)/i.test(file)) return 'test'; if (/(?:^|\/)src(?:\/|$)/i.test(file)) return 'source'; return ''; }
+export function isPureBarrel(source) { const content = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*(?=\r?$)/gm, '$1').trim(); return Boolean(content) && content.split(';').map((statement) => statement.trim()).filter(Boolean).every((statement) => /^(?:import\b|export\s+(?:(?:type\s+)?(?:\{|\*)))[\s\S]*$/u.test(statement)); }
