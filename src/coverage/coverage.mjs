@@ -1,4 +1,5 @@
 import { metricHasGap } from './metric.mjs';
+import { normalizeCoveragePath } from './normalize-path.mjs';
 export { metricHasGap } from './metric.mjs';
 const coverageLine = /^\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)(?:\s*\|\s*([^|]+?))?\s*\|?\s*$/;
 const MAX_COVERAGE_DETAILS = 20;
@@ -187,12 +188,7 @@ export function formatCoverageGaps(gaps, root = '') {
   const entries = Array.isArray(gaps) ? gaps : [];
   if (entries.length === 0) return '';
   return ['Coverage gaps:', 'File | Statements | Branches | Functions | Lines', ...entries.map((gap) => {
-    const normalizedFile = typeof gap?.file === 'string' ? gap.file.replaceAll('\\', '/') : 'unknown';
-    const normalizedRoot = typeof root === 'string' ? root.replaceAll('\\', '/').replace(/\/+$/, '') : '';
-    const rootPrefix = `${normalizedRoot}/`;
-    const file = normalizedRoot && /^[A-Za-z]:[\\/]|^\//.test(normalizedFile) && normalizedFile.startsWith(rootPrefix)
-      ? normalizedFile.slice(rootPrefix.length)
-      : normalizedFile;
+    const file = normalizeCoveragePath(gap?.file, root);
     if (Array.isArray(gap.metrics)) return `${file} | ${gap.metrics.join(' | ')}`;
     const location = (entry) => entry?.start?.line ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ''}` : 'unknown';
     const metrics = gap.metrics ?? { statements: '-', branches: '-', functions: '-', lines: '-' };
@@ -211,4 +207,3 @@ export function formatCoverageGaps(gaps, root = '') {
     ].join('\n');
   }), '', 'Remediation: Add tests to improve coverage. Refactor the implementation if necessary to ensure proper testability. Remove any truly unreachable branches. Istanbul ignore directives are authorized only in pure barrel files.'].join('\n');
 }
-
