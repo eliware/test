@@ -43,7 +43,10 @@ output remains concise.
 The source/test validator is stricter than the monolith-size exemption: every
 `src/**/*.mjs`, including a pure import/export barrel, must have exactly one
 mirrored `tests/**/*.test.mjs` file. This repository has no barrel-only source
-modules.
+modules. Other source/test extensions are outside this architecture bijection;
+they may still be passed to Jest as focused paths when Jest supports them.
+Alternate pairs such as `tests/foo.spec.mjs` are not canonical pairs and are
+reported as orphan tests rather than merged with `tests/foo.test.mjs`.
 
 Coverage-gap diagnostics include normalized paths, four percentages, uncovered
 lines, statement/branch locations, function names and locations, and an
