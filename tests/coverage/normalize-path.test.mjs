@@ -10,3 +10,8 @@ test('preserves unrelated and malformed paths', () => {
 test('normalizes Windows UNC paths independently of host platform', () => {
   expect(normalizeCoveragePath('\\\\server\\share\\src\\a.mjs', '\\\\server\\share')).toBe('src/a.mjs');
 });
+
+test('normalizes files directly below filesystem roots', () => {
+  expect(normalizeCoveragePath('/src/a.mjs', '/')).toBe('src/a.mjs');
+  expect(normalizeCoveragePath('C:\\src\\a.mjs', 'C:\\')).toBe('src/a.mjs');
+});

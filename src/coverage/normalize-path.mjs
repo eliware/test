@@ -7,10 +7,11 @@ export function normalizeCoveragePath(file, root) {
   const normalize = windowsPath ? win32.normalize : posix.normalize;
   const normalizedFile = typeof file === 'string' ? normalize(file).replaceAll('\\', '/') : 'unknown';
   const normalizedRoot = typeof root === 'string' ? normalize(root).replaceAll('\\', '/').replace(/\/+$/, '') : '';
+  const filesystemRoot = typeof root === 'string' && /^[/\\]+$/.test(root);
   const rootPrefix = `${normalizedRoot}/`;
   const comparableFile = windowsPath ? normalizedFile.toLowerCase() : normalizedFile;
   const comparableRoot = windowsPath ? rootPrefix.toLowerCase() : rootPrefix;
-  return normalizedRoot && /^[A-Za-z]:[\\/]|^\//.test(normalizedFile) && comparableFile.startsWith(comparableRoot)
+  return (normalizedRoot || filesystemRoot) && /^[A-Za-z]:[\\/]|^\//.test(normalizedFile) && comparableFile.startsWith(comparableRoot)
     ? normalizedFile.slice(rootPrefix.length)
     : normalizedFile;
 }
