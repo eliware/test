@@ -36,11 +36,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     report replacement is incomplete.
   - Define freshness/ownership semantics and test stale-candidate behavior.
 
-- [ ] **P1 — Diagnostic redaction has resource and evidence risks**
-  - Location: `src/processes/output/normalize-output.mjs:9-10`
-  - Global regex replacement can perform excessive matching for long paths and
-    alter unrelated diagnostic text. Replace with bounded path-component logic.
-
 - [ ] **P2 — Focused symlinks may escape workspace containment**
   - Location: `src/testing/validate-focused-paths.mjs:5-22`
   - Lexical containment can pass a symlink that resolves outside the workspace.

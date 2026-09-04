@@ -28,3 +28,9 @@ test('redacts only workspace path boundaries with platform-aware matching', () =
   expect(normalizeOutput('C:/REPO/failure C:/repository/failure', 'c:/repo'))
     .toBe('<workspace>/failure C:/repository/failure');
 });
+
+test('handles long workspace paths without constructing a large regex', () => {
+  const cwd = `C:/${'deep/'.repeat(2000)}repo`;
+  expect(normalizeOutput(`${cwd}/failure`, cwd)).toBe('<workspace>/failure');
+  expect(normalizeOutput(cwd, cwd)).toBe('<workspace>');
+});
