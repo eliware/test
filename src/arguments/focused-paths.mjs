@@ -12,9 +12,12 @@ export function extractFocusedPaths(argumentsList) {
   const valueOptions = new Set(VALUE_OPTIONS);
   for (let index = 0; index < argumentsList.length; index += 1) {
     const argument = argumentsList[index];
-    if (valueOptions.has(argument)) {
-      if (index + 1 >= argumentsList.length) throw new Error(`${argument} requires a value.`);
-      index += 1;
+    const optionName = argument.split('=', 1)[0];
+    if (valueOptions.has(optionName)) {
+      if (optionName === argument) {
+        if (index + 1 >= argumentsList.length) throw new Error(`${argument} requires a value.`);
+        index += 1;
+      }
       continue;
     }
     if (!argument.startsWith('-')) values.push(argument);
