@@ -49,6 +49,15 @@ test('reports absent mapping roots as drift instead of filesystem errors', async
   await expect(findSourceTestMappingDrifts(root, readDirectory)).resolves.toEqual({ missingTests: [], orphanTests: [] });
 });
 
+test('skips dependency and generated discovery directories', async () => {
+  const entries = new Map([
+    ['src', [{ name: 'main.mjs', isDirectory: () => false, isFile: () => true }, { name: 'node_modules', isDirectory: () => true, isFile: () => false }]],
+    ['tests', [{ name: 'main.test.mjs', isDirectory: () => false, isFile: () => true }, { name: 'coverage', isDirectory: () => true, isFile: () => false }]],
+  ]);
+  const readDirectory = async (directory) => entries.get(directory.replaceAll('\\', '/').split('/').slice(-1)[0]) ?? [];
+  await expect(findSourceTestMappingDrifts('repo', readDirectory)).resolves.toEqual({ missingTests: [], orphanTests: [] });
+});
+
 test('propagates mapping read failures other than missing roots', async () => {
   const failure = Object.assign(new Error('denied'), { code: 'EACCES' });
   await expect(findSourceTestMappingDrifts('repo', async () => { throw failure; })).rejects.toBe(failure);

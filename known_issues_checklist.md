@@ -27,11 +27,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     a later valid report. Define complete usability semantics for all required
     metrics and test malformed-first/valid-later selection.
 
-- [ ] **P2 — Source/test mapping traversal lacks directory exclusions**
-  - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
-  - Apply the standard dependency, VCS, coverage, build, and generated-tree
-    exclusions and add correctness/scalability validation.
-
 - [ ] **P2 — Process stream boundary cases lack coverage**
   - Location: `tests/processes/monitor-child-process.test.mjs`
   - Cover split UTF-8 chunks, missing streams, late data, and close ordering.

@@ -1,6 +1,8 @@
 import { readdir } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 
+const EXCLUDED_DIRECTORIES = new Set(['.git', 'node_modules', 'coverage', 'dist', 'build', 'test-results']);
+
 async function filesUnder(root, readDirectory) {
   const files = new Set();
   async function visit(directory) {
@@ -8,6 +10,7 @@ async function filesUnder(root, readDirectory) {
     try { entries = await readDirectory(directory, { withFileTypes: true }); }
     catch (error) { if (error.code === 'ENOENT') return; throw error; }
     for (const entry of entries) {
+      if (entry.isDirectory() && EXCLUDED_DIRECTORIES.has(entry.name)) continue;
       const path = resolve(directory, entry.name);
       if (entry.isDirectory()) await visit(path);
       else if (entry.isFile()) files.add(relative(root, path).replaceAll('\\', '/'));
