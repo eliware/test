@@ -8,7 +8,7 @@ test('formats actionable monolith diagnostics', () => {
 });
 
 test('formats empty violations with plural summary and validates input', () => {
-  expect(formatMonolithViolations([])).toBe('Monolith limit violations (exit 18)\nSummary: 0 violations\n');
+  expect(formatMonolithViolations([])).toBe('Monolith limit violations (exit 15)\nSummary: 0 violations\n');
   expect(() => formatMonolithViolations(null)).toThrow(TypeError);
 });
 

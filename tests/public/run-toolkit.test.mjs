@@ -40,18 +40,6 @@ test('reports failed test executors without throwing', async () => {
   expect(messages.join('')).toContain('Tests failed');
 });
 
-test('runs audit and pack after lint', async () => {
-  const calls = [];
-  await expect(runToolkit({
-    cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: () => {},
-    runTest: async () => ({ code: 0, output: '' }),
-    runLintCommand: async () => { calls.push('lint'); return 0; },
-    runAudit: async () => { calls.push('audit'); return { code: 0, output: '' }; },
-    runPack: async () => { calls.push('pack'); return { code: 0, output: '' }; }
-  })).resolves.toBe(0);
-  expect(calls).toEqual(['lint', 'audit', 'pack']);
-});
-
 test('fails before tests when Istanbul policy is violated', async () => {
   let invoked = false;
   const messages = [];
@@ -62,26 +50,14 @@ test('fails before tests when Istanbul policy is violated', async () => {
 
 test('enforces the monolith gate only when explicitly enabled', async () => {
   const messages = [];
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], enforceMonolithLimits: true, write: (message) => messages.push(message), findMonolith: async () => [{ file: 'src/large.mjs', lines: 301, threshold: 300 }], runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 })).resolves.toBe(18);
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], enforceMonolithLimits: true, write: (message) => messages.push(message), findMonolith: async () => [{ file: 'src/large.mjs', lines: 301, threshold: 300 }], runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 })).resolves.toBe(15);
   expect(messages.join('')).toContain('src/large.mjs');
-});
-
-test('stops when configured typecheck fails', async () => {
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: () => {}, readFilePath: async () => '{"scripts":{"typecheck":"tsc --noEmit"}}', runTest: async () => ({ code: 0, output: '' }), runTypecheck: async () => ({ code: 1, output: 'type error' }), runLintCommand: async () => 0 }))
-    .resolves.toBe(19);
-});
-
-test('reports configured build startup failures', async () => {
-  const messages = [];
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: (message) => messages.push(message), readFilePath: async (path) => path.endsWith('package.json') ? '{"scripts":{"build":"build"}}' : '', runTest: async () => ({ code: 0, output: '' }), runBuild: async () => { throw new Error('build unavailable'); }, runLintCommand: async () => 0 }))
-    .resolves.toBe(17);
-  expect(messages.join('')).toContain('Build failed to start');
 });
 
 test('reports monolith validator failures with the dedicated code', async () => {
   const messages = [];
   await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, enforceMonolithLimits: true, write: (message) => messages.push(message), findMonolith: async () => { throw new Error('bad config'); }, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
-    .resolves.toBe(18);
+    .resolves.toBe(15);
   expect(messages.join('')).toContain('bad config');
 });
 
@@ -105,9 +81,10 @@ test('rejects lint warnings even when lint exits successfully', async () => {
   expect(messages.join('')).toContain('warning');
 });
 
-test('normalizes an incomplete configured build result as failure', async () => {
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: () => {}, readFilePath: async (path) => path.endsWith('package.json') ? '{"scripts":{"build":"build"}}' : '', runTest: async () => ({ code: 0, output: '' }), runBuild: async () => null, runLintCommand: async () => 0 }))
-    .resolves.toBe(17);
+test('normalizes structured and incomplete lint results', async () => {
+  const base = { cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: () => {}, runTest: async () => ({ code: 0, output: '' }) };
+  await expect(runToolkit({ ...base, runLintCommand: async () => ({ code: 0 }) })).resolves.toBe(0);
+  await expect(runToolkit({ ...base, runLintCommand: async () => ({}) })).resolves.toBe(1);
 });
 
 test('omits in-band execution when explicitly disabled', async () => {
@@ -175,16 +152,6 @@ test('reports focused coverage gaps', async () => {
   expect(messages.join('')).toContain('foo.mjs');
 });
 
-test('reports typecheck startup failures', async () => {
-  await expect(runToolkit({
-    cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: () => {},
-    readFilePath: async (path) => path.endsWith('package.json') ? '{"scripts":{"typecheck":"tsc"}}' : '',
-    runTest: async () => ({ code: 0, output: '' }),
-    runTypecheck: async () => { throw new Error('typecheck unavailable'); },
-    runLintCommand: async () => 0
-  })).resolves.toBe(19);
-});
-
 test('formats and removes timing reports when timing is enabled', async () => {
   const messages = [];
   await expect(runToolkit({
@@ -225,31 +192,6 @@ test('normalizes malformed Jest results as test failures', async () => {
     cwd: process.cwd(), runnerArguments: [], write: () => {},
     runTest: async () => null, runLintCommand: async () => 0
   })).resolves.toBe(9);
-});
-
-test('returns stable failures for nonzero build, typecheck, audit, and pack results', async () => {
-  const base = {
-    cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: () => {},
-    runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0
-  };
-  await expect(runToolkit({ ...base, readFilePath: async () => '{"scripts":{"build":"build"}}', runBuild: async () => ({ code: 2 }) })).resolves.toBe(17);
-  await expect(runToolkit({ ...base, readFilePath: async () => '{"scripts":{"typecheck":"typecheck"}}', runTypecheck: async () => ({ code: 2 }) })).resolves.toBe(19);
-  await expect(runToolkit({ ...base, readFilePath: async () => '{"scripts":{"build":"build"}}', runBuild: async () => ({ code: 0 }) })).resolves.toBe(0);
-  await expect(runToolkit({ ...base, readFilePath: async () => '{"scripts":{"typecheck":"typecheck"}}', runTypecheck: async () => ({ code: 0 }) })).resolves.toBe(0);
-  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runAudit: async () => ({ code: 2 }) })).resolves.toBe(15);
-  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runPack: async () => ({ code: 2 }) })).resolves.toBe(16);
-  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runAudit: async () => { throw new Error('audit unavailable'); } })).resolves.toBe(15);
-  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runPack: async () => { throw new Error('pack unavailable'); } })).resolves.toBe(16);
-});
-
-test('rejects executable validation without package collaborators', async () => {
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {}, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0, requireReleaseStages: true }))
-    .rejects.toThrow('requires audit and pack collaborators');
-});
-
-test('rejects executable validation when pack collaborator is absent', async () => {
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {}, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0, runAudit: async () => 0, requireReleaseStages: true }))
-    .rejects.toThrow('requires audit and pack collaborators');
 });
 
 test('returns coverage cleanup failure when artifact removal fails', async () => {

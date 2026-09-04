@@ -9,17 +9,12 @@ import { buildJestArguments } from '../testing/build-jest-arguments.mjs';
 import { runJest } from '../testing/run-jest.mjs';
 import { formatFailure } from '../diagnostics/format-failure.mjs';
 import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
-import { configuredScript } from '../validation/common/configured-script.mjs';
-import { detectBuildScript } from '../validation/build/detect-script.mjs';
 import { detectViolations } from '../monolith/detect-violations.mjs';
 import { formatMonolithViolations } from '../diagnostics/format-monolith-violations.mjs';
 import { readCoverage } from '../coverage/read-coverage.mjs';
 import { formatGaps } from '../coverage/format-gaps.mjs';
 import { createTiming } from '../diagnostics/timing.mjs';
 import { formatTestTimings } from '../diagnostics/format-test-timings.mjs';
-import { runChildProcess } from '../processes/run-child-process.mjs';
-import { debugOutput } from '../diagnostics/debug-output.mjs';
-import { normalizeValidationResult } from '../validation/common/validation-result.mjs';
 
 const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
@@ -30,8 +25,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 export async function runToolkit(options) {
   if (!options || typeof options !== 'object') throw new TypeError('runToolkit options are required');
   if (typeof options.cwd !== 'string' || !Array.isArray(options.runnerArguments)) throw new TypeError('runToolkit requires cwd and runnerArguments');
-  const { cwd, runnerArguments, write, runTest = runJest, runLintCommand, runBuild: build,
-    runTypecheck: typecheck, runAudit: audit, runPack: pack,
+  const { cwd, runnerArguments, write, runTest = runJest, runLintCommand,
     runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
     enforceMonolithLimits = false, sanitizeEnv = false, accessPath = access,
     removePath = rm, readFilePath = readFile,
@@ -40,9 +34,6 @@ export async function runToolkit(options) {
   const timing = createTiming(options.debugTiming, write);
   if (typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
     throw new TypeError('runToolkit requires cwd, runnerArguments, write, runTest, and runLintCommand');
-  }
-  if (options.requireReleaseStages && (typeof audit !== 'function' || typeof pack !== 'function')) {
-    throw new TypeError('runToolkit requires audit and pack collaborators for release validation');
   }
   const disableInBand = runnerArguments.includes('--no-runInBand');
   const timingOutput = options.debugTiming ? resolve(cwd, '.eliware-test-timings.json') : undefined;
@@ -83,37 +74,10 @@ export async function runToolkit(options) {
       return EXIT_CODES.COVERAGE_GAP;
     }
   }
-  timing.step('Coverage', 'build');
-  const context = { cwd, sanitizeEnv, write, runBuild: build, runTypecheck: typecheck, runLintCommand, runAudit: audit, runPack: pack, runChildProcess, timeoutMs: options.validationTimeoutMs };
-  const buildScript = await detectBuildScript(cwd, readFilePath);
-  const typecheckScript = await configuredScript(cwd, 'typecheck', readFilePath);
-  debugOutput(write, 'Validation stages', {
-    build: Boolean(buildScript), typecheck: Boolean(typecheckScript),
-    audit: typeof audit === 'function', pack: typeof pack === 'function'
-  });
-  let code = 0;
-  if (buildScript && typeof build === 'function') {
-    try { code = resultCode(await build(context, buildScript)); }
-    catch (error) { write(`Build failed to start: ${error.message}\n`); return EXIT_CODES.BUILD_FAILURE; }
-    if (code) return EXIT_CODES.BUILD_FAILURE;
-  }
-  if (typecheckScript && typeof typecheck === 'function') {
-    try { code = resultCode(await typecheck(context, typecheckScript)); }
-    catch (error) { write(`Typecheck failed to start: ${error.message}\n`); return EXIT_CODES.TYPECHECK_FAILURE; }
-    if (code) return EXIT_CODES.TYPECHECK_FAILURE;
-  }
+  timing.step('Coverage', 'lint');
   const lint = resultCode(await runLintCommand({ cwd, write, sanitizeEnv }));
   if (lint) return lint;
-  timing.step('Lint', 'package checks');
-  if (typeof audit === 'function') {
-    code = await runValidationStage('Audit', () => audit(context), EXIT_CODES.AUDIT_FAILURE, write);
-    if (code) return code;
-  }
-  if (typeof pack === 'function') {
-    code = await runValidationStage('Pack', () => pack(context), EXIT_CODES.PACK_FAILURE, write);
-    if (code) return code;
-  }
-  timing.step('Package checks', 'monolith validation');
+  timing.step('Lint', 'monolith validation');
   if (enforceMonolithLimits) {
     try {
       const violations = await findMonolith(cwd);
@@ -132,16 +96,6 @@ export async function runToolkit(options) {
 }
 
 function resultCode(result) {
-  return normalizeValidationResult(Number.isInteger(result) ? { code: result } : result).code;
-}
-
-async function runValidationStage(name, run, failureCode, write) {
-  try {
-    const result = normalizeValidationResult(await run());
-    if (result.code !== 0) write(formatFailure(name, result));
-    return result.code === 0 ? 0 : failureCode;
-  } catch (error) {
-    write(`${name} failed to start: ${error.message}\n`);
-    return failureCode;
-  }
+  if (Number.isInteger(result)) return result;
+  return Number.isInteger(result?.code) ? result.code : 1;
 }

@@ -38,18 +38,11 @@ user-facing examples; this file resolves contract ambiguities.
 4. Remove stale coverage candidates.
 5. Run Jest with coverage.
 6. Select and validate coverage evidence.
-7. Run `npm run build` only when the consumer has a non-empty `scripts.build`.
-8. Run Oxlint with warnings denied.
-9. Run npm audit and npm pack through the CLI-wired collaborators.
-
-Build therefore runs after coverage and before lint; audit and pack run after
-lint. Audit and pack are wired by the executable.
+7. Run Oxlint with warnings denied.
 
 Stages stop at the first applicable failure. The package self-test proves
 tests, coverage, and lint; its
 concise output is not evidence that consumer-only stages were visually printed.
-Child validation stages have a bounded execution time; timeout failures retain
-the stage-specific stable exit code and captured diagnostic output.
 
 `--lint` runs only workspace policy, setup, and Oxlint. It rejects warnings and
 test arguments. `--help`/`-h` and `--version`/`-v` are terminal modes and do not
@@ -59,8 +52,7 @@ Stable wrapper exit codes are: workspace setup `2`, Istanbul policy `3`,
 invalid argument `4`, focused-path validation `5`, missing focused path `6`,
 coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
 `10`, coverage gap `11`, lint startup `12`, lint failure `13`, internal failure
-`14`, audit failure `15`, pack failure `16`, build failure `17`, and monolith
-limit failure `18`.
+`14`, and monolith limit failure `15`.
 
 ## 5. Implementation and test file-size limits
 
@@ -78,7 +70,7 @@ corresponding mirrored tests. Every violation fails with exit code 18, and
 the diagnostic lists all violations.
 
 `eliware-test --ignore-monolith-limits` is a temporary refactoring bypass. It
-still runs Jest, coverage, lint, build, audit, and pack and reports their
+  still runs Jest, coverage, and lint and reports their
 failures; it only suppresses the size-limit failure. CI, release, and normal
 validation must not use this bypass, but developers may use it while
 decomposing existing violations.
@@ -91,7 +83,7 @@ decomposing existing violations.
 - `--runInBand` is accepted and normalized to the default. `--no-runInBand`
   explicitly opts out for diagnostic runs.
 - `--ignore-100x4` skips enforcement only; tests, coverage collection, lint,
-  build, audit, and pack behavior otherwise remain unchanged.
+  behavior otherwise remains unchanged.
 - `--sanitize-env` runs child tools with an empty base environment while
   retaining explicitly supplied tool variables.
 - A standalone `--` separator is removed once before Jest invocation.
@@ -269,7 +261,6 @@ This package does not promise or implement:
 - narrowing ambiguous focused source mappings by guessing a source;
 - making incomplete JSON authoritative over a valid text report;
 - proving Windows behavior locally when its shim is unavailable; or
-- validating consumer build-script syntax before npm runs it.
 - proving that fallback text coverage originated from a specific reporter rather
   than the completed child invocation's bounded output.
 
@@ -284,7 +275,6 @@ should be ignored. Ignoring generated output must never conceal a coverage gap.
 Consumer migration removes direct Jest/Oxlint development dependencies unless
 separately required, installs `@eliware/test`, updates `test` and `lint`, runs
 npm install, reviews the lockfile, and keeps specialized test tiers separate.
-TypeScript projects run typecheck when they ship declarations.
 
 The normal validation set is:
 
@@ -292,12 +282,9 @@ The normal validation set is:
 node bin/eliware-test.mjs
 npm test
 npm run lint
-npm run typecheck
-npm audit --omit=dev --audit-level=moderate
-npm pack --dry-run
 ```
 
 CI must provide Ubuntu and Windows coverage. Lint warnings block publication,
 and release validation confirms required platform checks, package metadata,
-packed files, audit, typecheck, and self-test results before publication. No
+ self-test results before publication. No
 tag, publish, push, or deployment is implied by this specification.

@@ -76,7 +76,6 @@ one worktree.
 3. Set `test` to `eliware-test` and `lint` to `eliware-test --lint`.
 4. Run `npm install` and review the lockfile.
 5. Keep smoke, integration, regression, and end-to-end checks separate.
-6. Run `npm run typecheck` when the project ships TypeScript declarations.
 
 ## Recommended `.gitignore` entries
 
@@ -101,15 +100,10 @@ fixtures tracked. Do not use ignore rules to hide coverage gaps.
 node bin/eliware-test.mjs
 npm test
 npm run lint
-npm run typecheck
-npm audit --omit=dev --audit-level=moderate
-npm pack --dry-run
 ```
 
-The normal `npm test` command runs the Jest/coverage/lint pipeline and then
-performs the consumer's build, typecheck, audit, and dry-run pack checks when
-those stages are wired by the executable. Package checks are bounded so a
-network or child-process stall becomes a reported validation failure.
+The normal `npm test` command runs Jest, coverage enforcement, and lint.
+Packaging is validated separately with `npm pack --dry-run`.
 
 Use the release runbooks before publication. Never tag, publish, push, or
 deploy without explicit authorization.

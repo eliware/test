@@ -12,6 +12,8 @@ test('accepts valid toolkit options', () => {
 });
 
 test('preserves the supplied operation name in toolkit errors', () => {
+  expect(() => assertExitCode(1, 'customOperation')).not.toThrow();
+  expect(() => assertExitCode('bad', 'customOperation')).toThrow('customOperation');
 });
 
 test('requires cwd and a writer for lint options', () => {
