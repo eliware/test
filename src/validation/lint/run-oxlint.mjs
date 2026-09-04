@@ -1,14 +1,11 @@
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
-import { oxlintExclusionArguments } from '../../workspace/exclusion-patterns.mjs';
 import { resolvePackage } from '../resolve-package.mjs';
+import { buildOxlintArguments } from './oxlint-command.mjs';
+export { buildOxlintArguments } from './oxlint-command.mjs';
 export { resolvePackage } from '../resolve-package.mjs';
 
 /** Build the managed Oxlint invocation and default workspace exclusions. */
-export function buildOxlintArguments() {
-  return ['oxlint', '--deny-warnings', '.', ...oxlintExclusionArguments()];
-}
-
 export function runOxlint(context) {
   if (!context || typeof context.cwd !== 'string' || typeof context.runChildProcess !== 'function') {
     throw new TypeError('runOxlint requires a context with cwd and runChildProcess');
