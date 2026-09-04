@@ -1,5 +1,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { extname, relative, resolve } from 'node:path';
+import { isPureBarrelSource } from './pure-barrel.mjs';
+export { isPureBarrelSource } from './pure-barrel.mjs';
 
 const SOURCE_EXTENSIONS = new Set(['.cjs', '.cts', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx']);
 const IGNORED_DIRECTORIES = new Set(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build']);
@@ -35,13 +37,6 @@ export async function findIstanbulIgnoreViolations(cwd, options = {}) {
   }
   await Promise.all(Array.from({ length: Math.min(MAX_SOURCE_READERS, sourceFiles.length) }, () => readSources()));
   return violations.filter(Boolean);
-}
-
-/** Return whether source contains only import/export barrel statements. */
-export function isPureBarrelSource(source) {
-  const withoutComments = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*(?=\r?$)/gm, '$1').trim();
-  if (!withoutComments) return false;
-  return withoutComments.split(';').map((statement) => statement.trim()).filter(Boolean).every((statement) => /^(?:import\b|export\s+(?:(?:type\s+)?(?:\{|\*)))[\s\S]*$/u.test(statement));
 }
 
 /** Check a file for pure-barrel status; missing files are not barrels. */
