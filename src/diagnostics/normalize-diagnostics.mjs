@@ -2,10 +2,12 @@ const ANSI_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`
 
 /** Remove stage-specific noise and duplicate diagnostic lines. */
 export function normalizeDiagnostics(output, stage) {
-  const lines = output.split(/\r?\n/).filter((line) => stage !== 'Tests' || !isCoverageNoise(line));
+  const lines = output.split(/\r?\n/).map((line) => line.replace(ANSI_PATTERN, '').trimEnd())
+    .filter((line) => stage !== 'Tests' || !isCoverageNoise(line));
   const seen = new Set();
   return lines.filter((line) => {
-    if (!line.trim() || !seen.has(line)) { seen.add(line); return true; }
+    const key = line.trim();
+    if (!key || !seen.has(key)) { seen.add(key); return true; }
     return false;
   }).join('\n');
 }
