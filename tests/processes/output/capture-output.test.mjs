@@ -17,3 +17,11 @@ test('accepts string stream chunks', () => {
   capture.capture('stdout')('text chunk');
   expect(capture.finish()).toContain('text chunk');
 });
+
+test('preserves interleaved stream arrival order', () => {
+  const capture = createOutputCapture();
+  capture.capture('stdout')('one');
+  capture.capture('stderr')('two');
+  capture.capture('stdout')('three');
+  expect(capture.finish()).toBe('onetwothree');
+});
