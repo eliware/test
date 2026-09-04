@@ -5,6 +5,32 @@ test('requires the toolkit caller contract', async () => {
   await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: [] })).rejects.toThrow(TypeError);
 });
 
+test('normalizes unexpected pipeline failures to the internal exit code', async () => {
+  const messages = [];
+  await expect(runToolkit({
+    cwd: process.cwd(),
+    runnerArguments: [],
+    write: (message) => messages.push(message),
+    inspectWorkspace: async () => { throw new Error('workspace inspection failed'); },
+    runTest: async () => ({ code: 0, output: '' }),
+    runLintCommand: async () => 0
+  })).resolves.toBe(14);
+  expect(messages.join('')).toContain('workspace inspection failed');
+});
+
+test('formats non-Error pipeline failures', async () => {
+  const messages = [];
+  await expect(runToolkit({
+    cwd: process.cwd(),
+    runnerArguments: [],
+    write: (message) => messages.push(message),
+    inspectWorkspace: async () => { throw 'workspace failure'; },
+    runTest: async () => ({ code: 0, output: '' }),
+    runLintCommand: async () => 0
+  })).resolves.toBe(14);
+  expect(messages.join('')).toContain('workspace failure');
+});
+
 test('honors the explicit coverage opt-out', async () => {
   const messages = [];
   await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], ignoreCoverage: true, write: (message) => messages.push(message), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))

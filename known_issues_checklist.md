@@ -51,13 +51,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - Define required relationships and missing-map semantics, share validation
     between usability and parsing, and test complete-looking inconsistent data.
 
-- [ ] **P1 — Public orchestration leaks unexpected exceptions**
-  - Location: `src/public/run-toolkit.mjs:13-29`
-  - Exceptions from injected collaborators or pipeline stages can escape as
-    rejected promises instead of stable wrapper exit codes.
-  - Normalize unexpected failures to the documented internal/stage result and
-    add rejection-path tests.
-
 - [ ] **P2 — Mapping traversal lacks explicit operational limits**
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
   - Traversal needs exclusions, cycle/repeated-entry protection, deterministic

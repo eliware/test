@@ -5,6 +5,7 @@ import { resolveToolkitOptions } from './resolve-toolkit-options.mjs';
 import { runPostTestValidation } from '../application/run-post-test-validation.mjs';
 import { runToolkitPreflight } from './run-toolkit-preflight.mjs';
 import { runToolkitExecution } from './run-toolkit-execution.mjs';
+import { EXIT_CODES } from '../exit-codes/codes.mjs';
 
 /**
  * Public toolkit API. The application pipeline owns execution; this boundary
@@ -12,6 +13,15 @@ import { runToolkitExecution } from './run-toolkit-execution.mjs';
  */
 export async function runToolkit(options) {
   validateToolkitOptions(options);
+  try {
+    return await runToolkitInternal(options);
+  } catch (error) {
+    options.write(`Toolkit failed: ${error instanceof Error ? error.message : String(error)}\n`);
+    return EXIT_CODES.INTERNAL;
+  }
+}
+
+async function runToolkitInternal(options) {
   const { cwd, runnerArguments, write, runTest, runLintCommand,
     runInBand, ignoreCoverage, ignoreMonolithLimits, enforceMonolithLimits,
     accessPath, removePath, readFilePath, findIstanbulIgnores,
