@@ -5,10 +5,11 @@ import { parseTextReport } from './parse-text-report.mjs';
 import { selectUsableReport } from './select-usable-report.mjs';
 import { hasTextCoverageEvidence } from './text-evidence.mjs';
 import { isUsableCoverageReport } from './is-usable-coverage-report.mjs';
+import { debugOutput } from '../diagnostics/debug-output.mjs';
 
 export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
-export async function readCoverage(cwd, testOutput, _write, readFilePath = readFile) {
+export async function readCoverage(cwd, testOutput, write, readFilePath = readFile) {
   if (typeof cwd !== 'string') throw new TypeError('readCoverage requires cwd');
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
   for (const name of COVERAGE_CANDIDATES) {
@@ -26,6 +27,7 @@ export async function readCoverage(cwd, testOutput, _write, readFilePath = readF
     if (testOutput.trim() === '') return [];
     throw new Error('Coverage evidence missing: Jest produced no usable JSON or text coverage report.');
   }
+  debugOutput(write, 'Coverage fallback', 'using Jest text coverage');
   return gaps;
 }
 

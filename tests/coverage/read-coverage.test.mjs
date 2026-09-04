@@ -40,6 +40,19 @@ test('rejects unusable nonempty coverage evidence', async () => {
   await expect(readCoverage('C:/repo', '', () => {}, async () => '{bad')).resolves.toEqual([]);
 });
 
+test('reports text fallback only in debug mode', async () => {
+  const previous = process.env.ELIWARE_TEST_DEBUG;
+  process.env.ELIWARE_TEST_DEBUG = '1';
+  const writes = [];
+  try {
+    await readCoverage('C:/repo', 'File | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #\nfile.mjs | 100 | 100 | 100 | 100 |', (message) => writes.push(message), async () => '');
+    expect(writes).toEqual(['[Coverage fallback] using Jest text coverage\n']);
+  } finally {
+    if (previous === undefined) delete process.env.ELIWARE_TEST_DEBUG;
+    else process.env.ELIWARE_TEST_DEBUG = previous;
+  }
+});
+
 test('supports default diagnostic and file-reader collaborators', async () => {
   await expect(readCoverage('C:/path-that-does-not-exist', '')).resolves.toEqual([]);
 });
