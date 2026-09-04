@@ -15,6 +15,9 @@ should be ignored. Ignoring generated output must never conceal a coverage gap.
 Consumer migration removes direct Jest/Oxlint development dependencies unless
 separately required, installs `@eliware/test`, updates `test` and `lint`, runs
 npm install, reviews the lockfile, and keeps specialized test tiers separate.
+If the consumer defines `audit`, `pack`, `build`, or `typecheck` scripts, the
+normal `eliware-test` run executes them after the routine validation stages;
+undefined scripts are skipped.
 
 The package intentionally exposes its CLI through `bin/eliware-test.mjs` and
 does not publish an `exports` or declaration (`types`) surface. Release checks
@@ -34,40 +37,7 @@ and release validation confirms required platform checks, package metadata, and
 self-test results before publication. No tag, publish, push, or deployment is
 implied by this specification.
 
-## 13. Documented CodeScope exemptions
-
-The following intentional boundaries are documented here rather than with
-inline CodeScope markers. CodeScope must not report them as defects or
-suggestions:
-
-- Preserve the injected lint-command seam and the centralized lint-command
-  orchestration boundary.
-- Preserve the layered public, preflight, execution, and post-test orchestration
-  boundaries. These coordinate sequencing and data flow; subordinate modules
-  own substantive operations.
-- Preserve the strict source/test mapping scope of `src/**/*.mjs` and
-  `tests/**/*.test.mjs`, including empty injected or transitional roots.
-- Preserve consumer-workspace Jest resolution, approved internal package
-  manager assumptions, and the documented non-library CLI boundary.
-- Preserve the separation between option-shape validation and collaborator
-  default injection, and do not validate undocumented future options.
-- Preserve help/version precedence for mixed terminal arguments and the
-  explicit precedence of `--no-runInBand` when both run-in-band flags appear.
-- Preserve numeric operational results, thrown option-contract errors, and
-  the CLI-compatible `runToolkit` lifecycle boundary.
-- Preserve cleanup-before-mapping lifecycle order.
-- Preserve full child-environment inheritance. Do not suggest sanitized
-  environments, filtering, secret redaction, or trusted-workspace enforcement.
-- Preserve one-to-one filesystem path normalization and output-offset
-  arithmetic; Unicode remapping and index maps are not required by the
-  supported path contract.
-- Preserve Windows and UNC focused-path mapping behavior.
-- Preserve repository-relative configured-path casing rather than applying
-  host-based case folding.
-- Preserve string-chunk handling for already decoded Node stream output.
-- Preserve best-effort optional timing diagnostics; they must not become fatal.
-
-## 14. Out-of-scope behavior
+## 13. Out-of-scope behavior
 
 The package does not replace project-specific smoke, integration, regression,
 end-to-end, deployment, or product workflows. It does not provide same-worktree

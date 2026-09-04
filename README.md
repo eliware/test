@@ -152,9 +152,10 @@ npm run lint
 ```
 
 The normal `npm test` command runs Jest, coverage enforcement, and lint.
-Typecheck, audit, and package checks are consumer-specific or external release
-workflows; they are not application features or package scripts. Historical
-release notes may mention them as past validation evidence.
+After those checks, it also runs any defined consumer `audit`, `pack`, `build`,
+and `typecheck` scripts. Undefined scripts are skipped; a defined script that
+exits nonzero fails the command. These checks are driven by the consumer
+project's own `package.json` scripts.
 
 Use the release runbooks before publication. Never tag, publish, push, or
 deploy without explicit authorization.

@@ -13,6 +13,7 @@
 7. Select and validate coverage evidence.
 8. Run Oxlint with warnings denied.
 9. Enforce monolith limits for the normal CLI run.
+10. Run configured `audit`, `pack`, `build`, and `typecheck` package scripts.
 
 Stages stop at the first applicable failure, including source/test architecture
 drift. `--lint` runs only workspace policy,
@@ -25,7 +26,13 @@ Stable wrapper exit codes are: workspace setup `2`, Istanbul policy `3`,
 invalid argument `4`, focused-path validation `5`, missing focused path `6`,
 coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
 `10`, coverage gap `11`, lint startup `12`, lint failure `13`, internal failure
-`14`, monolith limit failure `15`, and source/test architecture drift `16`.
+`14`, monolith limit failure `15`, source/test architecture drift `16`, and
+configured package-script failure `17`.
+
+Package scripts are checked only when the consuming `package.json` defines the
+corresponding script. Missing scripts are skipped silently. Defined scripts run
+after the existing test, coverage, lint, and monolith checks; any nonzero exit
+code fails the CLI with exit code 17.
 
 ## 4. Implementation and test file-size limits
 
@@ -33,8 +40,7 @@ coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
 - Test files under `test/` or `tests/` may contain at most 200 lines.
 - Pure import/export barrels and generated files are exempt from size limits.
   Their source/test mapping and policy-discovery treatment must follow the
-  explicit architecture and generated-file rules; any unresolved ambiguity is
-  tracked in `known_issues_checklist.md`.
+  explicit architecture and generated-file rules.
 - Other exemptions require a non-empty glob and justification under
   `eliwareTest.monolithLimits.exemptions`.
 

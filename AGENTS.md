@@ -54,8 +54,9 @@ npm test
 npm run lint
 ```
 
-Typecheck, audit, and packaging are external consumer or release workflows,
-not application features or package scripts.
+After the normal test, coverage, lint, and monolith stages, run any defined
+consumer `audit`, `pack`, `build`, and `typecheck` scripts. Missing scripts are
+skipped; defined scripts must exit successfully.
 
 Use `eliware-test --help` for the supported command forms. When invoking via
 npm, pass Jest options after `npm test --`. Use `eliware-test --version` to

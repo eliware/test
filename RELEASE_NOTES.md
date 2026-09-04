@@ -1,5 +1,40 @@
 # Release notes
 
+## 4.0.0
+
+### Breaking changes
+
+- Replaced the legacy public implementation with a thin native-ESM CLI and
+  decomposed the runner into focused application, coverage, workspace,
+  process, and validation modules.
+- Removed the obsolete `index.mjs`, `index.d.ts`, and legacy top-level module
+  entry points; consumers use the `eliware-test` executable.
+- Enforced the mirrored `src/` and `tests/` module layout and added diagnostic
+  reporting for missing source tests and orphaned test files.
+
+### Validation and coverage
+
+- Preserved the normal test, 100×4 coverage, and Oxlint validation pipeline,
+  with Jest running in-band by default and six parallel workers for monolith
+  measurement.
+- Added optional `audit`, `pack`, `build`, and `typecheck` package-script
+  checks after the existing validation stages. Undefined scripts are skipped;
+  defined scripts must exit successfully.
+- Hardened coverage parsing, freshness checks, focused coverage selection,
+  malformed-report handling, atomic coverage-directory promotion, and
+  cross-platform path normalization.
+- Added `--workers=N` for overriding the default monolith-scan worker count.
+
+### Diagnostics and portability
+
+- Improved bounded, deduplicated failure diagnostics, timing cleanup, child
+  process handling, workspace traversal limits, and inherited environment
+  behavior.
+- Added broad Windows/Linux regression coverage for focused paths, runtime
+  resolution, workspace discovery, and coverage paths.
+- Removed obsolete analyzer suppressions and retained explicit tests for the
+  intentional coverage edge cases they had previously obscured.
+
 ## 3.0.0
 
 - Tightened focused-test handling so only conventional test and spec paths use

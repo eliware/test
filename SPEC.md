@@ -34,8 +34,9 @@ package metadata and documentation.
 
 The normal validation sequence is workspace policy and architecture checks,
 focused-argument validation, coverage cleanup, Jest with coverage, coverage
-evidence validation, Oxlint with warnings denied, and monolith enforcement.
-Stages stop at the first applicable failure. See the linked sections for
+evidence validation, Oxlint with warnings denied, monolith enforcement, and
+optional consumer package-script checks. Stages stop at the first applicable
+failure. See the linked sections for
 stable exit codes, diagnostic behavior, focused-test rules, coverage fallback,
 workspace ownership, and release limitations.
 
