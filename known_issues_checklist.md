@@ -43,14 +43,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Third follow-up CodeScope findings
 
-- [ ] **P1 — Coverage maps and counters can be semantically inconsistent**
-  - Locations: `src/coverage/is-usable-coverage-report.mjs:4-7` and
-    `src/coverage/coverage.mjs:13-24`
-  - Reports with inherited, extra, missing, or mismatched map/counter keys may
-    be selected or interpreted inconsistently.
-  - Define required relationships and missing-map semantics, share validation
-    between usability and parsing, and test complete-looking inconsistent data.
-
 - [ ] **P2 — Mapping traversal lacks explicit operational limits**
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
   - Traversal needs exclusions, cycle/repeated-entry protection, deterministic

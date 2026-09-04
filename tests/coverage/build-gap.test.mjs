@@ -1,5 +1,6 @@
 import { buildCoverageGap } from '../../src/coverage/build-gap.mjs';
 test('builds a coverage gap', () => expect(buildCoverageGap('a', [{ type: 'statement' }], [], [], { a: 0 }, {}, {}, new Map([[1, 0]]), 0, false)).toMatchObject({ file: 'a', lines: [1] }));
+test('uses complete line coverage when no line counters exist', () => expect(buildCoverageGap('a', [{ type: 'statement' }], [], [], {}, {}, {}, new Map(), 0, false)).toMatchObject({ metrics: { lines: 100 } }));
 test('returns null when every metric is complete', () => expect(buildCoverageGap('a', [], [], [], { a: 1 }, {}, {}, new Map([[1, 1]]), 0, false)).toBeNull());
 test('uses line gaps and unknown line fallback', () => {
   expect(buildCoverageGap('a', [], [], [], {}, {}, {}, new Map(), 0, true).metrics.lines).toBe(0);

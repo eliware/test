@@ -30,29 +30,28 @@ describe('coverage facade', () => {
     expect(parseCoverageJson({ nullEntry: null, scalarEntry: 'invalid', empty: {} })).toEqual([]);
   });
 
-  test('retains a gap when a usable report has malformed metric data', () => {
+  test('skips entries with inconsistent metric maps and counters', () => {
     const gaps = parseCoverageJson({
       'src/malformed.mjs': {
         statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 },
         branchMap: {}, b: { 0: 'invalid' }, fnMap: {}, f: 'invalid'
       }
     });
-    expect(gaps[0].branches).toEqual([{ type: 'branch' }]);
-    expect(gaps[0].functions).toEqual([{ type: 'function', name: 'unknown' }]);
+    expect(gaps).toEqual([]);
   });
 
-  test('handles missing maps and malformed counters conservatively', () => {
+  test('skips entries with missing maps or malformed counters', () => {
     expect(parseCoverageJson({
       'src/missing.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 0 }, b: undefined, fnMap: {}, f: undefined }
-    })[0].metrics).toMatchObject({ branches: 0, functions: 0 });
+    })).toEqual([]);
     expect(parseCoverageJson({
       'src/bad-branches.mjs': { statementMap: {}, s: {}, b: 'invalid', fnMap: {}, f: {} }
-    })[0].branches).toEqual([{ type: 'branch' }]);
+    })).toEqual([]);
     expect(parseCoverageJson({
       'src/empty.mjs': { statementMap: {}, s: {}, b: {}, fnMap: {}, f: {} }
     })).toEqual([]);
     expect(parseCoverageJson({
       'src/no-statement-counters.mjs': { statementMap: { 0: { start: { line: 1 } } }, b: {}, fnMap: {}, f: {} }
-    })[0].statements).toEqual([{ type: 'statement' }]);
+    })).toEqual([]);
   });
 });
