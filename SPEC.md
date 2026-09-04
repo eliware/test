@@ -229,9 +229,10 @@ tests, not a promise of separately published stage modules.
 
 These are supported, documented limitations rather than hidden quality gates:
 
-- Istanbul policy discovery is complete and serial to bound descriptor pressure
-  in arbitrary consumer workspaces. No parallel traversal or startup bound is
-  promised.
+- Istanbul policy discovery is complete. Directory enumeration remains
+  deterministic, while source inspection uses at most six concurrent readers to
+  limit descriptor pressure in arbitrary consumer workspaces. Violations retain
+  discovery order.
 - The CLI centralizes stage sequencing and uses injected filesystem/process
   seams internally. The CLI is the supported consumer API.
 - Injected lint collaborators may return either a numeric exit code or an
