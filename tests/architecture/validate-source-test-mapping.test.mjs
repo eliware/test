@@ -76,6 +76,16 @@ test('skips dependency and generated discovery directories', async () => {
   await expect(findSourceTestMappingDrifts('repo', readDirectory)).resolves.toEqual({ missingTests: [], orphanTests: [] });
 });
 
+test('keeps generated files in the strict source/test mapping', async () => {
+  const root = resolve('generated-file-repo');
+  const entries = new Map([
+    ['src', [{ name: 'value.generated.mjs', isDirectory: () => false, isFile: () => true }]],
+    ['tests', []]
+  ]);
+  const readDirectory = async (directory) => entries.get(directory.replaceAll('\\', '/').split('/').slice(-1)[0]) ?? [];
+  await expect(findSourceTestMappingDrifts(root, readDirectory)).resolves.toEqual({ missingTests: ['value.generated'], orphanTests: [] });
+});
+
 test('propagates mapping read failures other than missing roots', async () => {
   const failure = Object.assign(new Error('denied'), { code: 'EACCES' });
   await expect(findSourceTestMappingDrifts('repo', async () => { throw failure; })).rejects.toBe(failure);

@@ -45,15 +45,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - Add a clean temporary consumer smoke test covering `--version`, a minimal
     test, lint, and bundled/consumer dependency layouts.
 
-- [ ] **P2 — Generated-file treatment differs across policy gates**
-  - Locations: `src/architecture/validate-source-test-mapping.mjs`,
-    `src/workspace/policy/discover-policy-sources.mjs`,
-    `src/monolith/measure-file.mjs`, `README.md`, and `spec/cli.md`
-  - Generated files are exempt from monolith limits, but their treatment in
-    mapping and Istanbul policy discovery is not consistently documented.
-  - Decide one rule across mapping, policy discovery, linting, and monolith
-    validation, then document and test it.
-
 ## Release validation additions
 
 - [ ] Pack the package, install the tarball into a clean temporary consumer,
