@@ -5,13 +5,6 @@ export const VALUE_OPTIONS = Object.freeze([
   '--env', '--watchPathIgnorePatterns', '--moduleNameMapper', '--outputFile'
 ]);
 
-/** Return whether an argument is a concrete test file path. */
-export function isFocusedTestPath(argument) {
-  return typeof argument === 'string' && !argument.startsWith('-') && !/[*!?[\]{}]/.test(argument)
-    && /(?:\.(?:c|m)?js|jsx|tsx|cts|mts|ts)$/i.test(argument)
-    && /(?:^|[\\/])(?:tests?|spec)(?:[\\/]|$)/i.test(argument);
-}
-
 /** Extract positional arguments that identify focused test files. */
 export function extractFocusedPaths(argumentsList) {
   if (!Array.isArray(argumentsList)) throw new TypeError('extractFocusedPaths requires an argument array');
@@ -28,3 +21,5 @@ export function extractFocusedPaths(argumentsList) {
   }
   return values.filter(isFocusedTestPath);
 }
+import { isFocusedTestPath } from './focused-path-matcher.mjs';
+export { isFocusedTestPath } from './focused-path-matcher.mjs';
