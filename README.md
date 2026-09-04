@@ -106,6 +106,11 @@ npm audit --omit=dev --audit-level=moderate
 npm pack --dry-run
 ```
 
+The normal `npm test` command runs the Jest/coverage/lint pipeline and then
+performs the consumer's build, typecheck, audit, and dry-run pack checks when
+those stages are wired by the executable. Package checks are bounded so a
+network or child-process stall becomes a reported validation failure.
+
 Use the release runbooks before publication. Never tag, publish, push, or
 deploy without explicit authorization.
 

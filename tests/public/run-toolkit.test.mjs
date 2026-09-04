@@ -236,6 +236,41 @@ test('returns stable failures for nonzero build, typecheck, audit, and pack resu
   await expect(runToolkit({ ...base, readFilePath: async () => '{"scripts":{"typecheck":"typecheck"}}', runTypecheck: async () => ({ code: 2 }) })).resolves.toBe(19);
   await expect(runToolkit({ ...base, readFilePath: async () => '{"scripts":{"build":"build"}}', runBuild: async () => ({ code: 0 }) })).resolves.toBe(0);
   await expect(runToolkit({ ...base, readFilePath: async () => '{"scripts":{"typecheck":"typecheck"}}', runTypecheck: async () => ({ code: 0 }) })).resolves.toBe(0);
-  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runAudit: async () => ({ code: 2 }) })).resolves.toBe(2);
-  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runPack: async () => ({ code: 2 }) })).resolves.toBe(2);
+  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runAudit: async () => ({ code: 2 }) })).resolves.toBe(15);
+  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runPack: async () => ({ code: 2 }) })).resolves.toBe(16);
+  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runAudit: async () => { throw new Error('audit unavailable'); } })).resolves.toBe(15);
+  await expect(runToolkit({ ...base, inspectWorkspace: async () => true, readFilePath: async () => '{}', runPack: async () => { throw new Error('pack unavailable'); } })).resolves.toBe(16);
+});
+
+test('rejects executable validation without package collaborators', async () => {
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {}, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0, requireReleaseStages: true }))
+    .rejects.toThrow('requires audit and pack collaborators');
+});
+
+test('rejects executable validation when pack collaborator is absent', async () => {
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {}, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0, runAudit: async () => 0, requireReleaseStages: true }))
+    .rejects.toThrow('requires audit and pack collaborators');
+});
+
+test('returns coverage cleanup failure when artifact removal fails', async () => {
+  const messages = [];
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: (message) => messages.push(message), removePath: async () => { throw new Error('locked'); }, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
+    .resolves.toBe(7);
+  expect(messages.join('')).toContain('Coverage cleanup failed: locked');
+});
+
+test('returns timing cleanup failure when timing artifact removal fails', async () => {
+  const messages = [];
+  let removals = 0;
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], debugTiming: true, write: (message) => messages.push(message), removePath: async (_path) => { removals += 1; if (removals > 4) throw new Error('locked'); }, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
+    .resolves.toBe(7);
+  expect(messages.join('')).toContain('Coverage cleanup failed: locked');
+});
+
+test('returns timing setup cleanup failure before tests start', async () => {
+  const messages = [];
+  let removals = 0;
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], debugTiming: true, write: (message) => messages.push(message), removePath: async () => { removals += 1; if (removals === 4) throw new Error('locked'); }, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
+    .resolves.toBe(7);
+  expect(messages.join('')).toContain('Coverage cleanup failed: locked');
 });

@@ -8,7 +8,7 @@ export function runAudit(context) {
   }
   const npmPath = resolve(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js');
   return context.runChildProcess(process.execPath, [npmPath, ...AUDIT_ARGUMENTS], {
-    ...context,
+    ...context, timeoutMs: context.timeoutMs ?? 30000,
     env: { ...context.env, npm_config_allow_scripts: undefined }
   });
 }

@@ -48,6 +48,8 @@ lint. Audit and pack are wired by the executable.
 Stages stop at the first applicable failure. The package self-test proves
 tests, coverage, and lint; its
 concise output is not evidence that consumer-only stages were visually printed.
+Child validation stages have a bounded execution time; timeout failures retain
+the stage-specific stable exit code and captured diagnostic output.
 
 `--lint` runs only workspace policy, setup, and Oxlint. It rejects warnings and
 test arguments. `--help`/`-h` and `--version`/`-v` are terminal modes and do not
