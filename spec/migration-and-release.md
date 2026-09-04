@@ -16,6 +16,11 @@ Consumer migration removes direct Jest/Oxlint development dependencies unless
 separately required, installs `@eliware/test`, updates `test` and `lint`, runs
 npm install, reviews the lockfile, and keeps specialized test tiers separate.
 
+The package intentionally exposes its CLI through `bin/eliware-test.mjs` and
+does not publish an `exports` or declaration (`types`) surface. Release checks
+must verify that this absence remains intentional and that the packed files
+match the `package.json` `files` allowlist.
+
 The normal validation set is:
 
 ```text
