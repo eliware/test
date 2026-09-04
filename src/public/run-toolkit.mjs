@@ -8,6 +8,7 @@ import { resolveFocusedCoverage } from '../testing/focused-coverage/resolve-sele
 import { buildJestArguments } from '../testing/build-jest-arguments.mjs';
 import { runJest } from '../testing/run-jest.mjs';
 import { runLintCommand as defaultRunLintCommand } from '../application/run-lint-command.mjs';
+import { assertToolkitOptions } from './contracts.mjs';
 import { formatFailure } from '../diagnostics/format-failure.mjs';
 import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
 import { detectViolations } from '../monolith/detect-violations.mjs';
@@ -24,8 +25,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
  * validates the minimum caller contract and preserves the numeric exit code.
  */
 export async function runToolkit(options) {
-  if (!options || typeof options !== 'object') throw new TypeError('runToolkit options are required');
-  if (typeof options.cwd !== 'string' || !Array.isArray(options.runnerArguments)) throw new TypeError('runToolkit requires cwd and runnerArguments');
+  assertToolkitOptions(options);
   const { cwd, runnerArguments, write, runTest = runJest, runLintCommand = defaultRunLintCommand,
     runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
     enforceMonolithLimits = false, accessPath = access,
@@ -33,9 +33,6 @@ export async function runToolkit(options) {
     findIstanbulIgnores, findMonolith = detectViolations,
     inspectWorkspace: inspect = (options.runTest && !findIstanbulIgnores ? async () => true : inspectWorkspace) } = options;
   const timing = createTiming(options.debugTiming, write);
-  if (typeof write !== 'function' || typeof runTest !== 'function' || typeof runLintCommand !== 'function') {
-    throw new TypeError('runToolkit requires cwd, runnerArguments, write, runTest, and runLintCommand');
-  }
   const disableInBand = runnerArguments.includes('--no-runInBand');
   const timingOutput = options.debugTiming ? resolve(cwd, '.eliware-test-timings.json') : undefined;
   if (!await inspect(cwd, write, accessPath, findIstanbulIgnores)) return EXIT_CODES.ISTANBUL_POLICY;
@@ -62,7 +59,8 @@ export async function runToolkit(options) {
   catch (error) { write(`Tests failed to start: ${error.message}\n`); return EXIT_CODES.TEST_START; }
   const testResult = { ...test, code: Number.isInteger(test?.code) ? test.code : 1, output: typeof test?.output === 'string' ? test.output : '' };
   if (timingOutput) {
-    try { write(formatTestTimings(JSON.parse(await readFilePath(timingOutput, 'utf8')))); } catch { /* Jest may fail before producing a report. */ }
+    try { write(formatTestTimings(JSON.parse(await readFilePath(timingOutput, 'utf8')))); }
+    catch (error) { write(`Timing report unavailable: ${error.message}\n`); }
     try { await removePath(timingOutput, { force: true }); }
     catch (error) { write(`Coverage cleanup failed: ${error.message}\n`); return EXIT_CODES.COVERAGE_CLEANUP; }
   }

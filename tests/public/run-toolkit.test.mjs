@@ -167,6 +167,19 @@ test('formats and removes timing reports when timing is enabled', async () => {
   expect(messages.join('')).toContain('Test file timings:');
 });
 
+test('reports malformed timing output and still cleans it up', async () => {
+  const messages = [];
+  let removed = false;
+  await expect(runToolkit({
+    cwd: process.cwd(), runnerArguments: [], debugTiming: true, ignoreCoverage: true,
+    write: (message) => messages.push(message), readFilePath: async () => '{bad json',
+    removePath: async () => { removed = true; }, runTest: async () => ({ code: 0, output: '' }),
+    runLintCommand: async () => 0
+  })).resolves.toBe(0);
+  expect(messages.join('')).toContain('Timing report unavailable');
+  expect(removed).toBe(true);
+});
+
 test('continues when monolith limits are explicitly ignored', async () => {
   const messages = [];
   await expect(runToolkit({

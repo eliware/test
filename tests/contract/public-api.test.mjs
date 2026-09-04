@@ -11,6 +11,11 @@ test('accepts valid toolkit options', () => {
   expect(assertToolkitOptions(options)).toBe(options);
 });
 
+test('rejects malformed advanced toolkit options early', () => {
+  expect(() => assertToolkitOptions({ cwd: 'workspace', runnerArguments: [], write, runTest: true })).toThrow('option runTest');
+  expect(() => assertToolkitOptions({ cwd: 'workspace', runnerArguments: [], write, ignoreCoverage: 'yes' })).toThrow('must be boolean');
+});
+
 test('preserves the supplied operation name in toolkit errors', () => {
   expect(() => assertExitCode(1, 'customOperation')).not.toThrow();
   expect(() => assertExitCode('bad', 'customOperation')).toThrow('customOperation');
