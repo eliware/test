@@ -73,6 +73,12 @@ test('settles timeout without a kill method', async () => {
   }
 });
 
+test('normalizes a child without output streams', async () => {
+  await expect(monitorChildProcess(new EventEmitter(), createOutputCapture())).resolves.toEqual({
+    code: 1, output: 'Invalid child process interface\n',
+  });
+});
+
 test('does not duplicate an error already captured on stderr', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

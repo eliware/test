@@ -13,7 +13,7 @@ export function resolveToolkitOptions(options) {
     enforceMonolithLimits = false, accessPath = access, removePath = rm, readFilePath = readFile,
     findIstanbulIgnores, findMonolith = detectViolations,
     findSourceTestMapping = findSourceTestMappingDrifts,
-    inspectWorkspace = (options.runTest && !findIstanbulIgnores ? async () => true : defaultInspectWorkspace),
+    inspectWorkspace = defaultInspectWorkspace,
   } = options;
   return {
     cwd, runnerArguments, write, runTest, runLintCommand, runInBand, ignoreCoverage,

@@ -6,3 +6,7 @@ test('preserves unrelated and malformed paths', () => {
   expect(normalizeCoveragePath(42, 42)).toBe('unknown');
   expect(normalizeCoveragePath('/repo/a.mjs', '')).toBe('/repo/a.mjs');
 });
+
+test('normalizes Windows UNC paths independently of host platform', () => {
+  expect(normalizeCoveragePath('\\\\server\\share\\src\\a.mjs', '\\\\server\\share')).toBe('src/a.mjs');
+});

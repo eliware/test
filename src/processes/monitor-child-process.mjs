@@ -1,6 +1,10 @@
 /** Capture a spawned child's output and settle on its error/close lifecycle. */
 export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {}) {
   return new Promise((resolveResult) => {
+    if (!child || typeof child.on !== 'function' || !child.stdout || typeof child.stdout.on !== 'function' || !child.stderr || typeof child.stderr.on !== 'function') {
+      resolveResult({ code: 1, output: 'Invalid child process interface\n' });
+      return;
+    }
     let settled = false;
     let processError = '';
     let timeout;
