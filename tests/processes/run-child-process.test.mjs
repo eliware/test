@@ -67,16 +67,6 @@ test('normalizes synchronous spawn failures', async () => {
     .resolves.toEqual({ code: 1, output: 'spawn failed synchronously\n' });
 });
 
-test('terminates processes that exceed the configured timeout', async () => {
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
-  let killed = false;
-  child.kill = () => { killed = true; };
-  const resultPromise = runChildProcess('ignored', [], { spawn: () => child, timeoutMs: 1 });
-  await expect(resultPromise).resolves.toMatchObject({ code: 1, output: expect.stringContaining('timed out') });
-  expect(killed).toBe(true);
-});
 
 test('keeps the truncation marker inside the exact output budget', async () => {
   const result = await runChildProcess(process.execPath, ['-e', 'process.stdout.write("B".repeat(16385))'], { cwd: process.cwd() });

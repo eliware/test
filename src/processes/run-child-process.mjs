@@ -18,11 +18,9 @@ export function runChildProcess(command, argumentsList = [], options = {}) {
     const capture = createOutputCapture();
     let settled = false;
     let processError = '';
-    let timeout;
     const finish = (code, errorMessage) => {
       if (settled) return;
       settled = true;
-      if (timeout) clearTimeout(timeout);
       resolveResult({ code, output: capture.finish(errorMessage) });
     };
     let child;
@@ -35,13 +33,6 @@ export function runChildProcess(command, argumentsList = [], options = {}) {
     } catch (error) {
       finish(1, `${error.message}\n`);
       return;
-    }
-    if (Number.isFinite(options.timeoutMs) && options.timeoutMs > 0) {
-      timeout = setTimeout(() => {
-        processError = `Process timed out after ${options.timeoutMs}ms\n`;
-        child.kill();
-        finish(1, processError);
-      }, options.timeoutMs);
     }
     child.stdout.on('data', capture.capture('stdout'));
     child.stderr.on('data', capture.capture('stderr'));

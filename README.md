@@ -57,7 +57,7 @@ skipped.
 
 Source modules are limited to 300 lines and test files to 600 lines. Pure
 barrels, generated files, and explicitly justified configuration exemptions
-are excluded. Violations fail with stable exit code 18 and must be decomposed
+are excluded. Violations fail with stable exit code 15 and must be decomposed
 with mirrored tests. During refactoring, use
 `eliware-test --ignore-monolith-limits`; it still runs the suite and other
 validation, but CI and release runs must enforce the limit. See `SPEC.md` for
@@ -79,7 +79,7 @@ one worktree.
 
 ## Recommended `.gitignore` entries
 
-The test command creates local coverage and package artifacts. Consumer
+The test command creates local coverage artifacts. Consumer
 repositories should normally ignore:
 
 ```gitignore

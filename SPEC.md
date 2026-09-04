@@ -66,7 +66,7 @@ The normal CLI run enforces focused-file decomposition limits:
 
 Every violation is reported with its normalized path, line count, threshold,
 and required action: decompose the file into focused modules and add the
-corresponding mirrored tests. Every violation fails with exit code 18, and
+corresponding mirrored tests. Every violation fails with exit code 15, and
 the diagnostic lists all violations.
 
 `eliware-test --ignore-monolith-limits` is a temporary refactoring bypass. It
@@ -232,8 +232,6 @@ These are supported, documented limitations rather than hidden quality gates:
 - Advanced collaborators may return incomplete results because runtime
   normalization occurs at the boundary. These are typed composition seams, not
   normal consumer setup.
-- Build-script syntax and executable availability are delegated to npm. The
-  runner detects only whether a non-empty build script is configured.
 - The local Windows npm-shim test is conditional when its generated shim is
   unavailable; Windows CI supplies platform evidence.
 - Coverage text parsing is whole-buffer because captured input is bounded; no
