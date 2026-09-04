@@ -122,8 +122,7 @@ complete behavior contract and limitations.
 The default mode intentionally uses the consumer's full environment, matching
 direct `npm test` and Jest behavior. This package does not change Jest or try
 to overcome its limitations. Do not run it against an untrusted workspace
-while sensitive credentials are available. Use `eliware-test --sanitize-env`
-when isolation is needed.
+while sensitive credentials are available.
 
 ## Support
 

@@ -28,7 +28,6 @@ test('recognizes lint and explicit coverage opt-out options', () => {
 
 test('parses the remaining wrapper options', () => {
   expect(parseArguments(['--ignore-monolith-limits'])).toMatchObject({ ignoreMonolithLimits: true });
-  expect(parseArguments(['--sanitize-env'])).toMatchObject({ sanitizeEnv: true });
   expect(parseArguments(['--no-runInBand'])).toMatchObject({ runInBand: false });
 });
 

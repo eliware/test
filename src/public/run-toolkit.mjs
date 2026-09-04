@@ -28,7 +28,7 @@ export async function runToolkit(options) {
   if (typeof options.cwd !== 'string' || !Array.isArray(options.runnerArguments)) throw new TypeError('runToolkit requires cwd and runnerArguments');
   const { cwd, runnerArguments, write, runTest = runJest, runLintCommand = defaultRunLintCommand,
     runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
-    enforceMonolithLimits = false, sanitizeEnv = false, accessPath = access,
+    enforceMonolithLimits = false, accessPath = access,
     removePath = rm, readFilePath = readFile,
     findIstanbulIgnores, findMonolith = detectViolations,
     inspectWorkspace: inspect = (options.runTest && !findIstanbulIgnores ? async () => true : inspectWorkspace) } = options;
@@ -58,7 +58,7 @@ export async function runToolkit(options) {
     catch (error) { write(`Coverage cleanup failed: ${error.message}\n`); return EXIT_CODES.COVERAGE_CLEANUP; }
   }
   let test;
-  try { test = await runTest(buildJestArguments({ runnerArguments: args, runInBand: runInBand && !disableInBand, focusedCoverage, focusedPathMode, timingOutput }), { cwd, runInBand: runInBand && !disableInBand, inheritEnv: !sanitizeEnv }); }
+  try { test = await runTest(buildJestArguments({ runnerArguments: args, runInBand: runInBand && !disableInBand, focusedCoverage, focusedPathMode, timingOutput }), { cwd, runInBand: runInBand && !disableInBand }); }
   catch (error) { write(`Tests failed to start: ${error.message}\n`); return EXIT_CODES.TEST_START; }
   const testResult = { ...test, code: Number.isInteger(test?.code) ? test.code : 1, output: typeof test?.output === 'string' ? test.output : '' };
   if (timingOutput) {
@@ -76,7 +76,7 @@ export async function runToolkit(options) {
     }
   }
   timing.step('Coverage', 'lint');
-  const lint = resultCode(await runLintCommand({ cwd, write, sanitizeEnv }));
+  const lint = resultCode(await runLintCommand({ cwd, write }));
   if (lint) return lint;
   timing.step('Lint', 'monolith validation');
   if (enforceMonolithLimits) {

@@ -31,9 +31,6 @@ describe('parseArguments', () => {
     expect(parseArguments(['--ignore-monolith-limits'])).toEqual({ lint: false, ignoreMonolithLimits: true, runnerArguments: [] });
   });
 
-  test('parses the explicit environment sanitization opt-out', () => {
-    expect(parseArguments(['--sanitize-env'])).toEqual({ lint: false, sanitizeEnv: true, runnerArguments: [] });
-  });
 
   test('forwards focused runner arguments unchanged', () => {
     const argumentsList = ['tests/client.test.mjs', '-t', 'rejects invalid options'];

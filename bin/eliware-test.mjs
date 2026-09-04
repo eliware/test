@@ -23,7 +23,7 @@ try {
   } else {
     const common = { cwd: process.cwd(), write: (message) => process.stdout.write(message) };
     process.exitCode = options.lint
-      ? await runLint({ ...common, sanitizeEnv: options.sanitizeEnv, debugTiming: options.debugTiming })
+      ? await runLint({ ...common, debugTiming: options.debugTiming })
       : await runToolkit({ ...common, ...options, enforceMonolithLimits: true, runLintCommand });
   }
 } catch (error) {

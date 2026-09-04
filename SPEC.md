@@ -84,8 +84,6 @@ decomposing existing violations.
   explicitly opts out for diagnostic runs.
 - `--ignore-100x4` skips enforcement only; tests, coverage collection, lint,
   behavior otherwise remains unchanged.
-- `--sanitize-env` runs child tools with an empty base environment while
-  retaining explicitly supplied tool variables.
 - A standalone `--` separator is removed once before Jest invocation.
 - One shared metadata list defines supported Jest value options; their values
   are never treated as positional focused paths.
@@ -180,8 +178,8 @@ works when Jest is invoked directly, this package should pass the same ambient
 environment through; it does not change Jest behavior, compensate for Jest
 limitations, or provide a new security boundary. Consumers must not run the
 default mode against an untrusted workspace while secrets are present.
-`--sanitize-env` is the explicit opt-in isolation mode. An environment
-allowlist and automatic secret redaction are not part of this release.
+Child tools receive the consumer's inherited environment, matching direct npm
+and Jest invocation behavior.
 
 Bundled Oxlint and npm invocations use Node's executable and supported
 package/runtime entrypoint contracts, preserving argument-array boundaries on
@@ -252,8 +250,6 @@ This package does not promise or implement:
   product workflows;
 - same-worktree concurrent validation, cross-process Jest coordination, lock
   management, and per-run temporary coverage isolation;
-- an inherited-environment allowlist or secret-redaction policy for consumer
-  code;
 - arbitrary Jest option discovery beyond the shared supported metadata;
 - structured diagnostics, machine-readable output, or an abort-signal API;
 - semantic merging of multiple coverage candidates;

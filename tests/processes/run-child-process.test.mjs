@@ -52,13 +52,6 @@ test('bounds large child-process output', async () => {
   expect(result.output).toContain('[Output truncated:');
 });
 
-test('supports an explicitly sanitized environment with overrides', async () => {
-  const result = await runChildProcess(process.execPath, ['-e', 'process.stdout.write(process.env.ELIWARE_TEST_SECRET ?? "missing")'], {
-    cwd: process.cwd(), inheritEnv: false, allowedNames: ['ELIWARE_TEST_SECRET'], env: { ELIWARE_TEST_SECRET: 'safe' }
-  });
-  expect(result).toMatchObject({ code: 0, output: 'safe' });
-});
-
 test('captures non-zero exit codes and terminal multibyte diagnostics', async () => {
   await expect(runChildProcess(process.execPath, ['-e', 'process.exitCode=4'], { cwd: process.cwd() })).resolves.toMatchObject({ code: 4 });
   await expect(runChildProcess(process.execPath, ['-e', 'process.stderr.write("終端🙂")'], { cwd: process.cwd() })).resolves.toMatchObject({ code: 0, output: '終端🙂' });

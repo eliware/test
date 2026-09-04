@@ -1,4 +1,4 @@
-export const WRAPPER_OPTIONS = Object.freeze(['--lint', '--ignore-100x4', '--ignore-monolith-limits', '--runInBand', '--no-runInBand', '--sanitize-env', '--debug-timing']);
+export const WRAPPER_OPTIONS = Object.freeze(['--lint', '--ignore-100x4', '--ignore-monolith-limits', '--runInBand', '--no-runInBand', '--debug-timing']);
 export const MANAGED_OPTIONS = Object.freeze(['--coverage', '--detectOpenHandles', '--silent', '--coverageReporters', '--runTestsByPath']);
 
 /** Identify arguments consumed by the wrapper itself. */

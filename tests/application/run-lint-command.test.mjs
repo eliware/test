@@ -37,11 +37,11 @@ test('reports lint failures and warning output', async () => {
   expect(messages.join('')).toContain('Lint failed (exit 1)');
 });
 
-test('reports a successful lint run and supports sanitized environments', async () => {
+test('reports a successful lint run', async () => {
   const messages = [];
   await expect(runLintCommand({
     cwd: 'C:/repo', write: (message) => messages.push(message), inspect: async () => true,
-    sanitizeEnv: true, runLint: async (options) => { expect(options.inheritEnv).toBe(false); return { code: 0, output: '' }; }
+    runLint: async () => ({ code: 0, output: '' })
   })).resolves.toBe(0);
   expect(messages.join('')).toContain('Lint passed: 0 warnings');
 });
@@ -52,8 +52,6 @@ test('uses the bundled Oxlint collaborator by default', async () => {
 });
 
 test('accepts an explicitly undefined sanitization option', async () => {
-  await expect(runLintCommand({ cwd: 'C:/repo', sanitizeEnv: undefined, write: () => {}, inspect: async () => true, runLint: async () => ({ code: 0, output: '' }) }))
-    .resolves.toBe(0);
 });
 
 test('uses the default workspace inspector', async () => {

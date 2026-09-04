@@ -10,7 +10,7 @@ import { runChildProcess } from '../processes/run-child-process.mjs';
 /** Run the standalone lint command and return the package exit code. */
 export async function runLintCommand(options) {
   assertLintOptions(options);
-  const { cwd, write, sanitizeEnv, inspect = inspectWorkspace, runLint = runOxlint } = options;
+  const { cwd, write, inspect = inspectWorkspace, runLint = runOxlint } = options;
   const timing = createTiming(options.debugTiming, write);
   try {
     if (!await inspect(cwd, write, options.accessPath, options.findIstanbulIgnores)) {
@@ -24,7 +24,7 @@ export async function runLintCommand(options) {
 
   let result;
   try {
-    result = (await runLint({ cwd, inheritEnv: !sanitizeEnv, write, runChildProcess })) ?? {};
+    result = (await runLint({ cwd, write, runChildProcess })) ?? {};
   } catch (error) {
     write(`Lint failed to start: ${error.message}\n`);
     return EXIT_CODES.LINT_START;

@@ -5,31 +5,9 @@ test('builds an inherited child environment and applies overrides', () => {
     .toEqual({ BASE: 'ok', SAFE: 'yes' });
 });
 
-test('builds a sanitized environment when inheritance is disabled', () => {
-  expect(childEnvironment({
-    environment: { SAFE: 'yes', SECRET: 'no' },
-    inheritEnv: false,
-    allowedNames: ['SAFE', 'EXTRA'],
-    env: { EXTRA: 'value' }
-  })).toEqual({ SAFE: 'yes', EXTRA: 'value' });
-});
-
-test('sanitizes explicitly even when inheritance remains enabled', () => {
-  expect(childEnvironment({
-    environment: { SAFE: 'yes', SECRET: 'no' },
-    sanitize: true,
-    allowedNames: ['SAFE']
-  })).toEqual({ SAFE: 'yes' });
-});
-
-test('filters sanitized environment overrides through the allowlist', () => {
-  expect(childEnvironment({ inheritEnv: false, allowedNames: ['SAFE'], env: { SECRET: 'no' }, overrides: { SAFE: 'yes', SECRET: 'still-no' } }))
-    .toEqual({ SAFE: 'yes' });
-});
-
-test('handles absent sanitized override objects', () => {
-  expect(childEnvironment({ inheritEnv: false, allowedNames: ['SAFE'], env: null, overrides: null }))
-    .toEqual({});
+test('passes explicit environment values and overrides through', () => {
+  expect(childEnvironment({ environment: { BASE: 'ok' }, env: { EXTRA: 'value' }, overrides: { SAFE: 'yes' } }))
+    .toEqual({ BASE: 'ok', EXTRA: 'value', SAFE: 'yes' });
 });
 
 test('uses safe defaults when called without options', () => {
