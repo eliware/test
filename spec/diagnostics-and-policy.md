@@ -13,6 +13,10 @@ When a child exceeds its timeout, the runner sends `SIGTERM`, waits briefly,
 sends `SIGKILL`, waits briefly again, and sends a final `SIGKILL`. It then
 continues with the timeout result; if the child never closes, diagnostics
 explicitly report that an unkillable child process remains.
+These signal names and escalation order are the portable Node child-process
+contract for this CLI; platform-specific process managers may interpret them
+differently, but the runner does not promise platform-specific tree-kill
+semantics.
 Truncation is explicit, repeated failure lines are deduplicated, and absolute
 coverage paths are normalized relative to the workspace. stdout and stderr are
 captured independently. `ELIWARE_TEST_DEBUG=1` enables only the fixed,
@@ -30,6 +34,10 @@ compatibility with direct `npm test` and Jest behavior. The package does not
 provide a sanitized or secret-redacting mode and does not create a new security
 boundary. Consumers must not run default mode against an untrusted workspace
 while secrets are present.
+Full inheritance is intentional and is not an accidental convenience: the
+consumer's Jest, lint, and project configuration may depend on any environment
+variable supplied by the invoking npm process. The CLI therefore does not
+filter, redact, or selectively copy environment variables.
 
 Bundled Oxlint and npm invocations use Node's executable and supported
 package/runtime entrypoint contracts, preserving argument-array boundaries on

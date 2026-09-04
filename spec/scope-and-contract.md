@@ -39,4 +39,7 @@ The intended implementation structure is layered orchestration:
 Stage orchestrators may coordinate subordinate operations. They must remain
 focused on sequencing and data flow; substantive operations belong in the
 dedicated modules beneath them. This is the intentional orchestration
-boundary.
+boundary. `runToolkit` is intentionally the composition root: it owns the
+single end-to-end lifecycle and delegates each stage to its stage orchestrator.
+It is not intended to be split into independent public APIs or treated as a
+runtime library entry point; consumers invoke the CLI executable.
