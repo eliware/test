@@ -159,7 +159,8 @@ deploy without explicit authorization.
 
 Use `eliware-test --help` for supported command forms. When invoking through
 npm, put Jest arguments after npm's `--` separator. Set
-`ELIWARE_TEST_DEBUG=1` only when troubleshooting argument forwarding.
+`ELIWARE_TEST_DEBUG=1` only when troubleshooting the safe coverage fallback
+diagnostic. Arbitrary forwarded arguments and values are never printed.
 `--help` and `--version` are terminal modes and take precedence over any
 other arguments supplied in the same invocation.
 

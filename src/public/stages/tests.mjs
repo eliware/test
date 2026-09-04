@@ -28,7 +28,8 @@ export async function executeTests({ cwd, args, runInBand, focusedCoverage, focu
 
 async function promoteCoverage(cwd, coverageDirectory, accessPath, removePath, renamePath, write) {
   try {
-    await promoteCoverageDirectory(cwd, coverageDirectory, accessPath, removePath, renamePath, (error) => write(`Coverage cleanup warning: ${error.message}\n`));
+    const promoted = await promoteCoverageDirectory(cwd, coverageDirectory, accessPath, removePath, renamePath, (error) => write(`Coverage cleanup warning: ${error.message}\n`));
+    if (!promoted) write('Coverage cleanup warning: Jest produced no isolated coverage directory.\n');
   } catch (error) {
     write(`Coverage cleanup failed: ${error.message}\n`);
     return { code: EXIT_CODES.COVERAGE_CLEANUP };

@@ -7,6 +7,7 @@ const IGNORED_DIRECTORIES = new Set(['node_modules', '.git', 'coverage', 'dist',
 export const MONOLITH_SCAN_LIMITS = Object.freeze({ maxDepth: 100 });
 export const DEFAULT_MEASUREMENT_WORKERS = 6;
 const compareNames = (left, right) => Number(left > right) - Number(left < right);
+const RELEVANT_ROOTS = new Set(['src', 'test', 'tests', 'spec', 'specs']);
 
 /** Traverse a workspace and measure files eligible for monolith policy checks. */
 export async function scanMonolithFiles(cwd, readDirectory = readdir, readSource = readFile, workers = DEFAULT_MEASUREMENT_WORKERS) {
@@ -14,7 +15,7 @@ export async function scanMonolithFiles(cwd, readDirectory = readdir, readSource
   const root = resolve(cwd);
   const candidates = [];
   const visited = new Set();
-  async function visit(directory, depth = 0) {
+  async function visit(directory, depth = 0, relevant = false) {
     if (depth > MONOLITH_SCAN_LIMITS.maxDepth) throw new Error(`Monolith traversal exceeded depth limit (${MONOLITH_SCAN_LIMITS.maxDepth}).`);
     const normalized = resolve(directory);
     if (visited.has(normalized)) return;
@@ -22,7 +23,10 @@ export async function scanMonolithFiles(cwd, readDirectory = readdir, readSource
     for (const entry of [...await readDirectory(directory, { withFileTypes: true })].sort((left, right) => compareNames(left.name, right.name))) {
       if (entry.isSymbolicLink?.()) continue;
       if (entry.isDirectory()) {
-        if (!IGNORED_DIRECTORIES.has(entry.name)) await visit(resolve(directory, entry.name), depth + 1);
+        if (!IGNORED_DIRECTORIES.has(entry.name)
+          && (relevant || directory !== root || RELEVANT_ROOTS.has(entry.name))) {
+          await visit(resolve(directory, entry.name), depth + 1, relevant || directory === root);
+        }
         continue;
       }
       if (!entry.isFile()) continue;

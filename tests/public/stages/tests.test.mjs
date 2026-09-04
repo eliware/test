@@ -36,7 +36,9 @@ test('does not promote coverage from a failed Jest run', async () => {
 
 test('handles an absent isolated coverage directory without attempting promotion', async () => {
   const calls = [];
-  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }, renamePath: async () => calls.push('rename'), removePath: async () => {}, runTest: async () => ({ code: 0, output: '' }), write: () => {} }))
+  const messages = [];
+  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }, renamePath: async () => calls.push('rename'), removePath: async () => {}, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
     .resolves.toMatchObject({ code: 0 });
   expect(calls).toEqual([]);
+  expect(messages).toEqual(['Coverage cleanup warning: Jest produced no isolated coverage directory.\n']);
 });

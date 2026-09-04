@@ -33,12 +33,29 @@ test('does not queue files outside source and test trees for measurement', async
   expect(reads[0]).toMatch(/src[\\/]module\.mjs$/);
 });
 
+test('does not traverse unrelated workspace directories', async () => {
+  const root = resolve('repo');
+  const visited = [];
+  const entries = {
+    [root]: [
+      { name: 'src', isDirectory: () => true },
+      { name: 'fixtures', isDirectory: () => true },
+    ],
+    [resolve(root, 'src')]: [],
+  };
+  await scanMonolithFiles(root, async (path) => {
+    visited.push(path);
+    return entries[path] ?? [];
+  }, async () => '');
+  expect(visited).toEqual([root, resolve(root, 'src')]);
+});
+
 test('skips symlinks and bounds depth', async () => {
   const root = resolve('repo');
   let depth = 0;
   const readDirectory = async () => {
     depth += 1;
-    if (depth === 1) return [{ name: 'link', isDirectory: () => true, isSymbolicLink: () => true }, { name: 'next', isDirectory: () => true, isSymbolicLink: () => false }];
+    if (depth === 1) return [{ name: 'link', isDirectory: () => true, isSymbolicLink: () => true }, { name: 'src', isDirectory: () => true, isSymbolicLink: () => false }];
     return [{ name: 'next', isDirectory: () => true, isSymbolicLink: () => false }];
   };
   await expect(scanMonolithFiles(root, readDirectory)).rejects.toThrow(`depth limit (${MONOLITH_SCAN_LIMITS.maxDepth})`);
@@ -46,9 +63,12 @@ test('skips symlinks and bounds depth', async () => {
 
 test('ignores repeated directories', async () => {
   const root = resolve('repo');
+  const source = resolve(root, 'src');
   const readDirectory = async (directory) => directory === root
-    ? [{ name: 'loop', isDirectory: () => true, isSymbolicLink: () => false }]
-    : [{ name: '..', isDirectory: () => true, isSymbolicLink: () => false }];
+    ? [{ name: 'src', isDirectory: () => true, isSymbolicLink: () => false }]
+    : directory === source
+      ? [{ name: 'loop', isDirectory: () => true, isSymbolicLink: () => false }]
+      : [{ name: '..', isDirectory: () => true, isSymbolicLink: () => false }];
   await expect(scanMonolithFiles(root, readDirectory)).resolves.toEqual([]);
 });
 

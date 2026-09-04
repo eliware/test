@@ -15,9 +15,9 @@ continues with the timeout result; if the child never closes, diagnostics
 explicitly report that an unkillable child process remains.
 Truncation is explicit, repeated failure lines are deduplicated, and absolute
 coverage paths are normalized relative to the workspace. stdout and stderr are
-captured independently. `ELIWARE_TEST_DEBUG=1` enables exact forwarded-Jest
-argument and selected coverage-fallback diagnostics. Structured diagnostics
-are not currently exposed.
+captured independently. `ELIWARE_TEST_DEBUG=1` enables only the fixed,
+non-sensitive coverage-fallback diagnostic; arbitrary arguments and values are
+never printed. Structured diagnostics are not currently exposed.
 
 ## 8. Workspace policy and process trust
 
