@@ -8,7 +8,9 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
-      resolveResult({ code, output: capture.finish(errorMessage) });
+      const output = capture.finish();
+      const duplicate = errorMessage && output.includes(errorMessage.trim());
+      resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}` });
     };
     child.stdout.on('data', capture.capture('stdout'));
     child.stderr.on('data', capture.capture('stderr'));

@@ -58,3 +58,14 @@ test('settles and terminates a child that never closes', async () => {
     jest.useRealTimers();
   }
 });
+
+test('does not duplicate an error already captured on stderr', async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  child.kill = jest.fn();
+  const resultPromise = monitorChildProcess(child, createOutputCapture());
+  child.stderr.emit('data', 'missing executable\n');
+  child.emit('error', new Error('missing executable'));
+  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'missing executable\n' });
+});
