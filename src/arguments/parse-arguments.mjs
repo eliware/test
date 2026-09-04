@@ -1,6 +1,7 @@
 import { isManagedOption, isWrapperOption, MANAGED_OPTIONS } from './classify-arguments.mjs';
 import { terminalMode } from './command-modes.mjs';
 import { readWrapperOptions } from './wrapper-options.mjs';
+import { assertCompatibleArguments } from './validate-options.mjs';
 
 export const HELP_TEXT = `Usage:
   eliware-test                         Run Jest with coverage, then lint
@@ -23,7 +24,7 @@ export function parseArguments(argumentsList = []) {
   if (protectedArgument) throw new Error(`${protectedArgument} is managed by eliware-test; remove it and use the wrapper command directly.`);
   const mode = terminalMode(argumentsList);
   if (mode) return mode;
-  if (lint && runnerArguments.length > 0) throw new Error('`--lint` cannot be combined with test arguments; run `eliware-test --lint` separately.');
+  assertCompatibleArguments(lint, runnerArguments);
   const parsed = { lint, runnerArguments: runnerArguments[0] === '--' ? runnerArguments.slice(1) : runnerArguments };
   if (disableInBand) parsed.runInBand = false;
   if (ignoreCoverage) parsed.ignoreCoverage = true;
