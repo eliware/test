@@ -51,9 +51,6 @@ test('uses the bundled Oxlint collaborator by default', async () => {
     .resolves.toEqual(expect.any(Number));
 });
 
-test('accepts an explicitly undefined sanitization option', async () => {
-});
-
 test('uses the default workspace inspector', async () => {
   await expect(runLintCommand({
     cwd: process.cwd(), write: () => {}, runLint: async () => ({ code: 0, output: '' })
