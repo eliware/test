@@ -69,11 +69,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - Missing stdout or stderr objects can throw while listeners are attached.
     Define a stable startup failure and cover malformed child objects.
 
-- [ ] **P2 — Terminal command precedence is undefined**
-  - Location: `src/arguments/parse-arguments.mjs:10-13`
-  - Define whether `--help` and `--version` take precedence over other
-    arguments, then document and test combinations with managed options.
-
 - [ ] **P2 — Mixed Windows/POSIX coverage paths may normalize incorrectly**
   - Location: `src/coverage/normalize-path.mjs:4-15`
   - Determine path flavor from both operands and add mixed-style path fixtures.

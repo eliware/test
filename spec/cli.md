@@ -18,8 +18,9 @@ is currently retained while later validation stages complete; this exception is
 tracked in `known_issues_checklist.md` and must be resolved or explicitly
 adopted as part of the public contract. `--lint` runs only workspace policy,
 setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
-`--version`/`-v` are terminal modes; their precedence when combined with other
-options is tracked for clarification. Version output comes from `package.json`.
+`--version`/`-v` are terminal modes and take precedence over managed-option
+validation when combined with other arguments. Version output comes from
+`package.json`.
 
 Stable wrapper exit codes are: workspace setup `2`, Istanbul policy `3`,
 invalid argument `4`, focused-path validation `5`, missing focused path `6`,
