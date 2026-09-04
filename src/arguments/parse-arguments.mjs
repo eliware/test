@@ -1,5 +1,6 @@
 import { isManagedOption, isWrapperOption, MANAGED_OPTIONS } from './classify-arguments.mjs';
 import { terminalMode } from './command-modes.mjs';
+import { readWrapperOptions } from './wrapper-options.mjs';
 
 export const HELP_TEXT = `Usage:
   eliware-test                         Run Jest with coverage, then lint
@@ -16,11 +17,7 @@ export { MANAGED_OPTIONS };
 
 export function parseArguments(argumentsList = []) {
   if (!Array.isArray(argumentsList)) throw new TypeError('parseArguments requires an argument array');
-  const lint = argumentsList.includes('--lint');
-  const ignoreCoverage = argumentsList.includes('--ignore-100x4');
-  const ignoreMonolithLimits = argumentsList.includes('--ignore-monolith-limits');
-  const disableInBand = argumentsList.includes('--no-runInBand');
-  const debugTiming = argumentsList.includes('--debug-timing');
+  const { lint, ignoreCoverage, ignoreMonolithLimits, disableInBand, debugTiming } = readWrapperOptions(argumentsList);
   const runnerArguments = argumentsList.filter((argument) => !isWrapperOption(argument));
   const protectedArgument = runnerArguments.find(isManagedOption);
   if (protectedArgument) throw new Error(`${protectedArgument} is managed by eliware-test; remove it and use the wrapper command directly.`);
