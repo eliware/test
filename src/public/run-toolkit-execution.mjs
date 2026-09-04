@@ -14,5 +14,5 @@ export async function runToolkitExecution({ cwd, args, runInBand, disableInBand,
     removePath,
     write,
   });
-  return { testResult, outcome: handleTestResult(testResult, write) };
+  return { testResult, outcome: handleTestResult(testResult, write, cwd) };
 }

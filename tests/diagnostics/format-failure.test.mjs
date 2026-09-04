@@ -23,3 +23,8 @@ test('normalizes malformed results', () => {
 test('normalizes non-string output after filtering coverage-only lines', () => {
   expect(formatFailure('Lint', { output: 42 })).toBe('Lint failed (exit 1)\n');
 });
+
+test('normalizes ANSI and workspace paths in failures', () => {
+  expect(formatFailure('Tests', { code: 1, output: '\u001b[31mC:/repo/src/a.mjs failed\u001b[0m' }, 'C:/repo'))
+    .toBe('Tests failed (exit 1)\n<workspace>/src/a.mjs failed');
+});
