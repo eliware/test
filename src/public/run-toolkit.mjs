@@ -5,18 +5,18 @@ import { MANAGED_OPTIONS } from '../arguments/classify-arguments.mjs';
 import { normalizeArguments } from '../arguments/normalize-arguments.mjs';
 import { validateFocusedPaths } from '../testing/validate-focused-paths.mjs';
 import { resolveFocusedCoverage } from '../testing/focused-coverage/resolve-selection.mjs';
-import { buildJestArguments } from '../testing/build-jest-arguments.mjs';
 import { runJest } from '../testing/run-jest.mjs';
 import { runLintCommand as defaultRunLintCommand } from '../application/run-lint-command.mjs';
 import { assertToolkitOptions } from './contracts.mjs';
 import { formatFailure } from '../diagnostics/format-failure.mjs';
 import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
 import { detectViolations } from '../monolith/detect-violations.mjs';
-import { formatMonolithViolations } from '../diagnostics/format-monolith-violations.mjs';
-import { readCoverage } from '../coverage/read-coverage.mjs';
-import { formatGaps } from '../coverage/format-gaps.mjs';
 import { createTiming } from '../diagnostics/timing.mjs';
-import { formatTestTimings } from '../diagnostics/format-test-timings.mjs';
+import { cleanupCoverage } from './stages/cleanup.mjs';
+import { executeTests } from './stages/tests.mjs';
+import { validateCoverage } from './stages/coverage.mjs';
+import { validateLint } from './stages/lint.mjs';
+import { validateMonolith } from './stages/monolith.mjs';
 
 const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
@@ -42,22 +42,16 @@ export async function runToolkit(options) {
   if (protectedArgument) { write(`Unsupported Jest option: ${protectedArgument} is managed by eliware-test; remove it and use a supported filter.\n`); return EXIT_CODES.INVALID_ARGUMENT; }
   const missing = await validateFocusedPaths(cwd, args, accessPath);
   if (missing) { write(`Focused test path not found: ${missing}\nUse a path relative to the consuming repository.\n`); return EXIT_CODES.FOCUSED_PATH_MISSING; }
-  try {
-    for (const candidate of COVERAGE_CANDIDATES) await removePath(resolve(cwd, candidate), { force: true });
-  } catch (error) {
-    write(`Coverage cleanup failed: ${error.message}\n`);
-    return EXIT_CODES.COVERAGE_CLEANUP;
-  }
+  if (!await cleanupCoverage(cwd, removePath, COVERAGE_CANDIDATES, write)) return EXIT_CODES.COVERAGE_CLEANUP;
   const focusedPathMode = args.some((arg) => /(?:^|[\\/])tests?[\\/].+\.(?:mjs|js|cjs|jsx|ts|tsx)$/.test(arg));
   const focusedCoverage = focusedPathMode ? await resolveFocusedCoverage(cwd, args, accessPath) : [];
   if (timingOutput) {
     try { await removePath(timingOutput, { force: true }); }
     catch (error) { write(`Coverage cleanup failed: ${error.message}\n`); return EXIT_CODES.COVERAGE_CLEANUP; }
   }
-  let test;
-  try { test = await runTest(buildJestArguments({ runnerArguments: args, runInBand: runInBand && !disableInBand, focusedCoverage, focusedPathMode, timingOutput }), { cwd, runInBand: runInBand && !disableInBand }); }
-  catch (error) { write(`Tests failed to start: ${error.message}\n`); return EXIT_CODES.TEST_START; }
-  const testResult = { ...test, code: Number.isInteger(test?.code) ? test.code : 1, output: typeof test?.output === 'string' ? test.output : '' };
+  const test = await executeTests({ cwd, args, runInBand: runInBand && !disableInBand, focusedCoverage, focusedPathMode, timingOutput, runTest, readFilePath, removePath, write });
+  if (test.code === EXIT_CODES.TEST_START) return test.code;
+  const testResult = test;
   if (timingOutput) {
     try { write(formatTestTimings(JSON.parse(await readFilePath(timingOutput, 'utf8')))); }
     catch (error) { write(`Timing report unavailable: ${error.message}\n`); }
@@ -67,36 +61,17 @@ export async function runToolkit(options) {
   if (testResult.code !== 0) { write(formatFailure('Tests', testResult)); return EXIT_CODES.TEST_FAILURE; }
   timing.step('Tests', 'coverage');
   if (!ignoreCoverage) {
-    let coverageGaps;
-    try { coverageGaps = await readCoverage(cwd, testResult.output, write, readFilePath); }
-    catch (error) { write(`Coverage validation failed: ${error.message}\n`); return EXIT_CODES.COVERAGE_FAILURE; }
-    if (coverageGaps.length) {
-      write(formatGaps(coverageGaps, cwd));
-      return EXIT_CODES.COVERAGE_GAP;
-    }
+    const coverageResult = await validateCoverage(cwd, testResult.output, write, readFilePath);
+    if (coverageResult) return coverageResult;
   }
   timing.step('Coverage', 'lint');
-  const lint = resultCode(await runLintCommand({ cwd, write }));
+  const lint = await validateLint(runLintCommand, cwd, write);
   if (lint) return lint;
   timing.step('Lint', 'monolith validation');
   if (enforceMonolithLimits) {
-    try {
-      const violations = await findMonolith(cwd);
-      if (violations.length) {
-        write(formatMonolithViolations(violations));
-        if (!ignoreMonolithLimits) return EXIT_CODES.MONOLITH_LIMIT;
-        write('Monolith limits ignored for this diagnostic/refactoring run.\n');
-      }
-    } catch (error) {
-      write(`Monolith validation failed: ${error.message}\n`);
-      return EXIT_CODES.MONOLITH_LIMIT;
-    }
+    const monolithResult = await validateMonolith({ cwd, findMonolith, write, ignoreMonolithLimits });
+    if (monolithResult) return monolithResult;
   }
   write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
   return 0;
-}
-
-function resultCode(result) {
-  if (Number.isInteger(result)) return result;
-  return Number.isInteger(result?.code) ? result.code : 1;
 }
