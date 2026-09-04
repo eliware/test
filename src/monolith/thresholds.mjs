@@ -1,4 +1,4 @@
-export const DEFAULT_THRESHOLDS = Object.freeze({ source: 300, test: 600 });
+export const DEFAULT_THRESHOLDS = Object.freeze({ source: 100, test: 200 });
 
 /** Resolve and validate the configured threshold for a file category. */
 export function thresholdFor(kind, thresholds = DEFAULT_THRESHOLDS) {

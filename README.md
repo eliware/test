@@ -59,7 +59,7 @@ default worker behavior. Use `eliware-test --ignore-100x4` only for diagnostic
 or transitional runs; tests and lint still run, but coverage enforcement is
 skipped.
 
-Source modules are limited to 300 lines and test files to 600 lines. Pure
+Source modules are limited to 100 lines and test files to 200 lines. Pure
 barrels, generated files, and explicitly justified configuration exemptions
 are excluded. Violations fail with stable exit code 15 and must be decomposed
 with mirrored tests. During refactoring, use

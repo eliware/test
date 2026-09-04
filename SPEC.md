@@ -58,8 +58,8 @@ coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
 
 The normal CLI run enforces focused-file decomposition limits:
 
-- source modules under `src/` may contain at most 300 lines;
-- test files under `test/` or `tests/` may contain at most 600 lines;
+- source modules under `src/` may contain at most 100 lines;
+- test files under `test/` or `tests/` may contain at most 200 lines;
 - pure import/export barrels and generated files are exempt;
 - any other exemption must be explicitly configured with a non-empty glob
   pattern and justification under `eliwareTest.monolithLimits.exemptions`.

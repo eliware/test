@@ -10,7 +10,7 @@ test('returns oversized source files', async () => {
       : [{ name: 'src', isDirectory: () => true, isFile: () => false }],
     readSource: async () => `${'x\n'.repeat(301)}`
   });
-  expect(violations[0]).toMatchObject({ kind: 'source', threshold: 300 });
+  expect(violations[0]).toMatchObject({ kind: 'source', threshold: 100 });
 });
 
 test('does not report pure barrels', async () => {
