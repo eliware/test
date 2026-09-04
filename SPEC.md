@@ -54,7 +54,7 @@ coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
 `10`, coverage gap `11`, lint startup `12`, lint failure `13`, internal failure
 `14`, and monolith limit failure `15`.
 
-## 5. Implementation and test file-size limits
+## 4. Implementation and test file-size limits
 
 The normal CLI run enforces focused-file decomposition limits:
 
@@ -75,7 +75,7 @@ failures; it only suppresses the size-limit failure. CI, release, and normal
 validation must not use this bypass, but developers may use it while
 decomposing existing violations.
 
-## 4. Arguments and focused tests
+## 5. Arguments and focused tests
 
 - Wrapper-owned options (`--coverage`, `--detectOpenHandles`, `--silent`,
   `--coverageReporters`, and `--runTestsByPath`) are rejected because the
@@ -95,7 +95,7 @@ decomposing existing violations.
   passes `--runTestsByPath`. Mixed path/name/config filters retain Jest
   semantics.
 
-## 5. Coverage enforcement
+## 6. Coverage enforcement
 
 Every in-scope implementation file must reach 100% statements, branches,
 functions, and lines independently. Coverage is a regression guard, not proof
@@ -146,7 +146,7 @@ lines, statement/branch locations, function names and locations, and an
 actionable testing hint. Pure barrel files may be identified as suggestions;
 executable files must not be hidden with Istanbul-ignore comments.
 
-## 6. Output and diagnostics
+## 7. Output and diagnostics
 
 Successful child output controlled by the wrapper is suppressed and replaced by
 a concise summary. npm lifecycle notices and non-failing workspace warnings
@@ -166,7 +166,7 @@ coverage-fallback diagnostics. Debug output is disabled by default. Bounded
 human-readable text plus the exit code is the stable diagnostics contract;
 structured diagnostics are not currently exposed.
 
-## 7. Workspace policy and process trust
+## 8. Workspace policy and process trust
 
 Discovery and linting exclude `.git`, `node_modules`, `coverage`, `.nyc_output`,
 `test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
@@ -187,7 +187,7 @@ package/runtime entrypoint contracts, preserving argument-array boundaries on
 Windows and Unix-like systems. CI, rather than an unavailable local shim, is
 the authoritative source of required Windows evidence.
 
-## 8. Concurrency and shared workspace artifacts
+## 9. Concurrency and shared workspace artifacts
 
 `@eliware/test` uses the consumer's current worktree as its validation
 workspace. Jest's standard coverage locations remain in that worktree so the
@@ -225,7 +225,7 @@ The toolkit intentionally keeps stage sequencing in one orchestration boundary;
 its injected seams are the supported isolation mechanism for individual stage
 tests, not a promise of separately published stage modules.
 
-## 9. Intentional limitations
+## 10. Intentional limitations
 
 These are supported, documented limitations rather than hidden quality gates:
 
@@ -249,7 +249,7 @@ These are supported, documented limitations rather than hidden quality gates:
   not emitted by consumer code; unrelated output that reproduces the Jest table
   shape is outside the threat model.
 
-## 10. Explicitly out of scope
+## 11. Explicitly out of scope
 
 This package does not promise or implement:
 
@@ -270,11 +270,18 @@ This package does not promise or implement:
 - preserving cross-stream temporal ordering in combined child diagnostics; and
 - exposing structured stage-result hooks for automation.
 
-## 11. Fixtures, artifacts, migration, and release
+## 12. Fixtures, artifacts, migration, and release
 
-Diagnostic fixtures may intentionally contain failing tests or uncovered
-branches, but they are excluded from the normal full suite and invoked only by
-explicit regression tests. Generated `coverage/`, `coverage.json`,
+The repository's `test-fixtures/` tree contains workspace fixtures used to
+exercise discovery and policy behavior; it is not production source and its
+contents are excluded from the source/test bijection. The `bin/` directory
+contains the supported CLI entrypoint and is likewise outside that bijection.
+
+There are no legacy compatibility barrels; new code must import canonical
+implementation modules directly rather than adding aliases. Diagnostic
+fixtures may intentionally contain failing tests or uncovered branches, but
+they are excluded from the normal full suite and invoked only by explicit
+regression tests. Generated `coverage/`, `coverage.json`,
 `.nyc_output/`, `test-results/`, build output, package archives, and debug logs
 should be ignored. Ignoring generated output must never conceal a coverage gap.
 

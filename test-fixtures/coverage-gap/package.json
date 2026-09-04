@@ -1,9 +1,0 @@
-{
-  "name": "coverage-gap-fixture",
-  "private": true,
-  "type": "module",
-  "jest": {
-    "collectCoverageFrom": ["src/**/*.mjs"],
-    "coverageReporters": ["text"]
-  }
-}

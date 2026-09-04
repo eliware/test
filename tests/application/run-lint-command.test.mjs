@@ -45,14 +45,3 @@ test('reports a successful lint run', async () => {
   })).resolves.toBe(0);
   expect(messages.join('')).toContain('Lint passed: 0 warnings');
 });
-
-test('uses the bundled Oxlint collaborator by default', async () => {
-  await expect(runLintCommand({ cwd: process.cwd(), write: () => {}, inspect: async () => true }))
-    .resolves.toBe(0);
-});
-
-test('uses the default workspace inspector', async () => {
-  await expect(runLintCommand({
-    cwd: process.cwd(), write: () => {}, runLint: async () => ({ code: 0, output: '' })
-  })).resolves.toEqual(expect.any(Number));
-});

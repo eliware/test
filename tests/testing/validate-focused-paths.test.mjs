@@ -23,6 +23,7 @@ test('validates its inputs and propagates unexpected access errors', async () =>
   })).rejects.toThrow('denied');
 });
 
-test('uses the default access check when there are no focused paths', async () => {
-  await expect(validateFocusedPaths(process.cwd(), [])).resolves.toBe('');
+test('returns no missing path without touching the filesystem', async () => {
+  await expect(validateFocusedPaths('C:/repo', [], async () => { throw new Error('unexpected'); })).resolves.toBe('');
+  await expect(validateFocusedPaths('C:/repo', [])).resolves.toBe('');
 });

@@ -3,10 +3,8 @@ import { uncoveredBranches } from './branches.mjs';
 import { uncoveredFunctions } from './functions.mjs';
 import { collectLineCoverage } from './lines.mjs';
 import { buildCoverageGap } from './build-gap.mjs';
-export { formatCoverageGaps } from './format-gaps.mjs';
-export { percentageWithUnknowns } from './percentages.mjs';
-export { parseCoverage } from './parse-text-coverage.mjs';
-export { metricHasGap } from './metric.mjs';
+
+/** Parse raw Istanbul JSON into coverage gaps. */
 export function parseCoverageJson(json) {
   if (!json || typeof json !== 'object' || Array.isArray(json)) return [];
   const gaps = [];
@@ -22,7 +20,6 @@ export function parseCoverageJson(json) {
       : Object.entries(data.b ?? {}).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
     const functions = uncoveredFunctions(data);
     const { lineCounts, unmappedLineCount, hasUnmappedStatement } = collectLineCoverage(data);
-    // An l-map is authoritative for lines; statement gaps remain independently enforced.
     const lineGap = !data.l && hasUnmappedStatement;
     const gap = buildCoverageGap(file, statements, branches, functions, data.s, data.b, data.f, lineCounts, unmappedLineCount, lineGap);
     if (gap) gaps.push(gap);

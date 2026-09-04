@@ -1,15 +1,8 @@
+import { prepareTestTimings } from './prepare-test-timings.mjs';
+
 /** Format Jest JSON reporter timings, slowest first. */
 export function formatTestTimings(report, limit = 10) {
-  const results = Array.isArray(report?.testResults) ? report.testResults : [];
-  const rows = results.map((result) => {
-    const start = result?.perfStats?.start ?? result?.startTime;
-    const end = result?.perfStats?.end ?? result?.endTime;
-    const duration = Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) : 0;
-    // A row reaches this point only after its numeric duration was computed,
-    // so `result` is necessarily an object; avoid an unreachable optional-chain branch.
-    const filePath = result.testFilePath ?? result.name;
-    return { duration, file: typeof filePath === 'string' ? filePath.replaceAll('\\', '/') : 'unknown', tests: result?.assertionResults ?? [] };
-  }).filter((row) => row.duration > 0).sort((a, b) => b.duration - a.duration).slice(0, limit);
+  const rows = prepareTestTimings(report, limit);
   if (!rows.length) return '';
   const output = ['Test file timings:'];
   for (const { duration, file, tests } of rows) {

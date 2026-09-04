@@ -65,8 +65,7 @@
         "oxlint": "^1.81.0"
     },
     "devDependencies": {
-        "@types/jest": "latest",
-        "typescript": "latest"
+        "@types/jest": "latest"
     },
     "engines": {
         "node": ">=26"

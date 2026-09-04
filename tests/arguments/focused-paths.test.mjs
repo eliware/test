@@ -1,7 +1,6 @@
-import { extractFocusedPaths, isFocusedTestPath, VALUE_OPTIONS } from '../../src/arguments/focused-paths.mjs';
+import { extractFocusedPaths, VALUE_OPTIONS } from '../../src/arguments/focused-paths.mjs';
 
-test('classifies test paths and extracts positional arguments', () => {
-  expect(isFocusedTestPath('tests/a.test.mjs')).toBe(true);
+test('extracts positional test paths', () => {
   expect(extractFocusedPaths(['--config', 'x', 'tests/a.test.mjs'])).toEqual(['tests/a.test.mjs']);
 });
 
@@ -14,12 +13,4 @@ test('rejects malformed argument lists and missing option values', () => {
   expect(() => extractFocusedPaths(null)).toThrow(TypeError);
   expect(() => extractFocusedPaths(['--config'])).toThrow('--config requires a value.');
   expect(extractFocusedPaths(['--watch'])).toEqual([]);
-});
-
-test('rejects non-concrete test path candidates', () => {
-  expect(isFocusedTestPath(null)).toBe(false);
-  expect(isFocusedTestPath('-tests/a.test.mjs')).toBe(false);
-  expect(isFocusedTestPath('tests/*.test.mjs')).toBe(false);
-  expect(isFocusedTestPath('tests/a.txt')).toBe(false);
-  expect(isFocusedTestPath('src/a.test.mjs')).toBe(false);
 });

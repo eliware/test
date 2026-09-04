@@ -1,13 +1,12 @@
 export const WRAPPER_OPTIONS = Object.freeze(['--lint', '--ignore-100x4', '--ignore-monolith-limits', '--runInBand', '--no-runInBand', '--debug-timing']);
-import { MANAGED_OPTIONS } from './managed-options.mjs';
+import { isManagedOption } from './managed-options.mjs';
 
-export { MANAGED_OPTIONS };
 
 /** Identify arguments consumed by the wrapper itself. */
 export function isWrapperOption(argument) { return WRAPPER_OPTIONS.includes(argument); }
 
 /** Identify Jest arguments controlled by the wrapper. */
-export function isManagedOption(argument) { return MANAGED_OPTIONS.some((name) => argument === name || argument.startsWith(`${name}=`)); }
+export { isManagedOption };
 
 /** Classify an argument before forwarding the remaining arguments to Jest. */
 export function classifyArgument(argument) {

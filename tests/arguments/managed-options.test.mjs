@@ -1,9 +1,4 @@
-import { MANAGED_OPTIONS, isManagedOption } from '../../src/arguments/managed-options.mjs';
-
-test('defines the wrapper-managed Jest options', () => {
-  expect(MANAGED_OPTIONS).toContain('--coverage');
-  expect(MANAGED_OPTIONS).toContain('--runTestsByPath');
-});
+import { isManagedOption } from '../../src/arguments/managed-options.mjs';
 
 test.each(['--coverage', '--coverage=false', '--silent=true'])('recognizes %s', (argument) => {
   expect(isManagedOption(argument)).toBe(true);

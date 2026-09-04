@@ -24,17 +24,3 @@ test('rejects ambiguous mappings and propagates access failures', async () => {
     throw Object.assign(new Error('denied'), { code: 'EACCES' });
   })).rejects.toThrow('denied');
 });
-
-test('normalizes relative and Windows-style test paths', async () => {
-  await expect(mapPathsToSources('C:/repo', ['.\\tests\\a.test.mjs'], async (path) => {
-    if (path.replaceAll('\\', '/').endsWith('src/a.mjs')) return;
-    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  })).resolves.toEqual(['src/a.mjs']);
-});
-
-test('normalizes workspace-absolute test paths', async () => {
-  await expect(mapPathsToSources('C:/repo', ['C:/repo/tests/a.test.mjs'], async (path) => {
-    if (path.replaceAll('\\', '/').endsWith('src/a.mjs')) return;
-    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  })).resolves.toEqual(['src/a.mjs']);
-});

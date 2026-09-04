@@ -1,64 +1,29 @@
-import { access, readFile, rm } from 'node:fs/promises';
-import { EXIT_CODES } from '../exit-codes/codes.mjs';
-import { MANAGED_OPTIONS } from '../arguments/classify-arguments.mjs';
-import { normalizeArguments } from '../arguments/normalize-arguments.mjs';
-import { runJest } from '../testing/run-jest.mjs';
-import { runLintCommand as defaultRunLintCommand } from '../application/run-lint-command.mjs';
-import { assertToolkitOptions } from './contracts.mjs';
-import { formatFailure } from '../diagnostics/format-failure.mjs';
-import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
-import { detectViolations } from '../monolith/detect-violations.mjs';
+import { validateToolkitOptions } from './validate-toolkit-options.mjs';
 import { createTiming } from '../diagnostics/timing.mjs';
-import { cleanupCoverage } from './stages/cleanup.mjs';
-import { executeTests } from './stages/tests.mjs';
-import { validateCoverage } from './stages/coverage.mjs';
-import { validateLint } from './stages/lint.mjs';
-import { validateMonolith } from './stages/monolith.mjs';
-import { prepareTests } from './stages/prepare-tests.mjs';
-
-const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
+import { reportToolkitSuccess } from './report-toolkit-success.mjs';
+import { resolveToolkitOptions } from './resolve-toolkit-options.mjs';
+import { runPostTestValidation } from '../application/run-post-test-validation.mjs';
+import { runToolkitPreflight } from './run-toolkit-preflight.mjs';
+import { runToolkitExecution } from './run-toolkit-execution.mjs';
 
 /**
  * Public toolkit API. The application pipeline owns execution; this boundary
  * validates the minimum caller contract and preserves the numeric exit code.
  */
 export async function runToolkit(options) {
-  assertToolkitOptions(options);
-  const { cwd, runnerArguments, write, runTest = runJest, runLintCommand = defaultRunLintCommand,
-    runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
-    enforceMonolithLimits = false, accessPath = access,
-    removePath = rm, readFilePath = readFile,
-    findIstanbulIgnores, findMonolith = detectViolations,
-    inspectWorkspace: inspect = (options.runTest && !findIstanbulIgnores ? async () => true : inspectWorkspace) } = options;
+  validateToolkitOptions(options);
+  const { cwd, runnerArguments, write, runTest, runLintCommand,
+    runInBand, ignoreCoverage, ignoreMonolithLimits, enforceMonolithLimits,
+    accessPath, removePath, readFilePath, findIstanbulIgnores,
+    findMonolith, findSourceTestMapping, inspectWorkspace: inspect } = resolveToolkitOptions(options);
   const timing = createTiming(options.debugTiming, write);
   const disableInBand = runnerArguments.includes('--no-runInBand');
-  if (!await inspect(cwd, write, accessPath, findIstanbulIgnores)) return EXIT_CODES.ISTANBUL_POLICY;
-  timing.step('Workspace inspection', 'tests');
-  const args = normalizeArguments(runnerArguments);
-  const protectedArgument = args.find((argument) => MANAGED_OPTIONS.some((name) => argument === name || argument.startsWith(`${name}=`)));
-  if (protectedArgument) { write(`Unsupported Jest option: ${protectedArgument} is managed by eliware-test; remove it and use a supported filter.\n`); return EXIT_CODES.INVALID_ARGUMENT; }
-  const preparation = await prepareTests({ cwd, args, accessPath, removePath, debugTiming: options.debugTiming });
-  if (preparation.missing) { write(`Focused test path not found: ${preparation.missing}\nUse a path relative to the consuming repository.\n`); return EXIT_CODES.FOCUSED_PATH_MISSING; }
-  if (preparation.cleanupError) { write(`Coverage cleanup failed: ${preparation.cleanupError.message}\n`); return EXIT_CODES.COVERAGE_CLEANUP; }
-  if (!await cleanupCoverage(cwd, removePath, COVERAGE_CANDIDATES, write)) return EXIT_CODES.COVERAGE_CLEANUP;
-  const { focusedPathMode, focusedCoverage, timingOutput } = preparation;
-  const test = await executeTests({ cwd, args, runInBand: runInBand && !disableInBand, focusedCoverage, focusedPathMode, timingOutput, runTest, readFilePath, removePath, write });
-  if (test.code === EXIT_CODES.TEST_START || test.code === EXIT_CODES.COVERAGE_CLEANUP) return test.code;
-  const testResult = test;
-  if (testResult.code !== 0) { write(formatFailure('Tests', testResult)); return EXIT_CODES.TEST_FAILURE; }
-  timing.step('Tests', 'coverage');
-  if (!ignoreCoverage) {
-    const coverageResult = await validateCoverage(cwd, testResult.output, write, readFilePath);
-    if (coverageResult) return coverageResult;
-  }
-  timing.step('Coverage', 'lint');
-  const lint = await validateLint(runLintCommand, cwd, write);
-  if (lint) return lint;
-  timing.step('Lint', 'monolith validation');
-  if (enforceMonolithLimits) {
-    const monolithResult = await validateMonolith({ cwd, findMonolith, write, ignoreMonolithLimits });
-    if (monolithResult) return monolithResult;
-  }
-  write(ignoreCoverage ? 'Tests passed | Coverage: ignored | Lint: 0 warnings\n' : 'Tests passed | Coverage: 100×4 | Lint: 0 warnings\n');
-  return 0;
+  const preflight = await runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, findIstanbulIgnores, inspect, debugTiming: options.debugTiming, findSourceTestMapping, timing });
+  if (preflight.exitCode !== undefined) return preflight.exitCode;
+  const { testResult, outcome: testOutcome } = await runToolkitExecution({ cwd, args: preflight.args, runInBand, disableInBand, preparation: preflight.preparation, runTest, readFilePath, removePath, write });
+  if (testOutcome !== null) return testOutcome;
+  const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, ignoreCoverage, runLintCommand, enforceMonolithLimits, findMonolith, ignoreMonolithLimits, timing });
+  if (validationOutcome !== null) return validationOutcome;
+  reportToolkitSuccess(write, ignoreCoverage);
+  return preflight.architecture || 0;
 }

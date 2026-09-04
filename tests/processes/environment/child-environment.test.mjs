@@ -9,7 +9,3 @@ test('passes explicit environment values and overrides through', () => {
   expect(childEnvironment({ environment: { BASE: 'ok' }, env: { EXTRA: 'value' }, overrides: { SAFE: 'yes' } }))
     .toEqual({ BASE: 'ok', EXTRA: 'value', SAFE: 'yes' });
 });
-
-test('uses safe defaults when called without options', () => {
-  expect(Object.keys(childEnvironment()).length).toBeGreaterThan(0);
-});

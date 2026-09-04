@@ -1,7 +1,4 @@
-import { readdir } from 'node:fs/promises';
-import { resolve } from 'node:path';
-
-const IGNORED_DIRECTORIES = new Set(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build']);
+import { walkFiles } from './walk-files.mjs';
 
 /** Discover workspace files while excluding generated/dependency directories. */
 export async function discoverFiles(cwd, { predicate = () => true, readDirectory } = {}) {
@@ -13,15 +10,8 @@ export async function discoverFiles(cwd, { predicate = () => true, readDirectory
   }
 
   const files = [];
-  const read = readDirectory ?? readdir;
-  async function visit(directory) {
-    for (const entry of await read(directory, { withFileTypes: true })) {
-      const path = resolve(directory, entry.name);
-      if (entry.isDirectory()) {
-        if (!IGNORED_DIRECTORIES.has(entry.name)) await visit(path);
-      } else if (entry.isFile() && predicate(path, entry)) files.push(path);
-    }
-  }
-  await visit(resolve(cwd));
+  await walkFiles(cwd, async (path, entry) => {
+    if (predicate(path, entry)) files.push(path);
+  }, { readDirectory });
   return files;
 }

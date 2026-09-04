@@ -1,0 +1,5 @@
+import { formatMappingDrifts } from '../../src/architecture/format-mapping-drifts.mjs';
+
+test('itemizes missing and orphan module pairs', () => {
+  expect(formatMappingDrifts({ missingTests: ['a'], orphanTests: ['b'] })).toBe('Source/test mapping drift detected:\n  Missing test pair: src/a.mjs (expected tests/a.test.mjs)\n  Test without source pair: tests/b.test.mjs\n');
+});

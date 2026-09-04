@@ -22,4 +22,3 @@ export function extractFocusedPaths(argumentsList) {
   return values.filter(isFocusedTestPath);
 }
 import { isFocusedTestPath } from './focused-path-matcher.mjs';
-export { isFocusedTestPath } from './focused-path-matcher.mjs';

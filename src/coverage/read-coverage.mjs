@@ -4,6 +4,7 @@ import { parseJsonReport } from './parse-json-report.mjs';
 import { parseTextReport } from './parse-text-report.mjs';
 import { selectUsableReport } from './select-usable-report.mjs';
 import { hasTextCoverageEvidence } from './text-evidence.mjs';
+import { isUsableCoverageReport } from './is-usable-coverage-report.mjs';
 
 export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
@@ -13,7 +14,7 @@ export async function readCoverage(cwd, testOutput, _write, readFilePath = readF
   for (const name of COVERAGE_CANDIDATES) {
     try {
       const json = JSON.parse(await readFilePath(resolve(cwd, name), 'utf8'));
-      if (selectUsableReport([{ usable: hasUsableCoverage(json), report: json }])) return parseJsonReport(json);
+      if (selectUsableReport([{ usable: isUsableCoverageReport(json), report: json }])) return parseJsonReport(json);
     } catch (error) {
       if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
     }
@@ -29,6 +30,5 @@ export async function readCoverage(cwd, testOutput, _write, readFilePath = readF
 }
 
 export function hasUsableCoverage(json) {
-  const entries = json && typeof json === 'object' && !Array.isArray(json) ? Object.values(json) : [];
-  return entries.length > 0 && entries.every((data) => data && typeof data === 'object' && data.statementMap && Object.keys(data.statementMap).length > 0 && data.s && typeof data.s === 'object' && data.b && typeof data.b === 'object' && data.f && typeof data.f === 'object');
+  return isUsableCoverageReport(json);
 }

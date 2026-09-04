@@ -12,6 +12,9 @@ test('validates options and delegated exit codes', async () => {
   await expect(runLint({ cwd: 'C:/repo', runLintCommand: async () => 0 })).rejects.toThrow('write function');
 });
 
-test('uses the bundled lint command by default', async () => {
-  await expect(runLint({ cwd: process.cwd(), write: () => {} })).resolves.toBe(0);
+test('uses an injected default command without launching the real linter', async () => {
+  await expect(runLint(
+    { cwd: 'C:/repo', write: () => {} },
+    { defaultRunLintCommand: async () => 0 },
+  )).resolves.toBe(0);
 });

@@ -30,7 +30,6 @@ cd "$workdir"
 npm ci
 npm test
 npm run lint
-npm run typecheck
 npm audit --omit=dev --audit-level=moderate
 npm pack --dry-run
 

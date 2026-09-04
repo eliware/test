@@ -4,8 +4,8 @@
 
 - Tightened focused-test handling so only conventional test and spec paths use
   strict `--runTestsByPath` selection; source-like paths retain Jest semantics.
-- Added an opt-in sanitized child-process environment through the internal
-  process helper while preserving the trusted inherited-environment default.
+- Preserved the full inherited environment when launching Jest and Oxlint,
+  matching direct npm/Jest behavior across consumer workspaces.
 - Made near-complete annotated coverage values fail closed, completed parser
   declarations, and added regression coverage for rounding and delegated Jest
   option values.
