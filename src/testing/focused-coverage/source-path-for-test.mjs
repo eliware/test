@@ -1,7 +1,7 @@
 import { access } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, win32 } from 'node:path';
 
-const WINDOWS_ABSOLUTE = /^[A-Za-z]:[\\/]/;
+const WINDOWS_ABSOLUTE = /^(?:[A-Za-z]:[\\/]|[/\\]{2})/;
 
 function relativeTestPath(cwd, testPath) {
   const windowsPath = WINDOWS_ABSOLUTE.test(cwd) || WINDOWS_ABSOLUTE.test(testPath);
