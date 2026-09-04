@@ -37,6 +37,18 @@ test('honors the explicit coverage opt-out', async () => {
     .resolves.toBe(0);
   expect(messages.join('')).toContain('Coverage: ignored');
 });
+
+test('allows malformed coverage when coverage enforcement is explicitly ignored', async () => {
+  await expect(runToolkit({
+    cwd: process.cwd(),
+    runnerArguments: [],
+    ignoreCoverage: true,
+    write: () => {},
+    readFilePath: async () => '{ malformed coverage }',
+    runTest: async () => ({ code: 0, output: '' }),
+    runLintCommand: async () => 0
+  })).resolves.toBe(0);
+});
 test('rejects a missing focused test path before invoking Jest', async () => {
   let invoked = false;
   const messages = [];

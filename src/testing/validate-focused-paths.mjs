@@ -1,5 +1,5 @@
 import { access, realpath, stat } from 'node:fs/promises';
-import { resolve, win32 } from 'node:path';
+import { posix, resolve, win32 } from 'node:path';
 import { extractFocusedPaths } from '../arguments/focused-paths.mjs';
 
 const WINDOWS_ABSOLUTE = /^(?:[A-Za-z]:[\\/]|[/\\]{2})/;
@@ -11,7 +11,8 @@ function resolveCandidate(cwd, candidate) {
 }
 
 function isInsideWorkspace(cwd, path) {
-  const relativePath = win32.relative(win32.resolve(cwd), win32.resolve(path));
+  const pathApi = WINDOWS_ABSOLUTE.test(cwd) || WINDOWS_ABSOLUTE.test(path) ? win32 : posix;
+  const relativePath = pathApi.relative(pathApi.resolve(cwd), pathApi.resolve(path));
   return relativePath !== '..' && !relativePath.startsWith('../') && !relativePath.startsWith('..\\') && !relativePath.startsWith('/');
 }
 
@@ -25,11 +26,11 @@ export async function validateFocusedPaths(cwd, argumentsList, accessPath, statP
       const path = resolveCandidate(cwd, candidate.replaceAll('\\', '/'));
       if (!isInsideWorkspace(cwd, path)) return candidate;
       const physicalWorkspace = await realpathPath(cwd).catch((error) => {
-        if (error.code === 'ENOENT' || (WINDOWS_ABSOLUTE.test(cwd) && error.code === 'UNKNOWN')) return resolve(cwd);
+        if (error.code === 'ENOENT' || (WINDOWS_ABSOLUTE.test(cwd) && ['UNKNOWN', 'ECONNRESET'].includes(error.code))) return resolve(cwd);
         throw error;
       });
       const physicalPath = await realpathPath(path).catch((error) => {
-        if (error.code === 'ENOENT' || (WINDOWS_ABSOLUTE.test(cwd) && error.code === 'UNKNOWN')) return path;
+        if (error.code === 'ENOENT' || (WINDOWS_ABSOLUTE.test(cwd) && ['UNKNOWN', 'ECONNRESET'].includes(error.code))) return path;
         throw error;
       });
       if (!isInsideWorkspace(physicalWorkspace, physicalPath)) return candidate;

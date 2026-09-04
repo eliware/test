@@ -24,16 +24,13 @@ test('normalizes process errors', async () => {
   await expect(resultPromise).resolves.toMatchObject({ code: 1, output: 'missing executable\n' });
 });
 
-test('preserves stream data delivered after an error and normalizes close codes', async () => {
+test('settles immediately on process errors', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
   child.stderr = new EventEmitter();
   const resultPromise = monitorChildProcess(child, createOutputCapture());
   child.emit('error', new Error('missing executable'));
-  child.stdout.emit('data', Buffer.from('late'));
-  child.stderr.emit('data', Buffer.from('late error'));
-  child.emit('close', null);
-  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'latelate errormissing executable\n' });
+  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'missing executable\n' });
 });
 
 test('normalizes an invalid close code without a process error', async () => {
