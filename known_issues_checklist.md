@@ -30,12 +30,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Second follow-up CodeScope findings
 
-- [ ] **P1 — Stale valid coverage artifacts can be accepted**
-  - Location: `src/coverage/read-coverage.mjs:15-31`
-  - A structurally valid report from an older run may be accepted if cleanup or
-    report replacement is incomplete.
-  - Define freshness/ownership semantics and test stale-candidate behavior.
-
 ## Third follow-up CodeScope findings
 
 ## Release validation additions

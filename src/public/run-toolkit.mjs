@@ -24,15 +24,16 @@ export async function runToolkit(options) {
 async function runToolkitInternal(options) {
   const { cwd, runnerArguments, write, runTest, runLintCommand,
     runInBand, ignoreCoverage, ignoreMonolithLimits, enforceMonolithLimits,
-    accessPath, removePath, readFilePath, findIstanbulIgnores,
+    accessPath, removePath, readFilePath, statPath, findIstanbulIgnores,
     findMonolith, findSourceTestMapping, inspectWorkspace: inspect } = resolveToolkitOptions(options);
   const timing = createTiming(options.debugTiming, write);
+  const startedAt = Date.now();
   const disableInBand = runnerArguments.includes('--no-runInBand');
   const preflight = await runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, findIstanbulIgnores, inspect, debugTiming: options.debugTiming, findSourceTestMapping, timing });
   if (preflight.exitCode !== undefined) return preflight.exitCode;
   const { testResult, outcome: testOutcome } = await runToolkitExecution({ cwd, args: preflight.args, runInBand, disableInBand, preparation: preflight.preparation, runTest, readFilePath, removePath, write });
   if (testOutcome !== null) return testOutcome;
-  const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, ignoreCoverage, runLintCommand, enforceMonolithLimits, findMonolith, ignoreMonolithLimits, timing });
+  const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, enforceMonolithLimits, findMonolith, ignoreMonolithLimits, timing });
   if (validationOutcome !== null) return validationOutcome;
   if (preflight.architecture) return preflight.architecture;
   reportToolkitSuccess(write, ignoreCoverage);

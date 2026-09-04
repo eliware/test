@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseJsonReport } from './parse-json-report.mjs';
 import { parseTextReport } from './parse-text-report.mjs';
@@ -9,13 +9,19 @@ import { debugOutput } from '../diagnostics/debug-output.mjs';
 
 export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
-export async function readCoverage(cwd, testOutput, write, readFilePath = readFile) {
+export async function readCoverage(cwd, testOutput, write, readFilePath = readFile, statPath = stat, startedAt = 0) {
   if (typeof cwd !== 'string') throw new TypeError('readCoverage requires cwd');
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
   for (const name of COVERAGE_CANDIDATES) {
     try {
-      const json = JSON.parse(await readFilePath(resolve(cwd, name), 'utf8'));
-      if (selectUsableReport([{ usable: isUsableCoverageReport(json), report: json }])) return parseJsonReport(json);
+      const reportPath = resolve(cwd, name);
+      const json = JSON.parse(await readFilePath(reportPath, 'utf8'));
+      let fresh = true;
+      if (startedAt) {
+        try { fresh = (await statPath(reportPath)).mtimeMs >= startedAt; }
+        catch (error) { if (error.code !== 'ENOENT') throw error; }
+      }
+      if (fresh && selectUsableReport([{ usable: isUsableCoverageReport(json), report: json }])) return parseJsonReport(json);
     } catch (error) {
       if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
     }

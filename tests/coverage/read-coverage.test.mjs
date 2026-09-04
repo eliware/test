@@ -18,6 +18,32 @@ test('reads the first usable JSON report', async () => {
   expect(result).toEqual([]);
 });
 
+test('rejects valid reports older than the current run', async () => {
+  const report = JSON.stringify({ 'src/old.mjs': complete });
+  const stale = Date.now() - 1;
+  await expect(readCoverage('C:/repo', text, () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async () => ({ mtimeMs: stale }), Date.now()))
+    .resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+});
+
+test('accepts a valid report written during the current run', async () => {
+  const report = JSON.stringify({ 'src/current.mjs': complete });
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async () => ({ mtimeMs: Date.now() }), Date.now() - 1))
+    .resolves.toEqual([]);
+});
+
+test('accepts injected reports when freshness metadata is unavailable', async () => {
+  const report = JSON.stringify({ 'src/current.mjs': complete });
+  const missing = Object.assign(new Error('metadata unavailable'), { code: 'ENOENT' });
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async () => { throw missing; }, Date.now() - 1))
+    .resolves.toEqual([]);
+});
+
+test('preserves real freshness metadata failures', async () => {
+  const failure = Object.assign(new Error('stat denied'), { code: 'EACCES' });
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json') ? JSON.stringify({ 'src/current.mjs': complete }) : '', async () => { throw failure; }, Date.now() - 1))
+    .rejects.toBe(failure);
+});
+
 test('falls back through missing and malformed reports to text coverage', async () => {
   const result = await readCoverage('C:/repo', text, () => {}, async (path) => {
     if (path.endsWith('coverage-final.json')) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
