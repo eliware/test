@@ -2,6 +2,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import { relative, resolve, extname } from 'node:path';
 import { DEFAULT_THRESHOLDS } from './thresholds.mjs';
 
+const IGNORED_DIRECTORIES = new Set(['node_modules', '.git', 'coverage', 'dist', 'build']);
+
 /** Discover source/test files and return those exceeding their configured limits. */
 export async function detectViolations(cwd, options = {}) {
   if (typeof cwd !== 'string' || cwd.length === 0) {
@@ -20,7 +22,7 @@ export async function detectViolations(cwd, options = {}) {
 async function visit(root, directory, files, readDirectory, readSource) {
   for (const entry of await readDirectory(directory, { withFileTypes: true })) {
     if (entry.isDirectory()) {
-      if (!new Set(['node_modules', '.git', 'coverage', 'dist', 'build']).has(entry.name)) await visit(root, resolve(directory, entry.name), files, readDirectory, readSource);
+      if (!IGNORED_DIRECTORIES.has(entry.name)) await visit(root, resolve(directory, entry.name), files, readDirectory, readSource);
       continue;
     }
     if (!entry.isFile()) continue;
