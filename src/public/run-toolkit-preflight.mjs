@@ -9,7 +9,6 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 
 export async function runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, findIstanbulIgnores, inspect, debugTiming, findSourceTestMapping, timing }) {
   const architecture = await validateArchitecture(cwd, write, findSourceTestMapping);
-  if (architecture) return { exitCode: architecture };
   if (!await inspect(cwd, write, accessPath, findIstanbulIgnores)) return { exitCode: EXIT_CODES.ISTANBUL_POLICY };
   timing.step('Workspace inspection', 'tests');
   const { args, protectedArgument } = validateRunnerArguments(runnerArguments);

@@ -16,11 +16,11 @@ test('returns public outcomes for policy, argument, preparation, and cleanup fai
   await expect(runToolkitPreflight(context({ removePath: async () => { throw new Error('locked'); } }))).resolves.toMatchObject({ exitCode: 7 });
 });
 
-test('stops before workspace inspection when mapping drifts', async () => {
+test('reports mapping drift but continues workspace inspection', async () => {
   let inspected = false;
   await expect(runToolkitPreflight(context({
     inspect: async () => { inspected = true; return true; },
     findSourceTestMapping: async () => ({ missingTests: ['missing'], orphanTests: [] }),
-  }))).resolves.toMatchObject({ exitCode: 16 });
-  expect(inspected).toBe(false);
+  }))).resolves.toMatchObject({ architecture: 16, args: [], preparation: expect.any(Object) });
+  expect(inspected).toBe(true);
 });

@@ -27,7 +27,7 @@ test('fails before tests when Istanbul policy is violated', async () => {
   expect(messages.join('')).toContain('src/module.mjs:4');
 });
 
-test('fails before Jest when source/test mapping drifts', async () => {
+test('reports mapping drift after developer tests run', async () => {
   let invoked = false;
   const messages = [];
   await expect(runToolkit({
@@ -35,7 +35,7 @@ test('fails before Jest when source/test mapping drifts', async () => {
     findSourceTestMapping: async () => ({ missingTests: ['new-module'], orphanTests: ['old-module'] }),
     runTest: async () => { invoked = true; return { code: 0, output: '' }; }, runLintCommand: async () => 0,
   })).resolves.toBe(16);
-  expect(invoked).toBe(false);
+  expect(invoked).toBe(true);
   expect(messages.join('')).toContain('Missing test pair');
   expect(messages.join('')).toContain('Test without source pair');
 });
