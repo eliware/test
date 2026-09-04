@@ -1,10 +1,11 @@
 import { detectViolations } from '../../src/monolith/detect-violations.mjs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 test('returns oversized source files', async () => {
-  const violations = await detectViolations('C:/repo', {
+  const root = resolve('repo');
+  const violations = await detectViolations(root, {
     readDirectory: async (directory) => directory.endsWith('src')
       ? [{ name: 'large.mjs', isDirectory: () => false, isFile: () => true }]
       : [{ name: 'src', isDirectory: () => true, isFile: () => false }],
@@ -14,26 +15,27 @@ test('returns oversized source files', async () => {
 });
 
 test('handles empty directories and non-file entries', async () => {
-  await expect(detectViolations('C:/repo', {
+  await expect(detectViolations(resolve('repo'), {
     readDirectory: async () => [{ name: 'link', isDirectory: () => false, isFile: () => false }]
   })).resolves.toEqual([]);
 });
 
 test('validates cwd and options', async () => {
   await expect(detectViolations('')).rejects.toThrow(TypeError);
-  await expect(detectViolations('C:/repo', null)).rejects.toThrow(TypeError);
+  await expect(detectViolations(resolve('repo'), null)).rejects.toThrow(TypeError);
 });
 
 test('ignores supported files outside src and propagates configuration errors', async () => {
-  await expect(detectViolations('C:/repo', {
+  const root = resolve('repo');
+  await expect(detectViolations(root, {
     readFilePath: async () => { throw new Error('invalid package'); },
-    readDirectory: async (directory) => directory === 'C:\\repo'
+    readDirectory: async (directory) => directory === root
       ? [{ name: 'module.mjs', isDirectory: () => false, isFile: () => true }]
       : [],
     readSource: async () => 'export const value = 1;'
   })).rejects.toThrow('invalid package');
   let visitedRoot = false;
-  await expect(detectViolations('C:/repo', {
+  await expect(detectViolations(root, {
     readFilePath: async () => '{}',
     readDirectory: async () => {
       if (visitedRoot) return [];

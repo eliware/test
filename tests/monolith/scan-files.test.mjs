@@ -1,14 +1,16 @@
 import { scanMonolithFiles, DEFAULT_MEASUREMENT_WORKERS, MONOLITH_SCAN_LIMITS } from '../../src/monolith/scan-files.mjs';
+import { resolve } from 'node:path';
 
 test('scans eligible files, measures lines, and skips ignored trees', async () => {
+  const root = resolve('repo');
   const entries = {
-    'C:/repo': [{ name: 'src', isDirectory: () => true }, { name: 'coverage', isDirectory: () => true }],
-    'C:/repo/src': [
+    [root]: [{ name: 'src', isDirectory: () => true }, { name: 'coverage', isDirectory: () => true }],
+    [resolve(root, 'src')]: [
       { name: 'module.mjs', isDirectory: () => false, isFile: () => true },
       { name: 'other.mjs', isDirectory: () => false, isFile: () => true },
     ]
   };
-  await expect(scanMonolithFiles('C:/repo', async (path) => entries[path.replaceAll('\\', '/')] ?? [], async () => 'a\nb\n'))
+  await expect(scanMonolithFiles(root, async (path) => entries[path] ?? [], async () => 'a\nb\n'))
     .resolves.toMatchObject([
       { file: 'src/module.mjs', kind: 'source', lines: 2, generated: false, pureBarrel: false },
       { file: 'src/other.mjs', kind: 'source', lines: 2, generated: false, pureBarrel: false },
@@ -16,22 +18,23 @@ test('scans eligible files, measures lines, and skips ignored trees', async () =
 });
 
 test('does not queue files outside source and test trees for measurement', async () => {
+  const root = resolve('repo');
   const reads = [];
   const entries = {
-    'C:/repo': [
+    [root]: [
       { name: 'socket', isDirectory: () => false, isFile: () => false },
       { name: 'README.md', isDirectory: () => false, isFile: () => true },
       { name: 'src', isDirectory: () => true },
     ],
-    'C:/repo/src': [{ name: 'module.mjs', isDirectory: () => false, isFile: () => true }],
+    [resolve(root, 'src')]: [{ name: 'module.mjs', isDirectory: () => false, isFile: () => true }],
   };
-  await scanMonolithFiles('C:/repo', async (path) => entries[path.replaceAll('\\', '/')] ?? [], async (path) => { reads.push(path); return 'x'; });
+  await scanMonolithFiles(root, async (path) => entries[path] ?? [], async (path) => { reads.push(path); return 'x'; });
   expect(reads).toHaveLength(1);
   expect(reads[0]).toMatch(/src[\\/]module\.mjs$/);
 });
 
 test('skips symlinks and bounds depth', async () => {
-  const root = '/repo';
+  const root = resolve('repo');
   let depth = 0;
   const readDirectory = async () => {
     depth += 1;
@@ -42,7 +45,7 @@ test('skips symlinks and bounds depth', async () => {
 });
 
 test('ignores repeated directories', async () => {
-  const root = '/repo';
+  const root = resolve('repo');
   const readDirectory = async (directory) => directory === root
     ? [{ name: 'loop', isDirectory: () => true, isSymbolicLink: () => false }]
     : [{ name: '..', isDirectory: () => true, isSymbolicLink: () => false }];
@@ -51,5 +54,5 @@ test('ignores repeated directories', async () => {
 
 test('uses the default worker count and validates overrides', async () => {
   expect(DEFAULT_MEASUREMENT_WORKERS).toBe(6);
-  await expect(scanMonolithFiles('/repo', async () => [], async () => '', 0)).rejects.toThrow('positive integer');
+  await expect(scanMonolithFiles(resolve('repo'), async () => [], async () => '', 0)).rejects.toThrow('positive integer');
 });

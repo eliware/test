@@ -1,19 +1,21 @@
 import { discoverPolicySources } from '../../../src/workspace/policy/discover-policy-sources.mjs';
 import { POLICY_DISCOVERY_LIMITS } from '../../../src/workspace/policy/discover-policy-sources.mjs';
+import { resolve } from 'node:path';
 
 test('discovers supported files while skipping generated directories', async () => {
+  const root = resolve('repo');
   const entries = {
-    'C:/repo': [{ name: 'src', isDirectory: () => true }, { name: 'coverage', isDirectory: () => true }, { name: 'notes.txt', isDirectory: () => false, isFile: () => false }],
-    'C:/repo/src': [{ name: 'module.mjs', isDirectory: () => false, isFile: () => true }, { name: 'generated.mjs', isDirectory: () => false, isFile: () => true }, { name: 'data.json', isDirectory: () => false, isFile: () => true }]
+    [root]: [{ name: 'src', isDirectory: () => true }, { name: 'coverage', isDirectory: () => true }, { name: 'notes.txt', isDirectory: () => false, isFile: () => false }],
+    [resolve(root, 'src')]: [{ name: 'module.mjs', isDirectory: () => false, isFile: () => true }, { name: 'generated.mjs', isDirectory: () => false, isFile: () => true }, { name: 'data.json', isDirectory: () => false, isFile: () => true }]
   };
-  await expect(discoverPolicySources('C:/repo', async (path) => entries[path.replaceAll('\\', '/')] ?? [])).resolves.toEqual([
-    { root: 'C:\\repo', path: 'C:\\repo\\src\\generated.mjs' }
-    ,{ root: 'C:\\repo', path: 'C:\\repo\\src\\module.mjs' }
+  await expect(discoverPolicySources(root, async (path) => entries[path] ?? [])).resolves.toEqual([
+    { root, path: resolve(root, 'src/generated.mjs') },
+    { root, path: resolve(root, 'src/module.mjs') }
   ]);
 });
 
 test('skips symlinks and bounds recursive discovery', async () => {
-  const root = 'C:/repo';
+  const root = resolve('repo');
   const readDirectory = async (path) => {
     if (path.endsWith('repo')) return [{ name: 'link', isDirectory: () => true, isSymbolicLink: () => true }];
     return [{ name: 'next', isDirectory: () => true, isSymbolicLink: () => false }];
@@ -23,7 +25,7 @@ test('skips symlinks and bounds recursive discovery', async () => {
 });
 
 test('ignores repeated directories and bounds file discovery', async () => {
-  const root = 'C:/repo';
+  const root = resolve('repo');
   await expect(discoverPolicySources(root, async (path) => {
     if (path.endsWith('repo')) return [{ name: 'loop', isDirectory: () => true }];
     return [{ name: '..', isDirectory: () => true }];
