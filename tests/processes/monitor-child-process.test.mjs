@@ -79,6 +79,15 @@ test('normalizes a child without output streams', async () => {
   });
 });
 
+test('normalizes listener setup failures', async () => {
+  const child = new EventEmitter();
+  child.stdout = { on: () => { throw new Error('stream unavailable'); } };
+  child.stderr = new EventEmitter();
+  await expect(monitorChildProcess(child, createOutputCapture())).resolves.toEqual({
+    code: 1, output: 'stream unavailable\n',
+  });
+});
+
 test('does not duplicate an error already captured on stderr', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

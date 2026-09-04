@@ -16,13 +16,18 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       const duplicate = errorMessage && output.includes(errorMessage.trim());
       resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}` });
     };
-    child.stdout.on('data', capture.capture('stdout'));
-    child.stderr.on('data', capture.capture('stderr'));
-    child.on('error', (error) => {
-      processError = `${error.message}\n`;
-      finish(1, processError);
-    });
-    child.on('close', (code) => finish(processError ? 1 : (Number.isInteger(code) && code >= 0 ? code : 1), processError));
+    try {
+      child.stdout.on('data', capture.capture('stdout'));
+      child.stderr.on('data', capture.capture('stderr'));
+      child.on('error', (error) => {
+        processError = `${error.message}\n`;
+        finish(1, processError);
+      });
+      child.on('close', (code) => finish(processError ? 1 : (Number.isInteger(code) && code >= 0 ? code : 1), processError));
+    } catch (error) {
+      finish(1, `${error.message}\n`);
+      return;
+    }
     timeout = setTimeout(() => {
       finish(1, `Child process timed out after ${timeoutMs} ms\n`);
       if (typeof child.kill === 'function') child.kill();

@@ -32,11 +32,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - Apply the standard dependency, VCS, coverage, build, and generated-tree
     exclusions and add correctness/scalability validation.
 
-- [ ] **P2 — Direct API and CLI argument behavior may differ**
-  - Location: `src/public/run-toolkit.mjs:20-21`
-  - Define direct `runToolkit` argument normalization, including separator
-    handling, and add parity tests against CLI-parsed arguments.
-
 - [ ] **P2 — Process stream boundary cases lack coverage**
   - Location: `tests/processes/monitor-child-process.test.mjs`
   - Cover split UTF-8 chunks, missing streams, late data, and close ordering.
@@ -62,12 +57,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - A structurally valid report from an older run may be accepted if cleanup or
     report replacement is incomplete.
   - Define freshness/ownership semantics and test stale-candidate behavior.
-
-- [ ] **P1 — Child monitor setup exceptions are not normalized**
-  - Location: `src/processes/monitor-child-process.mjs:14-25`
-  - Exceptions while attaching listeners or creating the timeout can escape
-    instead of producing a stable startup failure.
-  - Validate the child interface and guard setup with malformed-child tests.
 
 - [ ] **P2 — Error handling can lose late process diagnostics**
   - Location: `src/processes/monitor-child-process.mjs:17-21`
@@ -110,13 +99,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     rejected promises instead of stable wrapper exit codes.
   - Normalize unexpected failures to the documented internal/stage result and
     add rejection-path tests.
-
-- [ ] **P1 — Direct API forwards unnormalized CLI arguments**
-  - Location: `src/public/run-toolkit.mjs:20-23`
-  - Direct callers can forward separators, wrapper-owned flags, or conflicting
-    in-band options differently from CLI callers.
-  - Share normalization and validation between entrypoints and add exact
-    argument-parity tests.
 
 - [ ] **P2 — Mapping traversal lacks explicit operational limits**
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
