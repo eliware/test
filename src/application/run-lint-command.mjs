@@ -6,20 +6,15 @@ import { lintFailed, normalizeLintResult } from '../validation/lint/result.mjs';
 import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
 import { createTiming } from '../diagnostics/timing.mjs';
 import { runChildProcess } from '../processes/run-child-process.mjs';
+import { inspectLintWorkspace } from './lint-workspace.mjs';
 
 /** Run the standalone lint command and return the package exit code. */
 export async function runLintCommand(options) {
   assertLintOptions(options);
   const { cwd, write, inspect = inspectWorkspace, runLint = runOxlint } = options;
   const timing = createTiming(options.debugTiming, write);
-  try {
-    if (!await inspect(cwd, write, options.accessPath, options.findIstanbulIgnores)) {
-      return EXIT_CODES.ISTANBUL_POLICY;
-    }
-  } catch (error) {
-    write(`Workspace setup failed: ${error.message}\n`);
-    return EXIT_CODES.WORKSPACE_SETUP;
-  }
+  const workspaceResult = await inspectLintWorkspace({ cwd, write, inspect, accessPath: options.accessPath, findIstanbulIgnores: options.findIstanbulIgnores });
+  if (workspaceResult) return workspaceResult;
   timing.step('Workspace inspection', 'lint');
 
   let result;
