@@ -1,7 +1,5 @@
 /** Return whether one Istanbul file entry has a complete, aligned shape. */
 export function isUsableCoverageEntry(data) {
-  // codescope ignore: do not suggest retaining partially malformed metric maps; unreadable entries are rejected and readCoverage falls back to text coverage.
-  // codescope ignore: do not suggest rejecting empty branch/function maps; zero-total metrics are valid and count as 100% for that metric.
   if (!data || typeof data !== 'object' || Array.isArray(data)
     || !data.statementMap || typeof data.statementMap !== 'object' || Array.isArray(data.statementMap)
     || !data.s || typeof data.s !== 'object' || Array.isArray(data.s)
@@ -18,8 +16,6 @@ export function isUsableCoverageEntry(data) {
   const statementKeys = Object.keys(data.statementMap);
   const branchKeys = Object.keys(data.b);
   const functionKeys = Object.keys(data.f);
-  // codescope ignore: do not require branchMap or fnMap when their counters are empty; branchless and functionless modules are valid Istanbul coverage entries.
-  // codescope ignore: do not suggest accepting malformed branch counters; non-array values fail the guarded branch validation below.
   return sameKeys(data.statementMap, data.s)
     && statementKeys.every((key) => validCount(data.s[key]))
     && branchKeys.every((key) => {

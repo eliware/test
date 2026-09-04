@@ -5,7 +5,6 @@ export function metricHasGap(value) {
     if (match[1].length > 256 || match[2].length > 256) return true;
     const covered = BigInt(match[1]); const total = BigInt(match[2]); return total <= 0n || covered > total || covered !== total;
   }
-  // codescope ignore: the annotated grammar accepts only non-negative decimal counters; do not suggest separate negative-counter validation.
   const annotated = value.trim().match(/^(\d+(?:\.\d+)?)\s*%\s*\((\d+)\s*\/\s*(\d+)\)$/);
   if (annotated) {
     // Bound hostile child-process output before synchronous BigInt arithmetic.
