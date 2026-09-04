@@ -50,3 +50,22 @@ test('does not classify comment-only files or executable exports as pure barrels
     { file: 'value.mjs', line: 1 }
   ]);
 });
+
+test('reads source files with at most six concurrent workers and preserves order', async () => {
+  await mkdir(join(fixture, 'many'), { recursive: true });
+  for (const name of ['01.mjs', '02.mjs', '03.mjs', '04.mjs', '05.mjs', '06.mjs', '07.mjs']) {
+    await writeFile(join(fixture, 'many', name), `/* ${directive('istanbul', 'ignore', 'next')} */\nexport const value = 1;\n`);
+  }
+  let active = 0;
+  let maximum = 0;
+  await expect(findIstanbulIgnoreViolations(fixture, {
+    readSource: async (_path) => {
+      active += 1;
+      maximum = Math.max(maximum, active);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      active -= 1;
+      return `/* ${directive('istanbul', 'ignore', 'next')} */\nexport const value = 1;\n`;
+    }
+  })).resolves.toHaveLength(7);
+  expect(maximum).toBeLessThanOrEqual(6);
+});
