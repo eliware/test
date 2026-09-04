@@ -8,9 +8,9 @@ export function parseArguments(argumentsList = []) {
   if (!Array.isArray(argumentsList)) throw new TypeError('parseArguments requires an argument array');
   const { lint, ignoreCoverage, ignoreMonolithLimits, disableInBand, debugTiming } = readWrapperOptions(argumentsList);
   const runnerArguments = argumentsList.filter((argument) => !isWrapperOption(argument));
-  rejectManagedArguments(runnerArguments);
   const mode = terminalMode(argumentsList);
   if (mode) return mode;
+  rejectManagedArguments(runnerArguments);
   assertCompatibleArguments(lint, runnerArguments);
   return buildParsedArguments(runnerArguments, { lint, disableInBand, ignoreCoverage, ignoreMonolithLimits, debugTiming });
 }

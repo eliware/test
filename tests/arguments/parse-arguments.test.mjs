@@ -15,4 +15,8 @@ describe('parseArguments', () => {
     expect(() => parseArguments(['--lint', 'tests/a.test.mjs'])).toThrow('cannot be combined');
     expect(() => parseArguments(['--coverage=false'])).toThrow('managed by eliware-test');
   });
+  test('terminal modes take precedence over managed options', () => {
+    expect(parseArguments(['--help', '--coverage'])).toMatchObject({ help: true });
+    expect(parseArguments(['--version', '--coverage'])).toMatchObject({ version: true });
+  });
 });
