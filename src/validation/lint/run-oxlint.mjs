@@ -1,6 +1,8 @@
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { oxlintExclusionArguments } from '../../workspace/exclusion-patterns.mjs';
+import { resolvePackage } from '../resolve-package.mjs';
+export { resolvePackage } from '../resolve-package.mjs';
 
 /** Build the managed Oxlint invocation and default workspace exclusions. */
 export function buildOxlintArguments() {
@@ -17,11 +19,6 @@ export function runOxlint(context) {
   const metadata = require(packagePath);
   const executable = resolveOxlintBin(metadata, packagePath);
   return context.runChildProcess(process.execPath, [executable, ...buildOxlintArguments().slice(1)], context);
-}
-
-export function resolvePackage(name, consumerRequire, packageRequire) {
-  try { return consumerRequire.resolve(name); }
-  catch { return packageRequire.resolve(name); }
 }
 
 export function resolveOxlintBin(metadata, packagePath) {

@@ -1,6 +1,8 @@
 import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { runChildProcess } from '../processes/run-child-process.mjs';
+import { resolvePackage } from '../validation/resolve-package.mjs';
+export { resolvePackage } from '../validation/resolve-package.mjs';
 
 /** Resolve and execute the consumer's bundled Jest CLI under native ESM. */
 export async function runJest(argumentsList, options) {
@@ -15,11 +17,6 @@ export async function runJest(argumentsList, options) {
     ? argumentsList
     : ['--runInBand', ...argumentsList];
   return runChildProcess(process.execPath, ['--experimental-vm-modules', '--no-warnings', jestPath, ...jestArguments], options);
-}
-
-export function resolvePackage(name, consumerRequire, packageRequire) {
-  try { return consumerRequire.resolve(name); }
-  catch { return packageRequire.resolve(name); }
 }
 
 export function resolveJestBin(metadata, packagePath) {
