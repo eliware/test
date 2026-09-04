@@ -141,12 +141,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     and mislead users about the original output.
   - Use platform-aware, boundary-aware, bounded path redaction.
 
-- [ ] **P2 — Focused source mapping mishandles some Windows paths**
-  - Location: `src/testing/source-path-for-test.mjs:15-25`
-  - Drive-letter, UNC, and mixed-separator forms are not normalized consistently
-    on non-Windows hosts.
-  - Centralize path-flavor detection and add representative mapping fixtures.
-
 - [ ] **P2 — Mapping traversal lacks explicit operational limits**
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
   - Traversal needs exclusions, cycle/repeated-entry protection, deterministic
