@@ -88,6 +88,13 @@ test('normalizes structured and incomplete lint results', async () => {
   await expect(runToolkit({ ...base, runLintCommand: async () => ({}) })).resolves.toBe(1);
 });
 
+test('returns a cleanup failure when timing setup cannot remove its artifact', async () => {
+  const messages = [];
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], debugTiming: true, write: (message) => messages.push(message), removePath: async () => { throw new Error('locked'); }, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
+    .resolves.toBe(7);
+  expect(messages.join('')).toContain('Coverage cleanup failed: locked');
+});
+
 test('returns a stable coverage failure when coverage reading fails', async () => {
   const messages = [];
   await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: (message) => messages.push(message), runTest: async () => ({ code: 0, output: '' }), readFilePath: async () => { throw new Error('coverage unavailable'); }, runLintCommand: async () => 0 }))
