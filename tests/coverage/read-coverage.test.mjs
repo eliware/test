@@ -40,6 +40,11 @@ test('rejects unusable nonempty coverage evidence', async () => {
   await expect(readCoverage('C:/repo', '', () => {}, async () => '{bad')).resolves.toEqual([]);
 });
 
+test('preserves genuine coverage read failures', async () => {
+  const failure = Object.assign(new Error('permission denied'), { code: 'EACCES' });
+  await expect(readCoverage('C:/repo', '', () => {}, async () => { throw failure; })).rejects.toBe(failure);
+});
+
 test('reports text fallback only in debug mode', async () => {
   const previous = process.env.ELIWARE_TEST_DEBUG;
   process.env.ELIWARE_TEST_DEBUG = '1';
