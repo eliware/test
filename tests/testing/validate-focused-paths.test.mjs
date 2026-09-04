@@ -7,7 +7,12 @@ test('returns the first missing focused test path', async () => {
 });
 
 test('accepts existing focused paths', async () => {
-  await expect(validateFocusedPaths('C:/repo', ['tests/example.test.mjs'], async () => undefined)).resolves.toBe('');
+  await expect(validateFocusedPaths('C:/repo', ['tests/example.test.mjs'], async () => undefined, async () => ({ isFile: () => true }))).resolves.toBe('');
+});
+
+test('rejects an existing directory as a focused file path', async () => {
+  await expect(validateFocusedPaths('C:/repo', ['tests/fixtures/dir.test.mjs'], async () => undefined, async () => ({ isFile: () => false })))
+    .resolves.toBe('tests/fixtures/dir.test.mjs');
 });
 
 test('validates its inputs and propagates unexpected access errors', async () => {
