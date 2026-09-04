@@ -1,5 +1,5 @@
 import { access } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { isAbsolute, relative, resolve } from 'node:path';
 
 /** Map focused test files to unambiguous mirrored source files. */
 export async function mapPathsToSources(cwd, testPaths, accessPath) {
@@ -11,7 +11,8 @@ export async function mapPathsToSources(cwd, testPaths, accessPath) {
 
 async function sourcePathForTest(cwd, testPath, accessPath) {
   if (typeof testPath !== 'string') return '';
-  const normalized = testPath.replaceAll('\\', '/').replace(/^\.\//, '');
+  const normalized = (isAbsolute(testPath) ? relative(cwd, testPath) : testPath)
+    .replaceAll('\\', '/').replace(/^\.\//, '');
   const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
   if (!marker) return '';
   const sourceRelative = marker[2].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, '').replace(/\.[^.]+$/, '');
