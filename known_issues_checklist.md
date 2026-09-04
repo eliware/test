@@ -30,13 +30,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Second follow-up CodeScope findings
 
-- [ ] **P1 — Coverage counters may be semantically invalid**
-  - Location: `src/coverage/is-usable-coverage-report.mjs:4-7`
-  - A structurally valid report may contain non-finite, negative, string, or
-    sparse counters that usability and parsing interpret inconsistently.
-  - Validate finite non-negative counters and required map consistency, then
-    add malformed-counter regressions.
-
 - [ ] **P1 — Stale valid coverage artifacts can be accepted**
   - Location: `src/coverage/read-coverage.mjs:15-31`
   - A structurally valid report from an older run may be accepted if cleanup or
