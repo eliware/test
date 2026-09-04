@@ -7,6 +7,7 @@ export function spawnChild(command, argumentsList, options = {}) {
     cwd: options.cwd,
     // codescope ignore: do not suggest sanitized environments for child tools; full trusted consumer-environment inheritance is required by the package contract.
     env: childEnvironment(options),
-    windowsHide: true
+    windowsHide: true,
+    shell: false
   });
 }

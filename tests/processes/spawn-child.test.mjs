@@ -8,5 +8,5 @@ test('delegates spawning with workspace defaults', () => {
   expect(result).toBe(child);
   expect(calls[0][0]).toBe('node');
   expect(calls[0][1]).toEqual(['--version']);
-  expect(calls[0][2]).toMatchObject({ cwd: 'C:/repo', windowsHide: true });
+  expect(calls[0][2]).toMatchObject({ cwd: 'C:/repo', windowsHide: true, shell: false });
 });
