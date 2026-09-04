@@ -1,11 +1,9 @@
 import { normalizeCoveragePath } from './normalize-path.mjs';
+import { isCoveredCount, percentage, percentageWithUnknowns } from './percentages.mjs';
+export { percentageWithUnknowns } from './percentages.mjs';
 export { parseCoverage } from './parse-text-coverage.mjs';
 export { metricHasGap } from './metric.mjs';
 const MAX_COVERAGE_DETAILS = 20;
-
-function isCoveredCount(value) {
-  return Number.isFinite(value) && value > 0;
-}
 
 /* metricHasGap is implemented in metric.mjs. */
 /*
@@ -57,23 +55,6 @@ function percentageHundredths(value) {
 */
 function locationsForCounts(map, counts) {
   return Object.entries(counts).filter(([, count]) => !isCoveredCount(count)).map(([id]) => map[id] ?? {});
-}
-
-function percentage(counts) {
-  if (counts === undefined || counts === null) return 0;
-  // Malformed scalar maps are not valid coverage evidence and must not look complete.
-  if (typeof counts !== 'object' || Array.isArray(counts)) return 0;
-  let total = 0;
-  let covered = 0;
-  for (const count of Object.values(Object(counts))) {
-    const values = Array.isArray(count) ? count : [count];
-    for (const value of values) {
-      total += 1;
-      if (isCoveredCount(value)) covered += 1;
-    }
-  }
-  if (total === 0) return 100;
-  return Math.round((covered / total) * 10000) / 100;
 }
 
 export function parseCoverageJson(json) {
@@ -160,17 +141,6 @@ export function parseCoverageJson(json) {
   }
   return gaps;
 }
-
-export function percentageWithUnknowns(lineCounts, unknownCount) {
-  if (!Number.isFinite(unknownCount) || !Number.isInteger(unknownCount) || unknownCount < 0) {
-    throw new TypeError('unknownCount must be a finite non-negative integer');
-  }
-  const mapped = [...lineCounts.values()];
-  const total = mapped.length + unknownCount;
-  if (total === 0) return 100;
-  return Math.round((mapped.filter(isCoveredCount).length / total) * 10000) / 100;
-}
-
 
 export function formatCoverageGaps(gaps, root = '') {
   const entries = Array.isArray(gaps) ? gaps : [];
