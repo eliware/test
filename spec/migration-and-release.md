@@ -88,3 +88,9 @@ supported consumer scenario. Diagnostic path normalization supports the
 documented Windows and POSIX path contracts, including one-for-one separator
 normalization; behavior for arbitrary mixed-separator representations outside
 those contracts is not promised.
+
+Source/test architecture mapping intentionally skips symbolic links; supported
+internal projects use ordinary files and directories for the canonical `src/`
+and `tests/` trees. Timeout escalation uses the supported Node child-process
+termination contract; platform-specific signal semantics and untrusted
+workspace execution are outside the release contract.

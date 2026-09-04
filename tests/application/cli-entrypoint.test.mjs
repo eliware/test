@@ -44,3 +44,15 @@ test('supports the real default output writers', async () => {
   stdout.mockRestore();
   stderr.mockRestore();
 });
+
+test('classifies downstream dispatch failures as internal errors', async () => {
+  const errors = [];
+  await expect(runCli([], { runToolkit: async () => { throw new Error('pipeline failed'); }, write: () => {}, writeError: (value) => errors.push(value) })).resolves.toBe(14);
+  expect(errors.join('')).toContain('Validation failed: pipeline failed');
+});
+
+test('normalizes non-Error downstream failures', async () => {
+  const errors = [];
+  await expect(runCli([], { runToolkit: async () => { throw 'pipeline failed'; }, write: () => {}, writeError: (value) => errors.push(value) })).resolves.toBe(14);
+  expect(errors.join('')).toContain('Validation failed: pipeline failed');
+});

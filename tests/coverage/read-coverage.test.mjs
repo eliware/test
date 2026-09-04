@@ -83,8 +83,8 @@ test('falls through a fresh malformed candidate to a later usable report', async
 });
 
 test('rejects unusable nonempty coverage evidence', async () => {
-  await expect(readCoverage('C:/repo', 'test output', () => {}, async () => '{bad')).rejects.toThrow('Coverage evidence missing');
-  await expect(readCoverage('C:/repo', '', () => {}, async () => '{bad')).rejects.toThrow('Coverage evidence missing');
+  await expect(readCoverage('C:/repo', 'test output', () => {}, async () => '{bad')).rejects.toThrow('Coverage report is malformed');
+  await expect(readCoverage('C:/repo', '', () => {}, async () => '{bad')).rejects.toThrow('Coverage report is malformed');
 });
 
 test('rejects malformed coverage with empty output', async () => {

@@ -14,9 +14,13 @@ export async function executeTests({ cwd, args, runInBand, focusedCoverage, focu
     write(`Tests failed to start: ${error.message}\n`);
     return { code: EXIT_CODES.TEST_START };
   }
+  const result = normalizeTestResult(test);
+  if (result.code !== 0) {
+    await handleTimingReport({ cwd, timingOutput, readFilePath, removePath, write });
+    return result;
+  }
   const cleanup = isolatedCoverage ? await promoteCoverage(cwd, coverageDirectory, accessPath, removePath, renamePath, write) : undefined;
   if (cleanup) return cleanup;
-  const result = normalizeTestResult(test);
   await handleTimingReport({ cwd, timingOutput, readFilePath, removePath, write });
   // Timing diagnostics are best-effort and never change the test result.
   return result;
@@ -24,7 +28,7 @@ export async function executeTests({ cwd, args, runInBand, focusedCoverage, focu
 
 async function promoteCoverage(cwd, coverageDirectory, accessPath, removePath, renamePath, write) {
   try {
-    await promoteCoverageDirectory(cwd, coverageDirectory, accessPath, removePath, renamePath);
+    await promoteCoverageDirectory(cwd, coverageDirectory, accessPath, removePath, renamePath, (error) => write(`Coverage cleanup warning: ${error.message}\n`));
   } catch (error) {
     write(`Coverage cleanup failed: ${error.message}\n`);
     return { code: EXIT_CODES.COVERAGE_CLEANUP };

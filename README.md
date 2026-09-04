@@ -46,6 +46,10 @@ eliware-test --help             Show supported options
 eliware-test --version          Print the installed version
 ```
 
+Do not run overlapping validations in the same worktree. Coverage promotion
+uses shared workspace artifacts and concurrent runs can replace each other's
+reports; use separate worktrees for concurrent jobs.
+
 Advanced options include `--no-runInBand` for diagnostic worker behavior and
 `--ignore-monolith-limits` for temporary refactoring runs. Both are supported
 diagnostic options; normal validation should use their defaults. Use
@@ -61,7 +65,7 @@ or transitional runs; tests and lint still run, but coverage enforcement is
 skipped.
 
 Production modules under `src/` are limited to 100 lines. Both `test/` and
-`tests/` participate in the 200-line test-size policy. Only the canonical
+`tests/` participate in the 200-line test-size policy; only the canonical
 `tests/` root participates in strict mirrored architecture validation, which pairs
 `src/**/*.mjs` with `tests/**/*.test.mjs`. Pure
 barrels, generated files, and explicitly justified configuration exemptions
@@ -71,6 +75,10 @@ with mirrored tests. During refactoring, use
 `eliware-test --ignore-monolith-limits`; it still runs the suite and other
 validation, but CI and release runs must enforce the limit. See `SPEC.md` for
 the full contract.
+
+The CLI enables monolith enforcement. Direct internal `runToolkit` calls leave
+that gate disabled unless the caller explicitly enables it; direct calls are
+not the consumer integration contract.
 
 Generated-file treatment across source/test mapping, Istanbul-ignore policy,
 and monolith checks is part of the architecture contract. Generated files are
@@ -173,7 +181,9 @@ pipeline outcomes.
 The default mode intentionally uses the consumer's full environment, matching
 direct `npm test` and Jest behavior. This package does not change Jest or try
 to overcome its limitations. Do not run it against an untrusted workspace
-while sensitive credentials are available.
+while sensitive credentials are available. Debug output and failure output use
+pattern-based redaction only and may contain unrecognized secrets; do not
+enable `ELIWARE_TEST_DEBUG=1` in credential-bearing or untrusted workspaces.
 
 ## Support
 

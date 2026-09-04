@@ -26,7 +26,8 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
       if (fresh && selectUsableReport([{ usable, report: json }])) return parseJsonReport(json);
       if (!usable && !malformedReport) malformedReport = name;
     } catch (error) {
-      if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
+      if (error instanceof SyntaxError) { malformedReport ??= name; continue; }
+      if (error.code !== 'ENOENT') throw error;
     }
   }
   const gaps = parseTextReport(testOutput);

@@ -34,6 +34,7 @@ export async function scanMonolithFiles(cwd, readDirectory = readdir, readSource
   await visit(root);
   const measured = [];
   let next = 0;
+  if (candidates.length === 1) return [await measureMonolithFile(candidates[0], readSource)];
   async function worker() {
     while (next < candidates.length) {
       const candidate = candidates[next]; next += 1;

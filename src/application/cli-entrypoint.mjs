@@ -14,16 +14,21 @@ export async function runCli(argumentsList, options = {}) {
   const metadata = options.packageMetadata ?? packageMetadata;
   const lint = options.runLint ?? runLint;
   const toolkit = options.runToolkit ?? runToolkit;
+  let parsed;
+  try { parsed = parseArguments(argumentsList); }
+  catch (error) {
+    writeError(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);
+    return EXIT_CODES.INVALID_ARGUMENT;
+  }
+  if (parsed.version) { write(`${metadata.version}\n`); return 0; }
+  if (parsed.help) { write(HELP_TEXT); return 0; }
   try {
-    const parsed = parseArguments(argumentsList);
-    if (parsed.version) { write(`${metadata.version}\n`); return 0; }
-    if (parsed.help) { write(HELP_TEXT); return 0; }
     const common = { cwd, write };
     return parsed.lint
       ? await lint({ ...common, debugTiming: parsed.debugTiming })
       : await toolkit({ ...common, ...parsed, enforceMonolithLimits: true, runLintCommand });
   } catch (error) {
-    writeError(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);
-    return EXIT_CODES.INVALID_ARGUMENT;
+    writeError(`Validation failed: ${error instanceof Error ? error.message : String(error)}\n`);
+    return EXIT_CODES.INTERNAL;
   }
 }

@@ -12,11 +12,7 @@ export function parseCoverageJson(json) {
   for (const [file, data] of Object.entries(json)) {
     // codescope ignore: direct parseCoverageJson callers are required to provide structurally validated Istanbul reports; skipped malformed entries are intentional.
     // codescope ignore: do not suggest treating skipped malformed entries as complete; readCoverage rejects malformed reports before this parser is used.
-    if (!isUsableCoverageEntry(data)) {
-      const hasEvidence = data && typeof data === 'object' && ['statementMap', 's', 'branchMap', 'b', 'fnMap', 'f'].some((key) => key in data);
-      if (hasEvidence || data && typeof data === 'object' && !Array.isArray(data)) throw new Error(`Malformed coverage entry: ${file}`);
-      continue;
-    }
+    if (!isUsableCoverageEntry(data)) throw new Error(`Malformed coverage entry: ${file}`);
     const statements = locationsForCounts(data.statementMap, data.s);
     const branches = Object.entries(data.b).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
     const functions = uncoveredFunctions(data);

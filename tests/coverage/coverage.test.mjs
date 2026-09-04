@@ -27,7 +27,7 @@ describe('coverage facade', () => {
     expect(parseCoverageJson(null)).toEqual([]);
     expect(parseCoverageJson([])).toEqual([]);
     expect(parseCoverageJson('invalid')).toEqual([]);
-    expect(parseCoverageJson({ nullEntry: null, scalarEntry: 'invalid' })).toEqual([]);
+    expect(() => parseCoverageJson({ nullEntry: null, scalarEntry: 'invalid' })).toThrow('Malformed coverage entry');
     expect(() => parseCoverageJson({ 'src/unknown.mjs': { unexpected: true } })).toThrow('Malformed coverage entry');
   });
 
@@ -71,4 +71,18 @@ describe('coverage facade', () => {
     })).toThrow('Malformed coverage entry');
   });
 
+});
+
+test('accepts a report containing both valid and zero-total entries', () => {
+  expect(parseCoverageJson({
+    'src/valid.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {} },
+    'src/empty.mjs': { statementMap: {}, s: {}, branchMap: {}, b: {}, fnMap: {}, f: {} },
+  })).toEqual([]);
+});
+
+test('rejects a report containing both valid and unrecognized entries', () => {
+  expect(() => parseCoverageJson({
+    'src/valid.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, branchMap: {}, b: {}, fnMap: {}, f: {} },
+    'src/unknown.mjs': { generated: true },
+  })).toThrow('Malformed coverage entry');
 });
