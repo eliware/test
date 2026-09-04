@@ -7,7 +7,7 @@ test('delegates the public lint operation and returns its code', async () => {
 test('validates options and delegated exit codes', async () => {
   await expect(runLint(null)).rejects.toThrow(TypeError);
   await expect(runLint({ cwd: 42 })).rejects.toThrow(TypeError);
-  await expect(runLint({ cwd: 'C:/repo', write: () => {}, runLintCommand: async () => 1.5 })).rejects.toThrow('integer exit code');
+  await expect(runLint({ cwd: 'C:/repo', write: () => {}, runLintCommand: async () => 1.5 })).resolves.toBe(14);
   await expect(runLint({ cwd: 'C:/repo', write: () => {}, runLintCommand: async () => 7 })).resolves.toBe(7);
   await expect(runLint({ cwd: 'C:/repo', runLintCommand: async () => 0 })).rejects.toThrow('write function');
 });

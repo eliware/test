@@ -23,8 +23,8 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
         catch (error) { if (error.code === 'ENOENT') { /* injected virtual files may not expose stat metadata */ } else throw error; }
       }
       const usable = isUsableCoverageReport(json);
-      if (fresh && selectUsableReport([{ usable, report: json }])) return parseJsonReport(json);
       if (!usable && !malformedReport) malformedReport = name;
+      if (fresh && selectUsableReport([{ usable, report: json }])) return parseJsonReport(json);
     } catch (error) {
       if (error instanceof SyntaxError) { malformedReport ??= name; continue; }
       if (error.code !== 'ENOENT') throw error;

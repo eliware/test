@@ -6,7 +6,9 @@ import { formatMappingDrifts } from '../../architecture/format-mapping-drifts.mj
 export async function validateArchitecture(cwd, write, findMapping = findSourceTestMappingDrifts) {
   try {
     const drifts = await findMapping(cwd);
-    if (!drifts || !Array.isArray(drifts.missingTests) || !Array.isArray(drifts.orphanTests)) {
+    if (!drifts || !Array.isArray(drifts.missingTests) || !Array.isArray(drifts.orphanTests)
+      || new Set([...drifts.missingTests, ...drifts.orphanTests]).size !== drifts.missingTests.length + drifts.orphanTests.length
+      || [...drifts.missingTests, ...drifts.orphanTests].some((entry) => typeof entry !== 'string' || entry.length === 0)) {
       throw new TypeError('mapping collaborator returned an invalid result');
     }
     if (drifts.missingTests.length || drifts.orphanTests.length) {

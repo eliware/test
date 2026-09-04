@@ -110,11 +110,6 @@ must include both a glob pattern and a non-empty reason:
 }
 ```
 
-When several people or jobs work at the same time, give each one a separate
-Git worktree or workspace. Coverage reports stay in the current worktree so
-they can be inspected after the run. Do not run overlapping validations in
-one worktree.
-
 ## Consumer migration
 
 1. Remove direct Jest and Oxlint development dependencies unless the project

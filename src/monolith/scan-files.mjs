@@ -32,16 +32,16 @@ export async function scanMonolithFiles(cwd, readDirectory = readdir, readSource
     }
   }
   await visit(root);
-  const measured = [];
+  const measured = Array.from({ length: candidates.length });
   let next = 0;
   if (candidates.length === 1) return [await measureMonolithFile(candidates[0], readSource)];
   async function worker() {
     while (next < candidates.length) {
-      const candidate = candidates[next]; next += 1;
-      const result = await measureMonolithFile(candidate, readSource);
-      measured.push(result);
+      const index = next; next += 1;
+      const result = await measureMonolithFile(candidates[index], readSource);
+      measured[index] = result;
     }
   }
   await Promise.all(Array.from({ length: Math.min(workers, candidates.length) }, worker));
-  return measured.sort((left, right) => compareNames(left.file, right.file));
+  return measured;
 }

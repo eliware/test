@@ -13,10 +13,11 @@ export function parseCoverageJson(json) {
     if (!isUsableCoverageEntry(data)) throw new Error(`Malformed coverage entry: ${file}`);
     const statements = locationsForCounts(data.statementMap, data.s);
     const branches = Object.entries(data.b).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
+    const branchCounts = Object.fromEntries(Object.entries(data.b).filter(([id]) => data.branchMap?.[id]?.type !== 'default-arg'));
     const functions = uncoveredFunctions(data);
     const { lineCounts, unmappedLineCount, hasUnmappedStatement } = collectLineCoverage(data);
     const lineGap = hasUnmappedStatement || [...lineCounts.values()].some((count) => count === 0);
-    const gap = buildCoverageGap(file, statements, branches, functions, data.s, data.b, data.f, lineCounts, unmappedLineCount, lineGap);
+    const gap = buildCoverageGap(file, statements, branches, functions, data.s, branchCounts, data.f, lineCounts, unmappedLineCount, lineGap);
     if (gap) gaps.push(gap);
   }
   return gaps;

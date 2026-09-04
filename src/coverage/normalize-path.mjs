@@ -13,6 +13,6 @@ export function normalizeCoveragePath(file, root) {
   const comparableRoot = windowsPath ? rootPrefix.toLowerCase() : rootPrefix;
   const equalRoot = comparableFile === (filesystemRoot ? '/' : (windowsPath ? normalizedRoot.toLowerCase() : normalizedRoot));
   return (normalizedRoot || filesystemRoot) && /^[A-Za-z]:[\\/]|^\//.test(normalizedFile) && (equalRoot || comparableFile.startsWith(comparableRoot))
-    ? (equalRoot ? '' : normalizedFile.slice(rootPrefix.length))
+    ? (equalRoot ? '' : normalizedFile.slice(normalizedRoot.length + 1))
     : normalizedFile;
 }

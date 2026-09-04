@@ -23,8 +23,12 @@ export async function runPostTestValidation({ cwd, testResult, write, readFilePa
     if (monolithResult) return monolithResult;
   }
   timing.step('Monolith validation', 'package checks');
-  for (const check of [runAudit, runPack, runBuild, runTypecheck]) {
-    if (await check(cwd, write, { ...packageChecks, readFilePath }) !== 0) return EXIT_CODES.PACKAGE_SCRIPT_FAILURE;
+  const checks = [['audit', runAudit], ['pack', runPack], ['build', runBuild], ['typecheck', runTypecheck]];
+  for (const [name, check] of checks) {
+    if (await check(cwd, write, { ...packageChecks, readFilePath }) !== 0) {
+      write(`Package script failed: ${name}\n`);
+      return EXIT_CODES.PACKAGE_SCRIPT_FAILURE;
+    }
   }
   return null;
 }

@@ -23,6 +23,20 @@ describe('coverage facade', () => {
     expect(gaps[0].lines).toEqual([2]);
   });
 
+  test('excludes generated default-argument counters from branch metrics', () => {
+    const gaps = parseCoverageJson({
+      'src/incomplete-with-default.mjs': {
+        statementMap: { 0: { start: { line: 2 } } }, s: { 0: 0 },
+        branchMap: {
+          0: { type: 'default-arg', locations: [{ start: { line: 1 } }] },
+          1: { type: 'if', locations: [{ start: { line: 3 } }] }
+        }, b: { 0: [0], 1: [1] },
+        fnMap: { 0: { name: 'choose', loc: { start: { line: 4 } } } }, f: { 0: 1 }
+      }
+    });
+    expect(gaps[0].metrics).toEqual({ statements: 0, branches: 100, functions: 100, lines: 0 });
+  });
+
   test('handles sparse and malformed top-level reports safely', () => {
     expect(parseCoverageJson(null)).toEqual([]);
     expect(parseCoverageJson([])).toEqual([]);

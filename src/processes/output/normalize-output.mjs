@@ -11,11 +11,11 @@ function redactWorkspacePath(output, cwd, caseInsensitive) {
   while (cursor < output.length) {
     const found = comparable.indexOf(needle, cursor);
     if (found < 0) return result + output.slice(cursor);
-    const before = found === 0 ? '' : output[found - 1];
-    const after = output[found + cwd.length] ?? '';
+    const before = found === 0 ? '' : comparableOutput[found - 1];
+    const after = comparableOutput[found + comparableCwd.length] ?? '';
     if (!PATH_TOKEN.test(before) && !PATH_TOKEN.test(after)) {
       result += output.slice(cursor, found) + '<workspace>';
-      cursor = found + cwd.length;
+      cursor = found + comparableCwd.length;
     } else {
       result += output.slice(cursor, found + 1);
       cursor = found + 1;

@@ -14,6 +14,9 @@ export async function runLint(options, dependencies = {}) {
     options.write(`Lint failed: ${error instanceof Error ? error.message : String(error)}\n`);
     return EXIT_CODES.INTERNAL;
   }
-  if (!Number.isInteger(result)) throw new TypeError('runLint must return an integer exit code');
+  if (!Number.isInteger(result)) {
+    options.write('Lint returned an invalid exit code.\n');
+    return EXIT_CODES.INTERNAL;
+  }
   return result;
 }

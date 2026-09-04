@@ -33,3 +33,10 @@ test('does not promote coverage from a failed Jest run', async () => {
     .resolves.toMatchObject({ code: 1 });
   expect(calls).toEqual([]);
 });
+
+test('handles an absent isolated coverage directory without attempting promotion', async () => {
+  const calls = [];
+  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }, renamePath: async () => calls.push('rename'), removePath: async () => {}, runTest: async () => ({ code: 0, output: '' }), write: () => {} }))
+    .resolves.toMatchObject({ code: 0 });
+  expect(calls).toEqual([]);
+});
