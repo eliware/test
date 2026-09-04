@@ -1,9 +1,7 @@
-import { metricHasGap } from './metric.mjs';
 import { normalizeCoveragePath } from './normalize-path.mjs';
+export { parseCoverage } from './parse-text-coverage.mjs';
 export { metricHasGap } from './metric.mjs';
-const coverageLine = /^\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)(?:\s*\|\s*([^|]+?))?\s*\|?\s*$/;
 const MAX_COVERAGE_DETAILS = 20;
-const ANSI_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, 'g');
 
 function isCoveredCount(value) {
   return Number.isFinite(value) && value > 0;
@@ -57,16 +55,6 @@ function percentageHundredths(value) {
 }
 
 */
-export function parseCoverage(text) {
-  return text.split(/\r?\n/).flatMap((line) => {
-    const cleanLine = line.replace(ANSI_PATTERN, '');
-    const match = cleanLine.match(coverageLine);
-    if (!match || /^-+$/.test(match[1].trim()) || match[1].trim() === 'All files' || match[1].trim() === 'File') return [];
-    const metrics = match.slice(2, 6);
-    return metrics.some(metricHasGap) ? [{ file: match[1].trim(), metrics }] : [];
-  });
-}
-
 function locationsForCounts(map, counts) {
   return Object.entries(counts).filter(([, count]) => !isCoveredCount(count)).map(([id]) => map[id] ?? {});
 }
