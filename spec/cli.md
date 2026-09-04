@@ -37,6 +37,10 @@ Violations report normalized paths, line counts, thresholds, and required
 action, and fail with exit code 15. `--ignore-monolith-limits` is a temporary
 refactoring bypass; it still runs Jest, coverage, and lint.
 
+The CLI enables this gate for normal test runs. Direct `runToolkit` callers
+must opt in with `enforceMonolithLimits: true`; this keeps the public API
+explicit for embedding and testing.
+
 Generated files are identified by a `generated` path segment, a `.generated.`
 filename segment, or an `@generated` marker in the file path or source text.
 
