@@ -27,3 +27,10 @@ test('returns no missing path without touching the filesystem', async () => {
   await expect(validateFocusedPaths('C:/repo', [], async () => { throw new Error('unexpected'); })).resolves.toBe('');
   await expect(validateFocusedPaths('C:/repo', [])).resolves.toBe('');
 });
+
+test('rejects concrete paths outside the workspace', async () => {
+  let accessed = false;
+  await expect(validateFocusedPaths('/repo', ['../tests/outside.test.mjs'], async () => { accessed = true; }))
+    .resolves.toBe('../tests/outside.test.mjs');
+  expect(accessed).toBe(false);
+});
