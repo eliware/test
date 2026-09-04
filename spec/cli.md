@@ -11,6 +11,7 @@
 5. Run Jest with coverage.
 6. Select and validate coverage evidence.
 7. Run Oxlint with warnings denied.
+8. Enforce monolith limits for the normal CLI run.
 
 Stages stop at the first applicable failure. `--lint` runs only workspace
 policy, setup, and Oxlint. It rejects warnings and test arguments. `--help`/
@@ -27,13 +28,17 @@ coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
 
 - Source modules under `src/` may contain at most 100 lines.
 - Test files under `test/` or `tests/` may contain at most 200 lines.
-- Pure import/export barrels and generated files are exempt from size limits.
+- Pure import/export barrels and generated files are exempt from size limits,
+  but both remain subject to exact source/test pairing.
 - Other exemptions require a non-empty glob and justification under
   `eliwareTest.monolithLimits.exemptions`.
 
 Violations report normalized paths, line counts, thresholds, and required
 action, and fail with exit code 15. `--ignore-monolith-limits` is a temporary
 refactoring bypass; it still runs Jest, coverage, and lint.
+
+Generated files are identified by a `generated` path segment, a `.generated.`
+filename segment, or an `@generated` marker in the file path or source text.
 
 ## 5. Arguments and focused tests
 

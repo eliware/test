@@ -26,3 +26,10 @@ test('reports zero lines for an empty eligible file', async () => {
   await expect(measureMonolithFile({ relative: 'src/empty.mjs', absolute: 'repo/src/empty.mjs' }, async () => ''))
     .resolves.toMatchObject({ lines: 0 });
 });
+
+test('recognizes generated path segments and filename markers', async () => {
+  await expect(measureMonolithFile({ relative: 'src/generated/value.mjs', absolute: 'repo/src/generated/value.mjs' }, async () => 'const value = 1'))
+    .resolves.toMatchObject({ generated: true });
+  await expect(measureMonolithFile({ relative: 'src/value.generated.mjs', absolute: 'repo/src/value.generated.mjs' }, async () => 'const value = 1'))
+    .resolves.toMatchObject({ generated: true });
+});
