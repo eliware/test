@@ -38,15 +38,4 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Third follow-up CodeScope findings
 
-- [ ] **P2 — Packed-install runtime behavior lacks an executable smoke test**
-  - Location: `tests/public/run-toolkit.test.mjs:1-133`
-  - Unit injection tests do not prove that a packed consumer can resolve the bin,
-    bundled Jest, and bundled Oxlint.
-  - Add a clean temporary consumer smoke test covering `--version`, a minimal
-    test, lint, and bundled/consumer dependency layouts.
-
 ## Release validation additions
-
-- [ ] Pack the package, install the tarball into a clean temporary consumer,
-      run `eliware-test --version`, a minimal test command, and lint.
-- [ ] Verify consumer-first and bundled fallback resolution for Jest and Oxlint.
