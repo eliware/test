@@ -36,17 +36,7 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     report replacement is incomplete.
   - Define freshness/ownership semantics and test stale-candidate behavior.
 
-- [ ] **P2 — Mapping traversal is not fully bounded or deterministic**
-  - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
-  - In addition to exclusions, traversal needs cycle/repeated-entry protection,
-    bounded resource use, and sorted output for stable diagnostics.
-
 ## Third follow-up CodeScope findings
-
-- [ ] **P2 — Mapping traversal lacks explicit operational limits**
-  - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
-  - Traversal needs exclusions, cycle/repeated-entry protection, deterministic
-    ordering, file/depth/resource limits, and stable limit failures.
 
 - [ ] **P2 — Packed-install runtime behavior lacks an executable smoke test**
   - Location: `tests/public/run-toolkit.test.mjs:1-133`

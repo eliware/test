@@ -1,4 +1,4 @@
-import { findSourceTestMappingDrifts } from '../../src/architecture/validate-source-test-mapping.mjs';
+import { findSourceTestMappingDrifts, MAPPING_LIMITS } from '../../src/architecture/validate-source-test-mapping.mjs';
 import { resolve } from 'node:path';
 
 test('current source and test trees are bijectively mirrored', async () => {
@@ -79,4 +79,32 @@ test('skips dependency and generated discovery directories', async () => {
 test('propagates mapping read failures other than missing roots', async () => {
   const failure = Object.assign(new Error('denied'), { code: 'EACCES' });
   await expect(findSourceTestMappingDrifts('repo', async () => { throw failure; })).rejects.toBe(failure);
+});
+
+test('bounds deeply nested traversal with a stable failure', async () => {
+  const root = resolve('deep-repo');
+  const readDirectory = async (directory) => {
+    const depth = directory.split(/[\\/]/).length - root.split(/[\\/]/).length;
+    return [{ name: `level-${depth}`, isDirectory: () => true, isFile: () => false }];
+  };
+  await expect(findSourceTestMappingDrifts(root, readDirectory)).rejects.toThrow(`depth limit (${MAPPING_LIMITS.maxDepth})`);
+});
+
+test('bounds large trees with a stable file-limit failure', async () => {
+  const root = resolve('large-repo');
+  const readDirectory = async (directory) => {
+    if (directory === resolve(root, 'src')) return Array.from({ length: MAPPING_LIMITS.maxFiles + 1 }, (_, index) => ({ name: `file-${index}.mjs`, isDirectory: () => false, isFile: () => true }));
+    return [];
+  };
+  await expect(findSourceTestMappingDrifts(root, readDirectory)).rejects.toThrow(`file limit (${MAPPING_LIMITS.maxFiles})`);
+});
+
+test('ignores repeated directory entries', async () => {
+  const root = resolve('cycle-repo');
+  const readDirectory = async (directory) => {
+    if (directory === resolve(root, 'src')) return [{ name: 'loop', isDirectory: () => true, isFile: () => false }];
+    if (directory === resolve(root, 'src/loop')) return [{ name: '..', isDirectory: () => true, isFile: () => false }];
+    return [];
+  };
+  await expect(findSourceTestMappingDrifts(root, readDirectory)).resolves.toEqual({ missingTests: [], orphanTests: [] });
 });

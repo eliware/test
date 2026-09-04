@@ -73,5 +73,11 @@ explicit and consistent across the policy gates.
   Jest starts. Missing paths fail clearly and never fall back to the full suite.
   This focused-path recognition is broader than the strict architecture
   bijection, which is limited to `src/**/*.mjs` and `tests/**/*.test.mjs`.
+
+Mapping discovery is deterministic and bounded: excluded generated/dependency
+directories are skipped, repeated directory visits are ignored, nesting is
+limited to 100 levels, and each tree is limited to 10,000 files. Exceeding a
+limit fails validation with a stable diagnostic rather than continuing an
+unbounded traversal.
 - File-only conventional selections use `--runTestsByPath`; mixed filters retain
   Jest semantics.
