@@ -234,6 +234,9 @@ These are supported, documented limitations rather than hidden quality gates:
   promised.
 - The CLI centralizes stage sequencing and uses injected filesystem/process
   seams internally. The CLI is the supported consumer API.
+- Injected lint collaborators may return either a numeric exit code or an
+  object containing an integer `code` and optional string `output`; the toolkit
+  normalizes both forms at the orchestration boundary.
 - Advanced collaborators may return incomplete results because runtime
   normalization occurs at the boundary. These are typed composition seams, not
   normal consumer setup.

@@ -46,6 +46,10 @@ eliware-test --help             Show supported options
 eliware-test --version          Print the installed version
 ```
 
+Advanced options include `--no-runInBand` for diagnostic worker behavior and
+`--ignore-monolith-limits` for temporary refactoring runs. Both are supported
+diagnostic options; normal validation should use their defaults.
+
 Tests run with coverage and are followed by linting. A successful run prints a
 short summary; failures include actionable diagnostics. The normal baseline
 requires 100% statements, branches, functions, and lines coverage.

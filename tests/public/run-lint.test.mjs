@@ -13,5 +13,5 @@ test('validates options and delegated exit codes', async () => {
 });
 
 test('uses the bundled lint command by default', async () => {
-  await expect(runLint({ cwd: process.cwd(), write: () => {} })).resolves.toEqual(expect.any(Number));
+  await expect(runLint({ cwd: process.cwd(), write: () => {} })).resolves.toBe(0);
 });
