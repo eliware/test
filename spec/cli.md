@@ -57,5 +57,7 @@ filename segment, or an `@generated` marker in the file path or source text.
   paths.
 - Conventional paths under `tests/`, `test/`, or `spec/` are checked before
   Jest starts. Missing paths fail clearly and never fall back to the full suite.
+  This focused-path recognition is broader than the strict architecture
+  bijection, which is limited to `src/**/*.mjs` and `tests/**/*.test.mjs`.
 - File-only conventional selections use `--runTestsByPath`; mixed filters retain
   Jest semantics.
