@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import { dirname, resolve } from 'node:path';
 import { runChildProcess } from '../processes/run-child-process.mjs';
 import { resolvePackage } from '../validation/resolve-package.mjs';
+import { buildJestCommand } from './jest-command.mjs';
 export { resolvePackage } from '../validation/resolve-package.mjs';
 
 /** Resolve and execute the consumer's bundled Jest CLI under native ESM. */
@@ -13,10 +14,8 @@ export async function runJest(argumentsList, options) {
   const jestPackage = resolvePackage('jest/package.json', require, packageRequire);
   const metadata = require(jestPackage);
   const jestPath = resolveJestBin(metadata, jestPackage);
-  const jestArguments = options.runInBand === false || argumentsList.includes('--runInBand')
-    ? argumentsList
-    : ['--runInBand', ...argumentsList];
-  return runChildProcess(process.execPath, ['--experimental-vm-modules', '--no-warnings', jestPath, ...jestArguments], options);
+  const command = buildJestCommand(jestPath, argumentsList, options.runInBand !== false);
+  return runChildProcess(command.command, command.argumentsList, options);
 }
 
 export function resolveJestBin(metadata, packagePath) {
