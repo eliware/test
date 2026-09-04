@@ -1,4 +1,4 @@
-import { buildOxlintArguments, runOxlint } from '../../../src/validation/lint/run-oxlint.mjs';
+import { buildOxlintArguments, resolveOxlintBin, runOxlint } from '../../../src/validation/lint/run-oxlint.mjs';
 
 test('builds the managed Oxlint invocation', () => {
   expect(buildOxlintArguments()).toEqual(expect.arrayContaining(['oxlint', '--deny-warnings', '.']));
@@ -8,6 +8,12 @@ test('builds the managed Oxlint invocation', () => {
 test('requires a workspace context and process collaborator', () => {
   expect(() => runOxlint({})).toThrow('requires a context with cwd and runChildProcess');
   expect(() => runOxlint({ cwd: process.cwd() })).toThrow('requires a context with cwd and runChildProcess');
+});
+
+test('resolves declared Oxlint bin forms and rejects missing metadata', () => {
+  expect(resolveOxlintBin({ bin: 'bin/oxlint' }, 'C:/repo/node_modules/oxlint/package.json')).toMatch(/bin[\\/]oxlint$/);
+  expect(() => resolveOxlintBin({}, 'C:/repo/package.json')).toThrow('does not declare');
+  expect(() => resolveOxlintBin(null, 'C:/repo/package.json')).toThrow(TypeError);
 });
 
 test('resolves the workspace Oxlint package and delegates the command', async () => {

@@ -14,8 +14,13 @@ export function runOxlint(context) {
   const require = createRequire(resolve(context.cwd, 'package.json'));
   const packagePath = require.resolve('oxlint/package.json');
   const metadata = require(packagePath);
+  const executable = resolveOxlintBin(metadata, packagePath);
+  return context.runChildProcess(process.execPath, [executable, ...buildOxlintArguments().slice(1)], context);
+}
+
+export function resolveOxlintBin(metadata, packagePath) {
+  if (!metadata || typeof metadata !== 'object' || typeof packagePath !== 'string') throw new TypeError('Oxlint metadata is required');
   const binPath = typeof metadata.bin === 'string' ? metadata.bin : metadata.bin?.oxlint;
   if (typeof binPath !== 'string' || binPath.length === 0) throw new Error('Oxlint package does not declare an executable');
-  const executable = resolve(dirname(packagePath), binPath);
-  return context.runChildProcess(process.execPath, [executable, ...buildOxlintArguments().slice(1)], context);
+  return resolve(dirname(packagePath), binPath);
 }
