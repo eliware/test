@@ -91,11 +91,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - Global regex replacement can perform excessive matching for long paths and
     alter unrelated diagnostic text. Replace with bounded path-component logic.
 
-- [ ] **P2 — Filesystem-root coverage paths are not fully covered**
-  - Location: `src/coverage/normalize-path.mjs:9-15`
-  - POSIX, Windows, and UNC root paths may produce incorrect containment or
-    doubled separators. Add explicit root-directory fixtures.
-
 - [ ] **P2 — Focused symlinks may escape workspace containment**
   - Location: `src/testing/validate-focused-paths.mjs:5-22`
   - Lexical containment can pass a symlink that resolves outside the workspace.
