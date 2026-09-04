@@ -73,11 +73,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - In addition to exclusions, traversal needs cycle/repeated-entry protection,
     bounded resource use, and sorted output for stable diagnostics.
 
-- [ ] **P2 — Coverage cleanup and stale-artifact tests are incomplete**
-  - Location: `tests/coverage/read-coverage.test.mjs:16-36`
-  - Add tests proving all candidates are removed, cleanup failures stop safely,
-    and stale candidates cannot be selected unexpectedly.
-
 ## Third follow-up CodeScope findings
 
 - [ ] **P1 — Coverage maps and counters can be semantically inconsistent**
@@ -106,11 +101,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     bundled Jest, and bundled Oxlint.
   - Add a clean temporary consumer smoke test covering `--version`, a minimal
     test, lint, and bundled/consumer dependency layouts.
-
-- [ ] **P2 — Coverage cleanup/freshness validation is incomplete**
-  - Location: `tests/coverage/read-coverage.test.mjs:16-36`
-  - Add tests proving every candidate is removed, cleanup failures stop safely,
-    and stale valid candidates cannot survive or be selected.
 
 - [ ] **P2 — Generated-file treatment differs across policy gates**
   - Locations: `src/architecture/validate-source-test-mapping.mjs`,
