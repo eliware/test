@@ -49,6 +49,22 @@ test('validates Windows and UNC paths on a non-Windows host', async () => {
   expect(accessed).toHaveLength(2);
 });
 
+test('accepts Windows runtime path errors when resolving focused paths', async () => {
+  const errors = ['UNKNOWN', 'ECONNRESET'];
+  for (const code of errors) {
+    const realpathPath = async () => {
+      throw Object.assign(new Error(code), { code });
+    };
+    await expect(validateFocusedPaths(
+      'C:/repo',
+      ['C:/repo/tests/example.test.mjs'],
+      async () => {},
+      async () => ({ isFile: () => true }),
+      realpathPath
+    )).resolves.toBe('');
+  }
+});
+
 test('rejects a focused symlink that resolves outside the workspace', async () => {
   const realpathPath = async (path) => path.endsWith('link.test.mjs') ? '/outside/real.test.mjs' : path;
   await expect(validateFocusedPaths('/repo', ['tests/link.test.mjs'], async () => {}, async () => ({ isFile: () => true }), realpathPath))
