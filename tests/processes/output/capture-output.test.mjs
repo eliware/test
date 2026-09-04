@@ -11,3 +11,9 @@ test('captures stderr and appends startup errors', () => {
   capture.capture('stderr')(new TextEncoder().encode('failure'));
   expect(capture.finish(' could not start')).toBe('failure could not start');
 });
+
+test('accepts string stream chunks', () => {
+  const capture = createOutputCapture();
+  capture.capture('stdout')('text chunk');
+  expect(capture.finish()).toContain('text chunk');
+});
