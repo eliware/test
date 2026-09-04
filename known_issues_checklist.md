@@ -58,11 +58,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Additional CodeScope review findings
 
-- [ ] **P1 — Malformed architecture results can crash preflight**
-  - Location: `src/public/run-toolkit-preflight.mjs:10-12`
-  - Validate mapping results before reading `missingTests` or `orphanTests`,
-    and convert malformed or rejected checks into the documented setup failure.
-
 - [ ] **P1 — Coverage candidate usability is only partially validated**
   - Location: `src/coverage/is-usable-coverage-report.mjs:4-7`
   - A report with malformed branch or function counters may be selected before
