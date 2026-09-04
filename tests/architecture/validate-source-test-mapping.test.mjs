@@ -29,6 +29,24 @@ test('reports missing and orphan mappings from a virtual tree', async () => {
   });
 });
 
+test('reports mapping drifts in stable lexical order', async () => {
+  const root = resolve('ordered-repo');
+  const readDirectory = async (directory) => {
+    if (directory === resolve(root, 'src')) return [
+      { name: 'z.mjs', isDirectory: () => false, isFile: () => true },
+      { name: 'a.mjs', isDirectory: () => false, isFile: () => true },
+    ];
+    if (directory === resolve(root, 'tests')) return [
+      { name: 'z.test.mjs', isDirectory: () => false, isFile: () => true },
+      { name: 'a-orphan.test.mjs', isDirectory: () => false, isFile: () => true },
+    ];
+    return [];
+  };
+  await expect(findSourceTestMappingDrifts(root, readDirectory)).resolves.toEqual({
+    missingTests: ['a'], orphanTests: ['a-orphan'],
+  });
+});
+
 test('requires a mirrored test even for barrel-shaped source files', async () => {
   const root = resolve('barrel-repo');
   const readDirectory = async (directory) => {
