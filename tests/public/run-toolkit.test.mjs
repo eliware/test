@@ -44,7 +44,7 @@ test('allows malformed coverage when coverage enforcement is explicitly ignored'
     runnerArguments: [],
     ignoreCoverage: true,
     write: () => {},
-    readFilePath: async () => '{ malformed coverage }',
+    readFilePath: async () => JSON.stringify({ scripts: {} }),
     runTest: async () => ({ code: 0, output: '' }),
     runLintCommand: async () => 0
   })).resolves.toBe(0);
