@@ -1,8 +1,9 @@
 import { normalizeCoveragePath } from './normalize-path.mjs';
-import { isCoveredCount, percentage, percentageWithUnknowns } from './percentages.mjs';
+import { percentage, percentageWithUnknowns } from './percentages.mjs';
 import { locationsForCounts } from './locations.mjs';
 import { uncoveredBranches } from './branches.mjs';
 import { uncoveredFunctions } from './functions.mjs';
+import { collectLineCoverage } from './lines.mjs';
 export { percentageWithUnknowns } from './percentages.mjs';
 export { parseCoverage } from './parse-text-coverage.mjs';
 export { metricHasGap } from './metric.mjs';
@@ -70,33 +71,7 @@ export function parseCoverageJson(json) {
       ? [{ type: 'branch' }]
       : Object.entries(data.b ?? {}).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
     const functions = uncoveredFunctions(data);
-    const lineCounts = new Map();
-    let unmappedLineCount = 0;
-    if (data.l && typeof data.l === 'object' && !Array.isArray(data.l)) {
-      for (const [line, count] of Object.entries(data.l)) {
-        const lineNumber = Number(line);
-        if (Number.isInteger(lineNumber) && lineNumber > 0 && Number.isFinite(count)) lineCounts.set(lineNumber, isCoveredCount(count) ? 1 : 0);
-      }
-    }
-    let hasUnmappedStatement = false;
-    Object.entries(data.statementMap).forEach(([id, statement]) => {
-      const statementCounts = data.s && (typeof data.s === 'object' || typeof data.s === 'function') ? data.s : {};
-      const count = statementCounts[id];
-      const statementStart = statement && typeof statement === 'object' && Object.hasOwn(statement, 'start')
-        && statement.start && typeof statement.start === 'object' && !Array.isArray(statement.start)
-        ? statement.start : undefined;
-      const line = statementStart?.line;
-      if (typeof line === 'number' && Number.isFinite(line) && !data.l) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
-      if (data.l) {
-        if (!Number.isFinite(count)) hasUnmappedStatement = true;
-      } else {
-        unmappedLineCount += 1;
-        if (!isCoveredCount(count)) hasUnmappedStatement = true;
-      }
-    });
-    Object.entries(data.s ?? {}).forEach(([id, count]) => {
-      if (!(id in data.statementMap) && !isCoveredCount(count)) hasUnmappedStatement = true;
-    });
+    const { lineCounts, unmappedLineCount, hasUnmappedStatement } = collectLineCoverage(data);
     const lines = new Set([...lineCounts].filter(([, count]) => count === 0).map(([line]) => line));
     // An l-map is authoritative for lines; statement gaps remain independently enforced.
     const lineGap = !data.l && hasUnmappedStatement;
