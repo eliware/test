@@ -2,8 +2,6 @@ import { isManagedOption, isWrapperOption, MANAGED_OPTIONS } from './classify-ar
 import { terminalMode } from './command-modes.mjs';
 import { readWrapperOptions } from './wrapper-options.mjs';
 import { assertCompatibleArguments } from './validate-options.mjs';
-import { HELP_TEXT } from './help-text.mjs';
-
 export { HELP_TEXT } from './help-text.mjs';
 
 export { MANAGED_OPTIONS };
