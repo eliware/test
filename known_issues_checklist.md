@@ -5,32 +5,9 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Correctness and lifecycle
 
-- [ ] **P1 — Architecture drift does not stop execution**
-  - Location: `src/public/run-toolkit-preflight.mjs:11-12`
-  - Mapping drift is retained, but workspace inspection and test execution can
-    continue before the architecture failure is returned.
-  - Decide and implement the documented contract: stop at the first applicable
-    failure, or explicitly revise the lifecycle contract to allow deferred
-    architecture reporting.
-  - Add regression coverage for the chosen behavior.
-
-- [ ] **P2 — Architecture failure is reported after other work**
-  - Location: `src/public/run-toolkit.mjs:13-29`
-  - `runToolkit` can run tests, coverage, lint, and monolith validation before
-    returning architecture drift.
-  - Make architecture validation a true preflight gate, or document the
-    deferred behavior explicitly in the public API contract.
-
 ## Reliability
 
 ## Architecture policy
-
-- [ ] **P2 — Barrel mapping and barrel exemptions are inconsistent**
-  - Location: `src/architecture/validate-source-test-mapping.mjs:21-30`
-  - Strict source/test mapping requires a test for every source `.mjs`, while
-    monolith policy exempts pure barrels.
-  - Either exclude pure barrels from mandatory mirroring or document and test
-    the deliberate requirement consistently across policy gates.
 
 ## Cross-platform behavior
 
@@ -42,13 +19,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     consistently with `sourcePathForTest`.
 
 ## Tests
-
-- [ ] **P2 — Stop-ordering regression coverage is incomplete**
-  - Locations: `tests/public/run-toolkit-preflight.test.mjs:19-25` and
-    `tests/public/run-toolkit.test.mjs:30-41`
-  - Existing tests cover mapping drift, but do not assert whether test execution
-    must stop when architecture drift is found.
-  - Add an invoked `runTest` spy and assert the chosen lifecycle behavior.
 
 ## Review notes
 
@@ -63,15 +33,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - A report with malformed branch or function counters may be selected before
     a later valid report. Define complete usability semantics for all required
     metrics and test malformed-first/valid-later selection.
-
-- [ ] **P1 — Child stream interfaces are assumed without validation**
-  - Location: `src/processes/monitor-child-process.mjs:15-25`
-  - Missing stdout or stderr objects can throw while listeners are attached.
-    Define a stable startup failure and cover malformed child objects.
-
-- [ ] **P2 — Mixed Windows/POSIX coverage paths may normalize incorrectly**
-  - Location: `src/coverage/normalize-path.mjs:4-15`
-  - Determine path flavor from both operands and add mixed-style path fixtures.
 
 - [ ] **P2 — Workspace path redaction is overbroad**
   - Location: `src/processes/output/normalize-output.mjs:9-10`
@@ -144,11 +105,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
   - In addition to exclusions, traversal needs cycle/repeated-entry protection,
     bounded resource use, and sorted output for stable diagnostics.
-
-- [ ] **P2 — Injected collaborators can alter policy defaults**
-  - Location: `src/public/resolve-toolkit-options.mjs:16-17`
-  - Supplying an unrelated collaborator can silently change workspace-inspection
-    behavior. Make policy defaults explicit and test injection combinations.
 
 - [ ] **P2 — Coverage cleanup and stale-artifact tests are incomplete**
   - Location: `tests/coverage/read-coverage.test.mjs:16-36`
