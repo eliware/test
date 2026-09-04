@@ -2,6 +2,7 @@ import { normalizeCoveragePath } from './normalize-path.mjs';
 import { isCoveredCount, percentage, percentageWithUnknowns } from './percentages.mjs';
 import { locationsForCounts } from './locations.mjs';
 import { uncoveredBranches } from './branches.mjs';
+import { uncoveredFunctions } from './functions.mjs';
 export { percentageWithUnknowns } from './percentages.mjs';
 export { parseCoverage } from './parse-text-coverage.mjs';
 export { metricHasGap } from './metric.mjs';
@@ -68,19 +69,7 @@ export function parseCoverageJson(json) {
     const branches = data.b !== undefined && (typeof data.b !== 'object' || Array.isArray(data.b))
       ? [{ type: 'branch' }]
       : Object.entries(data.b ?? {}).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
-    const functionCounters = data.f === undefined || data.f === null
-      ? {}
-      : (typeof data.f === 'object' && !Array.isArray(data.f) ? data.f : null);
-    const functions = functionCounters === null
-      ? [{ type: 'function', name: 'unknown' }]
-      : Object.entries(functionCounters).filter(([, count]) => !Number.isFinite(count) || count <= 0).map(([id]) => {
-      const metadata = data.fnMap && typeof data.fnMap === 'object' && Object.hasOwn(data.fnMap, id) ? data.fnMap[id] : undefined;
-      const fn = metadata && typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {};
-      const primaryLocation = fn.loc && typeof fn.loc === 'object' && !Array.isArray(fn.loc) && fn.loc.start && typeof fn.loc.start === 'object' ? fn.loc : undefined;
-      const fallbackLocation = Array.isArray(fn.locations) && fn.locations[0] && typeof fn.locations[0] === 'object' && !Array.isArray(fn.locations[0]) ? fn.locations[0] : undefined;
-      const location = primaryLocation ?? fallbackLocation;
-      return { ...(location && typeof location === 'object' && !Array.isArray(location) ? location : {}), name: typeof fn.name === 'string' ? fn.name : (metadata && typeof metadata === 'object' ? 'anonymous' : 'unknown') };
-      });
+    const functions = uncoveredFunctions(data);
     const lineCounts = new Map();
     let unmappedLineCount = 0;
     if (data.l && typeof data.l === 'object' && !Array.isArray(data.l)) {
