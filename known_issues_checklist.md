@@ -11,13 +11,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Cross-platform behavior
 
-- [ ] **P2 — Windows paths may be misclassified on non-Windows hosts**
-  - Location: `src/testing/validate-focused-paths.mjs:5-7`
-  - Workspace containment uses the host platform’s path semantics even when a
-    supplied path is Windows-formatted.
-  - Select Windows or POSIX path operations based on the supplied path format,
-    consistently with `sourcePathForTest`.
-
 ## Tests
 
 ## Review notes
@@ -33,11 +26,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - A report with malformed branch or function counters may be selected before
     a later valid report. Define complete usability semantics for all required
     metrics and test malformed-first/valid-later selection.
-
-- [ ] **P2 — Workspace path redaction is overbroad**
-  - Location: `src/processes/output/normalize-output.mjs:9-10`
-  - Restrict redaction to path-component boundaries so unrelated words and
-    longer path prefixes are not altered.
 
 - [ ] **P2 — Source/test mapping traversal lacks directory exclusions**
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`
@@ -129,12 +117,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     in-band options differently from CLI callers.
   - Share normalization and validation between entrypoints and add exact
     argument-parity tests.
-
-- [ ] **P1 — Diagnostic redaction is not platform-aware**
-  - Location: `src/processes/output/normalize-output.mjs:9-10`
-  - Case-insensitive global replacement can alter unrelated POSIX diagnostics
-    and mislead users about the original output.
-  - Use platform-aware, boundary-aware, bounded path redaction.
 
 - [ ] **P2 — Mapping traversal lacks explicit operational limits**
   - Location: `src/architecture/validate-source-test-mapping.mjs:4-17`

@@ -21,3 +21,10 @@ test('escapes workspace path characters and matches case-insensitively', () => {
     '<workspace>\\file.mjs',
   );
 });
+
+test('redacts only workspace path boundaries with platform-aware matching', () => {
+  expect(normalizeOutput('/work/failure /workspace/failure /workshop/failure', '/work'))
+    .toBe('<workspace>/failure /workspace/failure /workshop/failure');
+  expect(normalizeOutput('C:/REPO/failure C:/repository/failure', 'c:/repo'))
+    .toBe('<workspace>/failure C:/repository/failure');
+});

@@ -8,6 +8,8 @@ test('returns the first missing focused test path', async () => {
 
 test('accepts existing focused paths', async () => {
   await expect(validateFocusedPaths('C:/repo', ['tests/example.test.mjs'], async () => undefined, async () => ({ isFile: () => true }))).resolves.toBe('');
+  await expect(validateFocusedPaths('/repo', ['tests/example.test.mjs'], async () => undefined, async () => ({ isFile: () => true }))).resolves.toBe('');
+  await expect(validateFocusedPaths('/repo', ['C:/repo/tests/example.test.mjs'], async () => undefined, async () => ({ isFile: () => true }))).resolves.toBe('');
 });
 
 test('rejects an existing directory as a focused file path', async () => {
@@ -33,4 +35,13 @@ test('rejects concrete paths outside the workspace', async () => {
   await expect(validateFocusedPaths('/repo', ['../tests/outside.test.mjs'], async () => { accessed = true; }))
     .resolves.toBe('../tests/outside.test.mjs');
   expect(accessed).toBe(false);
+});
+
+test('validates Windows and UNC paths on a non-Windows host', async () => {
+  const accessed = [];
+  const accessPath = async (path) => { accessed.push(path); };
+  const file = async () => ({ isFile: () => true });
+  await expect(validateFocusedPaths('C:/repo', ['C:/repo/tests/a.test.mjs'], accessPath, file)).resolves.toBe('');
+  await expect(validateFocusedPaths('\\\\server\\share', ['\\\\server\\share\\tests\\a.test.mjs'], accessPath, file)).resolves.toBe('');
+  expect(accessed).toHaveLength(2);
 });

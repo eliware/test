@@ -1,9 +1,17 @@
 import { access, stat } from 'node:fs/promises';
-import { relative, resolve } from 'node:path';
+import { resolve, win32 } from 'node:path';
 import { extractFocusedPaths } from '../arguments/focused-paths.mjs';
 
+const WINDOWS_ABSOLUTE = /^(?:[A-Za-z]:[\\/]|[/\\]{2})/;
+
+function resolveCandidate(cwd, candidate) {
+  return WINDOWS_ABSOLUTE.test(cwd) || WINDOWS_ABSOLUTE.test(candidate)
+    ? win32.resolve(cwd, candidate)
+    : resolve(cwd, candidate);
+}
+
 function isInsideWorkspace(cwd, path) {
-  const relativePath = relative(resolve(cwd), path);
+  const relativePath = win32.relative(win32.resolve(cwd), win32.resolve(path));
   return relativePath !== '..' && !relativePath.startsWith('../') && !relativePath.startsWith('..\\') && !relativePath.startsWith('/');
 }
 
@@ -14,7 +22,7 @@ export async function validateFocusedPaths(cwd, argumentsList, accessPath, statP
   const checkAccess = accessPath ?? access;
   for (const candidate of extractFocusedPaths(argumentsList)) {
     try {
-      const path = resolve(cwd, candidate.replaceAll('\\', '/'));
+      const path = resolveCandidate(cwd, candidate.replaceAll('\\', '/'));
       if (!isInsideWorkspace(cwd, path)) return candidate;
       await checkAccess(path);
       if (!(await statPath(path)).isFile()) return candidate;

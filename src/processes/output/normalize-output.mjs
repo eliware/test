@@ -6,6 +6,8 @@ export function normalizeOutput(output, cwd) {
   const normalized = output.replace(ANSI_ESCAPE, '');
   if (typeof cwd !== 'string' || cwd.length === 0) return normalized;
 
-  const escapedCwd = cwd.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return normalized.replace(new RegExp(escapedCwd, 'gi'), '<workspace>');
+  const escapedCwd = cwd.replace(/[.*+?^${}()|[\][\\]/g, '\\$&');
+  const windowsPath = /^(?:[A-Za-z]:[\\/]|[/\\]{2})/.test(cwd);
+  const pathPattern = `(?<![A-Za-z0-9])${escapedCwd}(?![A-Za-z0-9])`;
+  return normalized.replace(new RegExp(pathPattern, windowsPath ? 'gi' : 'g'), '<workspace>');
 }
