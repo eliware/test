@@ -3,10 +3,10 @@ import { dirname, resolve } from 'node:path';
 import { resolvePackage } from '../resolve-package.mjs';
 
 /** Resolve the consumer-workspace Oxlint executable. */
-export function resolveOxlintRuntime(cwd) {
+export function resolveOxlintRuntime(cwd, resolvePackageForRun = resolvePackage) {
   const require = createRequire(resolve(cwd, 'package.json'));
   const packageRequire = createRequire(import.meta.url);
-  const packagePath = resolvePackage('oxlint/package.json', require, packageRequire);
+  const packagePath = resolvePackageForRun('oxlint/package.json', require, packageRequire);
   return resolveOxlintBin(require(packagePath), packagePath);
 }
 

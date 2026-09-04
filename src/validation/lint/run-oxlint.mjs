@@ -6,6 +6,6 @@ export function runOxlint(context) {
   if (!context || typeof context.cwd !== 'string' || typeof context.runChildProcess !== 'function') {
     throw new TypeError('runOxlint requires a context with cwd and runChildProcess');
   }
-  const executable = resolveOxlintRuntime(context.cwd);
+  const executable = resolveOxlintRuntime(context.cwd, context.resolvePackage);
   return context.runChildProcess(process.execPath, [executable, ...buildOxlintArguments().slice(1)], context);
 }

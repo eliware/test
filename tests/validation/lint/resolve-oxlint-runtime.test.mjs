@@ -9,3 +9,13 @@ test('resolves declared Oxlint bin forms and rejects missing metadata', () => {
   expect(() => resolveOxlintBin({}, 'C:/repo/package.json')).toThrow('does not declare');
   expect(() => resolveOxlintBin(null, 'C:/repo/package.json')).toThrow(TypeError);
 });
+
+test('accepts an injected package resolver', () => {
+  const calls = [];
+  const executable = resolveOxlintRuntime(process.cwd(), (name, consumer, bundled) => {
+    calls.push([name, consumer, bundled]);
+    return consumer.resolve(name);
+  });
+  expect(executable).toMatch(/node_modules[\\/]oxlint[\\/]bin[\\/]oxlint/i);
+  expect(calls[0][0]).toBe('oxlint/package.json');
+});
