@@ -1,6 +1,7 @@
 import { normalizeCoveragePath } from './normalize-path.mjs';
 import { isCoveredCount, percentage, percentageWithUnknowns } from './percentages.mjs';
 import { locationsForCounts } from './locations.mjs';
+import { uncoveredBranches } from './branches.mjs';
 export { percentageWithUnknowns } from './percentages.mjs';
 export { parseCoverage } from './parse-text-coverage.mjs';
 export { metricHasGap } from './metric.mjs';
@@ -66,17 +67,7 @@ export function parseCoverageJson(json) {
       : [{ type: 'statement' }];
     const branches = data.b !== undefined && (typeof data.b !== 'object' || Array.isArray(data.b))
       ? [{ type: 'branch' }]
-      : Object.entries(data.b ?? {}).flatMap(([id, counts]) => {
-      if (!Array.isArray(counts)) return [{ type: 'branch' }];
-      const branch = data.branchMap?.[id];
-      if (branch?.type === 'default-arg') return [];
-      if (!branch || typeof branch !== 'object') return counts.filter((count) => !isCoveredCount(count)).map(() => ({ type: 'branch' }));
-      return counts.flatMap((count, index) => {
-        const location = branch.locations?.[index];
-        if (isCoveredCount(count)) return [];
-        return [{ ...location, type: branch.type ?? 'branch' }];
-      });
-      });
+      : Object.entries(data.b ?? {}).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
     const functionCounters = data.f === undefined || data.f === null
       ? {}
       : (typeof data.f === 'object' && !Array.isArray(data.f) ? data.f : null);
