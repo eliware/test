@@ -4,7 +4,10 @@ import { relative, resolve } from 'node:path';
 async function filesUnder(root, readDirectory) {
   const files = new Set();
   async function visit(directory) {
-    for (const entry of await readDirectory(directory, { withFileTypes: true })) {
+    let entries;
+    try { entries = await readDirectory(directory, { withFileTypes: true }); }
+    catch (error) { if (error.code === 'ENOENT') return; throw error; }
+    for (const entry of entries) {
       const path = resolve(directory, entry.name);
       if (entry.isDirectory()) await visit(path);
       else if (entry.isFile()) files.add(relative(root, path).replaceAll('\\', '/'));

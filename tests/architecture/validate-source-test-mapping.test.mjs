@@ -38,3 +38,18 @@ test('requires a mirrored test even for barrel-shaped source files', async () =>
   };
   await expect(findSourceTestMappingDrifts(root, readDirectory)).resolves.toEqual({ missingTests: ['index'], orphanTests: [] });
 });
+
+test('reports absent mapping roots as drift instead of filesystem errors', async () => {
+  const root = resolve('missing-root-repo');
+  const readDirectory = async (directory) => {
+    if (directory === resolve(root, 'src')) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+    if (directory === resolve(root, 'tests')) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+    return [];
+  };
+  await expect(findSourceTestMappingDrifts(root, readDirectory)).resolves.toEqual({ missingTests: [], orphanTests: [] });
+});
+
+test('propagates mapping read failures other than missing roots', async () => {
+  const failure = Object.assign(new Error('denied'), { code: 'EACCES' });
+  await expect(findSourceTestMappingDrifts('repo', async () => { throw failure; })).rejects.toBe(failure);
+});
