@@ -52,10 +52,10 @@ repositories.
 node bin/eliware-test.mjs
 npm test
 npm run lint
-npm run typecheck
-npm audit --omit=dev --audit-level=moderate
-npm pack --dry-run
 ```
+
+Typecheck, audit, and packaging are external consumer or release workflows,
+not application features or package scripts.
 
 Use `eliware-test --help` for the supported command forms. When invoking via
 npm, pass Jest options after `npm test --`. Use `eliware-test --version` to
