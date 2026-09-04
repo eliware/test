@@ -1,9 +1,9 @@
 import { normalizeCoveragePath } from './normalize-path.mjs';
-import { percentage, percentageWithUnknowns } from './percentages.mjs';
 import { locationsForCounts } from './locations.mjs';
 import { uncoveredBranches } from './branches.mjs';
 import { uncoveredFunctions } from './functions.mjs';
 import { collectLineCoverage } from './lines.mjs';
+import { buildCoverageGap } from './build-gap.mjs';
 export { percentageWithUnknowns } from './percentages.mjs';
 export { parseCoverage } from './parse-text-coverage.mjs';
 export { metricHasGap } from './metric.mjs';
@@ -72,24 +72,10 @@ export function parseCoverageJson(json) {
       : Object.entries(data.b ?? {}).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
     const functions = uncoveredFunctions(data);
     const { lineCounts, unmappedLineCount, hasUnmappedStatement } = collectLineCoverage(data);
-    const lines = new Set([...lineCounts].filter(([, count]) => count === 0).map(([line]) => line));
     // An l-map is authoritative for lines; statement gaps remain independently enforced.
     const lineGap = !data.l && hasUnmappedStatement;
-    if (statements.length || branches.length || functions.length || lines.size || lineGap) {
-      gaps.push({
-        file,
-        statements,
-        branches,
-        functions,
-        lines: [...lines].sort((a, b) => a - b),
-        metrics: {
-          statements: percentage(data.s),
-          branches: percentage(data.b),
-          functions: percentage(data.f),
-          lines: lineGap ? 0 : (lineCounts.size > 0 ? percentageWithUnknowns(lineCounts, unmappedLineCount) : 100)
-        }
-      });
-    }
+    const gap = buildCoverageGap(file, statements, branches, functions, data.s, data.b, data.f, lineCounts, unmappedLineCount, lineGap);
+    if (gap) gaps.push(gap);
   }
   return gaps;
 }
