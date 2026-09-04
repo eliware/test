@@ -7,6 +7,7 @@ import { validateFocusedPaths } from '../testing/validate-focused-paths.mjs';
 import { resolveFocusedCoverage } from '../testing/focused-coverage/resolve-selection.mjs';
 import { buildJestArguments } from '../testing/build-jest-arguments.mjs';
 import { runJest } from '../testing/run-jest.mjs';
+import { runLintCommand as defaultRunLintCommand } from '../application/run-lint-command.mjs';
 import { formatFailure } from '../diagnostics/format-failure.mjs';
 import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
 import { detectViolations } from '../monolith/detect-violations.mjs';
@@ -25,7 +26,7 @@ const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.
 export async function runToolkit(options) {
   if (!options || typeof options !== 'object') throw new TypeError('runToolkit options are required');
   if (typeof options.cwd !== 'string' || !Array.isArray(options.runnerArguments)) throw new TypeError('runToolkit requires cwd and runnerArguments');
-  const { cwd, runnerArguments, write, runTest = runJest, runLintCommand,
+  const { cwd, runnerArguments, write, runTest = runJest, runLintCommand = defaultRunLintCommand,
     runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
     enforceMonolithLimits = false, sanitizeEnv = false, accessPath = access,
     removePath = rm, readFilePath = readFile,

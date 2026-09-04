@@ -27,6 +27,11 @@ test('filters sanitized environment overrides through the allowlist', () => {
     .toEqual({ SAFE: 'yes' });
 });
 
+test('handles absent sanitized override objects', () => {
+  expect(childEnvironment({ inheritEnv: false, allowedNames: ['SAFE'], env: null, overrides: null }))
+    .toEqual({});
+});
+
 test('uses safe defaults when called without options', () => {
   expect(Object.keys(childEnvironment()).length).toBeGreaterThan(0);
 });

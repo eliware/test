@@ -6,8 +6,9 @@ test('requires the toolkit caller contract', async () => {
   await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: [] })).rejects.toThrow(TypeError);
 });
 
-test('rejects incomplete runner collaborators', async () => {
-  await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: [], write: () => {} })).rejects.toThrow('requires cwd, runnerArguments, write, runTest, and runLintCommand');
+test('uses the bundled lint command by default', async () => {
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], write: () => {}, ignoreCoverage: true, runTest: async () => { throw new Error('stop before lint'); } }))
+    .resolves.toBe(8);
 });
 
 test('reports test startup failures through the stable code', async () => {

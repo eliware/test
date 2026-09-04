@@ -54,7 +54,7 @@ test('bounds large child-process output', async () => {
 
 test('supports an explicitly sanitized environment with overrides', async () => {
   const result = await runChildProcess(process.execPath, ['-e', 'process.stdout.write(process.env.ELIWARE_TEST_SECRET ?? "missing")'], {
-    cwd: process.cwd(), inheritEnv: false, allowedNames: [], env: { ELIWARE_TEST_SECRET: 'safe' }
+    cwd: process.cwd(), inheritEnv: false, allowedNames: ['ELIWARE_TEST_SECRET'], env: { ELIWARE_TEST_SECRET: 'safe' }
   });
   expect(result).toMatchObject({ code: 0, output: 'safe' });
 });
