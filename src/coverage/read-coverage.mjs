@@ -12,6 +12,7 @@ export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/co
 export async function readCoverage(cwd, testOutput, write, readFilePath = readFile, statPath = stat, startedAt = 0) {
   if (typeof cwd !== 'string') throw new TypeError('readCoverage requires cwd');
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
+  let malformedReport;
   for (const name of COVERAGE_CANDIDATES) {
     try {
       const reportPath = resolve(cwd, name);
@@ -22,10 +23,12 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
         catch (error) { if (error.code !== 'ENOENT') throw error; }
       }
       if (fresh && selectUsableReport([{ usable: isUsableCoverageReport(json), report: json }])) return parseJsonReport(json);
+      if (fresh && !isUsableCoverageReport(json)) malformedReport = name;
     } catch (error) {
       if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error;
     }
   }
+  if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
   const gaps = parseTextReport(testOutput);
   // Injected test runners may intentionally omit coverage output; treat that
   // as an empty report so later validation stages can still be exercised.

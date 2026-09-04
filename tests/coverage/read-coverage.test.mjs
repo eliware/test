@@ -53,12 +53,11 @@ test('falls back through missing and malformed reports to text coverage', async 
   expect(result[0].file).toBe('gap.mjs');
 });
 
-test('skips a structurally unusable JSON report', async () => {
-  const result = await readCoverage('C:/repo', text, () => {}, async (path) => {
+test('reports a structurally malformed JSON report explicitly', async () => {
+  await expect(readCoverage('C:/repo', text, () => {}, async (path) => {
     if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  });
-  expect(result[0].file).toBe('gap.mjs');
+  })).rejects.toThrow('Coverage report is malformed: coverage/coverage-final.json');
 });
 
 test('rejects unusable nonempty coverage evidence', async () => {
