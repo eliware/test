@@ -21,12 +21,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
 
 ## Additional CodeScope review findings
 
-- [ ] **P1 — Coverage candidate usability is only partially validated**
-  - Location: `src/coverage/is-usable-coverage-report.mjs:4-7`
-  - A report with malformed branch or function counters may be selected before
-    a later valid report. Define complete usability semantics for all required
-    metrics and test malformed-first/valid-later selection.
-
 ## Checklist maintenance notes
 
 - Add release validation for packed-artifact smoke installation and metadata,
