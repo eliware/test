@@ -1,11 +1,11 @@
 import { readdir, readFile } from 'node:fs/promises';
-import { extname, relative, resolve } from 'node:path';
+import { extname, resolve } from 'node:path';
 import { isPureBarrelSource } from './pure-barrel.mjs';
+import { scanIstanbulSource } from './scan-istanbul.mjs';
 export { isPureBarrelSource } from './pure-barrel.mjs';
 
 const SOURCE_EXTENSIONS = new Set(['.cjs', '.cts', '.js', '.jsx', '.mjs', '.mts', '.ts', '.tsx']);
 const IGNORED_DIRECTORIES = new Set(['.git', 'node_modules', 'coverage', '.nyc_output', 'test-results', 'dist', 'build']);
-const IGNORED_DIRECTIVE = /(?:\/\*\s*\*?\s*|\/\/\s*)istanbul\s+ignore\b/i;
 const MAX_SOURCE_READERS = 6;
 
 /** Find Istanbul ignore directives outside pure barrel modules. */
@@ -31,8 +31,8 @@ export async function findIstanbulIgnoreViolations(cwd, options = {}) {
       const index = nextIndex++;
       const { root, path } = sourceFiles[index];
       const source = await readSource(path, 'utf8');
-      const match = source.match(IGNORED_DIRECTIVE);
-      if (match && !isPureBarrelSource(source)) violations[index] = { file: relative(root, path).replaceAll('\\', '/'), line: source.slice(0, match.index).split(/\r?\n/).length };
+        const violation = scanIstanbulSource(root, path, source);
+        if (violation) violations[index] = violation;
     }
   }
   await Promise.all(Array.from({ length: Math.min(MAX_SOURCE_READERS, sourceFiles.length) }, () => readSources()));
