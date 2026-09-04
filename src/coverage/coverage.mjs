@@ -1,5 +1,6 @@
 import { normalizeCoveragePath } from './normalize-path.mjs';
 import { isCoveredCount, percentage, percentageWithUnknowns } from './percentages.mjs';
+import { locationsForCounts } from './locations.mjs';
 export { percentageWithUnknowns } from './percentages.mjs';
 export { parseCoverage } from './parse-text-coverage.mjs';
 export { metricHasGap } from './metric.mjs';
@@ -53,10 +54,6 @@ function percentageHundredths(value) {
 }
 
 */
-function locationsForCounts(map, counts) {
-  return Object.entries(counts).filter(([, count]) => !isCoveredCount(count)).map(([id]) => map[id] ?? {});
-}
-
 export function parseCoverageJson(json) {
   if (!json || typeof json !== 'object' || Array.isArray(json)) return [];
   const gaps = [];
