@@ -249,7 +249,8 @@ This package does not promise or implement:
 - same-worktree concurrent validation, cross-process Jest coordination, lock
   management, and per-run temporary coverage isolation;
 - arbitrary Jest option discovery beyond the shared supported metadata;
-- structured diagnostics, machine-readable output, or an abort-signal API;
+- structured validation diagnostics, machine-readable output, or an abort-signal
+  API; callers must use the concise human-readable output and exit code only.
 - semantic merging of multiple coverage candidates;
 - coverage correctness beyond supplied producer evidence;
 - narrowing ambiguous focused source mappings by guessing a source;
