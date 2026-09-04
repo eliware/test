@@ -9,7 +9,7 @@ test('builds a sanitized environment when inheritance is disabled', () => {
   expect(childEnvironment({
     environment: { SAFE: 'yes', SECRET: 'no' },
     inheritEnv: false,
-    allowedNames: ['SAFE'],
+    allowedNames: ['SAFE', 'EXTRA'],
     env: { EXTRA: 'value' }
   })).toEqual({ SAFE: 'yes', EXTRA: 'value' });
 });
@@ -20,6 +20,11 @@ test('sanitizes explicitly even when inheritance remains enabled', () => {
     sanitize: true,
     allowedNames: ['SAFE']
   })).toEqual({ SAFE: 'yes' });
+});
+
+test('filters sanitized environment overrides through the allowlist', () => {
+  expect(childEnvironment({ inheritEnv: false, allowedNames: ['SAFE'], env: { SECRET: 'no' }, overrides: { SAFE: 'yes', SECRET: 'still-no' } }))
+    .toEqual({ SAFE: 'yes' });
 });
 
 test('uses safe defaults when called without options', () => {
