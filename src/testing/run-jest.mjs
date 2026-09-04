@@ -6,10 +6,19 @@ import { runChildProcess } from '../processes/run-child-process.mjs';
 export async function runJest(argumentsList, options) {
   if (!Array.isArray(argumentsList)) throw new TypeError('runJest requires an argument array');
   if (!options || typeof options.cwd !== 'string') throw new TypeError('runJest requires cwd');
-  const jestPackage = createRequire(resolve(options.cwd, 'package.json')).resolve('jest/package.json');
-  const jestPath = resolve(dirname(jestPackage), 'bin/jest.js');
+  const require = createRequire(resolve(options.cwd, 'package.json'));
+  const jestPackage = require.resolve('jest/package.json');
+  const metadata = require(jestPackage);
+  const jestPath = resolveJestBin(metadata, jestPackage);
   const jestArguments = options.runInBand === false || argumentsList.includes('--runInBand')
     ? argumentsList
     : ['--runInBand', ...argumentsList];
   return runChildProcess(process.execPath, ['--experimental-vm-modules', '--no-warnings', jestPath, ...jestArguments], options);
+}
+
+export function resolveJestBin(metadata, packagePath) {
+  if (!metadata || typeof metadata !== 'object' || typeof packagePath !== 'string') throw new TypeError('Jest metadata is required');
+  const binPath = typeof metadata.bin === 'string' ? metadata.bin : metadata.bin?.jest;
+  if (typeof binPath !== 'string' || binPath.length === 0) throw new Error('Jest package does not declare an executable');
+  return resolve(dirname(packagePath), binPath);
 }

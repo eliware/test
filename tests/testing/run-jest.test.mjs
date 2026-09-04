@@ -1,7 +1,13 @@
-import { runJest } from '../../src/testing/run-jest.mjs';
+import { resolveJestBin, runJest } from '../../src/testing/run-jest.mjs';
 
 test('exports the Jest executor', () => {
   expect(runJest).toBeInstanceOf(Function);
+});
+
+test('resolves declared Jest bin forms and rejects missing metadata', () => {
+  expect(resolveJestBin({ bin: 'bin/jest.js' }, 'C:/repo/node_modules/jest/package.json')).toMatch(/bin[\\/]jest\.js$/);
+  expect(() => resolveJestBin({}, 'C:/repo/package.json')).toThrow('does not declare');
+  expect(() => resolveJestBin(null, 'C:/repo/package.json')).toThrow(TypeError);
 });
 
 test('rejects malformed invocation options', async () => {
