@@ -27,10 +27,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
     a later valid report. Define complete usability semantics for all required
     metrics and test malformed-first/valid-later selection.
 
-- [ ] **P2 — Process stream boundary cases lack coverage**
-  - Location: `tests/processes/monitor-child-process.test.mjs`
-  - Cover split UTF-8 chunks, missing streams, late data, and close ordering.
-
 ## Checklist maintenance notes
 
 - Add release validation for packed-artifact smoke installation and metadata,
@@ -52,11 +48,6 @@ Source: `codescope release` run on 2026-09-04. The release verdict was
   - A structurally valid report from an older run may be accepted if cleanup or
     report replacement is incomplete.
   - Define freshness/ownership semantics and test stale-candidate behavior.
-
-- [ ] **P2 — Error handling can lose late process diagnostics**
-  - Location: `src/processes/monitor-child-process.mjs:17-21`
-  - Settling immediately on an error event can discard output delivered before
-    close. Decide whether to drain streams or explicitly document the behavior.
 
 - [ ] **P1 — Diagnostic redaction has resource and evidence risks**
   - Location: `src/processes/output/normalize-output.mjs:9-10`

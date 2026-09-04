@@ -11,6 +11,7 @@ test('settles with captured output and exit code', async () => {
   child.stdout.emit('data', 'ok');
   child.emit('close', 0);
   await expect(resultPromise).resolves.toEqual({ code: 0, output: 'ok' });
+  child.emit('close', 0);
 });
 
 test('normalizes process errors', async () => {
@@ -19,10 +20,11 @@ test('normalizes process errors', async () => {
   child.stderr = new EventEmitter();
   const resultPromise = monitorChildProcess(child, createOutputCapture());
   child.emit('error', new Error('missing executable'));
+  child.emit('close', null);
   await expect(resultPromise).resolves.toMatchObject({ code: 1, output: 'missing executable\n' });
 });
 
-test('ignores late lifecycle events and invalid close codes', async () => {
+test('preserves stream data delivered after an error and normalizes close codes', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
   child.stderr = new EventEmitter();
@@ -31,7 +33,7 @@ test('ignores late lifecycle events and invalid close codes', async () => {
   child.stdout.emit('data', Buffer.from('late'));
   child.stderr.emit('data', Buffer.from('late error'));
   child.emit('close', null);
-  await expect(resultPromise).resolves.toMatchObject({ code: 1, output: expect.stringContaining('missing executable') });
+  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'latelate errormissing executable\n' });
 });
 
 test('normalizes an invalid close code without a process error', async () => {
@@ -96,5 +98,6 @@ test('does not duplicate an error already captured on stderr', async () => {
   const resultPromise = monitorChildProcess(child, createOutputCapture());
   child.stderr.emit('data', 'missing executable\n');
   child.emit('error', new Error('missing executable'));
+  child.emit('close', 1);
   await expect(resultPromise).resolves.toEqual({ code: 1, output: 'missing executable\n' });
 });
