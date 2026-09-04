@@ -7,13 +7,19 @@ export async function runJest(argumentsList, options) {
   if (!Array.isArray(argumentsList)) throw new TypeError('runJest requires an argument array');
   if (!options || typeof options.cwd !== 'string') throw new TypeError('runJest requires cwd');
   const require = createRequire(resolve(options.cwd, 'package.json'));
-  const jestPackage = require.resolve('jest/package.json');
+  const packageRequire = createRequire(import.meta.url);
+  const jestPackage = resolvePackage('jest/package.json', require, packageRequire);
   const metadata = require(jestPackage);
   const jestPath = resolveJestBin(metadata, jestPackage);
   const jestArguments = options.runInBand === false || argumentsList.includes('--runInBand')
     ? argumentsList
     : ['--runInBand', ...argumentsList];
   return runChildProcess(process.execPath, ['--experimental-vm-modules', '--no-warnings', jestPath, ...jestArguments], options);
+}
+
+export function resolvePackage(name, consumerRequire, packageRequire) {
+  try { return consumerRequire.resolve(name); }
+  catch { return packageRequire.resolve(name); }
 }
 
 export function resolveJestBin(metadata, packagePath) {

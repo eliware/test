@@ -12,10 +12,16 @@ export function runOxlint(context) {
     throw new TypeError('runOxlint requires a context with cwd and runChildProcess');
   }
   const require = createRequire(resolve(context.cwd, 'package.json'));
-  const packagePath = require.resolve('oxlint/package.json');
+  const packageRequire = createRequire(import.meta.url);
+  const packagePath = resolvePackage('oxlint/package.json', require, packageRequire);
   const metadata = require(packagePath);
   const executable = resolveOxlintBin(metadata, packagePath);
   return context.runChildProcess(process.execPath, [executable, ...buildOxlintArguments().slice(1)], context);
+}
+
+export function resolvePackage(name, consumerRequire, packageRequire) {
+  try { return consumerRequire.resolve(name); }
+  catch { return packageRequire.resolve(name); }
 }
 
 export function resolveOxlintBin(metadata, packagePath) {

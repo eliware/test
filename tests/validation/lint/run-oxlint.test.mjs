@@ -1,4 +1,4 @@
-import { buildOxlintArguments, resolveOxlintBin, runOxlint } from '../../../src/validation/lint/run-oxlint.mjs';
+import { buildOxlintArguments, resolveOxlintBin, resolvePackage, runOxlint } from '../../../src/validation/lint/run-oxlint.mjs';
 
 test('builds the managed Oxlint invocation', () => {
   expect(buildOxlintArguments()).toEqual(expect.arrayContaining(['oxlint', '--deny-warnings', '.']));
@@ -14,6 +14,10 @@ test('resolves declared Oxlint bin forms and rejects missing metadata', () => {
   expect(resolveOxlintBin({ bin: 'bin/oxlint' }, 'C:/repo/node_modules/oxlint/package.json')).toMatch(/bin[\\/]oxlint$/);
   expect(() => resolveOxlintBin({}, 'C:/repo/package.json')).toThrow('does not declare');
   expect(() => resolveOxlintBin(null, 'C:/repo/package.json')).toThrow(TypeError);
+});
+
+test('falls back to package resolution', () => {
+  expect(resolvePackage('oxlint/package.json', { resolve: () => { throw new Error('missing'); } }, { resolve: (name) => `package/${name}` })).toBe('package/oxlint/package.json');
 });
 
 test('resolves the workspace Oxlint package and delegates the command', async () => {
