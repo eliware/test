@@ -1,8 +1,8 @@
 import { assertLintOptions, assertExitCode } from '../public/contracts.mjs';
 import { EXIT_CODES } from '../exit-codes/codes.mjs';
 import { formatFailure } from '../diagnostics/format-failure.mjs';
-import { detectWarnings } from '../validation/lint/detect-warnings.mjs';
 import { runOxlint } from '../validation/lint/run-oxlint.mjs';
+import { lintFailed, normalizeLintResult } from '../validation/lint/result.mjs';
 import { inspectWorkspace } from '../workspace/inspect-workspace.mjs';
 import { createTiming } from '../diagnostics/timing.mjs';
 import { runChildProcess } from '../processes/run-child-process.mjs';
@@ -30,10 +30,9 @@ export async function runLintCommand(options) {
     return EXIT_CODES.LINT_START;
   }
 
-  const code = Number.isInteger(result.code) ? result.code : 1;
-  const output = typeof result.output === 'string' ? result.output : '';
-  if (code !== 0 || detectWarnings(output)) {
-    write(formatFailure('Lint', { ...result, code, output }));
+  const normalized = normalizeLintResult(result);
+  if (lintFailed(normalized)) {
+    write(formatFailure('Lint', normalized));
     return assertExitCode(EXIT_CODES.LINT_FAILURE, 'runLintCommand');
   }
   timing.step('Lint', 'complete');
