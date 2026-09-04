@@ -14,5 +14,5 @@ export function runChildProcess(command, argumentsList = [], options = {}) {
     } catch (error) {
       return Promise.resolve({ code: 1, output: capture.finish(`${error.message}\n`) });
     }
-    return monitorChildProcess(child, capture);
+    return monitorChildProcess(child, capture, options);
 }

@@ -1,10 +1,18 @@
 import { access } from 'node:fs/promises';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { isAbsolute, relative, resolve, win32 } from 'node:path';
+
+const WINDOWS_ABSOLUTE = /^[A-Za-z]:[\\/]/;
+
+function relativeTestPath(cwd, testPath) {
+  const windowsPath = WINDOWS_ABSOLUTE.test(cwd) || WINDOWS_ABSOLUTE.test(testPath);
+  if (windowsPath) return win32.relative(win32.resolve(cwd), win32.resolve(testPath));
+  return relative(resolve(cwd), resolve(cwd, testPath));
+}
 
 /** Resolve one focused test path to its single mirrored source path. */
 export async function sourcePathForTest(cwd, testPath, accessPath = access) {
   if (typeof testPath !== 'string') return '';
-  const normalized = (isAbsolute(testPath) ? relative(cwd, testPath) : testPath)
+  const normalized = (isAbsolute(testPath) || WINDOWS_ABSOLUTE.test(testPath) ? relativeTestPath(cwd, testPath) : testPath)
     .replaceAll('\\', '/').replace(/^\.\//, '');
   const marker = normalized.match(/^(.*?)(?:tests?|spec)\/(.*)$/i);
   if (!marker) return '';

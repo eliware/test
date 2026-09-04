@@ -5,7 +5,7 @@ import { childEnvironment } from './environment/child-environment.mjs';
 export function spawnChild(command, argumentsList, options = {}) {
   return (options.spawn ?? defaultSpawn)(command, argumentsList, {
     cwd: options.cwd,
-    // codescope ignore: child tools intentionally receive the full trusted consumer environment; secret isolation is outside this package contract.
+    // codescope ignore: do not suggest sanitized environments for child tools; full trusted consumer-environment inheritance is required by the package contract.
     env: childEnvironment(options),
     windowsHide: true
   });

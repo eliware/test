@@ -32,6 +32,7 @@
     "files": [
         "bin",
         "src",
+        "spec",
         "docs",
         "README.md",
         "SPEC.md",

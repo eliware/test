@@ -11,4 +11,6 @@ test('normalizes relative and workspace-absolute test paths', async () => {
   };
   await expect(sourcePathForTest('C:/repo', '.\\tests\\a.test.mjs', accessPath)).resolves.toBe('src/a.mjs');
   await expect(sourcePathForTest('C:/repo', 'C:/repo/tests/a.test.mjs', accessPath)).resolves.toBe('src/a.mjs');
+  await expect(sourcePathForTest('c:\\REPO', 'C:/repo/tests/a.test.mjs', accessPath)).resolves.toBe('src/a.mjs');
+  await expect(sourcePathForTest('/repo', '/repo/tests/a.test.mjs', accessPath)).resolves.toBe('src/a.mjs');
 });

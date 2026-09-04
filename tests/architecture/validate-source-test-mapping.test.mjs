@@ -28,3 +28,13 @@ test('reports missing and orphan mappings from a virtual tree', async () => {
     orphanTests: ['orphan'],
   });
 });
+
+test('requires a mirrored test even for barrel-shaped source files', async () => {
+  const root = resolve('barrel-repo');
+  const readDirectory = async (directory) => {
+    if (directory === resolve(root, 'src')) return [{ name: 'index.mjs', isDirectory: () => false, isFile: () => true }];
+    if (directory === resolve(root, 'tests')) return [];
+    return [];
+  };
+  await expect(findSourceTestMappingDrifts(root, readDirectory)).resolves.toEqual({ missingTests: ['index'], orphanTests: [] });
+});

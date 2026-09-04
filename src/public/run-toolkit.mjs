@@ -25,5 +25,5 @@ export async function runToolkit(options) {
   const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, ignoreCoverage, runLintCommand, enforceMonolithLimits, findMonolith, ignoreMonolithLimits, timing });
   if (validationOutcome !== null) return validationOutcome;
   reportToolkitSuccess(write, ignoreCoverage);
-  return preflight.architecture || 0;
+  return 0;
 }

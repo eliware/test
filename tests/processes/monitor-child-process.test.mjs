@@ -1,4 +1,5 @@
 import { EventEmitter } from 'node:events';
+import { jest } from '@jest/globals';
 import { createOutputCapture } from '../../src/processes/output/capture-output.mjs';
 import { monitorChildProcess } from '../../src/processes/monitor-child-process.mjs';
 
@@ -40,4 +41,20 @@ test('normalizes an invalid close code without a process error', async () => {
   const resultPromise = monitorChildProcess(child, createOutputCapture());
   child.emit('close', null);
   await expect(resultPromise).resolves.toMatchObject({ code: 1 });
+});
+
+test('settles and terminates a child that never closes', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    child.kill = jest.fn();
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(10);
+    await expect(resultPromise).resolves.toEqual({ code: 1, output: 'Child process timed out after 10 ms\n' });
+    expect(child.kill).toHaveBeenCalledTimes(1);
+  } finally {
+    jest.useRealTimers();
+  }
 });

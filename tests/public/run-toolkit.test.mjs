@@ -35,7 +35,7 @@ test('fails before Jest when source/test mapping drifts', async () => {
     findSourceTestMapping: async () => ({ missingTests: ['new-module'], orphanTests: ['old-module'] }),
     runTest: async () => { invoked = true; return { code: 0, output: '' }; }, runLintCommand: async () => 0,
   })).resolves.toBe(16);
-  expect(invoked).toBe(true);
+  expect(invoked).toBe(false);
   expect(messages.join('')).toContain('Missing test pair');
   expect(messages.join('')).toContain('Test without source pair');
 });

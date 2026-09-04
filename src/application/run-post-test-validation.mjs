@@ -10,7 +10,7 @@ export async function runPostTestValidation({ cwd, testResult, write, readFilePa
     if (coverageResult) return coverageResult;
   }
   timing.step('Coverage', 'lint');
-  const lint = await validateLint(runLintCommand, cwd, write);
+  const lint = await validateLint(() => runLintCommand({ cwd, write }));
   if (lint) return lint;
   timing.step('Lint', 'monolith validation');
   if (enforceMonolithLimits) {

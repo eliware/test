@@ -67,6 +67,21 @@ with mirrored tests. During refactoring, use
 validation, but CI and release runs must enforce the limit. See `SPEC.md` for
 the full contract.
 
+Configuration exemptions belong in the consuming package's `package.json` and
+must include both a glob pattern and a non-empty reason:
+
+```json
+{
+  "eliwareTest": {
+    "monolithLimits": {
+      "exemptions": [
+        { "pattern": "src/public/index.mjs", "reason": "pure export barrel" }
+      ]
+    }
+  }
+}
+```
+
 When several people or jobs work at the same time, give each one a separate
 Git worktree or workspace. Coverage reports stay in the current worktree so
 they can be inspected after the run. Do not run overlapping validations in
