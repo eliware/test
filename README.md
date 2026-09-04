@@ -61,11 +61,24 @@ skipped.
 
 Source modules are limited to 100 lines and test files to 200 lines. Pure
 barrels, generated files, and explicitly justified configuration exemptions
-are excluded. Violations fail with stable exit code 15 and must be decomposed
+are excluded from size limits. Their mapping and discovery treatment follows
+the explicit architecture policy. Violations fail with stable exit code 15 and must be decomposed
 with mirrored tests. During refactoring, use
 `eliware-test --ignore-monolith-limits`; it still runs the suite and other
 validation, but CI and release runs must enforce the limit. See `SPEC.md` for
 the full contract.
+
+Generated-file treatment across source/test mapping, Istanbul-ignore policy,
+and monolith checks is part of the architecture contract. Generated files are
+exempt from monolith size limits only; they remain subject to source/test
+mapping and Istanbul-ignore policy discovery unless a directory-level exclusion
+applies. See `spec/cli.md` for the complete rule.
+
+The CLI is the normal policy-enforcing entrypoint. Code importing the public
+`runToolkit` API uses the direct-call contract instead: it does not inherit CLI
+argument parsing, and callers must provide documented options explicitly.
+Architecture preflight ordering and CLI/API parity are tracked in
+`known_issues_checklist.md`.
 
 Configuration exemptions belong in the consuming package's `package.json` and
 must include both a glob pattern and a non-empty reason:
