@@ -6,6 +6,11 @@ Successful child output controlled by the wrapper is suppressed and replaced
 by a concise summary. npm lifecycle notices and non-failing workspace warnings
 may still appear. Failures preserve useful test names, assertions, stacks, lint
 findings, and coverage details.
+On a clean full `npm test`/`eliware-test` run, lint success is consolidated
+into the single final summary line (`Tests passed | Coverage: 100×4 | Lint: 0
+warnings`). The standalone lint command may report `Lint passed: 0 warnings`
+when it is run independently, but the integrated pipeline does not emit that
+duplicate line.
 
 Captured child diagnostics are bounded to 16 KiB of JavaScript string length.
 

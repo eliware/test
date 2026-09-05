@@ -10,7 +10,7 @@ export async function runPostTestValidation({ cwd, testResult, write, readFilePa
   const coverageResult = ignoreCoverage ? 0 : await coverageValidator(cwd, testResult.output, write, readFilePath, statPath, startedAt);
   const normalizedCoverageResult = Number.isInteger(coverageResult) ? coverageResult : EXIT_CODES.COVERAGE_FAILURE;
   timing.step('Coverage', 'lint');
-  const lint = await validateLint(() => runLintCommand({ ...lintOptions, cwd, write }));
+  const lint = await validateLint(() => runLintCommand({ ...lintOptions, cwd, write, reportSuccess: false }));
   if (lint) return lint;
   timing.step('Lint', 'monolith validation');
   if (enforceMonolithLimits) {

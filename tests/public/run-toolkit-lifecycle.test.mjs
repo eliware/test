@@ -14,4 +14,5 @@ test('runs the lifecycle stages and reports success', async () => {
   };
   await expect(runToolkitLifecycle(context)).resolves.toBe(0);
   expect(messages.join('')).toContain('Tests passed');
+  expect(messages.filter((message) => message.includes('Lint passed: 0 warnings'))).toHaveLength(0);
 });

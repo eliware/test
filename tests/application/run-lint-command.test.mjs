@@ -46,6 +46,12 @@ test('reports a successful lint run', async () => {
   expect(messages.join('')).toContain('Lint passed: 0 warnings');
 });
 
+test('suppresses standalone lint success when called by the toolkit pipeline', async () => {
+  const messages = [];
+  await expect(runLintCommand({ cwd: 'C:/repo', write: (message) => messages.push(message), reportSuccess: false, inspect: async () => true, runLint: async () => ({ code: 0, output: '' }) })).resolves.toBe(0);
+  expect(messages).not.toContain('Lint passed: 0 warnings\n');
+});
+
 test('passes the default lint process runner through to Oxlint', async () => {
   let received;
   await expect(runLintCommand({
