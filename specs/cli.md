@@ -148,6 +148,9 @@ host is therefore intentionally treated as Windows syntax.
   independent consumer API; direct calls that bypass option validation are
   outside the contract and are not required to reject malformed worker values
   themselves.
+- Focused-path extraction recognizes only the documented value-taking Jest
+  options. Unknown or undocumented options are not inferred to consume a
+  following token; consumers must use the supported CLI forms.
 - A standalone `--` separator is removed once before Jest invocation.
 - Shared Jest value-option metadata prevents option values becoming focused
   paths.

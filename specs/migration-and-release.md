@@ -47,6 +47,12 @@ and release validation confirms required platform checks, package metadata, and
 self-test results before publication. No tag, publish, push, or deployment is
 implied by this specification.
 
+Windows package-script execution supports the documented conventional Node/npm
+installation layout. Compatibility with arbitrary package managers or unusual
+installation layouts is not promised. Release evidence identifies commands
+that were actually run; an unreported command is not evidence of either
+success or failure.
+
 ## Out-of-scope behavior
 
 The package does not replace project-specific smoke, integration, regression,

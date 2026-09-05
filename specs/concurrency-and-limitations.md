@@ -16,6 +16,15 @@ boundaries are not consumer APIs; consumers should invoke the CLI.
 
 ## Supported operational constraints
 
+Coverage promotion may use a fixed, transient rollback pathname while an
+existing coverage directory is replaced. That pathname is cleaned up before
+promotion and is not a user backup or restoration feature. Concurrent runs or
+unrelated external manipulation of that transient pathname are unsupported.
+
+The CLI adapter explicitly enables monolith enforcement for normal runs. The
+toolkit's lower-level defaults are internal composition and test seams, not an
+alternate consumer configuration contract.
+
 - Istanbul policy discovery is complete; directory enumeration is deterministic
   and source inspection uses at most six concurrent readers.
 - The CLI centralizes sequencing and uses injected filesystem/process seams.
