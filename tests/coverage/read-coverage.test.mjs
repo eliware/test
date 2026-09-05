@@ -116,11 +116,11 @@ test('falls back through missing and malformed reports to text coverage', async 
   expect(result[0].file).toBe('gap.mjs');
 });
 
-test('fails closed when the only JSON report is structurally malformed', async () => {
+test('falls back when the only JSON report is structurally malformed', async () => {
   await expect(readCoverage('C:/repo', text, () => {}, async (path) => {
     if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  })).rejects.toThrow('Coverage report is malformed: coverage/coverage-final.json');
+  })).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
 });
 
 test('reports malformed JSON when production output has no text fallback', async () => {

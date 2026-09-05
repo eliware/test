@@ -42,7 +42,7 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
       const usable = isUsableCoverageReport(json);
       return { name, json, usable, malformed: !usable, fresh };
     } catch (error) {
-      if (error instanceof SyntaxError) return { name, malformed: true };
+      if (error instanceof SyntaxError) return { name, malformed: true, fresh: !startedAt };
       if (error.code === 'ENOENT') return { name };
       throw error;
     }
