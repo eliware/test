@@ -60,6 +60,15 @@ describe('coverage facade', () => {
     expect(gaps[0].lines).toEqual([1]);
   });
 
+  test('rejects malformed explicit line counters', () => {
+    expect(() => parseCoverageJson({
+      'src/malformed-lines.mjs': {
+        statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, l: { 1: '1' },
+        branchMap: {}, b: {}, fnMap: {}, f: {}
+      }
+    })).toThrow('Malformed coverage entry');
+  });
+
   test('rejects entries with inconsistent metric maps and counters', () => {
     expect(() => parseCoverageJson({
       'src/malformed.mjs': {

@@ -8,6 +8,8 @@ export function isUsableCoverageEntry(data) {
     || data.branchMap !== undefined && (!data.branchMap || typeof data.branchMap !== 'object' || Array.isArray(data.branchMap))
     || data.fnMap !== undefined && (!data.fnMap || typeof data.fnMap !== 'object' || Array.isArray(data.fnMap))) return false;
   const validCount = (count) => Number.isFinite(count) && count >= 0;
+  const validLineMap = data.l === undefined || (data.l && typeof data.l === 'object' && !Array.isArray(data.l)
+    && Object.entries(data.l).every(([line, count]) => Number.isInteger(Number(line)) && Number(line) > 0 && validCount(count)));
   const sameKeys = (left, right) => {
     const leftKeys = Object.keys(left);
     const rightKeys = Object.keys(right);
@@ -16,7 +18,8 @@ export function isUsableCoverageEntry(data) {
   const statementKeys = Object.keys(data.statementMap);
   const branchKeys = Object.keys(data.b);
   const functionKeys = Object.keys(data.f);
-  return sameKeys(data.statementMap, data.s)
+  return validLineMap
+    && sameKeys(data.statementMap, data.s)
     && statementKeys.every((key) => validCount(data.s[key]))
     && branchKeys.every((key) => {
       const locations = data.branchMap?.[key]?.locations;
