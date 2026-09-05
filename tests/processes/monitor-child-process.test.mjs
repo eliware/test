@@ -23,6 +23,16 @@ test('normalizes process errors', async () => {
   await expect(resultPromise).resolves.toEqual({ code: 1, output: 'late diagnostic\nmissing executable\n' });
 });
 
+test('settles an error when the child never closes', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+    const resultPromise = monitorChildProcess(child, createOutputCapture());
+    child.emit('error', new Error('spawn failed'));
+    jest.advanceTimersByTime(100);
+    await expect(resultPromise).resolves.toEqual({ code: 1, output: 'spawn failed\n' });
+  } finally { jest.useRealTimers(); }
+});
 test('normalizes an invalid close code without a process error', async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

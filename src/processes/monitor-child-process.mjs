@@ -12,10 +12,12 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
     let forceKill;
     let finalKill;
     let processError = '';
+    let errorGrace;
     const finish = (code, errorMessage) => {
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
+      clearTimeout(errorGrace);
       const output = capture.finish();
       const duplicate = errorMessage && output.includes(errorMessage.trim());
       resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}` });
@@ -25,6 +27,8 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       child.stderr.on('data', capture.capture('stderr'));
       child.on('error', (error) => {
         processError = `${error.message}\n`;
+        errorGrace = setTimeout(() => finish(1, processError), 100);
+        errorGrace.unref?.();
       });
       child.on('close', (code) => {
         closed = true;
