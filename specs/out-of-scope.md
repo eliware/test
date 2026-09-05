@@ -45,6 +45,9 @@ This document records behavior the v5 CLI intentionally does not provide.
 - Requiring immediate child-process settlement on an `error` event when no
   `close` event has arrived is out of scope. The documented timeout and signal
   escalation contract remains authoritative.
+- Guaranteed removal of optional timing diagnostics after a failed Jest run is
+  out of scope. Timing parsing and cleanup are best effort; cleanup warnings
+  must not replace the primary test failure or become a release gate.
 - Inferring values for undocumented Jest options, coordinating concurrent
   worktree runs, validating unsupported package-manager layouts, and treating
   internal toolkit defaults as consumer configuration are out of scope.

@@ -36,6 +36,10 @@ On Linux and macOS, children are started in a process group and that group is
 best-effort terminated before the direct child is terminated. Windows and
 other platforms receive direct-child termination. Guaranteed cleanup of
 arbitrary descendant trees on every platform is out of scope.
+When `--debug-timing` is enabled, timing-report parsing and removal are
+best-effort diagnostics. A cleanup failure emits a bounded warning, may leave
+the timing artifact for the next run's preparation cleanup, and never replaces
+the primary Jest result or becomes the release failure category.
 Truncation is explicit, repeated failure lines are deduplicated, and absolute
 coverage paths are normalized relative to the workspace. stdout and stderr are
 decoded independently and then combined into one bounded
