@@ -19,10 +19,14 @@ export function isUsableCoverageEntry(data) {
     const rightKeys = Object.keys(right);
     return leftKeys.length === rightKeys.length && leftKeys.every((key) => Object.hasOwn(right, key));
   };
+  const validMetadataMap = (map) => Object.values(map).every((value) => value && typeof value === 'object' && !Array.isArray(value));
   const statementKeys = Object.keys(data.statementMap);
   const branchKeys = Object.keys(data.b);
   const functionKeys = Object.keys(data.f);
   return validLineMap
+    && validMetadataMap(data.statementMap)
+    && validMetadataMap(data.branchMap ?? {})
+    && validMetadataMap(data.fnMap ?? {})
     && sameKeys(data.statementMap, data.s)
     && statementKeys.every((key) => validCount(data.s[key]))
     && branchKeys.every((key) => {

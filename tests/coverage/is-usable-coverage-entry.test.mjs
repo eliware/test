@@ -36,3 +36,9 @@ test('rejects whitespace and non-canonical counter strings', () => {
   expect(isUsableCoverageEntry({ statementMap: {}, s: {}, b: {}, f: {}, l: { 1: ' ' } })).toBe(false);
   expect(isUsableCoverageEntry({ statementMap: { 0: {} }, s: { 0: '01' }, b: {}, f: {} })).toBe(false);
 });
+
+test('rejects primitive Istanbul metadata before coverage conversion', () => {
+  expect(isUsableCoverageEntry({ ...entry, statementMap: { 0: null } })).toBe(false);
+  expect(isUsableCoverageEntry({ ...entry, branchMap: { 0: 'invalid' } })).toBe(false);
+  expect(isUsableCoverageEntry({ ...entry, fnMap: { 0: 42 } })).toBe(false);
+});
