@@ -8,12 +8,14 @@ export function resolveNpmCommand(platform = process.platform) {
 }
 export function resolveNpmArguments(script, platform = process.platform, npmExecPath = process.env.npm_execpath) {
   return platform === 'win32'
-    ? [npmExecPath?.endsWith('.js') ? npmExecPath : join(dirname(npmExecPath || process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', script]
+    ? [npmExecPath?.toLowerCase().endsWith('.js') ? npmExecPath : join(dirname(npmExecPath || process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', script]
     : ['run', script];
 }
 /** Return the child status; the toolkit boundary maps nonzero values to code 17. */
 export async function runPackageScript(cwd, script, write = () => {}, options = {}) {
-  const packageJson = await Object.assign({ readPackageJson }, options).readPackageJson(cwd, options.readFilePath);
+  let packageJson;
+  try { packageJson = await Object.assign({ readPackageJson }, options).readPackageJson(cwd, options.readFilePath); }
+  catch (error) { write(`${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to read package metadata'}\n`); return 1; }
   if (!packageJson?.scripts?.[script]) return 0;
   const platform = options.platform ?? process.platform;
   let result;

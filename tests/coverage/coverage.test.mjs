@@ -70,6 +70,12 @@ describe('coverage facade', () => {
     })).toEqual([]);
   });
 
+  test('normalizes numeric string statement, branch, and function counters', () => {
+    expect(parseCoverageJson({
+      'src/numeric-counters.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: '1' }, branchMap: { 0: { locations: [{}] } }, b: { 0: ['1'] }, fnMap: { 0: {} }, f: { 0: '1' } },
+    })).toEqual([]);
+  });
+
   test('rejects entries with inconsistent metric maps and counters', () => {
     expect(() => parseCoverageJson({
       'src/malformed.mjs': {
