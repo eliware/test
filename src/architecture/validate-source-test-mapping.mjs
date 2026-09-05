@@ -15,7 +15,7 @@ async function filesUnder(root, readDirectory) {
     visitedDirectories.add(resolvedDirectory);
     let entries;
     try { entries = await readDirectory(directory, { withFileTypes: true }); }
-    catch (error) { if (error.code === 'ENOENT') return; throw error; }
+    catch (error) { if (error.code === 'ENOENT') return new Set(); throw error; }
     const children = [...entries].sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0);
     for (const entry of children) {
       if (entry.isSymbolicLink?.() || (entry.isDirectory() && EXCLUDED_DIRECTORIES.has(entry.name))) continue;
