@@ -9,8 +9,8 @@ export async function runLint(options, dependencies = {}) {
   const defaultCommand = dependencies.defaultRunLintCommand ?? defaultRunLintCommand;
   let result;
   try {
-    const commandOptions = (({ cwd, write, inspect, runLint, runChildProcess }) => ({
-      cwd, write, inspect, runLint, runChildProcess
+    const commandOptions = (({ cwd, write, inspect, runLint, runChildProcess, debugTiming }) => ({
+      cwd, write, inspect, runLint, runChildProcess, debugTiming
     }))(options);
     result = await (options.runLintCommand ?? defaultCommand)(commandOptions);
   } catch (error) {

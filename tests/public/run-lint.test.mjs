@@ -4,6 +4,12 @@ test('delegates the public lint operation and returns its code', async () => {
   await expect(runLint({ cwd: 'C:/repo', write: () => {}, runLintCommand: async () => 0 })).resolves.toBe(0);
 });
 
+test('forwards lint timing diagnostics options', async () => {
+  let received;
+  await expect(runLint({ cwd: 'C:/repo', write: () => {}, debugTiming: true, runLintCommand: async (options) => { received = options; return 0; } })).resolves.toBe(0);
+  expect(received.debugTiming).toBe(true);
+});
+
 test('validates options and delegated exit codes', async () => {
   await expect(runLint(null)).rejects.toThrow(TypeError);
   await expect(runLint({ cwd: 42 })).rejects.toThrow(TypeError);
