@@ -9,5 +9,5 @@ import { validateConventions } from '../conventions/validate-conventions.mjs';
 import { readPackageJson } from '../workspace/read-package-json.mjs';
 
 export function getToolkitDefaults() {
-  return { runTest: runJest, runLintCommand, runInBand: true, ignoreCoverage: false, ignoreMonolithLimits: false, debugTiming: false, workers: 6, enforceMonolithLimits: false, accessPath: access, removePath: rm, readFilePath: readFile, statPath: stat, findMonolith: detectViolations, findSourceTestMapping: findSourceTestMappingDrifts, renamePath: rename, inspectWorkspace, runChildProcess, validateConventions, readPackageJson };
+  return { runTest: runJest, runLintCommand, runInBand: true, ignoreCoverage: false, ignoreMonolithLimits: false, debugTiming: false, workers: 6, enforceMonolithLimits: true, accessPath: access, removePath: rm, readFilePath: readFile, statPath: stat, findMonolith: detectViolations, findSourceTestMapping: findSourceTestMappingDrifts, renamePath: rename, inspectWorkspace, runChildProcess, validateConventions, readPackageJson };
 }

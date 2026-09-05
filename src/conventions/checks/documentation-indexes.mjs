@@ -5,7 +5,7 @@ function hasDirectLink(source, target) { return [...source.matchAll(LINK_PATTERN
 function hasDescribedLink(source, target) { return [...source.matchAll(LINK_PATTERN)].some(([full, link]) => normalize(link) === normalize(target) && full.slice(full.indexOf('[') + 1, full.indexOf(']')).trim()); }
 export function checkDocumentationIndexes({ docsFiles, docsReadme, specFiles, specsReadme, examples, examplesReadme, specTexts = new Map(), exampleReadmes = new Map() }) {
   const findings = [];
-  if (docsFiles.length < 3) findings.push(finding('docs/: must contain README.md and at least two additional Markdown documents'));
+  if (!docsFiles.includes('README.md') || docsFiles.length < 3) findings.push(finding('docs/: must contain README.md and at least two additional Markdown documents'));
   for (const [label, files, index] of [['docs', docsFiles, docsReadme], ['specs', specFiles, specsReadme]]) {
     if (!index) findings.push(finding(`${label}/README.md: missing documentation index`));
     else {

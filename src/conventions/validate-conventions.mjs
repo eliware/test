@@ -15,7 +15,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   const packageJson = await (async () => {
     try { return await collectConventionInputs({ cwd, accessPath, readFilePath, readDirectory }); }
     catch (error) {
-      const findings = [{ group: 'structure', message: `workspace traversal failed: ${error.message}` }];
+      const findings = [{ group: 'structure', code: 'WORKSPACE_TRAVERSAL_FAILED', message: `workspace traversal failed: ${error.message}` }];
       write(formatConventionFindings(findings));
       return null;
     }

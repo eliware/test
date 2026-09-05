@@ -28,3 +28,13 @@ test('reports missing links, descriptions, and example guidance', () => {
   ]));
   expect(checkDocumentationIndexes({ docsFiles: ['README.md'], docsReadme: '', specFiles: ['README.md', 'x.md'], specsReadme: 'scope', examples: [], examplesReadme: '' })).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('requirements') })]));
 });
+
+test('requires docs README even when enough other Markdown files exist', () => {
+  const findings = checkDocumentationIndexes({
+    docsFiles: ['guide.md', 'reference.md', 'security.md'], docsReadme: '',
+    specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
+  });
+  expect(findings).toEqual(expect.arrayContaining([
+    expect.objectContaining({ message: expect.stringContaining('docs/: must contain README.md') }),
+  ]));
+});
