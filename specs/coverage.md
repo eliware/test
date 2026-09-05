@@ -80,6 +80,13 @@ fresh. When the filesystem does not provide `dev` and `ino` identity fields,
 freshness is necessarily based on stable contents and modification timestamps;
 the tool cannot prove replacement identity beyond those signals on such
 filesystems.
+A stale but otherwise usable JSON report is never accepted as the current
+run's structured evidence. It may be skipped while the resolver evaluates the
+fixed candidate order. If Jest produced structurally valid current text
+coverage, that text is the intentional fallback; if no valid current JSON or
+text evidence exists, coverage fails closed. This is not silent acceptance of
+stale coverage, and the resolver does not attempt to prove that text output and
+stale JSON describe identical artifacts.
 If any freshness-tracked candidate changes while it is being read, the entire
 coverage decision fails closed, even if a lower-priority candidate is otherwise
 usable. This is intentional: an unstable artifact indicates that test output

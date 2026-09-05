@@ -138,6 +138,11 @@ host is therefore intentionally treated as Windows syntax.
   and other behavior remain unchanged.
 - `--workers=N` overrides the default six monolith-scan measurement workers;
   `N` must be a positive integer and the option is not forwarded to Jest.
+- The monolith measurement helper receives this already validated value from
+  the pipeline. It is an internal implementation and test seam, not an
+  independent consumer API; direct calls that bypass option validation are
+  outside the contract and are not required to reject malformed worker values
+  themselves.
 - A standalone `--` separator is removed once before Jest invocation.
 - Shared Jest value-option metadata prevents option values becoming focused
   paths.

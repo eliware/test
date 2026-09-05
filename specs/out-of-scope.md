@@ -19,6 +19,13 @@ This document records behavior the v5 CLI intentionally does not provide.
   not provide per-check waivers for package metadata, README content,
   specifications, environment safety, examples, or badges; repositories must
   satisfy those checks when the corresponding path exists.
+- Internal monolith measurement helpers are not standalone public APIs. The
+  supported pipeline validates `--workers=N` before invoking them; rejecting
+  malformed worker values supplied by direct helper callers is outside scope.
+- A stale but structurally usable coverage JSON report is not promoted as
+  current evidence. The resolver may skip it and use valid current Jest text
+  coverage instead; proving that those two artifacts are identical is outside
+  scope. If no valid current evidence exists, coverage fails closed.
 - Semantic judgment of documentation prose is out of scope. Documentation
   checks validate deterministic structure, links, headings, required markers,
   and safe placeholders; they do not decide whether prose is elegant,
