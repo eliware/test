@@ -1,4 +1,5 @@
 import { executeTests } from '../../../src/public/stages/tests.mjs';
+import { basename } from 'node:path';
 test('normalizes test result', async () => expect(await executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, runTest: async () => ({ code: 0, output: '' }), write: () => {} })).toMatchObject({ code: 0, output: '' }));
 test('reports test startup failures', async () => expect(await executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, runTest: async () => { throw new Error('unavailable'); }, write: () => {} })).toMatchObject({ code: 8 }));
 test('promotes isolated coverage after a startup failure', async () => {
@@ -26,7 +27,7 @@ test('returns cleanup code when coverage preparation fails', async () => {
 test('reports a cleanup failure after promotion', async () => {
   const messages = [];
   let removes = 0;
-  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async (path) => { if (path.endsWith('\\coverage')) { removes += 1; throw new Error('cleanup locked'); } }, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
+  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async (path) => { if (basename(path) === 'coverage') { removes += 1; throw new Error('cleanup locked'); } }, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
     .resolves.toMatchObject({ code: 7 });
   expect(messages).toContain('Coverage cleanup failed: cleanup locked\n');
 });

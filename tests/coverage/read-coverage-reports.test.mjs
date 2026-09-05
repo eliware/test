@@ -1,4 +1,5 @@
 import { COVERAGE_CANDIDATES, readCoverageReports } from '../../src/coverage/read-coverage-reports.mjs';
+import { sep } from 'node:path';
 
 const valid = JSON.stringify({ 'src/example.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, b: {}, f: {} } });
 
@@ -11,7 +12,7 @@ test('reads candidates in deterministic priority order', async () => {
 test('records empty, malformed, and missing candidates', async () => {
   const reports = await readCoverageReports('C:/repo', async (path) => {
     if (path.endsWith('coverage-final.json')) return '';
-    if (path.endsWith('coverage\\coverage.json')) return '{bad';
+    if (path.endsWith(`coverage${sep}coverage.json`)) return '{bad';
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
   });
   expect(reports[0]).toMatchObject({ name: COVERAGE_CANDIDATES[0] });

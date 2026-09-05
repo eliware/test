@@ -1,4 +1,5 @@
 import { validateConventions } from '../../src/conventions/validate-conventions.mjs';
+import { resolve } from 'node:path';
 
 test('validates the current repository convention set', async () => {
   const messages = [];
@@ -14,7 +15,7 @@ test('reports missing structure deterministically', async () => {
 
 test('reads exact path exceptions from package metadata', async () => {
   const realRead = (await import('node:fs/promises')).readFile;
-  const packagePath = `${process.cwd()}\\package.json`;
+  const packagePath = resolve(process.cwd(), 'package.json');
   const readFilePath = async (path, encoding) => path === packagePath
     ? JSON.stringify({ eliwareTest: { conventions: { exceptions: ['examples'] } } })
     : realRead(path, encoding);
