@@ -7,8 +7,9 @@ export function isUsableCoverageEntry(data) {
     || !data.f || typeof data.f !== 'object' || Array.isArray(data.f)
     || data.branchMap !== undefined && (!data.branchMap || typeof data.branchMap !== 'object' || Array.isArray(data.branchMap))
     || data.fnMap !== undefined && (!data.fnMap || typeof data.fnMap !== 'object' || Array.isArray(data.fnMap))) return false;
-  const validCount = (count) => Number.isFinite(Number(count)) && Number(count) >= 0;
-  const validLineCount = (count) => Number.isFinite(Number(count)) && Number(count) >= 0;
+  const validCount = (count) => (typeof count === 'number' && Number.isFinite(count) && count >= 0)
+    || (typeof count === 'string' && /^(?:0|[1-9]\d*)$/.test(count));
+  const validLineCount = validCount;
   const validLineMap = data.l === undefined || (data.l && typeof data.l === 'object' && !Array.isArray(data.l)
     && Object.entries(data.l).every(([line, count]) => Number.isInteger(Number(line)) && Number(line) > 0 && validLineCount(count)));
   const sameKeys = (left, right) => {

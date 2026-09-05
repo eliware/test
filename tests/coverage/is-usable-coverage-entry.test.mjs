@@ -31,3 +31,8 @@ test('accepts numeric string line-map counters', () => {
 test('accepts numeric string counters consistently across metrics', () => {
   expect(isUsableCoverageEntry({ statementMap: { 0: {} }, s: { 0: '1' }, branchMap: { 0: { locations: [{}] } }, b: { 0: ['0'] }, fnMap: { 0: {} }, f: { 0: '1' } })).toBe(true);
 });
+
+test('rejects whitespace and non-canonical counter strings', () => {
+  expect(isUsableCoverageEntry({ statementMap: {}, s: {}, b: {}, f: {}, l: { 1: ' ' } })).toBe(false);
+  expect(isUsableCoverageEntry({ statementMap: { 0: {} }, s: { 0: '01' }, b: {}, f: {} })).toBe(false);
+});

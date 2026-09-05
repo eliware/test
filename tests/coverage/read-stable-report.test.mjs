@@ -16,3 +16,8 @@ test('rejects an unchanged pre-run report at the same timestamp as the run', asy
   await expect(readStableReport('coverage.json', async () => 'contents', async () => ({ mtimeMs: 100 }), 100))
     .resolves.toMatchObject({ fresh: false });
 });
+
+test('marks freshness unavailable when timestamps are missing', async () => {
+  await expect(readStableReport('coverage.json', async () => 'contents', async () => ({}), 100))
+    .resolves.toMatchObject({ fresh: false, freshnessAvailable: false });
+});

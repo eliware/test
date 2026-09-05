@@ -22,7 +22,7 @@ export async function readStableReport(reportPath, readFilePath, statPath, start
     && firstAfter.ino !== undefined && after.ino !== undefined
     && (firstAfter.dev !== after.dev || firstAfter.ino !== after.ino);
   if (startedAt && (first !== second || (firstAfter && after && firstAfter.mtimeMs !== after.mtimeMs) || identityChanged)) return null;
-  const hasTimes = firstAfter?.mtimeMs !== undefined && after?.mtimeMs !== undefined;
+  const hasTimes = Number.isFinite(firstAfter?.mtimeMs) && Number.isFinite(after?.mtimeMs);
   const fresh = !startedAt || (hasTimes && (before ? firstAfter.mtimeMs === after.mtimeMs && after.mtimeMs > startedAt : after.mtimeMs > startedAt));
   return { contents: second, fresh, freshnessAvailable: !startedAt || hasTimes };
 }
