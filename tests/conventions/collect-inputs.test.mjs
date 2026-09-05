@@ -8,3 +8,15 @@ test('collects repository inputs for convention orchestration', async () => {
 test('uses filesystem defaults when readers are omitted', async () => {
   await expect(collectConventionInputs({ cwd: '.', accessPath: async () => {}, readDirectory: async () => [] })).resolves.toEqual(expect.objectContaining({ paths: expect.any(Set) }));
 });
+
+test('selects an index overview without reading SPEC.md', async () => {
+  const readDirectory = async (path) => path.endsWith('/specs')
+    ? [{ name: 'index.md', isFile: () => true, isDirectory: () => false }]
+    : [{ name: 'specs', isFile: () => false, isDirectory: () => true }];
+  const readFilePath = async (path) => {
+    if (path.endsWith('/specs/index.md')) return 'overview';
+    throw new Error('unexpected read');
+  };
+  const result = await collectConventionInputs({ cwd: '.', accessPath: async () => {}, readDirectory, readFilePath });
+  expect(result.specText).toBe('overview');
+});
