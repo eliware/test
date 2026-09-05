@@ -46,6 +46,7 @@ test('settles and terminates a child that never closes', async () => {
   jest.useFakeTimers();
   try {
     const child = new EventEmitter();
+    child.pid = 999999;
     child.stdout = new EventEmitter();
     child.stderr = new EventEmitter();
     child.kill = jest.fn();

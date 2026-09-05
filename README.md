@@ -178,9 +178,11 @@ pipeline outcomes.
 The default mode intentionally uses the consumer's full environment, matching
 direct `npm test` and Jest behavior. This package does not change Jest or try
 to overcome its limitations. Do not run it against an untrusted workspace
-while sensitive credentials are available. Debug output and failure output use
-pattern-based redaction only and may contain unrecognized secrets; do not
-enable `ELIWARE_TEST_DEBUG=1` in credential-bearing or untrusted workspaces.
+while sensitive credentials are available. Secret redaction is best effort;
+if Jest outputs a secret from consumer code, the CLI preserves that diagnostic
+so the failure remains useful. Scrub code, fixtures, and logs before testing
+projects that may contain credentials. Do not enable `ELIWARE_TEST_DEBUG=1` in
+credential-bearing or untrusted workspaces.
 
 ## Support
 

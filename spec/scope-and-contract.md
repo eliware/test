@@ -21,6 +21,8 @@ This document is part of the normative contract for the published CLI.
 - Consumers use `eliware-test` for `test` and `eliware-test --lint` for `lint`.
 - Process execution uses Node child-process APIs and argument arrays, not Unix
   pipelines, shell quoting, `grep`, or platform-specific executable names.
+  The exported `runToolkit` and `runLint` functions exist to provide injectable
+  test seams; they are not supported consumer APIs.
 
 ## 3. CLI boundary and orchestration
 

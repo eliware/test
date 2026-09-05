@@ -32,6 +32,10 @@ npm test
 npm run lint
 ```
 
+The normal `npm test` command already runs lint after Jest and coverage.
+Standalone lint is therefore redundant for ordinary validation and is needed
+only when diagnosing lint independently.
+
 CI must provide Ubuntu and Windows coverage. Lint warnings block publication,
 and release validation confirms required platform checks, package metadata, and
 self-test results before publication. No tag, publish, push, or deployment is
@@ -62,5 +66,7 @@ those contracts is not promised.
 Source/test architecture mapping intentionally skips symbolic links; supported
 internal projects use ordinary files and directories for the canonical `src/`
 and `tests/` trees. Timeout escalation uses the supported Node child-process
-termination contract; platform-specific signal semantics and untrusted
-workspace execution are outside the release contract.
+termination contract; guaranteed descendant cleanup across arbitrary child
+trees and platforms is outside the release contract. Sanitized environment
+mode is also out of scope because full inheritance is required for the
+supported internal projects.

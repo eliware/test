@@ -7,6 +7,7 @@ export function spawnChild(command, argumentsList, options = {}) {
     cwd: options.cwd,
     env: childEnvironment(options),
     windowsHide: true,
-    shell: false
+    shell: false,
+    detached: process.platform !== 'win32'
   });
 }
