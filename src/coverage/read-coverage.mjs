@@ -49,12 +49,8 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
     })());
   }
   const selected = reports.find(({ usable, fresh }) => fresh && usable);
-  const firstPresent = reports.find(({ fresh, usable, malformed }) => fresh && (usable || malformed));
-  if (firstPresent?.malformed) {
-    throw new Error(`Coverage report is malformed: ${firstPresent.name}. Rerun the tests to regenerate coverage data.`);
-  }
   if (selected) return parseJsonReport(selected.json);
-  const malformedReport = reports.find(({ malformed }) => malformed)?.name;
+  const malformedReport = reports.find(({ malformed, fresh }) => malformed && fresh)?.name;
   const gaps = parseTextReport(testOutput);
   if (!hasTextCoverageEvidence(testOutput)) {
     if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
