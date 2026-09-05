@@ -42,6 +42,12 @@ instead of launching the default processes. Their numeric results
 and diagnostics are the supported internal contract; callers must not depend
 on additional structured error fields.
 
+If an invalid internal call supplies a non-function diagnostic writer, the
+boundary returns the structured internal-error result without attempting to
+write output. This is intentional because no valid output channel is
+available when the supplied writer itself is invalid. Normal CLI invocations
+always provide a diagnostic writer.
+
 Stable wrapper exit codes are:
 
 | Code | Category | Typical remediation |

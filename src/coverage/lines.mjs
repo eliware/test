@@ -1,5 +1,9 @@
 import { isCoveredCount } from './percentages.mjs';
 
+function normalizedCount(value) {
+  return typeof value === 'string' && /^(?:0|[1-9]\d*)$/.test(value) ? Number(value) : value;
+}
+
 export function collectLineCoverage(data) {
   const lineCounts = new Map();
   let unmappedLineCount = 0;
@@ -7,7 +11,7 @@ export function collectLineCoverage(data) {
   if (hasLineMap) {
     for (const [line, count] of Object.entries(data.l)) {
       const lineNumber = Number(line);
-      if (Number.isInteger(lineNumber) && lineNumber > 0 && Number.isFinite(count)) lineCounts.set(lineNumber, isCoveredCount(count) ? 1 : 0);
+      if (Number.isInteger(lineNumber) && lineNumber > 0 && Number.isFinite(normalizedCount(count))) lineCounts.set(lineNumber, isCoveredCount(normalizedCount(count)) ? 1 : 0);
     }
   }
   let hasUnmappedStatement = false;
@@ -23,7 +27,7 @@ export function collectLineCoverage(data) {
     const validLine = Number.isInteger(line) && line > 0;
     if (!hasStatement) { hasUnmappedStatement = true; return; }
     if (validLine && !hasLineMap) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
-    if (validLine && hasLineMap && Object.hasOwn(data.l, line) && (data.l[line] > 0) !== isCoveredCount(count)) hasConflictingLineCoverage = true;
+    if (validLine && hasLineMap && Object.hasOwn(data.l, line) && isCoveredCount(normalizedCount(data.l[line])) !== isCoveredCount(count)) hasConflictingLineCoverage = true;
     if (hasLineMap) {
       if (!Number.isInteger(line) || line <= 0 || !Number.isFinite(count)) hasUnmappedStatement = true;
       if (validLine && !Object.hasOwn(data.l, line)) { lineCounts.set(line, 0); hasUnmappedStatement = true; }

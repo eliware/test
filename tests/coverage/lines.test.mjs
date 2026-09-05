@@ -72,6 +72,12 @@ test('keeps valid mapped zero counters as ordinary uncovered lines', () => {
   expect(result.lineCounts).toEqual(new Map([[1, 1]]));
 });
 
+test('normalizes numeric-string explicit line counters consistently', () => {
+  const result = collectLineCoverage({ l: { 1: '1' }, statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 } });
+  expect(result.lineCounts).toEqual(new Map([[1, 1]]));
+  expect(result.hasConflictingLineCoverage).toBe(false);
+});
+
 test('accepts function-valued statement counters', () => {
   const counters = () => {};
   counters[0] = 0;
