@@ -1,7 +1,10 @@
 import { readPackageJson } from '../workspace/read-package-json.mjs';
 import { runChildProcess } from '../processes/run-child-process.mjs';
 import { normalizeOutput } from '../processes/output/normalize-output.mjs';
-const npmCommand = 'npm';
+export function resolveNpmCommand(platform = process.platform) {
+  return platform === 'win32' ? 'npm.cmd' : 'npm';
+}
+const npmCommand = resolveNpmCommand();
 export async function runPackageScript(cwd, script, write, options = {}) {
   const packageJson = await Object.assign({ readPackageJson }, options).readPackageJson(cwd, options.readFilePath);
   if (!packageJson?.scripts?.[script]) return 0;

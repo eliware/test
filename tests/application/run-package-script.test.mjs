@@ -1,4 +1,9 @@
-import { runPackageScript } from '../../src/application/run-package-script.mjs';
+import { resolveNpmCommand, runPackageScript } from '../../src/application/run-package-script.mjs';
+
+test('resolves the platform npm executable', () => {
+  expect(resolveNpmCommand('win32')).toBe('npm.cmd');
+  expect(resolveNpmCommand('linux')).toBe('npm');
+});
 
 test('skips scripts that are not defined', async () => {
   const result = await runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => ({ scripts: {} }) });
@@ -16,6 +21,7 @@ test('runs defined scripts and returns their exit code', async () => {
     runChildProcess: async (...args) => { calls.push(args); return { code: 3, output: 'failed' }; }
   });
   expect(result).toBe(3);
+  expect(calls[0][0]).toBe(process.platform === 'win32' ? 'npm.cmd' : 'npm');
   expect(calls[0][1]).toEqual(['run', 'audit']);
 });
 
