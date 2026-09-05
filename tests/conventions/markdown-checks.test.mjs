@@ -1,4 +1,4 @@
-import { checkReadme, checkSpecifications } from '../../src/conventions/markdown-checks.mjs';
+import { checkAgents, checkReadme, checkSpecifications } from '../../src/conventions/markdown-checks.mjs';
 
 test('checks README structure and local links', () => {
   const readme = '# Demo\n\nIntro.\n\n## Requirements\n## Installation\n## Usage\n## Configuration\n## Validation\n## Security\n## Support\n## License\n\n[specs](specs/)';
@@ -15,4 +15,11 @@ test('requires overview links and an out-of-scope specification', () => {
     { group: 'specifications', message: 'specs/: missing a clear overview/index document' },
   ]));
   expect(checkSpecifications(['scope.md', 'other.md'], 'scope.md', 'other.md')).toEqual(expect.arrayContaining([{ group: 'specifications', message: 'specs/: overview does not link to every specification document' }]));
+});
+
+test('checks deterministic AGENTS scope and exception markers', () => {
+  expect(checkAgents('Applies to: repository-wide.')).toEqual([]);
+  expect(checkAgents('')).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('Applies to') })]));
+  expect(checkAgents('Applies to: repository-wide.', ['examples'])).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('deviations') })]));
+  expect(checkAgents('Applies to: repository-wide.\n## Intentional deviations', ['examples'])).toEqual([]);
 });

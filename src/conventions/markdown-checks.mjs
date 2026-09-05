@@ -36,3 +36,10 @@ export function checkSpecifications(specFiles, overview, outOfScope) {
   if (!outOfScope) findings.push(finding('specifications', 'specs/: missing an explicit out-of-scope document or section'));
   return findings;
 }
+
+export function checkAgents(agents, exceptions = []) {
+  const findings = [];
+  if (!/^\s*Applies to\s*:/im.test(agents)) findings.push(finding('agents', 'AGENTS.md: must declare instruction scope with an "Applies to:" marker'));
+  if (exceptions.length && !/intentional deviations?|exceptions?/i.test(agents)) findings.push(finding('agents', 'AGENTS.md: must document an intentional deviations section when exceptions are configured'));
+  return findings;
+}

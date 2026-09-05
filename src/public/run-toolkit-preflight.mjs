@@ -7,9 +7,9 @@ import { validateArchitecture } from './stages/validate-architecture.mjs';
 import { COVERAGE_CANDIDATES } from '../coverage/read-coverage.mjs';
 import { validateConventions as defaultValidateConventions } from '../conventions/validate-conventions.mjs';
 
-export async function runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, readFilePath, findIstanbulIgnores, inspect, debugTiming, findSourceTestMapping, timing, validateConventions = defaultValidateConventions }) {
+export async function runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, readFilePath, findIstanbulIgnores, inspect, debugTiming, findSourceTestMapping, timing, validateConventions = defaultValidateConventions, ignoreCoverage = false, ignoreMonolithLimits = false }) {
   if (!await inspect(cwd, write, accessPath, findIstanbulIgnores)) return { exitCode: EXIT_CODES.ISTANBUL_POLICY };
-  if (!await validateConventions({ cwd, write, accessPath, readFilePath })) return { exitCode: EXIT_CODES.CONVENTION_VALIDATION };
+  if (!await validateConventions({ cwd, write, accessPath, readFilePath, allowCoverageOptOut: ignoreCoverage, allowMonolithOptOut: ignoreMonolithLimits })) return { exitCode: EXIT_CODES.CONVENTION_VALIDATION };
   timing.step('Workspace inspection', 'tests');
   const { args, protectedArgument } = validateRunnerArguments(runnerArguments);
   if (protectedArgument) {

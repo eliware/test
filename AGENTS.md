@@ -1,5 +1,7 @@
 # `@eliware/test` contributor guidance
 
+Applies to: repository-wide.
+
 ## Repository contributors
 
 This repository provides the single Eliware baseline for routine Jest
@@ -15,6 +17,13 @@ with `npm test`, `npm run lint`, `npm run check:docs`, `npm audit`, and
 `npm run pack` as applicable;
 keep package metadata, lockfiles, documentation, examples, and release notes
 synchronized.
+
+## Intentional deviations
+
+- This repository self-hosts its validation through `node bin/eliware-test.mjs`
+  because the package cannot install itself as its own development dependency.
+  Consumers must use the standard `eliware-test` and `eliware-test --lint`
+  scripts described below.
 
 ## Rules
 

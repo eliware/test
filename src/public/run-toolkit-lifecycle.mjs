@@ -11,7 +11,7 @@ export async function runToolkitLifecycle(context) {
     accessPath, removePath, readFilePath, statPath, renamePath, findIstanbulIgnores,
     runChildProcess, findMonolith, findSourceTestMapping, inspectWorkspace: inspect,
     timing, startedAt, disableInBand, validateConventions, readPackageJson = defaultReadPackageJson } = context;
-  const preflight = await runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, readFilePath, findIstanbulIgnores, inspect, debugTiming: context.debugTiming, findSourceTestMapping, timing, validateConventions });
+  const preflight = await runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, readFilePath, findIstanbulIgnores, inspect, debugTiming: context.debugTiming, findSourceTestMapping, timing, validateConventions, ignoreCoverage, ignoreMonolithLimits });
   if (preflight.exitCode !== undefined) return preflight.exitCode;
   const { testResult, outcome: testOutcome } = await runToolkitExecution({ cwd, args: preflight.args, runInBand, disableInBand, preparation: preflight.preparation, runTest, runChildProcess, readFilePath, removePath, accessPath, renamePath, write });
   if (testOutcome !== null) return testOutcome;

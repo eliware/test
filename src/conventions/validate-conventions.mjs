@@ -3,12 +3,12 @@ import { relative, resolve } from 'node:path';
 import { findMissingRequiredPaths } from './required-paths.mjs';
 import { readConventionPackage } from './read-package.mjs';
 import { checkPackageMetadata } from './package-metadata.mjs';
-import { checkReadme, checkSpecifications } from './markdown-checks.mjs';
+import { checkAgents, checkReadme, checkSpecifications } from './markdown-checks.mjs';
 import { checkEnvironmentExample, checkExamples } from './environment-and-examples.mjs';
 import { formatConventionFindings } from './format-findings.mjs';
 import { walkFiles } from '../workspace/walk-files.mjs';
 
-export async function validateConventions({ cwd, write, accessPath, readFilePath = readFile, readDirectory = readdir }) {
+export async function validateConventions({ cwd, write, accessPath, readFilePath = readFile, readDirectory = readdir, allowCoverageOptOut = false, allowMonolithOptOut = false }) {
   const packageJson = await readConventionPackage(cwd, readFilePath);
   const exceptions = Array.isArray(packageJson?.eliwareTest?.conventions?.exceptions)
     ? packageJson.eliwareTest.conventions.exceptions.filter((value) => typeof value === 'string') : [];
@@ -27,13 +27,15 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
     return false;
   }
   const readme = await read('README.md');
+  const agents = await read('AGENTS.md');
   const releaseNotes = await read('RELEASE_NOTES.md');
   const envExample = await read('.env.example');
   const specEntries = paths.has('specs') ? await readDirectory(resolve(cwd, 'specs'), { withFileTypes: true }) : [];
   const specFiles = specEntries.filter((entry) => entry.isFile() && entry.name.endsWith('.md')).map((entry) => entry.name);
   const overview = specFiles.find((file) => file.toLowerCase() === 'readme.md' || file.toLowerCase() === 'index.md') ?? (await read('SPEC.md') ? 'SPEC.md' : '');
   const specText = overview === 'SPEC.md' ? await read('SPEC.md') : await read(`specs/${overview}`);
-  findings.push(...checkPackageMetadata(packageJson, { readme, releaseNotes, existingPaths: paths }));
+  findings.push(...checkAgents(agents, exceptions));
+  findings.push(...checkPackageMetadata(packageJson, { readme, releaseNotes, existingPaths: paths, allowSelfReference: packageJson?.name === '@eliware/test', allowCoverageOptOut, allowMonolithOptOut }));
   findings.push(...checkReadme(readme, paths, packageJson?.files ?? []));
   findings.push(...checkSpecifications(specFiles, specText, specFiles.find((file) => /out.of.scope/i.test(file))));
   const environmentSources = [];

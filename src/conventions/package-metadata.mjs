@@ -2,7 +2,7 @@ const REQUIRED_STRING_FIELDS = ['name', 'version', 'description', 'author', 'lic
 
 function finding(message) { return { group: 'package', message }; }
 
-export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = '', existingPaths = new Set() } = {}) {
+export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = '', existingPaths = new Set(), allowSelfReference = false, allowCoverageOptOut = false, allowMonolithOptOut = false } = {}) {
   if (packageJson === null) return [];
   if (packageJson?.__error) return [finding(`package.json: ${packageJson.__error}`)];
   const findings = [];
@@ -17,6 +17,11 @@ export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = 
   if (packageJson.engines !== undefined && (typeof packageJson.engines !== 'object' || typeof packageJson.engines.node !== 'string' || packageJson.engines.node.trim() === '')) findings.push(finding('package.json: engines.node must be a non-empty string when present'));
   if (typeof packageJson.scripts?.test !== 'string' || packageJson.scripts.test.trim() === '') findings.push(finding('package.json: scripts.test must be a non-empty string'));
   if (typeof packageJson.scripts?.lint !== 'string' || packageJson.scripts.lint.trim() === '') findings.push(finding('package.json: scripts.lint must be a non-empty string'));
+  if (!allowSelfReference && !/\beliware-test\b/.test(packageJson.scripts?.test ?? '')) findings.push(finding('package.json: scripts.test must invoke eliware-test'));
+  if (!allowSelfReference && !/\beliware-test\b/.test(packageJson.scripts?.lint ?? '')) findings.push(finding('package.json: scripts.lint must invoke eliware-test --lint'));
+  if (!allowSelfReference && !/--lint(?:\s|$)/.test(packageJson.scripts?.lint ?? '')) findings.push(finding('package.json: scripts.lint must invoke eliware-test --lint'));
+  if (!allowCoverageOptOut && /(?:^|\s)--ignore-100x4(?:\s|$)/.test(packageJson.scripts?.test ?? '')) findings.push(finding('package.json: scripts.test must not include --ignore-100x4 unless coverage enforcement is explicitly disabled'));
+  if (!allowMonolithOptOut && /(?:^|\s)--ignore-monolith-limits(?:\s|$)/.test(packageJson.scripts?.test ?? '')) findings.push(finding('package.json: scripts.test must not include --ignore-monolith-limits unless monolith enforcement is explicitly disabled'));
   const publishable = packageJson.private !== true;
   if (publishable) {
     if (packageJson.exports !== undefined && (typeof packageJson.exports !== 'string' && (typeof packageJson.exports !== 'object' || packageJson.exports === null))) findings.push(finding('package.json: exports must be a string or object when present'));
