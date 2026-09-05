@@ -1,6 +1,6 @@
 # Out of scope
 
-This document records behavior the v5 CLI intentionally does not provide.
+This document records behavior the v6 CLI intentionally does not provide.
 
 - Sanitized or selectively inherited child environments are out of scope; the
   CLI intentionally passes through the invoking environment.

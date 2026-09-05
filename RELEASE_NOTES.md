@@ -23,7 +23,7 @@
 ### Documentation and tests
 
 - Expanded the CLI, coverage, conventions, concurrency, diagnostics, migration,
-  and out-of-scope specifications to describe the v5 behavior precisely.
+  and out-of-scope specifications to describe the v6 behavior precisely.
 - Added regression coverage for package metadata policies, coverage edge cases,
   output normalization, process behavior, and public-boundary failures.
 
