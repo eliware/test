@@ -5,6 +5,9 @@
 ### Validation and coverage
 
 - Added runtime and npm provenance metadata checks for publishable packages.
+- Hardened repository-convention validation with explicit documentation-index
+  requirements, structured workspace-traversal failures, and monolith
+  enforcement enabled in shared toolkit defaults.
 - Strengthened package-script sequencing and continued collecting later-stage
   diagnostics after earlier validation failures.
 - Hardened Istanbul coverage handling for mapped counters, malformed reports,
