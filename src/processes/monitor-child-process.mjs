@@ -11,6 +11,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
     let timeout;
     let forceKill;
     let finalKill;
+    let processError = '';
     const finish = (code, errorMessage) => {
       if (settled) return;
       settled = true;
@@ -23,12 +24,11 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       child.stdout.on('data', capture.capture('stdout'));
       child.stderr.on('data', capture.capture('stderr'));
       child.on('error', (error) => {
-        closed = true;
-        finish(1, `${error.message}\n`);
+        processError = `${error.message}\n`;
       });
       child.on('close', (code) => {
         closed = true;
-        finish(Number.isInteger(code) && code >= 0 ? code : 1, '');
+        finish(processError ? 1 : (Number.isInteger(code) && code >= 0 ? code : 1), processError);
       });
     } catch (error) {
       finish(1, `${error.message}\n`);

@@ -15,22 +15,12 @@ test('settles with captured output and exit code', async () => {
 });
 
 test('normalizes process errors', async () => {
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
+  const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
   const resultPromise = monitorChildProcess(child, createOutputCapture());
   child.emit('error', new Error('missing executable'));
+  child.stdout.emit('data', 'late diagnostic\n');
   child.emit('close', null);
-  await expect(resultPromise).resolves.toMatchObject({ code: 1, output: 'missing executable\n' });
-});
-
-test('settles immediately on process errors', async () => {
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
-  const resultPromise = monitorChildProcess(child, createOutputCapture());
-  child.emit('error', new Error('missing executable'));
-  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'missing executable\n' });
+  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'late diagnostic\nmissing executable\n' });
 });
 
 test('normalizes an invalid close code without a process error', async () => {
