@@ -1,5 +1,32 @@
 # Release notes
 
+## 6.0.0
+
+### Validation and coverage
+
+- Added runtime and npm provenance metadata checks for publishable packages.
+- Strengthened package-script sequencing and continued collecting later-stage
+  diagnostics after earlier validation failures.
+- Hardened Istanbul coverage handling for mapped counters, malformed reports,
+  freshness, fallback evidence, and artifact replacement.
+- Preserved the 100×4 coverage contract, focused coverage behavior, source/test
+  mapping, monolith enforcement, and configurable six-worker scanning.
+
+### Diagnostics and portability
+
+- Improved child-process lifecycle handling, bounded diagnostics, timing cleanup,
+  workspace-path normalization, and stable structured error results.
+- Ensured diagnostic writer failures do not escape the public toolkit boundary.
+- Documented the supported Windows Node/npm layout and other intentional
+  operational limitations.
+
+### Documentation and tests
+
+- Expanded the CLI, coverage, conventions, concurrency, diagnostics, migration,
+  and out-of-scope specifications to describe the v5 behavior precisely.
+- Added regression coverage for package metadata policies, coverage edge cases,
+  output normalization, process behavior, and public-boundary failures.
+
 ## 5.0.0
 
 ### Repository convention validation

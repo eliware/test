@@ -1,6 +1,6 @@
 {
     "name": "@eliware/test",
-    "version": "5.0.0",
+    "version": "6.0.0",
     "description": "Shared Jest testing, coverage enforcement, Oxlint, and consumer validation for Eliware Node.js projects",
     "keywords": [
         "eliware",
