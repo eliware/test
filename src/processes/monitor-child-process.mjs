@@ -24,7 +24,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       child.stdout.on('data', capture.capture('stdout'));
       child.stderr.on('data', capture.capture('stderr'));
       child.on('error', (error) => {
-        processError = `${error.message}\n`;
+        if (!processError) processError = `${error.message}\n`;
       });
       child.on('close', (code) => {
         closed = true;

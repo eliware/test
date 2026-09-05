@@ -84,8 +84,9 @@ The normal test command runs these stages in order:
 
 Coverage failures are deferred until the post-test checks finish: lint,
 monolith, and defined package-script checks still run and report their own
-results. If those checks pass, the coverage failure is returned after all
-diagnostics are printed; pre-test failures still stop before Jest.
+results. If several post-test checks fail, package scripts take precedence,
+then monolith validation, lint, and coverage. Pre-test failures still stop
+before Jest.
 
 Focused runs use a mirrored source file when the test path maps unambiguously;
 for example, `tests/api.test.mjs` can scope coverage to `src/api.mjs`. A missing

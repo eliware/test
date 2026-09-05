@@ -23,6 +23,8 @@ test('normalizes process errors', async () => {
   await expect(resultPromise).resolves.toEqual({ code: 1, output: 'late diagnostic\nmissing executable\n' });
 });
 
+test('preserves the first process error when multiple errors occur', async () => { const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); const resultPromise = monitorChildProcess(child, createOutputCapture()); child.emit('error', new Error('first failure')); child.emit('error', new Error('second failure')); child.emit('close', null); await expect(resultPromise).resolves.toMatchObject({ output: 'first failure\n' }); });
+
 test('uses the existing timeout path when an error has no close', async () => {
   jest.useFakeTimers();
   try { const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); const result = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 }); child.emit('error', new Error('spawn failed')); jest.advanceTimersByTime(2010); await expect(result).resolves.toMatchObject({ code: 1 }); }

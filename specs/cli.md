@@ -27,8 +27,16 @@ validation when combined with other arguments. Version output comes from
 
 The continuation after a coverage failure is intentional: coverage evidence
 is reported as failed, but the remaining deterministic checks still run so one
-invocation exposes all actionable diagnostics. The final exit code remains the
-highest-priority applicable failure after those checks complete.
+invocation exposes all actionable diagnostics. If multiple post-test checks
+fail, the first failing stage in this order supplies the final code: package
+scripts, monolith validation, lint, then coverage. Coverage therefore remains
+deferred, but it is not allowed to replace a later failure.
+
+The lifecycle and lint exports expose internal test seams, not consumer APIs.
+The lifecycle accepts its collaborators through the validated toolkit options;
+the standalone lint seam accepts its dependency object. Their numeric results
+and diagnostics are the supported internal contract; callers must not depend
+on additional structured error fields.
 
 Stable wrapper exit codes are:
 

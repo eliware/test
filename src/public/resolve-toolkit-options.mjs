@@ -6,6 +6,7 @@ import { inspectWorkspace as defaultInspectWorkspace } from '../workspace/inspec
 import { findSourceTestMappingDrifts } from '../architecture/validate-source-test-mapping.mjs';
 import { runChildProcess as defaultRunChildProcess } from '../processes/run-child-process.mjs';
 import { validateConventions as defaultValidateConventions } from '../conventions/validate-conventions.mjs';
+import { readPackageJson as defaultReadPackageJson } from '../workspace/read-package-json.mjs';
 
 /** Resolve toolkit defaults while preserving injectable collaborators. */
 export function resolveToolkitOptions(options) {
@@ -17,10 +18,11 @@ export function resolveToolkitOptions(options) {
     findIstanbulIgnores, findMonolith = detectViolations,
     findSourceTestMapping = findSourceTestMappingDrifts, renamePath = rename,
     inspectWorkspace = defaultInspectWorkspace, runChildProcess = defaultRunChildProcess, validateConventions = defaultValidateConventions,
+    readPackageJson = defaultReadPackageJson,
   } = options;
   return {
     cwd, runnerArguments, write, runTest, runLintCommand, runInBand, ignoreCoverage,
     ignoreMonolithLimits, debugTiming, workers, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath,
-    findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath, runChildProcess, validateConventions,
+    findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath, runChildProcess, validateConventions, readPackageJson,
   };
 }
