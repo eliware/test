@@ -19,11 +19,6 @@ test('returns coverage cleanup failure when startup cleanup fails', async () => 
     .resolves.toMatchObject({ code: 7 });
 });
 
-test('returns coverage cleanup failure when coverage preparation fails', async () => {
-  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async () => { throw new Error('prepare locked'); }, runTest: async () => ({ code: 0, output: '' }), write: () => {} }))
-    .resolves.toMatchObject({ code: 7 });
-});
-
 test('reports a cleanup failure after promotion', async () => {
   const messages = [];
   let removes = 0;

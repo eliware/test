@@ -42,7 +42,7 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
   const reports = [];
   for (const name of COVERAGE_CANDIDATES) {
-    const report = await (async () => {
+    reports.push(await (async () => {
     try {
       const reportPath = resolve(cwd, name);
       const snapshot = await readStableReport(reportPath, readFilePath, statPath, startedAt);
@@ -57,16 +57,14 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
       if (error.code === 'ENOENT') return { name };
       throw error;
     }
-    })();
-    reports.push(report);
-    if (report.usable && report.fresh) break;
+    })());
   }
   const selected = reports.find(({ usable, fresh }) => fresh && usable);
   if (selected) return parseJsonReport(selected.json);
   if (startedAt && reports.some(({ usable, freshnessAvailable }) => usable && freshnessAvailable === false)) {
     throw new Error('Coverage freshness unavailable: could not verify that the JSON report belongs to the current test run.');
   }
-  const malformedReport = reports.find(({ malformed }) => malformed)?.name;
+  const malformedReport = reports.find(({ malformed, fresh }) => malformed && fresh)?.name;
   if (startedAt && malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
   const gaps = parseTextReport(testOutput);
   if (!hasTextCoverageEvidence(testOutput)) {
