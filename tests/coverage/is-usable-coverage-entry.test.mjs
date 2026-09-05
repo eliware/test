@@ -27,3 +27,7 @@ test('rejects missing or misaligned metric data', () => {
 test('accepts numeric string line-map counters', () => {
   expect(isUsableCoverageEntry({ statementMap: {}, s: {}, b: {}, f: {}, l: { 1: '0' } })).toBe(true);
 });
+
+test('accepts numeric string counters consistently across metrics', () => {
+  expect(isUsableCoverageEntry({ statementMap: { 0: {} }, s: { 0: '1' }, branchMap: { 0: { locations: [{}] } }, b: { 0: ['0'] }, fnMap: { 0: {} }, f: { 0: '1' } })).toBe(true);
+});

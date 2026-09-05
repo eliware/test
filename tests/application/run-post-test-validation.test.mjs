@@ -13,6 +13,17 @@ test('reports coverage failures after running lint', async () => {
   expect(lint).toHaveBeenCalled();
 });
 
+test('uses later package failure precedence while retaining coverage diagnostics', async () => {
+  const messages = [];
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message),
+    coverageValidator: async () => 11, ignoreCoverage: false, runLintCommand: async () => 0,
+    enforceMonolithLimits: false, packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess: async () => ({ code: 1, output: 'failed' }) },
+    timing: { step: () => {} },
+  })).resolves.toBe(17);
+  expect(messages).toContain('Package script failed: audit\n');
+});
+
 test('fails after existing validation when a package check fails', async () => {
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, readFilePath: async () => '{}',
