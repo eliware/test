@@ -1,6 +1,6 @@
 import { checkPackageMetadata } from '../../src/conventions/package-metadata.mjs';
 
-const valid = { name: 'demo', version: '1.0.0', description: 'demo', keywords: ['demo'], author: 'Eliware', license: 'MIT', repository: 'https://github.com/e/demo', homepage: 'https://github.com/e/demo', scripts: { test: 'eliware-test', lint: 'eliware-test --lint' }, files: ['README.md', 'LICENSE', 'RELEASE_NOTES.md'], publishConfig: { access: 'public' } };
+const valid = { name: 'demo', version: '1.0.0', description: 'demo', keywords: ['demo'], author: 'Eliware', license: 'MIT', repository: 'https://github.com/e/demo', homepage: 'https://github.com/e/demo', engines: { node: '>=26' }, scripts: { test: 'eliware-test', lint: 'eliware-test --lint' }, files: ['README.md', 'LICENSE', 'RELEASE_NOTES.md'], publishConfig: { access: 'public', provenance: true } };
 
 test('accepts valid publishable metadata and consistency evidence', () => {
   expect(checkPackageMetadata(valid, { readme: 'demo', releaseNotes: '## 1.0.0', existingPaths: new Set(['README.md', 'LICENSE', 'RELEASE_NOTES.md']) })).toEqual([]);

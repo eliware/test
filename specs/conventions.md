@@ -65,3 +65,8 @@ For public Eliware packages, the convention validator also requires README
 links for the canonical npm package, license file, and the repository's
 canonical `actions/workflows/nodejs.yml` CI badge. A generic workflows-directory
 link is not sufficient.
+
+Publishable Node.js packages must declare a non-empty `engines.node` runtime
+requirement and set `publishConfig.provenance` to `true`. These are package
+metadata and publication-safety checks owned by this validator; release tools
+may verify publication outcomes but do not replace these checks.
