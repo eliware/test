@@ -1,7 +1,7 @@
 import { promoteCoverageDirectory, prepareCoverageDirectory, TEMP_COVERAGE_DIRECTORY } from '../../src/coverage/run-directory.mjs';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 test('prepares an isolated coverage directory', async () => {
   const calls = [];
@@ -20,7 +20,10 @@ test('overwrites coverage with the completed isolated directory', async () => {
 test('removes stale rollback output before promotion', async () => {
   const calls = [];
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async (...args) => calls.push(['remove', ...args]), async (...args) => calls.push(['rename', ...args]))).resolves.toBe(true);
-  expect(calls.filter(([name]) => name === 'remove').map(([, path]) => path.endsWith('\\.eliware-test-coverage-previous'))).toEqual([true, true]);
+  expect(calls.filter(([name]) => name === 'remove').map(([, path]) => basename(path))).toEqual([
+    '.eliware-test-coverage-previous',
+    '.eliware-test-coverage-previous',
+  ]);
 });
 
 test('does not promote missing isolated output', async () => {
