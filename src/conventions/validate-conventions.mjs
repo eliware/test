@@ -30,7 +30,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   const readme = await read('README.md');
   findings.push(...checkReadme(readme, paths, packageData.files ?? [], packageData, { existingFiles: files, indexFiles: new Set([...files].filter((path) => /(?:^|\/)README\.md$|(?:^|\/)index\.md$/i.test(path))) }));
   findings.push(...checkPublicBadges(readme, packageData.name, packageData.repository));
-  findings.push(...checkSpecifications(specFiles, specText, specFiles.find((file) => /out.of.scope/i.test(file))));
+  findings.push(...checkSpecifications(specFiles, specText));
   findings.push(...checkEnvironmentExample(await read('.env.example'), environmentSources.join('\n')));
   findings.push(...checkDocumentationIndexes({ docsFiles, docsReadme: await read('docs/README.md'), specFiles, specsReadme: await read('specs/README.md'), examples, examplesReadme: await read('examples/README.md'), specTexts, exampleReadmes }));
   findings.push(...checkExamples(examples, exampleReadmes, examplePackages));

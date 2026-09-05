@@ -10,11 +10,15 @@ test('uses filesystem defaults when readers are omitted', async () => {
 });
 
 test('selects an index overview without reading SPEC.md', async () => {
-  const readDirectory = async (path) => path.endsWith('/specs')
-    ? [{ name: 'index.md', isFile: () => true, isDirectory: () => false }]
-    : [{ name: 'specs', isFile: () => false, isDirectory: () => true }];
+  let calls = 0;
+  const readDirectory = async () => {
+    calls += 1;
+    return calls <= 2
+      ? [{ name: 'specs', isFile: () => false, isDirectory: () => true }]
+      : [{ name: 'index.md', isFile: () => true, isDirectory: () => false }];
+  };
   const readFilePath = async (path) => {
-    if (path.endsWith('/specs/index.md')) return 'overview';
+    if (/specs[\\/]index\.md$/.test(path)) return 'overview';
     throw new Error('unexpected read');
   };
   const result = await collectConventionInputs({ cwd: '.', accessPath: async () => {}, readDirectory, readFilePath });
