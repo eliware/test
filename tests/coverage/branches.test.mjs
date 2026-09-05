@@ -6,6 +6,7 @@ test('handles absent location arrays', () => expect(uncoveredBranches({ a: { typ
 test('handles null location arrays', () => expect(uncoveredBranches({ a: { type: 'if', locations: null } }, 'a', [0])).toEqual([{ unknown: true, type: 'if' }]));
 test('uses a generic type when branch type is absent', () => expect(uncoveredBranches({ a: { locations: [] } }, 'a', [0])).toEqual([{ unknown: true, type: 'branch' }]));
 test('does not skip malformed default-argument branches', () => expect(uncoveredBranches({ a: { type: 'default-arg' } }, 'a', [0])).toEqual([{ unknown: true, type: 'default-arg' }]));
+test('skips covered default-argument branches', () => expect(uncoveredBranches({ a: { type: 'default-arg', locations: [{ start: { line: 1 } }] } }, 'a', [0])).toEqual([]));
 test('preserves covered branch entries and missing locations', () => {
   expect(uncoveredBranches({ a: { type: 'if', locations: [{ start: { line: 2 } }] } }, 'a', [1, 0]))
     .toEqual([{ unknown: true, type: 'if' }]);
