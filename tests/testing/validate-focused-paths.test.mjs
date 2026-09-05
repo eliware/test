@@ -71,6 +71,16 @@ test('rejects a focused symlink that resolves outside the workspace', async () =
     .resolves.toBe('tests/link.test.mjs');
 });
 
+test('rechecks the physical target after access and stat', async () => {
+  let calls = 0;
+  const realpathPath = async (path) => {
+    calls += 1;
+    return calls === 3 ? '/outside/replaced.test.mjs' : path;
+  };
+  await expect(validateFocusedPaths('/repo', ['tests/replaced.test.mjs'], async () => {}, async () => ({ isFile: () => true }), realpathPath))
+    .resolves.toBe('tests/replaced.test.mjs');
+});
+
 test('propagates realpath failures', async () => {
   const failure = Object.assign(new Error('realpath denied'), { code: 'EACCES' });
   await expect(validateFocusedPaths('/repo', ['tests/a.test.mjs'], async () => {}, async () => ({ isFile: () => true }), async () => { throw failure; }))
@@ -80,5 +90,15 @@ test('propagates realpath failures', async () => {
     calls += 1;
     if (calls === 2) throw failure;
     return '/repo';
+  })).rejects.toBe(failure);
+});
+
+test('propagates final target realpath failures', async () => {
+  const failure = Object.assign(new Error('final realpath denied'), { code: 'EACCES' });
+  let calls = 0;
+  await expect(validateFocusedPaths('/repo', ['tests/a.test.mjs'], async () => {}, async () => ({ isFile: () => true }), async (path) => {
+    calls += 1;
+    if (calls === 3) throw failure;
+    return path;
   })).rejects.toBe(failure);
 });

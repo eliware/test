@@ -29,6 +29,17 @@ test('reports script output and normalizes an invalid exit code', async () => {
   expect(messages.join('')).toContain('build failed');
 });
 
+test('normalizes workspace paths in script failures', async () => {
+  const messages = [];
+  const cwd = 'C:/repo';
+  await expect(runPackageScript(cwd, 'build', (message) => messages.push(message), {
+    readPackageJson: async () => ({ scripts: { build: 'build-command' } }),
+    runChildProcess: async () => ({ code: 1, output: 'error in C:/repo/src/file.mjs\n' })
+  })).resolves.toBe(1);
+  expect(messages.join('')).toContain('error in <workspace>/src/file.mjs');
+  expect(messages.join('')).not.toContain('C:/repo/src/file.mjs');
+});
+
 test('reports a failed script without output', async () => {
   const messages = [];
   await expect(runPackageScript('.', 'typecheck', (message) => messages.push(message), {

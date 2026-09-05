@@ -33,6 +33,6 @@ export async function promoteCoverageDirectory(cwd, temporaryPath, accessPath = 
     try { await renamePath(previousPath, destination); } catch {}
     throw error;
   }
-  await removePrevious(removePath, previousPath);
+  await removePrevious(removePath, previousPath, reportCleanupError);
   return true;
 }

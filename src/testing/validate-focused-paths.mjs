@@ -36,6 +36,11 @@ export async function validateFocusedPaths(cwd, argumentsList, accessPath, statP
       if (!isInsideWorkspace(physicalWorkspace, physicalPath)) return candidate;
       await checkAccess(path);
       if (!(await statPath(path)).isFile()) return candidate;
+      const finalPhysicalPath = await realpathPath(path).catch((error) => {
+        if (error.code === 'ENOENT' || (WINDOWS_ABSOLUTE.test(cwd) && ['UNKNOWN', 'ECONNRESET'].includes(error.code))) return path;
+        throw error;
+      });
+      if (!isInsideWorkspace(physicalWorkspace, finalPhysicalPath)) return candidate;
     }
     catch (error) { if (error.code !== 'ENOENT') throw error; return candidate; }
   }
