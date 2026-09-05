@@ -9,3 +9,7 @@ test('normalizes unexpected lifecycle failures at the public boundary', async ()
   })).resolves.toMatchObject({ code: 14, category: 'internal', message: 'boundary failure' });
   expect(messages.join('')).toContain('boundary failure');
 });
+
+test('normalizes malformed options without requiring a diagnostic writer', async () => {
+  await expect(runToolkitBoundary(null)).resolves.toMatchObject({ code: 14, category: 'internal' });
+});

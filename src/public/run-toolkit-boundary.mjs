@@ -6,11 +6,12 @@ import { toolkitResult } from './toolkit-result.mjs';
 
 /** Validate the public call and normalize unexpected lifecycle failures. */
 export async function runToolkitBoundary(options) {
+  const write = typeof options?.write === 'function' ? options.write : () => {};
   try {
     validateToolkitOptions(options);
     return toolkitResult(await runToolkitLifecycle(createToolkitContext(options)));
   } catch (error) {
-    options.write(`Toolkit failed: ${error instanceof Error ? error.message : String(error)}\n`);
+    write(`Toolkit failed: ${error instanceof Error ? error.message : String(error)}\n`);
     return toolkitResult(EXIT_CODES.INTERNAL, { message: error instanceof Error ? error.message : String(error) });
   }
 }

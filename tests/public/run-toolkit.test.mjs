@@ -2,9 +2,9 @@ import { runToolkit as runToolkitResult } from '../../src/public/run-toolkit.mjs
 
 const runToolkit = async (...argumentsList) => (await runToolkitResult(...argumentsList)).code;
 test('requires the toolkit caller contract', async () => {
-  await expect(runToolkit(null)).rejects.toThrow(TypeError);
-  await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: null })).rejects.toThrow(TypeError);
-  await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: [] })).rejects.toThrow(TypeError);
+  await expect(runToolkit(null)).resolves.toBe(14);
+  await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: null })).resolves.toBe(14);
+  await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: [] })).resolves.toBe(14);
 });
 
 test('normalizes unexpected pipeline failures to the internal exit code', async () => {
