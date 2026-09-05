@@ -66,6 +66,12 @@ test('reports a positive statement line omitted from an explicit line map', () =
   expect(result.lineCounts).toEqual(new Map([[1, 1], [2, 0]]));
 });
 
+test('keeps valid mapped zero counters as ordinary uncovered lines', () => {
+  const result = collectLineCoverage({ l: { 1: 1 }, statementMap: { 0: { start: { line: 1 } } }, s: { 0: 0 } });
+  expect(result.hasUnmappedStatement).toBe(false);
+  expect(result.lineCounts).toEqual(new Map([[1, 1]]));
+});
+
 test('accepts function-valued statement counters', () => {
   const counters = () => {};
   counters[0] = 0;

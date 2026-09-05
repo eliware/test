@@ -23,9 +23,9 @@ export function collectLineCoverage(data) {
     if (!hasStatement) { hasUnmappedStatement = true; return; }
     if (validLine && !hasLineMap) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
     if (hasLineMap) {
-      if (!Number.isInteger(line) || line <= 0 || !Number.isFinite(count) || !isCoveredCount(count)) hasUnmappedStatement = true;
+      if (!Number.isInteger(line) || line <= 0 || !Number.isFinite(count)) hasUnmappedStatement = true;
       if (validLine && !Object.hasOwn(data.l, line)) { lineCounts.set(line, 0); hasUnmappedStatement = true; }
-  } else if (!validLine) { unmappedLineCount += 1; hasUnmappedStatement = true; }
+    } else if (!validLine) { unmappedLineCount += 1; hasUnmappedStatement = true; }
   });
   return { lineCounts, unmappedLineCount, hasUnmappedStatement };
 }

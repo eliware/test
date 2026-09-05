@@ -1,11 +1,7 @@
 import { validateCoverage } from '../public/stages/coverage.mjs';
 import { validateLint } from '../public/stages/lint.mjs';
 import { validateMonolith } from '../public/stages/monolith.mjs';
-import { runAudit } from './run-audit.mjs';
-import { runPack } from './run-pack.mjs';
-import { runBuild } from './run-build.mjs';
-import { runTypecheck } from './run-typecheck.mjs';
-import { EXIT_CODES } from '../exit-codes/codes.mjs';
+import { runPackageChecks } from './run-package-checks.mjs';
 
 /** Run coverage, lint, and optional monolith gates after successful tests. */
 export async function runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions = {}, enforceMonolithLimits, findMonolith, monolithOptions = {}, ignoreMonolithLimits, timing, packageChecks = {} }) {
@@ -23,12 +19,6 @@ export async function runPostTestValidation({ cwd, testResult, write, readFilePa
     if (monolithResult) return monolithResult;
   }
   timing.step('Monolith validation', 'package checks');
-  const checks = [['audit', runAudit], ['pack', runPack], ['build', runBuild], ['typecheck', runTypecheck]];
-  for (const [name, check] of checks) {
-    if (await check(cwd, write, { ...packageChecks, readFilePath }) !== 0) {
-      write(`Package script failed: ${name}\n`);
-      return EXIT_CODES.PACKAGE_SCRIPT_FAILURE;
-    }
-  }
-  return null;
+  const packageResult = await runPackageChecks(cwd, write, { ...packageChecks, readFilePath });
+  return packageResult === 0 ? null : packageResult;
 }

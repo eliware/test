@@ -6,8 +6,8 @@ import { toolkitResult } from './toolkit-result.mjs';
 
 /** Validate the public call and normalize unexpected lifecycle failures. */
 export async function runToolkitBoundary(options) {
-  validateToolkitOptions(options);
   try {
+    validateToolkitOptions(options);
     return toolkitResult(await runToolkitLifecycle(createToolkitContext(options)));
   } catch (error) {
     options.write(`Toolkit failed: ${error instanceof Error ? error.message : String(error)}\n`);
