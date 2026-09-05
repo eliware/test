@@ -74,9 +74,11 @@ fresh report.
 
 Malformed or missing counter maps invalidate the candidate report and cause
 validation to fail closed when no usable candidate or text fallback remains. A
-fresh malformed JSON candidate at any configured priority is authoritative
-failure evidence and blocks text fallback; stale or missing candidates may be
-skipped while searching the fixed candidate order.
+When freshness tracking is enabled, a fresh malformed JSON candidate at any
+configured priority is authoritative failure evidence and blocks text
+fallback; stale or missing candidates may be skipped while searching the fixed
+candidate order. Without freshness tracking, malformed candidates may be
+skipped in the normal text-fallback path.
 For a run with freshness tracking, a malformed current JSON candidate is not
 masked by text output, and a candidate whose freshness cannot be verified is
 rejected. Text fallback is used only when JSON candidates are missing, empty,

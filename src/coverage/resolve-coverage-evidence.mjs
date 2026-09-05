@@ -4,16 +4,16 @@ import { hasTextCoverageEvidence } from './text-evidence.mjs';
 import { debugOutput } from '../diagnostics/debug-output.mjs';
 
 export function resolveCoverageEvidence(reports, testOutput, write, startedAt = 0) {
-  const selected = reports.find(({ usable, fresh }) => fresh && usable);
   if (startedAt && reports.some(({ unstable }) => unstable)) {
     throw new Error('Coverage freshness unavailable: coverage report changed while it was being read.');
   }
+  const malformedReport = reports.find(({ malformed, fresh }) => malformed && fresh)?.name;
+  if (startedAt && malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
+  const selected = reports.find(({ usable, fresh }) => fresh && usable);
   if (selected) return parseJsonReport(selected.json);
   if (startedAt && reports.some(({ freshnessAvailable }) => freshnessAvailable === false)) {
     throw new Error('Coverage freshness unavailable: could not verify that the JSON report belongs to the current test run.');
   }
-  const malformedReport = reports.find(({ malformed, fresh }) => malformed && fresh)?.name;
-  if (startedAt && malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
   const gaps = parseTextReport(testOutput);
   if (!hasTextCoverageEvidence(testOutput)) {
     if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);

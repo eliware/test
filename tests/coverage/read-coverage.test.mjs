@@ -140,13 +140,13 @@ test('reports malformed JSON when production output has no text fallback', async
   }, async () => ({ mtimeMs: Date.now() }), Date.now() - 1)).rejects.toThrow('Coverage report is malformed');
 });
 
-test('falls through a malformed highest-priority candidate to a usable report', async () => {
+test('blocks a usable lower-priority report when the highest-priority candidate is fresh and malformed', async () => {
   const report = JSON.stringify({ 'src/current.mjs': complete });
   await expect(readCoverage('C:/repo', '', () => {}, async (path) => {
     if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
     if (path.endsWith('coverage.json')) return report;
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  }, async () => ({ mtimeMs: Date.now() }))).resolves.toEqual([]);
+  }, async () => ({ mtimeMs: Date.now() }), Date.now() - 1)).rejects.toThrow('Coverage report is malformed');
 });
 
 test('falls through a malformed lower-priority candidate to a usable report', async () => {

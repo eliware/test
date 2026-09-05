@@ -26,6 +26,11 @@ This document records behavior the v5 CLI intentionally does not provide.
   current evidence. The resolver may skip it and use valid current Jest text
   coverage instead; proving that those two artifacts are identical is outside
   scope. If no valid current evidence exists, coverage fails closed.
+- With freshness tracking enabled, a fresh malformed JSON candidate is
+  authoritative failure evidence even when a lower-priority candidate is
+  usable. Treating that malformed current artifact as skippable is outside the
+  coverage contract; without freshness tracking, the normal text-fallback path
+  remains supported.
 - Semantic judgment of documentation prose is out of scope. Documentation
   checks validate deterministic structure, links, headings, required markers,
   and safe placeholders; they do not decide whether prose is elegant,
