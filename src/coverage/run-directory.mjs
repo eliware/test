@@ -25,7 +25,9 @@ export async function promoteCoverageDirectory(cwd, temporaryPath, accessPath = 
   catch (error) { if (error.code === 'ENOENT') return false; throw error; }
   const destination = resolve(cwd, 'coverage');
   const previousPath = `${destination}.previous`;
-  await removePrevious(removePath, previousPath, reportCleanupError);
+  if (!await removePrevious(removePath, previousPath, reportCleanupError)) {
+    throw new Error(`Coverage backup cleanup failed: ${previousPath}`);
+  }
   try { await renamePath(destination, previousPath); }
   catch (error) { if (error.code !== 'ENOENT') throw error; }
   try { await renamePath(temporaryPath, destination); }

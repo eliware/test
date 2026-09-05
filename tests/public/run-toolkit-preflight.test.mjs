@@ -10,6 +10,15 @@ test('runs the preflight and returns prepared test inputs', async () => {
   await expect(runToolkitPreflight(context())).resolves.toMatchObject({ args: [], preparation: expect.any(Object) });
 });
 
+test('cleans interrupted coverage promotion artifacts before tests', async () => {
+  const removed = [];
+  await runToolkitPreflight(context({ removePath: async (path) => removed.push(path) }));
+  expect(removed).toEqual(expect.arrayContaining([
+    expect.stringMatching(/[\\/]\.eliware-test-coverage$/),
+    expect.stringMatching(/[\\/]coverage\.previous$/),
+  ]));
+});
+
 test('returns public outcomes for policy, argument, preparation, and cleanup failures', async () => {
   await expect(runToolkitPreflight(context({ inspect: async () => false }))).resolves.toMatchObject({ exitCode: 3 });
   await expect(runToolkitPreflight(context({ runnerArguments: ['--coverage'] }))).resolves.toMatchObject({ exitCode: 4 });

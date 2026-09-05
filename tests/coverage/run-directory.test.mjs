@@ -97,17 +97,17 @@ test('propagates failure while moving the existing coverage directory', async ()
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {}, async () => { throw new Error('existing locked'); })).rejects.toThrow('existing locked');
 });
 
-test('reports but does not fail when old-directory cleanup fails', async () => {
+test('fails when old-directory cleanup fails', async () => {
   const warnings = [];
   let removes = 0;
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {
     removes += 1;
     throw new Error('cleanup locked');
-  }, async () => {}, (error) => warnings.push(error.message))).resolves.toBe(true);
-  expect(warnings).toEqual(['cleanup locked', 'cleanup locked']);
+  }, async () => {}, (error) => warnings.push(error.message))).rejects.toThrow('Coverage backup cleanup failed');
+  expect(warnings).toEqual(['cleanup locked']);
 });
 
-test('reports final backup cleanup failure without failing promotion', async () => {
+test('reports but does not fail when final backup cleanup fails', async () => {
   const warnings = [];
   let removes = 0;
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {
@@ -117,10 +117,9 @@ test('reports final backup cleanup failure without failing promotion', async () 
   expect(warnings).toEqual(['final cleanup locked']);
 });
 
-test('keeps the new coverage and reports bounded previous cleanup failure', async () => {
+test('keeps the new coverage but fails on bounded previous cleanup failure', async () => {
   const warnings = [];
   let cleanupAttempts = 0;
-  const renames = [];
   await expect(promoteCoverageDirectory(
     'repo',
     'temp',
@@ -131,10 +130,9 @@ test('keeps the new coverage and reports bounded previous cleanup failure', asyn
         throw new Error('previous directory locked');
       }
     },
-    async (...args) => { renames.push(args); },
+    async () => {},
     (error) => warnings.push(error.message),
-  )).resolves.toBe(true);
-  expect(cleanupAttempts).toBe(6);
-  expect(renames.at(-1)[1]).toMatch(/coverage$/);
-  expect(warnings).toEqual(['previous directory locked', 'previous directory locked']);
+  )).rejects.toThrow('Coverage backup cleanup failed');
+  expect(cleanupAttempts).toBe(3);
+  expect(warnings).toEqual(['previous directory locked']);
 });

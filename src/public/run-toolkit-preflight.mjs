@@ -22,7 +22,8 @@ export async function runToolkitPreflight({ cwd, runnerArguments, write, accessP
   }
   const preparationOutcome = handleTestPreparation(preparation, write);
   if (preparationOutcome !== null) return { exitCode: preparationOutcome };
-  if (!await cleanupCoverage(cwd, removePath, COVERAGE_CANDIDATES, write)) return { exitCode: EXIT_CODES.COVERAGE_CLEANUP };
+  const coverageArtifacts = [...COVERAGE_CANDIDATES, '.eliware-test-coverage', 'coverage.previous'];
+  if (!await cleanupCoverage(cwd, removePath, coverageArtifacts, write)) return { exitCode: EXIT_CODES.COVERAGE_CLEANUP };
   const architecture = await validateArchitecture(cwd, write, findSourceTestMapping);
   if (architecture) return { exitCode: architecture };
   return { args, preparation };

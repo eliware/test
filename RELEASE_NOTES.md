@@ -1,5 +1,13 @@
 # Release notes
 
+## 4.0.1
+
+### Documentation and metadata
+
+- Corrected the public README branding, badges, and generated-file ignore
+  guidance for the released CLI.
+- Synchronized package and lockfile metadata for the 4.0.1 patch release.
+
 ## 4.0.0
 
 ### Breaking changes

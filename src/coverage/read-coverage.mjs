@@ -41,6 +41,10 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
       throw error;
     }
   }));
+  const firstFresh = reports.find(({ fresh }) => fresh);
+  if (firstFresh?.malformed) {
+    throw new Error(`Coverage report is malformed: ${firstFresh.name}. Rerun the tests to regenerate coverage data.`);
+  }
   const malformedReport = reports.find(({ malformed }) => malformed)?.name;
   const selected = reports.find(({ usable, fresh }) => fresh && usable);
   if (selected) return parseJsonReport(selected.json);
