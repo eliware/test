@@ -169,11 +169,18 @@ test('rejects malformed coverage with empty output', async () => {
     : '', async () => ({ mtimeMs: 0 }))).rejects.toThrow('Coverage report is malformed');
 });
 
-test('does not treat an empty JSON coverage entry as authoritative', async () => {
+test('does not treat an empty JSON report as authoritative', async () => {
   await expect(readCoverage('C:/repo', text, () => {}, async (path) => {
-    if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/empty.mjs': { statementMap: {}, s: {}, b: {}, f: {} } });
+    if (path.endsWith('coverage-final.json')) return '{}';
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
   })).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+});
+
+test('treats a valid zero-total JSON entry as authoritative', async () => {
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => {
+    if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/barrel.mjs': { statementMap: {}, s: {}, b: {}, f: {} } });
+    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+  })).resolves.toEqual([]);
 });
 
 test('fails closed for empty production-run coverage evidence', async () => {
