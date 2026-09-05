@@ -9,6 +9,11 @@ findings, and coverage details.
 
 Captured child diagnostics are bounded to 16 KiB of JavaScript string length.
 
+A child `error` event records the startup or process failure but does not by
+itself settle monitoring. The runner continues collecting output and waits
+for `close` so diagnostics emitted before close are preserved. If close never
+arrives, the normal timeout and termination escalation applies.
+
 When a child exceeds its timeout, the runner sends `SIGTERM`, waits briefly,
 sends `SIGKILL`, waits briefly again, and sends a final `SIGKILL`. It then
 continues with the timeout result; if the child never closes, diagnostics

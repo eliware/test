@@ -39,6 +39,12 @@ Candidates are considered in order:
 2. `coverage/coverage.json`
 3. `coverage.json`
 
+The runner inspects each configured candidate for fallback and diagnostics
+before selecting the first fresh usable report in this fixed order. Lower-
+priority candidates never override a higher-priority fresh usable candidate;
+the bounded eager inspection is intentional and is not a recency or merge
+policy.
+
 Stale candidates are removed before Jest runs. Missing, malformed, empty, or
 structurally unusable candidates advance to the next candidate; other read
 errors fail. The first usable candidate is authoritative and candidates are
