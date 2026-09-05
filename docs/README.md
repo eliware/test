@@ -47,8 +47,8 @@ for the only supported environment variable and its permissible value.
 ## Operation and validation
 
 The CLI runs workspace policy checks, deterministic repository-convention
-validation, focused-path validation, Jest with coverage, the 100%
-statements/branches/functions/lines gate, source/test mapping, and Oxlint.
+validation, focused-path validation, source/test mapping, Jest with coverage,
+the 100% statements/branches/functions/lines gate, and Oxlint.
 Convention and other pre-test failures stop before Jest. Defined consumer
 `audit`, `pack`, `build`, and `typecheck` scripts are checked afterward;
 undefined scripts are skipped. Examples are documentation only and are not
