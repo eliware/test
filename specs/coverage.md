@@ -35,8 +35,9 @@ Each run writes Jest coverage to an isolated temporary directory. After Jest
 finishes, the runner validates that directory, removes the consumer's existing
 `coverage/` directory, and moves the completed directory into its place. The
 consumer's coverage artifacts are overwritten by the latest run. Previous
-coverage is not backed up or restored. Promotion failures return the dedicated
-coverage-cleanup outcome.
+coverage is not backed up or restored. A stale transient rollback directory
+from an interrupted promotion is removed before the next attempt. Promotion
+failures return the dedicated coverage-cleanup outcome.
 
 Candidates are considered in order:
 

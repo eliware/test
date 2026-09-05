@@ -164,7 +164,9 @@ library API.
 After an interrupted run, stop overlapping jobs and remove stale
 `.eliware-test-coverage/` directory if it remains after an interrupted run.
 The next run overwrites the consumer's `coverage/` directory with the new
-report; previous coverage is not backed up or restored.
+report; previous coverage is not backed up or restored. A stale transient
+rollback directory from an interrupted promotion is removed before the next
+attempt.
 
 See the [exit-code table](specs/cli.md#3-commands-and-lifecycle) in the
 specification for numeric meanings used by CI and troubleshooting.

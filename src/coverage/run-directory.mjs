@@ -17,6 +17,7 @@ export async function promoteCoverageDirectory(cwd, temporaryPath, accessPath = 
   const previous = resolve(cwd, '.eliware-test-coverage-previous');
   let hadDestination = true;
   try { await accessPath(destination); } catch (error) { if (error.code === 'ENOENT') hadDestination = false; else throw error; }
+  await removePath(previous, { recursive: true, force: true });
   if (hadDestination) await renamePath(destination, previous);
   try {
     await renamePath(temporaryPath, destination);

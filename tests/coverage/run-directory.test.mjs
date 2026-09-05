@@ -13,8 +13,14 @@ test('prepares an isolated coverage directory', async () => {
 test('overwrites coverage with the completed isolated directory', async () => {
   const calls = [];
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async (...args) => calls.push(['remove', ...args]), async (...args) => calls.push(['rename', ...args]))).resolves.toBe(true);
-  expect(calls.map(([name]) => name)).toEqual(['rename', 'rename', 'remove']);
-  expect(calls[2][2]).toMatchObject({ recursive: true, force: true });
+  expect(calls.map(([name]) => name)).toEqual(['remove', 'rename', 'rename', 'remove']);
+  expect(calls[0][2]).toMatchObject({ recursive: true, force: true });
+});
+
+test('removes stale rollback output before promotion', async () => {
+  const calls = [];
+  await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async (...args) => calls.push(['remove', ...args]), async (...args) => calls.push(['rename', ...args]))).resolves.toBe(true);
+  expect(calls.filter(([name]) => name === 'remove').map(([, path]) => path.endsWith('\\.eliware-test-coverage-previous'))).toEqual([true, true]);
 });
 
 test('does not promote missing isolated output', async () => {
@@ -27,7 +33,7 @@ test('promotes without a previous destination', async () => {
   await expect(promoteCoverageDirectory('repo', 'temp', async (path) => {
     if (path.endsWith('coverage')) throw missing;
   }, async (...args) => calls.push(['remove', ...args]), async (...args) => calls.push(['rename', ...args]))).resolves.toBe(true);
-  expect(calls.map(([name]) => name)).toEqual(['rename']);
+  expect(calls.map(([name]) => name)).toEqual(['remove', 'rename']);
 });
 
 test('restores the previous destination when promotion fails', async () => {
