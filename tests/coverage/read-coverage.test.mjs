@@ -165,7 +165,7 @@ test('rejects a report whose file identity changes with unchanged mtime', async 
     if (!path.endsWith('coverage-final.json')) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
     stats += 1;
     return { mtimeMs: 100, dev: 1, ino: stats === 2 ? 1 : 2 };
-  }, 100)).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+  }, 100)).rejects.toThrow('Coverage freshness unavailable');
 });
 
 test('rejects unusable nonempty coverage evidence', async () => {

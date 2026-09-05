@@ -17,8 +17,8 @@
 11. Run configured `audit`, `pack`, `build`, and `typecheck` package scripts.
 
 Pre-test stages stop at the first applicable failure, including source/test
-architecture drift. Post-test validation continues after coverage failure so
-lint, monolith, and package-check diagnostics are also reported; a later
+architecture drift. After Jest, coverage failure is deferred while lint,
+monolith, and package-check diagnostics are reported; a later post-test
 failure takes precedence over the deferred coverage result. `--lint` runs only workspace policy,
 setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
 `--version`/`-v` are terminal modes and take precedence over managed-option
@@ -52,6 +52,11 @@ Package scripts are checked only when the consuming `package.json` defines the
 corresponding script. Missing scripts are skipped silently. Defined scripts run
 after the existing test, coverage, lint, and monolith checks; any nonzero exit
 code fails the CLI with exit code 17.
+
+On Windows, package scripts run through the current Node executable. When npm
+provides a JavaScript entrypoint through `npm_execpath`, that entrypoint is
+used; otherwise the conventional npm CLI beside Node is used. This avoids
+invoking `.cmd` files through a non-shell child process.
 
 ## 4. Implementation and test file-size limits
 

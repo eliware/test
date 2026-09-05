@@ -15,7 +15,13 @@ export async function runPackageScript(cwd, script, write = () => {}, options = 
   const packageJson = await Object.assign({ readPackageJson }, options).readPackageJson(cwd, options.readFilePath);
   if (!packageJson?.scripts?.[script]) return 0;
   const platform = options.platform ?? process.platform;
-  const result = await Object.assign({ runChildProcess }, options).runChildProcess(resolveNpmCommand(platform), resolveNpmArguments(script, platform, options.npmExecPath), { cwd });
+  let result;
+  try {
+    result = await Object.assign({ runChildProcess }, options).runChildProcess(resolveNpmCommand(platform), resolveNpmArguments(script, platform, options.npmExecPath), { cwd });
+  } catch (error) {
+    write(`${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to start package script'}\n`);
+    return 1;
+  }
   const safeResult = result && typeof result === 'object' ? result : {};
   const output = normalizeOutput(safeResult.output, cwd);
   if (safeResult.code !== 0) write(`${script} failed${output ? `:\n${output}` : '.\n'}`);

@@ -1,3 +1,4 @@
+import { dirname, join } from 'node:path';
 import { resolveNpmArguments, resolveNpmCommand, runPackageScript } from '../../src/application/run-package-script.mjs';
 
 test('resolves the platform npm executable', () => {
@@ -73,9 +74,33 @@ test('uses npm_execpath when it provides a JavaScript npm entrypoint on Windows'
   expect(resolveNpmArguments('audit', 'win32', 'C:/npm/npm-cli.js')).toEqual(['C:/npm/npm-cli.js', 'run', 'audit']);
 });
 
+test('uses the Node-relative npm CLI when Windows provides no JavaScript entrypoint', () => {
+  expect(resolveNpmArguments('audit', 'win32', 'C:/npm/npm.cmd')).toEqual([
+    join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', 'audit',
+  ]);
+});
+
 test('uses a safe default writer for failed scripts', async () => {
   await expect(runPackageScript('.', 'audit', undefined, {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async () => ({ code: 1, output: 'failed' }),
+})).resolves.toBe(1);
+});
+
+test('normalizes child-process startup failures', async () => {
+  const messages = [];
+  await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
+    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
+    runChildProcess: async () => { throw new Error('spawn failed'); },
   })).resolves.toBe(1);
+  expect(messages.join('')).toContain('audit failed: spawn failed');
+});
+
+test('uses a safe startup diagnostic when the rejection has no message', async () => {
+  const messages = [];
+  await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
+    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
+    runChildProcess: async () => { throw null; },
+  })).resolves.toBe(1);
+  expect(messages.join('')).toContain('audit failed: unable to start package script');
 });
