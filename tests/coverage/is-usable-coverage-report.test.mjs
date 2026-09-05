@@ -9,9 +9,9 @@ test('recognizes an instrumented report', () => {
   } })).toBe(true);
 });
 
-test('rejects empty reports but accepts valid zero-statement entries', () => {
+test('rejects empty reports and empty coverage entries', () => {
   expect(isUsableCoverageReport({})).toBe(false);
-  expect(isUsableCoverageReport({ file: { statementMap: {}, s: {}, b: {}, f: {} } })).toBe(true);
+  expect(isUsableCoverageReport({ file: { statementMap: {}, s: {}, b: {}, f: {} } })).toBe(false);
 });
 
 test('rejects reports missing statement counters', () => {

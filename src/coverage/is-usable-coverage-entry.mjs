@@ -18,6 +18,8 @@ export function isUsableCoverageEntry(data) {
   const statementKeys = Object.keys(data.statementMap);
   const branchKeys = Object.keys(data.b);
   const functionKeys = Object.keys(data.f);
+  if (statementKeys.length === 0 && branchKeys.length === 0 && functionKeys.length === 0
+    && Object.keys(data.l ?? {}).length === 0) return false;
   return validLineMap
     && sameKeys(data.statementMap, data.s)
     && statementKeys.every((key) => validCount(data.s[key]))
