@@ -1,4 +1,6 @@
-# @eliware/test
+# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
+
+## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![build status](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/nodejs.yml)
 
 Shared Jest testing, coverage enforcement, and Oxlint validation for Eliware
 Node.js projects using npm and the conventional `node_modules` layout.
@@ -167,7 +169,10 @@ coverage.json
 .eliware-test-coverage/
 coverage.previous/
 test-results/
+build/
+dist/
 *.tgz
+*.log
 ```
 
 The runtime warning for a missing `.gitignore` is intentionally shorter, but
