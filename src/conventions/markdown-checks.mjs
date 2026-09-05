@@ -7,8 +7,14 @@ const HEADING_ALIASES = Object.freeze({
 
 function finding(group, message) { return { group, message }; }
 
-export function checkReadme(readme, existingPaths, packageFiles = []) {
+export function checkReadme(readme, existingPaths, packageFiles = [], packageJson = {}) {
   const findings = [];
+  if (packageJson.private !== true && typeof packageJson.name === 'string' && packageJson.name.startsWith('@eliware/')) {
+    const opening = readme.split(/\r?\n/).slice(0, 3).join('\n');
+    if (!opening.includes('https://eliware.org/logos/brand.png') || !opening.includes('https://discord.gg/M6aTR9eTwN')) {
+      findings.push(finding('readme', 'README.md: public Eliware packages must use the standard branded opening'));
+    }
+  }
   const headings = [...readme.matchAll(/^#{1,6}\s+(.+)$/gm)].map((match) => match[1].trim().toLowerCase());
   const introductoryText = readme.replace(/^#.*$/gm, '').trim();
   for (const [name, aliases] of Object.entries(HEADING_ALIASES)) {

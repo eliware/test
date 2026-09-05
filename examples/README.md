@@ -1,6 +1,6 @@
 # Minimal consumer example
 
-This example shows the supported v4 consumer setup with a mirrored `src/` and
+This example shows the supported v5 consumer setup with a mirrored `src/` and
 `tests/` tree.
 
 ## Prerequisites

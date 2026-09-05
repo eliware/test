@@ -36,7 +36,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   const specText = overview === 'SPEC.md' ? await read('SPEC.md') : await read(`specs/${overview}`);
   findings.push(...checkAgents(agents, exceptions));
   findings.push(...checkPackageMetadata(packageJson, { readme, releaseNotes, existingPaths: paths, allowSelfReference: packageJson?.name === '@eliware/test', allowCoverageOptOut, allowMonolithOptOut }));
-  findings.push(...checkReadme(readme, paths, packageJson?.files ?? []));
+  findings.push(...checkReadme(readme, paths, packageJson?.files ?? [], packageJson ?? {}));
   findings.push(...checkSpecifications(specFiles, specText, specFiles.find((file) => /out.of.scope/i.test(file))));
   const environmentSources = [];
   for (const relative of paths) {

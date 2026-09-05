@@ -7,6 +7,6 @@
     "lint": "eliware-test --lint"
   },
   "devDependencies": {
-    "@eliware/test": "^4.0.1"
+    "@eliware/test": "^5.0.0"
   }
 }

@@ -28,6 +28,14 @@ test('checks publish metadata types, URLs, license, and consistency', () => {
   expect(checkPackageMetadata({ private: true }, { readme: '', releaseNotes: '' })).toEqual(expect.arrayContaining([{ group: 'package', message: 'package.json: name must be a non-empty string' }]));
 });
 
+test('requires canonical repository and homepage metadata for publishable packages', () => {
+  const messages = checkPackageMetadata({ ...valid, repository: undefined, homepage: undefined }, { readme: 'demo', releaseNotes: '## 1.0.0', existingPaths: new Set(['README.md', 'LICENSE', 'RELEASE_NOTES.md']) }).map(({ message }) => message);
+  expect(messages).toEqual(expect.arrayContaining([
+    'package.json: publishable packages must declare repository metadata',
+    'package.json: publishable packages must declare homepage metadata',
+  ]));
+});
+
 test('enforces shared scripts and allows diagnostic flags only when enabled', () => {
   expect(checkPackageMetadata({ ...valid, scripts: { test: 'jest', lint: 'eslint' } }).map(({ message }) => message)).toEqual(expect.arrayContaining([
     'package.json: scripts.test must invoke eliware-test',
