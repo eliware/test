@@ -23,7 +23,7 @@ test('selects an index overview without reading SPEC.md', async () => {
   let calls = 0;
   const readDirectory = async () => {
     calls += 1;
-    return calls <= 2
+    return calls === 1
       ? [{ name: 'specs', isFile: () => false, isDirectory: () => true }]
       : [{ name: 'index.md', isFile: () => true, isDirectory: () => false }];
   };

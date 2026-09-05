@@ -13,21 +13,27 @@ export async function collectConventionInputs({ cwd, accessPath, readFilePath = 
   const configuredExceptions = Array.isArray(packageJson?.eliwareTest?.conventions?.exceptions) ? packageJson.eliwareTest.conventions.exceptions.filter((value) => typeof value === 'string') : exceptions;
   const findings = (await findMissingRequiredPaths(cwd, accessPath, configuredExceptions)).map((path) => ({ group: 'structure', message: `missing required path: ${path}` }));
   const read = (path) => readText(cwd, readFilePath, path);
-  const entries = await readDirectory(cwd, { withFileTypes: true });
+  const directoryCache = new Map();
+  const readDirectoryOnce = async (directory, options) => {
+    const key = resolve(directory);
+    if (!directoryCache.has(key)) directoryCache.set(key, await readDirectory(directory, options));
+    return directoryCache.get(key);
+  };
+  const entries = await readDirectoryOnce(cwd, { withFileTypes: true });
   const paths = new Set(entries.map((entry) => entry.name));
   const files = new Set();
   await walkFiles(cwd, async (path) => {
     const relativePath = relative(cwd, path).replaceAll('\\', '/');
     paths.add(relativePath);
     files.add(relativePath);
-  }, { readDirectory });
-  const specEntries = paths.has('specs') ? await readDirectory(resolve(cwd, 'specs'), { withFileTypes: true }) : [];
+  }, { readDirectory: readDirectoryOnce });
+  const specEntries = paths.has('specs') ? await readDirectoryOnce(resolve(cwd, 'specs'), { withFileTypes: true }) : [];
   const specFiles = specEntries.filter((entry) => entry.isFile() && entry.name.endsWith('.md')).map((entry) => entry.name);
-  const docsEntries = paths.has('docs') ? await readDirectory(resolve(cwd, 'docs'), { withFileTypes: true }) : [];
+  const docsEntries = paths.has('docs') ? await readDirectoryOnce(resolve(cwd, 'docs'), { withFileTypes: true }) : [];
   const docsFiles = docsEntries.filter((entry) => entry.isFile() && entry.name.endsWith('.md')).map((entry) => entry.name);
   const overview = specFiles.find((file) => file.toLowerCase() === 'readme.md' || file.toLowerCase() === 'index.md') ?? (await read('SPEC.md') ? 'SPEC.md' : '');
   const specText = overview === 'SPEC.md' ? await read('SPEC.md') : await read(`specs/${overview}`);
-  const examples = paths.has('examples') ? (await readDirectory(resolve(cwd, 'examples'), { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name) : [];
+  const examples = paths.has('examples') ? (await readDirectoryOnce(resolve(cwd, 'examples'), { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name) : [];
   const environmentSources = [];
   for (const path of paths) if (path.startsWith('src/') && /\.(?:mjs|js|cjs)$/.test(path)) environmentSources.push(await read(path));
   const exampleReadmes = new Map();
