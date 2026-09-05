@@ -5,7 +5,9 @@ import { normalizeTestResult } from './normalize-test-result.mjs';
 import { prepareCoverageDirectory, promoteCoverageDirectory } from '../../coverage/run-directory.mjs';
 export async function executeTests({ cwd, args, runInBand, focusedCoverage, focusedPathMode, timingOutput, runTest, runChildProcess, readFilePath, removePath, accessPath, renamePath, write }) {
   const isolatedCoverage = typeof accessPath === 'function' && typeof renamePath === 'function';
-  const coverageDirectory = isolatedCoverage ? await prepareCoverageDirectory(cwd, removePath) : undefined;
+  let coverageDirectory;
+  try { coverageDirectory = isolatedCoverage ? await prepareCoverageDirectory(cwd, removePath) : undefined; }
+  catch (error) { write(`Coverage cleanup failed: ${error.message}\n`); return { code: EXIT_CODES.COVERAGE_CLEANUP }; }
   let test;
   try { test = await runTest(buildJestArguments({ runnerArguments: args, runInBand, focusedCoverage, focusedPathMode, timingOutput, coverageDirectory }), { cwd, runInBand, runChildProcess }); }
   catch (error) {
