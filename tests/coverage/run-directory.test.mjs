@@ -116,3 +116,25 @@ test('reports final backup cleanup failure without failing promotion', async () 
   }, async () => {}, (error) => warnings.push(error.message))).resolves.toBe(true);
   expect(warnings).toEqual(['final cleanup locked']);
 });
+
+test('keeps the new coverage and reports bounded previous cleanup failure', async () => {
+  const warnings = [];
+  let cleanupAttempts = 0;
+  const renames = [];
+  await expect(promoteCoverageDirectory(
+    'repo',
+    'temp',
+    async () => {},
+    async (path) => {
+      if (path.endsWith('coverage.previous')) {
+        cleanupAttempts += 1;
+        throw new Error('previous directory locked');
+      }
+    },
+    async (...args) => { renames.push(args); },
+    (error) => warnings.push(error.message),
+  )).resolves.toBe(true);
+  expect(cleanupAttempts).toBe(6);
+  expect(renames.at(-1)[1]).toMatch(/coverage$/);
+  expect(warnings).toEqual(['previous directory locked', 'previous directory locked']);
+});

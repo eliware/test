@@ -10,7 +10,7 @@ import { runChildProcess as defaultRunChildProcess } from '../processes/run-chil
 export function resolveToolkitOptions(options) {
   const {
     cwd, runnerArguments, write, runTest = runJest, runLintCommand = defaultRunLintCommand,
-    runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false,
+    runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false, debugTiming = false,
     workers = 6,
     enforceMonolithLimits = false, accessPath = access, removePath = rm, readFilePath = readFile, statPath = stat,
     findIstanbulIgnores, findMonolith = detectViolations,
@@ -19,7 +19,7 @@ export function resolveToolkitOptions(options) {
   } = options;
   return {
     cwd, runnerArguments, write, runTest, runLintCommand, runInBand, ignoreCoverage,
-    ignoreMonolithLimits, workers, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath,
+    ignoreMonolithLimits, debugTiming, workers, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath,
     findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath, runChildProcess,
   };
 }

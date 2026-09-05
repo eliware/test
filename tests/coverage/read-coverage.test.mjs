@@ -18,6 +18,20 @@ test('reads the first usable JSON report', async () => {
   expect(result).toEqual([]);
 });
 
+test('preserves candidate precedence when lower-priority reads finish first', async () => {
+  const preferred = JSON.stringify({ 'src/preferred.mjs': { ...complete, s: { 0: 0 } } });
+  const fallback = JSON.stringify({ 'src/fallback.mjs': complete });
+  const read = async (path) => {
+    if (path.endsWith('coverage-final.json')) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      return preferred;
+    }
+    if (path.endsWith('coverage.json')) return fallback;
+    return '';
+  };
+  await expect(readCoverage('C:/repo', '', () => {}, read)).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'src/preferred.mjs' })]));
+});
+
 test('rejects valid reports older than the current run', async () => {
   const report = JSON.stringify({ 'src/old.mjs': complete });
   const stale = Date.now() - 1;
@@ -46,6 +60,16 @@ test('rejects a report replaced between freshness checks', async () => {
     if (finalCalls === 1) return { mtimeMs: 100 };
     throw Object.assign(new Error('gone'), { code: 'ENOENT' });
   }, 100))
+    .resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+});
+
+test('rejects a report whose contents change during a stable metadata check', async () => {
+  const reports = [JSON.stringify({ 'src/old.mjs': complete }), JSON.stringify({ 'src/new.mjs': complete })];
+  let reads = 0;
+  await expect(readCoverage('C:/repo', text, () => {}, async (path) => {
+    if (!path.endsWith('coverage-final.json')) return '';
+    return reports[reads++];
+  }, async (path) => path.endsWith('coverage-final.json') ? { mtimeMs: 100 } : { mtimeMs: 0 }, 100))
     .resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
 });
 

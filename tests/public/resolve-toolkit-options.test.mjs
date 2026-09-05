@@ -8,3 +8,7 @@ test('preserves supplied collaborators and defaults', () => {
   expect(options.runLintCommand).toEqual(expect.any(Function));
   expect(options.inspectWorkspace).toEqual(expect.any(Function));
 });
+
+test('preserves debug timing for the toolkit stages', () => {
+  expect(resolveToolkitOptions({ cwd: '.', runnerArguments: [], write: () => {}, debugTiming: true }).debugTiming).toBe(true);
+});

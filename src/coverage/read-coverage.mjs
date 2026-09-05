@@ -8,23 +8,31 @@ import { debugOutput } from '../diagnostics/debug-output.mjs';
 
 export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
 
+async function readStableReport(reportPath, readFilePath, statPath, startedAt) {
+  let before = null;
+  if (startedAt) {
+    try { before = await statPath(reportPath); }
+    catch (error) { if (error.code !== 'ENOENT') throw error; }
+  }
+  const first = await readFilePath(reportPath, 'utf8');
+  const firstAfter = startedAt ? await statPath(reportPath) : null;
+  const second = startedAt ? await readFilePath(reportPath, 'utf8') : first;
+  const after = startedAt ? await statPath(reportPath) : null;
+  if (startedAt && (first !== second || (firstAfter && after && firstAfter.mtimeMs !== after.mtimeMs))) return null;
+  const fresh = !startedAt || (before ? firstAfter.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt);
+  return { contents: second, fresh };
+}
+
 export async function readCoverage(cwd, testOutput, write, readFilePath = readFile, statPath = stat, startedAt = 0) {
   if (typeof cwd !== 'string') throw new TypeError('readCoverage requires cwd');
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
   const reports = await Promise.all(COVERAGE_CANDIDATES.map(async (name) => {
     try {
       const reportPath = resolve(cwd, name);
-      let before = null;
-      let fresh = true;
-      if (startedAt) {
-        try { before = await statPath(reportPath); }
-        catch (error) { if (error.code !== 'ENOENT') throw error; }
-      }
-      const json = JSON.parse(await readFilePath(reportPath, 'utf8'));
-      if (startedAt) {
-        const after = await statPath(reportPath);
-        fresh = before ? before.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt;
-      }
+      const snapshot = await readStableReport(reportPath, readFilePath, statPath, startedAt);
+      if (!snapshot) return { name };
+      const json = JSON.parse(snapshot.contents);
+      const { fresh } = snapshot;
       const usable = isUsableCoverageReport(json);
       return { name, json, usable, malformed: !usable, fresh };
     } catch (error) {
