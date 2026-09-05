@@ -35,6 +35,8 @@ export async function promoteCoverageDirectory(cwd, temporaryPath, accessPath = 
     try { await renamePath(previousPath, destination); } catch {}
     throw error;
   }
-  await removePrevious(removePath, previousPath, reportCleanupError);
+  if (!await removePrevious(removePath, previousPath, reportCleanupError)) {
+    throw new Error(`Coverage backup cleanup failed: ${previousPath}`);
+  }
   return true;
 }

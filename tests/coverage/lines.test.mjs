@@ -30,6 +30,11 @@ test('detects uncovered counters without matching statements', () => {
   expect(result.hasUnmappedStatement).toBe(true);
 });
 
+test('detects covered counters without matching statements', () => {
+  const result = collectLineCoverage({ l: { 1: 1 }, statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1, 1: 1 } });
+  expect(result.hasUnmappedStatement).toBe(true);
+});
+
 test('handles missing locations, invalid line maps, and covered extra statements', () => {
   const result = collectLineCoverage({ l: [], statementMap: { 0: {}, 1: { start: { line: 2 } } }, s: { 0: 1, 1: 1, 2: 1 } });
   expect(result.lineCounts.size).toBe(1);

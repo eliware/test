@@ -20,7 +20,7 @@ export function collectLineCoverage(data) {
     const statementStart = statement && typeof statement === 'object' && Object.hasOwn(statement, 'start') && statement.start && typeof statement.start === 'object' && !Array.isArray(statement.start) ? statement.start : undefined;
     const line = statementStart?.line;
     const validLine = Number.isInteger(line) && line > 0;
-    if (!hasStatement) { if (!isCoveredCount(count)) hasUnmappedStatement = true; return; }
+    if (!hasStatement) { hasUnmappedStatement = true; return; }
     if (validLine && !hasLineMap) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
     if (hasLineMap) {
       if (!Number.isInteger(line) || line <= 0 || !Number.isFinite(count) || !isCoveredCount(count)) hasUnmappedStatement = true;

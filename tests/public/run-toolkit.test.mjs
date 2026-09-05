@@ -166,10 +166,9 @@ test('continues when monolith limits are explicitly ignored', async () => {
 
 test('rejects protected Jest options before running tests', async () => { const messages = []; await expect(runToolkit({ cwd: process.cwd(), runnerArguments: ['--coverage'], write: (message) => messages.push(message), runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 })).resolves.toBe(4); expect(messages.join('')).toContain('Unsupported Jest option'); });
 
-test('keeps timing cleanup failure non-fatal to diagnostics', async () => {
+test('reports coverage validation failures before timing diagnostics', async () => {
   const messages = [];
-  let removals = 0;
-  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], debugTiming: true, write: (message) => messages.push(message), removePath: async (_path) => { removals += 1; if (removals > 8) throw new Error('locked'); }, renamePath: async () => {}, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
+  await expect(runToolkit({ cwd: process.cwd(), runnerArguments: [], debugTiming: true, write: (message) => messages.push(message), readFilePath: async () => { throw new Error('coverage unavailable'); }, runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0 }))
     .resolves.toBe(10);
   expect(messages.join('')).toContain('Coverage validation failed');
 });

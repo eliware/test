@@ -17,10 +17,10 @@ These signal names and escalation order are the portable Node child-process
 contract for this CLI; platform-specific process managers may interpret them
 differently, but the runner does not promise platform-specific tree-kill
 semantics.
-On POSIX systems, children are started in a process group and that group is
-best-effort terminated before the direct child is terminated. Windows receives
-direct-child termination. Guaranteed cleanup of arbitrary descendant trees on
-every platform is out of scope.
+On Linux and macOS, children are started in a process group and that group is
+best-effort terminated before the direct child is terminated. Windows and
+other platforms receive direct-child termination. Guaranteed cleanup of
+arbitrary descendant trees on every platform is out of scope.
 Truncation is explicit, repeated failure lines are deduplicated, and absolute
 coverage paths are normalized relative to the workspace. stdout and stderr are
 decoded independently and then combined into one bounded

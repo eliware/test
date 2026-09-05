@@ -19,11 +19,11 @@ test('returns coverage cleanup failure when startup cleanup fails', async () => 
     .resolves.toMatchObject({ code: 7 });
 });
 
-test('reports a nonfatal cleanup warning after promotion', async () => {
+test('reports a cleanup failure after promotion', async () => {
   const messages = [];
   let removes = 0;
   await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async (path) => { if (path.endsWith('coverage.previous')) { removes += 1; if (removes >= 2) throw new Error('cleanup locked'); } }, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
-    .resolves.toMatchObject({ code: 0 });
+    .resolves.toMatchObject({ code: 7 });
   expect(messages).toContain('Coverage cleanup warning: cleanup locked\n');
 });
 
