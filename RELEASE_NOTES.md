@@ -9,6 +9,8 @@
   consumer examples.
 - Added grouped, stable, actionable convention diagnostics and documented
   exact path-level exceptions.
+- Added public `@eliware/*` package checks for Eliware author identity,
+  canonical repository metadata, and existing `bin` targets.
 - Added the `specs/` contract layout, explicit out-of-scope documentation,
   public documentation, and a minimal consumer example.
 
@@ -18,10 +20,14 @@
   `typecheck` scripts; undefined scripts remain silently skipped.
 - Hardened coverage parsing, freshness checks, fallback evidence, empty and
   malformed report handling, and coverage artifact promotion.
+- Normalized numeric-string Istanbul line counters before line coverage and
+  line-map conflict checks.
 - Preserved the 100×4 coverage contract, focused coverage behavior, source/test
   mapping, monolith enforcement, and six-worker scanning with `--workers=N`.
 - Continued validation after coverage failures so users receive diagnostics
   from later lint, monolith, and package-script stages.
+- Consolidated successful validation output into one summary line instead of
+  repeating the lint-success message.
 
 ### Portability and diagnostics
 

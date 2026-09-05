@@ -46,11 +46,13 @@ for the only supported environment variable and its permissible value.
 
 ## Operation and validation
 
-The CLI runs workspace policy checks, focused-path validation, Jest with
-coverage, the 100% statements/branches/functions/lines gate, source/test
-mapping, and Oxlint. Defined consumer `audit`, `pack`, `build`, and
-`typecheck` scripts are checked afterward; undefined scripts are skipped.
-Examples are documentation only and are not executed by the validator.
+The CLI runs workspace policy checks, deterministic repository-convention
+validation, focused-path validation, Jest with coverage, the 100%
+statements/branches/functions/lines gate, source/test mapping, and Oxlint.
+Convention and other pre-test failures stop before Jest. Defined consumer
+`audit`, `pack`, `build`, and `typecheck` scripts are checked afterward;
+undefined scripts are skipped. Examples are documentation only and are not
+executed by the validator.
 
 Coverage output is replaced by the latest run. The tool does not back up or
 restore an older coverage directory. Use `eliware-test --help` for supported
