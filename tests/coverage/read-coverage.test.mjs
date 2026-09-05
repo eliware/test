@@ -70,7 +70,7 @@ test('rejects a report whose contents change during a stable metadata check', as
     if (!path.endsWith('coverage-final.json')) return '';
     return reports[reads++];
   }, async (path) => path.endsWith('coverage-final.json') ? { mtimeMs: 100 } : { mtimeMs: 0 }, 100))
-    .resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+    .rejects.toThrow('Coverage freshness unavailable');
 });
 
 test('accepts a report when freshness metadata appears after an unavailable pre-read stat', async () => {

@@ -5,6 +5,9 @@ import { debugOutput } from '../diagnostics/debug-output.mjs';
 
 export function resolveCoverageEvidence(reports, testOutput, write, startedAt = 0) {
   const selected = reports.find(({ usable, fresh }) => fresh && usable);
+  if (startedAt && reports.some(({ unstable }) => unstable)) {
+    throw new Error('Coverage freshness unavailable: coverage report changed while it was being read.');
+  }
   if (selected) return parseJsonReport(selected.json);
   if (startedAt && reports.some(({ freshnessAvailable }) => freshnessAvailable === false)) {
     throw new Error('Coverage freshness unavailable: could not verify that the JSON report belongs to the current test run.');

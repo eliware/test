@@ -76,8 +76,21 @@ test('uses npm_execpath when it provides a JavaScript npm entrypoint on Windows'
 
 test('uses the Node-relative npm CLI when Windows provides no JavaScript entrypoint', () => {
   expect(resolveNpmArguments('audit', 'win32', 'C:/npm/npm.cmd')).toEqual([
+    join('C:/npm', 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', 'audit',
+  ]);
+});
+
+test('uses the Node-relative npm CLI when Windows provides no npm path', () => {
+  expect(resolveNpmArguments('audit', 'win32', null)).toEqual([
     join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', 'audit',
   ]);
+});
+
+test('normalizes negative child exit codes to failure', async () => {
+  await expect(runPackageScript('.', 'audit', () => {}, {
+    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
+    runChildProcess: async () => ({ code: -1, output: '' }),
+  })).resolves.toBe(1);
 });
 
 test('uses a safe default writer for failed scripts', async () => {

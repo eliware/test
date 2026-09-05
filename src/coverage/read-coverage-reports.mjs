@@ -10,7 +10,7 @@ export async function readCoverageReports(cwd, readFilePath = readFile, statPath
   for (const name of candidates) {
     try {
       const snapshot = await readStableReport(resolve(cwd, name), readFilePath, statPath, startedAt);
-      if (!snapshot) { reports.push({ name }); continue; }
+      if (!snapshot) { reports.push({ name, unstable: true, freshnessAvailable: false }); continue; }
       if (snapshot.contents.trim() === '') { reports.push({ name, fresh: snapshot.fresh, freshnessAvailable: snapshot.freshnessAvailable }); continue; }
       const json = JSON.parse(snapshot.contents);
       const usable = isUsableCoverageReport(json);
