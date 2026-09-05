@@ -73,7 +73,10 @@ and is accepted only when its later timestamp is newer than the run start. A
 timestamp lookup that fails for any other reason is an error and does not permit
 the candidate to be accepted. This behavior is intentional and accepted: the
 reader fails closed rather than treating an unverifiable stale artifact as
-fresh.
+fresh. When the filesystem does not provide `dev` and `ino` identity fields,
+freshness is necessarily based on stable contents and modification timestamps;
+the tool cannot prove replacement identity beyond those signals on such
+filesystems.
 Coverage validation is reported during post-test validation but does not stop
 lint, monolith enforcement, or configured package checks. If those stages pass,
 the coverage exit code is returned after all diagnostics are available. A later
