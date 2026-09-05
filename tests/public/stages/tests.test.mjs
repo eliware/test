@@ -4,7 +4,7 @@ test('reports test startup failures', async () => expect(await executeTests({ cw
 test('promotes isolated coverage after a startup failure', async () => {
   const calls = [];
   await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => calls.push('rename'), removePath: async () => {}, runTest: async () => { throw new Error('unavailable'); }, write: () => {} })).resolves.toMatchObject({ code: 8 });
-  expect(calls).toEqual(['rename', 'rename']);
+  expect(calls).toEqual(['rename']);
 });
 
 test('returns coverage cleanup failure after Jest succeeds', async () => {
@@ -22,9 +22,9 @@ test('returns coverage cleanup failure when startup cleanup fails', async () => 
 test('reports a cleanup failure after promotion', async () => {
   const messages = [];
   let removes = 0;
-  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async (path) => { if (path.endsWith('coverage.previous')) { removes += 1; if (removes >= 2) throw new Error('cleanup locked'); } }, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
+  await expect(executeTests({ cwd: '.', args: [], runInBand: true, focusedCoverage: [], focusedPathMode: false, accessPath: async () => true, renamePath: async () => {}, removePath: async (path) => { if (path.endsWith('\\coverage')) { removes += 1; throw new Error('cleanup locked'); } }, runTest: async () => ({ code: 0, output: '' }), write: (message) => messages.push(message) }))
     .resolves.toMatchObject({ code: 7 });
-  expect(messages).toContain('Coverage cleanup warning: cleanup locked\n');
+  expect(messages).toContain('Coverage cleanup failed: cleanup locked\n');
 });
 
 test('does not promote coverage from a failed Jest run', async () => {

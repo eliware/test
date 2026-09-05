@@ -13,10 +13,7 @@ test('runs the preflight and returns prepared test inputs', async () => {
 test('cleans interrupted coverage promotion artifacts before tests', async () => {
   const removed = [];
   await runToolkitPreflight(context({ removePath: async (path) => removed.push(path) }));
-  expect(removed).toEqual(expect.arrayContaining([
-    expect.stringMatching(/[\\/]\.eliware-test-coverage$/),
-    expect.stringMatching(/[\\/]coverage\.previous$/),
-  ]));
+  expect(removed).toEqual(expect.arrayContaining([expect.stringMatching(/[\\/]\.eliware-test-coverage$/)]));
 });
 
 test('returns public outcomes for policy, argument, preparation, and cleanup failures', async () => {

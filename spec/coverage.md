@@ -20,13 +20,11 @@ conversion.
 ## Istanbul JSON coverage
 
 Each run writes Jest coverage to an isolated temporary directory. After Jest
-finishes, the runner validates that directory and promotes it to the
-consumer's `coverage/` directory so the generated reports remain available
-for inspection without accepting stale pre-run artifacts. Promotion moves the
-completed directory into place using a rename-based replacement rather than
-copying its contents. Promotion failures return the dedicated coverage-cleanup
-outcome and clean up or restore temporary filesystem state on a best-effort
-basis.
+finishes, the runner validates that directory, removes the consumer's existing
+`coverage/` directory, and moves the completed directory into its place. The
+consumer's coverage artifacts are overwritten by the latest run. Previous
+coverage is not backed up or restored. Promotion failures return the dedicated
+coverage-cleanup outcome.
 
 Candidates are considered in order:
 

@@ -9,10 +9,10 @@ outside that bijection.
 
 There are no legacy compatibility barrels; new code must import canonical
 implementation modules directly. Generated `coverage/`, `coverage.json`,
-`.nyc_output/`, `.eliware-test-coverage/`, `coverage.previous/`,
-`test-results/`, build output, package archives, and debug logs should be
-ignored. The two named coverage directories are transient promotion artifacts
-that may remain after an interrupted run. Ignoring generated output must never
+`.nyc_output/`, `.eliware-test-coverage/`, `test-results/`, build output,
+package archives, and debug logs should be ignored. The isolated coverage
+directory is a transient promotion artifact that may remain after an
+interrupted run. Ignoring generated output must never
 conceal a coverage gap.
 
 Consumer migration removes direct Jest/Oxlint development dependencies unless

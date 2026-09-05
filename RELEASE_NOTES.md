@@ -39,8 +39,8 @@
 - Hardened coverage parsing and fail-closed evidence validation, including
   malformed statement, branch, function, and explicit line counters; freshness
   checks; focused coverage selection; and fallback handling.
-- Promoted isolated coverage results into the consumer's `coverage/` directory
-  with atomic rename sequencing and bounded cleanup warnings.
+- Promoted isolated coverage results by overwriting the consumer's `coverage/`
+  directory with the latest run; previous coverage is not backed up.
 - Limited monolith traversal to relevant source and test roots while retaining
   depth, file-count, symlink, and six-worker safeguards.
 - Enabled monolith-size enforcement for normal CLI runs; `--ignore-monolith-limits`

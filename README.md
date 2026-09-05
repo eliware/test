@@ -139,8 +139,9 @@ structured result with `code` and `category`; this is not a supported consumer
 library API.
 
 After an interrupted run, stop overlapping jobs and remove stale
-`.eliware-test-coverage/` or `coverage.previous/` directories if they are no
-longer needed before retrying.
+`.eliware-test-coverage/` directory if it remains after an interrupted run.
+The next run overwrites the consumer's `coverage/` directory with the new
+report; previous coverage is not backed up or restored.
 
 See the [exit-code table](spec/cli.md#3-commands-and-lifecycle) in the
 specification for numeric meanings used by CI and troubleshooting.
@@ -174,7 +175,6 @@ coverage/
 coverage.json
 .nyc_output/
 .eliware-test-coverage/
-coverage.previous/
 test-results/
 build/
 dist/

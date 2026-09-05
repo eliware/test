@@ -22,7 +22,7 @@ export async function runToolkitPreflight({ cwd, runnerArguments, write, accessP
   }
   const preparationOutcome = handleTestPreparation(preparation, write);
   if (preparationOutcome !== null) return { exitCode: preparationOutcome };
-  const coverageArtifacts = [...COVERAGE_CANDIDATES, '.eliware-test-coverage', 'coverage.previous'];
+  const coverageArtifacts = [...COVERAGE_CANDIDATES, '.eliware-test-coverage'];
   if (!await cleanupCoverage(cwd, removePath, coverageArtifacts, write)) return { exitCode: EXIT_CODES.COVERAGE_CLEANUP };
   const architecture = await validateArchitecture(cwd, write, findSourceTestMapping);
   if (architecture) return { exitCode: architecture };
