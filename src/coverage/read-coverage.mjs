@@ -15,16 +15,26 @@ async function readStableReport(reportPath, readFilePath, statPath, startedAt) {
     catch (error) { if (error.code !== 'ENOENT') throw error; }
   }
   const first = await readFilePath(reportPath, 'utf8');
-  const firstAfter = startedAt ? await statPath(reportPath) : null;
-  const second = startedAt ? await readFilePath(reportPath, 'utf8') : first;
-  const after = startedAt ? await statPath(reportPath) : null;
+  let firstAfter = null;
+  let second = first;
+  let after = null;
+  if (startedAt) {
+    try {
+      firstAfter = await statPath(reportPath);
+      second = await readFilePath(reportPath, 'utf8');
+      after = await statPath(reportPath);
+    } catch (error) {
+      if (error.code === 'ENOENT') return { contents: first, fresh: false, freshnessAvailable: firstAfter !== null };
+      throw error;
+    }
+  }
   const identityChanged = firstAfter && after && firstAfter.dev !== undefined && after.dev !== undefined
     && firstAfter.ino !== undefined && after.ino !== undefined
     && (firstAfter.dev !== after.dev || firstAfter.ino !== after.ino);
   if (startedAt && (first !== second || (firstAfter && after && firstAfter.mtimeMs !== after.mtimeMs) || identityChanged)) return null;
   const hasTimes = firstAfter?.mtimeMs !== undefined && after?.mtimeMs !== undefined;
   const fresh = !startedAt || (hasTimes && (before ? firstAfter.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt));
-  return { contents: second, fresh };
+  return { contents: second, fresh, freshnessAvailable: !startedAt || hasTimes };
 }
 
 export async function readCoverage(cwd, testOutput, write, readFilePath = readFile, statPath = stat, startedAt = 0) {
@@ -37,12 +47,13 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
       const reportPath = resolve(cwd, name);
       const snapshot = await readStableReport(reportPath, readFilePath, statPath, startedAt);
       if (!snapshot) return { name };
+      if (snapshot.contents.trim() === '') return { name, fresh: snapshot.fresh, freshnessAvailable: snapshot.freshnessAvailable };
       const json = JSON.parse(snapshot.contents);
-      const { fresh } = snapshot;
+      const { fresh, freshnessAvailable } = snapshot;
       const usable = isUsableCoverageReport(json);
-      return { name, json, usable, malformed: !usable, fresh };
+      return { name, json, usable, malformed: !usable, fresh, freshnessAvailable };
     } catch (error) {
-      if (error instanceof SyntaxError) return { name, malformed: true, fresh: !startedAt };
+      if (error instanceof SyntaxError) return { name, malformed: true, fresh: true, freshnessAvailable: true };
       if (error.code === 'ENOENT') return { name };
       throw error;
     }
@@ -50,7 +61,11 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
   }
   const selected = reports.find(({ usable, fresh }) => fresh && usable);
   if (selected) return parseJsonReport(selected.json);
+  if (startedAt && reports.some(({ usable, freshnessAvailable }) => usable && freshnessAvailable === false)) {
+    throw new Error('Coverage freshness unavailable: could not verify that the JSON report belongs to the current test run.');
+  }
   const malformedReport = reports.find(({ malformed, fresh }) => malformed && fresh)?.name;
+  if (startedAt && malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
   const gaps = parseTextReport(testOutput);
   if (!hasTextCoverageEvidence(testOutput)) {
     if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);

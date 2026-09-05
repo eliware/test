@@ -51,7 +51,7 @@ test('accepts a report exactly at the run timestamp after cleanup', async () => 
     .resolves.toEqual([]);
 });
 
-test('rejects a report replaced between freshness checks', async () => {
+test('fails closed when a report disappears during freshness checks', async () => {
   const report = JSON.stringify({ 'src/current.mjs': complete });
   let finalCalls = 0;
   await expect(readCoverage('C:/repo', text, () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async (path) => {
@@ -60,7 +60,7 @@ test('rejects a report replaced between freshness checks', async () => {
     if (finalCalls === 1) return { mtimeMs: 100 };
     throw Object.assign(new Error('gone'), { code: 'ENOENT' });
   }, 100))
-    .resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+    .rejects.toThrow('Coverage freshness unavailable');
 });
 
 test('rejects a report whose contents change during a stable metadata check', async () => {
@@ -84,27 +84,37 @@ test('accepts a report when freshness metadata appears after an unavailable pre-
   }, 99)).resolves.toEqual([]);
 });
 
-test('falls back when the report disappears during freshness validation', async () => {
+test('fails closed when the report disappears during freshness validation', async () => {
   const missing = Object.assign(new Error('gone'), { code: 'ENOENT' });
   let calls = 0;
   await expect(readCoverage('C:/repo', text, () => {}, async (path) => path.endsWith('coverage-final.json') ? JSON.stringify({ 'src/current.mjs': complete }) : '', async () => {
     calls += 1;
     if (calls === 1) return { mtimeMs: 100 };
     throw missing;
-  }, 100)).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+  }, 100)).rejects.toThrow('Coverage freshness unavailable');
 });
 
-test('falls back when freshness metadata is unavailable', async () => {
+test('fails closed when freshness metadata is unavailable', async () => {
   const report = JSON.stringify({ 'src/current.mjs': complete });
   const missing = Object.assign(new Error('metadata unavailable'), { code: 'ENOENT' });
   await expect(readCoverage('C:/repo', text, () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async () => { throw missing; }, Date.now() - 1))
-    .resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+    .rejects.toThrow('Coverage freshness unavailable');
 });
 
 test('preserves real freshness metadata failures', async () => {
   const failure = Object.assign(new Error('stat denied'), { code: 'EACCES' });
   await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json') ? JSON.stringify({ 'src/current.mjs': complete }) : '', async () => { throw failure; }, Date.now() - 1))
     .rejects.toBe(failure);
+});
+
+test('preserves real failures during stable freshness checks', async () => {
+  const failure = Object.assign(new Error('stat denied after read'), { code: 'EACCES' });
+  let calls = 0;
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json') ? JSON.stringify({ 'src/current.mjs': complete }) : '', async () => {
+    calls += 1;
+    if (calls === 1) return { mtimeMs: 100 };
+    throw failure;
+  }, 99)).rejects.toBe(failure);
 });
 
 test('falls back through missing and malformed reports to text coverage', async () => {
@@ -167,6 +177,11 @@ test('rejects malformed coverage with empty output', async () => {
   await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json')
     ? JSON.stringify({ 'src/bad.mjs': { statementMap: {} } })
     : '', async () => ({ mtimeMs: 0 }))).rejects.toThrow('Coverage report is malformed');
+});
+
+test('does not mask a fresh malformed JSON report with text output', async () => {
+  await expect(readCoverage('C:/repo', text, () => {}, async (path) => path.endsWith('coverage-final.json') ? '{bad' : '', async () => ({ mtimeMs: 100 }), 99))
+    .rejects.toThrow('Coverage report is malformed');
 });
 
 test('does not treat an empty JSON report as authoritative', async () => {
