@@ -27,5 +27,24 @@ test('uses default package-check options', async () => {
     cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: true,
     runLintCommand: async () => 0, enforceMonolithLimits: false,
     timing: { step: () => {} },
+})).resolves.toBeNull();
+});
+
+test('normalizes malformed coverage-stage results to a coverage failure', async () => {
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: false,
+    coverageValidator: async () => ({ unexpected: true }), runLintCommand: async () => 0,
+    enforceMonolithLimits: false, packageChecks: { runChildProcess: async () => ({ code: 0, output: '' }) },
+    timing: { step: () => {} },
+  })).resolves.toBe(10);
+});
+
+test('passes the package reader through to package checks', async () => {
+  const readPackageJson = jest.fn(async () => ({ scripts: {} }));
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: true,
+    runLintCommand: async () => 0, enforceMonolithLimits: false,
+    packageChecks: { readPackageJson }, timing: { step: () => {} },
   })).resolves.toBeNull();
+  expect(readPackageJson).toHaveBeenCalledWith('.', undefined);
 });

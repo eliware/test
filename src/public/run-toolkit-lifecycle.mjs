@@ -2,6 +2,7 @@ import { reportToolkitSuccess } from './report-toolkit-success.mjs';
 import { runPostTestValidation } from '../application/run-post-test-validation.mjs';
 import { runToolkitPreflight } from './run-toolkit-preflight.mjs';
 import { runToolkitExecution } from './run-toolkit-execution.mjs';
+import { readPackageJson } from '../workspace/read-package-json.mjs';
 
 /** Execute the toolkit stages in their documented order. */
 export async function runToolkitLifecycle(context) {
@@ -14,7 +15,7 @@ export async function runToolkitLifecycle(context) {
   if (preflight.exitCode !== undefined) return preflight.exitCode;
   const { testResult, outcome: testOutcome } = await runToolkitExecution({ cwd, args: preflight.args, runInBand, disableInBand, preparation: preflight.preparation, runTest, runChildProcess, readFilePath, removePath, accessPath, renamePath, write });
   if (testOutcome !== null) return testOutcome;
-  const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions: { accessPath, findIstanbulIgnores, debugTiming: context.debugTiming, inspect }, enforceMonolithLimits, findMonolith, monolithOptions: { workers }, ignoreMonolithLimits, timing, packageChecks: { runChildProcess } });
+  const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions: { accessPath, findIstanbulIgnores, debugTiming: context.debugTiming, inspect }, enforceMonolithLimits, findMonolith, monolithOptions: { workers }, ignoreMonolithLimits, timing, packageChecks: { runChildProcess, readPackageJson: context.readPackageJson ?? readPackageJson } });
   if (validationOutcome !== null) return validationOutcome;
   reportToolkitSuccess(write, ignoreCoverage);
   return 0;
