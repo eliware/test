@@ -45,4 +45,10 @@ test('enforces shared scripts and allows diagnostic flags only when enabled', ()
   expect(checkPackageMetadata({ ...valid, name: '@eliware/test', scripts: { test: 'node bin/eliware-test.mjs', lint: 'node bin/eliware-test.mjs --lint' } }, { allowSelfReference: true })).not.toEqual(expect.arrayContaining([
     expect.objectContaining({ message: expect.stringContaining('must invoke eliware-test') }),
   ]));
+  expect(checkPackageMetadata({ ...valid, name: '@eliware/test', scripts: { test: 'node other.mjs', lint: 'node bin/eliware-test.mjs --lint' } }, { allowSelfReference: true }).map(({ message }) => message)).toContain('package.json: self-hosted scripts.test must execute node bin/eliware-test.mjs');
+  expect(checkPackageMetadata({ ...valid, name: '@eliware/test', scripts: { test: 'node bin/eliware-test.mjs', lint: 'node other.mjs' } }, { allowSelfReference: true }).map(({ message }) => message)).toContain('package.json: self-hosted scripts.lint must execute node bin/eliware-test.mjs');
+  expect(checkPackageMetadata({ ...valid, name: '@eliware/test', scripts: {} }, { allowSelfReference: true })).toEqual(expect.arrayContaining([
+    expect.objectContaining({ message: expect.stringContaining('self-hosted scripts.test') }),
+    expect.objectContaining({ message: expect.stringContaining('self-hosted scripts.lint') }),
+  ]));
 });

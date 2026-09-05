@@ -20,6 +20,8 @@ export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = 
   if (!allowSelfReference && !/\beliware-test\b/.test(packageJson.scripts?.test ?? '')) findings.push(finding('package.json: scripts.test must invoke eliware-test'));
   if (!allowSelfReference && !/\beliware-test\b/.test(packageJson.scripts?.lint ?? '')) findings.push(finding('package.json: scripts.lint must invoke eliware-test --lint'));
   if (!allowSelfReference && !/--lint(?:\s|$)/.test(packageJson.scripts?.lint ?? '')) findings.push(finding('package.json: scripts.lint must invoke eliware-test --lint'));
+  if (allowSelfReference && !/node\s+bin[\\/]eliware-test\.mjs(?:\s|$)/.test(packageJson.scripts?.test ?? '')) findings.push(finding('package.json: self-hosted scripts.test must execute node bin/eliware-test.mjs'));
+  if (allowSelfReference && !/node\s+bin[\\/]eliware-test\.mjs(?:\s|$)/.test(packageJson.scripts?.lint ?? '')) findings.push(finding('package.json: self-hosted scripts.lint must execute node bin/eliware-test.mjs'));
   if (!allowCoverageOptOut && /(?:^|\s)--ignore-100x4(?:\s|$)/.test(packageJson.scripts?.test ?? '')) findings.push(finding('package.json: scripts.test must not include --ignore-100x4 unless coverage enforcement is explicitly disabled'));
   if (!allowMonolithOptOut && /(?:^|\s)--ignore-monolith-limits(?:\s|$)/.test(packageJson.scripts?.test ?? '')) findings.push(finding('package.json: scripts.test must not include --ignore-monolith-limits unless monolith enforcement is explicitly disabled'));
   const publishable = packageJson.private !== true;
