@@ -7,6 +7,13 @@ use the producer-defined aggregate. This package does not independently
 enumerate omitted consumer source files. Coverage is a regression guard, not
 proof of behavioral correctness.
 
+Istanbul's compiler-generated `default-arg` counters are excluded from the
+branch metric. They do not represent an independently testable application
+branch, and this exception is limited to counters explicitly marked
+`default-arg` by the coverage producer. All real statements, branches,
+functions, and lines remain subject to the 100×4 requirement. This is a
+coverage-measurement limitation, not a general coverage exemption.
+
 ## Text coverage
 
 The parser recognizes the standard Jest table, including CRLF and ANSI output,
