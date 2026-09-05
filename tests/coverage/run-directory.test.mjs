@@ -18,6 +18,11 @@ test('does not promote missing isolated output', async () => {
   await expect(promoteCoverageDirectory('repo', 'missing', async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); })).resolves.toBe(false);
 });
 
+test('reports non-missing access failures', async () => {
+  await expect(promoteCoverageDirectory('repo', 'temp', async () => { throw new Error('access denied'); }))
+    .rejects.toThrow('access denied');
+});
+
 test('preserves destination removal and promotion failures', async () => {
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => { throw new Error('locked'); })).rejects.toThrow('locked');
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {}, async () => { throw new Error('rename failed'); })).rejects.toThrow('rename failed');
