@@ -18,7 +18,10 @@ async function readStableReport(reportPath, readFilePath, statPath, startedAt) {
   const firstAfter = startedAt ? await statPath(reportPath) : null;
   const second = startedAt ? await readFilePath(reportPath, 'utf8') : first;
   const after = startedAt ? await statPath(reportPath) : null;
-  if (startedAt && (first !== second || (firstAfter && after && firstAfter.mtimeMs !== after.mtimeMs))) return null;
+  const identityChanged = firstAfter && after && firstAfter.dev !== undefined && after.dev !== undefined
+    && firstAfter.ino !== undefined && after.ino !== undefined
+    && (firstAfter.dev !== after.dev || firstAfter.ino !== after.ino);
+  if (startedAt && (first !== second || (firstAfter && after && firstAfter.mtimeMs !== after.mtimeMs) || identityChanged)) return null;
   const fresh = !startedAt || (before ? firstAfter.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt);
   return { contents: second, fresh };
 }
@@ -44,13 +47,14 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
     }
     })());
   }
-  const firstFresh = reports.find(({ fresh }) => fresh);
-  if (firstFresh?.malformed) {
-    throw new Error(`Coverage report is malformed: ${firstFresh.name}. Rerun the tests to regenerate coverage data.`);
-  }
-  const malformedReport = reports.find(({ malformed }) => malformed)?.name;
   const selected = reports.find(({ usable, fresh }) => fresh && usable);
+  const selectedIndex = selected ? reports.indexOf(selected) : reports.length;
+  const malformedBeforeSelected = reports.slice(0, selectedIndex).find(({ malformed, fresh }) => malformed && fresh);
+  if (malformedBeforeSelected) {
+    throw new Error(`Coverage report is malformed: ${malformedBeforeSelected.name}. Rerun the tests to regenerate coverage data.`);
+  }
   if (selected) return parseJsonReport(selected.json);
+  const malformedReport = reports.find(({ malformed }) => malformed)?.name;
   const gaps = parseTextReport(testOutput);
   if (!hasTextCoverageEvidence(testOutput)) {
     if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);

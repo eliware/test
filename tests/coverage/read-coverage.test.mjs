@@ -139,6 +139,25 @@ test('fails closed when the highest-priority fresh candidate is malformed', asyn
   }, async () => ({ mtimeMs: Date.now() }))).rejects.toThrow('Coverage report is malformed: coverage/coverage-final.json');
 });
 
+test('falls through a malformed lower-priority candidate to a usable report', async () => {
+  const report = JSON.stringify({ 'src/current.mjs': complete });
+  await expect(readCoverage('C:/repo', '', () => {}, async (path) => {
+    if (path.endsWith('coverage-final.json')) return report;
+    if (path.endsWith('coverage.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
+    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+  })).resolves.toEqual([]);
+});
+
+test('rejects a report whose file identity changes with unchanged mtime', async () => {
+  let stats = 0;
+  const report = JSON.stringify({ 'src/current.mjs': complete });
+  await expect(readCoverage('C:/repo', text, () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async (path) => {
+    if (!path.endsWith('coverage-final.json')) throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+    stats += 1;
+    return { mtimeMs: 100, dev: 1, ino: stats === 2 ? 1 : 2 };
+  }, 100)).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
+});
+
 test('rejects unusable nonempty coverage evidence', async () => {
   await expect(readCoverage('C:/repo', 'test output', () => {}, async () => '{bad')).rejects.toThrow('Coverage report is malformed');
   await expect(readCoverage('C:/repo', '', () => {}, async () => '{bad')).rejects.toThrow('Coverage report is malformed');
