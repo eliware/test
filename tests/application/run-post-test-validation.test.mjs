@@ -24,6 +24,19 @@ test('uses later package failure precedence while retaining coverage diagnostics
   expect(messages).toContain('Package script failed: audit\n');
 });
 
+test('continues through monolith and package checks after lint failure', async () => {
+  const findMonolith = jest.fn(async () => []);
+  const runChildProcess = jest.fn(async () => ({ code: 0, output: '' }));
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: true,
+    runLintCommand: async () => 13, enforceMonolithLimits: true, findMonolith,
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess },
+    timing: { step: () => {} },
+  })).resolves.toBe(13);
+  expect(findMonolith).toHaveBeenCalled();
+  expect(runChildProcess).toHaveBeenCalled();
+});
+
 test('fails after existing validation when a package check fails', async () => {
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, readFilePath: async () => '{}',

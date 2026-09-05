@@ -34,6 +34,11 @@ fail, the first failing stage in this order supplies the final code: package
 scripts, monolith validation, lint, then coverage. Coverage therefore remains
 deferred, but it is not allowed to replace a later failure.
 
+This precedence is intentional and normative. A coverage failure being
+retained while later checks run, then losing precedence to a later package,
+monolith, or lint failure, is not a correctness inconsistency and must not be
+reported as one when the implementation and this order agree.
+
 The lifecycle and lint exports expose internal test seams, not consumer APIs.
 The lifecycle accepts its collaborators through the validated toolkit options;
 the standalone lint seam accepts its dependency object, including injected

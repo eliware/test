@@ -11,13 +11,15 @@ export async function runPostTestValidation({ cwd, testResult, write, readFilePa
   const normalizedCoverageResult = Number.isInteger(coverageResult) ? coverageResult : EXIT_CODES.COVERAGE_FAILURE;
   timing.step('Coverage', 'lint');
   const lint = await validateLint(() => runLintCommand({ ...lintOptions, cwd, write, reportSuccess: false }));
-  if (lint) return lint;
   timing.step('Lint', 'monolith validation');
+  let monolithResult = 0;
   if (enforceMonolithLimits) {
-    const monolithResult = await validateMonolith({ cwd, findMonolith, monolithOptions, write, ignoreMonolithLimits });
-    if (monolithResult) return monolithResult;
+    monolithResult = await validateMonolith({ cwd, findMonolith, monolithOptions, write, ignoreMonolithLimits });
   }
   timing.step('Monolith validation', 'package checks');
   const packageResult = await runPackageChecks(cwd, write, packageChecks);
-  return packageResult === 0 ? (normalizedCoverageResult || null) : packageResult;
+  if (packageResult !== 0) return packageResult;
+  if (monolithResult !== 0) return monolithResult;
+  if (lint !== 0) return lint;
+  return normalizedCoverageResult || null;
 }

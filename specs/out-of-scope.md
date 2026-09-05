@@ -34,3 +34,8 @@ This document records behavior the v5 CLI intentionally does not provide.
   remain consumer responsibilities.
 - A supported runtime library API is out of scope; the public interface is
   the `eliware-test` CLI.
+- Coverage does not have precedence over later post-test failures. The tool
+  intentionally runs package-script, monolith, and lint checks after coverage
+  evidence fails; those failures take precedence in that order, with coverage
+  returned only when the later checks pass. Treating this documented precedence
+  as a correctness defect is out of scope.
