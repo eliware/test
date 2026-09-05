@@ -2,7 +2,7 @@ const REQUIRED_STRING_FIELDS = ['name', 'version', 'description', 'author', 'lic
 
 function finding(message) { return { group: 'package', message }; }
 
-export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = '', existingPaths = new Set(), allowSelfReference = false, allowCoverageOptOut = false, allowMonolithOptOut = false } = {}) {
+export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = '', existingPaths = new Set(), existingFiles = existingPaths, allowSelfReference = false, allowCoverageOptOut = false, allowMonolithOptOut = false } = {}) {
   if (packageJson === null) return [];
   if (packageJson?.__error) return [finding(`package.json: ${packageJson.__error}`)];
   const findings = [];
@@ -33,6 +33,10 @@ export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = 
     if (!packageJson.publishConfig || typeof packageJson.publishConfig !== 'object') findings.push(finding('package.json: publishConfig must be an object for publishable packages'));
     for (const required of ['README.md', 'LICENSE', 'RELEASE_NOTES.md']) if (!packageJson.files?.includes(required)) findings.push(finding(`package.json: files must include ${required}`));
   }
+  for (const [name, target] of normalizeBinEntries(packageJson.bin)) {
+    const normalizedTarget = normalizePackagePath(target);
+    if (!normalizedTarget || !existingFiles.has(normalizedTarget)) findings.push(finding(`package.json: bin.${name} target does not exist: ${target}`));
+  }
   if (packageJson.name && !readme.includes(packageJson.name)) findings.push(finding(`README.md: does not mention package name ${packageJson.name}`));
   if (packageJson.version && !new RegExp(`^##\\s+v?${escapeRegExp(packageJson.version)}(?:\\s|$)`, 'mi').test(releaseNotes)) findings.push(finding(`RELEASE_NOTES.md: missing heading for version ${packageJson.version}`));
   if (packageJson.license && ![...existingPaths].some((path) => path.toLowerCase() === packageJson.license.toLowerCase() || path.toLowerCase() === 'license')) findings.push(finding(`package.json: license ${packageJson.license} has no corresponding license file`));
@@ -48,6 +52,16 @@ export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = 
     if (!exists) findings.push(finding(`package.json: files entry does not exist: ${entry}`));
   }
   return findings;
+}
+
+function normalizeBinEntries(bin) {
+  if (typeof bin === 'string') return [['default', bin]];
+  if (!bin || typeof bin !== 'object' || Array.isArray(bin)) return [];
+  return Object.entries(bin).filter(([, target]) => typeof target === 'string');
+}
+
+function normalizePackagePath(path) {
+  return path.replaceAll('\\', '/').replace(/^\.\//, '');
 }
 
 function escapeRegExp(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }

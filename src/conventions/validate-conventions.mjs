@@ -17,9 +17,12 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   const read = async (path) => { try { return await readFilePath(resolve(cwd, path), 'utf8'); } catch { return ''; } };
   const entries = await readDirectory(cwd, { withFileTypes: true });
   const paths = new Set(entries.map((entry) => entry.name));
+  const files = new Set();
   try {
     await walkFiles(cwd, async (path) => {
-      paths.add(relative(cwd, path).replaceAll('\\', '/'));
+      const relativePath = relative(cwd, path).replaceAll('\\', '/');
+      paths.add(relativePath);
+      files.add(relativePath);
     }, { readDirectory });
   } catch (error) {
     findings.push({ group: 'structure', message: `workspace traversal failed: ${error.message}` });
@@ -35,7 +38,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   const overview = specFiles.find((file) => file.toLowerCase() === 'readme.md' || file.toLowerCase() === 'index.md') ?? (await read('SPEC.md') ? 'SPEC.md' : '');
   const specText = overview === 'SPEC.md' ? await read('SPEC.md') : await read(`specs/${overview}`);
   findings.push(...checkAgents(agents, exceptions));
-  findings.push(...checkPackageMetadata(packageJson, { readme, releaseNotes, existingPaths: paths, allowSelfReference: packageJson?.name === '@eliware/test', allowCoverageOptOut, allowMonolithOptOut }));
+  findings.push(...checkPackageMetadata(packageJson, { readme, releaseNotes, existingPaths: paths, existingFiles: files, allowSelfReference: packageJson?.name === '@eliware/test', allowCoverageOptOut, allowMonolithOptOut }));
   findings.push(...checkReadme(readme, paths, packageJson?.files ?? [], packageJson ?? {}));
   findings.push(...checkSpecifications(specFiles, specText, specFiles.find((file) => /out.of.scope/i.test(file))));
   const environmentSources = [];

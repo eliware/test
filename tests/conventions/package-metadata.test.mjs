@@ -6,6 +6,13 @@ test('accepts valid publishable metadata and consistency evidence', () => {
   expect(checkPackageMetadata(valid, { readme: 'demo', releaseNotes: '## 1.0.0', existingPaths: new Set(['README.md', 'LICENSE', 'RELEASE_NOTES.md']) })).toEqual([]);
 });
 
+test('validates package bin targets when present', () => {
+  const options = { readme: 'demo', releaseNotes: '## 1.0.0', existingPaths: new Set(['README.md', 'LICENSE', 'RELEASE_NOTES.md', 'bin', 'bin/cli.mjs']), existingFiles: new Set(['README.md', 'LICENSE', 'RELEASE_NOTES.md', 'bin/cli.mjs']) };
+  expect(checkPackageMetadata({ ...valid, bin: { demo: './bin/cli.mjs' } }, options)).toEqual([]);
+  expect(checkPackageMetadata({ ...valid, bin: { demo: './bin/missing.mjs' } }, options).map(({ message }) => message)).toContain('package.json: bin.demo target does not exist: ./bin/missing.mjs');
+  expect(checkPackageMetadata({ ...valid, bin: './bin/missing.mjs' }, options).map(({ message }) => message)).toContain('package.json: bin.default target does not exist: ./bin/missing.mjs');
+});
+
 test('reports missing fields, files, and consistency evidence', () => {
   expect(checkPackageMetadata({ name: 'demo' }, { existingPaths: new Set() }).map(({ message }) => message)).toEqual(expect.arrayContaining(['package.json: version must be a non-empty string', 'package.json: keywords must be a non-empty string array']));
 });
