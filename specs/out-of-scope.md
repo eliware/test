@@ -15,6 +15,14 @@ This document records behavior the v5 CLI intentionally does not provide.
 - Compatibility with nonstandard Node.js/npm installation layouts or package
   managers outside the internal Eliware environment is out of scope. The
   Windows npm fallback supports the documented conventional layout only.
+- Convention exceptions are not a general disable switch. The validator does
+  not provide per-check waivers for package metadata, README content,
+  specifications, environment safety, examples, or badges; repositories must
+  satisfy those checks when the corresponding path exists.
+- Semantic judgment of documentation prose is out of scope. Documentation
+  checks validate deterministic structure, links, headings, required markers,
+  and safe placeholders; they do not decide whether prose is elegant,
+  complete, or understandable to a human reviewer.
 - Project-specific smoke, integration, regression, deployment, and E2E tests
   remain consumer responsibilities.
 - A supported runtime library API is out of scope; the public interface is

@@ -80,6 +80,10 @@ fresh. When the filesystem does not provide `dev` and `ino` identity fields,
 freshness is necessarily based on stable contents and modification timestamps;
 the tool cannot prove replacement identity beyond those signals on such
 filesystems.
+If any freshness-tracked candidate changes while it is being read, the entire
+coverage decision fails closed, even if a lower-priority candidate is otherwise
+usable. This is intentional: an unstable artifact indicates that test output
+is still changing, and a later candidate must not mask that uncertainty.
 Coverage validation is reported during post-test validation but does not stop
 lint, monolith enforcement, or configured package checks. If those stages pass,
 the coverage exit code is returned after all diagnostics are available. A later

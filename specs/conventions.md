@@ -47,8 +47,12 @@ path in `package.json`:
 }
 ```
 
-Exceptions are explicit path-level waivers only; they do not disable checks
-that can still run. Examples are inspected but never executed by this layer.
+Exceptions are explicit path-level waivers for required top-level paths only.
+They are also used to declare the scope of intentional AGENTS.md deviations.
+They do not suppress README, package metadata, specification, environment,
+example, badge, or index checks for a path that exists. An exception never
+makes an invalid existing document valid; it only permits the named required
+path to be absent. Examples are inspected but never executed by this layer.
 
 Specification discovery is intentionally shallow and deterministic: Markdown
 documents directly inside `specs/` are the specification set. The overview
@@ -58,4 +62,6 @@ indexed by the convention validator; repositories needing nested material
 should link it from a top-level specification document.
 
 For public Eliware packages, the convention validator also requires README
-links for the canonical npm package, license file, and CI workflow badges.
+links for the canonical npm package, license file, and the repository's
+canonical `actions/workflows/nodejs.yml` CI badge. A generic workflows-directory
+link is not sufficient.

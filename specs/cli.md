@@ -81,6 +81,9 @@ When `--debug-timing` is enabled, timing-report parsing and cleanup are
 best-effort diagnostics. A malformed or locked timing artifact produces a
 bounded warning and does not replace the underlying Jest result or block the
 remaining validation stages.
+Cleanup failures are reported as `Timing report cleanup unavailable: ...`;
+they are not silently ignored and do not change the underlying test exit
+category. Timing output is diagnostic state, not a release gate.
 
 ## 4. Implementation and test file-size limits
 
