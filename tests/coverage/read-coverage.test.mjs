@@ -116,11 +116,11 @@ test('falls back through missing and malformed reports to text coverage', async 
   expect(result[0].file).toBe('gap.mjs');
 });
 
-test('reports a structurally malformed JSON report explicitly', async () => {
+test('falls back when the only JSON report is structurally malformed', async () => {
   await expect(readCoverage('C:/repo', text, () => {}, async (path) => {
     if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  })).rejects.toThrow('Coverage report is malformed: coverage/coverage-final.json');
+  })).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ file: 'gap.mjs' })]));
 });
 
 test('reports malformed JSON when production output has no text fallback', async () => {
@@ -130,13 +130,13 @@ test('reports malformed JSON when production output has no text fallback', async
   }, async () => ({ mtimeMs: Date.now() }), Date.now() - 1)).rejects.toThrow('Coverage report is malformed');
 });
 
-test('fails closed when the highest-priority fresh candidate is malformed', async () => {
+test('falls through a malformed highest-priority candidate to a usable report', async () => {
   const report = JSON.stringify({ 'src/current.mjs': complete });
   await expect(readCoverage('C:/repo', '', () => {}, async (path) => {
     if (path.endsWith('coverage-final.json')) return JSON.stringify({ 'src/bad.mjs': { statementMap: {} } });
     if (path.endsWith('coverage.json')) return report;
     throw Object.assign(new Error('missing'), { code: 'ENOENT' });
-  }, async () => ({ mtimeMs: Date.now() }))).rejects.toThrow('Coverage report is malformed: coverage/coverage-final.json');
+  }, async () => ({ mtimeMs: Date.now() }))).resolves.toEqual([]);
 });
 
 test('falls through a malformed lower-priority candidate to a usable report', async () => {

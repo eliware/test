@@ -15,6 +15,15 @@ test('uses statement locations when no line map exists', () => {
   expect(result.unmappedLineCount).toBe(2);
 });
 
+test('derives partial line coverage from valid statement locations', () => {
+  const result = collectLineCoverage({
+    statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 2 } } },
+    s: { 0: 1, 1: 0 },
+  });
+  expect(result.lineCounts).toEqual(new Map([[1, 1], [2, 0]]));
+  expect(result.hasUnmappedStatement).toBe(false);
+});
+
 test('counts only unmappable statements when deriving lines without an explicit map', () => {
   const result = collectLineCoverage({
     statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 2 } } },

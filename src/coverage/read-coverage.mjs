@@ -48,11 +48,6 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
     })());
   }
   const selected = reports.find(({ usable, fresh }) => fresh && usable);
-  const selectedIndex = selected ? reports.indexOf(selected) : reports.length;
-  const malformedBeforeSelected = reports.slice(0, selectedIndex).find(({ malformed, fresh }) => malformed && fresh);
-  if (malformedBeforeSelected) {
-    throw new Error(`Coverage report is malformed: ${malformedBeforeSelected.name}. Rerun the tests to regenerate coverage data.`);
-  }
   if (selected) return parseJsonReport(selected.json);
   const malformedReport = reports.find(({ malformed }) => malformed)?.name;
   const gaps = parseTextReport(testOutput);
