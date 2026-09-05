@@ -14,6 +14,10 @@ test('does not warn when gitignore exists', async () => {
   expect(write).not.toHaveBeenCalled();
 });
 
+test('uses the default filesystem access check', async () => {
+  await expect(warnIfMissingGitignore(process.cwd(), jest.fn())).resolves.toBeUndefined();
+});
+
 test('propagates unexpected gitignore errors', async () => {
   await expect(warnIfMissingGitignore('repo', jest.fn(), async () => {
     throw new Error('denied');

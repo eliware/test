@@ -28,7 +28,7 @@ test paths use strict path selection, even with mixed name filters; missing
 paths fail without falling back to the full suite. Set
 ELIWARE_TEST_DEBUG=1 to show the fixed coverage-fallback diagnostic; this is
 separate from --debug-timing.
-See spec/cli.md for the stable exit-code meanings used by CI.
+See specs/cli.md for the stable exit-code meanings used by CI.
 Defined audit, pack, build, and typecheck scripts run after validation; missing
 scripts are skipped and any failing check returns wrapper exit code 17.
 Configure consumer scripts as test=eliware-test and lint=eliware-test --lint;

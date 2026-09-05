@@ -3,7 +3,7 @@ const CATEGORIES = Object.freeze({
   5: 'focused-path-validation', 6: 'focused-path-missing', 7: 'coverage-cleanup',
   8: 'test-startup', 9: 'test-failure', 10: 'coverage-failure', 11: 'coverage-gap',
   12: 'lint-startup', 13: 'lint-failure', 14: 'internal', 15: 'monolith-limit',
-  16: 'architecture-mapping', 17: 'package-script-failure',
+  16: 'architecture-mapping', 17: 'package-script-failure', 18: 'convention-validation',
 });
 
 /** Convert a pipeline code into the structured result exposed by runToolkit. */

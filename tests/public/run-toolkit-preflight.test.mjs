@@ -3,11 +3,15 @@ import { runToolkitPreflight } from '../../src/public/run-toolkit-preflight.mjs'
 const context = (overrides = {}) => ({
   cwd: process.cwd(), runnerArguments: [], write: () => {}, accessPath: async () => true,
   removePath: async () => {}, findIstanbulIgnores: async () => [], inspect: async () => true,
-  debugTiming: false, findSourceTestMapping: async () => ({ missingTests: [], orphanTests: [] }), timing: { step: () => {} }, ...overrides,
+  debugTiming: false, validateConventions: async () => true, findSourceTestMapping: async () => ({ missingTests: [], orphanTests: [] }), timing: { step: () => {} }, ...overrides,
 });
 
 test('runs the preflight and returns prepared test inputs', async () => {
   await expect(runToolkitPreflight(context())).resolves.toMatchObject({ args: [], preparation: expect.any(Object) });
+});
+
+test('uses the default convention validator', async () => {
+  await expect(runToolkitPreflight({ ...context(), validateConventions: undefined })).resolves.toMatchObject({ args: [], preparation: expect.any(Object) });
 });
 
 test('cleans interrupted coverage promotion artifacts before tests', async () => {
@@ -29,6 +33,10 @@ test('fails after workspace policy when mapping drifts', async () => {
     findSourceTestMapping: async () => ({ missingTests: ['missing'], orphanTests: [] }),
   }))).resolves.toEqual({ exitCode: 16 });
   expect(inspected).toBe(true);
+});
+
+test('returns the convention-validation exit code', async () => {
+  await expect(runToolkitPreflight(context({ validateConventions: async () => false }))).resolves.toEqual({ exitCode: 18 });
 });
 
 test('runs policy before reporting mapping drift', async () => {

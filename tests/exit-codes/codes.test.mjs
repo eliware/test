@@ -18,6 +18,7 @@ test('defines stable unique wrapper exit codes', () => {
     MONOLITH_LIMIT: 15,
     ARCHITECTURE_MAPPING: 16,
     PACKAGE_SCRIPT_FAILURE: 17,
+    CONVENTION_VALIDATION: 18,
   });
   expect(new Set(Object.values(EXIT_CODES)).size).toBe(Object.keys(EXIT_CODES).length);
 });

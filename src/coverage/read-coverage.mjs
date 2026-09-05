@@ -1,78 +1,15 @@
 import { readFile, stat } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import { parseJsonReport } from './parse-json-report.mjs';
-import { parseTextReport } from './parse-text-report.mjs';
-import { hasTextCoverageEvidence } from './text-evidence.mjs';
+import { readCoverageReports, COVERAGE_CANDIDATES } from './read-coverage-reports.mjs';
+import { resolveCoverageEvidence } from './resolve-coverage-evidence.mjs';
 import { isUsableCoverageReport } from './is-usable-coverage-report.mjs';
-import { debugOutput } from '../diagnostics/debug-output.mjs';
 
-export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/coverage.json', 'coverage.json'];
-
-async function readStableReport(reportPath, readFilePath, statPath, startedAt) {
-  let before = null;
-  if (startedAt) {
-    try { before = await statPath(reportPath); }
-    catch (error) { if (error.code !== 'ENOENT') throw error; }
-  }
-  const first = await readFilePath(reportPath, 'utf8');
-  let firstAfter = null;
-  let second = first;
-  let after = null;
-  if (startedAt) {
-    try {
-      firstAfter = await statPath(reportPath);
-      second = await readFilePath(reportPath, 'utf8');
-      after = await statPath(reportPath);
-    } catch (error) {
-      if (error.code === 'ENOENT') return { contents: first, fresh: false, freshnessAvailable: firstAfter !== null };
-      throw error;
-    }
-  }
-  const identityChanged = firstAfter && after && firstAfter.dev !== undefined && after.dev !== undefined
-    && firstAfter.ino !== undefined && after.ino !== undefined
-    && (firstAfter.dev !== after.dev || firstAfter.ino !== after.ino);
-  if (startedAt && (first !== second || (firstAfter && after && firstAfter.mtimeMs !== after.mtimeMs) || identityChanged)) return null;
-  const hasTimes = firstAfter?.mtimeMs !== undefined && after?.mtimeMs !== undefined;
-  const fresh = !startedAt || (hasTimes && (before ? firstAfter.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt));
-  return { contents: second, fresh, freshnessAvailable: !startedAt || hasTimes };
-}
+export { COVERAGE_CANDIDATES };
 
 export async function readCoverage(cwd, testOutput, write, readFilePath = readFile, statPath = stat, startedAt = 0) {
   if (typeof cwd !== 'string') throw new TypeError('readCoverage requires cwd');
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
-  const reports = [];
-  for (const name of COVERAGE_CANDIDATES) {
-    reports.push(await (async () => {
-    try {
-      const reportPath = resolve(cwd, name);
-      const snapshot = await readStableReport(reportPath, readFilePath, statPath, startedAt);
-      if (!snapshot) return { name };
-      if (snapshot.contents.trim() === '') return { name, fresh: snapshot.fresh, freshnessAvailable: snapshot.freshnessAvailable };
-      const json = JSON.parse(snapshot.contents);
-      const { fresh, freshnessAvailable } = snapshot;
-      const usable = isUsableCoverageReport(json);
-      return { name, json, usable, malformed: !usable, fresh, freshnessAvailable };
-    } catch (error) {
-      if (error instanceof SyntaxError) return { name, malformed: true, fresh: true, freshnessAvailable: true };
-      if (error.code === 'ENOENT') return { name };
-      throw error;
-    }
-    })());
-  }
-  const selected = reports.find(({ usable, fresh }) => fresh && usable);
-  if (selected) return parseJsonReport(selected.json);
-  if (startedAt && reports.some(({ usable, freshnessAvailable }) => usable && freshnessAvailable === false)) {
-    throw new Error('Coverage freshness unavailable: could not verify that the JSON report belongs to the current test run.');
-  }
-  const malformedReport = reports.find(({ malformed, fresh }) => malformed && fresh)?.name;
-  if (startedAt && malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
-  const gaps = parseTextReport(testOutput);
-  if (!hasTextCoverageEvidence(testOutput)) {
-    if (malformedReport) throw new Error(`Coverage report is malformed: ${malformedReport}. Rerun the tests to regenerate coverage data.`);
-    throw new Error('Coverage evidence missing: Jest produced no usable JSON or text coverage report.');
-  }
-  debugOutput(write, 'Coverage fallback', 'using Jest text coverage');
-  return gaps;
+  const reports = await readCoverageReports(cwd, readFilePath, statPath, startedAt);
+  return resolveCoverageEvidence(reports, testOutput, write, startedAt);
 }
 
 export function hasUsableCoverage(json) {

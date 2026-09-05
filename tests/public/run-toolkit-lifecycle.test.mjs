@@ -10,7 +10,7 @@ test('runs the lifecycle stages and reports success', async () => {
     readFilePath: async () => JSON.stringify({ 'src/example.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, b: {}, f: {} } }), statPath: async () => ({ mtimeMs: 1 }), renamePath: async () => {},
     findIstanbulIgnores: async () => [], findMonolith: async () => [], findSourceTestMapping: async () => ({ missingTests: [], orphanTests: [] }),
     inspectWorkspace: async () => true, runChildProcess: async () => ({ code: 0, output: '' }),
-    timing: { step: () => {} }, startedAt: 0, debugTiming: false,
+    timing: { step: () => {} }, startedAt: 0, debugTiming: false, validateConventions: async () => true,
   };
   await expect(runToolkitLifecycle(context)).resolves.toBe(0);
   expect(messages.join('')).toContain('Tests passed');

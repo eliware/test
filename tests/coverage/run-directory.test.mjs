@@ -1,4 +1,7 @@
 import { promoteCoverageDirectory, prepareCoverageDirectory, TEMP_COVERAGE_DIRECTORY } from '../../src/coverage/run-directory.mjs';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 test('prepares an isolated coverage directory', async () => {
   const calls = [];
@@ -26,4 +29,15 @@ test('reports non-missing access failures', async () => {
 test('preserves destination removal and promotion failures', async () => {
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => { throw new Error('locked'); })).rejects.toThrow('locked');
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {}, async () => { throw new Error('rename failed'); })).rejects.toThrow('rename failed');
+});
+
+test('uses default filesystem collaborators', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'eliware-test-'));
+  try {
+    const temporary = await prepareCoverageDirectory(root);
+    await writeFile(join(temporary, 'coverage-final.json'), '{}');
+    expect(await promoteCoverageDirectory(root, temporary)).toBe(true);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

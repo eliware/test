@@ -5,6 +5,7 @@ import { runLintCommand as defaultRunLintCommand } from '../application/run-lint
 import { inspectWorkspace as defaultInspectWorkspace } from '../workspace/inspect-workspace.mjs';
 import { findSourceTestMappingDrifts } from '../architecture/validate-source-test-mapping.mjs';
 import { runChildProcess as defaultRunChildProcess } from '../processes/run-child-process.mjs';
+import { validateConventions as defaultValidateConventions } from '../conventions/validate-conventions.mjs';
 
 /** Resolve toolkit defaults while preserving injectable collaborators. */
 export function resolveToolkitOptions(options) {
@@ -15,11 +16,11 @@ export function resolveToolkitOptions(options) {
     enforceMonolithLimits = false, accessPath = access, removePath = rm, readFilePath = readFile, statPath = stat,
     findIstanbulIgnores, findMonolith = detectViolations,
     findSourceTestMapping = findSourceTestMappingDrifts, renamePath = rename,
-    inspectWorkspace = defaultInspectWorkspace, runChildProcess = defaultRunChildProcess,
+    inspectWorkspace = defaultInspectWorkspace, runChildProcess = defaultRunChildProcess, validateConventions = defaultValidateConventions,
   } = options;
   return {
     cwd, runnerArguments, write, runTest, runLintCommand, runInBand, ignoreCoverage,
     ignoreMonolithLimits, debugTiming, workers, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath,
-    findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath, runChildProcess,
+    findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath, runChildProcess, validateConventions,
   };
 }

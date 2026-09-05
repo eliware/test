@@ -7,6 +7,15 @@ testing, coverage enforcement, and Oxlint validation. Keep project-specific
 smoke, integration, regression, and end-to-end workflows in consuming
 repositories.
 
+The supported public interface is the CLI command `eliware-test`; internal
+structured toolkit results and source modules are implementation seams, not a
+consumer runtime API. The v4 package publishes the CLI, `src/`, `specs/`,
+README, specification overview, license, and release notes. Validate changes
+with `npm test`, `npm run lint`, `npm run check:docs`, `npm audit`, and
+`npm run pack` as applicable;
+keep package metadata, lockfiles, documentation, examples, and release notes
+synchronized.
+
 ## Rules
 
 - Use Node.js 26, native ESM, and `.mjs` source and test files.
@@ -39,6 +48,9 @@ repositories.
 - Support `--ignore-100x4` only as an explicit coverage-enforcement opt-out;
   tests, lint, and coverage collection still run.
 - Do not hide real coverage gaps with ignore comments.
+- Run the deterministic repository-convention validator; use only exact,
+  documented path exceptions for requirements a repository genuinely cannot
+  satisfy.
 
 ## Consumer migration
 

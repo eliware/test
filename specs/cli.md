@@ -6,14 +6,15 @@
 
 1. Scan for disallowed Istanbul-ignore directives.
 2. Check workspace setup and warn, without failing, when `.gitignore` is absent.
-3. Validate wrapper-managed and focused-path arguments.
-4. Remove stale coverage candidates.
-5. Validate source/test architecture mapping.
-6. Run Jest with coverage.
-7. Select and validate coverage evidence.
-8. Run Oxlint with warnings denied.
-9. Enforce monolith limits for the normal CLI run.
-10. Run configured `audit`, `pack`, `build`, and `typecheck` package scripts.
+3. Validate deterministic repository conventions.
+4. Validate wrapper-managed and focused-path arguments.
+5. Remove stale coverage candidates.
+6. Validate source/test architecture mapping.
+7. Run Jest with coverage.
+8. Select and validate coverage evidence.
+9. Run Oxlint with warnings denied.
+10. Enforce monolith limits for the normal CLI run.
+11. Run configured `audit`, `pack`, `build`, and `typecheck` package scripts.
 
 Pre-test stages stop at the first applicable failure, including source/test
 architecture drift. Post-test validation continues after coverage failure so
@@ -23,6 +24,11 @@ setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
 `--version`/`-v` are terminal modes and take precedence over managed-option
 validation when combined with other arguments. Version output comes from
 `package.json`.
+
+The continuation after a coverage failure is intentional: coverage evidence
+is reported as failed, but the remaining deterministic checks still run so one
+invocation exposes all actionable diagnostics. The final exit code remains the
+highest-priority applicable failure after those checks complete.
 
 Stable wrapper exit codes are:
 
@@ -40,6 +46,7 @@ Stable wrapper exit codes are:
 | 15 | Monolith limit | Split the module or use a justified exemption. |
 | 16 | Source/test drift | Restore the exact canonical mapping. |
 | 17 | Package-script failure | Fix the configured package script. |
+| 18 | Repository convention failure | Fix the grouped diagnostics or document an exact path exception. |
 
 Package scripts are checked only when the consuming `package.json` defines the
 corresponding script. Missing scripts are skipped silently. Defined scripts run

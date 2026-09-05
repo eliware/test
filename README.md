@@ -2,12 +2,23 @@
 
 ## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![build status](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/nodejs.yml)
 
-Shared Jest testing, coverage enforcement, and Oxlint validation for Eliware
-Node.js projects using npm and the conventional `node_modules` layout.
+Shared Jest testing, coverage enforcement, Oxlint, and consumer validation for
+Eliware Node.js projects using npm and the conventional `node_modules` layout.
 
 `@eliware/test` provides one CLI for the routine checks every project should
 run. Jest and Oxlint are installed as runtime dependencies, so consuming
 projects do not need to install them directly.
+
+## Contents
+
+- [Installation](#installation)
+- [Usage and common commands](#usage-and-common-commands)
+- [Consumer migration](#consumer-migration)
+- [Generated files](#generated-files)
+- [Security and diagnostics](#security-and-diagnostics)
+- [Support](#support)
+- [Further documentation](#further-documentation)
+- [Development](#development)
 
 ## Requirements
 
@@ -22,7 +33,7 @@ Focused execution recognizes `.js`, `.mjs`, `.cjs`, `.jsx`, `.tsx`, `.cts`,
 require direct Jest execution and do not satisfy the canonical architecture
 mapping.
 
-## Install
+## Installation
 
 ```sh
 npm install --save-dev @eliware/test
@@ -44,7 +55,7 @@ Set the consuming project's scripts:
 
 Review the resulting lockfile and commit it with the package change.
 
-## Common commands
+## Usage and common commands
 
 ```text
 npm test                         Run the full validation pipeline
@@ -61,14 +72,15 @@ eliware-test --debug-timing     Show pipeline and best-effort Jest timing
 The normal test command runs these stages in order:
 
 1. Workspace policy and focused-argument validation
-2. Coverage cleanup
-3. Source/test mapping
-4. Jest with coverage and a 100% statements/branches/functions/lines gate over
+2. Deterministic repository-convention validation
+3. Coverage cleanup
+4. Source/test mapping
+5. Jest with coverage and a 100% statements/branches/functions/lines gate over
    the producer-selected coverage set; focused mirrored runs may narrow it
-5. Coverage evidence validation
-6. Oxlint with warnings treated as failures
-7. Monolith-size enforcement
-8. Any defined `audit`, `pack`, `build`, and `typecheck` scripts
+6. Coverage evidence validation
+7. Oxlint with warnings treated as failures
+8. Monolith-size enforcement
+9. Any defined `audit`, `pack`, `build`, and `typecheck` scripts
 
 Coverage failures are reported but do not stop the remaining post-test checks;
 lint, monolith, and defined package-script checks still run. If those checks
@@ -80,6 +92,8 @@ focused test path fails before Jest runs. If an existing focused test has no
 unambiguous mirrored source, coverage retains the producer's broader coverage
 set. Coverage validation consumes the producer's report and does not discover
 omitted consumer source files independently.
+
+## Configuration
 
 The monolith limits can be customized in `package.json` when a justified
 project-specific exception is needed:
@@ -113,6 +127,11 @@ consumed by the wrapper, not forwarded to Jest.
 Diagnostic options include `--ignore-100x4`, `--ignore-monolith-limits`,
 `--no-runInBand`, and `--workers=N`.
 
+Repository convention failures use exit code 18. The required structure,
+metadata, specification, environment-example, and example checks are defined
+in [`specs/conventions.md`](specs/conventions.md); examples are inspected but
+never executed automatically.
+
 For direct CLI diagnostics, use `eliware-test --no-runInBand`,
 `eliware-test --ignore-100x4`, `eliware-test --ignore-monolith-limits`, or
 `eliware-test --workers=N`. These options are also available after `npm test --`;
@@ -143,7 +162,7 @@ After an interrupted run, stop overlapping jobs and remove stale
 The next run overwrites the consumer's `coverage/` directory with the new
 report; previous coverage is not backed up or restored.
 
-See the [exit-code table](spec/cli.md#3-commands-and-lifecycle) in the
+See the [exit-code table](specs/cli.md#3-commands-and-lifecycle) in the
 specification for numeric meanings used by CI and troubleshooting.
 
 The most common CI failures are 4 (invalid argument), 9 (test failure),
@@ -167,7 +186,7 @@ When moving an existing project to this package:
 ## Generated files
 
 Consumer repositories should normally ignore the generated files listed in
-[`spec/migration-and-release.md`](spec/migration-and-release.md):
+[`specs/migration-and-release.md`](specs/migration-and-release.md):
 
 ```gitignore
 node_modules/
@@ -198,12 +217,21 @@ before testing sensitive projects. The consumer environment is passed through,
 and child-process diagnostics may preserve secrets printed by consumer code.
 See the process-trust specification for the complete behavior.
 
+## Support
+
+Report bugs and request changes in the
+[GitHub issue tracker](https://github.com/eliware/test/issues). For community
+help and project discussion, join the
+[Eliware Discord](https://discord.gg/M6aTR9eTwN).
+
 ## Further documentation
 
 - [`SPEC.md`](SPEC.md) — normative behavior, coverage, architecture, and
   limitations
-- [`spec/`](spec/) — detailed contract sections
+- [`specs/`](specs/) — detailed contract sections
 - [`RELEASE_NOTES.md`](RELEASE_NOTES.md) — release history
+- [`docs/`](docs/) — user-facing documentation
+- [`examples/`](examples/) — runnable consumer examples
 
 ## Development
 
@@ -211,6 +239,8 @@ See the process-trust specification for the complete behavior.
 node bin/eliware-test.mjs  Repository-local executable validation
 npm test                    Consumer-style full validation
 npm run lint                Standalone lint/policy diagnostics
+npm run check:docs          Validate package-relative Markdown links
+npm run pack                Validate the npm package file list
 ```
 
 ## License

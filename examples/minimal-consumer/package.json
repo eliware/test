@@ -1,0 +1,12 @@
+{
+  "name": "eliware-test-minimal-consumer-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "eliware-test",
+    "lint": "eliware-test --lint"
+  },
+  "devDependencies": {
+    "@eliware/test": "^4.0.1"
+  }
+}

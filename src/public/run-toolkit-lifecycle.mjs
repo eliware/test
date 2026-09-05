@@ -9,8 +9,8 @@ export async function runToolkitLifecycle(context) {
     runInBand, ignoreCoverage, ignoreMonolithLimits, workers, enforceMonolithLimits,
     accessPath, removePath, readFilePath, statPath, renamePath, findIstanbulIgnores,
     runChildProcess, findMonolith, findSourceTestMapping, inspectWorkspace: inspect,
-    timing, startedAt, disableInBand } = context;
-  const preflight = await runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, findIstanbulIgnores, inspect, debugTiming: context.debugTiming, findSourceTestMapping, timing });
+    timing, startedAt, disableInBand, validateConventions } = context;
+  const preflight = await runToolkitPreflight({ cwd, runnerArguments, write, accessPath, removePath, readFilePath, findIstanbulIgnores, inspect, debugTiming: context.debugTiming, findSourceTestMapping, timing, validateConventions });
   if (preflight.exitCode !== undefined) return preflight.exitCode;
   const { testResult, outcome: testOutcome } = await runToolkitExecution({ cwd, args: preflight.args, runInBand, disableInBand, preparation: preflight.preparation, runTest, runChildProcess, readFilePath, removePath, accessPath, renamePath, write });
   if (testOutcome !== null) return testOutcome;

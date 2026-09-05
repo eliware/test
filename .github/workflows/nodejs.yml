@@ -27,6 +27,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run lint
+      - run: npm run check:docs
+      - run: npm audit
+      - run: npm pack --dry-run
   publish:
     needs: validate
     if: startsWith(github.ref, 'refs/tags/v')

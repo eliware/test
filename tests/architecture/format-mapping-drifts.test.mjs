@@ -10,3 +10,7 @@ test('deduplicates and bounds repeated drift entries', () => {
   expect(output.match(/Missing test pair/g)).toHaveLength(20);
   expect(output).toContain('... 1 more omitted');
 });
+
+test('uses empty defaults for omitted drift lists', () => {
+  expect(formatMappingDrifts({})).toBe('Source/test mapping drift detected:\n');
+});

@@ -41,6 +41,10 @@ test('handles missing and unreadable barrel files', async () => {
   await expect(isPureBarrelFile(filePath('barrel.mjs'), async () => 'export * from "./value.mjs";')).resolves.toBe(true);
 });
 
+test('uses the default source reader for barrel checks', async () => {
+  await expect(isPureBarrelFile('src/coverage/branches.mjs')).resolves.toBe(false);
+});
+
 test('reports Istanbul ignores in executable modules with line numbers', async () => {
   const files = { 'module.mjs': `export function value() {\n  /* ${directive('istanbul', 'ignore', 'next')} */\n  return 1;\n}\n` };
   await expect(findIstanbulIgnoreViolations(root, virtualWorkspace(files))).resolves.toEqual([{ file: 'module.mjs', line: 2 }]);

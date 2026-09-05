@@ -1,8 +1,13 @@
-import { resolveNpmCommand, runPackageScript } from '../../src/application/run-package-script.mjs';
+import { resolveNpmArguments, resolveNpmCommand, runPackageScript } from '../../src/application/run-package-script.mjs';
 
 test('resolves the platform npm executable', () => {
-  expect(resolveNpmCommand('win32')).toBe('npm.cmd');
+  expect(resolveNpmCommand()).toBe(process.platform === 'win32' ? process.execPath : 'npm');
+  expect(resolveNpmCommand('win32')).toBe(process.execPath);
   expect(resolveNpmCommand('linux')).toBe('npm');
+  expect(resolveNpmArguments('audit', 'linux')).toEqual(['run', 'audit']);
+  expect(resolveNpmArguments('audit', 'win32')).toEqual(expect.arrayContaining(['run', 'audit']));
+  expect(resolveNpmArguments('audit')).toEqual(expect.arrayContaining(['run', 'audit']));
+  expect(resolveNpmArguments('audit', 'win32', 'npm.cmd')).toEqual(expect.arrayContaining(['run', 'audit']));
 });
 
 test('skips scripts that are not defined', async () => {
@@ -21,8 +26,8 @@ test('runs defined scripts and returns their exit code', async () => {
     runChildProcess: async (...args) => { calls.push(args); return { code: 3, output: 'failed' }; }
   });
   expect(result).toBe(3);
-  expect(calls[0][0]).toBe(process.platform === 'win32' ? 'npm.cmd' : 'npm');
-  expect(calls[0][1]).toEqual(['run', 'audit']);
+  expect(calls[0][0]).toBe(process.platform === 'win32' ? process.execPath : 'npm');
+  expect(calls[0][1]).toEqual(expect.arrayContaining(['run', 'audit']));
 });
 
 test('reports script output and normalizes an invalid exit code', async () => {
@@ -53,6 +58,19 @@ test('reports a failed script without output', async () => {
     runChildProcess: async () => ({ code: 1 })
   })).resolves.toBe(1);
   expect(messages.join('')).toContain('typecheck failed.');
+});
+
+test('normalizes a null child-process result', async () => {
+  const messages = [];
+  await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
+    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
+    runChildProcess: async () => null,
+  })).resolves.toBe(1);
+  expect(messages.join('')).toContain('audit failed.');
+});
+
+test('uses npm_execpath when it provides a JavaScript npm entrypoint on Windows', () => {
+  expect(resolveNpmArguments('audit', 'win32', 'C:/npm/npm-cli.js')).toEqual(['C:/npm/npm-cli.js', 'run', 'audit']);
 });
 
 test('uses a safe default writer for failed scripts', async () => {

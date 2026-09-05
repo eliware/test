@@ -10,3 +10,15 @@ test('delegates spawning with workspace defaults', () => {
   expect(calls[0][1]).toEqual(['--version']);
   expect(calls[0][2]).toMatchObject({ cwd: 'C:/repo', windowsHide: true, shell: false });
 });
+
+test('uses the default spawn implementation when no override is supplied', () => {
+  const child = spawnChild(process.execPath, ['-e', 'process.exit(0)'], { cwd: process.cwd() });
+  expect(child).toBeDefined();
+  child.kill();
+});
+
+test('uses default spawn options', () => {
+  const child = spawnChild(process.execPath, ['-e', 'process.exit(0)']);
+  expect(child).toBeDefined();
+  child.kill();
+});

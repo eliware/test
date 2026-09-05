@@ -12,3 +12,7 @@ test('normalizes the first defined package-check failure', async () => {
 test('skips undefined package checks', async () => {
   await expect(runPackageChecks('.', () => {}, { readPackageJson: async () => ({ scripts: {} }) })).resolves.toBe(0);
 });
+
+test('uses the default options object', async () => {
+  await expect(runPackageChecks('.', () => {})).resolves.toBe(0);
+});

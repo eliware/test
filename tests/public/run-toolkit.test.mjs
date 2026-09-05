@@ -1,6 +1,13 @@
 import { runToolkit as runToolkitResult } from '../../src/public/run-toolkit.mjs';
 
-const runToolkit = async (...argumentsList) => (await runToolkitResult(...argumentsList)).code;
+const runToolkit = async (options) => {
+  if (!options || typeof options !== 'object') return (await runToolkitResult(options)).code;
+  return (await runToolkitResult({
+    ...options,
+    runChildProcess: async () => ({ code: 0, output: '' }),
+    validateConventions: async () => true,
+  })).code;
+};
 test('requires the toolkit caller contract', async () => {
   await expect(runToolkit(null)).resolves.toBe(14);
   await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: null })).resolves.toBe(14);

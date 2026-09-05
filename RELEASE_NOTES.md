@@ -6,7 +6,21 @@
 
 - Corrected the public README branding, badges, and generated-file ignore
   guidance for the released CLI.
+- Organized the normative contract under `specs/`, added the dedicated
+  out-of-scope document, and added public documentation and consumer examples
+  to the package.
+- Added a package-relative Markdown link check and documented it in the
+  development and release validation commands.
 - Synchronized package and lockfile metadata for the 4.0.1 patch release.
+
+### Validation and portability
+
+- Made defined package-script validation portable on Windows without relying
+  on shell execution when invoking npm.
+- Added deterministic repository-convention validation for required structure,
+  package metadata, local documentation links, specifications, environment
+  examples, and consumer examples, with grouped exit-code-18 diagnostics and
+  explicit path-level exceptions.
 
 ## 4.0.0
 
@@ -35,7 +49,7 @@
 - Added optional `audit`, `pack`, `build`, and `typecheck` package-script
   checks after the existing validation stages. Undefined scripts are skipped;
   defined scripts must exit successfully; failures use wrapper exit code 17 as
-  documented in `spec/cli.md`.
+  documented in `specs/cli.md`.
 - Hardened coverage parsing and fail-closed evidence validation, including
   malformed statement, branch, function, and explicit line counters; freshness
   checks; focused coverage selection; and fallback handling.
@@ -55,7 +69,8 @@
 - Removed the historical argument-forwarding debug output; `ELIWARE_TEST_DEBUG=1`
   now emits only the fixed coverage-fallback diagnostic.
 - Restricted package-script failures to normalized workspace diagnostics and
-  selected the Windows `npm.cmd` executable when shell resolution is disabled.
+  invokes npm's CLI through the current Node executable on Windows, avoiding
+  shell-dependent `npm.cmd` resolution.
 - Preserved injectable process collaborators through the Jest execution stage
   and forwarded lint timing diagnostics correctly.
 - Hardened focused-path validation with physical-target containment checks,

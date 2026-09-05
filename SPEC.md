@@ -7,12 +7,27 @@ provides the stable navigation entrypoint.
 
 ## Contract sections
 
-1. [Scope and package contract](spec/scope-and-contract.md)
-2. [CLI commands, lifecycle, limits, and focused tests](spec/cli.md)
-3. [Coverage enforcement](spec/coverage.md)
-4. [Output, workspace policy, and process trust](spec/diagnostics-and-policy.md)
-5. [Concurrency and intentional limitations](spec/concurrency-and-limitations.md)
-6. [Out-of-scope behavior, migration, fixtures, and release](spec/migration-and-release.md)
+1. [Scope and package contract](specs/scope-and-contract.md)
+2. [CLI commands, lifecycle, limits, and focused tests](specs/cli.md)
+3. [Coverage enforcement](specs/coverage.md)
+4. [Output, workspace policy, and process trust](specs/diagnostics-and-policy.md)
+5. [Concurrency and intentional limitations](specs/concurrency-and-limitations.md)
+6. [Out-of-scope behavior](specs/out-of-scope.md)
+7. [Migration, fixtures, and release](specs/migration-and-release.md)
+8. [Repository conventions](specs/conventions.md)
+
+## Complete document index
+
+Every document in `specs/` is normative or explicitly identifies its scope:
+
+- [Scope and package contract](specs/scope-and-contract.md)
+- [CLI commands, lifecycle, limits, and focused tests](specs/cli.md)
+- [Coverage enforcement](specs/coverage.md)
+- [Output, workspace policy, and process trust](specs/diagnostics-and-policy.md)
+- [Concurrency and intentional limitations](specs/concurrency-and-limitations.md)
+- [Out-of-scope behavior](specs/out-of-scope.md)
+- [Migration, fixtures, and release](specs/migration-and-release.md)
+- [Repository conventions](specs/conventions.md)
 
 ## Scope summary
 

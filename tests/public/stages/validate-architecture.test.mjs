@@ -5,6 +5,10 @@ test('returns success for an exact mapping', async () => {
   await expect(validateArchitecture('repo', () => {}, async () => ({ missingTests: [], orphanTests: [] }))).resolves.toBe(0);
 });
 
+test('uses the default mapping checker', async () => {
+  await expect(validateArchitecture(process.cwd(), () => {})).resolves.toBe(0);
+});
+
 test('reports mapping drift and returns a non-zero code', async () => {
   const write = jest.fn();
   await expect(validateArchitecture('repo', write, async () => ({ missingTests: ['a'], orphanTests: ['b'] }))).resolves.toBe(16);

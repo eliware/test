@@ -9,3 +9,7 @@ test('uses defaults when package metadata is missing', async () => {
   await expect(readMonolithConfig('.', async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }))
     .resolves.toMatchObject({ exemptions: [] });
 });
+
+test('uses the default package reader', async () => {
+  await expect(readMonolithConfig(process.cwd())).resolves.toMatchObject({ origin: 'package' });
+});

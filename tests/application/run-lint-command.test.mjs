@@ -54,3 +54,7 @@ test('passes the default lint process runner through to Oxlint', async () => {
   })).resolves.toBe(0);
   expect(received).toEqual(expect.any(Function));
 });
+
+test('uses the default lint collaborators', async () => {
+  await expect(runLintCommand({ cwd: process.cwd(), write: () => {} })).resolves.toBe(0);
+});

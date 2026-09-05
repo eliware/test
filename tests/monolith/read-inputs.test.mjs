@@ -8,3 +8,7 @@ test('reads configuration and scanned files with injected collaborators', async 
   });
   expect(result).toMatchObject({ config: expect.any(Object), files: [] });
 });
+
+test('uses default input options', async () => {
+  await expect(readMonolithInputs(process.cwd())).resolves.toMatchObject({ config: expect.any(Object), files: expect.any(Array) });
+});

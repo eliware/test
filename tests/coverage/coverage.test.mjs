@@ -6,7 +6,7 @@ describe('coverage facade', () => {
       'src/complete.mjs': {
         statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 },
         branchMap: { 0: { type: 'default-arg', locations: [{ start: { line: 1 } }] } },
-        b: { 0: [0] }, fnMap: { 0: { name: 'complete', loc: { start: { line: 1 } } } }, f: { 0: 1 }
+        b: { 0: [1] }, fnMap: { 0: { name: 'complete', loc: { start: { line: 1 } } } }, f: { 0: 1 }
       }
     })).toEqual([]);
   });
@@ -23,7 +23,7 @@ describe('coverage facade', () => {
     expect(gaps[0].lines).toEqual([2]);
   });
 
-  test('excludes generated default-argument counters from branch metrics', () => {
+  test('counts default-argument counters in branch metrics', () => {
     const gaps = parseCoverageJson({
       'src/incomplete-with-default.mjs': {
         statementMap: { 0: { start: { line: 2 } } }, s: { 0: 0 },
@@ -34,8 +34,8 @@ describe('coverage facade', () => {
         fnMap: { 0: { name: 'choose', loc: { start: { line: 4 } } } }, f: { 0: 1 }
       }
     });
-    expect(gaps[0].metrics).toEqual({ statements: 0, branches: 100, functions: 100, lines: 0 });
-    expect(gaps[0].branches).toEqual([]);
+    expect(gaps[0].metrics).toEqual({ statements: 0, branches: 50, functions: 100, lines: 0 });
+    expect(gaps[0].branches).toEqual([{ start: { line: 1 }, type: 'default-arg' }]);
   });
 
   test('handles sparse and malformed top-level reports safely', () => {
@@ -61,13 +61,13 @@ describe('coverage facade', () => {
     expect(gaps[0].lines).toEqual([1]);
   });
 
-  test('rejects malformed explicit line counters', () => {
-    expect(() => parseCoverageJson({
+  test('normalizes numeric string explicit line counters', () => {
+    expect(parseCoverageJson({
       'src/malformed-lines.mjs': {
         statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, l: { 1: '1' },
         branchMap: {}, b: {}, fnMap: {}, f: {}
       }
-    })).toThrow('Malformed coverage entry');
+    })).toEqual([]);
   });
 
   test('rejects entries with inconsistent metric maps and counters', () => {
