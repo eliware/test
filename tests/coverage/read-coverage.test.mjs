@@ -45,10 +45,10 @@ test('accepts a valid report written during the current run', async () => {
     .resolves.toEqual([]);
 });
 
-test('accepts a report exactly at the run timestamp after cleanup', async () => {
+test('rejects a report exactly at the run timestamp as stale', async () => {
   const report = JSON.stringify({ 'src/current.mjs': complete });
   await expect(readCoverage('C:/repo', '', () => {}, async (path) => path.endsWith('coverage-final.json') ? report : '', async () => ({ mtimeMs: 100 }), 100))
-    .resolves.toEqual([]);
+    .rejects.toThrow('Coverage evidence missing');
 });
 
 test('fails closed when a report disappears during freshness checks', async () => {

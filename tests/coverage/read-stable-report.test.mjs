@@ -11,3 +11,8 @@ test('rejects changed contents and tracks unavailable metadata', async () => {
   let stats = 0;
   await expect(readStableReport('coverage.json', async () => 'contents', async () => { stats += 1; if (stats === 2) throw missing; return { mtimeMs: 1 }; }, 1)).resolves.toMatchObject({ fresh: false });
 });
+
+test('rejects an unchanged pre-run report at the same timestamp as the run', async () => {
+  await expect(readStableReport('coverage.json', async () => 'contents', async () => ({ mtimeMs: 100 }), 100))
+    .resolves.toMatchObject({ fresh: false });
+});

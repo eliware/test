@@ -58,6 +58,11 @@ provides a JavaScript entrypoint through `npm_execpath`, that entrypoint is
 used; otherwise the conventional npm CLI beside Node is used. This avoids
 invoking `.cmd` files through a non-shell child process.
 
+When `--debug-timing` is enabled, timing-report parsing and cleanup are
+best-effort diagnostics. A malformed or locked timing artifact produces a
+bounded warning and does not replace the underlying Jest result or block the
+remaining validation stages.
+
 ## 4. Implementation and test file-size limits
 
 The normal CLI pipeline enforces these monolith limits; they are not general
