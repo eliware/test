@@ -1,8 +1,11 @@
 # Coverage enforcement
 
-Every in-scope implementation file must reach 100% statements, branches,
-functions, and lines independently. Coverage is a regression guard, not proof
-of behavioral correctness.
+Every implementation file included by the producer's coverage report must
+reach 100% statements, branches, functions, and lines independently. Focused
+runs may select an unambiguous mirrored source file; broad or unmappable runs
+use the producer-defined aggregate. This package does not independently
+enumerate omitted consumer source files. Coverage is a regression guard, not
+proof of behavioral correctness.
 
 ## Text coverage
 
@@ -41,7 +44,9 @@ usable, completed bounded Jest output is used only when
 it contains a structurally valid coverage table; otherwise validation fails
 closed.
 
-Malformed or missing counter maps are reported conservatively as explicit
+Malformed or missing counter maps invalidate the candidate report and cause
+validation to fail closed when no usable candidate or text fallback remains.
+Valid reports with incomplete location metadata are rendered as explicit
 unknown uncovered diagnostics. An Istanbul `l` map is authoritative for line
 coverage. Statement, branch, function, and line metrics remain independent.
 Multiple statements on one line make that line uncovered when any statement is
@@ -51,8 +56,9 @@ counts to the line metric.
 
 ## Focused coverage and diagnostics
 
-Focused file-only runs map `tests/foo.test.mjs` to `src/foo.mjs` only when
-exactly one supported source candidate exists. Zero or multiple candidates
+Runs containing a recognized focused test path map `tests/foo.test.mjs` to
+`src/foo.mjs` only when exactly one supported source candidate exists. Additional
+Jest name filters do not change that path selection. Zero or multiple candidates
 retain broad coverage enforcement. Debug mode reports this fallback; normal
 output remains concise.
 

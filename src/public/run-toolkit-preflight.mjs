@@ -14,7 +14,12 @@ export async function runToolkitPreflight({ cwd, runnerArguments, write, accessP
     write(`Unsupported Jest option: ${protectedArgument} is managed by eliware-test; remove it and use a supported filter.\n`);
     return { exitCode: EXIT_CODES.INVALID_ARGUMENT };
   }
-  const preparation = await prepareTests({ cwd, args, accessPath, removePath, debugTiming });
+  let preparation;
+  try { preparation = await prepareTests({ cwd, args, accessPath, removePath, debugTiming }); }
+  catch (error) {
+    write(`Focused path validation failed: ${error.message}\n`);
+    return { exitCode: EXIT_CODES.FOCUSED_PATH_VALIDATION };
+  }
   const preparationOutcome = handleTestPreparation(preparation, write);
   if (preparationOutcome !== null) return { exitCode: preparationOutcome };
   if (!await cleanupCoverage(cwd, removePath, COVERAGE_CANDIDATES, write)) return { exitCode: EXIT_CODES.COVERAGE_CLEANUP };

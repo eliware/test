@@ -1,4 +1,6 @@
-import { runToolkit } from '../../src/public/run-toolkit.mjs';
+import { runToolkit as runToolkitResult } from '../../src/public/run-toolkit.mjs';
+
+const runToolkit = async (...argumentsList) => (await runToolkitResult(...argumentsList)).code;
 test('requires the toolkit caller contract', async () => {
   await expect(runToolkit(null)).rejects.toThrow(TypeError);
   await expect(runToolkit({ cwd: 'C:/repo', runnerArguments: null })).rejects.toThrow(TypeError);

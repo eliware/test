@@ -1,28 +1,35 @@
-# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
+# @eliware/test
 
-## @eliware/test
+Shared Jest testing, coverage enforcement, and Oxlint validation for Eliware
+Node.js projects using npm and the conventional `node_modules` layout.
 
-Shared testing, coverage checks, and linting for Eliware Node.js projects.
-Jest and Oxlint are included, so consuming projects do not need to install
-them directly.
-
-For the complete technical contract—including coverage rules, focused tests,
-process behavior, workspace ownership, limitations, and release requirements,
-see [`SPEC.md`](SPEC.md). This README is intentionally limited to common
-setup and commands.
+`@eliware/test` provides one CLI for the routine checks every project should
+run. Jest and Oxlint are installed as runtime dependencies, so consuming
+projects do not need to install them directly.
 
 ## Requirements
 
 - Node.js 26 or newer
-- A Node.js project with Jest-discoverable tests
+- An Eliware internal Node.js project using npm and the conventional
+  `node_modules` layout
+- Every `src/**/*.mjs` implementation file paired with exactly one
+  `tests/**/*.test.mjs` file for normal validation
 
-## Installation
+Focused execution recognizes `.js`, `.mjs`, `.cjs`, `.jsx`, `.tsx`, `.cts`,
+`.mts`, and `.ts` paths under `test/`, `tests/`, or `spec/`. Other extensions
+require direct Jest execution and do not satisfy the canonical architecture
+mapping.
+
+## Install
 
 ```sh
 npm install --save-dev @eliware/test
 ```
 
-In the consuming project's `package.json`:
+After configuring the consumer's `test` script as `eliware-test`, use
+`npm test -- ...`; use `eliware-test ...` for direct invocation.
+
+Set the consuming project's scripts:
 
 ```json
 {
@@ -33,110 +40,158 @@ In the consuming project's `package.json`:
 }
 ```
 
-Run `npm install` after editing `package.json` so the lockfile stays current.
+Review the resulting lockfile and commit it with the package change.
 
-## Commands
+## Common commands
 
 ```text
-npm test                         Run tests, enforce 100×4 coverage, and lint
-npm run lint                    Run lint only
-npm test -- tests/api.test.mjs  Run a focused test file
+npm test                         Run the full validation pipeline
+npm run lint                    Run lint/policy after configuring that script
+npm test -- tests/api.test.mjs  Run one focused test file
 npm test -- -t "test name"      Run tests matching a name
 eliware-test --help             Show supported options
-eliware-test --version          Print the installed version
+eliware-test --version          Show the installed version
+eliware-test --debug-timing     Show pipeline and best-effort Jest timing
 ```
 
-Do not run overlapping validations in the same worktree. Coverage promotion
-uses shared workspace artifacts; overlapping results are unsupported and may
-be nondeterministic. Use separate worktrees for concurrent jobs.
+`eliware-test -v` is an alias for `eliware-test --version`.
 
-Advanced options include `--no-runInBand` for diagnostic worker behavior and
-`--ignore-monolith-limits` for temporary refactoring runs. Both are supported
-diagnostic options; normal validation should use their defaults. Use
-`--workers=N` to override the default six monolith-scan measurement workers.
+The normal test command runs these stages in order:
 
-Tests run with coverage and are followed by linting. A successful run prints a
-short summary; failures include actionable diagnostics. The normal baseline
-requires 100% statements, branches, functions, and lines coverage.
+1. Workspace policy and focused-argument validation
+2. Coverage cleanup
+3. Source/test mapping
+4. Jest with coverage and a 100% statements/branches/functions/lines gate over
+   the producer-selected coverage set; focused mirrored runs may narrow it
+5. Coverage evidence validation
+6. Oxlint with warnings treated as failures
+7. Monolith-size enforcement
+8. Any defined `audit`, `pack`, `build`, and `typecheck` scripts
 
-Use `npm test -- --no-runInBand` only for a diagnostic run that needs Jest's
-default worker behavior. Use `eliware-test --ignore-100x4` only for diagnostic
-or transitional runs; tests and lint still run, but coverage enforcement is
-skipped.
+Focused runs use a mirrored source file when the test path maps unambiguously;
+for example, `tests/api.test.mjs` can scope coverage to `src/api.mjs`. A missing
+focused test path fails before Jest runs. If an existing focused test has no
+unambiguous mirrored source, coverage retains the producer's broader coverage
+set. Coverage validation consumes the producer's report and does not discover
+omitted consumer source files independently.
 
-Production modules under `src/` are limited to 100 lines. Both `test/` and
-`tests/` participate in the 200-line test-size policy; only the canonical
-`tests/` root participates in strict mirrored architecture validation, which pairs
-`src/**/*.mjs` with `tests/**/*.test.mjs`. Pure
-barrels, generated files, and explicitly justified configuration exemptions
-are excluded from size limits. Their mapping and discovery treatment follows
-the explicit architecture policy. Violations fail with stable exit code 15 and must be decomposed
-with mirrored tests. During refactoring, use
-`eliware-test --ignore-monolith-limits`; it still runs the suite and other
-validation, but CI and release runs must enforce the limit. See `SPEC.md` for
-the full contract.
-
-The CLI enables monolith enforcement. Direct internal `runToolkit` calls leave
-that gate disabled unless the caller explicitly enables it; direct calls are
-not the consumer integration contract.
-
-Generated-file treatment across source/test mapping, Istanbul-ignore policy,
-and monolith checks is part of the architecture contract. Generated files are
-exempt from monolith size limits only; they remain subject to source/test
-mapping and Istanbul-ignore policy discovery unless a directory-level exclusion
-applies. See [`SPEC.md`](SPEC.md) for the complete rule and its linked detail.
-
-The CLI is the normal policy-enforcing entrypoint. Code importing the public
-`runToolkit` API uses the direct-call contract instead: it does not inherit CLI
-argument parsing, and callers must provide documented options explicitly.
-Architecture preflight ordering and CLI/API behavior are defined by `SPEC.md`.
-The strict source/test mapping intentionally covers only source `.mjs` files
-and their `.test.mjs` mirrors under the `src/` and `tests/` roots; focused-path
-recognition supports additional Jest file extensions but does not expand the
-architecture bijection.
-
-Configuration exemptions belong in the consuming package's `package.json` and
-must include both a glob pattern and a non-empty reason:
+The monolith limits can be customized in `package.json` when a justified
+project-specific exception is needed:
 
 ```json
 {
   "eliwareTest": {
     "monolithLimits": {
+      "source": 100,
+      "test": 200,
       "exemptions": [
-        { "pattern": "src/public/index.mjs", "reason": "pure export barrel" }
+        { "pattern": "src/generated/*", "reason": "Generated source" }
       ]
     }
   }
 }
 ```
 
+Each exemption requires a pattern and a reason; use exemptions sparingly and
+prefer splitting hand-written modules. The defaults are 100 source lines and
+200 test lines; the boundary is inclusive, so 100 or 200 passes and the next
+line fails unless an exemption applies.
+
+Undefined package scripts are skipped.
+
+Use `--ignore-100x4` and `--ignore-monolith-limits` only for diagnostic or
+transitional work. They do not disable tests or lint. Use `--workers=N` to
+adjust monolith scanning when needed; `N` must be a positive integer and is
+consumed by the wrapper, not forwarded to Jest.
+
+Diagnostic options include `--ignore-100x4`, `--ignore-monolith-limits`,
+`--no-runInBand`, and `--workers=N`.
+
+For direct CLI diagnostics, use `eliware-test --no-runInBand`,
+`eliware-test --ignore-100x4`, `eliware-test --ignore-monolith-limits`, or
+`eliware-test --workers=N`. These options are also available after `npm test --`;
+for example, `npm test -- --ignore-100x4 --workers=6`.
+
+Supported filters are forwarded, but wrapper-managed Jest options such as
+`--coverage`, `--silent`, `--detectOpenHandles`, `--coverageReporters`, and
+`--runTestsByPath` are rejected. Use `eliware-test --help` for the contract.
+For example, `npm test -- --ignore-100x4` uses a wrapper option, while
+`npm test -- -t "test name"` forwards a Jest filter.
+
+Validation stops at the first applicable failure and reports a stable wrapper
+exit code. Focused paths are validated before Jest runs; a missing path never silently
+falls back to the full suite. The CLI cannot coordinate concurrent runs: do not
+overlap validations in one worktree because they may overwrite shared coverage
+artifacts. Use separate worktrees for concurrent jobs.
+
+The command-line interface exits with the numeric codes documented in the
+specification. Internal and test callers of the toolkit boundary receive a
+structured result with `code` and `category`; this is not a supported consumer
+library API.
+
+After an interrupted run, stop overlapping jobs and remove stale
+`.eliware-test-coverage/` or `coverage.previous/` directories if they are no
+longer needed before retrying.
+
+See the [exit-code table](spec/cli.md#3-commands-and-lifecycle) in the
+specification for numeric meanings used by CI and troubleshooting.
+
+The most common CI failures are 4 (invalid argument), 9 (test failure),
+10/11 (coverage failure or gap), 13 (lint failure), 15 (monolith limit),
+16 (source/test mapping drift), and 17 (configured package-script failure).
+This is a common-failure summary; see the complete exit-code table for all
+workspace, policy, focused-path, cleanup, startup, and internal failures.
+Exit code 0 means every applicable stage succeeded.
+
 ## Consumer migration
 
-1. Remove direct Jest and Oxlint development dependencies unless the project
-   needs them for another purpose.
+When moving an existing project to this package:
+
+1. Remove direct Jest and Oxlint development dependencies unless required by
+   runtime code or a separately documented workflow.
 2. Install `@eliware/test` as a development dependency.
-3. Set `test` to `eliware-test` and `lint` to `eliware-test --lint`.
-4. Run `npm install` and review the lockfile.
-5. Keep smoke, integration, regression, and end-to-end checks separate.
+3. Set `test` and `lint` to the commands shown above.
+4. Keep project-specific smoke, integration, regression, and end-to-end checks
+   as separate scripts.
 
-## Recommended `.gitignore` entries
+## Generated files
 
-The test command creates local coverage artifacts. Consumer repositories
-should normally ignore the generated files and directories below. These
-ignore rules affect version control only; `eliware-test` still reads its
-coverage candidates and enforces coverage at runtime:
+Consumer repositories should normally ignore the generated files listed in
+[`spec/migration-and-release.md`](spec/migration-and-release.md):
 
 ```gitignore
 node_modules/
 coverage/
 coverage.json
 .nyc_output/
+.eliware-test-coverage/
+coverage.previous/
 test-results/
 *.tgz
 ```
 
-Keep source tests, configuration, lockfiles, and intentionally shipped
-fixtures tracked. Do not use ignore rules to hide coverage gaps.
+The runtime warning for a missing `.gitignore` is intentionally shorter, but
+these are the complete generated-artifact recommendations.
+
+Istanbul ignore directives are checked before Jest runs. They are allowed
+only in pure import/export barrel modules; remove an ignore from executable
+code or split the barrel before rerunning validation.
+
+Do not use ignore rules to hide source files or coverage gaps.
+
+## Security and diagnostics
+
+Run the CLI only against trusted workspaces and scrub code, fixtures, and logs
+before testing sensitive projects. The consumer environment is passed through,
+and child-process diagnostics may preserve secrets printed by consumer code.
+See the process-trust specification for the complete behavior.
+
+## Further documentation
+
+- [`SPEC.md`](SPEC.md) — normative behavior, coverage, architecture, and
+  limitations
+- [`spec/`](spec/) — detailed contract sections
+- [`RELEASE_NOTES.md`](RELEASE_NOTES.md) — release history
 
 ## Development
 
@@ -146,53 +201,6 @@ npm test
 npm run lint
 ```
 
-The normal `npm test` command runs Jest, coverage enforcement, and lint.
-After those checks, it also runs any defined consumer `audit`, `pack`, `build`,
-and `typecheck` scripts. Undefined scripts are skipped; a defined script that
-exits nonzero fails the command. These checks are driven by the consumer
-project's own `package.json` scripts.
-
-Use the release runbooks before publication. Never tag, publish, push, or
-deploy without explicit authorization.
-
-## Troubleshooting
-
-Use `eliware-test --help` for supported command forms. When invoking through
-npm, put Jest arguments after npm's `--` separator. Set
-`ELIWARE_TEST_DEBUG=1` only when troubleshooting the safe coverage fallback
-diagnostic. Arbitrary forwarded arguments and values are never printed.
-`--help` and `--version` are terminal modes and take precedence over any
-other arguments supplied in the same invocation.
-
-The package's stable interface is the CLI. See [`SPEC.md`](SPEC.md), whose
-overview links the detailed `spec/` sections, for the complete behavior
-contract and limitations.
-
-Direct `runToolkit` calls use the documented option defaults, including
-`enforceMonolithLimits: false`; the CLI enables that gate explicitly. The
-direct API otherwise follows the documented defaults and returns numeric
-pipeline outcomes.
-
-## Security
-
-The default mode intentionally uses the consumer's full environment, matching
-direct `npm test` and Jest behavior. This package does not change Jest or try
-to overcome its limitations. Do not run it against an untrusted workspace
-while sensitive credentials are available. Secret redaction is best effort;
-if Jest outputs a secret from consumer code, the CLI preserves that diagnostic
-so the failure remains useful. Scrub code, fixtures, and logs before testing
-projects that may contain credentials. Do not enable `ELIWARE_TEST_DEBUG=1` in
-credential-bearing or untrusted workspaces.
-
-## Support
-
-Open an issue in the [GitHub repository](https://github.com/eliware/test/issues).
-
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
-
-## Links
-
-- [`SPEC.md`](SPEC.md) — complete implementation contract
-- [`RELEASE_NOTES.md`](RELEASE_NOTES.md) — release history

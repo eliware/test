@@ -9,11 +9,15 @@ This document is part of the normative contract for the published CLI.
 
 ## 2. Supported environment and package contract
 
-- Source and tests use native ESM and `.mjs` files; Node.js 26 or newer is
-  required.
-- The supported consumer set is Eliware's internal projects using the approved
-  package managers and standard workspace installation layout.
-- Jest and Oxlint are runtime dependencies and are resolved from the consumer
+- The package's implementation and canonical source/test architecture use
+  native ESM and `.mjs` files; Node.js 26 or newer is required. Focused-path
+  validation also accepts the documented JavaScript and TypeScript extensions
+  under conventional test directories; those paths are outside the strict
+  source/test bijection.
+- The supported consumer set is Eliware's internal projects using npm and the
+  conventional `node_modules` installation layout. Compatibility with other
+  package managers or nonstandard installation layouts is not promised.
+- Jest and Oxlint are npm runtime dependencies and are resolved from the consumer
   workspace using their package contracts.
 - The package exposes the `eliware-test` executable.
 - Package metadata, lockfile, README, release notes, and packed-file allowlist
@@ -24,24 +28,10 @@ This document is part of the normative contract for the published CLI.
   The exported `runToolkit` and `runLint` functions exist to provide injectable
   test seams; they are not supported consumer APIs.
 
-## 3. CLI boundary and orchestration
+## 3. CLI boundary
 
 The supported consumer boundary is the `eliware-test` executable. Consumers
 replace their `npm test` command with this CLI.
 
-The intended implementation structure is layered orchestration:
-
-- `runToolkit` is the thin public boundary and main lifecycle orchestrator.
-- `runToolkitPreflight` orchestrates preflight operations.
-- `runToolkitExecution` orchestrates Jest execution operations.
-- `runPostTestValidation` orchestrates post-test validation operations.
-- Single-purpose modules beneath those stage orchestrators perform cleanup,
-  coverage, lint, monolith checks, reporting, timing, and related operations.
-
-Stage orchestrators may coordinate subordinate operations. They must remain
-focused on sequencing and data flow; substantive operations belong in the
-dedicated modules beneath them. This is the intentional orchestration
-boundary. `runToolkit` is intentionally the composition root: it owns the
-single end-to-end lifecycle and delegates each stage to its stage orchestrator.
-It is not intended to be split into independent public APIs or treated as a
-runtime library entry point; consumers invoke the CLI executable.
+The CLI is the supported boundary. Internal module structure and orchestration
+are implementation details; consumers must not import internal functions.

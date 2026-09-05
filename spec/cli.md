@@ -22,12 +22,22 @@ setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
 validation when combined with other arguments. Version output comes from
 `package.json`.
 
-Stable wrapper exit codes are: workspace setup `2`, Istanbul policy `3`,
-invalid argument `4`, focused-path validation `5`, missing focused path `6`,
-coverage cleanup `7`, test startup `8`, test failure `9`, coverage failure
-`10`, coverage gap `11`, lint startup `12`, lint failure `13`, internal failure
-`14`, monolith limit failure `15`, source/test architecture drift `16`, and
-configured package-script failure `17`.
+Stable wrapper exit codes are:
+
+| Code | Category | Typical remediation |
+| ---: | --- | --- |
+| 2 | Workspace setup | Add or correct workspace configuration. |
+| 3 | Istanbul policy | Remove an invalid ignore directive. |
+| 4 | Invalid argument | Remove or correct the unsupported option. |
+| 5–6 | Focused-path validation | Correct the focused path or its access. |
+| 7 | Coverage cleanup | Resolve coverage filesystem permissions or locks. |
+| 8–9 | Test startup/failure | Fix Jest startup or test failures. |
+| 10–11 | Coverage failure/gap | Provide usable 100×4 coverage evidence. |
+| 12–13 | Lint startup/failure | Fix lint startup or findings. |
+| 14 | Internal failure | Review the diagnostic and report a wrapper defect if needed. |
+| 15 | Monolith limit | Split the module or use a justified exemption. |
+| 16 | Source/test drift | Restore the exact canonical mapping. |
+| 17 | Package-script failure | Fix the configured package script. |
 
 Package scripts are checked only when the consuming `package.json` defines the
 corresponding script. Missing scripts are skipped silently. Defined scripts run
@@ -36,13 +46,21 @@ code fails the CLI with exit code 17.
 
 ## 4. Implementation and test file-size limits
 
+The normal CLI pipeline enforces these monolith limits; they are not general
+filesystem restrictions. `--ignore-monolith-limits` temporarily bypasses only
+this gate for diagnostic or refactoring work.
+
 - Source modules under `src/` may contain at most 100 lines.
-- Test files under `test/` or `tests/` may contain at most 200 lines.
+- Test files under `test/`, `tests/`, `spec/`, or `specs/` may contain at most
+  200 lines.
 - Pure import/export barrels and generated files are exempt from size limits.
   Their source/test mapping and policy-discovery treatment must follow the
   explicit architecture and generated-file rules.
 - Other exemptions require a non-empty glob and justification under
   `eliwareTest.monolithLimits.exemptions`.
+
+These exemptions apply only to monolith size limits; they do not exempt files
+from source/test mapping or other workspace policies.
 
 Violations report normalized paths, line counts, thresholds, and required
 action, and fail with exit code 15. `--ignore-monolith-limits` is a temporary
@@ -86,10 +104,12 @@ Strict architecture mapping intentionally considers only `src/**/*.mjs` and
 monolith and workspace-policy scanners. This is an explicit boundary, not a
 claim that all discovery policies are interchangeable.
 
-Mapping discovery is deterministic and bounded: excluded generated/dependency
-directories are skipped, repeated directory visits are ignored, nesting is
+Mapping discovery is deterministic and bounded: excluded dependency, VCS,
+coverage, build, distribution, and test-result directories are skipped,
+repeated directory visits are ignored, nesting is
 limited to 100 levels, and each tree is limited to 10,000 files. Exceeding a
 limit fails validation with a stable diagnostic rather than continuing an
 unbounded traversal.
-- File-only conventional selections use `--runTestsByPath`; mixed filters retain
-  Jest semantics.
+- Any invocation containing a recognized conventional test path uses
+  `--runTestsByPath`, including mixed path-and-name filters. Invocations without
+  a recognized path retain normal Jest filter semantics.

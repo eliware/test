@@ -35,3 +35,13 @@ test('runs policy before reporting mapping drift', async () => {
   expect(order[0]).toBe('policy');
   expect(order.at(-1)).toBe('mapping');
 });
+
+test('maps focused-path validation errors to the focused validation exit code', async () => {
+  const messages = [];
+  await expect(runToolkitPreflight(context({
+    runnerArguments: ['tests/example.test.mjs'],
+    write: (message) => messages.push(message),
+    accessPath: async () => { throw Object.assign(new Error('access denied'), { code: 'EACCES' }); },
+  }))).resolves.toEqual({ exitCode: 5 });
+  expect(messages.join('')).toContain('Focused path validation failed');
+});

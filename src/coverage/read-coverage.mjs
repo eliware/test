@@ -14,11 +14,16 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
   const reports = await Promise.all(COVERAGE_CANDIDATES.map(async (name) => {
     try {
       const reportPath = resolve(cwd, name);
-      const json = JSON.parse(await readFilePath(reportPath, 'utf8'));
+      let before = null;
       let fresh = true;
       if (startedAt) {
-        try { fresh = (await statPath(reportPath)).mtimeMs >= startedAt; }
+        try { before = await statPath(reportPath); }
         catch (error) { if (error.code !== 'ENOENT') throw error; }
+      }
+      const json = JSON.parse(await readFilePath(reportPath, 'utf8'));
+      if (startedAt) {
+        const after = await statPath(reportPath);
+        fresh = before ? before.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt;
       }
       const usable = isUsableCoverageReport(json);
       return { name, json, usable, malformed: !usable, fresh };

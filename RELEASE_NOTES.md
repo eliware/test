@@ -9,31 +9,60 @@
   process, and validation modules.
 - Removed the obsolete `index.mjs`, `index.d.ts`, and legacy top-level module
   entry points; consumers use the `eliware-test` executable.
+- Node.js 26 or newer is required for the native-ESM CLI.
+- Migration: set `test` to `eliware-test` and `lint` to `eliware-test --lint`;
+  see the README migration guide for the complete upgrade steps.
 - Enforced the mirrored `src/` and `tests/` module layout and added diagnostic
   reporting for missing source tests and orphaned test files.
+- The previously available declaration and top-level implementation surfaces
+  are no longer supported; the `eliware-test` CLI is the only public consumer
+  interface. The older exports and declarations described in 2.4.0 are
+  historical and are not migration targets.
 
 ### Validation and coverage
 
 - Preserved the normal test, 100×4 coverage, and Oxlint validation pipeline,
-  with Jest running in-band by default and six parallel workers for monolith
-  measurement.
+  with Jest running in-band by default and six parallel workers by default for
+  monolith measurement; the worker count is configurable with `--workers=N`.
 - Added optional `audit`, `pack`, `build`, and `typecheck` package-script
   checks after the existing validation stages. Undefined scripts are skipped;
-  defined scripts must exit successfully.
-- Hardened coverage parsing, freshness checks, focused coverage selection,
-  malformed-report handling, atomic coverage-directory promotion, and
-  cross-platform path normalization.
-- Added `--workers=N` for overriding the default monolith-scan worker count.
+  defined scripts must exit successfully; failures use wrapper exit code 17 as
+  documented in `spec/cli.md`.
+- Hardened coverage parsing and fail-closed evidence validation, including
+  malformed statement, branch, function, and explicit line counters; freshness
+  checks; focused coverage selection; and fallback handling.
+- Promoted isolated coverage results into the consumer's `coverage/` directory
+  with atomic rename sequencing and bounded cleanup warnings.
+- Limited monolith traversal to relevant source and test roots while retaining
+  depth, file-count, symlink, and six-worker safeguards.
+- Enabled monolith-size enforcement for normal CLI runs; `--ignore-monolith-limits`
+  remains an explicit diagnostic or refactoring bypass.
+- Enforced exact source/test mapping diagnostics, including absent-root handling
+  and validation of injected mapping results.
 
 ### Diagnostics and portability
 
-- Improved bounded, deduplicated failure diagnostics, timing cleanup, child
-  process handling, workspace traversal limits, and inherited environment
-  behavior.
+- Improved bounded, deduplicated failure diagnostics, timing cleanup, output
+  normalization, and child-process timeout escalation.
+- Removed the historical argument-forwarding debug output; `ELIWARE_TEST_DEBUG=1`
+  now emits only the fixed coverage-fallback diagnostic.
+- Restricted package-script failures to normalized workspace diagnostics and
+  selected the Windows `npm.cmd` executable when shell resolution is disabled.
+- Preserved injectable process collaborators through the Jest execution stage
+  and forwarded lint timing diagnostics correctly.
+- Hardened focused-path validation with physical-target containment checks,
+  final realpath revalidation, and missing-path rejection without broad-suite
+  fallback.
 - Added broad Windows/Linux regression coverage for focused paths, runtime
-  resolution, workspace discovery, and coverage paths.
+  resolution, workspace discovery, package scripts, process seams, and
+  coverage paths.
 - Removed obsolete analyzer suppressions and retained explicit tests for the
   intentional coverage edge cases they had previously obscured.
+
+## Historical pre-4.0 releases
+
+The APIs, declaration files, and argument-forwarding debug behavior described
+below are historical and are not available in 4.x.
 
 ## 3.0.0
 

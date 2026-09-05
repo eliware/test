@@ -10,7 +10,7 @@ import { reportLintResult } from './report-lint-result.mjs';
 /** Run the standalone lint command and return the package exit code. */
 export async function runLintCommand(options) {
   validateLintOptions(options);
-  const { cwd, write, inspect = inspectWorkspace, runLint = runOxlint } = options;
+  const { cwd, write, inspect = inspectWorkspace, runLint = runOxlint, runChildProcess: childProcess = runChildProcess } = options;
   const timing = createTiming(options.debugTiming, write);
   const workspaceResult = await inspectLintWorkspace({ cwd, write, inspect, accessPath: options.accessPath, findIstanbulIgnores: options.findIstanbulIgnores });
   if (workspaceResult) return workspaceResult;
@@ -18,7 +18,7 @@ export async function runLintCommand(options) {
 
   let result;
   try {
-    result = (await runLint({ cwd, write, runChildProcess })) ?? {};
+    result = (await runLint({ cwd, write, runChildProcess: childProcess })) ?? {};
   } catch (error) {
     write(`Lint failed to start: ${error.message}\n`);
     return EXIT_CODES.LINT_START;

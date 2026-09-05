@@ -45,3 +45,12 @@ test('reports a successful lint run', async () => {
   })).resolves.toBe(0);
   expect(messages.join('')).toContain('Lint passed: 0 warnings');
 });
+
+test('passes the default lint process runner through to Oxlint', async () => {
+  let received;
+  await expect(runLintCommand({
+    cwd: process.cwd(), write: () => {}, inspect: async () => true,
+    runLint: async (options) => { received = options.runChildProcess; return { code: 0, output: '' }; },
+  })).resolves.toBe(0);
+  expect(received).toEqual(expect.any(Function));
+});

@@ -19,7 +19,7 @@
     "author": "Eliware",
     "repository": {
         "type": "git",
-        "url": "git+ssh://git@github.com/eliware/test.git"
+        "url": "https://github.com/eliware/test"
     },
     "bugs": {
         "url": "https://github.com/eliware/test/issues"
@@ -33,7 +33,6 @@
         "bin",
         "src",
         "spec",
-        "docs",
         "README.md",
         "SPEC.md",
         "LICENSE",

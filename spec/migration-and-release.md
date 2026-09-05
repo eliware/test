@@ -1,6 +1,6 @@
 # Out-of-scope behavior, migration, fixtures, and release
 
-## 12. Fixtures, artifacts, migration, and release
+## Fixtures, artifacts, migration, and release
 
 The repository's `test-fixtures/` tree contains workspace fixtures used to
 exercise discovery and policy behavior; it is excluded from source/test
@@ -9,12 +9,17 @@ outside that bijection.
 
 There are no legacy compatibility barrels; new code must import canonical
 implementation modules directly. Generated `coverage/`, `coverage.json`,
-`.nyc_output/`, `test-results/`, build output, package archives, and debug logs
-should be ignored. Ignoring generated output must never conceal a coverage gap.
+`.nyc_output/`, `.eliware-test-coverage/`, `coverage.previous/`,
+`test-results/`, build output, package archives, and debug logs should be
+ignored. The two named coverage directories are transient promotion artifacts
+that may remain after an interrupted run. Ignoring generated output must never
+conceal a coverage gap.
 
 Consumer migration removes direct Jest/Oxlint development dependencies unless
-separately required, installs `@eliware/test`, updates `test` and `lint`, runs
-npm install, reviews the lockfile, and keeps specialized test tiers separate.
+they are required by runtime code or a separately documented workflow,
+installs `@eliware/test`, updates `test` and `lint`, runs npm install, reviews
+the lockfile, and keeps specialized test tiers separate. Separate direct
+Jest/Oxlint commands remain the consumer's responsibility.
 If the consumer defines `audit`, `pack`, `build`, or `typecheck` scripts, the
 normal `eliware-test` run executes them after the routine validation stages;
 undefined scripts are skipped.
@@ -41,7 +46,7 @@ and release validation confirms required platform checks, package metadata, and
 self-test results before publication. No tag, publish, push, or deployment is
 implied by this specification.
 
-## 13. Out-of-scope behavior
+## Out-of-scope behavior
 
 The package does not replace project-specific smoke, integration, regression,
 end-to-end, deployment, or product workflows. It does not provide same-worktree

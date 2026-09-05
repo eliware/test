@@ -5,6 +5,7 @@ import { runLint } from '../public/run-lint.mjs';
 import { runToolkit } from '../public/run-toolkit.mjs';
 import { runLintCommand } from './run-lint-command.mjs';
 import { EXIT_CODES } from '../exit-codes/codes.mjs';
+import { toProcessExitCode } from './to-process-exit-code.mjs';
 
 /** Dispatch one CLI invocation and return its process exit code. */
 export async function runCli(argumentsList, options = {}) {
@@ -26,7 +27,7 @@ export async function runCli(argumentsList, options = {}) {
     const common = { cwd, write };
     return parsed.lint
       ? await lint({ ...common, debugTiming: parsed.debugTiming })
-      : await toolkit({ ...common, ...parsed, enforceMonolithLimits: true, runLintCommand });
+      : toProcessExitCode(await toolkit({ ...common, ...parsed, enforceMonolithLimits: true, runLintCommand }));
   } catch (error) {
     writeError(`Validation failed: ${error instanceof Error ? error.message : String(error)}\n`);
     return EXIT_CODES.INTERNAL;

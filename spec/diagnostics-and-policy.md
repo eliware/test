@@ -1,6 +1,6 @@
 # Output, workspace policy, and process trust
 
-## 7. Output and diagnostics
+## Output and diagnostics
 
 Successful child output controlled by the wrapper is suppressed and replaced
 by a concise summary. npm lifecycle notices and non-failing workspace warnings
@@ -23,11 +23,14 @@ direct-child termination. Guaranteed cleanup of arbitrary descendant trees on
 every platform is out of scope.
 Truncation is explicit, repeated failure lines are deduplicated, and absolute
 coverage paths are normalized relative to the workspace. stdout and stderr are
-captured independently. `ELIWARE_TEST_DEBUG=1` enables only the fixed,
+decoded independently and then combined into one bounded
+diagnostic stream; stream identity is not exposed and arrival order does not
+provide reliable stdout/stderr labels. `ELIWARE_TEST_DEBUG=1`
+enables only the fixed,
 non-sensitive coverage-fallback diagnostic; arbitrary arguments and values are
 never printed. Structured diagnostics are not currently exposed.
 
-## 8. Workspace policy and process trust
+## Workspace policy and process trust
 
 Discovery and linting exclude `.git`, `node_modules`, `coverage`, `.nyc_output`,
 `test-results`, `dist`, `build`, and package archives. Missing `.gitignore`
