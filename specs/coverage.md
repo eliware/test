@@ -61,6 +61,12 @@ usable, completed bounded Jest output is used only when
 it contains a structurally valid coverage table; otherwise validation fails
 closed.
 
+The internal evidence resolver receives report records produced by the report
+reader, including their `fresh` metadata. Direct calls that omit that metadata
+are incomplete internal test-seam inputs, not a supported consumer API; they
+are outside the coverage contract and are not required to be normalized into a
+fresh report.
+
 Malformed or missing counter maps invalidate the candidate report and cause
 validation to fail closed when no usable candidate or text fallback remains. A
 fresh malformed JSON candidate at any configured priority is authoritative

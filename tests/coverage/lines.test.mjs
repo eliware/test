@@ -78,6 +78,13 @@ test('normalizes numeric-string explicit line counters consistently', () => {
   expect(result.hasConflictingLineCoverage).toBe(false);
 });
 
+test('normalizes numeric-string statement counters with an explicit line map', () => {
+  const result = collectLineCoverage({ l: { 1: '1' }, statementMap: { 0: { start: { line: 1 } } }, s: { 0: '1' } });
+  expect(result.lineCounts).toEqual(new Map([[1, 1]]));
+  expect(result.hasUnmappedStatement).toBe(false);
+  expect(result.hasConflictingLineCoverage).toBe(false);
+});
+
 test('accepts function-valued statement counters', () => {
   const counters = () => {};
   counters[0] = 0;

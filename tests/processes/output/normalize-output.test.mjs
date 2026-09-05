@@ -33,6 +33,13 @@ test('redacts only workspace path boundaries with platform-aware matching', () =
     .toBe('<workspace>/failure C:/repository/failure');
 });
 
+test('does not redact punctuation-containing sibling paths', () => {
+  expect(normalizeOutput('/work-shop/failure /work.foo/failure /work_test/failure', '/work'))
+    .toBe('/work-shop/failure /work.foo/failure /work_test/failure');
+  expect(normalizeOutput('C:/work-shop/failure C:/work.foo/failure C:/work_test/failure', 'C:/work'))
+    .toBe('C:/work-shop/failure C:/work.foo/failure C:/work_test/failure');
+});
+
 test('handles long workspace paths without constructing a large regex', () => {
   const cwd = `C:/${'deep/'.repeat(2000)}repo`;
   expect(normalizeOutput(`${cwd}/failure`, cwd)).toBe('<workspace>/failure');

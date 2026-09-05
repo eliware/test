@@ -1,5 +1,5 @@
 const ANSI_ESCAPE = new RegExp(`[${String.fromCharCode(27)}\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d/#&.:=?%@~_]+)*)?\\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-T-Zcf-nq-uy=><~]))`, 'g');
-const PATH_TOKEN = /[A-Za-z0-9]/;
+const PATH_TOKEN = /[A-Za-z0-9._-]/;
 
 function redactWorkspacePath(output, cwd, caseInsensitive) {
   const comparableOutput = caseInsensitive ? output.replaceAll('\\', '/') : output;

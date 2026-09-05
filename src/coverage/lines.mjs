@@ -27,9 +27,10 @@ export function collectLineCoverage(data) {
     const validLine = Number.isInteger(line) && line > 0;
     if (!hasStatement) { hasUnmappedStatement = true; return; }
     if (validLine && !hasLineMap) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
-    if (validLine && hasLineMap && Object.hasOwn(data.l, line) && isCoveredCount(normalizedCount(data.l[line])) !== isCoveredCount(count)) hasConflictingLineCoverage = true;
+    const normalizedStatementCount = normalizedCount(count);
+    if (validLine && hasLineMap && Object.hasOwn(data.l, line) && isCoveredCount(normalizedCount(data.l[line])) !== isCoveredCount(normalizedStatementCount)) hasConflictingLineCoverage = true;
     if (hasLineMap) {
-      if (!Number.isInteger(line) || line <= 0 || !Number.isFinite(count)) hasUnmappedStatement = true;
+      if (!Number.isInteger(line) || line <= 0 || !Number.isFinite(normalizedStatementCount)) hasUnmappedStatement = true;
       if (validLine && !Object.hasOwn(data.l, line)) { lineCounts.set(line, 0); hasUnmappedStatement = true; }
     } else if (!validLine) { unmappedLineCount += 1; hasUnmappedStatement = true; }
   });
