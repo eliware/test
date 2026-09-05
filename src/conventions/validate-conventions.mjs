@@ -1,11 +1,12 @@
 import { readdir, readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import { findMissingRequiredPaths } from './required-paths.mjs';
 import { readConventionPackage } from './read-package.mjs';
 import { checkPackageMetadata } from './package-metadata.mjs';
 import { checkReadme, checkSpecifications } from './markdown-checks.mjs';
 import { checkEnvironmentExample, checkExamples } from './environment-and-examples.mjs';
 import { formatConventionFindings } from './format-findings.mjs';
+import { walkFiles } from '../workspace/walk-files.mjs';
 
 export async function validateConventions({ cwd, write, accessPath, readFilePath = readFile, readDirectory = readdir }) {
   const packageJson = await readConventionPackage(cwd, readFilePath);
@@ -16,15 +17,15 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   const read = async (path) => { try { return await readFilePath(resolve(cwd, path), 'utf8'); } catch { return ''; } };
   const entries = await readDirectory(cwd, { withFileTypes: true });
   const paths = new Set(entries.map((entry) => entry.name));
-  const collectPaths = async (directory, prefix = '') => {
-    for (const entry of await readDirectory(directory, { withFileTypes: true })) {
-      if (['.git', 'node_modules', 'coverage', '.eliware-test-coverage'].includes(entry.name)) continue;
-      const relative = `${prefix}${entry.name}`;
-      paths.add(relative);
-      if (entry.isDirectory()) await collectPaths(resolve(directory, entry.name), `${relative}/`);
-    }
-  };
-  await collectPaths(cwd);
+  try {
+    await walkFiles(cwd, async (path) => {
+      paths.add(relative(cwd, path).replaceAll('\\', '/'));
+    }, { readDirectory });
+  } catch (error) {
+    findings.push({ group: 'structure', message: `workspace traversal failed: ${error.message}` });
+    write(formatConventionFindings(findings));
+    return false;
+  }
   const readme = await read('README.md');
   const releaseNotes = await read('RELEASE_NOTES.md');
   const envExample = await read('.env.example');

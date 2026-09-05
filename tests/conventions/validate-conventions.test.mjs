@@ -20,3 +20,17 @@ test('reads exact path exceptions from package metadata', async () => {
     : realRead(path, encoding);
   await expect(validateConventions({ cwd: process.cwd(), write: () => {}, accessPath: async () => {}, readFilePath })).resolves.toBe(false);
 });
+
+test('reports bounded traversal failures as convention diagnostics', async () => {
+  const messages = [];
+  let calls = 0;
+  const readDirectory = async () => {
+    calls += 1;
+    return calls > 105 ? [] : [{ name: 'nested', isDirectory: () => true, isFile: () => false }];
+  };
+  await expect(validateConventions({
+    cwd: 'repo', write: (message) => messages.push(message), accessPath: async () => {},
+    readFilePath: async () => '{}', readDirectory,
+  })).resolves.toBe(false);
+  expect(messages.join('')).toContain('workspace traversal failed');
+});
