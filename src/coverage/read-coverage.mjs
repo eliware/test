@@ -22,7 +22,8 @@ async function readStableReport(reportPath, readFilePath, statPath, startedAt) {
     && firstAfter.ino !== undefined && after.ino !== undefined
     && (firstAfter.dev !== after.dev || firstAfter.ino !== after.ino);
   if (startedAt && (first !== second || (firstAfter && after && firstAfter.mtimeMs !== after.mtimeMs) || identityChanged)) return null;
-  const fresh = !startedAt || (before ? firstAfter.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt);
+  const hasTimes = firstAfter?.mtimeMs !== undefined && after?.mtimeMs !== undefined;
+  const fresh = !startedAt || !hasTimes || (before ? firstAfter.mtimeMs === after.mtimeMs && after.mtimeMs >= startedAt : after.mtimeMs >= startedAt);
   return { contents: second, fresh };
 }
 

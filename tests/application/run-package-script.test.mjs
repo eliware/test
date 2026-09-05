@@ -54,3 +54,10 @@ test('reports a failed script without output', async () => {
   })).resolves.toBe(1);
   expect(messages.join('')).toContain('typecheck failed.');
 });
+
+test('uses a safe default writer for failed scripts', async () => {
+  await expect(runPackageScript('.', 'audit', undefined, {
+    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
+    runChildProcess: async () => ({ code: 1, output: 'failed' }),
+  })).resolves.toBe(1);
+});

@@ -36,7 +36,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
     }
     const terminate = (signal) => {
       try {
-        if (Number.isInteger(child.pid) && child.pid > 0) process.kill(-child.pid, signal);
+        if ((process.platform === 'linux' || process.platform === 'darwin') && Number.isInteger(child.pid) && child.pid > 0) process.kill(-child.pid, signal);
       } catch { /* fall back to the direct child */ }
       try { child.kill?.(signal); } catch { /* continue escalation */ }
     };

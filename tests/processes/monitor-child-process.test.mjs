@@ -76,6 +76,14 @@ test('settles timeout without a kill method', async () => {
   }
 });
 
+test('terminates the process group on supported POSIX platforms', async () => {
+  jest.useFakeTimers(); const originalKill = process.kill; const originalPlatform = process.platform;
+  try { Object.defineProperty(process, 'platform', { value: 'linux', configurable: true }); process.kill = jest.fn();
+    const child = new EventEmitter(); child.pid = 1234; child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); child.kill = jest.fn();
+    const resultPromise = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 }); jest.advanceTimersByTime(10); jest.advanceTimersByTime(2000);
+    await expect(resultPromise).resolves.toMatchObject({ code: 1 }); expect(process.kill).toHaveBeenCalledWith(-1234, 'SIGTERM');
+  } finally { process.kill = originalKill; Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true }); jest.useRealTimers(); }
+});
 test('stops escalation when SIGTERM closes the child', async () => {
   jest.useFakeTimers();
   try {
