@@ -1,0 +1,4 @@
+import { checkPackagePolicy } from '../../../src/conventions/package-metadata/policy.mjs';
+test('validates package policy independently', () => { expect(checkPackagePolicy({ name: 'demo' })).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('version') })])); });
+test('checks the lint flag after the shared launcher is present', () => { expect(checkPackagePolicy({ name: 'demo', scripts: { test: 'eliware-test', lint: 'eliware-test' } }).map(({ message }) => message)).toContain('package.json: scripts.lint must invoke eliware-test --lint'); });
+test('checks lint commands that contain the launcher without the flag', () => { expect(checkPackagePolicy({ name: 'demo', scripts: { test: 'eliware-test', lint: 'eliware-test extra' } }).map(({ message }) => message)).toContain('package.json: scripts.lint must invoke eliware-test --lint'); });

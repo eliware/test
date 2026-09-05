@@ -67,6 +67,9 @@ before validation; comprehensive secret detection is not provided.
 
 ## Further reference
 
+- [`usage.md`](usage.md) — supported consumer workflow and command profiles
+- [`troubleshooting.md`](troubleshooting.md) — diagnosing common validation failures
+
 - [README quick start](../README.md)
 - [Normative specification](../SPEC.md)
 - [Specification documents](../specs/)

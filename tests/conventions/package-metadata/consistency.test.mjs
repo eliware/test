@@ -1,0 +1,2 @@
+import { checkPackageConsistency } from '../../../src/conventions/package-metadata/consistency.mjs';
+test('validates package file and bin consistency independently', () => { const result = checkPackageConsistency({ name: 'demo', version: '1.0.0', license: 'MIT', files: ['missing'], bin: './missing.mjs' }); expect(result.map(({ message }) => message)).toEqual(expect.arrayContaining([expect.stringContaining('bin.default'), expect.stringContaining('files entry')])); });

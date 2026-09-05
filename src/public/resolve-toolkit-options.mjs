@@ -1,28 +1,8 @@
-import { access, readFile, rename, rm, stat } from 'node:fs/promises';
-import { detectViolations } from '../monolith/detect-violations.mjs';
-import { runJest } from '../testing/run-jest.mjs';
-import { runLintCommand as defaultRunLintCommand } from '../application/run-lint-command.mjs';
-import { inspectWorkspace as defaultInspectWorkspace } from '../workspace/inspect-workspace.mjs';
-import { findSourceTestMappingDrifts } from '../architecture/validate-source-test-mapping.mjs';
-import { runChildProcess as defaultRunChildProcess } from '../processes/run-child-process.mjs';
-import { validateConventions as defaultValidateConventions } from '../conventions/validate-conventions.mjs';
-import { readPackageJson as defaultReadPackageJson } from '../workspace/read-package-json.mjs';
+import { getToolkitDefaults } from './toolkit-defaults.mjs';
 
-/** Resolve toolkit defaults while preserving injectable collaborators. */
-export function resolveToolkitOptions(options) {
-  const {
-    cwd, runnerArguments, write, runTest = runJest, runLintCommand = defaultRunLintCommand,
-    runInBand = true, ignoreCoverage = false, ignoreMonolithLimits = false, debugTiming = false,
-    workers = 6,
-    enforceMonolithLimits = false, accessPath = access, removePath = rm, readFilePath = readFile, statPath = stat,
-    findIstanbulIgnores, findMonolith = detectViolations,
-    findSourceTestMapping = findSourceTestMappingDrifts, renamePath = rename,
-    inspectWorkspace = defaultInspectWorkspace, runChildProcess = defaultRunChildProcess, validateConventions = defaultValidateConventions,
-    readPackageJson = defaultReadPackageJson,
-  } = options;
-  return {
-    cwd, runnerArguments, write, runTest, runLintCommand, runInBand, ignoreCoverage,
-    ignoreMonolithLimits, debugTiming, workers, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath,
-    findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath, runChildProcess, validateConventions, readPackageJson,
-  };
+/** Compose caller options over the toolkit's dependency defaults. */
+export function resolveToolkitOptions(options = {}) {
+  const defaults = getToolkitDefaults();
+  const { cwd, runnerArguments, write, runTest = defaults.runTest, runLintCommand = defaults.runLintCommand, runInBand = defaults.runInBand, ignoreCoverage = defaults.ignoreCoverage, ignoreMonolithLimits = defaults.ignoreMonolithLimits, debugTiming = defaults.debugTiming, workers = defaults.workers, enforceMonolithLimits = defaults.enforceMonolithLimits, accessPath = defaults.accessPath, removePath = defaults.removePath, readFilePath = defaults.readFilePath, statPath = defaults.statPath, findIstanbulIgnores, findMonolith = defaults.findMonolith, findSourceTestMapping = defaults.findSourceTestMapping, renamePath = defaults.renamePath, inspectWorkspace = defaults.inspectWorkspace, runChildProcess = defaults.runChildProcess, validateConventions = defaults.validateConventions, readPackageJson = defaults.readPackageJson } = options;
+  return { cwd, runnerArguments, write, runTest, runLintCommand, runInBand, ignoreCoverage, ignoreMonolithLimits, debugTiming, workers, enforceMonolithLimits, accessPath, removePath, readFilePath, statPath, findIstanbulIgnores, findMonolith, findSourceTestMapping, inspectWorkspace, renamePath, runChildProcess, validateConventions, readPackageJson };
 }

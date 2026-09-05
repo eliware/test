@@ -1,4 +1,5 @@
-import { WALK_LIMITS, walkFiles } from '../../src/workspace/walk-files.mjs';
+import { walkFiles } from '../../src/workspace/walk-files.mjs';
+import { WALK_LIMITS } from '../../src/workspace/walk-policy.mjs';
 
 test('validates the workspace, visitor, and options', async () => {
   await expect(walkFiles('')).rejects.toThrow(TypeError);

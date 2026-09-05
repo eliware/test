@@ -36,7 +36,9 @@ deferred, but it is not allowed to replace a later failure.
 
 The lifecycle and lint exports expose internal test seams, not consumer APIs.
 The lifecycle accepts its collaborators through the validated toolkit options;
-the standalone lint seam accepts its dependency object. Their numeric results
+the standalone lint seam accepts its dependency object, including injected
+`runLint` and `runChildProcess` collaborators, and must use those collaborators
+instead of launching the default processes. Their numeric results
 and diagnostics are the supported internal contract; callers must not depend
 on additional structured error fields.
 
@@ -61,12 +63,19 @@ Stable wrapper exit codes are:
 Package scripts are checked only when the consuming `package.json` defines the
 corresponding script. Missing scripts are skipped silently. Defined scripts run
 after the existing test, coverage, lint, and monolith checks; any nonzero exit
-code fails the CLI with exit code 17.
+code fails the CLI with exit code 17. The package-check set is limited to
+`audit`, `pack`, `build`, and `typecheck`; it must never invoke the consumer's
+`test` script, so the normal `npm test` command cannot recurse through the
+package-check pipeline.
 
 On Windows, package scripts run through the current Node executable. When npm
 provides a JavaScript entrypoint through `npm_execpath`, that entrypoint is
 used; otherwise the conventional npm CLI beside Node is used. This avoids
 invoking `.cmd` files through a non-shell child process.
+The supported environment is the internal Node.js/npm installation layout used
+by Eliware projects. Alternative package-manager layouts are not a supported
+compatibility target; the fallback is not required to locate npm in those
+environments.
 
 When `--debug-timing` is enabled, timing-report parsing and cleanup are
 best-effort diagnostics. A malformed or locked timing artifact produces a

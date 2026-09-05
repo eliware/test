@@ -35,3 +35,10 @@ test('reports bounded traversal failures as convention diagnostics', async () =>
   })).resolves.toBe(false);
   expect(messages.join('')).toContain('workspace traversal failed');
 });
+
+test('handles a repository using the root SPEC.md fallback', async () => {
+  await expect(validateConventions({
+    cwd: 'repo', write: () => {}, accessPath: async () => {},
+    readFilePath: async () => '{}', readDirectory: async () => [],
+  })).resolves.toBe(false);
+});

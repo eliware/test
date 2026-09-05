@@ -20,7 +20,7 @@ test('warns about invalid options while still showing help', async () => {
 test('forwards the monolith opt-out from CLI parsing to the toolkit', async () => {
   let received;
   await expect(runCli(['--ignore-monolith-limits'], {
-    runToolkit: async (options) => { received = options; return 0; },
+    runToolkit: async (options) => { received = options; return { code: 0, category: 'success' }; },
     write: () => {}
   })).resolves.toBe(0);
   expect(received).toMatchObject({ ignoreMonolithLimits: true, enforceMonolithLimits: true });
@@ -29,7 +29,7 @@ test('forwards the monolith opt-out from CLI parsing to the toolkit', async () =
 test('dispatches lint and toolkit modes', async () => {
   const calls = [];
   const runLint = async (options) => { calls.push(['lint', options]); return 12; };
-  const runToolkit = async (options) => { calls.push(['toolkit', options]); return 0; };
+  const runToolkit = async (options) => { calls.push(['toolkit', options]); return { code: 0, category: 'success' }; };
   await expect(runCli(['--lint'], { runLint, runToolkit, cwd: 'repo', write: () => {} })).resolves.toBe(12);
   await expect(runCli([], { runLint, runToolkit, cwd: 'repo', write: () => {} })).resolves.toBe(0);
   expect(calls[0][0]).toBe('lint');
