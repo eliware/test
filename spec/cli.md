@@ -15,8 +15,10 @@
 9. Enforce monolith limits for the normal CLI run.
 10. Run configured `audit`, `pack`, `build`, and `typecheck` package scripts.
 
-Stages stop at the first applicable failure, including source/test architecture
-drift. `--lint` runs only workspace policy,
+Pre-test stages stop at the first applicable failure, including source/test
+architecture drift. Post-test validation continues after coverage failure so
+lint, monolith, and package-check diagnostics are also reported; a later
+failure takes precedence over the deferred coverage result. `--lint` runs only workspace policy,
 setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
 `--version`/`-v` are terminal modes and take precedence over managed-option
 validation when combined with other arguments. Version output comes from

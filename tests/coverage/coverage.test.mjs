@@ -35,6 +35,7 @@ describe('coverage facade', () => {
       }
     });
     expect(gaps[0].metrics).toEqual({ statements: 0, branches: 100, functions: 100, lines: 0 });
+    expect(gaps[0].branches).toEqual([]);
   });
 
   test('handles sparse and malformed top-level reports safely', () => {

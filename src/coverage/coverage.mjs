@@ -18,7 +18,9 @@ export function parseCoverageJson(json) {
   for (const [file, data] of Object.entries(json)) {
     if (!isUsableCoverageEntry(data)) throw new Error(`Malformed coverage entry: ${file}`);
     const statements = locationsForCounts(data.statementMap, data.s);
-    const branches = Object.entries(data.b).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
+    const branches = Object.entries(data.b)
+      .filter(([id]) => !isDefaultArgumentBranch(data.branchMap?.[id]))
+      .flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
     const branchCounts = Object.fromEntries(Object.entries(data.b).filter(([id]) => !isDefaultArgumentBranch(data.branchMap?.[id])));
     const functions = uncoveredFunctions(data);
     const { lineCounts, unmappedLineCount, hasUnmappedStatement, hasConflictingLineCoverage } = collectLineCoverage(data);

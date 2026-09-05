@@ -124,9 +124,12 @@ Supported filters are forwarded, but wrapper-managed Jest options such as
 For example, `npm test -- --ignore-100x4` uses a wrapper option, while
 `npm test -- -t "test name"` forwards a Jest filter.
 
-Validation stops at the first applicable failure and reports a stable wrapper
-exit code. Focused paths are validated before Jest runs; a missing path never silently
-falls back to the full suite. The CLI cannot coordinate concurrent runs: do not
+Pre-test failures stop before Jest and report a stable wrapper exit code.
+Post-test checks continue after a coverage failure so users receive lint,
+monolith, and package-check diagnostics in the same run; the coverage code is
+returned if those later checks pass. Focused paths are validated before Jest runs;
+a missing path never silently falls back to the full suite. The CLI cannot
+coordinate concurrent runs: do not
 overlap validations in one worktree because they may overwrite shared coverage
 artifacts. Use separate worktrees for concurrent jobs.
 
