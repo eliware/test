@@ -11,6 +11,7 @@ export function collectLineCoverage(data) {
     }
   }
   let hasUnmappedStatement = false;
+  let hasConflictingLineCoverage = false;
   const statementIds = new Set([...Object.keys(data.statementMap), ...Object.keys(data.s ?? {})]);
   statementIds.forEach((id) => {
     const statement = data.statementMap[id];
@@ -22,10 +23,11 @@ export function collectLineCoverage(data) {
     const validLine = Number.isInteger(line) && line > 0;
     if (!hasStatement) { hasUnmappedStatement = true; return; }
     if (validLine && !hasLineMap) lineCounts.set(line, Math.min(lineCounts.get(line) ?? 1, isCoveredCount(count) ? 1 : 0));
+    if (validLine && hasLineMap && Object.hasOwn(data.l, line) && (data.l[line] > 0) !== isCoveredCount(count)) hasConflictingLineCoverage = true;
     if (hasLineMap) {
       if (!Number.isInteger(line) || line <= 0 || !Number.isFinite(count)) hasUnmappedStatement = true;
       if (validLine && !Object.hasOwn(data.l, line)) { lineCounts.set(line, 0); hasUnmappedStatement = true; }
     } else if (!validLine) { unmappedLineCount += 1; hasUnmappedStatement = true; }
   });
-  return { lineCounts, unmappedLineCount, hasUnmappedStatement };
+  return { lineCounts, unmappedLineCount, hasUnmappedStatement, hasConflictingLineCoverage };
 }

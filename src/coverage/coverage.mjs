@@ -21,8 +21,8 @@ export function parseCoverageJson(json) {
     const branches = Object.entries(data.b).flatMap(([id, counts]) => uncoveredBranches(data.branchMap, id, counts));
     const branchCounts = Object.fromEntries(Object.entries(data.b).filter(([id]) => !isDefaultArgumentBranch(data.branchMap?.[id])));
     const functions = uncoveredFunctions(data);
-    const { lineCounts, unmappedLineCount, hasUnmappedStatement } = collectLineCoverage(data);
-    const lineGap = hasUnmappedStatement || [...lineCounts.values()].some((count) => count === 0);
+    const { lineCounts, unmappedLineCount, hasUnmappedStatement, hasConflictingLineCoverage } = collectLineCoverage(data);
+    const lineGap = hasUnmappedStatement || hasConflictingLineCoverage || [...lineCounts.values()].some((count) => count === 0);
     const gap = buildCoverageGap(file, statements, branches, functions, data.s, branchCounts, data.f, lineCounts, unmappedLineCount, lineGap);
     if (gap) gaps.push(gap);
   }

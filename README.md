@@ -70,6 +70,10 @@ The normal test command runs these stages in order:
 7. Monolith-size enforcement
 8. Any defined `audit`, `pack`, `build`, and `typecheck` scripts
 
+Coverage failures are reported but do not stop the remaining post-test checks;
+lint, monolith, and defined package-script checks still run. If those checks
+pass, the coverage failure is returned after all diagnostics are printed.
+
 Focused runs use a mirrored source file when the test path maps unambiguously;
 for example, `tests/api.test.mjs` can scope coverage to `src/api.mjs`. A missing
 focused test path fails before Jest runs. If an existing focused test has no

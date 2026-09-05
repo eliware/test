@@ -46,6 +46,10 @@ closed.
 
 Malformed or missing counter maps invalidate the candidate report and cause
 validation to fail closed when no usable candidate or text fallback remains.
+Coverage validation is reported during post-test validation but does not stop
+lint, monolith enforcement, or configured package checks. If those stages pass,
+the coverage exit code is returned after all diagnostics are available. A later
+stage failure takes precedence because it is the final actionable failure.
 Valid reports with incomplete location metadata are rendered as explicit
 unknown uncovered diagnostics. An Istanbul `l` map is authoritative for line
 coverage. Statement, branch, function, and line metrics remain independent.

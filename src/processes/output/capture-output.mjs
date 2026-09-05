@@ -8,10 +8,8 @@ export function createOutputCapture() {
 
   const capture = (stream) => (chunk) => {
     const decoder = stream === 'stderr' ? stderrDecoder : stdoutDecoder;
-    if (typeof chunk === 'string') {
-      output = appendBounded(output, decoder.decode());
-      output = appendBounded(output, chunk);
-    } else output = appendBounded(output, decoder.decode(chunk, { stream: true }));
+    if (typeof chunk === 'string') output = appendBounded(output, chunk);
+    else output = appendBounded(output, decoder.decode(chunk, { stream: true }));
   };
 
   const finish = (errorMessage = '') => {
