@@ -31,7 +31,8 @@ test('dispatches lint and toolkit modes', async () => {
 test('normalizes CLI setup failures', async () => {
   const errors = [];
   await expect(runCli(['--lint', 'tests/a.test.mjs'], { writeError: (value) => errors.push(value) })).resolves.toBe(4);
-  expect(errors.join('')).toContain('Workspace setup failed');
+  expect(errors.join('')).toContain('Argument validation failed');
+  expect(errors.join('')).not.toContain('Workspace setup failed');
 });
 
 test('supports the real default output writers', async () => {

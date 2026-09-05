@@ -18,7 +18,7 @@ export async function runCli(argumentsList, options = {}) {
   let parsed;
   try { parsed = parseArguments(argumentsList); }
   catch (error) {
-    writeError(`Workspace setup failed: ${error.message}\nCheck package.json, installed dependencies, and workspace paths.\n`);
+    writeError(`Argument validation failed: ${error.message}\nCheck the supported command options and their values.\n`);
     return EXIT_CODES.INVALID_ARGUMENT;
   }
   if (parsed.version) { write(`${metadata.version}\n`); return 0; }
