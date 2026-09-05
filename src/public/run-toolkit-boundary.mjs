@@ -11,7 +11,7 @@ export async function runToolkitBoundary(options) {
     validateToolkitOptions(options);
     return toolkitResult(await runToolkitLifecycle(createToolkitContext(options)));
   } catch (error) {
-    write(`Toolkit failed: ${error instanceof Error ? error.message : String(error)}\n`);
+    try { write(`Toolkit failed: ${error instanceof Error ? error.message : String(error)}\n`); } catch { /* preserve the structured boundary result */ }
     return toolkitResult(EXIT_CODES.INTERNAL, { message: error instanceof Error ? error.message : String(error) });
   }
 }

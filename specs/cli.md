@@ -39,6 +39,10 @@ retained while later checks run, then losing precedence to a later package,
 monolith, or lint failure, is not a correctness inconsistency and must not be
 reported as one when the implementation and this order agree.
 
+The public boundary preserves its structured internal-error result even when a
+caller-supplied diagnostic writer throws. Diagnostic emission is best effort;
+an output-sink failure must not escape as an uncaught boundary rejection.
+
 The lifecycle and lint exports expose internal test seams, not consumer APIs.
 The lifecycle accepts its collaborators through the validated toolkit options;
 the standalone lint seam accepts its dependency object, including injected

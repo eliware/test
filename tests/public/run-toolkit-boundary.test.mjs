@@ -13,3 +13,8 @@ test('normalizes unexpected lifecycle failures at the public boundary', async ()
 test('normalizes malformed options without requiring a diagnostic writer', async () => {
   await expect(runToolkitBoundary(null)).resolves.toMatchObject({ code: 14, category: 'internal' });
 });
+
+test('preserves the structured result when the diagnostic writer throws', async () => {
+  await expect(runToolkitBoundary({ write: () => { throw new Error('output failed'); } }))
+    .resolves.toMatchObject({ code: 14, category: 'internal' });
+});

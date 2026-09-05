@@ -51,6 +51,12 @@ This document records behavior the v5 CLI intentionally does not provide.
 - Inferring values for undocumented Jest options, coordinating concurrent
   worktree runs, validating unsupported package-manager layouts, and treating
   internal toolkit defaults as consumer configuration are out of scope.
+- The boundary does not guarantee delivery through a caller-supplied output
+  sink that throws. It guarantees the structured failure result; diagnostic
+  emission through a faulty sink is best effort.
+- Bare value options whose next token begins with `-` are rejected as
+  ambiguous; option-like values must use the documented equals form. Supporting
+  arbitrary Jest option grammars is out of scope.
 - Release-review tooling may request evidence for commands such as
   `check:docs`, audit, or pack; missing evidence is an incomplete validation
   record, not proof that the command failed.
