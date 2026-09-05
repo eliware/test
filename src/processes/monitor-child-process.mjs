@@ -49,7 +49,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
         terminate('SIGKILL');
         finalKill = setTimeout(() => {
           terminate('SIGKILL');
-          finish(1, `Child process timed out after ${timeoutMs} ms\nChild process remained alive after SIGKILL\n`);
+          finish(1, `Child process timed out after ${timeoutMs} ms\n${processError}Child process remained alive after SIGKILL\n`);
         }, 1000);
         finalKill.unref?.();
       }, 1000);

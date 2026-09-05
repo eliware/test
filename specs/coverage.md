@@ -62,7 +62,10 @@ it contains a structurally valid coverage table; otherwise validation fails
 closed.
 
 Malformed or missing counter maps invalidate the candidate report and cause
-validation to fail closed when no usable candidate or text fallback remains.
+validation to fail closed when no usable candidate or text fallback remains. A
+fresh malformed JSON candidate at any configured priority is authoritative
+failure evidence and blocks text fallback; stale or missing candidates may be
+skipped while searching the fixed candidate order.
 For a run with freshness tracking, a malformed current JSON candidate is not
 masked by text output, and a candidate whose freshness cannot be verified is
 rejected. Text fallback is used only when JSON candidates are missing, empty,

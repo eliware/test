@@ -91,6 +91,12 @@ test('uses the Node-relative npm CLI when Windows provides no npm path', () => {
   ]);
 });
 
+test('uses the Node-relative npm CLI when Windows receives a non-string npm path', () => {
+  expect(resolveNpmArguments('audit', 'win32', { unexpected: true })).toEqual([
+    join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', 'audit',
+  ]);
+});
+
 test('normalizes negative child exit codes to failure', async () => {
   await expect(runPackageScript('.', 'audit', () => {}, {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),

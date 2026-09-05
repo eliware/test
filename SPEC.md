@@ -58,8 +58,10 @@ The normal validation sequence is workspace policy, focused-argument
 validation, coverage cleanup, source/test architecture mapping, Jest with
 coverage, coverage evidence validation, Oxlint with warnings denied, monolith
 enforcement, and
-optional consumer package-script checks. Stages stop at the first applicable
-failure. See the linked sections for
+optional consumer package-script checks. Pre-test stages stop at the first
+applicable failure. After Jest, coverage failure is deferred while the
+remaining post-test checks run so users receive all actionable diagnostics;
+the first later failure takes precedence over coverage. See the linked sections for
 stable exit codes, diagnostic behavior, focused-test rules, coverage fallback,
 workspace ownership, and release limitations.
 

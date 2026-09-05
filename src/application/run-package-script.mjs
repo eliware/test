@@ -8,7 +8,7 @@ export function resolveNpmCommand(platform = process.platform) {
 }
 export function resolveNpmArguments(script, platform = process.platform, npmExecPath = process.env.npm_execpath) {
   return platform === 'win32'
-    ? [npmExecPath?.toLowerCase().endsWith('.js') ? npmExecPath : join(dirname(npmExecPath || process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', script]
+    ? [typeof npmExecPath === 'string' && npmExecPath.toLowerCase().endsWith('.js') ? npmExecPath : join(dirname(typeof npmExecPath === 'string' ? npmExecPath : process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'), 'run', script]
     : ['run', script];
 }
 /** Return the child status; the toolkit boundary maps nonzero values to code 17. */
