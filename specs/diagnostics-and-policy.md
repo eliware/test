@@ -19,6 +19,11 @@ itself settle monitoring. The runner continues collecting output and waits
 for `close` so diagnostics emitted before close are preserved. If close never
 arrives, the normal timeout and termination escalation applies.
 
+This error-without-close behavior is intentional. The monitor preserves the
+error and waits for the bounded timeout/escalation path so diagnostics emitted
+before a late close event are not discarded. Immediate settlement on every
+error event is not part of the process lifecycle contract.
+
 When a child exceeds its timeout, the runner sends `SIGTERM`, waits briefly,
 sends `SIGKILL`, waits briefly again, and sends a final `SIGKILL`. It then
 continues with the timeout result; if the child never closes, diagnostics

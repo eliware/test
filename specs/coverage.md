@@ -29,6 +29,11 @@ numbers could change their exact value and misclassify the 100×4 result.
 Such a candidate is treated as structurally unusable and follows the normal
 fallback and fail-closed rules below.
 
+Istanbul metadata maps are authoritative shape data: statement, branch, and
+function metadata keys must align with their corresponding counter maps. An
+entry with function metadata but no matching function counters is structurally
+unusable; it is not treated as a valid functionless file.
+
 ## Istanbul JSON coverage
 
 Each run writes Jest coverage to an isolated temporary directory. After Jest

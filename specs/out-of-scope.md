@@ -34,6 +34,12 @@ This document records behavior the v5 CLI intentionally does not provide.
   remain consumer responsibilities.
 - A supported runtime library API is out of scope; the public interface is
   the `eliware-test` CLI.
+- Treating Istanbul metadata maps with unmatched counter keys as valid
+  coverage, including non-empty function metadata with an empty function
+  counter map, is out of scope. Such reports are structurally unusable.
+- Requiring immediate child-process settlement on an `error` event when no
+  `close` event has arrived is out of scope. The documented timeout and signal
+  escalation contract remains authoritative.
 - Inferring values for undocumented Jest options, coordinating concurrent
   worktree runs, validating unsupported package-manager layouts, and treating
   internal toolkit defaults as consumer configuration are out of scope.
