@@ -28,7 +28,9 @@ describe('parseArguments', () => {
     expect(() => parseArguments(['--workers=abc'])).toThrow('positive integer');
   });
   test('terminal modes take precedence over managed options', () => {
-    expect(parseArguments(['--help', '--coverage'])).toMatchObject({ help: true });
-    expect(parseArguments(['--version', '--coverage'])).toMatchObject({ version: true });
+    expect(parseArguments(['--help', '--coverage'])).toMatchObject({ help: true, warnings: ['--coverage is managed by eliware-test; remove it and use the wrapper command directly.'] });
+    expect(parseArguments(['--version', '--coverage'])).toMatchObject({ version: true, warnings: ['--coverage is managed by eliware-test; remove it and use the wrapper command directly.'] });
+    expect(parseArguments(['--help', '--help=true'])).toMatchObject({ help: true, warnings: ['Terminal options do not accept equals-form values.'] });
+    expect(parseArguments(['--version', '--ignore-100x4=true'])).toMatchObject({ version: true, warnings: ['Wrapper options do not accept equals-form values.'] });
   });
 });

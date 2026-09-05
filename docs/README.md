@@ -24,6 +24,26 @@ Use Node.js 26 or newer and the conventional npm `node_modules` layout. Run
 `npm test -- tests/example.test.mjs`; missing focused paths are reported before
 Jest starts.
 
+## Quick start
+
+The normal workflow runs repository policy and convention checks, focused-path
+validation, Jest with coverage, source/test mapping, Oxlint, monolith limits,
+and any defined `audit`, `pack`, `build`, or `typecheck` scripts. Missing
+package scripts are skipped.
+
+Supported profiles are:
+
+- **Normal:** `npm test`
+- **Lint-only:** `npm run lint` or `eliware-test --lint`
+- **Focused:** `npm test -- tests/example.test.mjs`
+- **Diagnostic:** `eliware-test --ignore-100x4`,
+  `eliware-test --ignore-monolith-limits`, or `eliware-test --no-runInBand`
+
+Valid CLI options are `--help`, `--version`, `--lint`, `--ignore-100x4`,
+`--ignore-monolith-limits`, `--workers=N`, `--debug-timing`,
+`--runInBand`, and `--no-runInBand`. See [`../.env.example`](../.env.example)
+for the only supported environment variable and its permissible value.
+
 ## Operation and validation
 
 The CLI runs workspace policy checks, focused-path validation, Jest with

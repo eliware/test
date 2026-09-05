@@ -66,6 +66,13 @@ For a run with freshness tracking, a malformed current JSON candidate is not
 masked by text output, and a candidate whose freshness cannot be verified is
 rejected. Text fallback is used only when JSON candidates are missing, empty,
 stale, or otherwise unusable without an unverifiable current artifact.
+If freshness tracking is enabled and an initial timestamp lookup fails because
+the candidate does not exist yet, the candidate may be read successfully later
+and is accepted only when its later timestamp is newer than the run start. A
+timestamp lookup that fails for any other reason is an error and does not permit
+the candidate to be accepted. This behavior is intentional and accepted: the
+reader fails closed rather than treating an unverifiable stale artifact as
+fresh.
 Coverage validation is reported during post-test validation but does not stop
 lint, monolith enforcement, or configured package checks. If those stages pass,
 the coverage exit code is returned after all diagnostics are available. A later

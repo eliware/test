@@ -21,6 +21,7 @@ export async function runCli(argumentsList, options = {}) {
     writeError(`Argument validation failed: ${error.message}\nCheck the supported command options and their values.\n`);
     return EXIT_CODES.INVALID_ARGUMENT;
   }
+  for (const warning of parsed.warnings ?? []) writeError(`Warning: ${warning}\n`);
   if (parsed.version) { write(`${metadata.version}\n`); return 0; }
   if (parsed.help) { write(HELP_TEXT); return 0; }
   try {

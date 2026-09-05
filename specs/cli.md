@@ -22,7 +22,9 @@ monolith, and package-check diagnostics are reported; a later post-test
 failure takes precedence over the deferred coverage result. `--lint` runs only workspace policy,
 setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
 `--version`/`-v` are terminal modes and take precedence over managed-option
-validation when combined with other arguments. Version output comes from
+validation when combined with other arguments. If invalid options accompany a
+terminal mode, the CLI emits a warning and still prints the requested help or
+version. Version output comes from
 `package.json`.
 
 The continuation after a coverage failure is intentional: coverage evidence
