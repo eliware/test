@@ -27,6 +27,6 @@ export async function runPackageScript(cwd, script, write = () => {}, options = 
   }
   const safeResult = normalizeCommandResult(result);
   const output = normalizeOutput(safeResult.output, cwd);
-  if (safeResult.code !== 0) write(`${script} failed${output ? `:\n${output}` : '.\n'}`);
+  if (safeResult.code !== 0) write(`${script} failed${output ? `:\n${output}${output.endsWith('\n') ? '' : '\n'}` : '.\n'}`);
   return safeResult.code;
 }

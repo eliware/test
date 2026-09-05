@@ -13,12 +13,55 @@ test('prepares an isolated coverage directory', async () => {
 test('overwrites coverage with the completed isolated directory', async () => {
   const calls = [];
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async (...args) => calls.push(['remove', ...args]), async (...args) => calls.push(['rename', ...args]))).resolves.toBe(true);
-  expect(calls.map(([name]) => name)).toEqual(['remove', 'rename']);
-  expect(calls[0][2]).toMatchObject({ recursive: true, force: true });
+  expect(calls.map(([name]) => name)).toEqual(['rename', 'rename', 'remove']);
+  expect(calls[2][2]).toMatchObject({ recursive: true, force: true });
 });
 
 test('does not promote missing isolated output', async () => {
   await expect(promoteCoverageDirectory('repo', 'missing', async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); })).resolves.toBe(false);
+});
+
+test('promotes without a previous destination', async () => {
+  const calls = [];
+  const missing = Object.assign(new Error('missing'), { code: 'ENOENT' });
+  await expect(promoteCoverageDirectory('repo', 'temp', async (path) => {
+    if (path.endsWith('coverage')) throw missing;
+  }, async (...args) => calls.push(['remove', ...args]), async (...args) => calls.push(['rename', ...args]))).resolves.toBe(true);
+  expect(calls.map(([name]) => name)).toEqual(['rename']);
+});
+
+test('restores the previous destination when promotion fails', async () => {
+  const calls = [];
+  let promotion = true;
+  await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {}, async (...args) => {
+    calls.push(args);
+    if (promotion && args[0] === 'temp') { promotion = false; throw new Error('promotion failed'); }
+  })).rejects.toThrow('promotion failed');
+  expect(calls).toHaveLength(3);
+});
+
+test('reports destination access failures', async () => {
+  const error = new Error('destination access denied');
+  await expect(promoteCoverageDirectory('repo', 'temp', async (path) => {
+    if (path.endsWith('coverage')) throw error;
+  })).rejects.toThrow('destination access denied');
+});
+
+test('preserves promotion error when rollback also fails', async () => {
+  let renames = 0;
+  await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {}, async () => {
+    renames += 1;
+    if (renames === 1) return;
+    if (renames === 2) throw new Error('promotion failed');
+    throw new Error('rollback failed');
+  })).rejects.toThrow('promotion failed');
+});
+
+test('does not attempt rollback when no destination existed', async () => {
+  const missing = Object.assign(new Error('missing'), { code: 'ENOENT' });
+  await expect(promoteCoverageDirectory('repo', 'temp', async (path) => {
+    if (path.endsWith('coverage')) throw missing;
+  }, async () => {}, async () => { throw new Error('promotion failed'); })).rejects.toThrow('promotion failed');
 });
 
 test('reports non-missing access failures', async () => {
@@ -27,8 +70,8 @@ test('reports non-missing access failures', async () => {
 });
 
 test('preserves destination removal and promotion failures', async () => {
-  await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => { throw new Error('locked'); })).rejects.toThrow('locked');
   await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => {}, async () => { throw new Error('rename failed'); })).rejects.toThrow('rename failed');
+  await expect(promoteCoverageDirectory('repo', 'temp', async () => {}, async () => { throw new Error('locked'); }, async () => {})).rejects.toThrow('locked');
 });
 
 test('uses default filesystem collaborators', async () => {

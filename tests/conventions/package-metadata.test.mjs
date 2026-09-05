@@ -36,6 +36,15 @@ test('requires canonical repository and homepage metadata for publishable packag
   ]));
 });
 
+test('validates directory and glob package file entries', () => {
+  const options = { readme: 'demo', releaseNotes: '## 1.0.0', existingPaths: new Set(['README.md', 'LICENSE', 'RELEASE_NOTES.md', 'src/index.mjs', 'docs/guide.md']) };
+  expect(checkPackageMetadata({ ...valid, files: ['README.md', 'LICENSE', 'RELEASE_NOTES.md', 'src/', 'docs/*.md'] }, options)).toEqual([]);
+  expect(checkPackageMetadata({ ...valid, files: ['missing/', 'generated/*.js', 42] }, options).map(({ message }) => message)).toEqual(expect.arrayContaining([
+    'package.json: files entry does not exist: missing/',
+    'package.json: files entry does not exist: generated/*.js',
+  ]));
+});
+
 test('enforces shared scripts and allows diagnostic flags only when enabled', () => {
   expect(checkPackageMetadata({ ...valid, scripts: { test: 'jest', lint: 'eslint' } }).map(({ message }) => message)).toEqual(expect.arrayContaining([
     'package.json: scripts.test must invoke eliware-test',

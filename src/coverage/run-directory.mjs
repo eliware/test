@@ -14,7 +14,18 @@ export async function promoteCoverageDirectory(cwd, temporaryPath, accessPath = 
   try { await accessPath(temporaryPath); }
   catch (error) { if (error.code === 'ENOENT') return false; throw error; }
   const destination = resolve(cwd, 'coverage');
-  await removePath(destination, { recursive: true, force: true });
-  await renamePath(temporaryPath, destination);
+  const previous = resolve(cwd, '.eliware-test-coverage-previous');
+  let hadDestination = true;
+  try { await accessPath(destination); } catch (error) { if (error.code === 'ENOENT') hadDestination = false; else throw error; }
+  if (hadDestination) await renamePath(destination, previous);
+  try {
+    await renamePath(temporaryPath, destination);
+  } catch (error) {
+    if (hadDestination) {
+      try { await renamePath(previous, destination); } catch { /* preserve the original promotion error */ }
+    }
+    throw error;
+  }
+  if (hadDestination) await removePath(previous, { recursive: true, force: true });
   return true;
 }

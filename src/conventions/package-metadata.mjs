@@ -36,7 +36,17 @@ export function checkPackageMetadata(packageJson, { readme = '', releaseNotes = 
   if (packageJson.name && !readme.includes(packageJson.name)) findings.push(finding(`README.md: does not mention package name ${packageJson.name}`));
   if (packageJson.version && !new RegExp(`^##\\s+v?${escapeRegExp(packageJson.version)}(?:\\s|$)`, 'mi').test(releaseNotes)) findings.push(finding(`RELEASE_NOTES.md: missing heading for version ${packageJson.version}`));
   if (packageJson.license && ![...existingPaths].some((path) => path.toLowerCase() === packageJson.license.toLowerCase() || path.toLowerCase() === 'license')) findings.push(finding(`package.json: license ${packageJson.license} has no corresponding license file`));
-  for (const entry of packageJson.files ?? []) if (typeof entry === 'string' && !entry.includes('*') && !existingPaths.has(entry.replace(/\/$/, ''))) findings.push(finding(`package.json: files entry does not exist: ${entry}`));
+  for (const entry of packageJson.files ?? []) {
+    if (typeof entry !== 'string') continue;
+    const normalized = entry.replace(/\/$/, '');
+    const pattern = entry.includes('*')
+      ? new RegExp(`^${escapeRegExp(normalized).replaceAll('\\*', '.*')}(?:/|$)`)
+      : null;
+    const exists = pattern ? [...existingPaths].some((path) => pattern.test(path))
+      : entry.endsWith('/') ? [...existingPaths].some((path) => path.startsWith(`${normalized}/`)) || existingPaths.has(normalized)
+        : existingPaths.has(normalized);
+    if (!exists) findings.push(finding(`package.json: files entry does not exist: ${entry}`));
+  }
   return findings;
 }
 
