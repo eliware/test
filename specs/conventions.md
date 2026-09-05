@@ -23,3 +23,10 @@ path in `package.json`:
 
 Exceptions are explicit path-level waivers only; they do not disable checks
 that can still run. Examples are inspected but never executed by this layer.
+
+Specification discovery is intentionally shallow and deterministic: Markdown
+documents directly inside `specs/` are the specification set. The overview
+must link to each of those documents. Nested directories under `specs/` are
+not part of the discoverable specification set and are not required to be
+indexed by the convention validator; repositories needing nested material
+should link it from a top-level specification document.

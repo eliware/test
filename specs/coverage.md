@@ -22,6 +22,13 @@ decimal places. Malformed annotations and ratios fail closed as gaps. Bare and
 annotated ratio counters are limited to 256 decimal digits before BigInt
 conversion.
 
+JSON coverage counters must be finite, non-negative safe integers within
+JavaScript's `Number.MAX_SAFE_INTEGER` range. Counters outside that range are
+not accepted as authoritative evidence because converting them to JavaScript
+numbers could change their exact value and misclassify the 100×4 result.
+Such a candidate is treated as structurally unusable and follows the normal
+fallback and fail-closed rules below.
+
 ## Istanbul JSON coverage
 
 Each run writes Jest coverage to an isolated temporary directory. After Jest

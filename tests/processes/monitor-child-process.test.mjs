@@ -94,3 +94,31 @@ test('terminates the process group on Darwin', async () => {
     jest.useRealTimers();
   }
 });
+
+test('clears pending escalation when the child closes after timeout', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); child.kill = jest.fn();
+    const result = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(10);
+    child.emit('close', 0);
+    jest.advanceTimersByTime(2000);
+    await expect(result).resolves.toMatchObject({ code: 0 });
+    expect(child.kill).toHaveBeenCalledTimes(1);
+  } finally { jest.useRealTimers(); }
+});
+
+test('clears final escalation when the child closes after force kill', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); child.kill = jest.fn();
+    const result = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    jest.advanceTimersByTime(1010);
+    child.emit('close', 0);
+    jest.advanceTimersByTime(1000);
+    await expect(result).resolves.toMatchObject({ code: 0 });
+    expect(child.kill).toHaveBeenCalledTimes(2);
+  } finally { jest.useRealTimers(); }
+});

@@ -76,6 +76,15 @@ describe('coverage facade', () => {
     })).toEqual([]);
   });
 
+  test('rejects counters outside safe integer precision', () => {
+    expect(() => parseCoverageJson({
+      'src/unsafe-counter.mjs': {
+        statementMap: { 0: { start: { line: 1 } } }, s: { 0: '9007199254740992' },
+        branchMap: {}, b: {}, fnMap: {}, f: {},
+      },
+    })).toThrow('Malformed coverage entry');
+  });
+
   test('rejects entries with inconsistent metric maps and counters', () => {
     expect(() => parseCoverageJson({
       'src/malformed.mjs': {

@@ -16,6 +16,8 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
+      clearTimeout(forceKill);
+      clearTimeout(finalKill);
       const output = capture.finish();
       const duplicate = errorMessage && output.includes(errorMessage.trim());
       resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}` });
@@ -44,10 +46,8 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       terminate('SIGTERM');
       if (closed) return;
       forceKill = setTimeout(() => {
-        if (closed) return;
         terminate('SIGKILL');
         finalKill = setTimeout(() => {
-          if (closed) return;
           terminate('SIGKILL');
           finish(1, `Child process timed out after ${timeoutMs} ms\nChild process remained alive after SIGKILL\n`);
         }, 1000);
