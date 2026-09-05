@@ -12,19 +12,21 @@ projects do not need to install them directly.
 ## Contents
 
 - [Installation](#installation)
+- [Requirements](#requirements)
 - [Usage and common commands](#usage-and-common-commands)
+- [Configuration](#configuration)
 - [Consumer migration](#consumer-migration)
 - [Generated files](#generated-files)
 - [Security and diagnostics](#security-and-diagnostics)
 - [Support](#support)
 - [Further documentation](#further-documentation)
 - [Development](#development)
+- [License](#license)
 
 ## Requirements
 
 - Node.js 26 or newer
-- An Eliware internal Node.js project using npm and the conventional
-  `node_modules` layout
+- A Node.js project using npm and the conventional `node_modules` layout
 - Every `src/**/*.mjs` implementation file paired with exactly one
   `tests/**/*.test.mjs` file for normal validation
 

@@ -1,5 +1,44 @@
 # Release notes
 
+## 5.0.0
+
+### Repository convention validation
+
+- Added deterministic validation for required repository structure, package
+  metadata, README links and sections, specifications, `.env.example`, and
+  consumer examples.
+- Added grouped, stable, actionable convention diagnostics and documented
+  exact path-level exceptions.
+- Added the `specs/` contract layout, explicit out-of-scope documentation,
+  public documentation, and a minimal consumer example.
+
+### Validation pipeline and coverage
+
+- Added post-test execution of defined `audit`, `pack`, `build`, and
+  `typecheck` scripts; undefined scripts remain silently skipped.
+- Hardened coverage parsing, freshness checks, fallback evidence, empty and
+  malformed report handling, and coverage artifact promotion.
+- Preserved the 100×4 coverage contract, focused coverage behavior, source/test
+  mapping, monolith enforcement, and six-worker scanning with `--workers=N`.
+- Continued validation after coverage failures so users receive diagnostics
+  from later lint, monolith, and package-script stages.
+
+### Portability and diagnostics
+
+- Made package-script execution portable across Windows and Linux without
+  relying on shell-specific npm executable assumptions.
+- Added cross-platform process, workspace, path, and coverage regression
+  coverage.
+- Improved child-process lifecycle handling, bounded diagnostics, timing
+  cleanup, and stable validation exit categories.
+
+### Documentation and metadata
+
+- Updated the public README contents, branding, requirements, migration, CLI
+  usage, security, and generated-file guidance for the package's public
+  consumer audience.
+- Synchronized package and lockfile metadata for the 5.0.0 release.
+
 ## 4.0.1
 
 ### Documentation and metadata
