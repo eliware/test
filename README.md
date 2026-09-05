@@ -201,9 +201,9 @@ See the process-trust specification for the complete behavior.
 ## Development
 
 ```text
-node bin/eliware-test.mjs
-npm test
-npm run lint
+node bin/eliware-test.mjs  Repository-local executable validation
+npm test                    Consumer-style full validation
+npm run lint                Standalone lint/policy diagnostics
 ```
 
 ## License

@@ -26,7 +26,9 @@ async function readStableReport(reportPath, readFilePath, statPath, startedAt) {
 export async function readCoverage(cwd, testOutput, write, readFilePath = readFile, statPath = stat, startedAt = 0) {
   if (typeof cwd !== 'string') throw new TypeError('readCoverage requires cwd');
   if (typeof testOutput !== 'string') throw new TypeError('readCoverage requires test output');
-  const reports = await Promise.all(COVERAGE_CANDIDATES.map(async (name) => {
+  const reports = [];
+  for (const name of COVERAGE_CANDIDATES) {
+    reports.push(await (async () => {
     try {
       const reportPath = resolve(cwd, name);
       const snapshot = await readStableReport(reportPath, readFilePath, statPath, startedAt);
@@ -40,7 +42,8 @@ export async function readCoverage(cwd, testOutput, write, readFilePath = readFi
       if (error.code === 'ENOENT') return { name };
       throw error;
     }
-  }));
+    })());
+  }
   const firstFresh = reports.find(({ fresh }) => fresh);
   if (firstFresh?.malformed) {
     throw new Error(`Coverage report is malformed: ${firstFresh.name}. Rerun the tests to regenerate coverage data.`);

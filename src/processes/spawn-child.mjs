@@ -8,6 +8,6 @@ export function spawnChild(command, argumentsList, options = {}) {
     env: childEnvironment(options),
     windowsHide: true,
     shell: false,
-    detached: process.platform !== 'win32'
+    detached: process.platform === 'linux' || process.platform === 'darwin'
   });
 }
