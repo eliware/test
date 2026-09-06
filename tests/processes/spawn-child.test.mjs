@@ -34,3 +34,17 @@ test('detaches on Darwin', () => {
     Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
   }
 });
+
+test('does not detach or mark process groups on Windows', () => {
+  const originalPlatform = process.platform;
+  const calls = [];
+  const child = new EventEmitter();
+  try {
+    Object.defineProperty(process, 'platform', { value: 'win32', configurable: true });
+    expect(spawnChild('node', [], { spawn: (...args) => { calls.push(args); return child; } })).toBe(child);
+    expect(calls[0][2].detached).toBe(false);
+    expect(child.__eliwareProcessGroup).toBeUndefined();
+  } finally {
+    Object.defineProperty(process, 'platform', { value: originalPlatform, configurable: true });
+  }
+});
