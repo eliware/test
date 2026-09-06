@@ -5,7 +5,7 @@ This example shows the supported v6 consumer setup with a mirrored `src/` and
 
 ## Examples
 
-- [`minimal-consumer/`](minimal-consumer/) — minimal setup with Jest, coverage,
+- [`minimal-consumer/README.md`](minimal-consumer/README.md) — minimal setup with Jest, coverage,
   and lint commands
 
 ## Prerequisites

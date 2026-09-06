@@ -32,10 +32,8 @@ export async function collectConventionInputs({ cwd, accessPath, readFilePath = 
     paths.add(relativePath);
     files.add(relativePath);
   }, { readDirectory: readDirectoryOnce });
-  const specEntries = paths.has('specs') ? await readDirectoryOnce(resolve(cwd, 'specs'), { withFileTypes: true }) : [];
-  const specFiles = specEntries.filter((entry) => entry.isFile() && entry.name.endsWith('.md')).map((entry) => entry.name);
-  const docsEntries = paths.has('docs') ? await readDirectoryOnce(resolve(cwd, 'docs'), { withFileTypes: true }) : [];
-  const docsFiles = docsEntries.filter((entry) => entry.isFile() && entry.name.endsWith('.md')).map((entry) => entry.name);
+  const specFiles = [...files].filter((path) => path.startsWith('specs/') && path.endsWith('.md')).map((path) => path.slice('specs/'.length));
+  const docsFiles = [...files].filter((path) => path.startsWith('docs/') && path.endsWith('.md')).map((path) => path.slice('docs/'.length));
   const overview = specFiles.find((file) => file.toLowerCase() === 'readme.md' || file.toLowerCase() === 'index.md') ?? (await read('SPEC.md') ? 'SPEC.md' : '');
   const specText = overview === 'SPEC.md' ? await read('SPEC.md') : await read(`specs/${overview}`);
   const examples = paths.has('examples') ? (await readDirectoryOnce(resolve(cwd, 'examples'), { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name) : [];

@@ -54,12 +54,11 @@ example, badge, or index checks for a path that exists. An exception never
 makes an invalid existing document valid; it only permits the named required
 path to be absent. Examples are inspected but never executed by this layer.
 
-Specification discovery is intentionally shallow and deterministic: Markdown
-documents directly inside `specs/` are the specification set. The overview
-must link to each of those documents. Nested directories under `specs/` are
-not part of the discoverable specification set and are not required to be
-indexed by the convention validator; repositories needing nested material
-should link it from a top-level specification document.
+Documentation discovery is recursive and deterministic under `docs/`,
+`specs/`, and `examples/`. Every Markdown file in those trees is part of the
+discovered documentation set. Indexes must link to their discovered Markdown
+files, and every local Markdown link must resolve to an existing file rather
+than a directory or an inferred README target.
 
 For public Eliware packages, the convention validator also requires README
 links for the canonical npm package, license file, and the repository's

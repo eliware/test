@@ -74,6 +74,6 @@ before validation; comprehensive secret detection is not provided.
 
 - [README quick start](../README.md)
 - [Normative specification](../SPEC.md)
-- [Specification documents](../specs/)
+- [Specification documents](../specs/README.md)
 - [Release notes](../RELEASE_NOTES.md)
-- [Consumer example](../examples/)
+- [Consumer example](../examples/README.md)

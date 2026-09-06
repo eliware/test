@@ -231,10 +231,10 @@ help and project discussion, join the
 
 - [`SPEC.md`](SPEC.md) — normative behavior, coverage, architecture, and
   limitations
-- [`specs/`](specs/) — detailed contract sections
+- [`specs/README.md`](specs/README.md) — detailed contract sections
 - [`RELEASE_NOTES.md`](RELEASE_NOTES.md) — release history
-- [`docs/`](docs/) — user-facing documentation
-- [`examples/`](examples/) — runnable consumer examples
+- [`docs/README.md`](docs/README.md) — user-facing documentation
+- [`examples/README.md`](examples/README.md) — runnable consumer examples
 
 ## Development
 

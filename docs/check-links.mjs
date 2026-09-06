@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -28,7 +28,7 @@ for (const file of files) {
     const reference = match[1].replace(/[?#].*$/, '');
     if (!reference || reference.startsWith('http://') || reference.startsWith('https://') || reference.startsWith('mailto:')) continue;
     const target = resolve(dirname(file), reference);
-    if (!existsSync(target) && !existsSync(`${target}.md`) && !existsSync(resolve(target, 'README.md'))) {
+    if (!existsSync(target) || !statSync(target).isFile()) {
       failures.push(`${file.slice(root.length + 1)} -> ${reference}`);
     }
   }
