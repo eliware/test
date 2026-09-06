@@ -17,7 +17,7 @@ export const HELP_TEXT = `Usage:
 Node.js 26+ is required. Focused paths are checked before Jest and never fall
 back to the full suite. Normal validation also enforces source/test mapping and
 monolith limits, then runs defined audit, pack, build, and typecheck scripts;
-missing scripts are skipped. Wrapper flags are consumed by eliware-test;
+missing scripts are skipped and defined scripts must be valid and pass. Wrapper flags are consumed by eliware-test;
 managed Jest options such as --coverage, --silent, and --runTestsByPath are
 rejected. Jest runs in-band by default; --no-runInBand opts out. The
 --ignore-100x4 flag collects coverage without enforcing its thresholds, while
@@ -30,7 +30,8 @@ ELIWARE_TEST_DEBUG=1 to show the fixed coverage-fallback diagnostic; this is
 separate from --debug-timing.
 See specs/cli.md for the stable exit-code meanings used by CI.
 Defined audit, pack, build, and typecheck scripts run after validation; missing
-scripts are skipped and any failing check returns wrapper exit code 17.
+scripts are skipped, invalid definitions fail, and any failing check returns
+wrapper exit code 17.
 Configure consumer scripts as test=eliware-test and lint=eliware-test --lint;
 see README.md for migration details.
 `;

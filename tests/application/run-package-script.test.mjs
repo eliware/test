@@ -7,7 +7,7 @@ test('fails when scripts are not defined', async () => {
 });
 
 test('uses the workspace package metadata when no reader is injected', async () => {
-  await expect(runPackageScript(process.cwd(), 'audit', () => {})).resolves.toMatchObject({ code: 0, category: 'package-script' });
+  await expect(runPackageScript(process.cwd(), 'pack', () => {})).resolves.toMatchObject({ code: 0, category: 'package-script' });
 });
 
 test('runs defined scripts and returns their exit code', async () => {

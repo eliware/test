@@ -10,7 +10,9 @@ export async function executePackageScript(cwd, script, write, options = {}) {
   let packageJson;
   try { packageJson = await Object.assign({ readPackageJson }, options).readPackageJson(cwd, options.readFilePath); }
   catch (error) { const diagnostic = `${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to read package metadata'}\n`; write(diagnostic); return makeResult(1, '', diagnostic); }
-  const configuredScript = packageJson?.scripts?.[script];
+  const scripts = packageJson?.scripts;
+  const configuredScript = scripts?.[script];
+  if (options.optional && (!scripts || !Object.hasOwn(scripts, script))) return makeResult(0, '', '');
   if (typeof configuredScript !== 'string' || configuredScript.trim() === '') {
     const diagnostic = `${script} failed: package.json script is missing or invalid\n`;
     write(diagnostic);

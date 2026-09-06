@@ -9,10 +9,17 @@ test('normalizes the first defined package-check failure', async () => {
   expect(messages.join('')).toContain('Package script failed: audit');
 });
 
-test('fails when a package check script is missing', async () => {
+test('skips missing optional package-check scripts', async () => {
   const messages = [];
   await expect(runPackageChecks('.', (message) => messages.push(message), {
     readPackageJson: async () => ({ scripts: {} }),
+  })).resolves.toBe(0);
+});
+
+test('fails when an optional package-check script is invalid', async () => {
+  const messages = [];
+  await expect(runPackageChecks('.', (message) => messages.push(message), {
+    readPackageJson: async () => ({ scripts: { audit: '  ' } }),
   })).resolves.toBe(17);
   expect(messages.join('')).toContain('Package script failed: audit');
 });

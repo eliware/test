@@ -48,10 +48,7 @@
         "test": "node bin/eliware-test.mjs",
         "test:timing": "node bin/eliware-test.mjs --debug-timing",
         "lint": "node bin/eliware-test.mjs --lint",
-        "pack": "npm pack --dry-run",
-        "audit": "node -e \"process.exit(0)\"",
-        "build": "node -e \"process.exit(0)\"",
-        "typecheck": "node -e \"process.exit(0)\""
+        "pack": "npm pack --dry-run"
     },
     "jest": {
         "collectCoverageFrom": [

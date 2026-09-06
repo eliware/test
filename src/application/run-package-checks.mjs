@@ -10,7 +10,7 @@ export async function runPackageChecks(cwd, write, options = {}) {
   const checks = options.checks ?? [['audit', runAudit], ['pack', runPack], ['build', runBuild], ['typecheck', runTypecheck]];
   for (const [name, check] of checks) {
     let result;
-    try { result = await check(cwd, write, options); }
+    try { result = await check(cwd, write, { ...options, optional: true }); }
     catch (error) {
       write(`Package script failed: ${name}${error?.message ? `: ${error.message}` : ''}\n`);
       return EXIT_CODES.PACKAGE_SCRIPT_FAILURE;

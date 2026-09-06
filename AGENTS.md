@@ -100,10 +100,10 @@ monolith enforcement, and defined package-script checks. Use
 `node bin/eliware-test.mjs` to exercise the repository-local executable
 directly, or `npm run lint` for standalone lint/policy diagnostics.
 
-Normal validation uses `npm test`, which runs the required consumer `audit`,
-`pack`, `build`, and `typecheck` scripts after the normal stages. Each must be
-a nonempty package script; a missing or invalid script fails validation. Use
-`npm run <script>` only to isolate a failing package check.
+Normal validation uses `npm test`, which runs the defined consumer `audit`,
+`pack`, `build`, and `typecheck` scripts after the normal stages. These scripts
+are optional; when present, each must be a nonempty package script and must
+pass. Use `npm run <script>` only to isolate a failing package check.
 
 Use `eliware-test --help` for the supported command forms. When invoking via
 npm, pass Jest options after `npm test --`. Use `eliware-test --version` to

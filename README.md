@@ -123,8 +123,8 @@ prefer splitting hand-written modules. The defaults are 100 source lines and
 200 test lines; the boundary is inclusive, so 100 or 200 passes and the next
 line fails unless an exemption applies.
 
-Missing or invalid `audit`, `pack`, `build`, or `typecheck` scripts fail the
-package-check stage. Each script must be a nonempty string in `package.json`.
+Missing `audit`, `pack`, `build`, or `typecheck` scripts are skipped. When
+present, each script must be a nonempty string in `package.json` and must pass.
 
 Use `--ignore-100x4` and `--ignore-monolith-limits` only for diagnostic or
 transitional work. They do not disable tests or lint. Use `--workers=N` to
