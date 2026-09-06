@@ -46,5 +46,5 @@ export async function collectConventionInputs({ cwd, accessPath, readFilePath = 
     examplePackages.set(example, await readConventionPackage(resolve(cwd, `examples/${example}`), cachedReadFile));
   }
   const specTexts = new Map(await Promise.all(specFiles.map(async (file) => [file, await read(`specs/${file}`)])));
-  return { packageJson, findings, read, paths, files, specFiles, docsFiles, specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts };
+  return { packageJson, exceptions: configuredExceptions, findings, read, paths, files, specFiles, docsFiles, specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts };
 }

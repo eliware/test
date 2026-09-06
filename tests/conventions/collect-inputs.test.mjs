@@ -28,6 +28,7 @@ test('honors the configured exception when collecting required-path findings', a
     readDirectory: async () => [],
   });
   expect(result.findings.map(({ message }) => message)).not.toContain('missing required path: examples');
+  expect(result.exceptions).toEqual(['examples']);
 });
 
 test('selects an index overview without reading SPEC.md', async () => {

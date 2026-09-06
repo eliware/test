@@ -21,9 +21,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
     }
   })();
   if (!packageJson) return false;
-  const { findings, read, paths, files, specFiles, docsFiles, specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts } = packageJson;
-  const exceptions = Array.isArray(packageJson.packageJson?.eliwareTest?.conventions?.exceptions)
-    ? packageJson.packageJson.eliwareTest.conventions.exceptions.filter((value) => typeof value === 'string') : [];
+  const { exceptions, findings, read, paths, files, specFiles, docsFiles, specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts } = packageJson;
   findings.push(...checkAgents(await read('AGENTS.md'), exceptions));
   findings.push(...checkPackageMetadata(packageJson.packageJson, { readme: await read('README.md'), releaseNotes: await read('RELEASE_NOTES.md'), existingPaths: paths, existingFiles: files, allowSelfReference: packageJson.packageJson?.name === '@eliware/test', allowCoverageOptOut, allowMonolithOptOut }));
   const packageData = packageJson.packageJson ?? {};
