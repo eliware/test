@@ -20,6 +20,19 @@ test('records empty, malformed, and missing candidates', async () => {
   expect(reports[2]).toEqual({ name: COVERAGE_CANDIDATES[2] });
 });
 
+test('preserves stale freshness when malformed JSON is skipped', async () => {
+  const reports = await readCoverageReports('C:/repo', async (path) => {
+    if (path.endsWith('coverage-final.json')) return '{bad';
+    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+  }, async () => ({ mtimeMs: 1 }), 10, ['coverage/coverage-final.json']);
+  expect(reports).toEqual([{ name: 'coverage/coverage-final.json', malformed: true, fresh: false, freshnessAvailable: true }]);
+});
+
+test('fails closed when a reader reports a syntax error before a snapshot exists', async () => {
+  const reports = await readCoverageReports('C:/repo', async () => { throw new SyntaxError('invalid coverage'); }, async () => ({ mtimeMs: 10 }), 1, ['coverage/coverage-final.json']);
+  expect(reports).toEqual([{ name: 'coverage/coverage-final.json', malformed: true, fresh: false, freshnessAvailable: false }]);
+});
+
 test('uses default readers and timestamps', async () => {
   await expect(readCoverageReports(process.cwd(), async () => { throw Object.assign(new Error('missing'), { code: 'ENOENT' }); }))
     .resolves.toHaveLength(COVERAGE_CANDIDATES.length);

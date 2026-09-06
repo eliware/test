@@ -8,8 +8,9 @@ export const COVERAGE_CANDIDATES = ['coverage/coverage-final.json', 'coverage/co
 export async function readCoverageReports(cwd, readFilePath = readFile, statPath = stat, startedAt = 0, candidates = COVERAGE_CANDIDATES) {
   const reports = [];
   for (const name of candidates) {
+    let snapshot;
     try {
-      const snapshot = await readStableReport(resolve(cwd, name), readFilePath, statPath, startedAt);
+      snapshot = await readStableReport(resolve(cwd, name), readFilePath, statPath, startedAt);
       if (!snapshot) { reports.push({ name, unstable: true, freshnessAvailable: false }); continue; }
       if (snapshot.contents.trim() === '') { reports.push({ name, fresh: snapshot.fresh, freshnessAvailable: snapshot.freshnessAvailable }); continue; }
       const json = JSON.parse(snapshot.contents);
@@ -17,7 +18,7 @@ export async function readCoverageReports(cwd, readFilePath = readFile, statPath
       reports.push({ name, json, usable, malformed: !usable, fresh: snapshot.fresh, freshnessAvailable: snapshot.freshnessAvailable });
       if (usable && snapshot.fresh) break;
     } catch (error) {
-      if (error instanceof SyntaxError) reports.push({ name, malformed: true, fresh: true, freshnessAvailable: true });
+      if (error instanceof SyntaxError) reports.push({ name, malformed: true, fresh: snapshot?.fresh ?? false, freshnessAvailable: snapshot?.freshnessAvailable ?? false });
       else if (error.code !== 'ENOENT') throw error;
       else reports.push({ name });
     }
