@@ -1,4 +1,4 @@
-import { metricHasGap } from './metric.mjs';
+import { metricHasGap, metricIsValid } from './metric.mjs';
 
 const coverageLine = /^\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)(?:\s*\|\s*([^|]+?))?\s*\|?\s*$/;
 const ANSI_PATTERN = new RegExp(`${String.fromCharCode(27)}\\[[0-?]*[ -/]*[@-~]`, 'g');
@@ -9,6 +9,6 @@ export function parseCoverage(text) {
     const match = cleanLine.match(coverageLine);
     if (!match || /^-+$/.test(match[1].trim()) || match[1].trim() === 'All files' || match[1].trim() === 'File') return [];
     const metrics = match.slice(2, 6);
-    return metrics.some(metricHasGap) ? [{ file: match[1].trim(), metrics }] : [];
+    return metrics.every(metricIsValid) && metrics.some(metricHasGap) ? [{ file: match[1].trim(), metrics }] : [];
   });
 }

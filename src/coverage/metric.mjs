@@ -1,3 +1,9 @@
+export function metricIsValid(value) {
+  if (typeof value !== 'string' || value.length > 2048) return false;
+  const trimmed = value.trim();
+  return /^\d+\s*\/\s*\d+$/.test(trimmed) || /^\d+(?:\.\d+)?\s*%\s*\(\d+\s*\/\s*\d+\)$/.test(trimmed) || /^\d+(?:\.\d+)?\s*%$/.test(trimmed) || /^\d+(?:\.\d+)?$/.test(trimmed);
+}
+
 export function metricHasGap(value) {
   if (typeof value !== 'string' || value.length > 2048) return true;
   const match = value.trim().match(/^(\d+)\s*\/\s*(\d+)$/);

@@ -13,5 +13,5 @@ test('ignores headings, separators, and empty input', () => {
 test('retains raw counter rows and zero-valued coverage as gaps', () => {
   expect(parseCoverage('odd.mjs | 100% (1/2) | 100% (0/0) | 100% | 100% |')).toHaveLength(1);
   expect(parseCoverage('empty.mjs | 0 | 0 | 0 | 0 |')).toHaveLength(1);
-  expect(parseCoverage('bad.mjs | not-a-number | 100 | 100 | 100 |')).toHaveLength(1);
+  expect(parseCoverage('bad.mjs | not-a-number | 100 | 100 | 100 |')).toEqual([]);
 });

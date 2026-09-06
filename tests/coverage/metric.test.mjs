@@ -1,4 +1,4 @@
-import { metricHasGap } from '../../src/coverage/metric.mjs';
+import { metricHasGap, metricIsValid } from '../../src/coverage/metric.mjs';
 
 test.each([
   ['100%', false], ['100.000%', false], ['100% (1/1)', false], ['100 % (1/1)', false],
@@ -8,6 +8,7 @@ test.each([
 ])('classifies metric %p', (value, gap) => expect(metricHasGap(value)).toBe(gap));
 
 test('rejects malformed or oversized values without coercion', () => {
+  expect(metricIsValid('1'.repeat(2049))).toBe(false);
   expect(metricHasGap('-1')).toBe(true);
   expect(metricHasGap('101')).toBe(true);
   expect(metricHasGap('100.00abc%')).toBe(true);
