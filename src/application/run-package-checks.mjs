@@ -14,7 +14,7 @@ export async function runPackageChecks(cwd, write, options = {}) {
       write(`Package script failed: ${name}${error?.message ? `: ${error.message}` : ''}\n`);
       return EXIT_CODES.PACKAGE_SCRIPT_FAILURE;
     }
-    const code = Number.isInteger(result) && result >= 0 ? result : 1;
+    const code = Number.isInteger(result?.code) && result.code >= 0 ? result.code : 1;
     if (code !== 0) {
       write(`Package script failed: ${name}\n`);
       return EXIT_CODES.PACKAGE_SCRIPT_FAILURE;

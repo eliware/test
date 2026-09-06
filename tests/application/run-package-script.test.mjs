@@ -14,15 +14,15 @@ test('resolves the platform npm executable', () => {
 
 test('skips scripts that are not defined', async () => {
   const result = await runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => ({ scripts: {} }) });
-  expect(result).toBe(0);
+  expect(result).toMatchObject({ code: 0, category: 'package-script', script: 'audit' });
 });
 
 test('skips scripts when package metadata is absent', async () => {
-  await expect(runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => null })).resolves.toBe(0);
+  await expect(runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => null })).resolves.toMatchObject({ code: 0, category: 'package-script' });
 });
 
 test('uses the workspace package metadata when no reader is injected', async () => {
-  await expect(runPackageScript(process.cwd(), 'audit', () => {})).resolves.toBe(0);
+  await expect(runPackageScript(process.cwd(), 'audit', () => {})).resolves.toMatchObject({ code: 0, category: 'package-script' });
 });
 
 test('runs defined scripts and returns their exit code', async () => {
@@ -31,7 +31,7 @@ test('runs defined scripts and returns their exit code', async () => {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async (...args) => { calls.push(args); return { code: 3, output: 'failed' }; }
   });
-  expect(result).toBe(3);
+  expect(result).toMatchObject({ code: 3, category: 'package-script', script: 'audit' });
   expect(calls[0][0]).toBe(process.platform === 'win32' ? process.execPath : 'npm');
   expect(calls[0][1]).toEqual(expect.arrayContaining(['run', 'audit']));
 });
@@ -42,7 +42,7 @@ test('reports script output and normalizes an invalid exit code', async () => {
     readPackageJson: async () => ({ scripts: { build: 'build-command' } }),
     runChildProcess: async () => ({ code: 'failed', output: 'details' })
   });
-  expect(result).toBe(1);
+  expect(result).toMatchObject({ code: 1, category: 'package-script', script: 'build' });
   expect(messages.join('')).toContain('build failed');
 });
 
@@ -52,7 +52,7 @@ test('normalizes workspace paths in script failures', async () => {
   await expect(runPackageScript(cwd, 'build', (message) => messages.push(message), {
     readPackageJson: async () => ({ scripts: { build: 'build-command' } }),
     runChildProcess: async () => ({ code: 1, output: 'error in C:/repo/src/file.mjs\n' })
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('error in <workspace>/src/file.mjs');
   expect(messages.join('')).not.toContain('C:/repo/src/file.mjs');
 });
@@ -62,7 +62,7 @@ test('reports a failed script without output', async () => {
   await expect(runPackageScript('.', 'typecheck', (message) => messages.push(message), {
     readPackageJson: async () => ({ scripts: { typecheck: 'typecheck-command' } }),
     runChildProcess: async () => ({ code: 1 })
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('typecheck failed.');
 });
 
@@ -71,7 +71,7 @@ test('normalizes a null child-process result', async () => {
   await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async () => null,
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('audit failed.');
 });
 
@@ -102,14 +102,14 @@ test('normalizes negative child exit codes to failure', async () => {
   await expect(runPackageScript('.', 'audit', () => {}, {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async () => ({ code: -1, output: '' }),
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
 });
 
 test('uses a safe default writer for failed scripts', async () => {
   await expect(runPackageScript('.', 'audit', undefined, {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async () => ({ code: 1, output: 'failed' }),
-})).resolves.toBe(1);
+})).resolves.toMatchObject({ code: 1, category: 'package-script' });
 });
 
 test('normalizes child-process startup failures', async () => {
@@ -117,7 +117,7 @@ test('normalizes child-process startup failures', async () => {
   await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async () => { throw new Error('spawn failed'); },
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('audit failed: spawn failed');
 });
 
@@ -126,7 +126,7 @@ test('uses a safe startup diagnostic when the rejection has no message', async (
   await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async () => { throw null; },
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('audit failed: unable to start package script');
 });
 
@@ -134,7 +134,7 @@ test('normalizes unreadable package metadata to a package failure', async () => 
   const messages = [];
   await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
     readPackageJson: async () => { throw new Error('invalid package'); },
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('audit failed: invalid package');
 });
 
@@ -142,6 +142,6 @@ test('uses a safe metadata diagnostic when the reader rejects without a message'
   const messages = [];
   await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
     readPackageJson: async () => { throw null; },
-  })).resolves.toBe(1);
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('audit failed: unable to read package metadata');
 });

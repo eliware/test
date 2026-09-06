@@ -20,7 +20,7 @@ test('uses the default options object', async () => {
 test('normalizes malformed package-check results', async () => {
   const messages = [];
   await expect(runPackageChecks('.', (message) => messages.push(message), {
-    checks: [['audit', async () => undefined]],
+    checks: [['audit', async () => ({})]],
   })).resolves.toBe(17);
   expect(messages.join('')).toContain('Package script failed: audit');
 });
