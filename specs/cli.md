@@ -98,6 +98,10 @@ normalized child `output`, and emitted `diagnostic`. The package-check
 orchestrator is the policy boundary that normalizes every defined-script
 failure to exit code 17.
 
+If npm cannot be resolved or started, the package check fails with exit code 17
+and an explicit npm-unavailable diagnostic. A launcher failure is never treated
+as a successful package script.
+
 On Windows, package scripts run through the current Node executable. When npm
 provides a JavaScript entrypoint through `npm_execpath`, that entrypoint is
 used; otherwise the conventional npm CLI beside Node is used. This avoids

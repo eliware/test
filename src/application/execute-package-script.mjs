@@ -19,7 +19,13 @@ export async function executePackageScript(cwd, script, write, options = {}) {
   const platform = options.platform ?? process.platform;
   let result;
   try { result = await Object.assign({ runChildProcess }, options).runChildProcess(resolveNpmCommand(platform), resolveNpmArguments(script, platform, options.npmExecPath), { cwd }); }
-  catch (error) { const diagnostic = `${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to start package script'}\n`; write(diagnostic); return makeResult(1, '', diagnostic); }
+  catch (error) {
+    const unavailable = error?.code === 'ENOENT' || error?.code === 'EINVAL';
+    const detail = unavailable ? 'npm is unavailable or could not be started' : (normalizeOutput(error?.message ?? error, cwd) || 'unable to start package script');
+    const diagnostic = `${script} failed: ${detail}\n`;
+    write(diagnostic);
+    return makeResult(1, '', diagnostic);
+  }
   const safeResult = normalizeCommandResult(result);
   const output = normalizeOutput(safeResult.output, cwd);
   const diagnostic = safeResult.code !== 0 ? `${script} failed${output ? `:\n${output}${output.endsWith('\n') ? '' : '\n'}` : '.\n'}` : '';

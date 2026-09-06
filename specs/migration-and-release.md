@@ -47,3 +47,5 @@ implied by this specification.
 Windows package-script execution uses the documented conventional Node/npm
 installation layout. Release evidence identifies commands that were actually
 run; an unreported command is not evidence of either success or failure.
+If the supported npm launcher is unavailable or cannot be started, validation
+fails with an explicit npm-unavailable diagnostic rather than passing.

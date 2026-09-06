@@ -82,6 +82,15 @@ test('uses a safe startup diagnostic when the rejection has no message', async (
   expect(messages.join('')).toContain('audit failed: unable to start package script');
 });
 
+test('reports unavailable npm clearly', async () => {
+  const messages = [];
+  await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
+    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
+    runChildProcess: async () => { throw Object.assign(new Error('spawn npm failed'), { code: 'ENOENT' }); },
+  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
+  expect(messages).toEqual(['audit failed: npm is unavailable or could not be started\n']);
+});
+
 test('normalizes unreadable package metadata to a package failure', async () => {
   const messages = [];
   await expect(runPackageScript('.', 'audit', (message) => messages.push(message), {
