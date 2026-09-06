@@ -86,10 +86,10 @@ Stable wrapper exit codes are:
 | 17 | Package-script failure | Fix the configured package script. |
 | 18 | Repository convention failure | Fix the grouped diagnostics or document an exact path exception. |
 
-Package scripts are checked only when the consuming `package.json` defines the
-corresponding script. Missing scripts are skipped silently. Defined scripts run
-after the existing test, coverage, lint, and monolith checks; any nonzero exit
-code fails the CLI with exit code 17. The package-check set is limited to
+Package checks require nonempty `audit`, `pack`, `build`, and `typecheck` script
+values in the consuming `package.json`; missing or invalid values fail with
+exit code 17. Valid scripts run after the existing test, coverage, lint, and
+monolith checks; any nonzero exit code also fails the CLI with exit code 17. The package-check set is limited to
 `audit`, `pack`, `build`, and `typecheck`; it must never invoke the consumer's
 `test` script, so the normal `npm test` command cannot recurse through the
 package-check pipeline. The lower-level package-script executor is an internal

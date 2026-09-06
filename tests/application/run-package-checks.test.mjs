@@ -9,11 +9,15 @@ test('normalizes the first defined package-check failure', async () => {
   expect(messages.join('')).toContain('Package script failed: audit');
 });
 
-test('skips undefined package checks', async () => {
-  await expect(runPackageChecks('.', () => {}, { readPackageJson: async () => ({ scripts: {} }) })).resolves.toBe(0);
+test('fails when a package check script is missing', async () => {
+  const messages = [];
+  await expect(runPackageChecks('.', (message) => messages.push(message), {
+    readPackageJson: async () => ({ scripts: {} }),
+  })).resolves.toBe(17);
+  expect(messages.join('')).toContain('Package script failed: audit');
 });
 
-test('uses the default options object', async () => {
+test('does not run package checks without package metadata collaborators', async () => {
   await expect(runPackageChecks('.', () => {})).resolves.toBe(0);
 });
 

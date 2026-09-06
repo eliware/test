@@ -18,7 +18,7 @@ test('uses later package failure precedence while retaining coverage diagnostics
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message),
     coverageValidator: async () => 11, ignoreCoverage: false, runLintCommand: async () => 0,
-    enforceMonolithLimits: false, packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess: async () => ({ code: 1, output: 'failed' }) },
+    enforceMonolithLimits: false, packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }), runChildProcess: async () => ({ code: 1, output: 'failed' }) },
     timing: { step: () => {} },
   })).resolves.toBe(17);
   expect(messages).toContain('Package script failed: audit\n');
@@ -30,7 +30,7 @@ test('continues through monolith and package checks after lint failure', async (
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: true,
     runLintCommand: async () => 13, enforceMonolithLimits: true, findMonolith,
-    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess },
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }), runChildProcess },
     timing: { step: () => {} },
   })).resolves.toBe(13);
   expect(findMonolith).toHaveBeenCalled();
@@ -51,7 +51,7 @@ test('fails after existing validation when a package check fails', async () => {
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, readFilePath: async () => '{}',
     ignoreCoverage: true, runLintCommand: async () => 0, enforceMonolithLimits: false,
-    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess: async () => ({ code: 1, output: 'failed' }) },
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }), runChildProcess: async () => ({ code: 1, output: 'failed' }) },
     timing: { step: () => {} }
   })).resolves.toBe(17);
 });
@@ -62,7 +62,7 @@ test('returns the highest post-test failure code after every stage runs', async 
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, coverageValidator: async () => 10,
     runLintCommand: async () => 13, enforceMonolithLimits: true, findMonolith,
-    packageChecks: { runChildProcess }, timing: { step: () => {} },
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }), runChildProcess }, timing: { step: () => {} },
   })).resolves.toBe(15);
   expect(findMonolith).toHaveBeenCalled();
   expect(runChildProcess).toHaveBeenCalled();
@@ -94,7 +94,7 @@ test('normalizes rejected coverage validation and continues later checks', async
     cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message),
     coverageValidator: async () => { throw new Error('coverage collaborator failed'); },
     runLintCommand: lint, enforceMonolithLimits: true, findMonolith,
-    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess },
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }), runChildProcess },
     timing: { step: () => {} },
   })).resolves.toBe(10);
   expect(messages).toContain('Coverage validation failed: coverage collaborator failed\n');
@@ -111,7 +111,7 @@ test('normalizes rejected lint validation and continues later checks', async () 
     cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message),
     ignoreCoverage: true, runLintCommand: async () => { throw new Error('lint collaborator failed'); },
     enforceMonolithLimits: true, findMonolith,
-    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess },
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }), runChildProcess },
     timing: { step: () => {} },
   })).resolves.toBe(13);
   expect(messages).toContain('Lint validation failed: lint collaborator failed\n');
@@ -129,11 +129,11 @@ test('normalizes rejected lint validation and continues later checks', async () 
 });
 
 test('passes the package reader through to package checks', async () => {
-  const readPackageJson = jest.fn(async () => ({ scripts: {} }));
+  const readPackageJson = jest.fn(async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }));
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: true,
     runLintCommand: async () => 0, enforceMonolithLimits: false,
-    packageChecks: { readPackageJson }, timing: { step: () => {} },
+    packageChecks: { readPackageJson, runChildProcess: async () => ({ code: 0, output: '' }) }, timing: { step: () => {} },
   })).resolves.toBeNull();
   expect(readPackageJson).toHaveBeenCalledWith('.', undefined);
 });

@@ -6,6 +6,7 @@ import { EXIT_CODES } from '../exit-codes/codes.mjs';
 
 /** Run defined consumer package checks and normalize every failure to code 17. */
 export async function runPackageChecks(cwd, write, options = {}) {
+  if (!options.readPackageJson && !options.checks) return 0;
   const checks = options.checks ?? [['audit', runAudit], ['pack', runPack], ['build', runBuild], ['typecheck', runTypecheck]];
   for (const [name, check] of checks) {
     let result;

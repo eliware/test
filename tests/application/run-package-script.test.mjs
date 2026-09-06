@@ -1,9 +1,9 @@
 import { runPackageScript } from '../../src/application/run-package-script.mjs';
 
-test('skips scripts that are not defined', async () => {
+test('fails when scripts are not defined', async () => {
   const result = await runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => ({ scripts: {} }) });
-  expect(result).toMatchObject({ code: 0, category: 'package-script', script: 'audit' });
-  await expect(runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => null })).resolves.toMatchObject({ code: 0, category: 'package-script' });
+  expect(result).toMatchObject({ code: 1, category: 'package-script', script: 'audit' });
+  await expect(runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => null })).resolves.toMatchObject({ code: 1, category: 'package-script' });
 });
 
 test('uses the workspace package metadata when no reader is injected', async () => {

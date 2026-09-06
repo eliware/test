@@ -84,7 +84,7 @@ The normal test command runs these stages in order:
 8. Select and validate coverage evidence
 9. Run Oxlint with warnings treated as failures
 10. Enforce monolith limits for the normal CLI run
-11. Run any defined `audit`, `pack`, `build`, and `typecheck` scripts
+11. Run the required `audit`, `pack`, `build`, and `typecheck` scripts
 
 Coverage failures are deferred until the post-test checks finish: lint,
 monolith, and defined package-script checks still run and report their own
@@ -123,7 +123,8 @@ prefer splitting hand-written modules. The defaults are 100 source lines and
 200 test lines; the boundary is inclusive, so 100 or 200 passes and the next
 line fails unless an exemption applies.
 
-Undefined package scripts are skipped.
+Missing or invalid `audit`, `pack`, `build`, or `typecheck` scripts fail the
+package-check stage. Each script must be a nonempty string in `package.json`.
 
 Use `--ignore-100x4` and `--ignore-monolith-limits` only for diagnostic or
 transitional work. They do not disable tests or lint. Use `--workers=N` to
