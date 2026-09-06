@@ -249,6 +249,13 @@ npm run check:docs          Validate package-relative Markdown links
 npm run pack                Validate the npm package file list
 ```
 
+The development commands above are the normal local workflow. Release
+validation additionally runs `npm audit`, `npm pack --dry-run`, and any
+defined `build` or `typecheck` scripts, then verifies package metadata,
+documentation links, packed contents, and the required Ubuntu and Windows CI
+checks. Run those release checks before publishing; they are broader than the
+standalone development commands listed above.
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
