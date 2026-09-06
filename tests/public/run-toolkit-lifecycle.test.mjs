@@ -42,3 +42,13 @@ test('returns the execution outcome before post-test validation', async () => {
 test('returns a post-test validation failure after execution succeeds', async () => {
   await expect(runToolkitLifecycle(lifecycleContext({ runLintCommand: async () => 13 }))).resolves.toBe(13);
 });
+
+test('passes the child process collaborator to post-test lint validation', async () => {
+  const runChildProcess = async () => ({ code: 0, output: '' });
+  let received;
+  await expect(runToolkitLifecycle(lifecycleContext({
+    runChildProcess,
+    runLintCommand: async (options) => { received = options.runChildProcess; return 0; },
+  }))).resolves.toBe(0);
+  expect(received).toBe(runChildProcess);
+});
