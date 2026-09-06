@@ -34,3 +34,11 @@ replace their `npm test` command with this CLI.
 The CLI is the supported boundary. Internal modules are implementation seams,
 and their documented result shapes exist for deterministic composition and
 testing rather than as a second consumer-facing command interface.
+
+## 4. Validation ownership
+
+`@eliware/test` owns deterministic repository, convention, and release-readiness
+checks. CodeScope provides read-only advisory semantic review, while TagIt
+invokes this validator and owns release state, CI, publication, and
+orchestration. Neither tool replaces or duplicates the deterministic checks
+owned here.

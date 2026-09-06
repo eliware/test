@@ -14,7 +14,8 @@ export function checkDocumentationIndexes({ docsFiles, docsReadme, specFiles, sp
     ...checkIndexedDocumentation({ docsFiles, docsReadme, specFiles, specsReadme, docsIndexes, specIndexes }),
     ...checkExampleDocumentation({ examples, examplesReadme, exampleReadmes, exampleFiles }),
   ];
-  if (!specFiles.some((file) => file !== 'README.md' && /requirements?|must|shall|normative/i.test(specTexts.get(file) ?? ''))) findings.push(finding('specs/: must contain a document stating specification requirements'));
-  if (!specFiles.some((file) => file !== 'README.md' && /out\s+of\s+scope/i.test(specTexts.get(file) ?? ''))) findings.push(finding('specs/: must contain a separate document with an explicit out-of-scope heading'));
+  const specificationDocuments = [...specTexts.entries()].filter(([file]) => !['README.md', 'index.md', 'SPEC.md'].includes(file.replace(/^specs[\\/]/i, '').toLowerCase()));
+  if (!specificationDocuments.some(([, text]) => /requirements?|must|shall|normative/i.test(text))) findings.push(finding('specs/: must contain a document stating specification requirements'));
+  if (!specificationDocuments.some(([, text]) => /out\s+of\s+scope/i.test(text))) findings.push(finding('specs/: must contain a separate document with an explicit out-of-scope heading'));
   return findings;
 }
