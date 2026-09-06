@@ -4,6 +4,6 @@ export function checkSpecifications(specFiles, overview) {
   const findings = [];
   if (!specFiles.length) findings.push(finding('specs/: contains no Markdown documents'));
   if (!overview) findings.push(finding('specs/: missing a clear overview/index document'));
-  if (overview && specFiles.some((file) => { const relative = file.replace(/^specs[\\/]/i, ''); return !['README.md', 'index.md'].includes(relative.toLowerCase()) && !hasDirectLink(overview, relative, 'specs'); })) findings.push(finding('specs/: overview does not link to every specification document'));
+  if (overview && specFiles.some((file) => { const relative = file.replace(/^specs[\\/]/i, ''); return !['README.md', 'index.md', 'SPEC.md'].includes(relative.toLowerCase()) && !hasDirectLink(overview, relative, 'specs'); })) findings.push(finding('specs/: overview does not link to every specification document'));
   return findings;
 }
