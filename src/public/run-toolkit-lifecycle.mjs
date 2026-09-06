@@ -15,7 +15,7 @@ export async function runToolkitLifecycle(context) {
   if (preflight.exitCode !== undefined) return preflight.exitCode;
   const { testResult, outcome: testOutcome } = await runToolkitExecution({ cwd, args: preflight.args, runInBand, disableInBand, preparation: preflight.preparation, runTest, runChildProcess, write });
   if (testOutcome !== null) return testOutcome;
-  const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions: { accessPath, findIstanbulIgnores, debugTiming: context.debugTiming, inspect }, enforceMonolithLimits, findMonolith, monolithOptions: { workers }, ignoreMonolithLimits, timing, packageChecks: { runChildProcess, readPackageJson } });
+  const validationOutcome = await runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions: { accessPath, findIstanbulIgnores, debugTiming: context.debugTiming, inspect }, enforceMonolithLimits, findMonolith, monolithOptions: { workers }, ignoreMonolithLimits, timing, packageChecks: { runChildProcess, readPackageJson, readFilePath } });
   if (validationOutcome !== null) return validationOutcome;
   reportToolkitSuccess(write, ignoreCoverage);
   return 0;

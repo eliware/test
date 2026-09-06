@@ -7,7 +7,9 @@ test('runs the lifecycle stages and reports success', async () => {
     runTest: async () => ({ code: 0, output: '' }), runLintCommand: async () => 0,
     runInBand: true, disableInBand: false, ignoreCoverage: false, ignoreMonolithLimits: true,
     enforceMonolithLimits: false, workers: 6, accessPath: async () => true, removePath: async () => {},
-    readFilePath: async () => JSON.stringify({ 'src/example.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, b: {}, f: {} } }), statPath: async () => ({ mtimeMs: 1 }),
+    readFilePath: async (path) => path.endsWith('package.json')
+      ? JSON.stringify({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } })
+      : JSON.stringify({ 'src/example.mjs': { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, b: {}, f: {} } }), statPath: async () => ({ mtimeMs: 1 }),
     findIstanbulIgnores: async () => [], findMonolith: async () => [], findSourceTestMapping: async () => ({ missingTests: [], orphanTests: [] }),
     inspectWorkspace: async () => true, runChildProcess: async () => ({ code: 0, output: '' }),
     timing: { step: () => {} }, startedAt: 0, debugTiming: false, validateConventions: async () => true,
@@ -25,6 +27,7 @@ const lifecycleContext = (overrides = {}) => ({
   findIstanbulIgnores: async () => [], findMonolith: async () => [], findSourceTestMapping: async () => ({ missingTests: [], orphanTests: [] }),
   inspectWorkspace: async () => true, runChildProcess: async () => ({ code: 0, output: '' }),
   timing: { step: () => {} }, startedAt: 0, debugTiming: false, validateConventions: async () => true,
+  readPackageJson: async () => ({ scripts: { audit: 'audit', pack: 'pack', build: 'build', typecheck: 'typecheck' } }),
   ...overrides,
 });
 
