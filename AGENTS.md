@@ -27,6 +27,12 @@ synchronized.
 
 ## Rules
 
+- Preserve single responsibility: every module must have one clear purpose.
+  New behavior that introduces a new responsibility belongs in a new focused
+  module; do not add unrelated responsibilities to an existing module. Keep
+  orchestrators limited to composition and keep subordinate modules limited to
+  their own business logic. New code means new modules when the responsibility
+  is new.
 - Use Node.js 26, native ESM, and `.mjs` source and test files.
 - Keep Jest and Oxlint as npm runtime dependencies.
 - Keep package metadata, lockfile, README, release notes, and packed files
