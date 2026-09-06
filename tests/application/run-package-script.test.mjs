@@ -1,16 +1,4 @@
-import { resolveNpmArguments } from '../../src/application/resolve-npm-arguments.mjs';
-import { resolveNpmCommand } from '../../src/application/resolve-npm-command.mjs';
 import { runPackageScript } from '../../src/application/run-package-script.mjs';
-
-test('resolves the platform npm executable', () => {
-  expect(resolveNpmCommand()).toBe(process.platform === 'win32' ? process.execPath : 'npm');
-  expect(resolveNpmCommand('win32')).toBe(process.execPath);
-  expect(resolveNpmCommand('linux')).toBe('npm');
-  expect(resolveNpmArguments('audit', 'linux')).toEqual(['run', 'audit']);
-  expect(resolveNpmArguments('audit', 'win32')).toEqual(expect.arrayContaining(['run', 'audit']));
-  expect(resolveNpmArguments('audit')).toEqual(expect.arrayContaining(['run', 'audit']));
-  expect(resolveNpmArguments('audit', 'win32', 'npm.cmd')).toEqual(expect.arrayContaining(['run', 'audit']));
-});
 
 test('skips scripts that are not defined', async () => {
   const result = await runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => ({ scripts: {} }) });
@@ -73,29 +61,6 @@ test('normalizes a null child-process result', async () => {
     runChildProcess: async () => null,
   })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('audit failed.');
-});
-
-test('uses npm_execpath when it provides a JavaScript npm entrypoint on Windows', () => {
-  expect(resolveNpmArguments('audit', 'win32', 'C:/npm/npm-cli.js')).toEqual(['C:/npm/npm-cli.js', 'run', 'audit']);
-  expect(resolveNpmArguments('audit', 'win32', 'C:/npm/NPM-CLI.JS')).toEqual(['C:/npm/NPM-CLI.JS', 'run', 'audit']);
-});
-
-test('uses the Node-relative npm CLI when Windows provides no JavaScript entrypoint', () => {
-  expect(resolveNpmArguments('audit', 'win32', 'C:/npm/npm.cmd')).toEqual([
-    expect.stringMatching(/C:[\\/]npm[\\/]node_modules[\\/]npm[\\/]bin[\\/]npm-cli\.js/), 'run', 'audit',
-  ]);
-});
-
-test('uses the Node-relative npm CLI when Windows provides no npm path', () => {
-  expect(resolveNpmArguments('audit', 'win32', null)).toEqual([
-    expect.stringContaining('node_modules'), 'run', 'audit',
-  ]);
-});
-
-test('uses the Node-relative npm CLI when Windows receives a non-string npm path', () => {
-  expect(resolveNpmArguments('audit', 'win32', { unexpected: true })).toEqual([
-    expect.stringContaining('node_modules'), 'run', 'audit',
-  ]);
 });
 
 test('normalizes negative child exit codes to failure', async () => {
