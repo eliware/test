@@ -76,6 +76,13 @@ test('uses default package-check options', async () => {
 })).resolves.toBeNull();
 });
 
+test('continues without a timing collaborator', async () => {
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: true,
+    runLintCommand: async () => 0, enforceMonolithLimits: false,
+  })).resolves.toBeNull();
+});
+
 test('normalizes malformed coverage-stage results to a coverage failure', async () => {
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: false,

@@ -11,3 +11,9 @@ test('includes unknown lines and validates the unknown count', () => {
   expect(percentageWithUnknowns(new Map(), 0)).toBe(100);
   for (const value of [-1, 1.5, Infinity]) expect(() => percentageWithUnknowns(new Map(), value)).toThrow('finite non-negative integer');
 });
+
+test('rejects malformed coverage counters', () => {
+  expect(() => percentage({ a: NaN })).toThrow('finite non-negative numbers');
+  expect(() => percentage({ a: -1 })).toThrow('finite non-negative numbers');
+  expect(() => percentage({ a: [1, Infinity] })).toThrow('finite non-negative numbers');
+});

@@ -8,7 +8,11 @@ export function percentage(counts) {
   let covered = 0;
   for (const count of Object.values(Object(counts))) {
     const values = Array.isArray(count) ? count : [count];
-    for (const value of values) { total += 1; if (isCoveredCount(value)) covered += 1; }
+    for (const value of values) {
+      if (!Number.isFinite(value) || value < 0) throw new TypeError('coverage counters must be finite non-negative numbers');
+      total += 1;
+      if (isCoveredCount(value)) covered += 1;
+    }
   }
   if (total === 0) return 100;
   return Math.round((covered / total) * 10000) / 100;

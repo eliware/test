@@ -6,13 +6,14 @@ import { selectFailureCode } from './post-test-stages/select-failure-code.mjs';
 
 /** Run coverage, lint, and optional monolith gates after successful tests. */
 export async function runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions = {}, enforceMonolithLimits, findMonolith, monolithOptions = {}, ignoreMonolithLimits, timing, packageChecks = {}, coverageValidator }) {
-  timing.step('Tests', 'coverage');
+  const step = typeof timing?.step === 'function' ? timing.step.bind(timing) : () => {};
+  step('Tests', 'coverage');
   const coverageResult = await runCoverageStage({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, coverageValidator });
-  timing.step('Coverage', 'lint');
+  step('Coverage', 'lint');
   const lintResult = await runLintStage({ cwd, write, runLintCommand, lintOptions });
-  timing.step('Lint', 'monolith validation');
+  step('Lint', 'monolith validation');
   const monolithResult = await runMonolithStage({ cwd, write, enforceMonolithLimits, findMonolith, monolithOptions, ignoreMonolithLimits });
-  timing.step('Monolith validation', 'package checks');
+  step('Monolith validation', 'package checks');
   const packageResult = await runPackageStage({ cwd, write, packageChecks });
   return selectFailureCode(coverageResult, lintResult, monolithResult, packageResult);
 }
