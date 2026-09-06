@@ -32,7 +32,9 @@ This document records behavior the v6 CLI intentionally does not provide.
   scope. Fixed candidate precedence is authoritative.
 - Compatibility with nonstandard Node.js/npm installation layouts or package
   managers outside the internal Eliware environment is out of scope. The
-  Windows npm fallback supports the documented conventional layout only.
+  Windows npm fallback supports the documented conventional layout only; the
+  CLI does not probe arbitrary npm locations or guarantee that an unsupported
+  layout can start package checks.
 - Convention exceptions are not a general disable switch. The validator does
   not provide per-check waivers for package metadata, README content,
   specifications, environment safety, examples, or badges; repositories must
@@ -70,6 +72,14 @@ This document records behavior the v6 CLI intentionally does not provide.
 - The boundary does not guarantee delivery through a caller-supplied output
   sink that throws. It guarantees the structured failure result; diagnostic
   emission through a faulty sink is best effort.
+- Numeric exit-code precedence is not a semantic ranking of failures. The CLI
+  intentionally returns the largest post-test code after all post-test
+  diagnostics have been emitted; callers needing detail must inspect those
+  diagnostics rather than treating the returned number as the sole cause.
+- The boundary does not provide a second diagnostic channel for invalid
+  internal calls. It returns the structured validation failure and its
+  available message; a caller that supplies no usable writer cannot require
+  additional output from that writer.
 - Invalid or throwing diagnostic writers are not required to receive a second
   fallback diagnostic channel. Boundary failures guarantee `code`, `category`,
   and applicable details, not successful output delivery.

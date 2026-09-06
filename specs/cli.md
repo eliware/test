@@ -38,6 +38,18 @@ This numeric precedence is intentional and normative. A coverage failure being
 retained while later checks run, then losing precedence to a higher-coded
 package, monolith, or lint failure, is expected behavior.
 
+The numeric code is the stable process-level summary, not a unique description
+of every failure. Callers that need the individual causes must consume the
+diagnostics emitted during the run; the wrapper does not infer a priority among
+the failed categories beyond returning the highest numeric code.
+
+The public boundary validates its options before starting the lifecycle. A
+missing options object, missing `cwd` or `runnerArguments`, non-string
+arguments, invalid collaborator types, or invalid boolean/worker values is an
+invalid internal call. The returned structured internal-error result includes
+the validation message when one is available, while the CLI reports the same
+message through its normal diagnostic channel.
+
 The public boundary preserves its structured internal-error result even when a
 caller-supplied diagnostic writer throws. Diagnostic emission is best effort;
 an output-sink failure must not escape as an uncaught boundary rejection.
@@ -90,6 +102,8 @@ On Windows, package scripts run through the current Node executable. When npm
 provides a JavaScript entrypoint through `npm_execpath`, that entrypoint is
 used; otherwise the conventional npm CLI beside Node is used. This avoids
 invoking `.cmd` files through a non-shell child process.
+The fallback is intentionally defined for the supported internal Node/npm
+installation layout; it is not a general package-manager discovery mechanism.
 
 When `--debug-timing` is enabled, Jest timing JSON is captured and parsed in
 memory. A malformed timing payload produces a bounded warning and does not
