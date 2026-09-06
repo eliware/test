@@ -36,3 +36,13 @@ test('uses the default termination collaborator', () => {
     cancel();
   } finally { jest.useRealTimers(); }
 });
+
+test('continues timeout escalation when termination throws', () => {
+  jest.useFakeTimers();
+  try {
+    const finish = jest.fn();
+    scheduleChildTimeout({}, { timeoutMs: 10, terminate: () => { throw new Error('terminate failed'); }, finish });
+    expect(() => jest.advanceTimersByTime(2010)).not.toThrow();
+    expect(finish).toHaveBeenCalled();
+  } finally { jest.useRealTimers(); }
+});

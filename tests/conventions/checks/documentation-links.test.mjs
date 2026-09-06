@@ -16,3 +16,7 @@ test('resolves nested index links in the repository file namespace', () => {
 test('normalizes repository file namespaces before matching links', () => {
   expect(hasFileLink('[Guide](./guide.md#intro)', './guide.md', new Set(['./docs/nested/guide.md']), './docs/nested')).toBe(true);
 });
+
+test('resolves nested source documents and Windows separators', () => {
+  expect(hasAnyFileLink(new Map([['docs\\nested\\README.md', '[Diagram](../diagram.svg)']]), 'docs/diagram.svg')).toBe(true);
+});

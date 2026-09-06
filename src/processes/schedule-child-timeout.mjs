@@ -2,14 +2,15 @@ import { terminateChildProcess } from './terminate-child-process.mjs';
 
 /** Schedule bounded child-process timeout escalation and return its cancellation. */
 export function scheduleChildTimeout(child, { timeoutMs, getErrorMessage = () => '', finish, terminate = terminateChildProcess }) {
+  const safeTerminate = (signal) => { try { terminate(child, signal); } catch {} };
   let forceKill;
   let finalKill;
   const timeout = setTimeout(() => {
-    terminate(child, 'SIGTERM');
+    safeTerminate('SIGTERM');
     forceKill = setTimeout(() => {
-      terminate(child, 'SIGKILL');
+      safeTerminate('SIGKILL');
       finalKill = setTimeout(() => {
-        terminate(child, 'SIGKILL');
+        safeTerminate('SIGKILL');
         finish(`Child process timed out after ${timeoutMs} ms\n${getErrorMessage()}Child process remained alive after SIGKILL\n`);
       }, 1000);
       finalKill.unref?.();
