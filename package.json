@@ -48,7 +48,6 @@
         "test": "node bin/eliware-test.mjs",
         "test:timing": "node bin/eliware-test.mjs --debug-timing",
         "lint": "node bin/eliware-test.mjs --lint",
-        "check:docs": "node docs/check-links.mjs",
         "pack": "npm pack --dry-run"
     },
     "jest": {

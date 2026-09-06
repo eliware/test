@@ -92,7 +92,7 @@ This document records behavior the v6 CLI intentionally does not provide.
   Windows npm fallback is validated only for the documented internal layout;
   other layouts may fail with the normal child-process startup diagnostic.
 - Release-review tooling may request evidence for commands such as
-  `check:docs`, audit, or pack; missing evidence is an incomplete validation
+  audit, or pack; missing evidence is an incomplete validation
   record, not proof that the command failed.
 - Project-specific smoke, integration, regression, deployment, and E2E tests,
   release orchestration, Git publishing, tagging, CI monitoring, and deployment

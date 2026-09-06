@@ -17,8 +17,7 @@ import { resolve } from 'node:path';
 test('validates the current repository convention set', async () => {
   const messages = [];
   await expect(validateConventions({ cwd: process.cwd(), write: (message) => messages.push(message), accessPath: async () => {}, readFilePath: undefined })).resolves.toBe(true);
-  expect(messages).toHaveLength(1);
-  expect(messages[0]).toContain('non-Markdown documentation file found');
+  expect(messages).toEqual([]);
 });
 
 test('reports missing structure deterministically', async () => {

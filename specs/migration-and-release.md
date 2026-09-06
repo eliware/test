@@ -33,7 +33,6 @@ The normal validation set is:
 node bin/eliware-test.mjs
 npm test
 npm run lint
-npm run check:docs
 ```
 
 The normal `npm test` command already runs lint after Jest and coverage.

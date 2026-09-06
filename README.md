@@ -243,7 +243,6 @@ help and project discussion, join the
 node bin/eliware-test.mjs  Repository-local executable validation
 npm test                    Consumer-style full validation
 npm run lint                Standalone lint/policy diagnostics
-npm run check:docs          Validate package-relative Markdown links
 npm run pack                Validate the npm package file list
 ```
 

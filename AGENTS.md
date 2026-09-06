@@ -13,7 +13,7 @@ The supported public interface is the CLI command `eliware-test`; internal
 structured toolkit results and source modules are implementation seams, not a
 consumer runtime API. The v6 package publishes the CLI, `src/`, `specs/`,
 README, specification overview, license, and release notes. Validate changes
-with `npm test`, `npm run lint`, `npm run check:docs`, `npm audit`, and
+with `npm test`, `npm run lint`, `npm audit`, and
 `npm run pack` as applicable;
 keep package metadata, lockfiles, documentation, examples, and release notes
 synchronized.
