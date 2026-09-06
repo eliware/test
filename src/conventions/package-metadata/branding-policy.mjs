@@ -1,7 +1,6 @@
 export function checkEliwareBranding(packageJson, finding) {
   if (packageJson.private === true || typeof packageJson.name !== 'string' || !packageJson.name.startsWith('@eliware/')) return [];
-  return /^eliware(?:\s|$)/i.test(packageJson.author ?? '')
+  return packageJson.author === 'Eliware <eliware@eliware.org>'
     ? []
-    : [finding('package.json: public @eliware packages must identify Eliware as the author')];
+    : [finding('package.json: public @eliware packages must use author Eliware <eliware@eliware.org>')];
 }
-

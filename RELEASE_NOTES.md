@@ -1,5 +1,14 @@
 # Release notes
 
+## Unreleased
+
+### Convention v6.1 enforcement
+
+- Require the exact Eliware public author identity and reject repository-local
+  `known_drifts.md` files.
+- Validate public package documentation metadata, attribution, and published
+  `docs/` and `specs/` trees before release review.
+
 ## 6.0.1
 
 ### Validation and package checks

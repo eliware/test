@@ -16,7 +16,7 @@
         "ci"
     ],
     "license": "MIT",
-    "author": "Eliware",
+    "author": "Eliware <eliware@eliware.org>",
     "repository": {
         "type": "git",
         "url": "https://github.com/eliware/test"
