@@ -23,3 +23,11 @@ test('rejects any candidate whose freshness cannot be verified', () => {
   expect(() => resolveCoverageEvidence([{ malformed: true, fresh: false, freshnessAvailable: false, name: 'coverage.json' }], text, () => {}, 1))
     .toThrow('freshness unavailable');
 });
+
+test('rejects unstable candidates before text fallback', () => {
+  expect(() => resolveCoverageEvidence([{ name: 'coverage.json', unstable: true }], '', () => {}, 1)).toThrow('Coverage freshness unavailable');
+});
+
+test('reports malformed evidence when there is no text fallback', () => {
+  expect(() => resolveCoverageEvidence([{ name: 'coverage.json', malformed: true, fresh: true }], '', () => {})).toThrow('Coverage report is malformed');
+});

@@ -3,9 +3,6 @@ import { runPackageScript } from '../../src/application/run-package-script.mjs';
 test('skips scripts that are not defined', async () => {
   const result = await runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => ({ scripts: {} }) });
   expect(result).toMatchObject({ code: 0, category: 'package-script', script: 'audit' });
-});
-
-test('skips scripts when package metadata is absent', async () => {
   await expect(runPackageScript('.', 'audit', () => {}, { readPackageJson: async () => null })).resolves.toMatchObject({ code: 0, category: 'package-script' });
 });
 
@@ -32,6 +29,10 @@ test('reports script output and normalizes an invalid exit code', async () => {
   });
   expect(result).toMatchObject({ code: 1, category: 'package-script', script: 'build', output: 'details', diagnostic: expect.stringContaining('build failed') });
   expect(messages.join('')).toContain('build failed');
+});
+
+test('normalizes negative child exit codes and uses a default writer', async () => {
+  await expect(runPackageScript('.', 'audit', undefined, { readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }), runChildProcess: async () => ({ code: -1, output: 'failed' }) })).resolves.toMatchObject({ code: 1, category: 'package-script' });
 });
 
 test('normalizes workspace paths in script failures', async () => {
@@ -61,20 +62,6 @@ test('normalizes a null child-process result', async () => {
     runChildProcess: async () => null,
   })).resolves.toMatchObject({ code: 1, category: 'package-script' });
   expect(messages.join('')).toContain('audit failed.');
-});
-
-test('normalizes negative child exit codes to failure', async () => {
-  await expect(runPackageScript('.', 'audit', () => {}, {
-    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
-    runChildProcess: async () => ({ code: -1, output: '' }),
-  })).resolves.toMatchObject({ code: 1, category: 'package-script' });
-});
-
-test('uses a safe default writer for failed scripts', async () => {
-  await expect(runPackageScript('.', 'audit', undefined, {
-    readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
-    runChildProcess: async () => ({ code: 1, output: 'failed' }),
-})).resolves.toMatchObject({ code: 1, category: 'package-script' });
 });
 
 test('normalizes child-process startup failures', async () => {

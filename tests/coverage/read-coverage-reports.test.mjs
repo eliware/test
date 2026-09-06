@@ -41,3 +41,12 @@ test('uses default readers and timestamps', async () => {
 test('uses all default readers when no collaborators are supplied', async () => {
   await expect(readCoverageReports(process.cwd())).resolves.toEqual(expect.any(Array));
 });
+
+test('records an unstable candidate and continues scanning', async () => {
+  let reads = 0;
+  await expect(readCoverageReports('C:/repo', async (path) => {
+    if (path.endsWith('coverage-final.json')) return reads++ === 0 ? JSON.stringify({}) : JSON.stringify({ changed: true });
+    throw Object.assign(new Error('missing'), { code: 'ENOENT' });
+  }, async () => ({ mtimeMs: 10 }), 1, ['coverage/coverage-final.json']))
+    .resolves.toEqual([{ name: 'coverage/coverage-final.json', unstable: true, freshnessAvailable: false }]);
+});

@@ -59,3 +59,7 @@ test('maps focused-path validation errors to the focused validation exit code', 
   }))).resolves.toEqual({ exitCode: 5 });
   expect(messages.join('')).toContain('Focused path validation failed');
 });
+
+test('returns the focused-path missing outcome before cleanup', async () => {
+  await expect(runToolkitPreflight(context({ runnerArguments: ['tests/missing.test.mjs'], accessPath: async () => false }))).resolves.toEqual({ exitCode: 6 });
+});

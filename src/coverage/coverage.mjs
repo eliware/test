@@ -3,15 +3,14 @@ import { uncoveredBranches } from './branches.mjs';
 import { uncoveredFunctions } from './functions.mjs';
 import { collectLineCoverage } from './lines.mjs';
 import { buildCoverageGap } from './build-gap.mjs';
-import { isUsableCoverageEntry } from './is-usable-coverage-entry.mjs';
+import { normalizeCoverageEntry, normalizeCoverageCount } from './normalize-coverage-entry.mjs';
 
 /** Parse raw Istanbul JSON into coverage gaps. */
 export function parseCoverageJson(json) {
   if (!json || typeof json !== 'object' || Array.isArray(json)) return [];
   const gaps = [];
   for (const [file, data] of Object.entries(json)) {
-    if (!isUsableCoverageEntry(data)) throw new Error(`Malformed coverage entry: ${file}`);
-    const normalized = { ...data, s: Object.fromEntries(Object.entries(data.s).map(([id, count]) => [id, normalizeCoverageCount(file, count)])), b: Object.fromEntries(Object.entries(data.b).map(([id, counts]) => [id, counts.map((count) => normalizeCoverageCount(file, count))])), f: Object.fromEntries(Object.entries(data.f).map(([id, count]) => [id, normalizeCoverageCount(file, count)])) };
+    const normalized = normalizeCoverageEntry(file, data);
     const statements = locationsForCounts(normalized.statementMap, normalized.s);
     const branches = Object.entries(normalized.b).flatMap(([id, counts]) => uncoveredBranches(normalized.branchMap, id, counts));
     const branchCounts = normalized.b;
@@ -25,8 +24,4 @@ export function parseCoverageJson(json) {
   return gaps;
 }
 
-export function normalizeCoverageCount(file, value) {
-  const count = Number(value);
-  if (!Number.isSafeInteger(count) || count < 0) throw new Error(`Malformed coverage entry: ${file}`);
-  return count;
-}
+export { normalizeCoverageCount } from './normalize-coverage-entry.mjs';

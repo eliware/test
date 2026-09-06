@@ -1,35 +1,18 @@
-import { validateCoverage } from '../public/stages/coverage.mjs';
-import { validateLint } from '../public/stages/lint.mjs';
-import { validateMonolith } from '../public/stages/monolith.mjs';
-import { runPackageChecks } from './run-package-checks.mjs';
-import { EXIT_CODES } from '../exit-codes/codes.mjs';
+import { runCoverageStage } from './post-test-stages/run-coverage-stage.mjs';
+import { runLintStage } from './post-test-stages/run-lint-stage.mjs';
+import { runMonolithStage } from './post-test-stages/run-monolith-stage.mjs';
+import { runPackageStage } from './post-test-stages/run-package-stage.mjs';
+import { selectFailureCode } from './post-test-stages/select-failure-code.mjs';
 
 /** Run coverage, lint, and optional monolith gates after successful tests. */
-export async function runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions = {}, enforceMonolithLimits, findMonolith, monolithOptions = {}, ignoreMonolithLimits, timing, packageChecks = {}, coverageValidator = validateCoverage }) {
+export async function runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions = {}, enforceMonolithLimits, findMonolith, monolithOptions = {}, ignoreMonolithLimits, timing, packageChecks = {}, coverageValidator }) {
   timing.step('Tests', 'coverage');
-  let coverageResult = 0;
-  if (!ignoreCoverage) {
-    try { coverageResult = await coverageValidator(cwd, testResult.output, write, readFilePath, statPath, startedAt); }
-    catch (error) {
-      write(`Coverage validation failed: ${error?.message ?? String(error)}\n`);
-      coverageResult = EXIT_CODES.COVERAGE_FAILURE;
-    }
-  }
-  const normalizedCoverageResult = Number.isInteger(coverageResult) ? coverageResult : EXIT_CODES.COVERAGE_FAILURE;
+  const coverageResult = await runCoverageStage({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, coverageValidator });
   timing.step('Coverage', 'lint');
-  let lint;
-  try { lint = await validateLint(() => runLintCommand({ ...lintOptions, cwd, write, reportSuccess: false })); }
-  catch (error) {
-    write(`Lint validation failed: ${error?.message ?? String(error)}\n`);
-    lint = EXIT_CODES.LINT_FAILURE;
-  }
+  const lintResult = await runLintStage({ cwd, write, runLintCommand, lintOptions });
   timing.step('Lint', 'monolith validation');
-  let monolithResult = 0;
-  if (enforceMonolithLimits) {
-    monolithResult = await validateMonolith({ cwd, findMonolith, monolithOptions, write, ignoreMonolithLimits });
-  }
+  const monolithResult = await runMonolithStage({ cwd, write, enforceMonolithLimits, findMonolith, monolithOptions, ignoreMonolithLimits });
   timing.step('Monolith validation', 'package checks');
-  const packageResult = await runPackageChecks(cwd, write, packageChecks);
-  const failures = [normalizedCoverageResult, lint, monolithResult, packageResult].filter((code) => Number.isInteger(code) && code > 0);
-  return failures.length ? Math.max(...failures) : null;
+  const packageResult = await runPackageStage({ cwd, write, packageChecks });
+  return selectFailureCode(coverageResult, lintResult, monolithResult, packageResult);
 }

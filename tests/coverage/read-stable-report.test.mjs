@@ -21,3 +21,41 @@ test('marks freshness unavailable when timestamps are missing', async () => {
   await expect(readStableReport('coverage.json', async () => 'contents', async () => ({}), 100))
     .resolves.toMatchObject({ fresh: false, freshnessAvailable: false });
 });
+
+test('rethrows non-missing initial stat failures', async () => {
+  const failure = Object.assign(new Error('denied'), { code: 'EACCES' });
+  await expect(readStableReport('coverage.json', async () => '{}', async () => { throw failure; }, 1)).rejects.toBe(failure);
+});
+
+test('rethrows non-missing failures during stable reads', async () => {
+  const failure = Object.assign(new Error('denied'), { code: 'EACCES' });
+  let calls = 0;
+  await expect(readStableReport('coverage.json', async () => '{}', async () => {
+    calls += 1;
+    if (calls === 1) return { mtimeMs: 2 };
+    throw failure;
+  }, 1)).rejects.toBe(failure);
+});
+
+test('rejects a replacement with a different file identity', async () => {
+  let stats = 0;
+  await expect(readStableReport('coverage.json', async () => '{}', async () => {
+    stats += 1;
+    return { mtimeMs: 2, dev: 1, ino: stats === 2 ? 2 : 1 };
+  }, 1)).resolves.toBeNull();
+});
+
+test('accepts a new report when no pre-run file existed', async () => {
+  const missing = Object.assign(new Error('missing'), { code: 'ENOENT' });
+  let stats = 0;
+  await expect(readStableReport('coverage.json', async () => '{}', async () => {
+    stats += 1;
+    if (stats === 1) throw missing;
+    return { mtimeMs: 2 };
+  }, 1)).resolves.toMatchObject({ fresh: true, freshnessAvailable: true });
+});
+
+test('rejects a report whose stable timestamp changes', async () => {
+  let stats = 0;
+  await expect(readStableReport('coverage.json', async () => '{}', async () => ({ mtimeMs: ++stats }), 1)).resolves.toBeNull();
+});

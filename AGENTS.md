@@ -33,6 +33,14 @@ synchronized.
   orchestrators limited to composition and keep subordinate modules limited to
   their own business logic. New code means new modules when the responsibility
   is new.
+- Place each test in the lowest-level test file that corresponds to the module
+  it exercises. Keep implementation tests with their direct module pair, and
+  keep orchestration tests limited to composition and stage-order behavior; do
+  not duplicate lower-level cases in a higher-level orchestrator suite.
+- Passing the 100-line source or 200-line test monolith threshold does not
+  satisfy these design rules by itself. Those limits are warning signals for
+  possible responsibility or test-structure violations, not permission to keep
+  mixed responsibilities together or to place tests above their proper module.
 - Use Node.js 26, native ESM, and `.mjs` source and test files.
 - Keep Jest and Oxlint as npm runtime dependencies.
 - Keep package metadata, lockfile, README, release notes, and packed files

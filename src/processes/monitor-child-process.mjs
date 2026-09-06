@@ -1,3 +1,6 @@
+import { createTimingDecoder } from './decode-timing-output.mjs';
+import { scheduleChildTimeout } from './schedule-child-timeout.mjs';
+
 /** Capture a spawned child's output and settle on its error/close lifecycle. */
 export function monitorChildProcess(child, capture, { timeoutMs = 120000, captureTiming = false } = {}) {
   return new Promise((resolveResult) => {
@@ -7,19 +10,15 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
       return;
     }
     let settled = false;
-    let timeout;
-    let forceKill;
-    let finalKill;
+    let cancelTimeout = () => {};
     let processError = '';
     let timingOutput = '';
-    const timingDecoder = captureTiming ? new TextDecoder() : null;
+    const timingDecoder = createTimingDecoder(captureTiming);
     const finish = (code, errorMessage) => {
       if (settled) return;
       settled = true;
-      clearTimeout(timeout);
-      clearTimeout(forceKill);
-      clearTimeout(finalKill);
-      if (timingDecoder) timingOutput += timingDecoder.decode();
+      cancelTimeout();
+      if (timingDecoder) timingOutput += timingDecoder.flush();
       const output = capture.finish();
       const duplicate = errorMessage && output.includes(errorMessage.trim());
       resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}`, ...(captureTiming ? { timingOutput } : {}) });
@@ -27,7 +26,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
     try {
       child.stdout.on('data', (chunk) => {
         capture.capture('stdout')(chunk);
-        if (captureTiming) timingOutput += typeof chunk === 'string' ? chunk : timingDecoder.decode(chunk, { stream: true });
+        if (captureTiming) timingOutput += timingDecoder.decode(chunk);
       });
       child.stderr.on('data', capture.capture('stderr'));
       child.on('error', (error) => {
@@ -41,23 +40,6 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
       finish(1, `${error.message}\n`);
       return;
     }
-    const terminate = (signal) => {
-      try {
-        if (child.__eliwareProcessGroup === true && Number.isInteger(child.pid) && child.pid > 0) process.kill(-child.pid, signal);
-      } catch { /* fall back to the direct child */ }
-      try { child.kill?.(signal); } catch { /* continue escalation */ }
-    };
-    timeout = setTimeout(() => {
-      terminate('SIGTERM');
-      forceKill = setTimeout(() => {
-        terminate('SIGKILL');
-        finalKill = setTimeout(() => {
-          terminate('SIGKILL');
-          finish(1, `Child process timed out after ${timeoutMs} ms\n${processError}Child process remained alive after SIGKILL\n`);
-        }, 1000);
-        finalKill.unref?.();
-      }, 1000);
-      forceKill.unref?.();
-    }, timeoutMs);
+    cancelTimeout = scheduleChildTimeout(child, { timeoutMs, getErrorMessage: () => processError, finish: (message) => finish(1, message) });
   });
 }

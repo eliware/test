@@ -14,6 +14,22 @@ test('returns oversized source files', async () => {
   expect(violations[0]).toMatchObject({ kind: 'source', threshold: 100 });
 });
 
+test('reports oversized test files using the test threshold', async () => {
+  const root = resolve('repo');
+  const violations = await detectViolations(root, {
+    readDirectory: async (directory) => directory === root
+      ? [{ name: 'tests', isDirectory: () => true, isFile: () => false }]
+      : [{ name: 'large.test.mjs', isDirectory: () => false, isFile: () => true }],
+    readSource: async () => `${'test\n'.repeat(201)}`,
+  });
+  expect(violations).toEqual([expect.objectContaining({
+    file: 'tests/large.test.mjs',
+    kind: 'test',
+    lines: 201,
+    threshold: 200,
+  })]);
+});
+
 test('handles empty directories and non-file entries', async () => {
   await expect(detectViolations(resolve('repo'), {
     readDirectory: async () => [{ name: 'link', isDirectory: () => false, isFile: () => false }]

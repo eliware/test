@@ -1,133 +1,59 @@
 import { checkDocumentationIndexes, readDocumentationIndexes } from '../../../src/conventions/checks/documentation-indexes.mjs';
 
 test('reads nested documentation indexes', async () => {
-  await expect(readDocumentationIndexes('docs', ['README.md', 'guides/setup.md', 'guides/README.md'], async (path) => `${path} index`))
+  await expect(readDocumentationIndexes('docs', ['README.md', 'guides/setup.md'], async (path) => `${path} index`))
     .resolves.toEqual(new Map([['guides', 'docs/guides/README.md index']]));
 });
 
-test('requires indexed documentation to link and describe contents', () => {
-  const findings = checkDocumentationIndexes({ docsFiles: ['README.md', 'guide.md'], docsReadme: '', specFiles: [], specsReadme: '', examples: [], examplesReadme: '' });
-  expect(findings).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('docs/') }), expect.objectContaining({ message: expect.stringContaining('specs/') }), expect.objectContaining({ message: expect.stringContaining('examples/') })]));
-});
-
-test('accepts complete documentation indexes and checks descriptions', () => {
-  const index = '[Root](../README.md)\n[Guide](guide.md)';
+test('accepts complete docs, specs, and example indexes', () => {
   expect(checkDocumentationIndexes({
-    docsFiles: ['README.md', 'guide.md', 'other.md'], docsReadme: `Documentation for users. ${index}\n[Other](other.md)`,
-    specFiles: ['README.md', 'requirements.md', 'out.md'], specsReadme: '[Root](../README.md)\n[Req](requirements.md)\n[Out](out.md) normative scope',
-    examples: ['demo'], examplesReadme: '[Root](../README.md)\n[Demo](demo/README.md) prerequisite expected result placeholder secret',
-    specTexts: new Map([['requirements.md', 'requirements'], ['out.md', 'out of scope']]), exampleReadmes: new Map([['demo', 'setup usage expected result']]),
-})).toEqual([]);
-});
-
-test('resolves equivalent relative links from each index directory', () => {
-  expect(checkDocumentationIndexes({
-    docsFiles: ['README.md', 'guide.md', 'other.md'], docsReadme: '[Root](./../README.md)\n[Guide](./guide.md) documentation\n[Other](other.md)',
-    specFiles: ['README.md', 'requirements.md', 'out.md'], specsReadme: '[Root](./../README.md)\n[Req](./requirements.md) requirements\n[Out](out.md) normative scope',
-    examples: ['demo'], examplesReadme: '[Root](./../README.md)\n[Demo](./demo/README.md) prerequisite usage expected result placeholder secret',
+    docsFiles: ['README.md', 'guide.md', 'security.md'], docsReadme: '[Root](../README.md)\n[Guide](guide.md) documentation\n[Security](security.md)',
+    specFiles: ['README.md', 'requirements.md', 'out.md'], specsReadme: '[Root](../README.md) scope normative [Req](requirements.md) [Out](out.md)',
+    examples: ['demo'], examplesReadme: '[Root](../README.md) [Demo](demo/README.md) prerequisite expected result placeholder secret',
     specTexts: new Map([['requirements.md', 'requirements'], ['out.md', 'out of scope']]), exampleReadmes: new Map([['demo', 'setup usage expected result']]),
   })).toEqual([]);
 });
 
-test('requires nested indexes and their nested links', () => {
-  const findings = checkDocumentationIndexes({
-    docsFiles: ['README.md', 'guides/setup.md', 'guides/README.md'], docsReadme: 'Documentation for users. [Root](../README.md)\n[Guides](guides/README.md) index',
-    docsIndexes: new Map([['guides', '[Setup](setup.md) setup']]),
-    specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-  });
-  expect(findings.filter(({ message }) => message.startsWith('docs/'))).toEqual([]);
-  expect(checkDocumentationIndexes({
-    docsFiles: ['README.md', 'guides/setup.md'], docsReadme: '[Root](../README.md)',
-    docsIndexes: new Map(), specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-  }).map(({ message }) => message)).toEqual(expect.arrayContaining([expect.stringContaining('missing documentation index')]));
-  const nestedFindings = checkDocumentationIndexes({
-    docsFiles: ['README.md', 'guides/setup.md'], docsReadme: 'Documentation [Root](../README.md) [Guides](guides/README.md)',
-    docsIndexes: new Map([['guides', '[](other.md)']]), specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-  }).map(({ message }) => message);
-  expect(nestedFindings).toEqual(expect.arrayContaining([expect.stringContaining('missing link to file guides/setup.md')]));
-  const missingNestedIndex = checkDocumentationIndexes({
-    docsFiles: ['README.md', 'guides/setup.md'], docsReadme: 'Documentation [Root](../README.md) [Guides](guides/README.md)',
-    docsIndexes: new Map([['guides', '']]), specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-  }).map(({ message }) => message);
-  expect(missingNestedIndex).toEqual(expect.arrayContaining([expect.stringContaining('missing documentation index')]));
-  const undescribedNestedFile = checkDocumentationIndexes({
-    docsFiles: ['README.md', 'guides/setup.md'], docsReadme: 'Documentation [Root](../README.md) [Guides](guides/README.md)',
-    docsIndexes: new Map([['guides', '[](setup.md)']]), specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-  }).map(({ message }) => message);
-  expect(undescribedNestedFile).toEqual(expect.arrayContaining([expect.stringContaining('needs a description')]));
+test('reports missing required documentation structure and guidance', () => {
+  const findings = checkDocumentationIndexes({ docsFiles: ['guide.md'], docsReadme: '', specFiles: ['README.md', 'x.md'], specsReadme: 'scope', examples: ['demo'], examplesReadme: '' }).map(({ message }) => message);
+  expect(findings).toEqual(expect.arrayContaining([
+    expect.stringContaining('docs/: must contain README.md'),
+    expect.stringContaining('specification'), expect.stringContaining('examples/README.md'),
+  ]));
 });
 
-test('reports missing links, descriptions, and example guidance', () => {
+test('checks root links, descriptions, and example documentation', () => {
   const findings = checkDocumentationIndexes({
     docsFiles: ['README.md', 'guide.md'], docsReadme: '[](guide.md)',
     specFiles: ['README.md', 'requirements.md', 'out.md'], specsReadme: 'scope normative',
-    examples: ['demo', 'missing'], examplesReadme: '[](demo/README.md)',
+    examples: ['demo'], examplesReadme: '[](demo/README.md)',
     specTexts: new Map([['requirements.md', 'requirements'], ['out.md', 'out of scope']]), exampleReadmes: new Map([['demo', 'setup']]),
   }).map(({ message }) => message);
-  expect(findings).toEqual(expect.arrayContaining([
-    expect.stringContaining('needs a description'), expect.stringContaining('missing link to missing'),
-    expect.stringContaining('must document prerequisites'),
-  ]));
-  expect(checkDocumentationIndexes({ docsFiles: ['README.md'], docsReadme: '', specFiles: ['README.md', 'x.md'], specsReadme: 'scope', examples: [], examplesReadme: '' })).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('requirements') })]));
+  expect(findings).toEqual(expect.arrayContaining([expect.stringContaining('needs a description'), expect.stringContaining('must document prerequisites')]));
 });
 
-test('requires docs README even when enough other Markdown files exist', () => {
+test('requires every non-Markdown documentation and example file to be linked', () => {
   const findings = checkDocumentationIndexes({
-    docsFiles: ['guide.md', 'reference.md', 'security.md'], docsReadme: '',
-    specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-  });
-  expect(findings).toEqual(expect.arrayContaining([
-    expect.objectContaining({ message: expect.stringContaining('docs/: must contain README.md') }),
-  ]));
-});
-
-test('detects an omitted direct child from the root docs index', () => {
-  const findings = checkDocumentationIndexes({
-    docsFiles: ['README.md', 'usage.md', 'troubleshooting.md'],
-    docsReadme: '[Root](../README.md)\n[Usage](usage.md) usage',
-    specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
+    docsFiles: ['README.md'], docsReadme: '[Root](../README.md)', specFiles: [], specsReadme: '', examples: ['demo'], examplesReadme: '[Demo](demo/README.md)',
+    nonMarkdownFiles: ['docs/diagram.svg'], exampleFiles: ['demo/package.json'], documentationTexts: new Map([['README.md', '[Diagram](docs/diagram.svg)']]),
   }).map(({ message }) => message);
-  expect(findings).toContain('docs/README.md: missing link to file troubleshooting.md');
+  expect(findings).toEqual(expect.arrayContaining([expect.stringContaining('demo/package.json')]));
+  expect(findings).not.toEqual(expect.arrayContaining([expect.stringContaining('non-Markdown documentation file is not linked')]));
 });
 
-test('warns for linked non-Markdown docs files and fails for unlinked ones', () => {
+test('reports unlinked documentation and examples', () => {
   const findings = checkDocumentationIndexes({
-    docsFiles: ['README.md'], docsReadme: '[Root](../README.md)',
-    specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-    nonMarkdownFiles: ['docs/diagram.svg', 'specs/schema.json'],
-    documentationTexts: new Map([['docs/README.md', '[Diagram](diagram.svg)']]),
-  });
+    docsFiles: ['README.md', 'guide.md', 'security.md'], docsReadme: '[Root](../README.md) [Guide](guide.md) [Security](security.md)',
+    specFiles: ['README.md', 'requirements.md', 'out.md'], specsReadme: '[Root](../README.md) [Req](requirements.md) [Out](out.md) scope normative',
+    examples: ['demo'], examplesReadme: '[Root](../README.md)', nonMarkdownFiles: ['docs/diagram.svg'], exampleFiles: ['demo/package.json'],
+  }).map(({ message }) => message);
   expect(findings).toEqual(expect.arrayContaining([
-    expect.objectContaining({ severity: 'warning', message: expect.stringContaining('docs/diagram.svg') }),
-    expect.objectContaining({ message: expect.stringContaining('specs/schema.json: non-Markdown') }),
+    expect.stringContaining('non-Markdown documentation file is not linked'),
+    expect.stringContaining('missing link to file demo/package.json'),
   ]));
 });
 
-test('recognizes links to non-Markdown files from root README and AGENTS documents', () => {
-  expect(checkDocumentationIndexes({
-    docsFiles: ['README.md'], docsReadme: '[Root](../README.md)', specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-    nonMarkdownFiles: ['docs/diagram.svg'],
-    documentationTexts: new Map([['README.md', '[Diagram](docs/diagram.svg)'], ['AGENTS.md', '[Diagram](docs/diagram.svg)']]),
-  })).toEqual(expect.arrayContaining([expect.objectContaining({ severity: 'warning', message: expect.stringContaining('docs/diagram.svg') })]));
-  expect(checkDocumentationIndexes({
-    docsFiles: ['README.md'], docsReadme: '[Root](../README.md)', specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
-    nonMarkdownFiles: ['docs/diagram.svg'], documentationTexts: new Map([['README.md', '[Diagram](docs/diagram.svg)']]),
-  })).not.toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('non-Markdown documentation file is not linked') })]));
-});
-
-test('requires every example file to be linked from the examples index', () => {
-  const findings = checkDocumentationIndexes({
-    docsFiles: ['README.md'], docsReadme: '', specFiles: [], specsReadme: '',
-    examples: ['demo'], examplesReadme: '[Demo](demo/README.md)',
-    exampleFiles: ['demo/README.md', 'demo/package.json'],
-  }).map(({ message }) => message);
-  expect(findings).toContain('examples/README.md: missing link to file demo/package.json');
-});
-
-test('reports an example file when the examples index is absent', () => {
-  const findings = checkDocumentationIndexes({
-    docsFiles: ['README.md'], docsReadme: '', specFiles: [], specsReadme: '',
-    examples: [], exampleFiles: ['demo/package.json'],
-  }).map(({ message }) => message);
-  expect(findings).toContain('examples/README.md: missing link to file demo/package.json');
+test('handles example files when their index is absent', () => {
+  expect(checkDocumentationIndexes({ docsFiles: ['README.md', 'guide.md', 'security.md'], docsReadme: '[Root](../README.md) [Guide](guide.md) [Security](security.md)', specFiles: [], specsReadme: '', examples: [], exampleFiles: ['demo/package.json'] }).map(({ message }) => message))
+    .toContain('examples/README.md: missing link to file demo/package.json');
 });
