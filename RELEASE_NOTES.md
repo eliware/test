@@ -1,5 +1,20 @@
 # Release notes
 
+## 6.0.1
+
+### Validation and package checks
+
+- Made consumer `audit`, `build`, and `typecheck` scripts optional; defined
+  scripts must remain valid and pass.
+- Forwarded injected process collaborators through post-test lint validation
+  and normalized package-stage failures to the documented exit code.
+- Required every README to include a `Configuration` section.
+
+### Documentation and tests
+
+- Aligned the CLI specification with optional package checks and strengthened
+  regression coverage for convention and validation failure paths.
+
 ## 6.0.0
 
 ### Validation and coverage
