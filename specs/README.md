@@ -16,6 +16,7 @@ lists behavior this package does not promise.
   trust boundaries
 - [`migration-and-release.md`](migration-and-release.md) — migration and release
   requirements
+- [`requirements.md`](requirements.md) — repository-level requirements
 - [`out-of-scope.md`](out-of-scope.md) — explicit exclusions
 - [`scope-and-contract.md`](scope-and-contract.md) — package scope and contract
 
