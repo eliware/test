@@ -12,6 +12,15 @@ test('accepts complete documentation indexes and checks descriptions', () => {
     specFiles: ['README.md', 'requirements.md', 'out.md'], specsReadme: '[Root](../README.md)\n[Req](requirements.md)\n[Out](out.md) normative scope',
     examples: ['demo'], examplesReadme: '[Root](../README.md)\n[Demo](demo/README.md) prerequisite expected result placeholder secret',
     specTexts: new Map([['requirements.md', 'requirements'], ['out.md', 'out of scope']]), exampleReadmes: new Map([['demo', 'setup usage expected result']]),
+})).toEqual([]);
+});
+
+test('resolves equivalent relative links from each index directory', () => {
+  expect(checkDocumentationIndexes({
+    docsFiles: ['README.md', 'guide.md', 'other.md'], docsReadme: '[Root](./../README.md)\n[Guide](./guide.md) documentation\n[Other](other.md)',
+    specFiles: ['README.md', 'requirements.md', 'out.md'], specsReadme: '[Root](./../README.md)\n[Req](./requirements.md) requirements\n[Out](out.md) normative scope',
+    examples: ['demo'], examplesReadme: '[Root](./../README.md)\n[Demo](./demo/README.md) prerequisite usage expected result placeholder secret',
+    specTexts: new Map([['requirements.md', 'requirements'], ['out.md', 'out of scope']]), exampleReadmes: new Map([['demo', 'setup usage expected result']]),
   })).toEqual([]);
 });
 

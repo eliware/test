@@ -73,16 +73,18 @@ eliware-test --debug-timing     Show pipeline and in-memory Jest timing
 
 The normal test command runs these stages in order:
 
-1. Workspace policy and focused-argument validation
-2. Deterministic repository-convention validation
-3. Coverage cleanup
-4. Source/test mapping
-5. Jest with coverage and a 100% statements/branches/functions/lines gate over
+1. Scan for disallowed Istanbul-ignore directives
+2. Check workspace setup and warn, without failing, when `.gitignore` is absent
+3. Validate deterministic repository conventions
+4. Validate wrapper-managed and focused-path arguments
+5. Remove stale coverage candidates
+6. Validate source/test architecture mapping
+7. Run Jest with coverage and a 100% statements/branches/functions/lines gate over
    the producer-selected coverage set; focused mirrored runs may narrow it
-6. Coverage evidence validation
-7. Oxlint with warnings treated as failures
-8. Monolith-size enforcement
-9. Any defined `audit`, `pack`, `build`, and `typecheck` scripts
+8. Select and validate coverage evidence
+9. Run Oxlint with warnings treated as failures
+10. Enforce monolith limits for the normal CLI run
+11. Run any defined `audit`, `pack`, `build`, and `typecheck` scripts
 
 Coverage failures are deferred until the post-test checks finish: lint,
 monolith, and defined package-script checks still run and report their own
