@@ -26,6 +26,10 @@ JSON coverage counters must be finite, non-negative safe integers within
 JavaScript's `Number.MAX_SAFE_INTEGER` range. Counters outside that range are
 not accepted as authoritative evidence because converting them to JavaScript
 numbers could change their exact value and misclassify the 100×4 result.
+After this validation, the parser may normalize accepted numeric strings with
+`Number()` for arithmetic. This conversion is not a second acceptance path:
+unvalidated numeric objects, `NaN`, fractional values, negative values, and
+unsafe integers remain invalid coverage evidence.
 Such a candidate is treated as structurally unusable and follows the normal
 fallback and fail-closed rules below.
 

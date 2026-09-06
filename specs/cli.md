@@ -81,7 +81,10 @@ after the existing test, coverage, lint, and monolith checks; any nonzero exit
 code fails the CLI with exit code 17. The package-check set is limited to
 `audit`, `pack`, `build`, and `typecheck`; it must never invoke the consumer's
 `test` script, so the normal `npm test` command cannot recurse through the
-package-check pipeline.
+package-check pipeline. The lower-level package-script executor is an internal
+test seam and may return the child process's raw code; the package-check
+orchestrator is the policy boundary that normalizes every defined-script
+failure to exit code 17.
 
 On Windows, package scripts run through the current Node executable. When npm
 provides a JavaScript entrypoint through `npm_execpath`, that entrypoint is

@@ -51,6 +51,12 @@ This document records behavior the v6 CLI intentionally does not provide.
 - Inferring values for undocumented Jest options, coordinating concurrent
   worktree runs, validating unsupported package-manager layouts, and treating
   internal toolkit defaults as consumer configuration are out of scope.
+- Internal helper return shapes are not additional consumer API contracts. In
+  particular, the package-script executor may expose a raw child exit code;
+  only the package-check orchestrator's normalized exit code 17 is supported.
+- Eliminating every reread of convention-checked file contents is not a
+  correctness requirement. Collection and validation may use separate reads as
+  long as diagnostics remain deterministic and accurate.
 - The boundary does not guarantee delivery through a caller-supplied output
   sink that throws. It guarantees the structured failure result; diagnostic
   emission through a faulty sink is best effort.

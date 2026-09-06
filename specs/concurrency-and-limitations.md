@@ -25,6 +25,11 @@ The CLI adapter explicitly enables monolith enforcement for normal runs. The
 toolkit's lower-level defaults are internal composition and test seams, not an
 alternate consumer configuration contract.
 
+Convention collection caches directory traversal but may reread file contents
+when individual checks consume them. This is deterministic and correct; reuse
+of a complete in-memory content snapshot is an optional implementation
+optimization, not a consumer-visible contract.
+
 - Istanbul policy discovery is complete; directory enumeration is deterministic
   and source inspection uses at most six concurrent readers.
 - The CLI centralizes sequencing and uses injected filesystem/process seams.
