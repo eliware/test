@@ -7,7 +7,14 @@ import { EXIT_CODES } from '../exit-codes/codes.mjs';
 /** Run coverage, lint, and optional monolith gates after successful tests. */
 export async function runPostTestValidation({ cwd, testResult, write, readFilePath, statPath, startedAt, ignoreCoverage, runLintCommand, lintOptions = {}, enforceMonolithLimits, findMonolith, monolithOptions = {}, ignoreMonolithLimits, timing, packageChecks = {}, coverageValidator = validateCoverage }) {
   timing.step('Tests', 'coverage');
-  const coverageResult = ignoreCoverage ? 0 : await coverageValidator(cwd, testResult.output, write, readFilePath, statPath, startedAt);
+  let coverageResult = 0;
+  if (!ignoreCoverage) {
+    try { coverageResult = await coverageValidator(cwd, testResult.output, write, readFilePath, statPath, startedAt); }
+    catch (error) {
+      write(`Coverage validation failed: ${error?.message ?? String(error)}\n`);
+      coverageResult = EXIT_CODES.COVERAGE_FAILURE;
+    }
+  }
   const normalizedCoverageResult = Number.isInteger(coverageResult) ? coverageResult : EXIT_CODES.COVERAGE_FAILURE;
   timing.step('Coverage', 'lint');
   const lint = await validateLint(() => runLintCommand({ ...lintOptions, cwd, write, reportSuccess: false }));

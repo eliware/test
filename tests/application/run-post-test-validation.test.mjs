@@ -35,6 +35,16 @@ test('continues through monolith and package checks after lint failure', async (
   })).resolves.toBe(13);
   expect(findMonolith).toHaveBeenCalled();
   expect(runChildProcess).toHaveBeenCalled();
+
+  const primitiveMessages = [];
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: (message) => primitiveMessages.push(message),
+    coverageValidator: async () => { throw 'coverage primitive failed'; },
+    runLintCommand: async () => 0, enforceMonolithLimits: false,
+    packageChecks: { runChildProcess: async () => ({ code: 0, output: '' }) },
+    timing: { step: () => {} },
+  })).resolves.toBe(10);
+  expect(primitiveMessages).toContain('Coverage validation failed: coverage primitive failed\n');
 });
 
 test('fails after existing validation when a package check fails', async () => {
@@ -61,6 +71,24 @@ test('normalizes malformed coverage-stage results to a coverage failure', async 
     enforceMonolithLimits: false, packageChecks: { runChildProcess: async () => ({ code: 0, output: '' }) },
     timing: { step: () => {} },
   })).resolves.toBe(10);
+});
+
+test('normalizes rejected coverage validation and continues later checks', async () => {
+  const lint = jest.fn(async () => 0);
+  const findMonolith = jest.fn(async () => []);
+  const runChildProcess = jest.fn(async () => ({ code: 0, output: '' }));
+  const messages = [];
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message),
+    coverageValidator: async () => { throw new Error('coverage collaborator failed'); },
+    runLintCommand: lint, enforceMonolithLimits: true, findMonolith,
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess },
+    timing: { step: () => {} },
+  })).resolves.toBe(10);
+  expect(messages).toContain('Coverage validation failed: coverage collaborator failed\n');
+  expect(lint).toHaveBeenCalled();
+  expect(findMonolith).toHaveBeenCalled();
+  expect(runChildProcess).toHaveBeenCalled();
 });
 
 test('passes the package reader through to package checks', async () => {
