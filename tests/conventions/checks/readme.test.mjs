@@ -27,3 +27,8 @@ test('requires navigable indexes for linked directories', () => {
 test('supports default README options', () => {
   expect(checkReadme('# Demo')).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('requirements') })]));
 });
+
+test('always requires a configuration section', () => {
+  const readme = '# Demo\n\n## Requirements\n## Installation\n## Usage\n## Validation\n## Security\n## Support\n## License';
+  expect(checkReadme(readme, new Set()).map(({ message }) => message)).toContain('README.md: missing configuration section');
+});

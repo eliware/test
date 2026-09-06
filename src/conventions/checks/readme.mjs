@@ -12,7 +12,6 @@ export function checkReadme(readme, existingPaths, packageFiles = [], packageJso
   for (const [name, aliases] of Object.entries(HEADING_ALIASES)) {
     const present = aliases.some((alias) => headings.some((heading) => heading === alias || heading.startsWith(`${alias} `)));
     if (name === 'purpose' && introductoryText) continue;
-    if (name === 'configuration' && !/eliwareTest|--workers|configuration/i.test(readme)) continue;
     if (!present) findings.push(finding('readme', `README.md: missing ${name} section`));
   }
   for (const match of readme.matchAll(LINK_PATTERN)) {
