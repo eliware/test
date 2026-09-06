@@ -5,8 +5,10 @@ const CATEGORIES = Object.freeze({
   12: 'lint-startup', 13: 'lint-failure', 14: 'internal', 15: 'monolith-limit',
   16: 'architecture-mapping', 17: 'package-script-failure', 18: 'convention-validation',
 });
+const VALID_CODES = new Set(Object.keys(CATEGORIES).map(Number));
 
 /** Convert a pipeline code into the structured result exposed by runToolkit. */
 export function toolkitResult(code, details = {}) {
-  return { code, category: CATEGORIES[code] ?? 'unknown', ...details };
+  const normalizedCode = VALID_CODES.has(code) ? code : 14;
+  return { code: normalizedCode, category: CATEGORIES[normalizedCode], ...details };
 }

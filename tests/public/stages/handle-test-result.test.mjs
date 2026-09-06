@@ -19,3 +19,9 @@ test('preserves an already normalized test failure code', () => {
 test('returns null for successful tests', () => {
   expect(handleTestResult({ code: 0, output: '' }, () => {})).toBeNull();
 });
+
+test('normalizes malformed direct results to test failure', () => {
+  const write = jest.fn();
+  expect(handleTestResult({}, write)).toBe(9);
+  expect(write).toHaveBeenCalled();
+});

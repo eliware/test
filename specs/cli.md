@@ -55,6 +55,10 @@ caller-supplied diagnostic writer throws. Diagnostic emission is best effort;
 an output-sink failure must not escape as an uncaught boundary rejection.
 
 The lifecycle and lint exports expose internal test seams, not consumer APIs.
+
+Structured toolkit results use the documented exit-code set. Unsupported codes
+are normalized to internal error (`14`, category `internal`) so callers never
+receive an unknown wrapper category.
 The lifecycle accepts its collaborators through the validated toolkit options;
 the standalone lint seam accepts its dependency object, including injected
 `runLint` and `runChildProcess` collaborators, and must use those collaborators
