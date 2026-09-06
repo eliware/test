@@ -1,4 +1,9 @@
 import { checkDocumentationIndexes, readDocumentationIndexes } from '../../../src/conventions/checks/documentation-indexes.mjs';
+import { checkSpecifications } from '../../../src/conventions/checks/specifications.mjs';
+
+test('requires specification filenames to be navigable links', () => {
+  expect(checkSpecifications(['README.md', 'requirements.md'], 'requirements.md requirements')).toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('does not link') })]));
+});
 
 test('reads nested documentation indexes', async () => {
   await expect(readDocumentationIndexes('docs', ['README.md', 'guides/setup.md'], async (path) => `${path} index`))
