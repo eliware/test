@@ -35,6 +35,10 @@ This document records behavior the v6 CLI intentionally does not provide.
   checks validate deterministic structure, links, headings, required markers,
   and safe placeholders; they do not decide whether prose is elegant,
   complete, or understandable to a human reviewer.
+- The convention validator does not require every documentation file to meet a
+  subjective completeness standard. A direct `docs/` child is covered by the
+  deterministic index, link, and marker checks only; judging end-user quality
+  or adding tests for that semantic judgment is out of scope.
 - Project-specific smoke, integration, regression, deployment, and E2E tests
   remain consumer responsibilities.
 - A supported runtime library API is out of scope; the public interface is
@@ -48,6 +52,10 @@ This document records behavior the v6 CLI intentionally does not provide.
 - Guaranteed removal of optional timing diagnostics after a failed Jest run is
   out of scope. Timing parsing and cleanup are best effort; cleanup warnings
   must not replace the primary test failure or become a release gate.
+- On filesystems without usable `dev` and `ino` identity fields, coverage
+  freshness cannot prove that an identical replacement file is the same or a
+  different artifact when contents and timestamps also match. Stable contents
+  and timestamps are the strongest supported signal in that environment.
 - Inferring values for undocumented Jest options, coordinating concurrent
   worktree runs, validating unsupported package-manager layouts, and treating
   internal toolkit defaults as consumer configuration are out of scope.
@@ -60,9 +68,15 @@ This document records behavior the v6 CLI intentionally does not provide.
 - The boundary does not guarantee delivery through a caller-supplied output
   sink that throws. It guarantees the structured failure result; diagnostic
   emission through a faulty sink is best effort.
+- Invalid or throwing diagnostic writers are not required to receive a second
+  fallback diagnostic channel. Boundary failures guarantee `code`, `category`,
+  and applicable details, not successful output delivery.
 - Bare value options whose next token begins with `-` are rejected as
   ambiguous; option-like values must use the documented equals form. Supporting
   arbitrary Jest option grammars is out of scope.
+- Testing unsupported Node/npm installation layouts is out of scope. The
+  Windows npm fallback is validated only for the documented internal layout;
+  other layouts may fail with the normal child-process startup diagnostic.
 - Release-review tooling may request evidence for commands such as
   `check:docs`, audit, or pack; missing evidence is an incomplete validation
   record, not proof that the command failed.
