@@ -14,6 +14,10 @@ test('normalizes malformed options without requiring a diagnostic writer', async
   await expect(runToolkitBoundary(null)).resolves.toMatchObject({ code: 14, category: 'internal' });
 });
 
+test('reports a missing writer explicitly for object options', async () => {
+  await expect(runToolkitBoundary({})).resolves.toMatchObject({ code: 14, message: 'runToolkitBoundary requires a write function' });
+});
+
 test('preserves the structured result when the diagnostic writer throws', async () => {
   await expect(runToolkitBoundary({ write: () => { throw new Error('output failed'); } }))
     .resolves.toMatchObject({ code: 14, category: 'internal' });

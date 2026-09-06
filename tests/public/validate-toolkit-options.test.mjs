@@ -4,6 +4,7 @@ test('validates the toolkit contract', () => {
   const options = { cwd: '.', runnerArguments: [], write: () => {} };
   expect(validateToolkitOptions(options)).toBe(options);
   expect(() => validateToolkitOptions({})).toThrow();
+  expect(() => validateToolkitOptions({ cwd: '.', runnerArguments: [] })).toThrow('requires a write function');
   expect(() => validateToolkitOptions({ ...options, runTest: true })).toThrow('option runTest');
   expect(() => validateToolkitOptions({ ...options, runnerArguments: [null] })).toThrow('requires cwd and runnerArguments');
   expect(() => validateToolkitOptions({ ...options, runChildProcess: true })).toThrow('option runChildProcess');

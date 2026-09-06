@@ -39,10 +39,10 @@ The normal `npm test` command already runs lint after Jest and coverage.
 Standalone lint is therefore redundant for ordinary validation and is needed
 only when diagnosing lint independently.
 
-CI must provide Ubuntu and Windows coverage. Lint warnings block publication,
-and release validation confirms required platform checks, package metadata, and
-self-test results before publication. No tag, publish, push, or deployment is
-implied by this specification.
+CI provides Ubuntu and Windows coverage in this repository's workflow. Lint
+warnings block publication, and release validation confirms the configured
+platform checks, package metadata, and self-test results before publication. No
+tag, publish, push, or deployment is implied by this specification.
 
 Windows package-script execution uses the documented conventional Node/npm
 installation layout. Release evidence identifies commands that were actually

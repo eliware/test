@@ -16,7 +16,11 @@ export function checkPackageConsistency(packageJson, { readme = '', licenseText 
       for (const [label, text] of [['README.md', readme], ['LICENSE', licenseText]]) {
         const attributionLines = text.split(/\r?\n/).filter((line) => /©|copyright\s*\(c\)|copyright\s+(?:19|20)\d{2}|\bauthor\b/i.test(line));
         if (attributionLines.length && !attributionLines.every((line) => line.toLowerCase().includes('eliware'))) findings.push(finding(`${label}: attribution must identify Eliware`));
-        if (attributionLines.some((line) => /(?:19|20)\d{2}/.test(line) && !line.includes(String(new Date().getFullYear())))) findings.push(finding(`${label}: attribution year must match the current release year`));
+        const currentYear = new Date().getFullYear();
+        if (attributionLines.some((line) => {
+          const years = [...line.matchAll(/(?:19|20)\d{2}/g)].map(([year]) => Number(year));
+          return years.length > 0 && !years.some((year, index) => year === currentYear || (index > 0 && years[index - 1] <= currentYear && currentYear <= year));
+        })) findings.push(finding(`${label}: attribution year must match the current release year`));
       }
     }
   }

@@ -19,4 +19,20 @@ test('requires the README description and matching attribution', () => {
     'LICENSE: attribution must identify Eliware',
   ]));
 });
+
+test('accepts attribution ranges containing the current year', () => {
+  const year = new Date().getFullYear();
+  expect(findings({ name: '@eliware/log', author: 'Eliware', files: ['docs', 'specs'] }, {
+    readme: `Copyright 2024–${year} Eliware`, licenseText: `Copyright (c) 2024–${year} Eliware`,
+  })).not.toContain('README.md: attribution year must match the current release year');
+  expect(findings({ name: '@eliware/log', author: 'Eliware', files: ['docs', 'specs'] }, {
+    readme: `Copyright 2024–${year + 2} Eliware`, licenseText: `Copyright (c) 2024–${year + 2} Eliware`,
+  })).not.toContain('README.md: attribution year must match the current release year');
+});
+
+test('accepts attribution without a year when identity is canonical', () => {
+  expect(findings({ name: '@eliware/log', author: 'Eliware', files: ['docs', 'specs'] }, {
+    readme: 'Author: Eliware', licenseText: 'Copyright (c) Eliware',
+  })).not.toContain('README.md: attribution year must match the current release year');
+});
 test('validates package file and bin consistency independently', () => { const result = checkPackageConsistency({ name: 'demo', version: '1.0.0', license: 'MIT', files: ['missing'], bin: './missing.mjs' }); expect(result.map(({ message }) => message)).toEqual(expect.arrayContaining([expect.stringContaining('bin.default'), expect.stringContaining('files entry')])); });

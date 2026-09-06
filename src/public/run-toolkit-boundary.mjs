@@ -12,6 +12,7 @@ function errorMessage(error) {
 /** Validate the public call and normalize unexpected lifecycle failures. */
 export async function runToolkitBoundary(options) {
   const write = typeof options?.write === 'function' ? options.write : () => {};
+  if (options && typeof options === 'object' && typeof options.write !== 'function') return toolkitResult(EXIT_CODES.INTERNAL, { message: 'runToolkitBoundary requires a write function' });
   try {
     validateToolkitOptions(options);
     return toolkitResult(await runToolkitLifecycle(createToolkitContext(options)));
