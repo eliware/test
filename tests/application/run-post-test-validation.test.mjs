@@ -56,6 +56,18 @@ test('fails after existing validation when a package check fails', async () => {
   })).resolves.toBe(17);
 });
 
+test('returns the highest post-test failure code after every stage runs', async () => {
+  const findMonolith = jest.fn(async () => [{ file: 'src/large.mjs', lines: 101, kind: 'source' }]);
+  const runChildProcess = jest.fn(async () => ({ code: 0, output: '' }));
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: () => {}, coverageValidator: async () => 10,
+    runLintCommand: async () => 13, enforceMonolithLimits: true, findMonolith,
+    packageChecks: { runChildProcess }, timing: { step: () => {} },
+  })).resolves.toBe(15);
+  expect(findMonolith).toHaveBeenCalled();
+  expect(runChildProcess).toHaveBeenCalled();
+});
+
 test('uses default package-check options', async () => {
   await expect(runPostTestValidation({
     cwd: '.', testResult: { output: '' }, write: () => {}, ignoreCoverage: true,

@@ -30,8 +30,6 @@ export async function runPostTestValidation({ cwd, testResult, write, readFilePa
   }
   timing.step('Monolith validation', 'package checks');
   const packageResult = await runPackageChecks(cwd, write, packageChecks);
-  if (packageResult !== 0) return packageResult;
-  if (monolithResult !== 0) return monolithResult;
-  if (lint !== 0) return lint;
-  return normalizedCoverageResult || null;
+  const failures = [normalizedCoverageResult, lint, monolithResult, packageResult].filter((code) => Number.isInteger(code) && code > 0);
+  return failures.length ? Math.max(...failures) : null;
 }

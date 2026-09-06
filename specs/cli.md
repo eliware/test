@@ -30,14 +30,13 @@ version. Version output comes from
 The continuation after a coverage failure is intentional: coverage evidence
 is reported as failed, but the remaining deterministic checks still run so one
 invocation exposes all actionable diagnostics. If multiple post-test checks
-fail, the first failing stage in this order supplies the final code: package
-scripts, monolith validation, lint, then coverage. Coverage therefore remains
-deferred, but it is not allowed to replace a later failure.
+fail, all post-test stages still run and the highest numeric failure code
+supplies the final result. Coverage therefore remains deferred while every
+actionable diagnostic is collected.
 
-This precedence is intentional and normative. A coverage failure being
-retained while later checks run, then losing precedence to a later package,
-monolith, or lint failure, is not a correctness inconsistency and must not be
-reported as one when the implementation and this order agree.
+This numeric precedence is intentional and normative. A coverage failure being
+retained while later checks run, then losing precedence to a higher-coded
+package, monolith, or lint failure, is expected behavior.
 
 The public boundary preserves its structured internal-error result even when a
 caller-supplied diagnostic writer throws. Diagnostic emission is best effort;
