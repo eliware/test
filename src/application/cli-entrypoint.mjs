@@ -22,8 +22,8 @@ export async function runCli(argumentsList, options = {}) {
     return EXIT_CODES.INVALID_ARGUMENT;
   }
   for (const warning of parsed.warnings ?? []) writeError(`Warning: ${warning}\n`);
-  if (parsed.version) { write(`${metadata.version}\n`); return 0; }
-  if (parsed.help) { write(HELP_TEXT); return 0; }
+  if (parsed.version) { write(`${metadata.version}\n`); return parsed.warnings?.length ? EXIT_CODES.INVALID_ARGUMENT : 0; }
+  if (parsed.help) { write(HELP_TEXT); return parsed.warnings?.length ? EXIT_CODES.INVALID_ARGUMENT : 0; }
   try {
     const common = { cwd, write };
     return parsed.lint

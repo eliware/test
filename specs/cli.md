@@ -21,10 +21,10 @@ architecture drift. After Jest, coverage failure is deferred while lint,
 monolith, and package-check diagnostics are reported; the highest numeric
 post-test failure code is returned. `--lint` runs only workspace policy,
 setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
-`--version`/`-v` are terminal modes and take precedence over managed-option
-validation when combined with other arguments. If invalid options accompany a
-terminal mode, the CLI emits a warning and still prints the requested help or
-version. Version output comes from
+`--version`/`-v` are terminal modes and still print their requested output when
+combined with other arguments. If invalid options accompany a terminal mode,
+the CLI emits a warning and returns the invalid-argument exit code. Version
+output comes from
 `package.json`.
 
 The continuation after a coverage failure is intentional: coverage evidence

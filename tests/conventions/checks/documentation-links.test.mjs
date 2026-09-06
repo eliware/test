@@ -12,3 +12,7 @@ test('reports no match when a file is not linked', () => {
 test('resolves nested index links in the repository file namespace', () => {
   expect(hasFileLink('[Guide](guide.md)', 'guide.md', new Set(['docs/nested/guide.md']), 'docs/nested')).toBe(true);
 });
+
+test('normalizes repository file namespaces before matching links', () => {
+  expect(hasFileLink('[Guide](./guide.md#intro)', './guide.md', new Set(['./docs/nested/guide.md']), './docs/nested')).toBe(true);
+});

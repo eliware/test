@@ -25,3 +25,11 @@ test('preserves interleaved stream arrival order', () => {
   capture.capture('stdout')('three');
   expect(capture.finish()).toBe('onetwothree');
 });
+
+test('finalizes output idempotently', () => {
+  const capture = createOutputCapture();
+  capture.capture('stdout')('once');
+  const first = capture.finish(' error');
+  capture.capture('stdout')('late');
+  expect(capture.finish(' different')).toBe(first);
+});

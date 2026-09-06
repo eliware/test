@@ -3,6 +3,7 @@ import { appendBounded, boundOutput } from './truncate-output.mjs';
 /** Capture both child-process streams while enforcing the output bound. */
 export function createOutputCapture() {
   let output = '';
+  let finalized;
   const stdoutDecoder = new TextDecoder();
   const stderrDecoder = new TextDecoder();
 
@@ -13,9 +14,11 @@ export function createOutputCapture() {
   };
 
   const finish = (errorMessage = '') => {
+    if (finalized !== undefined) return finalized;
     output = appendBounded(output, stdoutDecoder.decode());
     output = appendBounded(output, stderrDecoder.decode());
-    return boundOutput(`${output}${errorMessage}`);
+    finalized = boundOutput(`${output}${errorMessage}`);
+    return finalized;
   };
 
   return { capture, finish };

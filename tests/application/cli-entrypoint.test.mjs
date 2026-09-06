@@ -12,9 +12,17 @@ test('handles version and help modes', async () => {
 test('warns about invalid options while still showing help', async () => {
   const errors = [];
   const output = [];
-  await expect(runCli(['--help', '--coverage'], { write: (value) => output.push(value), writeError: (value) => errors.push(value) })).resolves.toBe(0);
+  await expect(runCli(['--help', '--coverage'], { write: (value) => output.push(value), writeError: (value) => errors.push(value) })).resolves.toBe(4);
   expect(errors.join('')).toContain('Warning:');
   expect(output.join('')).toContain('Usage:');
+});
+
+test('returns invalid-argument for malformed version invocations', async () => {
+  const errors = [];
+  const output = [];
+  await expect(runCli(['--version', '--coverage'], { write: (value) => output.push(value), writeError: (value) => errors.push(value), packageMetadata: { version: '9.9.9' } })).resolves.toBe(4);
+  expect(output).toEqual(['9.9.9\n']);
+  expect(errors.join('')).toContain('Warning:');
 });
 
 test('forwards the monolith opt-out from CLI parsing to the toolkit', async () => {
