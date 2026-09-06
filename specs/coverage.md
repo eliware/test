@@ -42,9 +42,10 @@ unusable; it is not treated as a valid functionless file.
 
 Each run writes Jest coverage to an isolated temporary directory. After Jest
 finishes, the runner validates that directory, removes the consumer's existing
-`coverage/` directory, and moves the completed directory into its place. The
-consumer's coverage artifacts are overwritten by the latest run. Previous
-coverage is not backed up or restored. Promotion failures return the dedicated
+`coverage/` directory, and moves the completed directory into its place as the
+single promotion operation. The consumer's coverage artifacts are overwritten
+by the latest run. The runner never creates, retains, restores, or cleans up a
+backup of previous coverage. Promotion failures return the dedicated
 coverage-cleanup outcome.
 
 Candidates are considered in order:

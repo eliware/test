@@ -16,8 +16,10 @@ boundaries are not consumer APIs; consumers should invoke the CLI.
 
 ## Supported operational constraints
 
-Coverage promotion atomically replaces the consumer's existing `coverage/`
-directory with the validated result. Previous results are not retained.
+Coverage promotion replaces the consumer's existing `coverage/` directory by
+moving the validated temporary directory into its place. Previous results are
+not retained: no backup, rollback directory, restoration attempt, or
+post-promotion cleanup is performed.
 
 The CLI adapter explicitly enables monolith enforcement for normal runs. The
 toolkit's lower-level defaults are internal composition and test seams, not an
