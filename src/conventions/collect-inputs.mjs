@@ -35,7 +35,7 @@ export async function collectConventionInputs({ cwd, accessPath, readFilePath = 
   const specFiles = [...files].filter((path) => path.startsWith('specs/') && path.endsWith('.md')).map((path) => path.slice('specs/'.length));
   const docsFiles = [...files].filter((path) => path.startsWith('docs/') && path.endsWith('.md')).map((path) => path.slice('docs/'.length));
   const nonMarkdownFiles = [...files].filter((path) => /^(?:docs|specs)\//.test(path) && !path.endsWith('.md'));
-  const exampleFiles = [...files].filter((path) => path.startsWith('examples/') && path !== 'examples/README.md').map((path) => path.slice('examples/'.length));
+  const exampleFiles = [...files].filter((path) => path.startsWith('examples/') && path !== 'examples/README.md' && !path.toLowerCase().endsWith('/readme.md')).map((path) => path.slice('examples/'.length));
   const overview = specFiles.find((file) => file.toLowerCase() === 'readme.md' || file.toLowerCase() === 'index.md') ?? (await read('SPEC.md') ? 'SPEC.md' : '');
   const specText = overview === 'SPEC.md' ? await read('SPEC.md') : await read(`specs/${overview}`);
   const examples = paths.has('examples') ? (await readDirectoryOnce(resolve(cwd, 'examples'), { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name) : [];

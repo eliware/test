@@ -106,6 +106,7 @@ test('terminates the process group on Darwin', async () => {
     process.kill = jest.fn();
     const child = new EventEmitter();
     child.pid = 1234;
+    child.__eliwareProcessGroup = true;
     child.stdout = new EventEmitter();
     child.stderr = new EventEmitter();
     child.kill = jest.fn();

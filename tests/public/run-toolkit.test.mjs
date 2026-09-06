@@ -148,6 +148,17 @@ test('runs lint after complete JSON coverage succeeds', async () => {
   expect(calls).toEqual(['lint']);
 });
 
+test('uses a fresh JSON coverage candidate as authoritative evidence', async () => {
+  const complete = { statementMap: { 0: { start: { line: 1 } } }, s: { 0: 1 }, b: {}, f: {} };
+  await expect(runToolkit({
+    cwd: process.cwd(), runnerArguments: [], write: () => {},
+    runTest: async () => ({ code: 0, output: 'not a coverage table' }),
+    readFilePath: async (path) => path.endsWith('coverage-final.json') ? JSON.stringify({ 'src/authoritative.mjs': complete }) : '',
+    statPath: async () => ({ mtimeMs: Date.now() + 1000 }),
+    runLintCommand: async () => 0,
+  })).resolves.toBe(0);
+});
+
 test('reports focused coverage gaps', async () => {
   const messages = [];
   await expect(runToolkit({
