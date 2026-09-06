@@ -12,3 +12,7 @@ test('uses the default worker count', async () => {
   await expect(measureMonolithFiles([{ relative: 'src/a.mjs', absolute: 'src/a.mjs' }], async () => 'one'))
     .resolves.toEqual([expect.objectContaining({ file: 'src/a.mjs', lines: 1 })]);
 });
+
+test.each([0, -1, 1.5, '2'])('rejects invalid worker count %p', async (workers) => {
+  await expect(measureMonolithFiles([], async () => '', workers)).rejects.toThrow('positive integer');
+});

@@ -3,6 +3,7 @@ import { measureMonolithFile } from './measure-file.mjs';
 export const DEFAULT_MEASUREMENT_WORKERS = 6;
 
 export async function measureMonolithFiles(candidates, readSource, workers = DEFAULT_MEASUREMENT_WORKERS) {
+  if (!Number.isInteger(workers) || workers <= 0) throw new TypeError('measureMonolithFiles workers must be a positive integer');
   const measured = Array.from({ length: candidates.length });
   if (candidates.length === 1) return [await measureMonolithFile(candidates[0], readSource)];
   let next = 0;
