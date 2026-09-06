@@ -21,8 +21,7 @@ arrives, the normal timeout and termination escalation applies.
 
 This error-without-close behavior is intentional. The monitor preserves the
 error and waits for the bounded timeout/escalation path so diagnostics emitted
-before a late close event are not discarded. Immediate settlement on every
-error event is not part of the process lifecycle contract.
+before a late close event are not discarded.
 
 When a child exceeds its timeout, the runner sends `SIGTERM`, waits briefly,
 sends `SIGKILL`, waits briefly again, and sends a final `SIGKILL`. It then
@@ -34,12 +33,12 @@ differently, but the runner does not promise platform-specific tree-kill
 semantics.
 On Linux and macOS, children are started in a process group and that group is
 best-effort terminated before the direct child is terminated. Windows and
-other platforms receive direct-child termination. Guaranteed cleanup of
-arbitrary descendant trees on every platform is out of scope.
-When `--debug-timing` is enabled, timing-report parsing and removal are
-best-effort diagnostics. A cleanup failure emits a bounded warning, may leave
-the timing artifact for the next run's preparation cleanup, and never replaces
-the primary Jest result or becomes the release failure category.
+other platforms receive direct-child termination. The runner reports when
+cleanup cannot fully settle the child process.
+When `--debug-timing` is enabled, timing-report parsing is an in-memory,
+best-effort diagnostic. A malformed timing payload emits a bounded warning and
+never replaces the primary Jest result or becomes the release failure
+category. No timing artifact is written to the workspace.
 Truncation is explicit, repeated failure lines are deduplicated, and absolute
 coverage paths are normalized relative to the workspace. stdout and stderr are
 decoded independently and then combined into one bounded
@@ -57,19 +56,14 @@ produces a warning with recommended entries but does not fail validation.
 
 The default child environment is inherited intentionally to preserve drop-in
 compatibility with direct `npm test` and Jest behavior. The package does not
-provide a sanitized or secret-redacting mode and does not create a new security
-boundary. Consumers must not run default mode against an untrusted workspace
-while secrets are present.
-An opt-in sanitized environment is deliberately out of scope: internal
-projects depend on complete environment inheritance, and the complexity of
-maintaining a second environment contract is not justified for this CLI.
-Secret redaction is best effort only. If Jest or another child process emits a
-secret from consumer code, the CLI preserves that diagnostic and passes it
-through; the consumer is responsible for scrubbing code, fixtures, and logs.
-Full inheritance is intentional and is not an accidental convenience: the
+create a new security boundary. Consumers must not run default mode against an
+untrusted workspace while secrets are present. Secret redaction is best effort
+only. If Jest or another child process emits a secret from consumer code, the
+CLI preserves that diagnostic and passes it through.
+Full inheritance is intentional:
 consumer's Jest, lint, and project configuration may depend on any environment
-variable supplied by the invoking npm process. The CLI therefore does not
-filter, redact, or selectively copy environment variables.
+variable supplied by the invoking npm process. The CLI passes those variables
+unchanged.
 
 Bundled Oxlint and npm invocations use Node's executable and supported
 package/runtime entrypoint contracts, preserving argument-array boundaries on

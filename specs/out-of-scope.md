@@ -2,6 +2,24 @@
 
 This document records behavior the v6 CLI intentionally does not provide.
 
+- Project-specific smoke, integration, regression, end-to-end, deployment,
+  and product workflows remain consumer responsibilities.
+- The CLI does not provide same-worktree concurrency coordination. Concurrent
+  runs, unrelated external manipulation of transient workspace paths, and
+  symbolic-link-based source/test trees are not supported validation models.
+- The CLI does not provide a separate Jest concurrency model, an abort-signal
+  API, or a supported runtime-library embedding API; the public interface is
+  the `eliware-test` command.
+- The CLI does not merge coverage candidates, select them by recency, infer
+  ambiguous focused mappings, or prove that fallback text originated from a
+  particular reporter.
+- Diagnostic path normalization supports the documented Windows and POSIX
+  path contracts. Arbitrary mixed-separator representations outside those
+  contracts are not a supported input model.
+- The convention validator checks deterministic structure, links, headings,
+  required markers, and safe placeholders. It does not judge subjective prose
+  quality, elegance, or whether an exception is substantively justified.
+
 - Sanitized or selectively inherited child environments are out of scope; the
   CLI intentionally passes through the invoking environment.
 - Comprehensive secret detection or redaction is out of scope. Consumers
@@ -19,9 +37,8 @@ This document records behavior the v6 CLI intentionally does not provide.
   not provide per-check waivers for package metadata, README content,
   specifications, environment safety, examples, or badges; repositories must
   satisfy those checks when the corresponding path exists.
-- Internal monolith measurement helpers are not standalone public APIs. The
-  supported pipeline validates `--workers=N` before invoking them; rejecting
-  malformed worker values supplied by direct helper callers is outside scope.
+- Internal monolith measurement helpers are not standalone consumer commands,
+  but their documented inputs and result shapes are validated test seams.
 - A stale but structurally usable coverage JSON report is not promoted as
   current evidence. The resolver may skip it and use valid current Jest text
   coverage instead; proving that those two artifacts are identical is outside
@@ -35,53 +52,36 @@ This document records behavior the v6 CLI intentionally does not provide.
   checks validate deterministic structure, links, headings, required markers,
   and safe placeholders; they do not decide whether prose is elegant,
   complete, or understandable to a human reviewer.
-- The convention validator does not require every documentation file to meet a
-  subjective completeness standard. A direct `docs/` child is covered by the
-  deterministic index, link, and marker checks only; judging end-user quality
-  or adding tests for that semantic judgment is out of scope.
-- Project-specific smoke, integration, regression, deployment, and E2E tests
-  remain consumer responsibilities.
 - A supported runtime library API is out of scope; the public interface is
   the `eliware-test` CLI.
 - Treating Istanbul metadata maps with unmatched counter keys as valid
   coverage, including non-empty function metadata with an empty function
   counter map, is out of scope. Such reports are structurally unusable.
-- Requiring immediate child-process settlement on an `error` event when no
-  `close` event has arrived is out of scope. The documented timeout and signal
-  escalation contract remains authoritative.
-- Guaranteed removal of optional timing diagnostics after a failed Jest run is
-  out of scope. Timing parsing and cleanup are best effort; cleanup warnings
-  must not replace the primary test failure or become a release gate.
+- Persisting timing diagnostics as workspace artifacts is out of scope. Timing
+  data is captured in memory for the current run only; malformed timing data
+  produces a warning and never replaces the primary test failure.
 - On filesystems without usable `dev` and `ino` identity fields, coverage
   freshness cannot prove that an identical replacement file is the same or a
   different artifact when contents and timestamps also match. Stable contents
   and timestamps are the strongest supported signal in that environment.
-- Inferring values for undocumented Jest options, coordinating concurrent
-  worktree runs, validating unsupported package-manager layouts, and treating
-  internal toolkit defaults as consumer configuration are out of scope.
-- Internal helper return shapes are not additional consumer API contracts. In
-  particular, the package-script executor may expose a raw child exit code;
-  only the package-check orchestrator's normalized exit code 17 is supported.
-- Eliminating every reread of convention-checked file contents is not a
-  correctness requirement. Collection and validation may use separate reads as
-  long as diagnostics remain deterministic and accurate.
+- Coordinating concurrent worktree runs, validating unsupported package-manager
+  layouts, and treating internal toolkit defaults as consumer configuration
+  are out of scope.
 - The boundary does not guarantee delivery through a caller-supplied output
   sink that throws. It guarantees the structured failure result; diagnostic
   emission through a faulty sink is best effort.
 - Invalid or throwing diagnostic writers are not required to receive a second
   fallback diagnostic channel. Boundary failures guarantee `code`, `category`,
   and applicable details, not successful output delivery.
-- Bare value options whose next token begins with `-` are rejected as
-  ambiguous; option-like values must use the documented equals form. Supporting
-  arbitrary Jest option grammars is out of scope.
+- The wrapper does not maintain a complete list of Jest options or infer their
+  validity. Options outside the wrapper's documented flags are forwarded to
+  Jest unchanged, which remains responsible for accepting or rejecting them.
 - Testing unsupported Node/npm installation layouts is out of scope. The
   Windows npm fallback is validated only for the documented internal layout;
   other layouts may fail with the normal child-process startup diagnostic.
 - Release-review tooling may request evidence for commands such as
   `check:docs`, audit, or pack; missing evidence is an incomplete validation
   record, not proof that the command failed.
-- Coverage does not have precedence over later post-test failures. The tool
-  intentionally runs package-script, monolith, and lint checks after coverage
-  evidence fails; those failures take precedence in that order, with coverage
-  returned only when the later checks pass. Treating this documented precedence
-  as a correctness defect is out of scope.
+- Project-specific smoke, integration, regression, deployment, and E2E tests,
+  release orchestration, Git publishing, tagging, CI monitoring, and deployment
+  remain outside this CLI's responsibility.

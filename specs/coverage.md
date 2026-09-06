@@ -71,10 +71,8 @@ it contains a structurally valid coverage table; otherwise validation fails
 closed.
 
 The internal evidence resolver receives report records produced by the report
-reader, including their `fresh` metadata. Direct calls that omit that metadata
-are incomplete internal test-seam inputs, not a supported consumer API; they
-are outside the coverage contract and are not required to be normalized into a
-fresh report.
+reader, including their `fresh` metadata. Internal callers provide the
+documented report shape before resolution.
 
 Malformed or missing counter maps invalidate the candidate report and cause
 validation to fail closed when no usable candidate or text fallback remains. A
@@ -94,9 +92,7 @@ timestamp lookup that fails for any other reason is an error and does not permit
 the candidate to be accepted. This behavior is intentional and accepted: the
 reader fails closed rather than treating an unverifiable stale artifact as
 fresh. When the filesystem does not provide `dev` and `ino` identity fields,
-freshness is necessarily based on stable contents and modification timestamps;
-the tool cannot prove replacement identity beyond those signals on such
-filesystems.
+freshness uses stable contents and modification timestamps.
 A stale but otherwise usable JSON report is never accepted as the current
 run's structured evidence. It may be skipped while the resolver evaluates the
 fixed candidate order. If Jest produced structurally valid current text
@@ -131,8 +127,9 @@ output remains concise.
 The source/test validator is stricter than the monolith-size exemption: every
 `src/**/*.mjs`, including a pure import/export barrel, must have exactly one
 mirrored `tests/**/*.test.mjs` file. This repository has no barrel-only source
-modules. Other source/test extensions are outside this architecture bijection;
-they may still be passed to Jest as focused paths when Jest supports them.
+modules. The canonical architecture bijection applies to supported `.mjs`
+source and test files; other supported focused-path extensions may still be
+passed to Jest when Jest supports them.
 Alternate pairs such as `tests/foo.spec.mjs` are not canonical pairs and are
 reported as orphan tests rather than merged with `tests/foo.test.mjs`.
 

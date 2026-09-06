@@ -63,7 +63,7 @@ Stable wrapper exit codes are:
 | ---: | --- | --- |
 | 2 | Workspace setup | Add or correct workspace configuration. |
 | 3 | Istanbul policy | Remove an invalid ignore directive. |
-| 4 | Invalid argument | Remove or correct the unsupported option. |
+| 4 | Invalid argument | Remove or correct the invalid option. |
 | 5–6 | Focused-path validation | Correct the focused path or its access. |
 | 7 | Coverage cleanup | Resolve coverage filesystem permissions or locks. |
 | 8–9 | Test startup/failure | Fix Jest startup or test failures. |
@@ -90,18 +90,12 @@ On Windows, package scripts run through the current Node executable. When npm
 provides a JavaScript entrypoint through `npm_execpath`, that entrypoint is
 used; otherwise the conventional npm CLI beside Node is used. This avoids
 invoking `.cmd` files through a non-shell child process.
-The supported environment is the internal Node.js/npm installation layout used
-by Eliware projects. Alternative package-manager layouts are not a supported
-compatibility target; the fallback is not required to locate npm in those
-environments.
 
-When `--debug-timing` is enabled, timing-report parsing and cleanup are
-best-effort diagnostics. A malformed or locked timing artifact produces a
-bounded warning and does not replace the underlying Jest result or block the
-remaining validation stages.
-Cleanup failures are reported as `Timing report cleanup unavailable: ...`;
-they are not silently ignored and do not change the underlying test exit
-category. Timing output is diagnostic state, not a release gate.
+When `--debug-timing` is enabled, Jest timing JSON is captured and parsed in
+memory. A malformed timing payload produces a bounded warning and does not
+replace the underlying Jest result or block the remaining validation stages.
+No timing artifact is written to the workspace; timing output is diagnostic
+state, not a release gate.
 
 ## 4. Implementation and test file-size limits
 
@@ -151,13 +145,9 @@ host is therefore intentionally treated as Windows syntax.
 - `--workers=N` overrides the default six monolith-scan measurement workers;
   `N` must be a positive integer and the option is not forwarded to Jest.
 - The monolith measurement helper receives this already validated value from
-  the pipeline. It is an internal implementation and test seam, not an
-  independent consumer API; direct calls that bypass option validation are
-  outside the contract and are not required to reject malformed worker values
-  themselves.
-- Focused-path extraction recognizes only the documented value-taking Jest
-  options. Unknown or undocumented options are not inferred to consume a
-  following token; consumers must use the supported CLI forms.
+  the pipeline and exposes its documented result shape to internal tests.
+- The wrapper validates only its own options. All other arguments are forwarded
+  to Jest unchanged; Jest remains responsible for their syntax and validity.
 - A standalone `--` separator is removed once before Jest invocation.
 - Shared Jest value-option metadata prevents option values becoming focused
   paths.

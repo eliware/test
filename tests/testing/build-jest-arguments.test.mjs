@@ -6,9 +6,9 @@ test('builds managed Jest arguments', () => {
 });
 
 test('supports diagnostic execution and timing output', () => {
-  expect(buildJestArguments({ runInBand: false, timingOutput: 'results.json' })).toEqual([
+  expect(buildJestArguments({ runInBand: false, timingOutput: true })).toEqual([
     '--coverage', '--detectOpenHandles', '--silent', '--coverageReporters=text',
-    '--coverageReporters=json', '--json', '--outputFile=results.json'
+    '--coverageReporters=json', '--json'
   ]);
   expect(buildJestArguments()).toEqual([
     '--coverage', '--runInBand', '--detectOpenHandles', '--silent',

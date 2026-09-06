@@ -1,5 +1,5 @@
 /** Capture a spawned child's output and settle on its error/close lifecycle. */
-export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {}) {
+export function monitorChildProcess(child, capture, { timeoutMs = 120000, captureTiming = false } = {}) {
   return new Promise((resolveResult) => {
     if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) { resolveResult({ code: 1, output: 'Invalid child process timeout\n' }); return; }
     if (!child || typeof child.on !== 'function' || !child.stdout || typeof child.stdout.on !== 'function' || !child.stderr || typeof child.stderr.on !== 'function') {
@@ -12,6 +12,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
     let forceKill;
     let finalKill;
     let processError = '';
+    let timingOutput = '';
     const finish = (code, errorMessage) => {
       if (settled) return;
       settled = true;
@@ -20,10 +21,13 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000 } = {})
       clearTimeout(finalKill);
       const output = capture.finish();
       const duplicate = errorMessage && output.includes(errorMessage.trim());
-      resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}` });
+      resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}`, ...(captureTiming ? { timingOutput } : {}) });
     };
     try {
-      child.stdout.on('data', capture.capture('stdout'));
+      child.stdout.on('data', (chunk) => {
+        capture.capture('stdout')(chunk);
+        if (captureTiming) timingOutput += typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
+      });
       child.stderr.on('data', capture.capture('stderr'));
       child.on('error', (error) => {
         if (!processError) processError = `${error.message}\n`;

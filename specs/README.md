@@ -9,7 +9,7 @@ lists behavior this package does not promise.
 
 - [`cli.md`](cli.md) — commands, lifecycle, arguments, and limits
 - [`concurrency-and-limitations.md`](concurrency-and-limitations.md) — workspace
-  concurrency and intentional limitations
+  concurrency and artifacts
 - [`conventions.md`](conventions.md) — deterministic repository conventions
 - [`coverage.md`](coverage.md) — coverage evidence and 100×4 enforcement
 - [`diagnostics-and-policy.md`](diagnostics-and-policy.md) — output and process

@@ -15,5 +15,5 @@ export async function runJest(argumentsList, options) {
   const buildCommand = options.buildJestCommand ?? buildJestCommand;
   const command = buildCommand(jestPath, argumentsList, options.runInBand !== false);
   const runProcess = options.runChildProcess ?? runChildProcess;
-  return runProcess(command.command, command.argumentsList, options);
+  return runProcess(command.command, command.argumentsList, { ...options, captureTiming: options.captureTiming ?? argumentsList.includes('--json') });
 }

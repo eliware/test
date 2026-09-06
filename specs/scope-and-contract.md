@@ -11,12 +11,9 @@ This document is part of the normative contract for the published CLI.
 
 - The package's implementation and canonical source/test architecture use
   native ESM and `.mjs` files; Node.js 26 or newer is required. Focused-path
-  validation also accepts the documented JavaScript and TypeScript extensions
-  under conventional test directories; those paths are outside the strict
-  source/test bijection.
-- The supported consumer set is Eliware's internal projects using npm and the
-  conventional `node_modules` installation layout. Compatibility with other
-  package managers or nonstandard installation layouts is not promised.
+  validation accepts the documented JavaScript and TypeScript extensions
+  under conventional test directories.
+- Consumers use npm and the conventional `node_modules` installation layout.
 - Jest and Oxlint are npm runtime dependencies and are resolved from the consumer
   workspace using their package contracts.
 - The package exposes the `eliware-test` executable.
@@ -25,13 +22,15 @@ This document is part of the normative contract for the published CLI.
 - Consumers use `eliware-test` for `test` and `eliware-test --lint` for `lint`.
 - Process execution uses Node child-process APIs and argument arrays, not Unix
   pipelines, shell quoting, `grep`, or platform-specific executable names.
-  The exported `runToolkit` and `runLint` functions exist to provide injectable
-  test seams; they are not supported consumer APIs.
+- Internal orchestration and helper functions have documented, injectable
+  result shapes for deterministic composition and testing; the CLI remains
+  the consumer boundary.
 
 ## 3. CLI boundary
 
 The supported consumer boundary is the `eliware-test` executable. Consumers
 replace their `npm test` command with this CLI.
 
-The CLI is the supported boundary. Internal module structure and orchestration
-are implementation details; consumers must not import internal functions.
+The CLI is the supported boundary. Internal modules are implementation seams,
+and their documented result shapes exist for deterministic composition and
+testing rather than as a second consumer-facing command interface.

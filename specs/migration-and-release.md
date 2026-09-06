@@ -1,4 +1,4 @@
-# Out-of-scope behavior, migration, fixtures, and release
+# Migration, fixtures, and release
 
 ## Fixtures, artifacts, migration, and release
 
@@ -47,38 +47,6 @@ and release validation confirms required platform checks, package metadata, and
 self-test results before publication. No tag, publish, push, or deployment is
 implied by this specification.
 
-Windows package-script execution supports the documented conventional Node/npm
-installation layout. Compatibility with arbitrary package managers or unusual
-installation layouts is not promised. Release evidence identifies commands
-that were actually run; an unreported command is not evidence of either
-success or failure.
-
-## Out-of-scope behavior
-
-The package does not replace project-specific smoke, integration, regression,
-end-to-end, deployment, or product workflows. It does not provide same-worktree
-concurrency coordination, arbitrary Jest option discovery, structured
-diagnostics, an abort-signal API, semantic coverage-candidate merging,
-coverage correctness beyond producer evidence, guessing for ambiguous focused
-mappings, or proof that fallback text came from a specific reporter.
-
-The package is not a library or supported embedding API. Direct implementation
-calls are internal composition and test seams only. Compatibility with
-arbitrary package managers, Plug'n'Play or virtual dependency layouts, and
-nonstandard installation structures is not promised. Same-worktree overlap is
-unsupported and its results are not guaranteed.
-
-Internal helper functions such as monolith filtering require the validated
-inputs supplied by the CLI pipeline; malformed direct helper calls are not a
-supported consumer scenario. Diagnostic path normalization supports the
-documented Windows and POSIX path contracts, including one-for-one separator
-normalization; behavior for arbitrary mixed-separator representations outside
-those contracts is not promised.
-
-Source/test architecture mapping intentionally skips symbolic links; supported
-internal projects use ordinary files and directories for the canonical `src/`
-and `tests/` trees. Timeout escalation uses the supported Node child-process
-termination contract; guaranteed descendant cleanup across arbitrary child
-trees and platforms is outside the release contract. Sanitized environment
-mode is also out of scope because full inheritance is required for the
-supported internal projects.
+Windows package-script execution uses the documented conventional Node/npm
+installation layout. Release evidence identifies commands that were actually
+run; an unreported command is not evidence of either success or failure.

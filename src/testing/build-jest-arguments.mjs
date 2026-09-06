@@ -12,7 +12,7 @@ export function buildJestArguments({ runnerArguments = [], runInBand = true, foc
     ...(typeof coverageDirectory === 'string' ? ['--coverageDirectory', coverageDirectory] : []),
     ...focusedCoverage,
     ...(focusedPathMode ? ['--runTestsByPath'] : []),
-    ...(typeof timingOutput === 'string' ? ['--json', `--outputFile=${timingOutput}`] : []),
+    ...(timingOutput ? ['--json'] : []),
     ...runnerArguments
   ];
   return executionArguments;

@@ -14,6 +14,17 @@ test('settles with captured output and exit code', async () => {
   child.emit('close', 0);
 });
 
+test('captures raw stdout for in-memory timing reports', async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const resultPromise = monitorChildProcess(child, createOutputCapture(), { captureTiming: true });
+  child.stdout.emit('data', 'prefix');
+  child.stdout.emit('data', Buffer.from('{"testResults":[]}'));
+  child.emit('close', 0);
+  await expect(resultPromise).resolves.toMatchObject({ code: 0, timingOutput: 'prefix{"testResults":[]}' });
+});
+
 test('normalizes process errors', async () => {
   const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
   const resultPromise = monitorChildProcess(child, createOutputCapture());
