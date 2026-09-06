@@ -144,3 +144,25 @@ test('passes the package reader through to package checks', async () => {
   })).resolves.toBeNull();
   expect(readPackageJson).toHaveBeenCalledWith('.', undefined);
 });
+
+test('normalizes package-stage exceptions to the package-script failure code', async () => {
+  const messages = [];
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message), ignoreCoverage: true,
+    runLintCommand: async () => 0, enforceMonolithLimits: false,
+    packageChecks: { get readPackageJson() { throw new Error('package collaborator failed'); } },
+    timing: { step: () => {} },
+  })).resolves.toBe(17);
+  expect(messages).toContain('Package validation failed: package collaborator failed\n');
+});
+
+test('normalizes primitive package-stage exceptions', async () => {
+  const messages = [];
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message), ignoreCoverage: true,
+    runLintCommand: async () => 0, enforceMonolithLimits: false,
+    packageChecks: { get readPackageJson() { throw null; } },
+    timing: { step: () => {} },
+  })).resolves.toBe(17);
+  expect(messages).toContain('Package validation failed: null\n');
+});

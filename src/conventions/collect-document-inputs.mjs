@@ -14,6 +14,8 @@ export async function collectDocumentInputs({ cwd, read, readDirectoryOnce, path
     exampleReadmes.set(example, await read(`examples/${example}/README.md`));
     examplePackages.set(example, await readConventionPackage(resolve(cwd, `examples/${example}`), read.readFile));
   }
-  const specTexts = new Map(await Promise.all(specFiles.map(async (file) => [file, await read(`specs/${file}`)])));
+  const specTextEntries = await Promise.all(specFiles.map(async (file) => [file, await read(`specs/${file}`)]));
+  if (overview === 'SPEC.md') specTextEntries.push(['SPEC.md', specText]);
+  const specTexts = new Map(specTextEntries);
   return { specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts };
 }
