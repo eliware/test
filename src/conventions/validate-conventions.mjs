@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { checkAgents } from './checks/agents.mjs';
 import { checkReadme } from './checks/readme.mjs';
 import { checkSpecifications } from './checks/specifications.mjs';
-import { checkDocumentationIndexes } from './checks/documentation-indexes.mjs';
+import { checkDocumentationIndexes, readDocumentationIndexes } from './checks/documentation-indexes.mjs';
 import { checkPublicBadges } from './package-badges.mjs';
 import { checkEnvironmentExample } from './environment.mjs';
 import { checkExamples } from './examples.mjs';
@@ -32,7 +32,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   findings.push(...checkPublicBadges(readme, packageData.name, packageData.repository));
   findings.push(...checkSpecifications(specFiles, specText));
   findings.push(...checkEnvironmentExample(await read('.env.example'), environmentSources.join('\n')));
-  findings.push(...checkDocumentationIndexes({ docsFiles, docsReadme: await read('docs/README.md'), specFiles, specsReadme: await read('specs/README.md'), examples, examplesReadme: await read('examples/README.md'), specTexts, exampleReadmes }));
+  findings.push(...checkDocumentationIndexes({ docsFiles, docsReadme: await read('docs/README.md'), specFiles, specsReadme: await read('specs/README.md'), examples, examplesReadme: await read('examples/README.md'), specTexts, exampleReadmes, docsIndexes: await readDocumentationIndexes('docs', docsFiles, read), specIndexes: await readDocumentationIndexes('specs', specFiles, read) }));
   findings.push(...checkExamples(examples, exampleReadmes, examplePackages));
   if (findings.length) write(formatConventionFindings(findings));
   return findings.length === 0;
