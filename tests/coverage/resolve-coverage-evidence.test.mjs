@@ -24,6 +24,13 @@ test('rejects any candidate whose freshness cannot be verified', () => {
     .toThrow('freshness unavailable');
 });
 
+test('does not bypass unavailable freshness with a later usable report', () => {
+  expect(() => resolveCoverageEvidence([
+    { name: 'coverage-final.json', freshnessAvailable: false },
+    { name: 'coverage.json', usable: true, fresh: true, json: {} },
+  ], text, () => {}, 1)).toThrow('freshness unavailable');
+});
+
 test('rejects unstable candidates before text fallback', () => {
   expect(() => resolveCoverageEvidence([{ name: 'coverage.json', unstable: true }], '', () => {}, 1)).toThrow('Coverage freshness unavailable');
 });

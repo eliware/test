@@ -5,6 +5,6 @@ export function buildCoverageGap(file, statements, branches, functions, statemen
   if (!statements.length && !branches.length && !functions.length && !lines.size && !lineGap) return null;
   return { file, statements, branches, functions, lines: [...lines].sort((a, b) => a - b), metrics: {
     statements: percentage(statementCounts), branches: percentage(branchCounts), functions: percentage(functionCounts),
-    lines: lineGap ? 0 : (lineCounts.size > 0 ? percentageWithUnknowns(lineCounts, unmappedLineCount) : 100)
+    lines: lineGap ? 0 : (lineCounts.size > 0 ? percentageWithUnknowns(lineCounts, unmappedLineCount) : (statements.length ? 0 : 100))
   } };
 }
