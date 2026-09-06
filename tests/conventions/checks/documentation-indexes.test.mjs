@@ -80,3 +80,12 @@ test('requires docs README even when enough other Markdown files exist', () => {
     expect.objectContaining({ message: expect.stringContaining('docs/: must contain README.md') }),
   ]));
 });
+
+test('detects an omitted direct child from the root docs index', () => {
+  const findings = checkDocumentationIndexes({
+    docsFiles: ['README.md', 'usage.md', 'troubleshooting.md'],
+    docsReadme: '[Root](../README.md)\n[Usage](usage.md) usage',
+    specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
+  }).map(({ message }) => message);
+  expect(findings).toContain('docs/README.md: missing link to file troubleshooting.md');
+});

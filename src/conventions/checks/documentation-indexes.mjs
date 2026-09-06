@@ -6,19 +6,22 @@ function resolveIndexLink(link, directory) { return posix.normalize(posix.join(d
 function hasDirectLink(source, target, directory) { return [...source.matchAll(LINK_PATTERN)].some(([, link]) => resolveIndexLink(link, directory) === resolveIndexLink(target, directory)); }
 function hasDescribedLink(source, target, directory) { return [...source.matchAll(LINK_PATTERN)].some(([full, link]) => resolveIndexLink(link, directory) === resolveIndexLink(target, directory) && full.slice(full.indexOf('[') + 1, full.indexOf(']')).trim()); }
 function hasFileLink(source, target, files, directory) { return [...source.matchAll(LINK_PATTERN)].some(([, link]) => resolveIndexLink(link, directory) === resolveIndexLink(target, directory) && files.has(resolveIndexLink(link, directory))); }
+function checkDirectFiles(label, files, index, indexDirectory, allFiles, findings) {
+  const directFiles = files.filter((file) => (posix.dirname(file) === '.' ? '' : posix.dirname(file)) === indexDirectory && posix.basename(file).toLowerCase() !== 'readme.md');
+  for (const file of directFiles) {
+    const target = indexDirectory ? file.slice(indexDirectory.length + 1) : file;
+    if (!hasFileLink(index, target, allFiles, `${label}/${indexDirectory}`)) findings.push(finding(`${label}/${indexDirectory ? `${indexDirectory}/` : ''}README.md: missing link to file ${file}`));
+    else if (!hasDescribedLink(index, target, `${label}/${indexDirectory}`)) findings.push(finding(`${label}/${indexDirectory ? `${indexDirectory}/` : ''}README.md: link to ${file} needs a description`));
+  }
+}
 function checkTree(label, files, indexes, findings) {
   const allFiles = new Set(files.map((file) => `${label}/${file}`));
   for (const [directory, index] of indexes) {
     const indexDirectory = directory ? `${label}/${directory}` : label;
-    const directFiles = files.filter((file) => (posix.dirname(file) === '.' ? '' : posix.dirname(file)) === directory && posix.basename(file).toLowerCase() !== 'readme.md');
     const prefix = directory ? `${directory}/` : '';
     const childDirectories = [...new Set(files.filter((file) => file.startsWith(prefix)).map((file) => file.slice(prefix.length).split('/')[0]).filter((part) => part && files.some((file) => file.startsWith(`${prefix}${part}/`))))];
     if (!index) { findings.push(finding(`${label}/${directory || 'README.md'}: missing documentation index`)); continue; }
-    for (const file of directFiles) {
-      const target = directory ? file.slice(directory.length + 1) : file;
-      if (!hasFileLink(index, target, allFiles, indexDirectory)) findings.push(finding(`${label}/${directory ? `${directory}/` : ''}README.md: missing link to file ${file}`));
-      else if (!hasDescribedLink(index, target, indexDirectory)) findings.push(finding(`${label}/${directory ? `${directory}/` : ''}README.md: link to ${file} needs a description`));
-    }
+    checkDirectFiles(label, files, index, directory, allFiles, findings);
     for (const child of childDirectories) {
       const target = `${child}/README.md`;
       if (!hasDirectLink(index, target, indexDirectory)) findings.push(finding(`${label}/${directory || 'README.md'}: missing link to nested index ${target}`));
