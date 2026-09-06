@@ -29,17 +29,18 @@ test('normalizes process errors', async () => {
   const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
   const resultPromise = monitorChildProcess(child, createOutputCapture());
   child.emit('error', new Error('missing executable'));
+  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'missing executable\n' });
   child.stdout.emit('data', 'late diagnostic\n');
   child.emit('close', null);
-  await expect(resultPromise).resolves.toEqual({ code: 1, output: 'late diagnostic\nmissing executable\n' });
 });
 
 test('preserves the first process error when multiple errors occur', async () => { const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); const resultPromise = monitorChildProcess(child, createOutputCapture()); child.emit('error', new Error('first failure')); child.emit('error', new Error('second failure')); child.emit('close', null); await expect(resultPromise).resolves.toMatchObject({ output: 'first failure\n' }); });
 
-test('preserves a startup error when an error has no close', async () => {
-  jest.useFakeTimers();
-  try { const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); const result = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 }); child.emit('error', new Error('spawn failed')); jest.advanceTimersByTime(2010); await expect(result).resolves.toMatchObject({ code: 1, output: expect.stringContaining('spawn failed') }); }
-  finally { jest.useRealTimers(); }
+test('settles a startup error immediately without waiting for close', async () => {
+  const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
+  const result = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10000 });
+  child.emit('error', new Error('spawn failed'));
+  await expect(result).resolves.toEqual({ code: 1, output: 'spawn failed\n' });
 });
 
 test('normalizes an invalid close code without a process error', async () => {
@@ -117,6 +118,19 @@ test('clears pending escalation when the child closes after timeout', async () =
     jest.advanceTimersByTime(2000);
     await expect(result).resolves.toMatchObject({ code: 0 });
     expect(child.kill).toHaveBeenCalledTimes(1);
+  } finally { jest.useRealTimers(); }
+});
+
+test('does not start timeout escalation after the child already closed', async () => {
+  jest.useFakeTimers();
+  try {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter(); child.stderr = new EventEmitter(); child.kill = jest.fn();
+    const result = monitorChildProcess(child, createOutputCapture(), { timeoutMs: 10 });
+    child.emit('close', 0);
+    jest.advanceTimersByTime(10);
+    await expect(result).resolves.toMatchObject({ code: 0 });
+    expect(child.kill).not.toHaveBeenCalled();
   } finally { jest.useRealTimers(); }
 });
 

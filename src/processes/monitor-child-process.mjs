@@ -7,7 +7,6 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
       return;
     }
     let settled = false;
-    let closed = false;
     let timeout;
     let forceKill;
     let finalKill;
@@ -31,9 +30,9 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
       child.stderr.on('data', capture.capture('stderr'));
       child.on('error', (error) => {
         if (!processError) processError = `${error.message}\n`;
+        finish(1, processError);
       });
       child.on('close', (code) => {
-        closed = true;
         finish(processError ? 1 : (Number.isInteger(code) && code >= 0 ? code : 1), processError);
       });
     } catch (error) {
@@ -48,7 +47,6 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
     };
     timeout = setTimeout(() => {
       terminate('SIGTERM');
-      if (closed) return;
       forceKill = setTimeout(() => {
         terminate('SIGKILL');
         finalKill = setTimeout(() => {
