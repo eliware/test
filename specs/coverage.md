@@ -44,9 +44,8 @@ Each run writes Jest coverage to an isolated temporary directory. After Jest
 finishes, the runner validates that directory, removes the consumer's existing
 `coverage/` directory, and moves the completed directory into its place. The
 consumer's coverage artifacts are overwritten by the latest run. Previous
-coverage is not backed up or restored. A stale transient rollback directory
-from an interrupted promotion is removed before the next attempt. Promotion
-failures return the dedicated coverage-cleanup outcome.
+coverage is not backed up or restored. Promotion failures return the dedicated
+coverage-cleanup outcome.
 
 Candidates are considered in order:
 
@@ -105,9 +104,9 @@ coverage decision fails closed, even if a lower-priority candidate is otherwise
 usable. This is intentional: an unstable artifact indicates that test output
 is still changing, and a later candidate must not mask that uncertainty.
 Coverage validation is reported during post-test validation but does not stop
-lint, monolith enforcement, or configured package checks. If those stages pass,
-the coverage exit code is returned after all diagnostics are available. A later
-stage failure takes precedence because it is the final actionable failure.
+lint, monolith enforcement, or configured package checks. All post-test stages
+run, and the highest numeric failure code is returned after all diagnostics are
+available.
 Valid reports with incomplete location metadata are rendered as explicit
 unknown uncovered diagnostics. An Istanbul `l` map is authoritative for line
 coverage. Statement, branch, function, and line metrics remain independent.

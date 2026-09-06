@@ -86,9 +86,9 @@ The normal test command runs these stages in order:
 
 Coverage failures are deferred until the post-test checks finish: lint,
 monolith, and defined package-script checks still run and report their own
-results. If several post-test checks fail, package scripts take precedence,
-then monolith validation, lint, and coverage. Pre-test failures still stop
-before Jest.
+results. If several post-test checks fail, the highest numeric failure code is
+returned after all post-test diagnostics are reported. Pre-test failures still
+stop before Jest.
 
 Focused runs use a mirrored source file when the test path maps unambiguously;
 for example, `tests/api.test.mjs` can scope coverage to `src/api.mjs`. A missing
@@ -161,12 +161,9 @@ specification. Internal and test callers of the toolkit boundary receive a
 structured result with `code` and `category`; this is not a supported consumer
 library API.
 
-After an interrupted run, stop overlapping jobs and remove stale
-`.eliware-test-coverage/` directory if it remains after an interrupted run.
 The next run overwrites the consumer's `coverage/` directory with the new
-report; previous coverage is not backed up or restored. A stale transient
-rollback directory from an interrupted promotion is removed before the next
-attempt.
+report; previous coverage is not backed up or restored. Avoid overlapping
+validation jobs in one worktree because they share that directory.
 
 See the [exit-code table](specs/cli.md#3-commands-and-lifecycle) in the
 specification for numeric meanings used by CI and troubleshooting.

@@ -18,8 +18,8 @@
 
 Pre-test stages stop at the first applicable failure, including source/test
 architecture drift. After Jest, coverage failure is deferred while lint,
-monolith, and package-check diagnostics are reported; a later post-test
-failure takes precedence over the deferred coverage result. `--lint` runs only workspace policy,
+monolith, and package-check diagnostics are reported; the highest numeric
+post-test failure code is returned. `--lint` runs only workspace policy,
 setup, and Oxlint. It rejects warnings and test arguments. `--help`/`-h` and
 `--version`/`-v` are terminal modes and take precedence over managed-option
 validation when combined with other arguments. If invalid options accompany a
