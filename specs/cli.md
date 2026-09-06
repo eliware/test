@@ -146,8 +146,9 @@ host is therefore intentionally treated as Windows syntax.
   `N` must be a positive integer and the option is not forwarded to Jest.
 - The monolith measurement helper receives this already validated value from
   the pipeline and exposes its documented result shape to internal tests.
-- The wrapper validates only its own options. All other arguments are forwarded
-  to Jest unchanged; Jest remains responsible for their syntax and validity.
+- The wrapper validates only its own options. Every other argument, including
+  options and their values unknown to this package, is forwarded to Jest
+  unchanged; Jest remains responsible for their syntax and validity.
 - A standalone `--` separator is removed once before Jest invocation.
 - Shared Jest value-option metadata prevents option values becoming focused
   paths.

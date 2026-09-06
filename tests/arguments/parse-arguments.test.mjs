@@ -12,6 +12,10 @@ describe('parseArguments', () => {
     expect(parseArguments(['--no-runInBand'])).toMatchObject({ runInBand: false });
     expect(parseArguments(['--workers=3'])).toMatchObject({ workers: 3, runnerArguments: [] });
   });
+  test('forwards unknown Jest options and their values unchanged', () => {
+    const argumentsList = ['--future-jest-option', 'value-without-validation', '--another-option=anything'];
+    expect(parseArguments(argumentsList).runnerArguments).toEqual(argumentsList);
+  });
   test('rejects invalid combinations', () => {
     expect(() => parseArguments(['--lint', 'tests/a.test.mjs'])).toThrow('cannot be combined');
     expect(() => parseArguments(['--coverage=false'])).toThrow('managed by eliware-test');
