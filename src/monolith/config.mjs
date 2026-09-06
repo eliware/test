@@ -14,6 +14,6 @@ export async function readMonolithConfig(cwd, readFilePath = readFile) {
     });
   } catch (error) {
     if (error.code === 'ENOENT') return { ...DEFAULT_THRESHOLDS, exemptions: [], origin: 'missing-package' };
-    throw error;
+    throw new Error(`Unable to read monolith configuration from package.json: ${error?.message ?? String(error)}`, { cause: error });
   }
 }

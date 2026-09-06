@@ -18,9 +18,10 @@ they are required by runtime code or a separately documented workflow,
 installs `@eliware/test`, updates `test` and `lint`, runs npm install, reviews
 the lockfile, and keeps specialized test tiers separate. Separate direct
 Jest/Oxlint commands remain the consumer's responsibility.
-The consumer must define nonempty `audit`, `pack`, `build`, and `typecheck`
-scripts. The normal `eliware-test` run executes them after the routine
-validation stages; a missing or invalid script fails the package-check stage.
+The `audit`, `pack`, `build`, and `typecheck` scripts are optional. When a
+consumer defines any of them, each must be nonempty and valid. The normal
+`eliware-test` run executes defined scripts after the routine validation
+stages; a missing or invalid defined script fails the package-check stage.
 
 The package intentionally exposes its CLI through `bin/eliware-test.mjs` and
 does not publish an `exports` or declaration (`types`) surface. Release checks
