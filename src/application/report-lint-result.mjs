@@ -4,12 +4,12 @@ import { formatFailure } from '../diagnostics/format-failure.mjs';
 import { lintFailed, normalizeLintResult } from '../validation/lint/result.mjs';
 
 /** Report a normalized lint result and return the public exit code. */
-export function reportLintResult(result, write, cwd) {
+export function reportLintResult(result, write, cwd, { reportSuccess = true } = {}) {
   const normalized = normalizeLintResult(result);
   if (lintFailed(normalized)) {
     write(formatFailure('Lint', normalized, cwd));
     return assertExitCode(EXIT_CODES.LINT_FAILURE, 'runLintCommand');
   }
-  write('Lint passed: 0 warnings\n');
+  if (reportSuccess) write('Lint passed: 0 warnings\n');
   return assertExitCode(0, 'runLintCommand');
 }

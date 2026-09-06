@@ -12,3 +12,15 @@ test('reports lint failures', () => {
   expect(reportLintResult({ code: 1, output: 'failure' }, write)).toBe(13);
   expect(write.mock.calls[0][0]).toContain('failure');
 });
+
+test('reports failures when success output is disabled', () => {
+  const write = jest.fn();
+  expect(reportLintResult({ code: 1, output: 'warning' }, write, '.', { reportSuccess: false })).toBe(13);
+  expect(write).toHaveBeenCalledWith(expect.stringContaining('Lint failed'));
+});
+
+test('suppresses only successful output when requested', () => {
+  const write = jest.fn();
+  expect(reportLintResult({ code: 0, output: '' }, write, '.', { reportSuccess: false })).toBe(0);
+  expect(write).not.toHaveBeenCalled();
+});

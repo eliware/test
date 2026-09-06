@@ -66,6 +66,7 @@ npm test -- tests/api.test.mjs  Run one focused test file
 npm test -- -t "test name"      Run tests matching a name
 eliware-test --help             Show supported options
 eliware-test --version          Show the installed version
+npm test -- -- --version       Show the version invoked by the npm test script
 eliware-test --debug-timing     Show pipeline and in-memory Jest timing
 ```
 

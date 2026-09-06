@@ -27,6 +27,10 @@ the CLI emits a warning and returns the invalid-argument exit code. Version
 output comes from
 `package.json`.
 
+Because npm reserves the first `--version` after `npm test`, use
+`npm test -- -- --version` to forward the version option to the configured test
+script and verify the `eliware-test` version it invokes.
+
 The continuation after a coverage failure is intentional: coverage evidence
 is reported as failed, but the remaining deterministic checks still run so one
 invocation exposes all actionable diagnostics. If multiple post-test checks

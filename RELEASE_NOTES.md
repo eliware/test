@@ -9,6 +9,14 @@
 - Validate public package documentation metadata, attribution, and published
   `docs/` and `specs/` trees before release review.
 
+## 6.1.0
+
+### Validation ownership and diagnostics
+
+- Documented npm forwarding for checking the invoked `eliware-test` version.
+- Preserved actionable lint diagnostics for validation failures.
+- Clarified deterministic validation ownership relative to CodeScope and TagIt.
+
 ## 6.0.1
 
 ### Validation and package checks

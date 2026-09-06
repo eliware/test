@@ -24,7 +24,7 @@ export async function runLintCommand(options) {
     return EXIT_CODES.LINT_START;
   }
 
-  const lintCode = reportLintResult(result, options.reportSuccess === false ? () => {} : write, cwd);
+  const lintCode = reportLintResult(result, write, cwd, { reportSuccess: options.reportSuccess !== false });
   if (lintCode !== 0) return lintCode;
   timing.step('Lint', 'complete');
   return lintCode;
