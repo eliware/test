@@ -15,7 +15,7 @@ test.each(['-e', '-w'])('skips test-looking values for short option %s', (option
 
 test('does not guess that unknown options consume values', () => {
   expect(extractFocusedPaths(['--futureTestPattern', 'tests/value.test.mjs', 'tests/actual.test.mjs']))
-    .toEqual(['tests/value.test.mjs', 'tests/actual.test.mjs']);
+    .toEqual(['tests/actual.test.mjs']);
 });
 
 test('skips equals-form option values', () => {

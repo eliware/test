@@ -133,10 +133,10 @@ consumed by the wrapper, not forwarded to Jest.
 Diagnostic options include `--ignore-100x4`, `--ignore-monolith-limits`,
 `--no-runInBand`, and `--workers=N`.
 
-Repository convention failures use exit code 18. The required structure,
-metadata, specification, environment-example, and example checks are defined
-in [`specs/conventions.md`](specs/conventions.md); examples are inspected but
-never executed automatically.
+Repository convention failures use exit code 18. The complete convention
+contract is indexed in [`specs/README.md`](specs/README.md), including its
+normative scope, out-of-scope policy, and recursive documentation-index
+requirements; examples are inspected but never executed automatically.
 
 For direct CLI diagnostics, use `eliware-test --no-runInBand`,
 `eliware-test --ignore-100x4`, `eliware-test --ignore-monolith-limits`, or

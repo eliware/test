@@ -34,6 +34,11 @@ export function extractFocusedPaths(argumentsList) {
       }
       continue;
     }
+    if (argument.startsWith('-') && !argument.includes('=') && index + 1 < argumentsList.length
+      && typeof argumentsList[index + 1] === 'string' && !argumentsList[index + 1].startsWith('-')) {
+      index += 1;
+      continue;
+    }
     if (!argument.startsWith('-')) values.push(argument);
   }
   return values.filter(isFocusedTestPath);
