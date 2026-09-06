@@ -60,6 +60,12 @@ discovered documentation set. Indexes must link to their discovered Markdown
 files, and every local Markdown link must resolve to an existing file rather
 than a directory or an inferred README target.
 
+Non-Markdown files under `docs/` or `specs/` produce warnings and must be
+linked from a Markdown document; an unlinked file is a convention failure.
+Examples may contain non-Markdown files, but every file under `examples/` must
+be linked from `examples/README.md`. These checks validate navigability, not
+the prose quality or runtime behavior of the linked files.
+
 For public Eliware packages, the convention validator also requires README
 links for the canonical npm package, license file, and the repository's
 canonical `actions/workflows/nodejs.yml` CI badge. A generic workflows-directory
