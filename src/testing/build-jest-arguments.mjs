@@ -1,5 +1,5 @@
 /** Build the managed Jest arguments before appending user-selected filters. */
-export function buildJestArguments({ runnerArguments = [], runInBand = true, focusedCoverage = [], focusedPathMode = false, timingOutput, coverageDirectory } = {}) {
+export function buildJestArguments({ runnerArguments = [], runInBand = true, focusedCoverage = [], focusedPathMode = false, timingOutput } = {}) {
   if (!Array.isArray(runnerArguments)) throw new TypeError('buildJestArguments runnerArguments must be an array');
   if (!Array.isArray(focusedCoverage)) throw new TypeError('buildJestArguments focusedCoverage must be an array');
   const executionArguments = [
@@ -9,7 +9,6 @@ export function buildJestArguments({ runnerArguments = [], runInBand = true, foc
     '--silent',
     '--coverageReporters=text',
     '--coverageReporters=json',
-    ...(typeof coverageDirectory === 'string' ? ['--coverageDirectory', coverageDirectory] : []),
     ...focusedCoverage,
     ...(focusedPathMode ? ['--runTestsByPath'] : []),
     ...(timingOutput ? ['--json'] : []),

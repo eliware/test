@@ -26,9 +26,10 @@ This document records behavior the v6 CLI intentionally does not provide.
   must scrub code, fixtures, and logs before running tests.
 - Guaranteed descendant-process cleanup on every platform is out of scope;
   Windows cleanup is limited to best-effort direct-child termination.
-- Coverage backup, restoration, rollback, and retention are out of scope. The
-  latest validated temporary directory overwrites the consumer's existing
-  `coverage/` directory; the prior result is not preserved for recovery.
+- Coverage backup, restoration, rollback, retention, temporary coverage
+  directories, and coverage-directory moves are out of scope. Jest writes the
+  latest report normally into the consumer's `coverage/` directory; the prior
+  result is not preserved for recovery.
 - Dynamic coverage merging or recency-based candidate selection is out of
   scope. Fixed candidate precedence is authoritative.
 - Compatibility with nonstandard Node.js/npm installation layouts or package

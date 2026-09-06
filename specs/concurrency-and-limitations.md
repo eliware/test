@@ -3,10 +3,9 @@
 ## Concurrency and shared workspace artifacts
 
 `@eliware/test` uses the consumer's current worktree as its validation
-workspace. Each Jest run writes coverage to an isolated temporary directory;
-after the run, the validated directory is promoted to the consumer's
-`coverage/` directory for inspection. The runner does not merge reports and
-does not provide a separate Jest concurrency model.
+ workspace. Each Jest run writes coverage directly to the consumer's
+`coverage/` directory. The runner does not merge reports or provide a
+separate Jest concurrency model.
 
 Validation uses one active run per worktree. Users or CI allocate separate
 worktrees for concurrent developers, agents, or jobs.
@@ -16,10 +15,9 @@ boundaries are not consumer APIs; consumers should invoke the CLI.
 
 ## Supported operational constraints
 
-Coverage promotion replaces the consumer's existing `coverage/` directory by
-moving the validated temporary directory into its place. Previous results are
-not retained: no backup, rollback directory, restoration attempt, or
-post-promotion cleanup is performed.
+Coverage output follows Jest's normal writer behavior. Previous results are
+not retained, backed up, restored, or moved by the toolkit; the latest Jest
+run writes the current report into the consumer's `coverage/` directory.
 
 The CLI adapter explicitly enables monolith enforcement for normal runs. The
 toolkit's lower-level defaults are internal composition and test seams, not an

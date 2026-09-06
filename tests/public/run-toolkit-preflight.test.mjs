@@ -14,10 +14,10 @@ test('uses the default convention validator', async () => {
   await expect(runToolkitPreflight({ ...context(), validateConventions: undefined })).resolves.toMatchObject({ args: [], preparation: expect.any(Object) });
 });
 
-test('cleans interrupted coverage promotion artifacts before tests', async () => {
+test('cleans stale coverage report files before tests', async () => {
   const removed = [];
   await runToolkitPreflight(context({ removePath: async (path) => removed.push(path) }));
-  expect(removed).toEqual(expect.arrayContaining([expect.stringMatching(/[\\/]\.eliware-test-coverage$/)]));
+  expect(removed).toEqual(expect.arrayContaining([expect.stringMatching(/[\\/]coverage-final\.json$/)]));
 });
 
 test('returns public outcomes for policy, argument, preparation, and cleanup failures', async () => {

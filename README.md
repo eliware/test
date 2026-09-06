@@ -198,7 +198,6 @@ node_modules/
 coverage/
 coverage.json
 .nyc_output/
-.eliware-test-coverage/
 test-results/
 build/
 dist/
