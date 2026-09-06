@@ -7,6 +7,9 @@ This example shows the supported v6 consumer setup with a mirrored `src/` and
 
 - [`minimal-consumer/README.md`](minimal-consumer/README.md) — minimal setup with Jest, coverage,
   and lint commands
+- [`minimal-consumer/package.json`](minimal-consumer/package.json) — example package metadata
+- [`minimal-consumer/src/hello.mjs`](minimal-consumer/src/hello.mjs) — example source module
+- [`minimal-consumer/tests/hello.test.mjs`](minimal-consumer/tests/hello.test.mjs) — example test
 
 ## Prerequisites
 

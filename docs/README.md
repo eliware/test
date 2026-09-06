@@ -71,6 +71,7 @@ before validation; comprehensive secret detection is not provided.
 
 - [`usage.md`](usage.md) — supported consumer workflow and command profiles
 - [`troubleshooting.md`](troubleshooting.md) — diagnosing common validation failures
+- [`check-links.mjs`](check-links.mjs) — the package-relative link checker source
 
 - [README quick start](../README.md)
 - [Normative specification](../SPEC.md)

@@ -6,6 +6,14 @@ function resolveIndexLink(link, directory) { return posix.normalize(posix.join(d
 function hasDirectLink(source, target, directory) { return [...source.matchAll(LINK_PATTERN)].some(([, link]) => resolveIndexLink(link, directory) === resolveIndexLink(target, directory)); }
 function hasDescribedLink(source, target, directory) { return [...source.matchAll(LINK_PATTERN)].some(([full, link]) => resolveIndexLink(link, directory) === resolveIndexLink(target, directory) && full.slice(full.indexOf('[') + 1, full.indexOf(']')).trim()); }
 function hasFileLink(source, target, files, directory) { return [...source.matchAll(LINK_PATTERN)].some(([, link]) => resolveIndexLink(link, directory) === resolveIndexLink(target, directory) && files.has(resolveIndexLink(link, directory))); }
+function hasAnyFileLink(texts, target) {
+  const normalizedTarget = posix.normalize(target);
+  for (const [source, text] of texts) {
+    const directory = posix.dirname(source);
+    if ([...text.matchAll(LINK_PATTERN)].some(([, link]) => resolveIndexLink(link, directory) === normalizedTarget)) return true;
+  }
+  return false;
+}
 function checkDirectFiles(label, files, index, indexDirectory, allFiles, findings) {
   const directFiles = files.filter((file) => (posix.dirname(file) === '.' ? '' : posix.dirname(file)) === indexDirectory && posix.basename(file).toLowerCase() !== 'readme.md');
   for (const file of directFiles) {
@@ -34,8 +42,13 @@ export async function readDocumentationIndexes(root, files, read) {
   return new Map(await Promise.all(directories.map(async (directory) => [directory, await read(`${root}/${directory}/README.md`)])));
 }
 
-export function checkDocumentationIndexes({ docsFiles, docsReadme, specFiles, specsReadme, examples, examplesReadme, specTexts = new Map(), exampleReadmes = new Map(), docsIndexes = new Map(), specIndexes = new Map() }) {
+export function checkDocumentationIndexes({ docsFiles, docsReadme, specFiles, specsReadme, examples, examplesReadme, specTexts = new Map(), exampleReadmes = new Map(), docsIndexes = new Map(), specIndexes = new Map(), nonMarkdownFiles = [], exampleFiles = [], documentationTexts = new Map() }) {
   const findings = [];
+  for (const file of nonMarkdownFiles) {
+    findings.push({ group: 'documentation', severity: 'warning', message: `${file}: non-Markdown documentation file found; link it from a Markdown document or remove it` });
+    if (!hasAnyFileLink(documentationTexts, file)) findings.push(finding(`${file}: non-Markdown documentation file is not linked from any Markdown document`));
+  }
+  for (const file of exampleFiles) if (!hasDirectLink(examplesReadme ?? '', file, 'examples')) findings.push(finding(`examples/README.md: missing link to file ${file}`));
   if (!docsFiles.includes('README.md') || docsFiles.length < 3) findings.push(finding('docs/: must contain README.md and at least two additional Markdown documents'));
   for (const [label, files, index] of [['docs', docsFiles, docsReadme], ['specs', specFiles, specsReadme]]) {
     const indexes = new Map([['', index], ...(label === 'docs' ? docsIndexes : specIndexes)]);

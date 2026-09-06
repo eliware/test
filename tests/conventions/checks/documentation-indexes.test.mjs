@@ -89,3 +89,33 @@ test('detects an omitted direct child from the root docs index', () => {
   }).map(({ message }) => message);
   expect(findings).toContain('docs/README.md: missing link to file troubleshooting.md');
 });
+
+test('warns for linked non-Markdown docs files and fails for unlinked ones', () => {
+  const findings = checkDocumentationIndexes({
+    docsFiles: ['README.md'], docsReadme: '[Root](../README.md)',
+    specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
+    nonMarkdownFiles: ['docs/diagram.svg', 'specs/schema.json'],
+    documentationTexts: new Map([['docs/README.md', '[Diagram](diagram.svg)']]),
+  });
+  expect(findings).toEqual(expect.arrayContaining([
+    expect.objectContaining({ severity: 'warning', message: expect.stringContaining('docs/diagram.svg') }),
+    expect.objectContaining({ message: expect.stringContaining('specs/schema.json: non-Markdown') }),
+  ]));
+});
+
+test('requires every example file to be linked from the examples index', () => {
+  const findings = checkDocumentationIndexes({
+    docsFiles: ['README.md'], docsReadme: '', specFiles: [], specsReadme: '',
+    examples: ['demo'], examplesReadme: '[Demo](demo/README.md)',
+    exampleFiles: ['demo/README.md', 'demo/package.json'],
+  }).map(({ message }) => message);
+  expect(findings).toContain('examples/README.md: missing link to file demo/package.json');
+});
+
+test('reports an example file when the examples index is absent', () => {
+  const findings = checkDocumentationIndexes({
+    docsFiles: ['README.md'], docsReadme: '', specFiles: [], specsReadme: '',
+    examples: [], exampleFiles: ['demo/package.json'],
+  }).map(({ message }) => message);
+  expect(findings).toContain('examples/README.md: missing link to file demo/package.json');
+});

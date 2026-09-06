@@ -10,6 +10,12 @@ import { checkPackageMetadata } from './package-metadata.mjs';
 import { collectConventionInputs } from './collect-inputs.mjs';
 import { formatConventionFindings } from './format-findings.mjs';
 
+export function finishConventionValidation(findings, write) {
+  if (!findings.length) return true;
+  write(formatConventionFindings(findings));
+  return findings.every(({ severity }) => severity === 'warning');
+}
+
 /** Coordinate deterministic convention checks over one collected repository snapshot. */
 export async function validateConventions({ cwd, write, accessPath, readFilePath = readFile, readDirectory, allowCoverageOptOut = false, allowMonolithOptOut = false }) {
   const packageJson = await (async () => {
@@ -21,7 +27,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
     }
   })();
   if (!packageJson) return false;
-  const { exceptions, findings, read, paths, files, specFiles, docsFiles, specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts } = packageJson;
+  const { exceptions, findings, read, paths, files, specFiles, docsFiles, nonMarkdownFiles, exampleFiles, specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts } = packageJson;
   findings.push(...checkAgents(await read('AGENTS.md'), exceptions));
   findings.push(...checkPackageMetadata(packageJson.packageJson, { readme: await read('README.md'), releaseNotes: await read('RELEASE_NOTES.md'), existingPaths: paths, existingFiles: files, allowSelfReference: packageJson.packageJson?.name === '@eliware/test', allowCoverageOptOut, allowMonolithOptOut }));
   const packageData = packageJson.packageJson ?? {};
@@ -30,8 +36,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   findings.push(...checkPublicBadges(readme, packageData.name, packageData.repository));
   findings.push(...checkSpecifications(specFiles, specText));
   findings.push(...checkEnvironmentExample(await read('.env.example'), environmentSources.join('\n')));
-  findings.push(...checkDocumentationIndexes({ docsFiles, docsReadme: await read('docs/README.md'), specFiles, specsReadme: await read('specs/README.md'), examples, examplesReadme: await read('examples/README.md'), specTexts, exampleReadmes, docsIndexes: await readDocumentationIndexes('docs', docsFiles, read), specIndexes: await readDocumentationIndexes('specs', specFiles, read) }));
+  findings.push(...checkDocumentationIndexes({ docsFiles, docsReadme: await read('docs/README.md'), specFiles, specsReadme: await read('specs/README.md'), examples, examplesReadme: await read('examples/README.md'), specTexts, exampleReadmes, nonMarkdownFiles, exampleFiles, documentationTexts: new Map(await Promise.all([...files].filter((path) => /^(?:docs|specs|examples)\/.*\.md$/.test(path)).map(async (path) => [path, await read(path)]))), docsIndexes: await readDocumentationIndexes('docs', docsFiles, read), specIndexes: await readDocumentationIndexes('specs', specFiles, read) }));
   findings.push(...checkExamples(examples, exampleReadmes, examplePackages));
-  if (findings.length) write(formatConventionFindings(findings));
-  return findings.length === 0;
+  return finishConventionValidation(findings, write);
 }
