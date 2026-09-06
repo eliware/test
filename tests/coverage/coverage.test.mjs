@@ -1,4 +1,4 @@
-import { parseCoverageJson } from '../../src/coverage/coverage.mjs';
+import { normalizeCoverageCount, parseCoverageJson } from '../../src/coverage/coverage.mjs';
 
 describe('coverage facade', () => {
   test('returns no gaps for complete coverage, including default arguments', () => {
@@ -83,6 +83,28 @@ describe('coverage facade', () => {
         branchMap: {}, b: {}, fnMap: {}, f: {},
       },
     })).toThrow('Malformed coverage entry');
+  });
+
+  test('accepts counters at the safe integer boundary after normalization', () => {
+    expect(parseCoverageJson({
+      'src/safe-boundary.mjs': {
+        statementMap: { 0: { start: { line: 1 } } }, s: { 0: String(Number.MAX_SAFE_INTEGER) },
+        branchMap: {}, b: {}, fnMap: {}, f: {}, l: { 1: String(Number.MAX_SAFE_INTEGER) },
+      },
+    })).toEqual([]);
+  });
+
+  test('rejects the first counter beyond safe integer precision after normalization', () => {
+    expect(() => parseCoverageJson({
+      'src/unsafe-boundary.mjs': {
+        statementMap: { 0: { start: { line: 1 } } }, s: { 0: String(Number.MAX_SAFE_INTEGER + 1) },
+        branchMap: {}, b: {}, fnMap: {}, f: {},
+      },
+    })).toThrow('Malformed coverage entry');
+  });
+
+  test('rejects a negative normalized counter', () => {
+    expect(() => normalizeCoverageCount('src/negative.mjs', -1)).toThrow('Malformed coverage entry');
   });
 
   test('rejects entries with inconsistent metric maps and counters', () => {

@@ -103,6 +103,18 @@ test('warns for linked non-Markdown docs files and fails for unlinked ones', () 
   ]));
 });
 
+test('recognizes links to non-Markdown files from root README and AGENTS documents', () => {
+  expect(checkDocumentationIndexes({
+    docsFiles: ['README.md'], docsReadme: '[Root](../README.md)', specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
+    nonMarkdownFiles: ['docs/diagram.svg'],
+    documentationTexts: new Map([['README.md', '[Diagram](docs/diagram.svg)'], ['AGENTS.md', '[Diagram](docs/diagram.svg)']]),
+  })).toEqual(expect.arrayContaining([expect.objectContaining({ severity: 'warning', message: expect.stringContaining('docs/diagram.svg') })]));
+  expect(checkDocumentationIndexes({
+    docsFiles: ['README.md'], docsReadme: '[Root](../README.md)', specFiles: [], specsReadme: '', examples: [], examplesReadme: '',
+    nonMarkdownFiles: ['docs/diagram.svg'], documentationTexts: new Map([['README.md', '[Diagram](docs/diagram.svg)']]),
+  })).not.toEqual(expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining('non-Markdown documentation file is not linked') })]));
+});
+
 test('requires every example file to be linked from the examples index', () => {
   const findings = checkDocumentationIndexes({
     docsFiles: ['README.md'], docsReadme: '', specFiles: [], specsReadme: '',

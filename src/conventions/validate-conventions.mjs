@@ -36,7 +36,7 @@ export async function validateConventions({ cwd, write, accessPath, readFilePath
   findings.push(...checkPublicBadges(readme, packageData.name, packageData.repository));
   findings.push(...checkSpecifications(specFiles, specText));
   findings.push(...checkEnvironmentExample(await read('.env.example'), environmentSources.join('\n')));
-  findings.push(...checkDocumentationIndexes({ docsFiles, docsReadme: await read('docs/README.md'), specFiles, specsReadme: await read('specs/README.md'), examples, examplesReadme: await read('examples/README.md'), specTexts, exampleReadmes, nonMarkdownFiles, exampleFiles, documentationTexts: new Map(await Promise.all([...files].filter((path) => /^(?:docs|specs|examples)\/.*\.md$/.test(path)).map(async (path) => [path, await read(path)]))), docsIndexes: await readDocumentationIndexes('docs', docsFiles, read), specIndexes: await readDocumentationIndexes('specs', specFiles, read) }));
+  findings.push(...checkDocumentationIndexes({ docsFiles, docsReadme: await read('docs/README.md'), specFiles, specsReadme: await read('specs/README.md'), examples, examplesReadme: await read('examples/README.md'), specTexts, exampleReadmes, nonMarkdownFiles, exampleFiles, documentationTexts: new Map(await Promise.all([...files].filter((path) => /^(?:README|AGENTS)\.md$|^(?:docs|specs|examples)\/.*\.md$/.test(path)).map(async (path) => [path, await read(path)]))), docsIndexes: await readDocumentationIndexes('docs', docsFiles, read), specIndexes: await readDocumentationIndexes('specs', specFiles, read) }));
   findings.push(...checkExamples(examples, exampleReadmes, examplePackages));
   return finishConventionValidation(findings, write);
 }

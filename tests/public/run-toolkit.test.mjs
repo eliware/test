@@ -159,6 +159,7 @@ test('uses a fresh JSON coverage candidate as authoritative evidence', async () 
   })).resolves.toBe(0);
 });
 
+
 test('reports focused coverage gaps', async () => {
   const messages = [];
   await expect(runToolkit({

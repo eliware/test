@@ -10,6 +10,10 @@ This document records behavior the v6 CLI intentionally does not provide.
 - The CLI does not provide a separate Jest concurrency model, an abort-signal
   API, or a supported runtime-library embedding API; the public interface is
   the `eliware-test` command.
+- Dependency-injected collaborators, including validators and process or file
+  readers, exist only as internal testability seams. They are not a consumer
+  API, are not configurable through the CLI, and maliciously injected
+  collaborators are outside the supported threat model.
 - The CLI does not merge coverage candidates, select them by recency, infer
   ambiguous focused mappings, or prove that fallback text originated from a
   particular reporter.
