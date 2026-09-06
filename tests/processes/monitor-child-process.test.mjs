@@ -25,6 +25,19 @@ test('captures raw stdout for in-memory timing reports', async () => {
   await expect(resultPromise).resolves.toMatchObject({ code: 0, timingOutput: 'prefix{"testResults":[]}' });
 });
 
+test('flushes split UTF-8 timing output when the child closes', async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const timing = Buffer.from('{"testResults":[{"name":"😀"}]}');
+  const split = timing.indexOf(Buffer.from('😀')) + 2;
+  const resultPromise = monitorChildProcess(child, createOutputCapture(), { captureTiming: true });
+  child.stdout.emit('data', timing.subarray(0, split));
+  child.stdout.emit('data', timing.subarray(split));
+  child.emit('close', 0);
+  await expect(resultPromise).resolves.toMatchObject({ code: 0, timingOutput: timing.toString() });
+});
+
 test('normalizes process errors', async () => {
   const child = new EventEmitter(); child.stdout = new EventEmitter(); child.stderr = new EventEmitter();
   const resultPromise = monitorChildProcess(child, createOutputCapture());

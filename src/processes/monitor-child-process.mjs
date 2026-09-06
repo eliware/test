@@ -12,12 +12,14 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
     let finalKill;
     let processError = '';
     let timingOutput = '';
+    const timingDecoder = captureTiming ? new TextDecoder() : null;
     const finish = (code, errorMessage) => {
       if (settled) return;
       settled = true;
       clearTimeout(timeout);
       clearTimeout(forceKill);
       clearTimeout(finalKill);
+      if (timingDecoder) timingOutput += timingDecoder.decode();
       const output = capture.finish();
       const duplicate = errorMessage && output.includes(errorMessage.trim());
       resolveResult({ code, output: `${output}${duplicate ? '' : errorMessage}`, ...(captureTiming ? { timingOutput } : {}) });
@@ -25,7 +27,7 @@ export function monitorChildProcess(child, capture, { timeoutMs = 120000, captur
     try {
       child.stdout.on('data', (chunk) => {
         capture.capture('stdout')(chunk);
-        if (captureTiming) timingOutput += typeof chunk === 'string' ? chunk : new TextDecoder().decode(chunk);
+        if (captureTiming) timingOutput += typeof chunk === 'string' ? chunk : timingDecoder.decode(chunk, { stream: true });
       });
       child.stderr.on('data', capture.capture('stderr'));
       child.on('error', (error) => {
