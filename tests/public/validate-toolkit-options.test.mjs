@@ -5,6 +5,8 @@ test('validates the toolkit contract', () => {
   expect(validateToolkitOptions(options)).toBe(options);
   expect(() => validateToolkitOptions({})).toThrow();
   expect(() => validateToolkitOptions({ ...options, runTest: true })).toThrow('option runTest');
+  expect(() => validateToolkitOptions({ ...options, runChildProcess: true })).toThrow('option runChildProcess');
+  expect(() => validateToolkitOptions({ ...options, readPackageJson: true })).toThrow('option readPackageJson');
   expect(() => validateToolkitOptions({ ...options, ignoreCoverage: 'yes' })).toThrow('must be boolean');
   expect(() => validateToolkitOptions({ ...options, workers: 0 })).toThrow('positive integer');
   expect(() => validateToolkitOptions({ ...options, workers: '6' })).toThrow('positive integer');
