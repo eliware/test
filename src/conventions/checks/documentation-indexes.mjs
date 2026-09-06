@@ -35,11 +35,9 @@ export function checkDocumentationIndexes({ docsFiles, docsReadme, specFiles, sp
   const findings = [];
   if (!docsFiles.includes('README.md') || docsFiles.length < 3) findings.push(finding('docs/: must contain README.md and at least two additional Markdown documents'));
   for (const [label, files, index] of [['docs', docsFiles, docsReadme], ['specs', specFiles, specsReadme]]) {
-    if (!index) findings.push(finding(`${label}/README.md: missing documentation index`));
-    else {
-      if (!hasDirectLink(index, '../README.md', label)) findings.push(finding(`${label}/README.md: missing link back to the root README`));
-      checkTree(label, files, new Map([['', index], ...(label === 'docs' ? docsIndexes : specIndexes)]), findings);
-    }
+    const indexes = new Map([['', index], ...(label === 'docs' ? docsIndexes : specIndexes)]);
+    if (index && !hasDirectLink(index, '../README.md', label)) findings.push(finding(`${label}/README.md: missing link back to the root README`));
+    checkTree(label, files, indexes, findings);
   }
   if (!specFiles.includes('README.md')) findings.push(finding('specs/: must contain README.md as its index'));
   if (!specFiles.some((file) => file !== 'README.md' && /requirements?|must|shall|normative/i.test(specTexts.get(file) ?? ''))) findings.push(finding('specs/: must contain a document stating specification requirements'));
