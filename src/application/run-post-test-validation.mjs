@@ -17,7 +17,12 @@ export async function runPostTestValidation({ cwd, testResult, write, readFilePa
   }
   const normalizedCoverageResult = Number.isInteger(coverageResult) ? coverageResult : EXIT_CODES.COVERAGE_FAILURE;
   timing.step('Coverage', 'lint');
-  const lint = await validateLint(() => runLintCommand({ ...lintOptions, cwd, write, reportSuccess: false }));
+  let lint;
+  try { lint = await validateLint(() => runLintCommand({ ...lintOptions, cwd, write, reportSuccess: false })); }
+  catch (error) {
+    write(`Lint validation failed: ${error?.message ?? String(error)}\n`);
+    lint = EXIT_CODES.LINT_FAILURE;
+  }
   timing.step('Lint', 'monolith validation');
   let monolithResult = 0;
   if (enforceMonolithLimits) {

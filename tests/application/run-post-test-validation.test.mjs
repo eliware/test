@@ -91,6 +91,31 @@ test('normalizes rejected coverage validation and continues later checks', async
   expect(runChildProcess).toHaveBeenCalled();
 });
 
+test('normalizes rejected lint validation and continues later checks', async () => {
+  const findMonolith = jest.fn(async () => []);
+  const runChildProcess = jest.fn(async () => ({ code: 0, output: '' }));
+  const messages = [];
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: (message) => messages.push(message),
+    ignoreCoverage: true, runLintCommand: async () => { throw new Error('lint collaborator failed'); },
+    enforceMonolithLimits: true, findMonolith,
+    packageChecks: { readPackageJson: async () => ({ scripts: { audit: 'audit' } }), runChildProcess },
+    timing: { step: () => {} },
+  })).resolves.toBe(13);
+  expect(messages).toContain('Lint validation failed: lint collaborator failed\n');
+  expect(findMonolith).toHaveBeenCalled();
+  expect(runChildProcess).toHaveBeenCalled();
+
+  const primitiveMessages = [];
+  await expect(runPostTestValidation({
+    cwd: '.', testResult: { output: '' }, write: (message) => primitiveMessages.push(message),
+    ignoreCoverage: true, runLintCommand: async () => { throw 'lint primitive failed'; },
+    enforceMonolithLimits: false, packageChecks: { runChildProcess: async () => ({ code: 0, output: '' }) },
+    timing: { step: () => {} },
+  })).resolves.toBe(13);
+  expect(primitiveMessages).toContain('Lint validation failed: lint primitive failed\n');
+});
+
 test('passes the package reader through to package checks', async () => {
   const readPackageJson = jest.fn(async () => ({ scripts: {} }));
   await expect(runPostTestValidation({
