@@ -4,15 +4,20 @@ import { findMissingRequiredPaths } from './required-paths.mjs';
 import { readConventionPackage } from './read-package.mjs';
 import { walkFiles } from '../workspace/walk-files.mjs';
 
-async function readText(cwd, readFilePath, path) {
-  try { return await readFilePath(resolve(cwd, path), 'utf8'); } catch { return ''; }
-}
-
 export async function collectConventionInputs({ cwd, accessPath, readFilePath = readFile, readDirectory = readdir, exceptions = [] }) {
-  const packageJson = await readConventionPackage(cwd, readFilePath);
+  const contentCache = new Map();
+  const cachedReadFile = async (path, encoding) => {
+    const key = resolve(path);
+    if (!contentCache.has(key)) contentCache.set(key, await readFilePath(path, encoding));
+    return contentCache.get(key);
+  };
+  const readText = async (path) => {
+    try { return await cachedReadFile(resolve(cwd, path), 'utf8'); } catch { return ''; }
+  };
+  const packageJson = await readConventionPackage(cwd, cachedReadFile);
   const configuredExceptions = Array.isArray(packageJson?.eliwareTest?.conventions?.exceptions) ? packageJson.eliwareTest.conventions.exceptions.filter((value) => typeof value === 'string') : exceptions;
   const findings = (await findMissingRequiredPaths(cwd, accessPath, configuredExceptions)).map((path) => ({ group: 'structure', message: `missing required path: ${path}` }));
-  const read = (path) => readText(cwd, readFilePath, path);
+  const read = (path) => readText(path);
   const directoryCache = new Map();
   const readDirectoryOnce = async (directory, options) => {
     const key = resolve(directory);
@@ -40,7 +45,7 @@ export async function collectConventionInputs({ cwd, accessPath, readFilePath = 
   const examplePackages = new Map();
   for (const example of examples) {
     exampleReadmes.set(example, await read(`examples/${example}/README.md`));
-    examplePackages.set(example, await readConventionPackage(resolve(cwd, `examples/${example}`), readFilePath));
+    examplePackages.set(example, await readConventionPackage(resolve(cwd, `examples/${example}`), cachedReadFile));
   }
   const specTexts = new Map(await Promise.all(specFiles.map(async (file) => [file, await read(`specs/${file}`)])));
   return { packageJson, findings, read, paths, files, specFiles, docsFiles, specText, examples, environmentSources, exampleReadmes, examplePackages, specTexts };

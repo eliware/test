@@ -5,6 +5,17 @@ test('collects repository inputs for convention orchestration', async () => {
   expect(result).toEqual(expect.objectContaining({ paths: expect.any(Set), files: expect.any(Set), specFiles: expect.any(Array) }));
 });
 
+test('caches repeated convention file reads', async () => {
+  const reads = new Map();
+  const readFilePath = async (path) => {
+    const key = path.replaceAll('\\', '/');
+    reads.set(key, (reads.get(key) ?? 0) + 1);
+    return key.endsWith('/package.json') ? JSON.stringify({}) : '';
+  };
+  await collectConventionInputs({ cwd: '.', accessPath: async () => {}, readDirectory: async () => [], readFilePath });
+  expect([...reads.values()].every((count) => count === 1)).toBe(true);
+});
+
 test('uses filesystem defaults when readers are omitted', async () => {
   await expect(collectConventionInputs({ cwd: '.', accessPath: async () => {}, readDirectory: async () => [] })).resolves.toEqual(expect.objectContaining({ paths: expect.any(Set) }));
 });
