@@ -6,18 +6,18 @@ import { resolveNpmCommand } from './resolve-npm-command.mjs';
 import { resolveNpmArguments } from './resolve-npm-arguments.mjs';
 
 export async function executePackageScript(cwd, script, write, options = {}) {
-  const makeResult = (code, output = '') => ({ code, category: 'package-script', script, output });
+  const makeResult = (code, output = '', diagnostic = '') => ({ code, category: 'package-script', script, output, diagnostic });
   let packageJson;
   try { packageJson = await Object.assign({ readPackageJson }, options).readPackageJson(cwd, options.readFilePath); }
-  catch (error) { const output = `${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to read package metadata'}\n`; write(output); return makeResult(1, output); }
+  catch (error) { const diagnostic = `${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to read package metadata'}\n`; write(diagnostic); return makeResult(1, '', diagnostic); }
   if (!packageJson?.scripts?.[script]) return makeResult(0);
   const platform = options.platform ?? process.platform;
   let result;
   try { result = await Object.assign({ runChildProcess }, options).runChildProcess(resolveNpmCommand(platform), resolveNpmArguments(script, platform, options.npmExecPath), { cwd }); }
-  catch (error) { const output = `${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to start package script'}\n`; write(output); return makeResult(1, output); }
+  catch (error) { const diagnostic = `${script} failed: ${normalizeOutput(error?.message ?? error, cwd) || 'unable to start package script'}\n`; write(diagnostic); return makeResult(1, '', diagnostic); }
   const safeResult = normalizeCommandResult(result);
   const output = normalizeOutput(safeResult.output, cwd);
   const diagnostic = safeResult.code !== 0 ? `${script} failed${output ? `:\n${output}${output.endsWith('\n') ? '' : '\n'}` : '.\n'}` : '';
   if (diagnostic) write(diagnostic);
-  return makeResult(safeResult.code, diagnostic);
+  return makeResult(safeResult.code, output, diagnostic);
 }

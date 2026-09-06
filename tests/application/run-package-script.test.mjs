@@ -31,7 +31,7 @@ test('runs defined scripts and returns their exit code', async () => {
     readPackageJson: async () => ({ scripts: { audit: 'audit-command' } }),
     runChildProcess: async (...args) => { calls.push(args); return { code: 3, output: 'failed' }; }
   });
-  expect(result).toMatchObject({ code: 3, category: 'package-script', script: 'audit' });
+  expect(result).toMatchObject({ code: 3, category: 'package-script', script: 'audit', output: 'failed', diagnostic: expect.stringContaining('audit failed') });
   expect(calls[0][0]).toBe(process.platform === 'win32' ? process.execPath : 'npm');
   expect(calls[0][1]).toEqual(expect.arrayContaining(['run', 'audit']));
 });
@@ -42,7 +42,7 @@ test('reports script output and normalizes an invalid exit code', async () => {
     readPackageJson: async () => ({ scripts: { build: 'build-command' } }),
     runChildProcess: async () => ({ code: 'failed', output: 'details' })
   });
-  expect(result).toMatchObject({ code: 1, category: 'package-script', script: 'build' });
+  expect(result).toMatchObject({ code: 1, category: 'package-script', script: 'build', output: 'details', diagnostic: expect.stringContaining('build failed') });
   expect(messages.join('')).toContain('build failed');
 });
 
