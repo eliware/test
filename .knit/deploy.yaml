@@ -3,8 +3,9 @@ on:
   push:
     deployments:
       - target: dev
-        cwd: /opt/test
+        cwd: /eliware/test
         timeoutMs: 300000
         commands:
-          - git pull --ff-only
-          - .knit/validate.sh
+          - git pull --ff-only origin main
+          - npm ci
+          - npm test

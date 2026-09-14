@@ -1,10 +1,12 @@
 # Troubleshooting
 
-Read grouped diagnostics from `npm test` first. Use `npm run lint` to isolate
-lint and workspace-policy failures, or run a defined package script directly to
-isolate a package-check failure. Coverage gaps require tests that cover all
-statements, branches, functions, and lines; `--ignore-100x4` is only a
-diagnostic opt-out.
+Run `eliware-test --help` to confirm supported command forms. Use
+`npm test -- <focused Jest paths>` for a focused run; missing paths are
+rejected rather than silently expanding to the full suite.
 
-Do not run the CLI against untrusted code while sensitive credentials are in
-the environment. Scrub fixtures and test output before validation.
+For a failure, preserve the stage diagnostics and collect `node --version`,
+the exact command, and a redacted package configuration. Do not include
+credentials, tokens, private environment values, coverage artifacts, or
+generated runtime output.
+
+[Return to documentation](README.md).

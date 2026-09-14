@@ -1,0 +1,394 @@
+{
+  "version": "8.0",
+  "description": "Specification for the deterministic Eliware validation harness.",
+  "authority": {
+    "authoritativeFor": [
+      "Harness configuration, bundled-check discovery, check execution, result reporting, and validation safety."
+    ],
+    "notAuthoritativeFor": [
+      "Repository requirements, convention wording, profile applicability, exemptions, publication policy, deployment, or operations."
+    ]
+  },
+  "crosslinks": [
+    {
+      "path": "../../docs/authority-map.json",
+      "relation": "relatedAuthority",
+      "authoritativeFor": "Cross-repository ownership and authority boundaries."
+    },
+    {
+      "path": "../../conventions/specs/general.json",
+      "relation": "relatedAuthority",
+      "authoritativeFor": "Universal repository conventions and profile authority."
+    },
+    {
+      "path": "../../conventions/specs/application.json",
+      "relation": "relatedAuthority",
+      "authoritativeFor": "Application repository requirements enforced by this package."
+    },
+    {
+      "path": "../../conventions/specs/cli.json",
+      "relation": "relatedAuthority",
+      "authoritativeFor": "CLI repository requirements, public help/version behavior, and exit-code documentation."
+    },
+    {
+      "path": "../../conventions/specs/npm-published.json",
+      "relation": "relatedAuthority",
+      "authoritativeFor": "npm-published package requirements and the aggregate pack-stage boundary."
+    },
+    {
+      "path": "../../operations/specs/directives.json",
+      "relation": "relatedAuthority",
+      "authoritativeFor": "Cross-cutting operational procedures and publication/deployment boundaries."
+    }
+  ],
+  "directives": [
+    {
+      "id": "E-18",
+      "dos": ["Provide a deterministic Eliware validation harness."],
+      "donts": [
+        "Do not define, reinterpret, duplicate, or extend repository conventions in the harness specification.",
+        "Do not perform publication, deployment, synchronization, tagging, pushing, or other external state changes during validation."
+      ],
+      "directives": [
+        {
+          "id": "E-18.2",
+          "dos": ["Fail fast when required repository configuration is missing or malformed."],
+          "donts": ["Do not begin partial validation with invalid repository configuration."],
+          "directives": [
+            {
+              "id": "A-18.2.0",
+              "dos": [
+                "Read the repository's declared harness configuration before validation begins."
+              ],
+              "donts": ["Do not begin check execution before configuration parsing has completed."]
+            },
+            {
+              "id": "A-18.2.1",
+              "dos": ["Require explicit configuration wherever the harness contract requires it."],
+              "donts": [
+                "Do not infer applicability from repository shape, dependencies, files, scripts, entrypoints, or runtime behavior.",
+                "Do not apply an implicit default profile when explicit selection is required."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-18.3",
+          "dos": ["Keep bundled checks self-contained and organized in profile directories."],
+          "donts": ["Do not require a private external authority repository at runtime."],
+          "directives": [
+            {
+              "id": "A-18.3.0",
+              "dos": [
+                "Discover checks deterministically from the published harness package.",
+                "Treat packaged check modules as the runtime authority snapshot."
+              ],
+              "donts": [
+                "Do not use a separate runtime registry that can diverge from bundled check modules."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-18.4",
+          "dos": ["Give every requirement an individually identifiable check module."],
+          "donts": ["Do not combine unrelated requirements into an unidentifiable check."],
+          "directives": [
+            {
+              "id": "A-18.4.0",
+              "dos": [
+                "Make each check's module identity, bundled location, and reported identity agree.",
+                "Reject duplicate, malformed, missing, or invalid check identities."
+              ],
+              "donts": ["Do not silently overwrite or merge duplicate check identities."]
+            },
+            {
+              "id": "A-18.4.1",
+              "dos": [
+                "Map each convention check to an existing directive identity in the bundled authority snapshot."
+              ],
+              "donts": ["Do not invent a convention requirement from an implementation detail."]
+            }
+          ]
+        },
+        {
+          "id": "E-18.5",
+          "dos": ["Execute applicable bundled architecture checks."],
+          "donts": ["Do not silently skip an applicable bundled architecture check."],
+          "directives": [
+            {
+              "id": "A-18.5.0",
+              "dos": [
+                "The harness must execute every selected deterministic bundled check as part of harness validation.",
+                "Preserve each bundled check's pass/fail result and diagnostics."
+              ],
+              "donts": [
+                "Do not silently omit a selected deterministic check, or replace a check failure with a warning or successful output."
+              ]
+            },
+            {
+              "id": "A-18.5.1",
+              "dos": [
+                "Keep the harness implementation native ESM, modular, injectable, and covered by its native test suite."
+              ],
+              "donts": ["Do not require consumers to import internal harness modules."]
+            }
+          ]
+        },
+        {
+          "id": "E-18.6",
+          "dos": [
+            "Make checks return only pass or fail with stable identities and actionable diagnostics."
+          ],
+          "donts": [
+            "Do not expose an undocumented warning, skipped, unknown, or partial state as a passing result."
+          ],
+          "directives": [
+            {
+              "id": "A-18.6.0",
+              "dos": [
+                "Report each check independently and aggregate results deterministically.",
+                "Preserve failed-check diagnostics without allowing another result to erase them."
+              ],
+              "donts": [
+                "Do not silently skip a selected check or convert uncertainty into success."
+              ]
+            },
+            {
+              "id": "A-18.6.1",
+              "dos": [
+                "Keep filesystem traversal, path handling, subprocess execution, and captured diagnostics bounded and platform-neutral.",
+                "Invoke child processes with argument arrays and preserve useful failure context."
+              ],
+              "donts": [
+                "Do not depend on shell pipelines, shell quoting, platform-specific executable assumptions, or unbounded output capture.",
+                "Do not expose sensitive values in harness-owned diagnostics."
+              ]
+            },
+            {
+              "id": "A-18.6.2",
+              "dos": [
+                "Use stable failure categories and deterministic precedence for process results."
+              ],
+              "donts": [
+                "Do not change public result semantics as an incidental implementation detail."
+              ]
+            },
+            {
+              "id": "A-18.6.3",
+              "dos": [
+                "Keep validation read-only with respect to external systems and publication state."
+              ],
+              "donts": [
+                "Do not publish, release, deploy, synchronize, tag, push, or mutate external state during validation."
+              ]
+            },
+            {
+              "id": "A-18.6.4",
+              "dos": [
+                "Preserve the complete bounded test-process output needed to diagnose failed tests, including both standard output and standard error.",
+                "When coverage evidence identifies gaps, report them at file level with each available metric, uncovered lines, and uncovered statement, branch, or function details.",
+                "Include concise remediation guidance for every reported coverage gap, including adding or extending tests and refactoring only when needed for testability.",
+                "Report missing, malformed, stale, changing, or unusable coverage evidence as a distinct actionable validation failure."
+              ],
+              "donts": [
+                "Do not reduce a failed test run to only its exit code or reduce coverage failures to an undifferentiated percentage.",
+                "Do not claim complete coverage when detailed evidence is unavailable or unusable."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-18.7",
+          "dos": ["Support focused testing without silently broadening the requested scope."],
+          "donts": ["Do not replace a focused request with an unrelated broad run."],
+          "directives": [
+            {
+              "id": "A-18.7.0",
+              "dos": [
+                "Expose focused execution through the public eliware-test command.",
+                "Validate focused paths and report failures within the requested scope."
+              ],
+              "donts": [
+                "Do not require consumers to import internal harness modules to focus a run."
+              ]
+            },
+            {
+              "id": "A-18.7.1",
+              "dos": [
+                "Keep unrelated sources and checks out of focused failure reporting unless explicitly requested."
+              ],
+              "donts": [
+                "Do not silently broaden focused validation because a path is difficult to resolve."
+              ]
+            },
+            {
+              "id": "A-18.7.2",
+              "dos": [
+                "Expose only the current public harness commands and diagnostic options: --help, --version, --debug-timing, --ignore-100x4, --ignore-monolith-limits, and --no-runInBand.",
+                "Run the bundled convention-check execution path for a normal invocation and return its stable result and diagnostics through the public CLI contract."
+              ],
+              "donts": [
+                "Do not expose direct Jest, Oxlint, npm audit, npm pack, formatter, or other implementation commands as the consumer interface."
+              ]
+            },
+            {
+              "id": "A-18.7.3",
+              "dos": [
+                "Treat --help and --version as informational commands that perform no validation and return exit code 0.",
+                "Require explicit convention profile selection in package.json.eliware.apply for normal validation.",
+                "Allow diagnostic options to affect only their documented diagnostic or enforcement behavior; they must not select a different profile or invoke an unrelated command."
+              ],
+              "donts": [
+                "Do not infer profile applicability from repository shape, files, scripts, dependencies, or runtime behavior."
+              ]
+            },
+            {
+              "id": "A-18.7.4",
+              "dos": [
+                "Keep normal validation limited to bundled convention checks and their orchestration.",
+                "Keep publication, deployment, release, synchronization, and external package commands outside the harness runtime."
+              ],
+              "donts": [
+                "Do not run unrelated lifecycle stages or invoke the consumer test script recursively."
+              ]
+            },
+            {
+              "id": "A-18.7.5",
+              "dos": [
+                "Allow a recognized focused path with the selected test-related stage and keep discovery, diagnostics, and failures within that requested scope.",
+                "Keep stage selection and path focus orthogonal: a focused path does not add stages, and a stage flag does not broaden the path.",
+                "Reject unsupported, missing, or ambiguous focused paths with the stable convention failure result before executing unrelated validation."
+              ],
+              "donts": [
+                "Do not apply focused-path narrowing to an aggregate package operation or silently reinterpret a package path as a test focus.",
+                "Do not fall back to aggregate validation when a focused path cannot be resolved."
+              ]
+            },
+            {
+              "id": "A-18.7.6",
+              "dos": [
+                "Use these stable result categories and exit codes: 0 success, 8 Jest/test failure, 10 coverage failure, 12 lint failure, 14 internal tool/process failure, 17 package-check failure, and 18 convention, configuration, applicability, argument, format, or format-check failure.",
+                "Stop before test execution for invalid configuration, unsupported arguments, or inapplicable selected stages; preserve the stable failure result and diagnostics.",
+                "After test execution, preserve every failed-stage diagnostic and use the highest applicable post-test exit code as the aggregate result; numeric precedence is an output rule, not a ranking of root-cause severity."
+              ],
+              "donts": [
+                "Do not convert an unknown, skipped, partial, or inapplicable selected stage into success.",
+                "Do not allow a later result to erase an earlier failure diagnostic or change public exit semantics as an incidental implementation detail."
+              ]
+            },
+            {
+              "id": "A-18.7.7",
+              "dos": [
+                "Make --debug-timing useful for diagnosing slow or hanging tests by streaming timing diagnostics while validation is still running.",
+                "Report when each test suite starts so the last reported Running line identifies the suite that may be hanging.",
+                "Report each suite's completion and elapsed time as soon as that suite finishes.",
+                "Report completed individual test-case durations when the test runner provides them.",
+                "Keep live timing output separate from buffered machine-readable results used for coverage and final failure diagnostics.",
+                "Run the requested Jest validation as one normal execution with its established ordering, setup, lifecycle, and coverage semantics."
+              ],
+              "donts": [
+                "Do not buffer all timing output until the complete validation run exits.",
+                "Do not execute every test in a separate process merely to collect timing data.",
+                "Do not change test ordering, isolation, setup, coverage enforcement, or exit-code behavior solely because timing diagnostics are enabled.",
+                "Do not expose raw machine-readable timing payloads as the normal human-facing timing output."
+              ]
+            },
+            {
+              "id": "A-18.7.8",
+              "dos": [
+                "Monitor test execution progress during every Jest run, whether or not --debug-timing is enabled.",
+                "Terminate Jest early when no observable test progress has occurred for 15 seconds.",
+                "Report the currently running suite or test when the no-progress watchdog terminates execution, including that it timed out after 15 seconds.",
+                "Flag every individual test case that takes longer than 5 seconds, including its suite, test name, and measured duration.",
+                "Treat watchdog termination as a test failure with actionable diagnostics while preserving the existing failure result and exit-code contract."
+              ],
+              "donts": [
+                "Do not impose a global maximum duration on the complete Jest run.",
+                "Do not require --debug-timing for progress monitoring, watchdog termination, or slow-test diagnostics.",
+                "Do not terminate an active test merely because it exceeds 5 seconds when progress is still being observed; the 5-second threshold is a diagnostic flag, not the watchdog timeout.",
+                "Do not report a watchdog timeout without identifying the last known running suite or test when Jest provides that information."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-18.8",
+          "dos": [
+            "Implement the harness as a self-contained filesystem-discovered convention-check system.",
+            "Treat the published bundled checks as the complete runtime authority snapshot."
+          ],
+          "donts": [
+            "Do not require the private eliware/conventions repository or any other external authority repository at runtime.",
+            "Do not retain a legacy compatibility layer or a second legacy check registry."
+          ],
+          "directives": [
+            {
+              "id": "A-18.8.0",
+              "dos": [
+                "Store checks under src/checks/<profile>/ using filenames that are the exact published directive IDs.",
+                "Use subdirectories to represent the directive parent/child hierarchy, with the same hierarchy available to exemption traversal."
+              ],
+              "donts": [
+                "Do not use a separate mapping.json as the authoritative check registry when profile directories and directive-named modules provide that mapping."
+              ]
+            },
+            {
+              "id": "A-18.8.1",
+              "dos": [
+                "Give each bundled directive module a stable ruleId and a single check entry point that returns a pass or fail result for that exact rule.",
+                "Require the module filename, exported identity, and reported result identity to agree."
+              ],
+              "donts": [
+                "Do not combine unrelated directive identities into one unidentifiable module or silently treat a malformed module as a passing check."
+              ]
+            },
+            {
+              "id": "A-18.8.2",
+              "dos": [
+                "Provision the bundled check tree from the published convention directive set so that each known directive has a discoverable implementation location.",
+                "Keep directives that are not deterministically enforceable from being represented as successful enforcement merely because a scaffold exists; their implementation status must remain distinct from the harness result contract."
+              ],
+              "donts": [
+                "Do not claim that a placeholder module enforces a convention before its deterministic check logic exists."
+              ]
+            },
+            {
+              "id": "A-18.8.3",
+              "dos": [
+                "Skip an exempted rule and every discovered child rule beneath that rule before executing check logic.",
+                "Validate exemption IDs against the complete bundled check tree, not only the currently selected profiles."
+              ],
+              "donts": [
+                "Do not execute a check that is excluded by its applicable exemption or a parent exemption."
+              ]
+            },
+            {
+              "id": "A-18.8.4",
+              "dos": [
+                "Keep applicability selection and exemption evaluation separate from check implementation."
+              ],
+              "donts": [
+                "Do not make individual check modules infer their own profile applicability or exemption state."
+              ]
+            },
+            {
+              "id": "A-18.8.5",
+              "dos": [
+                "Treat missing or malformed harness configuration as a fast configuration failure for an in-scope validation target."
+              ],
+              "donts": ["Do not begin partial validation with missing or invalid configuration."]
+            },
+            {
+              "id": "A-18.8.7",
+              "dos": [
+                "Keep focused test execution available through the public harness boundary without reporting unrelated-module coverage failures."
+              ],
+              "donts": ["Do not broaden a focused run into unrelated validation."]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

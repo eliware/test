@@ -1,0 +1,713 @@
+{
+  "schemaVersion": "1.0",
+  "contractVersion": "8.0",
+  "kind": "contract-reference",
+  "description": "Normative Test contract reference. Contracts define harness behavior without making implementation or tests authoritative.",
+  "authority": {
+    "normativeSources": ["./directives.json", "./contracts.json"],
+    "implementationRole": "Repository files realize these contracts but do not redefine them.",
+    "verificationRole": "Tests and commands verify these contracts but are not authoritative.",
+    "externalBoundaries": [
+      "../../docs/authority-map.json",
+      "../../conventions/specs/general.json",
+      "../../conventions/specs/application.json",
+      "../../conventions/specs/cli.json",
+      "../../conventions/specs/npm-published.json",
+      "../../operations/specs/directives.json"
+    ],
+    "nonRedefinitionRule": "This file defines Test harness behavior and does not redefine repository conventions, convention profile meaning, exemption approval, publication, release, deployment, or operations policy."
+  },
+  "terminology": {
+    "root": "The repository directory being validated.",
+    "profile": "A named directory under the bundled src/checks tree.",
+    "check": "One bundled module responsible for one exact directive identity.",
+    "ruleId": "An exact E- or A-prefixed directive identifier, including all numeric components.",
+    "parentRuleId": "The nearest directive represented by the containing check directory.",
+    "selectedCheck": "A discovered check belonging to an explicitly selected profile.",
+    "exemptedCheck": "A selected check excluded by its own exemption or an exemption on an ancestor rule.",
+    "diagnostic": "A stable human-readable description of a validation failure or internal validation error."
+  },
+  "format": {
+    "requiredTopLevelFields": [
+      "schemaVersion",
+      "contractVersion",
+      "kind",
+      "description",
+      "authority",
+      "format",
+      "contracts"
+    ],
+    "requiredContractFields": [
+      "id",
+      "title",
+      "scope",
+      "directiveIds",
+      "dos",
+      "donts",
+      "contract",
+      "implementation",
+      "verification"
+    ],
+    "optionalContractFields": ["parent", "dependencies", "status"],
+    "contractIdPattern": "^C-\\d+(?:\\.\\d+)*$",
+    "directiveIdPattern": "^[EA]-\\d+(?:\\.\\d+)*$",
+    "contractSections": [
+      "purpose",
+      "inputs",
+      "outputs",
+      "errors",
+      "ordering",
+      "invariants",
+      "boundaries"
+    ],
+    "rules": [
+      "Contract IDs are unique within one repository.",
+      "directiveIds reference authoritative local directives or explicitly linked external directives.",
+      "Parent and dependency references must resolve and must not form cycles.",
+      "Implementation and verification references are evidence only.",
+      "A repository adopts this format by adding specs/contracts.json and linking it from specs/README.md."
+    ],
+    "directiveIds": "References are to authoritative local directives or explicitly linked external directives; repository convention IDs remain authoritative in eliware/conventions.",
+    "contract": "The exact inputs, outputs, errors, ordering, and invariants for one cohesive harness behavior.",
+    "implementation": "Non-authoritative repository-relative source ownership references.",
+    "verification": "Non-authoritative tests and commands used to verify the contract.",
+    "parent": "Optional contract hierarchy reference; referenced parents must exist and cycles are prohibited.",
+    "dependencies": "Optional cross-contract ordering or dependency references."
+  },
+  "contracts": [
+    {
+      "id": "C-18.1",
+      "title": "CLI entry and informational dispatch",
+      "scope": "public-cli",
+      "directiveIds": ["E-18.6", "A-18.7.2", "A-18.7.3"],
+      "dos": [
+        "Keep bin/eliware-test.mjs limited to process wiring and pass process.argv.slice(2) to the CLI.",
+        "Treat --help and --version as informational commands that perform no validation and return 0.",
+        "Use a writer callback for output, defaulting to console.log."
+      ],
+      "donts": [
+        "Do not expose internal modules as the consumer CLI boundary.",
+        "Do not perform repository validation for informational commands."
+      ],
+      "contract": {
+        "purpose": "Define the public Test entry behavior for informational CLI commands.",
+        "inputs": {
+          "args": "An ordered array of CLI argument strings.",
+          "write": "Optional function receiving one output string at a time.",
+          "root": "Optional validation root; defaults to process.cwd()."
+        },
+        "outputs": {
+          "return": "A numeric process exit code.",
+          "version": "The package version string when --version is present.",
+          "help": "The supported usage string when --help is present."
+        },
+        "errors": [
+          "Informational command failures are reported through the normal harness failure boundary."
+        ],
+        "ordering": ["Recognize --version/--help before validation or stage execution."],
+        "invariants": [
+          "Informational commands return 0 when their output is written successfully."
+        ],
+        "boundaries": {
+          "owns": ["Test CLI informational dispatch"],
+          "doesNotOwn": ["Repository conventions", "Release or deployment policy"]
+        }
+      },
+      "implementation": { "source": ["bin/eliware-test.mjs", "src/cli/run-cli.mjs"] },
+      "verification": { "tests": ["tests/cli/run-cli.test.mjs"], "commands": ["npm test"] }
+    },
+    {
+      "id": "C-18.2",
+      "title": "CLI validation dispatch and diagnostics",
+      "scope": "public-cli",
+      "directiveIds": ["E-18.6", "A-18.7.4", "A-18.7.6"],
+      "dos": [
+        "Run the bundled convention-validation path for a normal invocation.",
+        "Return the stable failure code associated with the failed validation stage, or 18 for convention, configuration, argument, or harness failures.",
+        "Preserve every failed-check diagnostic and optionally append timing diagnostics when requested.",
+        "When --debug-timing is enabled, report completed pipeline stages with total and since-previous-step durations.",
+        "When --debug-timing is enabled, report the slowest Jest test files and their slowest individual test cases."
+      ],
+      "donts": [
+        "Do not run unrelated publication, deployment, release, synchronization, or external package commands as validation side effects.",
+        "Do not erase an earlier diagnostic when a later operation fails."
+      ],
+      "contract": {
+        "purpose": "Define how Test runs validation and exposes diagnostics.",
+        "inputs": {
+          "args": "CLI arguments after informational handling.",
+          "root": "The target repository path."
+        },
+        "outputs": {
+          "stage": "{ code, category: 'conventions', diagnostics }",
+          "timing": "Optional ordered stage timing lines followed by slowest Jest file and test-case timing lines."
+        },
+        "errors": [
+          "Thrown orchestration errors become code 18 with their message as a diagnostic."
+        ],
+        "ordering": [
+          "Read options, run validation, write stage diagnostics, then write optional stage and Jest timing diagnostics."
+        ],
+        "invariants": [
+          "Successful validation returns code 0 and an empty diagnostics list.",
+          "Jest, coverage, lint, package-stage, internal, and convention failures retain their distinct stable exit codes.",
+          "Timing output is opt-in and does not change validation results or exit codes.",
+          "Jest timing is sorted slowest-first and includes only positive-duration files and tests."
+        ],
+        "boundaries": {
+          "owns": ["Test validation execution"],
+          "doesNotOwn": ["Project implementation"]
+        }
+      },
+      "implementation": {
+        "source": [
+          "src/cli/read-diagnostic-options.mjs",
+          "src/cli/write-stage-diagnostics.mjs",
+          "src/cli/write-debug-timing.mjs",
+          "src/orchestrators/run-convention-stage.mjs"
+        ]
+      },
+      "verification": {
+        "tests": [
+          "tests/cli/run-cli.test.mjs",
+          "tests/orchestrators/run-convention-stage.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.3",
+      "title": "Repository configuration loading",
+      "scope": "configuration",
+      "directiveIds": ["E-18.2", "A-18.2.0", "A-18.2.1", "A-18.8.5"],
+      "dos": [
+        "Read package.json before selecting or executing checks.",
+        "Require valid harness configuration before partial validation begins.",
+        "Keep applicability selection explicit rather than inferring it from repository shape."
+      ],
+      "donts": [
+        "Do not start check execution with missing, malformed, empty, or unknown harness configuration."
+      ],
+      "contract": {
+        "purpose": "Define explicit loading and interpretation of repository validation configuration.",
+        "inputs": { "packageJson": "Parsed target package metadata." },
+        "outputs": { "configuration": "{ apply: string[] } with validated harness applicability." },
+        "errors": ["Missing or malformed configuration throws a descriptive configuration error."],
+        "ordering": [
+          "Configuration validation precedes check discovery for selection and check execution."
+        ],
+        "invariants": ["No profile is implicitly added."],
+        "boundaries": {
+          "owns": ["Convention profile selection"],
+          "doesNotOwn": ["Convention applicability policy"]
+        }
+      },
+      "implementation": {
+        "source": ["src/cli/read-package-json.mjs", "src/orchestrators/read-convention-config.mjs"]
+      },
+      "verification": {
+        "tests": [
+          "tests/orchestrators/run-validation.test.mjs",
+          "tests/cli/run-cli.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.4",
+      "title": "Bundled check discovery and registry integrity",
+      "scope": "check-discovery",
+      "directiveIds": [
+        "E-18.3",
+        "E-18.4",
+        "A-18.3.0",
+        "A-18.4.0",
+        "A-18.4.1",
+        "A-18.8.0",
+        "A-18.8.1"
+      ],
+      "dos": [
+        "Discover checks recursively from the published src/checks filesystem.",
+        "Use profile directories and directive-named modules as the runtime registry.",
+        "Validate module identity, entry points, parentage, duplicates, and deterministic numeric ordering."
+      ],
+      "donts": [
+        "Do not fetch a private conventions repository or silently overwrite duplicate or malformed checks."
+      ],
+      "contract": {
+        "purpose": "Define discovery and identity checks for bundled convention modules.",
+        "inputs": {
+          "profiles": "Ordered profile names.",
+          "options": "Optional injectable root, directory reader, and module importer."
+        },
+        "outputs": {
+          "checks": "Ordered records containing ruleId, optional parentRuleId, and run."
+        },
+        "errors": [
+          "Unknown profile, duplicate rule ID, invalid module export, or invalid rule filename fails discovery."
+        ],
+        "ordering": [
+          "Sort by numeric rule components, using lexical comparison only as a final tie-breaker."
+        ],
+        "invariants": [
+          "A module filename and exported ruleId always identify the same rule.",
+          "Parentage is derived from containing rule-named directories."
+        ],
+        "boundaries": {
+          "owns": ["Check discovery and selection"],
+          "doesNotOwn": ["Check behavior"]
+        }
+      },
+      "implementation": {
+        "source": [
+          "src/orchestrators/discover-checks.mjs",
+          "src/orchestrators/select-convention-checks.mjs"
+        ]
+      },
+      "verification": {
+        "tests": [
+          "tests/orchestrators/run-validation.test.mjs",
+          "tests/orchestrators/discover-checks.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.5",
+      "title": "Check result and validation context",
+      "scope": "check-interface",
+      "directiveIds": ["E-18.6", "A-18.8.1"],
+      "dos": [
+        "Require every check to return one result with its exact rule ID and a pass or fail status.",
+        "Supply checks with the target root and parsed package metadata."
+      ],
+      "donts": [
+        "Do not expose warning, skipped, unknown, partial, or not-applicable result states."
+      ],
+      "contract": {
+        "purpose": "Define the stable result shape and context passed between checks and orchestration.",
+        "inputs": {
+          "context": "{ root, packageJson } unless a documented extension adds more fields."
+        },
+        "outputs": { "checkResult": "{ ruleId: string, status: 'pass'|'fail', message: string }" },
+        "errors": [
+          "A missing, malformed, or mismatched result throws an invalid-check-result error."
+        ],
+        "ordering": ["Result validation occurs immediately after each check returns."],
+        "invariants": [
+          "Check modules do not mutate shared orchestration state to communicate results."
+        ],
+        "boundaries": {
+          "owns": ["Check result execution"],
+          "doesNotOwn": ["Repository state mutation"]
+        }
+      },
+      "implementation": {
+        "source": ["src/checks/check-result.mjs", "src/orchestrators/run-validation.mjs"]
+      },
+      "verification": {
+        "tests": [
+          "tests/checks/check-result.test.mjs",
+          "tests/orchestrators/discover-checks.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.6",
+      "title": "Profile selection and exemption execution",
+      "scope": "check-execution",
+      "directiveIds": ["E-18.2", "E-18.6", "A-18.8.3", "A-18.8.4"],
+      "dos": [
+        "Execute only checks selected by validated profiles.",
+        "Validate exemption IDs against the complete bundled registry.",
+        "Skip an exempted rule and every descendant in its parentRuleId chain while preserving unrelated siblings."
+      ],
+      "donts": [
+        "Do not let check modules infer applicability or exemption state, and do not let an unknown exemption silently skip work."
+      ],
+      "contract": {
+        "purpose": "Define profile selection and ancestor-aware exemption evaluation.",
+        "inputs": {
+          "checks": "Selected discovered checks.",
+          "context": "Validation context.",
+          "exemptions": "Set of validated rule IDs."
+        },
+        "outputs": { "results": "Non-exempt CheckResults in deterministic execution order." },
+        "errors": ["Unknown exemption IDs and thrown check errors fail validation."],
+        "ordering": [
+          "Check ancestors are evaluated for exemption before the check runs.",
+          "Checks run sequentially in discovery order."
+        ],
+        "invariants": [
+          "An exact exemption excludes no sibling branch.",
+          "An ancestor exemption excludes all discovered descendants."
+        ],
+        "boundaries": {
+          "owns": ["Exemption evaluation"],
+          "doesNotOwn": ["Exemption approval authority"]
+        }
+      },
+      "implementation": {
+        "source": [
+          "src/orchestrators/read-exemptions.mjs",
+          "src/orchestrators/validate-exemption-records.mjs",
+          "src/orchestrators/validate-exemption-ids.mjs",
+          "src/orchestrators/execute-convention-checks.mjs"
+        ]
+      },
+      "verification": {
+        "tests": [
+          "tests/orchestrators/read-exemptions.test.mjs",
+          "tests/orchestrators/validate-exemption-records.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.7",
+      "title": "Validation stage aggregation and exit semantics",
+      "scope": "validation-stage",
+      "directiveIds": ["E-18.6", "A-18.6.0", "A-18.6.2", "A-18.7.6"],
+      "dos": [
+        "Aggregate all failed-check diagnostics deterministically.",
+        "Use stable exit categories and preserve every diagnostic."
+      ],
+      "donts": [
+        "Do not convert an unknown, skipped, partial, or failed required operation into success."
+      ],
+      "contract": {
+        "purpose": "Define aggregation of validation outcomes and process exit behavior.",
+        "inputs": { "runChecks": "Async callback returning CheckResults." },
+        "outputs": { "stage": "{ code, category: 'conventions', diagnostics: string[] }" },
+        "errors": ["A thrown callback error produces code 18 and one safe diagnostic."],
+        "ordering": ["Failure diagnostics follow check result order."],
+        "invariants": [
+          "All-pass results produce code 0 and no diagnostics.",
+          "Failed checks map to their documented stable stage code; multiple failures use the highest applicable code while retaining every diagnostic."
+        ],
+        "boundaries": {
+          "owns": ["Validation result aggregation"],
+          "doesNotOwn": ["Project quality decisions"]
+        }
+      },
+      "implementation": {
+        "source": [
+          "src/orchestrators/run-convention-stage.mjs",
+          "src/cli/write-stage-diagnostics.mjs"
+        ]
+      },
+      "verification": {
+        "tests": [
+          "tests/orchestrators/run-convention-stage.test.mjs",
+          "tests/cli/run-cli.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.8",
+      "title": "Focused execution",
+      "scope": "focused-testing",
+      "directiveIds": ["E-18.7", "A-18.7.0", "A-18.7.1", "A-18.7.5"],
+      "dos": [
+        "Expose focused testing through the public harness boundary.",
+        "Reject missing or ambiguous focused paths before unrelated execution.",
+        "Scope coverage to an unambiguous mirrored source mapping."
+      ],
+      "donts": [
+        "Do not silently fall back to the full suite or report unrelated-module coverage failures for a focused request."
+      ],
+      "contract": {
+        "purpose": "Define targeted execution without changing normal profile or exemption semantics.",
+        "inputs": {
+          "focusedPaths": "Recognized test paths supplied through the public invocation."
+        },
+        "outputs": {
+          "scope": "Only requested tests and unambiguously mapped source coverage are selected."
+        },
+        "errors": [
+          "Unsupported, missing, or ambiguous paths produce the stable convention failure result."
+        ],
+        "ordering": ["Path validation precedes test execution."],
+        "invariants": ["Focused selection does not add profiles or change exemption evaluation."],
+        "boundaries": {
+          "owns": ["Focused validation selection"],
+          "doesNotOwn": ["Convention profile definitions"]
+        }
+      },
+      "implementation": {
+        "source": ["src/cli/run-cli.mjs", "src/checks/general/E-1/E-1.20/run-jest.mjs"]
+      },
+      "verification": {
+        "tests": [
+          "tests/cli/run-cli.test.mjs",
+          "tests/checks/general/E-1/E-1.20/run-jest.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.9",
+      "title": "Coverage summary and 100×4 evaluation",
+      "scope": "coverage",
+      "directiveIds": ["E-18.6", "A-18.6.2", "A-18.6.4"],
+      "dos": [
+        "Evaluate statements, branches, functions, and lines independently against exactly 100.",
+        "Accept usable JSON totals or a usable Jest text summary fallback.",
+        "Reject stale, changing, invalid, missing, or zero-valued evidence as appropriate.",
+        "Preserve bounded test output and report detailed per-file coverage gaps with remediation guidance."
+      ],
+      "donts": [
+        "Do not treat missing instrumented entries or incomplete metrics as successful coverage.",
+        "Do not reduce test or coverage failures to an exit code without actionable evidence."
+      ],
+      "contract": {
+        "purpose": "Define the four-dimensional coverage summary and its gap reporting.",
+        "inputs": {
+          "summary": "Coverage metric object or report reader inputs.",
+          "report": "Optional report path and freshness clock/stat seams."
+        },
+        "outputs": {
+          "evaluation": "{ status: 'pass'|'fail', gaps: string[] }",
+          "summary": "{ statements, branches, functions, lines }",
+          "diagnostics": "Bounded test output plus per-file coverage gaps, metric percentages, uncovered locations, and remediation guidance."
+        },
+        "errors": [
+          "Invalid, stale, changing, or unusable reports produce a distinct actionable coverage failure."
+        ],
+        "ordering": ["Freshness is checked before and during report reading."],
+        "invariants": [
+          "Any metric other than exactly 100 appears in gaps.",
+          "The four metrics are never collapsed into one aggregate percentage."
+        ],
+        "boundaries": { "owns": ["Coverage reporting"], "doesNotOwn": ["Coverage instrumentation"] }
+      },
+      "implementation": {
+        "source": [
+          "src/checks/general/E-1/E-1.20.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.10.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.10/coverage-evidence-selection.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.10/coverage-report-readers.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.10/parse-detailed-coverage.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.10/parse-summary-coverage.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.10/parse-text-coverage.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.10/format-coverage-gaps.mjs"
+        ]
+      },
+      "verification": {
+        "tests": [
+          "tests/checks/general/E-1/E-1.20.test.mjs",
+          "tests/checks/general/E-1/E-1.20/E-1.20.10.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.10",
+      "title": "Process and external-state boundaries",
+      "scope": "process-safety",
+      "directiveIds": ["E-18", "E-18.6", "A-18.6.1", "A-18.6.3"],
+      "dos": [
+        "Use Node child-process APIs and argument arrays.",
+        "Bound captured output and preserve actionable failure context.",
+        "Keep validation read-only with respect to external systems."
+      ],
+      "donts": [
+        "Do not depend on shell pipelines, shell quoting, platform-specific executable assumptions, or unbounded output capture.",
+        "Do not publish, deploy, release, synchronize, tag, or push during validation."
+      ],
+      "contract": {
+        "purpose": "Define safety limits for process interaction, external state, and diagnostics.",
+        "inputs": { "command": "Executable and argument array supplied to a process adapter." },
+        "outputs": { "process": "Bounded stdout/stderr and normalized process status." },
+        "errors": [
+          "Spawn, timeout, nonzero status, and output-limit failures preserve safe context."
+        ],
+        "ordering": ["Argument construction is separate from process execution."],
+        "invariants": [
+          "External state is not mutated by validation.",
+          "Sensitive values are excluded from diagnostics."
+        ],
+        "boundaries": {
+          "owns": ["Validation safety and diagnostics"],
+          "doesNotOwn": ["Secrets management"]
+        }
+      },
+      "implementation": {
+        "source": [
+          "src/cli/run-cli.mjs",
+          "src/orchestrators/run-convention-stage.mjs",
+          "src/checks/general/E-1/E-1.20/run-jest.mjs",
+          "src/checks/general/E-1/E-1.20/create-jest-process-options.mjs",
+          "src/checks/general/E-1/E-1.20/jest-progress-reporter.mjs",
+          "src/checks/general/E-1/E-1.20/run-npm-audit.mjs",
+          "src/checks/npm-published/E-1.140/run-npm-pack.mjs",
+          "src/checks/general/E-1/E-1.4/run-oxlint.mjs",
+          "src/checks/run-prettier.mjs"
+        ]
+      },
+      "verification": {
+        "tests": [
+          "tests/cli/run-cli.test.mjs",
+          "tests/orchestrators/run-convention-stage.test.mjs",
+          "tests/checks/run-prettier.test.mjs"
+        ],
+        "commands": ["npm test"]
+      }
+    },
+    {
+      "id": "C-18.13",
+      "title": "Jest progress watchdog and slow-test diagnostics",
+      "scope": "jest-execution",
+      "directiveIds": ["E-18.6", "E-18.7", "A-18.7.8"],
+      "dos": [
+        "Observe progress for every Jest execution, regardless of whether debug timing is enabled.",
+        "Terminate Jest when no suite or test progress is observed for 15 seconds and report the last known execution context.",
+        "Flag each individual test case that takes more than 5 seconds, including its suite, name, and duration.",
+        "Keep watchdog and slow-test diagnostics separate from the optional human-readable debug-timing stream."
+      ],
+      "donts": [
+        "Do not impose a maximum duration on a healthy suite that continues making progress.",
+        "Do not terminate a suite merely because one test exceeds 5 seconds while progress continues.",
+        "Do not make debug timing a prerequisite for timeout detection or slow-test reporting."
+      ],
+      "contract": {
+        "purpose": "Define bounded Jest execution with progress-aware timeout and per-test duration diagnostics.",
+        "inputs": {
+          "jest": "One Jest child process launched through the harness process adapter.",
+          "progress": "Bundled reporter progress events identifying suite start and completion.",
+          "testResults": "Bundled reporter test-result events containing individual assertion durations."
+        },
+        "outputs": {
+          "normal": "The existing Jest result, output, and exit semantics when progress continues.",
+          "slowTests": "Deterministic diagnostics for every test case whose duration is greater than 5 seconds.",
+          "timeout": "A failed validation diagnostic identifying the last known suite or test and stating that it timed out after 15 seconds without progress."
+        },
+        "errors": [
+          "A watchdog timeout terminates the Jest child process and fails validation.",
+          "A slow test is a diagnostic convention failure even when the overall Jest process succeeds."
+        ],
+        "ordering": [
+          "Start or completion progress resets the 15-second no-progress timer.",
+          "A test result is inspected for slow cases after its suite result is received.",
+          "A watchdog timeout terminates the child before returning its process result."
+        ],
+        "invariants": [
+          "The 15-second watchdog is inactivity-based, not a global suite-duration limit.",
+          "The 5-second threshold is strictly greater than 5 seconds.",
+          "Timeout and slow-test diagnostics do not depend on --debug-timing.",
+          "Normal successful output remains quiet except for intentional failure diagnostics and explicitly requested debug timing."
+        ],
+        "boundaries": {
+          "owns": ["Jest progress observation", "Jest child timeout", "Slow-test diagnostics"],
+          "doesNotOwn": ["Jest test selection", "Global suite duration policy", "Convention applicability"]
+        }
+      },
+      "implementation": {
+        "source": [
+          "src/checks/general/E-1/E-1.20/run-child.mjs",
+          "src/checks/general/E-1/E-1.20/handle-child-progress.mjs",
+          "src/checks/general/E-1/E-1.20/run-jest.mjs",
+          "src/checks/general/E-1/E-1.20/jest-timing-reporter.mjs",
+          "src/checks/general/E-1/E-1.20/inspect-jest-output.mjs",
+          "src/checks/general/E-1/E-1.20.mjs",
+          "src/checks/general/E-1/E-1.20/E-1.20.20.mjs"
+        ]
+      },
+      "verification": {
+        "tests": [
+          "tests/checks/general/E-1/E-1.20/run-child.test.mjs",
+          "tests/checks/general/E-1/E-1.20/handle-child-progress.test.mjs",
+          "tests/checks/general/E-1/E-1.20/run-jest.test.mjs",
+          "tests/checks/general/E-1/E-1.20/create-jest-process-options.test.mjs",
+          "tests/checks/general/E-1/E-1.20/jest-progress-reporter.test.mjs",
+          "tests/checks/general/E-1/E-1.20/jest-timing-reporter.test.mjs",
+          "tests/checks/general/E-1/E-1.20/inspect-jest-output.test.mjs",
+          "tests/checks/general/E-1/E-1.20.test.mjs",
+          "tests/checks/general/E-1/E-1.20/E-1.20.20.test.mjs"
+        ],
+        "commands": ["npm test", "npm run lint"]
+      }
+    },
+    {
+      "id": "C-18.11",
+      "title": "Orchestration composition boundaries",
+      "scope": "orchestration",
+      "directiveIds": ["E-18.5", "A-18.5.0", "A-18.5.1"],
+      "dos": [
+        "Keep orchestrators responsible for composition, ordering, and dependency injection.",
+        "Keep check and process modules responsible for their own focused business logic.",
+        "Allow filesystem, process, clock, and package seams to be injected for deterministic verification."
+      ],
+      "donts": [
+        "Do not make a coordinator absorb unrelated check logic or require consumers to import internal orchestration modules."
+      ],
+      "contract": {
+        "purpose": "Define focused module composition boundaries for the validation harness.",
+        "inputs": {
+          "dependencies": "Explicit functions or adapters supplied at composition boundaries."
+        },
+        "outputs": { "pipeline": "Stable stage or check results without hidden side effects." },
+        "errors": ["Dependency failures retain their original safe context."],
+        "ordering": [
+          "Composition determines stage order; subordinate modules do not secretly reorder peer work."
+        ],
+        "invariants": [
+          "A new responsibility is represented by a focused module rather than appended to an unrelated module."
+        ],
+        "boundaries": {
+          "owns": ["Harness module decomposition guidance"],
+          "doesNotOwn": ["Project architecture outside Test"]
+        }
+      },
+      "implementation": { "source": ["src/orchestrators", "src/cli"] },
+      "verification": {
+        "tests": ["tests/orchestrators", "tests/cli"],
+        "commands": ["npm test", "npm run lint"]
+      }
+    },
+    {
+      "id": "C-18.12",
+      "title": "Contract traceability and verification boundary",
+      "scope": "governance",
+      "directiveIds": ["E-18", "E-18.4", "E-18.5", "E-18.6"],
+      "dos": [
+        "Keep each contract individually identifiable and traceable to implementation and verification evidence.",
+        "Use tests as evidence that contracts are fulfilled, not as the source of contract truth.",
+        "Keep contract references repository-relative and reviewable."
+      ],
+      "donts": [
+        "Do not let implementation behavior or a passing test silently redefine a contract."
+      ],
+      "contract": {
+        "purpose": "Define how Test contracts remain traceable to directives, implementation, and verification.",
+        "inputs": {
+          "contract": "One atomic record from this file.",
+          "evidence": "Optional implementation and verification references."
+        },
+        "outputs": {
+          "traceability": "A reviewer can identify the responsible implementation and verification evidence for each contract."
+        },
+        "errors": [
+          "Missing or invalid contract references are documentation/contract review failures."
+        ],
+        "ordering": ["Contract definition precedes implementation and verification evidence."],
+        "invariants": [
+          "The contract document remains authoritative for harness behavior even when implementation or tests are incomplete."
+        ],
+        "boundaries": {
+          "owns": ["Test contract references"],
+          "doesNotOwn": ["Convention and operations contracts"]
+        }
+      },
+      "implementation": {
+        "source": ["specs/directives.json", "specs/contracts.json", "src", "bin"]
+      },
+      "verification": {
+        "tests": ["tests", "tests/checks/general/E-1/E-1.17.test.mjs"],
+        "commands": ["npm test", "npm run lint", "git diff --check"]
+      }
+    }
+  ]
+}

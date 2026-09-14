@@ -1,36 +1,12 @@
-# Minimal consumer example
+# @eliware/test examples
 
-This example shows the supported v6 consumer setup with a mirrored `src/` and
-`tests/` tree.
+Examples demonstrate safe placeholder-based use of the public CLI.
 
-## Examples
+## Contents
 
-- [`minimal-consumer/README.md`](minimal-consumer/README.md) — minimal setup with Jest, coverage,
-  and lint commands
-- [`minimal-consumer/package.json`](minimal-consumer/package.json) — example package metadata
-- [`minimal-consumer/src/hello.mjs`](minimal-consumer/src/hello.mjs) — example source module
-- [`minimal-consumer/tests/hello.test.mjs`](minimal-consumer/tests/hello.test.mjs) — example test
+- No runnable consumer example has been added yet; the v8 CLI scaffold is
+  exercised by the repository tests.
 
-## Prerequisites
+Examples must never contain real secrets or private endpoints.
 
-- Node.js 26 or newer
-- npm
-
-## Install and run
-
-From this directory:
-
-```sh
-npm install
-npm test
-npm run lint
-```
-
-Expected output includes a passing Jest run, `100×4` coverage, and zero lint
-warnings. Remove generated `node_modules/`, coverage output, and the lockfile
-after trying it if you do not want to retain them.
-
-Examples use safe placeholders only; never add real secrets or private
-endpoints to an example.
-
-Return to the [root README](../README.md) for the consumer workflow.
+[Return to the root README](../README.md).

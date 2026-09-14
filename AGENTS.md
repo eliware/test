@@ -1,116 +1,120 @@
 # `@eliware/test` contributor guidance
 
-Applies to: repository-wide.
+## Instruction scope
 
-## Repository contributors
+These instructions apply repository-wide. No subdirectory-specific AGENTS.md
+files currently override them.
 
-This repository provides the single Eliware baseline for routine Jest
-testing, coverage enforcement, and Oxlint validation. Keep project-specific
-smoke, integration, regression, and end-to-end workflows in consuming
-repositories.
+## Read before changing
 
-The supported public interface is the CLI command `eliware-test`; internal
-structured toolkit results and source modules are implementation seams, not a
-consumer runtime API. The v6 package publishes the CLI, `src/`, `specs/`,
-README, specification overview, license, and release notes. Validate changes
-with `npm test`, `npm run lint`, `npm audit`, and
-`npm run pack` as applicable;
-keep package metadata, lockfiles, documentation, examples, and release notes
-synchronized.
+Read README.md, AGENTS.md, and applicable documentation before changes. In
+particular, read the applicable documentation and specifications under `docs/`
+and `specs/` before changing files.
 
-## Intentional deviations
+## Authoritative sources
 
-- This repository self-hosts its validation through `node bin/eliware-test.mjs`
-  because the package cannot install itself as its own development dependency.
-  Consumers must use the standard `eliware-test` and `eliware-test --lint`
-  scripts described below.
+- `eliware/docs` is authoritative for shared documentation content and
+  cross-repository ownership.
+- `eliware/conventions` is authoritative for repository structure, required
+  files, metadata, and committed contents.
+- `eliware/operations` is authoritative for release, deployment, and other
+  cross-cutting operational procedures.
+- Read `../docs/authority-map.json`, `../conventions/specs/`,
+  `../operations/specs/directives.json`, and the relevant local specification
+  before changing governance files.
+- This repository's `specs/directives.json` is authoritative only for the
+  validator harness contract; it does not define repository requirements,
+  exemptions, publication policy, deployment, or operations.
 
-## Rules
+## Repository identity
 
-- Preserve single responsibility: every module must have one clear purpose.
-  New behavior that introduces a new responsibility belongs in a new focused
-  module; do not add unrelated responsibilities to an existing module. Keep
-  orchestrators limited to composition and keep subordinate modules limited to
-  their own business logic. New code means new modules when the responsibility
-  is new.
-- Place each test in the lowest-level test file that corresponds to the module
-  it exercises. Keep implementation tests with their direct module pair, and
-  keep orchestration tests limited to composition and stage-order behavior; do
-  not duplicate lower-level cases in a higher-level orchestrator suite.
-- Passing the 100-line source or 200-line test monolith threshold does not
-  satisfy these design rules by itself. Those limits are warning signals for
-  possible responsibility or test-structure violations, not permission to keep
-  mixed responsibilities together or to place tests above their proper module.
-- Use Node.js 26, native ESM, and `.mjs` source and test files.
-- Keep Jest and Oxlint as npm runtime dependencies.
-- Keep package metadata, lockfile, README, release notes, and packed files
-  synchronized. If an exports or declaration surface exists, keep it
-  synchronized too; this package intentionally publishes neither.
-- Use Node.js child-process APIs and argument arrays; do not use shell
-  pipelines, `grep`, shell quoting, or platform-specific executable assumptions.
-- Preserve useful failure diagnostics and keep successful output concise.
-- Bound subprocess output, deduplicate repeated diagnostics, and normalize
-  workspace paths in user-facing output.
-- Keep the fixed coverage-fallback diagnostic opt-in through
-  `ELIWARE_TEST_DEBUG=1`; it does not expose forwarded arguments or arbitrary
-  values. Do not add debug output to normal runs.
-- Preserve focused test paths and reject missing paths before invoking Jest;
-  never silently fall back to the full suite.
-- Use strict path selection when an invocation contains only focused test
-  paths, and keep the selection behavior covered by regression tests.
-- Scope coverage to mirrored focused source files when they map unambiguously;
-  retain broad enforcement for unmappable paths.
-- Exclude dependency, VCS, coverage, build, and test-result directories from
-  discovery and linting by default.
-- Enforce statements, branches, functions, and lines independently.
-- Treat zero-valued text coverage and missing usable JSON coverage as gaps;
-  fall back to the Jest text report when JSON has no instrumented entries.
-- Invoke Oxlint with warnings denied so warning-level findings fail validation.
-- Run Jest in-band by default; support `--no-runInBand` as an explicit
-  diagnostic opt-out.
-- Support `--ignore-100x4` only as an explicit coverage-enforcement opt-out;
-  tests, lint, and coverage collection still run.
-- Do not hide real coverage gaps with ignore comments.
-- Run the deterministic repository-convention validator; use only exact,
-  documented path exceptions for requirements a repository genuinely cannot
-  satisfy.
+- Project: `@eliware/test`
+- Purpose: native v8 implementation of the shared Eliware deterministic
+  validation CLI.
+- Runtime: Node.js 26 with native ESM and `.mjs` source and test files.
 
-## Consumer migration
+## Scope and boundaries
 
-The following applies to projects consuming the published CLI; the repository
-rules above describe this package's own source and tests.
+- The older repository is reference material only; Test does not provide a
+  compatibility layer.
+- The CLI entrypoint is `bin/eliware-test.mjs`.
+- This repository performs local and CI validation only. Release, publication,
+  deployment, and other operational changes are controlled by Eliware runbooks.
+- Do not modify `test/src` or `test/tests` as part of documentation-only or
+  instruction-alignment work unless separately authorized.
+- Test validates repository directives as a consumer of the authoritative
+  Docs/Conventions/Operations policies; it does not own or redefine those
+  policies.
 
-1. Remove direct Jest and Oxlint dev dependencies unless required by runtime
-   code or a separately documented workflow.
-2. Install `@eliware/test` as a development dependency.
-3. Set `test` to `eliware-test` and `lint` to `eliware-test --lint`.
-4. Run `npm install` and review the lockfile.
-5. Run specialized smoke, integration, regression, and E2E checks separately.
-6. Run `npm run typecheck` when the project defines that script or its
-   TypeScript workflow requires it.
+## Repository-specific rules
+
+- Runtime commands are the package scripts in `package.json`; `.env.example`
+  documents repository environment configuration.
+- Application configuration, connection lifecycle, repeatable shutdown, and
+  externally observable workflow requirements must remain documented when they
+  apply to a consuming application repository.
+- Supported modes include the default validation run, `--lint`, `--format`,
+  `--format-check`, `--help`, `--version`, focused Jest arguments, and the
+  documented diagnostic flags. Usage validation rejects unsupported or missing
+  paths before Jest starts.
+- Platform-specific process behavior must use Node APIs and argument arrays;
+  do not assume a Unix shell or platform-specific executable names.
+- Keep new modules single-purpose and keep orchestrators limited to composition.
+- Exercise new modules through existing Jest suites where possible; add
+  mirrored test files when required by applicable conventions or explicitly
+  requested.
+- Keep fixtures and source-less test support under one root `artifacts/`
+  directory.
+- Add new orchestrators, sub-orchestrators, adapters, and registry modules;
+  do not add v8 behavior to the older reference repository.
+- Preserve stable rule IDs, deterministic diagnostics, and the public CLI
+  boundary.
+- Keep instructions actionable, current, and concise. Project-specific rules
+  may add detail without weakening the shared conventions; record approved
+  deviations explicitly.
+- Web, library, and application repositories have additional documentation
+  requirements described in the applicable conventions.
+
+## Required structure
+
+- Keep the root `README.md`, `AGENTS.md`, `package.json`, `package-lock.json`,
+  `LICENSE`, `.env.example`, and `RELEASE_NOTES.md` present.
+- Keep `bin/eliware-test.mjs`, `src/`, and `tests/` as the CLI implementation
+  and validation suites.
+- Keep `docs/README.md` and `specs/README.md` as indexes for documentation and
+  Test specifications.
+- Keep `.knit/` and the package metadata required by the applicable convention
+  profiles present and discoverable from the root README. Use the Tasklist CLI
+  for live task-board mutations.
+
+## Security and secrets
+
+- No runtime secret or local `.env` file belongs in version control.
+- Do not commit secrets, private runtime state, generated output, credentials,
+  or machine state.
+- Validation output must not print secrets or arbitrary environment values.
 
 ## Validation
 
-```text
-npm test
-```
+- Validation commands are `npm test`, `npm run lint`, `npm run format:check`,
+  and `git diff --check`.
 
-`npm test` is the primary full validation command and already includes lint,
-monolith enforcement, and defined package-script checks. Use
-`node bin/eliware-test.mjs` to exercise the repository-local executable
-directly, or `npm run lint` for standalone lint/policy diagnostics.
+## Approved deviations
 
-Normal validation uses `npm test`, which runs the defined consumer `audit`,
-`pack`, `build`, and `typecheck` scripts after the normal stages. These scripts
-are optional; when present, each must be a nonempty package script and must
-pass. Use `npm run <script>` only to isolate a failing package check.
+- The self-hosting scripts use the local CLI because `@eliware/test` cannot
+  install itself as its own development dependency. This is an approved
+  package exemption and does not change the shared convention authority.
 
-Use `eliware-test --help` for the supported command forms. When invoking via
-npm, pass Jest options after `npm test --`. Use `eliware-test --version` to
-verify the installed package version without starting validation.
-Use `eliware-test --ignore-100x4` or `eliware-test --ignore-monolith-limits`
-only for diagnostic or transitional runs; the latter skips only monolith
-enforcement while tests, coverage collection, and lint still run.
+## Change control and authorization
 
-Follow the pre-release and release runbooks before publication. Never
-tag, publish, push, or deploy without explicit authorization.
+- Do not release, publish, deploy, synchronize, tag, commit, or push without
+  explicit authorization for the current task.
+- The CLI performs no deploy, publish, release, or destructive repository
+  operation.
+- Public npm publication requirements are governed by the applied
+  `npm-published` convention profile and the Operations release runbook.
+
+## Subdirectory instructions
+
+No subdirectory-specific AGENTS.md files currently override these repository-wide
+instructions.

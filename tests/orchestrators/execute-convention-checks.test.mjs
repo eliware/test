@@ -1,0 +1,43 @@
+import { expect, test } from "@jest/globals";
+import { executeConventionChecks } from "../../src/orchestrators/execute-convention-checks.mjs";
+
+test("skips an exempted parent and all descendants", async () => {
+  const calls = [];
+  const checks = [
+    {
+      ruleId: "E-1",
+      run: async () => {
+        calls.push("parent");
+        return { ruleId: "E-1", status: "pass", message: "" };
+      },
+    },
+    {
+      ruleId: "A-1.0",
+      parentRuleId: "E-1",
+      run: async () => {
+        calls.push("child");
+        return { ruleId: "A-1.0", status: "pass", message: "" };
+      },
+    },
+    {
+      ruleId: "E-2",
+      run: async () => {
+        calls.push("other");
+        return { ruleId: "E-2", status: "pass", message: "" };
+      },
+    },
+  ];
+  const results = await executeConventionChecks(checks, {}, new Set(["E-1"]));
+  expect(calls).toEqual(["other"]);
+  expect(results).toEqual([{ ruleId: "E-2", status: "pass", message: "" }]);
+});
+
+test("rejects a check result with the wrong identity", async () => {
+  await expect(
+    executeConventionChecks(
+      [{ ruleId: "E-1", run: async () => ({ ruleId: "E-2", status: "pass", message: "" }) }],
+      {},
+      new Set(),
+    ),
+  ).rejects.toThrow("invalid result");
+});
