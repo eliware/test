@@ -7,8 +7,8 @@ import { hasMarkdownFragment } from "./validate-markdown-fragment.mjs";
 export async function validateMarkdownLinks(root, files) {
   for (const relativeFile of files.filter((file) => file.endsWith(".md"))) {
     const content = await readFile(join(root, relativeFile), "utf8");
-    for (const { reference, referenceLabel, bareReference } of extractMarkdownLinks(content)) {
-      if (referenceLabel || !reference || (bareReference && !/[./]/u.test(reference))) continue;
+    for (const { reference, referenceLabel } of extractMarkdownLinks(content)) {
+      if (referenceLabel || !reference) continue;
       const target = resolveMarkdownLinkTarget(root, relativeFile, reference);
       if (!target) continue;
       const [, fragment] = reference.split("#", 2);

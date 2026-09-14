@@ -45,10 +45,35 @@ test("reads detailed Istanbul evidence and identifies locations", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("falls back to the Jest text summary", async () => {
+test("rejects an aggregate-only Jest text summary", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
-  await expect(readCoverageEvidenceFromCandidates(root, "All files | 100 | 100 | 100 | 100 |\n")).resolves.toMatchObject({
-    source: "Jest text output", totals: { lines: 100 },
+  await expect(readCoverageEvidenceFromCandidates(root, "All files | 100 | 100 | 100 | 100 |\n"))
+    .rejects.toThrow("Coverage evidence is missing");
+  await rm(root, { recursive: true, force: true });
+});
+
+test("falls back to Jest text with file-level evidence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  const text = [
+    "File | % Stmts | % Branch | % Funcs | % Lines |",
+    "src/example.mjs | 100 | 100 | 100 | 100 |",
+    "All files | 100 | 100 | 100 | 100 |",
+  ].join("\n");
+  await expect(readCoverageEvidenceFromCandidates(root, text)).resolves.toMatchObject({
+    source: "Jest text output", totals: { lines: 100 }, gaps: [],
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("reports file-level gaps from Jest text", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  const text = [
+    "src/example.mjs | 90 | 80 | 70 | 60 |",
+    "All files | 90 | 80 | 70 | 60 |",
+  ].join("\n");
+  await expect(readCoverageEvidenceFromCandidates(root, text)).resolves.toMatchObject({
+    source: "Jest text output",
+    gaps: [{ file: "src/example.mjs", metrics: { statements: 90, branches: 80, functions: 70, lines: 60 } }],
   });
   await rm(root, { recursive: true, force: true });
 });
@@ -77,7 +102,7 @@ test("rejects stale evidence and invalid evidence without usable text", async ()
   await expect(readCoverageEvidenceFromCandidates(root, "", 1.5, {
     statFile: async (path) => {
       if (!path.endsWith("coverage-summary.json")) return { mtimeMs: 2 };
-      return { mtimeMs: summaryCalls++ === 0 ? 1 : 2 };
+      return { mtimeMs: summaryCalls++ === 0 ? 1 : 1.4 };
     },
   })).rejects.toThrow("stale");
   await rm(root, { recursive: true, force: true });

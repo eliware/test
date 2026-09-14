@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { recordJestContext } from "../../../../../../src/checks/general/E-1/E-1.20/record-jest-context.mjs";
+import { recordJestContext } from "../../../../../src/checks/general/E-1/E-1.20/record-jest-context.mjs";
 
 test("records Jest output and timing context", () => {
   const setJestOutput = jest.fn();

@@ -10,7 +10,7 @@ test("builds a quiet progress-aware Jest process configuration", () => {
   options.onProgress("[eliware-test-progress] test tests/hanging.test.mjs :: test 4 0.100s\n");
   options.onProgress("unrecognized progress text\n");
   options.onTimeout();
-  expect(onTimeout).toHaveBeenCalledWith("Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.");
+  expect(onTimeout).toHaveBeenCalledWith("Test suite tests/hanging.test.mjs :: test 4 timed out after 15 seconds without progress.");
 });
 
 test("uses defaults when optional arguments are omitted", () => {

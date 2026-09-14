@@ -3,7 +3,7 @@ import { executeValidationPlan } from "../../src/orchestrators/execute-validatio
 
 test("executes the selected validation plan", async () => {
   const timing = { step: jest.fn() };
-  const checks = [{ ruleId: "E-1.0", run: async () => ({ status: "pass" }) }];
+  const checks = [{ ruleId: "E-1.0", run: async () => ({ ruleId: "E-1.0", status: "pass" }) }];
   await expect(executeValidationPlan(checks, { timing }, new Set())).resolves.toEqual([
     { ruleId: "E-1.0", status: "pass" },
   ]);

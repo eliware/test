@@ -36,3 +36,15 @@ test("normalizes structured-reference discovery failures through the check bound
   expect(result.status).toBe("fail");
   expect(result.message).toContain("Structured JSON references must be valid and resolvable");
 });
+
+test("normalizes unexpected structured-reference failures", async () => {
+  const result = await run(
+    { root: "fixture" },
+    { loadDocuments: async () => { throw new Error("discovery failed"); } },
+  );
+  expect(result).toEqual({
+    ruleId: "A-1.25.0.0",
+    status: "fail",
+    message: "Structured JSON references must be valid and resolvable: discovery failed",
+  });
+});

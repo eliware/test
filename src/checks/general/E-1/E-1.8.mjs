@@ -27,12 +27,9 @@ export async function run({ root, packageJson, trackedFiles, findFiles = findRep
     return fail(ruleId, `Local .env must define the mailbox owner as ${expected}.`);
   }
 
-  let tracked;
-  try {
-    tracked = trackedFiles ? new Set(trackedFiles) : new Set(await readTrackedPaths(root));
-  } catch (error) {
-    return fail(ruleId, `Environment files could not be inspected: ${error.message}`);
-  }
+  const tracked = trackedFiles
+    ? new Set(trackedFiles)
+    : new Set((await readTrackedPaths(root)) ?? []);
   if (tracked?.has(".env")) {
     return fail(ruleId, "The local mailbox owner file .env must remain untracked.");
   }

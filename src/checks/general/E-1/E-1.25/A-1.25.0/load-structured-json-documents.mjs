@@ -2,7 +2,12 @@ import { readFile } from "node:fs/promises";
 import { collectJsonFiles } from "./collect-json-files.mjs";
 
 export async function loadStructuredJsonDocuments(root) {
-  const files = await collectJsonFiles(root);
+  let files;
+  try {
+    files = await collectJsonFiles(root);
+  } catch (error) {
+    return { error: error.message };
+  }
   const documents = new Map();
   for (const file of files) {
     try {

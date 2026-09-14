@@ -109,3 +109,11 @@ test("fails closed when repository inspection cannot run", async () => {
   await expect(run({ root }, async () => null)).resolves.toEqual(expected);
   await rm(root, { recursive: true, force: true });
 });
+
+test("fails closed when fallback filesystem inspection cannot run", async () => {
+  await expect(run({ root: join(tmpdir(), "eliware-test-missing-secrets-root") })).resolves.toEqual({
+    ruleId: "E-1.6.0",
+    status: "fail",
+    message: "Repository contents could not be inspected for secret or runtime-state artifacts.",
+  });
+});

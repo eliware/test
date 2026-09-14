@@ -4,7 +4,7 @@ import { prepareValidationExemptions } from "../../src/orchestrators/prepare-val
 test("combines package exemptions with ignored rule IDs", () => {
   const packageJson = {
     eliware: {
-      exempt: [{ ruleId: "E-1.0", reason: "fixture", approver: "Eli", expiry: null }],
+      exempt: [{ ruleId: "E-1.0", reason: "fixture", approver: "Eli", approvalTimestamp: "2026-09-14", expiry: null }],
     },
   };
   const checks = [{ ruleId: "E-1.0" }, { ruleId: "E-1.1" }];

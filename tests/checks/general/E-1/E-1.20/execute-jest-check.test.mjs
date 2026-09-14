@@ -1,9 +1,9 @@
 import { expect, jest, test } from "@jest/globals";
 
 const runJest = jest.fn();
-jest.unstable_mockModule("../../../../../../src/checks/general/E-1/E-1.20/run-jest.mjs", () => ({ runJest }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.20/run-jest.mjs", () => ({ runJest }));
 const { executeJestCheck } = await import(
-  "../../../../../../src/checks/general/E-1/E-1.20/execute-jest-check.mjs",
+  "../../../../../src/checks/general/E-1/E-1.20/execute-jest-check.mjs",
 );
 
 test("executes Jest and records its start time", async () => {
