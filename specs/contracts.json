@@ -120,11 +120,12 @@
       "id": "C-18.2",
       "title": "CLI validation dispatch and diagnostics",
       "scope": "public-cli",
-      "directiveIds": ["E-18.6", "A-18.7.4", "A-18.7.6"],
+      "directiveIds": ["E-18.6", "A-18.7.4", "A-18.7.6", "A-18.7.9"],
       "dos": [
         "Run the bundled convention-validation path for a normal invocation.",
         "Return the stable failure code associated with the failed validation stage, or 18 for convention, configuration, argument, or harness failures.",
         "Preserve every failed-check diagnostic and optionally append timing diagnostics when requested.",
+        "When validation succeeds with no diagnostics, emit exactly one line: All tests passed | 100x4 coverage | 0 lint warnings.",
         "When --debug-timing is enabled, report completed pipeline stages with total and since-previous-step durations.",
         "When --debug-timing is enabled, report the slowest Jest test files and their slowest individual test cases."
       ],
@@ -140,6 +141,7 @@
         },
         "outputs": {
           "stage": "{ code, category: 'conventions', diagnostics }",
+          "cleanSuccess": "Exactly one line: All tests passed | 100x4 coverage | 0 lint warnings.",
           "timing": "Optional ordered stage timing lines followed by slowest Jest file and test-case timing lines."
         },
         "errors": [
@@ -150,6 +152,8 @@
         ],
         "invariants": [
           "Successful validation returns code 0 and an empty diagnostics list.",
+          "A clean non-debug success writes only the cleanSuccess line; it writes no other normal output.",
+          "Any diagnostic, failure, or requested debug timing suppresses the cleanSuccess-only output mode.",
           "Jest, coverage, lint, package-stage, internal, and convention failures retain their distinct stable exit codes.",
           "Timing output is opt-in and does not change validation results or exit codes.",
           "Jest timing is sorted slowest-first and includes only positive-duration files and tests."

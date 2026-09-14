@@ -309,6 +309,17 @@
                 "Do not terminate an active test merely because it exceeds 5 seconds when progress is still being observed; the 5-second threshold is a diagnostic flag, not the watchdog timeout.",
                 "Do not report a watchdog timeout without identifying the last known running suite or test when Jest provides that information."
               ]
+            },
+            {
+              "id": "A-18.7.9",
+              "dos": [
+                "When validation succeeds without diagnostics, emit exactly one concise human-readable line: All tests passed | 100x4 coverage | 0 lint warnings.",
+                "Keep the clean-run line unchanged across normal successful invocations."
+              ],
+              "donts": [
+                "Do not emit stage summaries, Jest banners, timing output, subprocess noise, or incidental logs during a normal clean run.",
+                "Do not emit the clean-run line when any validation failure or diagnostic is present."
+              ]
             }
           ]
         },
