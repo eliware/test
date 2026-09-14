@@ -1,7 +1,8 @@
 import { expect, test } from "@jest/globals";
+import { resolve } from "node:path";
 import { validateAuthorityMapPaths } from "../../../../src/checks/documentation/E-1.100/validate-authority-map-paths.mjs";
 
-const context = { root: "C:\\repo", file: "C:\\repo\\authority-map.json" };
+const context = { root: resolve("fixture-repo"), file: resolve("fixture-repo", "authority-map.json") };
 
 test("accepts empty optional path collections", async () => {
   await expect(validateAuthorityMapPaths(context)).resolves.toBeNull();
