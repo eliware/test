@@ -52,6 +52,13 @@ test("rejects an aggregate-only Jest text summary", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("requires a run timestamp when fresh evidence is required", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  await expect(readCoverageEvidenceFromCandidates(root, "", 0, { requireFresh: true }))
+    .rejects.toThrow("bound to the current Jest run");
+  await rm(root, { recursive: true, force: true });
+});
+
 test("falls back to Jest text with file-level evidence", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
   const text = [

@@ -17,5 +17,18 @@ test("parses complete detailed files and all detailed metric shapes", () => {
   });
   expect(result.gaps).toEqual([]);
   expect(result.totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
-  expect(parseDetailed(null).totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
+  expect(parseDetailed(null)).toBeNull();
+});
+
+test("ignores out-of-scope and empty coverage entries", () => {
+  const result = parseDetailed({
+    "tests/example.test.mjs": { s: { 0: 0 } },
+    "src/empty.mjs": {},
+    "src/covered.mjs": { s: { 0: 1 } },
+    "src/branch-only.mjs": { b: { 0: [1] } },
+  });
+  expect(result).toEqual({
+    gaps: [],
+    totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
+  });
 });

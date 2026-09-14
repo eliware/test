@@ -15,6 +15,7 @@ export async function run(context, readEvidence = readCoverageEvidenceFromCandid
       context.root,
       context.jestResult.stdout,
       context.jestResult.startedAt,
+      { requireFresh: true },
     );
     const gaps = ["statements", "branches", "functions", "lines"].filter(
       (metric) => evidence.totals[metric] !== 100,

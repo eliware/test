@@ -10,7 +10,10 @@ const candidates = [
   "coverage.json",
 ];
 
-export async function readCoverageEvidenceFromCandidates(root, testOutput = "", startedAt = 0, { read = readFile, statFile = stat } = {}) {
+export async function readCoverageEvidenceFromCandidates(root, testOutput = "", startedAt = 0, { read = readFile, statFile = stat, requireFresh = false } = {}) {
+  if (requireFresh && !startedAt) {
+    throw new Error("Coverage evidence cannot be bound to the current Jest run. Rerun Jest with coverage enabled.");
+  }
   let lastError;
   for (const relativePath of candidates) {
     try {

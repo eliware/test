@@ -6,6 +6,6 @@ test("accepts fresh coverage evidence", () => {
 });
 
 test("rejects stale or changed coverage evidence", () => {
-  expect(() => assertFreshCoverage({ mtimeMs: 2 }, { mtimeMs: 2 }, "coverage.json", 1)).toThrow("stale");
+  expect(() => assertFreshCoverage({ mtimeMs: 2 }, { mtimeMs: 2 }, "coverage.json", 3)).toThrow("stale");
   expect(() => assertFreshCoverage(null, null, "coverage.json", 1)).toThrow("stale");
 });
