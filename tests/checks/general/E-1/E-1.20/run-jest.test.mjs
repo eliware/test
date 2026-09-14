@@ -47,6 +47,8 @@ test("maps a focused test to its mirrored source coverage", async () => {
     "--coverageReporters=json-summary",
     "--coverageReporters=text",
     "--reporters",
+    "default",
+    "--reporters",
     expect.stringContaining("jest-progress-reporter.mjs"),
     "--collectCoverageFrom",
     "src/sample.mjs",

@@ -21,6 +21,8 @@ export async function runJest(root, args = [], execute = runChild, options = {})
       "--coverageReporters=json-summary",
       "--coverageReporters=text",
       "--reporters",
+      "default",
+      "--reporters",
       PROGRESS_REPORTER,
       ...(args.includes("--debug-timing") ? ["--reporters", TIMING_REPORTER] : []),
       ...focusedCoverage,
