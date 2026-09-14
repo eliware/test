@@ -27,3 +27,8 @@ export function workflowCommands(document) {
     workflowRunSteps(job).map((step) => ({ job: id, ...step })),
   );
 }
+
+export function isValidationJob(id, job) {
+  const label = `${id} ${job?.name ?? ""}`;
+  return /(?:^|\b)(?:ci|check|test|validate|validation)(?:\b|$)/iu.test(label);
+}

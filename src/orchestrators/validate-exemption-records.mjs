@@ -9,12 +9,12 @@ export function validateExemptionRecords(records) {
         !entry.ruleId ||
         typeof entry.reason !== "string" ||
         !entry.reason.trim() ||
-        typeof entry.approver !== "string" ||
-        !entry.approver.trim() ||
+        entry.approver !== "Eli" ||
         typeof entry.approvalTimestamp !== "string" ||
-        !entry.approvalTimestamp.trim() ||
+        !isValidTimestamp(entry.approvalTimestamp) ||
         (entry.expiry !== null && typeof entry.expiry !== "string") ||
-        (typeof entry.expiry === "string" && !isValidDate(entry.expiry))
+        (typeof entry.expiry === "string" && (!isValidDate(entry.expiry) || isExpired(entry.expiry) || !isValidReview(entry.review, entry.expiry))) ||
+        (entry.expiry === null && entry.review !== undefined)
       );
     })
   ) {
@@ -27,8 +27,20 @@ export function validateExemptionRecords(records) {
     throw new Error("Convention exemption rule IDs must be unique.");
 }
 
+function isValidReview(value, expiry) {
+  return typeof value === "string" && isValidDate(value) && Date.parse(`${value}T00:00:00.000Z`) <= Date.parse(`${expiry}T23:59:59.999Z`);
+}
+
 function isValidDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().startsWith(`${value}T`);
+}
+
+function isValidTimestamp(value) {
+  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
+function isExpired(value) {
+  return Date.parse(`${value}T23:59:59.999Z`) < Date.now();
 }

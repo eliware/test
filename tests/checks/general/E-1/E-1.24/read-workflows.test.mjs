@@ -4,7 +4,13 @@ import {
   workflowCommands,
   workflowJobs,
   workflowRunSteps,
+  isValidationJob,
 } from "../../../../../src/checks/general/E-1/E-1.24/read-workflows.mjs";
+
+test("identifies validation jobs by their declared job identity", () => {
+  expect(isValidationJob("validate", {})).toBe(true);
+  expect(isValidationJob("publish", { name: "release" })).toBe(false);
+});
 
 test("collects typed values recursively without inspecting source text", () => {
   const document = {

@@ -8,7 +8,9 @@ export const parentRuleId = "E-1.140";
 
 export async function run({ root }) {
   try {
-    for (const workflow of await readWorkflows(root)) {
+    const workflows = await readWorkflows(root);
+    if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0)) return fail(ruleId, "npm-published repositories must define a publication workflow.");
+    for (const workflow of workflows) {
       const publication = npmPublicationJobs(workflow);
       if (publication.length === 0) {
         if (/\bnpm\s+publish\b/i.test(workflow.content)) {
@@ -29,8 +31,8 @@ export async function run({ root }) {
           `Publication workflow must inherit the validation gate: ${workflow.name}.`,
         );
     }
-  } catch {
-    return pass(ruleId);
+  } catch (error) {
+    return fail(ruleId, `npm publication workflows could not be read: ${error.message}`);
   }
   return pass(ruleId);
 }

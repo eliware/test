@@ -9,5 +9,5 @@ export function collectEnvironmentMember(node, aliases, variables) {
   const source = isProcessEnv(node.object) || (node.object.type === "Identifier" && aliases.has(node.object.name));
   if (!source) return;
   const name = propertyName(node.property);
-  if (name) addVariable(variables, name);
+  addVariable(variables, name);
 }

@@ -41,3 +41,18 @@ test("rejects a check result with the wrong identity", async () => {
     ),
   ).rejects.toThrow("invalid result");
 });
+
+test("does not represent non-deterministic checks as successful enforcement", async () => {
+  let calls = 0;
+  const run = async () => {
+    calls += 1;
+    return { ruleId: "E-3", status: "pass", message: "" };
+  };
+  const results = await executeConventionChecks(
+    [{ ruleId: "E-3", enforcementMode: "non-deterministic", run }],
+    {},
+    new Set(),
+  );
+  expect(calls).toBe(0);
+  expect(results).toEqual([]);
+});

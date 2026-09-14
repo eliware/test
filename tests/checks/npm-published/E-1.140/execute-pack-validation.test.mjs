@@ -7,7 +7,8 @@ test("skips pack execution outside the pack stage", async () => {
       root: "C:\\repo",
       executePack: true,
       mode: "other",
-      runPack: async () => ({ code: 0 }),
+      packageJson: { files: ["README.md", "LICENSE", "RELEASE_NOTES.md"] },
+      runPack: async () => ({ code: 0, stdout: JSON.stringify([{ files: ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"].map((path) => ({ path })) }]) }),
     }),
   ).resolves.toBeNull();
 });
@@ -47,7 +48,18 @@ test("reports successful pack execution", async () => {
       root: "C:\\repo",
       executePack: true,
       mode: "pack",
-      runPack: async () => ({ code: 0 }),
+      packageJson: { files: ["README.md", "LICENSE", "RELEASE_NOTES.md"] },
+      runPack: async () => ({ code: 0, stdout: JSON.stringify([{ files: ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"].map((path) => ({ path })) }]) }),
     }),
   ).resolves.toBeNull();
+});
+
+test("rejects a successful pack without usable manifest output", async () => {
+  await expect(executePackValidation({
+    root: "C:\\repo",
+    packageJson: { files: ["README.md", "LICENSE", "RELEASE_NOTES.md"] },
+    executePack: true,
+    mode: "pack",
+    runPack: async () => ({ code: 0, stdout: null, stderr: null }),
+  })).resolves.toContain("invalid JSON");
 });

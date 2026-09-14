@@ -24,12 +24,12 @@ async function fixture(overrides = {}) {
     ...overrides,
   };
   await writeFile(join(root, "specs", "contracts.json"), JSON.stringify(contract));
+  await writeFile(join(root, "specs", "directives.json"), JSON.stringify({ directives: [{ id: "E-1.25" }] }));
   await writeFile(join(root, "specs", "README.md"), "- [contracts.json](contracts.json)");
   return root;
 }
 
 const cleanup = (root) => rm(root, { recursive: true, force: true });
-
 test("passes a complete shared contract record", async () => {
   const root = await fixture();
   await expect(run({ root })).resolves.toEqual({ ruleId: "A-1.25.1", status: "pass", message: "" });
@@ -166,7 +166,21 @@ test("rejects unresolved contract graph references", async () => {
   );
   await cleanup(root);
 });
+test("resolves directive IDs against the local directive document", async () => {
+  const root = await fixture({ contracts: [{ ...baseContract(), directiveIds: ["E-9.9"] }] });
+  await writeFile(join(root, "specs", "directives.json"), JSON.stringify({ directives: [{ id: "E-1.25" }] }));
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("unresolved directive ID") }));
+  await cleanup(root);
 
+  const empty = await fixture({ contracts: [{ ...baseContract(), directiveIds: [] }] });
+  await writeFile(join(empty, "specs", "directives.json"), JSON.stringify({ directives: [{ id: "E-1.25" }] }));
+  await expect(run({ root: empty })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await cleanup(empty);
+  const invalid = await fixture();
+  await writeFile(join(invalid, "specs", "directives.json"), "not json");
+  await expect(run({ root: invalid })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("directives.json is invalid") }));
+  await cleanup(invalid);
+});
 function baseContract() {
   const sections = Object.fromEntries(
     ["purpose", "inputs", "outputs", "errors", "ordering", "invariants"].map((key) => [key, []]),

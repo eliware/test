@@ -13,6 +13,7 @@ export async function executeConventionChecks(checks, context, exemptions) {
   };
   for (const check of checks) {
     if (isExempt(check.ruleId)) continue;
+    if (check.enforcementMode === "non-deterministic") continue;
     context.timing?.step(`${check.ruleId} started`, `${check.ruleId} completed`);
     results.push(assertCheckResult(await check.run(context), check.ruleId));
   }

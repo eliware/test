@@ -54,3 +54,31 @@ test("rejects missing, invalid, and empty directive documents", async () => {
   });
   await rm(empty, { recursive: true, force: true });
 });
+
+test("checks the local authority namespace when authority metadata is present", async () => {
+  const valid = await fixture([{ id: "E-18", directives: [{ id: "A-18.1" }] }]);
+  await writeFile(join(valid, "specs", "authority.json"), JSON.stringify({ subjects: [{ directives: [{ ids: ["E-18"] }] }] }));
+  await expect(run({ root: valid })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await rm(valid, { recursive: true, force: true });
+
+  const missing = await fixture([{ id: "E-18", directives: [{ id: "A-18.1" }] }]);
+  await writeFile(join(missing, "specs", "authority.json"), JSON.stringify({ subjects: [{ directives: [{ ids: ["E-19"] }] }] }));
+  await expect(run({ root: missing })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("E-18") }));
+  await rm(missing, { recursive: true, force: true });
+
+  const invalid = await fixture([{ id: "E-18", directives: [{ id: "A-18.1" }] }]);
+  await writeFile(join(invalid, "specs", "authority.json"), "not json");
+  await expect(run({ root: invalid })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await rm(invalid, { recursive: true, force: true });
+
+  for (const authority of [
+    { subjects: [] },
+    { subjects: [{}] },
+    { subjects: [{ directives: [null, {}] }] },
+  ]) {
+    const root = await fixture([{ id: "E-18", directives: [{ id: "A-18.1" }] }]);
+    await writeFile(join(root, "specs", "authority.json"), JSON.stringify(authority));
+    await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+    await rm(root, { recursive: true, force: true });
+  }
+});

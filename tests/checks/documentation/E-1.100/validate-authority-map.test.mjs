@@ -11,6 +11,7 @@ function entry(overrides = {}) {
     package: "./package.json",
     authorityFile: "./specs/authority.json",
     reference: "./README.md",
+    governs: ["example.subject"],
     directiveNamespaces: ["E-1"],
     ...overrides,
   };
@@ -59,6 +60,12 @@ test("rejects duplicate repositories and invalid registry records", async () => 
       document: { repositoryRegistry: [entry({ directiveNamespaces: ["invalid"] })] },
     }),
   ).resolves.toContain("valid directiveNamespaces");
+  await expect(
+    validateAuthorityMap({ root, file, document: { repositoryRegistry: [entry({ governs: [] })] } }),
+  ).resolves.toContain("valid governs targets");
+  await expect(
+    validateAuthorityMap({ root, file, document: { repositoryRegistry: [entry({ baselineFor: ["eliware/missing"] })] } }),
+  ).resolves.toContain("unsupported delegation");
 });
 
 async function fixture(authority = { repositoryId: "eliware/example" }) {
@@ -146,7 +153,7 @@ test("propagates invalid authority links and allows unavailable external records
       ...context,
       document: { repositoryRegistry: [entry({ authorityFile: "../external.json" })] },
     }),
-  ).resolves.toBeNull();
+  ).resolves.toContain("within its repository path");
   await expect(
     validateAuthorityMap({
       ...context,

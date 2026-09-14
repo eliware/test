@@ -4,7 +4,22 @@ import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/general/E-1/E-1.0.mjs";
 
-const agents = ["eliware/docs", "eliware/conventions", "eliware/operations"].join("\n");
+const agents = [
+  "## Instruction scope",
+  "## Read before changing",
+  "## Authoritative sources",
+  "## Repository identity",
+  "## Scope and boundaries",
+  "## Required structure",
+  "## Security and secrets",
+  "## Validation",
+  "## Approved deviations",
+  "## Change control and authorization",
+  "## Subdirectory instructions",
+  "eliware/docs",
+  "eliware/conventions",
+  "eliware/operations",
+].join("\n");
 
 async function fixture(content) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-0-"));
@@ -35,5 +50,15 @@ test("fails when an authoritative repository is not referenced", async () => {
     status: "fail",
     message: "AGENTS.md must reference: eliware/conventions.",
   });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("fails when required AGENTS sections are missing", async () => {
+  const root = await fixture("eliware/docs\neliware/conventions\neliware/operations\n## Validation\n");
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({
+    ruleId: "E-1.0",
+    status: "fail",
+    message: expect.stringContaining("required sections"),
+  }));
   await rm(root, { recursive: true, force: true });
 });

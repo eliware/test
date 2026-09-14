@@ -36,7 +36,7 @@ jobs:
           subject-digest: steps.push.outputs.digest
           push-to-registry: true
       - run: docker buildx imagetools inspect ghcr.io/eliware/example@steps.push.outputs.digest
-      - run: verify digest
+      - run: echo verified steps.push.outputs.digest >> "$GITHUB_STEP_SUMMARY"
 `;
 
 export async function createGhcrFixture() {

@@ -2,6 +2,7 @@ import { access, readFile, stat } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 
 const uriPattern = /^[A-Za-z][A-Za-z\d+.-]*:/u;
+const rootRelativeFields = new Set(["implementation.source", "implementation.tests", "verification.source", "verification.tests"]);
 
 function splitFragment(reference) {
   const [path, ...fragments] = reference.split("#");
@@ -40,7 +41,7 @@ export async function validateStructuredReference({
   if (!path || isAbsolute(path) || path.startsWith("\\") || /^[A-Za-z]:/u.test(path)) {
     return "must be a repository-relative path";
   }
-  const base = field.endsWith(".source") || field.endsWith(".tests") ? root : dirname(file);
+  const base = rootRelativeFields.has(field) || field.startsWith("implementation.") || field.startsWith("verification.") ? root : dirname(file);
   const target = resolve(base, path);
   const fromRoot = relative(root, target);
   const external = fromRoot.startsWith("..") || /^[A-Za-z]:/u.test(fromRoot);

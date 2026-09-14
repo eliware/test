@@ -5,3 +5,7 @@ test("requires explicit convention documents", () => {
   expect(run({ packageJson: { eliware: { apply: ["general"] } } }).status).toBe("pass");
   expect(run({ packageJson: { eliware: { apply: [] } } }).status).toBe("fail");
 });
+
+test("rejects a profile without its required inherited profile", () => {
+  expect(run({ packageJson: { eliware: { apply: ["cli"] } } }).status).toBe("fail");
+});

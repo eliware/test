@@ -17,10 +17,24 @@ test("validates implementation and verification evidence targets", async () => {
   const file = join(root, "specs", "contracts.json");
   const contract = {
     id: "C-1.1",
-    implementation: { source: ["src"] },
-    verification: { tests: ["tests"] },
+    implementation: { source: ["src"], roles: ["validator"] },
+    verification: { tests: ["tests"], commands: ["npm test"], documents: ["specs/README.md"] },
   };
   await expect(validateContractReferences({ root, file, contract })).resolves.toBeNull();
+});
+
+test("validates every path-bearing evidence field", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-contract-evidence-fields-"));
+  await mkdir(join(root, "src"));
+  await mkdir(join(root, "tests"));
+  await mkdir(join(root, "docs"));
+  await writeFile(join(root, "src", "index.mjs"), "export {};" );
+  await writeFile(join(root, "tests", "index.test.mjs"), "export {};" );
+  await writeFile(join(root, "docs", "guide.md"), "# guide" );
+  const file = join(root, "specs", "contracts.json");
+  const base = { id: "C-1.5", implementation: { source: ["src"], documents: ["docs/guide.md"] }, verification: { tests: ["tests"], files: ["src/index.mjs"] } };
+  await expect(validateContractReferences({ root, file, contract: base })).resolves.toBeNull();
+  await expect(validateContractReferences({ root, file, contract: { ...base, implementation: { ...base.implementation, documents: ["docs/missing.md"] } } })).resolves.toContain("does not resolve");
 });
 
 test("rejects malformed and unresolved evidence targets", async () => {
@@ -67,7 +81,7 @@ test("rejects missing evidence, non-string paths, and paths outside approved tre
   const base = { id: "C-1.4", implementation: { source: ["src"] }, verification: { tests: ["tests"] } };
   await expect(validateContractReferences({ root, file, contract: { ...base, implementation: null } })).resolves.toContain("implementation evidence must be an object");
   await expect(validateContractReferences({ root, file, contract: { ...base, verification: [] } })).resolves.toContain("verification evidence must be an object");
-  await expect(validateContractReferences({ root, file, contract: { ...base, implementation: { source: [7] } } })).resolves.toContain("must be an array of paths");
-  await expect(validateContractReferences({ root, file, contract: { ...base, implementation: { source: ["docs/guide.md"] } } })).resolves.toContain("must point into the src/, bin/, or specs/ tree");
-  await expect(validateContractReferences({ root, file, contract: { ...base, verification: { tests: ["src/index.mjs"] } } })).resolves.toContain("must point into the tests/ tree");
+  await expect(validateContractReferences({ root, file, contract: { ...base, implementation: { source: [7] } } })).resolves.toContain("must be a nonempty string array");
+  await expect(validateContractReferences({ root, file, contract: { ...base, implementation: { source: ["docs/guide.md"] } } })).resolves.toContain("must point into an approved repository tree");
+  await expect(validateContractReferences({ root, file, contract: { ...base, verification: { tests: ["src/index.mjs"] } } })).resolves.toContain("must point into an approved repository tree");
 });

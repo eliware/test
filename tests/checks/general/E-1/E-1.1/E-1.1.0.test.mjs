@@ -3,8 +3,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-1/E-1.1/E-1.1.0.mjs";
+import { validateReadmeRequiredContent } from "../../../../../src/checks/general/E-1/E-1.1/validate-readme-required-content.mjs";
 
-const readme = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://github.com/eliware/fixture)
+const readme = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
+## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions)
+Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
 ## Purpose
 A maintained fixture.
 ## Requirements
@@ -22,9 +25,16 @@ Use the runbooks.
 ## Security
 Do not commit secrets.
 ## Support
-Use GitHub issues.
+[Discord](https://discord.gg/M6aTR9eTwN)
+eliware.org on Discord
 ## License
 [license](LICENSE)
+## Links
+Home Page: https://eliware.org
+GitHub: https://github.com/eliware/fixture
+GitHub organization: https://github.com/eliware
+npm: https://www.npmjs.com/package/@eliware/fixture
+Discord: https://discord.gg/M6aTR9eTwN
 Description: Fixture project.
 Keywords: fixture.
 Author: Eliware.
@@ -33,6 +43,12 @@ License: MIT.
 [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/nodejs.yml)
 `;
 
+test("strict README content reports each contract omission", () => {
+  expect(validateReadmeRequiredContent(readme.replace("[license](https://img.shields.io/github/license/eliware/fixture.svg)", ""))).toContain("license badge");
+  expect(validateReadmeRequiredContent(readme.replace("## Security", "## Security removed"))).toContain("Security section");
+  expect(validateReadmeRequiredContent(readme, { publishConfig: { access: "public" } })).toBeNull();
+});
+
 test("accepts a complete branded project README", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-"));
   await writeFile(join(root, "README.md"), readme);
@@ -40,6 +56,7 @@ test("accepts a complete branded project README", async () => {
     run({
       root,
       packageJson: {
+        name: "@eliware/fixture",
         description: "Fixture project.",
         keywords: ["fixture"],
         author: "Eliware",
@@ -76,14 +93,20 @@ test("requires the standard branding, CI badge, and license link", async () => {
     expect.objectContaining({ message: expect.stringContaining("GitHub CI badge") }),
   );
   await expect(runVariant(readme.replace("[license](LICENSE)", "License text"))).resolves.toEqual(
+    expect.objectContaining({ message: expect.stringContaining("repository LICENSE file") }),
+  );
+  await expect(runVariant(readme.replace(/ \[!\[license\][^\n]+/i, ""))).resolves.toEqual(
     expect.objectContaining({ message: expect.stringContaining("license badge") }),
+  );
+  await expect(runVariant(readme.replace("## Security", "## Security removed"))).resolves.toEqual(
+    expect.objectContaining({ message: expect.stringContaining("Security section") }),
   );
 });
 
 test("requires publication metadata and package metadata to be represented", async () => {
   await expect(
-    runVariant(readme, { publishConfig: { access: "public" } }),
-  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("npm version") }));
+    runVariant(readme.replaceAll("https://www.npmjs.com/package/@eliware/fixture", "https://example.com"), { publishConfig: { access: "public" } }),
+  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("npm version badge") }));
   await expect(
     runVariant(readme, { description: "Different description" }),
   ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("project description") }));

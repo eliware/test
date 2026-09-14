@@ -11,9 +11,10 @@ export async function run({ root, packageJson }) {
   let workflows;
   try {
     workflows = await readWorkflows(root);
-  } catch {
-    return pass(ruleId);
+  } catch (error) {
+    return fail(ruleId, `npm publication workflows could not be read: ${error.message}`);
   }
+  if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0)) return fail(ruleId, "npm-published repositories must define a publication workflow.");
   for (const workflow of workflows) {
     const publication = npmPublicationJobs(workflow);
     if (publication.length === 0) {
@@ -25,9 +26,8 @@ export async function run({ root, packageJson }) {
     const version = packageJson?.version;
     const text = workflowText(workflow);
     const verifiedVersion =
-      /npm\s+(?:pkg\s+get\s+version|view)\b/i.test(text) &&
-      /github\.ref_name|github\.ref|release_ref/i.test(text) &&
-      new RegExp(`v?${String(version).replaceAll(".", "\\.")}`).test(text);
+      typeof version === "string" &&
+      /test\s+["']?\$\(npm\s+pkg\s+get\s+version\s+--raw\)["']?\s*=\s*["']?\$\{GITHUB_REF_NAME#v\}["']?/iu.test(text);
     if (
       !hasExactTagTrigger(workflow) ||
       typeof version !== "string" ||

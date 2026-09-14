@@ -15,7 +15,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=26"
+    "node": ">=26 <27"
   },
   "bin": {
     "eliware-test": "./bin/eliware-test.mjs"
@@ -77,9 +77,9 @@
     ]
   },
   "dependencies": {
-    "@babel/parser": "^7.29.8",
+    "@babel/parser": "^8.0.5",
     "jest": "^30.5.1",
-    "oxlint": "^1.82.0",
+    "oxlint": "^1.83.0",
     "prettier": "^3.9.6",
     "yaml": "^2.8.1"
   },
@@ -96,32 +96,28 @@
         "reason": "@eliware/test must self-host its test command and directly declare Jest, Oxlint, and Prettier because it cannot install itself as its own development dependency and owns the validation stack.",
         "approver": "Eli",
         "approvalTimestamp": "2026-09-09T00:00:00Z",
-        "expiry": null,
-        "review": "Review when @eliware/test can consume its published eliware-test command and validation dependencies without self-hosting."
+        "expiry": null
       },
       {
         "ruleId": "E-1.20.17",
         "reason": "@eliware/test self-hosts its local CLI with node bin/eliware-test.mjs because it cannot install itself as its own development dependency.",
         "approver": "Eli",
         "approvalTimestamp": "2026-09-13T00:00:00Z",
-        "expiry": null,
-        "review": "Review when @eliware/test can consume its published eliware-test command without self-hosting."
+        "expiry": null
       },
       {
         "ruleId": "E-1.20.19",
         "reason": "@eliware/test self-hosts its audit command with node bin/eliware-test.mjs --audit because it cannot install itself as its own development dependency.",
         "approver": "Eli",
         "approvalTimestamp": "2026-09-13T00:00:00Z",
-        "expiry": null,
-        "review": "Review when @eliware/test can consume its published eliware-test command without self-hosting."
+        "expiry": null
       },
       {
         "ruleId": "E-1.140.1",
         "reason": "@eliware/test self-hosts its pack command with node bin/eliware-test.mjs --pack because it cannot install itself as its own development dependency.",
         "approver": "Eli",
         "approvalTimestamp": "2026-09-13T00:00:00Z",
-        "expiry": null,
-        "review": "Review when @eliware/test can consume its published eliware-test command without self-hosting."
+        "expiry": null
       }
     ],
     "authority": {

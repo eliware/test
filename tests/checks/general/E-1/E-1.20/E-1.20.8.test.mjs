@@ -97,3 +97,11 @@ test("reports malformed environment-example records", async () => {
   );
   await rm(root, { recursive: true, force: true });
 });
+
+test("reports source parse failures instead of skipping environment validation", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-env-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "broken.mjs"), "export const = process.env.EXAMPLE_VALUE;");
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail", message: "src/ is required for environment-reference validation." }));
+  await rm(root, { recursive: true, force: true });
+});

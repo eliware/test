@@ -1,6 +1,8 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/npm/l/@eliware/test)](LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/nodejs.yml)
+## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions)
+
+Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
 
 ## Purpose
 
@@ -77,8 +79,13 @@ npm run format:check
 git diff --check
 ```
 
-## Navigation
+## Links
 
+- [Home Page](https://eliware.org)
+- [GitHub repository](https://github.com/eliware/test)
+- [GitHub organization](https://github.com/eliware)
+- [npm package](https://www.npmjs.com/package/@eliware/test)
+- [Discord](https://discord.gg/M6aTR9eTwN)
 - [Documentation](docs/README.md)
 - [Specifications](specs/README.md)
 - [Local authority](specs/authority.json)
@@ -96,6 +103,10 @@ Eliware runbooks and are not performed by `eliware-test`.
 Never commit secrets, credentials, private runtime state, or generated output.
 
 ## Support
+
+![Discord](https://eliware.org/logos/discord_96.png)
+
+[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)
 
 Use the [Eliware Discord community](https://discord.gg/M6aTR9eTwN),
 [GitHub issues](https://github.com/eliware/test/issues), or

@@ -1,5 +1,6 @@
 export async function executePackValidation({
   root,
+  packageJson,
   executePack,
   mode,
   runPack,
@@ -11,8 +12,11 @@ export async function executePackValidation({
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return detail ? `npm pack failed: ${detail}` : "npm pack failed without diagnostics.";
     }
+    const manifestError = validatePackManifest(result.stdout ?? "", packageJson?.files);
+    if (manifestError) return manifestError;
   } catch (error) {
     return `npm pack could not be started: ${error.message}`;
   }
   return null;
 }
+import { validatePackManifest } from "./validate-pack-manifest.mjs";

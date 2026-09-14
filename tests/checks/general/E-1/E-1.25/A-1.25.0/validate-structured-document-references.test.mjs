@@ -36,10 +36,19 @@ test("resolves local structured references", async () => {
 test("allows a registered external crosslink when its checkout is unavailable", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-external-reference-"));
   await writeFile(
-    join(root, "crosslinks.json"),
+    join(root, "authority.json"),
     JSON.stringify({ crosslinks: [{ path: "../external-repo/specs/authority.json" }] }),
   );
   expect(await validate(root)).toBeNull();
+});
+
+test("does not allow an ordinary document to self-register an unavailable external target", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-unregistered-reference-"));
+  await writeFile(
+    join(root, "source.json"),
+    JSON.stringify({ crosslinks: [{ path: "../unregistered/specs/authority.json" }] }),
+  );
+  expect(await validate(root)).toContain("does not resolve to an available target");
 });
 
 test("rejects a crosslink object without a path", async () => {

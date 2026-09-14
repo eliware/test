@@ -51,4 +51,18 @@ test("requires and executes typecheck", async () => {
   await expect(run({ packageJson: { scripts: {} } })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
+  await expect(run({ packageJson: { scripts: { typecheck: "echo skipped" } } })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("recognized direct") }),
+  );
+});
+
+test("executes only for aggregate or matching typecheck mode", async () => {
+  const calls = [];
+  const runScript = async (_root, name) => {
+    calls.push(name);
+    return { code: 0, stdout: "", stderr: "" };
+  };
+  await expect(run({ packageJson: { scripts: { typecheck: "tsc" } }, executePackageChecks: true, mode: "typecheck", runScript })).resolves.toMatchObject({ status: "pass" });
+  await expect(run({ packageJson: { scripts: { typecheck: "tsc" } }, executePackageChecks: true, mode: "build", runScript })).resolves.toMatchObject({ status: "pass" });
+  expect(calls).toEqual(["typecheck"]);
 });

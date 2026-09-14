@@ -49,4 +49,22 @@ test("requires and executes the build script", async () => {
   await expect(run({ packageJson: { scripts: {} } })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
+  await expect(run({})).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  await expect(run({ packageJson: { scripts: { build: "npm test" } } })).resolves.toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  await expect(run({ packageJson: { scripts: { build: "echo build succeeded" } } })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("recognized direct") }),
+  );
+});
+
+test("executes only for aggregate or matching build mode", async () => {
+  const calls = [];
+  const runScript = async (_root, name) => {
+    calls.push(name);
+    return { code: 0, stdout: "", stderr: "" };
+  };
+  await expect(run({ packageJson: { scripts: { build: "webpack" } }, executePackageChecks: true, mode: "build", runScript })).resolves.toMatchObject({ status: "pass" });
+  await expect(run({ packageJson: { scripts: { build: "webpack" } }, executePackageChecks: true, mode: "typecheck", runScript })).resolves.toMatchObject({ status: "pass" });
+  expect(calls).toEqual(["build"]);
 });

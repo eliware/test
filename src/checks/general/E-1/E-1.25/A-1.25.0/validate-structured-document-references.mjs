@@ -4,8 +4,11 @@ import { referenceRegistrationKey } from "./reference-registration-key.mjs";
 import { validateStructuredReference } from "./resolve-structured-reference.mjs";
 
 export async function validateStructuredDocumentReferences({ root, documents }) {
+  const authoritativeDocuments = [...documents.entries()]
+    .filter(([file]) => /(?:^|[\\/])(?:package|authority)\.json$/iu.test(file))
+    .map(([, document]) => document);
   const registered = new Set(
-    [...documents.values()]
+    authoritativeDocuments
       .flatMap((document) => [...collectRegisteredExternalReferences(document)])
       .map(referenceRegistrationKey),
   );

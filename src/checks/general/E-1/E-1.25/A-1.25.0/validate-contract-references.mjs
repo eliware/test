@@ -1,30 +1,30 @@
 import { validateStructuredReference } from "./resolve-structured-reference.mjs";
 
-const evidenceReferences = [
-  ["implementation", "source"],
-  ["verification", "tests"],
-];
+const pathFields = new Set(["source", "tests", "files", "documents", "references", "artifacts"]);
+
+function isPathField(field) {
+  return pathFields.has(field) || field.endsWith("Paths") || field.endsWith("Files");
+}
 
 export async function validateContractReferences({ root, file, contract }) {
-  for (const [section, field] of evidenceReferences) {
+  for (const section of ["implementation", "verification"]) {
     const evidence = contract[section];
     if (!evidence || typeof evidence !== "object" || Array.isArray(evidence)) {
       return `Contract ${contract.id} ${section} evidence must be an object.`;
     }
-    if (!Object.hasOwn(evidence, field)) continue;
-    if (
-      !Array.isArray(evidence[field]) ||
-      evidence[field].some((value) => typeof value !== "string")
-    ) {
-      return `Contract ${contract.id} ${section}.${field} references must be an array of paths.`;
-    }
-    for (const value of evidence[field]) {
+    for (const [field, values] of Object.entries(evidence)) {
+      if (!Array.isArray(values) || values.some((value) => typeof value !== "string" || !value.trim())) {
+        return `Contract ${contract.id} ${section}.${field} evidence must be a nonempty string array.`;
+      }
+      if (!isPathField(field)) continue;
+      for (const value of values) {
       const normalized = value.replaceAll("\\", "/").replace(/^\.\//u, "");
       if (
         (field === "source" && !/^(?:src|bin|specs)(?:\/|$)/u.test(normalized)) ||
-        (field === "tests" && !/^tests(?:\/|$)/u.test(normalized))
+        (field === "tests" && !/^tests(?:\/|$)/u.test(normalized)) ||
+        (field !== "source" && field !== "tests" && !/^(?:src|bin|specs|tests|docs|examples)(?:\/|$)/u.test(normalized))
       ) {
-        return `Contract ${contract.id} ${section}.${field} reference ${value} must point into the ${field === "source" ? "src/, bin/, or specs/" : "tests/"} tree`;
+        return `Contract ${contract.id} ${section}.${field} reference ${value} must point into an approved repository tree`;
       }
       const error = await validateStructuredReference({
         root,
@@ -33,6 +33,7 @@ export async function validateContractReferences({ root, file, contract }) {
         value,
       });
       if (error) return `Contract ${contract.id} ${section}.${field} reference ${value} ${error}.`;
+      }
     }
   }
   return null;

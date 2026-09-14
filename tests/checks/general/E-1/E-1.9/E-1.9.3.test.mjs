@@ -7,12 +7,13 @@ const valid = {
   approver: "Eli",
   approvalTimestamp: "2026-09-13T00:00:00Z",
   expiry: "2026-09-30",
+  review: "2026-09-20",
 };
 
 test("accepts approved permanent and temporary exemption metadata", () => {
   expect(
     run({
-      packageJson: { eliware: { exempt: [valid, { ...valid, ruleId: "E-1.3", expiry: null }] } },
+      packageJson: { eliware: { exempt: [valid, { ...valid, ruleId: "E-1.3", expiry: null, review: undefined }] } },
     }),
   ).toEqual({ ruleId: "E-1.9.3", status: "pass", message: "" });
 });
@@ -41,4 +42,20 @@ test("accepts repositories without exemptions and rejects malformed metadata sha
   expect(run({ packageJson: { eliware: { exempt: [null] } } })).toEqual(
     expect.objectContaining({ status: "fail" }),
   );
+});
+
+test.each(["random-user", "eli", "Eliware", ""]) (
+  "rejects non-Eli approver %j",
+  (approver) => {
+    expect(run({ packageJson: { eliware: { exempt: [{ ...valid, approver }] } } })).toEqual(
+      expect.objectContaining({ status: "fail" }),
+    );
+  },
+);
+
+test("enforces review metadata against temporary and permanent expiry", () => {
+  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, review: "2026-09-20" }] } } }).status).toBe("pass");
+  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, review: "2026-10-01" }] } } }).status).toBe("fail");
+  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, review: "fixture" }] } } }).status).toBe("fail");
+  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, expiry: null, review: "2026-09-20" }] } } }).status).toBe("fail");
 });

@@ -7,7 +7,13 @@ export function permissions(workflow, job) {
 export function hasExactTagTrigger(workflow) {
   const trigger = workflow.document?.on ?? workflow.document?.true;
   const tags = trigger?.push?.tags;
-  return Array.isArray(tags) && tags.some((tag) => tag === "v*.*.*");
+  return Boolean(
+    trigger &&
+    Object.keys(trigger).every((event) => event === "push") &&
+    Array.isArray(tags) &&
+    tags.length === 1 &&
+    tags[0] === "v*.*.*",
+  );
 }
 
 export function validationJobs(workflow) {

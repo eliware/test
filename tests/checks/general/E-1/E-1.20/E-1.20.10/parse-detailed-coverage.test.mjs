@@ -20,7 +20,7 @@ test("parses complete detailed files and all detailed metric shapes", () => {
   expect(parseDetailed(null)).toBeNull();
 });
 
-test("ignores out-of-scope and empty coverage entries", () => {
+test("rejects incomplete in-scope coverage entries instead of treating missing metrics as perfect", () => {
   const result = parseDetailed({
     "tests/example.test.mjs": { s: { 0: 0 } },
     "src/empty.mjs": {},
@@ -28,7 +28,10 @@ test("ignores out-of-scope and empty coverage entries", () => {
     "src/branch-only.mjs": { b: { 0: [1] } },
   });
   expect(result).toEqual({
-    gaps: [],
-    totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
+    gaps: expect.arrayContaining([
+      expect.objectContaining({ file: "src/covered.mjs" }),
+      expect.objectContaining({ file: "src/branch-only.mjs" }),
+    ]),
+    totals: { statements: 100, branches: 100, functions: 0, lines: 0 },
   });
 });

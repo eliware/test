@@ -1,5 +1,5 @@
 import { fail, pass } from "../../../check-result.mjs";
-import { workflowCommands } from "./read-workflows.mjs";
+import { isValidationJob, workflowCommands, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
 import { readWorkflows } from "./read-workflow-files.mjs";
 import { findPublicationCommand, findUnsupportedCommands } from "./classify-workflow-commands.mjs";
 import { validateWorkflowSequence } from "./validate-workflow-sequence.mjs";
@@ -8,25 +8,26 @@ export const ruleId = "E-1.24.4";
 export const parentRuleId = "E-1.24";
 
 export async function run({ root }) {
-  for (const { name, document } of await readWorkflows(root)) {
+  let workflows;
+  try { workflows = await readWorkflows(root); } catch (error) {
+    return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
+  }
+  for (const { name, document } of workflows) {
     const commands = workflowCommands(document);
-    const publicationWorkflow = /publish|release|deploy/iu.test(name);
-    if (findPublicationCommand(commands)) {
+    const validationCommands = workflowJobs(document)
+      .filter(({ id, job }) => isValidationJob(id, job))
+      .flatMap(({ id, job }) => workflowRunSteps(job).map((step) => ({ job: id, ...step })));
+    const publicationWorkflow = Boolean(findPublicationCommand(commands));
+    if (publicationWorkflow && validationCommands.length === 0)
+      return fail(ruleId, `${name} publication workflow must contain a separate validation job.`);
+    const unsupported = findUnsupportedCommands(validationCommands);
+    if (unsupported.length > 0)
       return fail(
         ruleId,
-        `${name} contains a publication, deployment, or synchronization command.`,
+        `${name} contains non-validation command(s): ${unsupported.join(", ")}.`,
       );
-    }
-    if (!publicationWorkflow) {
-      const unsupported = findUnsupportedCommands(commands);
-      if (unsupported.length > 0)
-        return fail(
-          ruleId,
-          `${name} contains non-validation command(s): ${unsupported.join(", ")}.`,
-        );
-      const sequenceError = validateWorkflowSequence(name, commands);
-      if (sequenceError) return fail(ruleId, sequenceError);
-    }
+    const sequenceError = validateWorkflowSequence(name, validationCommands);
+    if (sequenceError) return fail(ruleId, sequenceError);
   }
   return pass(ruleId);
 }

@@ -1,5 +1,12 @@
 import { expect, test } from "@jest/globals";
-import { fileGap } from "../../../../../../src/checks/general/E-1/E-1.20/E-1.20.10/coverage-file-gap.mjs";
+import { coverageLineEntries, fileGap } from "../../../../../../src/checks/general/E-1/E-1.20/E-1.20.10/coverage-file-gap.mjs";
+
+test("derives line evidence from statement locations when Istanbul omits line counters", () => {
+  expect(coverageLineEntries({ statementMap: { 0: { start: { line: 4 } } }, s: { 0: 1 } })).toEqual([["4", 1]]);
+  expect(coverageLineEntries({ statementMap: { 0: { start: { line: 4 } }, 1: { start: { line: 4 } } }, s: { 0: 0, 1: 1 } })).toEqual([["4", 1]]);
+  expect(coverageLineEntries({ statementMap: { 0: { start: { line: 5 } } }, s: {} })).toEqual([["5", 0]]);
+  expect(coverageLineEntries({ l: { 4: 1 } })).toEqual([["4", 1]]);
+});
 
 test("returns no gap for fully covered files and diagnostics for uncovered files", () => {
   const complete = { s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1 }, statementMap: { 1: {} } };

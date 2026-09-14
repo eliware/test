@@ -8,7 +8,6 @@ export async function run({
   packageJson,
   root,
   executeAudit = false,
-  mode = null,
   runAudit = runNpmAudit,
 }) {
   if (packageJson?.scripts?.audit !== "eliware-test --audit") {
@@ -17,7 +16,7 @@ export async function run({
       "The aggregate validation must execute the shared audit stage through npm run audit.",
     );
   }
-  if (!executeAudit || (mode !== null && mode !== "audit")) return pass(ruleId);
+  if (!executeAudit) return pass(ruleId);
   try {
     const result = await runAudit(root);
     if (result.code !== 0) {

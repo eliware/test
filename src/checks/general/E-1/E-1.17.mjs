@@ -1,8 +1,9 @@
+import { readFile } from "node:fs/promises";
 import { fail, pass } from "../../check-result.mjs";
 import { join } from "node:path";
 import { collectRepositoryFiles } from "./collect-repository-files.mjs";
 import { collectRepositoryDirectories } from "./collect-repository-directories.mjs";
-import { findMirrorViolations } from "./validate-mirror-structure.mjs";
+import { findMirrorViolations, findDuplicatePathViolations, findOrphanTestViolations, findTestContractViolations } from "./validate-mirror-structure.mjs";
 import { findMisplacedArtifacts } from "./validate-test-artifacts.mjs";
 import { findGeneratedSource } from "./validate-generated-source.mjs";
 
@@ -25,6 +26,14 @@ export async function run({ root }) {
   }
   const findings = findMirrorViolations(sourceFiles, testFiles, sourceDirectories, testDirectories);
   const sourceModules = sourceFiles.filter((file) => file.endsWith(".mjs"));
+  const expectedTests = new Set(sourceModules.map((source) => source.replace(/\.mjs$/u, ".test.mjs")));
+  findings.push(...findDuplicatePathViolations(sourceFiles, testFiles));
+  findings.push(...findOrphanTestViolations(testFiles, expectedTests).map((file) => `orphan test is not an approved cross-cutting suite: ${file}`));
+  const testContents = new Map();
+  for (const file of testFiles.filter((candidate) => candidate.endsWith(".test.mjs"))) {
+    testContents.set(file, await readFile(join(root, "tests", file), "utf8"));
+  }
+  findings.push(...findTestContractViolations(sourceModules, testContents));
   const misplacedArtifacts = findMisplacedArtifacts(sourceFiles, testFiles);
   if (misplacedArtifacts.length > 0)
     findings.push(`test artifacts must be under artifacts/: ${misplacedArtifacts.join(", ")}`);

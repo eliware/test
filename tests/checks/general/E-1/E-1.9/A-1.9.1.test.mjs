@@ -20,3 +20,7 @@ test.each([
 ])("rejects malformed package baseline configuration %#", (packageJson) => {
   expect(run({ packageJson })).toMatchObject({ status: "fail" });
 });
+
+test("rejects profiles absent from the bundled authority", () => {
+  expect(run({ packageJson: { version: "8.0.0", eliware: { apply: ["missing"] } } })).toMatchObject({ status: "fail" });
+});

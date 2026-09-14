@@ -1,5 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
 import { runNpmScript } from "../../run-npm-script.mjs";
+import { validateDirectToolScript } from "../../validate-direct-tool-script.mjs";
 
 export const ruleId = "E-1.40.6";
 export const parentRuleId = "E-1.40";
@@ -13,7 +14,9 @@ export async function run({
 }) {
   if (typeof packageJson?.scripts?.typecheck !== "string" || !packageJson.scripts.typecheck.trim())
     return fail(ruleId, "Libraries must define a nonempty typecheck script.");
-  if (!executePackageChecks || mode !== null) return pass(ruleId);
+  const directToolError = validateDirectToolScript(packageJson.scripts.typecheck, "typecheck");
+  if (directToolError) return fail(ruleId, directToolError);
+  if (!executePackageChecks || (mode !== null && mode !== "typecheck")) return pass(ruleId);
   try {
     const result = await runScript(root, "typecheck");
     if (result.code !== 0) {

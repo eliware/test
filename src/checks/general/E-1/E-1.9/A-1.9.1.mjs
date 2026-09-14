@@ -1,4 +1,5 @@
 import { fail, pass } from "../../../check-result.mjs";
+import { readBundledProfileAuthority, validateAppliedProfiles } from "../../../../orchestrators/read-bundled-profile-authority.mjs";
 
 export const ruleId = "A-1.9.1";
 export const parentRuleId = "E-1.9";
@@ -24,5 +25,6 @@ export function run({ packageJson }) {
       "package.json.eliware.apply must identify the selected convention documents.",
     );
   }
-  return pass(ruleId);
+  const failure = validateAppliedProfiles(apply, readBundledProfileAuthority());
+  return failure ? fail(ruleId, failure) : pass(ruleId);
 }

@@ -9,6 +9,6 @@ const ANSI_ESCAPE = new RegExp(`${String.fromCodePoint(0x1b)}\\[[0-?]*[ -/]*[@-~
 export function findUnexpectedJestLines(text) {
   return text
     .split(/\r?\n/)
-    .map((line) => line.replace(ANSI_ESCAPE, "").trimEnd())
-    .filter((line) => line.trim() && !line.startsWith("[eliware-test-progress] ") && !JEST_LINES.some((pattern) => pattern.test(line)));
+    .map((line) => line.replace(ANSI_ESCAPE, "").trim())
+    .filter((line) => line && !line.startsWith("[eliware-test-progress] ") && !JEST_LINES.some((pattern) => pattern.test(line)));
 }

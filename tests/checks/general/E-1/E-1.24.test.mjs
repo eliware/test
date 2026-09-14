@@ -63,12 +63,12 @@ test("rejects workflows that do not satisfy every validation requirement", async
     "on:\n  push:\n    branches: [main]\n  pull_request:\njobs:\n  validate:\n    runs-on: [ubuntu-latest, windows-latest]\n",
   );
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24", status: "pass", message: "" });
-  for (const push of ["null", "[main]", "{}", "\n    branches: [main]\n"]) {
+  for (const push of ["null", "{}", "\n    branches: [dev]\n"]) {
     await writeFile(
       join(root, ".github", "workflows", "validation.yml"),
       `on:\n  push: ${push}\n  pull_request:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n`,
     );
-    await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24", status: "pass", message: "" });
+    await expect(run({ root })).resolves.toMatchObject({ ruleId: "E-1.24", status: "fail" });
   }
   await rm(root, { recursive: true, force: true });
 });

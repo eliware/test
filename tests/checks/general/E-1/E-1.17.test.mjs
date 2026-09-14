@@ -9,7 +9,7 @@ async function fixture(withTest = true) {
   await mkdir(join(root, "src", "nested"), { recursive: true });
   await mkdir(join(root, "tests", "nested"), { recursive: true });
   await writeFile(join(root, "src", "nested", "module.mjs"), "export {};");
-  if (withTest) await writeFile(join(root, "tests", "nested", "module.test.mjs"), "test();");
+  if (withTest) await writeFile(join(root, "tests", "nested", "module.test.mjs"), "import \"../../src/nested/module.mjs\"; test();");
   return root;
 }
 

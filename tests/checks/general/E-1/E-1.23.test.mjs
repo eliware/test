@@ -6,7 +6,7 @@ import { run } from "../../../../src/checks/general/E-1/E-1.23.mjs";
 
 test("requires the Eliware MIT license attribution", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-license-"));
-  await writeFile(join(root, "LICENSE"), "MIT License\nCopyright (c) 2026 Eliware\n");
+  await writeFile(join(root, "LICENSE"), `MIT License\n\nCopyright (c) 2026 Eliware\n\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE\n`);
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.23", status: "pass", message: "" });
   await writeFile(join(root, "LICENSE"), "Apache License\n");
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));

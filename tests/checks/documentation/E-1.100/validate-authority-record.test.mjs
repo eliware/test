@@ -17,10 +17,14 @@ test("validates authority record subjects and references", async () => {
         subjects: [
           {
             id: "example.subject",
+            kind: "specification",
             authority: { path: "../../external/directives.json" },
             directives: [{ path: "../../external/directives.json" }],
             implementation: [{ path: "../../src" }],
+            consumers: ["example consumers"],
+            reviewers: ["example reviewers"],
             evidence: [],
+            status: "active",
           },
         ],
       },

@@ -24,7 +24,7 @@ test("inspects run commands but ignores URLs and comments outside commands", asy
     join(root, ".github", "workflows", "ci.yml"),
     "jobs:\n  publish:\n    steps:\n      - run: npm publish\n",
   );
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("separate validation job") });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -38,6 +38,14 @@ test("requires the validation command sequence in non-publication workflows", as
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("npm ci") }),
   );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("reports malformed workflow YAML", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(join(root, ".github", "workflows", "broken.yml"), "jobs: [");
+  await expect(run({ root })).resolves.toMatchObject({ ruleId: "E-1.24.4", status: "fail", message: expect.stringContaining("could not be parsed") });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -65,8 +73,8 @@ test("does not require validation order in publication workflows", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-release-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(join(root, ".github", "workflows", "release.yml"), "jobs:\n  release:\n    steps:\n      - run: npm publish\n");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "fail", message: "release.yml contains a publication, deployment, or synchronization command." });
+  await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "fail", message: "release.yml publication workflow must contain a separate validation job." });
   await writeFile(join(root, ".github", "workflows", "release.yml"), "jobs:\n  release:\n    steps:\n      - run: echo release\n");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "fail", message: "release.yml must validate with npm ci followed by npm test." });
   await rm(root, { recursive: true, force: true });
 });

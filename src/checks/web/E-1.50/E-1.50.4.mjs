@@ -1,5 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
 import { runNpmScript } from "../../run-npm-script.mjs";
+import { validateDirectToolScript } from "../../validate-direct-tool-script.mjs";
 
 export const ruleId = "E-1.50.4";
 export const parentRuleId = "E-1.50";
@@ -14,7 +15,9 @@ export async function run({
   if (typeof packageJson?.scripts?.build !== "string" || !packageJson.scripts.build.trim()) {
     return fail(ruleId, "Web applications must define a nonempty build script.");
   }
-  if (!executePackageChecks || mode !== null) return pass(ruleId);
+  const directToolError = validateDirectToolScript(packageJson.scripts.build, "build");
+  if (directToolError) return fail(ruleId, directToolError);
+  if (!executePackageChecks || (mode !== null && mode !== "build")) return pass(ruleId);
   try {
     const result = await runScript(root, "build");
     if (result.code !== 0) {

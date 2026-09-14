@@ -6,6 +6,7 @@ import { validateContractIndex } from "./validate-contract-index.mjs";
 import { validateContractReferences } from "./validate-contract-references.mjs";
 import { validateContractDocumentShape } from "./validate-contract-document-shape.mjs";
 import { validateContractRecordShape } from "./validate-contract-record-shape.mjs";
+import { loadDirectiveIds } from "./load-directive-ids.mjs";
 
 export const ruleId = "A-1.25.1";
 export const parentRuleId = "A-1.25.0";
@@ -13,12 +14,20 @@ export const parentRuleId = "A-1.25.0";
 export async function run({ root }) {
   const { contracts, index, error } = await loadContractDocument(root);
   if (error) return fail(ruleId, error);
+  const directiveDocument = await loadDirectiveIds(root);
+  if (directiveDocument.error) return fail(ruleId, directiveDocument.error);
   const documentError = validateContractDocumentShape(contracts);
   if (documentError) return fail(ruleId, documentError);
   const ids = new Set();
   for (const contract of contracts.contracts) {
     const shapeError = validateContractRecordShape(contract, ids);
     if (shapeError) return fail(ruleId, shapeError);
+    if (!directiveDocument.ids && contract.directiveIds.length > 0) {
+      return fail(ruleId, "Contract directive references cannot be resolved because no local or explicitly linked directive authority is available.");
+    }
+    if (directiveDocument.ids && contract.directiveIds.some((id) => !directiveDocument.ids.has(id))) {
+      return fail(ruleId, `Contract ${contract.id} references an unresolved directive ID.`);
+    }
     const referenceError = await validateContractReferences({
       root,
       file: join(root, "specs", "contracts.json"),

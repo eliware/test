@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
+import { validateExamplesIndex } from "./validate-examples-index.mjs";
 
 export const ruleId = "A-1.40.3";
 export const parentRuleId = "E-1.40";
@@ -24,6 +25,11 @@ export async function run({ root }) {
       "examples/",
     ]) {
       if (!readme.includes(term)) return fail(ruleId, `Library README.md must document ${term}.`);
+    }
+    const examples = await readFile(join(root, "examples", "README.md"), "utf8").catch(() => null);
+    if (examples) {
+      const error = validateExamplesIndex(examples);
+      if (error) return fail(ruleId, error);
     }
   } catch {
     return fail(ruleId, "Library README.md is required.");

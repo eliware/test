@@ -81,21 +81,15 @@ test("rejects missing, invalid, mismatched, and incomplete lockfiles", async () 
   }
 });
 
-test("reports regenerated lockfile mismatches and errors", async () => {
+test("rejects incomplete transitive package records and dependency edges", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-lockfile-"));
-  const packageJson = { name: "fixture", version: "1.0.0" };
   await writeFile(join(root, "package-lock.json"), JSON.stringify({
     name: "fixture", version: "1.0.0", lockfileVersion: 3,
-    packages: { "": { name: "fixture", version: "1.0.0" } },
+    packages: {
+      "": { name: "fixture", version: "1.0.0", dependencies: { alpha: "1.0.0" } },
+      "node_modules/alpha": { name: "alpha", version: "1.0.0", resolved: "https://registry.npmjs.org/alpha/-/alpha-1.0.0.tgz", dependencies: { missing: "1.0.0" } },
+    },
   }));
-  await expect(run({ root, packageJson, regeneratedMatches: async () => false })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("does not match") }),
-  );
-  await expect(run({ root, packageJson, regeneratedMatches: async () => { throw new Error("npm failed"); } })).resolves.toEqual({
-    ruleId: "E-1.20.6", status: "fail", message: "npm failed",
-  });
-  await expect(run({ root, packageJson, regeneratedMatches: async () => true })).resolves.toEqual({
-    ruleId: "E-1.20.6", status: "pass", message: "",
-  });
+  await expect(run({ root, packageJson: { name: "fixture", version: "1.0.0", dependencies: { alpha: "1.0.0" } } })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("missing dependency") }));
   await rm(root, { recursive: true, force: true });
 });

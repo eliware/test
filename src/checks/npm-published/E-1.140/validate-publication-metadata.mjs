@@ -1,5 +1,7 @@
+import { compatibleWithNode26 } from "../../general/E-1/validate-package-runtime.mjs";
+
 export function validatePublicationMetadata(packageJson) {
-  if (typeof packageJson?.engines?.node !== "string" || !/26/.test(packageJson.engines.node)) {
+  if (typeof packageJson?.engines?.node !== "string" || !compatibleWithNode26(packageJson.engines.node.trim())) {
     return "Public npm packages must declare Node.js 26 compatibility.";
   }
   if (packageJson?.publishConfig?.provenance !== true) {

@@ -3,7 +3,7 @@ import { run } from "../../../../src/checks/npm-published/E-1.140/E-1.140.1.mjs"
 
 test("requires the public package publication contract", async () => {
   const packageJson = {
-    engines: { node: ">=26" },
+    engines: { node: ">=26 <27" },
     publishConfig: { provenance: true },
     files: ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs/", "specs/"],
     scripts: { pack: "eliware-test --pack" },
@@ -20,7 +20,7 @@ test("requires the public package publication contract", async () => {
 
 test("reports pack diagnostics when the pack stage fails", async () => {
   const packageJson = {
-    engines: { node: ">=26" },
+    engines: { node: ">=26 <27" },
     publishConfig: { provenance: true },
     files: ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs/", "specs/"],
     scripts: { pack: "eliware-test --pack" },
@@ -41,7 +41,7 @@ test("reports pack diagnostics when the pack stage fails", async () => {
 });
 
 const validPackage = {
-  engines: { node: ">=26" },
+  engines: { node: ">=26 <27" },
   publishConfig: { provenance: true },
   files: ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs/", "specs/"],
   scripts: { pack: "eliware-test --pack" },
@@ -62,7 +62,7 @@ test("handles successful and skipped pack execution", async () => {
   await expect(run({ packageJson: validPackage, executePack: true, mode: "other", runPack: async () => ({ code: 0 }) })).resolves.toEqual(
     expect.objectContaining({ status: "pass" }),
   );
-  await expect(run({ packageJson: validPackage, executePack: true, mode: "pack", runPack: async () => ({ code: 0 }) })).resolves.toEqual(
+  await expect(run({ packageJson: validPackage, executePack: true, mode: "pack", runPack: async () => ({ code: 0, stdout: JSON.stringify([{ files: ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "docs/README.md", "specs/README.md"].map((path) => ({ path })) }]) }) })).resolves.toEqual(
     expect.objectContaining({ status: "pass" }),
   );
   await expect(run({ packageJson: validPackage, executePack: true, mode: "pack", runPack: async () => ({ code: 1, stdout: "", stderr: "" }) })).resolves.toEqual(

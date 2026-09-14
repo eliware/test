@@ -7,7 +7,7 @@ import { run } from "../../../../../src/checks/application/E-1.130/E-1.130.2/A-1
 test("requires docs README to index end-user documents", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-"));
   await mkdir(join(root, "docs"));
-  await writeFile(join(root, "docs", "README.md"), "# Docs");
+  await writeFile(join(root, "docs", "README.md"), "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\n");
   await writeFile(join(root, "docs", "guide.md"), "# Guide");
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("docs/guide.md") }),
@@ -20,7 +20,7 @@ test("passes when the documentation tree is completely indexed", async () => {
   await mkdir(join(root, "docs", "guides"), { recursive: true });
   await writeFile(
     join(root, "docs", "README.md"),
-    "# Docs\n[Guide](docs/guide.md)\n[Deep guide](docs/guides/deep.md)\n",
+    "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\n[Guide](docs/guide.md)\n[Deep guide](docs/guides/deep.md)\n",
   );
   await writeFile(join(root, "docs", "guide.md"), "# Guide");
   await writeFile(join(root, "docs", "guides", "deep.md"), "# Deep guide");

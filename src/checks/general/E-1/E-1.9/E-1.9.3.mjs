@@ -9,6 +9,10 @@ function validDate(value) {
   return !Number.isNaN(date.valueOf()) && date.toISOString().startsWith(`${value}T`);
 }
 
+function validTimestamp(value) {
+  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
 export function run({ packageJson }) {
   const exemptions = packageJson?.eliware?.exempt ?? [];
   if (!Array.isArray(exemptions))
@@ -20,12 +24,15 @@ export function run({ packageJson }) {
       !exemption.ruleId.trim() ||
       typeof exemption.reason !== "string" ||
       !exemption.reason.trim() ||
-      typeof exemption.approver !== "string" ||
-      !exemption.approver.trim() ||
+      exemption.approver !== "Eli" ||
       typeof exemption.approvalTimestamp !== "string" ||
-      !exemption.approvalTimestamp.trim() ||
+      !validTimestamp(exemption.approvalTimestamp) ||
       (exemption.expiry !== null &&
-        (typeof exemption.expiry !== "string" || !validDate(exemption.expiry)))
+        (typeof exemption.expiry !== "string" || !validDate(exemption.expiry) ||
+          Date.parse(`${exemption.expiry}T23:59:59.999Z`) < Date.now() ||
+          typeof exemption.review !== "string" || !validDate(exemption.review) ||
+          Date.parse(`${exemption.review}T00:00:00.000Z`) > Date.parse(`${exemption.expiry}T23:59:59.999Z`))) ||
+      (exemption.expiry === null && exemption.review !== undefined)
     ) {
       return fail(
         ruleId,

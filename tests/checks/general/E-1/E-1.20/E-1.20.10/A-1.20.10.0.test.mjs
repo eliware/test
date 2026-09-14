@@ -13,6 +13,7 @@ test("accepts a valid temporary 100x4 exemption", () => {
               approver: "Eli",
               approvalTimestamp: "2026-09-13T00:00:00Z",
               expiry: "2026-09-30",
+              review: "2026-09-20",
             },
           ],
         },

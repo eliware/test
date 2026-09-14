@@ -40,10 +40,7 @@ test("handles computed env access, invalid names, unsupported properties, and sy
   );
   await writeFile(join(root, "src", "invalid.mjs"), "export {\n");
   await writeFile(join(root, "notes.txt"), "process.env.IGNORED\n");
-  await expect(findEnvironmentReferences(root)).resolves.toEqual([
-    "FIFTH_VALUE",
-    "FOURTH_VALUE",
-  ]);
+  await expect(findEnvironmentReferences(root)).rejects.toThrow();
   await rm(root, { recursive: true, force: true });
 });
 

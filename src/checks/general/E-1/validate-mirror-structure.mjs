@@ -26,3 +26,33 @@ export function findMirrorViolations(
     invalidSource.length > 0 ? `invalid source paths (expected .mjs): ${invalidSource.join(", ")}` : "",
   ].filter(Boolean);
 }
+
+export function findDuplicatePathViolations(sourceFiles, testFiles) {
+  const findings = [];
+  for (const [label, files] of [["source", sourceFiles], ["test", testFiles]]) {
+    const normalized = new Map();
+    for (const file of files) {
+      const key = file.toLowerCase();
+      const entries = normalized.get(key) ?? [];
+      entries.push(file);
+      normalized.set(key, entries);
+    }
+    for (const entries of normalized.values()) if (entries.length > 1) findings.push(`duplicate ${label} paths differing only by case: ${entries.join(", ")}`);
+  }
+  return findings;
+}
+
+export function findOrphanTestViolations(testFiles, expectedTests) {
+  return testFiles.filter((file) => file.endsWith(".test.mjs") && !expectedTests.has(file) && !/(?:integration|e2e|smoke|cross[-_]?cutting)/iu.test(file));
+}
+
+export function findTestContractViolations(sourceFiles, testContents) {
+  const findings = [];
+  for (const source of sourceFiles) {
+    const test = source.replace(/\.mjs$/u, ".test.mjs");
+    const content = testContents.get(test) ?? "";
+    if (!/\b(?:test|it|describe)\s*\(/u.test(content)) findings.push(`${test} is not a Jest test file`);
+    if (!/(?:from|import|require\s*\()[\s\S]*src[\\/]\S+\.mjs/u.test(content)) findings.push(`${test} does not reference an implementation module`);
+  }
+  return findings;
+}

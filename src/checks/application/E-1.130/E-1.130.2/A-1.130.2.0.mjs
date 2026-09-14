@@ -20,6 +20,10 @@ export async function run({ root }) {
     const docs = join(root, "docs");
     const files = await collect(docs);
     const index = await readFile(join(docs, "README.md"), "utf8");
+    for (const requirement of ["Purpose", "scope", "Setup", "usage", "validation", "support"]) {
+      if (!index.toLowerCase().includes(requirement.toLowerCase()))
+        return fail(ruleId, `docs/README.md must document ${requirement}.`);
+    }
     const missing = files
       .filter((file) => file !== join(docs, "README.md"))
       .map((file) => relative(root, file).replaceAll("\\", "/"))

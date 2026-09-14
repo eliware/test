@@ -1,21 +1,27 @@
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { appendFile, mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 export async function fixture(conventions) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-"));
-  await mkdir(join(root, "src", "checks", "general"), { recursive: true });
+  await mkdir(join(root, "bin"), { recursive: true });
+  await writeFile(join(root, "bin", "eliware-test.mjs"), "#!/usr/bin/env node\n");
+  await mkdir(join(root, "src"), { recursive: true });
   await mkdir(join(root, "tests"), { recursive: true });
+  await writeFile(join(root, "src", "module.mjs"), "export const moduleValue = true;\n");
+  await writeFile(join(root, "tests", "module.test.mjs"), "test(\"module\", () => {});\n");
   await writeFile(
     join(root, "AGENTS.md"),
-    "# fixture repository purpose\nNode.js 26 native ESM .mjs module environment validation. Scope boundaries repository-wide subdirectory instructions. Read README.md and applicable documentation before changes. Validation commands. Security secrets credentials machine. Actionable current concise guidance. Approved deviations and project-specific rules must not weaken shared requirements. Required files and structure. Web routes assets configuration browser deployment ports. Application configuration connection shutdown workflow. CLI entrypoint commands validation platform. eliware/docs eliware/conventions eliware/operations\n",
+    "# fixture\n\n## Instruction scope\nRepository-wide purpose and scope.\n\n## Read before changing\nRead README.md and relevant records.\n\n## Authoritative sources\neliware/docs, eliware/conventions, and eliware/operations.\n\n## Repository identity\nProject: fixture.\n\n## Scope and boundaries\nValidation fixture only.\n\n## Required structure\nRequired files and directories are indexed.\n\n## Security and secrets\nDo not commit secrets, credentials, tokens, or machine state.\n\n## Validation\nRun npm test and npm run lint; keep guidance actionable, current, and concise.\n\n## Approved deviations\nProject-specific deviations must not weaken shared requirements.\n\n## Change control and authorization\nDo not publish without authorization.\n\n## Subdirectory instructions\nNone.\n",
   );
+  await appendFile(join(root, "AGENTS.md"), "\nNode.js 26 native ESM .mjs module environment validation.\n");
   await writeFile(
     join(root, "README.md"),
-    "# [![eliware.org](https://eliware.org/logos/brand.png)](https://github.com/eliware/fixture)\n\n# fixture\n\n## Purpose\nfixture\n## Requirements\nfixture\n## Setup\nfixture\n## Configuration\nfixture\n## Usage\nfixture\n## Validation\nfixture\n## Operations\nfixture\n## Security\nfixture\n## Support\nfixture\n## License\n[license](LICENSE) https://www.npmjs.com/package/@eliware/fixture\n[Release notes](RELEASE_NOTES.md)\n",
+    "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)\n## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/nodejs.yml)\nDocumentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)\n## Purpose\nfixture\n## Requirements\nNode.js 26.\n## Setup\nfixture\n## Configuration\nfixture\n## Usage\nfixture\n## Validation\nfixture\n## Operations\nfixture\n## Security\nfixture\n## Support\n[Discord](https://discord.gg/M6aTR9eTwN) eliware.org on Discord\n## License\n[LICENSE](LICENSE)\n## Links\nEliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [npm](https://www.npmjs.com/package/@eliware/fixture)\n[Release notes](RELEASE_NOTES.md)\nDescription: fixture\nKeywords: fixture\nAuthor: Eliware <eliware@eliware.org>\nRepository: https://github.com/eliware/fixture\nLicense: MIT\n",
   );
-  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n## 8.0.0\n");
-  await writeFile(join(root, "LICENSE"), "MIT License\nCopyright (c) 2026 Eliware\n");
+  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n## 8.0.0\n### Added\n- Fixture baseline.\n### Fixed\n- Fixture validation.\n");
+  await writeFile(join(root, ".env"), "MAIL_OWNER_ADDRESS=fixture@eliware.org\n");
+  await writeFile(join(root, "LICENSE"), `MIT License\n\nCopyright (c) 2026 Eliware\n\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE\n`);
   await writeFile(join(root, ".env.example"), "# safe example\n");
   await writeFile(
     join(root, ".gitignore"),
@@ -33,7 +39,7 @@ export async function fixture(conventions) {
   await writeFile(join(root, "specs", "authority.json"), "{}");
   await writeFile(
     join(root, "specs", "directives.json"),
-    JSON.stringify({ directives: [{ id: "E-1", directives: [] }] }),
+    JSON.stringify({ directives: [{ id: "E-1", directives: [{ id: "E-1.25", directives: [] }] }] }),
   );
   await writeFile(
     join(root, "specs", "contracts.json"),
@@ -61,8 +67,8 @@ export async function fixture(conventions) {
             invariants: [],
             boundaries: {},
           },
-          implementation: {},
-          verification: {},
+          implementation: { source: ["bin/eliware-test.mjs"] },
+          verification: { tests: ["tests"] },
         },
       ],
     }),
@@ -75,7 +81,7 @@ export async function fixture(conventions) {
   await mkdir(join(root, ".knit"), { recursive: true });
   await writeFile(
     join(root, ".knit", "validate.mjs"),
-    "git pull --ff-only origin main\nnpm ci\nnpm test\n",
+    'import { spawnSync } from "node:child_process";\nspawnSync("git", ["pull", "--ff-only", "origin", "main"]);\nspawnSync("npm", ["ci"]);\nspawnSync("npm", ["test"]);\n',
   );
   await writeFile(join(root, ".knit", "deploy.yaml"), "version: 1\n");
   const packageJson = {
@@ -110,7 +116,10 @@ export async function fixture(conventions) {
     jest: { collectCoverageFrom: ["src/**/*.mjs"] },
     eliware: {
       apply: conventions.apply,
-      exempt: conventions.exempt ?? [],
+      exempt: [
+        ...(conventions.exempt ?? []),
+        { ruleId: "E-1.6.0", path: ".env", reason: "Fixture-only local environment file.", approver: "Eli", approvalTimestamp: "2026-09-14T00:00:00Z", expiry: null },
+      ],
       authority: { authoritativeFor: ["fixture"], notAuthoritativeFor: ["runtime"] },
       crosslinks: [
         {
@@ -128,7 +137,7 @@ export async function fixture(conventions) {
       name: "@eliware/fixture",
       version: "8.0.0",
       lockfileVersion: 3,
-      packages: {},
+      packages: { "": { name: "@eliware/fixture", version: "8.0.0" } },
     }),
   );
   return root;

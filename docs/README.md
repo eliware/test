@@ -2,6 +2,20 @@
 
 This directory contains end-user documentation for the native v8 validator.
 
+## Purpose and scope
+
+These documents explain the validator's supported user-facing commands and
+configuration boundary.
+
+## Setup and usage
+
+Start with [Usage](usage.md) for prerequisites and exact commands.
+
+## Validation and support
+
+See [Troubleshooting](troubleshooting.md) for validation diagnostics and
+[Support](support.md) for support channels.
+
 ## Contents
 
 - [Usage](usage.md) — setup and supported commands.

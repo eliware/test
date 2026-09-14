@@ -1,3 +1,5 @@
+import { readBundledProfileAuthority, validateAppliedProfiles } from "./read-bundled-profile-authority.mjs";
+
 export function readConventionConfig(packageJson) {
   const apply = packageJson?.eliware?.apply;
   if (!Array.isArray(apply) || apply.length === 0) {
@@ -6,5 +8,7 @@ export function readConventionConfig(packageJson) {
   if (apply.some((group) => typeof group !== "string" || group.length === 0)) {
     throw new Error("eliware.apply must be an array of group names.");
   }
+  const failure = validateAppliedProfiles(apply, readBundledProfileAuthority());
+  if (failure) throw new Error(failure);
   return { apply };
 }

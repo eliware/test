@@ -1,6 +1,6 @@
-function compatibleWithNode26(range) {
+export function compatibleWithNode26(range) {
   return (
-    /^(?:>=\s*)?26(?:\.x|\.\d+(?:\.\d+)?)?(?:\s*<\s*27(?:\.\d+(?:\.\d+)?)?)?$/.test(range) ||
+    /^(?:26(?:\.x|\.\d+(?:\.\d+)?)?|>=\s*26(?:\.\d+(?:\.\d+)?)?\s*<\s*27(?:\.\d+(?:\.\d+)?)?)$/.test(range) ||
     /^(?:\^|~)\s*26(?:\.\d+(?:\.\d+)?)?$/.test(range)
   );
 }

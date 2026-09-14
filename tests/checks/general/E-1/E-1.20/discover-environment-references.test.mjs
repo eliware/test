@@ -11,3 +11,11 @@ test("discovers environment references from repository source files", async () =
   await expect(discoverEnvironmentReferences(root)).resolves.toEqual(["PORT"]);
   await rm(root, { recursive: true, force: true });
 });
+
+test("fails closed when a source file cannot be parsed", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-env-discovery-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "broken.mjs"), "export const = process.env.PORT;");
+  await expect(discoverEnvironmentReferences(root)).rejects.toThrow();
+  await rm(root, { recursive: true, force: true });
+});

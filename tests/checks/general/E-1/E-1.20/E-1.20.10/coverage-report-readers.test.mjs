@@ -13,7 +13,7 @@ test("reads detailed and summary report formats", async () => {
     1,
     async () => JSON.stringify({ "src/example.mjs": { s: { 0: 1 } } }),
     async () => ({ mtimeMs: 2 }),
-  )).resolves.toEqual({ gaps: [], totals: { statements: 100, branches: 100, functions: 100, lines: 100 } });
+  )).resolves.toEqual({ gaps: [{ file: "src/example.mjs", statements: [], branches: [], functions: [], lines: [], metrics: { statements: 100, branches: 0, functions: 0, lines: 0 } }], totals: { statements: 100, branches: 0, functions: 0, lines: 0 } });
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 0)).rejects.toThrow();
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 1)).rejects.toThrow();
 });

@@ -37,13 +37,13 @@ test("requires validation before publication", async () => {
   expect((await run({ root })).status).toBe("fail");
 });
 
-test("passes when workflows are unavailable or have no publication", async () => {
+test("fails when the required publication workflow is unavailable", async () => {
   const missing = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-missing-"));
-  await expect(run({ root: missing })).resolves.toEqual({ ruleId: "A-1.140.3", status: "pass", message: "" });
+  await expect(run({ root: missing })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-ci-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(join(root, ".github", "workflows", "ci.yml"), "name: ci\n");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-1.140.3", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
 test("rejects publication without a validation job or matching needs", async () => {
@@ -80,9 +80,7 @@ test("reports unparseable publication workflows and missing needs", async () => 
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-parse-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(join(root, ".github", "workflows", "publish.yml"), "npm publish\n");
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ message: "Publication workflow could not be parsed: publish.yml." }),
-  );
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await writeFile(join(root, ".github", "workflows", "publish.yml"), `jobs:
   validate:
     steps:
@@ -93,4 +91,21 @@ test("reports unparseable publication workflows and missing needs", async () => 
       - run: npm publish
 `);
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+});
+
+test("rejects a publication workflow without a usable validation job", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-no-validation-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `jobs:\n  publish:\n    needs: validate\n    steps:\n      - run: npm publish\n`);
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+});
+
+test("rejects an unparseable publication-looking companion workflow", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-mixed-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `jobs:\n  validate:\n    steps:\n      - run: npm ci\n      - run: npm test\n  publish:\n    needs: validate\n    steps:\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "legacy.yml"), "npm publish\n");
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  await writeFile(join(root, ".github", "workflows", "legacy.yml"), "name: legacy\n");
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
 });

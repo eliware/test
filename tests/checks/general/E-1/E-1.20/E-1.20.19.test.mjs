@@ -71,3 +71,16 @@ test("passes when the audit stage succeeds", async () => {
     }),
   ).resolves.toEqual({ ruleId: "E-1.20.19", status: "pass", message: "" });
 });
+
+test("executes audit during the aggregate validation mode", async () => {
+  let called = false;
+  await expect(
+    run({
+      packageJson: { scripts: { audit: "eliware-test --audit" } },
+      root: "C:\\repo",
+      executeAudit: true,
+      runAudit: async () => { called = true; return { code: 0, stdout: "", stderr: "" }; },
+    }),
+  ).resolves.toEqual({ ruleId: "E-1.20.19", status: "pass", message: "" });
+  expect(called).toBe(true);
+});

@@ -1,9 +1,13 @@
-import { pass } from "../../check-result.mjs";
+import { fail, pass } from "../../check-result.mjs";
+import { formatOutdatedDependencies, readOutdatedDependencies } from "./read-outdated-dependencies.mjs";
 
 export const ruleId = "E-1.15";
 export const parentRuleId = "E-1";
-export const enforcementMode = "non-deterministic";
+export const enforcementMode = "deterministic";
 
-export function run() {
-  return pass(ruleId);
+export async function run({ root = process.cwd(), packageJson, outdatedDependencies }) {
+  if (packageJson && !["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"].some((field) => Object.keys(packageJson[field] ?? {}).length)) return pass(ruleId);
+  const outdated = outdatedDependencies ?? await readOutdatedDependencies(root);
+  const findings = formatOutdatedDependencies(outdated);
+  return findings.length ? fail(ruleId, `Latest stable direct dependency versions are required: ${findings.join(", ")}.`) : pass(ruleId);
 }

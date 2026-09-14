@@ -15,6 +15,6 @@ export async function run({
 }) {
   const metadataError = validatePublicationMetadata(packageJson);
   if (metadataError) return fail(ruleId, metadataError);
-  const executionError = await executePackValidation({ root, executePack, mode, runPack });
+  const executionError = await executePackValidation({ root, packageJson, executePack, mode, runPack });
   return executionError ? fail(ruleId, executionError) : pass(ruleId);
 }

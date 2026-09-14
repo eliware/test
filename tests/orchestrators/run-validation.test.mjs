@@ -87,7 +87,7 @@ test("retains selected checks when the fixture is incomplete", async () => {
 });
 
 test("runs explicitly applied profile groups", async () => {
-  const results = await runValidation(await fixture({ apply: ["application", "cli"] }));
+  const results = await runValidation(await fixture({ apply: ["general", "application", "cli"] }));
   expect(results.map(({ ruleId }) => ruleId)).toContain("E-1.60");
 });
 

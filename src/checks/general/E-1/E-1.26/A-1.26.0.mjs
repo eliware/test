@@ -18,7 +18,13 @@ export async function run({ root, packageJson }) {
     ) {
       return fail(ruleId, "RELEASE_NOTES.md must contain the current package version heading.");
     }
-    if (!readme.includes("RELEASE_NOTES.md"))
+    if (!/^###\s+(?:Added|Changes|User-visible changes)\s*$/im.test(notes)) {
+      return fail(ruleId, "RELEASE_NOTES.md must contain a user-visible changes section.");
+    }
+    if (!/^###\s+(?:Fixed|Fixes)\s*$/im.test(notes)) {
+      return fail(ruleId, "RELEASE_NOTES.md must contain a fixes section.");
+    }
+    if (!/\[[^\]]+\]\((?:\.\/)?RELEASE_NOTES\.md(?:#[^)]+)?\)/iu.test(readme))
       return fail(ruleId, "README.md must link RELEASE_NOTES.md.");
   } catch {
     return fail(

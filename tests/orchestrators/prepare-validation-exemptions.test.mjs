@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { prepareValidationExemptions } from "../../src/orchestrators/prepare-validation-exemptions.mjs";
 
-test("combines package exemptions with ignored rule IDs", () => {
+test("combines package exemptions with validated ignored rule IDs", () => {
   const packageJson = {
     eliware: {
       exempt: [{ ruleId: "E-1.0", reason: "fixture", approver: "Eli", approvalTimestamp: "2026-09-14", expiry: null }],
@@ -11,6 +11,10 @@ test("combines package exemptions with ignored rule IDs", () => {
   expect(prepareValidationExemptions(packageJson, checks, ["E-1.1"])).toEqual(
     new Set(["E-1.0", "E-1.1"]),
   );
+});
+
+test("rejects an unknown CLI ignored ID", () => {
+  expect(() => prepareValidationExemptions({}, [{ ruleId: "E-1.0" }], ["E-9"])).toThrow(/Unknown convention exemption rule ID/);
 });
 
 test("rejects exemptions for unknown checks", () => {

@@ -28,3 +28,8 @@
 - Added concise successful output, actionable failure diagnostics, bounded
   subprocess handling, and protected handling of secrets and local machine
   state.
+
+### Fixed
+
+- Corrected validation output and tightened standardized repository-content
+  enforcement for the v8 conventions.

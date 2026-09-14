@@ -11,3 +11,7 @@ test("requires an explicit nonempty apply list", () => {
     expect.objectContaining({ status: "fail" }),
   );
 });
+
+test("rejects profiles absent from the bundled authority", () => {
+  expect(run({ packageJson: { eliware: { apply: ["not-a-profile"] } } })).toMatchObject({ status: "fail" });
+});

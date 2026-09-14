@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
+import { validateExamplesIndex } from "./validate-examples-index.mjs";
 
 export const ruleId = "A-1.40.1";
 export const parentRuleId = "E-1.40";
@@ -10,8 +11,11 @@ export async function run({ root, packageJson }) {
     await readFile(join(root, "docs", "README.md"), "utf8");
     await readFile(join(root, "examples", "README.md"), "utf8");
     const examples = await readdir(join(root, "examples"), { withFileTypes: true });
-    if (!examples.some((entry) => entry.name !== "README.md"))
+    const exampleNames = examples.filter((entry) => entry.name !== "README.md").map((entry) => entry.name);
+    if (exampleNames.length === 0)
       return fail(ruleId, "Libraries must provide at least one runnable example.");
+    const indexError = validateExamplesIndex(await readFile(join(root, "examples", "README.md"), "utf8"), exampleNames);
+    if (indexError) return fail(ruleId, indexError);
     if (!packageJson?.files?.length)
       return fail(ruleId, "Libraries must declare a package file allowlist.");
   } catch {

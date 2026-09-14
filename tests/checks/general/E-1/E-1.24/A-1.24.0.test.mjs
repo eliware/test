@@ -30,3 +30,13 @@ test("requires validation commands in workflow job steps", async () => {
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
 });
+
+test("reports malformed workflow YAML and ignores unrelated jobs", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(join(root, ".github", "workflows", "broken.yml"), "jobs: [");
+  await expect(run({ root })).resolves.toMatchObject({ ruleId: "A-1.24.0", status: "fail", message: expect.stringContaining("could not be parsed") });
+  await writeFile(join(root, ".github", "workflows", "broken.yml"), "jobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n");
+  await expect(run({ root })).resolves.toMatchObject({ ruleId: "A-1.24.0", status: "fail" });
+  await rm(root, { recursive: true, force: true });
+});

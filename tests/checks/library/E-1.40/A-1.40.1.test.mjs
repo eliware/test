@@ -9,7 +9,7 @@ test("requires library docs, examples, and allowlist", async () => {
   await mkdir(join(root, "docs"));
   await mkdir(join(root, "examples"));
   await writeFile(join(root, "docs", "README.md"), "docs");
-  await writeFile(join(root, "examples", "README.md"), "examples");
+  await writeFile(join(root, "examples", "README.md"), "Purpose\nPrerequisites\nCommand\nExpected result\n[basic.mjs](basic.mjs)");
   await writeFile(join(root, "examples", "basic.mjs"), "example");
   expect((await run({ root, packageJson: { files: ["src"] } })).status).toBe("pass");
   expect((await run({ root, packageJson: { files: [] } })).status).toBe("fail");
@@ -32,5 +32,10 @@ test("reports missing runnable examples and indexes", async () => {
       status: "fail",
       message: "Libraries must provide complete docs/ and examples/ indexes.",
     }),
+  );
+  await writeFile(join(root, "examples", "README.md"), "Purpose\nPrerequisites\nCommand\nExpected result");
+  await writeFile(join(root, "examples", "basic.mjs"), "example");
+  await expect(run({ root, packageJson: { files: ["src"] } })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("index") }),
   );
 });
