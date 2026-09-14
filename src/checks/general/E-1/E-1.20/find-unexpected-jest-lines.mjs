@@ -4,10 +4,11 @@ const JEST_LINES = [
   /^\s*(?:Expected|Received|Difference):/, /^\s*at\s/, /^\s*[✓√✕×○]\s/, /^\s*●\s/, /^\s*>\s/,
   /^\s*Node\.js\s+v/, /^\s*Test Suites:/, /^\s*Tests:/, /^\s*Snapshots:/,
 ];
+const ANSI_ESCAPE = new RegExp(`${String.fromCodePoint(0x1b)}\\[[0-?]*[ -/]*[@-~]`, "gu");
 
 export function findUnexpectedJestLines(text) {
   return text
     .split(/\r?\n/)
-    .map((line) => line.trimEnd())
+    .map((line) => line.replace(ANSI_ESCAPE, "").trimEnd())
     .filter((line) => line.trim() && !line.startsWith("[eliware-test-progress] ") && !JEST_LINES.some((pattern) => pattern.test(line)));
 }
