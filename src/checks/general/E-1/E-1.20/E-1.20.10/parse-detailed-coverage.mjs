@@ -23,7 +23,7 @@ export function parseDetailed(json) {
       continue;
     }
     for (const [metric, values] of Object.entries({
-      statements: Object.values(data.s ?? {}), branches: Object.values(data.b ?? {}).flat(),
+      statements: Object.values(data.s ?? {}), branches: Object.values(Object(data.b)).flat(),
       functions: Object.values(data.f ?? {}), lines: coverageLineEntries(data).map(([, count]) => count),
     })) {
       counts[metric].total += values.length;
