@@ -25,6 +25,9 @@ export async function readCoverageEvidenceFromCandidates(root, testOutput = "", 
     }
   }
   const textEvidence = parseText(testOutput);
+  if (textEvidence && requireFresh) {
+    throw new Error("Jest text coverage evidence cannot prove freshness for the current run. Rerun Jest with detailed coverage enabled.");
+  }
   if (textEvidence) return { ...textEvidence, source: "Jest text output" };
   throw lastError ?? new Error("Coverage evidence is missing. Rerun Jest with coverage enabled.");
 }

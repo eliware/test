@@ -19,3 +19,11 @@ test("does not execute an exempted plan item", async () => {
   )).resolves.toEqual([]);
   expect(run).not.toHaveBeenCalled();
 });
+
+test("requires the check that owns each enabled aggregate stage", async () => {
+  await expect(executeValidationPlan(
+    [{ ruleId: "E-1.20", run: async () => ({ ruleId: "E-1.20", status: "pass" }) }],
+    { executeJest: true, executeAudit: true },
+    new Set(),
+  )).rejects.toThrow("executeAudit");
+});

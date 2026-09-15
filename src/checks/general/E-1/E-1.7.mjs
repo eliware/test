@@ -12,6 +12,8 @@ const internalPatterns = [
   /\b(?:[a-z0-9-]+\.)*(?:internal|private)\.eliware\.org\b/i,
   /[a-z]:[\\/]+(?:users|home|srv|var[\\/]lib)[\\/]+[^\s"'`,;\])]+/i,
   /\/(?:home|users|srv|var\/lib)\/[^\s"'`,;\])]+/i,
+  /(?:^|[^a-z0-9])(?:C:|D:)[\\/]+(?:eliware|Users[\\/]\w+[\\/]src)(?:[\\/]|$)/i,
+  /(?:^|[^a-z0-9])file:\/\/(?:internal|private|[^/]+\.internal\.eliware\.org)(?:[\\/]|$)/i,
 ];
 export async function run({ root, files: suppliedFiles }) {
   const findings = [];

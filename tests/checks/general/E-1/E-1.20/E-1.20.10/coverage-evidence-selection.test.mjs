@@ -72,6 +72,14 @@ test("falls back to Jest text with file-level evidence", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("rejects text fallback when fresh evidence is required", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  const text = "src/example.mjs | 100 | 100 | 100 | 100 |\nAll files | 100 | 100 | 100 | 100 |";
+  await expect(readCoverageEvidenceFromCandidates(root, text, 1, { requireFresh: true }))
+    .rejects.toThrow("cannot prove freshness");
+  await rm(root, { recursive: true, force: true });
+});
+
 test("reports file-level gaps from Jest text", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
   const text = [

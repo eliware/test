@@ -44,7 +44,7 @@ export function fileGap(file, data) {
   const hasMaps = Object.keys(data.statementMap ?? {}).length > 0 || Object.keys(data.branchMap ?? {}).length > 0
     || Object.keys(data.fnMap ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
   if (!hasCounters) return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines, statements, branches, functions };
-  if (hasCounters && !hasMaps) return { file, metrics: values, lines, statements, branches, functions };
+  if (hasCounters && !hasMaps) return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines, statements, branches, functions };
   return metrics.every((metric) => values[metric] === 100)
     ? null
     : { file, metrics: values, lines, statements, branches, functions };
