@@ -87,7 +87,9 @@
       ],
       "donts": [
         "Do not expose internal modules as the consumer CLI boundary.",
-        "Do not perform repository validation for informational commands."
+        "Do not perform repository validation for informational commands.",
+        "Do not expose dependency-injected collaborators or runtime-library embedding seams as consumer APIs.",
+        "Do not provide a second consumer-facing diagnostic channel when a caller-supplied output sink throws."
       ],
       "contract": {
         "purpose": "Define the public Test entry behavior for informational CLI commands.",
@@ -131,7 +133,13 @@
       ],
       "donts": [
         "Do not run unrelated publication, deployment, release, synchronization, or external package commands as validation side effects.",
-        "Do not erase an earlier diagnostic when a later operation fails."
+        "Do not erase an earlier diagnostic when a later operation fails.",
+        "Do not invoke the consumer's test script recursively.",
+        "Do not convert uncertainty, skipped work, partial work, or unknown results into success.",
+        "Do not change test ordering, setup, isolation, coverage, or exit behavior merely because timing diagnostics are enabled.",
+        "Do not emit raw machine-readable timing payloads as normal human-facing output.",
+        "Do not persist timing diagnostics as workspace artifacts.",
+        "Do not treat numeric exit-code precedence as a ranking of root-cause severity."
       ],
       "contract": {
         "purpose": "Define how Test runs validation and exposes diagnostics.",
@@ -190,7 +198,9 @@
         "Keep applicability selection explicit rather than inferring it from repository shape."
       ],
       "donts": [
-        "Do not start check execution with missing, malformed, empty, or unknown harness configuration."
+        "Do not start check execution with missing, malformed, empty, or unknown harness configuration.",
+        "Do not infer applicability from repository shape, files, dependencies, scripts, entrypoints, or runtime behavior.",
+        "Do not expose internal toolkit defaults as consumer configuration."
       ],
       "contract": {
         "purpose": "Define explicit loading and interpretation of repository validation configuration.",
@@ -236,7 +246,10 @@
         "Validate module identity, entry points, parentage, duplicates, and deterministic numeric ordering."
       ],
       "donts": [
-        "Do not fetch a private conventions repository or silently overwrite duplicate or malformed checks."
+        "Do not fetch a private conventions repository or silently overwrite duplicate or malformed checks.",
+        "Do not use a separate runtime registry that can diverge from bundled checks.",
+        "Do not claim that a placeholder or scaffold check enforces a convention before deterministic check logic exists.",
+        "Do not retain a legacy compatibility layer or a second legacy check registry."
       ],
       "contract": {
         "purpose": "Define discovery and identity checks for bundled convention modules.",
@@ -328,7 +341,9 @@
         "Skip an exempted rule and every descendant in its parentRuleId chain while preserving unrelated siblings."
       ],
       "donts": [
-        "Do not let check modules infer applicability or exemption state, and do not let an unknown exemption silently skip work."
+        "Do not let check modules infer applicability or exemption state, and do not let an unknown exemption silently skip work.",
+        "Do not allow an exact exemption to skip sibling branches.",
+        "Do not silently omit a selected check or replace a check failure with a warning or successful output."
       ],
       "contract": {
         "purpose": "Define profile selection and ancestor-aware exemption evaluation.",
@@ -420,7 +435,11 @@
         "Scope coverage to an unambiguous mirrored source mapping."
       ],
       "donts": [
-        "Do not silently fall back to the full suite or report unrelated-module coverage failures for a focused request."
+        "Do not silently fall back to the full suite or report unrelated-module coverage failures for a focused request.",
+        "Do not treat a package path as a test focus.",
+        "Do not apply focused coverage narrowing to aggregate package operations.",
+        "Do not let option values become accidental focused paths.",
+        "Do not silently broaden validation when a focused path is difficult to resolve."
       ],
       "contract": {
         "purpose": "Define targeted execution without changing normal profile or exemption semantics.",
@@ -464,7 +483,13 @@
       ],
       "donts": [
         "Do not treat missing instrumented entries or incomplete metrics as successful coverage.",
-        "Do not reduce test or coverage failures to an exit code without actionable evidence."
+        "Do not reduce test or coverage failures to an exit code without actionable evidence.",
+        "Do not merge coverage candidates or select evidence by recency.",
+        "Do not allow stale, changing, or unstable evidence to be masked by a lower-priority candidate.",
+        "Do not claim that fallback text evidence came from a particular reporter.",
+        "Do not treat unmatched Istanbul metadata and counter keys as valid evidence.",
+        "Do not preserve, back up, restore, roll back, retain, move, or rename prior coverage output.",
+        "Do not create temporary coverage directories."
       ],
       "contract": {
         "purpose": "Define the four-dimensional coverage summary and its gap reporting.",
@@ -519,7 +544,12 @@
       ],
       "donts": [
         "Do not depend on shell pipelines, shell quoting, platform-specific executable assumptions, or unbounded output capture.",
-        "Do not publish, deploy, release, synchronize, tag, or push during validation."
+        "Do not publish, deploy, release, synchronize, tag, or push during validation.",
+        "Do not sanitize or selectively inherit the environment passed to child processes.",
+        "Do not expose sensitive values in diagnostics or claim comprehensive secret detection or redaction.",
+        "Do not promise guaranteed descendant-process cleanup on every platform.",
+        "Do not probe arbitrary npm or package-manager installation layouts.",
+        "Do not invoke Windows command shims through a non-shell child process."
       ],
       "contract": {
         "purpose": "Define safety limits for process interaction, external state, and diagnostics.",
@@ -559,6 +589,62 @@
         ],
         "commands": ["npm test"]
       }
+    },
+    {
+      "id": "C-18.14",
+      "title": "Compatibility and out-of-scope boundaries",
+      "scope": "compatibility-boundaries",
+      "directiveIds": ["E-18", "E-18.6", "E-18.7"],
+      "dos": [
+        "Preserve the documented negative guarantees that bound validation side effects, evidence selection, process execution, and public API scope.",
+        "Keep unsupported project workflows and subjective policy judgments outside the harness contract.",
+        "Pass a defensive copy of the complete invoking environment to every child process, applying only documented overrides.",
+        "Resolve and execute the consumer repository's declared Jest installation rather than silently substituting the validator's own runtime.",
+        "Remove the documented prior coverage candidates before Jest starts and fail clearly when cleanup cannot be completed.",
+        "Write current coverage directly to the consumer workspace using Jest's normal coverage writer without backup, restore, move, or merge behavior.",
+        "Read coverage candidates in fixed precedence order and verify freshness, stability, structure, and current-run ownership before accepting evidence.",
+        "Fail closed when coverage evidence is stale, changing, malformed, missing, structurally unusable, or otherwise insufficient.",
+        "Run workspace, policy, argument, focused-path, coverage-cleanup, and source/test architecture gates in their documented pre-Jest order.",
+        "Forward unknown non-wrapper Jest arguments unchanged while rejecting wrapper-owned arguments and preserving separator and option-value semantics.",
+        "Reject missing, ambiguous, or unsupported focused paths before unrelated execution and keep focused coverage and diagnostics within the requested scope.",
+        "Continue required post-test stages after a coverage failure, preserve every diagnostic, and return the documented aggregate failure result.",
+        "Report coverage independently for statements, branches, functions, and lines with file-level gaps and actionable remediation.",
+        "Use Node child-process APIs, argument arrays, explicit working directories, shell-disabled execution, and platform-appropriate process termination.",
+        "Bound captured output while retaining both stdout and stderr needed to diagnose failed tests.",
+        "Keep timing diagnostics live and separate from buffered machine-readable results without changing normal Jest execution semantics."
+      ],
+      "donts": [
+        "Do not provide project-specific smoke, integration, regression, end-to-end, deployment, or product workflows.",
+        "Do not provide same-worktree concurrency coordination, symbolic-link-based source/test-tree support, or a separate Jest concurrency model.",
+        "Do not support arbitrary mixed-separator path representations outside the documented Windows and POSIX contracts.",
+        "Do not judge subjective documentation prose quality, elegance, completeness, or human comprehensibility.",
+        "Do not execute discovered examples merely because they exist.",
+        "Do not treat convention exceptions as a general disable switch or use them to make an invalid existing document valid.",
+        "Do not expose internal toolkit defaults, dependency-injected seams, or runtime-library embedding APIs as consumer configuration or public APIs.",
+        "Do not provide a second diagnostic channel when a caller-supplied output sink throws.",
+        "Do not guarantee cleanup of descendant processes on every platform.",
+        "Do not claim support for nonstandard Node.js, npm, or package-manager installation layouts.",
+        "Do not retain a legacy compatibility layer or a second legacy check registry.",
+        "Do not persist timing diagnostics as workspace artifacts.",
+        "Do not treat numeric exit-code precedence as a semantic ranking of root-cause severity.",
+        "Do not claim that redaction replaces the consumer's responsibility to scrub fixtures, code, and logs.",
+        "Do not invoke every test in a separate process merely to collect timing data.",
+        "Do not let timing diagnostics change test ordering, isolation, setup, coverage enforcement, or exit semantics."
+      ],
+      "contract": {
+        "purpose": "Define the negative compatibility and scope boundaries that prevent the harness from acquiring v6-excluded side effects or consumer-facing responsibilities.",
+        "inputs": { "invocation": "A public harness invocation and its selected validation stages." },
+        "outputs": { "boundary": "The invocation remains within the documented Test harness scope." },
+        "errors": ["A forbidden side effect, unsupported public API, or out-of-scope interpretation is a contract violation."],
+        "ordering": ["Boundary checks apply before and during stage execution."],
+        "invariants": ["Validation remains local, deterministic, bounded, and read-only with respect to external systems."],
+        "boundaries": {
+          "owns": ["Harness compatibility and out-of-scope boundaries"],
+          "doesNotOwn": ["Project workflows", "subjective policy judgment", "external release and deployment procedures"]
+        }
+      },
+      "implementation": { "source": ["src", "bin"] },
+      "verification": { "tests": ["tests"], "commands": ["npm test", "npm run lint", "git diff --check"] }
     },
     {
       "id": "C-18.13",

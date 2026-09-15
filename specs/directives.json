@@ -47,7 +47,10 @@
       "dos": ["Provide a deterministic Eliware validation harness."],
       "donts": [
         "Do not define, reinterpret, duplicate, or extend repository conventions in the harness specification.",
-        "Do not perform publication, deployment, synchronization, tagging, pushing, or other external state changes during validation."
+        "Do not perform publication, deployment, synchronization, tagging, pushing, or other external state changes during validation.",
+        "Do not expose internal modules, injected collaborators, or runtime-library seams as consumer APIs.",
+        "Do not claim comprehensive secret detection or redaction.",
+        "Do not provide same-worktree concurrency coordination or a separate Jest concurrency model."
       ],
       "directives": [
         {
@@ -135,10 +138,11 @@
             }
           ]
         },
-        {
-          "id": "E-18.6",
-          "dos": [
-            "Make checks return only pass or fail with stable identities and actionable diagnostics."
+            {
+              "id": "E-18.6",
+              "dos": [
+            "Make checks return only pass or fail with stable identities and actionable diagnostics.",
+            "Preserve complete bounded child-process context, deterministic failure aggregation, current-run evidence ownership, and the invoking environment needed by the executed tests."
           ],
           "donts": [
             "Do not expose an undocumented warning, skipped, unknown, or partial state as a passing result."
@@ -158,11 +162,18 @@
               "id": "A-18.6.1",
               "dos": [
                 "Keep filesystem traversal, path handling, subprocess execution, and captured diagnostics bounded and platform-neutral.",
-                "Invoke child processes with argument arrays and preserve useful failure context."
+                "Invoke child processes with argument arrays and preserve useful failure context.",
+                "Pass a defensive copy of the complete invoking environment, applying only documented overrides.",
+                "Use explicit working directories, shell-disabled execution, and platform-appropriate child termination.",
+                "Retain bounded stdout and stderr needed to diagnose failed tests."
               ],
               "donts": [
                 "Do not depend on shell pipelines, shell quoting, platform-specific executable assumptions, or unbounded output capture.",
-                "Do not expose sensitive values in harness-owned diagnostics."
+                "Do not expose sensitive values in harness-owned diagnostics.",
+                "Do not sanitize or selectively inherit child-process environments.",
+                "Do not promise guaranteed descendant-process cleanup on every platform.",
+                "Do not probe arbitrary npm or package-manager installation layouts.",
+                "Do not invoke Windows command shims through a non-shell child process."
               ]
             },
             {
@@ -189,11 +200,19 @@
                 "Preserve the complete bounded test-process output needed to diagnose failed tests, including both standard output and standard error.",
                 "When coverage evidence identifies gaps, report them at file level with each available metric, uncovered lines, and uncovered statement, branch, or function details.",
                 "Include concise remediation guidance for every reported coverage gap, including adding or extending tests and refactoring only when needed for testability.",
-                "Report missing, malformed, stale, changing, or unusable coverage evidence as a distinct actionable validation failure."
+                "Report missing, malformed, stale, changing, or unusable coverage evidence as a distinct actionable validation failure.",
+                "Remove documented prior coverage candidates before test execution so accepted evidence belongs to the current run.",
+                "Read coverage candidates in fixed precedence order without merging or recency-based selection.",
+                "Continue required post-test diagnostics after a coverage failure while preserving every failure diagnostic."
               ],
               "donts": [
                 "Do not reduce a failed test run to only its exit code or reduce coverage failures to an undifferentiated percentage.",
-                "Do not claim complete coverage when detailed evidence is unavailable or unusable."
+                "Do not claim complete coverage when detailed evidence is unavailable or unusable.",
+                "Do not merge coverage candidates or select evidence by recency.",
+                "Do not allow stale, changing, or unstable evidence to be masked by a lower-priority candidate.",
+                "Do not preserve, back up, restore, roll back, retain, move, or rename prior coverage output.",
+                "Do not create temporary coverage directories.",
+                "Do not treat unmatched Istanbul metadata and counter keys as valid evidence."
               ]
             }
           ]
