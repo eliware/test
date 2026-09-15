@@ -20,7 +20,7 @@ export function resolveValidationDependencies(dependencies = validationDependenc
   return dependencies;
 }
 
-export async function runValidation(root, ignoredRuleIds, options) {
+export async function runValidation(root, ignoredRuleIds, options = {}) {
   const dependencies = resolveValidationDependencies(options.dependencies);
   const {
     loadValidationTarget: loadTarget,

@@ -11,3 +11,7 @@ credentials, tokens, private environment values, coverage artifacts, or
 generated runtime output.
 
 [Return to documentation](README.md).
+Focused validation uses exactly one test path after npm's `--` separator, for
+example `npm test -- tests/example.test.mjs`. Direct CLI use is
+`node bin/eliware-test.mjs tests/example.test.mjs`; ambiguous or multiple
+focused paths are rejected.

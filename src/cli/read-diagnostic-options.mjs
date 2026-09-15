@@ -23,6 +23,8 @@ export function readDiagnosticOptions(args) {
   }
   const modes = normalizedArgs.filter((argument) => modeFlags.includes(argument));
   if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
+  const focused = normalizedArgs.filter((argument) => !argument.startsWith("-"));
+  if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
   return {
     ignoredRuleIds: [
       ...(normalizedArgs.includes("--ignore-100x4") ? ["E-1.20.10"] : []),

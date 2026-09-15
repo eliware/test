@@ -3,7 +3,8 @@ import { coverageLineEntries, fileGap } from "./coverage-file-gap.mjs";
 const metrics = ["statements", "branches", "functions", "lines"];
 
 function isInScopeSource(file) {
-  return /(?:^|\/)src\/.*\.(?:mjs|js|cjs)$/iu.test(file.split("\\").join("/"));
+  const normalized = file.split("\\").join("/");
+  return /^(?!.*(?:^|\/)(?:tests?|fixtures?|generated|dist|build)\/)(?:.*\/)?src\/.*\.(?:mjs|js|cjs)$/iu.test(normalized);
 }
 
 export function parseDetailed(json) {

@@ -16,7 +16,7 @@ export function createJestProcessOptions(root, args = [], options = {}) {
   }
   return {
     cwd: root,
-    env: { ...process.env, NODE_OPTIONS: nodeOptions },
+    env: Object.fromEntries(Object.entries({ ...process.env, NODE_OPTIONS: nodeOptions }).filter(([key]) => !/pass|secret|token|key|credential/i.test(key))),
     progressPattern: /^\[eliware-test-progress\]/m,
     progressTimeoutMs: 15_000,
     onProgress,
