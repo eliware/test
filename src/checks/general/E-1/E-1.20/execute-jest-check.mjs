@@ -5,12 +5,10 @@ export async function executeJestCheck(context) {
   const startedAt = Date.now();
   let timeoutDiagnostic;
   try {
-    const result = context.writeOutput
-      ? await runJest(context.root, context.jestArgs ?? [], runChild, {
-        onStderr: context.writeOutput,
-        onTimeout: (message) => { timeoutDiagnostic = message; },
-      })
-      : await runJest(context.root, context.jestArgs ?? [], runChild, {});
+    const result = await runJest(context.root, context.jestArgs ?? [], runChild, {
+      onStderr: context.writeOutput,
+      onTimeout: (message) => { timeoutDiagnostic = message; },
+    });
     return { result: { ...result, startedAt }, timeoutDiagnostic };
   } catch (error) {
     return { error };

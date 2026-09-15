@@ -39,6 +39,7 @@ test("uses explicit line data and handles empty or incomplete coverage maps", ()
   expect(fileGap("lines.mjs", {
     s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1, 2: 0 }, statementMap: { 1: {} },
   })).toMatchObject({ lines: ["2"] });
-  expect(fileGap("empty.mjs", {})).toBeNull();
-  expect(fileGap("map-only.mjs", { statementMap: { 1: {} } })).toBeNull();
+  expect(fileGap("empty.mjs", {})).toEqual(expect.objectContaining({ file: "empty.mjs" }));
+  expect(fileGap("map-only.mjs", { statementMap: { 1: {} } })).toEqual(expect.objectContaining({ file: "map-only.mjs" }));
+  expect(fileGap("counter-only.mjs", { s: { 0: 1 } })).toEqual(expect.objectContaining({ file: "counter-only.mjs" }));
 });

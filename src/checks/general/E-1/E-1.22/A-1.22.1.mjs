@@ -41,13 +41,18 @@ function prohibitedTrackedPath(path) {
 }
 
 export async function run({ root, checkIgnored = gitIgnores, trackedPaths = readTrackedPaths }) {
+  let ignoreText;
   try {
-    await readFile(join(root, ".gitignore"), "utf8");
+    ignoreText = await readFile(join(root, ".gitignore"), "utf8");
   } catch {
     return fail(ruleId, ".gitignore is required.");
   }
   const missing = [];
   for (const [category, path] of requiredPaths) {
+    if (!hasExplicitIgnoreRule(ignoreText, path)) {
+      missing.push(category);
+      continue;
+    }
     const ignored = await checkIgnored(root, path);
     if (ignored === null) return fail(ruleId, "Git ignore inspection was unavailable; cannot validate required ignored paths safely.");
     if (!ignored) missing.push(category);
@@ -59,4 +64,11 @@ export async function run({ root, checkIgnored = gitIgnores, trackedPaths = read
   const violations = tracked.filter(prohibitedTrackedPath);
   if (violations.length > 0) return fail(ruleId, `Prohibited ignored paths are tracked: ${violations.join(", ")}.`);
   return pass(ruleId);
+}
+
+function hasExplicitIgnoreRule(ignoreText, path) {
+  const normalized = path.replaceAll("\\", "/");
+  const first = normalized.split("/")[0];
+  if (first.startsWith(".env")) return /(?:^|\r?\n)\s*\.env(?:\*|\b)/u.test(ignoreText);
+  return new RegExp(`(?:^|\\r?\\n)\\s*(?:/)?${first.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}(?:/|\\s|$)`, "u").test(ignoreText);
 }

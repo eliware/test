@@ -14,8 +14,9 @@ export async function run({ root }) {
   }
   for (const { name, document } of workflows) {
     const commands = workflowCommands(document);
-    const validationCommands = workflowJobs(document)
-      .filter(({ id, job }) => isValidationJob(id, job))
+    const jobs = workflowJobs(document);
+    const validationCommands = jobs
+      .filter(({ id, job }) => isValidationJob(id, job) || isValidationExecutionJob(job))
       .flatMap(({ id, job }) => workflowRunSteps(job).map((step) => ({ job: id, ...step })));
     const publicationWorkflow = Boolean(findPublicationCommand(commands));
     if (publicationWorkflow && validationCommands.length === 0)
@@ -30,4 +31,10 @@ export async function run({ root }) {
     if (sequenceError) return fail(ruleId, sequenceError);
   }
   return pass(ruleId);
+}
+
+function isValidationExecutionJob(job) {
+  const commands = workflowRunSteps(job).map(({ command }) => command);
+  return commands.some((command) => /^npm\s+ci$/iu.test(command))
+    && commands.some((command) => /^npm\s+test$/iu.test(command));
 }

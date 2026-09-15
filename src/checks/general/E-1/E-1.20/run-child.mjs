@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { appendBoundedOutput } from "./bound-process-output.mjs";
 import { handleChildProgress } from "./handle-child-progress.mjs";
 import { createProgressTimeout } from "./create-progress-timeout.mjs";
+import { terminateChild } from "./terminate-child.mjs";
 
 export function runChild(command, args, options = {}) {
   const maxOutputLength = options.maxOutputLength;
@@ -18,7 +19,7 @@ export function runChild(command, args, options = {}) {
       timeoutMs: options.progressTimeoutMs,
       onTimeout: () => {
         options.onTimeout?.();
-        child.kill();
+        terminateChild(child);
       },
     });
     const resetProgressTimer = timeout.reset;

@@ -1,7 +1,8 @@
 # Troubleshooting
 
 Run `eliware-test --help` to confirm supported command forms. Use
-`npm test -- <focused Jest paths>` for a focused run; missing paths are
+`npm test -- <focused Jest paths>` (or `node bin/eliware-test.mjs <focused Jest paths>`)
+for a focused run; missing paths are
 rejected rather than silently expanding to the full suite.
 
 For a failure, preserve the stage diagnostics and collect `node --version`,

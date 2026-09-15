@@ -15,7 +15,7 @@ test("parses complete detailed files and all detailed metric shapes", () => {
     },
     "src/empty.mjs": {},
   });
-  expect(result.gaps).toEqual([]);
+  expect(result.gaps).toEqual([expect.objectContaining({ file: "src/empty.mjs" })]);
   expect(result.totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
   expect(parseDetailed(null)).toBeNull();
 });
@@ -31,6 +31,7 @@ test("rejects incomplete in-scope coverage entries instead of treating missing m
     gaps: expect.arrayContaining([
       expect.objectContaining({ file: "src/covered.mjs" }),
       expect.objectContaining({ file: "src/branch-only.mjs" }),
+      expect.objectContaining({ file: "src/empty.mjs" }),
     ]),
     totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
   });

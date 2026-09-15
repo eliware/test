@@ -15,14 +15,14 @@ test("builds a quiet progress-aware Jest process configuration", () => {
 
 test("uses defaults when optional arguments are omitted", () => {
   const options = createJestProcessOptions("C:/fixture");
-  expect(options.progressTimeoutMs).toBeUndefined();
+  expect(options.progressTimeoutMs).toBe(15_000);
   options.onTimeout();
 });
 
-test("filters machine progress from streamed human output and expands debug capture", () => {
+test("preserves machine progress for diagnostics and expands debug capture", () => {
   const output = [];
   const options = createJestProcessOptions("C:/fixture", ["--debug-timing"], { onStderr: (text) => output.push(text) });
   expect(options.maxOutputLength).toBe(10_000_000);
   options.onStderr("[eliware-test-progress] start suite\n[eliware-test] Running suite...\n");
-  expect(output).toEqual(["[eliware-test] Running suite...\n"]);
+  expect(output).toEqual(["[eliware-test-progress] start suite\n[eliware-test] Running suite...\n"]);
 });

@@ -48,6 +48,8 @@ test("maps a focused test to its mirrored source coverage", async () => {
     "--coverageReporters=text",
     "--reporters",
     "default",
+    "--reporters",
+    expect.stringContaining("jest-progress-reporter.mjs"),
     "--collectCoverageFrom",
     "src/sample.mjs",
     "--runTestsByPath",
@@ -124,7 +126,7 @@ test("raises the bounded debug-timing capture without making it unlimited", asyn
   expect(received[1]).toContain("--reporters");
   expect(received[2].onStderr).toEqual(expect.any(Function));
   received[2].onStderr("[eliware-test-progress] machine\nvisible\n");
-  expect(onStderr).toHaveBeenCalledWith("visible\n");
+  expect(onStderr).toHaveBeenCalledWith("[eliware-test-progress] machine\nvisible\n");
   expect(received[2].progressTimeoutMs).toBe(15_000);
   expect(received[2].progressPattern).toEqual(/^\[eliware-test-progress\]/m);
 });

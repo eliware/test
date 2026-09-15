@@ -25,10 +25,13 @@ export async function run({ root, packageJson }) {
     }
     const version = packageJson?.version;
     const publicationJobs = publication.flatMap(({ job }) => [job]);
-    const verifiedVersion = typeof version === "string" && publicationJobs.some((job) =>
-      steps(job).some(({ run }) => typeof run === "string" &&
-        /^test\s+["']?\$\(npm\s+pkg\s+get\s+version\s+--raw\)["']?\s*=\s*["']?\$\{GITHUB_REF_NAME#v\}["']?$/iu.test(run.trim())),
-    );
+    const verifiedVersion = typeof version === "string" && publicationJobs.some((job) => {
+      const jobSteps = steps(job);
+      const verifyIndex = jobSteps.findIndex(({ run }) => typeof run === "string" &&
+        /^test\s+["']?\$\(npm\s+pkg\s+get\s+version\s+--raw\)["']?\s*=\s*["']?\$\{GITHUB_REF_NAME#v\}["']?$/iu.test(run.trim()));
+      const publishIndex = jobSteps.findIndex(({ run }) => /^npm\s+publish\b/iu.test(String(run).trim()));
+      return verifyIndex >= 0 && publishIndex > verifyIndex;
+    });
     if (
       !hasExactTagTrigger(workflow) ||
       typeof version !== "string" ||

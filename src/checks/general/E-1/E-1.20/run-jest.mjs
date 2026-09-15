@@ -9,7 +9,6 @@ const PROGRESS_REPORTER = fileURLToPath(new URL("./jest-progress-reporter.mjs", 
 
 export async function runJest(root, args, execute, options) {
   args ??= [];
-  const debugTiming = args.includes("--debug-timing");
   const focusedPath = await validateFocusedTestPath(root, args);
   const focusedCoverage = await resolveFocusedCoverage(root, focusedPath);
   const jestArguments = buildJestArguments(args);
@@ -23,7 +22,8 @@ export async function runJest(root, args, execute, options) {
       "--coverageReporters=text",
       "--reporters",
       "default",
-      ...(debugTiming ? ["--reporters", PROGRESS_REPORTER, "--reporters", TIMING_REPORTER] : []),
+      "--reporters", PROGRESS_REPORTER,
+      ...(args.includes("--debug-timing") ? ["--reporters", TIMING_REPORTER] : []),
       ...focusedCoverage,
       ...jestArguments.slice(1),
     ],
