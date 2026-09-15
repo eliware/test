@@ -45,3 +45,12 @@ test("handles a complete file with no branch counter map", () => {
     },
   }).totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
 });
+
+test("handles a complete file with no statement counter map", () => {
+  expect(parseDetailed({
+    "src/no-statements.mjs": {
+      b: { 0: [1] }, f: { 0: 1 }, l: { 1: 1 },
+      statementMap: { 0: { start: { line: 1 } } }, branchMap: { 0: {} }, fnMap: { 0: {} },
+    },
+  }).totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
+});
