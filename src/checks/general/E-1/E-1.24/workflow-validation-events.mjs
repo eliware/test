@@ -1,5 +1,7 @@
 export function workflowHasValidationEvents(document) {
-  const events = document?.on ?? document?.true ?? {};
+  const raw = document?.on ?? document?.true ?? {};
+  const events = Array.isArray(raw) ? Object.fromEntries(raw.map((event) => [event, {}]))
+    : typeof raw === "string" ? { [raw]: {} } : raw;
   const push = events.push;
   const mainPush =
     (Array.isArray(push) && push.includes("main")) ||

@@ -122,7 +122,7 @@ test("raises the bounded debug-timing capture without making it unlimited", asyn
     received = args;
     return { code: 0, stdout: "", stderr: "" };
   }, { onStderr });
-  expect(received[2].maxOutputLength).toBe(10_000_000);
+  expect(received[2].maxOutputLength).toBe(1_000_000);
   expect(received[1]).toContain("--reporters");
   expect(received[2].onStderr).toEqual(expect.any(Function));
   received[2].onStderr("[eliware-test-progress] machine\nvisible\n");

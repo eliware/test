@@ -1,5 +1,9 @@
 const metrics = ["statements", "branches", "functions", "lines"];
 
+function validCounter(value) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
 function percentage(covered, total) {
   return total > 0 ? (covered / total) * 100 : 100;
 }
@@ -22,6 +26,15 @@ export function coverageLineEntries(data) {
 }
 
 export function fileGap(file, data) {
+  const counterValues = [
+    ...Object.values(data.s ?? {}),
+    ...Object.values(data.b ?? {}).flat(),
+    ...Object.values(data.f ?? {}),
+    ...Object.values(data.l ?? {}),
+  ];
+  if (counterValues.some((value) => !validCounter(value))) {
+    return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines: [], statements: [], branches: [], functions: [] };
+  }
   const statements = Object.entries(data.s ?? {}).filter(([, count]) => count === 0)
     .map(([id]) => ({ location: location(data.statementMap?.[id]) }));
   const branches = Object.entries(data.b ?? {}).flatMap(([id, counts]) => counts.map((count, index) =>

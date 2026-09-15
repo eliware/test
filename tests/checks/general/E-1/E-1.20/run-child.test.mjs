@@ -11,6 +11,11 @@ test("captures child output and reports process results", async () => {
   expect(output).toEqual(["out:ok", "err:err"]);
 });
 
+test("uses default options when omitted", async () => {
+  await expect(runChild(process.execPath, ["-e", "process.stdout.write('default')"]))
+    .resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));
+});
+
 test("bounds output and rejects spawn errors", async () => {
   await expect(runChild(process.execPath, ["-e", "process.stdout.write('x'.repeat(101));"], { maxOutputLength: 100 }))
     .resolves.toEqual(expect.objectContaining({ stdout: expect.stringContaining("…") }));

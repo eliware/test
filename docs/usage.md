@@ -47,6 +47,7 @@ terminated with a diagnostic, and individual tests taking more than five
 seconds are reported as slow. These safeguards apply without
 `--debug-timing`.
 
-Use `--ignore-100x4` or `--ignore-monolith-limits` only for diagnostics or
-approved transitional work. The former still runs tests and collects
+Use `--ignore-100x4` or `--ignore-monolith-limits` only for approved
+diagnostics or transitional work. These flags bypass enforcement and must not
+be used for release validation or CI. The former still runs tests and collects
 coverage; the latter skips only monolith enforcement.

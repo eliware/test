@@ -23,7 +23,7 @@ export function createJestProcessOptions(root, args = [], options = {}) {
     onTimeout: () => {
       options.onTimeout?.(`Test suite ${currentSuite} timed out after 15 seconds without progress.`);
     },
-    ...(args.includes("--debug-timing") ? { maxOutputLength: 10_000_000 } : {}),
+    ...(args.includes("--debug-timing") ? { maxOutputLength: 1_000_000 } : {}),
     ...(options.onStderr ? { onStderr: options.onStderr } : {}),
   };
 }

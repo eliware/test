@@ -22,7 +22,7 @@ test("uses defaults when optional arguments are omitted", () => {
 test("preserves machine progress for diagnostics and expands debug capture", () => {
   const output = [];
   const options = createJestProcessOptions("C:/fixture", ["--debug-timing"], { onStderr: (text) => output.push(text) });
-  expect(options.maxOutputLength).toBe(10_000_000);
+  expect(options.maxOutputLength).toBe(1_000_000);
   options.onStderr("[eliware-test-progress] start suite\n[eliware-test] Running suite...\n");
   expect(output).toEqual(["[eliware-test-progress] start suite\n[eliware-test] Running suite...\n"]);
 });

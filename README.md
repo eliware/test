@@ -43,6 +43,10 @@ eliware-test --ignore-monolith-limits
 eliware-test --debug-timing
 ```
 
+The two `--ignore-*` flags bypass enforcement and are diagnostic-only. They
+must not be used for release validation or CI and require approved
+transitional use.
+
 The v8 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 

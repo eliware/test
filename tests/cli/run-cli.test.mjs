@@ -15,8 +15,8 @@ test("reports the convention-only help contract", async () => {
   await expect(runCli(["--help"], (value) => output.push(value))).resolves.toBe(0);
   expect(output[0]).toContain("Usage: eliware-test");
   expect(output[0]).toContain("--debug-timing");
-  expect(output[0]).not.toContain("--audit");
-  expect(output[0]).not.toContain("--pack");
+  expect(output[0]).toContain("--audit");
+  expect(output[0]).toContain("--pack");
 });
 
 test("rejects conflicting informational and validation arguments before dispatch", async () => {

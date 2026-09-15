@@ -15,6 +15,14 @@ export function runChild(command, args, options = {}) {
     });
     let stdout = "";
     let stderr = "";
+    let streamed = 0;
+    const stream = (callback, text) => {
+      if (!callback || streamed >= (maxOutputLength ?? 1_000_000)) return;
+      const remaining = (maxOutputLength ?? 1_000_000) - streamed;
+      const bounded = text.slice(0, remaining);
+      streamed += bounded.length;
+      callback(bounded);
+    };
     const timeout = createProgressTimeout({
       timeoutMs: options.progressTimeoutMs,
       onTimeout: () => {
@@ -26,13 +34,13 @@ export function runChild(command, args, options = {}) {
     timeout.reset();
     child.stdout.on("data", (chunk) => {
       const text = chunk.toString();
-      options.onStdout?.(text);
+      stream(options.onStdout, text);
       stdout = appendBoundedOutput(stdout, text, maxOutputLength);
     });
     child.stderr.on("data", (chunk) => {
       const text = chunk.toString();
       handleChildProgress(text, { ...options, resetProgressTimer });
-      options.onStderr?.(text);
+      stream(options.onStderr, text);
       stderr = appendBoundedOutput(stderr, options.captureStderr?.(text) ?? text, maxOutputLength);
     });
     child.on("error", (error) => {

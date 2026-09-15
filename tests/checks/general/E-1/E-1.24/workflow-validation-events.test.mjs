@@ -11,5 +11,7 @@ test("evaluates supported push and runner shapes", () => {
   expect(workflowHasValidationEvents({ on: { ...events, push: ["main"] }, jobs })).toBe(true);
   expect(workflowHasValidationEvents({ on: { ...events, push: { branches: ["dev"] } }, jobs })).toBe(false);
   expect(workflowHasValidationEvents({ on: { ...events, push: null }, jobs: { validate: { "runs-on": ["ubuntu-latest"] } } })).toBe(false);
+  expect(workflowHasValidationEvents({ on: "pull_request", jobs })).toBe(false);
+  expect(workflowHasValidationEvents({ on: ["push", "pull_request"], jobs })).toBe(false);
   expect(workflowHasValidationEvents({ on: { ...events, push: {} }, jobs: { validate: null } })).toBe(false);
 });

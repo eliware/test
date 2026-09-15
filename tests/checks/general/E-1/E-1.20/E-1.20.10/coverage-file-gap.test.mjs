@@ -43,3 +43,9 @@ test("uses explicit line data and handles empty or incomplete coverage maps", ()
   expect(fileGap("map-only.mjs", { statementMap: { 1: {} } })).toEqual(expect.objectContaining({ file: "map-only.mjs" }));
   expect(fileGap("counter-only.mjs", { s: { 0: 1 } })).toEqual(expect.objectContaining({ file: "counter-only.mjs" }));
 });
+
+test("rejects malformed coverage counters", () => {
+  expect(fileGap("invalid.mjs", {
+    s: { 1: Number.NaN }, statementMap: { 1: {} },
+  })).toEqual(expect.objectContaining({ file: "invalid.mjs", metrics: { statements: 0, branches: 0, functions: 0, lines: 0 } }));
+});
