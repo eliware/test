@@ -18,7 +18,7 @@ export async function readCoverageEvidenceFromCandidates(root, testOutput = "", 
   for (const relativePath of candidates) {
     try {
       const evidence = await readJsonCoverage(join(root, relativePath), relativePath, startedAt, read, statFile);
-      if (evidence) return { ...evidence, source: relativePath };
+      if (evidence && !evidence.incomplete) return { ...evidence, source: relativePath };
       lastError = new Error(`Coverage report is invalid: ${relativePath}. Rerun the tests.`);
     } catch (error) {
       if (error.code !== "ENOENT") lastError = error;

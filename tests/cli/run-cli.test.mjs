@@ -140,8 +140,10 @@ test("passes explicit stage controls to injected validation", async () => {
     executePackageChecks: false,
     executeFormat: false,
     mode: null,
+    modeRuleId: null,
     jestArgs: [],
     timing: expect.any(Object),
+    writeOutput: undefined,
   });
   expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings"]);
 });

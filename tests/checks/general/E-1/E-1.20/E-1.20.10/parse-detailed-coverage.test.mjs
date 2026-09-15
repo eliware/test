@@ -34,6 +34,7 @@ test("rejects incomplete in-scope coverage entries instead of treating missing m
       expect.objectContaining({ file: "src/empty.mjs" }),
     ]),
     totals: { statements: 0, branches: 0, functions: 0, lines: 0 },
+    incomplete: true,
   });
 });
 

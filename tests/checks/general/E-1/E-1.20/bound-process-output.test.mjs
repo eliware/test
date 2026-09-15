@@ -3,6 +3,7 @@ import { appendBoundedOutput, MAX_PROCESS_OUTPUT_LENGTH } from "../../../../../s
 
 test("appends output without truncation under the limit", () => {
   expect(appendBoundedOutput("a", "b", 4)).toBe("ab");
+  expect(appendBoundedOutput("a", "b")).toBe("ab");
   expect(MAX_PROCESS_OUTPUT_LENGTH).toBe(100_000);
 });
 

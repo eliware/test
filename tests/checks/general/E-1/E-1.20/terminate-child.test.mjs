@@ -1,10 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
 import { terminateChild } from "../../../../../src/checks/general/E-1/E-1.20/terminate-child.mjs";
 
-test("uses a hard termination signal on Windows", () => {
+test("uses Node's supported child termination on Windows", () => {
   const kill = jest.fn();
   expect(terminateChild({ kill }, "win32")).toBe(true);
-  expect(kill).toHaveBeenCalledWith("SIGKILL");
+  expect(kill).toHaveBeenCalledWith();
 });
 
 test("falls back to terminating the child when no process group exists", () => {

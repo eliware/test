@@ -13,7 +13,7 @@ test("passes quiet Jest output and fails unexpected output", async () => {
     ruleId: "E-1.20.20", status: "pass", message: "",
   });
   await expect(run({ executeJest: true, jestResult: { code: 0, stdout: "console leak\n" } })).resolves.toEqual({
-    ruleId: "E-1.20.20", status: "fail", message: "Unexpected test-process output detected: console leak",
+    ruleId: "E-1.20.20", status: "fail", message: "Unexpected test-process output detected: Unexpected output from unknown test suite: console leak",
   });
 });
 

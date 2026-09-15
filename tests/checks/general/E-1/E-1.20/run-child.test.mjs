@@ -22,6 +22,11 @@ test("bounds output and rejects spawn errors", async () => {
   await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
 });
 
+test("bounds captured stdout and stderr together", async () => {
+  const result = await runChild(process.execPath, ["-e", "process.stdout.write('o'.repeat(80)); process.stderr.write('e'.repeat(80));"], { maxOutputLength: 100 });
+  expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(101);
+});
+
 test("terminates a child after the configured period without progress", async () => {
   const timeout = jest.fn();
   const result = await runChild(process.execPath, ["-e", "setTimeout(() => {}, 30000)"], {

@@ -9,6 +9,7 @@ function isInScopeSource(file) {
 export function parseDetailed(json) {
   const counts = Object.fromEntries(metrics.map((metric) => [metric, { covered: 0, total: 0 }]));
   const gaps = [];
+  let incomplete = false;
   const entries = Object.entries(json ?? {}).filter(([file]) => isInScopeSource(file));
   if (entries.length === 0) return null;
   for (const [file, data] of entries) {
@@ -19,6 +20,7 @@ export function parseDetailed(json) {
     const hasMaps = Object.keys(data.statementMap ?? {}).length > 0 || Object.keys(data.branchMap ?? {}).length > 0
       || Object.keys(data.fnMap ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
     if (!hasCounters || !hasMaps) {
+      incomplete = true;
       for (const metric of metrics) counts[metric].total += 1;
       continue;
     }
@@ -36,5 +38,6 @@ export function parseDetailed(json) {
       metric,
       counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : 100,
     ])),
+    incomplete,
   };
 }

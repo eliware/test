@@ -42,6 +42,21 @@ test("rejects a check result with the wrong identity", async () => {
   ).rejects.toThrow("invalid result");
 });
 
+test("runs only the selected operational check for an explicit mode", async () => {
+  const calls = [];
+  const checks = ["E-1.4", "E-1.20.17", "E-1.20.19"].map((ruleId) => ({
+    ruleId,
+    run: async () => {
+      calls.push(ruleId);
+      return { ruleId, status: "pass", message: "" };
+    },
+  }));
+  await expect(executeConventionChecks(checks, { modeRuleId: "E-1.20.17" }, new Set())).resolves.toEqual([
+    { ruleId: "E-1.20.17", status: "pass", message: "" },
+  ]);
+  expect(calls).toEqual(["E-1.20.17"]);
+});
+
 test("does not represent non-deterministic checks as successful enforcement", async () => {
   let calls = 0;
   const run = async () => {

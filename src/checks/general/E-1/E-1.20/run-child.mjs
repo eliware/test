@@ -6,6 +6,7 @@ import { terminateChild } from "./terminate-child.mjs";
 
 export function runChild(command, args, options = {}) {
   const maxOutputLength = options.maxOutputLength;
+  const outputLimit = maxOutputLength ?? 100_000;
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: options.cwd,
@@ -17,8 +18,8 @@ export function runChild(command, args, options = {}) {
     let stderr = "";
     let streamed = 0;
     const stream = (callback, text) => {
-      if (!callback || streamed >= (maxOutputLength ?? 1_000_000)) return;
-      const remaining = (maxOutputLength ?? 1_000_000) - streamed;
+      if (!callback || streamed >= outputLimit) return;
+      const remaining = outputLimit - streamed;
       const bounded = text.slice(0, remaining);
       streamed += bounded.length;
       callback(bounded);
@@ -35,13 +36,13 @@ export function runChild(command, args, options = {}) {
     child.stdout.on("data", (chunk) => {
       const text = chunk.toString();
       stream(options.onStdout, text);
-      stdout = appendBoundedOutput(stdout, text, maxOutputLength);
+      stdout = appendBoundedOutput(stdout, text, Math.max(0, outputLimit - stderr.length));
     });
     child.stderr.on("data", (chunk) => {
       const text = chunk.toString();
       handleChildProgress(text, { ...options, resetProgressTimer });
       stream(options.onStderr, text);
-      stderr = appendBoundedOutput(stderr, options.captureStderr?.(text) ?? text, maxOutputLength);
+      stderr = appendBoundedOutput(stderr, options.captureStderr?.(text) ?? text, Math.max(0, outputLimit - stdout.length));
     });
     child.on("error", (error) => {
       timeout.stop();

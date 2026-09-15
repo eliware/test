@@ -19,7 +19,7 @@ test("creates validation options from diagnostics and CLI settings", () => {
 
 test("disables Jest for a package-validation mode", () => {
   expect(createValidationRunOptions([], { mode: "audit", jestArgs: ["--audit"] }, { executeJest: true }, {}, undefined))
-    .toEqual(expect.objectContaining({ executeJest: false, mode: "audit" }));
+    .toEqual(expect.objectContaining({ executeJest: false, mode: "audit", modeRuleId: "E-1.20.19" }));
 });
 
 test("keeps aggregate package stages enabled when Jest execution is independently disabled", () => {

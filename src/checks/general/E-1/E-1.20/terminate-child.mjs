@@ -1,7 +1,7 @@
 export function terminateChild(child, platform = process.platform) {
   if (!child || typeof child.kill !== "function") return false;
   if (platform === "win32") {
-    child.kill("SIGKILL");
+    child.kill();
     return true;
   }
   try {

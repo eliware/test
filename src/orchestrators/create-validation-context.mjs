@@ -9,6 +9,7 @@ export function createValidationContext(root, packageJson, options = {}) {
     executePackageChecks: options.executePackageChecks === true,
     executeFormat: options.executeFormat === true,
     mode: options.mode ?? null,
+    modeRuleId: options.modeRuleId ?? null,
     jestArgs: options.jestArgs ?? [],
     timing: options.timing,
     writeOutput: options.writeOutput,
