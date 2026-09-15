@@ -2,10 +2,10 @@ import { expect, test } from "@jest/globals";
 import { hasExactTagTrigger, hasUbuntuRunner, permissions, validationJobs } from "../../../src/checks/ghcr-published/workflow-policy.mjs";
 
 test("classifies workflow validation policy", () => {
-  const workflow = { content: "runs-on: ubuntu-latest", document: { on: { push: { tags: ["v*.*.*"] } }, permissions: { contents: "read" }, jobs: { ci: { steps: [{ run: "npm ci" }, { run: "npm test" }] } } } };
+  const workflow = { content: "runs-on: ubuntu-latest", document: { on: { push: { tags: ["v*.*.*"] } }, permissions: { contents: "read" }, jobs: { ci: { "runs-on": "ubuntu-latest", steps: [{ run: "npm ci" }, { run: "npm test" }] } } } };
   expect(hasExactTagTrigger(workflow)).toBe(true);
   expect(validationJobs(workflow)).toHaveLength(1);
-  expect(hasUbuntuRunner(workflow, {})).toBe(true);
+  expect(hasUbuntuRunner(workflow, workflow.document.jobs.ci)).toBe(true);
   expect(permissions(workflow, {})).toEqual({ contents: "read" });
 });
 

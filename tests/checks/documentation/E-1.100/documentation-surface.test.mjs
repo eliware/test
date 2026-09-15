@@ -52,6 +52,7 @@ test("accepts headings, HTML ids, fragments, definitions, and safe external link
       "[external](https://example.test)",
       "[mail](mailto:test@example.test)",
       "[anchor](#local)",
+      '<a id="local"></a>',
       "<https://example.test>",
     ].join("\n"),
   );

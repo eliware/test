@@ -8,6 +8,10 @@ test("allows Jest summaries and harness timing lines", () => {
   })).toEqual([]);
 });
 
+test("allows harness diagnostics echoed by the Jest stage", () => {
+  expect(findUnexpectedJestOutput({ stderr: "E-1.20: Jest failed: diagnostic\n" })).toEqual([]);
+});
+
 test("detects unexpected lines and logged console output", () => {
   expect(findUnexpectedJestOutput({
     stdout: "application log\n{\"numFailedTestSuites\":0,\"testResults\":[{\"name\":\"tests/example.test.mjs\",\"console\":[{\"type\":\"log\",\"message\":\"logged value\",\"origin\":\"example test\"}]}]}",

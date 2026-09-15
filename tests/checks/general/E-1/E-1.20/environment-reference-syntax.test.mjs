@@ -11,3 +11,8 @@ test("recognizes direct and computed process.env syntax", () => {
   expect(propertyName(computed.property)).toBe("TOKEN");
   expect(propertyName(null)).toBeUndefined();
 });
+
+test("recognizes statically resolvable computed template names", () => {
+  const ast = parse("process.env[`MAIL_OWNER_ADDRESS`];", { sourceType: "module" });
+  expect(propertyName(ast.program.body[0].expression.property)).toBe("MAIL_OWNER_ADDRESS");
+});

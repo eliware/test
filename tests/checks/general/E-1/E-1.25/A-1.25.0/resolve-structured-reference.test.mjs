@@ -52,7 +52,7 @@ test("validates files, directories, JSON anchors, and malformed references", asy
     validateStructuredReference({ root, file: source, field: "verification.tests", value: "tests/source.test.mjs" }),
   ).resolves.toBeNull();
   await expect(
-    validateStructuredReference({ root, file: source, field: "implementation.files", value: "./target.json" }),
+    validateStructuredReference({ root, file: source, field: "implementation.files", value: "specs/target.json" }),
   ).resolves.toBeNull();
   await expect(valid(null)).resolves.toBe(
     "must be a nonempty repository-relative path, not a URI or absolute path",

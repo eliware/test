@@ -4,7 +4,7 @@ export function createValidationRunOptions(args, diagnosticOptions, options, tim
     executeLint: options.executeLint ?? options.executeJest ?? true,
     executeAudit: options.executeAudit ?? options.executeJest ?? true,
     executePack: options.executePack ?? options.executeJest ?? true,
-    executePackageChecks: options.executePackageChecks ?? options.executeJest ?? true,
+    executePackageChecks: options.executePackageChecks ?? true,
     executeFormat: options.executeFormat ?? options.executeJest ?? true,
     mode: diagnosticOptions.mode,
     jestArgs: diagnosticOptions.jestArgs,

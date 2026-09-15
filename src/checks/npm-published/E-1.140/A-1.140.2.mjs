@@ -2,7 +2,7 @@ import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
 import { hasExactTagTrigger, hasUbuntuRunner } from "../../ghcr-published/workflow-policy.mjs";
 import { npmPublicationJobs } from "../../ghcr-published/workflow-publication.mjs";
-import { workflowText } from "../../ghcr-published/workflow-structure.mjs";
+import { steps } from "../../ghcr-published/workflow-structure.mjs";
 
 export const ruleId = "A-1.140.2";
 export const parentRuleId = "E-1.140";
@@ -24,15 +24,16 @@ export async function run({ root, packageJson }) {
       continue;
     }
     const version = packageJson?.version;
-    const text = workflowText(workflow);
-    const verifiedVersion =
-      typeof version === "string" &&
-      /test\s+["']?\$\(npm\s+pkg\s+get\s+version\s+--raw\)["']?\s*=\s*["']?\$\{GITHUB_REF_NAME#v\}["']?/iu.test(text);
+    const publicationJobs = publication.flatMap(({ job }) => [job]);
+    const verifiedVersion = typeof version === "string" && publicationJobs.some((job) =>
+      steps(job).some(({ run }) => typeof run === "string" &&
+        /^test\s+["']?\$\(npm\s+pkg\s+get\s+version\s+--raw\)["']?\s*=\s*["']?\$\{GITHUB_REF_NAME#v\}["']?$/iu.test(run.trim())),
+    );
     if (
       !hasExactTagTrigger(workflow) ||
       typeof version !== "string" ||
       !verifiedVersion ||
-      !publication.some(({ job }) => hasUbuntuRunner(workflow, job))
+      !publication.some(({ job }) => hasUbuntuRunner(workflow, job) && /ubuntu/i.test(String(job["runs-on"] ?? job.runsOn ?? "")))
     ) {
       return fail(
         ruleId,

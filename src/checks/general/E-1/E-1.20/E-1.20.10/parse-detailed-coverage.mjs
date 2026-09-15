@@ -26,7 +26,7 @@ export function parseDetailed(json) {
     gaps,
     totals: Object.fromEntries(metrics.map((metric) => [
       metric,
-      counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : 0,
+      counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : 100,
     ])),
   };
 }

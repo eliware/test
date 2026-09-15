@@ -1,14 +1,14 @@
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-1/E-1.9/E-1.9.5.mjs";
 
-test("requires crosslink authority records", () => {
+test("requires crosslink authority records", async () => {
   const packageJson = {
     eliware: {
       crosslinks: [{ path: "../docs", relation: "relatedAuthority", authoritativeFor: "docs" }],
     },
   };
-  expect(run({ packageJson }).status).toBe("pass");
-  expect(run({ packageJson: { eliware: { crosslinks: [{ path: "../docs" }] } } }).status).toBe(
+  expect((await run({ packageJson })).status).toBe("pass");
+  expect((await run({ packageJson: { eliware: { crosslinks: [{ path: "../docs" }] } } })).status).toBe(
     "fail",
   );
 });
@@ -25,6 +25,9 @@ test.each([
   { crosslinks: [{ path: 7, relation: "relatedAuthority", authoritativeFor: "docs" }] },
   { crosslinks: [{ path: "docs", relation: 7, authoritativeFor: "docs" }] },
   { crosslinks: [{ path: "docs", relation: "relatedAuthority", authoritativeFor: 7 }] },
-])("rejects incomplete authority crosslinks %#", (eliware) => {
-  expect(run({ packageJson: { eliware } })).toEqual(expect.objectContaining({ status: "fail" }));
+  { crosslinks: [{ path: "/absolute.json", relation: "relatedAuthority", authoritativeFor: "docs" }] },
+  { crosslinks: [{ path: "https://example.com/docs.json", relation: "relatedAuthority", authoritativeFor: "docs" }] },
+  { crosslinks: [{ path: "missing.json", relation: "relatedAuthority", authoritativeFor: "docs" }] },
+])("rejects incomplete authority crosslinks %#", async (eliware) => {
+  await expect(run({ packageJson: { eliware } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });

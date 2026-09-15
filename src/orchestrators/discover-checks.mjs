@@ -18,7 +18,7 @@ export async function discoverChecks(
     } catch {
       throw new Error(`Unknown convention group: ${group}`);
     }
-    for (const module of await discoverCheckTree(groupRoot, importCheck, null, readDirectory)) {
+    for (const module of await discoverCheckTree(groupRoot, importCheck, null, readDirectory, root)) {
       if (seen.has(module.ruleId)) throw new Error(`Duplicate check module: ${module.ruleId}`);
       seen.add(module.ruleId);
       discovered.push(module);

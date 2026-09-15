@@ -16,13 +16,13 @@ async function fixture(example) {
 }
 
 test("passes when referenced variables are documented", async () => {
-  const root = await fixture("# default: fixture\nEXAMPLE_VALUE=fixture\n");
+  const root = await fixture("# default: fixture allowed: fixture\nEXAMPLE_VALUE=fixture\n");
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.20.8", status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });
 });
 
 test("reports missing environment documentation", async () => {
-  const root = await fixture("# default: value\nOTHER=value\n");
+  const root = await fixture("# default: value allowed: value\nOTHER=value\n");
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("EXAMPLE_VALUE") }),
   );
@@ -38,7 +38,7 @@ test("discovers computed and destructured environment references", async () => {
   );
   await writeFile(
     join(root, ".env.example"),
-    "# default: one\nFIRST=one\n# default: two\nSECOND=two\n",
+    "# default: one allowed: one\nFIRST=one\n# default: two allowed: two\nSECOND=two\n",
   );
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.20.8", status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });

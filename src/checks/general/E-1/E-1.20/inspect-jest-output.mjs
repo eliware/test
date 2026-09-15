@@ -8,6 +8,8 @@ export function findUnexpectedJestOutput({ stdout = "", stderr = "" } = {}) {
   const findings = findUnexpectedJestLines(parsed.text);
   findings.push(...findSlowTestFindings(stderr));
   findings.push(...findJestConsoleOutput(parsed.report));
-  findings.push(...findUnexpectedJestLines(stderr).filter((line) => !line.startsWith("[eliware-test] ")));
+  findings.push(...findUnexpectedJestLines(stderr).filter((line) =>
+    !line.startsWith("[eliware-test] ") && !/^E-1\.20(?::|\.)/.test(line),
+  ));
   return [...new Set(findings)];
 }

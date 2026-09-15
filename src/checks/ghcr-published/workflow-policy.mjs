@@ -19,12 +19,12 @@ export function hasExactTagTrigger(workflow) {
 export function validationJobs(workflow) {
   return jobs(workflow).filter(
     ({ job }) =>
-      steps(job).some((step) => /\bnpm\s+ci\b/i.test(String(step.run ?? ""))) &&
-      steps(job).some((step) => /\bnpm\s+test\b/i.test(String(step.run ?? ""))),
+      steps(job).some((step) => /^npm\s+ci$/iu.test(String(step.run ?? "").trim())) &&
+      steps(job).some((step) => /^npm\s+test$/iu.test(String(step.run ?? "").trim())),
   );
 }
 
 export function hasUbuntuRunner(workflow, job) {
   const runner = job?.["runs-on"] ?? job?.runsOn;
-  return /ubuntu/i.test(String(runner ?? "")) || /ubuntu-latest|ubuntu-\d{2}\.\d{2}/i.test(workflow.content);
+  return /ubuntu(?:-latest|-\d{2}\.\d{2})?/iu.test(String(runner ?? ""));
 }

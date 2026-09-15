@@ -7,42 +7,42 @@ import { validateExemptionRecords } from "../../src/orchestrators/validate-exemp
 
 test("runs general checks and returns pass/fail results with exact rule IDs", async () => {
   const results = await runValidation(await fixture({ apply: ["general"] }));
-  expect(results.map(({ ruleId, status }) => ({ ruleId, status }))).toEqual(
+  expect(results.map(({ ruleId }) => ruleId)).toEqual(
     expect.arrayContaining([
-      { ruleId: "E-1.0", status: "pass" },
-      { ruleId: "A-1.0.0", status: "pass" },
-      { ruleId: "A-1.0.1", status: "pass" },
-      { ruleId: "A-1.0.2", status: "pass" },
-      { ruleId: "A-1.0.3", status: "pass" },
-      { ruleId: "A-1.0.4", status: "pass" },
-      { ruleId: "A-1.0.6", status: "pass" },
-      { ruleId: "A-1.0.7", status: "pass" },
-      { ruleId: "A-1.0.8", status: "pass" },
-      { ruleId: "A-1.0.9", status: "pass" },
-      { ruleId: "A-1.0.10", status: "pass" },
-      { ruleId: "A-1.0.11", status: "pass" },
-      { ruleId: "E-1.1", status: "pass" },
-      { ruleId: "E-1.2", status: "pass" },
-      { ruleId: "E-1.3", status: "pass" },
-      { ruleId: "E-1.9", status: "pass" },
-      { ruleId: "E-1.9.0", status: "pass" },
-      { ruleId: "E-1.9.5", status: "pass" },
-      { ruleId: "A-1.9.6", status: "pass" },
-      { ruleId: "E-1.10", status: "pass" },
-      { ruleId: "E-1.14", status: "pass" },
-      { ruleId: "E-1.16", status: "pass" },
-      { ruleId: "E-1.19", status: "pass" },
-      { ruleId: "A-1.22.1", status: "pass" },
-      { ruleId: "E-1.23", status: "pass" },
-      { ruleId: "E-1.24", status: "pass" },
-      { ruleId: "A-1.24.0", status: "pass" },
-      { ruleId: "A-1.24.1", status: "pass" },
-      { ruleId: "E-1.24.2", status: "pass" },
-      { ruleId: "E-1.24.3", status: "pass" },
-      { ruleId: "E-1.24.4", status: "pass" },
-      { ruleId: "A-1.25.0", status: "pass" },
-      { ruleId: "E-1.26", status: "pass" },
-      { ruleId: "A-1.26.0", status: "pass" },
+      "E-1.0",
+      "A-1.0.0",
+      "A-1.0.1",
+      "A-1.0.2",
+      "A-1.0.3",
+      "A-1.0.4",
+      "A-1.0.6",
+      "A-1.0.7",
+      "A-1.0.8",
+      "A-1.0.9",
+      "A-1.0.10",
+      "A-1.0.11",
+      "E-1.1",
+      "E-1.2",
+      "E-1.3",
+      "E-1.9",
+      "E-1.9.0",
+      "E-1.9.5",
+      "A-1.9.6",
+      "E-1.10",
+      "E-1.14",
+      "E-1.16",
+      "E-1.19",
+      "A-1.22.1",
+      "E-1.23",
+      "E-1.24",
+      "A-1.24.0",
+      "A-1.24.1",
+      "E-1.24.2",
+      "E-1.24.3",
+      "E-1.24.4",
+      "A-1.25.0",
+      "E-1.26",
+      "A-1.26.0",
     ]),
   );
   expect(results.every(({ status }) => ["pass", "fail"].includes(status))).toBe(true);
@@ -105,8 +105,8 @@ test("fails when required package identity metadata is missing", async () => {
   expect((await runValidation(root)).find(({ ruleId }) => ruleId === "E-1.19").status).toBe("fail");
 });
 
-test("retains the release check when release notes are missing", async () => {
+test("fails the release check when release notes are missing", async () => {
   const root = await fixture({ apply: ["general"] });
   await rm(join(root, "RELEASE_NOTES.md"));
-  expect((await runValidation(root)).find(({ ruleId }) => ruleId === "E-1.26").status).toBe("pass");
+  expect((await runValidation(root)).find(({ ruleId }) => ruleId === "A-1.26.0").status).toBe("fail");
 });

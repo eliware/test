@@ -66,7 +66,7 @@ test("runs convention validation and reports debug timing when requested", async
     runCli(["--debug-timing"], (value) => output.push(value), root, { executeJest: false }),
   ).resolves.toBe(0);
   expect(output.at(-1)).toMatch(/^Validation time: \d+ms$/);
-  expect(output.some((line) => /completed, starting/.test(line))).toBe(true);
+  expect(output.some((line) => /completed, starting/.test(line))).toBe(false);
 });
 
 test("fails when package metadata cannot be read", async () => {

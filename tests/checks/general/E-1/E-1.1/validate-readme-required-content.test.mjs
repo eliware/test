@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateReadmeRequiredContent } from "../../../../../src/checks/general/E-1/E-1.1/validate-readme-required-content.mjs";
+import { normalizeRepositoryUrl, validateReadmeRequiredContent } from "../../../../../src/checks/general/E-1/E-1.1/validate-readme-required-content.mjs";
 
 const standard = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 ## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/nodejs.yml)
@@ -21,7 +21,7 @@ Eliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repos
 
 test("accepts the standardized content surface", () => {
   expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture", publishConfig: { access: "public" } })).toBeNull();
-  expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture" })).toBeNull();
+  expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture", publishConfig: { access: "public" } })).toBeNull();
 });
 
 test("allows the examples navigation link when the optional examples surface is absent", () => {
@@ -66,13 +66,22 @@ test("requires the complete ordered footer and distinct organization, repository
   expect(validateReadmeRequiredContent(standard.replace("[Discord](https://discord.gg/M6aTR9eTwN) eliware.org on Discord", "[Support](https://discord.gg/M6aTR9eTwN)"), metadata)).toContain("Discord support");
 });
 
-test("normalizes malformed repository metadata and handles a final Links section", () => {
+test("rejects malformed repository metadata and handles a final Links section", () => {
   const metadata = { name: "@eliware/fixture", repository: "ssh://example.invalid/fixture" };
   const linksAtEnd = standard.replace(
     "## Links\nEliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)\n## License\n[LICENSE](LICENSE)",
     "## License\n[LICENSE](LICENSE)\n## Links\nEliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)",
   );
-  expect(validateReadmeRequiredContent(linksAtEnd, metadata)).toBeNull();
-  expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture", repository: "https://github.com//fixture" })).toBeNull();
+  expect(validateReadmeRequiredContent(linksAtEnd, metadata)).toContain("valid GitHub repository URL");
+  expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture", repository: "https://github.com//fixture" })).toContain("valid GitHub repository URL");
   expect(validateReadmeRequiredContent(standard.replace("## Links", "## Navigation"), { name: "@eliware/fixture" })).toContain("Links section");
+});
+
+test("supports generic headings and repository metadata forms", () => {
+  expect(validateReadmeRequiredContent(standard, { private: true })).toContain("Non-public");
+  expect(validateReadmeRequiredContent(standard, { repository: { url: "https://github.com/eliware/fixture" } })).toBeNull();
+  expect(validateReadmeRequiredContent(standard, { repository: { url: 7 } })).toContain("valid GitHub repository URL");
+  expect(validateReadmeRequiredContent(standard)).toBeNull();
+  expect(normalizeRepositoryUrl()).toBe("https://github.com/eliware/fixture");
+  expect(normalizeRepositoryUrl("")).toBeNull();
 });

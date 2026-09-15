@@ -15,24 +15,29 @@ const requiredPaths = new Map([
   ["build output", "dist/index.js"],
   ["runtime state", ".cache/test-state"],
   ["secrets", ".env.local"],
+  ["secrets", ".env"],
   ["machine-specific files", ".vscode/settings.json"],
+  ["machine-specific files", ".idea/workspace.xml"],
 ]);
 
-export async function gitIgnores(root, path) {
+export async function gitIgnores(root, path, runGit = execFileAsync) {
   try {
-    await execFileAsync("git", ["-C", root, "check-ignore", "-q", "--no-index", "--", path], { windowsHide: true });
+    await runGit("git", ["-C", root, "check-ignore", "-q", "--no-index", "--", path], { windowsHide: true });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (error?.code === 1) return false;
+    return null;
   }
 }
 
 function prohibitedTrackedPath(path) {
   const normalized = path.replaceAll("\\", "/").toLowerCase();
-  return normalized === ".env" || normalized.startsWith(".env/") || (normalized.startsWith(".env.") && normalized !== ".env.example") ||
-    normalized.includes("node_modules/") || normalized.startsWith("coverage/") || normalized.startsWith("dist/") ||
-    normalized.startsWith("build/") || normalized.startsWith(".cache/") || normalized.startsWith(".vscode/") ||
-    normalized.startsWith(".idea/") || normalized.endsWith(".pem") || normalized.endsWith(".key");
+  const segments = normalized.split("/");
+  const basename = segments.at(-1);
+  return basename === ".env" || (basename.startsWith(".env.") && basename !== ".env.example") ||
+    segments.includes("node_modules") || segments.includes(".git") || segments.includes("coverage") || segments.includes("dist") ||
+    segments.includes("build") || segments.includes(".cache") || segments.includes(".vscode") ||
+    segments.includes(".idea") || normalized.endsWith(".pem") || normalized.endsWith(".key");
 }
 
 export async function run({ root, checkIgnored = gitIgnores, trackedPaths = readTrackedPaths }) {
@@ -42,11 +47,16 @@ export async function run({ root, checkIgnored = gitIgnores, trackedPaths = read
     return fail(ruleId, ".gitignore is required.");
   }
   const missing = [];
-  for (const [category, path] of requiredPaths) if (!(await checkIgnored(root, path))) missing.push(category);
+  for (const [category, path] of requiredPaths) {
+    const ignored = await checkIgnored(root, path);
+    if (ignored === null) return fail(ruleId, "Git ignore inspection was unavailable; cannot validate required ignored paths safely.");
+    if (!ignored) missing.push(category);
+  }
   if (missing.length > 0)
     return fail(ruleId, `Required .gitignore paths are not ignored: ${missing.join(", ")}.`);
   const tracked = await trackedPaths(root);
-  const violations = (tracked ?? []).filter(prohibitedTrackedPath);
+  if (!Array.isArray(tracked)) return fail(ruleId, "Git tracked-file inspection was unavailable; cannot validate prohibited tracked paths safely.");
+  const violations = tracked.filter(prohibitedTrackedPath);
   if (violations.length > 0) return fail(ruleId, `Prohibited ignored paths are tracked: ${violations.join(", ")}.`);
   return pass(ruleId);
 }

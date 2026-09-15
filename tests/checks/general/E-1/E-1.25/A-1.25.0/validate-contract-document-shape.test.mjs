@@ -19,3 +19,9 @@ test("rejects an invalid envelope and an empty contract list", () => {
 test("accepts a complete envelope", () => {
   expect(validateContractDocumentShape({ ...envelope, contracts: [{}] })).toBeNull();
 });
+
+test("requires the published schema and contract versions", () => {
+  expect(validateContractDocumentShape({ ...envelope, schemaVersion: "2.0", contracts: [{}] })).toContain("schemaVersion 1.0");
+  expect(validateContractDocumentShape({ ...envelope, contractVersion: "7.0", contracts: [{}] })).toContain("contractVersion 8.0");
+  expect(validateContractDocumentShape({ ...envelope, description: "", contracts: [{}] })).toContain("nonempty description");
+});

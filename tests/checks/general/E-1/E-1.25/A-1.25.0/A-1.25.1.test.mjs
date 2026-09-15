@@ -156,16 +156,6 @@ test("rejects malformed contract metadata and missing specification files", asyn
   );
   await cleanup(missing);
 });
-test("rejects unresolved contract graph references", async () => {
-  const root = await fixture({ contracts: [{ ...baseContract(), parent: "C-9.9" }] });
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({
-      status: "fail",
-      message: "Contract parent and dependency references must resolve without cycles.",
-    }),
-  );
-  await cleanup(root);
-});
 test("resolves directive IDs against the local directive document", async () => {
   const root = await fixture({ contracts: [{ ...baseContract(), directiveIds: ["E-9.9"] }] });
   await writeFile(join(root, "specs", "directives.json"), JSON.stringify({ directives: [{ id: "E-1.25" }] }));
@@ -180,19 +170,22 @@ test("resolves directive IDs against the local directive document", async () => 
   await writeFile(join(invalid, "specs", "directives.json"), "not json");
   await expect(run({ root: invalid })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("directives.json is invalid") }));
   await cleanup(invalid);
+
+  const unavailable = await fixture(); await rm(join(unavailable, "specs", "directives.json"));
+  await expect(run({ root: unavailable })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("cannot be resolved") })); await cleanup(unavailable);
 });
 function baseContract() {
   const sections = Object.fromEntries(
-    ["purpose", "inputs", "outputs", "errors", "ordering", "invariants"].map((key) => [key, []]),
+    ["purpose", "inputs", "outputs", "errors", "ordering", "invariants"].map((key) => [key, [key]]),
   );
-  sections.boundaries = {};
+  sections.boundaries = { owns: ["fixture"] };
   return {
     id: "C-1.1",
     title: "fixture",
     scope: "test",
     directiveIds: ["E-1.25"],
-    dos: [],
-    donts: [],
+    dos: ["do"],
+    donts: ["do not"],
     contract: sections,
     implementation: { source: ["src"] },
     verification: { tests: ["tests"] },

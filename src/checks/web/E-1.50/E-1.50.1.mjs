@@ -29,15 +29,20 @@ export async function run({ root, packageJson }) {
       ? packageJson.eliware.webRoot.trim()
       : "public";
   const configuredExclusions = packageJson?.eliware?.webAssetExcludes;
-  const exclusions = configuredExclusions === undefined
-    ? ["dist", "build", "coverage", "node_modules", ".git"]
-    : configuredExclusions;
   if (
-    !Array.isArray(exclusions) ||
-    exclusions.some((value) => typeof value !== "string" || !value.trim())
+    configuredExclusions !== undefined &&
+    (!Array.isArray(configuredExclusions) || configuredExclusions.some((value) => typeof value !== "string" || !value.trim()))
   ) {
     return fail(ruleId, "eliware.webAssetExcludes must be a string array when provided.");
   }
+  const exclusions = [
+    "dist",
+    "build",
+    "coverage",
+    "node_modules",
+    ".git",
+    ...(configuredExclusions ?? []),
+  ];
   const resolvedRoot = resolve(root);
   const resolvedAssets = resolve(resolvedRoot, assetRoot);
   if (isAbsolute(assetRoot) || (relative(resolvedRoot, resolvedAssets).startsWith(`..${sep}`) || relative(resolvedRoot, resolvedAssets) === ".."))

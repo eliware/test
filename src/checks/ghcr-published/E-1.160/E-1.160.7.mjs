@@ -1,23 +1,26 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
-import { stepText, steps } from "../workflow-structure.mjs";
+import { steps } from "../workflow-structure.mjs";
+import { findImagePush, imageDetails } from "../ghcr-attestation-contract.mjs";
 
 export const ruleId = "E-1.160.7";
 export const parentRuleId = "E-1.160";
 
 export async function run({ root }) {
   try {
-    const publication = (await readWorkflows(root)).find(isPublicationWorkflow);
-    const published =
-      publication &&
-      publicationJobs(publication).some(({ job }) =>
-        steps(job).some((step) => /sha256|digest/i.test(stepText(step))),
-      );
+    const publications = (await readWorkflows(root)).filter(isPublicationWorkflow);
+    const published = publications.some((publication) => publicationJobs(publication).some(({ job }) => {
+      const push = findImagePush(job);
+      const details = imageDetails(push);
+      return Boolean(push && details.image && details.digestReference);
+    }));
     if (
-      !publication ||
+      publications.length === 0 ||
       !published ||
-      steps(publicationJobs(publication)[0]?.job).some((step) => /:latest\b/i.test(stepText(step)))
+      publications.some((publication) => publicationJobs(publication).some(({ job }) => steps(job).some((step) =>
+        typeof step?.with?.tags === "string" && /:latest\b/iu.test(step.with.tags),
+      )))
     )
       return fail(
         ruleId,

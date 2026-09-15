@@ -21,3 +21,8 @@ test("disables Jest for a package-validation mode", () => {
   expect(createValidationRunOptions([], { mode: "audit", jestArgs: ["--audit"] }, { executeJest: true }, {}, undefined))
     .toEqual(expect.objectContaining({ executeJest: false, mode: "audit" }));
 });
+
+test("keeps aggregate package stages enabled when Jest execution is independently disabled", () => {
+  expect(createValidationRunOptions([], { mode: null, jestArgs: [] }, { executeJest: false }, {}, undefined))
+    .toEqual(expect.objectContaining({ executeJest: false, executePackageChecks: true, mode: null }));
+});

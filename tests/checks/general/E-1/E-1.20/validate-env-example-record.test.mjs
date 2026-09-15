@@ -5,7 +5,7 @@ const record = (overrides = {}) => ({
   name: "MODE",
   value: "dev",
   optional: false,
-  details: { default: "dev" },
+  details: { default: "dev", allowed: "dev" },
   duplicate: false,
   ...overrides,
 });

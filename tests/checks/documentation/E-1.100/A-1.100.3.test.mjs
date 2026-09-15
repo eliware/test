@@ -21,7 +21,7 @@ test("validates local structured references", async () => {
   await writeFile(join(root, "notes.txt"), "not a documentation surface");
   await writeFile(
     join(root, "README.md"),
-    "[Authority](specs/authority.json) [External](https://example.test) [Anchor](#heading) [Outside](../../outside.md)",
+    "# Heading\n\n[Authority](specs/authority.json) [External](https://example.test) [Anchor](#heading) [Outside](../../outside.md)",
   );
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-1.100.3",
@@ -48,10 +48,14 @@ test("validates an available authority registry and reciprocal authority record"
       subjects: [
         {
           id: "example.subject",
+          kind: "specification",
           authority: { path: "./authority.json" },
-          directives: [],
-          implementation: [],
+          directives: [{ path: "../README.md" }],
+          implementation: [{ path: "../README.md" }],
+          consumers: [],
+          reviewers: [],
           evidence: [],
+          status: "active",
         },
       ],
     }),
@@ -66,6 +70,7 @@ test("validates an available authority registry and reciprocal authority record"
           package: "./package.json",
           authorityFile: "./specs/authority.json",
           reference: "./README.md",
+          governs: ["example.subject"],
           directiveNamespaces: ["E-1"],
         },
       ],
@@ -94,10 +99,14 @@ test("rejects an authority registry whose reciprocal identity differs", async ()
       subjects: [
         {
           id: "example.subject",
+          kind: "specification",
           authority: { path: "./authority.json" },
-          directives: [],
-          implementation: [],
+          directives: [{ path: "../README.md" }],
+          implementation: [{ path: "../README.md" }],
+          consumers: [],
+          reviewers: [],
           evidence: [],
+          status: "active",
         },
       ],
     }),
@@ -112,6 +121,7 @@ test("rejects an authority registry whose reciprocal identity differs", async ()
           package: "./package.json",
           authorityFile: "./specs/authority.json",
           reference: "./README.md",
+          governs: ["example.subject"],
           directiveNamespaces: ["E-1"],
         },
       ],

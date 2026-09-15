@@ -7,16 +7,13 @@ export async function validateAuthorityRegistry({ root, file, entries }) {
   if (!Array.isArray(entries)) return "authority-map.json must declare repositoryRegistry.";
   const repositories = new Set(entries.filter((entry) => entry && typeof entry.repository === "string").map((entry) => entry.repository));
   if (repositories.size !== entries.filter((entry) => entry && typeof entry.repository === "string").length) {
-    return `Duplicate authority repository: ${entries.find((entry, index) => entry && typeof entry.repository === "string" && entries.findIndex((candidate) => candidate?.repository === entry.repository) !== index)?.repository ?? "unknown"}.`;
+    return `Duplicate authority repository: ${entries.find((entry, index) => entry && typeof entry.repository === "string" && entries.findIndex((candidate) => candidate?.repository === entry.repository) !== index)?.repository}.`;
   }
-  const seenRepositories = new Set();
   const governedTargets = new Set();
   for (const [index, entry] of entries.entries()) {
     if (!entry || typeof entry !== "object" || typeof entry.repository !== "string") {
       return `repositoryRegistry[${index}] must declare a repository.`;
     }
-    if (seenRepositories.has(entry.repository)) return `Duplicate authority repository: ${entry.repository}.`;
-    seenRepositories.add(entry.repository);
     if (typeof entry.path !== "string" || !entry.path.trim()) return `${entry.repository} must declare path.`;
     const repositoryRoot = resolve(file, "..", entry.path);
     const fields = {};

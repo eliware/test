@@ -1,5 +1,5 @@
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { workflowCommands } from "../../general/E-1/E-1.24/read-workflows.mjs";
+import { readWorkflows as loadWorkflows } from "../../general/E-1/E-1.24/read-workflow-files.mjs";
 import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "A-1.150.1";
@@ -7,15 +7,13 @@ export const parentRuleId = "E-1.150";
 
 export async function run({ root }) {
   try {
-    const files = (
-      await readdir(join(root, ".github", "workflows"), { withFileTypes: true })
-    ).filter((entry) => entry.isFile() && /\.(?:yml|yaml)$/i.test(entry.name));
-    for (const file of files) {
-      const content = await readFile(join(root, ".github", "workflows", file.name), "utf8");
-      if (/(?:npm\s+publish|docker\s+push|kubectl\s+apply|deploy)/i.test(content))
+    const workflows = await loadWorkflows(root);
+    for (const { name, document } of workflows) {
+      const commands = workflowCommands(document);
+      if (commands.some(({ command }) => /^(?:npm\s+publish|docker\s+push|kubectl\s+apply|deploy(?:\s|$))/iu.test(command)))
         return fail(
           ruleId,
-          `Private validation workflow contains publication or deployment: ${file.name}.`,
+          `Private validation workflow contains publication or deployment: ${name}.`,
         );
     }
   } catch {

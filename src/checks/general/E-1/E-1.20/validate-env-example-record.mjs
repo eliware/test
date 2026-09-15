@@ -2,6 +2,9 @@ const sensitiveValue = /(?:token|secret|password|private|credential)/i;
 
 function metadataError(value, details) {
   if (!Object.hasOwn(details, "default") || !details.default) return "must document a nonempty default";
+  if (!Object.hasOwn(details, "allowed") && !Object.hasOwn(details, "range")) {
+    return "must document allowed values or an allowed range";
+  }
   if (Object.hasOwn(details, "allowed")) {
     const allowed = details.allowed.split(/\s*(?:\||,)\s*/u).filter(Boolean);
     if (allowed.length === 0 || !allowed.includes(value)) return "has a default outside its allowed values";

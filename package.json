@@ -155,7 +155,7 @@
         "authoritativeFor": "npm publication conventions enforced by this package."
       },
       {
-        "path": "../operations/records.json",
+        "path": "../operations/specs/directives.json",
         "relation": "relatedAuthority",
         "authoritativeFor": "Cross-cutting release, publication, and deployment procedures."
       }

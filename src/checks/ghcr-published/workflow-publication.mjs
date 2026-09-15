@@ -17,6 +17,6 @@ export function npmPublicationJobs(workflow) {
 
 export function publicationJobs(workflow) {
   return jobs(workflow).filter(({ job }) =>
-    steps(job).some((step) => /docker\/build-push-action|docker\s+push|npm\s+publish/i.test(stepText(step))),
+    steps(job).some((step) => /docker\/build-push-action|docker\s+(?:build|push)|npm\s+publish/i.test(stepText(step))),
   );
 }

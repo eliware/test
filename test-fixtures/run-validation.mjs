@@ -9,7 +9,7 @@ export async function fixture(conventions) {
   await mkdir(join(root, "src"), { recursive: true });
   await mkdir(join(root, "tests"), { recursive: true });
   await writeFile(join(root, "src", "module.mjs"), "export const moduleValue = true;\n");
-  await writeFile(join(root, "tests", "module.test.mjs"), "test(\"module\", () => {});\n");
+  await writeFile(join(root, "tests", "module.test.mjs"), "import \"../../src/module.mjs\";\ntest(\"module\", () => {});\n");
   await writeFile(
     join(root, "AGENTS.md"),
     "# fixture\n\n## Instruction scope\nRepository-wide purpose and scope.\n\n## Read before changing\nRead README.md and relevant records.\n\n## Authoritative sources\neliware/docs, eliware/conventions, and eliware/operations.\n\n## Repository identity\nProject: fixture.\n\n## Scope and boundaries\nValidation fixture only.\n\n## Required structure\nRequired files and directories are indexed.\n\n## Security and secrets\nDo not commit secrets, credentials, tokens, or machine state.\n\n## Validation\nRun npm test and npm run lint; keep guidance actionable, current, and concise.\n\n## Approved deviations\nProject-specific deviations must not weaken shared requirements.\n\n## Change control and authorization\nDo not publish without authorization.\n\n## Subdirectory instructions\nNone.\n",
@@ -25,7 +25,7 @@ export async function fixture(conventions) {
   await writeFile(join(root, ".env.example"), "# safe example\n");
   await writeFile(
     join(root, ".gitignore"),
-    "node_modules\n.git\ncoverage\nbuild\n.env\nbackup\ndump\nrestore\nruntime state\n.DS_Store\n",
+    "node_modules/\n.git/\ncoverage/\nbuild/\ndist/\n.cache/\n.env*\n!.env.example\n.vscode/\nbackup/\ndump/\nrestore/\nruntime/\n.DS_Store\n",
   );
   await mkdir(join(root, "docs"), { recursive: true });
   await writeFile(join(root, "docs", "README.md"), "# docs\n");
@@ -97,7 +97,7 @@ export async function fixture(conventions) {
     repository: { type: "git", url: "https://github.com/eliware/fixture" },
     homepage: "https://github.com/eliware/fixture#readme",
     type: "module",
-    engines: { node: ">=26" },
+    engines: { node: ">=26 <27" },
     dependencies: {},
     scripts: {
       test: "eliware-test",

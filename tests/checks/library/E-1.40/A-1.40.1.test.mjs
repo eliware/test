@@ -10,8 +10,23 @@ test("requires library docs, examples, and allowlist", async () => {
   await mkdir(join(root, "examples"));
   await writeFile(join(root, "docs", "README.md"), "docs");
   await writeFile(join(root, "examples", "README.md"), "Purpose\nPrerequisites\nCommand\nExpected result\n[basic.mjs](basic.mjs)");
-  await writeFile(join(root, "examples", "basic.mjs"), "example");
+  await writeFile(join(root, "examples", "basic.mjs"), "console.log('example');");
   expect((await run({ root, packageJson: { files: ["src"] } })).status).toBe("pass");
+  await expect(run({
+    root,
+    packageJson: { files: ["src"] },
+    executeExample: async () => ({ code: 1, stdout: "", stderr: "example failed" }),
+  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("example failed") });
+  await expect(run({
+    root,
+    packageJson: { files: ["src"] },
+    executeExample: async () => ({ code: 1 }),
+  })).resolves.toMatchObject({ status: "fail", message: "Example basic.mjs failed." });
+  await expect(run({
+    root,
+    packageJson: { files: ["src"] },
+    executeExample: async () => { throw new Error("spawn failed"); },
+  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("could not run") });
   expect((await run({ root, packageJson: { files: [] } })).status).toBe("fail");
 });
 
@@ -34,7 +49,7 @@ test("reports missing runnable examples and indexes", async () => {
     }),
   );
   await writeFile(join(root, "examples", "README.md"), "Purpose\nPrerequisites\nCommand\nExpected result");
-  await writeFile(join(root, "examples", "basic.mjs"), "example");
+  await writeFile(join(root, "examples", "basic.mjs"), "console.log('example');");
   await expect(run({ root, packageJson: { files: ["src"] } })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("index") }),
   );

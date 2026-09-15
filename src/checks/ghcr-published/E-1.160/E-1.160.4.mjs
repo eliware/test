@@ -9,9 +9,9 @@ export const parentRuleId = "E-1.160";
 
 export async function run({ root }) {
   try {
-    const publication = (await readWorkflows(root)).find(isPublicationWorkflow);
-    if (!publication) return fail(ruleId, "GHCR publication must grant only the required permissions.");
-    for (const { job } of publicationJobs(publication)) {
+    const publications = (await readWorkflows(root)).filter(isPublicationWorkflow);
+    if (publications.length === 0) return fail(ruleId, "GHCR publication must grant only the required permissions.");
+    for (const publication of publications) for (const { job } of publicationJobs(publication)) {
       const granted = permissions(publication, job);
       const jobSteps = steps(job);
       const required = new Map([["contents", "read"], ["packages", "write"]]);

@@ -22,3 +22,11 @@ test("reports workflow inspection failures", async () => {
     }),
   );
 });
+
+test("fails when publication has no image push step", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(publicationPath, content.replace("push: true", "push: false"));
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+});

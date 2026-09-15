@@ -1,10 +1,15 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
-import { validationJobs } from "../../ghcr-published/workflow-policy.mjs";
+import { hasUbuntuRunner, validationJobs } from "../../ghcr-published/workflow-policy.mjs";
 import { npmPublicationJobs } from "../../ghcr-published/workflow-publication.mjs";
+import { steps } from "../../ghcr-published/workflow-structure.mjs";
 
 export const ruleId = "A-1.140.3";
 export const parentRuleId = "E-1.140";
+
+export function publicationNeeds(job) {
+  return Array.isArray(job?.needs) ? job.needs : job?.needs ? [job.needs] : [];
+}
 
 export async function run({ root }) {
   try {
@@ -21,9 +26,12 @@ export async function run({ root }) {
       const validation = validationJobs(workflow);
       if (
         validation.length === 0 ||
+        !validation.some(({ job }) => hasUbuntuRunner(workflow, job) &&
+          steps(job).some(({ run }) => /^npm\s+ci$/iu.test(String(run ?? "").trim())) &&
+          steps(job).some(({ run }) => /^npm\s+test$/iu.test(String(run ?? "").trim()))) ||
         publication.some(({ job }) => {
-          const needs = Array.isArray(job.needs) ? job.needs : job.needs ? [job.needs] : [];
-          return !needs.some((id) => validation.some((item) => item.id === id));
+          const needs = publicationNeeds(job);
+          return !needs.some((id) => validation.some((item) => item.id === id)) || /always\s*\(/iu.test(String(job.if ?? ""));
         })
       )
         return fail(

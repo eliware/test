@@ -32,5 +32,19 @@ export async function run({ root, packageJson }) {
   if (requiredContentError) return fail(ruleId, requiredContentError);
   const metadataError = validateReadmeMetadata(readme, packageJson);
   if (metadataError) return fail(ruleId, metadataError);
+  for (const path of ["docs/README.md", "specs/README.md"]) {
+    try {
+      await access(join(root, path));
+    } catch {
+      return fail(ruleId, `README.md links to required documentation index ${path}, but it does not exist.`);
+    }
+  }
+  if (examplesRequired) {
+    try {
+      await access(join(root, "examples", "README.md"));
+    } catch {
+      return fail(ruleId, "README.md links to examples/README.md, but it does not exist.");
+    }
+  }
   return pass(ruleId);
 }

@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
@@ -52,6 +52,10 @@ test("strict README content reports each contract omission", () => {
 test("accepts a complete branded project README", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-"));
   await writeFile(join(root, "README.md"), readme);
+  await mkdir(join(root, "docs"));
+  await mkdir(join(root, "specs"));
+  await writeFile(join(root, "docs", "README.md"), "docs");
+  await writeFile(join(root, "specs", "README.md"), "specs");
   await expect(
     run({
       root,
@@ -80,6 +84,10 @@ test("reports missing README sections", async () => {
 async function runVariant(content, packageJson = {}) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-variant-"));
   await writeFile(join(root, "README.md"), content);
+  await mkdir(join(root, "docs"));
+  await mkdir(join(root, "specs"));
+  await writeFile(join(root, "docs", "README.md"), "docs");
+  await writeFile(join(root, "specs", "README.md"), "specs");
   const result = await run({ root, packageJson });
   await rm(root, { recursive: true, force: true });
   return result;
@@ -116,6 +124,10 @@ test("requires publication metadata and package metadata to be represented", asy
   await expect(runVariant(readme, { keywords: "fixture" })).resolves.toEqual(
     expect.objectContaining({ status: "pass" }),
   );
+});
+
+test("rejects an npm version badge for a non-public package", () => {
+  expect(validateReadmeRequiredContent(readme, { name: "@eliware/fixture", private: true })).toContain("Non-public");
 });
 
 test("requires a root README", async () => {

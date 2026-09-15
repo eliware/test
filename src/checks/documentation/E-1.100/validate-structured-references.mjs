@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 
 const uriPattern = /^[A-Za-z][A-Za-z\d+.-]*:/u;
@@ -27,7 +27,7 @@ export async function validateStructuredReferences(root, files) {
     visit(document);
     for (const reference of references) {
       const target = resolveReference(root, file, reference);
-      if (target) await readFile(target);
+      if (target) await stat(target);
     }
   }
   return null;

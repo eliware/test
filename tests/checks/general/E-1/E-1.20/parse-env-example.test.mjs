@@ -3,7 +3,7 @@ import { parseEnvExample } from "../../../../../src/checks/general/E-1/E-1.20/pa
 
 test("parses required and optional environment examples", () => {
   const parsed = parseEnvExample(
-    "# default: value\nREQUIRED=value\n# default: default\n# OPTIONAL=default\n",
+    "# default: value allowed: value\nREQUIRED=value\n# default: default allowed: default\n# OPTIONAL=default\n",
   );
   expect([...parsed.records.keys()]).toEqual(["REQUIRED", "OPTIONAL"]);
   expect(parsed.errors).toEqual([]);

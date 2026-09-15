@@ -1,7 +1,7 @@
 const metrics = ["statements", "branches", "functions", "lines"];
 
 function percentage(covered, total) {
-  return total > 0 ? (covered / total) * 100 : 0;
+  return total > 0 ? (covered / total) * 100 : 100;
 }
 
 function location(entry) {
@@ -39,6 +39,11 @@ export function fileGap(file, data) {
     functions: percentage(Object.values(data.f ?? {}).filter((count) => count > 0).length, Object.keys(data.f ?? {}).length),
     lines: percentage(lineCovered, lineTotal),
   };
+  const hasCounters = Object.keys(data.s ?? {}).length > 0 || Object.keys(data.b ?? {}).length > 0
+    || Object.keys(data.f ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
+  const hasMaps = Object.keys(data.statementMap ?? {}).length > 0 || Object.keys(data.branchMap ?? {}).length > 0
+    || Object.keys(data.fnMap ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
+  if (hasCounters && !hasMaps) return { file, metrics: values, lines, statements, branches, functions };
   if (
     Object.keys(data.s ?? {}).length === 0 &&
     Object.keys(data.b ?? {}).length === 0 &&
