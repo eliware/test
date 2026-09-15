@@ -21,3 +21,7 @@ test("rejects conflicting informational commands", () => {
     "--help and --version cannot be used together",
   );
 });
+
+test("rejects multiple focused paths", () => {
+  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"])).toThrow("Only one focused test path");
+});

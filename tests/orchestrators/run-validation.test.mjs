@@ -22,6 +22,7 @@ test("resolves the default and injected dependency registries", () => {
   expect(resolveValidationDependencies(injected)).toBe(injected);
 });
 
+
 test("loads configuration, discovers checks, validates completeness, and executes the plan", async () => {
   const { options, checks, calls } = dependencies();
   await expect(runValidation("/repo", ["E-9"], options)).resolves.toEqual([{ ruleId: "E-1", status: "pass" }]);
