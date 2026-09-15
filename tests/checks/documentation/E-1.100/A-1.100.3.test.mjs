@@ -25,8 +25,8 @@ test("validates local structured references", async () => {
   );
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-1.100.3",
-    status: "pass",
-    message: "",
+    status: "fail",
+    message: expect.stringContaining("escapes the repository"),
   });
   await writeFile(join(root, "README.md"), "[Missing](specs/missing.json)");
   await expect(run({ root })).resolves.toEqual(

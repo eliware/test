@@ -7,7 +7,14 @@ import { run } from "../../../../../src/checks/general/E-1/E-1.20/E-1.20.10.mjs"
 async function fixture(total) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-20-10-"));
   await mkdir(join(root, "coverage"));
-  await writeFile(join(root, "coverage", "coverage-summary.json"), JSON.stringify({ total }));
+  await writeFile(join(root, "coverage", "coverage-final.json"), JSON.stringify({
+    "src/example.mjs": {
+      statementMap: { 0: { start: { line: 1, column: 0 } } }, s: { 0: total.statements.pct === 100 ? 1 : 0 },
+      branchMap: { 0: { locations: [{ start: { line: 1, column: 0 } }] } }, b: { 0: [total.branches.pct === 100 ? 1 : 0] },
+      fnMap: { 0: { name: "example", start: { line: 1, column: 0 } } }, f: { 0: total.functions.pct === 100 ? 1 : 0 },
+      l: { 1: total.lines.pct === 100 ? 1 : 0 },
+    },
+  }));
   return root;
 }
 

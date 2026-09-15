@@ -8,5 +8,6 @@ test("appends output without truncation under the limit", () => {
 });
 
 test("bounds output and marks truncation", () => {
-  expect(appendBoundedOutput("abc", "def", 4)).toBe("abcd…");
+  expect(appendBoundedOutput("abc", "def", 4)).toBe("abc…");
+  expect(appendBoundedOutput("abc", "def", 0)).toBe("…");
 });

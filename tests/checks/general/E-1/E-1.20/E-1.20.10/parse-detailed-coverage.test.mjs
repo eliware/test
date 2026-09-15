@@ -34,7 +34,6 @@ test("rejects incomplete in-scope coverage entries instead of treating missing m
       expect.objectContaining({ file: "src/empty.mjs" }),
     ]),
     totals: { statements: 0, branches: 0, functions: 0, lines: 0 },
-    incomplete: true,
   });
 });
 
@@ -54,4 +53,12 @@ test("handles a complete file with no statement counter map", () => {
       statementMap: { 0: { start: { line: 1 } } }, branchMap: { 0: {} }, fnMap: { 0: {} },
     },
   }).totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
+});
+
+test("normalizes absolute Windows source paths and ignores unsupported files", () => {
+  expect(parseDetailed({
+    "C:\\repo\\src\\absolute.mjs": { s: { 0: 1 }, statementMap: { 0: { start: { line: 1 } } } },
+    "src/README.txt": {},
+    "src/tests/example.mjs": {},
+  }).gaps).toEqual([]);
 });

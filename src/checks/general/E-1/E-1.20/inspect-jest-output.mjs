@@ -7,7 +7,7 @@ export function findUnexpectedJestOutput({ stdout = "", stderr = "" } = {}) {
   const parsed = parseJsonOutput(stdout);
   const suite = latestSuite(stderr);
   const findings = findUnexpectedJestLines(parsed.text)
-    .filter((line) => line !== "…")
+    .filter((line) => line !== "…" && !/^\[?eliware(?:-test)?(?:-progress)?\b/u.test(line))
     .map((line) => formatUnexpected(line, suite));
   findings.push(...findSlowTestFindings(stderr));
   findings.push(...findJestConsoleOutput(parsed.report));

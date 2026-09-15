@@ -73,6 +73,6 @@ test("reports missing fragments and targets", async () => {
     "Documentation link does not resolve: missing-target.md in docs/missing.md.",
   );
   await writeFile(join(root, "docs", "escape.md"), "[outside](../../outside.md)\n");
-  await expect(validateMarkdownLinks(root, ["docs/escape.md"])).resolves.toBeNull();
+  await expect(validateMarkdownLinks(root, ["docs/escape.md"])).resolves.toContain("escapes the repository");
   await rm(root, { recursive: true, force: true });
 });

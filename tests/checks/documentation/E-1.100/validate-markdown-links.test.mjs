@@ -27,7 +27,7 @@ test("validates local Markdown links and fragments", async () => {
   await writeFile(join(root, "README.md"), "[Unsupported](ftp://example.test/file)");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("invalid");
   await writeFile(join(root, "README.md"), "[Outside](../outside.md)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
+  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("escapes the repository");
   await writeFile(join(root, "README.md"), "[Heading](#heading)");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("fragment");
   await writeFile(join(root, "README.md"), "[Missing heading](docs/index.md#missing)");

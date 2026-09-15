@@ -25,3 +25,7 @@ test("rejects conflicting informational commands", () => {
 test("rejects multiple focused paths", () => {
   expect(() => readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"])).toThrow("Only one focused test path");
 });
+
+test("rejects unsupported focused path roots", () => {
+  expect(() => readDiagnosticOptions(["src/example.mjs"])).toThrow("must be under tests/");
+});

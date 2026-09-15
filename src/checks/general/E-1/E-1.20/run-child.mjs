@@ -1,5 +1,4 @@
 import { spawn } from "node:child_process";
-import { appendBoundedOutput } from "./bound-process-output.mjs";
 import { handleChildProgress } from "./handle-child-progress.mjs";
 import { createProgressTimeout } from "./create-progress-timeout.mjs";
 import { terminateChild } from "./terminate-child.mjs";
@@ -15,8 +14,10 @@ export function runChild(command, args, options = {}) {
       shell: false,
       detached: process.platform !== "win32",
     });
-    let stdout = "";
-    let stderr = "";
+    const stdoutChunks = [];
+    const stderrChunks = [];
+    let stdoutLength = 0;
+    let stderrLength = 0;
     let streamed = 0;
     const stream = (callback, text) => {
       if (!callback || streamed >= outputLimit) return;
@@ -34,16 +35,25 @@ export function runChild(command, args, options = {}) {
     });
     const resetProgressTimer = timeout.reset;
     timeout.reset();
+    const capture = (chunks, length, text, otherLength) => {
+      const remaining = Math.max(0, outputLimit - otherLength - length);
+      const truncated = text.length > remaining;
+      const bounded = truncated && remaining > 0
+        ? `${text.slice(0, remaining - 1)}…`
+        : text.slice(0, remaining);
+      if (bounded) chunks.push(bounded);
+      return length + bounded.length;
+    };
     child.stdout.on("data", (chunk) => {
       const text = chunk.toString();
       stream(options.onStdout, text);
-      stdout = appendBoundedOutput(stdout, text, Math.max(0, outputLimit - stderr.length));
+      stdoutLength = capture(stdoutChunks, stdoutLength, text, stderrLength);
     });
     child.stderr.on("data", (chunk) => {
       const text = chunk.toString();
       handleChildProgress(text, { ...options, resetProgressTimer });
       stream(options.onStderr, text);
-      stderr = appendBoundedOutput(stderr, options.captureStderr?.(text) ?? text, Math.max(0, outputLimit - stdout.length));
+      stderrLength = capture(stderrChunks, stderrLength, options.captureStderr?.(text) ?? text, stdoutLength);
     });
     child.on("error", (error) => {
       timeout.stop();
@@ -51,7 +61,7 @@ export function runChild(command, args, options = {}) {
     });
     child.on("close", (code, signal) => {
       timeout.stop();
-      resolve({ code, signal, stdout, stderr, ...(timeout.wasTriggered() ? { timedOut: true } : {}) });
+      resolve({ code, signal, stdout: stdoutChunks.join(""), stderr: stderrChunks.join(""), ...(timeout.wasTriggered() ? { timedOut: true } : {}) });
     });
   });
 }

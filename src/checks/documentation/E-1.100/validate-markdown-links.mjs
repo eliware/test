@@ -27,7 +27,9 @@ export async function validateMarkdownLinks(root, files) {
         continue;
       }
       const target = resolveMarkdownLinkTarget(root, relativeFile, reference);
-      if (!target) continue;
+      if (!target) {
+        return `Documentation link escapes the repository: ${reference} in ${relativeFile}.`;
+      }
       const [, fragment] = reference.split("#", 2);
       try {
         await readFile(target);

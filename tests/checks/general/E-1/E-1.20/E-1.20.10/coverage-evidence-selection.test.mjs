@@ -20,6 +20,17 @@ test("reads aggregate summary evidence", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("does not accept summary-only evidence for a fresh run", async () => {
+  const root = await fixture("coverage-summary.json", JSON.stringify({ total: {
+    statements: { pct: 100 }, branches: { pct: 100 }, functions: { pct: 100 }, lines: { pct: 100 },
+  } }));
+  await expect(readCoverageEvidenceFromCandidates(root, "", 1, {
+    requireFresh: true,
+    statFile: async () => ({ mtimeMs: 2 }),
+  })).rejects.toThrow("Coverage evidence is missing");
+  await rm(root, { recursive: true, force: true });
+});
+
 test("reads JSON with the default file dependencies", async () => {
   const root = await fixture("coverage-summary.json", JSON.stringify({ total: {
     statements: { pct: 100 }, branches: { pct: 100 }, functions: { pct: 100 }, lines: { pct: 100 },
