@@ -14,9 +14,12 @@ export function createJestProcessOptions(root, args = [], options = {}) {
   if (!nodeOptions.includes("--trace-warnings") && !nodeOptions.includes("--no-warnings")) {
     nodeOptions = `${nodeOptions} --no-warnings`;
   }
+  const environment = Object.fromEntries(Object.entries({ ...process.env, NODE_OPTIONS: nodeOptions }).filter(([key]) =>
+    /^(?:PATH|NODE_PATH|NODE_OPTIONS|CI|FORCE_COLOR|TERM|TEMP|TMP|HOME|USER|USERNAME|LOGNAME|LANG|LC_ALL|SystemRoot|ComSpec|windir|PATHEXT|USERPROFILE|APPDATA|LOCALAPPDATA|INIT_CWD|npm_config_[A-Za-z0-9_]+|npm_lifecycle_[A-Za-z0-9_]+|npm_execpath|npm_node_execpath)$/u.test(key),
+  ));
   return {
     cwd: root,
-    env: Object.fromEntries(Object.entries({ ...process.env, NODE_OPTIONS: nodeOptions }).filter(([key]) => !/pass|secret|token|key|credential/i.test(key))),
+    env: environment,
     progressPattern: /^\[eliware-test-progress\]/m,
     progressTimeoutMs: 15_000,
     onProgress,

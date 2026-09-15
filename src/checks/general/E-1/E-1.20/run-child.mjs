@@ -37,9 +37,8 @@ export function runChild(command, args, options = {}) {
     timeout.reset();
     const capture = (chunks, length, text, otherLength) => {
       const remaining = Math.max(0, outputLimit - otherLength - length);
-      const truncated = text.length > remaining;
-      const bounded = truncated && remaining > 0
-        ? `${text.slice(0, remaining - 1)}…`
+      const bounded = text.length > remaining && remaining > 0
+        ? `${text.slice(0, remaining - 1)}…`.slice(0, remaining)
         : text.slice(0, remaining);
       if (bounded) chunks.push(bounded);
       return length + bounded.length;

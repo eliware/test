@@ -42,8 +42,8 @@ npm test -- tests/example.test.mjs
 ```
 
 `--debug-timing` streams completed stage and test timing while validation is
-running. Jest runs in-band by default; `--no-runInBand` is an explicit
-diagnostic opt-out. Tests that stop making progress for 15 seconds are
+running. Jest runs in-band by default and unsupported Jest execution flags are
+rejected by the public CLI. Tests that stop making progress for 15 seconds are
 terminated with a diagnostic, and individual tests taking more than five
 seconds are reported as slow. These safeguards apply without
 `--debug-timing`.

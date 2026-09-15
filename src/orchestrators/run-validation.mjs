@@ -20,7 +20,7 @@ export function resolveValidationDependencies(dependencies = validationDependenc
   return dependencies;
 }
 
-export async function runValidation(root, ignoredRuleIds, options) {
+export async function runValidation(root, ignoredRuleIds, options = {}) {
   const dependencies = resolveValidationDependencies(options.dependencies);
   const {
     loadValidationTarget: loadTarget,
@@ -32,8 +32,8 @@ export async function runValidation(root, ignoredRuleIds, options) {
   } = dependencies;
   const packageJson = await loadTarget(root);
   const conventions = readConventionConfig(packageJson);
-  const checks = await selectChecks(conventions);
   const allChecks = await discoverChecks();
+  const checks = await selectChecks(conventions, allChecks);
   await validateCompleteness(allChecks, conventions.apply);
   const exemptions = prepareExemptions(packageJson, allChecks, ignoredRuleIds);
   const context = createValidationContext(root, packageJson, options);

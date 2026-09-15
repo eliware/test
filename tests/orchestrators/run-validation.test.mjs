@@ -22,12 +22,20 @@ test("resolves the default and injected dependency registries", () => {
   expect(resolveValidationDependencies(injected)).toBe(injected);
 });
 
+test("keeps runtime options optional at the orchestration boundary", () => {
+  expect(runValidation.length).toBe(2);
+});
+
+test("uses default runtime options when omitted", async () => {
+  await expect(runValidation("/missing-repository", [], undefined)).rejects.toBeTruthy();
+});
+
 
 test("loads configuration, discovers checks, validates completeness, and executes the plan", async () => {
   const { options, checks, calls } = dependencies();
   await expect(runValidation("/repo", ["E-9"], options)).resolves.toEqual([{ ruleId: "E-1", status: "pass" }]);
   expect(options.dependencies.loadValidationTarget).toHaveBeenCalledWith("/repo");
-  expect(options.dependencies.selectConventionChecks).toHaveBeenCalledWith({ apply: ["general"] });
+  expect(options.dependencies.selectConventionChecks).toHaveBeenCalledWith({ apply: ["general"] }, checks);
   expect(options.dependencies.discoverAllChecks).toHaveBeenCalledWith();
   expect(options.dependencies.validateBundledDirectiveCompleteness).toHaveBeenCalledWith(checks, ["general"]);
   expect(options.dependencies.prepareValidationExemptions).toHaveBeenCalledWith({ eliware: { apply: ["general"] } }, checks, ["E-9"]);

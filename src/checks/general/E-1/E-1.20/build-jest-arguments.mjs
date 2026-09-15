@@ -11,7 +11,7 @@ export function buildJestArguments(args = []) {
       argument !== "--ignore-monolith-limits" &&
       argument !== "--debug-timing",
   );
-  const concurrency = forwarded.includes("--no-runInBand") ? [] : ["--runInBand"];
+  const concurrency = ["--runInBand"];
   const timing = args.includes("--debug-timing") ? ["--json"] : [];
   return [
     "--coverage",

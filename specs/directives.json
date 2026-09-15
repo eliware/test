@@ -225,7 +225,7 @@
             {
               "id": "A-18.7.2",
               "dos": [
-                "Expose only the current public harness commands and diagnostic options: --help, --version, --debug-timing, --ignore-100x4, --ignore-monolith-limits, and --no-runInBand.",
+                "Expose only the current public harness commands and diagnostic options: --help, --version, --debug-timing, --ignore-100x4, and --ignore-monolith-limits.",
                 "Run the bundled convention-check execution path for a normal invocation and return its stable result and diagnostics through the public CLI contract."
               ],
               "donts": [

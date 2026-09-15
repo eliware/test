@@ -41,7 +41,14 @@ node bin/eliware-test.mjs --version
 node bin/eliware-test.mjs --ignore-100x4
 node bin/eliware-test.mjs --ignore-monolith-limits
 node bin/eliware-test.mjs --debug-timing
+node bin/eliware-test.mjs --lint
+node bin/eliware-test.mjs --format
+node bin/eliware-test.mjs --format-check
+node bin/eliware-test.mjs tests/example.test.mjs
 ```
+
+`--format` mutates files; `--format-check` only validates formatting. `--pack`
+validates the package contents without publishing it.
 
 The two `--ignore-*` flags bypass enforcement and are diagnostic-only. They
 must not be used for release validation or CI and require approved

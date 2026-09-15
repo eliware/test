@@ -11,6 +11,8 @@ test("collects documentation files while excluding generated directories", async
   await writeFile(join(root, "docs", "index.md"), "# Docs");
   await writeFile(join(root, "docs", "data.json"), "{}");
   await writeFile(join(root, "node_modules", "ignored.json"), "{}");
+  expect(jsonFiles(root)).toBe(jsonFiles(root));
+  expect(repositoryFiles(root)).toBe(repositoryFiles(root));
   await expect(jsonFiles(root)).resolves.toEqual(["docs/data.json"]);
   await expect(repositoryFiles(root)).resolves.toEqual(["docs/data.json", "docs/index.md"]);
   await rm(root, { recursive: true, force: true });

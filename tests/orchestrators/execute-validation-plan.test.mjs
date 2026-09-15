@@ -27,3 +27,11 @@ test("requires the check that owns each enabled aggregate stage", async () => {
     new Set(),
   )).rejects.toThrow("executeAudit");
 });
+
+test("proves aggregate stage applicability before applying an explicit mode filter", async () => {
+  await expect(executeValidationPlan(
+    [{ ruleId: "E-1.20.17", run: async () => ({ ruleId: "E-1.20.17", status: "pass" }) }],
+    { executeLint: true, modeRuleId: "E-1.20.17" },
+    new Set(),
+  )).rejects.toThrow("executeLint");
+});

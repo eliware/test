@@ -26,3 +26,10 @@ test("preserves machine progress for diagnostics and expands debug capture", () 
   options.onStderr("[eliware-test-progress] start suite\n[eliware-test] Running suite...\n");
   expect(output).toEqual(["[eliware-test-progress] start suite\n[eliware-test] Running suite...\n"]);
 });
+
+test("passes only documented subprocess environment variables", () => {
+  const options = createJestProcessOptions("C:/fixture");
+  expect(options.env.PATH ?? options.env.Path).toBeTruthy();
+  expect(options.env.NODE_OPTIONS).toContain("--experimental-vm-modules");
+  expect(options.env.SECRET_TOKEN).toBeUndefined();
+});

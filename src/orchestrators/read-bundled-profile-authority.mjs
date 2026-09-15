@@ -20,22 +20,18 @@ export const bundledDirectiveAuthority = { version: "8.0", profiles: {
   private: ["E-1.150","E-1.150.0","A-1.150.1"],
   fork: ["E-1.120","E-1.120.0"],
 } };
-const profileManifest = { version: "8.0", profiles: {
-  general: { profile: "general", document: "general.json", version: "8.0", extends: [] },
-  application: { profile: "application", document: "application.json", version: "8.0", extends: ["general"] },
-  cli: { profile: "cli", document: "cli.json", version: "8.0", extends: ["application"] },
-  web: { profile: "web", document: "web.json", version: "8.0", extends: ["application"] },
-  discord: { profile: "discord", document: "discord.json", version: "8.0", extends: ["application"] },
-  "mcp-server": { profile: "mcp-server", document: "mcp-server.json", version: "8.0", extends: ["application"] },
-  library: { profile: "library", document: "library.json", version: "8.0", extends: ["general"] },
-  documentation: { profile: "documentation", document: "documentation.json", version: "8.0", extends: ["general"] },
-  workspace: { profile: "workspace", document: "workspace.json", version: "8.0", extends: ["general"] },
-  infrastructure: { profile: "infrastructure", document: "infrastructure.json", version: "8.0", extends: ["general"] },
-  "npm-published": { profile: "npm-published", document: "npm-published.json", version: "8.0", extends: ["general"] },
-  "ghcr-published": { profile: "ghcr-published", document: "ghcr-published.json", version: "8.0", extends: ["general"] },
-  private: { profile: "private", document: "private.json", version: "8.0", extends: ["general"] },
-  fork: { profile: "fork", document: "fork.json", version: "8.0", extends: [] },
-} };
+const profileParents = Object.freeze({
+  general: [], application: ["general"], cli: ["application"], web: ["application"],
+  discord: ["application"], "mcp-server": ["application"], library: ["general"],
+  documentation: ["general"], workspace: ["general"], infrastructure: ["general"],
+  "npm-published": ["general"], "ghcr-published": ["general"], private: ["general"], fork: [],
+});
+const profileManifest = {
+  version: bundledConventionVersion,
+  profiles: Object.fromEntries(Object.keys(bundledDirectiveAuthority.profiles).map((profile) => [profile, {
+    profile, document: `${profile}.json`, version: bundledConventionVersion, extends: profileParents[profile],
+  }])),
+};
 
 export function readBundledProfileAuthority({ root = checksRoot, manifest = profileManifest, listDirectories = readdirSync, statDirectory = statSync } = {}) {
   if (manifest?.version !== bundledConventionVersion || !manifest?.profiles || Array.isArray(manifest.profiles)) {

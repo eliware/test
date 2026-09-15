@@ -8,10 +8,11 @@ export async function resolveFocusedCoverage(root, focusedPath) {
   if (!marker || !/\.(?:test|spec)\.[^.]+$/i.test(marker[1])) return [];
   const sourceBase = marker[1].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, "");
   const extension = extname(sourceBase);
-  const sourcePath = join(root, "src", `${sourceBase.slice(0, -extension.length)}${extension}`);
+  const sourceRelative = `src/${sourceBase.slice(0, -extension.length)}${extension}`;
+  const sourcePath = join(root, ...sourceRelative.split("/"));
   try {
     await access(sourcePath);
-    return ["--collectCoverageFrom", `src/${sourceBase}`];
+    return ["--collectCoverageFrom", sourceRelative.replaceAll("\\", "/")];
   } catch {
     return [];
   }

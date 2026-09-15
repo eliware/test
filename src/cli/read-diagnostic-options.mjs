@@ -7,7 +7,6 @@ export function readDiagnosticOptions(args) {
     "--debug-timing",
     "--ignore-100x4",
     "--ignore-monolith-limits",
-    "--no-runInBand",
     ...modeFlags,
   ]);
   const invalid = normalizedArgs.filter(

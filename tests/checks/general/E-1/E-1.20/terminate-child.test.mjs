@@ -29,3 +29,9 @@ test("terminates a POSIX process group and falls back when the group is unavaila
 test("handles an invalid child safely", () => {
   expect(terminateChild(null, "linux")).toBe(false);
 });
+
+test("uses the injected process-group terminator at the adapter boundary", () => {
+  const killProcess = jest.fn();
+  expect(terminateChild({ pid: 7, kill: jest.fn() }, "linux", killProcess)).toBe(true);
+  expect(killProcess).toHaveBeenCalledWith(-7, "SIGTERM");
+});

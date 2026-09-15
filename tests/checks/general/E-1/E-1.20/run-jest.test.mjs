@@ -14,8 +14,8 @@ test("builds the default in-band coverage command", () => {
 
 test("preserves focused paths and filters harness-only options", () => {
   expect(
-    buildJestArguments(["tests/a.test.mjs", "--ignore-100x4", "--debug-timing", "--no-runInBand"]),
-  ).toEqual(["--coverage", "--json", "--runTestsByPath", "tests/a.test.mjs", "--no-runInBand"]);
+    buildJestArguments(["tests/a.test.mjs", "--ignore-100x4", "--debug-timing"]),
+  ).toEqual(["--coverage", "--json", "--runTestsByPath", "tests/a.test.mjs", "--runInBand"]);
 });
 
 test("rejects a missing focused test before invoking Jest", async () => {
