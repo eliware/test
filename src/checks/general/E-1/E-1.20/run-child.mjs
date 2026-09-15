@@ -26,9 +26,13 @@ export function runChild(command, args, options = {}) {
       streamed += bounded.length;
       callback(bounded);
     };
+    let timeoutTriggered = false;
     const timeout = createProgressTimeout({
       timeoutMs: options.progressTimeoutMs,
       onTimeout: () => {
+        if (timeoutTriggered) return;
+        timeoutTriggered = true;
+        timeout.stop();
         options.onTimeout?.();
         terminateChild(child);
       },

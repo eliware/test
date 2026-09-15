@@ -50,6 +50,10 @@ node bin/eliware-test.mjs tests/example.test.mjs
 `--format` mutates files; `--format-check` only validates formatting. `--pack`
 validates the package contents without publishing it.
 
+The public CLI accepts the corresponding `--audit` and `--pack` flags. The
+npm script forms are the supported package-level shortcuts; arbitrary npm
+script names are not CLI arguments.
+
 The two `--ignore-*` flags bypass enforcement and are diagnostic-only. They
 must not be used for release validation or CI and require approved
 transitional use.

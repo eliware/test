@@ -28,10 +28,11 @@ eliware-test --help
 eliware-test --version
 ```
 
-The normal test command runs the configured validation stages. `audit` and
-Use `npm run audit` and `npm run pack` for the isolated audit and package
-validation stages. Direct CLI equivalents are `node bin/eliware-test.mjs
---audit` and `node bin/eliware-test.mjs --pack`.
+The normal test command runs the configured validation stages. Use
+`npm run audit` and `npm run pack` for the isolated audit and package
+validation stages. The public CLI equivalents are `node bin/eliware-test.mjs
+--audit` and `node bin/eliware-test.mjs --pack`; npm script names are not
+accepted as direct CLI arguments.
 
 To validate one focused Jest path, pass it after the npm separator. Focused
 paths are rejected when they do not exist, and coverage is narrowed to an

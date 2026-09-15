@@ -5,9 +5,12 @@ import { join } from "node:path";
 
 export async function executeJestCheck(context) {
   const startedAt = Date.now();
-  await Promise.all(["coverage-final.json", "coverage-summary.json", "coverage.json"].map((file) =>
-    rm(join(context.root, "coverage", file), { force: true }),
-  ));
+  await Promise.all([
+    join(context.root, "coverage", "coverage-final.json"),
+    join(context.root, "coverage", "coverage-summary.json"),
+    join(context.root, "coverage", "coverage.json"),
+    join(context.root, "coverage.json"),
+  ].map((file) => rm(file, { force: true })));
   let timeoutDiagnostic;
   try {
     const result = await runJest(context.root, context.jestArgs ?? [], runChild, {

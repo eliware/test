@@ -6,6 +6,7 @@ import { createValidationContext } from "./create-validation-context.mjs";
 import { executeValidationPlan } from "./execute-validation-plan.mjs";
 import { discoverAllChecks } from "./discover-checks.mjs";
 import { validateBundledDirectiveCompleteness } from "./validate-bundled-directive-completeness.mjs";
+import { bundledDirectiveAuthority } from "./read-bundled-profile-authority.mjs";
 
 export const validationDependencies = Object.freeze({
   loadValidationTarget,
@@ -34,7 +35,8 @@ export async function runValidation(root, ignoredRuleIds, options = {}) {
   const conventions = readConventionConfig(packageJson);
   const allChecks = await discoverChecks();
   const checks = await selectChecks(conventions, allChecks);
-  await validateCompleteness(allChecks, conventions.apply);
+  await validateCompleteness(checks, conventions.apply);
+  await validateCompleteness(allChecks, Object.keys(bundledDirectiveAuthority.profiles));
   const exemptions = prepareExemptions(packageJson, allChecks, ignoredRuleIds);
   const context = createValidationContext(root, packageJson, options);
   return executePlan(checks, context, exemptions);

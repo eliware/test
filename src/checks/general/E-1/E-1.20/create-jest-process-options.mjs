@@ -15,7 +15,7 @@ export function createJestProcessOptions(root, args = [], options = {}) {
     nodeOptions = `${nodeOptions} --no-warnings`;
   }
   const environment = Object.fromEntries(Object.entries({ ...process.env, NODE_OPTIONS: nodeOptions }).filter(([key]) =>
-    /^(?:PATH|NODE_PATH|NODE_OPTIONS|CI|FORCE_COLOR|TERM|TEMP|TMP|HOME|USER|USERNAME|LOGNAME|LANG|LC_ALL|SystemRoot|ComSpec|windir|PATHEXT|USERPROFILE|APPDATA|LOCALAPPDATA|INIT_CWD|npm_config_[A-Za-z0-9_]+|npm_lifecycle_[A-Za-z0-9_]+|npm_execpath|npm_node_execpath)$/u.test(key),
+    /^(?:PATH|Path|NODE_PATH|NODE_OPTIONS|CI|FORCE_COLOR|TERM|TEMP|TMP|HOME|USER|USERNAME|LOGNAME|LANG|LC_ALL|SystemRoot|ComSpec|windir|PATHEXT|USERPROFILE|APPDATA|LOCALAPPDATA|INIT_CWD|npm_lifecycle_event|npm_lifecycle_script|npm_execpath|npm_node_execpath|npm_config_cache|npm_config_local_prefix|npm_config_user_agent)$/u.test(key),
   ));
   return {
     cwd: root,
