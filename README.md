@@ -36,11 +36,11 @@ npm run lint
 npm run format:check
 npm run audit
 npm run pack
-eliware-test --help
-eliware-test --version
-eliware-test --ignore-100x4
-eliware-test --ignore-monolith-limits
-eliware-test --debug-timing
+node bin/eliware-test.mjs --help
+node bin/eliware-test.mjs --version
+node bin/eliware-test.mjs --ignore-100x4
+node bin/eliware-test.mjs --ignore-monolith-limits
+node bin/eliware-test.mjs --debug-timing
 ```
 
 The two `--ignore-*` flags bypass enforcement and are diagnostic-only. They

@@ -41,7 +41,7 @@ test("maps a focused test to its mirrored source coverage", async () => {
     return { code: 0, stdout: "", stderr: "" };
   });
   expect(received[1]).toEqual([
-    "node_modules/jest/bin/jest.js",
+    expect.stringContaining("jest-cli\\bin\\jest.js"),
     "--coverage",
     "--coverageReporters=json",
     "--coverageReporters=json-summary",
