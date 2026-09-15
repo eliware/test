@@ -36,3 +36,12 @@ test("rejects incomplete in-scope coverage entries instead of treating missing m
     totals: { statements: 0, branches: 0, functions: 0, lines: 0 },
   });
 });
+
+test("handles a complete file with no branch counter map", () => {
+  expect(parseDetailed({
+    "src/no-branches.mjs": {
+      s: { 0: 1 }, f: { 0: 1 }, l: { 1: 1 },
+      statementMap: { 0: { start: { line: 1 } } }, fnMap: { 0: { name: "run" } },
+    },
+  }).totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
+});
