@@ -29,8 +29,7 @@ eliware-test --version
 ```
 
 The normal test command runs the configured validation stages. `audit` and
-`pack` are also available as isolated diagnostics; `build` and `typecheck` run
-when the repository defines and requires them.
+`pack` is also available as an isolated diagnostic.
 
 To validate one focused Jest path, pass it after the npm separator. Focused
 paths are rejected when they do not exist, and coverage is narrowed to an

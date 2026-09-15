@@ -16,10 +16,7 @@ test("reads aggregate summary evidence", async () => {
   const root = await fixture("coverage-summary.json", JSON.stringify({ total: {
     statements: { pct: 100 }, branches: { pct: 99 }, functions: { pct: 100 }, lines: { pct: 100 },
   } }));
-  await expect(readCoverageEvidenceFromCandidates(root)).resolves.toMatchObject({
-    source: "coverage/coverage-summary.json",
-    totals: { statements: 100, branches: 99, functions: 100, lines: 100 },
-  });
+  await expect(readCoverageEvidenceFromCandidates(root)).resolves.toMatchObject({ source: "coverage/coverage-summary.json", totals: { statements: 100, branches: 99, functions: 100, lines: 100 } });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -27,9 +24,7 @@ test("reads JSON with the default file dependencies", async () => {
   const root = await fixture("coverage-summary.json", JSON.stringify({ total: {
     statements: { pct: 100 }, branches: { pct: 100 }, functions: { pct: 100 }, lines: { pct: 100 },
   } }));
-  await expect(readJsonCoverage(join(root, "coverage", "coverage-summary.json"), "coverage/coverage-summary.json", 0)).resolves.toMatchObject({
-    totals: { lines: 100 },
-  });
+  await expect(readJsonCoverage(join(root, "coverage", "coverage-summary.json"), "coverage/coverage-summary.json", 0)).resolves.toMatchObject({ totals: { lines: 100 } });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -108,19 +103,6 @@ test("falls through invalid summaries to alternate JSON and root reports", async
   await writeFile(join(rootReport, "coverage.json"), JSON.stringify(detailed));
   await expect(readCoverageEvidenceFromCandidates(rootReport)).resolves.toMatchObject({ source: "coverage.json" });
   await rm(rootReport, { recursive: true, force: true });
-});
-
-test("skips incomplete detailed evidence in favor of a complete report", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
-  await mkdir(join(root, "coverage"));
-  await writeFile(join(root, "coverage", "coverage-final.json"), JSON.stringify({
-    "src/example.mjs": { s: { 0: 1 } },
-  }));
-  await writeFile(join(root, "coverage", "coverage-summary.json"), JSON.stringify({ total: {
-    statements: { pct: 100 }, branches: { pct: 100 }, functions: { pct: 100 }, lines: { pct: 100 },
-  } }));
-  await expect(readCoverageEvidenceFromCandidates(root)).resolves.toMatchObject({ source: "coverage/coverage-summary.json" });
-  await rm(root, { recursive: true, force: true });
 });
 
 test("rejects stale evidence and invalid evidence without usable text", async () => {

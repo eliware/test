@@ -13,6 +13,7 @@ export function runChild(command, args, options = {}) {
       env: options.env ?? process.env,
       stdio: ["ignore", "pipe", "pipe"],
       shell: false,
+      detached: process.platform !== "win32",
     });
     let stdout = "";
     let stderr = "";
