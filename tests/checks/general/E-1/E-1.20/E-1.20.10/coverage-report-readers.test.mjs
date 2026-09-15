@@ -15,7 +15,7 @@ test("reads detailed and summary report formats", async () => {
     async () => ({ mtimeMs: 2 }),
   )).resolves.toEqual({
     gaps: [expect.objectContaining({ file: "src/example.mjs" })],
-    totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
+    totals: { statements: 0, branches: 0, functions: 0, lines: 0 },
   });
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 0)).rejects.toThrow();
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 1)).rejects.toThrow();

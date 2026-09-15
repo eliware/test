@@ -14,6 +14,14 @@ export function parseDetailed(json) {
   for (const [file, data] of entries) {
     const gap = fileGap(file, data);
     if (gap) gaps.push(gap);
+    const hasCounters = Object.keys(data.s ?? {}).length > 0 || Object.keys(data.b ?? {}).length > 0
+      || Object.keys(data.f ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
+    const hasMaps = Object.keys(data.statementMap ?? {}).length > 0 || Object.keys(data.branchMap ?? {}).length > 0
+      || Object.keys(data.fnMap ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
+    if (!hasCounters || !hasMaps) {
+      for (const metric of metrics) counts[metric].total += 1;
+      continue;
+    }
     for (const [metric, values] of Object.entries({
       statements: Object.values(data.s ?? {}), branches: Object.values(data.b ?? {}).flat(),
       functions: Object.values(data.f ?? {}), lines: coverageLineEntries(data).map(([, count]) => count),
