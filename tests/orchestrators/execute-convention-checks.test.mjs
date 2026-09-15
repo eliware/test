@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { executeConventionChecks } from "../../src/orchestrators/execute-convention-checks.mjs";
 
 test("skips an exempted parent and all descendants", async () => {
@@ -55,4 +55,25 @@ test("does not represent non-deterministic checks as successful enforcement", as
   );
   expect(calls).toBe(0);
   expect(results).toEqual([]);
+});
+
+test("reports timing through start and end callbacks", async () => {
+  const timing = { start: jest.fn(), end: jest.fn() };
+  await executeConventionChecks(
+    [{ ruleId: "E-4", run: async () => ({ ruleId: "E-4", status: "pass", message: "" }) }],
+    { timing },
+    new Set(),
+  );
+  expect(timing.start).toHaveBeenCalledWith("E-4");
+  expect(timing.end).toHaveBeenCalledWith("E-4");
+});
+
+test("reports timing through the legacy step callback when start is unavailable", async () => {
+  const timing = { step: jest.fn() };
+  await executeConventionChecks(
+    [{ ruleId: "E-5", run: async () => ({ ruleId: "E-5", status: "pass", message: "" }) }],
+    { timing },
+    new Set(),
+  );
+  expect(timing.step).toHaveBeenCalledWith("E-5 started", "E-5 completed");
 });

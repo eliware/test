@@ -1,3 +1,5 @@
+import { execute } from "../../execute-child-process.mjs";
+
 export async function executePackValidation({
   root,
   packageJson,
@@ -7,7 +9,7 @@ export async function executePackValidation({
 }) {
   if (!executePack || (mode !== null && mode !== "pack")) return null;
   try {
-    const result = await runPack(root);
+    const result = await runPack(root, execute);
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return detail ? `npm pack failed: ${detail}` : "npm pack failed without diagnostics.";

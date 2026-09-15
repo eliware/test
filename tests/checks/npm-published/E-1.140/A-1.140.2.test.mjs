@@ -88,3 +88,10 @@ test("rejects a publication job with no runner field", async () => {
   await writeFile(join(root, ".github", "workflows", "publish.yml"), `name: ubuntu-latest reference\non:\n  push:\n    tags: ["v*.*.*"]\njobs:\n  publish:\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
 });
+
+test("rejects a publication job whose normalized runner is not Ubuntu", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-normalized-runner-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `on:\n  push:\n    tags: ["v*.*.*"]\njobs:\n  publish:\n    runsOn: windows-latest\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
+});

@@ -34,7 +34,8 @@ test("resets the watchdog and reports progress markers", async () => {
     progressPattern: /start suite/,
     progressTimeoutMs: 1_000,
     onProgress: progress,
+    captureStderr: (text) => text.replace(/^\[eliware-test-progress\].*\r?\n?/gmu, ""),
   });
-  expect(result).toEqual(expect.objectContaining({ timedOut: true }));
+  expect(result).toEqual(expect.objectContaining({ timedOut: true, stderr: "" }));
   expect(progress).toHaveBeenCalledWith(expect.stringContaining("start suite"));
 });

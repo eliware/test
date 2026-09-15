@@ -1,5 +1,6 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { runNpmAudit } from "./run-npm-audit.mjs";
+import { execute } from "../../../execute-child-process.mjs";
 
 export const ruleId = "E-1.20.19";
 export const parentRuleId = "E-1.20";
@@ -18,7 +19,7 @@ export async function run({
   }
   if (!executeAudit) return pass(ruleId);
   try {
-    const result = await runAudit(root);
+    const result = await runAudit(root, execute);
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return fail(

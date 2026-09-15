@@ -1,4 +1,5 @@
 export function createJestProcessOptions(root, args = [], options = {}) {
+  const debugTiming = args.includes("--debug-timing");
   let currentSuite = "Jest startup";
   const onProgress = (text) => {
     for (const line of text.split(/\r?\n/)) {
@@ -17,9 +18,11 @@ export function createJestProcessOptions(root, args = [], options = {}) {
   return {
     cwd: root,
     env: { ...process.env, NODE_OPTIONS: nodeOptions },
-    progressPattern: /^\[eliware-test-progress\]/m,
-    progressTimeoutMs: 15_000,
-    onProgress,
+    ...(debugTiming ? {
+      progressPattern: /^\[eliware-test-progress\]/m,
+      progressTimeoutMs: 15_000,
+      onProgress,
+    } : {}),
     onTimeout: () => {
       options.onTimeout?.(`Test suite ${currentSuite} timed out after 15 seconds without progress.`);
     },

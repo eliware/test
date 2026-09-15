@@ -1,5 +1,4 @@
 import { fileURLToPath } from "node:url";
-import { runChild } from "./run-child.mjs";
 import { createJestProcessOptions } from "./create-jest-process-options.mjs";
 import { buildJestArguments } from "./build-jest-arguments.mjs";
 import { resolveFocusedCoverage } from "./resolve-focused-coverage.mjs";
@@ -8,7 +7,9 @@ import { validateFocusedTestPath } from "./validate-focused-test-path.mjs";
 const TIMING_REPORTER = fileURLToPath(new URL("./jest-timing-reporter.mjs", import.meta.url));
 const PROGRESS_REPORTER = fileURLToPath(new URL("./jest-progress-reporter.mjs", import.meta.url));
 
-export async function runJest(root, args = [], execute = runChild, options = {}) {
+export async function runJest(root, args, execute, options) {
+  args ??= [];
+  const debugTiming = args.includes("--debug-timing");
   const focusedPath = await validateFocusedTestPath(root, args);
   const focusedCoverage = await resolveFocusedCoverage(root, focusedPath);
   const jestArguments = buildJestArguments(args);
@@ -22,9 +23,7 @@ export async function runJest(root, args = [], execute = runChild, options = {})
       "--coverageReporters=text",
       "--reporters",
       "default",
-      "--reporters",
-      PROGRESS_REPORTER,
-      ...(args.includes("--debug-timing") ? ["--reporters", TIMING_REPORTER] : []),
+      ...(debugTiming ? ["--reporters", PROGRESS_REPORTER, "--reporters", TIMING_REPORTER] : []),
       ...focusedCoverage,
       ...jestArguments.slice(1),
     ],

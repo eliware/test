@@ -7,13 +7,35 @@ import { executeValidationPlan } from "./execute-validation-plan.mjs";
 import { discoverAllChecks } from "./discover-checks.mjs";
 import { validateBundledDirectiveCompleteness } from "./validate-bundled-directive-completeness.mjs";
 
-export async function runValidation(root, ignoredRuleIds = [], options = {}) {
-  const packageJson = await loadValidationTarget(root);
+export const validationDependencies = Object.freeze({
+  loadValidationTarget,
+  selectConventionChecks,
+  discoverAllChecks,
+  validateBundledDirectiveCompleteness,
+  prepareValidationExemptions,
+  executeValidationPlan,
+});
+
+export function resolveValidationDependencies(dependencies = validationDependencies) {
+  return dependencies;
+}
+
+export async function runValidation(root, ignoredRuleIds, options) {
+  const dependencies = resolveValidationDependencies(options.dependencies);
+  const {
+    loadValidationTarget: loadTarget,
+    selectConventionChecks: selectChecks,
+    discoverAllChecks: discoverChecks,
+    validateBundledDirectiveCompleteness: validateCompleteness,
+    prepareValidationExemptions: prepareExemptions,
+    executeValidationPlan: executePlan,
+  } = dependencies;
+  const packageJson = await loadTarget(root);
   const conventions = readConventionConfig(packageJson);
-  const checks = await selectConventionChecks(conventions);
-  const allChecks = await discoverAllChecks();
-  await validateBundledDirectiveCompleteness(allChecks, conventions.apply);
-  const exemptions = prepareValidationExemptions(packageJson, allChecks, ignoredRuleIds);
+  const checks = await selectChecks(conventions);
+  const allChecks = await discoverChecks();
+  await validateCompleteness(allChecks, conventions.apply);
+  const exemptions = prepareExemptions(packageJson, allChecks, ignoredRuleIds);
   const context = createValidationContext(root, packageJson, options);
-  return executeValidationPlan(checks, context, exemptions);
+  return executePlan(checks, context, exemptions);
 }

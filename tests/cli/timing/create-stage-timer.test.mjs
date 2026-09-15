@@ -8,10 +8,36 @@ test("records cumulative and since-previous-step timings", () => {
   timer.step("configuration", "checks");
   now = 4500;
   timer.step("checks", "complete");
-  expect(timer.getLines()).toEqual([
-    "configuration completed, starting checks... (+1.500s total, +1.500s since last step)",
-    "checks completed, starting complete... (+3.500s total, +2.000s since last step)",
-  ]);
+  expect(timer.getLines()).toEqual([]);
+  expect(timer.getJestOutput()).toBe("");
+});
+
+test("streams one live line per check", () => {
+  let now = 1000;
+  const output = [];
+  const timer = createStageTimer(true, () => now, (text) => output.push(text));
+  timer.start("E-1");
+  now = 2500;
+  timer.end("E-1");
+  expect(output).toEqual(["[eliware-test] Running E-1...", " E-1 completed — 1.500s\n"]);
+});
+
+test("retains stage transitions for non-check orchestration timing", () => {
+  let now = 1000;
+  const output = [];
+  const timer = createStageTimer(true, () => now, (text) => output.push(text));
+  now = 2500;
+  timer.step("configuration", "checks");
+  expect(output).toEqual([" configuration completed — starting checks\n"]);
+});
+
+test("does not emit check timing when disabled", () => {
+  const output = [];
+  const timer = createStageTimer(false, () => 1000, (text) => output.push(text));
+  timer.start("E-1");
+  timer.step("E-1", "done");
+  timer.end("E-1");
+  expect(output).toEqual([]);
 });
 
 test("does not collect disabled timing and stores Jest output", () => {

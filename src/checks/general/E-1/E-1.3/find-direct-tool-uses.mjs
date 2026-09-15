@@ -9,7 +9,7 @@ const directCommand =
 const directImport =
   /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)["'](?:@jest\/|jest(?:\/|["'])|oxlint(?:["']|\/)|prettier(?:["']|\/))/i;
 
-export async function findDirectToolUses(root, files = null) {
+export async function findDirectToolUses(root, files) {
   const findings = [];
   for (const file of files ?? (await findRepositoryFiles(root))) {
     if (file === "package.json" || !inspectable.test(file)) continue;

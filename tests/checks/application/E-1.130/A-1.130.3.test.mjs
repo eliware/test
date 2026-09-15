@@ -10,4 +10,13 @@ test("requires an application entrypoint and distribution status", () => {
   expect(run({ packageJson: { private: true } })).toEqual(
     expect.objectContaining({ status: "fail" }),
   );
+  expect(run({ packageJson: { main: "index.mjs" } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  expect(run({ packageJson: { scripts: { start: "node index.mjs" } } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  expect(run({ packageJson: { bin: {}, private: true } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
 });

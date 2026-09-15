@@ -1,17 +1,25 @@
-export function createStageTimer(enabled, now = () => Date.now()) {
+export function createStageTimer(enabled, now = () => Date.now(), write = () => {}) {
   const startedAt = now();
   let previousAt = startedAt;
   const lines = [];
   let jestOutput = "";
 
   return {
-    step(completed, next) {
+    start(label) {
+      if (enabled) write(`[eliware-test] Running ${label}...`);
+    },
+    end(label) {
       if (!enabled) return;
       const current = now();
       const total = ((current - startedAt) / 1000).toFixed(3);
       const delta = ((current - previousAt) / 1000).toFixed(3);
       previousAt = current;
-      lines.push(`${completed} completed, starting ${next}... (+${total}s total, +${delta}s since last step)`);
+      write(` ${label} completed — ${delta}s\n`);
+      lines.push(`${label} completed — ${total}s`);
+    },
+    step(completed, next) {
+      if (!enabled) return;
+      write(` ${completed} completed — starting ${next}\n`);
     },
     getLines() {
       return [...lines];

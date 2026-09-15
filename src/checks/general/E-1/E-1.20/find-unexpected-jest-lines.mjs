@@ -10,5 +10,5 @@ export function findUnexpectedJestLines(text) {
   return text
     .split(/\r?\n/)
     .map((line) => line.replace(ANSI_ESCAPE, "").trim())
-    .filter((line) => line && !line.startsWith("[eliware-test-progress] ") && !JEST_LINES.some((pattern) => pattern.test(line)));
+    .filter((line) => line && !/^\[?eliware-test-progress\]?\s/u.test(line) && !/^\[?eliware-test\]?\s/u.test(line) && !JEST_LINES.some((pattern) => pattern.test(line)));
 }

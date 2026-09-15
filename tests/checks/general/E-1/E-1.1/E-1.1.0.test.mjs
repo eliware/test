@@ -53,6 +53,7 @@ test("accepts a complete branded project README", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-"));
   await writeFile(join(root, "README.md"), readme);
   await mkdir(join(root, "docs"));
+  await writeFile(join(root, "docs", "README.md"), "docs");
   await mkdir(join(root, "specs"));
   await writeFile(join(root, "docs", "README.md"), "docs");
   await writeFile(join(root, "specs", "README.md"), "specs");
@@ -137,5 +138,30 @@ test("requires a root README", async () => {
     status: "fail",
     message: "README.md is required.",
   });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("requires the examples index when examples are present", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-examples-"));
+  await writeFile(join(root, "README.md"), readme);
+  await mkdir(join(root, "docs"));
+  await mkdir(join(root, "specs"));
+  await mkdir(join(root, "examples"));
+  await writeFile(join(root, "docs", "README.md"), "docs");
+  await writeFile(join(root, "specs", "README.md"), "specs");
+  await expect(run({ root, packageJson: {} })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("examples/README.md") }),
+  );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("requires both documentation indexes", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-indexes-"));
+  await writeFile(join(root, "README.md"), readme);
+  await mkdir(join(root, "docs"));
+  await writeFile(join(root, "docs", "README.md"), "docs");
+  await expect(run({ root, packageJson: {} })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("specs/README.md") }),
+  );
   await rm(root, { recursive: true, force: true });
 });

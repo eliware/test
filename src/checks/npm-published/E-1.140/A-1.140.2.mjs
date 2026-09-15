@@ -33,7 +33,7 @@ export async function run({ root, packageJson }) {
       !hasExactTagTrigger(workflow) ||
       typeof version !== "string" ||
       !verifiedVersion ||
-      !publication.some(({ job }) => hasUbuntuRunner(workflow, job) && /ubuntu/i.test(String(job["runs-on"] ?? job.runsOn ?? "")))
+      !publication.some(({ job }) => hasUbuntuRunner(workflow, job))
     ) {
       return fail(
         ruleId,

@@ -2,6 +2,7 @@ import { fail, pass } from "../../check-result.mjs";
 import { findDirectToolUses } from "./E-1.3/find-direct-tool-uses.mjs";
 import { findDirectValidationDependencies } from "./E-1.3/validate-validation-dependencies.mjs";
 import { findInvalidValidationScripts } from "./E-1.3/validate-validation-scripts.mjs";
+import { findRepositoryFiles } from "./find-repository-files.mjs";
 
 export const ruleId = "E-1.3";
 export const parentRuleId = "E-1";
@@ -23,7 +24,7 @@ export async function run({ packageJson, root, files }) {
   }
   if (root) {
     try {
-      const directUses = await findDirectToolUses(root, files);
+      const directUses = await findDirectToolUses(root, files ?? (await findRepositoryFiles(root)));
       if (directUses.length > 0)
         return fail(
           ruleId,

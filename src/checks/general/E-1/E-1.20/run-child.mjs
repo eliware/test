@@ -32,7 +32,7 @@ export function runChild(command, args, options = {}) {
       const text = chunk.toString();
       handleChildProgress(text, { ...options, resetProgressTimer });
       options.onStderr?.(text);
-      stderr = appendBoundedOutput(stderr, text, maxOutputLength);
+      stderr = appendBoundedOutput(stderr, options.captureStderr?.(text) ?? text, maxOutputLength);
     });
     child.on("error", (error) => {
       timeout.stop();

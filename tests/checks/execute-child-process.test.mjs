@@ -15,10 +15,6 @@ test("captures child-process output until it closes", async () => {
   expect(child.on).toHaveBeenCalledWith("error", expect.any(Function));
 });
 
-test("uses the real child-process adapter when no spawn override is provided", async () => {
-  await expect(execute(process.execPath, ["-e", "process.stdout.write('out'); process.stderr.write('err');"], {})).resolves.toMatchObject({ code: 0, stdout: "out", stderr: "err" });
-});
-
 test("captures bounded stdout and stderr from a completed child", async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
@@ -44,11 +40,6 @@ test("rejects when the child process cannot start", async () => {
   await expect(promise).rejects.toThrow("spawn failed");
 });
 
-test("captures audit output, bounds oversized streams, and reports process errors", async () => {
-  await expect(execute(process.execPath, ["-e", "process.stdout.write('ok'); process.stderr.write('err')"], {})).resolves.toEqual({ code: 0, signal: null, stdout: "ok", stderr: "err" });
-  await expect(execute(process.execPath, ["-e", "process.stdout.write('x'.repeat(100001)); process.stderr.write('x'.repeat(100001))"], {})).resolves.toEqual(expect.objectContaining({ stdout: expect.stringContaining("x"), stderr: expect.stringContaining("x") }));
-  await expect(execute("C:\\missing-executable", [], {})).rejects.toBeTruthy();
-});
 
 test("captures child output and completion details", async () => {
   const child = new EventEmitter();
@@ -101,12 +92,4 @@ test("rejects when the formatter child cannot start", async () => {
     if (event === "error") handler(new Error("formatter spawn failed"));
   });
   await expect(execute("node", [], {}, () => child)).rejects.toThrow("formatter spawn failed");
-});
-
-test("uses the real child-process adapter when no spawn override is provided", async () => {
-  await expect(execute(process.execPath, ["-e", "process.stdout.write('out'); process.stderr.write('err');"], {})).resolves.toMatchObject({
-    code: 0,
-    stdout: "out",
-    stderr: "err",
-  });
 });

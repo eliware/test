@@ -39,7 +39,11 @@ export async function loadLinkedDirectiveIds(root) {
         return { error: `Linked directive authority IDs do not resolve from ${record.path}.` };
       }
     } catch (error) {
-      if (error.code !== "ENOENT") return { error: `Linked directive document ${record.path} is invalid: ${error.message}` };
+      if (error.code === "ENOENT") {
+        for (const id of record.ids ?? []) ids.add(id);
+      } else {
+        return { error: `Linked directive document ${record.path} is invalid: ${error.message}` };
+      }
     }
   }
   return { ids };

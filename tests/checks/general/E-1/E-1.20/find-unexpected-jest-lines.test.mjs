@@ -9,6 +9,10 @@ test("allows progress lines with framing whitespace", () => {
   expect(findUnexpectedJestLines("  [eliware-test-progress] complete suite 0.100s  \n")).toEqual([]);
 });
 
+test("allows harness output after transport framing removes brackets", () => {
+  expect(findUnexpectedJestLines("eliware-test-progress start suite\n[eliware-test] Running suite...\n")).toEqual([]);
+});
+
 test("returns unexpected output lines", () => {
   expect(findUnexpectedJestLines("application log\napplication log\n")).toEqual(["application log", "application log"]);
 });

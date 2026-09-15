@@ -24,7 +24,7 @@ test("passes after a successful Jest run", async () => {
     status: "pass",
     message: "",
   });
-  expect(runJest).toHaveBeenCalledWith(".", []);
+  expect(runJest).toHaveBeenCalledWith(".", [], expect.any(Function), {});
 });
 
 test("uses an empty argument list when none is configured", async () => {
@@ -34,7 +34,7 @@ test("uses an empty argument list when none is configured", async () => {
     status: "pass",
     message: "",
   });
-  expect(runJest).toHaveBeenCalledWith(".", []);
+  expect(runJest).toHaveBeenCalledWith(".", [], expect.any(Function), {});
 });
 
 test("streams stderr when debug output is enabled", async () => {
@@ -45,14 +45,14 @@ test("streams stderr when debug output is enabled", async () => {
     status: "pass",
     message: "",
   });
-  expect(runJest).toHaveBeenCalledWith(".", ["--debug-timing"], undefined, expect.objectContaining({ onStderr: writeOutput, onTimeout: expect.any(Function) }));
+  expect(runJest).toHaveBeenCalledWith(".", ["--debug-timing"], expect.any(Function), expect.objectContaining({ onStderr: writeOutput, onTimeout: expect.any(Function) }));
 });
 
 test("uses empty Jest arguments while streaming when arguments are absent", async () => {
   runJest.mockResolvedValueOnce({ code: 0, stdout: "", stderr: "" });
   const writeOutput = jest.fn();
   await run({ root: ".", executeJest: true, writeOutput });
-  expect(runJest).toHaveBeenCalledWith(".", [], undefined, expect.objectContaining({ onStderr: writeOutput, onTimeout: expect.any(Function) }));
+  expect(runJest).toHaveBeenCalledWith(".", [], expect.any(Function), expect.objectContaining({ onStderr: writeOutput, onTimeout: expect.any(Function) }));
 });
 
 test("reports a no-progress timeout", async () => {

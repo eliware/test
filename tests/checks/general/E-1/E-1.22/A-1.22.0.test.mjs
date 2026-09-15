@@ -72,6 +72,7 @@ test("checks the local authority namespace when authority metadata is present", 
   await rm(invalid, { recursive: true, force: true });
 
   for (const authority of [
+    { subjects: null },
     { subjects: [] },
     { subjects: [{}] },
     { subjects: [{ directives: [null, {}] }] },
@@ -81,4 +82,11 @@ test("checks the local authority namespace when authority metadata is present", 
     await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("accepts authority metadata when no local namespace can be derived", async () => {
+  const root = await fixture([{ id: "E-18", directives: [{ id: "A-18.1" }] }]);
+  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ subjects: [{ directives: [{ ids: [] }] }] }));
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await rm(root, { recursive: true, force: true });
 });

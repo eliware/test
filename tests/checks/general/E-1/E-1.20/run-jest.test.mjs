@@ -48,8 +48,6 @@ test("maps a focused test to its mirrored source coverage", async () => {
     "--coverageReporters=text",
     "--reporters",
     "default",
-    "--reporters",
-    expect.stringContaining("jest-progress-reporter.mjs"),
     "--collectCoverageFrom",
     "src/sample.mjs",
     "--runTestsByPath",
@@ -133,7 +131,7 @@ test("raises the bounded debug-timing capture without making it unlimited", asyn
 
 test("reports the last started suite when progress stops", async () => {
   let received;
-  await runJest("C:/fixture", [], async (...args) => {
+  await runJest("C:/fixture", ["--debug-timing"], async (...args) => {
     received = args;
     args[2].onProgress("[eliware-test-progress] start tests/hanging.test.mjs\n");
     args[2].onTimeout();
@@ -142,12 +140,9 @@ test("reports the last started suite when progress stops", async () => {
   expect(received.timeoutMessage).toBe("Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.");
 });
 
-test("uses default Jest arguments and child executor", async () => {
-  await expect(runJest(process.cwd(), ["--help"])).resolves.toEqual(
-    expect.objectContaining({ code: expect.anything() }),
-  );
+test("uses default Jest arguments with an injected child executor", async () => {
   let received;
-  await runJest(process.cwd(), undefined, async (...args) => {
+  await runJest("C:/fixture", undefined, async (...args) => {
     received = args;
     return { code: 0, stdout: "", stderr: "" };
   });

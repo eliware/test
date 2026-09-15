@@ -15,6 +15,16 @@ test("requires docs README to index end-user documents", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("fails when a required documentation section is absent", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-section-"));
+  await mkdir(join(root, "docs"), { recursive: true });
+  await writeFile(join(root, "docs", "README.md"), "# Docs\nPurpose and scope\nSetup and usage\nValidation\n");
+  await expect(run({ root })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("support") }),
+  );
+  await rm(root, { recursive: true, force: true });
+});
+
 test("passes when the documentation tree is completely indexed", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-indexed-"));
   await mkdir(join(root, "docs", "guides"), { recursive: true });
@@ -40,5 +50,19 @@ test("fails when the documentation tree cannot be read", async () => {
     status: "fail",
     message: "docs/README.md must index the complete end-user documentation tree.",
   });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("fails when a nested markdown document is not indexed", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-nested-"));
+  await mkdir(join(root, "docs", "guides"), { recursive: true });
+  await writeFile(
+    join(root, "docs", "README.md"),
+    "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\n",
+  );
+  await writeFile(join(root, "docs", "guides", "deep.md"), "# Deep guide");
+  await expect(run({ root })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("docs/guides/deep.md") }),
+  );
   await rm(root, { recursive: true, force: true });
 });

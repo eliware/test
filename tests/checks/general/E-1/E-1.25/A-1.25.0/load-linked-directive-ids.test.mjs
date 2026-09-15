@@ -48,3 +48,37 @@ test("accepts an authority document without subjects", async () => {
   await expect(loadLinkedDirectiveIds(root)).resolves.toEqual({ ids: new Set() });
   await rm(root, { recursive: true, force: true });
 });
+
+test("rejects invalid IDs and IDs without a linked path", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-linked-directives-shape-"));
+  await mkdir(join(root, "specs"), { recursive: true });
+  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ subjects: [{ directives: [
+    { ids: ["bad id"], path: "missing.json" },
+  ] }] }));
+  await expect(loadLinkedDirectiveIds(root)).resolves.toEqual(expect.objectContaining({ error: expect.stringContaining("invalid directive IDs") }));
+  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ subjects: [{ directives: [
+    { ids: ["E-1"] },
+  ] }] }));
+  await expect(loadLinkedDirectiveIds(root)).resolves.toEqual(expect.objectContaining({ error: expect.stringContaining("document path") }));
+  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ subjects: [{ directives: [{}, { path: "missing.json" }] }] }));
+  await expect(loadLinkedDirectiveIds(root)).resolves.toEqual({ ids: new Set() });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("rejects invalid or incomplete linked directive documents", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-linked-directives-content-"));
+  await mkdir(join(root, "specs"), { recursive: true });
+  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ subjects: [{ directives: [{ path: "external.json", ids: ["E-1"] }] }] }));
+  await writeFile(join(root, "specs", "external.json"), JSON.stringify({ directives: [null, { id: "bad id" }] }));
+  await expect(loadLinkedDirectiveIds(root)).resolves.toEqual(expect.objectContaining({ error: expect.stringContaining("invalid directive ID") }));
+  await writeFile(join(root, "specs", "external.json"), JSON.stringify({ directives: [{ id: "E-2" }] }));
+  await expect(loadLinkedDirectiveIds(root)).resolves.toEqual(expect.objectContaining({ error: expect.stringContaining("do not resolve") }));
+  await rm(root, { recursive: true, force: true });
+});
+
+test("returns an empty set when the authority document is absent", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-linked-directives-absent-"));
+  await mkdir(join(root, "specs"), { recursive: true });
+  await expect(loadLinkedDirectiveIds(root)).resolves.toEqual({ ids: new Set() });
+  await rm(root, { recursive: true, force: true });
+});

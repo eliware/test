@@ -5,12 +5,17 @@ import { join } from "node:path";
 import { run } from "../../../../../src/checks/general/E-1/E-1.20/E-1.20.7.mjs";
 
 test("requires Jest configuration in package.json", async () => {
-  expect(await run({ packageJson: { jest: {} } })).toEqual({
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-valid-"));
+  expect(await run({ root, packageJson: { jest: {} } })).toEqual({
     ruleId: "E-1.20.7",
     status: "pass",
     message: "",
   });
-  expect(await run({ packageJson: {} })).toEqual(expect.objectContaining({ status: "fail" }));
+  expect(await run({ root, packageJson: {} })).toEqual(expect.objectContaining({ status: "fail" }));
+  expect(await run({ root, packageJson: { jest: [] } })).toEqual(expect.objectContaining({ status: "fail" }));
+  expect(await run({ root, packageJson: { jest: null } })).toEqual(expect.objectContaining({ status: "fail" }));
+  expect(await run({ root, packageJson: { jest: "jest" } })).toEqual(expect.objectContaining({ status: "fail" }));
+  await rm(root, { recursive: true, force: true });
 });
 
 test("rejects separate Jest configuration files", async () => {
@@ -30,4 +35,13 @@ test("reports configuration inspection failures", async () => {
       message: expect.stringContaining("Jest configuration files could not be inspected"),
     }),
   );
+});
+
+test("reports failures when the repository root cannot be enumerated", async () => {
+  const root = join(await mkdtemp(join(tmpdir(), "eliware-test-jest-root-")), "not-a-directory");
+  await writeFile(root, "not a directory");
+  await expect(run({ root, packageJson: { jest: {} } })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("could not be inspected") }),
+  );
+  await rm(root, { force: true });
 });

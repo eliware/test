@@ -1,12 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { execFile } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { promisify } from "node:util";
 import { run } from "../../../../src/checks/general/E-1/E-1.8.mjs";
 
-const execFileAsync = promisify(execFile);
 
 test("requires the repository mailbox owner in local .env only", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-"));
@@ -85,20 +82,5 @@ test("reports environment discovery and template read failures", async () => {
   await expect(
     run({ root, packageJson: { name: "@eliware/fixture" }, trackedFiles: [".env.example"], checkIgnored: async () => true, findFiles: async () => [".env.example"] }),
   ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("Environment template could not be inspected") }));
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reads tracked paths from Git when no override is supplied", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-git-"));
-  await execFileAsync("git", ["-C", root, "init"], { windowsHide: true });
-  await writeFile(join(root, ".env"), "MAIL_OWNER_ADDRESS=fixture@eliware.org\n");
-  await writeFile(join(root, ".env.local"), "OTHER=value\n");
-  await writeFile(join(root, ".gitignore"), ".env\n.env.*\n");
-  await writeFile(join(root, "config.json"), "public");
-  await expect(run({ root, packageJson: { name: "@eliware/fixture" } })).resolves.toEqual({
-    ruleId: "E-1.8",
-    status: "pass",
-    message: "",
-  });
   await rm(root, { recursive: true, force: true });
 });

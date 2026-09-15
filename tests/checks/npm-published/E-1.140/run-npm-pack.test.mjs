@@ -13,8 +13,19 @@ test("runs npm pack in the repository root", async () => {
   expect(calls[0][2]).toEqual({ cwd: "C:\\repo" });
 });
 
-test("supports the default runner with an injected command resolver", async () => {
-  await expect(
-    runNpmPack(process.cwd(), undefined, () => [process.execPath, []]),
-  ).resolves.toEqual(expect.objectContaining({ code: expect.any(Number) }));
+test("uses npm's executable when npm invokes the harness", async () => {
+  const previous = process.env.npm_execpath;
+  process.env.npm_execpath = "C:\\npm\\cli.js";
+  const calls = [];
+  try {
+    await runNpmPack("C:\\repo", async (...args) => {
+      calls.push(args);
+      return { code: 0, signal: null, stdout: "", stderr: "" };
+    });
+  } finally {
+    if (previous === undefined) delete process.env.npm_execpath;
+    else process.env.npm_execpath = previous;
+  }
+  expect(calls[0][0]).toBe(process.execPath);
+  expect(calls[0][1][0]).toBe("C:\\npm\\cli.js");
 });

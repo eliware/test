@@ -12,17 +12,15 @@ export async function run({ root, packageJson }) {
   ) {
     return fail(ruleId, "Jest configuration must be declared in package.json.");
   }
-  if (root) {
-    try {
-      const configs = await findJestConfigFiles(root);
-      if (configs.length > 0)
-        return fail(
-          ruleId,
-          "Jest configuration must live in package.json; found separate config files.",
-        );
-    } catch (error) {
-      return fail(ruleId, `Jest configuration files could not be inspected: ${error.message}`);
-    }
+  try {
+    const configs = await findJestConfigFiles(root);
+    if (configs.length > 0)
+      return fail(
+        ruleId,
+        "Jest configuration must live in package.json; found separate config files.",
+      );
+  } catch (error) {
+    return fail(ruleId, `Jest configuration files could not be inspected: ${error.message}`);
   }
   return pass(ruleId);
 }

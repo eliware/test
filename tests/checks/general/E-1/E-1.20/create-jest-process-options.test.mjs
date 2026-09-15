@@ -3,7 +3,7 @@ import { createJestProcessOptions } from "../../../../../src/checks/general/E-1/
 
 test("builds a quiet progress-aware Jest process configuration", () => {
   const onTimeout = jest.fn();
-  const options = createJestProcessOptions("C:/fixture", [], { onTimeout });
+  const options = createJestProcessOptions("C:/fixture", ["--debug-timing"], { onTimeout });
   expect(options.cwd).toBe("C:/fixture");
   expect(options.progressTimeoutMs).toBe(15_000);
   options.onProgress("[eliware-test-progress] start tests/hanging.test.mjs\n");
@@ -14,7 +14,9 @@ test("builds a quiet progress-aware Jest process configuration", () => {
 });
 
 test("uses defaults when optional arguments are omitted", () => {
-  expect(createJestProcessOptions("C:/fixture").progressTimeoutMs).toBe(15_000);
+  const options = createJestProcessOptions("C:/fixture");
+  expect(options.progressTimeoutMs).toBeUndefined();
+  options.onTimeout();
 });
 
 test("filters machine progress from streamed human output and expands debug capture", () => {

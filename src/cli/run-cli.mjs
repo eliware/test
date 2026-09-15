@@ -13,7 +13,11 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
   try {
     const startedAt = Date.now();
     const diagnosticOptions = readDiagnosticOptions(args);
-    const timing = createStageTimer(args.includes("--debug-timing"));
+    const timing = createStageTimer(
+      args.includes("--debug-timing"),
+      () => Date.now(),
+      args.includes("--debug-timing") ? process.stdout.write.bind(process.stdout) : undefined,
+    );
     const executeConvention = options.runConventionStage ?? runConventionStage;
     const executeValidation = options.runValidation ?? runValidation;
     const result = await executeConvention(() => executeValidation(

@@ -25,3 +25,8 @@ test("requires the published schema and contract versions", () => {
   expect(validateContractDocumentShape({ ...envelope, contractVersion: "7.0", contracts: [{}] })).toContain("contractVersion 8.0");
   expect(validateContractDocumentShape({ ...envelope, description: "", contracts: [{}] })).toContain("nonempty description");
 });
+
+test("requires object-shaped authority and format sections", () => {
+  expect(validateContractDocumentShape({ ...envelope, contracts: [{}], authority: [] })).toContain("authority must be an object");
+  expect(validateContractDocumentShape({ ...envelope, contracts: [{}], format: [] })).toContain("format must be an object");
+});
