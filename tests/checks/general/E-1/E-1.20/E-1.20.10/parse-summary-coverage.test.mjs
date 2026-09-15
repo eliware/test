@@ -23,3 +23,18 @@ test("returns null for incomplete summaries", () => {
   expect(parseSummary(null)).toBeNull();
   expect(parseSummary({ total: { statements: { pct: 100 } } })).toBeNull();
 });
+
+test("rejects a zero-total metric reported as complete", () => {
+  const total = Object.fromEntries(["statements", "branches", "functions", "lines"].map((metric) => [metric, { pct: 100, covered: 0, total: 0 }]));
+  expect(parseSummary({ total })).toBeNull();
+});
+
+test("accepts consistent counted metrics", () => {
+  const total = Object.fromEntries(["statements", "branches", "functions", "lines"].map((metric) => [metric, { pct: 50, covered: 1, total: 2 }]));
+  expect(parseSummary({ total }).totals).toEqual({ statements: 50, branches: 50, functions: 50, lines: 50 });
+});
+
+test("rejects malformed counted metrics", () => {
+  const total = Object.fromEntries(["statements", "branches", "functions", "lines"].map((metric) => [metric, { pct: 50, covered: 3, total: 2 }]));
+  expect(parseSummary({ total })).toBeNull();
+});

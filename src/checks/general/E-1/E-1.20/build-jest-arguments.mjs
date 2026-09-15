@@ -1,5 +1,5 @@
 export function focusedPathFrom(args = []) {
-  return args.find((argument) => /^(?:tests?|specs?)[\\/]/.test(argument));
+  return args.find((argument) => /^(?:tests?|specs?)(?:[\\/]|$)/.test(argument));
 }
 
 export function buildJestArguments(args = []) {

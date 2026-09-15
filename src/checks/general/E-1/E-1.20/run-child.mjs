@@ -19,7 +19,10 @@ export function runChild(command, args, options = {}) {
     let stdoutLength = 0;
     let stderrLength = 0;
     let streamed = 0;
-    const redact = (text) => text.replace(/(\b(?:password|token|secret|api[_-]?key)\b\s*[=:]\s*)[^\s,;]+/giu, "$1[REDACTED]");
+    const redact = (text) => text
+      .replace(/((?:password|passwd|pwd|token|secret|api[_-]?key|access[_-]?key|private[_-]?key)\s*[=:]\s*)(["']?)[^\s,;"']+\2/giu, "$1[REDACTED]")
+      .replace(/(authorization\s*:\s*(?:bearer|basic)\s+)[^\s,;]+/giu, "$1[REDACTED]")
+      .replace(/((?:Bearer|Basic)\s+)[A-Za-z0-9+/=_-]{12,}/gu, "$1[REDACTED]");
     const stream = (callback, text) => {
       if (!callback || streamed >= outputLimit) return;
       const remaining = outputLimit - streamed;

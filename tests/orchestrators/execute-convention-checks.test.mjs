@@ -42,6 +42,12 @@ test("rejects a check result with the wrong identity", async () => {
   ).rejects.toThrow("invalid result");
 });
 
+test("rejects an incomplete selected check before execution", async () => {
+  await expect(executeConventionChecks([{ ruleId: "E-1.99" }], {}, new Set())).rejects.toThrow(
+    "Selected check E-1.99 is incomplete",
+  );
+});
+
 test("runs only the selected operational check for an explicit mode", async () => {
   const calls = [];
   const checks = ["E-1.4", "E-1.20.17", "E-1.20.19"].map((ruleId) => ({

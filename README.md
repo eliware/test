@@ -71,7 +71,9 @@ procedures. Test consumes those policies and does not redefine them.
 
 For web applicability, document routes, assets, configuration, ports, browser
 validation, and deployment boundaries. Library applicability additionally
-requires public API, packaging, and examples documentation.
+requires public API, packaging, and examples documentation. This repository
+does not provide a separate consumer-facing examples catalog; the focused CLI
+command above is an invocation example, not that missing examples surface.
 
 Exit codes identify the failed validation stage: `0` is success, `8` is Jest
 failure, `10` is coverage failure, `12` is lint failure, `14` is an internal
