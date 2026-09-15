@@ -19,19 +19,21 @@ export function runChild(command, args, options = {}) {
     let stdoutLength = 0;
     let stderrLength = 0;
     let streamed = 0;
+    const redact = (text) => text.replace(/(\b(?:password|token|secret|api[_-]?key)\b\s*[=:]\s*)[^\s,;]+/giu, "$1[REDACTED]");
     const stream = (callback, text) => {
       if (!callback || streamed >= outputLimit) return;
       const remaining = outputLimit - streamed;
-      const bounded = text.slice(0, remaining);
+      const bounded = redact(text).slice(0, remaining);
       streamed += bounded.length;
       callback(bounded);
     };
-    let timeoutTriggered = false;
+    const settleError = (error) => {
+      timeout.stop();
+      reject(error);
+    };
     const timeout = createProgressTimeout({
       timeoutMs: options.progressTimeoutMs,
       onTimeout: () => {
-        if (timeoutTriggered) return;
-        timeoutTriggered = true;
         timeout.stop();
         options.onTimeout?.();
         terminateChild(child);
@@ -39,28 +41,29 @@ export function runChild(command, args, options = {}) {
     });
     const resetProgressTimer = timeout.reset;
     timeout.reset();
-    const capture = (chunks, length, text, otherLength) => {
-      const remaining = Math.max(0, outputLimit - otherLength - length);
+    let capturedLength = 0;
+    const capture = (chunks, text) => {
+      const remaining = Math.max(0, outputLimit - capturedLength);
       const bounded = text.length > remaining && remaining > 0
         ? `${text.slice(0, remaining - 1)}…`.slice(0, remaining)
         : text.slice(0, remaining);
       if (bounded) chunks.push(bounded);
-      return length + bounded.length;
+      capturedLength += bounded.length;
+      return bounded.length;
     };
     child.stdout.on("data", (chunk) => {
-      const text = chunk.toString();
+      const text = redact(chunk.toString());
       stream(options.onStdout, text);
-      stdoutLength = capture(stdoutChunks, stdoutLength, text, stderrLength);
+      stdoutLength += capture(stdoutChunks, text);
     });
     child.stderr.on("data", (chunk) => {
-      const text = chunk.toString();
+      const text = redact(chunk.toString());
       handleChildProgress(text, { ...options, resetProgressTimer });
       stream(options.onStderr, text);
-      stderrLength = capture(stderrChunks, stderrLength, options.captureStderr?.(text) ?? text, stdoutLength);
+      stderrLength += capture(stderrChunks, options.captureStderr?.(text) ?? text);
     });
     child.on("error", (error) => {
-      timeout.stop();
-      reject(error);
+      settleError(error);
     });
     child.on("close", (code, signal) => {
       timeout.stop();

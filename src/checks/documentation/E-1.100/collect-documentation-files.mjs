@@ -12,5 +12,11 @@ async function collect(directory, root, predicate) {
   return result;
 }
 
-export const jsonFiles = (root) => collect(root, root, (name) => name.endsWith(".json"));
-export const repositoryFiles = (root) => collect(root, root, (name) => /\.(?:json|md)$/iu.test(name));
+const cache = new Map();
+function cached(root, key, predicate) {
+  const cacheKey = `${key}:${root}`;
+  if (!cache.has(cacheKey)) cache.set(cacheKey, collect(root, root, predicate));
+  return cache.get(cacheKey);
+}
+export const jsonFiles = (root) => cached(root, "json", (name) => name.endsWith(".json"));
+export const repositoryFiles = (root) => cached(root, "repository", (name) => /\.(?:json|md)$/iu.test(name));

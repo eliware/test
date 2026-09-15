@@ -33,7 +33,7 @@ export function fileGap(file, data) {
     ...Object.values(data.l ?? {}),
   ];
   if (counterValues.some((value) => !validCounter(value))) {
-    return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines: [], statements: [], branches: [], functions: [] };
+    throw new Error(`Coverage evidence is malformed for ${file}.`);
   }
   const statements = Object.entries(data.s ?? {}).filter(([, count]) => count === 0)
     .map(([id]) => ({ location: location(data.statementMap?.[id]) }));

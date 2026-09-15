@@ -24,8 +24,8 @@ export function readDiagnosticOptions(args) {
   if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
   const focused = normalizedArgs.filter((argument) => !argument.startsWith("-"));
   if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
-  if (focused.some((argument) => !/^(?:tests?|specs?)[\\/]/u.test(argument))) {
-    throw new Error("Focused paths must be under tests/ or specs/.");
+  if (focused.some((argument) => !/^tests?[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))) {
+    throw new Error("Focused paths must be under tests/.");
   }
   return {
     ignoredRuleIds: [
@@ -33,6 +33,6 @@ export function readDiagnosticOptions(args) {
       ...(normalizedArgs.includes("--ignore-monolith-limits") ? ["E-1.20.16"] : []),
     ],
     mode: modes[0]?.slice(2) ?? null,
-    jestArgs: normalizedArgs,
+    jestArgs: normalizedArgs.filter((argument) => argument === "--" || argument.startsWith("-") || argument === focused[0]),
   };
 }
