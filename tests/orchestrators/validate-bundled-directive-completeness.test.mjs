@@ -40,3 +40,11 @@ test("rejects a deterministic check with no authority entry", () => {
   expect(() => validateBundledDirectiveCompleteness([check("E-9")], ["general"], { version: "8.0", profiles: { general: [] } }))
     .toThrow("no authority entry");
 });
+
+test("rejects an invalid enforcement mode instead of treating it as an implemented check", () => {
+  expect(() => validateBundledDirectiveCompleteness(
+    [check("E-1", "unknown")],
+    ["general"],
+    { version: "8.0", profiles: { general: ["E-1"] } },
+  )).toThrow("valid enforcement mode");
+});

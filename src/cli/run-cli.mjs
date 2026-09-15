@@ -8,11 +8,11 @@ import { writeValidationResults } from "./write-validation-results.mjs";
 import { normalizeCliError } from "./normalize-cli-error.mjs";
 
 export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
-  const informationalResult = dispatchInformationalCommand(args, write);
-  if (informationalResult !== null) return informationalResult;
   try {
-    const startedAt = Date.now();
     const diagnosticOptions = readDiagnosticOptions(args);
+    const informationalResult = dispatchInformationalCommand(args, write);
+    if (informationalResult !== null) return informationalResult;
+    const startedAt = Date.now();
     const timing = createStageTimer(
       args.includes("--debug-timing"),
       () => Date.now(),

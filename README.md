@@ -13,6 +13,7 @@ provide a v7 compatibility layer.
 Description: Shared deterministic repository validation for Eliware projects.
 Keywords: eliware, testing, validation, jest, oxlint, prettier, cli.
 Author: Eliware <eliware@eliware.org>.
+License: MIT.
 Repository: https://github.com/eliware/test.
 
 ## Requirements
@@ -79,19 +80,6 @@ npm run format:check
 git diff --check
 ```
 
-## Links
-
-- [Home Page](https://eliware.org)
-- [GitHub repository](https://github.com/eliware/test)
-- [GitHub organization](https://github.com/eliware)
-- [npm package](https://www.npmjs.com/package/@eliware/test)
-- [Discord](https://discord.gg/M6aTR9eTwN)
-- [Documentation](docs/README.md)
-- [Specifications](specs/README.md)
-- [Local authority](specs/authority.json)
-- [Examples](examples/README.md)
-- [Release notes](RELEASE_NOTES.md)
-
 ## Operations
 
 This package performs local and CI validation only. Release, publication,
@@ -104,9 +92,9 @@ Never commit secrets, credentials, private runtime state, or generated output.
 
 ## Support
 
-![Discord](https://eliware.org/logos/discord_96.png)
+[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)
 
-[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)
+**[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**
 
 Use the [Eliware Discord community](https://discord.gg/M6aTR9eTwN),
 [GitHub issues](https://github.com/eliware/test/issues), or
@@ -115,6 +103,13 @@ diagnostics when requesting help.
 
 ## License
 
-Licensed under MIT; see [LICENSE](LICENSE).
+[license](LICENSE)
 
-[Eliware](https://eliware.org) · [GitHub](https://github.com/eliware/test) · [Support](https://discord.gg/M6aTR9eTwN) · [License](LICENSE)
+## Links
+
+- [Home Page](https://eliware.org)
+- [GitHub Repo](https://github.com/eliware/test)
+- [GitHub Org](https://github.com/eliware)
+- [npm Package](https://www.npmjs.com/package/@eliware/test)
+- [Release Notes](RELEASE_NOTES.md)
+- [Discord](https://discord.gg/M6aTR9eTwN)

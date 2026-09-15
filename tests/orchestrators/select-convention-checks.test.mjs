@@ -1,11 +1,11 @@
 import { expect, test } from "@jest/globals";
 import { selectConventionChecks } from "../../src/orchestrators/select-convention-checks.mjs";
 
-test("selects only checks from explicitly applied profiles", async () => {
+test("selects checks from the applied profile and its inherited profiles", async () => {
   const checks = await selectConventionChecks({ apply: ["application"] });
   expect(checks.length).toBeGreaterThan(0);
   expect(
-    checks.every(({ ruleId }) => ruleId.startsWith("E-1.130") || ruleId.startsWith("A-1.130")),
+    checks.some(({ ruleId }) => ruleId === "E-1") && checks.some(({ ruleId }) => ruleId.startsWith("E-1.130")),
   ).toBe(true);
 });
 

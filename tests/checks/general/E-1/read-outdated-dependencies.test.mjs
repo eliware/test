@@ -39,7 +39,9 @@ test("parses successful npm output and bounds stderr", async () => {
 test("builds the non-Windows npm command", async () => {
   const child = childProcess();
   const originalPlatform = process.platform;
+  const originalNpmExecPath = process.env.npm_execpath;
   Object.defineProperty(process, "platform", { configurable: true, value: "linux" });
+  delete process.env.npm_execpath;
   try {
     const promise = readOutdatedDependencies("fixture", (executable, args) => {
       expect(executable).toBe("npm");
@@ -50,6 +52,8 @@ test("builds the non-Windows npm command", async () => {
     await expect(promise).resolves.toEqual({});
   } finally {
     Object.defineProperty(process, "platform", { configurable: true, value: originalPlatform });
+    if (originalNpmExecPath === undefined) delete process.env.npm_execpath;
+    else process.env.npm_execpath = originalNpmExecPath;
   }
 });
 

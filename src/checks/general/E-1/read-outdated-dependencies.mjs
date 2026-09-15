@@ -1,11 +1,10 @@
 import { spawn } from "node:child_process";
+import { npmCommand } from "../../npm-command.mjs";
 
 export function readOutdatedDependencies(root, spawnProcess = spawn) {
   return new Promise((resolve, reject) => {
-    const npmExecutable = process.platform === "win32" ? process.execPath : "npm";
-    const npmArgs = process.platform === "win32"
-      ? [`${process.env.ProgramFiles ?? "C:\\Program Files"}\\nodejs\\node_modules\\npm\\bin\\npm-cli.js`, "outdated", "--json"]
-      : ["outdated", "--json"];
+    const [npmExecutable, prefix] = npmCommand();
+    const npmArgs = [...prefix, "outdated", "--json"];
     const child = spawnProcess(npmExecutable, npmArgs, {
       cwd: root,
       shell: false,

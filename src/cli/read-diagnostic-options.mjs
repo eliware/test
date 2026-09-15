@@ -16,6 +16,10 @@ export function readDiagnosticOptions(args) {
   if (args.includes("--help") && args.includes("--version")) {
     throw new Error("--help and --version cannot be used together.");
   }
+  const informational = args.filter((argument) => argument === "--help" || argument === "--version");
+  if (informational.length > 0 && args.some((argument) => !informational.includes(argument))) {
+    throw new Error("Informational commands cannot be combined with validation arguments.");
+  }
   const modes = args.filter((argument) => modeFlags.includes(argument));
   if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
   return {

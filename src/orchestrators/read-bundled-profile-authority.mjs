@@ -72,11 +72,19 @@ export function validateAppliedProfiles(apply, authority = readBundledProfileAut
   const selected = new Set(apply);
   const unknown = apply.filter((name) => !authority.profiles[name]);
   if (unknown.length > 0) return `Unknown convention group: ${unknown.join(", ")}.`;
-  for (const name of apply) {
-    for (const parent of authority.profiles[name].extends) {
-      if (!selected.has(parent)) return `Convention groups require applying: ${parent}.`;
-    }
-  }
   if (selected.has("fork") && selected.size !== 1) return "The fork convention group excludes all other convention groups.";
   return null;
+}
+
+export function expandAppliedProfiles(apply, authority = readBundledProfileAuthority()) {
+  const expanded = [];
+  const seen = new Set();
+  const visit = (name) => {
+    if (seen.has(name)) return;
+    seen.add(name);
+    for (const parent of authority.profiles[name]?.extends ?? []) visit(parent);
+    expanded.push(name);
+  };
+  for (const name of apply) visit(name);
+  return expanded;
 }

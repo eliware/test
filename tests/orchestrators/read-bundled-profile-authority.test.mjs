@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { readBundledProfileAuthority, validateAppliedProfiles } from "../../src/orchestrators/read-bundled-profile-authority.mjs";
+import { expandAppliedProfiles, readBundledProfileAuthority, validateAppliedProfiles } from "../../src/orchestrators/read-bundled-profile-authority.mjs";
 
 test("loads the complete bundled v8 profile authority", () => {
   const authority = readBundledProfileAuthority();
@@ -11,7 +11,7 @@ test("loads the complete bundled v8 profile authority", () => {
 test("validates selected profiles against bundled inheritance", () => {
   const authority = readBundledProfileAuthority();
   expect(validateAppliedProfiles(["general", "application", "cli"], authority)).toBeNull();
-  expect(validateAppliedProfiles(["cli"], authority)).toContain("application");
+  expect(validateAppliedProfiles(["cli"], authority)).toBeNull();
   expect(validateAppliedProfiles(["general", "unknown"], authority)).toContain("Unknown");
   expect(validateAppliedProfiles(["general", "fork"], authority)).toContain("excludes");
   expect(validateAppliedProfiles(["general"])).toBeNull();
@@ -19,7 +19,15 @@ test("validates selected profiles against bundled inheritance", () => {
 
 test("rejects a selected profile whose inherited authority is absent", () => {
   const authority = { version: "8.0", profiles: { cli: { profile: "cli", document: "cli.json", version: "8.0", extends: ["application"] } } };
-  expect(validateAppliedProfiles(["cli"], authority)).toContain("application");
+  expect(() => readBundledProfileAuthority({ manifest: authority, root: "C:/does-not-exist" })).toThrow();
+});
+
+test("expands profiles with and without inherited metadata", () => {
+  expect(expandAppliedProfiles(["child"], {
+    profiles: { child: { extends: ["base"] }, base: { extends: [] } },
+  })).toEqual(["base", "child"]);
+  expect(expandAppliedProfiles(["standalone"], { profiles: { standalone: {} } })).toEqual(["standalone"]);
+  expect(expandAppliedProfiles(["general"])).toContain("general");
 });
 
 test.each([

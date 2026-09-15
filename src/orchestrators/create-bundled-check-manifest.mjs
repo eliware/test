@@ -4,6 +4,10 @@
  * considered implemented merely because it appears in an ID set.
  */
 export function createBundledCheckManifest(checks) {
+  if (checks.some(({ enforcementMode }) => enforcementMode !== undefined
+    && enforcementMode !== "deterministic" && enforcementMode !== "non-deterministic")) {
+    throw new Error("Every bundled check must declare a valid enforcement mode.");
+  }
   const records = checks.map(({ ruleId, parentRuleId = null, enforcementMode = "deterministic", modulePath }) => ({
     ruleId,
     parentRuleId,

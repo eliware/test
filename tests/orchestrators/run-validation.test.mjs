@@ -40,6 +40,27 @@ test("passes runtime options into the validation context", async () => {
   expect(calls[0][1]).toEqual(expect.objectContaining({ root: "/repo", executeJest: true, mode: "test" }));
 });
 
+test("passes every aggregate stage to the selected checks", async () => {
+  const { options, calls } = dependencies();
+  await runValidation("/repo", [], {
+    ...options,
+    executeJest: true,
+    executeLint: true,
+    executeAudit: true,
+    executePack: true,
+    executeFormat: true,
+    executePackageChecks: true,
+  });
+  expect(calls[0][1]).toEqual(expect.objectContaining({
+    executeJest: true,
+    executeLint: true,
+    executeAudit: true,
+    executePack: true,
+    executeFormat: true,
+    executePackageChecks: true,
+  }));
+});
+
 test("does not execute the plan when completeness validation fails", async () => {
   const executeValidationPlan = jest.fn();
   const { options } = dependencies({

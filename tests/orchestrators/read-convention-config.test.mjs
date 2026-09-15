@@ -11,8 +11,8 @@ test("requires a non-empty explicit apply list", () => {
   );
 });
 
-test("rejects unknown groups and missing inherited groups", () => {
-  expect(() => readConventionConfig({ eliware: { apply: ["web"] } })).toThrow("application");
+test("rejects unknown groups and expands inherited groups", () => {
+  expect(readConventionConfig({ eliware: { apply: ["web"] } }).apply).toEqual(["general", "application", "web"]);
   expect(() => readConventionConfig({ eliware: { apply: ["general", "bogus"] } })).toThrow("Unknown convention group");
   expect(() => readConventionConfig({ eliware: { apply: ["general", "fork"] } })).toThrow("excludes");
 });
@@ -23,6 +23,6 @@ test("accepts explicit inherited groups", () => {
   });
 });
 
-test("uses the bundled profile authority for inheritance", () => {
-  expect(() => readConventionConfig({ eliware: { apply: ["cli"] } })).toThrow("application");
+test("uses the bundled profile authority for implicit inheritance", () => {
+  expect(readConventionConfig({ eliware: { apply: ["cli"] } }).apply).toEqual(["general", "application", "cli"]);
 });

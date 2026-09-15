@@ -19,6 +19,12 @@ test("reports the convention-only help contract", async () => {
   expect(output[0]).not.toContain("--pack");
 });
 
+test("rejects conflicting informational and validation arguments before dispatch", async () => {
+  const output = [];
+  await expect(runCli(["--help", "--lint"], (value) => output.push(value))).resolves.toBe(18);
+  expect(output).toEqual(["Informational commands cannot be combined with validation arguments."]);
+});
+
 test("runs convention validation and reports debug timing when requested", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-"));
   await writeFile(join(root, "README.md"), "# fixture\n");
