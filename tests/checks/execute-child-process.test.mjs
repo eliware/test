@@ -15,6 +15,20 @@ test("captures child-process output until it closes", async () => {
   expect(child.on).toHaveBeenCalledWith("error", expect.any(Function));
 });
 
+test("redacts common credential formats from captured output", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], {}, () => child);
+  child.stdout.emit("data", 'password: "secret value" token=abc12345');
+  child.stderr.emit("data", "Authorization: Bearer abcdefghijkl");
+  child.emit("close", 0, null);
+  await expect(promise).resolves.toMatchObject({
+    stdout: 'password: [REDACTED] token=[REDACTED]',
+    stderr: "Authorization: Bearer [REDACTED]",
+  });
+});
+
 test("captures bounded stdout and stderr from a completed child", async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

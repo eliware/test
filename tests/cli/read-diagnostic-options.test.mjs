@@ -41,3 +41,11 @@ test("does not treat option values as focused paths and preserves them for Jest"
     jestArgs: ["--testNamePattern", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
   });
 });
+
+test("recognizes values for common Jest options", () => {
+  expect(readDiagnosticOptions([
+    "--moduleNameMapper", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs",
+  ])).toMatchObject({
+    jestArgs: ["--moduleNameMapper", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
+  });
+});

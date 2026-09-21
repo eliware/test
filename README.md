@@ -53,9 +53,8 @@ validates the package contents without publishing it.
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward extra
 arguments to Oxlint, Prettier, npm audit, or npm pack as appropriate.
 
-The public CLI accepts the corresponding `--audit` and `--pack` flags. The
-npm script forms are the supported package-level shortcuts; arbitrary npm
-script names are not CLI arguments.
+All five tool modes are public CLI modes. The npm script forms are supported
+package-level shortcuts; arbitrary npm script names are not CLI arguments.
 
 The two `--ignore-*` flags bypass enforcement and are diagnostic-only. They
 must not be used for release validation or CI and require approved

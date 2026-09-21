@@ -462,12 +462,13 @@
         }
       },
       "implementation": {
-        "source": ["src/cli/run-cli.mjs", "src/checks/general/E-1/E-1.20/run-jest.mjs"]
+        "source": ["src/cli/run-cli.mjs", "src/cli/parse-focused-arguments.mjs", "src/checks/general/E-1/E-1.20/run-jest.mjs"]
       },
       "verification": {
         "tests": [
           "tests/cli/run-cli.test.mjs",
           "tests/cli/read-diagnostic-options.test.mjs",
+          "tests/cli/parse-focused-arguments.test.mjs",
           "tests/checks/general/E-1/E-1.20/build-jest-arguments.test.mjs",
           "tests/checks/general/E-1/E-1.20/validate-focused-test-path.test.mjs",
           "tests/checks/general/E-1/E-1.20/run-jest.test.mjs"
@@ -527,6 +528,7 @@
           "src/checks/general/E-1/E-1.20/E-1.20.10/parse-summary-coverage.mjs",
           "src/checks/general/E-1/E-1.20/E-1.20.10/parse-text-coverage.mjs",
           "src/checks/general/E-1/E-1.20/E-1.20.10/format-coverage-gaps.mjs"
+          ,"src/checks/general/E-1/E-1.20/cleanup-coverage.mjs"
         ]
       },
       "verification": {
@@ -536,6 +538,7 @@
           "tests/checks/general/E-1/E-1.20/E-1.20.10/coverage-evidence-selection.test.mjs",
           "tests/checks/general/E-1/E-1.20/E-1.20.10/parse-detailed-coverage.test.mjs",
           "tests/checks/general/E-1/E-1.20/E-1.20.10/coverage-report-readers.test.mjs"
+          ,"tests/checks/general/E-1/E-1.20/cleanup-coverage.test.mjs"
         ],
         "commands": ["npm test"]
       }
@@ -586,6 +589,9 @@
           "src/checks/general/E-1/E-1.20/run-npm-audit.mjs",
           "src/checks/npm-published/E-1.140/run-npm-pack.mjs",
           "src/checks/general/E-1/E-1.4/run-oxlint.mjs",
+          "src/checks/execute-child-process.mjs",
+          "src/checks/redact-process-output.mjs",
+          "src/checks/general/E-1/E-1.20/terminate-child.mjs",
           "src/checks/run-prettier.mjs"
         ]
       },
@@ -599,6 +605,8 @@
           "tests/checks/general/E-1/E-1.4/run-oxlint.test.mjs",
           "tests/checks/general/E-1/E-1.20/run-npm-audit.test.mjs",
           "tests/checks/npm-published/E-1.140/run-npm-pack.test.mjs"
+          ,"tests/checks/execute-child-process.test.mjs",
+          "tests/checks/general/E-1/E-1.20/terminate-child.test.mjs"
         ],
         "commands": ["npm test"]
       }

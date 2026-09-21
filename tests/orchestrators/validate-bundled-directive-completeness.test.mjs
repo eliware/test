@@ -40,3 +40,9 @@ test("rejects an invalid enforcement mode instead of treating it as an implement
     authority,
   )).toThrow("valid enforcement mode");
 });
+
+test("rejects a deterministic check whose identity disagrees with its module path", () => {
+  expect(() => validateBundledDirectiveCompleteness(
+    [{ ...check("E-9"), modulePath: "general/E-1.mjs" }], ["general"], authority,
+  )).toThrow("no authority entry");
+});

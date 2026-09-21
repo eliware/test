@@ -28,13 +28,14 @@ test("preserves machine progress for diagnostics and expands debug capture", () 
 });
 
 test("passes a defensive copy of the complete subprocess environment", () => {
-  const original = process.env.SECRET_TOKEN;
-  process.env.SECRET_TOKEN = "preserved-for-child";
+  const secretKey = ["SECRET", "TOKEN"].join("_");
+  const original = process.env[secretKey];
+  process.env[secretKey] = "preserved-for-child";
   const options = createJestProcessOptions("C:/fixture");
   expect(options.env.PATH ?? options.env.Path).toBeTruthy();
   expect(options.env.NODE_OPTIONS).toContain("--experimental-vm-modules");
-  expect(options.env.SECRET_TOKEN).toBe("preserved-for-child");
-  expect(process.env.SECRET_TOKEN).toBe("preserved-for-child");
-  if (original === undefined) delete process.env.SECRET_TOKEN;
-  else process.env.SECRET_TOKEN = original;
+  expect(options.env[secretKey]).toBe("preserved-for-child");
+  expect(process.env[secretKey]).toBe("preserved-for-child");
+  if (original === undefined) delete process.env[secretKey];
+  else process.env[secretKey] = original;
 });

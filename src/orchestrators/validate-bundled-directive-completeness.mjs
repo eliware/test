@@ -10,7 +10,11 @@ export function validateBundledDirectiveCompleteness(checks, groups, authority =
   const unregistered = manifest.checks
     .filter(({ enforcementMode, modulePath }) => enforcementMode === "deterministic"
       && selectedProfiles.has(modulePath.split("/")[0]))
-    .filter(({ modulePath }) => !authority.profiles[modulePath.split("/")[0]]);
+    .filter(({ ruleId, modulePath }) => {
+      const profile = modulePath.split("/")[0];
+      const filename = modulePath.split("/").at(-1)?.replace(/\.mjs$/u, "");
+      return !authority.profiles[profile] || filename !== ruleId;
+    });
   if (unregistered.length) throw new Error(`Deterministic bundled checks have no authority entry: ${unregistered.join(", ")}.`);
   return true;
 }

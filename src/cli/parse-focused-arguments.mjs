@@ -1,8 +1,13 @@
 const valueOptions = new Set([
   "--config", "--coverageDirectory", "--coverageThreshold", "--collectCoverageFrom",
-  "--changedSince", "--findRelatedTests", "--maxWorkers", "--outputFile", "--preset",
-  "--rootDir", "--selectProjects", "--testEnvironment", "--testMatch", "--testNamePattern",
-  "--testPathPattern", "--testRegex", "--testTimeout", "--watchPathIgnorePatterns",
+  "--changedSince", "--findRelatedTests", "--maxConcurrency", "--maxWorkers", "--outputFile",
+  "--preset", "--projects", "--rootDir", "--runTestsByPath", "--selectProjects", "--shard",
+  "--testEnvironment", "--testMatch", "--testNamePattern", "--testPathPattern", "--testRegex",
+  "--testRunner", "--testSequencer", "--testTimeout", "--transform", "--transformIgnorePatterns",
+  "--watchPathIgnorePatterns", "--reporters", "--env", "--resolver", "--setupFiles",
+  "--setupFilesAfterEnv", "--moduleNameMapper", "--modulePathIgnorePatterns", "--testLocationInResults",
+  "--coverageReporters", "--coveragePathIgnorePatterns", "--snapshotSerializers", "--watchPlugins",
+  "-c", "-w", "-t", "-o",
 ]);
 
 export function parseFocusedArguments(args = []) {
