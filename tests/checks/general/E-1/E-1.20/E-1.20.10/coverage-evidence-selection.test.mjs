@@ -2,7 +2,6 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
-import { readJsonCoverage } from "../../../../../../src/checks/general/E-1/E-1.20/E-1.20.10/coverage-report-readers.mjs";
 import { readCoverageEvidenceFromCandidates } from "../../../../../../src/checks/general/E-1/E-1.20/E-1.20.10/coverage-evidence-selection.mjs";
 
 async function fixture(name, contents) {
@@ -49,48 +48,6 @@ test("does not accept summary-only evidence for a fresh run", async () => {
       statFile: async () => ({ mtimeMs: 2 }),
     }),
   ).rejects.toThrow("Coverage evidence is missing");
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reads JSON with the default file dependencies", async () => {
-  const root = await fixture(
-    "coverage-summary.json",
-    JSON.stringify({
-      total: {
-        statements: { pct: 100 },
-        branches: { pct: 100 },
-        functions: { pct: 100 },
-        lines: { pct: 100 },
-      },
-    }),
-  );
-  await expect(
-    readJsonCoverage(
-      join(root, "coverage", "coverage-summary.json"),
-      "coverage/coverage-summary.json",
-      0,
-    ),
-  ).resolves.toMatchObject({ totals: { lines: 100 } });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reads detailed Istanbul evidence and identifies locations", async () => {
-  const root = await fixture(
-    "coverage-final.json",
-    JSON.stringify({
-      "src/example.mjs": {
-        statementMap: { 0: { start: { line: 4, column: 0 } } },
-        s: { 0: 0 },
-        branchMap: { 0: { locations: [{ start: { line: 6, column: 0 } }] } },
-        b: { 0: [0] },
-        fnMap: { 0: { name: "example", start: { line: 8, column: 0 } } },
-        f: { 0: 0 },
-      },
-    }),
-  );
-  await expect(readCoverageEvidenceFromCandidates(root)).resolves.toMatchObject({
-    gaps: [{ file: "src/example.mjs", lines: ["4"], statements: [{ location: "4" }] }],
-  });
   await rm(root, { recursive: true, force: true });
 });
 

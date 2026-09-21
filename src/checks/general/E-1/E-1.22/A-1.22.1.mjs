@@ -4,6 +4,7 @@ import { promisify } from "node:util";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 import { readTrackedPaths } from "../E-1.6/read-tracked-paths.mjs";
+import { hasExplicitIgnoreRule, prohibitedTrackedPath } from "./git-ignore-policy.mjs";
 
 export const ruleId = "A-1.22.1";
 export const parentRuleId = "E-1.22";
@@ -30,16 +31,6 @@ export async function gitIgnores(root, path, runGit = execFileAsync) {
   }
 }
 
-function prohibitedTrackedPath(path) {
-  const normalized = path.replaceAll("\\", "/").toLowerCase();
-  const segments = normalized.split("/");
-  const basename = segments.at(-1);
-  return basename === ".env" || (basename.startsWith(".env.") && basename !== ".env.example") ||
-    segments.includes("node_modules") || segments.includes(".git") || segments.includes("coverage") || segments.includes("dist") ||
-    segments.includes("build") || segments.includes(".cache") || segments.includes(".vscode") ||
-    segments.includes(".idea") || normalized.endsWith(".pem") || normalized.endsWith(".key");
-}
-
 export async function run({ root, checkIgnored = gitIgnores, trackedPaths = readTrackedPaths }) {
   let ignoreText;
   try {
@@ -64,11 +55,4 @@ export async function run({ root, checkIgnored = gitIgnores, trackedPaths = read
   const violations = tracked.filter(prohibitedTrackedPath);
   if (violations.length > 0) return fail(ruleId, `Prohibited ignored paths are tracked: ${violations.join(", ")}.`);
   return pass(ruleId);
-}
-
-function hasExplicitIgnoreRule(ignoreText, path) {
-  const normalized = path.replaceAll("\\", "/");
-  const first = normalized.split("/")[0];
-  if (first.startsWith(".env")) return /(?:^|\r?\n)\s*\.env(?:\*|\b)/u.test(ignoreText);
-  return new RegExp(`(?:^|\\r?\\n)\\s*(?:/)?${first.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}(?:/|\\s|$)`, "u").test(ignoreText);
 }

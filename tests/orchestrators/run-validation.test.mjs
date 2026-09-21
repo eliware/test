@@ -70,6 +70,16 @@ test("passes every aggregate stage to the selected checks", async () => {
   }));
 });
 
+test("executes only Jest for a focused test path", async () => {
+  const checks = [{ ruleId: "E-1.20" }, { ruleId: "E-1.20.16" }];
+  const { options, calls } = dependencies({
+    selectConventionChecks: jest.fn(async () => checks),
+    discoverAllChecks: jest.fn(async () => checks),
+  });
+  await runValidation("/repo", [], { ...options, jestArgs: ["tests/example.test.mjs"] });
+  expect(calls[0][0]).toEqual([{ ruleId: "E-1.20" }]);
+});
+
 test("does not execute the plan when completeness validation fails", async () => {
   const executeValidationPlan = jest.fn();
   const { options } = dependencies({

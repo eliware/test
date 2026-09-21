@@ -76,10 +76,10 @@
     ]
   },
   "dependencies": {
-    "@babel/parser": "^8.0.5",
-    "jest": "^30.5.1",
-    "oxlint": "^1.83.0",
-    "prettier": "^3.9.6",
+    "@babel/parser": "^7.29.9",
+    "jest": "^30.5.2",
+    "oxlint": "^1.85.0",
+    "prettier": "^3.9.8",
     "yaml": "^2.8.1"
   },
   "eliware": {

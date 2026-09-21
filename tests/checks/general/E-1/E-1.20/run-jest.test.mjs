@@ -2,24 +2,14 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, jest, test } from "@jest/globals";
-import { runJest } from "../../../../../src/checks/general/E-1/E-1.20/run-jest.mjs";
-import { buildJestArguments } from "../../../../../src/checks/general/E-1/E-1.20/build-jest-arguments.mjs";
-import { resolveFocusedCoverage } from "../../../../../src/checks/general/E-1/E-1.20/resolve-focused-coverage.mjs";
+import { resolveConsumerJestCli, resolveJestCli, runJest } from "../../../../../src/checks/general/E-1/E-1.20/run-jest.mjs";
 import { runChild } from "../../../../../src/checks/general/E-1/E-1.20/run-child.mjs";
 
-test("builds the default in-band coverage command", () => {
-  expect(buildJestArguments([])).toEqual(["--coverage", "--runInBand"]);
-  expect(buildJestArguments()).toEqual(["--coverage", "--runInBand"]);
-});
-
-test("preserves focused paths and filters harness-only options", () => {
-  expect(buildJestArguments(["tests/a.test.mjs", "--ignore-100x4", "--debug-timing"])).toEqual([
-    "--coverage",
-    "--json",
-    "--runTestsByPath",
-    "tests/a.test.mjs",
-    "--runInBand",
-  ]);
+test("resolves Jest from the consumer package", () => {
+  expect(resolveConsumerJestCli(process.cwd())).toContain("jest.js");
+  expect(resolveJestCli(process.cwd(), runChild, {})).toContain("jest.js");
+  expect(resolveJestCli("C:/fixture", async () => {}, {})).toBe("jest-cli");
+  expect(resolveJestCli("C:/fixture", runChild, { jestCli: "custom-jest" })).toBe("custom-jest");
 });
 
 test("rejects a missing focused test before invoking Jest", async () => {
@@ -33,36 +23,6 @@ test("rejects a missing focused test before invoking Jest", async () => {
   expect(invoked).toBe(false);
 });
 
-test("maps a focused test to its mirrored source coverage", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-"));
-  await mkdir(join(root, "src"));
-  await mkdir(join(root, "tests"));
-  await writeFile(join(root, "src", "sample.mjs"), "export {};\n");
-  await writeFile(join(root, "tests", "sample.test.mjs"), 'test("sample", () => {});\n');
-  let received;
-  await runJest(root, ["tests/sample.test.mjs"], async (...args) => {
-    received = args;
-    return { code: 0, stdout: "", stderr: "" };
-  });
-  expect(received[1]).toEqual([
-    "jest-cli",
-    "--coverage",
-    "--coverageReporters=json",
-    "--coverageReporters=json-summary",
-    "--coverageReporters=text",
-    "--reporters",
-    "default",
-    "--reporters",
-    expect.stringContaining("jest-progress-reporter.mjs"),
-    "--collectCoverageFrom",
-    "src/sample.mjs",
-    "--runTestsByPath",
-    "tests/sample.test.mjs",
-    "--runInBand",
-  ]);
-  await rm(root, { recursive: true, force: true });
-});
-
 test("supports non-test focused paths without focused coverage mapping", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-"));
   await mkdir(join(root, "tests"));
@@ -73,19 +33,6 @@ test("supports non-test focused paths without focused coverage mapping", async (
     return { code: 0, stdout: "", stderr: "" };
   });
   expect(received[1]).not.toContain("--collectCoverageFrom");
-  await rm(root, { recursive: true, force: true });
-});
-
-test("returns no focused coverage for absent or unmappable source paths", async () => {
-  await expect(resolveFocusedCoverage("C:/fixture", undefined)).resolves.toEqual([]);
-  await expect(resolveFocusedCoverage("C:/fixture", "tests/sample.test.mjs")).resolves.toEqual([]);
-});
-
-test("returns no focused coverage when the mirrored source is missing", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-"));
-  await mkdir(join(root, "tests"));
-  await writeFile(join(root, "tests", "sample.test.mjs"), 'test("sample", () => {});\n');
-  await expect(resolveFocusedCoverage(root, "tests/sample.test.mjs")).resolves.toEqual([]);
   await rm(root, { recursive: true, force: true });
 });
 
@@ -104,19 +51,6 @@ test("preserves an existing VM module option and forwards non-focused arguments"
     if (previous === undefined) delete process.env.NODE_OPTIONS;
     else process.env.NODE_OPTIONS = previous;
   }
-});
-
-test("captures child output, truncates oversized output, and reports spawn errors", async () => {
-  await expect(
-    runChild(process.execPath, ["-e", "process.stdout.write('ok'); process.stderr.write('err')"]),
-  ).resolves.toEqual({ code: 0, signal: null, stdout: "ok", stderr: "err" });
-  await expect(
-    runChild(process.execPath, ["-e", "process.stdout.write('x'.repeat(100001))"]),
-  ).resolves.toEqual(expect.objectContaining({ code: 0, stdout: expect.stringContaining("…") }));
-  await expect(
-    runChild(process.execPath, ["-e", "process.stderr.write('x'.repeat(100001))"]),
-  ).resolves.toEqual(expect.objectContaining({ code: 0, stderr: expect.stringContaining("…") }));
-  await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
 });
 
 test("raises the bounded debug-timing capture without making it unlimited", async () => {

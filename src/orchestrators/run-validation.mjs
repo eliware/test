@@ -1,11 +1,10 @@
-import { readConventionConfig } from "./read-convention-config.mjs";
+import { executeValidationPlan } from "./execute-validation-plan.mjs";
 import { selectConventionChecks } from "./select-convention-checks.mjs";
 import { loadValidationTarget } from "./load-validation-target.mjs";
 import { prepareValidationExemptions } from "./prepare-validation-exemptions.mjs";
-import { createValidationContext } from "./create-validation-context.mjs";
-import { executeValidationPlan } from "./execute-validation-plan.mjs";
 import { discoverAllChecks } from "./discover-checks.mjs";
 import { validateBundledDirectiveCompleteness } from "./validate-bundled-directive-completeness.mjs";
+import { prepareValidationPlan } from "./prepare-validation-plan.mjs";
 
 export const validationDependencies = Object.freeze({
   loadValidationTarget,
@@ -30,12 +29,12 @@ export async function runValidation(root, ignoredRuleIds, options = {}) {
     prepareValidationExemptions: prepareExemptions,
     executeValidationPlan: executePlan,
   } = dependencies;
-  const packageJson = await loadTarget(root);
-  const conventions = readConventionConfig(packageJson);
-  const allChecks = await discoverChecks();
-  const checks = await selectChecks(conventions, allChecks);
-  await validateCompleteness(allChecks, conventions.apply);
-  const exemptions = prepareExemptions(packageJson, allChecks, ignoredRuleIds);
-  const context = createValidationContext(root, packageJson, options);
-  return executePlan(checks, context, exemptions);
+  const plan = await prepareValidationPlan(root, ignoredRuleIds, options, {
+    loadValidationTarget: loadTarget,
+    selectConventionChecks: selectChecks,
+    discoverAllChecks: discoverChecks,
+    validateBundledDirectiveCompleteness: validateCompleteness,
+    prepareValidationExemptions: prepareExemptions,
+  });
+  return executePlan(plan.checks, plan.context, plan.exemptions);
 }

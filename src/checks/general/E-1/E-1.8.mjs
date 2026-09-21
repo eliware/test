@@ -6,6 +6,7 @@ import { findRepositoryFiles } from "./find-repository-files.mjs";
 import { validateMailboxOwner } from "./validate-mailbox-owner.mjs";
 import { validateMailboxTemplates } from "./validate-mailbox-templates.mjs";
 import { isIgnoredByGit } from "./check-git-ignore.mjs";
+import { resolveMailboxTemplateFiles } from "./resolve-mailbox-template-files.mjs";
 
 export const ruleId = "E-1.8";
 export const parentRuleId = "E-1";
@@ -43,9 +44,11 @@ export async function run({ root, packageJson, trackedFiles, findFiles = findRep
   } catch (error) {
     return fail(ruleId, `Environment files could not be inspected: ${error.message}`);
   }
-  const templateFiles = Array.isArray(gitTracked)
-    ? gitTracked
-    : (await Promise.all(files.map(async (file) => (await checkIgnored(root, file) ? null : file)))).filter(Boolean);
+  const templateFiles = await resolveMailboxTemplateFiles(
+    files,
+    gitTracked,
+    (file) => checkIgnored(root, file),
+  );
   const templateError = await validateMailboxTemplates(root, templateFiles);
   if (templateError) return fail(ruleId, templateError);
   return pass(ruleId);

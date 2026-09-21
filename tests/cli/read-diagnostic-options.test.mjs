@@ -49,3 +49,13 @@ test("recognizes values for common Jest options", () => {
     jestArgs: ["--moduleNameMapper", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
   });
 });
+
+test("rejects non-string arguments", () => {
+  expect(() => readDiagnosticOptions([null])).toThrow("Unsupported validation argument");
+});
+
+test("rejects informational commands combined with validation", () => {
+  expect(() => readDiagnosticOptions(["--help", "--lint"])).toThrow(
+    "Informational commands cannot be combined",
+  );
+});

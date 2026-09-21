@@ -26,3 +26,21 @@ test("keeps aggregate package stages enabled when Jest execution is independentl
   expect(createValidationRunOptions([], { mode: null, jestArgs: [] }, { executeJest: false }, {}, undefined))
     .toEqual(expect.objectContaining({ executeJest: false, executePackageChecks: true, mode: null }));
 });
+
+test("disables unrelated stages for focused Jest execution", () => {
+  expect(createValidationRunOptions(
+    [], { mode: null, jestArgs: ["tests/example.test.mjs"] }, {}, {}, undefined,
+  )).toEqual(expect.objectContaining({
+    executeJest: true,
+    executeLint: false,
+    executeFormat: false,
+    executeAudit: false,
+    executePack: false,
+    executePackageChecks: false,
+  }));
+});
+
+test("handles diagnostic options without Jest arguments", () => {
+  expect(createValidationRunOptions([], { mode: null }, {}, {}, undefined))
+    .toEqual(expect.objectContaining({ executeJest: true, jestArgs: undefined }));
+});

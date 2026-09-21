@@ -12,7 +12,7 @@ Repository requirements are owned by eliware/conventions, documentation by eliwa
 
 # Repository identity
 
-This is the Eliware Test repository: a Node.js 26 validation CLI implemented as native ESM `.mjs` modules.
+Purpose: provide the Eliware Test repository's Node.js 26 validation CLI, implemented as native ESM `.mjs` modules.
 
 # Scope and boundaries
 

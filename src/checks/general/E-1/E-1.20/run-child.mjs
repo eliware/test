@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import { handleChildProgress } from "./handle-child-progress.mjs";
 import { createProgressTimeout } from "./create-progress-timeout.mjs";
 import { terminateChild } from "./terminate-child.mjs";
-import { redactProcessOutput } from "../../../redact-process-output.mjs";
+import { createChildOutputCapture } from "./capture-child-output.mjs";
 
 export function runChild(command, args, options = {}) {
   const maxOutputLength = options.maxOutputLength;
@@ -15,18 +15,7 @@ export function runChild(command, args, options = {}) {
       shell: false,
       detached: process.platform !== "win32",
     });
-    const stdoutChunks = [];
-    const stderrChunks = [];
-    let stdoutLength = 0;
-    let stderrLength = 0;
-    let streamed = 0;
-    const stream = (callback, text) => {
-      if (!callback || streamed >= outputLimit) return;
-      const remaining = outputLimit - streamed;
-      const bounded = redactProcessOutput(text).slice(0, remaining);
-      streamed += bounded.length;
-      callback(bounded);
-    };
+    const output = createChildOutputCapture(outputLimit, options);
     const settleError = (error) => {
       timeout.stop();
       reject(error);
@@ -41,33 +30,20 @@ export function runChild(command, args, options = {}) {
     });
     const resetProgressTimer = timeout.reset;
     timeout.reset();
-    let capturedLength = 0;
-    const capture = (chunks, text) => {
-      const remaining = Math.max(0, outputLimit - capturedLength);
-      const bounded = text.length > remaining && remaining > 0
-        ? `${text.slice(0, remaining - 1)}…`.slice(0, remaining)
-        : text.slice(0, remaining);
-      if (bounded) chunks.push(bounded);
-      capturedLength += bounded.length;
-      return bounded.length;
-    };
     child.stdout.on("data", (chunk) => {
-      const text = redactProcessOutput(chunk.toString());
-      stream(options.onStdout, text);
-      stdoutLength += capture(stdoutChunks, text);
+      output.stdout(chunk.toString());
     });
     child.stderr.on("data", (chunk) => {
-      const text = redactProcessOutput(chunk.toString());
+      const text = chunk.toString();
       handleChildProgress(text, { ...options, resetProgressTimer });
-      stream(options.onStderr, text);
-      stderrLength += capture(stderrChunks, options.captureStderr?.(text) ?? text);
+      output.stderr(text);
     });
     child.on("error", (error) => {
       settleError(error);
     });
     child.on("close", (code, signal) => {
       timeout.stop();
-      resolve({ code, signal, stdout: stdoutChunks.join(""), stderr: stderrChunks.join(""), ...(timeout.wasTriggered() ? { timedOut: true } : {}) });
+      resolve({ code, signal, ...output.result(), ...(timeout.wasTriggered() ? { timedOut: true } : {}) });
     });
   });
 }

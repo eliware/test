@@ -15,3 +15,9 @@ test("maps an existing mirrored test to its source coverage", async () => {
   ]);
   await rm(root, { recursive: true, force: true });
 });
+
+test("returns no coverage when the mirrored source does not exist", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
+  await expect(resolveFocusedCoverage(root, "tests/missing.test.mjs")).resolves.toEqual([]);
+  await rm(root, { recursive: true, force: true });
+});
