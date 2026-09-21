@@ -27,9 +27,14 @@ test("preserves machine progress for diagnostics and expands debug capture", () 
   expect(output).toEqual(["[eliware-test-progress] start suite\n[eliware-test] Running suite...\n"]);
 });
 
-test("passes only documented subprocess environment variables", () => {
+test("passes a defensive copy of the complete subprocess environment", () => {
+  const original = process.env.SECRET_TOKEN;
+  process.env.SECRET_TOKEN = "preserved-for-child";
   const options = createJestProcessOptions("C:/fixture");
   expect(options.env.PATH ?? options.env.Path).toBeTruthy();
   expect(options.env.NODE_OPTIONS).toContain("--experimental-vm-modules");
-  expect(options.env.SECRET_TOKEN).toBeUndefined();
+  expect(options.env.SECRET_TOKEN).toBe("preserved-for-child");
+  expect(process.env.SECRET_TOKEN).toBe("preserved-for-child");
+  if (original === undefined) delete process.env.SECRET_TOKEN;
+  else process.env.SECRET_TOKEN = original;
 });

@@ -50,6 +50,9 @@ node bin/eliware-test.mjs tests/example.test.mjs
 `--format` mutates files; `--format-check` only validates formatting. `--pack`
 validates the package contents without publishing it.
 
+`--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward extra
+arguments to Oxlint, Prettier, npm audit, or npm pack as appropriate.
+
 The public CLI accepts the corresponding `--audit` and `--pack` flags. The
 npm script forms are the supported package-level shortcuts; arbitrary npm
 script names are not CLI arguments.

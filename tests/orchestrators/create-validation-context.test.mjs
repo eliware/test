@@ -4,19 +4,26 @@ import { createValidationContext } from "../../src/orchestrators/create-validati
 test("creates the complete execution context from validation options", () => {
   const timing = {};
   const writeOutput = () => {};
-  expect(createValidationContext("root", { name: "fixture" }, {
-    executeJest: true,
-    executeLint: true,
-    executeAudit: true,
-    executePack: true,
-    executePackageChecks: true,
-    executeFormat: true,
-    mode: "focused",
-    modeRuleId: null,
-    jestArgs: ["tests/example.test.mjs"],
-    timing,
-    writeOutput,
-  })).toEqual({
+  expect(
+    createValidationContext(
+      "root",
+      { name: "fixture" },
+      {
+        executeJest: true,
+        executeLint: true,
+        executeAudit: true,
+        executePack: true,
+        executePackageChecks: true,
+        executeFormat: true,
+        mode: "focused",
+        modeRuleId: null,
+        jestArgs: ["tests/example.test.mjs"],
+        toolArgs: ["--watch"],
+        timing,
+        writeOutput,
+      },
+    ),
+  ).toEqual({
     root: "root",
     packageJson: { name: "fixture" },
     executeJest: true,
@@ -28,6 +35,7 @@ test("creates the complete execution context from validation options", () => {
     mode: "focused",
     modeRuleId: null,
     jestArgs: ["tests/example.test.mjs"],
+    toolArgs: ["--watch"],
     timing,
     writeOutput,
   });
@@ -46,6 +54,7 @@ test("creates default options without enabling stages", () => {
     mode: null,
     modeRuleId: null,
     jestArgs: [],
+    toolArgs: [],
     timing: undefined,
     writeOutput: undefined,
   });

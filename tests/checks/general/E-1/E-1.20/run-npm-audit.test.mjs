@@ -16,12 +16,30 @@ test("runs npm audit in the repository root", async () => {
 
 test("supports an injected executable resolver", async () => {
   const calls = [];
-  await runNpmAudit("C:\\repo", async (...args) => {
-    calls.push(args);
-    return { code: 0, signal: null, stdout: "", stderr: "" };
-  }, () => ["npm", ["custom-cli.js"]]);
+  await runNpmAudit(
+    "C:\\repo",
+    async (...args) => {
+      calls.push(args);
+      return { code: 0, signal: null, stdout: "", stderr: "" };
+    },
+    () => ["npm", ["custom-cli.js"]],
+  );
   expect(calls[0][0]).toBe("npm");
   expect(calls[0][1][0]).toBe("custom-cli.js");
+});
+
+test("forwards additional npm audit arguments", async () => {
+  const calls = [];
+  await runNpmAudit(
+    "C:\\repo",
+    async (...args) => {
+      calls.push(args);
+      return { code: 0 };
+    },
+    () => ["npm", []],
+    ["--omit=dev"],
+  );
+  expect(calls[0][1]).toEqual(["audit", "--json", "--audit-level=high", "--omit=dev"]);
 });
 
 test("uses npm's executable when npm invokes the harness", async () => {

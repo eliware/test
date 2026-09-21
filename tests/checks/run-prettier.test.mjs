@@ -9,7 +9,13 @@ test("uses the default formatter runner with an injected child adapter", async (
   });
 
   await expect(
-    runPrettier("C:\\repo", { write: true }, undefined, async () => "C:\\prettier.cjs", () => child),
+    runPrettier(
+      "C:\\repo",
+      { write: true },
+      undefined,
+      async () => "C:\\prettier.cjs",
+      () => child,
+    ),
   ).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
 });
 
@@ -23,4 +29,24 @@ test("uses default formatter resolution when a runner override is supplied", asy
   ).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
   expect(calls[0][0]).toBe(process.execPath);
   expect(calls[0][1]).toEqual(expect.arrayContaining(["--check", "."]));
+});
+
+test("forwards additional Prettier arguments", async () => {
+  const calls = [];
+  await runPrettier(
+    "C:/repo",
+    { extraArgs: ["--ignore-path", "custom.ignore"] },
+    async (...args) => {
+      calls.push(args);
+      return { code: 0, signal: null, stdout: "", stderr: "" };
+    },
+    async () => "C:/prettier.cjs",
+  );
+  expect(calls[0][1]).toEqual([
+    "C:/prettier.cjs",
+    "--check",
+    ".",
+    "--ignore-path",
+    "custom.ignore",
+  ]);
 });

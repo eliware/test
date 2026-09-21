@@ -1,3 +1,3 @@
-export function buildOxlintArguments() {
-  return ["--deny-warnings", "."];
+export function buildOxlintArguments(extraArgs = []) {
+  return ["--deny-warnings", ".", ...extraArgs];
 }

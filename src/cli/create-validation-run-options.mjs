@@ -16,6 +16,7 @@ export function createValidationRunOptions(args, diagnosticOptions, options, tim
     mode: diagnosticOptions.mode,
     modeRuleId: modeRuleIds[diagnosticOptions.mode] ?? null,
     jestArgs: diagnosticOptions.jestArgs,
+    toolArgs: diagnosticOptions.toolArgs,
     timing,
     writeOutput: args.includes("--debug-timing") ? write : undefined,
   };

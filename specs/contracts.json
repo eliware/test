@@ -83,6 +83,7 @@
       "dos": [
         "Keep bin/eliware-test.mjs limited to process wiring and pass process.argv.slice(2) to the CLI.",
         "Treat --help and --version as informational commands that perform no validation and return 0.",
+        "Expose exactly these public harness commands and diagnostic options: --help, --version, --debug-timing, --lint, --format, --format-check, --audit, and --pack.",
         "Use a writer callback for output, defaulting to console.log."
       ],
       "donts": [
@@ -94,7 +95,7 @@
       "contract": {
         "purpose": "Define the public Test entry behavior for informational CLI commands.",
         "inputs": {
-          "args": "An ordered array of CLI argument strings.",
+          "args": "An ordered array of CLI argument strings. Supported public options are --help, --version, --debug-timing, --lint, --format, --format-check, --audit, and --pack.",
           "write": "Optional function receiving one output string at a time.",
           "root": "Optional validation root; defaults to process.cwd()."
         },
@@ -127,6 +128,7 @@
         "Run the bundled convention-validation path for a normal invocation.",
         "Return the stable failure code associated with the failed validation stage, or 18 for convention, configuration, argument, or harness failures.",
         "Preserve every failed-check diagnostic and optionally append timing diagnostics when requested.",
+        "For --lint, --format, --format-check, --audit, and --pack, forward additional non-wrapper CLI arguments unchanged to the corresponding Oxlint, Prettier, or npm operation.",
         "When validation succeeds with no diagnostics, emit exactly one line: All tests passed | 100x4 coverage | 0 lint warnings.",
         "When --debug-timing is enabled, report completed pipeline stages with total and since-previous-step durations.",
         "When --debug-timing is enabled, report the slowest Jest test files and their slowest individual test cases."
@@ -144,7 +146,7 @@
       "contract": {
         "purpose": "Define how Test runs validation and exposes diagnostics.",
         "inputs": {
-          "args": "CLI arguments after informational handling.",
+          "args": "CLI arguments after informational handling; for --lint, --format, --format-check, --audit, and --pack, additional non-wrapper arguments are forwarded unchanged to the selected underlying tool operation.",
           "root": "The target repository path."
         },
         "outputs": {
@@ -465,6 +467,9 @@
       "verification": {
         "tests": [
           "tests/cli/run-cli.test.mjs",
+          "tests/cli/read-diagnostic-options.test.mjs",
+          "tests/checks/general/E-1/E-1.20/build-jest-arguments.test.mjs",
+          "tests/checks/general/E-1/E-1.20/validate-focused-test-path.test.mjs",
           "tests/checks/general/E-1/E-1.20/run-jest.test.mjs"
         ],
         "commands": ["npm test"]
@@ -527,7 +532,10 @@
       "verification": {
         "tests": [
           "tests/checks/general/E-1/E-1.20.test.mjs",
-          "tests/checks/general/E-1/E-1.20/E-1.20.10.test.mjs"
+          "tests/checks/general/E-1/E-1.20/E-1.20.10.test.mjs",
+          "tests/checks/general/E-1/E-1.20/E-1.20.10/coverage-evidence-selection.test.mjs",
+          "tests/checks/general/E-1/E-1.20/E-1.20.10/parse-detailed-coverage.test.mjs",
+          "tests/checks/general/E-1/E-1.20/E-1.20.10/coverage-report-readers.test.mjs"
         ],
         "commands": ["npm test"]
       }
@@ -585,7 +593,12 @@
         "tests": [
           "tests/cli/run-cli.test.mjs",
           "tests/orchestrators/run-convention-stage.test.mjs",
-          "tests/checks/run-prettier.test.mjs"
+          "tests/checks/run-prettier.test.mjs",
+          "tests/checks/general/E-1/E-1.20/create-jest-process-options.test.mjs",
+          "tests/checks/general/E-1/E-1.20/run-jest.test.mjs",
+          "tests/checks/general/E-1/E-1.4/run-oxlint.test.mjs",
+          "tests/checks/general/E-1/E-1.20/run-npm-audit.test.mjs",
+          "tests/checks/npm-published/E-1.140/run-npm-pack.test.mjs"
         ],
         "commands": ["npm test"]
       }

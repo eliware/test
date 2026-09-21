@@ -244,11 +244,12 @@
             {
               "id": "A-18.7.2",
               "dos": [
-                "Expose only the current public harness commands and diagnostic options: --help, --version, --debug-timing, --ignore-100x4, and --ignore-monolith-limits.",
+                "Expose exactly these public harness commands and diagnostic options: --help, --version, --debug-timing, --lint, --format, --format-check, --audit, and --pack.",
+                "For --lint, --format, --format-check, --audit, and --pack, forward additional non-wrapper CLI arguments unchanged to the corresponding Oxlint, Prettier, or npm operation.",
                 "Run the bundled convention-check execution path for a normal invocation and return its stable result and diagnostics through the public CLI contract."
               ],
               "donts": [
-                "Do not expose direct Jest, Oxlint, npm audit, npm pack, formatter, or other implementation commands as the consumer interface."
+                "Do not expose direct Jest, Oxlint, formatter, or other implementation commands as the consumer interface; --audit and --pack are supported public harness modes."
               ]
             },
             {

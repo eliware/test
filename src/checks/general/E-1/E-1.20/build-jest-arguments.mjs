@@ -1,6 +1,6 @@
-export function focusedPathFrom(args = []) {
-  return args.find((argument) => /^(?:tests?|specs?)(?:[\\/]|$)/.test(argument));
-}
+import { focusedPathFrom } from "../../../../cli/parse-focused-arguments.mjs";
+
+export { focusedPathFrom };
 
 export function buildJestArguments(args = []) {
   const focusedPath = focusedPathFrom(args);

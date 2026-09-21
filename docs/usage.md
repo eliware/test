@@ -28,6 +28,17 @@ eliware-test --help
 eliware-test --version
 ```
 
+The normal test command runs the configured validation stages. The five public
+tool modes forward additional arguments to their underlying tools:
+
+```text
+eliware-test --lint --fix
+eliware-test --format --ignore-path custom.ignore
+eliware-test --format-check --ignore-path custom.ignore
+eliware-test --audit --omit=dev
+eliware-test --pack --pack-destination artifacts
+```
+
 The normal test command runs the configured validation stages. Use
 `npm run audit` and `npm run pack` for the isolated audit and package
 validation stages. The public CLI equivalents are `node bin/eliware-test.mjs
@@ -43,8 +54,8 @@ npm test -- tests/example.test.mjs
 ```
 
 `--debug-timing` streams completed stage and test timing while validation is
-running. Jest runs in-band by default and unsupported Jest execution flags are
-rejected by the public CLI. Tests that stop making progress for 15 seconds are
+running. Jest runs in-band by default. Jest option/value pairs are forwarded
+unchanged, and a value is not interpreted as a focused path. Tests that stop making progress for 15 seconds are
 terminated with a diagnostic, and individual tests taking more than five
 seconds are reported as slow. These safeguards apply without
 `--debug-timing`.

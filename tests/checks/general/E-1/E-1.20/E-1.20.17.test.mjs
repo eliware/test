@@ -36,9 +36,9 @@ test("runs the formatter in aggregate and explicit format modes", async () => {
     });
   }
   expect(calls).toEqual([
-    { root: "/repo", options: { write: false } },
-    { root: "/repo", options: { write: false } },
-    { root: "/repo", options: { write: true } },
+    { root: "/repo", options: { write: false, extraArgs: [] } },
+    { root: "/repo", options: { write: false, extraArgs: [] } },
+    { root: "/repo", options: { write: true, extraArgs: [] } },
   ]);
 });
 

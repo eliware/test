@@ -11,6 +11,7 @@ export function createValidationContext(root, packageJson, options = {}) {
     mode: options.mode ?? null,
     modeRuleId: options.modeRuleId ?? null,
     jestArgs: options.jestArgs ?? [],
+    toolArgs: options.toolArgs ?? [],
     timing: options.timing,
     writeOutput: options.writeOutput,
   };

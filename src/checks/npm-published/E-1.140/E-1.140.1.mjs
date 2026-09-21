@@ -12,9 +12,17 @@ export async function run({
   executePack = false,
   mode = null,
   runPack = runNpmPack,
+  toolArgs = [],
 }) {
   const metadataError = validatePublicationMetadata(packageJson);
   if (metadataError) return fail(ruleId, metadataError);
-  const executionError = await executePackValidation({ root, packageJson, executePack, mode, runPack });
+  const executionError = await executePackValidation({
+    root,
+    packageJson,
+    executePack,
+    mode,
+    runPack,
+    toolArgs,
+  });
   return executionError ? fail(ruleId, executionError) : pass(ruleId);
 }

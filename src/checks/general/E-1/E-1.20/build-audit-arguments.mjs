@@ -1,3 +1,3 @@
-export function buildAuditArguments() {
-  return ["audit", "--json", "--audit-level=high"];
+export function buildAuditArguments(extraArgs = []) {
+  return ["audit", "--json", "--audit-level=high", ...extraArgs];
 }

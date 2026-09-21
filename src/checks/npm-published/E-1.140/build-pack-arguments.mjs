@@ -1,3 +1,3 @@
-export function buildPackArguments() {
-  return ["pack", "--dry-run", "--json"];
+export function buildPackArguments(extraArgs = []) {
+  return ["pack", "--dry-run", "--json", ...extraArgs];
 }

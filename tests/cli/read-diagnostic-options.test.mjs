@@ -5,15 +5,17 @@ test("maps supported diagnostic flags to current rule IDs and preserves Jest arg
   expect(readDiagnosticOptions(["--ignore-100x4", "tests/example.test.mjs"])).toEqual({
     ignoredRuleIds: ["E-1.20.10"],
     mode: null,
+    toolArgs: ["tests/example.test.mjs"],
     jestArgs: ["--ignore-100x4", "tests/example.test.mjs"],
   });
   expect(readDiagnosticOptions(["--ignore-monolith-limits"]).ignoredRuleIds).toEqual(["E-1.20.16"]);
   expect(readDiagnosticOptions(["--lint"]).mode).toBe("lint");
+  expect(readDiagnosticOptions(["--audit", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
   expect(() => readDiagnosticOptions(["--lint", "--audit"])).toThrow(/mutually exclusive/);
 });
 
-test("rejects unsupported command-line flags before validation", () => {
-  expect(() => readDiagnosticOptions(["--runInBand"])).toThrow(/Unsupported validation argument/);
+test("forwards non-wrapper Jest options unchanged", () => {
+  expect(readDiagnosticOptions(["--runInBand"]).jestArgs).toEqual(["--runInBand"]);
 });
 
 test("rejects conflicting informational commands", () => {
@@ -23,9 +25,19 @@ test("rejects conflicting informational commands", () => {
 });
 
 test("rejects multiple focused paths", () => {
-  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"])).toThrow("Only one focused test path");
+  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"])).toThrow(
+    "Only one focused test path",
+  );
 });
 
 test("rejects unsupported focused path roots", () => {
   expect(() => readDiagnosticOptions(["src/example.mjs"])).toThrow("must be under tests/");
+});
+
+test("does not treat option values as focused paths and preserves them for Jest", () => {
+  expect(readDiagnosticOptions([
+    "--testNamePattern", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs",
+  ])).toMatchObject({
+    jestArgs: ["--testNamePattern", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
+  });
 });

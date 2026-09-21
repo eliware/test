@@ -14,9 +14,7 @@ export function createJestProcessOptions(root, args = [], options = {}) {
   if (!nodeOptions.includes("--trace-warnings") && !nodeOptions.includes("--no-warnings")) {
     nodeOptions = `${nodeOptions} --no-warnings`;
   }
-  const environment = Object.fromEntries(Object.entries({ ...process.env, NODE_OPTIONS: nodeOptions }).filter(([key]) =>
-    /^(?:path|node_path|node_options|ci|force_color|term|temp|tmp|home|user|username|logname|lang|lc_all|systemroot|comspec|windir|pathext|userprofile|appdata|localappdata|init_cwd|npm_lifecycle_event|npm_lifecycle_script|npm_execpath|npm_node_execpath|npm_config_cache|npm_config_local_prefix|npm_config_user_agent)$/iu.test(key),
-  ));
+  const environment = { ...process.env, NODE_OPTIONS: nodeOptions };
   return {
     cwd: root,
     env: environment,

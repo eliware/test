@@ -12,9 +12,18 @@ export async function run({
   executeFormat = false,
   mode = null,
   runFormatter = runPrettier,
+  toolArgs = [],
 }) {
   const scriptError = validateRequiredScripts(packageJson?.scripts);
   if (scriptError) return fail(ruleId, scriptError);
-  const formatterError = await executeFormatterValidation({ root, executeFormat, mode, runFormatter });
-  return formatterError === null || formatterError === "" ? pass(ruleId) : fail(ruleId, formatterError);
+  const formatterError = await executeFormatterValidation({
+    root,
+    executeFormat,
+    mode,
+    runFormatter,
+    toolArgs,
+  });
+  return formatterError === null || formatterError === ""
+    ? pass(ruleId)
+    : fail(ruleId, formatterError);
 }

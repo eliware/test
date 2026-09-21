@@ -10,13 +10,14 @@ export async function run({
   executeLint = false,
   mode = null,
   runLint = runOxlint,
+  toolArgs = [],
 }) {
   if (typeof packageJson?.scripts?.lint !== "string" || !packageJson.scripts.lint.trim()) {
     return fail(ruleId, "Repositories must define a lint validation command.");
   }
   if (!executeLint || (mode !== null && mode !== "lint")) return pass(ruleId);
   try {
-    const result = await runLint(root);
+    const result = await runLint(root, undefined, undefined, toolArgs);
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return fail(

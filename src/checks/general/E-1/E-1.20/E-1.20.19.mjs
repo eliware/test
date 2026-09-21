@@ -10,6 +10,7 @@ export async function run({
   root,
   executeAudit = false,
   runAudit = runNpmAudit,
+  toolArgs = [],
 }) {
   if (packageJson?.scripts?.audit !== "eliware-test --audit") {
     return fail(
@@ -19,7 +20,7 @@ export async function run({
   }
   if (!executeAudit) return pass(ruleId);
   try {
-    const result = await runAudit(root, execute);
+    const result = await runAudit(root, execute, undefined, toolArgs);
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return fail(

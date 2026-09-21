@@ -1,5 +1,5 @@
+import { npmCommand } from "../../../npm-command.mjs";
+
 export function resolveAuditExecutable({ env = process.env, platform = process.platform, execPath = process.execPath } = {}) {
-  return env.npm_execpath
-    ? [execPath, [env.npm_execpath]]
-    : [platform === "win32" ? "npm.cmd" : "npm", []];
+  return npmCommand(platform, env.npm_execpath ?? "", execPath);
 }

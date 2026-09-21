@@ -100,14 +100,21 @@ test("runs a configured convention validation target without starting Jest", asy
   const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-configured-"));
   await writeFile(
     join(root, "package.json"),
-    JSON.stringify({ name: "fixture", version: "1.0.0", type: "module", eliware: { apply: ["fork"] } }),
+    JSON.stringify({
+      name: "fixture",
+      version: "1.0.0",
+      type: "module",
+      eliware: { apply: ["fork"] },
+    }),
   );
   await writeFile(join(root, "README.md"), "# fixture\n");
   await writeFile(join(root, "AGENTS.md"), "eliware/docs eliware/conventions eliware/operations\n");
   await mkdir(join(root, "specs"));
   await writeFile(join(root, "specs", "README.md"), "# specs\n");
   const output = [];
-  await expect(runCli([], (value) => output.push(value), root, { executeJest: false })).resolves.toBe(0);
+  await expect(
+    runCli([], (value) => output.push(value), root, { executeJest: false }),
+  ).resolves.toBe(0);
   expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings"]);
 });
 
@@ -142,6 +149,7 @@ test("passes explicit stage controls to injected validation", async () => {
     mode: null,
     modeRuleId: null,
     jestArgs: [],
+    toolArgs: [],
     timing: expect.any(Object),
     writeOutput: undefined,
   });

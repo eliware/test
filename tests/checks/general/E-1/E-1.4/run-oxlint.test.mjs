@@ -16,10 +16,14 @@ test("runs Oxlint through an injected argument-array executor", async () => {
 test("passes the resolved executable to the injected runner", async () => {
   const calls = [];
   await expect(
-    runOxlint("C:/repo", async (...args) => {
-      calls.push(args);
-      return { code: 1, stdout: "out", stderr: "err" };
-    }, async () => "C:/pkg/oxlint.js"),
+    runOxlint(
+      "C:/repo",
+      async (...args) => {
+        calls.push(args);
+        return { code: 1, stdout: "out", stderr: "err" };
+      },
+      async () => "C:/pkg/oxlint.js",
+    ),
   ).resolves.toEqual({ code: 1, stdout: "out", stderr: "err" });
   expect(calls[0]).toEqual([
     process.execPath,
@@ -28,8 +32,22 @@ test("passes the resolved executable to the injected runner", async () => {
   ]);
 });
 
+test("forwards additional Oxlint arguments", async () => {
+  const calls = [];
+  await runOxlint(
+    "C:/repo",
+    async (...args) => {
+      calls.push(args);
+      return { code: 0 };
+    },
+    async () => "C:/pkg/oxlint.js",
+    ["--quiet"],
+  );
+  expect(calls[0][1]).toEqual(["C:/pkg/oxlint.js", "--deny-warnings", ".", "--quiet"]);
+});
+
 test("supports the default child-process runner", async () => {
-  await expect(
-    runOxlint(process.cwd(), undefined, async () => process.execPath),
-  ).resolves.toEqual(expect.objectContaining({ code: expect.any(Number) }));
+  await expect(runOxlint(process.cwd(), undefined, async () => process.execPath)).resolves.toEqual(
+    expect.objectContaining({ code: expect.any(Number) }),
+  );
 });

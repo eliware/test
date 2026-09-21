@@ -13,6 +13,20 @@ test("runs npm pack in the repository root", async () => {
   expect(calls[0][2]).toEqual({ cwd: "C:\\repo" });
 });
 
+test("forwards additional npm pack arguments", async () => {
+  const calls = [];
+  await runNpmPack(
+    "C:\\repo",
+    async (...args) => {
+      calls.push(args);
+      return { code: 0, stdout: "{}" };
+    },
+    () => ["npm", []],
+    ["--pack-destination", "out"],
+  );
+  expect(calls[0][1]).toEqual(["pack", "--dry-run", "--json", "--pack-destination", "out"]);
+});
+
 test("uses npm's executable when npm invokes the harness", async () => {
   const previous = process.env.npm_execpath;
   process.env.npm_execpath = "C:\\npm\\cli.js";

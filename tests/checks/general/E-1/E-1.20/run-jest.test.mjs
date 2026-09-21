@@ -13,9 +13,13 @@ test("builds the default in-band coverage command", () => {
 });
 
 test("preserves focused paths and filters harness-only options", () => {
-  expect(
-    buildJestArguments(["tests/a.test.mjs", "--ignore-100x4", "--debug-timing"]),
-  ).toEqual(["--coverage", "--json", "--runTestsByPath", "tests/a.test.mjs", "--runInBand"]);
+  expect(buildJestArguments(["tests/a.test.mjs", "--ignore-100x4", "--debug-timing"])).toEqual([
+    "--coverage",
+    "--json",
+    "--runTestsByPath",
+    "tests/a.test.mjs",
+    "--runInBand",
+  ]);
 });
 
 test("rejects a missing focused test before invoking Jest", async () => {
@@ -41,7 +45,7 @@ test("maps a focused test to its mirrored source coverage", async () => {
     return { code: 0, stdout: "", stderr: "" };
   });
   expect(received[1]).toEqual([
-    expect.stringContaining("jest-cli\\bin\\jest.js"),
+    "jest-cli",
     "--coverage",
     "--coverageReporters=json",
     "--coverageReporters=json-summary",
@@ -118,10 +122,15 @@ test("captures child output, truncates oversized output, and reports spawn error
 test("raises the bounded debug-timing capture without making it unlimited", async () => {
   let received;
   const onStderr = jest.fn();
-  await runJest("C:/fixture", ["--debug-timing"], async (...args) => {
-    received = args;
-    return { code: 0, stdout: "", stderr: "" };
-  }, { onStderr });
+  await runJest(
+    "C:/fixture",
+    ["--debug-timing"],
+    async (...args) => {
+      received = args;
+      return { code: 0, stdout: "", stderr: "" };
+    },
+    { onStderr },
+  );
   expect(received[2].maxOutputLength).toBe(1_000_000);
   expect(received[1]).toContain("--reporters");
   expect(received[2].onStderr).toEqual(expect.any(Function));
@@ -133,13 +142,24 @@ test("raises the bounded debug-timing capture without making it unlimited", asyn
 
 test("reports the last started suite when progress stops", async () => {
   let received;
-  await runJest("C:/fixture", ["--debug-timing"], async (...args) => {
-    received = args;
-    args[2].onProgress("[eliware-test-progress] start tests/hanging.test.mjs\n");
-    args[2].onTimeout();
-    return { code: null, timedOut: true, stdout: "", stderr: "" };
-  }, { onTimeout: (message) => { received.timeoutMessage = message; } });
-  expect(received.timeoutMessage).toBe("Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.");
+  await runJest(
+    "C:/fixture",
+    ["--debug-timing"],
+    async (...args) => {
+      received = args;
+      args[2].onProgress("[eliware-test-progress] start tests/hanging.test.mjs\n");
+      args[2].onTimeout();
+      return { code: null, timedOut: true, stdout: "", stderr: "" };
+    },
+    {
+      onTimeout: (message) => {
+        received.timeoutMessage = message;
+      },
+    },
+  );
+  expect(received.timeoutMessage).toBe(
+    "Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.",
+  );
 });
 
 test("uses default Jest arguments with an injected child executor", async () => {
