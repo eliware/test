@@ -2,7 +2,7 @@ export function createStageTimer(enabled, now = () => Date.now(), write = () => 
   const startedAt = now();
   let previousAt = startedAt;
   const lines = [];
-  let jestOutput = "";
+  let jestOutput = () => "";
 
   return {
     start(label) {
@@ -25,10 +25,13 @@ export function createStageTimer(enabled, now = () => Date.now(), write = () => 
       return [...lines];
     },
     setJestOutput(output) {
-      jestOutput = typeof output === "string" ? output : "";
+      jestOutput = typeof output === "function" ? output : () => (typeof output === "string" ? output : "");
+    },
+    setJestOutputGetter(getter) {
+      jestOutput = typeof getter === "function" ? getter : () => "";
     },
     getJestOutput() {
-      return jestOutput;
+      return jestOutput();
     },
   };
 }

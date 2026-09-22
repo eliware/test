@@ -21,6 +21,10 @@ export function parseDetailed(json) {
     const gap = fileGap(file, data);
     if (gap) gaps.push(gap);
     const { values } = coverageMetricValues(data, coverageLineEntries(data));
+    const requiredMaps = ["s", "b", "f", "statementMap", "branchMap", "fnMap"];
+    if (requiredMaps.some((key) => !Object.hasOwn(data, key))) {
+      throw new Error(`Coverage evidence is incomplete for ${file}.`);
+    }
     for (const [metric, metricValues] of Object.entries(values)) {
       counts[metric].total += metricValues.length;
       counts[metric].covered += metricValues.filter((count) => count > 0).length;

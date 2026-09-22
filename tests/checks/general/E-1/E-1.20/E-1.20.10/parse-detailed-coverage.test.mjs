@@ -4,7 +4,7 @@ import { parseDetailed } from "../../../../../../src/checks/general/E-1/E-1.20/E
 test("parses detailed coverage gaps", () => {
   expect(
     parseDetailed({
-      "src/example.mjs": { statementMap: { 0: { start: { line: 4 } } }, s: { 0: 0 } },
+      "src/example.mjs": { statementMap: { 0: { start: { line: 4 } } }, s: { 0: 0 }, branchMap: { 0: {} }, b: { 0: [0] }, fnMap: { 0: {} }, f: { 0: 0 }, l: { 4: 0 } },
     }).gaps,
   ).toHaveLength(1);
 });
@@ -17,73 +17,59 @@ test("parses complete detailed files and all detailed metric shapes", () => {
       f: { 0: 1 },
       l: { 1: 1 },
       statementMap: { 0: { start: { line: 1 } } },
+      branchMap: { 0: {} },
+      fnMap: { 0: {} },
     },
-    "src/empty.mjs": {},
   });
-  expect(result.gaps).toEqual([expect.objectContaining({ file: "src/empty.mjs" })]);
+  expect(result.gaps).toEqual([]);
   expect(result.totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
   expect(parseDetailed(null)).toBeNull();
 });
 
 test("rejects incomplete in-scope coverage entries instead of treating missing metrics as perfect", () => {
-  const result = parseDetailed({
-    "tests/example.test.mjs": { s: { 0: 0 } },
-    "src/empty.mjs": {},
-    "src/covered.mjs": { s: { 0: 1 } },
-    "src/branch-only.mjs": { b: { 0: [1] } },
-  });
-  expect(result).toEqual({
-    gaps: expect.arrayContaining([
-      expect.objectContaining({ file: "src/empty.mjs" }),
-    ]),
-    totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
-  });
+  for (const data of [
+    { s: { 0: 1 }, b: { 0: [1] }, f: { 0: 1 } },
+    { s: { 0: 1 }, b: { 0: [1] }, l: { 1: 1 } },
+    { s: { 0: 1 }, f: { 0: 1 }, l: { 1: 1 } },
+    { b: { 0: [1] }, f: { 0: 1 }, l: { 1: 1 } },
+  ]) {
+    expect(() => parseDetailed({ "src/incomplete.mjs": data })).toThrow("Coverage evidence is incomplete");
+  }
 });
 
 test("does not mask an uncovered same-line statement", () => {
   expect(parseDetailed({
     "src/same-line.mjs": {
       s: { 0: 1, 1: 0 },
+      b: { 0: [1] }, branchMap: { 0: {} }, f: { 0: 1 }, fnMap: { 0: {} }, l: { 1: 0 },
       statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 1 } } },
     },
   }).gaps[0].lines).toEqual(["1"]);
 });
 
-test("handles a complete file with no branch counter map", () => {
-  expect(
-    parseDetailed({
-      "src/no-branches.mjs": {
-        s: { 0: 1 },
-        f: { 0: 1 },
-        l: { 1: 1 },
-        statementMap: { 0: { start: { line: 1 } } },
-        fnMap: { 0: { name: "run" } },
-      },
-    }).totals,
-  ).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
-});
-
-test("handles a complete file with no statement counter map", () => {
-  expect(
-    parseDetailed({
-      "src/no-statements.mjs": {
-        b: { 0: [1] },
-        f: { 0: 1 },
-        l: { 1: 1 },
-        statementMap: { 0: { start: { line: 1 } } },
-        branchMap: { 0: {} },
-        fnMap: { 0: {} },
-      },
-    }).totals,
-  ).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
+test("does not treat missing branch or statement maps as complete coverage", () => {
+  expect(() => parseDetailed({ "src/no-branches.mjs": {
+    s: { 0: 1 }, f: { 0: 1 }, l: { 1: 1 },
+  } })).toThrow("Coverage evidence is incomplete");
+  expect(() => parseDetailed({ "src/no-statements.mjs": {
+    b: { 0: [1] }, f: { 0: 1 }, l: { 1: 1 },
+  } })).toThrow("Coverage evidence is incomplete");
 });
 
 test("normalizes absolute Windows source paths and ignores unsupported files", () => {
   expect(
     parseDetailed({
-      "C:\\repo\\src\\absolute.mjs": { s: { 0: 1 }, statementMap: { 0: { start: { line: 1 } } } },
+      "C:\\repo\\src\\absolute.mjs": { s: { 0: 1 }, b: { 0: [1] }, branchMap: { 0: {} }, f: { 0: 1 }, fnMap: { 0: {} }, l: { 1: 1 }, statementMap: { 0: { start: { line: 1 } } } },
       "src/README.txt": {},
       "src/tests/example.mjs": {},
     }).gaps,
   ).toEqual([]);
+  expect(parseDetailed({ "README.md": {} })).toBeNull();
+});
+
+test("reports zero-total metrics without treating incomplete evidence as missing", () => {
+  expect(parseDetailed({ "src/no-branches.mjs": {
+    s: { 0: 1 }, b: {}, f: { 0: 1 },
+    statementMap: { 0: { start: { line: 1 } } }, branchMap: {}, fnMap: { 0: {} },
+  } }).totals.branches).toBe(100);
 });

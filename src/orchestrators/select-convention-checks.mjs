@@ -4,8 +4,9 @@ import { expandAppliedProfiles, readBundledProfileAuthority } from "./read-bundl
 export async function selectConventionChecks(conventions, availableChecks = null) {
   const authority = readBundledProfileAuthority();
   const profiles = expandAppliedProfiles(conventions.apply, authority);
-  const checks = availableChecks ?? await discoverChecks(profiles);
-  const profileChecks = availableChecks ? await discoverChecks(profiles) : checks;
-  const allowed = new Set(profileChecks.map(({ ruleId }) => ruleId));
-  return checks.filter(({ ruleId }) => allowed.has(ruleId));
+  if (availableChecks) {
+    const allowedGroups = new Set(profiles);
+    return availableChecks.filter(({ modulePath }) => allowedGroups.has(modulePath?.split("/")[0]));
+  }
+  return discoverChecks(profiles);
 }

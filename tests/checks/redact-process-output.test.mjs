@@ -16,6 +16,19 @@ test("redacts structured, quoted, and authorization credentials", () => {
   );
 });
 
+test("redacts common header, provider token, JWT, and private-key formats", () => {
+  const output = redactProcessOutput([
+    "x-api-key: header-secret",
+    "ghp_1234567890abcdefghijklmnop",
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature",
+    "-----BEGIN PRIVATE KEY-----\nsecret\n-----END PRIVATE KEY-----",
+  ].join("\n"));
+  expect(output).not.toContain("header-secret");
+  expect(output).not.toContain("ghp_");
+  expect(output).not.toContain("eyJhbGci");
+  expect(output).not.toContain("BEGIN PRIVATE KEY");
+});
+
 test("redacts JSON and camelCase credential keys", () => {
   expect(redactProcessOutput('{"apiKey":"json-secret","refreshToken":"refresh-secret"}')).toBe('{"apiKey":[REDACTED],"refreshToken":[REDACTED]}');
   const multiline = redactProcessOutput("password = 'multi\nline secret'");

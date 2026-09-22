@@ -39,7 +39,7 @@ export function runChild(command, args, options = {}) {
         hardKillTimer = setTimeout(() => {
           settled = true;
           timeout.stop();
-          resolve({ code: null, signal: "SIGTERM", ...output.result(), timedOut: true });
+          resolve({ code: null, signal: "SIGTERM", ...output.result(), timedOut: true, terminationConfirmed: false });
         }, options.terminationGraceMs ?? 1000);
       },
     });

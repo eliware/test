@@ -9,3 +9,12 @@ test("records Jest output and timing context", () => {
   expect(context.jestResult).toBe(result);
   expect(setJestOutput).toHaveBeenCalledWith("ok");
 });
+
+test("uses the lazy timing output handoff when supported", () => {
+  const setJestOutputGetter = jest.fn();
+  const context = { timing: { setJestOutputGetter } };
+  const result = { code: 0, stdout: "lazy", stderr: "" };
+  recordJestContext(context, result);
+  expect(setJestOutputGetter).toHaveBeenCalledTimes(1);
+  expect(setJestOutputGetter.mock.calls[0][0]()).toBe("lazy");
+});

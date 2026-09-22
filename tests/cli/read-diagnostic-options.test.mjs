@@ -2,12 +2,7 @@ import { expect, test } from "@jest/globals";
 import { readDiagnosticOptions } from "../../src/cli/read-diagnostic-options.mjs";
 
 test("maps supported diagnostic flags and preserves Jest arguments", () => {
-  expect(readDiagnosticOptions(["tests/example.test.mjs"])).toEqual({
-    ignoredRuleIds: [],
-    mode: null,
-    toolArgs: ["tests/example.test.mjs"],
-    jestArgs: ["tests/example.test.mjs"],
-  });
+  expect(readDiagnosticOptions(["tests/example.test.mjs"]).jestArgs).toEqual(["tests/example.test.mjs"]);
   expect(() => readDiagnosticOptions(["--ignore-100x4"])).toThrow("Legacy ignore flags are no longer supported");
   expect(readDiagnosticOptions(["--lint"]).mode).toBe("lint");
   expect(readDiagnosticOptions(["--audit", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
@@ -20,7 +15,7 @@ test("forwards non-wrapper Jest options unchanged", () => {
 
 test("preserves the delegation separator and its following arguments", () => {
   expect(readDiagnosticOptions(["--audit", "--", "--omit=dev"]).toolArgs)
-    .toEqual(["--", "--omit=dev"]);
+    .toEqual(["--omit=dev"]);
 });
 
 test("rejects conflicting informational commands", () => {

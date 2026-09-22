@@ -61,8 +61,11 @@ npm test -- tests/example.test.mjs
 ```
 
 `--debug-timing` streams completed stage and test timing while validation is
-running. Jest runs in-band by default. Jest option/value pairs are forwarded
-unchanged, and a value is not interpreted as a focused path. Tests that stop making progress for 15 seconds are
+running. The timing stream is written to the CLI writer supplied by the
+invocation; programmatic callers that omit a writer receive diagnostics through
+the normal result instead of an implicit process-global sink. Jest runs in-band
+by default. Jest option/value pairs are forwarded unchanged, and a value is not
+interpreted as a focused path. Tests that stop making progress for 15 seconds are
 terminated with a diagnostic, and individual tests taking more than five
 seconds are reported as slow. These safeguards apply without
 `--debug-timing`.

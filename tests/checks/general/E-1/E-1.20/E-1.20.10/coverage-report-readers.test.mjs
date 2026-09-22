@@ -12,9 +12,9 @@ test("reads detailed and summary report formats", async () => {
     "coverage-final.json",
     "coverage-final.json",
     1,
-    async () => JSON.stringify({ "src/example.mjs": { s: { 0: 1 } } }),
+    async () => JSON.stringify({ "src/example.mjs": { s: { 0: 1 }, b: { 0: [1] }, f: { 0: 1 }, l: { 1: 1 }, statementMap: { 0: { start: { line: 1 } } }, branchMap: { 0: {} }, fnMap: { 0: {} } } }),
     async () => (statCalls++ === 0 ? null : { mtimeMs: 2 }),
-  )).resolves.toMatchObject({ gaps: [expect.objectContaining({ file: "src/example.mjs" })], totals: { statements: 100, branches: 100, functions: 100, lines: 100 } });
+  )).resolves.toMatchObject({ gaps: [], totals: { statements: 100, branches: 100, functions: 100, lines: 100 } });
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 0)).rejects.toThrow();
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 1)).rejects.toThrow();
   await expect(readJsonCoverage(

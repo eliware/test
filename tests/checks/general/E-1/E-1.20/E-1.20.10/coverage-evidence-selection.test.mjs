@@ -117,9 +117,10 @@ test("fails when the highest-priority summary is invalid", async () => {
       statementMap: { 0: { start: { line: 1 } } },
       s: { 0: 1 },
       branchMap: {},
-      b: {},
-      fnMap: {},
-      f: {},
+      b: { 0: [1] },
+      fnMap: { 0: {} },
+      f: { 0: 1 },
+      l: { 1: 1 },
     },
   };
   await writeFile(join(root, "coverage", "coverage.json"), JSON.stringify(detailed));

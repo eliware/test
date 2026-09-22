@@ -57,6 +57,10 @@ package-level shortcuts; arbitrary npm script names are not CLI arguments.
 Legacy `--ignore-*` flags are unsupported. Coverage and monolith enforcement
 remain enabled for all validation modes.
 
+`--debug-timing` writes timing diagnostics through the selected CLI output
+writer. Programmatic callers that omit a writer do not receive an implicit
+process-global timing stream.
+
 The v8 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 

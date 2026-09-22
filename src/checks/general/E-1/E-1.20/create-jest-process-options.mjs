@@ -8,12 +8,13 @@ export function createJestProcessOptions(root, args = [], options = {}) {
       if (test) currentSuite = `${test[1]} :: ${test[2]}`;
     }
   };
-  let nodeOptions = process.env.NODE_OPTIONS?.includes("--experimental-vm-modules")
-    ? process.env.NODE_OPTIONS
-    : `${process.env.NODE_OPTIONS ?? ""} --experimental-vm-modules`.trim();
-  if (!nodeOptions.includes("--trace-warnings") && !nodeOptions.includes("--no-warnings")) {
-    nodeOptions = `${nodeOptions} --no-warnings`;
-  }
+  const existingNodeOptions = process.env.NODE_OPTIONS?.trim() ?? "";
+  const hasOption = (option) => new RegExp(`(?:^|[\\s])${option.replace("-", "\\-")}(?:$|[\\s])`).test(existingNodeOptions);
+  const nodeOptions = [
+    existingNodeOptions,
+    hasOption("--experimental-vm-modules") ? "" : "--experimental-vm-modules",
+    /(?:^|[\s])(?:--trace-warnings|--no-warnings)(?:$|[\s])/.test(existingNodeOptions) ? "" : "--no-warnings",
+  ].filter(Boolean).join(" ");
   const environment = { ...process.env, NODE_OPTIONS: nodeOptions };
   return {
     cwd: root,
