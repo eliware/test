@@ -2,12 +2,13 @@ import { expect, jest, test } from "@jest/globals";
 import { executeValidationPlan } from "../../src/orchestrators/execute-validation-plan.mjs";
 
 test("executes the selected validation plan", async () => {
-  const timing = { step: jest.fn() };
+  const timing = { start: jest.fn(), end: jest.fn() };
   const checks = [{ ruleId: "E-1.0", run: async () => ({ ruleId: "E-1.0", status: "pass" }) }];
   await expect(executeValidationPlan(checks, { timing }, new Set())).resolves.toEqual([
     { ruleId: "E-1.0", status: "pass" },
   ]);
-  expect(timing.step).toHaveBeenCalledWith("E-1.0 started", "E-1.0 completed");
+  expect(timing.start).toHaveBeenCalledWith("E-1.0");
+  expect(timing.end).toHaveBeenCalledWith("E-1.0");
 });
 
 test("does not execute an exempted plan item", async () => {

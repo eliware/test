@@ -64,7 +64,16 @@ terminated with a diagnostic, and individual tests taking more than five
 seconds are reported as slow. These safeguards apply without
 `--debug-timing`.
 
-Use `--ignore-100x4` or `--ignore-monolith-limits` only for approved
-diagnostics or transitional work. These flags bypass enforcement and must not
-be used for release validation or CI. The former still runs tests and collects
-coverage; the latter skips only monolith enforcement.
+Coverage and monolith checks are always enforced by the public validation
+commands; no public ignore flags bypass them.
+
+Compatibility boundaries
+
+The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
+repository or supported Node.js/Windows executable locations. Workflow parsing
+normalizes YAML 1.1 `true` keys and equivalent runner/input spellings before
+domain checks consume them. External authority references may be unavailable
+when the contract identifies them as cross-repository references; local
+references still fail when they do not resolve. Git-sensitive checks use Git
+metadata when available and retain filesystem discovery only for non-Git test
+fixtures.

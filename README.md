@@ -38,8 +38,6 @@ npm run audit
 npm run pack
 node bin/eliware-test.mjs --help
 node bin/eliware-test.mjs --version
-node bin/eliware-test.mjs --ignore-100x4
-node bin/eliware-test.mjs --ignore-monolith-limits
 node bin/eliware-test.mjs --debug-timing
 node bin/eliware-test.mjs --lint
 node bin/eliware-test.mjs --format

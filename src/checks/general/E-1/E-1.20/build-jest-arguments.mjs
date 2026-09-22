@@ -7,8 +7,6 @@ export function buildJestArguments(args = []) {
   const forwarded = args.filter(
     (argument) =>
       argument !== focusedPath &&
-      argument !== "--ignore-100x4" &&
-      argument !== "--ignore-monolith-limits" &&
       argument !== "--debug-timing",
   );
   const concurrency = ["--runInBand"];

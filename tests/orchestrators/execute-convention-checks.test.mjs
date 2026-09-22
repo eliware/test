@@ -97,12 +97,12 @@ test("reports timing through start and end callbacks", async () => {
   expect(timing.end).toHaveBeenCalledWith("E-4");
 });
 
-test("reports timing through the legacy step callback when start is unavailable", async () => {
-  const timing = { step: jest.fn() };
+test("does not require timing when the current timer is unavailable", async () => {
+  const timing = {};
   await executeConventionChecks(
     [{ ruleId: "E-5", run: async () => ({ ruleId: "E-5", status: "pass", message: "" }) }],
     { timing },
     new Set(),
   );
-  expect(timing.step).toHaveBeenCalledWith("E-5 started", "E-5 completed");
+  expect(timing).toEqual({});
 });

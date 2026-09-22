@@ -7,7 +7,7 @@ export function dispatchInformationalCommand(args, write) {
   }
   if (args.includes("--help")) {
     write(
-      "Usage: eliware-test [--help|--version|--lint|--format|--format-check|--audit|--pack|--debug-timing|--ignore-100x4|--ignore-monolith-limits] [focused-test-path...]",
+      "Usage: eliware-test [--help|--version|--lint|--format|--format-check|--audit|--pack|--debug-timing] [focused-test-path...]",
     );
     return 0;
   }

@@ -20,11 +20,10 @@ export async function executeConventionChecks(checks, context, exemptions) {
     if (check.enforcementMode === "non-deterministic") continue;
     if (context.modeRuleId && check.ruleId !== context.modeRuleId) continue;
     if (typeof check.run !== "function") throw new Error(`Selected check ${check.ruleId} is incomplete and cannot be executed.`);
-    if (context.timing?.start) context.timing.start(check.ruleId);
-    else context.timing?.step(`${check.ruleId} started`, `${check.ruleId} completed`);
+    context.timing?.start?.(check.ruleId);
     const result = await check.run(context);
     results.push(assertCheckResult(result, check.ruleId));
-    if (context.timing?.end) context.timing.end(check.ruleId);
+    context.timing?.end?.(check.ruleId);
   }
   return results;
 }

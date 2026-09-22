@@ -3,10 +3,13 @@ import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
 export function readDiagnosticOptions(args) {
   const normalizedArgs = args.filter((argument) => argument !== "--");
   const modeFlags = ["--lint", "--format", "--format-check", "--audit", "--pack"];
+  const removedFlags = ["--ignore-100x4", "--ignore-monolith-limits"];
   const modes = normalizedArgs.filter((argument) => modeFlags.includes(argument));
   const invalid = normalizedArgs.filter((argument) => typeof argument !== "string");
   if (invalid.length > 0)
     throw new Error(`Unsupported validation argument: ${invalid.join(", ")}.`);
+  if (normalizedArgs.some((argument) => removedFlags.includes(argument)))
+    throw new Error("Legacy ignore flags are no longer supported.");
   if (normalizedArgs.includes("--help") && normalizedArgs.includes("--version")) {
     throw new Error("--help and --version cannot be used together.");
   }
@@ -28,15 +31,12 @@ export function readDiagnosticOptions(args) {
     throw new Error("Focused paths must be under tests/ or specs/.");
   }
   return {
-    ignoredRuleIds: [
-      ...(normalizedArgs.includes("--ignore-100x4") ? ["E-1.20.10"] : []),
-      ...(normalizedArgs.includes("--ignore-monolith-limits") ? ["E-1.20.16"] : []),
-    ],
+    ignoredRuleIds: [],
     mode: modes[0]?.slice(2) ?? null,
     toolArgs: normalizedArgs.filter(
       (argument) =>
         !modeFlags.includes(argument) &&
-        !["--debug-timing", "--ignore-100x4", "--ignore-monolith-limits"].includes(argument),
+        argument !== "--debug-timing",
     ),
     jestArgs: normalizedArgs.filter((argument) => argument !== "--debug-timing"),
   };

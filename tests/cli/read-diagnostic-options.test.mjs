@@ -1,14 +1,14 @@
 import { expect, test } from "@jest/globals";
 import { readDiagnosticOptions } from "../../src/cli/read-diagnostic-options.mjs";
 
-test("maps supported diagnostic flags to current rule IDs and preserves Jest arguments", () => {
-  expect(readDiagnosticOptions(["--ignore-100x4", "tests/example.test.mjs"])).toEqual({
-    ignoredRuleIds: ["E-1.20.10"],
+test("maps supported diagnostic flags and preserves Jest arguments", () => {
+  expect(readDiagnosticOptions(["tests/example.test.mjs"])).toEqual({
+    ignoredRuleIds: [],
     mode: null,
     toolArgs: ["tests/example.test.mjs"],
-    jestArgs: ["--ignore-100x4", "tests/example.test.mjs"],
+    jestArgs: ["tests/example.test.mjs"],
   });
-  expect(readDiagnosticOptions(["--ignore-monolith-limits"]).ignoredRuleIds).toEqual(["E-1.20.16"]);
+  expect(() => readDiagnosticOptions(["--ignore-100x4"])).toThrow("Legacy ignore flags are no longer supported");
   expect(readDiagnosticOptions(["--lint"]).mode).toBe("lint");
   expect(readDiagnosticOptions(["--audit", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
   expect(() => readDiagnosticOptions(["--lint", "--audit"])).toThrow(/mutually exclusive/);

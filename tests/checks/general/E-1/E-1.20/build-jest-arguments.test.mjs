@@ -9,13 +9,7 @@ test("builds focused and default Jest argument lists", () => {
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing"])).toEqual([
     "--coverage", "--json", "--runTestsByPath", "tests/sample.test.mjs", "--runInBand",
   ]);
-  expect(buildJestArguments([
-    "tests/sample.test.mjs",
-    "--ignore-100x4",
-    "--ignore-monolith-limits",
-    "--debug-timing",
-    "--watch",
-  ])).toEqual([
+  expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing", "--watch"])).toEqual([
     "--coverage", "--json", "--runTestsByPath", "tests/sample.test.mjs", "--runInBand", "--watch",
   ]);
 });
