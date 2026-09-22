@@ -2,7 +2,7 @@
 
 ## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions)
 
-Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [release notes](RELEASE_NOTES.md)
+Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [release notes](RELEASE_NOTES.md) · Examples: not applicable
 
 ## Purpose
 
@@ -74,8 +74,9 @@ procedures. Test consumes those policies and does not redefine them.
 For web applicability, document routes, assets, configuration, ports, browser
 validation, and deployment boundaries. Library applicability additionally
 requires public API, packaging, and examples documentation. This repository
-does not provide a separate consumer-facing examples catalog; the focused CLI
-command above is an invocation example, not that missing examples surface.
+does not apply the library or web profiles and therefore has no examples
+surface to index. The focused CLI command above is an invocation example, not
+a missing examples catalog.
 
 Exit codes identify the failed validation stage: `0` is success, `8` is Jest
 failure, `10` is coverage failure, `12` is lint failure, `14` is an internal
