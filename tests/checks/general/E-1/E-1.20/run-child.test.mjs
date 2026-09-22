@@ -61,3 +61,30 @@ test("ignores an error emitted after the child has closed", async () => {
   child.emit("error", new Error("late spawn error"));
   await expect(result).resolves.toMatchObject({ code: 0, signal: null });
 });
+
+test("does not timeout after the child has already closed", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const onTimeout = jest.fn();
+  const result = runChild("ignored", [], { spawnProcess: () => child, progressTimeoutMs: 5, onTimeout });
+  child.emit("close", 0, null);
+  await new Promise((resolve) => setTimeout(resolve, 15));
+  await expect(result).resolves.toMatchObject({ code: 0 });
+  expect(onTimeout).not.toHaveBeenCalled();
+});
+
+test("guards a watchdog callback that arrives after close", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  let onTimeout;
+  const timeout = { reset: jest.fn(), stop: jest.fn(), wasTriggered: () => false };
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    createProgressTimeout: (options) => { onTimeout = options.onTimeout; return timeout; },
+  });
+  child.emit("close", 0, null);
+  onTimeout();
+  await expect(result).resolves.toMatchObject({ code: 0 });
+});

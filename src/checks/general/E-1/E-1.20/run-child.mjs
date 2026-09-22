@@ -8,6 +8,7 @@ export function runChild(command, args, options = {}) {
   const maxOutputLength = options.maxOutputLength;
   const outputLimit = maxOutputLength ?? 100_000;
   const spawnProcess = options.spawnProcess ?? spawn;
+  const createTimeout = options.createProgressTimeout ?? createProgressTimeout;
   return new Promise((resolve, reject) => {
     const child = spawnProcess(command, args, {
       cwd: options.cwd,
@@ -25,10 +26,11 @@ export function runChild(command, args, options = {}) {
       timeout.stop();
       reject(error);
     };
-    const timeout = createProgressTimeout({
+    const timeout = createTimeout({
       timeoutMs: options.progressTimeoutMs,
       onTimeout: () => {
-      timeout.stop();
+        if (settled) return;
+        timeout.stop();
       timedOut = true;
       options.onTimeout?.();
         terminateChild(child);

@@ -35,3 +35,7 @@ test("uses the injected process-group terminator at the adapter boundary", () =>
   expect(terminateChild({ pid: 7, kill: jest.fn() }, "linux", killProcess)).toBe(true);
   expect(killProcess).toHaveBeenCalledWith(-7, "SIGTERM");
 });
+
+test("reports failure when direct termination also fails", () => {
+  expect(terminateChild({ pid: 0, kill: () => { throw new Error("closed"); } }, "linux")).toBe(false);
+});
