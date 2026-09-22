@@ -7,6 +7,11 @@ test("separates option values from focused positional paths", () => {
   ]).positional).toEqual(["tests/example.test.mjs"]);
 });
 
+test("preserves separator semantics for delegated option-looking arguments", () => {
+  expect(parseFocusedArguments(["--", "--runInBand", "tests/example.test.mjs"]).positional)
+    .toEqual(["tests/example.test.mjs"]);
+});
+
 test("handles empty and non-string argument values", () => {
   expect(parseFocusedArguments()).toEqual({ positional: [], optionValues: new Set() });
   expect(focusedPathFrom()).toBeUndefined();

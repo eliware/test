@@ -18,6 +18,11 @@ test("forwards non-wrapper Jest options unchanged", () => {
   expect(readDiagnosticOptions(["--runInBand"]).jestArgs).toEqual(["--runInBand"]);
 });
 
+test("preserves the delegation separator and its following arguments", () => {
+  expect(readDiagnosticOptions(["--audit", "--", "--omit=dev"]).toolArgs)
+    .toEqual(["--", "--omit=dev"]);
+});
+
 test("rejects conflicting informational commands", () => {
   expect(() => readDiagnosticOptions(["--help", "--version"])).toThrow(
     "--help and --version cannot be used together",

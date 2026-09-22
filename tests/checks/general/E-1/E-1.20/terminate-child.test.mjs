@@ -7,6 +7,16 @@ test("uses Node's supported child termination on Windows", () => {
   expect(kill).toHaveBeenCalledWith();
 });
 
+test("uses the host defaults when platform arguments are omitted", () => {
+  expect(terminateChild({ kill: jest.fn() })).toBe(true);
+});
+
+test("uses the injected Windows process-tree terminator when available", () => {
+  const killTree = jest.fn();
+  expect(terminateChild({ pid: 42, kill: jest.fn() }, "win32", process.kill, killTree)).toBe(true);
+  expect(killTree).toHaveBeenCalledWith(42);
+});
+
 test("falls back to terminating the child when no process group exists", () => {
   const kill = jest.fn();
   expect(terminateChild({ kill, pid: 0 }, "linux")).toBe(true);

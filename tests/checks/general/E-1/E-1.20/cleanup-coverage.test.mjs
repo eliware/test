@@ -24,3 +24,20 @@ test("fails closed when a prior coverage candidate cannot be removed", async () 
     }),
   ).rejects.toThrow("Could not remove prior coverage evidence");
 });
+
+test("serializes cleanup operations for the same repository", async () => {
+  let active = 0;
+  let maximum = 0;
+  const remove = async () => {
+    active += 1;
+    maximum = Math.max(maximum, active);
+    await new Promise((resolve) => setTimeout(resolve, 1));
+    active -= 1;
+  };
+  await Promise.all([cleanupCoverage("C:/serialized", remove), cleanupCoverage("C:/serialized", remove)]);
+  expect(maximum).toBe(coverageCandidates.length);
+});
+
+test("uses the default remover for an absent repository", async () => {
+  await expect(cleanupCoverage("C:/path-that-does-not-exist-eliware-test")).resolves.toBeUndefined();
+});

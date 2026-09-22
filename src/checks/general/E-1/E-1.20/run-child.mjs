@@ -34,7 +34,7 @@ export function runChild(command, args, options = {}) {
         timeout.stop();
         timedOut = true;
         options.onTimeout?.();
-        terminateChild(child);
+        terminateChild(child, process.platform, process.kill, options.killTree);
         hardKillTimer = setTimeout(() => {
           settled = true;
           timeout.stop();
