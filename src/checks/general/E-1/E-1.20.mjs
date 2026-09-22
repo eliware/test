@@ -5,6 +5,7 @@ import { classifyJestResult } from "./E-1.20/classify-jest-result.mjs";
 
 export const ruleId = "E-1.20";
 export const parentRuleId = "E-1";
+export const focusedSafe = true;
 
 export async function run(context) {
   if (!context.executeJest) return pass(ruleId);

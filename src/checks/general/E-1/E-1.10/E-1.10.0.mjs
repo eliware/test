@@ -5,6 +5,7 @@ import { commandTokens, parseKnitScript } from "./parse-knit-script.mjs";
 
 export const ruleId = "E-1.10.0";
 export const parentRuleId = "E-1.10";
+const allowedCommands = new Set(["node", "npm", "npx", "git", "echo"]);
 
 export async function run({ root }) {
   try {
@@ -22,6 +23,9 @@ export async function run({ root }) {
         ruleId,
         ".knit/validate.mjs must use statically inspectable child-process commands.",
       );
+    }
+    if (parsed.calls.some((call) => !allowedCommands.has(commandTokens(call)[0].replace(/^.*[\\/]/u, "").toLowerCase()))) {
+      return fail(ruleId, ".knit/validate.mjs uses a command outside the read-only validation allowlist.");
     }
     if (
       /(?:node:)?(?:fs|fs\/promises)\.(?:rm|rmdir|unlink|rename|writeFile|chmod)|\b(?:fetch|https?\.request|net\.connect|process\.exit)\s*\(/iu.test(

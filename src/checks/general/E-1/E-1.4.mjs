@@ -3,6 +3,7 @@ import { runOxlint } from "./E-1.4/run-oxlint.mjs";
 
 export const ruleId = "E-1.4";
 export const parentRuleId = "E-1";
+export const focusedSafe = true;
 
 export async function run({
   packageJson,

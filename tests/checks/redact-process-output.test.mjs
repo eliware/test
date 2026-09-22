@@ -15,3 +15,10 @@ test("redacts structured, quoted, and authorization credentials", () => {
     "https://[REDACTED]@example.test/path",
   );
 });
+
+test("redacts JSON and camelCase credential keys", () => {
+  expect(redactProcessOutput('{"apiKey":"json-secret","refreshToken":"refresh-secret"}')).toBe('{"apiKey":[REDACTED],"refreshToken":[REDACTED]}');
+  const multiline = redactProcessOutput("password = 'multi\nline secret'");
+  expect(multiline).toMatch(/password[\s=:]+\[REDACTED\]/iu);
+  expect(multiline).not.toContain("multi");
+});

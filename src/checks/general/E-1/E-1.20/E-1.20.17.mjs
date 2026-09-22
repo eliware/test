@@ -5,6 +5,7 @@ import { executeFormatterValidation } from "./execute-formatter-validation.mjs";
 
 export const ruleId = "E-1.20.17";
 export const parentRuleId = "E-1.20";
+export const focusedSafe = true;
 
 export async function run({
   packageJson,

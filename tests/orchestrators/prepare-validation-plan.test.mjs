@@ -2,7 +2,7 @@ import { expect, jest, test } from "@jest/globals";
 import { prepareValidationPlan } from "../../src/orchestrators/prepare-validation-plan.mjs";
 
 test("prepares a focused validation plan with context and exemptions", async () => {
-  const checks = ["E-1.4", "E-1.17", "E-1.20", "E-1.20.10", "E-1.20.20", "E-1.20.16"].map((ruleId) => ({ ruleId }));
+  const checks = ["E-1.4", "E-1.17", "E-1.20", "E-1.20.10", "E-1.20.20", "E-1.20.16"].map((ruleId) => ({ ruleId, focusedSafe: ruleId !== "E-1.20.16" }));
   const dependencies = {
     loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general"] } })),
     discoverAllChecks: jest.fn(async () => checks),

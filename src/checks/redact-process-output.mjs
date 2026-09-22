@@ -1,8 +1,9 @@
-const credentialKey = "(?:password|passwd|pwd|token|secret|credential|api[_-]?key|access[_-]?key|private[_-]?key|client[_-]?(?:secret|id)|refresh[_-]?token|session[_-]?id)";
+const credentialKey = "(?:password|passwd|pwd|token|secret|credential|api[_-]?key|apiKey|access[_-]?key|accessKey|private[_-]?key|privateKey|client[_-]?(?:secret|id)|client(?:Secret|Id)|refresh[_-]?token|refreshToken|session[_-]?id|sessionId)";
 
 export function redactProcessOutput(text) {
   return String(text)
-    .replace(new RegExp(`((?:${credentialKey})\\s*[=:]\\s*)(?:"(?:\\\\.|[^"\\\\])*"|'[^']*'|[^\\s,;}]+)`, "giu"), "$1[REDACTED]")
+    .replace(new RegExp(`(["']?(?:${credentialKey})["']?\\s*[=:]\\s*)['"][\\s\\S]*?['"]`, "giu"), "$1[REDACTED]")
+    .replace(new RegExp(`(["']?(?:${credentialKey})["']?\\s*[=:]\\s*)(?:"(?:\\\\.|[^"\\\\])*"|'[^']*'|[^\\s,;}]+)`, "giu"), "$1[REDACTED]")
     .replace(/((?:authorization|proxy-authorization)\s*:\s*(?:bearer|basic)\s+)[^\s,;}]+/giu, "$1[REDACTED]")
     .replace(/((?:authorization|proxy-authorization)\s*:\s+\[REDACTED\]\s+)[^\s,;}]+/giu, "$1[REDACTED]")
     .replace(new RegExp(`((?:${credentialKey})\\s+)(?:"[^"]*"|'[^']*'|[^\\s,;}]+)`, "giu"), "$1[REDACTED]")

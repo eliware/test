@@ -16,10 +16,10 @@ test("reads aggregate summary evidence", async () => {
     "coverage-summary.json",
     JSON.stringify({
       total: {
-        statements: { pct: 100 },
-        branches: { pct: 99 },
-        functions: { pct: 100 },
-        lines: { pct: 100 },
+        statements: { pct: 100, covered: 1, total: 1 },
+        branches: { pct: 99, covered: 99, total: 100 },
+        functions: { pct: 100, covered: 1, total: 1 },
+        lines: { pct: 100, covered: 1, total: 1 },
       },
     }),
   );

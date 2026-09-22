@@ -88,3 +88,31 @@ test("guards a watchdog callback that arrives after close", async () => {
   onTimeout();
   await expect(result).resolves.toMatchObject({ code: 0 });
 });
+
+test("settles when a child ignores termination", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  let onTimeout;
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    terminationGraceMs: 5,
+    createProgressTimeout: (options) => { onTimeout = options.onTimeout; return { reset: jest.fn(), stop: jest.fn() }; },
+  });
+  onTimeout();
+  await expect(result).resolves.toMatchObject({ timedOut: true, signal: "SIGTERM" });
+});
+
+test("clears the escalation timer when timeout is followed by close", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  let onTimeout;
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    createProgressTimeout: (options) => { onTimeout = options.onTimeout; return { reset: jest.fn(), stop: jest.fn() }; },
+  });
+  onTimeout();
+  child.emit("close", null, "SIGTERM");
+  await expect(result).resolves.toMatchObject({ timedOut: true, signal: "SIGTERM" });
+});

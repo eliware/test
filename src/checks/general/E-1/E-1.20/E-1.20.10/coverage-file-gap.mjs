@@ -22,7 +22,10 @@ export function coverageLineEntries(data) {
   const lines = new Map();
   for (const [id, entry] of Object.entries(data.statementMap ?? {})) {
     const line = entry?.start?.line;
-    if (line) lines.set(String(line), Math.max(lines.get(String(line)) ?? 0, Number(data.s?.[id] ?? 0)));
+    if (line) {
+      const count = Number(data.s?.[id] ?? 0);
+      lines.set(String(line), lines.has(String(line)) ? Math.min(lines.get(String(line)), count) : count);
+    }
   }
   return [...lines.entries()];
 }
@@ -51,8 +54,7 @@ export function fileGap(file, data) {
     metric,
     percentage(metricCounters[metric].filter((count) => count > 0).length, metricCounters[metric].length),
   ]));
-  if (!hasCounters) return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines, statements, branches, functions };
-  if (hasCounters && !hasMaps) return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines, statements, branches, functions };
+  if (!hasCounters || !hasMaps) return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines, statements, branches, functions };
   return metrics.every((metric) => values[metric] === 100)
     ? null
     : { file, metrics: values, lines, statements, branches, functions };

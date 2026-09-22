@@ -4,6 +4,7 @@ import { formatCoverageGaps } from "./E-1.20.10/format-coverage-gaps.mjs";
 
 export const ruleId = "E-1.20.10";
 export const parentRuleId = "E-1.20";
+export const focusedSafe = true;
 
 export async function run(context, readEvidence = readCoverageEvidenceFromCandidates) {
   if (!context.executeJest) return pass(ruleId);

@@ -23,7 +23,7 @@ const requiredPaths = new Map([
 
 export async function gitIgnores(root, path, runGit = execFileAsync) {
   try {
-    await runGit("git", ["-C", root, "check-ignore", "-q", "--no-index", "--", path], { windowsHide: true });
+    await runGit("git", ["-C", root, "check-ignore", "-q", "--no-index", "--", path.replaceAll("\\", "/")], { windowsHide: true });
     return true;
   } catch (error) {
     if (error?.code === 1) return false;
@@ -52,7 +52,7 @@ export async function run({ root, checkIgnored = gitIgnores, trackedPaths = read
     return fail(ruleId, `Required .gitignore paths are not ignored: ${missing.join(", ")}.`);
   const tracked = await trackedPaths(root);
   if (!Array.isArray(tracked)) return fail(ruleId, "Git tracked-file inspection was unavailable; cannot validate prohibited tracked paths safely.");
-  const violations = tracked.filter(prohibitedTrackedPath);
+  const violations = tracked.map((path) => path.replaceAll("\\", "/")).filter(prohibitedTrackedPath);
   if (violations.length > 0) return fail(ruleId, `Prohibited ignored paths are tracked: ${violations.join(", ")}.`);
   return pass(ruleId);
 }

@@ -16,6 +16,7 @@ export function readDiagnosticOptions(args) {
   const informational = normalizedArgs.filter(
     (argument) => argument === "--help" || argument === "--version",
   );
+  if (informational.length > 1) throw new Error("Informational commands cannot be repeated or combined.");
   if (
     informational.length > 0 &&
     normalizedArgs.some((argument) => !informational.includes(argument))

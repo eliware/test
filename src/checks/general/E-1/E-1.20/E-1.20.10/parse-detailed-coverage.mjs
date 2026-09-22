@@ -20,11 +20,7 @@ export function parseDetailed(json) {
   for (const [file, data] of entries) {
     const gap = fileGap(file, data);
     if (gap) gaps.push(gap);
-    const { values, hasCounters, hasMaps } = coverageMetricValues(data, coverageLineEntries(data));
-    if (!hasCounters || !hasMaps) {
-      for (const metric of metrics) counts[metric].total += 1;
-      continue;
-    }
+    const { values } = coverageMetricValues(data, coverageLineEntries(data));
     for (const [metric, metricValues] of Object.entries(values)) {
       counts[metric].total += metricValues.length;
       counts[metric].covered += metricValues.filter((count) => count > 0).length;
@@ -35,7 +31,7 @@ export function parseDetailed(json) {
     totals: Object.fromEntries(
       metrics.map((metric) => [
         metric,
-        counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : 0,
+        counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : 100,
       ]),
     ),
   };

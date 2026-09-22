@@ -3,6 +3,7 @@ import { findJestConfigFiles } from "./find-jest-config-files.mjs";
 
 export const ruleId = "E-1.20.7";
 export const parentRuleId = "E-1.20";
+export const focusedSafe = true;
 
 export async function run({ root, packageJson }) {
   if (

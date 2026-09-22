@@ -24,6 +24,10 @@ test("rejects conflicting informational commands", () => {
   );
 });
 
+test("rejects repeated informational commands", () => {
+  expect(() => readDiagnosticOptions(["--help", "--help"])).toThrow("cannot be repeated");
+});
+
 test("rejects multiple focused paths", () => {
   expect(() => readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"])).toThrow(
     "Only one focused test path",

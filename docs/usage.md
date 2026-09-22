@@ -72,7 +72,8 @@ The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
 repository or supported Node.js/Windows executable locations. Workflow parsing
 normalizes YAML 1.1 `true` keys and equivalent runner/input spellings before
 domain checks consume them. External authority references may be unavailable
-when the contract identifies them as cross-repository references; local
-references still fail when they do not resolve. Git-sensitive checks use Git
+only when they are registered in `docs/authority-map.json` as cross-repository
+references; unregistered or local references must resolve and fail otherwise.
+Git-sensitive checks use Git
 metadata when available and retain filesystem discovery only for non-Git test
 fixtures.

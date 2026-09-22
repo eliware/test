@@ -9,6 +9,7 @@ import { findGeneratedSource } from "./validate-generated-source.mjs";
 
 export const ruleId = "E-1.17";
 export const parentRuleId = "E-1";
+export const focusedSafe = true;
 export const collect = collectRepositoryFiles;
 
 export async function run({ root, focusedScope = null }) {

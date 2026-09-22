@@ -20,6 +20,7 @@ export function runChild(command, args, options = {}) {
     const output = createChildOutputCapture(outputLimit, options);
     let settled = false;
     let timedOut = false;
+    let hardKillTimer;
     const settleError = (error) => {
       if (settled) return;
       settled = true;
@@ -34,6 +35,11 @@ export function runChild(command, args, options = {}) {
         timedOut = true;
         options.onTimeout?.();
         terminateChild(child);
+        hardKillTimer = setTimeout(() => {
+          settled = true;
+          timeout.stop();
+          resolve({ code: null, signal: "SIGTERM", ...output.result(), timedOut: true });
+        }, options.terminationGraceMs ?? 1000);
       },
     });
     const resetProgressTimer = timeout.reset;
@@ -53,6 +59,7 @@ export function runChild(command, args, options = {}) {
       if (settled) return;
       settled = true;
       timeout.stop();
+      if (hardKillTimer) clearTimeout(hardKillTimer);
       resolve({ code, signal, ...output.result(), ...(timedOut ? { timedOut: true } : {}) });
     });
   });

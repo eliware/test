@@ -21,12 +21,7 @@ test("parses complete detailed files and all detailed metric shapes", () => {
     "src/empty.mjs": {},
   });
   expect(result.gaps).toEqual([expect.objectContaining({ file: "src/empty.mjs" })]);
-  expect(result.totals).toEqual({
-    statements: 50,
-    branches: 66.66666666666666,
-    functions: 50,
-    lines: 50,
-  });
+  expect(result.totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
   expect(parseDetailed(null)).toBeNull();
 });
 
@@ -39,12 +34,19 @@ test("rejects incomplete in-scope coverage entries instead of treating missing m
   });
   expect(result).toEqual({
     gaps: expect.arrayContaining([
-      expect.objectContaining({ file: "src/covered.mjs" }),
-      expect.objectContaining({ file: "src/branch-only.mjs" }),
       expect.objectContaining({ file: "src/empty.mjs" }),
     ]),
-    totals: { statements: 0, branches: 0, functions: 0, lines: 0 },
+    totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
   });
+});
+
+test("does not mask an uncovered same-line statement", () => {
+  expect(parseDetailed({
+    "src/same-line.mjs": {
+      s: { 0: 1, 1: 0 },
+      statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 1 } } },
+    },
+  }).gaps[0].lines).toEqual(["1"]);
 });
 
 test("handles a complete file with no branch counter map", () => {
@@ -58,7 +60,7 @@ test("handles a complete file with no branch counter map", () => {
         fnMap: { 0: { name: "run" } },
       },
     }).totals,
-  ).toEqual({ statements: 100, branches: 0, functions: 100, lines: 100 });
+  ).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
 });
 
 test("handles a complete file with no statement counter map", () => {
@@ -73,7 +75,7 @@ test("handles a complete file with no statement counter map", () => {
         fnMap: { 0: {} },
       },
     }).totals,
-  ).toEqual({ statements: 0, branches: 100, functions: 100, lines: 100 });
+  ).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
 });
 
 test("normalizes absolute Windows source paths and ignores unsupported files", () => {

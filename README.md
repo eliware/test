@@ -94,6 +94,8 @@ Repository convention applicability is declared in `package.json` under
 npm test
 npm run lint
 npm run format:check
+npm run audit
+npm run pack
 git diff --check
 ```
 

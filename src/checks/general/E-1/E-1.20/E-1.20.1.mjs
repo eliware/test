@@ -2,6 +2,7 @@ import { fail, pass } from "../../../check-result.mjs";
 
 export const ruleId = "E-1.20.1";
 export const parentRuleId = "E-1.20";
+export const focusedSafe = true;
 
 export function run({ nodeVersion = process.versions.node } = {}) {
   if (Number.parseInt(nodeVersion.split(".")[0], 10) !== 26)

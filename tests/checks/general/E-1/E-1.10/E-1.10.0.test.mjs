@@ -49,6 +49,14 @@ test("rejects filesystem and dynamic module side effects", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("rejects non-allowlisted static commands", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-"));
+  await mkdir(join(root, ".knit"));
+  await writeFile(join(root, ".knit", "validate.mjs"), 'import { spawnSync } from "node:child_process"; spawnSync("curl", ["https://example.test"]);');
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("allowlist") }));
+  await rm(root, { recursive: true, force: true });
+});
+
 test("reports malformed and missing Knit scripts", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-errors-"));
   await mkdir(join(root, ".knit"));
