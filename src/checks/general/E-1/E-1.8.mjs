@@ -45,11 +45,7 @@ export async function run({ root, packageJson, trackedFiles, readTracked = readT
   } catch (error) {
     return fail(ruleId, `Environment files could not be inspected: ${error.message}`);
   }
-  const templateFiles = await resolveMailboxTemplateFiles(
-    files,
-    trackedFiles,
-    (file) => checkIgnored(root, file),
-  );
+  const templateFiles = await resolveMailboxTemplateFiles(files, gitTracked);
   const templateError = await validateMailboxTemplates(root, templateFiles);
   if (templateError) return fail(ruleId, templateError);
   return pass(ruleId);
