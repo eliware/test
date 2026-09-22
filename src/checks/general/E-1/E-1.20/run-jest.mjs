@@ -3,8 +3,14 @@ import { dirname, join } from "node:path";
 import { runChild } from "./run-child.mjs";
 import { prepareJestRun } from "./prepare-jest-run.mjs";
 export function resolveConsumerJestCli(root) {
-  const packageEntry = createRequire(join(root, "package.json")).resolve("jest-cli");
-  return join(dirname(packageEntry), "../bin/jest.js");
+  const requireFromConsumer = createRequire(join(root, "package.json"));
+  for (const candidate of ["jest-cli/bin/jest.js", "jest/bin/jest.js"]) {
+    try {
+      return requireFromConsumer.resolve(candidate);
+    } catch {}
+  }
+  const packageEntry = requireFromConsumer.resolve("jest-cli");
+  return join(dirname(packageEntry), "..", "bin", "jest.js");
 }
 
 export function resolveJestCli(root, execute, options = {}) {

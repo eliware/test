@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
 import { runChild } from "../../../../../src/checks/general/E-1/E-1.20/run-child.mjs";
 
@@ -49,4 +50,14 @@ test("resets the watchdog and reports progress markers", async () => {
   });
   expect(result).toEqual(expect.objectContaining({ timedOut: true, stderr: "" }));
   expect(progress).toHaveBeenCalledWith(expect.stringContaining("start suite"));
+});
+
+test("ignores an error emitted after the child has closed", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const result = runChild("ignored", [], { spawnProcess: () => child });
+  child.emit("close", 0, null);
+  child.emit("error", new Error("late spawn error"));
+  await expect(result).resolves.toMatchObject({ code: 0, signal: null });
 });

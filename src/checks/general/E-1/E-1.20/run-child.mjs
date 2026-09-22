@@ -7,8 +7,9 @@ import { createChildOutputCapture } from "./capture-child-output.mjs";
 export function runChild(command, args, options = {}) {
   const maxOutputLength = options.maxOutputLength;
   const outputLimit = maxOutputLength ?? 100_000;
+  const spawnProcess = options.spawnProcess ?? spawn;
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
+    const child = spawnProcess(command, args, {
       cwd: options.cwd,
       env: options.env ?? process.env,
       stdio: ["ignore", "pipe", "pipe"],
@@ -16,15 +17,20 @@ export function runChild(command, args, options = {}) {
       detached: process.platform !== "win32",
     });
     const output = createChildOutputCapture(outputLimit, options);
+    let settled = false;
+    let timedOut = false;
     const settleError = (error) => {
+      if (settled) return;
+      settled = true;
       timeout.stop();
       reject(error);
     };
     const timeout = createProgressTimeout({
       timeoutMs: options.progressTimeoutMs,
       onTimeout: () => {
-        timeout.stop();
-        options.onTimeout?.();
+      timeout.stop();
+      timedOut = true;
+      options.onTimeout?.();
         terminateChild(child);
       },
     });
@@ -42,8 +48,10 @@ export function runChild(command, args, options = {}) {
       settleError(error);
     });
     child.on("close", (code, signal) => {
+      if (settled) return;
+      settled = true;
       timeout.stop();
-      resolve({ code, signal, ...output.result(), ...(timeout.wasTriggered() ? { timedOut: true } : {}) });
+      resolve({ code, signal, ...output.result(), ...(timedOut || timeout.wasTriggered() ? { timedOut: true } : {}) });
     });
   });
 }
