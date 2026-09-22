@@ -16,6 +16,7 @@ export async function executeConventionChecks(checks, context, exemptions) {
   };
   for (const check of checks) {
     if (isExempt(check.ruleId)) continue;
+    // codescope ignore: non-deterministic checks are intentionally advisory and are not enforcement results.
     if (check.enforcementMode === "non-deterministic") continue;
     if (context.modeRuleId && check.ruleId !== context.modeRuleId) continue;
     if (typeof check.run !== "function") throw new Error(`Selected check ${check.ruleId} is incomplete and cannot be executed.`);

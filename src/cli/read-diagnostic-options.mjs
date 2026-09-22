@@ -25,7 +25,7 @@ export function readDiagnosticOptions(args) {
   if (
     focused.some((argument) => !/^(?:tests?|specs?)[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))
   ) {
-    throw new Error("Focused paths must be under tests/.");
+    throw new Error("Focused paths must be under tests/ or specs/.");
   }
   return {
     ignoredRuleIds: [
