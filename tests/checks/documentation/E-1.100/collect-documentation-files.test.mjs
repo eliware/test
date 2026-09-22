@@ -34,3 +34,14 @@ test("bounds traversal depth and file count", async () => {
   await expect(collectDocumentationFiles(shallow, shallow, () => true, { maxFiles: 0 })).rejects.toThrow("file limit");
   await rm(shallow, { recursive: true, force: true });
 });
+
+test("bounds cached repository roots", async () => {
+  const roots = [];
+  for (let index = 0; index < 33; index += 1) {
+    const root = await mkdtemp(join(tmpdir(), `eliware-doc-cache-${index}-`));
+    roots.push(root);
+    await writeFile(join(root, "README.md"), "# Docs");
+    await expect(repositoryFiles(root)).resolves.toEqual(["README.md"]);
+  }
+  await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
+});

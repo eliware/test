@@ -16,7 +16,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
     const timing = createStageTimer(
       args.includes("--debug-timing"),
       () => Date.now(),
-      args.includes("--debug-timing") ? process.stdout.write.bind(process.stdout) : undefined,
+      args.includes("--debug-timing") ? write : undefined,
     );
     const executeConvention = options.runConventionStage ?? runConventionStage;
     const executeValidation = options.runValidation ?? runValidation;

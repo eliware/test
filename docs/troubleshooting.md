@@ -12,7 +12,8 @@ generated runtime output.
 
 [Return to documentation](README.md).
 Focused validation uses exactly one test path after npm's `--` separator, for
-example `npm test -- tests/example.test.mjs`. Direct CLI use is
+example `npm test -- tests/example.test.mjs`. The separator belongs to npm and
+is not forwarded to Jest. Direct CLI use is
 `node bin/eliware-test.mjs tests/example.test.mjs`. The supported focused
 option/value forms are the wrapper's declared Jest value options (including
 `--testNamePattern "case name"`); their values are forwarded unchanged and

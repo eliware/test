@@ -41,6 +41,15 @@ test("passes when fresh evidence is complete", async () => {
   ).resolves.toEqual({ ruleId: "E-1.20.10", status: "pass", message: "" });
 });
 
+test("rejects malformed injected coverage evidence", async () => {
+  await expect(
+    run(
+      { root: "fixture", executeJest: true, jestResult: { code: 0, startedAt: 1 } },
+      async () => ({ totals: {}, gaps: [] }),
+    ),
+  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("invalid shape") });
+});
+
 test("reports every coverage metric below 100%", async () => {
   const root = await fixture({
     statements: { pct: 99 },

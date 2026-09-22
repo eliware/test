@@ -9,6 +9,7 @@ test("prepares a focused validation plan with context and exemptions", async () 
     selectConventionChecks: jest.fn(async () => checks),
     validateBundledDirectiveCompleteness: jest.fn(async () => true),
     prepareValidationExemptions: jest.fn(() => new Set(["E-9"])),
+    findRepositoryFiles: jest.fn(async () => []),
   };
   const plan = await prepareValidationPlan("/repo", ["E-9"], { jestArgs: ["tests/a.test.mjs"] }, dependencies);
   expect(plan.checks.map(({ ruleId }) => ruleId)).toEqual(["E-1.4", "E-1.17", "E-1.20", "E-1.20.10", "E-1.20.20"]);
@@ -24,6 +25,7 @@ test("keeps the complete selected plan when no focused path is supplied", async 
     selectConventionChecks: jest.fn(async () => checks),
     validateBundledDirectiveCompleteness: jest.fn(async () => true),
     prepareValidationExemptions: jest.fn(() => new Set()),
+    findRepositoryFiles: jest.fn(async () => []),
   };
   const plan = await prepareValidationPlan("/repo", [], {}, dependencies);
   expect(plan.checks).toBe(checks);

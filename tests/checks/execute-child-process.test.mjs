@@ -57,6 +57,22 @@ test("enforces one combined output budget across stdout and stderr", async () =>
   expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(100_000);
 });
 
+test("handles process adapters without output streams and ignores late errors", async () => {
+  const child = new EventEmitter();
+  const result = execute("tool", [], {}, () => child);
+  child.emit("close", 0, null);
+  child.emit("error", new Error("late"));
+  await expect(result).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
+});
+
+test("rejects an early process error and ignores a later close", async () => {
+  const child = new EventEmitter();
+  const result = execute("tool", [], {}, () => child);
+  child.emit("error", new Error("spawn failed"));
+  child.emit("close", 1, null);
+  await expect(result).rejects.toThrow("spawn failed");
+});
+
 test("uses the real child-process adapter when no injector is supplied", async () => {
   await expect(execute(process.execPath, ["-e", ""], {})).resolves.toMatchObject({ code: 0 });
 });

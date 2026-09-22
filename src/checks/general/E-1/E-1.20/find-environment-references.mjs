@@ -6,6 +6,6 @@ export { propertyName };
 export function collect(node, aliases, variables) {
   return collectEnvironmentReferences(node, aliases, variables);
 }
-export function findEnvironmentReferences(root) {
-  return discoverEnvironmentReferences(root);
+export function findEnvironmentReferences(root, repositoryFiles) {
+  return discoverEnvironmentReferences(root, repositoryFiles);
 }

@@ -8,6 +8,7 @@ function dependencies(overrides = {}) {
     loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general"] } })),
     selectConventionChecks: jest.fn(async () => checks),
     discoverAllChecks: jest.fn(async () => checks),
+    findRepositoryFiles: jest.fn(async () => []),
     validateBundledDirectiveCompleteness: jest.fn(async () => true),
     prepareValidationExemptions: jest.fn(() => new Set()),
     executeValidationPlan: jest.fn(async (...args) => { calls.push(args); return [{ ruleId: "E-1", status: "pass" }]; }),

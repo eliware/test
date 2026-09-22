@@ -31,6 +31,18 @@ export function coverageLineEntries(data) {
 }
 
 export function fileGap(file, data) {
+  const hasCounterData = Object.keys(data.s ?? {}).length > 0 || Object.keys(data.b ?? {}).length > 0
+    || Object.keys(data.f ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
+  const hasMapData = Object.keys(data.statementMap ?? {}).length > 0 || Object.keys(data.branchMap ?? {}).length > 0
+    || Object.keys(data.fnMap ?? {}).length > 0 || Object.keys(data.lineMap ?? {}).length > 0;
+  if (hasCounterData !== hasMapData) throw new Error(`Coverage evidence is incomplete for ${file}.`);
+  for (const [map, counters] of [
+    [data.statementMap, data.s], [data.branchMap, data.b], [data.fnMap, data.f], [data.lineMap, data.l],
+  ]) {
+    const mapKeys = Object.keys(map ?? {});
+    if (mapKeys.length === 0) continue;
+    if (Object.keys(counters ?? {}).length === 0) throw new Error(`Coverage evidence is incomplete for ${file}.`);
+  }
   const counterValues = [
     ...Object.values(data.s ?? {}),
     ...Object.values(data.b ?? {}).flat(),

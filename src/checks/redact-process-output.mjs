@@ -12,6 +12,8 @@ export function redactProcessOutput(text) {
     .replace(new RegExp(`([?&](?:${credentialKey})=)[^&#\\s]+`, "giu"), "$1[REDACTED]")
     .replace(/(https?:\/\/)[^\s/@:]+(?::[^\s/@]+)?@/giu, "$1[REDACTED]@")
     .replace(/((?:x-api-key|x-auth-token|x-access-token)\s*:\s*)[^\s,;}]+/giu, "$1[REDACTED]")
+    .replace(/((?:cookie|set-cookie)\s*:\s*)[^\r\n]+/giu, "$1[REDACTED]")
+    .replace(/((?:^|[\s,{])(?:AWS_SECRET_ACCESS_KEY|NPM_TOKEN|GH_TOKEN|CI_JOB_TOKEN)\s*=\s*)[^\s,;}]+/gimu, "$1[REDACTED]")
     .replace(/((?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+|npm_[A-Za-z0-9_]+|AKIA[0-9A-Z]{16})\b)/gu, "[REDACTED]")
     .replace(/(eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/gu, "[REDACTED]")
     ;

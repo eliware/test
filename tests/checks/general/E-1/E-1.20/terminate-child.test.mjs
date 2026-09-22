@@ -1,9 +1,15 @@
 import { expect, jest, test } from "@jest/globals";
-import { terminateChild } from "../../../../../src/checks/general/E-1/E-1.20/terminate-child.mjs";
+import { resolveTaskkillExecutable, terminateChild } from "../../../../../src/checks/general/E-1/E-1.20/terminate-child.mjs";
 
 test("uses Node's supported child termination on Windows", () => {
   const kill = jest.fn();
   expect(terminateChild({ kill }, "win32")).toBe(true);
+  expect(kill).toHaveBeenCalledWith();
+});
+
+test("falls back when the default Windows tree terminator cannot kill the child", () => {
+  const kill = jest.fn();
+  expect(terminateChild({ pid: 42, kill }, "win32")).toBe(true);
   expect(kill).toHaveBeenCalledWith();
 });
 
@@ -15,6 +21,11 @@ test("uses the injected Windows process-tree terminator when available", () => {
   const killTree = jest.fn();
   expect(terminateChild({ pid: 42, kill: jest.fn() }, "win32", process.kill, killTree)).toBe(true);
   expect(killTree).toHaveBeenCalledWith(42);
+});
+
+test("resolves the Windows tree terminator from the platform environment", () => {
+  expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(/System32[\\/]taskkill\.exe$/iu);
+  expect(resolveTaskkillExecutable({})).toBe("taskkill.exe");
 });
 
 test("falls back to terminating the child when no process group exists", () => {

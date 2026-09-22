@@ -1,7 +1,7 @@
 import { collectScriptReferences } from "./collect-script-dependency-references.mjs";
 import { scanDependencyFiles } from "./scan-dependency-files.mjs";
 
-export async function findDependencyReferences(root, packageJson) {
+export async function findDependencyReferences(root, packageJson, repositoryFiles) {
   const declared = [
     ...Object.keys(packageJson?.dependencies ?? {}),
     ...Object.keys(packageJson?.devDependencies ?? {}),
@@ -13,7 +13,7 @@ export async function findDependencyReferences(root, packageJson) {
   collectScriptReferences(packageJson?.scripts, declared, referenced);
   for (const tool of ["jest", "prettier", "oxlint"])
     if (packageJson?.[tool] && declared.includes(tool)) referenced.add(tool);
-  await scanDependencyFiles(root, declared, referenced, uncertain);
+  await scanDependencyFiles(root, declared, referenced, uncertain, repositoryFiles);
   const result = declared.filter((name) => referenced.has(name));
   result.uncertain = uncertain.value;
   return result;

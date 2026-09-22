@@ -35,3 +35,9 @@ test("redacts JSON and camelCase credential keys", () => {
   expect(multiline).toMatch(/password[\s=:]+\[REDACTED\]/iu);
   expect(multiline).not.toContain("multi");
 });
+
+test("redacts cookie and common CI credential formats", () => {
+  const output = redactProcessOutput("Cookie: session=secret\nNPM_TOKEN=abc123secret");
+  expect(output).not.toContain("session=secret");
+  expect(output).not.toContain("abc123secret");
+});

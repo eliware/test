@@ -56,6 +56,21 @@ test("does not treat missing branch or statement maps as complete coverage", () 
   } })).toThrow("Coverage evidence is incomplete");
 });
 
+test("rejects a required map that is absent after file validation", () => {
+  expect(() => parseDetailed({ "src/no-branch-map.mjs": {
+    s: { 0: 1 }, b: {}, f: { 0: 1 },
+    statementMap: { 0: { start: { line: 1 } } }, fnMap: { 0: {} },
+  } })).toThrow("Coverage evidence is incomplete");
+});
+
+test("rejects nonempty metric maps with empty counters", () => {
+  expect(() => parseDetailed({ "src/empty-counters.mjs": {
+    s: {}, b: { 0: {} }, f: { 0: {} },
+    statementMap: { 0: { start: { line: 1 } } },
+    branchMap: { 0: {} }, fnMap: { 0: {} },
+  } })).toThrow("Coverage evidence is incomplete");
+});
+
 test("normalizes absolute Windows source paths and ignores unsupported files", () => {
   expect(
     parseDetailed({

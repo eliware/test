@@ -19,3 +19,12 @@ test("fails closed when a source file cannot be parsed", async () => {
   await expect(discoverEnvironmentReferences(root)).rejects.toThrow();
   await rm(root, { recursive: true, force: true });
 });
+
+test("uses the shared file list and skips non-source files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-env-discovery-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "module.mjs"), "export const port = process.env.PORT;");
+  await writeFile(join(root, "README.md"), "process.env.IGNORED");
+  await expect(discoverEnvironmentReferences(root, ["src/module.mjs", "tests/example.mjs", "README.md"])).resolves.toEqual(["PORT"]);
+  await rm(root, { recursive: true, force: true });
+});

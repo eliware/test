@@ -8,9 +8,10 @@ import { collectStructuredValues } from "./collect-structured-dependency-referen
 const sourceFile = /\.(?:mjs|js|cjs|ts|tsx|cts)$/iu;
 const structuredConfig = /(?:^|\/)(?:\.eslintrc(?:\.[^.]+)?|\.prettierrc(?:\.[^.]+)?|jest\.config\.json|(?:tsconfig|oxlint|knip|vite|webpack|rollup)\.[^.]+\.json)$/iu;
 
-export async function scanDependencyFiles(root, declared, referenced, uncertain) {
-  for (const file of await findRepositoryFiles(root)) {
+export async function scanDependencyFiles(root, declared, referenced, uncertain, repositoryFiles = null) {
+  for (const file of repositoryFiles ?? await findRepositoryFiles(root)) {
     if (sourceFile.test(file)) {
+      if (repositoryFiles && !file.startsWith("src/")) continue;
       try {
         const ast = parse(await readFile(join(root, file), "utf8"), { sourceType: "unambiguous", plugins: ["typescript", "jsx", "topLevelAwait"] });
         collectAstReferences(ast, declared, referenced, uncertain);

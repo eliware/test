@@ -18,6 +18,11 @@ export async function run(context, readEvidence = readCoverageEvidenceFromCandid
       context.jestResult.startedAt,
       { requireFresh: true },
     );
+    const metrics = ["statements", "branches", "functions", "lines"];
+    if (!evidence || !Array.isArray(evidence.gaps) || !evidence.totals
+      || metrics.some((metric) => typeof evidence.totals[metric] !== "number" || !Number.isFinite(evidence.totals[metric]))) {
+      throw new Error("Coverage evidence has an invalid shape.");
+    }
     const gaps = ["statements", "branches", "functions", "lines"].filter(
       (metric) => evidence.totals[metric] !== 100,
     );

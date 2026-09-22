@@ -130,3 +130,24 @@ test("adds the VM module option when it is absent", async () => {
     else process.env.NODE_OPTIONS = previous;
   }
 });
+
+test("serializes concurrent Jest runs for one consumer root", async () => {
+  const root = "C:/shared-consumer";
+  let releaseFirst;
+  let started = 0;
+  const first = runJest(root, [], async () => {
+    started += 1;
+    await new Promise((resolve) => { releaseFirst = resolve; });
+    return { code: 0, stdout: "", stderr: "" };
+  }, { jestCli: "jest-cli" });
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  const second = runJest(root, [], async () => {
+    started += 1;
+    return { code: 0, stdout: "", stderr: "" };
+  }, { jestCli: "jest-cli" });
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  expect(started).toBe(1);
+  releaseFirst();
+  await Promise.all([first, second]);
+  expect(started).toBe(2);
+});

@@ -41,7 +41,7 @@ test.each([
 ])("rejects sensitive or machine-state artifact %s", async (name) => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-secrets-"));
   await writeFile(join(root, name), "sensitive");
-  await expect(run({ root })).resolves.toEqual(
+  await expect(run({ root }, async () => [name])).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining(name) }),
   );
   await rm(root, { recursive: true, force: true });
@@ -71,7 +71,7 @@ test("permits an exact approved path exemption", async () => {
     run({
       root,
       packageJson: { eliware: { exempt: [{ ruleId: "E-1.6.0", path: "credentials.json" }] } },
-    }),
+    }, async () => ["credentials.json"]),
   ).resolves.toEqual({ ruleId: "E-1.6.0", status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });
 });

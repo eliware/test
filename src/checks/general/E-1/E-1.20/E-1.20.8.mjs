@@ -7,10 +7,10 @@ import { parseEnvExample } from "./parse-env-example.mjs";
 export const ruleId = "E-1.20.8";
 export const parentRuleId = "E-1.20";
 
-export async function run({ root }) {
+export async function run({ root, repositoryFiles }) {
   let variables;
   try {
-    variables = await findEnvironmentReferences(root);
+    variables = await findEnvironmentReferences(root, repositoryFiles);
   } catch {
     return fail(ruleId, "src/ is required for environment-reference validation.");
   }

@@ -23,6 +23,7 @@ export async function collectDocumentationFiles(directory, root = directory, pre
 const cache = new Map();
 function cached(root, key, predicate) {
   const cacheKey = `${key}:${root}`;
+  if (cache.size >= 32 && !cache.has(cacheKey)) cache.delete(cache.keys().next().value);
   if (!cache.has(cacheKey)) cache.set(cacheKey, collectDocumentationFiles(root, root, predicate));
   return cache.get(cacheKey);
 }

@@ -16,9 +16,18 @@ export function execute(command, args, options, spawnProcess = spawn) {
       captured += value.length;
       return `${current}${value}`;
     };
-    child.stdout.on("data", (chunk) => { stdout = append(stdout, chunk); });
-    child.stderr.on("data", (chunk) => { stderr = append(stderr, chunk); });
-    child.on("error", reject);
-    child.on("close", (code, signal) => resolveResult({ code, signal, stdout, stderr }));
+    child.stdout?.on("data", (chunk) => { stdout = append(stdout, chunk); });
+    child.stderr?.on("data", (chunk) => { stderr = append(stderr, chunk); });
+    let settled = false;
+    child.on("error", (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    });
+    child.on("close", (code, signal) => {
+      if (settled) return;
+      settled = true;
+      resolveResult({ code, signal, stdout, stderr });
+    });
   });
 }

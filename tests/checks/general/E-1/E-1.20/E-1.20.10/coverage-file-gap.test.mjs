@@ -5,6 +5,7 @@ test("derives line evidence from statement locations when Istanbul omits line co
   expect(coverageLineEntries({ statementMap: { 0: { start: { line: 4 } } }, s: { 0: 1 } })).toEqual([["4", 1]]);
   expect(coverageLineEntries({ statementMap: { 0: { start: { line: 4 } }, 1: { start: { line: 4 } } }, s: { 0: 0, 1: 1 } })).toEqual([["4", 0]]);
   expect(coverageLineEntries({ statementMap: { 0: { start: { line: 5 } } }, s: {} })).toEqual([["5", 0]]);
+  expect(coverageLineEntries({ statementMap: { 0: {} }, s: { 0: 1 } })).toEqual([]);
   expect(coverageLineEntries({ l: { 4: 1 } })).toEqual([["4", 1]]);
 });
 
@@ -40,12 +41,38 @@ test("uses explicit line data and handles empty or incomplete coverage maps", ()
     s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1, 2: 0 }, statementMap: { 1: {} },
   })).toMatchObject({ lines: ["2"] });
   expect(fileGap("empty.mjs", {})).toEqual(expect.objectContaining({ file: "empty.mjs" }));
-  expect(fileGap("map-only.mjs", { statementMap: { 1: {} } })).toEqual(expect.objectContaining({ file: "map-only.mjs" }));
-  expect(fileGap("counter-only.mjs", { s: { 0: 1 } })).toEqual(expect.objectContaining({ file: "counter-only.mjs" }));
+  expect(() => fileGap("map-only.mjs", { statementMap: { 1: {} } })).toThrow("Coverage evidence is incomplete");
+  expect(() => fileGap("counter-only.mjs", { s: { 0: 1 } })).toThrow("Coverage evidence is incomplete");
 });
 
 test("rejects malformed coverage counters", () => {
   expect(() => fileGap("invalid.mjs", {
     s: { 1: Number.NaN }, statementMap: { 1: {} },
   })).toThrow("Coverage evidence is malformed");
+});
+
+test("rejects a nonempty line map without line counters", () => {
+  expect(() => fileGap("missing-lines.mjs", {
+    lineMap: { 1: { start: { line: 1 } } }, l: {},
+  })).toThrow("Coverage evidence is incomplete");
+});
+
+test("rejects an individual metric map without its counters", () => {
+  expect(() => fileGap("missing-branches.mjs", { s: { 1: 1 }, statementMap: { 1: {} }, branchMap: { 1: {} }, b: {} })).toThrow("Coverage evidence is incomplete");
+  expect(() => fileGap("missing-branch-field.mjs", { s: { 1: 1 }, statementMap: { 1: {} }, branchMap: { 1: {} } })).toThrow("Coverage evidence is incomplete");
+  expect(() => fileGap("missing-functions.mjs", { s: { 1: 1 }, statementMap: { 1: {} }, fnMap: { 1: {} }, f: {} })).toThrow("Coverage evidence is incomplete");
+});
+
+test("accepts complete line-map evidence", () => {
+  expect(fileGap("complete-lines.mjs", {
+    s: { 1: 1 }, statementMap: { 1: {} }, lineMap: { 1: {} }, l: { 1: 1 },
+  })).toBeNull();
+});
+
+test("accepts complete branch and function maps", () => {
+  expect(fileGap("complete-maps.mjs", {
+    s: { 1: 1 }, statementMap: { 1: {} },
+    b: { 1: [1] }, branchMap: { 1: { locations: [{}] } },
+    f: { 1: 1 }, fnMap: { 1: {} }, l: { 1: 1 },
+  })).toBeNull();
 });

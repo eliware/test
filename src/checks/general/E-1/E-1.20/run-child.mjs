@@ -37,9 +37,10 @@ export function runChild(command, args, options = {}) {
         options.onTimeout?.();
         terminateChild(child, process.platform, process.kill, options.killTree);
         hardKillTimer = setTimeout(() => {
+          terminateChild(child, process.platform, process.kill, options.killTree);
           settled = true;
           timeout.stop();
-          resolve({ code: null, signal: "SIGTERM", ...output.result(), timedOut: true, terminationConfirmed: false });
+          resolve({ code: null, signal: "SIGTERM", ...output.result(), timedOut: true, terminationRequested: true, terminationConfirmed: false });
         }, options.terminationGraceMs ?? 1000);
       },
     });

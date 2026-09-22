@@ -1,7 +1,12 @@
 import { execFileSync } from "node:child_process";
+import { join } from "node:path";
 
-function defaultKillTree(pid) {
-  execFileSync("taskkill.exe", ["/pid", String(pid), "/t", "/f"], { windowsHide: true, stdio: "ignore" });
+export function resolveTaskkillExecutable(env = process.env) {
+  return env.SystemRoot ? join(env.SystemRoot, "System32", "taskkill.exe") : "taskkill.exe";
+}
+
+function defaultKillTree(pid, resolveExecutable = resolveTaskkillExecutable) {
+  execFileSync(resolveExecutable(), ["/pid", String(pid), "/t", "/f"], { windowsHide: true, stdio: "ignore" });
 }
 
 export function terminateChild(child, platform = process.platform, killProcess = process.kill, killTree = defaultKillTree) {
