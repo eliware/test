@@ -136,6 +136,20 @@ test("fails when the highest-priority summary is invalid", async () => {
   await rm(rootReport, { recursive: true, force: true });
 });
 
+test("skips an absent higher-priority detailed candidate and selects coverage.json", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  await mkdir(join(root, "coverage"));
+  const detailed = {
+    "src/example.mjs": {
+      statementMap: { 0: { start: { line: 1 } } }, branchMap: {}, fnMap: {},
+      s: { 0: 1 }, b: {}, f: {}, l: { 1: 1 },
+    },
+  };
+  await writeFile(join(root, "coverage", "coverage.json"), JSON.stringify(detailed));
+  await expect(readCoverageEvidenceFromCandidates(root)).resolves.toMatchObject({ source: "coverage/coverage.json" });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("rejects stale evidence and invalid evidence without usable text", async () => {
   const root = await fixture("coverage-summary.json", JSON.stringify({ total: {} }));
   await expect(readCoverageEvidenceFromCandidates(root, "not a coverage table")).rejects.toThrow(

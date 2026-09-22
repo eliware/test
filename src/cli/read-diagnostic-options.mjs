@@ -27,6 +27,14 @@ export function readDiagnosticOptions(args) {
     throw new Error("Informational commands cannot be combined with validation arguments.");
   }
   if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
+  if (modes.length > 0) {
+    const modeIndex = wrapperArgs.indexOf(modes[0]);
+    const unsupportedWrapperArgs = wrapperArgs.slice(0, modeIndex)
+      .filter((argument) => argument !== "--debug-timing");
+    if (unsupportedWrapperArgs.length > 0) {
+      throw new Error(`Tool mode arguments must follow ${modes[0]} or the -- separator.`);
+    }
+  }
   const candidateFocused = parseFocusedArguments(wrapperArgs).positional;
   if (modes.length > 0 && candidateFocused.some((argument) => /^tests?[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))) {
     throw new Error("Focused test paths cannot be combined with tool modes.");

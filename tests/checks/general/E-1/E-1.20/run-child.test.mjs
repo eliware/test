@@ -100,7 +100,7 @@ test("settles when a child ignores termination", async () => {
     createProgressTimeout: (options) => { onTimeout = options.onTimeout; return { reset: jest.fn(), stop: jest.fn() }; },
   });
   onTimeout();
-  await expect(result).resolves.toMatchObject({ timedOut: true, signal: "SIGTERM" });
+  await expect(result).resolves.toMatchObject({ timedOut: true, terminationConfirmed: false, signal: "SIGTERM" });
 });
 
 test("clears the escalation timer when timeout is followed by close", async () => {

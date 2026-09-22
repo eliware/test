@@ -28,8 +28,8 @@ export async function readCoverageEvidenceFromCandidates(
       if (evidence) return { ...evidence, source: relativePath };
       throw new Error(`Coverage report is invalid: ${relativePath}. Rerun the tests.`);
     } catch (error) {
-      if (error.code === "ENOENT") continue;
-      throw error;
+      if (error.code !== "ENOENT" && relativePath.endsWith("coverage-summary.json")) throw error;
+      continue;
     }
   }
   const textEvidence = parseText(testOutput);

@@ -71,3 +71,9 @@ test("rejects informational commands combined with validation", () => {
 test("rejects focused Jest paths combined with tool modes", () => {
   expect(() => readDiagnosticOptions(["--audit", "tests/example.test.mjs"])).toThrow("cannot be combined");
 });
+
+test("rejects wrapper arguments placed before a tool mode", () => {
+  expect(() => readDiagnosticOptions(["--runInBand", "--audit"])).toThrow(
+    "must follow --audit",
+  );
+});

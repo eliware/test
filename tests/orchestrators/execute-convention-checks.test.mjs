@@ -86,6 +86,17 @@ test("executes selected non-deterministic checks instead of silently skipping th
   expect(results).toEqual([{ ruleId: "E-3", status: "pass", message: "" }]);
 });
 
+test("does not execute advisory-only placeholder checks", async () => {
+  const run = jest.fn();
+  const results = await executeConventionChecks(
+    [{ ruleId: "E-1.20.3", applicability: "advisory-only", run }],
+    {},
+    new Set(),
+  );
+  expect(run).not.toHaveBeenCalled();
+  expect(results).toEqual([]);
+});
+
 test("reports timing through start and end callbacks", async () => {
   const timing = { start: jest.fn(), end: jest.fn() };
   await executeConventionChecks(

@@ -15,6 +15,7 @@ export async function executeConventionChecks(checks, context, exemptions) {
     return false;
   };
   for (const check of checks) {
+    if (check.applicability === "advisory-only") continue;
     if (isExempt(check.ruleId)) continue;
     if (context.modeRuleId && check.ruleId !== context.modeRuleId) continue;
     if (typeof check.run !== "function") throw new Error(`Selected check ${check.ruleId} is incomplete and cannot be executed.`);
