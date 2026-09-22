@@ -116,3 +116,17 @@ test("clears the escalation timer when timeout is followed by close", async () =
   child.emit("close", null, "SIGTERM");
   await expect(result).resolves.toMatchObject({ timedOut: true, signal: "SIGTERM" });
 });
+
+test("clears the escalation timer when timeout is followed by an error", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  let onTimeout;
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    createProgressTimeout: (options) => { onTimeout = options.onTimeout; return { reset: jest.fn(), stop: jest.fn() }; },
+  });
+  onTimeout();
+  child.emit("error", new Error("late failure"));
+  await expect(result).rejects.toThrow("late failure");
+});

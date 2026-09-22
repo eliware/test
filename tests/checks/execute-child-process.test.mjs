@@ -45,6 +45,22 @@ test("captures bounded stdout and stderr from a completed child", async () => {
   await expect(promise).resolves.toEqual({ code: 3, signal: "SIGTERM", stdout: "output", stderr: "warning" });
 });
 
+test("enforces one combined output budget across stdout and stderr", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], {}, () => child);
+  child.stdout.emit("data", "o".repeat(100_000));
+  child.stderr.emit("data", "e".repeat(100_000));
+  child.emit("close", 0, null);
+  const result = await promise;
+  expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(100_000);
+});
+
+test("uses the real child-process adapter when no injector is supplied", async () => {
+  await expect(execute(process.execPath, ["-e", ""], {})).resolves.toMatchObject({ code: 0 });
+});
+
 test("rejects when the child process cannot start", async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

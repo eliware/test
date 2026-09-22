@@ -2,9 +2,10 @@ export function createProgressTimeout({ timeoutMs, onTimeout }) {
   let timer;
   let timedOut = false;
   const reset = () => {
-    if (!timeoutMs) return;
+    if (!timeoutMs || timedOut) return;
     clearTimeout(timer);
     timer = setTimeout(() => {
+      if (timedOut) return;
       timedOut = true;
       onTimeout();
     }, timeoutMs);

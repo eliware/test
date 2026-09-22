@@ -60,6 +60,10 @@ remain enabled for all validation modes.
 The v8 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 
+The architecture/common-stack requirements E-1.20.3, E-1.20.4, E-1.20.5, and
+E-1.20.9 are explicitly advisory-only in the bundled profile; their current
+runtime stubs do not claim deterministic enforcement.
+
 ## Authority and scope
 
 Test owns the validator architecture, public CLI lifecycle, deterministic

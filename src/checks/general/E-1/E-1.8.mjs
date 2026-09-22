@@ -11,7 +11,7 @@ import { resolveMailboxTemplateFiles } from "./resolve-mailbox-template-files.mj
 export const ruleId = "E-1.8";
 export const parentRuleId = "E-1";
 
-export async function run({ root, packageJson, trackedFiles, findFiles = findRepositoryFiles, checkIgnored = isIgnoredByGit }) {
+export async function run({ root, packageJson, trackedFiles, readTracked = readTrackedPaths, findFiles = findRepositoryFiles, checkIgnored = isIgnoredByGit }) {
   const repositoryName = packageJson?.name?.replace(/^@[^/]+\//, "");
   if (!repositoryName) {
     return fail(ruleId, "package.json.name is required to derive the mailbox owner.");
@@ -29,9 +29,10 @@ export async function run({ root, packageJson, trackedFiles, findFiles = findRep
     return fail(ruleId, `Local .env must define the mailbox owner as ${expected}.`);
   }
 
-  const gitTracked = trackedFiles ?? await readTrackedPaths(root);
-  const tracked = new Set(gitTracked ?? []);
-  if (tracked?.has(".env")) {
+  const gitTracked = trackedFiles ?? await readTracked(root);
+  if (!Array.isArray(gitTracked)) return fail(ruleId, "Git tracking inspection was unavailable; cannot validate the local mailbox owner safely.");
+  const tracked = new Set(gitTracked);
+  if (tracked.has(".env")) {
     return fail(ruleId, "The local mailbox owner file .env must remain untracked.");
   }
   if (!(await checkIgnored(root, ".env"))) {
@@ -46,7 +47,7 @@ export async function run({ root, packageJson, trackedFiles, findFiles = findRep
   }
   const templateFiles = await resolveMailboxTemplateFiles(
     files,
-    gitTracked,
+    trackedFiles,
     (file) => checkIgnored(root, file),
   );
   const templateError = await validateMailboxTemplates(root, templateFiles);

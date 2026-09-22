@@ -34,6 +34,12 @@ test("fails closed when Git returns an unexpected error", async () => {
   await expect(gitIgnores("C:/repo", "file", async () => { throw { code: 1 }; })).resolves.toBe(false);
 });
 
+test("uses the platform Git executable adapter", async () => {
+  let command;
+  await gitIgnores("C:/repo", "file", async (resolved) => { command = resolved; }, () => "git.exe");
+  expect(command).toBe("git.exe");
+});
+
 test("reports an omitted dependency category", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-"));
   await writeFile(join(root, ".gitignore"), ".git\ncoverage\nbuild\nruntime\n.env\n.DS_Store\n");

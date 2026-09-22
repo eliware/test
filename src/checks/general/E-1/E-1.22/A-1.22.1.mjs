@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 import { readTrackedPaths } from "../E-1.6/read-tracked-paths.mjs";
 import { hasExplicitIgnoreRule, prohibitedTrackedPath } from "./git-ignore-policy.mjs";
+import { resolveGitExecutable } from "./resolve-git-executable.mjs";
 
 export const ruleId = "A-1.22.1";
 export const parentRuleId = "E-1.22";
@@ -21,9 +22,9 @@ const requiredPaths = new Map([
   ["machine-specific files", ".idea/workspace.xml"],
 ]);
 
-export async function gitIgnores(root, path, runGit = execFileAsync) {
+export async function gitIgnores(root, path, runGit = execFileAsync, resolveGit = resolveGitExecutable) {
   try {
-    await runGit("git", ["-C", root, "check-ignore", "-q", "--no-index", "--", path.replaceAll("\\", "/")], { windowsHide: true });
+    await runGit(resolveGit(), ["-C", root, "check-ignore", "-q", "--no-index", "--", path.replaceAll("\\", "/")], { windowsHide: true });
     return true;
   } catch (error) {
     if (error?.code === 1) return false;

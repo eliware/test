@@ -72,3 +72,7 @@ test("rejects informational commands combined with validation", () => {
     "Informational commands cannot be combined",
   );
 });
+
+test("rejects focused Jest paths combined with tool modes", () => {
+  expect(() => readDiagnosticOptions(["--audit", "tests/example.test.mjs"])).toThrow("cannot be combined");
+});

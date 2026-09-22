@@ -11,7 +11,7 @@ test("requires the repository mailbox owner in local .env only", async () => {
   const checkIgnored = async (_root, path) => path === ".env";
   await expect(run({ root, packageJson })).resolves.toMatchObject({ status: "fail" });
   await writeFile(join(root, ".env"), "MAIL_OWNER_ADDRESS=fixture@eliware.org\n");
-  await expect(run({ root, packageJson, checkIgnored })).resolves.toMatchObject({ status: "pass" });
+  await expect(run({ root, packageJson, trackedFiles: [], checkIgnored })).resolves.toMatchObject({ status: "pass" });
   await writeFile(join(root, ".env.example"), "MAIL_OWNER_ADDRESS=fixture@eliware.org\n");
   await expect(run({ root, packageJson, checkIgnored })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
@@ -39,7 +39,7 @@ test.each([
 ])("rejects a non-canonical mailbox declaration: %s", async (line) => {
   const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-"));
   await writeFile(join(root, ".env"), `${line}\n`);
-  await expect(run({ root, packageJson: { name: "@eliware/fixture" }, checkIgnored: async () => true })).resolves.toMatchObject({
+  await expect(run({ root, packageJson: { name: "@eliware/fixture" }, trackedFiles: [], checkIgnored: async () => true })).resolves.toMatchObject({
     status: "fail",
   });
   await rm(root, { recursive: true, force: true });
@@ -51,6 +51,22 @@ test("rejects a tracked local .env", async () => {
   await expect(
     run({ root, packageJson: { name: "@eliware/fixture" }, trackedFiles: [".env"], checkIgnored: async () => true }),
   ).resolves.toMatchObject({ status: "fail" });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("fails closed when Git tracking inspection is unavailable", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-unavailable-"));
+  await writeFile(join(root, ".env"), "MAIL_OWNER_ADDRESS=fixture@eliware.org\n");
+  await expect(run({ root, packageJson: { name: "@eliware/fixture" }, readTracked: async () => null, checkIgnored: async () => true }))
+    .resolves.toMatchObject({ status: "fail", message: expect.stringContaining("Git tracking inspection") });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("filters untracked environment templates through Git", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-template-"));
+  await writeFile(join(root, ".env"), "MAIL_OWNER_ADDRESS=fixture@eliware.org\n");
+  await expect(run({ root, packageJson: { name: "@eliware/fixture" }, readTracked: async () => [], checkIgnored: async (_root, file) => file === ".env" }))
+    .resolves.toMatchObject({ status: "pass" });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -67,7 +83,7 @@ test("rejects a local .env that Git would track", async () => {
 test("accepts a quoted canonical mailbox declaration", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-"));
   await writeFile(join(root, ".env"), 'export MAIL_OWNER_ADDRESS="fixture@eliware.org"\n');
-  await expect(run({ root, packageJson: { name: "@eliware/fixture" }, checkIgnored: async () => true })).resolves.toMatchObject({
+  await expect(run({ root, packageJson: { name: "@eliware/fixture" }, trackedFiles: [], checkIgnored: async () => true })).resolves.toMatchObject({
     status: "pass",
   });
   await rm(root, { recursive: true, force: true });

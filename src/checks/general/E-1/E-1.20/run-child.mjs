@@ -25,6 +25,7 @@ export function runChild(command, args, options = {}) {
       if (settled) return;
       settled = true;
       timeout.stop();
+      if (hardKillTimer) clearTimeout(hardKillTimer);
       reject(error);
     };
     const timeout = createTimeout({

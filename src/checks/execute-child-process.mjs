@@ -8,8 +8,16 @@ export function execute(command, args, options, spawnProcess = spawn) {
     const child = spawnProcess(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (chunk) => { stdout = `${stdout}${redactProcessOutput(chunk)}`.slice(0, MAX_OUTPUT_LENGTH); });
-    child.stderr.on("data", (chunk) => { stderr = `${stderr}${redactProcessOutput(chunk)}`.slice(0, MAX_OUTPUT_LENGTH); });
+    let captured = 0;
+    const append = (current, chunk) => {
+      const remaining = Math.max(0, MAX_OUTPUT_LENGTH - captured);
+      if (remaining === 0) return current;
+      const value = redactProcessOutput(chunk).slice(0, remaining);
+      captured += value.length;
+      return `${current}${value}`;
+    };
+    child.stdout.on("data", (chunk) => { stdout = append(stdout, chunk); });
+    child.stderr.on("data", (chunk) => { stderr = append(stderr, chunk); });
     child.on("error", reject);
     child.on("close", (code, signal) => resolveResult({ code, signal, stdout, stderr }));
   });

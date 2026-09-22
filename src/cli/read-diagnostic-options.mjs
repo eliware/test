@@ -24,7 +24,11 @@ export function readDiagnosticOptions(args) {
     throw new Error("Informational commands cannot be combined with validation arguments.");
   }
   if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
-  const focused = modes.length === 0 ? parseFocusedArguments(normalizedArgs).positional : [];
+  const candidateFocused = parseFocusedArguments(normalizedArgs).positional;
+  if (modes.length > 0 && candidateFocused.some((argument) => /^tests?[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))) {
+    throw new Error("Focused test paths cannot be combined with tool modes.");
+  }
+  const focused = modes.length === 0 ? candidateFocused : [];
   if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
   if (
     focused.some((argument) => !/^tests?[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))

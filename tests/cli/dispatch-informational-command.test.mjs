@@ -13,3 +13,8 @@ test("dispatches version and help commands", () => {
 test("returns no result for validation commands", () => {
   expect(dispatchInformationalCommand([], () => {})).toBeNull();
 });
+
+test("owns informational conflict validation", () => {
+  expect(() => dispatchInformationalCommand(["--help", "--help"], () => {})).toThrow("cannot be repeated");
+  expect(() => dispatchInformationalCommand(["--help", "--lint"], () => {})).toThrow("combined");
+});
