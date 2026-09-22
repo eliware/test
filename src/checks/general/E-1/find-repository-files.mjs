@@ -6,7 +6,8 @@ const excluded = new Set([".git", "node_modules", "coverage", "dist", "build", "
 export async function findRepositoryFiles(root, readDirectory = readdir) {
   const files = [];
   async function visit(directory) {
-    for (const entry of await readDirectory(directory, { withFileTypes: true })) {
+    const entries = await readDirectory(directory, { withFileTypes: true });
+    for (const entry of entries.toSorted((left, right) => left.name.localeCompare(right.name))) {
       if (entry.isDirectory()) {
         if (!excluded.has(entry.name)) await visit(join(directory, entry.name));
       } else if (entry.isFile()) {

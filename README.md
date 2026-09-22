@@ -54,9 +54,8 @@ arguments to Oxlint, Prettier, npm audit, or npm pack as appropriate.
 All five tool modes are public CLI modes. The npm script forms are supported
 package-level shortcuts; arbitrary npm script names are not CLI arguments.
 
-The two `--ignore-*` flags bypass enforcement and are diagnostic-only. They
-must not be used for release validation or CI and require approved
-transitional use.
+Legacy `--ignore-*` flags are unsupported. Coverage and monolith enforcement
+remain enabled for all validation modes.
 
 The v8 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.

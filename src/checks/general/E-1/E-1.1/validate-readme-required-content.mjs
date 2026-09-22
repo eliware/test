@@ -42,6 +42,7 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, { exampl
     return "README.md must include the standard Links section.";
   }
   if (licenseIndex < 0 || !/\[license\]\(LICENSE\)/iu.test(sectionContent(readme, licenseIndex))) return "README.md must link the repository LICENSE file from its License section.";
+  if (!(supportIndex < licenseIndex && licenseIndex < linksIndex)) return "README.md footer sections must be ordered Support, License, Links.";
   return null;
 }
 

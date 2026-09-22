@@ -31,8 +31,8 @@ export function runChild(command, args, options = {}) {
       onTimeout: () => {
         if (settled) return;
         timeout.stop();
-      timedOut = true;
-      options.onTimeout?.();
+        timedOut = true;
+        options.onTimeout?.();
         terminateChild(child);
       },
     });

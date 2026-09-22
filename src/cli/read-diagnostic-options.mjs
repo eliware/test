@@ -1,7 +1,7 @@
 import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
 
 export function readDiagnosticOptions(args) {
-  const normalizedArgs = args.filter((argument) => argument !== "--");
+  const normalizedArgs = [...args];
   const modeFlags = ["--lint", "--format", "--format-check", "--audit", "--pack"];
   const removedFlags = ["--ignore-100x4", "--ignore-monolith-limits"];
   const modes = normalizedArgs.filter((argument) => modeFlags.includes(argument));

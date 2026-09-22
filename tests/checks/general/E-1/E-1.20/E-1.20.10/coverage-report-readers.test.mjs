@@ -19,4 +19,11 @@ test("reads detailed and summary report formats", async () => {
   });
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 0)).rejects.toThrow();
   await expect(readJsonCoverage("missing-coverage.json", "missing-coverage.json", 1)).rejects.toThrow();
+  await expect(readJsonCoverage(
+    "coverage-summary.json",
+    "coverage-summary.json",
+    1,
+    async () => JSON.stringify({ total: {} }),
+    async () => ({ mtimeMs: 2 }),
+  )).rejects.toThrow("Summary-only coverage");
 });

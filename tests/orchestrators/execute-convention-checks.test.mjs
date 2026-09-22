@@ -71,7 +71,7 @@ test("fails when an explicit mode has no selected owner", async () => {
   )).rejects.toThrow("is unavailable in the selected checks");
 });
 
-test("does not represent non-deterministic checks as successful enforcement", async () => {
+test("executes selected non-deterministic checks instead of silently skipping them", async () => {
   let calls = 0;
   const run = async () => {
     calls += 1;
@@ -82,8 +82,8 @@ test("does not represent non-deterministic checks as successful enforcement", as
     {},
     new Set(),
   );
-  expect(calls).toBe(0);
-  expect(results).toEqual([]);
+  expect(calls).toBe(1);
+  expect(results).toEqual([{ ruleId: "E-3", status: "pass", message: "" }]);
 });
 
 test("reports timing through start and end callbacks", async () => {

@@ -6,6 +6,6 @@ export async function runNpmAudit(
   resolveCommand = resolveAuditExecutable,
   extraArgs = [],
 ) {
-  const [command, prefix] = resolveCommand();
+  const [command, prefix] = resolveCommand({ env: process.env, platform: process.platform, execPath: process.execPath });
   return run(command, [...prefix, ...buildAuditArguments(extraArgs)], { cwd: root });
 }

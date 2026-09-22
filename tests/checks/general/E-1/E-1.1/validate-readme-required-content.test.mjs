@@ -14,10 +14,10 @@ Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [e
 ## Security
 ## Support
 [Discord](https://discord.gg/M6aTR9eTwN) eliware.org on Discord
-## Links
-Eliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)
 ## License
-[LICENSE](LICENSE)`;
+[LICENSE](LICENSE)
+## Links
+Eliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)`;
 
 test("accepts the standardized content surface", () => {
   expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture", publishConfig: { access: "public" } })).toBeNull();
@@ -28,6 +28,14 @@ test("allows the examples navigation link when the optional examples surface is 
   const withoutExamples = standard.replace(" · [examples](examples/README.md)", "");
   expect(validateReadmeRequiredContent(withoutExamples, { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture" }, { examplesRequired: false })).toBeNull();
   expect(validateReadmeRequiredContent(withoutExamples, { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture" })).toContain("Documentation navigation");
+});
+
+test("requires the standard footer order", () => {
+  const misplaced = standard.replace(
+    /## License\n\[LICENSE\]\(LICENSE\)\n## Links/u,
+    "## Links\nEliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)\n## License\n[LICENSE](LICENSE)",
+  );
+  expect(validateReadmeRequiredContent(misplaced, { name: "@eliware/fixture" })).toContain("footer sections");
 });
 
 test.each([

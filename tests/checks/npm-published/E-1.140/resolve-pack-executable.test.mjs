@@ -8,4 +8,5 @@ test("resolves npm through npm_execpath or the platform executable", () => {
   ]);
   expect(resolvePackExecutable({}, "win32", "node.exe")).toEqual(["npm.cmd", []]);
   expect(resolvePackExecutable({}, "linux", "node")).toEqual(["npm", []]);
+  expect(resolvePackExecutable()).toHaveLength(2);
 });

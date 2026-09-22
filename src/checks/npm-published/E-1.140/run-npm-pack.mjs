@@ -7,6 +7,6 @@ export async function runNpmPack(
   resolveCommand = resolvePackExecutable,
   extraArgs = [],
 ) {
-  const [command, prefix] = resolveCommand();
+  const [command, prefix] = resolveCommand(process.env, process.platform, process.execPath);
   return run(command, [...prefix, ...buildPackArguments(extraArgs)], { cwd: root });
 }

@@ -8,6 +8,9 @@ export async function readJsonCoverage(path, relativePath, startedAt, read = rea
   const parsed = JSON.parse(await read(path, "utf8"));
   const after = startedAt ? await statFile(path) : null;
   assertFreshCoverage(before, after, relativePath, startedAt);
+  if (relativePath.endsWith("coverage-summary.json") && startedAt) {
+    throw new Error(`Summary-only coverage cannot prove file-level coverage: ${relativePath}.`);
+  }
   return relativePath.endsWith("coverage-final.json") || !parsed?.total
     ? parseDetailed(parsed)
     : parseSummary(parsed);
