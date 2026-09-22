@@ -1,4 +1,7 @@
+import { normalizeWorkflowDocument } from "../../../ghcr-published/normalize-workflow-document.mjs";
+
 export function workflowHasValidationEvents(document) {
+  document = normalizeWorkflowDocument(document);
   const raw = document?.on ?? document?.true ?? {};
   const events = Array.isArray(raw) ? Object.fromEntries(raw.map((event) => [event, {}]))
     : typeof raw === "string" ? { [raw]: {} } : raw;

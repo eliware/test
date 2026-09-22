@@ -1,6 +1,5 @@
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import { runChild } from "./run-child.mjs";
 import { prepareJestRun } from "./prepare-jest-run.mjs";
 export function resolveConsumerJestCli(root) {
   const requireFromConsumer = createRequire(join(root, "package.json"));
@@ -18,7 +17,7 @@ export function resolveConsumerJestCli(root) {
 }
 
 export function resolveJestCli(root, execute, options = {}) {
-  return options?.jestCli ?? (execute === runChild ? resolveConsumerJestCli(root) : "jest-cli");
+  return options?.jestCli ?? resolveConsumerJestCli(root);
 }
 
 export async function runJest(root, args, execute, options) {

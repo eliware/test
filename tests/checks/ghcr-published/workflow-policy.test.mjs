@@ -30,6 +30,7 @@ test("handles alternate triggers, runners, permissions, and validation jobs", ()
   expect(hasExactTagTrigger(alternate)).toBe(false);
   expect(validationJobs(alternate)).toHaveLength(0);
   expect(hasUbuntuRunner(alternate, alternate.document.jobs.publish)).toBe(true);
+  expect(hasUbuntuRunner(alternate, null)).toBe(false);
   expect(permissions(alternate, alternate.document.jobs.publish)).toEqual({ packages: "write" });
   expect(permissions({ document: {} }, {})).toEqual({});
   expect(hasExactTagTrigger({ document: { on: { push: { tags: ["other"] } } } })).toBe(false);

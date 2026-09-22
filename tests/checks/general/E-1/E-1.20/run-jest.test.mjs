@@ -8,7 +8,9 @@ import { runChild } from "../../../../../src/checks/general/E-1/E-1.20/run-child
 test("resolves Jest from the consumer package", () => {
   expect(resolveConsumerJestCli(process.cwd())).toContain("jest.js");
   expect(resolveJestCli(process.cwd(), runChild, {})).toContain("jest.js");
-  expect(resolveJestCli("C:/fixture", async () => {}, {})).toBe("jest-cli");
+  expect(resolveJestCli(process.cwd(), runChild, null)).toContain("jest.js");
+  expect(resolveJestCli(process.cwd(), runChild)).toContain("jest.js");
+  expect(resolveJestCli("C:/fixture", async () => {}, { jestCli: "jest-cli" })).toBe("jest-cli");
   expect(resolveJestCli("C:/fixture", runChild, { jestCli: "custom-jest" })).toBe("custom-jest");
 });
 
@@ -25,7 +27,7 @@ test("rejects a missing focused test before invoking Jest", async () => {
     runJest("C:/fixture", ["tests/missing.test.mjs"], async () => {
       invoked = true;
       return { code: 0, stdout: "", stderr: "" };
-    }),
+    }, { jestCli: "jest-cli" }),
   ).rejects.toThrow("Focused test path does not exist");
   expect(invoked).toBe(false);
 });
@@ -38,7 +40,7 @@ test("supports non-test focused paths without focused coverage mapping", async (
   await runJest(root, ["tests/README.md"], async (...args) => {
     received = args;
     return { code: 0, stdout: "", stderr: "" };
-  });
+  }, { jestCli: "jest-cli" });
   expect(received[1]).not.toContain("--collectCoverageFrom");
   await rm(root, { recursive: true, force: true });
 });
@@ -51,7 +53,7 @@ test("preserves an existing VM module option and forwards non-focused arguments"
     await runJest("C:/fixture", ["--watch"], async (...args) => {
       received = args;
       return { code: 0, stdout: "", stderr: "" };
-    });
+    }, { jestCli: "jest-cli" });
     expect(received[2].env.NODE_OPTIONS).toBe(process.env.NODE_OPTIONS);
     expect(received[1]).toContain("--watch");
   } finally {
@@ -70,7 +72,7 @@ test("raises the bounded debug-timing capture without making it unlimited", asyn
       received = args;
       return { code: 0, stdout: "", stderr: "" };
     },
-    { onStderr },
+    { onStderr, jestCli: "jest-cli" },
   );
   expect(received[2].maxOutputLength).toBe(1_000_000);
   expect(received[1]).toContain("--reporters");
@@ -96,6 +98,7 @@ test("reports the last started suite when progress stops", async () => {
       onTimeout: (message) => {
         received.timeoutMessage = message;
       },
+      jestCli: "jest-cli",
     },
   );
   expect(received.timeoutMessage).toBe(
@@ -108,7 +111,7 @@ test("uses default Jest arguments with an injected child executor", async () => 
   await runJest("C:/fixture", undefined, async (...args) => {
     received = args;
     return { code: 0, stdout: "", stderr: "" };
-  });
+  }, { jestCli: "jest-cli" });
   expect(received[1]).toContain("--runInBand");
 });
 
@@ -120,7 +123,7 @@ test("adds the VM module option when it is absent", async () => {
     await runJest(process.cwd(), [], async (...args) => {
       received = args;
       return { code: 0, stdout: "", stderr: "" };
-    });
+    }, { jestCli: "jest-cli" });
     expect(received[2].env.NODE_OPTIONS).toBe("--experimental-vm-modules --no-warnings");
   } finally {
     if (previous === undefined) delete process.env.NODE_OPTIONS;

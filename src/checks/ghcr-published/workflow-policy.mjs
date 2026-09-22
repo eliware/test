@@ -1,4 +1,5 @@
 import { jobs, steps } from "./workflow-structure.mjs";
+import { normalizeWorkflowJob } from "./normalize-workflow-document.mjs";
 
 export function permissions(workflow, job) {
   return job?.permissions ?? workflow.document?.permissions ?? {};
@@ -25,6 +26,6 @@ export function validationJobs(workflow) {
 }
 
 export function hasUbuntuRunner(workflow, job) {
-  const runner = job?.["runs-on"] ?? job?.runsOn;
+  const runner = normalizeWorkflowJob(job)?.["runs-on"];
   return /ubuntu(?:-latest|-\d{2}\.\d{2})?/iu.test(String(runner ?? ""));
 }

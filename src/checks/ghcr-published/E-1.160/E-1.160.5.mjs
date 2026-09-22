@@ -20,8 +20,8 @@ export async function run({ root }) {
     const attestIndex = attest ? jobSteps.indexOf(attest) : -1;
     const permissionsSet = permissions(publication, publicationJob);
     const attestWith = attest?.with ?? {};
-    const subjectName = attestWith.subjectName ?? attestWith["subject-name"];
-    const subjectDigest = attestWith.subjectDigest ?? attestWith["subject-digest"];
+    const subjectName = attestWith.subjectName;
+    const subjectDigest = attestWith.subjectDigest;
     if (
       !publication ||
       attestIndex < 0 ||
@@ -32,7 +32,7 @@ export async function run({ root }) {
       permissionsSet["artifact-metadata"] !== "write" ||
       permissionsSet.contents !== "read" ||
       permissionsSet.packages !== "write" ||
-      (attestWith.pushToRegistry ?? attestWith["push-to-registry"]) !== true ||
+      attestWith.pushToRegistry !== true ||
       subjectName !== details.image ||
       subjectDigest !== details.digestReference
     )

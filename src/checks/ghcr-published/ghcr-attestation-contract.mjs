@@ -19,10 +19,10 @@ export function imageDetails(push) {
 export function findAttestation(job, details) {
   return steps(job).find((step) => {
     const withValues = step?.with ?? {};
-    const subjectName = withValues.subjectName ?? withValues["subject-name"];
-    const subjectDigest = withValues.subjectDigest ?? withValues["subject-digest"];
+    const subjectName = withValues.subjectName;
+    const subjectDigest = withValues.subjectDigest;
     return step?.uses === "actions/attest@v4" &&
-      (withValues.pushToRegistry ?? withValues["push-to-registry"]) === true &&
+      withValues.pushToRegistry === true &&
       subjectName === details.image &&
       subjectDigest === details.digestReference;
   });
