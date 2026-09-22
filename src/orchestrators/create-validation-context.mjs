@@ -14,5 +14,6 @@ export function createValidationContext(root, packageJson, options = {}) {
     toolArgs: options.toolArgs ?? [],
     timing: options.timing,
     writeOutput: options.writeOutput,
+    ...(options.focusedScope ? { focusedScope: options.focusedScope } : {}),
   };
 }

@@ -27,13 +27,13 @@ test("keeps aggregate package stages enabled when Jest execution is independentl
     .toEqual(expect.objectContaining({ executeJest: false, executePackageChecks: true, mode: null }));
 });
 
-test("disables unrelated stages for focused Jest execution", () => {
+test("keeps focused lint and formatting while disabling unrelated stages", () => {
   expect(createValidationRunOptions(
     [], { mode: null, jestArgs: ["tests/example.test.mjs"] }, {}, {}, undefined,
   )).toEqual(expect.objectContaining({
     executeJest: true,
-    executeLint: false,
-    executeFormat: false,
+    executeLint: true,
+    executeFormat: true,
     executeAudit: false,
     executePack: false,
     executePackageChecks: false,

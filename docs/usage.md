@@ -47,7 +47,11 @@ accepted as direct CLI arguments.
 
 To validate one focused Jest path, pass it after the npm separator. Focused
 paths are rejected when they do not exist, and coverage is narrowed to an
-unambiguous mirrored source module when possible:
+unambiguous mirrored source module when possible. Focused validation also
+checks the selected Jest run's coverage and output, runs Oxlint and Prettier
+only on the selected source/test pair, and validates that pair's mirroring and
+test contract. Repository-wide checks such as audit, pack, dependency,
+documentation, workflow, and unrelated source/test checks remain skipped:
 
 ```text
 npm test -- tests/example.test.mjs

@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { executeFormatterValidation } from "../../../../../src/checks/general/E-1/E-1.20/execute-formatter-validation.mjs";
 
 test("runs format and format-check modes with the correct write setting", async () => {
@@ -53,4 +53,20 @@ test("returns formatter diagnostics and startup failures", async () => {
       },
     }),
   ).resolves.toBe("Prettier could not be started: spawn failed");
+});
+
+test("skips disabled or unrelated formatter stages and scopes focused paths", async () => {
+  const runFormatter = jest.fn(async () => ({ code: 0 }));
+  await expect(executeFormatterValidation({ executeFormat: false, mode: "format-check", runFormatter })).resolves.toBeNull();
+  await expect(executeFormatterValidation({ executeFormat: true, mode: "lint", runFormatter })).resolves.toBeNull();
+  await executeFormatterValidation({
+    root: "/repo",
+    executeFormat: true,
+    mode: "format-check",
+    focusedScope: { paths: ["tests/example.test.mjs", "src/example.mjs"] },
+    runFormatter,
+  });
+  expect(runFormatter).toHaveBeenCalledWith("/repo", expect.objectContaining({
+    paths: ["tests/example.test.mjs", "src/example.mjs"],
+  }));
 });

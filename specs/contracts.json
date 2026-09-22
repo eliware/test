@@ -434,7 +434,9 @@
       "dos": [
         "Expose focused testing through the public harness boundary.",
         "Reject missing or ambiguous focused paths before unrelated execution.",
-        "Scope coverage to an unambiguous mirrored source mapping."
+        "Scope coverage to an unambiguous mirrored source mapping.",
+        "Run focused Jest, coverage, unexpected-output, lint, formatting, runtime/Jest configuration, and selected source/test mirror checks.",
+        "Keep the full check registry available for completeness and exemption validation while executing only focused-safe checks."
       ],
       "donts": [
         "Do not silently fall back to the full suite or report unrelated-module coverage failures for a focused request.",
@@ -449,20 +451,23 @@
           "focusedPaths": "Recognized test paths supplied through the public invocation."
         },
         "outputs": {
-          "scope": "Only requested tests and unambiguously mapped source coverage are selected."
+          "scope": "Only the requested test, its mapped source, and checks applicable to that pair are selected."
         },
         "errors": [
           "Unsupported, missing, or ambiguous paths produce the stable convention failure result."
         ],
         "ordering": ["Path validation precedes test execution."],
-        "invariants": ["Focused selection does not add profiles or change exemption evaluation."],
+        "invariants": [
+          "Focused selection does not add profiles or change exemption evaluation.",
+          "Repository-wide audit, pack, dependency, documentation, workflow, publication, and unrelated source/test checks remain skipped."
+        ],
         "boundaries": {
           "owns": ["Focused validation selection"],
           "doesNotOwn": ["Convention profile definitions"]
         }
       },
       "implementation": {
-        "source": ["src/cli/run-cli.mjs", "src/cli/parse-focused-arguments.mjs", "src/checks/general/E-1/E-1.20/run-jest.mjs"]
+        "source": ["src/cli/run-cli.mjs", "src/cli/parse-focused-arguments.mjs", "src/cli/resolve-focused-scope.mjs", "src/orchestrators/prepare-validation-plan.mjs", "src/checks/general/E-1/E-1.17.mjs", "src/checks/general/E-1/E-1.20/run-jest.mjs"]
       },
       "verification": {
         "tests": [
@@ -471,6 +476,9 @@
           "tests/cli/parse-focused-arguments.test.mjs",
           "tests/checks/general/E-1/E-1.20/build-jest-arguments.test.mjs",
           "tests/checks/general/E-1/E-1.20/validate-focused-test-path.test.mjs",
+          "tests/cli/resolve-focused-scope.test.mjs",
+          "tests/orchestrators/prepare-validation-plan.test.mjs",
+          "tests/checks/general/E-1/E-1.17.test.mjs",
           "tests/checks/general/E-1/E-1.20/run-jest.test.mjs"
         ],
         "commands": ["npm test"]

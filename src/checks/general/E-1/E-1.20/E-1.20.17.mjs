@@ -13,6 +13,7 @@ export async function run({
   mode = null,
   runFormatter = runPrettier,
   toolArgs = [],
+  focusedScope = null,
 }) {
   const scriptError = validateRequiredScripts(packageJson?.scripts);
   if (scriptError) return fail(ruleId, scriptError);
@@ -22,6 +23,7 @@ export async function run({
     mode,
     runFormatter,
     toolArgs,
+    focusedScope,
   });
   return formatterError === null || formatterError === ""
     ? pass(ruleId)

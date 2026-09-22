@@ -4,11 +4,14 @@ export async function executeFormatterValidation({
   mode,
   runFormatter,
   toolArgs = [],
+  focusedScope = null,
 }) {
   if (!executeFormat || (mode !== null && mode !== "format" && mode !== "format-check"))
     return null;
   try {
-    const result = await runFormatter(root, { write: mode === "format", extraArgs: toolArgs });
+    const formatterOptions = { write: mode === "format", extraArgs: toolArgs };
+    if (focusedScope) formatterOptions.paths = focusedScope.paths;
+    const result = await runFormatter(root, formatterOptions);
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return detail ? `Prettier failed: ${detail}` : "Prettier failed without diagnostics.";

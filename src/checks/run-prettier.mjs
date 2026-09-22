@@ -5,7 +5,7 @@ import { resolvePrettierExecutable } from "./resolve-prettier-executable.mjs";
 
 export async function runPrettier(
   root,
-  { write = false, extraArgs = [] } = {},
+  { write = false, extraArgs = [], paths = [] } = {},
   run,
   resolveExecutable = resolvePrettierExecutable,
   spawnProcess = spawn,
@@ -14,7 +14,7 @@ export async function runPrettier(
   const executePrettier = run ?? ((...args) => execute(...args, spawnProcess));
   return executePrettier(
     process.execPath,
-    [executable, ...buildPrettierArguments({ write, extraArgs })],
+    [executable, ...buildPrettierArguments({ write, extraArgs, paths })],
     {
       cwd: root,
     },

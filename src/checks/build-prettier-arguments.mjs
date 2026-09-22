@@ -1,3 +1,3 @@
-export function buildPrettierArguments({ write = false, extraArgs = [] } = {}) {
-  return [write ? "--write" : "--check", ".", ...extraArgs];
+export function buildPrettierArguments({ write = false, extraArgs = [], paths = [] } = {}) {
+  return [write ? "--write" : "--check", ...(paths.length > 0 ? paths : ["."]), ...extraArgs];
 }

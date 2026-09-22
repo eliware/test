@@ -129,3 +129,36 @@ test("ignores directory entries that are neither files nor directories", async (
   ).toEqual([]);
   await rm(root, { recursive: true, force: true });
 });
+
+test("validates a focused mirrored pair", async () => {
+  const root = await fixture();
+  await expect(run({
+    root,
+    focusedScope: { sourcePath: "src/nested/module.mjs", testPath: "tests/nested/module.test.mjs" },
+  })).resolves.toEqual({ ruleId: "E-1.17", status: "pass", message: "" });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("reports focused mirror and test-contract failures", async () => {
+  const root = await fixture();
+  await writeFile(join(root, "tests", "nested", "module.test.mjs"), "import \"../../src/nested/module.mjs\";");
+  await expect(run({
+    root,
+    focusedScope: { sourcePath: "src/nested/missing.mjs", testPath: "tests/nested/module.test.mjs" },
+  })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("missing mirrored source") }));
+  await writeFile(join(root, "tests", "nested", "module.test.mjs"), "test();");
+  await expect(run({
+    root,
+    focusedScope: { sourcePath: "src/nested/module.mjs", testPath: "tests/nested/module.test.mjs" },
+  })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("does not reference") }));
+  await rm(root, { recursive: true, force: true });
+});
+
+test("reports a missing focused test file", async () => {
+  const root = await fixture();
+  await expect(run({
+    root,
+    focusedScope: { sourcePath: "src/nested/module.mjs", testPath: "tests/nested/missing.test.mjs" },
+  })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("Focused test file is missing") }));
+  await rm(root, { recursive: true, force: true });
+});
