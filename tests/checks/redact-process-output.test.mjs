@@ -8,4 +8,10 @@ test("redacts structured, quoted, and authorization credentials", () => {
   expect(redactProcessOutput("Authorization: Bearer abcdefghijkl")).toBe(
     "Authorization: Bearer [REDACTED]",
   );
+  expect(redactProcessOutput('API_KEY "quoted secret" user:pass@https://example.test')).toBe(
+    "API_KEY [REDACTED] user:pass@https://example.test",
+  );
+  expect(redactProcessOutput("https://alice:secret@example.test/path")).toBe(
+    "https://[REDACTED]@example.test/path",
+  );
 });

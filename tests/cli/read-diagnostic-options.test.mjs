@@ -42,6 +42,10 @@ test("does not treat option values as focused paths and preserves them for Jest"
   });
 });
 
+test("accepts focused specs paths using the shared grammar", () => {
+  expect(readDiagnosticOptions(["specs/example.spec.mjs"]).jestArgs).toEqual(["specs/example.spec.mjs"]);
+});
+
 test("recognizes values for common Jest options", () => {
   expect(readDiagnosticOptions([
     "--moduleNameMapper", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs",

@@ -63,6 +63,14 @@ test("runs only the selected operational check for an explicit mode", async () =
   expect(calls).toEqual(["E-1.20.17"]);
 });
 
+test("fails when an explicit mode has no selected owner", async () => {
+  await expect(executeConventionChecks(
+    [{ ruleId: "E-1.4", run: async () => ({ ruleId: "E-1.4", status: "pass", message: "" }) }],
+    { modeRuleId: "E-1.20.19" },
+    new Set(),
+  )).rejects.toThrow("is unavailable in the selected checks");
+});
+
 test("does not represent non-deterministic checks as successful enforcement", async () => {
   let calls = 0;
   const run = async () => {
