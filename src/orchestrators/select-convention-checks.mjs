@@ -7,5 +7,5 @@ export async function selectConventionChecks(conventions, availableChecks = null
   const checks = availableChecks ?? await discoverChecks(profiles);
   const profileChecks = availableChecks ? await discoverChecks(profiles) : checks;
   const allowed = new Set(profileChecks.map(({ ruleId }) => ruleId));
-  return checks.filter(({ ruleId, enforcementMode }) => allowed.has(ruleId) && enforcementMode !== "non-deterministic");
+  return checks.filter(({ ruleId }) => allowed.has(ruleId));
 }

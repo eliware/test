@@ -23,7 +23,7 @@ export function readDiagnosticOptions(args) {
   const focused = modes.length === 0 ? parseFocusedArguments(normalizedArgs).positional : [];
   if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
   if (
-    focused.some((argument) => !/^(?:tests?|specs?)[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))
+    focused.some((argument) => !/^tests?[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))
   ) {
     throw new Error("Focused paths must be under tests/ or specs/.");
   }

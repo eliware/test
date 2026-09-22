@@ -13,8 +13,7 @@ export function validateExemptionRecords(records) {
         typeof entry.approvalTimestamp !== "string" ||
         !isValidTimestamp(entry.approvalTimestamp) ||
         (entry.expiry !== null && typeof entry.expiry !== "string") ||
-        (typeof entry.expiry === "string" && (!isValidDate(entry.expiry) || isExpired(entry.expiry) || !isValidReview(entry.review, entry.expiry))) ||
-        (entry.expiry === null && entry.review !== undefined)
+        (typeof entry.expiry === "string" && (!isValidDate(entry.expiry) || isExpired(entry.expiry)))
       );
     })
   ) {
@@ -25,10 +24,6 @@ export function validateExemptionRecords(records) {
   const ids = records.map(({ ruleId }) => ruleId);
   if (new Set(ids).size !== ids.length)
     throw new Error("Convention exemption rule IDs must be unique.");
-}
-
-function isValidReview(value, expiry) {
-  return typeof value === "string" && isValidDate(value) && Date.parse(`${value}T00:00:00.000Z`) <= Date.parse(`${expiry}T23:59:59.999Z`);
 }
 
 function isValidDate(value) {

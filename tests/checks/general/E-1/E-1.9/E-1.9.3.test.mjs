@@ -7,7 +7,6 @@ const valid = {
   approver: "Eli",
   approvalTimestamp: "2026-09-13T00:00:00Z",
   expiry: "2026-09-30",
-  review: "2026-09-20",
 };
 
 test("accepts approved permanent and temporary exemption metadata", () => {
@@ -53,9 +52,6 @@ test.each(["random-user", "eli", "Eliware", ""]) (
   },
 );
 
-test("enforces review metadata against temporary and permanent expiry", () => {
-  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, review: "2026-09-20" }] } } }).status).toBe("pass");
-  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, review: "2026-10-01" }] } } }).status).toBe("fail");
-  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, review: "fixture" }] } } }).status).toBe("fail");
-  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, expiry: null, review: "2026-09-20" }] } } }).status).toBe("fail");
+test("accepts canonical temporary exemptions without review metadata", () => {
+  expect(run({ packageJson: { eliware: { exempt: [valid] } } }).status).toBe("pass");
 });

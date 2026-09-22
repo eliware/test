@@ -3,15 +3,14 @@ import { join } from "node:path";
 
 async function collect(directory, root, predicate) {
   const entries = await readdir(directory, { withFileTypes: true });
-  const batches = await Promise.all(entries
-    .filter((entry) => ![".git", "node_modules", "coverage", "build", "dist"].includes(entry.name))
-    .map(async (entry) => {
-      const file = join(directory, entry.name);
-      if (entry.isDirectory()) return collect(file, root, predicate);
-      if (entry.isFile() && predicate(entry.name)) return [file.slice(root.length + 1).replaceAll("\\", "/")];
-      return [];
-    }));
-  return batches.flat();
+  const files = [];
+  for (const entry of entries) {
+    if ([".git", "node_modules", "coverage", "build", "dist"].includes(entry.name)) continue;
+    const file = join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await collect(file, root, predicate));
+    else if (entry.isFile() && predicate(entry.name)) files.push(file.slice(root.length + 1).replaceAll("\\", "/"));
+  }
+  return files;
 }
 
 const cache = new Map();

@@ -127,6 +127,8 @@ diagnostics when requesting help.
 
 ## Links
 
+- [Documentation](docs/README.md)
+- [Specifications](specs/README.md)
 - [Home Page](https://eliware.org)
 - [GitHub Repo](https://github.com/eliware/test)
 - [GitHub Org](https://github.com/eliware)

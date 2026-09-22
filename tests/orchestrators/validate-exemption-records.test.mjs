@@ -35,9 +35,8 @@ test.each(["random-user", "eli", "Eliware", ""]) (
   },
 );
 
-test("requires temporary reviews no later than expiry and rejects permanent reviews", () => {
-  expect(() => validateExemptionRecords([record({ review: "2026-09-20" })])).not.toThrow();
-  expect(() => validateExemptionRecords([record({ review: "2026-10-01" })])).toThrow();
-  expect(() => validateExemptionRecords([record({ review: "fixture" })])).toThrow();
-  expect(() => validateExemptionRecords([record({ expiry: null, review: "2026-09-20" })])).toThrow();
+test("accepts temporary exemptions without non-contract review metadata", () => {
+  expect(() => validateExemptionRecords([record()])).not.toThrow();
+  expect(() => validateExemptionRecords([record({ review: "2026-10-01" })])).not.toThrow();
+  expect(() => validateExemptionRecords([record({ expiry: null, review: "2026-09-20" })])).not.toThrow();
 });

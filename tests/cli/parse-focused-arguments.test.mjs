@@ -20,5 +20,6 @@ test("handles empty and non-string argument values", () => {
   expect(parseFocusedArguments(["--testNamePattern", "tests/example.test.mjs", "tests/example.test.mjs"]).positional)
     .toEqual([]);
   expect(focusedPathFrom(["tests/example.test.mjs"])).toBe("tests/example.test.mjs");
+  expect(focusedPathFrom(["specs/example.spec.mjs"])).toBeUndefined();
   expect(focusedPathFrom(["src/example.mjs"])).toBeUndefined();
 });

@@ -53,7 +53,7 @@ export function runChild(command, args, options = {}) {
       if (settled) return;
       settled = true;
       timeout.stop();
-      resolve({ code, signal, ...output.result(), ...(timedOut || timeout.wasTriggered() ? { timedOut: true } : {}) });
+      resolve({ code, signal, ...output.result(), ...(timedOut ? { timedOut: true } : {}) });
     });
   });
 }

@@ -9,8 +9,12 @@ export function resolveConsumerJestCli(root) {
       return requireFromConsumer.resolve(candidate);
     } catch {}
   }
-  const packageEntry = requireFromConsumer.resolve("jest-cli");
-  return join(dirname(packageEntry), "..", "bin", "jest.js");
+  try {
+    const packageEntry = requireFromConsumer.resolve("jest-cli");
+    return join(dirname(packageEntry), "..", "bin", "jest.js");
+  } catch (error) {
+    throw new Error(`Consumer repository Jest executable could not be resolved: ${error.message}`, { cause: error });
+  }
 }
 
 export function resolveJestCli(root, execute, options = {}) {

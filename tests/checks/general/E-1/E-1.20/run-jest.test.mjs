@@ -12,6 +12,13 @@ test("resolves Jest from the consumer package", () => {
   expect(resolveJestCli("C:/fixture", runChild, { jestCli: "custom-jest" })).toBe("custom-jest");
 });
 
+test("reports a stable error when the consumer has no resolvable Jest", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-no-jest-"));
+  await writeFile(join(root, "package.json"), JSON.stringify({ type: "module" }));
+  expect(() => resolveConsumerJestCli(root)).toThrow("Consumer repository Jest executable could not be resolved");
+  await rm(root, { recursive: true, force: true });
+});
+
 test("rejects a missing focused test before invoking Jest", async () => {
   let invoked = false;
   await expect(

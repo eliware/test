@@ -18,9 +18,6 @@ test("returns no scope for a non-test positional path", () => {
   expect(resolveFocusedScope(["src/cli/example.mjs"])).toBeNull();
 });
 
-test("supports spec paths", () => {
-  expect(resolveFocusedScope(["specs/cli/example.spec.mjs"])).toMatchObject({
-    testPath: "specs/cli/example.spec.mjs",
-    sourcePath: "src/cli/example.mjs",
-  });
+test("does not create a scope for specification paths", () => {
+  expect(resolveFocusedScope(["specs/cli/example.spec.mjs"])).toBeNull();
 });

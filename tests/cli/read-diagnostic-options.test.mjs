@@ -42,8 +42,8 @@ test("does not treat option values as focused paths and preserves them for Jest"
   });
 });
 
-test("accepts focused specs paths using the shared grammar", () => {
-  expect(readDiagnosticOptions(["specs/example.spec.mjs"]).jestArgs).toEqual(["specs/example.spec.mjs"]);
+test("rejects specs paths because focused Jest execution is rooted under tests", () => {
+  expect(() => readDiagnosticOptions(["specs/example.spec.mjs"])).toThrow("Focused paths must be under tests/");
 });
 
 test("recognizes values for common Jest options", () => {

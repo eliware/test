@@ -25,5 +25,5 @@ export function parseFocusedArguments(args = []) {
 
 export function focusedPathFrom(args = []) {
   return parseFocusedArguments(args).positional.find((argument) =>
-    /^(?:tests?|specs?)(?:[\\/]|$)/iu.test(argument));
+    /^tests?(?:[\\/]|$)/iu.test(argument));
 }

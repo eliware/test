@@ -29,10 +29,7 @@ export function run({ packageJson }) {
       !validTimestamp(exemption.approvalTimestamp) ||
       (exemption.expiry !== null &&
         (typeof exemption.expiry !== "string" || !validDate(exemption.expiry) ||
-          Date.parse(`${exemption.expiry}T23:59:59.999Z`) < Date.now() ||
-          typeof exemption.review !== "string" || !validDate(exemption.review) ||
-          Date.parse(`${exemption.review}T00:00:00.000Z`) > Date.parse(`${exemption.expiry}T23:59:59.999Z`))) ||
-      (exemption.expiry === null && exemption.review !== undefined)
+          Date.parse(`${exemption.expiry}T23:59:59.999Z`) < Date.now()))
     ) {
       return fail(
         ruleId,
