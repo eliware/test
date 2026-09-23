@@ -45,3 +45,12 @@ test("bounds cached repository roots", async () => {
   }
   await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
 });
+
+test("evicts rejected cached scans", async () => {
+  const root = join(tmpdir(), `eliware-doc-retry-${Date.now()}-`);
+  await expect(repositoryFiles(root)).rejects.toThrow();
+  await mkdir(root);
+  await writeFile(join(root, "README.md"), "# Docs");
+  await expect(repositoryFiles(root)).resolves.toEqual(["README.md"]);
+  await rm(root, { recursive: true, force: true });
+});

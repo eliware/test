@@ -25,3 +25,14 @@ test("reads detailed and summary report formats", async () => {
     async () => ({ mtimeMs: 2 }),
   )).rejects.toThrow("Summary-only coverage");
 });
+
+test("rejects a report replaced during the read", async () => {
+  let reads = 0;
+  await expect(readJsonCoverage(
+    "coverage-final.json",
+    "coverage-final.json",
+    1,
+    async () => (++reads === 1 ? JSON.stringify({}) : JSON.stringify({ changed: true })),
+    async () => ({ mtimeMs: 2 }),
+  )).rejects.toThrow("changed while being read");
+});

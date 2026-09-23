@@ -50,7 +50,7 @@ export function readDiagnosticOptions(args) {
     ignoredRuleIds: [],
     mode: modes[0]?.slice(2) ?? null,
     toolArgs: modes.length > 0
-      ? [...delegatedArgs, ...wrapperArgs.filter((argument) => !modeFlags.includes(argument))]
+      ? [...wrapperArgs.filter((argument) => !modeFlags.includes(argument)), ...delegatedArgs]
         .filter((argument) => argument !== "--debug-timing")
       : [],
     jestArgs: normalizedArgs.filter((argument) => argument !== "--debug-timing"),

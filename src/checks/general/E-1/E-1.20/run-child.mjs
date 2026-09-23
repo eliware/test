@@ -62,7 +62,7 @@ export function runChild(command, args, options = {}) {
       settled = true;
       timeout.stop();
       if (hardKillTimer) clearTimeout(hardKillTimer);
-      resolve({ code, signal, ...output.result(), ...(timedOut ? { timedOut: true } : {}) });
+      resolve({ code, signal, ...output.result(), ...(timedOut ? { timedOut: true, terminationConfirmed: true } : {}) });
     });
   });
 }

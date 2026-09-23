@@ -35,7 +35,7 @@ export function parseDetailed(json) {
     totals: Object.fromEntries(
       metrics.map((metric) => [
         metric,
-        counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : 100,
+        counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : 0,
       ]),
     ),
   };

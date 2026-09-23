@@ -24,7 +24,11 @@ const cache = new Map();
 function cached(root, key, predicate) {
   const cacheKey = `${key}:${root}`;
   if (cache.size >= 32 && !cache.has(cacheKey)) cache.delete(cache.keys().next().value);
-  if (!cache.has(cacheKey)) cache.set(cacheKey, collectDocumentationFiles(root, root, predicate));
+  if (!cache.has(cacheKey)) {
+    const pending = collectDocumentationFiles(root, root, predicate);
+    cache.set(cacheKey, pending);
+    pending.catch(() => { cache.delete(cacheKey); });
+  }
   return cache.get(cacheKey);
 }
 export const jsonFiles = (root) => cached(root, "json", (name) => name.endsWith(".json"));

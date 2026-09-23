@@ -86,5 +86,5 @@ test("reports zero-total metrics without treating incomplete evidence as missing
   expect(parseDetailed({ "src/no-branches.mjs": {
     s: { 0: 1 }, b: {}, f: { 0: 1 },
     statementMap: { 0: { start: { line: 1 } } }, branchMap: {}, fnMap: { 0: {} },
-  } }).totals.branches).toBe(100);
+  } }).totals.branches).toBe(0);
 });

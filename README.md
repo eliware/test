@@ -50,6 +50,8 @@ validates the package contents without publishing it.
 
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward extra
 arguments to Oxlint, Prettier, npm audit, or npm pack as appropriate.
+Wrapper arguments are emitted before arguments supplied after `--`, preserving
+their relative order within each group.
 
 All five tool modes are public CLI modes. The npm script forms are supported
 package-level shortcuts; arbitrary npm script names are not CLI arguments.
@@ -89,6 +91,12 @@ tool failure, `17` is a package-check failure, and `18` is a convention
 failure. Validation output is intended to preserve actionable diagnostics and
 does not print secrets or arbitrary environment values. The CLI performs no
 deploy, publish, release, or destructive repository operation.
+
+Child-process diagnostics use bounded, pattern-based redaction; captured output
+is not a comprehensive secret scanner. Callers must not emit credentials or
+other arbitrary sensitive values to child output. Checks execute in declared
+order and share a validation context so later stages can consume earlier
+results.
 
 ## Configuration
 

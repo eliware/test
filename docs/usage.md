@@ -40,7 +40,8 @@ eliware-test --pack --pack-destination artifacts
 
 Tool modes may not be combined with a focused Jest test path. Paths supplied
 to a tool mode are forwarded as tool arguments; focused paths are reserved for
-the unscoped Jest validation command.
+the unscoped Jest validation command. Wrapper tool arguments precede arguments
+after `--`, and each group preserves its original order.
 
 The normal test command runs the configured validation stages. Use
 `npm run audit` and `npm run pack` for the isolated audit and package
