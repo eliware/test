@@ -16,3 +16,11 @@ test("allows harness output after transport framing removes brackets", () => {
 test("returns unexpected output lines", () => {
   expect(findUnexpectedJestLines("application log\napplication log\n")).toEqual(["application log", "application log"]);
 });
+
+test("ignores only the partial final line marked as truncated", () => {
+  expect(findUnexpectedJestLines("application log\nE-1.70.mjs | 100% …")).toEqual(["application log"]);
+  expect(findUnexpectedJestLines("application log…\ncomplete log")).toEqual([
+    "application log…",
+    "complete log",
+  ]);
+});

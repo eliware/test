@@ -16,3 +16,16 @@ test("finds a native Git installation outside PATH on Windows", () => {
   });
   expect(resolved).toBe(expected);
 });
+
+test.each([
+  [{ Path: "C:\\Git\\cmd" }, "C:\\Git\\cmd\\git.exe"],
+  [{ PATH: "C:\\Git\\cmd" }, "C:\\Git\\cmd\\git.exe"],
+  [{ "ProgramFiles(x86)": "C:\\Program Files (x86)" }, "C:\\Program Files (x86)\\Git\\cmd\\git.exe"],
+  [{ LOCALAPPDATA: "C:\\Users\\Eli\\AppData\\Local" }, "C:\\Users\\Eli\\AppData\\Local\\Programs\\Git\\cmd\\git.exe"],
+])("searches each Windows Git location independently", (env, expected) => {
+  expect(resolveGitExecutable({
+    platform: "win32",
+    env,
+    exists: (candidate) => candidate === expected,
+  })).toBe(expected);
+});

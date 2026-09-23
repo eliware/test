@@ -7,8 +7,9 @@ const JEST_LINES = [
 const ANSI_ESCAPE = new RegExp(`${String.fromCodePoint(0x1b)}\\[[0-?]*[ -/]*[@-~]`, "gu");
 
 export function findUnexpectedJestLines(text) {
-  return text
-    .split(/\r?\n/)
+  const lines = text.split(/\r?\n/);
+  const completeLines = text.endsWith("…") ? lines.slice(0, -1) : lines;
+  return completeLines
     .map((line) => line.replace(ANSI_ESCAPE, "").trim())
     .filter((line) => line && !/^\[?eliware-test-progress\]?\s/u.test(line) && !/^\[?eliware-test\]?\s/u.test(line) && !JEST_LINES.some((pattern) => pattern.test(line)));
 }
