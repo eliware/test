@@ -1,4 +1,5 @@
 import { execute } from "../../execute-child-process.mjs";
+import { validatePackManifest } from "./validate-pack-manifest.mjs";
 
 export async function executePackValidation({
   root,
@@ -22,4 +23,3 @@ export async function executePackValidation({
   }
   return null;
 }
-import { validatePackManifest } from "./validate-pack-manifest.mjs";

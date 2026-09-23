@@ -6,7 +6,11 @@ function allowedByEntry(path, entry) {
 export function validatePackManifest(stdout, files) {
   let manifest;
   try { manifest = JSON.parse(stdout); } catch { return "npm pack returned invalid JSON manifest."; }
-  const packed = Array.isArray(manifest) ? manifest[0]?.files : manifest?.files;
+  const packed = Array.isArray(manifest)
+    ? manifest[0]?.files
+    : Array.isArray(manifest?.files)
+      ? manifest.files
+      : Object.values(manifest ?? {}).find((entry) => Array.isArray(entry?.files))?.files;
   if (!Array.isArray(packed) || packed.some((entry) => typeof entry?.path !== "string")) {
     return "npm pack JSON manifest must contain a files array with paths.";
   }

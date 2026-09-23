@@ -12,6 +12,12 @@ test("accepts npm's object-shaped manifest and rejects malformed file entries", 
   expect(validatePackManifest(JSON.stringify({ files: paths.map((path) => ({ path })) }), [])).toBeNull();
   expect(validatePackManifest(manifest(paths), null)).toBeNull();
   expect(validatePackManifest(JSON.stringify([{ files: [{ path: 7 }] }]), [])).toContain("files array");
+  expect(validatePackManifest("null", [])).toContain("files array");
+});
+
+test("accepts npm 12 scoped object-shaped manifests", () => {
+  const paths = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"];
+  expect(validatePackManifest(JSON.stringify({ "@eliware/codescope": { files: paths.map((path) => ({ path })) } }), [])).toBeNull();
 });
 
 test("rejects invalid, incomplete, and over-broad pack manifests", () => {
