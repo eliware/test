@@ -9,3 +9,17 @@ test("selects the platform npm executable or npm exec path", () => {
     "C:\\node.exe", ["C:\\node_modules\\npm\\bin\\npm-cli.js"],
   ]);
 });
+
+test("uses platform defaults when no npm executable override is set", () => {
+  const previous = process.env.npm_execpath;
+  delete process.env.npm_execpath;
+  try {
+    expect(npmCommand(undefined, undefined, "C:\\missing\\node.exe")).toEqual([
+      process.platform === "win32" ? "npm.cmd" : "npm",
+      [],
+    ]);
+  } finally {
+    if (previous === undefined) delete process.env.npm_execpath;
+    else process.env.npm_execpath = previous;
+  }
+});

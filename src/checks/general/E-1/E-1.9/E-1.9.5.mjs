@@ -1,11 +1,10 @@
 import { fail, pass } from "../../../check-result.mjs";
-import { access } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { isAbsolute } from "node:path";
 
 export const ruleId = "E-1.9.5";
 export const parentRuleId = "E-1.9";
 
-export async function run({ root = process.cwd(), packageJson }) {
+export async function run({ packageJson }) {
   const crosslinks = packageJson?.eliware?.crosslinks;
   if (!Array.isArray(crosslinks) || crosslinks.length === 0) {
     return fail(ruleId, "package.json.eliware.crosslinks must be a nonempty array.");
@@ -27,11 +26,6 @@ export async function run({ root = process.cwd(), packageJson }) {
     }
     if (isAbsolute(link.path) || /^[A-Za-z][A-Za-z\d+.-]*:/u.test(link.path)) {
       return fail(ruleId, `Crosslink ${link.path} must be a repository-relative path.`);
-    }
-    try {
-      await access(resolve(root, link.path.split("#", 1)[0]));
-    } catch {
-      return fail(ruleId, `Crosslink ${link.path} does not resolve from the repository root.`);
     }
   }
   return pass(ruleId);

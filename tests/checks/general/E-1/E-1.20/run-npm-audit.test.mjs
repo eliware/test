@@ -12,7 +12,8 @@ test("runs npm audit in the repository root", async () => {
   expect(calls).toHaveLength(1);
   expect(calls[0][1].slice(-3)).toEqual(["audit", "--json", "--audit-level=high"]);
   expect(calls[0][2].cwd).toBe("C:\\repo");
-  expect(calls[0][2].env).toEqual(expect.objectContaining({ Path: expect.any(String) }));
+  const pathKey = process.env.Path === undefined ? "PATH" : "Path";
+  expect(calls[0][2].env).toEqual(expect.objectContaining({ [pathKey]: process.env[pathKey] }));
 });
 
 test("supports an injected executable resolver", async () => {

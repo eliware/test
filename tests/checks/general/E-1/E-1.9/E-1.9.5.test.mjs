@@ -27,7 +27,16 @@ test.each([
   { crosslinks: [{ path: "docs", relation: "relatedAuthority", authoritativeFor: 7 }] },
   { crosslinks: [{ path: "/absolute.json", relation: "relatedAuthority", authoritativeFor: "docs" }] },
   { crosslinks: [{ path: "https://example.com/docs.json", relation: "relatedAuthority", authoritativeFor: "docs" }] },
-  { crosslinks: [{ path: "missing.json", relation: "relatedAuthority", authoritativeFor: "docs" }] },
 ])("rejects incomplete authority crosslinks %#", async (eliware) => {
   await expect(run({ packageJson: { eliware } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+});
+
+test("accepts a structurally valid cross-repository authority path", async () => {
+  await expect(run({
+    packageJson: {
+      eliware: {
+        crosslinks: [{ path: "../../conventions/specs/general.json", relation: "relatedAuthority", authoritativeFor: "shared requirements" }],
+      },
+    },
+  })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
 });
