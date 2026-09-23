@@ -24,9 +24,6 @@ export function createStageTimer(enabled, now = () => Date.now(), write = () => 
     getLines() {
       return [...lines];
     },
-    setJestOutput(output) {
-      jestOutput = typeof output === "function" ? output : () => (typeof output === "string" ? output : "");
-    },
     setJestOutputGetter(getter) {
       jestOutput = typeof getter === "function" ? getter : () => "";
     },

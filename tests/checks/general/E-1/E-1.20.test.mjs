@@ -70,13 +70,13 @@ test("reports a no-progress timeout", async () => {
 
 test("uses the fallback timeout diagnostic and records Jest output timing", async () => {
   runJest.mockResolvedValueOnce({ code: null, timedOut: true, stdout: "captured", stderr: "" });
-  const setJestOutput = jest.fn();
-  await expect(run({ root: ".", executeJest: true, timing: { setJestOutput } })).resolves.toEqual({
+  const setJestOutputGetter = jest.fn();
+  await expect(run({ root: ".", executeJest: true, timing: { setJestOutputGetter } })).resolves.toEqual({
     ruleId: "E-1.20",
     status: "fail",
     message: "Jest timed out after 15 seconds without progress.",
   });
-  expect(setJestOutput).toHaveBeenCalledWith("captured");
+  expect(setJestOutputGetter.mock.calls[0][0]()).toBe("captured");
 });
 
 test("preserves both Jest stdout and stderr on test failure", async () => {

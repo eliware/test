@@ -4,20 +4,26 @@ import { normalizeRepositoryUrl, validateReadmeRequiredContent } from "../../../
 const standard = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 ## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/nodejs.yml)
 Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
-## Purpose
+## Table of Contents
+[Features](#features) · [Requirements](#requirements) · [Setup](#setup) · [Usage](#usage) · [Development](#development) · [Testing](#testing) · [Troubleshooting](#troubleshooting) · [Security](#security) · [Support](#support) · [License](#license) · [Links](#links)
+## Features
 ## Requirements
 ## Setup
-## Configuration
 ## Usage
-## Validation
-## Operations
+## Development
+## Testing
+## Troubleshooting
 ## Security
 ## Support
 [Discord](https://discord.gg/M6aTR9eTwN) eliware.org on Discord
 ## License
 [LICENSE](LICENSE)
 ## Links
-Eliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)`;
+Eliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)
+## Purpose
+## Configuration
+## Validation
+## Operations`;
 
 test("accepts the standardized content surface", () => {
   expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture", publishConfig: { access: "public" } })).toBeNull();
@@ -35,7 +41,7 @@ test("requires the standard footer order", () => {
     /## License\n\[LICENSE\]\(LICENSE\)\n## Links/u,
     "## Links\nEliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)\n## License\n[LICENSE](LICENSE)",
   );
-  expect(validateReadmeRequiredContent(misplaced, { name: "@eliware/fixture" })).toContain("footer sections");
+  expect(validateReadmeRequiredContent(misplaced, { name: "@eliware/fixture" })).toContain("required top-level headings");
 });
 
 test.each([
@@ -51,7 +57,7 @@ test.each([
 });
 
 test("rejects every missing required heading and public package link", () => {
-  for (const section of ["Purpose", "Requirements", "Setup", "Configuration", "Usage", "Validation", "Operations", "Security", "Support", "License"]) {
+  for (const section of ["Features", "Requirements", "Setup", "Usage", "Development", "Testing", "Troubleshooting", "Security", "Support", "License", "Links"]) {
     expect(validateReadmeRequiredContent(standard.replace(`## ${section}`, `## ${section} removed`), { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture" })).toContain(`${section} section`);
   }
   expect(validateReadmeRequiredContent(standard.replace("Documentation:", "Docs:"), { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture" })).toContain("Documentation navigation");
@@ -92,4 +98,16 @@ test("supports generic headings and repository metadata forms", () => {
   expect(validateReadmeRequiredContent(standard)).toBeNull();
   expect(normalizeRepositoryUrl()).toBe("https://github.com/eliware/fixture");
   expect(normalizeRepositoryUrl("")).toBeNull();
+});
+
+test("enforces the clarified README structure and TOC", () => {
+  expect(validateReadmeRequiredContent(standard.replace("## Table of Contents", "## Purpose"))).toContain("required top-level headings");
+  expect(validateReadmeRequiredContent(standard.replace("[Testing](#testing)", ""))).toContain("Table of Contents");
+  expect(validateReadmeRequiredContent(standard.replace("## Features", "## Purpose\n## Features"))).toContain("contiguously");
+  expect(validateReadmeRequiredContent(standard.replace("## License", "## Links\n## License"))).toContain("required top-level headings");
+  expect(validateReadmeRequiredContent(standard.replace("## Requirements", "## Setup\n## Requirements"))).toContain("required top-level headings");
+  expect(validateReadmeRequiredContent(standard.replace("## Purpose", "## Removed"))).toContain("Purpose section");
+  expect(validateReadmeRequiredContent(standard.slice(0, standard.indexOf("\n## Purpose")), { name: "@eliware/fixture" })).toContain("Purpose section");
+  const linksAtEnd = standard.replace(/\n## Purpose[\s\S]*?\n## Support/u, "\n## Purpose\n## Configuration\n## Validation\n## Operations\n## Support");
+  expect(validateReadmeRequiredContent(linksAtEnd, { name: "@eliware/fixture" })).toBeNull();
 });

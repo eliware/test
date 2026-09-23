@@ -3,6 +3,21 @@ const STANDARD_BRAND_LINE = "# [![eliware.org](https://eliware.org/logos/brand.p
 export function validateReadmeRequiredContent(readme, packageJson = {}, { examplesRequired = true } = {}) {
   const lines = readme.split(/\r?\n/);
   if (lines[0] !== STANDARD_BRAND_LINE) return "README.md must begin with the standard Eliware branding line.";
+  const headings = lines.map((line, index) => ({ line, index })).filter(({ line }) => /^##\s+[^#]/u.test(line));
+  const tocIndex = headings.find(({ line }) => /^##\s+Table of Contents\s*$/iu.test(line))?.index ?? -1;
+  const requiredHeadings = ["Features", "Requirements", "Setup", "Usage", "Development", "Testing", "Troubleshooting", "Security", "Support", "License", "Links"];
+  const requiredIndices = requiredHeadings.map((heading) => headings.find(({ line }) => new RegExp(`^##\\s+${heading}\\s*$`, "iu").test(line))?.index ?? -1);
+  if (tocIndex < 0) return "README.md must contain the required top-level headings in order with a Table of Contents.";
+  const missingHeading = requiredHeadings.find((heading, index) => requiredIndices[index] < 0);
+  if (missingHeading) return `README.md must include the ${missingHeading === "Links" ? "standard Links" : missingHeading} section.`;
+  if (requiredIndices[requiredHeadings.indexOf("Links")] < requiredIndices[requiredHeadings.indexOf("License")]) return "README.md must contain the required top-level headings in order with a Table of Contents.";
+  if (requiredIndices.some((index, position) => position > 0 && index <= requiredIndices[position - 1])) return "README.md must contain the required top-level headings in order with a Table of Contents.";
+  const requiredHeadingSequence = headings
+    .filter(({ index }) => index >= tocIndex && index <= requiredIndices.at(-1))
+    .map(({ line }) => line.replace(/^##\s+/u, "").trim());
+  if (JSON.stringify(requiredHeadingSequence) !== JSON.stringify(["Table of Contents", ...requiredHeadings])) return "README.md must place the required top-level headings contiguously after the Table of Contents.";
+  const tocContent = lines.slice(tocIndex, requiredIndices[0]).join("\n");
+  if (requiredHeadings.some((heading) => !new RegExp(`\\[[^\\]]*\\]\\(#${heading.toLowerCase().replaceAll(" ", "-")}\\)`, "iu").test(tocContent))) return "README.md Table of Contents must link every required heading.";
   const packageName = packageJson?.name;
   const publicPackage = (packageJson?.private !== true && packageJson?.publishConfig?.access === "public")
     || packageJson?.eliware?.apply?.includes("npm-published");
@@ -42,7 +57,6 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, { exampl
     return "README.md must include the standard Links section.";
   }
   if (licenseIndex < 0 || !/\[license\]\(LICENSE\)/iu.test(sectionContent(readme, licenseIndex))) return "README.md must link the repository LICENSE file from its License section.";
-  if (!(supportIndex < licenseIndex && licenseIndex < linksIndex)) return "README.md footer sections must be ordered Support, License, Links.";
   return null;
 }
 
@@ -59,10 +73,8 @@ export function normalizeRepositoryUrl(value) {
 }
 
 function sectionContent(readme, start) {
-  if (start < 0) return "";
   const content = readme.slice(start);
-  const nextSection = content.search(/\n##\s+/u);
-  return nextSection < 0 ? content : content.slice(0, nextSection);
+  return content.split(/\n##\s+/u, 1)[0];
 }
 
 function hasExactUrl(content, url) {

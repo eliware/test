@@ -1,19 +1,19 @@
 const requiredSections = [
-  "Instruction scope",
-  "Read before changing",
-  "Authoritative sources",
-  "Repository identity",
+  "Project",
   "Scope and boundaries",
-  "Required structure",
-  "Security and secrets",
+  "Layout",
+  "Development",
   "Validation",
-  "Approved deviations",
-  "Change control and authorization",
-  "Subdirectory instructions",
+  "Security",
+  "Changes",
 ];
 
 export function findMissingAgentsSections(content) {
-  return requiredSections.filter((section) => !new RegExp(`^#{1,6}\\s+${section}\\s*$`, "im").test(content));
+  const lines = content.split(/\r?\n/);
+  const firstContentIndex = lines.findIndex((line) => line.trim() !== "");
+  if (firstContentIndex < 0 || lines[firstContentIndex] !== "# AGENTS.md") return ["# AGENTS.md", ...requiredSections];
+  const indices = requiredSections.map((section) => lines.findIndex((line) => line === `## ${section}`));
+  return requiredSections.filter((section, index) => indices[index] < 0 || (index > 0 && indices[index] <= indices[index - 1]));
 }
 
 export { requiredSections };

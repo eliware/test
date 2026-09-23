@@ -8,20 +8,22 @@ import { validateReadmeRequiredContent } from "../../../../../src/checks/general
 const readme = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 ## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions)
 Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
-## Purpose
-A maintained fixture.
+## Table of Contents
+[Features](#features) · [Requirements](#requirements) · [Setup](#setup) · [Usage](#usage) · [Development](#development) · [Testing](#testing) · [Troubleshooting](#troubleshooting) · [Security](#security) · [Support](#support) · [License](#license) · [Links](#links)
+## Features
+Validation features.
 ## Requirements
 Node.js 26.
 ## Setup
 Install dependencies.
-## Configuration
-Use package.json.
 ## Usage
 Run the test command.
-## Validation
-Run validation.
-## Operations
-Use the runbooks.
+## Development
+Use native ESM modules.
+## Testing
+Run the tests.
+## Troubleshooting
+Inspect diagnostics.
 ## Security
 Do not commit secrets.
 ## Support
@@ -35,6 +37,14 @@ GitHub: https://github.com/eliware/fixture
 GitHub organization: https://github.com/eliware
 npm: https://www.npmjs.com/package/@eliware/fixture
 Discord: https://discord.gg/M6aTR9eTwN
+## Purpose
+A maintained fixture.
+## Configuration
+Use package.json.
+## Validation
+Run validation.
+## Operations
+Use the runbooks.
 Description: Fixture project.
 Keywords: fixture.
 Author: Eliware.

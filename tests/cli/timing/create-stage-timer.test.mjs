@@ -40,30 +40,10 @@ test("does not emit check timing when disabled", () => {
   expect(output).toEqual([]);
 });
 
-test("does not collect disabled timing and stores Jest output", () => {
-  const timer = createStageTimer(false);
-  timer.step("one", "two");
-  timer.setJestOutput(42);
-  expect(timer.getLines()).toEqual([]);
-  expect(timer.getJestOutput()).toBe("");
-});
-
-test("keeps string Jest output", () => {
-  const timer = createStageTimer(false);
-  timer.setJestOutput("report");
-  expect(timer.getJestOutput()).toBe("report");
-});
-
 test("supports lazy Jest output without retaining a second copy", () => {
   const timer = createStageTimer(false);
   timer.setJestOutputGetter(() => "lazy-report");
   expect(timer.getJestOutput()).toBe("lazy-report");
   timer.setJestOutputGetter(null);
   expect(timer.getJestOutput()).toBe("");
-});
-
-test("accepts a lazy getter through the compatibility setter", () => {
-  const timer = createStageTimer(false);
-  timer.setJestOutput(() => "compat-report");
-  expect(timer.getJestOutput()).toBe("compat-report");
 });

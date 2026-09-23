@@ -4,5 +4,5 @@ export const ruleId = "A-1.0.0";
 export const parentRuleId = "E-1.0";
 
 export function run({ root }) {
-  return checkAgents(root, ruleId, [["repository"], ["purpose"]]);
+  return checkAgents(root, ruleId, [["project"], ["purpose"]]);
 }

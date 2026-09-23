@@ -6,7 +6,7 @@ export const ruleId = "A-1.25.0";
 export const parentRuleId = "E-1.25";
 
 export async function run({ root }) {
-  const required = ["authority.json", "directives.json", "contracts.json"];
+  const required = ["authority.json", "directives.json"];
   try {
     const index = await readFile(join(root, "specs", "README.md"), "utf8");
     for (const file of required) {
@@ -16,7 +16,7 @@ export async function run({ root }) {
   } catch {
     return fail(
       ruleId,
-      "specs/ must contain README.md, authority.json, directives.json, and contracts.json.",
+      "specs/ must contain README.md, authority.json, and directives.json.",
     );
   }
   return pass(ruleId);

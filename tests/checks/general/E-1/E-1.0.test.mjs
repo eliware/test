@@ -5,17 +5,14 @@ import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/general/E-1/E-1.0.mjs";
 
 const agents = [
-  "## Instruction scope",
-  "## Read before changing",
-  "## Authoritative sources",
-  "## Repository identity",
+  "# AGENTS.md",
+  "## Project",
   "## Scope and boundaries",
-  "## Required structure",
-  "## Security and secrets",
+  "## Layout",
+  "## Development",
   "## Validation",
-  "## Approved deviations",
-  "## Change control and authorization",
-  "## Subdirectory instructions",
+  "## Security",
+  "## Changes",
   "eliware/docs",
   "eliware/conventions",
   "eliware/operations",
