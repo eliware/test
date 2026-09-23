@@ -10,7 +10,6 @@ test("accepts represented metadata", () => {
     author: "author",
     repository: "https://github.com/example",
     license: "MIT",
-    keywords: ["fixture"],
     publishConfig: { access: "public" },
   })).toBeNull();
 });
@@ -18,5 +17,6 @@ test("accepts represented metadata", () => {
 test("reports missing publication or package metadata", () => {
   expect(validateReadmeMetadata("", { publishConfig: { access: "public" } })).toContain("npm version");
   expect(validateReadmeMetadata(readme, { description: "different" })).toContain("project description");
-  expect(validateReadmeMetadata(readme, { keywords: ["missing"] })).toContain("package keywords");
+  expect(validateReadmeMetadata(readme, { author: "missing" })).toContain("author");
+  expect(validateReadmeMetadata(readme, { license: "Apache-2.0" })).toContain("license");
 });

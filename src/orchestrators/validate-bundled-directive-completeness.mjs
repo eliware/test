@@ -1,20 +1,37 @@
 import { bundledDirectiveAuthority } from "./read-bundled-profile-authority.mjs";
 import { createBundledCheckManifest } from "./create-bundled-check-manifest.mjs";
+import { validateRemediationCoverage } from "./convention-remediation.mjs";
 
-export function validateBundledDirectiveCompleteness(checks, groups, authority = bundledDirectiveAuthority) {
-  if (authority.version !== "8.0" || !authority.profiles) throw new Error("Bundled directive authority is missing or invalid.");
+export function validateBundledDirectiveCompleteness(
+  checks,
+  groups,
+  authority = bundledDirectiveAuthority,
+  remediationGuidance,
+) {
+  if (authority.version !== "8.0" || !authority.profiles)
+    throw new Error("Bundled directive authority is missing or invalid.");
   const manifest = createBundledCheckManifest(checks);
   const selectedProfiles = new Set(groups);
   const unknownProfiles = groups.filter((group) => !authority.profiles[group]);
-  if (unknownProfiles.length) throw new Error(`Unknown bundled convention profiles: ${unknownProfiles.join(", ")}.`);
+  if (unknownProfiles.length)
+    throw new Error(`Unknown bundled convention profiles: ${unknownProfiles.join(", ")}.`);
   const unregistered = manifest.checks
-    .filter(({ enforcementMode, modulePath }) => enforcementMode === "deterministic"
-      && selectedProfiles.has(modulePath.split("/")[0]))
+    .filter(
+      ({ enforcementMode, modulePath }) =>
+        enforcementMode === "deterministic" && selectedProfiles.has(modulePath.split("/")[0]),
+    )
     .filter(({ ruleId, modulePath }) => {
       const profile = modulePath.split("/")[0];
-      const filename = modulePath.split("/").at(-1)?.replace(/\.mjs$/u, "");
+      const filename = modulePath
+        .split("/")
+        .at(-1)
+        ?.replace(/\.mjs$/u, "");
       return !authority.profiles[profile] || filename !== ruleId;
     });
-  if (unregistered.length) throw new Error(`Deterministic bundled checks have no authority entry: ${unregistered.join(", ")}.`);
+  if (unregistered.length)
+    throw new Error(
+      `Deterministic bundled checks have no authority entry: ${unregistered.join(", ")}.`,
+    );
+  validateRemediationCoverage(checks, remediationGuidance);
   return true;
 }

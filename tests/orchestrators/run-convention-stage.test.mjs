@@ -1,6 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { runConventionStage } from "../../src/orchestrators/run-convention-stage.mjs";
 import { readConventionConfig } from "../../src/orchestrators/read-convention-config.mjs";
+import { formatConventionFailure } from "../../src/orchestrators/convention-remediation.mjs";
 
 test("returns a passing convention stage", async () => {
   const result = await runConventionStage(async () => [
@@ -9,80 +10,67 @@ test("returns a passing convention stage", async () => {
   expect(result).toEqual({ code: 0, category: "conventions", diagnostics: [] });
 });
 
-test("returns convention failure diagnostics for failed checks", async () => {
-  const result = await runConventionStage(async () => [
-    { ruleId: "E-1.0", status: "fail", message: "missing file" },
-  ]);
+test("adds resolution guidance to each failed-check diagnostic", async () => {
+  const failure = { ruleId: "E-1.0", status: "fail", message: "missing file" };
+  const result = await runConventionStage(async () => [failure]);
   expect(result).toEqual({
     code: 18,
     category: "conventions",
-    diagnostics: ["E-1.0: missing file"],
+    diagnostics: [formatConventionFailure(failure)],
   });
+  expect(result.diagnostics[0]).toContain("How to resolve:");
 });
 
 test("preserves stable failure codes for each validation stage", async () => {
-  await expect(
-    runConventionStage(async () => [{ ruleId: "E-1.20", status: "fail", message: "Jest failed" }]),
-  ).resolves.toEqual({ code: 8, category: "conventions", diagnostics: ["E-1.20: Jest failed"] });
-  await expect(
-    runConventionStage(async () => [
-      { ruleId: "E-1.20.10", status: "fail", message: "coverage gap" },
-    ]),
-  ).resolves.toEqual({
-    code: 10,
-    category: "conventions",
-    diagnostics: ["E-1.20.10: coverage gap"],
-  });
-  await expect(
-    runConventionStage(async () => [{ ruleId: "E-1.4", status: "fail", message: "Oxlint failed" }]),
-  ).resolves.toEqual({ code: 12, category: "conventions", diagnostics: ["E-1.4: Oxlint failed"] });
-  await expect(
-    runConventionStage(async () => [{ ruleId: "E-1.4", status: "fail", message: "process could not be started" }]),
-  ).resolves.toEqual({ code: 14, category: "conventions", diagnostics: ["E-1.4: process could not be started"] });
-  await expect(
-    runConventionStage(async () => [
-      { ruleId: "E-1.140.1", status: "fail", message: "pack failed" },
-    ]),
-  ).resolves.toEqual({
-    code: 17,
-    category: "conventions",
-    diagnostics: ["E-1.140.1: pack failed"],
-  });
-  await expect(
-    runConventionStage(async () => [{ ruleId: "E-1.20", status: "fail", message: "Jest could not be started" }]),
-  ).resolves.toEqual({ code: 14, category: "conventions", diagnostics: ["E-1.20: Jest could not be started"] });
-  await expect(
-    runConventionStage(async () => [{ ruleId: "E-1.20", status: "fail", message: "unsupported focused path" }]),
-  ).resolves.toEqual({ code: 18, category: "conventions", diagnostics: ["E-1.20: unsupported focused path"] });
-  await expect(
-    runConventionStage(async () => [{ ruleId: "E-1.20.12", status: "fail", message: "publication metadata" }]),
-  ).resolves.toEqual({ code: 17, category: "conventions", diagnostics: ["E-1.20.12: publication metadata"] });
+  const cases = [
+    ["E-1.20", "Jest failed", 8],
+    ["E-1.20.10", "coverage gap", 10],
+    ["E-1.4", "Oxlint failed", 12],
+    ["E-1.4", "process could not be started", 14],
+    ["E-1.140.1", "pack failed", 17],
+    ["E-1.20", "Jest could not be started", 14],
+    ["E-1.20", "unsupported focused path", 18],
+    ["E-1.20.12", "publication metadata", 17],
+  ];
+  for (const [ruleId, message, code] of cases) {
+    const failure = { ruleId, status: "fail", message };
+    await expect(runConventionStage(async () => [failure])).resolves.toEqual({
+      code,
+      category: "conventions",
+      diagnostics: [formatConventionFailure(failure)],
+    });
+  }
 });
 
-test("uses the highest code when several checks fail", async () => {
-  const result = await runConventionStage(async () => [
+test("uses the highest code when several checks fail and preserves each remediation", async () => {
+  const failures = [
     { ruleId: "E-1.0", status: "fail", message: "first" },
     { ruleId: "E-1.20.10", status: "fail", message: "coverage" },
-  ]);
+  ];
+  const result = await runConventionStage(async () => failures);
   expect(result.code).toBe(18);
-  expect(result.diagnostics).toEqual(["E-1.0: first", "E-1.20.10: coverage"]);
+  expect(result.diagnostics).toEqual(failures.map((failure) => formatConventionFailure(failure)));
 });
 
-test("handles a failed check without a message", async () => {
-  await expect(
-    runConventionStage(async () => [{ ruleId: "E-1.0", status: "fail" }]),
-  ).resolves.toEqual({ code: 18, category: "conventions", diagnostics: ["E-1.0: undefined"] });
-});
-
-test("classifies invalid focused paths as argument failures", async () => {
-  await expect(
-    runConventionStage(async () => [
-      { ruleId: "E-1.20", status: "fail", message: "Jest could not be started: Focused test path does not exist: tests/missing.test.mjs" },
-    ]),
-  ).resolves.toEqual({
+test("provides remediation even when a check omitted its message", async () => {
+  const failure = { ruleId: "E-1.0", status: "fail" };
+  await expect(runConventionStage(async () => [failure])).resolves.toEqual({
     code: 18,
     category: "conventions",
-    diagnostics: ["E-1.20: Jest could not be started: Focused test path does not exist: tests/missing.test.mjs"],
+    diagnostics: [formatConventionFailure(failure)],
+  });
+});
+
+test("classifies invalid focused paths as argument failures and provides guidance", async () => {
+  const failure = {
+    ruleId: "E-1.20",
+    status: "fail",
+    message: "Jest could not be started: Focused test path does not exist: tests/missing.test.mjs",
+  };
+  await expect(runConventionStage(async () => [failure])).resolves.toEqual({
+    code: 18,
+    category: "conventions",
+    diagnostics: [formatConventionFailure(failure)],
   });
 });
 
@@ -90,7 +78,13 @@ test("normalizes convention-runner errors as convention failures", async () => {
   const result = await runConventionStage(async () => {
     throw new Error("invalid config");
   });
-  expect(result).toEqual({ code: 18, category: "conventions", diagnostics: ["invalid config"] });
+  expect(result).toEqual({
+    code: 18,
+    category: "conventions",
+    diagnostics: [
+      "invalid config\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.",
+    ],
+  });
 });
 
 test("reads valid convention configuration", () => {

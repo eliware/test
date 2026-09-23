@@ -1,7 +1,7 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
-import { readReadmeSections, requiredReadmeSections } from "./read-readme-sections.mjs";
+import { readReadmeSections, expectedReadmeHeadings } from "./read-readme-sections.mjs";
 import { validateReadmeBranding } from "./validate-readme-branding.mjs";
 import { validateReadmeMetadata } from "./validate-readme-metadata.mjs";
 import { validateReadmeRequiredContent } from "./validate-readme-required-content.mjs";
@@ -16,8 +16,8 @@ export async function run({ root, packageJson }) {
   } catch {
     return fail(ruleId, "README.md is required.");
   }
-  const sections = readReadmeSections(readme);
-  const missing = requiredReadmeSections.filter((section) => !sections.get(section));
+  const sections = readReadmeSections(readme, packageJson);
+  const missing = expectedReadmeHeadings(packageJson).filter((section) => section !== "Table of Contents" && !sections.get(section));
   if (missing.length > 0) {
     return fail(ruleId, `README.md is missing required sections: ${missing.join(", ")}.`);
   }

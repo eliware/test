@@ -37,14 +37,6 @@ GitHub: https://github.com/eliware/fixture
 GitHub organization: https://github.com/eliware
 npm: https://www.npmjs.com/package/@eliware/fixture
 Discord: https://discord.gg/M6aTR9eTwN
-## Purpose
-A maintained fixture.
-## Configuration
-Use package.json.
-## Validation
-Run validation.
-## Operations
-Use the runbooks.
 Description: Fixture project.
 Keywords: fixture.
 Author: Eliware.
@@ -87,7 +79,7 @@ test("reports missing README sections", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-"));
   await writeFile(join(root, "README.md"), "# fixture");
   await expect(run({ root, packageJson: {} })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("Purpose") }),
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("Features") }),
   );
   await rm(root, { recursive: true, force: true });
 });
@@ -130,8 +122,14 @@ test("requires publication metadata and package metadata to be represented", asy
     runVariant(readme, { description: "Different description" }),
   ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("project description") }));
   await expect(
-    runVariant(readme, { keywords: ["unlisted"] }),
-  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("package keywords") }));
+    runVariant(readme, { author: "Other Author" }),
+  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("author") }));
+  await expect(
+    runVariant(readme, { license: "Apache-2.0" }),
+  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("license") }));
+  await expect(runVariant(readme, { keywords: ["unlisted"] })).resolves.toEqual(
+    expect.objectContaining({ status: "pass" }),
+  );
   await expect(runVariant(readme, { keywords: "fixture" })).resolves.toEqual(
     expect.objectContaining({ status: "pass" }),
   );

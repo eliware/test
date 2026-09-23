@@ -14,9 +14,5 @@ export function validateReadmeMetadata(readme, packageJson = {}) {
   if (missingMetadata.length > 0) {
     return `README.md must state package metadata: ${missingMetadata.join(", ")}.`;
   }
-  const keywords = Array.isArray(packageJson.keywords) ? packageJson.keywords.filter(Boolean) : [];
-  if (keywords.length > 0 && !keywords.every((keyword) => readme.includes(String(keyword)))) {
-    return "README.md must state the package keywords.";
-  }
   return null;
 }

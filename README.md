@@ -18,8 +18,7 @@ Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [R
 The CLI validates repository structure, documentation, conventions, tests,
 coverage, packaging, and supported operational checks.
 
-Package description: Shared deterministic repository validation for Eliware
-projects. Author: Eliware <eliware@eliware.org>. License: MIT.
+Package description: Shared deterministic repository validation for Eliware projects. Author: Eliware <eliware@eliware.org>. License: MIT.
 
 ## Requirements
 

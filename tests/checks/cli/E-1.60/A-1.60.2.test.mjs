@@ -28,7 +28,7 @@ test("fails when a required CLI README section is missing", async () => {
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-1.60.2",
     status: "fail",
-    message: "CLI README.md must document Requirements.",
+    message: "CLI README.md must document ## Commands.",
   });
   await rm(root, { recursive: true, force: true });
 });

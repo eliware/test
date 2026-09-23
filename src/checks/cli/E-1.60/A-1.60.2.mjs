@@ -9,19 +9,11 @@ export async function run({ root }) {
   try {
     const readme = await readFile(join(root, "README.md"), "utf8");
     for (const term of [
-      "Purpose",
-      "Requirements",
-      "Setup",
-      "Configuration",
-      "commands",
+      "## Commands",
+      "## Exit codes",
       "--help",
       "--version",
-      "exit codes",
-      "Validation",
-      "Operations",
-      "Security",
-      "Support",
-      "License",
+      "platform",
     ]) {
       if (!readme.toLowerCase().includes(term.toLowerCase()))
         return fail(ruleId, `CLI README.md must document ${term}.`);

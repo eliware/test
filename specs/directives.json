@@ -87,10 +87,12 @@
               "id": "A-18.3.0",
               "dos": [
                 "Discover checks deterministically from the published harness package.",
-                "Treat packaged check modules as the runtime authority snapshot."
+                "Treat packaged check modules as the runtime authority snapshot.",
+                "Bundle remediation guidance for every discovered check so failed diagnostics can explain how to resolve the violated requirement without a runtime dependency on eliware/conventions."
               ],
               "donts": [
-                "Do not use a separate runtime registry that can diverge from bundled check modules."
+                "Do not use a separate runtime registry that can diverge from bundled check modules.",
+                "Do not require consumers to have the eliware/conventions repository installed to receive failure remediation."
               ]
             }
           ]
@@ -141,10 +143,11 @@
             }
           ]
         },
-            {
-              "id": "E-18.6",
-              "dos": [
+        {
+          "id": "E-18.6",
+          "dos": [
             "Make checks return only pass or fail with stable identities and actionable diagnostics.",
+            "For every failed convention check, report the check identity, the observed failure, and concise remediation guidance drawn from the bundled authority snapshot.",
             "Preserve complete bounded child-process context, deterministic failure aggregation, current-run evidence ownership, and the invoking environment needed by the executed tests."
           ],
           "donts": [
@@ -155,10 +158,12 @@
               "id": "A-18.6.0",
               "dos": [
                 "Report each check independently and aggregate results deterministically.",
-                "Preserve failed-check diagnostics without allowing another result to erase them."
+                "Preserve failed-check diagnostics without allowing another result to erase them.",
+                "Include a clear How to resolve instruction with every failed-check diagnostic, selecting relevant guidance from the check's authoritative directive."
               ],
               "donts": [
-                "Do not silently skip a selected check or convert uncertainty into success."
+                "Do not silently skip a selected check or convert uncertainty into success.",
+                "Do not report only a convention ID and failure description without explaining how to resolve the failure."
               ]
             },
             {

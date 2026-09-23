@@ -69,7 +69,9 @@ test("fails fast when package.json.eliware is absent", async () => {
   await expect(
     runCli([], (value) => output.push(value), root, { executeJest: false }),
   ).resolves.toBe(18);
-  expect(output).toEqual(["package.json.eliware is required for Eliware validation."]);
+  expect(output).toEqual([
+    "package.json.eliware is required for Eliware validation.\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.",
+  ]);
 });
 
 test("runs a configured convention validation target without starting Jest", async () => {

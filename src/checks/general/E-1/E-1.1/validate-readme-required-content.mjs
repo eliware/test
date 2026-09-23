@@ -1,3 +1,5 @@
+import { expectedReadmeHeadings } from "./read-readme-sections.mjs";
+
 const STANDARD_BRAND_LINE = "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
 
 export function validateReadmeRequiredContent(readme, packageJson = {}, { examplesRequired = true } = {}) {
@@ -5,19 +7,22 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, { exampl
   if (lines[0] !== STANDARD_BRAND_LINE) return "README.md must begin with the standard Eliware branding line.";
   const headings = lines.map((line, index) => ({ line, index })).filter(({ line }) => /^##\s+[^#]/u.test(line));
   const tocIndex = headings.find(({ line }) => /^##\s+Table of Contents\s*$/iu.test(line))?.index ?? -1;
-  const requiredHeadings = ["Features", "Requirements", "Setup", "Usage", "Development", "Testing", "Troubleshooting", "Security", "Support", "License", "Links"];
-  const requiredIndices = requiredHeadings.map((heading) => headings.find(({ line }) => new RegExp(`^##\\s+${heading}\\s*$`, "iu").test(line))?.index ?? -1);
+  const expected = expectedReadmeHeadings(packageJson);
+  const requiredHeadings = expected.slice(1);
+  const requiredIndices = requiredHeadings.map((heading) => headings.find(({ line }) => new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, "iu").test(line))?.index ?? -1);
   if (tocIndex < 0) return "README.md must contain the required top-level headings in order with a Table of Contents.";
+  if (headings.filter(({ index }) => index < tocIndex).length !== 1) return "README.md must not add top-level sections before the Table of Contents.";
   const missingHeading = requiredHeadings.find((heading, index) => requiredIndices[index] < 0);
   if (missingHeading) return `README.md must include the ${missingHeading === "Links" ? "standard Links" : missingHeading} section.`;
+  const actualHeadingSequence = headings.filter(({ index }) => index >= tocIndex).map(({ line }) => line.replace(/^##\s+/u, "").trim());
+  if (actualHeadingSequence.some((heading) => !expected.includes(heading))) return "README.md top-level headings must exactly match the general and applied-profile order; do not add unapproved headings.";
   if (requiredIndices[requiredHeadings.indexOf("Links")] < requiredIndices[requiredHeadings.indexOf("License")]) return "README.md must contain the required top-level headings in order with a Table of Contents.";
   if (requiredIndices.some((index, position) => position > 0 && index <= requiredIndices[position - 1])) return "README.md must contain the required top-level headings in order with a Table of Contents.";
-  const requiredHeadingSequence = headings
-    .filter(({ index }) => index >= tocIndex && index <= requiredIndices.at(-1))
-    .map(({ line }) => line.replace(/^##\s+/u, "").trim());
-  if (JSON.stringify(requiredHeadingSequence) !== JSON.stringify(["Table of Contents", ...requiredHeadings])) return "README.md must place the required top-level headings contiguously after the Table of Contents.";
+  if (JSON.stringify(actualHeadingSequence) !== JSON.stringify(expected)) return "README.md top-level headings must exactly match the general and applied-profile order; do not add unapproved headings.";
   const tocContent = lines.slice(tocIndex, requiredIndices[0]).join("\n");
-  if (requiredHeadings.some((heading) => !new RegExp(`\\[[^\\]]*\\]\\(#${heading.toLowerCase().replaceAll(" ", "-")}\\)`, "iu").test(tocContent))) return "README.md Table of Contents must link every required heading.";
+  const tocLinks = [...tocContent.matchAll(/\[[^\]]*\]\(#([^)]+)\)/gu)].map((match) => match[1]);
+  const expectedTocLinks = requiredHeadings.map((heading) => heading.toLowerCase().replaceAll(" ", "-"));
+  if (JSON.stringify(tocLinks) !== JSON.stringify(expectedTocLinks)) return "README.md Table of Contents must link every required heading exactly once, in document order.";
   const packageName = packageJson?.name;
   const publicPackage = (packageJson?.private !== true && packageJson?.publishConfig?.access === "public")
     || packageJson?.eliware?.apply?.includes("npm-published");
@@ -33,10 +38,6 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, { exampl
   if (!/\[!\[license\][\s\S]*?\]\(LICENSE\)/iu.test(heading)) return "README.md must include the license badge.";
   if (!/\[!\[CI\][\s\S]*?actions\/workflows/iu.test(heading)) return "README.md must include the GitHub CI badge.";
   if (!readme.includes("Documentation:") || !/\[docs\]\((?:\.\/)?docs\/README\.md\)/u.test(readme) || !/\[specifications\]\((?:\.\/)?specs\/README\.md\)/u.test(readme) || (examplesRequired && !/\[examples\]\((?:\.\/)?examples\/README\.md\)/u.test(readme))) return "README.md must include the standard Documentation navigation links.";
-  for (const section of ["Purpose", "Requirements", "Setup", "Configuration", "Usage", "Validation", "Operations", "Security", "Support", "License"]) {
-    if (!new RegExp(`^##\\s+${section}\\s*$`, "im").test(readme))
-      return `README.md must include the ${section} section.`;
-  }
   const supportIndex = readme.search(/^##\s+Support\s*$/im);
   const linksIndex = readme.search(/^##\s+Links\s*$/im);
   const licenseIndex = readme.search(/^##\s+License\s*$/im);
@@ -67,7 +68,7 @@ function escapeRegExp(value) {
 export function normalizeRepositoryUrl(value) {
   if (value === undefined || value === null) return "https://github.com/eliware/fixture";
   if (typeof value !== "string" || !value.trim()) return null;
-  const normalized = value.replace(/^git\+/, "").replace(/\.git$/, "").replace(/\/$/, "");
+  const normalized = value.replace(/^git\+/, "").replace(/\/+$/, "").replace(/\.git$/, "").replace(/\/+$/, "");
   if (!/^https:\/\/github\.com\/[^/]+\/[^/]+$/u.test(normalized)) return null;
   return normalized;
 }

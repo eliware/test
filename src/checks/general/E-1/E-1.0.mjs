@@ -9,7 +9,7 @@ export const parentRuleId = "E-1";
 
 const authorityReferences = ["eliware/docs", "eliware/conventions", "eliware/operations"];
 
-export async function run({ root }) {
+export async function run({ root, packageJson }) {
   let content;
   try {
     content = await readFile(join(root, "AGENTS.md"), "utf8");
@@ -20,7 +20,7 @@ export async function run({ root }) {
   if (missing.length > 0) {
     return fail(ruleId, `AGENTS.md must reference: ${missing.join(", ")}.`);
   }
-  const missingSections = findMissingAgentsSections(content);
+  const missingSections = findMissingAgentsSections(content, packageJson);
   if (missingSections.length > 0) {
     return fail(ruleId, `AGENTS.md is missing required sections: ${missingSections.join(", ")}.`);
   }

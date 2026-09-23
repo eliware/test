@@ -20,10 +20,7 @@ Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [e
 [LICENSE](LICENSE)
 ## Links
 Eliware: [site](https://eliware.org) [GitHub](https://github.com/eliware) [repository](https://github.com/eliware/fixture) [npm](https://www.npmjs.com/package/@eliware/fixture)
-## Purpose
-## Configuration
-## Validation
-## Operations`;
+`;
 
 test("accepts the standardized content surface", () => {
   expect(validateReadmeRequiredContent(standard, { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture", publishConfig: { access: "public" } })).toBeNull();
@@ -98,16 +95,28 @@ test("supports generic headings and repository metadata forms", () => {
   expect(validateReadmeRequiredContent(standard)).toBeNull();
   expect(normalizeRepositoryUrl()).toBe("https://github.com/eliware/fixture");
   expect(normalizeRepositoryUrl("")).toBeNull();
+  expect(normalizeRepositoryUrl("git+https://github.com/eliware/fixture.git/")).toBe("https://github.com/eliware/fixture");
 });
 
 test("enforces the clarified README structure and TOC", () => {
   expect(validateReadmeRequiredContent(standard.replace("## Table of Contents", "## Purpose"))).toContain("required top-level headings");
   expect(validateReadmeRequiredContent(standard.replace("[Testing](#testing)", ""))).toContain("Table of Contents");
-  expect(validateReadmeRequiredContent(standard.replace("## Features", "## Purpose\n## Features"))).toContain("contiguously");
+  expect(validateReadmeRequiredContent(standard.replace("[Testing](#testing)", "[Testing](#testing) · [Testing](#testing)"))).toContain("exactly once");
+  expect(validateReadmeRequiredContent(standard.replace("[Features](#features) · [Requirements](#requirements)", "[Requirements](#requirements) · [Features](#features)"))).toContain("document order");
+  expect(validateReadmeRequiredContent(standard.replace("## Features", "## Purpose\n## Features"))).toContain("exactly match");
   expect(validateReadmeRequiredContent(standard.replace("## License", "## Links\n## License"))).toContain("required top-level headings");
   expect(validateReadmeRequiredContent(standard.replace("## Requirements", "## Setup\n## Requirements"))).toContain("required top-level headings");
-  expect(validateReadmeRequiredContent(standard.replace("## Purpose", "## Removed"))).toContain("Purpose section");
-  expect(validateReadmeRequiredContent(standard.slice(0, standard.indexOf("\n## Purpose")), { name: "@eliware/fixture" })).toContain("Purpose section");
-  const linksAtEnd = standard.replace(/\n## Purpose[\s\S]*?\n## Support/u, "\n## Purpose\n## Configuration\n## Validation\n## Operations\n## Support");
-  expect(validateReadmeRequiredContent(linksAtEnd, { name: "@eliware/fixture" })).toBeNull();
+  expect(validateReadmeRequiredContent(standard.replace("## Table of Contents", "## Purpose\n## Table of Contents"))).toContain("before the Table of Contents");
+  expect(validateReadmeRequiredContent(standard.replace("## Links", "## Links\n## Links"))).toContain("exactly match");
+});
+
+test("requires applied profile headings in canonical order and rejects extra headings", () => {
+  const metadata = { name: "@eliware/fixture", eliware: { apply: ["cli", "application"] } };
+  const profileReadme = standard.replace(
+    "## Security\n## Support",
+    "## Security\n## Configuration\n## Operations\n## Commands\n## Exit codes\n## Support",
+  ).replace("[Security](#security) · [Support]", "[Security](#security) · [Configuration](#configuration) · [Operations](#operations) · [Commands](#commands) · [Exit codes](#exit-codes) · [Support]");
+  expect(validateReadmeRequiredContent(profileReadme, metadata)).toBeNull();
+  expect(validateReadmeRequiredContent(profileReadme.replace("## Operations", "## Commands\n## Operations"), metadata)).toContain("order");
+  expect(validateReadmeRequiredContent(profileReadme.replace("## Security", "## Security\n## Project details"), metadata)).toContain("exactly match");
 });
