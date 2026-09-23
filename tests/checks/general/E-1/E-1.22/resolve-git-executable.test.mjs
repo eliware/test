@@ -21,11 +21,16 @@ test.each([
   [{ Path: "C:\\Git\\cmd" }, "C:\\Git\\cmd\\git.exe"],
   [{ PATH: "C:\\Git\\cmd" }, "C:\\Git\\cmd\\git.exe"],
   [{ "ProgramFiles(x86)": "C:\\Program Files (x86)" }, "C:\\Program Files (x86)\\Git\\cmd\\git.exe"],
-  [{ LOCALAPPDATA: "C:\\Users\\Eli\\AppData\\Local" }, "C:\\Users\\Eli\\AppData\\Local\\Programs\\Git\\cmd\\git.exe"],
+  [{ LOCALAPPDATA: "C:\\Temp\\Local" }, "C:\\Temp\\Local\\Programs\\Git\\cmd\\git.exe"],
 ])("searches each Windows Git location independently", (env, expected) => {
   expect(resolveGitExecutable({
     platform: "win32",
     env,
     exists: (candidate) => candidate === expected,
   })).toBe(expected);
+});
+
+test("uses default environment and filesystem checks for simulated Windows", () => {
+  expect(resolveGitExecutable({ platform: "win32", exists: () => false })).toBe("git.exe");
+  expect(resolveGitExecutable({ platform: "win32", env: { Path: "C:\\__missing_git_directory__" } })).toBe("git.exe");
 });
