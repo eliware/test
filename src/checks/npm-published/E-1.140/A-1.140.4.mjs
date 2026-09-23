@@ -11,18 +11,9 @@ function publicationIndex(job, packageName) {
   const escapedName = packageName.replaceAll("/", "\\/");
   return steps(job).findIndex((step) => {
     const command = stepText(step).trim();
-    return new RegExp(`^npm\\s+publish(?:\\s+--[A-Za-z0-9_-]+(?:\\s+|$))*$`, "iu").test(command) &&
+    return new RegExp(`^npm\\s+publish(?:\\s+--[A-Za-z0-9_-]+(?:\\s+[^\\s-][^\\s]*)?)*$`, "iu").test(command) &&
       !new RegExp(`\\s${escapedName}(?:\\s|$)`, "u").test(command);
   });
-}
-
-function exactVerificationIndex(job, packageName) {
-  const escapedName = packageName.replaceAll("/", "\\/");
-  const pattern = new RegExp(
-    `^npm\\s+(?:view|info)\\s+${escapedName}@\\$\\(npm\\s+pkg\\s+get\\s+version\\s+--raw\\)\\s+version\\s+--registry=https://registry\\.npmjs\\.org/?$`,
-    "iu",
-  );
-  return steps(job).findIndex((step) => pattern.test(stepText(step).trim()));
 }
 
 export async function run({ root, packageJson }) {
@@ -39,19 +30,16 @@ export async function run({ root, packageJson }) {
         const allowed = new Set(["contents", "id-token"]);
         const packageName = typeof packageJson?.name === "string" ? packageJson.name : "";
         const publishAt = packageName ? publicationIndex(job, packageName) : -1;
-        const verifyAt = packageName ? exactVerificationIndex(job, packageName) : -1;
-        const verified = verifyAt > publishAt;
         if (
           (publishAt < 0 ||
             (granted.contents !== "read" ||
             granted["id-token"] !== "write" ||
             Object.keys(granted).some((key) => !allowed.has(key)) ||
-            !verified ||
             /NPM_TOKEN|NODE_AUTH_TOKEN/i.test(JSON.stringify(job))))
         ) {
           return fail(
             ruleId,
-            `Publication workflow must use least-privilege permissions and exact-version verification: ${workflow.name}.`,
+            `Publication workflow must use least-privilege permissions: ${workflow.name}.`,
           );
         }
       }

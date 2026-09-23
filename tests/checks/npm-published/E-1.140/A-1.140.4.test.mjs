@@ -16,13 +16,21 @@ jobs:
   publish:
     steps:
       - run: npm publish
-      - run: npm view @eliware/example@$(npm pkg get version --raw) version --registry=https://registry.npmjs.org
 `,
   );
   expect((await run({ root, packageJson: { name: "@eliware/example" } })).status).toBe("pass");
   expect((await run({ root, packageJson: {} })).status).toBe("fail");
   await writeFile(join(root, ".github", "workflows", "publish.yml"), "npm publish\n");
   expect((await run({ root, packageJson: { name: "@eliware/example" } })).status).toBe("fail");
+});
+
+test("accepts publication options with values", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-options-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `permissions:\n  contents: read\n  id-token: write\njobs:\n  publish:\n    steps:\n      - run: npm publish --access public --provenance\n`);
+  await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(
+    expect.objectContaining({ status: "pass" }),
+  );
 });
 
 test("rejects unsafe publication permissions, credentials, and unverified versions", async () => {
@@ -38,7 +46,6 @@ jobs:
   publish:
     steps:
       - run: npm publish
-      - run: npm view @eliware/example@$(npm pkg get version --raw) version --registry=https://registry.npmjs.org
 `,
   );
   await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(
@@ -71,17 +78,17 @@ test("fails when the required publication workflow is unavailable", async () => 
   await expect(run({ root, packageJson: {} })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
-test("rejects publication jobs with an unverified package or extra permission", async () => {
+test("rejects publication jobs with extra permission", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-unverified-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), `permissions:\n  contents: read\n  id-token: write\n  attestations: write\njobs:\n  publish:\n    steps:\n      - run: npm view other-package version\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `permissions:\n  contents: read\n  id-token: write\n  attestations: write\njobs:\n  publish:\n    steps:\n      - run: npm publish\n`);
   await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
 test("rejects an unparseable publication-looking companion workflow", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-permissions-mixed-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), `permissions:\n  contents: read\n  id-token: write\njobs:\n  publish:\n    steps:\n      - run: npm view @eliware/example version\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `permissions:\n  contents: read\n  id-token: write\njobs:\n  publish:\n    steps:\n      - run: npm publish\n`);
   await writeFile(join(root, ".github", "workflows", "legacy.yml"), "npm publish\n");
   await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });

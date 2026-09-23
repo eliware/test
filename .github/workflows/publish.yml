@@ -39,4 +39,3 @@ jobs:
       - run: npm pkg get version
       - run: echo v8.0.0 github.ref_name
       - run: npm publish --provenance
-      - run: npm view @eliware/test@$(npm pkg get version --raw) version --registry=https://registry.npmjs.org
