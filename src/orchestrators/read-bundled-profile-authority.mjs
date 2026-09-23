@@ -1,54 +1,39 @@
-import { readdirSync, statSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const checksRoot = join(dirname(fileURLToPath(import.meta.url)), "../checks");
 export const bundledConventionVersion = "8.0";
-const profileParents = Object.freeze({
-  general: [], application: ["general"], cli: ["application"], web: ["application"],
-  discord: ["application"], "mcp-server": ["application"], library: ["general"],
-  documentation: ["general"], workspace: ["general"], infrastructure: ["general"],
-  "npm-published": ["general"], "ghcr-published": ["general"], private: ["general"], fork: [],
-});
-const profileManifest = {
-  version: bundledConventionVersion,
-  profiles: Object.fromEntries(Object.keys(profileParents).map((profile) => [profile, {
-    profile, document: `${profile}.json`, version: bundledConventionVersion, extends: profileParents[profile],
-  }])),
-};
-// Authority describes profile structure only. Directive IDs are derived from
-// the discovered bundled modules so this registry cannot drift from code.
-export const bundledDirectiveAuthority = profileManifest;
 
-export function readBundledProfileAuthority({ root = checksRoot, manifest = profileManifest, listDirectories = readdirSync, statDirectory = statSync } = {}) {
-  if (manifest?.version !== bundledConventionVersion || !manifest?.profiles || Array.isArray(manifest.profiles)) {
-    throw new Error("Bundled convention profile manifest must be a v8 profile registry.");
+function profilesFromDirectories(root, listDirectories) {
+  return listDirectories(root, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+}
+
+function authorityFromDirectories(names) {
+  return {
+    version: bundledConventionVersion,
+    profiles: Object.fromEntries(names.map((name) => [name, { profile: name }])),
+  };
+}
+
+// Consumers explicitly declare every applicable profile. The check-directory
+// tree is the only authority for the available profile names.
+export const bundledDirectiveAuthority = authorityFromDirectories(
+  profilesFromDirectories(checksRoot, readdirSync),
+);
+
+export function readBundledProfileAuthority({ root = checksRoot, listDirectories = readdirSync } = {}) {
+  let names;
+  try {
+    names = profilesFromDirectories(root, listDirectories);
+  } catch (error) {
+    throw new Error(`Bundled convention profiles could not be discovered: ${error.message}`);
   }
-  const names = Object.keys(manifest.profiles);
-  if (names.length === 0) throw new Error("Bundled convention profile manifest cannot be empty.");
-  const profiles = {};
-  for (const name of names) {
-    const metadata = manifest.profiles[name];
-    if (!metadata || metadata.profile !== name || metadata.document !== `${name}.json` || metadata.version !== bundledConventionVersion || !Array.isArray(metadata.extends) || new Set(metadata.extends).size !== metadata.extends.length || metadata.extends.includes(name)) {
-      throw new Error(`Bundled convention profile metadata is inconsistent for ${name}.`);
-    }
-    for (const parent of metadata.extends) {
-      if (!names.includes(parent)) throw new Error(`Bundled convention profile ${name} extends unknown profile ${parent}.`);
-    }
-    const profileDir = join(root, name);
-    try {
-      if (!statDirectory(profileDir).isDirectory()) throw new Error("not a directory");
-    } catch (error) {
-      throw new Error(`Bundled convention profile ${name} is missing or invalid: ${error.message}`);
-    }
-    profiles[name] = { ...metadata };
-  }
-  const directories = listDirectories(root, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
-  const expected = [...names].sort();
-  if (JSON.stringify(directories) !== JSON.stringify(expected)) {
-    throw new Error("Bundled convention profile directories do not match the profile manifest.");
-  }
-  return { version: manifest.version, profiles };
+  if (names.length === 0) throw new Error("Bundled convention profile directories cannot be empty.");
+  return authorityFromDirectories(names);
 }
 
 export function validateAppliedProfiles(apply, authority = readBundledProfileAuthority()) {
@@ -60,14 +45,6 @@ export function validateAppliedProfiles(apply, authority = readBundledProfileAut
 }
 
 export function expandAppliedProfiles(apply, authority = readBundledProfileAuthority()) {
-  const expanded = [];
   const seen = new Set();
-  const visit = (name) => {
-    if (seen.has(name)) return;
-    seen.add(name);
-    for (const parent of authority.profiles[name]?.extends ?? []) visit(parent);
-    expanded.push(name);
-  };
-  for (const name of apply) visit(name);
-  return expanded;
+  return apply.filter((name) => authority.profiles[name] && !seen.has(name) && seen.add(name));
 }

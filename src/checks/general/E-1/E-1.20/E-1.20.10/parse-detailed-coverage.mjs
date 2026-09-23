@@ -12,10 +12,14 @@ function isInScopeSource(file) {
   return !/(?:^|\/)(?:tests?|fixtures?|generated|dist|build)(?:\/|$)/iu.test(sourcePath);
 }
 
-export function parseDetailed(json) {
+export function parseDetailed(json, expectedFiles = []) {
   const counts = Object.fromEntries(metrics.map((metric) => [metric, { covered: 0, total: 0 }]));
   const gaps = [];
   const entries = Object.entries(json ?? {}).filter(([file]) => isInScopeSource(file));
+  if (entries.length === 0 && expectedFiles.length === 0) return null;
+  const reported = new Set(entries.map(([file]) => normalizeSourcePath(file)));
+  const omitted = expectedFiles.filter((file) => isInScopeSource(file) && !reported.has(normalizeSourcePath(file)));
+  if (omitted.length > 0) throw new Error(`Detailed coverage omits in-scope source file(s): ${omitted.join(", ")}.`);
   if (entries.length === 0) return null;
   for (const [file, data] of entries) {
     const gap = fileGap(file, data);
@@ -39,4 +43,10 @@ export function parseDetailed(json) {
       ]),
     ),
   };
+}
+
+function normalizeSourcePath(file) {
+  const normalized = file.replaceAll("\\", "/").replace(/^\.\//u, "");
+  const sourceIndex = normalized.lastIndexOf("/src/");
+  return sourceIndex < 0 ? normalized : normalized.slice(sourceIndex + 1);
 }

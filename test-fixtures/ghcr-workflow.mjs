@@ -33,10 +33,12 @@ jobs:
       - uses: actions/attest@v4
         with:
           subject-name: ghcr.io/eliware/example
-          subject-digest: steps.push.outputs.digest
+          subject-digest: \${{ steps.push.outputs.digest }}
           push-to-registry: true
-      - run: docker buildx imagetools inspect ghcr.io/eliware/example@steps.push.outputs.digest
-      - run: echo verified steps.push.outputs.digest >> "$GITHUB_STEP_SUMMARY"
+      - run: test "$(docker buildx imagetools inspect ghcr.io/eliware/example:v1.2.3 --format '{{.Manifest.Digest}}')" = "\${{ steps.push.outputs.digest }}"
+      - run: docker buildx imagetools inspect ghcr.io/eliware/example@\${{ steps.push.outputs.digest }}
+      - run: gh attestation verify oci://ghcr.io/eliware/example@\${{ steps.push.outputs.digest }} --repo \${{ github.repository }}
+      - run: echo verified \${{ steps.push.outputs.digest }} >> "$GITHUB_STEP_SUMMARY"
 `;
 
 export async function createGhcrFixture() {

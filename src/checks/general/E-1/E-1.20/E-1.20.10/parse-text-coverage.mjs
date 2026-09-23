@@ -13,6 +13,8 @@ export function parseText(text) {
   const aggregate = rows.find(({ file }) => /^All files$/iu.test(file));
   const fileRows = rows.filter(({ file }) => !/^All files$/iu.test(file));
   if (!aggregate || fileRows.length === 0) return null;
+  const invalidRows = fileRows.filter(({ file }) => !isSourcePath(file));
+  if (invalidRows.length > 0) throw new Error(`Text coverage contains non-source file row(s): ${invalidRows.map(({ file }) => file).join(", ")}.`);
 
   return {
     gaps: fileRows
@@ -27,4 +29,11 @@ export function parseText(text) {
       })),
     totals: Object.fromEntries(metrics.map((metric, index) => [metric, aggregate.values[index]])),
   };
+}
+
+function isSourcePath(file) {
+  const normalized = file.replaceAll("\\", "/").replace(/^\.\//u, "");
+  const sourceIndex = normalized.lastIndexOf("/src/");
+  const sourcePath = sourceIndex < 0 ? normalized : normalized.slice(sourceIndex + 1);
+  return /^src\/(?!.*(?:^|\/)(?:tests?|fixtures?|generated|dist|build)(?:\/|$)).+\.(?:mjs|js|cjs)$/iu.test(sourcePath);
 }

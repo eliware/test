@@ -15,12 +15,32 @@ const internalPatterns = [
   /(?:^|[^a-z0-9])(?:C:|D:)[\\/]+(?:eliware|Users[\\/]\w+[\\/]src)(?:[\\/]|$)/i,
   /(?:^|[^a-z0-9])file:\/\/(?:internal|private|[^/]+\.internal\.eliware\.org)(?:[\\/]|$)/i,
 ];
+
+function containsBinaryControlCharacters(content) {
+  for (const character of content) {
+    const codePoint = character.codePointAt(0);
+    if (
+      (codePoint < 0x20 && ![0x09, 0x0a, 0x0d].includes(codePoint)) ||
+      (codePoint >= 0x7f && codePoint <= 0x9f)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function run({ root, files: suppliedFiles }) {
   const findings = [];
   try {
     for (const file of suppliedFiles ?? (await findRepositoryFiles(root))) {
-      const content = await readFile(join(root, file), "utf8");
-      if (content.includes("\u0000")) continue;
+      const bytes = await readFile(join(root, file));
+      let content;
+      try {
+        content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      } catch {
+        continue;
+      }
+      if (containsBinaryControlCharacters(content)) continue;
       if (internalPatterns.some((pattern) => pattern.test(content))) findings.push(file);
     }
   } catch (error) {

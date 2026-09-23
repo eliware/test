@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { EventEmitter } from "node:events";
 import { formatOutdatedDependencies, readOutdatedDependencies } from "../../../../src/checks/general/E-1/read-outdated-dependencies.mjs";
 
@@ -34,6 +34,21 @@ test("parses successful npm output and bounds stderr", async () => {
     return child;
   });
   await expect(promise).resolves.toEqual({ alpha: { current: "1", latest: "2" } });
+});
+
+test("terminates and rejects npm outdated output that exceeds its capture limit", async () => {
+  const child = childProcess();
+  child.kill = jest.fn();
+  const result = readOutdatedDependencies("fixture", () => {
+    queueMicrotask(() => {
+      child.stdout.emit("data", "x".repeat(100_001));
+      child.stdout.emit("data", "additional output after the limit");
+      child.emit("close", null, "SIGTERM");
+    });
+    return child;
+  });
+  await expect(result).rejects.toThrow("output exceeded 100000 characters");
+  expect(child.kill).toHaveBeenCalledWith("SIGTERM");
 });
 
 test("builds the non-Windows npm command", async () => {

@@ -9,6 +9,14 @@ test("redacts configured sensitive environment values literally", () => {
   expect(redactProcessOutput("unchanged", [null, ""])).toBe("unchanged");
 });
 
+test("redacts short configured values and secrets after the first hundred entries", () => {
+  const environment = Object.fromEntries(Array.from({ length: 105 }, (_, index) => [`SERVICE_TOKEN_${index}`, `secret-${index}`]));
+  environment.SHORT_TOKEN = "x";
+  const secrets = collectRedactionSecrets(environment);
+  expect(secrets).toHaveLength(106);
+  expect(redactProcessOutput("last secret-104 and x", secrets)).toBe("last [REDACTED] and [REDACTED]");
+});
+
 test("redacts structured, quoted, and authorization credentials", () => {
   expect(redactProcessOutput('password: "secret value" token=abc12345')).toBe(
     "password: [REDACTED] token=[REDACTED]",

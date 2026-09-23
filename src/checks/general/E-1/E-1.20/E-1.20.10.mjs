@@ -1,6 +1,8 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { readCoverageEvidenceFromCandidates } from "./E-1.20.10/coverage-evidence-selection.mjs";
 import { formatCoverageGaps } from "./E-1.20.10/format-coverage-gaps.mjs";
+import { focusedPathFrom } from "./build-jest-arguments.mjs";
+import { resolveFocusedCoverage } from "./resolve-focused-coverage.mjs";
 
 export const ruleId = "E-1.20.10";
 export const parentRuleId = "E-1.20";
@@ -12,11 +14,16 @@ export async function run(context, readEvidence = readCoverageEvidenceFromCandid
     return fail(ruleId, "Jest results are unavailable or indicate a failed test run.");
   }
   try {
+    const focusedPath = focusedPathFrom(context.jestArgs ?? []);
+    const focusedCoverage = await resolveFocusedCoverage(context.root, focusedPath);
+    const expectedFiles = focusedCoverage.includes("--collectCoverageFrom")
+      ? [focusedCoverage[focusedCoverage.indexOf("--collectCoverageFrom") + 1]]
+      : undefined;
     const evidence = await readEvidence(
       context.root,
       context.jestResult.stdout,
       context.jestResult.startedAt,
-      { requireFresh: true },
+      { requireFresh: true, expectedFiles },
     );
     const metrics = ["statements", "branches", "functions", "lines"];
     if (!evidence || !Array.isArray(evidence.gaps) || !evidence.totals

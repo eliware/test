@@ -41,7 +41,7 @@ test("handles static loops and bindings while collecting commands", () => {
   );
   expect(calls).toHaveLength(3);
   expect(calls[0]).toEqual(expect.objectContaining({ command: "npm", args: ["test"] }));
-  expect(unsupported).toEqual([]);
+  expect(unsupported).toHaveLength(1);
 });
 
 test("marks dynamic and unsupported call forms", () => {

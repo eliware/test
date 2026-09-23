@@ -26,13 +26,16 @@ export function createChildOutputCapture(options, { onStdout, onStderr, captureS
   };
 
   return {
+    redact(text) {
+      return redactProcessOutput(text, redactionSecrets);
+    },
     stdout(text) {
-      const redacted = redactProcessOutput(text, redactionSecrets);
+      const redacted = this.redact(text);
       stream(onStdout, redacted);
       capture(stdoutChunks, redacted);
     },
     stderr(text) {
-      const redacted = redactProcessOutput(text, redactionSecrets);
+      const redacted = this.redact(text);
       stream(onStderr, redacted);
       capture(stderrChunks, captureStderr?.(redacted) ?? redacted);
     },

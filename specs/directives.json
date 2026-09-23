@@ -44,7 +44,10 @@
   "directives": [
     {
       "id": "E-18",
-      "dos": ["Provide a deterministic Eliware validation harness."],
+      "dos": [
+        "Provide a deterministic Eliware validation harness.",
+        "Treat overlapping validation invocations on the same worktree as unsupported; callers are responsible for avoiding them."
+      ],
       "donts": [
         "Do not define, reinterpret, duplicate, or extend repository conventions in the harness specification.",
         "Do not perform publication, deployment, synchronization, tagging, pushing, or other external state changes during validation.",

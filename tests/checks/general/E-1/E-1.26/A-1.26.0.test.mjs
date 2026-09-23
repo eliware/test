@@ -7,7 +7,7 @@ import { run } from "../../../../../src/checks/general/E-1/E-1.26/A-1.26.0.mjs";
 test("requires current release notes and README indexing", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-release-notes-"));
   await writeFile(join(root, "README.md"), "[Release notes](RELEASE_NOTES.md)");
-  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n\n## 8.0.0\n\n### Added\n- Feature\n\n### Fixed\n- Fix\n");
+  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n\n## 8.0.0 — 2026-09-10\n\n### Added\n- Feature\n\n### Fixed\n- Fix\n");
   await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toEqual({
     ruleId: "A-1.26.0",
     status: "pass",
@@ -26,7 +26,15 @@ test("requires current release notes and README indexing", async () => {
     expect.objectContaining({ status: "pass" }),
   );
   await writeFile(join(root, "README.md"), "[Release notes](RELEASE_NOTES.md)");
-  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n\n## 7.0.0\n");
+  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n\n## 7.0.0 — 2026-09-10\n");
+  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n\n## 8.0.0 — 2026-9-10\n");
+  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  await writeFile(join(root, "RELEASE_NOTES.md"), "# Release notes\n\n## 8.0.0 — 2026-02-30\n");
   await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
@@ -41,9 +49,9 @@ test("requires current release notes and README indexing", async () => {
 test("requires both user-visible changes sections", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-release-notes-sections-"));
   await writeFile(join(root, "README.md"), "[Release notes](RELEASE_NOTES.md)");
-  await writeFile(join(root, "RELEASE_NOTES.md"), "## 8.0.0\n### Fixed\n- Fix\n");
+  await writeFile(join(root, "RELEASE_NOTES.md"), "## 8.0.0 — 2026-09-10\n### Fixed\n- Fix\n");
   await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("user-visible changes") }));
-  await writeFile(join(root, "RELEASE_NOTES.md"), "## 8.0.0\n### Added\n- Feature\n");
+  await writeFile(join(root, "RELEASE_NOTES.md"), "## 8.0.0 — 2026-09-10\n### Added\n- Feature\n");
   await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("fixes section") }));
   await rm(root, { recursive: true, force: true });
 });

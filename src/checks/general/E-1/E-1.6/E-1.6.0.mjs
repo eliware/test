@@ -11,7 +11,7 @@ export async function run({ root, packageJson }, getTracked = readTrackedPaths) 
   const allowed = readSensitiveExemptions(packageJson, ruleId);
   try {
     const tracked = await getTracked(root);
-    if (!Array.isArray(tracked)) throw new Error("Git inspection returned no paths.");
+    if (!Array.isArray(tracked) || tracked.length === 0) throw new Error("Git inspection returned no paths.");
     findings.push(...tracked.filter((path) => isForbiddenPath(path) && !allowed.has(path)));
   } catch {
     return fail(

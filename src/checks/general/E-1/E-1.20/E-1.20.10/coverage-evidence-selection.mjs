@@ -3,18 +3,21 @@ import { join } from "node:path";
 import { parseText } from "./parse-text-coverage.mjs";
 import { readJsonCoverage } from "./coverage-report-readers.mjs";
 import { coverageCandidates as candidates } from "../cleanup-coverage.mjs";
+import { findRepositoryFiles } from "../../find-repository-files.mjs";
 
 export async function readCoverageEvidenceFromCandidates(
   root,
   testOutput = "",
   startedAt = 0,
-  { read = readFile, statFile = stat, requireFresh = false } = {},
+  { read = readFile, statFile = stat, requireFresh = false, expectedFiles: suppliedExpectedFiles } = {},
 ) {
   if (requireFresh && !startedAt) {
     throw new Error(
       "Coverage evidence cannot be bound to the current Jest run. Rerun Jest with coverage enabled.",
     );
   }
+  const expectedFiles = suppliedExpectedFiles ?? (await findRepositoryFiles(root))
+    .filter((file) => /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file));
   for (const relativePath of candidates) {
     if (requireFresh && relativePath.endsWith("coverage-summary.json")) continue;
     try {
@@ -24,6 +27,7 @@ export async function readCoverageEvidenceFromCandidates(
         startedAt,
         read,
         statFile,
+        expectedFiles,
       );
       if (evidence) return { ...evidence, source: relativePath };
       throw new Error(`Coverage report is invalid: ${relativePath}. Rerun the tests.`);

@@ -2,6 +2,7 @@ import { fail, pass } from "../../../check-result.mjs";
 import { isValidationJob, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
 import { readWorkflows } from "./read-workflow-files.mjs";
 import { isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
+import { validateWorkflowSequence } from "./validate-workflow-sequence.mjs";
 
 export const ruleId = "A-1.24.0";
 export const parentRuleId = "E-1.24";
@@ -17,9 +18,7 @@ export async function run({ root }) {
       if (!isValidationWorkflowJob(job, workflowRunSteps)) return false;
       if (!/^ubuntu(?:-|$)/iu.test(String(job["runs-on"] ?? ""))) return false;
       const commands = workflowRunSteps(job);
-      const install = commands.findIndex(({ command }) => /^npm\s+ci$/iu.test(command));
-      const test = commands.findIndex(({ command }) => /^npm\s+test$/iu.test(command));
-      return install < test;
+      return validateWorkflowSequence(name, commands, job.steps, job) === null;
     });
     if (!validJob)
       return fail(ruleId, `${name} must run npm ci followed by npm test.`);

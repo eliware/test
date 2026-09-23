@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
 import { npmCommand } from "../../npm-command.mjs";
 
+const maxStdoutLength = 100_000;
+
 export function readOutdatedDependencies(root, spawnProcess = spawn) {
   return new Promise((resolve, reject) => {
     const [npmExecutable, prefix] = npmCommand();
@@ -13,10 +15,21 @@ export function readOutdatedDependencies(root, spawnProcess = spawn) {
     });
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (chunk) => { stdout += chunk; });
+    let oversized = false;
+    child.stdout.on("data", (chunk) => {
+      if (oversized) return;
+      const text = chunk.toString();
+      if (stdout.length + text.length > maxStdoutLength) {
+        oversized = true;
+        try { child.kill?.("SIGTERM"); } catch {}
+        return;
+      }
+      stdout += text;
+    });
     child.stderr.on("data", (chunk) => { stderr = `${stderr}${chunk}`.slice(-4000); });
     child.on("error", reject);
     child.on("close", (code) => {
+      if (oversized) return reject(new Error(`npm outdated output exceeded ${maxStdoutLength} characters.`));
       if (code !== 0 && !stdout.trim()) return reject(new Error(stderr || `npm outdated exited with ${code}.`));
       try { resolve(JSON.parse(stdout || "{}")); } catch { reject(new Error("npm outdated returned invalid JSON.")); }
     });

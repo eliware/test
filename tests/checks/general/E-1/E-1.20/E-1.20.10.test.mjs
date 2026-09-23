@@ -41,6 +41,27 @@ test("passes when fresh evidence is complete", async () => {
   ).resolves.toEqual({ ruleId: "E-1.20.10", status: "pass", message: "" });
 });
 
+test("limits detailed-coverage completeness to the focused test's source file", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-focused-coverage-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "example.mjs"), "export const value = 1;\n");
+  let evidenceOptions;
+  await expect(run(
+    {
+      root,
+      executeJest: true,
+      jestArgs: ["tests/example.test.mjs"],
+      jestResult: { code: 0, startedAt: 1 },
+    },
+    async (_root, _stdout, _startedAt, options) => {
+      evidenceOptions = options;
+      return { totals: { statements: 100, branches: 100, functions: 100, lines: 100 }, gaps: [] };
+    },
+  )).resolves.toMatchObject({ status: "pass" });
+  expect(evidenceOptions.expectedFiles).toEqual(["src/example.mjs"]);
+  await rm(root, { recursive: true, force: true });
+});
+
 test("rejects malformed injected coverage evidence", async () => {
   await expect(
     run(

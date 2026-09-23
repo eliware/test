@@ -12,6 +12,23 @@ test("captures child output and reports process results", async () => {
   expect(output).toEqual(["out:ok", "err:err"]);
 });
 
+test("redacts stderr before progress and output callbacks", async () => {
+  const progress = jest.fn();
+  const stderr = jest.fn();
+  const result = await runChild(process.execPath, [
+    "-e",
+    'process.stderr.write(`[eliware-test-progress] ${process.env.SERVICE_TOKEN}`)',
+  ], {
+    env: { SERVICE_TOKEN: "x" },
+    progressPattern: /eliware-test-progress/u,
+    onProgress: progress,
+    onStderr: stderr,
+  });
+  expect(result.stderr).not.toContain("x");
+  expect(progress.mock.calls.flat().join(" ")).not.toContain("x");
+  expect(stderr.mock.calls.flat().join(" ")).not.toContain("x");
+});
+
 test("uses default options when omitted", async () => {
   await expect(runChild(process.execPath, ["-e", "process.stdout.write('default')"]))
     .resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));

@@ -64,7 +64,7 @@ test("rejects unsupported commands and reversed validation order", async () => {
     "jobs:\n  validate:\n    steps:\n      - run: npm test\n      - run: npm ci\n",
   );
   await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("followed by") }),
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("followed immediately") }),
   );
   await rm(root, { recursive: true, force: true });
 });
@@ -76,5 +76,35 @@ test("does not require validation order in publication workflows", async () => {
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "fail", message: "release.yml publication workflow must contain a separate validation job." });
   await writeFile(join(root, ".github", "workflows", "release.yml"), "jobs:\n  release:\n    steps:\n      - run: echo release\n");
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "fail", message: "release.yml must validate with npm ci followed by npm test." });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("keeps validation sequence checks scoped to the validation job in mixed workflows", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-job-scope-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  const workflow = join(root, ".github", "workflows", "release.yml");
+  await writeFile(workflow, `jobs:
+  validate:
+    steps:
+      - run: npm ci
+      - run: curl https://example.test
+      - run: npm test
+  publish:
+    steps:
+      - run: npm publish
+`);
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("non-validation") });
+  await writeFile(workflow, `jobs:
+  validate-install:
+    steps:
+      - run: npm ci
+  validate-test:
+    steps:
+      - run: npm test
+  publish:
+    steps:
+      - run: npm publish
+`);
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("followed immediately") });
   await rm(root, { recursive: true, force: true });
 });

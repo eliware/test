@@ -19,7 +19,7 @@ export function workflowRunSteps(job) {
   if (!Array.isArray(job?.steps)) return [];
   return job.steps
     .filter((step) => step && typeof step === "object" && typeof step.run === "string")
-    .map((step) => ({ name: step.name, command: step.run.trim() }));
+    .map((step, index) => ({ name: step.name, command: step.run.trim(), step, index }));
 }
 
 export function workflowCommands(document) {

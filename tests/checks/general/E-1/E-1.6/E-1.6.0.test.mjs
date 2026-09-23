@@ -110,6 +110,16 @@ test("fails closed when repository inspection cannot run", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("fails closed when Git inspection returns empty tracked-path evidence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-empty-index-"));
+  await expect(run({ root }, async () => [])).resolves.toEqual(expect.objectContaining({
+    ruleId: "E-1.6.0",
+    status: "fail",
+    message: "Repository contents could not be inspected for secret or runtime-state artifacts.",
+  }));
+  await rm(root, { recursive: true, force: true });
+});
+
 test("fails closed when fallback filesystem inspection cannot run", async () => {
   await expect(run({ root: join(tmpdir(), "eliware-test-missing-secrets-root") })).resolves.toEqual({
     ruleId: "E-1.6.0",

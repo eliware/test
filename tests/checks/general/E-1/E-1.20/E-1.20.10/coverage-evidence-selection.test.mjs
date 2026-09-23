@@ -27,13 +27,21 @@ test("rejects aggregate summary evidence", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("rejects an empty detailed report instead of falling through", async () => {
+test("rejects empty and omitted-only detailed reports", async () => {
   const root = await fixture("coverage-final.json", JSON.stringify({}));
   await expect(readCoverageEvidenceFromCandidates(root)).rejects.toThrow("invalid");
   await rm(root, { recursive: true, force: true });
+
+  const omittedRoot = await mkdtemp(join(tmpdir(), "eliware-test-coverage-omitted-"));
+  await mkdir(join(omittedRoot, "coverage"), { recursive: true });
+  await mkdir(join(omittedRoot, "src"), { recursive: true });
+  await writeFile(join(omittedRoot, "src", "expected.mjs"), "export const value = 1;\n");
+  await writeFile(join(omittedRoot, "coverage", "coverage-final.json"), JSON.stringify({ "tests/only.test.mjs": {} }));
+  await expect(readCoverageEvidenceFromCandidates(omittedRoot)).rejects.toThrow("src/expected.mjs");
+  await rm(omittedRoot, { recursive: true, force: true });
 });
 
-test("does not accept summary-only evidence for a fresh run", async () => {
+test("requires fresh per-file evidence instead of accepting summary-only evidence", async () => {
   const root = await fixture(
     "coverage-summary.json",
     JSON.stringify({
@@ -52,25 +60,21 @@ test("does not accept summary-only evidence for a fresh run", async () => {
     }),
   ).rejects.toThrow("Coverage evidence is missing");
   await rm(root, { recursive: true, force: true });
-});
 
-test("rejects an aggregate-only Jest text summary", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  const textRoot = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
   await expect(
-    readCoverageEvidenceFromCandidates(root, "All files | 100 | 100 | 100 | 100 |\n"),
+    readCoverageEvidenceFromCandidates(textRoot, "All files | 100 | 100 | 100 | 100 |\n"),
   ).rejects.toThrow("Coverage evidence is missing");
-  await rm(root, { recursive: true, force: true });
-});
+  await rm(textRoot, { recursive: true, force: true });
 
-test("requires a run timestamp when fresh evidence is required", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  const missingTimestampRoot = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
   await expect(
-    readCoverageEvidenceFromCandidates(root, "", 0, { requireFresh: true }),
+    readCoverageEvidenceFromCandidates(missingTimestampRoot, "", 0, { requireFresh: true }),
   ).rejects.toThrow("bound to the current Jest run");
-  await rm(root, { recursive: true, force: true });
+  await rm(missingTimestampRoot, { recursive: true, force: true });
 });
 
-test("falls back to Jest text with file-level evidence", async () => {
+test("validates Jest text fallback, freshness, and file-level gaps", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
   const text = [
     "File | % Stmts | % Branch | % Funcs | % Lines |",
@@ -83,23 +87,19 @@ test("falls back to Jest text with file-level evidence", async () => {
     gaps: [],
   });
   await rm(root, { recursive: true, force: true });
-});
 
-test("rejects text fallback when fresh evidence is required", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
-  const text = "src/example.mjs | 100 | 100 | 100 | 100 |\nAll files | 100 | 100 | 100 | 100 |";
+  const freshRoot = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  const freshText = "src/example.mjs | 100 | 100 | 100 | 100 |\nAll files | 100 | 100 | 100 | 100 |";
   await expect(
-    readCoverageEvidenceFromCandidates(root, text, 1, { requireFresh: true }),
+    readCoverageEvidenceFromCandidates(freshRoot, freshText, 1, { requireFresh: true }),
   ).rejects.toThrow("cannot prove freshness");
-  await rm(root, { recursive: true, force: true });
-});
+  await rm(freshRoot, { recursive: true, force: true });
 
-test("reports file-level gaps from Jest text", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
-  const text = ["src/example.mjs | 90 | 80 | 70 | 60 |", "All files | 90 | 80 | 70 | 60 |"].join(
+  const gapsRoot = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  const gapText = ["src/example.mjs | 90 | 80 | 70 | 60 |", "All files | 90 | 80 | 70 | 60 |"].join(
     "\n",
   );
-  await expect(readCoverageEvidenceFromCandidates(root, text)).resolves.toMatchObject({
+  await expect(readCoverageEvidenceFromCandidates(gapsRoot, gapText)).resolves.toMatchObject({
     source: "Jest text output",
     gaps: [
       {
@@ -108,7 +108,7 @@ test("reports file-level gaps from Jest text", async () => {
       },
     ],
   });
-  await rm(root, { recursive: true, force: true });
+  await rm(gapsRoot, { recursive: true, force: true });
 });
 
 test("fails when the highest-priority summary is invalid", async () => {
@@ -119,7 +119,7 @@ test("fails when the highest-priority summary is invalid", async () => {
     "src/example.mjs": {
       statementMap: { 0: { start: { line: 1 } } },
       s: { 0: 1 },
-      branchMap: {},
+      branchMap: { 0: { locations: [{}] } },
       b: { 0: [1] },
       fnMap: { 0: {} },
       f: { 0: 1 },
@@ -182,16 +182,13 @@ test("rejects stale evidence and invalid evidence without usable text", async ()
   await rm(root, { recursive: true, force: true });
 });
 
-test("reports malformed coverage JSON when no fallback succeeds", async () => {
+test("reports malformed JSON and missing evidence when no fallback succeeds", async () => {
   const root = await fixture("coverage-summary.json", "not json");
   await expect(readCoverageEvidenceFromCandidates(root)).rejects.toThrow("Unexpected token");
   await rm(root, { recursive: true, force: true });
-});
-
-test("reports missing evidence when no report or text summary exists", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
-  await expect(readCoverageEvidenceFromCandidates(root, "not a coverage table")).rejects.toThrow(
+  const missingRoot = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
+  await expect(readCoverageEvidenceFromCandidates(missingRoot, "not a coverage table")).rejects.toThrow(
     "Coverage evidence is missing",
   );
-  await rm(root, { recursive: true, force: true });
+  await rm(missingRoot, { recursive: true, force: true });
 });

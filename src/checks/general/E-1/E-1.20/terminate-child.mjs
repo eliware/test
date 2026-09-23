@@ -16,8 +16,11 @@ export function terminateChild(child, platform = process.platform, killProcess =
     if (Number.isInteger(child.pid) && child.pid > 0) {
       try { killTree(child.pid); return true; } catch {}
     }
-    child.kill();
-    return true;
+    try {
+      return child.kill("SIGTERM") !== false;
+    } catch {
+      return false;
+    }
   }
   if (Number.isInteger(child.pid) && child.pid > 0) {
     try {

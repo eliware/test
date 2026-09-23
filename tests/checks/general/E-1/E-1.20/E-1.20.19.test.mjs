@@ -42,6 +42,23 @@ test("reports audit failures without diagnostics", async () => {
   });
 });
 
+test("redacts audit output and startup errors using the invoking environment", async () => {
+  await expect(run({
+    packageJson: { scripts: { audit: "eliware-test --audit" } },
+    root: "C:\\repo",
+    executeAudit: true,
+    env: { NPM_TOKEN: "tiny" },
+    runAudit: async () => ({ code: 1, stdout: "token=tiny", stderr: "tiny" }),
+  })).resolves.toMatchObject({ status: "fail", message: "npm audit failed: token=[REDACTED]\n[REDACTED]" });
+  await expect(run({
+    packageJson: { scripts: { audit: "eliware-test --audit" } },
+    root: "C:\\repo",
+    executeAudit: true,
+    env: { NPM_TOKEN: "tiny" },
+    runAudit: async () => { throw new Error("spawn leaked tiny"); },
+  })).resolves.toMatchObject({ status: "fail", message: "npm audit could not be started: spawn leaked [REDACTED]" });
+});
+
 test("reports audit startup failures", async () => {
   await expect(
     run({

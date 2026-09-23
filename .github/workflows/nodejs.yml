@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 26
           cache: npm
-      - run: npm ci
       - name: Create CI-only mailbox owner environment
         run: printf 'MAIL_OWNER_ADDRESS=test@eliware.org\n' > .env
+      - run: npm ci
       - run: npm test

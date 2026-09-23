@@ -5,6 +5,15 @@ import { fail, pass } from "../../../check-result.mjs";
 export const ruleId = "A-1.26.0";
 export const parentRuleId = "E-1.26";
 
+function hasCurrentReleaseHeading(notes, version) {
+  return notes.split(/\r?\n/u).some((line) => {
+    const match = /^## ([^\s]+) — (\d{4}-\d{2}-\d{2})$/u.exec(line);
+    if (!match || match[1] !== version) return false;
+    const date = new Date(`${match[2]}T00:00:00.000Z`);
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === match[2];
+  });
+}
+
 export async function run({ root, packageJson }) {
   try {
     const [notes, readme] = await Promise.all([
@@ -12,10 +21,7 @@ export async function run({ root, packageJson }) {
       readFile(join(root, "README.md"), "utf8"),
     ]);
     const version = packageJson?.version;
-    if (
-      typeof version !== "string" ||
-      !new RegExp(`^##\\s+${version.replaceAll(".", "\\.")}\\s*$`, "m").test(notes)
-    ) {
+    if (typeof version !== "string" || !hasCurrentReleaseHeading(notes, version)) {
       return fail(ruleId, "RELEASE_NOTES.md must contain the current package version heading.");
     }
     if (!/^###\s+(?:Added|Changes|User-visible changes)\s*$/im.test(notes)) {

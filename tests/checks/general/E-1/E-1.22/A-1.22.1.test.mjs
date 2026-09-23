@@ -40,6 +40,13 @@ test("uses the platform Git executable adapter", async () => {
   expect(command).toBe("git.exe");
 });
 
+test("uses an explicitly resolved native Git path for ignore inspection", async () => {
+  const nativeGit = "C:\\Program Files\\Git\\cmd\\git.exe";
+  let command;
+  await gitIgnores("C:/repo", "file", async (resolved) => { command = resolved; }, () => nativeGit);
+  expect(command).toBe(nativeGit);
+});
+
 test("reports an omitted dependency category", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-"));
   await writeFile(join(root, ".gitignore"), ".git\ncoverage\nbuild\nruntime\n.env\n.DS_Store\n");

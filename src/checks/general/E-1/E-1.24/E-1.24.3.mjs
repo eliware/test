@@ -1,14 +1,17 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { readWorkflows } from "./read-workflow-files.mjs";
-import { workflowCommands } from "./read-workflows.mjs";
-import { findPublicationCommand } from "./classify-workflow-commands.mjs";
+import { isValidationJob, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
+import { isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
 
 export const ruleId = "E-1.24.3";
 export const parentRuleId = "E-1.24";
 
 export async function run({ root }) {
   for (const { name, document } of await readWorkflows(root)) {
-    if (findPublicationCommand(workflowCommands(document))) continue;
+    const hasValidationJob = workflowJobs(document).some(({ id, job }) =>
+      isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
+    );
+    if (!hasValidationJob) continue;
     const concurrency = document?.concurrency;
     const group = concurrency?.group;
     const identifiesRepository = typeof group === "string" && /\bgithub\.repository\b/iu.test(group);

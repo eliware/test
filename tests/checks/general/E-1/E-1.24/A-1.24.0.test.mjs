@@ -90,3 +90,39 @@ test("reports malformed workflow YAML and ignores unrelated jobs", async () => {
   await expect(run({ root })).resolves.toMatchObject({ ruleId: "A-1.24.0", status: "fail" });
   await rm(root, { recursive: true, force: true });
 });
+
+test("rejects intervening steps and validation split across jobs", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-gap-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  const path = join(root, ".github", "workflows", "ci.yml");
+  await writeFile(path, `jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm ci
+      - run: rm -rf node_modules
+      - run: npm test
+`);
+  await expect(run({ root })).resolves.toMatchObject({ ruleId: "A-1.24.0", status: "fail" });
+  await writeFile(path, `jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm ci
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm test
+`);
+  await expect(run({ root })).resolves.toMatchObject({ ruleId: "A-1.24.0", status: "fail" });
+  await writeFile(path, `jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm ci
+      - run: npm test
+        continue-on-error: true
+`);
+  await expect(run({ root })).resolves.toMatchObject({ ruleId: "A-1.24.0", status: "fail" });
+  await rm(root, { recursive: true, force: true });
+});

@@ -4,10 +4,10 @@ const sensitiveEnvironmentKey = /(?:password|passwd|pwd|token|secret|credential|
 
 export function collectRedactionSecrets(environment) {
   if (!environment || typeof environment !== "object") return [];
-  return Object.entries(environment)
-    .filter(([key, value]) => sensitiveEnvironmentKey.test(key) && typeof value === "string" && value.length >= 4)
-    .map(([, value]) => value)
-    .slice(0, 100);
+  return [...new Set(Object.entries(environment)
+    .filter(([key, value]) => sensitiveEnvironmentKey.test(key) && typeof value === "string" && value.length > 0)
+    .map(([, value]) => value))]
+    .sort((left, right) => right.length - left.length);
 }
 
 export function redactProcessOutput(text, secrets = []) {

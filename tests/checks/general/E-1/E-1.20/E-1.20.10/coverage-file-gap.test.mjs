@@ -10,7 +10,7 @@ test("derives line evidence from statement locations when Istanbul omits line co
 });
 
 test("returns no gap for fully covered files and diagnostics for uncovered files", () => {
-  const complete = { s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1 }, statementMap: { 1: {} } };
+  const complete = { s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1 }, statementMap: { 1: {} }, branchMap: { 1: { locations: [{}] } }, fnMap: { 1: {} } };
   expect(fileGap("complete.mjs", complete)).toBeNull();
   expect(fileGap("gap.mjs", { ...complete, s: { 1: 0 } })).toEqual(expect.objectContaining({ file: "gap.mjs" }));
 });
@@ -18,14 +18,15 @@ test("returns no gap for fully covered files and diagnostics for uncovered files
 test("reports statement, branch, function, and line locations", () => {
   const gap = fileGap("gap.mjs", {
     s: { 1: 0, 2: 1 },
-    statementMap: { 1: { start: { line: 4, column: 2 } } },
+    statementMap: { 1: { start: { line: 4, column: 2 } }, 2: { start: { line: 5 } } },
     b: { 1: [0, 1], 2: [0], 3: [0] },
     branchMap: {
       1: { locations: [{ start: { line: 6 } }, {}] },
       2: { start: { line: 7 } },
+      3: {},
     },
     f: { 1: 0, 2: 1, 3: 0 },
-    fnMap: { 1: { name: "missing", start: { line: 8 } } },
+    fnMap: { 1: { name: "missing", start: { line: 8 } }, 2: {}, 3: {} },
   });
   expect(gap).toMatchObject({
     file: "gap.mjs",
@@ -38,7 +39,7 @@ test("reports statement, branch, function, and line locations", () => {
 
 test("uses explicit line data and handles empty or incomplete coverage maps", () => {
   expect(fileGap("lines.mjs", {
-    s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1, 2: 0 }, statementMap: { 1: {} },
+    s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1, 2: 0 }, statementMap: { 1: {} }, branchMap: { 1: { locations: [{}] } }, fnMap: { 1: {} },
   })).toMatchObject({ lines: ["2"] });
   expect(fileGap("empty.mjs", {})).toEqual(expect.objectContaining({ file: "empty.mjs" }));
   expect(() => fileGap("map-only.mjs", { statementMap: { 1: {} } })).toThrow("Coverage evidence is incomplete");
@@ -75,4 +76,14 @@ test("accepts complete branch and function maps", () => {
     b: { 1: [1] }, branchMap: { 1: { locations: [{}] } },
     f: { 1: 1 }, fnMap: { 1: {} }, l: { 1: 1 },
   })).toBeNull();
+});
+
+test("rejects mismatched map and counter key sets", () => {
+  expect(() => fileGap("mismatch.mjs", {
+    s: { 1: 1, 2: 1 }, statementMap: { 1: {} },
+  })).toThrow("map and counter keys do not match");
+  expect(() => fileGap("mismatch-branch.mjs", {
+    s: { 1: 1 }, statementMap: { 1: {} },
+    b: { 1: [1], 2: [1] }, branchMap: { 1: { locations: [{}] } },
+  })).toThrow("map and counter keys do not match");
 });

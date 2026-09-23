@@ -40,7 +40,7 @@ test.each([
 
 test("accepts files without infrastructure-internal identifiers", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-public-"));
-  await writeFile(join(root, "config.json"), JSON.stringify({ host: "localhost" }));
+  await writeFile(join(root, "config.json"), JSON.stringify({ host: "Café localhost" }));
   await expect(run({ root, files: ["config.json"] })).resolves.toEqual({
     ruleId: "E-1.7",
     status: "pass",
@@ -57,6 +57,17 @@ test("ignores binary files", async () => {
     ruleId: "E-1.7",
     status: "pass",
     message: "",
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("ignores invalid UTF-8 and control-character binaries without scanning their payload", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-binary-"));
+  const internalLabel = ["eliware", "internal"].join("-");
+  await writeFile(join(root, "invalid.bin"), Buffer.concat([Buffer.from(internalLabel), Buffer.from([0xff])]));
+  await writeFile(join(root, "control.bin"), Buffer.from(`${internalLabel}${String.fromCharCode(0x85)}`, "utf8"));
+  await expect(run({ root, files: ["invalid.bin", "control.bin"] })).resolves.toEqual({
+    ruleId: "E-1.7", status: "pass", message: "",
   });
   await rm(root, { recursive: true, force: true });
 });

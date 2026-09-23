@@ -25,7 +25,18 @@ test("fails closed when a prior coverage candidate cannot be removed", async () 
   ).rejects.toThrow("Could not remove prior coverage evidence");
 });
 
-test("serializes cleanup operations for the same repository", async () => {
+test("reports concurrent cleanup failures in candidate order", async () => {
+  const failures = new Map(coverageCandidates.map((path, index) => [path, index]));
+  await expect(cleanupCoverage("C:/repo", async (path) => {
+    const normalizedPath = path.replaceAll("\\", "/");
+    const relative = coverageCandidates.find((candidate) => normalizedPath.endsWith(candidate));
+    await new Promise((resolve) => setTimeout(resolve, failures.get(relative) === 0 ? 5 : 0));
+    const error = new Error(`failure-${failures.get(relative)}`);
+    throw error;
+  })).rejects.toThrow(new RegExp(coverageCandidates.map((path, index) => `${path.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&")}: failure-${index}`).join("; ")));
+});
+
+test("does not coordinate separate cleanup calls for one repository", async () => {
   let active = 0;
   let maximum = 0;
   const remove = async () => {
@@ -35,7 +46,7 @@ test("serializes cleanup operations for the same repository", async () => {
     active -= 1;
   };
   await Promise.all([cleanupCoverage("C:/serialized", remove), cleanupCoverage("C:/serialized", remove)]);
-  expect(maximum).toBe(coverageCandidates.length);
+  expect(maximum).toBe(coverageCandidates.length * 2);
 });
 
 test("uses the default remover for an absent repository", async () => {

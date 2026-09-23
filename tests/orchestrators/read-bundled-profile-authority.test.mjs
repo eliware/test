@@ -1,56 +1,52 @@
 import { expect, test } from "@jest/globals";
-import { expandAppliedProfiles, readBundledProfileAuthority, validateAppliedProfiles } from "../../src/orchestrators/read-bundled-profile-authority.mjs";
+import {
+  bundledConventionVersion,
+  expandAppliedProfiles,
+  readBundledProfileAuthority,
+  validateAppliedProfiles,
+} from "../../src/orchestrators/read-bundled-profile-authority.mjs";
 
-test("loads the complete bundled v8 profile authority", () => {
-  const authority = readBundledProfileAuthority();
-  expect(authority.version).toBe("8.0");
-  expect(Object.keys(authority.profiles)).toEqual(expect.arrayContaining(["general", "application", "cli", "npm-published", "fork"]));
-  expect(authority.profiles.cli.extends).toEqual(["application"]);
+function directories(...names) {
+  return () => names.map((name) => ({ name, isDirectory: () => true }));
+}
+
+test("derives available profiles from bundled check directories", () => {
+  const authority = readBundledProfileAuthority({
+    root: "C:/fixture/checks",
+    listDirectories: directories("cli", "general", "application"),
+  });
+  expect(authority.version).toBe(bundledConventionVersion);
+  expect(Object.keys(authority.profiles)).toEqual(["application", "cli", "general"]);
+  expect(authority.profiles.cli).toEqual({ profile: "cli" });
+  expect(readBundledProfileAuthority().profiles).toEqual(expect.objectContaining({
+    general: { profile: "general" },
+  }));
 });
 
-test("validates selected profiles against bundled inheritance", () => {
-  const authority = readBundledProfileAuthority();
+test("validates explicit profile selections without inferred inheritance", () => {
+  const authority = readBundledProfileAuthority({
+    listDirectories: directories("application", "cli", "fork", "general"),
+  });
   expect(validateAppliedProfiles(["general", "application", "cli"], authority)).toBeNull();
   expect(validateAppliedProfiles(["cli"], authority)).toBeNull();
+  expect(expandAppliedProfiles(["cli"], authority)).toEqual(["cli"]);
+  expect(expandAppliedProfiles(["general", "cli", "general"], authority)).toEqual(["general", "cli"]);
+  expect(expandAppliedProfiles(["general", "not-a-profile"], authority)).toEqual(["general"]);
   expect(validateAppliedProfiles(["general", "unknown"], authority)).toContain("Unknown");
   expect(validateAppliedProfiles(["general", "fork"], authority)).toContain("excludes");
-  expect(validateAppliedProfiles(["general"])).toBeNull();
 });
 
-test("rejects a selected profile whose inherited authority is absent", () => {
-  const authority = { version: "8.0", profiles: { cli: { profile: "cli", document: "cli.json", version: "8.0", extends: ["application"] } } };
-  expect(() => readBundledProfileAuthority({ manifest: authority, root: "C:/does-not-exist" })).toThrow();
+test("uses discovered authority by default when validating and expanding profiles", () => {
+  const profiles = Object.keys(readBundledProfileAuthority().profiles);
+  expect(validateAppliedProfiles(profiles.filter((profile) => profile !== "fork"))).toBeNull();
+  expect(expandAppliedProfiles(profiles)).toEqual(profiles);
 });
 
-test("expands profiles with and without inherited metadata", () => {
-  expect(expandAppliedProfiles(["child"], {
-    profiles: { child: { extends: ["base"] }, base: { extends: [] } },
-  })).toEqual(["base", "child"]);
-  expect(expandAppliedProfiles(["standalone"], { profiles: { standalone: {} } })).toEqual(["standalone"]);
-  expect(expandAppliedProfiles(["general"])).toContain("general");
-});
-
-test.each([
-  { version: "7.0", profiles: {} },
-  { version: "8.0", profiles: [] },
-  { version: "8.0", profiles: { general: null } },
-  { version: "8.0", profiles: { general: { profile: "wrong", document: "general.json", version: "8.0", extends: [] } } },
-  { version: "8.0", profiles: { general: { profile: "general", document: "other.json", version: "8.0", extends: [] } } },
-  { version: "8.0", profiles: { general: { profile: "general", document: "general.json", version: "7.0", extends: [] } } },
-  { version: "8.0", profiles: { general: { profile: "general", document: "general.json", version: "8.0", extends: ["general"] } } },
-  { version: "8.0", profiles: { general: { profile: "general", document: "general.json", version: "8.0", extends: ["missing"] } } },
-])("rejects malformed bundled authority %#", (manifest) => {
-  expect(() => readBundledProfileAuthority({ manifest })).toThrow();
-});
-
-test("rejects an empty profile registry and non-directory profile", () => {
-  expect(() => readBundledProfileAuthority({ manifest: { version: "8.0", profiles: {} } })).toThrow("cannot be empty");
-  const manifest = { version: "8.0", profiles: { general: { profile: "general", document: "general.json", version: "8.0", extends: [] } } };
-  expect(() => readBundledProfileAuthority({ manifest, statDirectory: () => ({ isDirectory: () => false }) })).toThrow("not a directory");
-});
-
-test("rejects a missing bundled profile directory and a stale directory list", () => {
-  const manifest = { version: "8.0", profiles: { absent: { profile: "absent", document: "absent.json", version: "8.0", extends: [] } } };
-  expect(() => readBundledProfileAuthority({ manifest, root: "C:/does-not-exist" })).toThrow("missing or invalid");
-  expect(() => readBundledProfileAuthority({ manifest: { version: "8.0", profiles: { general: { profile: "general", document: "general.json", version: "8.0", extends: [] } } }, listDirectories: () => [] })).toThrow("do not match");
+test("rejects empty, unreadable, and non-directory profile listings", () => {
+  expect(() => readBundledProfileAuthority({ listDirectories: directories() })).toThrow("cannot be empty");
+  expect(() => readBundledProfileAuthority({ listDirectories: () => { throw new Error("denied"); } }))
+    .toThrow("could not be discovered");
+  expect(() => readBundledProfileAuthority({
+    listDirectories: () => [{ name: "not-a-profile", isDirectory: () => false }],
+  })).toThrow("cannot be empty");
 });

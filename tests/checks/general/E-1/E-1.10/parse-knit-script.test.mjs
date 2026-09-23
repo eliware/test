@@ -45,6 +45,12 @@ test("marks filesystem, network, and dynamic execution as unsupported", () => {
   expect(parsed.unsupported.length).toBeGreaterThanOrEqual(3);
 });
 
+test("rejects side-effect imports from arbitrary modules", () => {
+  const parsed = parseKnitScript('import "custom-side-effect"; import value from "unknown-package";');
+  expect(parsed.calls).toEqual([]);
+  expect(parsed.unsupported).toHaveLength(2);
+});
+
 test("does not allow command wrappers to hide side effects", () => {
   const parsed = parseKnitScript('import { spawnSync } from "node:child_process"; const run = (args) => spawnSync(...args); run([["npm", ["test"]]]);');
   expect(parsed.unsupported.length).toBeGreaterThan(0);

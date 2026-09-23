@@ -43,13 +43,13 @@ test("extracts runnable steps and commands while ignoring malformed steps", () =
     ],
   };
   expect(workflowRunSteps(job)).toEqual([
-    { name: "install", command: "npm ci" },
-    { name: undefined, command: "npm test" },
+    { name: "install", command: "npm ci", step: job.steps[0], index: 0 },
+    { name: undefined, command: "npm test", step: job.steps[1], index: 1 },
   ]);
   expect(workflowRunSteps()).toEqual([]);
   expect(workflowRunSteps({ steps: "bad" })).toEqual([]);
   expect(workflowCommands({ jobs: { test: job, empty: {} } })).toEqual([
-    { job: "test", name: "install", command: "npm ci" },
-    { job: "test", name: undefined, command: "npm test" },
+    { job: "test", name: "install", command: "npm ci", step: job.steps[0], index: 0 },
+    { job: "test", name: undefined, command: "npm test", step: job.steps[1], index: 1 },
   ]);
 });

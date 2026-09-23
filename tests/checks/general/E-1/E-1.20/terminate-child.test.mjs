@@ -4,13 +4,18 @@ import { resolveTaskkillExecutable, terminateChild } from "../../../../../src/ch
 test("uses Node's supported child termination on Windows", () => {
   const kill = jest.fn();
   expect(terminateChild({ kill }, "win32")).toBe(true);
-  expect(kill).toHaveBeenCalledWith();
+  expect(kill).toHaveBeenCalledWith("SIGTERM");
 });
 
 test("falls back when the default Windows tree terminator cannot kill the child", () => {
   const kill = jest.fn();
   expect(terminateChild({ pid: 42, kill }, "win32")).toBe(true);
-  expect(kill).toHaveBeenCalledWith();
+  expect(kill).toHaveBeenCalledWith("SIGTERM");
+});
+
+test("reports failure when Windows direct termination fails", () => {
+  expect(terminateChild({ kill: () => false }, "win32")).toBe(false);
+  expect(terminateChild({ kill: () => { throw new Error("closed"); } }, "win32")).toBe(false);
 });
 
 test("uses the host defaults when platform arguments are omitted", () => {

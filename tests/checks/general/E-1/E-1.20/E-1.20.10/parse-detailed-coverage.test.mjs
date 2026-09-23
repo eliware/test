@@ -61,6 +61,10 @@ test("rejects a required map that is absent after file validation", () => {
     s: { 0: 1 }, b: {}, f: { 0: 1 },
     statementMap: { 0: { start: { line: 1 } } }, fnMap: { 0: {} },
   } })).toThrow("Coverage evidence is incomplete");
+  expect(() => parseDetailed({ "src/no-branch-fields.mjs": {
+    s: { 0: 1 }, f: { 0: 1 },
+    statementMap: { 0: { start: { line: 1 } } }, fnMap: { 0: {} },
+  } })).toThrow("Coverage evidence is incomplete");
 });
 
 test("rejects nonempty metric maps with empty counters", () => {
@@ -80,6 +84,17 @@ test("normalizes absolute Windows source paths and ignores unsupported files", (
     }).gaps,
   ).toEqual([]);
   expect(parseDetailed({ "README.md": {} })).toBeNull();
+});
+
+test("reports omitted in-scope source files from detailed coverage", () => {
+  expect(() => parseDetailed({
+    "tests/example.test.mjs": {},
+    "src/present.mjs": {
+      s: { 0: 1 }, b: {}, f: { 0: 1 },
+      statementMap: { 0: { start: { line: 1 } } }, branchMap: {}, fnMap: { 0: {} },
+    },
+  }, ["src/present.mjs", "src/omitted.mjs"])).toThrow("src/omitted.mjs");
+  expect(parseDetailed({ "tests/example.test.mjs": {} }, ["tests/example.test.mjs"])).toBeNull();
 });
 
 test("reports zero-total metrics without treating incomplete evidence as missing", () => {

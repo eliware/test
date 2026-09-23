@@ -12,7 +12,10 @@ export function collectCalls(node, bindings, imports, calls, unsupported) {
           bindPattern(node.left.declarations[0].id, value, loopBindings);
         collectCalls(node.body, loopBindings, imports, calls, unsupported);
       }
-    } else collectCalls(node.body, bindings, imports, calls, unsupported);
+    } else {
+      unsupported.push(node.start);
+      collectCalls(node.body, bindings, imports, calls, unsupported);
+    }
     return;
   }
   if (node.type === "VariableDeclaration") {

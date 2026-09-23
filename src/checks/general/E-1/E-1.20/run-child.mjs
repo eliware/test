@@ -9,15 +9,16 @@ export function runChild(command, args, options = {}) {
   const outputLimit = maxOutputLength ?? 100_000;
   const spawnProcess = options.spawnProcess ?? spawn;
   const createTimeout = options.createProgressTimeout ?? createProgressTimeout;
+  const environment = options.env ?? process.env;
   return new Promise((resolve, reject) => {
     const child = spawnProcess(command, args, {
       cwd: options.cwd,
-      env: options.env ?? process.env,
+      env: environment,
       stdio: ["ignore", "pipe", "pipe"],
       shell: false,
       detached: process.platform !== "win32",
     });
-    const output = createChildOutputCapture(outputLimit, options);
+    const output = createChildOutputCapture(outputLimit, { ...options, env: environment });
     let settled = false;
     let timedOut = false;
     let hardKillTimer;
@@ -50,7 +51,7 @@ export function runChild(command, args, options = {}) {
       output.stdout(chunk.toString());
     });
     child.stderr.on("data", (chunk) => {
-      const text = chunk.toString();
+      const text = output.redact(chunk.toString());
       handleChildProgress(text, { ...options, resetProgressTimer });
       output.stderr(text);
     });
