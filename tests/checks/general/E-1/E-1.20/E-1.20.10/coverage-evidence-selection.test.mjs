@@ -11,7 +11,7 @@ async function fixture(name, contents) {
   return root;
 }
 
-test("reads aggregate summary evidence", async () => {
+test("rejects aggregate summary evidence", async () => {
   const root = await fixture(
     "coverage-summary.json",
     JSON.stringify({
@@ -23,10 +23,13 @@ test("reads aggregate summary evidence", async () => {
       },
     }),
   );
-  await expect(readCoverageEvidenceFromCandidates(root)).resolves.toMatchObject({
-    source: "coverage/coverage-summary.json",
-    totals: { statements: 100, branches: 99, functions: 100, lines: 100 },
-  });
+  await expect(readCoverageEvidenceFromCandidates(root)).rejects.toThrow("file-level coverage");
+  await rm(root, { recursive: true, force: true });
+});
+
+test("rejects an empty detailed report instead of falling through", async () => {
+  const root = await fixture("coverage-final.json", JSON.stringify({}));
+  await expect(readCoverageEvidenceFromCandidates(root)).rejects.toThrow("invalid");
   await rm(root, { recursive: true, force: true });
 });
 
@@ -152,9 +155,7 @@ test("skips an absent higher-priority detailed candidate and selects coverage.js
 
 test("rejects stale evidence and invalid evidence without usable text", async () => {
   const root = await fixture("coverage-summary.json", JSON.stringify({ total: {} }));
-  await expect(readCoverageEvidenceFromCandidates(root, "not a coverage table")).rejects.toThrow(
-    "invalid",
-  );
+  await expect(readCoverageEvidenceFromCandidates(root, "not a coverage table")).rejects.toThrow("file-level coverage");
   await writeFile(
     join(root, "coverage", "coverage-summary.json"),
     JSON.stringify({

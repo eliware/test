@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { redactProcessOutput } from "./redact-process-output.mjs";
+import { collectRedactionSecrets, redactProcessOutput } from "./redact-process-output.mjs";
 
 const MAX_OUTPUT_LENGTH = 100_000;
 
@@ -12,7 +12,7 @@ export function execute(command, args, options, spawnProcess = spawn) {
     const append = (current, chunk) => {
       const remaining = Math.max(0, MAX_OUTPUT_LENGTH - captured);
       if (remaining === 0) return current;
-      const value = redactProcessOutput(chunk).slice(0, remaining);
+      const value = redactProcessOutput(chunk, collectRedactionSecrets(options?.env)).slice(0, remaining);
       captured += value.length;
       return `${current}${value}`;
     };

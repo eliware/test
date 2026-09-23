@@ -29,6 +29,16 @@ test("redacts common credential formats from captured output", async () => {
   });
 });
 
+test("redacts configured credential values from the child environment", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], { env: { SERVICE_TOKEN: "opaque-value-123" } }, () => child);
+  child.stdout.emit("data", "service output opaque-value-123");
+  child.emit("close", 0, null);
+  await expect(promise).resolves.toMatchObject({ stdout: "service output [REDACTED]" });
+});
+
 test("captures bounded stdout and stderr from a completed child", async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

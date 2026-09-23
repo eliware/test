@@ -2,7 +2,8 @@ import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 
 export function resolveTaskkillExecutable(env = process.env) {
-  return env.SystemRoot ? join(env.SystemRoot, "System32", "taskkill.exe") : "taskkill.exe";
+  if (!env.SystemRoot) throw new Error("Windows process-tree termination requires SystemRoot.");
+  return join(env.SystemRoot, "System32", "taskkill.exe");
 }
 
 function defaultKillTree(pid, resolveExecutable = resolveTaskkillExecutable) {

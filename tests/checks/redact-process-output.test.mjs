@@ -1,5 +1,13 @@
 import { expect, test } from "@jest/globals";
-import { redactProcessOutput } from "../../src/checks/redact-process-output.mjs";
+import { collectRedactionSecrets, redactProcessOutput } from "../../src/checks/redact-process-output.mjs";
+
+test("redacts configured sensitive environment values literally", () => {
+  expect(collectRedactionSecrets()).toEqual([]);
+  const secrets = collectRedactionSecrets({ SAFE: "visible", SERVICE_TOKEN: "opaque-value-123" });
+  expect(redactProcessOutput("child leaked opaque-value-123", secrets)).toBe("child leaked [REDACTED]");
+  expect(secrets).toEqual(["opaque-value-123"]);
+  expect(redactProcessOutput("unchanged", [null, ""])).toBe("unchanged");
+});
 
 test("redacts structured, quoted, and authorization credentials", () => {
   expect(redactProcessOutput('password: "secret value" token=abc12345')).toBe(

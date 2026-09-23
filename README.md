@@ -87,8 +87,9 @@ a missing examples catalog.
 
 Exit codes identify the failed validation stage: `0` is success, `8` is Jest
 failure, `10` is coverage failure, `12` is lint failure, `14` is an internal
-tool failure, `17` is a package-check failure, and `18` is a convention
-failure. Validation output is intended to preserve actionable diagnostics and
+tool failure, `17` is a package-check failure, and `18` is a convention,
+configuration, argument, format, or format-check failure. Validation output is
+intended to preserve actionable diagnostics and
 does not print secrets or arbitrary environment values. The CLI performs no
 deploy, publish, release, or destructive repository operation.
 

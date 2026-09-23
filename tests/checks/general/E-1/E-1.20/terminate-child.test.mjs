@@ -25,7 +25,7 @@ test("uses the injected Windows process-tree terminator when available", () => {
 
 test("resolves the Windows tree terminator from the platform environment", () => {
   expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(/System32[\\/]taskkill\.exe$/iu);
-  expect(resolveTaskkillExecutable({})).toBe("taskkill.exe");
+  expect(() => resolveTaskkillExecutable({})).toThrow("SystemRoot");
 });
 
 test("falls back to terminating the child when no process group exists", () => {
