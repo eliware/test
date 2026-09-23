@@ -12,6 +12,11 @@ test("preserves separator semantics for delegated option-looking arguments", () 
     .toEqual(["tests/example.test.mjs"]);
 });
 
+test("treats equals-form option values as delegated values", () => {
+  expect(parseFocusedArguments(["--testNamePattern=tests/value.test.mjs", "tests/example.test.mjs"]).positional)
+    .toEqual(["tests/example.test.mjs"]);
+});
+
 test("handles empty and non-string argument values", () => {
   expect(parseFocusedArguments()).toEqual({ positional: [], optionValues: new Set() });
   expect(focusedPathFrom()).toBeUndefined();
