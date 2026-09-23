@@ -9,6 +9,8 @@ Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [R
 [Features](#features) · [Requirements](#requirements) · [Setup](#setup) ·
 [Usage](#usage) · [Development](#development) · [Testing](#testing) ·
 [Troubleshooting](#troubleshooting) · [Security](#security) ·
+[Configuration](#configuration) · [Operations](#operations) ·
+[Commands](#commands) · [Exit codes](#exit-codes) ·
 [Support](#support) · [License](#license) · [Links](#links)
 
 ## Features
@@ -16,19 +18,40 @@ Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [R
 The CLI validates repository structure, documentation, conventions, tests,
 coverage, packaging, and supported operational checks.
 
+Package description: Shared deterministic repository validation for Eliware
+projects. Author: Eliware <eliware@eliware.org>. License: MIT.
+
 ## Requirements
 
 Node.js 26 is required.
 
 ## Setup
 
+For development in this repository, install the locked dependencies:
+
 ```text
 npm ci
 ```
 
+In a consuming repository, install the public CLI as a development dependency:
+
+```text
+npm install --save-dev @eliware/test
+```
+
+Because `8.0.0` has not been published, that install currently resolves the
+latest published package version, not this checkout's version.
+
 ## Usage
 
-Commands are exposed through the `eliware-test` CLI.
+Run validation with `eliware-test` from the consumer repository or use the
+package-level npm scripts below.
+
+`package.json` is the source of truth for the package version. The repository's
+current version is `8.0.0`, which has not been published; do not treat that
+version as installable from npm until the authorized release handoff verifies
+the exact version in the public registry. The npm badge reflects the published
+package version, not an unpublished repository version.
 
 ```text
 npm test
@@ -89,6 +112,47 @@ runtime stubs do not claim deterministic enforcement.
 
 Never commit secrets, credentials, private runtime state, or generated output.
 
+## Configuration
+
+`eliware-test` has no consumer runtime configuration files or environment
+settings. Convention applicability is repository metadata in
+`package.json.eliware.apply`; CLI options are documented under Commands and are
+not runtime configuration.
+
+## Operations
+
+This package performs local and CI validation only. Release, publication,
+deployment, and other operational changes are controlled by the applicable
+Eliware runbooks and are not performed by `eliware-test`.
+
+## Commands
+
+The CLI entrypoint is `bin/eliware-test.mjs`; the installed executable is
+`eliware-test`. `--help` prints usage; `--version` reports the package version.
+Other public modes are `--debug-timing`,
+`--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. The five tool
+modes forward extra arguments to Oxlint, Prettier, npm audit, or npm pack as
+appropriate. Wrapper arguments precede arguments after `--`.
+
+Examples and package-level shortcuts are shown under Usage. `--format` mutates
+files; `--format-check` does not. `--pack` validates package contents without
+publishing. Legacy `--ignore-*` flags are unsupported. Platform support is
+intended for Windows, macOS, and Linux with Node.js 26 and npm available; CI
+currently validates on Ubuntu.
+
+## Exit codes
+
+`0` is success, `8` is Jest failure, `10` is coverage failure, `12` is lint
+failure, `14` is an internal tool failure, `17` is a package-check failure, and
+`18` is a convention, configuration, argument, format, or format-check failure.
+Every failed convention check includes the check ID, the observed failure, and
+a `How to resolve` line selected from the bundled Convention v8 remediation
+guidance. The bundled snapshot is regenerated from the adjacent
+`eliware/conventions/specs` directory with `node scripts/sync-convention-remediation.mjs`
+when directive guidance changes. Output also redacts recognized secret
+patterns. The CLI performs no deploy, publish, release, or destructive
+repository operation.
+
 ## Support
 
 [![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)
@@ -114,66 +178,3 @@ diagnostics when requesting help.
 - [npm Package](https://www.npmjs.com/package/@eliware/test)
 - [Release Notes](RELEASE_NOTES.md)
 - [Discord](https://discord.gg/M6aTR9eTwN)
-
-## Purpose
-
-`@eliware/test` is the shared deterministic validation CLI for Eliware
-repositories using the current published validation contracts.
-
-Description: Shared deterministic repository validation for Eliware projects.
-Keywords: eliware, testing, validation, jest, oxlint, prettier, cli.
-Author: Eliware <eliware@eliware.org>.
-License: MIT.
-Repository: https://github.com/eliware/test.
-
-## Authority and scope
-
-Test owns the validator architecture, public CLI lifecycle, deterministic
-check execution, and validation acceptance contract. Docs owns cross-repository
-documentation and authority mapping; Conventions owns the policies Test
-validates; Operations owns cross-cutting release, deployment, and publication
-procedures. Test consumes those policies and does not redefine them.
-
-For web applicability, document routes, assets, configuration, ports, browser
-validation, and deployment boundaries. Library applicability additionally
-requires public API, packaging, and examples documentation. This repository
-does not apply the library or web profiles and therefore has no examples
-surface to index. The focused CLI command above is an invocation example, not
-a missing examples catalog.
-
-Exit codes identify the failed validation stage: `0` is success, `8` is Jest
-failure, `10` is coverage failure, `12` is lint failure, `14` is an internal
-tool failure, `17` is a package-check failure, and `18` is a convention,
-configuration, argument, format, or format-check failure. Validation output is
-intended to preserve actionable diagnostics and does not print secrets or
-arbitrary environment values. The CLI performs no deploy, publish, release,
-or destructive repository operation.
-
-Child-process diagnostics use bounded, pattern-based redaction; captured output
-is not a comprehensive secret scanner. Callers must not emit credentials or
-other arbitrary sensitive values to child output. Checks execute in declared
-order and share a validation context so later stages can consume earlier
-results.
-
-## Configuration
-
-Repository convention applicability is declared in `package.json` under
-`eliware.apply`. Test-specific directives are documented in
-[specs/directives.json](specs/directives.json).
-
-## Validation
-
-```text
-npm test
-npm run lint
-npm run format:check
-npm run audit
-npm run pack
-git diff --check
-```
-
-## Operations
-
-This package performs local and CI validation only. Release, publication,
-deployment, and other operational changes are controlled by the applicable
-Eliware runbooks and are not performed by `eliware-test`.
