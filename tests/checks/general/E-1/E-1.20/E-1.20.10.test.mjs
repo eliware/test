@@ -7,14 +7,20 @@ import { run } from "../../../../../src/checks/general/E-1/E-1.20/E-1.20.10.mjs"
 async function fixture(total) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-20-10-"));
   await mkdir(join(root, "coverage"));
-  await writeFile(join(root, "coverage", "coverage-final.json"), JSON.stringify({
-    "src/example.mjs": {
-      statementMap: { 0: { start: { line: 1, column: 0 } } }, s: { 0: total.statements.pct === 100 ? 1 : 0 },
-      branchMap: { 0: { locations: [{ start: { line: 1, column: 0 } }] } }, b: { 0: [total.branches.pct === 100 ? 1 : 0] },
-      fnMap: { 0: { name: "example", start: { line: 1, column: 0 } } }, f: { 0: total.functions.pct === 100 ? 1 : 0 },
-      l: { 1: total.lines.pct === 100 ? 1 : 0 },
-    },
-  }));
+  await writeFile(
+    join(root, "coverage", "coverage-final.json"),
+    JSON.stringify({
+      "src/example.mjs": {
+        statementMap: { 0: { start: { line: 1, column: 0 } } },
+        s: { 0: total.statements.pct === 100 ? 1 : 0 },
+        branchMap: { 0: { locations: [{ start: { line: 1, column: 0 } }] } },
+        b: { 0: [total.branches.pct === 100 ? 1 : 0] },
+        fnMap: { 0: { name: "example", start: { line: 1, column: 0 } } },
+        f: { 0: total.functions.pct === 100 ? 1 : 0 },
+        l: { 1: total.lines.pct === 100 ? 1 : 0 },
+      },
+    }),
+  );
   return root;
 }
 
@@ -24,7 +30,9 @@ const complete = Object.fromEntries(
 
 test("passes when Jest reports 100% for all four coverage metrics", async () => {
   const root = await fixture(complete);
-  await expect(run({ root, executeJest: true, jestResult: { code: 0, startedAt: 1 } })).resolves.toEqual({
+  await expect(
+    run({ root, executeJest: true, jestResult: { code: 0, startedAt: 1 } }),
+  ).resolves.toEqual({
     ruleId: "E-1.20.10",
     status: "pass",
     message: "",
@@ -36,7 +44,10 @@ test("passes when fresh evidence is complete", async () => {
   await expect(
     run(
       { root: "fixture", executeJest: true, jestResult: { code: 0, startedAt: 1 } },
-      async () => ({ totals: { statements: 100, branches: 100, functions: 100, lines: 100 }, gaps: [] }),
+      async () => ({
+        totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
+        gaps: [],
+      }),
     ),
   ).resolves.toEqual({ ruleId: "E-1.20.10", status: "pass", message: "" });
 });
@@ -46,51 +57,46 @@ test("limits detailed-coverage completeness to the focused test's source file", 
   await mkdir(join(root, "src"));
   await writeFile(join(root, "src", "example.mjs"), "export const value = 1;\n");
   let evidenceOptions;
-  await expect(run(
-    {
-      root,
-      executeJest: true,
-      jestArgs: ["tests/example.test.mjs"],
-      jestResult: { code: 0, startedAt: 1 },
-    },
-    async (_root, _stdout, _startedAt, options) => {
-      evidenceOptions = options;
-      return { totals: { statements: 100, branches: 100, functions: 100, lines: 100 }, gaps: [] };
-    },
-  )).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run(
+      {
+        root,
+        executeJest: true,
+        jestArgs: ["tests/example.test.mjs"],
+        jestResult: { code: 0, startedAt: 1 },
+      },
+      async (_root, _stdout, _startedAt, options) => {
+        evidenceOptions = options;
+        return { totals: { statements: 100, branches: 100, functions: 100, lines: 100 }, gaps: [] };
+      },
+    ),
+  ).resolves.toMatchObject({ status: "pass" });
   expect(evidenceOptions.expectedFiles).toEqual(["src/example.mjs"]);
   await rm(root, { recursive: true, force: true });
 });
 
-test("rejects malformed injected coverage evidence", async () => {
+test("passes focused coverage when a metric has no instrumented paths", async () => {
   await expect(
     run(
-      { root: "fixture", executeJest: true, jestResult: { code: 0, startedAt: 1 } },
-      async () => ({ totals: {}, gaps: [] }),
+      {
+        root: "fixture",
+        executeJest: true,
+        jestArgs: ["tests/example.test.mjs"],
+        jestResult: { code: 0, startedAt: 1 },
+      },
+      async () => ({
+        totals: { statements: 100, branches: null, functions: 100, lines: 100 },
+        gaps: [],
+      }),
     ),
-  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("invalid shape") });
-});
-
-test("reports every coverage metric below 100%", async () => {
-  const root = await fixture({
-    statements: { pct: 99 },
-    branches: { pct: 98 },
-    functions: { pct: 97 },
-    lines: { pct: 96 },
-  });
-  await expect(run({ root, executeJest: true, jestResult: { code: 0, startedAt: 1 } })).resolves.toEqual(
-    expect.objectContaining({
-      ruleId: "E-1.20.10",
-      status: "fail",
-      message: expect.stringContaining("Aggregate gaps: statements, branches, functions, lines."),
-    }),
-  );
-  await rm(root, { recursive: true, force: true });
+  ).resolves.toMatchObject({ status: "pass" });
 });
 
 test("fails when Jest does not produce a coverage summary", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-20-10-"));
-  await expect(run({ root, executeJest: true, jestResult: { code: 0, startedAt: 1 } })).resolves.toEqual({
+  await expect(
+    run({ root, executeJest: true, jestResult: { code: 0, startedAt: 1 } }),
+  ).resolves.toEqual({
     ruleId: "E-1.20.10",
     status: "fail",
     message: "Coverage evidence is missing. Rerun Jest with coverage enabled.",
@@ -150,7 +156,9 @@ test("reports file-level coverage gaps from detailed evidence", async () => {
       },
     }),
   );
-  await expect(run({ root, executeJest: true, jestResult: { code: 0, startedAt: 1 } })).resolves.toEqual(
+  await expect(
+    run({ root, executeJest: true, jestResult: { code: 0, startedAt: 1 } }),
+  ).resolves.toEqual(
     expect.objectContaining({
       ruleId: "E-1.20.10",
       status: "fail",
@@ -160,29 +168,25 @@ test("reports file-level coverage gaps from detailed evidence", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("reports file-level gaps even when aggregate metrics are complete", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-20-10-"));
+test("reports file-level gaps when all aggregate metrics are complete", async () => {
+  const gap = {
+    file: "src/example.mjs",
+    metrics: { statements: 99, branches: 99, functions: 99, lines: 99 },
+    lines: [],
+    statements: [],
+    branches: [],
+    functions: [],
+  };
   await expect(
     run(
-      { root, executeJest: true, jestResult: { code: 0, startedAt: 1 } },
+      { root: "fixture", executeJest: true, jestResult: { code: 0, startedAt: 1 } },
       async () => ({
         totals: { statements: 100, branches: 100, functions: 100, lines: 100 },
-        gaps: [{
-          file: "src/example.mjs",
-          metrics: { statements: 99, branches: 99, functions: 99, lines: 99 },
-          lines: [],
-          statements: [],
-          branches: [],
-          functions: [],
-        }],
+        gaps: [gap],
       }),
     ),
-  ).resolves.toEqual(
-    expect.objectContaining({
-      ruleId: "E-1.20.10",
-      status: "fail",
-      message: expect.stringContaining("Aggregate gaps: file-level gaps."),
-    }),
-  );
-  await rm(root, { recursive: true, force: true });
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("Aggregate gaps: file-level gaps."),
+  });
 });

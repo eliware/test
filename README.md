@@ -2,8 +2,6 @@
 
 ## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/test/actions)
 
-Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [RELEASE_NOTES.md](RELEASE_NOTES.md) · [examples](examples/README.md)
-
 ## Table of Contents
 
 [Features](#features) · [Requirements](#requirements) · [Setup](#setup) ·
@@ -113,35 +111,39 @@ Never commit secrets, credentials, private runtime state, or generated output.
 
 ## Configuration
 
-`eliware-test` has no consumer runtime configuration files or environment
-settings. Convention applicability is repository metadata in
+`eliware-test` has no runtime configuration: no runtime settings, environment
+variables, or consumer configuration files are supported; runtime defaults are
+none. Convention applicability is repository metadata in
 `package.json.eliware.apply`; CLI options are documented under Commands and are
 not runtime configuration.
 
 ## Operations
 
-This package performs local and CI validation only. Release, publication,
-deployment, and other operational changes are controlled by the applicable
-Eliware runbooks and are not performed by `eliware-test`.
+Startup is a local CLI invocation through `eliware-test` or
+`bin/eliware-test.mjs`. Shutdown and child-process termination are handled by
+the validation runner. The validation workflow is local or CI validation only;
+its boundaries exclude release, publication, deployment, and other operational
+changes, which are controlled by the applicable Eliware runbooks.
 
 ## Commands
 
-The CLI entrypoint is `bin/eliware-test.mjs`; the installed executable is
-`eliware-test`. `--help` prints usage; `--version` reports the package version.
+The CLI command entrypoint is `bin/eliware-test.mjs`; the installed executable
+is `eliware-test`. `--help` prints usage; `--version` reports the package version.
 Other public modes are `--debug-timing`,
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. The five tool
 modes forward extra arguments to Oxlint, Prettier, npm audit, or npm pack as
 appropriate. Wrapper arguments precede arguments after `--`.
 
 Examples and package-level shortcuts are shown under Usage. `--format` mutates
-files; `--format-check` does not. `--pack` validates package contents without
-publishing. Legacy `--ignore-*` flags are unsupported. Platform support is
+files; `--format-check` is read-only. `--pack` is read-only package validation
+and does not publish. The commands do not authorize release, deployment, or
+other destructive external actions. Legacy `--ignore-*` flags are unsupported. Platform support is
 intended for Windows, macOS, and Linux with Node.js 26 and npm available; CI
 currently validates on Ubuntu.
 
 ## Exit codes
 
-`0` is success, `8` is Jest failure, `10` is coverage failure, `12` is lint
+Exit code `0` is success, `8` is Jest failure, `10` is coverage failure, `12` is lint
 failure, `14` is an internal tool failure, `17` is a package-check failure, and
 `18` is a convention, configuration, argument, format, or format-check failure.
 Every failed convention check includes the check ID, the observed failure, and
@@ -169,6 +171,7 @@ diagnostics when requesting help.
 
 ## Links
 
+- Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [RELEASE_NOTES.md](RELEASE_NOTES.md) · [examples](examples/README.md)
 - [Documentation](docs/README.md)
 - [Specifications](specs/README.md)
 - [Home Page](https://eliware.org)

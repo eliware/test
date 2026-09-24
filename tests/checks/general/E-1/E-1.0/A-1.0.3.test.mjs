@@ -8,9 +8,9 @@ test("requires read-before-change guidance", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-agents-"));
   await writeFile(
     join(root, "AGENTS.md"),
-    "Read README.md and applicable documentation before changing files.",
+    "## Development\nRead README.md and applicable documentation before changing files.",
   );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
-  await writeFile(join(root, "AGENTS.md"), "Read README.md.");
+  await writeFile(join(root, "AGENTS.md"), "## Development\nRead README.md.");
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });

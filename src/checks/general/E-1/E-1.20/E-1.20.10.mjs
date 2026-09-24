@@ -1,4 +1,5 @@
 import { fail, pass } from "../../../check-result.mjs";
+import { assessCoverageEvidence } from "./E-1.20.10/assess-coverage-evidence.mjs";
 import { readCoverageEvidenceFromCandidates } from "./E-1.20.10/coverage-evidence-selection.mjs";
 import { formatCoverageGaps } from "./E-1.20.10/format-coverage-gaps.mjs";
 import { focusedPathFrom } from "./build-jest-arguments.mjs";
@@ -25,18 +26,11 @@ export async function run(context, readEvidence = readCoverageEvidenceFromCandid
       context.jestResult.startedAt,
       { requireFresh: true, expectedFiles },
     );
-    const metrics = ["statements", "branches", "functions", "lines"];
-    if (!evidence || !Array.isArray(evidence.gaps) || !evidence.totals
-      || metrics.some((metric) => typeof evidence.totals[metric] !== "number" || !Number.isFinite(evidence.totals[metric]))) {
-      throw new Error("Coverage evidence has an invalid shape.");
-    }
-    const gaps = ["statements", "branches", "functions", "lines"].filter(
-      (metric) => evidence.totals[metric] !== 100,
-    );
-    if (gaps.length > 0 || evidence.gaps.length > 0) {
+    const assessment = assessCoverageEvidence(evidence, { focusedPath: Boolean(focusedPath) });
+    if (assessment.aggregateGaps.length > 0 || assessment.hasFileGaps) {
       return fail(
         ruleId,
-        `${formatCoverageGaps(evidence)}\nAggregate gaps: ${gaps.join(", ") || "file-level gaps"}.`,
+        `${formatCoverageGaps(evidence)}\nAggregate gaps: ${assessment.aggregateGaps.join(", ") || "file-level gaps"}.`,
       );
     }
   } catch (error) {

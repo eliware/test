@@ -6,7 +6,7 @@ Purpose: provide the Eliware Test repository's Node.js 26 validation CLI, implem
 
 ## Scope and boundaries
 
-These repository-wide instructions govern the project. The project validates consumer repositories and does not publish, deploy, release, synchronize, or modify external systems. Keep project-specific guidance within this scope.
+These repository-wide instructions govern the project. The project validates consumer repositories and does not publish, deploy, release, synchronize, or modify external systems. Important boundaries: these instructions include only this repository's validation CLI and exclude authority over consumer repositories or external systems; keep project-specific guidance within this scope.
 
 ## Layout
 
@@ -14,7 +14,7 @@ Keep `src/` and `tests/` mirrored, preserve native ESM module structure, and kee
 
 ## Development
 
-Read the relevant README.md, specifications, implementation, and tests before changing behavior. Check subdirectory instructions before editing nested files.
+Read the relevant README.md, specifications, implementation, and tests before changing behavior. This AGENTS.md applies repository-wide; nearer AGENTS.md instructions apply within their subdirectories, so check them before editing nested files.
 
 Repository requirements are owned by eliware/conventions, documentation by eliware/docs, and operational procedures by eliware/operations.
 
@@ -34,12 +34,12 @@ Record approved deviations or exceptions with their reason, approver, and expiry
 
 ## Application
 
-The application entrypoint is `bin/eliware-test.mjs`. Validation runs locally or in CI; it does not publish, deploy, release, synchronize, or modify external systems. The CLI has no consumer runtime configuration files or environment settings; `package.json.eliware.apply` is repository metadata, and CLI options are arguments rather than runtime configuration. Preserve these boundaries and safe process shutdown when changing application behavior.
+The application entrypoint is `bin/eliware-test.mjs`. Validation runs locally or in CI; it does not publish, deploy, release, synchronize, or modify external systems. The CLI has no runtime configuration files or environment settings; `package.json.eliware.apply` is repository metadata, and CLI options are arguments rather than runtime configuration. Preserve these boundaries and safe process shutdown when changing application behavior.
 
 ## CLI
 
-The executable `eliware-test` maps to `bin/eliware-test.mjs`. `--help` prints usage and `--version` reports the package version; informational commands must be used alone. Public modes are `--debug-timing`, `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`; validation modes are mutually exclusive. The five tool modes forward extra arguments to Oxlint, Prettier, npm audit, or npm pack, with wrapper arguments before arguments supplied after `--`. With no tool mode, at most one focused test path under `tests/` may be supplied; it runs only that test and applicable focused validation. With no focused path, `npm test` runs the aggregate stages. Invalid paths, multiple focused paths, combined tool modes, and unsupported argument combinations fail with a non-zero code. Exit codes are 0 (success), 8 (Jest), 10 (coverage), 12 (lint), 14 (internal), 17 (package), and 18 (convention/configuration/argument/format). Node.js 26 with npm is required; Windows, macOS, and Linux are intended targets, while CI currently validates Ubuntu. `--format` writes formatted files; use `--format-check` for a read-only check. `--pack` validates package contents and does not publish. No CLI mode authorizes release, deployment, or other external changes.
+The executable `eliware-test` maps to `bin/eliware-test.mjs`. `--help` prints usage and `--version` reports the package version; informational commands must be used alone. Public modes are `--debug-timing`, `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`; validation modes are mutually exclusive. The five tool modes forward extra arguments to Oxlint, Prettier, npm audit, or npm pack, with wrapper arguments before arguments supplied after `--`. The default behavior with no arguments runs the aggregate validation stages. With no tool mode, at most one focused test path under `tests/` may be supplied; it runs only that test and applicable focused validation. With no focused path, `npm test` runs the aggregate stages. Invalid paths, multiple focused paths, combined tool modes, and unsupported argument combinations fail with a non-zero code. Exit codes are 0 (success), 8 (Jest), 10 (coverage), 12 (lint), 14 (internal), 17 (package), and 18 (convention/configuration/argument/format). Node.js 26 with npm is required; Windows, macOS, and Linux are intended targets, while CI currently validates Ubuntu. `--format` writes formatted files; use `--format-check` for a read-only check. `--pack` validates package contents and does not publish. No CLI mode authorizes release, deployment, or other external changes.
 
 ## npm publication
 
-The package is public as `@eliware/test`; `package.json.version` is the source of truth for its release version, currently `8.0.0` (not yet published). Its exact `package.json.files` allowlist is `bin/`, `src/`, `specs/`, `docs/`, `README.md`, `AGENTS.md`, `LICENSE`, and `RELEASE_NOTES.md`; validate the packed contents with `npm run pack`/`eliware-test --pack`. The publication workflow must use provenance and verify that exact package version in the public registry as defined by the release procedure. Publication requires explicit authorization through the applicable Eliware Operations handoff; these instructions do not authorize publishing.
+The package is public as `@eliware/test`; `package.json.version` is the source of truth for its release version, currently `8.0.0` (not yet published). Its exact `package.json.files` allowlist is `bin/`, `src/`, `specs/`, `docs/`, `README.md`, `AGENTS.md`, `LICENSE`, and `RELEASE_NOTES.md`. Validate packed contents with `node bin/eliware-test.mjs --pack` or `npm run pack`; the pack validation must pass before publication. The publication workflow must use npm provenance and verify that the exact package version exists in the public registry as defined by the release procedure. Publication requires explicit authorization through the applicable Eliware Operations handoff; these instructions do not authorize publishing.

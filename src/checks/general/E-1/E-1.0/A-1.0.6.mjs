@@ -4,5 +4,7 @@ export const ruleId = "A-1.0.6";
 export const parentRuleId = "E-1.0";
 
 export function run({ root }) {
-  return checkAgents(root, ruleId, [["security"], ["secret"]]);
+  return checkAgents(root, ruleId, [["secret", "credential"]], {
+    section: "Security",
+  });
 }

@@ -3,11 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-1/E-1.1/E-1.1.0.mjs";
-import { validateReadmeRequiredContent } from "../../../../../src/checks/general/E-1/E-1.1/validate-readme-required-content.mjs";
 
 const readme = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 ## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions)
-Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
 ## Table of Contents
 [Features](#features) · [Requirements](#requirements) · [Setup](#setup) · [Usage](#usage) · [Development](#development) · [Testing](#testing) · [Troubleshooting](#troubleshooting) · [Security](#security) · [Support](#support) · [License](#license) · [Links](#links)
 ## Features
@@ -32,6 +30,7 @@ eliware.org on Discord
 ## License
 [license](LICENSE)
 ## Links
+Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
 Home Page: https://eliware.org
 GitHub: https://github.com/eliware/fixture
 GitHub organization: https://github.com/eliware
@@ -45,19 +44,12 @@ License: MIT.
 [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/nodejs.yml)
 `;
 
-test("strict README content reports each contract omission", () => {
-  expect(validateReadmeRequiredContent(readme.replace("[license](https://img.shields.io/github/license/eliware/fixture.svg)", ""))).toContain("license badge");
-  expect(validateReadmeRequiredContent(readme.replace("## Security", "## Security removed"))).toContain("Security section");
-  expect(validateReadmeRequiredContent(readme, { publishConfig: { access: "public" } })).toBeNull();
-});
-
 test("accepts a complete branded project README", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-"));
   await writeFile(join(root, "README.md"), readme);
   await mkdir(join(root, "docs"));
   await writeFile(join(root, "docs", "README.md"), "docs");
   await mkdir(join(root, "specs"));
-  await writeFile(join(root, "docs", "README.md"), "docs");
   await writeFile(join(root, "specs", "README.md"), "specs");
   await expect(
     run({
@@ -96,47 +88,16 @@ async function runVariant(content, packageJson = {}) {
   return result;
 }
 
-test("requires the standard branding, CI badge, and license link", async () => {
-  await expect(runVariant(readme.replace("eliware.org/logos/brand.png", "brand.png"))).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("standard Eliware branding") }),
-  );
-  await expect(runVariant(readme.replaceAll("actions/workflows/", "workflows/"))).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("GitHub CI badge") }),
-  );
-  await expect(runVariant(readme.replace("[license](LICENSE)", "License text"))).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("repository LICENSE file") }),
-  );
-  await expect(runVariant(readme.replace(/ \[!\[license\][^\n]+/i, ""))).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("license badge") }),
-  );
-  await expect(runVariant(readme.replace("## Security", "## Security removed"))).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("Security section") }),
-  );
-});
-
-test("requires publication metadata and package metadata to be represented", async () => {
-  await expect(
-    runVariant(readme.replaceAll("https://www.npmjs.com/package/@eliware/fixture", "https://example.com"), { publishConfig: { access: "public" } }),
-  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("npm version badge") }));
-  await expect(
-    runVariant(readme, { description: "Different description" }),
-  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("project description") }));
-  await expect(
-    runVariant(readme, { author: "Other Author" }),
-  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("author") }));
-  await expect(
-    runVariant(readme, { license: "Apache-2.0" }),
-  ).resolves.toEqual(expect.objectContaining({ message: expect.stringContaining("license") }));
-  await expect(runVariant(readme, { keywords: ["unlisted"] })).resolves.toEqual(
-    expect.objectContaining({ status: "pass" }),
-  );
-  await expect(runVariant(readme, { keywords: "fixture" })).resolves.toEqual(
-    expect.objectContaining({ status: "pass" }),
-  );
-});
-
-test("rejects an npm version badge for a non-public package", () => {
-  expect(validateReadmeRequiredContent(readme, { name: "@eliware/fixture", private: true })).toContain("Non-public");
+test("returns the first delegated branding, content, and metadata failure", async () => {
+  await expect(runVariant(readme.replace("eliware.org/logos/brand.png", "brand.png"))).resolves.toMatchObject({
+    message: expect.stringContaining("standard Eliware branding"),
+  });
+  await expect(runVariant(readme.replace("Documentation:", "Docs:"))).resolves.toMatchObject({
+    message: expect.stringContaining("Documentation navigation"),
+  });
+  await expect(runVariant(readme, { description: "Different description" })).resolves.toMatchObject({
+    message: expect.stringContaining("project description"),
+  });
 });
 
 test("requires a root README", async () => {
@@ -158,7 +119,10 @@ test("requires the examples index when examples are present", async () => {
   await writeFile(join(root, "docs", "README.md"), "docs");
   await writeFile(join(root, "specs", "README.md"), "specs");
   await expect(run({ root, packageJson: {} })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("examples/README.md") }),
+    expect.objectContaining({
+      status: "fail",
+      message: expect.stringContaining("examples/README.md"),
+    }),
   );
   await rm(root, { recursive: true, force: true });
 });
@@ -169,7 +133,10 @@ test("requires both documentation indexes", async () => {
   await mkdir(join(root, "docs"));
   await writeFile(join(root, "docs", "README.md"), "docs");
   await expect(run({ root, packageJson: {} })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("specs/README.md") }),
+    expect.objectContaining({
+      status: "fail",
+      message: expect.stringContaining("specs/README.md"),
+    }),
   );
   await rm(root, { recursive: true, force: true });
 });

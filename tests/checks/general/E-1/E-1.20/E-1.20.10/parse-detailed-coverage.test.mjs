@@ -97,9 +97,9 @@ test("reports omitted in-scope source files from detailed coverage", () => {
   expect(parseDetailed({ "tests/example.test.mjs": {} }, ["tests/example.test.mjs"])).toBeNull();
 });
 
-test("reports zero-total metrics without treating incomplete evidence as missing", () => {
+test("marks zero-total metrics as not applicable instead of reporting false coverage", () => {
   expect(parseDetailed({ "src/no-branches.mjs": {
     s: { 0: 1 }, b: {}, f: { 0: 1 },
     statementMap: { 0: { start: { line: 1 } } }, branchMap: {}, fnMap: { 0: {} },
-  } }).totals.branches).toBe(0);
+  } }).totals.branches).toBeNull();
 });
