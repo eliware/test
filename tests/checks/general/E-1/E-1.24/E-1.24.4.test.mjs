@@ -40,6 +40,24 @@ test("selects validation jobs and checks their command sequence", async () => {
   expect(validateWorkflowSequence).toHaveBeenCalledWith("ci.yml job validate", commands, job.steps, job);
 });
 
+test("requires publish.yml when a publication profile applies", async () => {
+  readWorkflows.mockResolvedValueOnce([
+    { name: "ci.yml", document: {} },
+    { name: "publish.yml", document: {} },
+  ]);
+  await expect(
+    run({ root: "/repo", packageJson: { eliware: { apply: ["npm-published"] } } }),
+  ).resolves.toEqual({ ruleId: "E-1.24.4", status: "pass", message: "" });
+
+  readWorkflows.mockResolvedValueOnce([{ name: "publication.yml", document: {} }]);
+  await expect(
+    run({ root: "/repo", packageJson: { eliware: { apply: ["ghcr-published"] } } }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("found .github/workflows/publication.yml"),
+  });
+});
+
 test("requires a separate validation job for publication workflows", async () => {
   findPublicationCommand.mockReturnValueOnce({ command: "npm publish" });
   workflowJobs.mockReturnValueOnce([{ id: "publish", job }]);

@@ -179,6 +179,7 @@
     "A-1.140.2": {
       "source": "npm-published.json",
       "dos": [
+        "Public npm repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If GHCR publication is also applied, both publication profiles use this single publish.yml file.",
         "Publication workflows must use the GitHub Actions tag filter `v[0-9]+.[0-9]+.[0-9]+` so only three-component numeric version-shaped tags start the workflow, verify that the tag exactly matches package.json, and require successful Ubuntu validation before npm publication."
       ]
     },
@@ -672,6 +673,7 @@
     "E-1.160.2": {
       "source": "ghcr-published.json",
       "dos": [
+        "GHCR repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If npm publication is also applied, both publication profiles use this single publish.yml file.",
         "GHCR publication workflows must use the GitHub Actions tag filter `v[0-9]+.[0-9]+.[0-9]+` so only three-component numeric version-shaped tags start the workflow; verify the tag and approved release version before pushing, and require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary; an approved GHCR badge may be added when a standard badge URL exists."
       ]
     },
@@ -881,6 +883,7 @@
       "source": "general.json",
       "dos": [
         "Every @eliware/* repository must contain a GitHub Actions workflow that runs the repository's validation script on pull requests and pushes to main.",
+        "Every repository must contain exactly one workflow file at .github/workflows/ci.yml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yml.",
         "Ubuntu CI is always required.",
         "Windows CI is optional; when included, every Windows validation job must pass before publication.",
         "The GitHub validation workflow may run the same validation command as .knit/validate.mjs."

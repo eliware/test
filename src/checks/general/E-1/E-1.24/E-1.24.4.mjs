@@ -3,15 +3,21 @@ import { isValidationJob, workflowCommands, workflowJobs, workflowRunSteps } fro
 import { readWorkflows } from "./read-workflow-files.mjs";
 import { findPublicationCommand, findUnsupportedCommands, isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
 import { validateWorkflowSequence } from "./validate-workflow-sequence.mjs";
+import { validateWorkflowFileSet } from "./validate-workflow-file-set.mjs";
 
 export const ruleId = "E-1.24.4";
 export const parentRuleId = "E-1.24";
 
-export async function run({ root }) {
+export async function run({ root, packageJson }) {
   let workflows;
   try { workflows = await readWorkflows(root); } catch (error) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
+  const fileSetError = validateWorkflowFileSet(
+    workflows.map(({ name }) => name),
+    packageJson,
+  );
+  if (fileSetError) return fail(ruleId, fileSetError);
   for (const { name, document } of workflows) {
     const commands = workflowCommands(document);
     const jobs = workflowJobs(document);
