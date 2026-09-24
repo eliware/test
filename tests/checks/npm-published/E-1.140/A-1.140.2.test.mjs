@@ -11,7 +11,7 @@ test("validates publication workflow gates when present", async () => {
     join(root, ".github", "workflows", "publish.yml"),
     `on:
   push:
-    tags: ["v*.*.*"]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -52,16 +52,18 @@ test("rejects publication workflows with inaccurate version, trigger, or runner"
   const base = (tag, version, runner) => `on:\n  push:\n    tags: ["${tag}"]\njobs:\n  publish:\n    runs-on: ${runner}\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`;
   await writeFile(file, base("main", "v1.2.3", "ubuntu-latest"));
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await writeFile(file, base("v*.*.*", "v9.9.9", "ubuntu-latest"));
+  await writeFile(file, base("v*.*.*", "v1.2.3", "ubuntu-latest"));
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  await writeFile(file, base("v[0-9]+.[0-9]+.[0-9]+", "v9.9.9", "ubuntu-latest"));
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
-  await writeFile(file, base("v*.*.*", "v1.2.3", "windows-latest"));
+  await writeFile(file, base("v[0-9]+.[0-9]+.[0-9]+", "v1.2.3", "windows-latest"));
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
 test("rejects an unparseable publication-looking workflow alongside a valid publisher", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-mixed-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), `on:\n  push:\n    tags: ["v*.*.*"]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm pkg get version\n      - run: echo v1.2.3 github.ref_name\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `on:\n  push:\n    tags: ["v[0-9]+.[0-9]+.[0-9]+"]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm pkg get version\n      - run: echo v1.2.3 github.ref_name\n      - run: npm publish\n`);
   await writeFile(join(root, ".github", "workflows", "legacy.yml"), "npm publish\n");
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await writeFile(join(root, ".github", "workflows", "legacy.yml"), "name: legacy\n");
@@ -71,27 +73,27 @@ test("rejects an unparseable publication-looking workflow alongside a valid publ
 test("accepts the normalized runner field when the workflow parser supplies runsOn", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-runson-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), `on:\n  push:\n    tags: ["v*.*.*"]\njobs:\n  publish:\n    runsOn: ubuntu-latest\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `on:\n  push:\n    tags: ["v[0-9]+.[0-9]+.[0-9]+"]\njobs:\n  publish:\n    runsOn: ubuntu-latest\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "pass" });
 });
 
 test("rejects a non-Ubuntu publication job even when unrelated workflow text names Ubuntu", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-runner-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), `name: ubuntu-latest reference\non:\n  push:\n    tags: ["v*.*.*"]\njobs:\n  publish:\n    runs-on: windows-latest\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `name: ubuntu-latest reference\non:\n  push:\n    tags: ["v[0-9]+.[0-9]+.[0-9]+"]\njobs:\n  publish:\n    runs-on: windows-latest\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
 });
 
 test("rejects a publication job with no runner field", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-no-runner-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), `name: ubuntu-latest reference\non:\n  push:\n    tags: ["v*.*.*"]\njobs:\n  publish:\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `name: ubuntu-latest reference\non:\n  push:\n    tags: ["v[0-9]+.[0-9]+.[0-9]+"]\njobs:\n  publish:\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
 });
 
 test("rejects a publication job whose normalized runner is not Ubuntu", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-normalized-runner-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), `on:\n  push:\n    tags: ["v*.*.*"]\njobs:\n  publish:\n    runsOn: windows-latest\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), `on:\n  push:\n    tags: ["v[0-9]+.[0-9]+.[0-9]+"]\njobs:\n  publish:\n    runsOn: windows-latest\n    steps:\n      - run: test "$(npm pkg get version --raw)" = "\${GITHUB_REF_NAME#v}"\n      - run: npm publish\n`);
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
 });

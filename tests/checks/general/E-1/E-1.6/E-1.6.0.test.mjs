@@ -28,11 +28,34 @@ test("maps a forbidden tracked path and its exact exemption", async () => {
     });
     await expect(run({
       root,
-      packageJson: { eliware: { exempt: [{ ruleId: "E-1.6.0", path: "credentials.json" }] } },
+      packageJson: { eliware: { exempt: [{
+        ruleId: "E-1.6.0",
+        path: "credentials.json",
+        reason: "approved test fixture",
+        approver: "Eli",
+        approvalTimestamp: "2026-09-24T00:00:00Z",
+        expiry: null,
+      }] } },
     }, async () => ["credentials.json"])).resolves.toEqual({
       ruleId: "E-1.6.0",
       status: "pass",
       message: "",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("does not let malformed direct-call exemption records suppress forbidden paths", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-secrets-malformed-exemption-"));
+  try {
+    const packageJson = {
+      eliware: { exempt: [{ ruleId: "E-1.6.0", path: "credentials.json" }] },
+    };
+    await expect(run({ root, packageJson }, async () => ["credentials.json"])).resolves.toMatchObject({
+      ruleId: "E-1.6.0",
+      status: "fail",
+      message: expect.stringContaining("credentials.json"),
     });
   } finally {
     await rm(root, { recursive: true, force: true });

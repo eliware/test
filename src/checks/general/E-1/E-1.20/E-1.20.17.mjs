@@ -16,6 +16,9 @@ export async function run({
   toolArgs = [],
   focusedScope = null,
 }) {
+  if (mode !== null && mode !== "format" && mode !== "format-check") {
+    return fail(ruleId, `Unsupported formatter mode: ${mode}.`);
+  }
   const scriptError = validateRequiredScripts(packageJson?.scripts);
   if (scriptError) return fail(ruleId, scriptError);
   const formatterError = await executeFormatterValidation({

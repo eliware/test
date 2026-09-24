@@ -8,7 +8,7 @@ const validation =
 const publication = `name: publish
 on:
   push:
-    tags: ["v*.*.*"]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
 permissions:
   contents: read
   packages: write

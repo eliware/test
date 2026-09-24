@@ -6,6 +6,6 @@ export function hasExactTagTrigger(workflow) {
       Object.keys(trigger).every((event) => event === "push") &&
       Array.isArray(tags) &&
       tags.length === 1 &&
-      tags[0] === "v*.*.*",
+      tags[0] === "v[0-9]+.[0-9]+.[0-9]+",
   );
 }

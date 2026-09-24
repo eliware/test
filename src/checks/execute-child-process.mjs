@@ -6,13 +6,20 @@ const MAX_OUTPUT_LENGTH = 100_000;
 export function execute(command, args, options, spawnProcess = spawn) {
   return new Promise((resolveResult, reject) => {
     const child = spawnProcess(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
+    const redactionSecrets = collectRedactionSecrets(options?.env);
     let stdout = "";
     let stderr = "";
     let captured = 0;
+    let capturedRawBytes = 0;
     const append = (current, chunk) => {
+      const rawChunk = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
+      const rawRemaining = Math.max(0, MAX_OUTPUT_LENGTH - capturedRawBytes);
+      if (rawRemaining === 0) return current;
+      const boundedRawChunk = rawChunk.subarray(0, rawRemaining);
+      capturedRawBytes += boundedRawChunk.length;
       const remaining = Math.max(0, MAX_OUTPUT_LENGTH - captured);
       if (remaining === 0) return current;
-      const value = redactProcessOutput(chunk, collectRedactionSecrets(options?.env)).slice(0, remaining);
+      const value = redactProcessOutput(boundedRawChunk.toString(), redactionSecrets).slice(0, remaining);
       captured += value.length;
       return `${current}${value}`;
     };

@@ -6,15 +6,15 @@ export function resolveTaskkillExecutable(env = process.env) {
   return join(env.SystemRoot, "System32", "taskkill.exe");
 }
 
-function defaultKillTree(pid, resolveExecutable = resolveTaskkillExecutable) {
-  execFileSync(resolveExecutable(), ["/pid", String(pid), "/t", "/f"], { windowsHide: true, stdio: "ignore" });
+function defaultKillTree(pid, env) {
+  execFileSync(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], { windowsHide: true, stdio: "ignore" });
 }
 
-export function terminateChild(child, platform = process.platform, killProcess = process.kill, killTree = defaultKillTree) {
+export function terminateChild(child, platform = process.platform, killProcess = process.kill, killTree = defaultKillTree, env = process.env) {
   if (!child || typeof child.kill !== "function") return false;
   if (platform === "win32") {
     if (Number.isInteger(child.pid) && child.pid > 0) {
-      try { killTree(child.pid); return true; } catch {}
+      try { killTree(child.pid, env); return true; } catch {}
     }
     try {
       return child.kill("SIGTERM") !== false;

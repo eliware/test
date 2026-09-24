@@ -9,7 +9,7 @@ test("requires Dockerfile build execution", async () => {
   const runBuild = await createGhcrFixture();
   await writeFile(
     runBuild.publicationPath,
-    "name: publish\non:\n  push:\n    tags: [\\\"v*.*.*\\\"]\njobs:\n  publish:\n    steps:\n      - run: docker push ghcr.io/eliware/example:latest\n      - run: docker build .\n",
+    "name: publish\non:\n  push:\n    tags: [\"v[0-9]+.[0-9]+.[0-9]+\"]\njobs:\n  publish:\n    steps:\n      - run: docker push ghcr.io/eliware/example:latest\n      - run: docker build .\n",
   );
   await expect(run({ root: runBuild.root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
   await writeFile(runBuild.publicationPath, "name: publish\njobs:\n  publish:\n    steps:\n      - uses: docker/build-push-action@v6\n        with:\n          context: ./\n          file: ./Dockerfile\n");

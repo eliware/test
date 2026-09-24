@@ -8,13 +8,25 @@ const directCommand =
   /(?:^|[\s"'`=(:,/])(?:(?:npx|npm\s+(?:exec|run))\s+(?:[^\s;&|]+\s+)*)?(?:jest|oxlint|prettier)(?=$|[\s"'`=:;,)&|])/i;
 const directImport =
   /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)["'](?:@jest\/|jest(?:\/|["'])|oxlint(?:["']|\/)|prettier(?:["']|\/))/i;
+const testApiImport =
+  /^\s*import\s+(?:[\s\S]*?\s+from\s+)?["']@jest\/globals["'];?\s*$/gim;
+
+function contentWithoutApprovedTestApi(file, content) {
+  const normalizedPath = file.replaceAll("\\", "/");
+  return normalizedPath.startsWith("tests/")
+    ? content.replace(testApiImport, "")
+    : content;
+}
 
 export async function findDirectToolUses(root, files) {
   const findings = [];
   for (const file of files ?? (await findRepositoryFiles(root))) {
     if (file === "package.json" || !inspectable.test(file)) continue;
     const content = await readFile(join(root, file), "utf8");
-    if (directCommand.test(content) || directImport.test(content)) findings.push(file);
+    const inspectedContent = contentWithoutApprovedTestApi(file, content);
+    if (directCommand.test(inspectedContent) || directImport.test(inspectedContent)) {
+      findings.push(file);
+    }
   }
   return findings;
 }

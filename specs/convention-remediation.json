@@ -3,11 +3,15 @@
   "checks": {
     "A-1.0.0": {
       "source": "general.json",
-      "dos": ["AGENTS.md must identify the repository and its purpose."]
+      "dos": [
+        "AGENTS.md must identify the repository and its purpose."
+      ]
     },
     "A-1.0.1": {
       "source": "general.json",
-      "dos": ["AGENTS.md must state the repository scope and important boundaries."]
+      "dos": [
+        "AGENTS.md must state the repository scope and important boundaries."
+      ]
     },
     "A-1.0.10": {
       "source": "general.json",
@@ -35,19 +39,27 @@
     },
     "A-1.0.4": {
       "source": "general.json",
-      "dos": ["AGENTS.md must list the repository's applicable validation commands."]
+      "dos": [
+        "AGENTS.md must list the repository's applicable validation commands."
+      ]
     },
     "A-1.0.6": {
       "source": "general.json",
-      "dos": ["AGENTS.md must state applicable security and secret-handling rules."]
+      "dos": [
+        "AGENTS.md must state applicable security and secret-handling rules."
+      ]
     },
     "A-1.0.7": {
       "source": "general.json",
-      "dos": ["AGENTS.md must document intentional deviations from shared conventions."]
+      "dos": [
+        "AGENTS.md must document intentional deviations from shared conventions."
+      ]
     },
     "A-1.0.8": {
       "source": "general.json",
-      "dos": ["AGENTS.md instructions must be actionable, current, and concise."]
+      "dos": [
+        "AGENTS.md instructions must be actionable, current, and concise."
+      ]
     },
     "A-1.0.9": {
       "source": "general.json",
@@ -167,7 +179,7 @@
     "A-1.140.2": {
       "source": "npm-published.json",
       "dos": [
-        "Publication workflows must run only on exact v#.#.# tags, verify the tag matches package.json, and require successful Ubuntu validation before npm publication."
+        "Publication workflows must use the GitHub Actions tag filter `v[0-9]+.[0-9]+.[0-9]+` so only three-component numeric version-shaped tags start the workflow, verify that the tag exactly matches package.json, and require successful Ubuntu validation before npm publication."
       ]
     },
     "A-1.140.3": {
@@ -467,7 +479,9 @@
     },
     "E-1": {
       "source": "general.json",
-      "dos": ["These conventions apply to every @eliware/* repository."]
+      "dos": [
+        "These conventions apply to every @eliware/* repository."
+      ]
     },
     "E-1.0": {
       "source": "general.json",
@@ -520,7 +534,9 @@
     },
     "E-1.100": {
       "source": "documentation.json",
-      "dos": ["These conventions apply to documentation-only repositories."]
+      "dos": [
+        "These conventions apply to documentation-only repositories."
+      ]
     },
     "E-1.100.1": {
       "source": "documentation.json",
@@ -536,7 +552,9 @@
     },
     "E-1.110": {
       "source": "workspace.json",
-      "dos": ["These conventions apply to workspace repositories."]
+      "dos": [
+        "These conventions apply to workspace repositories."
+      ]
     },
     "E-1.12": {
       "source": "general.json",
@@ -568,7 +586,9 @@
     },
     "E-1.130": {
       "source": "application.json",
-      "dos": ["These conventions apply to repositories containing application or service code."]
+      "dos": [
+        "These conventions apply to repositories containing application or service code."
+      ]
     },
     "E-1.130.2": {
       "source": "application.json",
@@ -624,7 +644,9 @@
     },
     "E-1.16": {
       "source": "general.json",
-      "dos": ["Align repository release versions with the convention baseline they implement."]
+      "dos": [
+        "Align repository release versions with the convention baseline they implement."
+      ]
     },
     "E-1.160": {
       "source": "ghcr-published.json",
@@ -650,7 +672,7 @@
     "E-1.160.2": {
       "source": "ghcr-published.json",
       "dos": [
-        "GHCR publication must use an exact v#.#.# tag, verify the tag and approved release version before pushing, and require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary; an approved GHCR badge may be added when a standard badge URL exists."
+        "GHCR publication workflows must use the GitHub Actions tag filter `v[0-9]+.[0-9]+.[0-9]+` so only three-component numeric version-shaped tags start the workflow; verify the tag and approved release version before pushing, and require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary; an approved GHCR badge may be added when a standard badge URL exists."
       ]
     },
     "E-1.160.3": {
@@ -730,7 +752,9 @@
     },
     "E-1.20.1": {
       "source": "general.json",
-      "dos": ["Maintained Node.js projects must use Node.js 26."]
+      "dos": [
+        "Maintained Node.js projects must use Node.js 26."
+      ]
     },
     "E-1.20.10": {
       "source": "general.json",
@@ -786,7 +810,9 @@
     },
     "E-1.20.2": {
       "source": "general.json",
-      "dos": ["Node.js projects must use native ESM exclusively."]
+      "dos": [
+        "Node.js projects must use native ESM exclusively."
+      ]
     },
     "E-1.20.20": {
       "source": "general.json",
@@ -797,23 +823,33 @@
     },
     "E-1.20.3": {
       "source": "general.json",
-      "dos": ["Node.js projects must keep entrypoints thin."]
+      "dos": [
+        "Node.js projects must keep entrypoints thin."
+      ]
     },
     "E-1.20.4": {
       "source": "general.json",
-      "dos": ["Each Node.js module must have one primary responsibility."]
+      "dos": [
+        "Each Node.js module must have one primary responsibility."
+      ]
     },
     "E-1.20.5": {
       "source": "general.json",
-      "dos": ["Use dependency injection to keep Node.js modules easily testable."]
+      "dos": [
+        "Use dependency injection to keep Node.js modules easily testable."
+      ]
     },
     "E-1.20.6": {
       "source": "general.json",
-      "dos": ["Use npm to regenerate package-lock.json whenever it is stale."]
+      "dos": [
+        "Use npm to regenerate package-lock.json whenever it is stale."
+      ]
     },
     "E-1.20.7": {
       "source": "general.json",
-      "dos": ["Repositories using Jest must keep Jest configuration in package.json."]
+      "dos": [
+        "Repositories using Jest must keep Jest configuration in package.json."
+      ]
     },
     "E-1.20.8": {
       "source": "general.json",
@@ -887,16 +923,21 @@
     "E-1.3": {
       "source": "general.json",
       "dos": [
-        "Repositories must use eliware-test for the shared Jest, Oxlint, and Prettier validation stack."
+        "Repositories must use eliware-test for the shared Jest, Oxlint, and Prettier validation stack.",
+        "ESM test files may import the Jest APIs from @jest/globals; eliware-test supplies this API transitively, so the import does not replace the shared runner or authorize a direct Jest tool dependency."
       ]
     },
     "E-1.4": {
       "source": "general.json",
-      "dos": ["Repositories must pass lint with zero errors and zero warnings."]
+      "dos": [
+        "Repositories must pass lint with zero errors and zero warnings."
+      ]
     },
     "E-1.40": {
       "source": "library.json",
-      "dos": ["These conventions apply to repositories containing library code."]
+      "dos": [
+        "These conventions apply to repositories containing library code."
+      ]
     },
     "E-1.40.2": {
       "source": "library.json",
@@ -988,7 +1029,9 @@
     },
     "E-1.7": {
       "source": "general.json",
-      "dos": ["Public repositories must keep Eliware infrastructure internals private."]
+      "dos": [
+        "Public repositories must keep Eliware infrastructure internals private."
+      ]
     },
     "E-1.70": {
       "source": "discord.json",
@@ -1025,7 +1068,9 @@
     },
     "E-1.9.2": {
       "source": "general.json",
-      "dos": ["package.json.eliware.apply must explicitly list applicable convention documents."]
+      "dos": [
+        "package.json.eliware.apply must explicitly list applicable convention documents."
+      ]
     },
     "E-1.9.3": {
       "source": "general.json",

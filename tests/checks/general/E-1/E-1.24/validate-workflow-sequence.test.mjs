@@ -18,7 +18,8 @@ test("rejects intervening, duplicate, mutating, or skippable workflow steps", ()
   ], [install, test])).toBeNull();
   expect(validateWorkflowSequence("ci.yml", [
     { command: install.run, index: 0, step: install },
-    { command: test.run, index: 1, step: test },
+    { command: "echo allowed reporting", index: 1, step: middle },
+    { command: test.run, index: 2, step: test },
   ], [install, middle, test])).toContain("no intervening steps");
   expect(validateWorkflowSequence("ci.yml", [
     { command: install.run, index: 0, step: install },

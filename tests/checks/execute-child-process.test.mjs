@@ -60,6 +60,30 @@ test("enforces one combined output budget across stdout and stderr", async () =>
   expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(100_000);
 });
 
+test("bounds raw output before redaction can shrink it", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], { env: { SERVICE_TOKEN: "x" } }, () => child);
+  child.stdout.emit("data", Buffer.from("x".repeat(200_000)));
+  child.stdout.emit("data", Buffer.from("x"));
+  child.emit("close", 0, null);
+  const result = await promise;
+  expect(result.stdout.length).toBeLessThanOrEqual(100_000);
+});
+
+test("does not append more redacted output after the captured output budget is full", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], { env: { SERVICE_TOKEN: "x" } }, () => child);
+  child.stdout.emit("data", Buffer.from("x".repeat(10_000)));
+  child.stdout.emit("data", Buffer.from("x"));
+  child.emit("close", 0, null);
+  const result = await promise;
+  expect(result.stdout.length).toBe(100_000);
+});
+
 test("handles process adapters without output streams and ignores late errors", async () => {
   const child = new EventEmitter();
   const result = execute("tool", [], {}, () => child);

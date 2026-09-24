@@ -20,6 +20,14 @@ test("requires the exact shared validation scripts", async () => {
   );
 });
 
+test("rejects unsupported direct formatter modes", async () => {
+  await expect(run({ packageJson: { scripts }, mode: "unrecognized" })).resolves.toEqual({
+    ruleId: "E-1.20.17",
+    status: "fail",
+    message: "Unsupported formatter mode: unrecognized.",
+  });
+});
+
 test("runs the formatter in aggregate and explicit format modes", async () => {
   const calls = [];
   const runFormatter = async (root, options) => {

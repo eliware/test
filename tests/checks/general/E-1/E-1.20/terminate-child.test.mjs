@@ -25,12 +25,20 @@ test("uses the host defaults when platform arguments are omitted", () => {
 test("uses the injected Windows process-tree terminator when available", () => {
   const killTree = jest.fn();
   expect(terminateChild({ pid: 42, kill: jest.fn() }, "win32", process.kill, killTree)).toBe(true);
-  expect(killTree).toHaveBeenCalledWith(42);
+  expect(killTree).toHaveBeenCalledWith(42, process.env);
 });
 
 test("resolves the Windows tree terminator from the platform environment", () => {
   expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(/System32[\\/]taskkill\.exe$/iu);
   expect(() => resolveTaskkillExecutable({})).toThrow("SystemRoot");
+  expect(resolveTaskkillExecutable()).toMatch(/System32[\\/]taskkill\.exe$/iu);
+});
+
+test("passes the effective child environment to Windows tree termination", () => {
+  const killTree = jest.fn();
+  const env = { SystemRoot: "D:/CustomWindows" };
+  expect(terminateChild({ pid: 42, kill: jest.fn() }, "win32", process.kill, killTree, env)).toBe(true);
+  expect(killTree).toHaveBeenCalledWith(42, env);
 });
 
 test("falls back to terminating the child when no process group exists", () => {
