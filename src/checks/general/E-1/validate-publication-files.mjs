@@ -4,7 +4,7 @@ import { join } from "node:path";
 const publishedFiles = ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs", "specs"];
 
 function isPublicPackage(packageJson) {
-  return packageJson?.eliware?.apply?.includes("npm-published") || packageJson?.publishConfig?.access === "public";
+  return packageJson?.eliware?.apply?.includes("npm-published");
 }
 
 export function validatePublicationFiles(packageJson, root) {

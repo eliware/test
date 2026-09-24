@@ -1,142 +1,78 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { expect, test } from "@jest/globals";
-import { run } from "../../../../../src/checks/general/E-1/E-1.1/E-1.1.0.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const readme = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
-## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions)
-## Table of Contents
-[Features](#features) · [Requirements](#requirements) · [Setup](#setup) · [Usage](#usage) · [Development](#development) · [Testing](#testing) · [Troubleshooting](#troubleshooting) · [Security](#security) · [Support](#support) · [License](#license) · [Links](#links)
-## Features
-Validation features.
-## Requirements
-Node.js 26.
-## Setup
-Install dependencies.
-## Usage
-Run the test command.
-## Development
-Use native ESM modules.
-## Testing
-Run the tests.
-## Troubleshooting
-Inspect diagnostics.
-## Security
-Do not commit secrets.
-## Support
-[Discord](https://discord.gg/M6aTR9eTwN)
-eliware.org on Discord
-## License
-[license](LICENSE)
-## Links
-Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
-Home Page: https://eliware.org
-GitHub: https://github.com/eliware/fixture
-GitHub organization: https://github.com/eliware
-npm: https://www.npmjs.com/package/@eliware/fixture
-Discord: https://discord.gg/M6aTR9eTwN
-Description: Fixture project.
-Keywords: fixture.
-Author: Eliware.
-Repository: https://github.com/eliware/fixture
-License: MIT.
-[![CI](https://github.com/eliware/fixture/actions/workflows/nodejs.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/nodejs.yml)
-`;
+const readFile = jest.fn();
+const readReadmeSections = jest.fn();
+const expectedReadmeHeadings = jest.fn();
+const validateReadmeBranding = jest.fn();
+const validateReadmeMetadata = jest.fn();
+const validateReadmeRequiredContent = jest.fn();
+const inspectReadmeDocumentationIndexes = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.1/read-readme-sections.mjs", () => ({ readReadmeSections, expectedReadmeHeadings }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.1/validate-readme-branding.mjs", () => ({ validateReadmeBranding }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.1/validate-readme-metadata.mjs", () => ({ validateReadmeMetadata }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.1/validate-readme-required-content.mjs", () => ({ validateReadmeRequiredContent }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.1/inspect-readme-documentation-indexes.mjs", () => ({ inspectReadmeDocumentationIndexes }));
 
-test("accepts a complete branded project README", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-"));
-  await writeFile(join(root, "README.md"), readme);
-  await mkdir(join(root, "docs"));
-  await writeFile(join(root, "docs", "README.md"), "docs");
-  await mkdir(join(root, "specs"));
-  await writeFile(join(root, "specs", "README.md"), "specs");
-  await expect(
-    run({
-      root,
-      packageJson: {
-        name: "@eliware/fixture",
-        description: "Fixture project.",
-        keywords: ["fixture"],
-        author: "Eliware",
-        repository: "https://github.com/eliware/fixture",
-        license: "MIT",
-      },
-    }),
-  ).resolves.toEqual({ ruleId: "E-1.1.0", status: "pass", message: "" });
-  await rm(root, { recursive: true, force: true });
+const { run } = await import("../../../../../src/checks/general/E-1/E-1.1/E-1.1.0.mjs");
+const headings = ["Table of Contents", "Features", "Requirements"];
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  readFile.mockResolvedValue("README content");
+  readReadmeSections.mockReturnValue(new Map(headings.map((heading) => [heading, "section"])));
+  expectedReadmeHeadings.mockReturnValue(headings);
+  validateReadmeBranding.mockReturnValue(null);
+  validateReadmeMetadata.mockReturnValue(null);
+  validateReadmeRequiredContent.mockReturnValue(null);
+  inspectReadmeDocumentationIndexes.mockResolvedValue({ examplesRequired: false, error: null });
 });
 
-test("maps missing required content to a rule failure", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-incomplete-"));
-  await writeFile(join(root, "README.md"), "# fixture");
-  await expect(run({ root, packageJson: {} })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("Features") }),
-  );
-  await rm(root, { recursive: true, force: true });
+test("composes README structure, branding, content, metadata, and index validation", async () => {
+  const packageJson = { name: "@eliware/example" };
+  await expect(run({ root: "/repo", packageJson })).resolves.toEqual({ ruleId: "E-1.1.0", status: "pass", message: "" });
+  expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/README\.md$/u), "utf8");
+  expect(readReadmeSections).toHaveBeenCalledWith("README content", packageJson);
+  expect(validateReadmeBranding).toHaveBeenCalledWith("README content");
+  expect(inspectReadmeDocumentationIndexes).toHaveBeenCalledWith("/repo");
+  expect(validateReadmeRequiredContent).toHaveBeenCalledWith("README content", packageJson, { examplesRequired: false });
+  expect(validateReadmeMetadata).toHaveBeenCalledWith("README content", packageJson);
+  expect(readFile.mock.invocationCallOrder[0]).toBeLessThan(readReadmeSections.mock.invocationCallOrder[0]);
+  expect(validateReadmeBranding.mock.invocationCallOrder[0]).toBeLessThan(inspectReadmeDocumentationIndexes.mock.invocationCallOrder[0]);
+  expect(validateReadmeRequiredContent.mock.invocationCallOrder[0]).toBeLessThan(validateReadmeMetadata.mock.invocationCallOrder[0]);
 });
 
-async function runVariant(content, packageJson = {}) {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-variant-"));
-  await writeFile(join(root, "README.md"), content);
-  await mkdir(join(root, "docs"));
-  await mkdir(join(root, "specs"));
-  await writeFile(join(root, "docs", "README.md"), "docs");
-  await writeFile(join(root, "specs", "README.md"), "specs");
-  const result = await run({ root, packageJson });
-  await rm(root, { recursive: true, force: true });
-  return result;
-}
+test("fails for missing README or structural headings before delegated checks", async () => {
+  readFile.mockRejectedValueOnce(new Error("missing"));
+  await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-1.1.0", status: "fail", message: "README.md is required." });
+  expect(readReadmeSections).not.toHaveBeenCalled();
 
-test("returns the first delegated branding, content, and metadata failure", async () => {
-  await expect(runVariant(readme.replace("eliware.org/logos/brand.png", "brand.png"))).resolves.toMatchObject({
-    message: expect.stringContaining("standard Eliware branding"),
-  });
-  await expect(runVariant(readme.replace("Documentation:", "Docs:"))).resolves.toMatchObject({
-    message: expect.stringContaining("Documentation navigation"),
-  });
-  await expect(runVariant(readme, { description: "Different description" })).resolves.toMatchObject({
-    message: expect.stringContaining("project description"),
-  });
-});
-
-test("requires a root README", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-missing-"));
-  await expect(run({ root, packageJson: {} })).resolves.toEqual({
+  readReadmeSections.mockReturnValueOnce(new Map());
+  await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-1.1.0",
     status: "fail",
-    message: "README.md is required.",
+    message: "README.md is missing required sections: Features, Requirements.",
   });
-  await rm(root, { recursive: true, force: true });
+  expect(validateReadmeBranding).not.toHaveBeenCalled();
 });
 
-test("requires the examples index when examples are present", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-examples-"));
-  await writeFile(join(root, "README.md"), readme);
-  await mkdir(join(root, "docs"));
-  await mkdir(join(root, "specs"));
-  await mkdir(join(root, "examples"));
-  await writeFile(join(root, "docs", "README.md"), "docs");
-  await writeFile(join(root, "specs", "README.md"), "specs");
-  await expect(run({ root, packageJson: {} })).resolves.toEqual(
-    expect.objectContaining({
-      status: "fail",
-      message: expect.stringContaining("examples/README.md"),
-    }),
-  );
-  await rm(root, { recursive: true, force: true });
+test.each([
+  [validateReadmeBranding, "branding invalid"],
+  [validateReadmeRequiredContent, "required content invalid"],
+  [validateReadmeMetadata, "metadata invalid"],
+])("returns the first delegated validation failure", async (validator, message) => {
+  validator.mockReturnValueOnce(message);
+  await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-1.1.0", status: "fail", message });
+  if (validator === validateReadmeBranding) expect(inspectReadmeDocumentationIndexes).not.toHaveBeenCalled();
+  if (validator !== validateReadmeMetadata) expect(validateReadmeMetadata).not.toHaveBeenCalled();
 });
 
-test("requires both documentation indexes", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-indexes-"));
-  await writeFile(join(root, "README.md"), readme);
-  await mkdir(join(root, "docs"));
-  await writeFile(join(root, "docs", "README.md"), "docs");
-  await expect(run({ root, packageJson: {} })).resolves.toEqual(
-    expect.objectContaining({
-      status: "fail",
-      message: expect.stringContaining("specs/README.md"),
-    }),
-  );
-  await rm(root, { recursive: true, force: true });
+test("reports index validation errors after validating README content", async () => {
+  inspectReadmeDocumentationIndexes.mockResolvedValueOnce({ examplesRequired: true, error: "examples index missing" });
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "E-1.1.0",
+    status: "fail",
+    message: "examples index missing",
+  });
+  expect(validateReadmeRequiredContent).toHaveBeenCalledWith("README content", undefined, { examplesRequired: true });
 });

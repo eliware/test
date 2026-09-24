@@ -32,3 +32,10 @@ test("does not flag artifact content already under artifacts", () => {
     "artifacts/arbitrary-helper.mjs",
   ])).toEqual([]);
 });
+
+test("allows ordinary source, test, and data files outside artifact locations", () => {
+  expect(findMisplacedArtifacts(
+    ["checks/module.mjs", "data/records.json"],
+    ["checks/module.test.mjs", "data/records.txt"],
+  )).toEqual([]);
+});

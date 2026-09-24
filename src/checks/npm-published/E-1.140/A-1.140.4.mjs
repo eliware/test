@@ -1,6 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
-import { permissions } from "../../ghcr-published/workflow-policy.mjs";
+import { permissions } from "../../ghcr-published/workflow-permissions.mjs";
 import { npmPublicationJobs } from "../../ghcr-published/workflow-publication.mjs";
 import { stepText, steps } from "../../ghcr-published/workflow-structure.mjs";
 

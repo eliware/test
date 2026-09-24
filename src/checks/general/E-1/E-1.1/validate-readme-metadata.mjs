@@ -1,5 +1,5 @@
 export function validateReadmeMetadata(readme, packageJson = {}) {
-  if (packageJson?.publishConfig?.access === "public" && !readme.includes("npmjs.com")) {
+  if (packageJson?.eliware?.apply?.includes("npm-published") && !readme.includes("npmjs.com")) {
     return "Public npm packages must include an npm version badge or npm link.";
   }
   const metadata = [

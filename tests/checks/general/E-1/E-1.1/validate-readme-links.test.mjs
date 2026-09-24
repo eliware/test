@@ -8,7 +8,7 @@ const links =
   "## Links\nHome https://eliware.org GitHub https://github.com/eliware Repo https://github.com/eliware/fixture npm https://www.npmjs.com/package/@eliware/fixture";
 
 test("requires exact organization, repository, package, and home links", () => {
-  const metadata = { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture" };
+  const metadata = { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture", eliware: { apply: ["npm-published"] } };
   expect(validateReadmeLinks(links, metadata)).toBeNull();
   expect(
     validateReadmeLinks(
@@ -29,7 +29,7 @@ test("accepts repository metadata forms and rejects invalid GitHub URLs", () => 
     validateReadmeLinks("## Links\nhttps://eliware.org https://github.com/eliware"),
   ).toBeNull();
   expect(
-    validateReadmeLinks(links, { repository: { url: "https://github.com/eliware/fixture" } }),
+    validateReadmeLinks(links.replace(/ npm https:\/\/www\.npmjs\.com\/package\/[^\s]+/u, ""), { repository: { url: "https://github.com/eliware/fixture" } }),
   ).toBeNull();
   expect(validateReadmeLinks(links, { repository: "ssh://example.invalid/repo" })).toContain(
     "valid GitHub repository URL",
@@ -42,4 +42,12 @@ test("accepts repository metadata forms and rejects invalid GitHub URLs", () => 
   expect(normalizeRepositoryUrl("git+https://github.com/eliware/fixture.git/")).toBe(
     "https://github.com/eliware/fixture",
   );
+});
+
+test("requires npm links only for npm-published and rejects public package links otherwise", () => {
+  const common = { name: "@eliware/fixture", repository: "https://github.com/eliware/fixture" };
+  const noNpmLink = links.replace(/ npm https:\/\/www\.npmjs\.com\/package\/[^\s]+/u, "");
+  expect(validateReadmeLinks(noNpmLink, common)).toBeNull();
+  expect(validateReadmeLinks(noNpmLink, { ...common, eliware: { apply: ["npm-published"] } })).toContain("Links section");
+  expect(validateReadmeLinks(links, common)).toContain("Links section");
 });

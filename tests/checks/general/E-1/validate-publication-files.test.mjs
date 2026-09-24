@@ -15,7 +15,7 @@ test("validates public package file allowlists", async () => {
 });
 
 test("rejects malformed, broad, incomplete, and nonexistent public allowlists", async () => {
-  const base = { publishConfig: { access: "public" } };
+  const base = { eliware: { apply: ["npm-published"] } };
   expect(validatePublicationFiles({ ...base, files: [] }, ".")).toContain("nonempty files allowlist");
   expect(validatePublicationFiles({ ...base, files: ["**"] }, ".")).toContain("wildcard");
   expect(validatePublicationFiles({ ...base, files: ["README.md"] }, ".")).toContain("allowlist");
@@ -24,4 +24,8 @@ test("rejects malformed, broad, incomplete, and nonexistent public allowlists", 
   const empty = await mkdtemp(join(tmpdir(), "eliware-test-publication-empty-"));
   expect(validatePublicationFiles({ ...base, files: ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs", "specs"] }, empty)).toContain("missing: README.md");
   await rm(empty, { recursive: true, force: true });
+});
+
+test("does not apply npm package allowlist rules based on publishConfig alone", () => {
+  expect(validatePublicationFiles({ publishConfig: { access: "public" } }, ".")).toBeNull();
 });

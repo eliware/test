@@ -1,6 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
-import { permissions } from "../workflow-policy.mjs";
+import { permissions } from "../workflow-permissions.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
 import { steps } from "../workflow-structure.mjs";
 

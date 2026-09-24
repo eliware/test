@@ -23,3 +23,10 @@ test("filters supplied checks to the selected profile", async () => {
   ]);
   expect(checks).toEqual([applicationCheck]);
 });
+
+test("private selection includes private rules and excludes npm publication rules", async () => {
+  const checks = await selectConventionChecks({ apply: ["general", "application", "private"] });
+  const ruleIds = checks.map(({ ruleId }) => ruleId);
+  expect(ruleIds).toContain("E-1.150");
+  expect(ruleIds.some((ruleId) => ruleId.startsWith("E-1.140"))).toBe(false);
+});

@@ -1,70 +1,68 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { expect, test } from "@jest/globals";
-import { run } from "../../../../src/checks/general/E-1/E-1.8.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-async function createOwnerFile() {
-  const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-rule-"));
-  await writeFile(join(root, ".env"), "MAIL_OWNER_ADDRESS=fixture@eliware.org\n");
-  return root;
-}
+const inspectLocalMailboxOwner = jest.fn();
+const findRepositoryFiles = jest.fn();
+const resolveMailboxTemplateFiles = jest.fn();
+const validateMailboxTemplates = jest.fn();
+jest.unstable_mockModule("../../../../src/checks/general/E-1/inspect-local-mailbox-owner.mjs", () => ({ inspectLocalMailboxOwner }));
+jest.unstable_mockModule("../../../../src/checks/general/E-1/find-repository-files.mjs", () => ({ findRepositoryFiles }));
+jest.unstable_mockModule("../../../../src/checks/general/E-1/resolve-mailbox-template-files.mjs", () => ({ resolveMailboxTemplateFiles }));
+jest.unstable_mockModule("../../../../src/checks/general/E-1/validate-mailbox-templates.mjs", () => ({ validateMailboxTemplates }));
 
-const packageJson = { name: "@eliware/fixture" };
-const ownerOptions = { trackedFiles: [], checkIgnored: async () => true };
+const { run } = await import("../../../../src/checks/general/E-1/E-1.8.mjs");
 
-test("requires package identity before composing mailbox validation", async () => {
-  await expect(run({ root: tmpdir(), packageJson: {} })).resolves.toEqual({
+beforeEach(() => {
+  jest.resetAllMocks();
+  inspectLocalMailboxOwner.mockResolvedValue({ trackedFiles: [".env"] });
+  findRepositoryFiles.mockResolvedValue([".env.example"]);
+  resolveMailboxTemplateFiles.mockReturnValue([".env.example"]);
+  validateMailboxTemplates.mockResolvedValue(null);
+});
+
+test("derives the owner and composes local and template validation", async () => {
+  await expect(run({
+    root: "/repo",
+    packageJson: { name: "@eliware/fixture" },
+    trackedFiles: [".env"],
+    readTracked: [".env"],
+    checkIgnored: jest.fn(),
+  })).resolves.toEqual({ ruleId: "E-1.8", status: "pass", message: "" });
+  expect(inspectLocalMailboxOwner).toHaveBeenCalledWith("/repo", "fixture@eliware.org", {
+    trackedFiles: [".env"],
+    readTracked: [".env"],
+    checkIgnored: expect.any(Function),
+  });
+  expect(findRepositoryFiles).toHaveBeenCalledWith("/repo");
+  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith([".env.example"], [".env"]);
+  expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"]);
+});
+
+test("requires package identity and stops after a local-owner failure", async () => {
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
     ruleId: "E-1.8",
     status: "fail",
     message: "package.json.name is required to derive the mailbox owner.",
   });
+  expect(inspectLocalMailboxOwner).not.toHaveBeenCalled();
+
+  inspectLocalMailboxOwner.mockResolvedValueOnce({ error: "local owner invalid" });
+  await expect(run({ root: "/repo", packageJson: { name: "fixture" } })).resolves.toEqual({
+    ruleId: "E-1.8",
+    status: "fail",
+    message: "local owner invalid",
+  });
+  expect(findRepositoryFiles).not.toHaveBeenCalled();
 });
 
-test("composes local-owner and template validation", async () => {
-  const root = await createOwnerFile();
-  try {
-    await expect(run({ root, packageJson, ...ownerOptions, findFiles: async () => [] })).resolves.toEqual({
-      ruleId: "E-1.8",
-      status: "pass",
-      message: "",
-    });
-    await expect(run({
-      root,
-      packageJson,
-      ...ownerOptions,
-      findFiles: async () => { throw new Error("scan failed"); },
-    })).resolves.toMatchObject({
-      status: "fail",
-      message: "Environment files could not be inspected: scan failed",
-    });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("maps local-owner and template validation failures to the check result", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-rule-missing-"));
-  try {
-    await expect(run({ root, packageJson })).resolves.toMatchObject({
-      ruleId: "E-1.8",
-      status: "fail",
-      message: expect.stringContaining("Local .env must define"),
-    });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-
-  const invalidTemplate = await createOwnerFile();
-  try {
-    await expect(run({
-      root: invalidTemplate,
-      packageJson,
-      trackedFiles: [".env.example"],
-      checkIgnored: async () => true,
-      findFiles: async () => [".env.example"],
-    })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("Environment template") });
-  } finally {
-    await rm(invalidTemplate, { recursive: true, force: true });
-  }
+test("maps template discovery and validation errors to the rule result", async () => {
+  findRepositoryFiles.mockRejectedValueOnce(new Error("scan failed"));
+  await expect(run({ root: "/repo", packageJson: { name: "fixture" } })).resolves.toMatchObject({
+    status: "fail",
+    message: "Environment files could not be inspected: scan failed",
+  });
+  validateMailboxTemplates.mockResolvedValueOnce("template invalid");
+  await expect(run({ root: "/repo", packageJson: { name: "fixture" } })).resolves.toMatchObject({
+    status: "fail",
+    message: "template invalid",
+  });
 });

@@ -14,6 +14,7 @@ export function validateReadmeLinks(readme, packageJson = {}) {
   }
 
   const linksContent = readSection(readme, "Links");
+  const npmPublished = packageJson?.eliware?.apply?.includes("npm-published") === true;
   const repositoryPath = repositoryUrl.replace("https://github.com/", "").split("/");
   const organizationUrl = `https://github.com/${repositoryPath[0]}`;
   const packageUrl = `https://www.npmjs.com/package/${packageJson?.name ?? "@eliware/fixture"}`;
@@ -22,7 +23,8 @@ export function validateReadmeLinks(readme, packageJson = {}) {
     !/https:\/\/eliware\.org(?:\/[^\s)]*)?/iu.test(linksContent) ||
     !hasExactUrl(linksContent, organizationUrl) ||
     (repository && !hasExactUrl(linksContent, repositoryUrl)) ||
-    (packageJson?.name && !hasExactUrl(linksContent, packageUrl))
+    (npmPublished && packageJson?.name && !hasExactUrl(linksContent, packageUrl)) ||
+    (!npmPublished && /https:\/\/(?:www\.)?npmjs\.com\/package\//iu.test(linksContent))
   ) {
     return "README.md must include the standard Links section.";
   }

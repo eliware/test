@@ -8,20 +8,16 @@ export function validateReadmePackageBadges(readme, packageJson = {}) {
 
   const headingPackageName = packageName ?? heading.match(/^## ([^ ]+)/u)?.[1];
   const hasNpmBadge = /!\[npm\s+version\][^\n]*npmjs\.com\/package\//iu.test(heading);
-  const publicPackage =
-    (packageJson?.private !== true && packageJson?.publishConfig?.access === "public") ||
-    packageJson?.eliware?.apply?.includes("npm-published");
+  const npmPublished = packageJson?.eliware?.apply?.includes("npm-published") === true;
   if (
-    publicPackage &&
+    npmPublished &&
     !new RegExp(`npmjs\\.com\\/package\\/${escapeRegExp(headingPackageName)}\\b`, "u").test(heading)
   ) {
     return "README.md must include the npm version badge for the package named in package.json.";
   }
 
-  const explicitlyNonPublic =
-    packageJson?.private === true || packageJson?.publishConfig?.access === "restricted";
-  if (explicitlyNonPublic && hasNpmBadge) {
-    return "Non-public packages must not include an npm version badge.";
+  if (!npmPublished && hasNpmBadge) {
+    return "Repositories that do not apply the npm-published profile must not include an npm version badge.";
   }
   if (!/\[!\[license\][\s\S]*?\]\(LICENSE\)/iu.test(heading)) {
     return "README.md must include the license badge.";

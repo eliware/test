@@ -9,12 +9,16 @@ export const ruleId = "E-1.19";
 export const parentRuleId = "E-1";
 
 export function run({ root = process.cwd(), packageJson }) {
-  for (const message of [
-    validateEliwarePackageMetadata(packageJson),
-    validatePackageIdentity(packageJson),
-    validatePackageMetadata(packageJson),
-    validatePackageRuntime(packageJson),
-  ]) if (message) return fail(ruleId, message);
+  const validators = [
+    validateEliwarePackageMetadata,
+    validatePackageIdentity,
+    validatePackageMetadata,
+    validatePackageRuntime,
+  ];
+  for (const validate of validators) {
+    const message = validate(packageJson);
+    if (message) return fail(ruleId, message);
+  }
   const publicationMessage = validatePublicationFiles(packageJson, root);
   if (publicationMessage) return fail(ruleId, publicationMessage);
   return pass(ruleId);

@@ -12,4 +12,5 @@ test("enforces private and npm-published package metadata", () => {
   expect(validatePackagePublicationMetadata({ eliware: { apply: ["npm-published"] }, private: true, publishConfig: { provenance: true } })).toContain("npm-published");
   expect(validatePackagePublicationMetadata({ eliware: { apply: ["npm-published"] }, private: false })).toContain("provenance");
   expect(validatePackagePublicationMetadata({ eliware: { apply: ["npm-published"] }, private: false, publishConfig: { provenance: true } })).toBeNull();
+  expect(validatePackagePublicationMetadata({ eliware: { apply: ["private", "npm-published"] }, private: true, publishConfig: { provenance: true } })).toContain("both private and npm-published");
 });

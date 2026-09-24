@@ -1,75 +1,58 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { expect, test } from "@jest/globals";
-import { run } from "../../../../src/checks/general/E-1/E-1.3.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("accepts a package that delegates validation to the shared harness", async () => {
-  await expect(
-    run({ packageJson: { scripts: { test: "eliware-test", lint: "eliware-test --lint" } } }),
-  ).resolves.toEqual({
-    ruleId: "E-1.3",
-    status: "pass",
-    message: "",
-  });
+const findDirectToolUses = jest.fn();
+const findDirectValidationDependencies = jest.fn();
+const findInvalidValidationScripts = jest.fn();
+const findRepositoryFiles = jest.fn();
+jest.unstable_mockModule("../../../../src/checks/general/E-1/E-1.3/find-direct-tool-uses.mjs", () => ({ findDirectToolUses }));
+jest.unstable_mockModule("../../../../src/checks/general/E-1/E-1.3/validate-validation-dependencies.mjs", () => ({ findDirectValidationDependencies }));
+jest.unstable_mockModule("../../../../src/checks/general/E-1/E-1.3/validate-validation-scripts.mjs", () => ({ findInvalidValidationScripts }));
+jest.unstable_mockModule("../../../../src/checks/general/E-1/find-repository-files.mjs", () => ({ findRepositoryFiles }));
+
+const { run } = await import("../../../../src/checks/general/E-1/E-1.3.mjs");
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  findDirectToolUses.mockResolvedValue([]);
+  findDirectValidationDependencies.mockReturnValue([]);
+  findInvalidValidationScripts.mockReturnValue([]);
+  findRepositoryFiles.mockResolvedValue(["README.md"]);
 });
 
-test("accepts an absent package configuration at this check boundary", async () => {
-  await expect(run({})).resolves.toEqual({ ruleId: "E-1.3", status: "pass", message: "" });
+test("composes script, dependency, and repository-source checks", async () => {
+  const packageJson = { scripts: { test: "eliware-test" } };
+  await expect(run({ root: "/repo", packageJson })).resolves.toEqual({ ruleId: "E-1.3", status: "pass", message: "" });
+  expect(findInvalidValidationScripts).toHaveBeenCalledWith(packageJson.scripts);
+  expect(findDirectValidationDependencies).toHaveBeenCalledWith(packageJson);
+  expect(findRepositoryFiles).toHaveBeenCalledWith("/repo");
+  expect(findDirectToolUses).toHaveBeenCalledWith("/repo", ["README.md"]);
 });
 
-test("rejects direct validation commands in package scripts", async () => {
-  await expect(run({ packageJson: { scripts: { test: "jest" } } })).resolves.toEqual(
-    expect.objectContaining({ ruleId: "E-1.3", status: "fail" }),
-  );
+test.each([
+  [findInvalidValidationScripts, ["test"], "Validation scripts must use eliware-test rather than direct tools: test."],
+  [findDirectValidationDependencies, ["jest"], "Repositories must not directly declare shared validation tools: jest."],
+])("short-circuits with the diagnostic from a failed validation phase", async (validator, findings, message) => {
+  validator.mockReturnValueOnce(findings);
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({ ruleId: "E-1.3", status: "fail", message });
+  expect(findDirectToolUses).not.toHaveBeenCalled();
 });
 
-test("rejects direct validation tool dependencies", async () => {
-  await expect(run({ packageJson: { devDependencies: { jest: "^30.0.0" } } })).resolves.toEqual(
-    expect.objectContaining({ ruleId: "E-1.3", status: "fail" }),
-  );
-});
-
-test("rejects direct validation-tool use in repository validation files", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-3-"));
-  await writeFile(join(root, "validate.mjs"), "import { run } from 'oxlint';\n");
-  await expect(run({ root, packageJson: {}, files: ["validate.mjs"] })).resolves.toEqual(
-    expect.objectContaining({
-      ruleId: "E-1.3",
-      status: "fail",
-      message: expect.stringContaining("validate.mjs"),
-    }),
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reports repository validation files that cannot be inspected", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-3-error-"));
-  await expect(run({ root, packageJson: {}, files: ["src/missing.mjs"] })).resolves.toEqual({
+test("maps repository inspection findings and errors", async () => {
+  findDirectToolUses.mockResolvedValueOnce(["validate.mjs"]);
+  await expect(run({ root: "/repo", packageJson: {}, files: ["validate.mjs"] })).resolves.toEqual({
     ruleId: "E-1.3",
     status: "fail",
-    message: expect.stringContaining("could not be inspected"),
+    message: "Direct validation-tool use found in repository files: validate.mjs.",
   });
-  await rm(root, { recursive: true, force: true });
+  findDirectToolUses.mockRejectedValueOnce(new Error("read failed"));
+  await expect(run({ root: "/repo", packageJson: {}, files: [] })).resolves.toMatchObject({
+    status: "fail",
+    message: "Repository validation surfaces could not be inspected: read failed",
+  });
 });
 
-test("passes after inspecting a repository with no direct tool use", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-3-clean-"));
-  await expect(run({ root, packageJson: {}, files: [] })).resolves.toEqual({
-    ruleId: "E-1.3",
-    status: "pass",
-    message: "",
-  });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("discovers repository files when the validation context does not provide them", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-e-1-3-discovery-"));
-  await writeFile(join(root, "README.md"), "clean\n");
-  await expect(run({ root, packageJson: {} })).resolves.toEqual({
-    ruleId: "E-1.3",
-    status: "pass",
-    message: "",
-  });
-  await rm(root, { recursive: true, force: true });
+test("does not inspect repository files when no root is supplied", async () => {
+  await expect(run({ packageJson: {} })).resolves.toEqual({ ruleId: "E-1.3", status: "pass", message: "" });
+  expect(findRepositoryFiles).not.toHaveBeenCalled();
+  expect(findDirectToolUses).not.toHaveBeenCalled();
 });

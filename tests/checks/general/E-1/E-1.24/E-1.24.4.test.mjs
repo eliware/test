@@ -1,110 +1,85 @@
-import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { run } from "../../../../../src/checks/general/E-1/E-1.24/E-1.24.4.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("rejects no publication or deployment commands in validation workflows", async () => {
-  await expect(run({ root: process.cwd() })).resolves.toEqual({
+const readWorkflows = jest.fn();
+const isValidationJob = jest.fn();
+const workflowCommands = jest.fn();
+const workflowJobs = jest.fn();
+const workflowRunSteps = jest.fn();
+const findPublicationCommand = jest.fn();
+const findUnsupportedCommands = jest.fn();
+const isValidationWorkflowJob = jest.fn();
+const validateWorkflowSequence = jest.fn();
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.24/read-workflow-files.mjs", () => ({ readWorkflows }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.24/read-workflows.mjs", () => ({ isValidationJob, workflowCommands, workflowJobs, workflowRunSteps }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.24/classify-workflow-commands.mjs", () => ({ findPublicationCommand, findUnsupportedCommands, isValidationWorkflowJob }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-1/E-1.24/validate-workflow-sequence.mjs", () => ({ validateWorkflowSequence }));
+
+const { run } = await import("../../../../../src/checks/general/E-1/E-1.24/E-1.24.4.mjs");
+const job = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
+const commands = [{ job: "validate", command: "npm ci" }, { job: "validate", command: "npm test" }];
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  readWorkflows.mockResolvedValue([{ name: "ci.yml", document: {} }]);
+  workflowCommands.mockReturnValue(commands);
+  workflowJobs.mockReturnValue([{ id: "validate", job }]);
+  workflowRunSteps.mockReturnValue(commands);
+  isValidationJob.mockReturnValue(true);
+  findPublicationCommand.mockReturnValue(null);
+  findUnsupportedCommands.mockReturnValue([]);
+  isValidationWorkflowJob.mockReturnValue(false);
+  validateWorkflowSequence.mockReturnValue(null);
+});
+
+test("selects validation jobs and checks their command sequence", async () => {
+  await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-1.24.4", status: "pass", message: "" });
+  expect(readWorkflows).toHaveBeenCalledWith("/repo");
+  expect(workflowCommands).toHaveBeenCalledWith({});
+  expect(workflowJobs).toHaveBeenCalledWith({});
+  expect(workflowRunSteps).toHaveBeenCalledWith(job);
+  expect(validateWorkflowSequence).toHaveBeenCalledWith("ci.yml job validate", commands, job.steps, job);
+});
+
+test("requires a separate validation job for publication workflows", async () => {
+  findPublicationCommand.mockReturnValueOnce({ command: "npm publish" });
+  workflowJobs.mockReturnValueOnce([{ id: "publish", job }]);
+  isValidationJob.mockReturnValueOnce(false);
+  await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-1.24.4",
-    status: "pass",
-    message: "",
+    status: "fail",
+    message: "ci.yml publication workflow must contain a separate validation job.",
   });
+  expect(validateWorkflowSequence).not.toHaveBeenCalled();
 });
 
-test("inspects run commands but ignores URLs and comments outside commands", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
-  await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
-    "env:\n  IMAGE: ghcr.io/example/app\nrun-name: npm publish\njobs:\n  validate:\n    steps:\n      - run: npm ci\n      - run: npm test\n",
-  );
-  await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
-  await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
-    "jobs:\n  publish:\n    steps:\n      - run: npm publish\n",
-  );
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("separate validation job") });
-  await rm(root, { recursive: true, force: true });
+test("requires validation for non-publication workflows and recognizes alternate validation jobs", async () => {
+  workflowJobs.mockReturnValueOnce([]);
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "E-1.24.4",
+    status: "fail",
+    message: "ci.yml must validate with npm ci followed by npm test.",
+  });
+  isValidationJob.mockReturnValueOnce(false);
+  isValidationWorkflowJob.mockReturnValueOnce(true);
+  await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-1.24.4", status: "pass", message: "" });
+  expect(isValidationWorkflowJob).toHaveBeenCalledWith(job, workflowRunSteps);
 });
 
-test("requires the validation command sequence in non-publication workflows", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-sequence-"));
-  await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
-    "jobs:\n  validate:\n    steps:\n      - run: npm test\n",
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("npm ci") }),
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reports malformed workflow YAML", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
-  await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "broken.yml"), "jobs: [");
-  await expect(run({ root })).resolves.toMatchObject({ ruleId: "E-1.24.4", status: "fail", message: expect.stringContaining("could not be parsed") });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects unsupported commands and reversed validation order", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-sequence-"));
-  await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
-    "jobs:\n  validate:\n    steps:\n      - run: npm ci\n      - run: curl https://example.test\n",
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("non-validation") }),
-  );
-  await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
-    "jobs:\n  validate:\n    steps:\n      - run: npm test\n      - run: npm ci\n",
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("followed immediately") }),
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("does not require validation order in publication workflows", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-release-"));
-  await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "release.yml"), "jobs:\n  release:\n    steps:\n      - run: npm publish\n");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "fail", message: "release.yml publication workflow must contain a separate validation job." });
-  await writeFile(join(root, ".github", "workflows", "release.yml"), "jobs:\n  release:\n    steps:\n      - run: echo release\n");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "E-1.24.4", status: "fail", message: "release.yml must validate with npm ci followed by npm test." });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("keeps validation sequence checks scoped to the validation job in mixed workflows", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-job-scope-"));
-  await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  const workflow = join(root, ".github", "workflows", "release.yml");
-  await writeFile(workflow, `jobs:
-  validate:
-    steps:
-      - run: npm ci
-      - run: curl https://example.test
-      - run: npm test
-  publish:
-    steps:
-      - run: npm publish
-`);
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("non-validation") });
-  await writeFile(workflow, `jobs:
-  validate-install:
-    steps:
-      - run: npm ci
-  validate-test:
-    steps:
-      - run: npm test
-  publish:
-    steps:
-      - run: npm publish
-`);
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("followed immediately") });
-  await rm(root, { recursive: true, force: true });
+test("maps command-policy, sequence, and workflow-loading errors", async () => {
+  findUnsupportedCommands.mockReturnValueOnce(["curl"]);
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
+    status: "fail",
+    message: "ci.yml contains non-validation command(s): curl.",
+  });
+  validateWorkflowSequence.mockReturnValueOnce("npm ci must precede npm test");
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
+    status: "fail",
+    message: "npm ci must precede npm test",
+  });
+  readWorkflows.mockRejectedValueOnce(new Error("invalid YAML"));
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "E-1.24.4",
+    status: "fail",
+    message: "Workflow YAML could not be parsed: invalid YAML",
+  });
 });

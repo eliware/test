@@ -1,6 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
-import { hasExactTagTrigger } from "../workflow-policy.mjs";
+import { hasExactTagTrigger } from "../has-exact-tag-trigger.mjs";
 import { isPublicationWorkflow } from "../workflow-publication.mjs";
 import { workflowText } from "../workflow-structure.mjs";
 

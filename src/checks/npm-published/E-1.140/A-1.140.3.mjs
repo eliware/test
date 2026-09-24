@@ -1,6 +1,7 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
-import { hasUbuntuRunner, validationJobs } from "../../ghcr-published/workflow-policy.mjs";
+import { hasUbuntuRunner } from "../../ghcr-published/has-ubuntu-runner.mjs";
+import { findValidationJobs } from "../../ghcr-published/find-validation-jobs.mjs";
 import { npmPublicationJobs } from "../../ghcr-published/workflow-publication.mjs";
 import { steps } from "../../ghcr-published/workflow-structure.mjs";
 
@@ -23,7 +24,7 @@ export async function run({ root }) {
         }
         continue;
       }
-      const validation = validationJobs(workflow);
+      const validation = findValidationJobs(workflow);
       if (
         validation.length === 0 ||
         !validation.some(({ job }) => hasUbuntuRunner(workflow, job) &&
