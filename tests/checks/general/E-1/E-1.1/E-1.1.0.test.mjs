@@ -67,8 +67,8 @@ test("accepts a complete branded project README", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("reports missing README sections", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-"));
+test("maps missing required content to a rule failure", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-readme-incomplete-"));
   await writeFile(join(root, "README.md"), "# fixture");
   await expect(run({ root, packageJson: {} })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("Features") }),

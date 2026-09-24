@@ -3,7 +3,8 @@ import { readWorkflows } from "../read-workflows.mjs";
 import { permissions } from "../workflow-policy.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
 import { steps } from "../workflow-structure.mjs";
-import { findAttestation, findImagePush, imageDetails } from "../ghcr-attestation-contract.mjs";
+import { findAttestation } from "../find-ghcr-attestation.mjs";
+import { findImagePush, imageDetails } from "../find-ghcr-image-push.mjs";
 
 export const ruleId = "E-1.160.5";
 export const parentRuleId = "E-1.160";

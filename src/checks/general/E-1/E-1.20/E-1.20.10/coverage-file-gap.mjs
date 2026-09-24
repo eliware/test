@@ -1,10 +1,7 @@
 import { coverageMetricValues } from "./coverage-metrics.mjs";
+import { validateCoverageFileEvidence } from "./validate-coverage-file-evidence.mjs";
 
 const metrics = ["statements", "branches", "functions", "lines"];
-
-function validCounter(value) {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0;
-}
 
 function percentage(covered, total) {
   return total > 0 ? (covered / total) * 100 : 100;
@@ -31,36 +28,7 @@ export function coverageLineEntries(data) {
 }
 
 export function fileGap(file, data) {
-  const hasCounterData = Object.keys(data.s ?? {}).length > 0 || Object.keys(data.b ?? {}).length > 0
-    || Object.keys(data.f ?? {}).length > 0 || Object.keys(data.l ?? {}).length > 0;
-  const hasMapData = Object.keys(data.statementMap ?? {}).length > 0 || Object.keys(data.branchMap ?? {}).length > 0
-    || Object.keys(data.fnMap ?? {}).length > 0 || Object.keys(data.lineMap ?? {}).length > 0;
-  if (hasCounterData !== hasMapData) throw new Error(`Coverage evidence is incomplete for ${file}.`);
-  for (const [map, counters, required] of [
-    [data.statementMap, data.s, Object.hasOwn(data, "statementMap") || Object.hasOwn(data, "s")],
-    [data.branchMap, data.b, Object.hasOwn(data, "branchMap") || Object.hasOwn(data, "b")],
-    [data.fnMap, data.f, Object.hasOwn(data, "fnMap") || Object.hasOwn(data, "f")],
-    [data.lineMap, data.l, Object.hasOwn(data, "lineMap")],
-  ]) {
-    const mapKeys = Object.keys(map ?? {});
-    const counterKeys = Object.keys(counters ?? {});
-    if (!required && !map) continue;
-    if (!map || !counters || (mapKeys.length > 0 && counterKeys.length === 0)) {
-      throw new Error(`Coverage evidence is incomplete for ${file}.`);
-    }
-    if (mapKeys.length !== counterKeys.length || mapKeys.some((key) => !Object.hasOwn(counters, key))) {
-      throw new Error(`Coverage map and counter keys do not match for ${file}.`);
-    }
-  }
-  const counterValues = [
-    ...Object.values(data.s ?? {}),
-    ...Object.values(data.b ?? {}).flat(),
-    ...Object.values(data.f ?? {}),
-    ...Object.values(data.l ?? {}),
-  ];
-  if (counterValues.some((value) => !validCounter(value))) {
-    throw new Error(`Coverage evidence is malformed for ${file}.`);
-  }
+  validateCoverageFileEvidence(file, data);
   const statements = Object.entries(data.s ?? {}).filter(([, count]) => count === 0)
     .map(([id]) => ({ location: location(data.statementMap?.[id]) }));
   const branches = Object.entries(data.b ?? {}).flatMap(([id, counts]) => counts.map((count, index) =>

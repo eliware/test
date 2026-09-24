@@ -1,5 +1,6 @@
 import { fail, pass } from "../../../check-result.mjs";
-import { formatOutdatedDependencies, readOutdatedDependencies } from "../read-outdated-dependencies.mjs";
+import { formatOutdatedDependencies } from "../format-outdated-dependencies.mjs";
+import { readOutdatedDependencies } from "../read-outdated-dependencies.mjs";
 
 export const ruleId = "E-1.20.12";
 export const parentRuleId = "E-1.20";

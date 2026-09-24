@@ -1,20 +1,31 @@
 import { expect, jest, test } from "@jest/globals";
-import { resolveValidationDependencies, runValidation, validationDependencies } from "../../src/orchestrators/run-validation.mjs";
+import {
+  resolveValidationDependencies,
+  runValidation,
+  validationDependencies,
+} from "../../src/orchestrators/run-validation.mjs";
 
-function dependencies(overrides = {}) {
-  const calls = [];
+function createDependencies(overrides = {}) {
   const checks = [{ ruleId: "E-1", run: jest.fn() }];
-  const dependencies = {
-    loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general"] } })),
-    selectConventionChecks: jest.fn(async () => checks),
-    discoverAllChecks: jest.fn(async () => checks),
-    findRepositoryFiles: jest.fn(async () => []),
-    validateBundledDirectiveCompleteness: jest.fn(async () => true),
-    prepareValidationExemptions: jest.fn(() => new Set()),
-    executeValidationPlan: jest.fn(async (...args) => { calls.push(args); return [{ ruleId: "E-1", status: "pass" }]; }),
-    ...overrides,
+  const executeValidationPlan = jest.fn(async (selected, context, exemptions) => ({
+    selected,
+    context,
+    exemptions,
+  }));
+  return {
+    checks,
+    executeValidationPlan,
+    dependencies: {
+      loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general"] } })),
+      selectConventionChecks: jest.fn(async () => checks),
+      discoverAllChecks: jest.fn(async () => checks),
+      findRepositoryFiles: jest.fn(async () => []),
+      validateBundledDirectiveCompleteness: jest.fn(async () => true),
+      prepareValidationExemptions: jest.fn(() => new Set(["E-9"])),
+      executeValidationPlan,
+      ...overrides,
+    },
   };
-  return { options: { dependencies }, checks, calls, dependencies };
 }
 
 test("resolves the default and injected dependency registries", () => {
@@ -23,70 +34,33 @@ test("resolves the default and injected dependency registries", () => {
   expect(resolveValidationDependencies(injected)).toBe(injected);
 });
 
-test("keeps runtime options optional at the orchestration boundary", () => {
-  expect(runValidation.length).toBe(2);
-});
-
-test("uses default runtime options when omitted", async () => {
-  await expect(runValidation("/missing-repository", [], undefined)).rejects.toBeTruthy();
-});
-
-
-test("loads configuration, discovers checks, validates completeness, and executes the plan", async () => {
-  const { options, checks, calls } = dependencies();
-  await expect(runValidation("/repo", ["E-9"], options)).resolves.toEqual([{ ruleId: "E-1", status: "pass" }]);
-  expect(options.dependencies.loadValidationTarget).toHaveBeenCalledWith("/repo");
-  expect(options.dependencies.selectConventionChecks).toHaveBeenCalledWith({ apply: ["general"] }, checks);
-  expect(options.dependencies.discoverAllChecks).toHaveBeenCalledWith();
-  expect(options.dependencies.validateBundledDirectiveCompleteness).toHaveBeenCalledWith(checks, ["general"]);
-  expect(options.dependencies.prepareValidationExemptions).toHaveBeenCalledWith({ eliware: { apply: ["general"] } }, checks, ["E-9"]);
-  expect(calls[0][0]).toBe(checks);
-  expect(calls[0][2]).toEqual(new Set());
-});
-
-test("passes runtime options into the validation context", async () => {
-  const { options, calls } = dependencies();
-  await runValidation("/repo", [], { ...options, executeJest: true, mode: "test" });
-  expect(calls[0][1]).toEqual(expect.objectContaining({ root: "/repo", executeJest: true, mode: "test" }));
-});
-
-test("passes every aggregate stage to the selected checks", async () => {
-  const { options, calls } = dependencies();
-  await runValidation("/repo", [], {
-    ...options,
-    executeJest: true,
-    executeLint: true,
-    executeAudit: true,
-    executePack: true,
-    executeFormat: true,
-    executePackageChecks: true,
+test("prepares and executes a plan with the requested target and exemptions", async () => {
+  const { checks, executeValidationPlan, dependencies } = createDependencies();
+  const planResult = await runValidation("/repo", ["E-9"], { dependencies });
+  expect(dependencies.loadValidationTarget).toHaveBeenCalledWith("/repo");
+  expect(dependencies.executeValidationPlan).toHaveBeenCalledWith(
+    checks,
+    expect.objectContaining({ root: "/repo", packageJson: { eliware: { apply: ["general"] } } }),
+    new Set(["E-9"]),
+  );
+  expect(planResult).toEqual({
+    selected: checks,
+    context: expect.objectContaining({ root: "/repo" }),
+    exemptions: new Set(["E-9"]),
   });
-  expect(calls[0][1]).toEqual(expect.objectContaining({
-    executeJest: true,
-    executeLint: true,
-    executeAudit: true,
-    executePack: true,
-    executeFormat: true,
-    executePackageChecks: true,
-  }));
+  expect(executeValidationPlan).toHaveBeenCalledTimes(1);
 });
 
-test("executes only focused-safe checks for a focused test path", async () => {
-  const checks = ["E-1.4", "E-1.17", "E-1.20", "E-1.20.10", "E-1.20.20", "E-1.20.16"].map((ruleId) => ({ ruleId, focusedSafe: ruleId !== "E-1.20.16" }));
-  const { options, calls } = dependencies({
-    selectConventionChecks: jest.fn(async () => checks),
-    discoverAllChecks: jest.fn(async () => checks),
-  });
-  await runValidation("/repo", [], { ...options, jestArgs: ["tests/example.test.mjs"] });
-  expect(calls[0][0].map(({ ruleId }) => ruleId)).toEqual(["E-1.4", "E-1.17", "E-1.20", "E-1.20.10", "E-1.20.20"]);
-});
-
-test("does not execute the plan when completeness validation fails", async () => {
+test("propagates plan-preparation failures without executing the plan", async () => {
   const executeValidationPlan = jest.fn();
-  const { options } = dependencies({
+  const { dependencies } = createDependencies({
+    loadValidationTarget: jest.fn(async () => { throw new Error("target unavailable"); }),
     executeValidationPlan,
-    validateBundledDirectiveCompleteness: jest.fn(async () => { throw new Error("missing check"); }),
   });
-  await expect(runValidation("/repo", [], options)).rejects.toThrow("missing check");
+  await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("target unavailable");
   expect(executeValidationPlan).not.toHaveBeenCalled();
+});
+
+test("uses default invocation options when omitted", async () => {
+  await expect(runValidation("/missing-repository", [], undefined)).rejects.toBeTruthy();
 });

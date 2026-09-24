@@ -1,10 +1,11 @@
-import { access, readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 import { readReadmeSections, expectedReadmeHeadings } from "./read-readme-sections.mjs";
 import { validateReadmeBranding } from "./validate-readme-branding.mjs";
 import { validateReadmeMetadata } from "./validate-readme-metadata.mjs";
 import { validateReadmeRequiredContent } from "./validate-readme-required-content.mjs";
+import { inspectReadmeDocumentationIndexes } from "./inspect-readme-documentation-indexes.mjs";
 
 export const ruleId = "E-1.1.0";
 export const parentRuleId = "E-1.1";
@@ -23,28 +24,12 @@ export async function run({ root, packageJson }) {
   }
   const brandingError = validateReadmeBranding(readme);
   if (brandingError) return fail(ruleId, brandingError);
-  let examplesRequired = false;
-  try {
-    await access(join(root, "examples"));
-    examplesRequired = true;
-  } catch {}
+  const indexes = await inspectReadmeDocumentationIndexes(root);
+  const examplesRequired = indexes.examplesRequired;
   const requiredContentError = validateReadmeRequiredContent(readme, packageJson, { examplesRequired });
   if (requiredContentError) return fail(ruleId, requiredContentError);
   const metadataError = validateReadmeMetadata(readme, packageJson);
   if (metadataError) return fail(ruleId, metadataError);
-  for (const path of ["docs/README.md", "specs/README.md"]) {
-    try {
-      await access(join(root, path));
-    } catch {
-      return fail(ruleId, `README.md links to required documentation index ${path}, but it does not exist.`);
-    }
-  }
-  if (examplesRequired) {
-    try {
-      await access(join(root, "examples", "README.md"));
-    } catch {
-      return fail(ruleId, "README.md links to examples/README.md, but it does not exist.");
-    }
-  }
+  if (indexes.error) return fail(ruleId, indexes.error);
   return pass(ruleId);
 }

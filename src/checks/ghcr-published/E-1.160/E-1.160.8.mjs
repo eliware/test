@@ -1,15 +1,10 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
-import {
-  findAttestation,
-  findAttestationVerification,
-  findDigestHandoff,
-  findDigestInspection,
-  findImagePush,
-  findVersionTagDigestVerification,
-  imageDetails,
-} from "../ghcr-attestation-contract.mjs";
+import { findAttestation, findAttestationVerification } from "../find-ghcr-attestation.mjs";
+import { findDigestHandoff } from "../find-ghcr-digest-handoff.mjs";
+import { findDigestInspection, findVersionTagDigestVerification } from "../find-ghcr-digest-verification.mjs";
+import { findImagePush, imageDetails } from "../find-ghcr-image-push.mjs";
 import { steps } from "../workflow-structure.mjs";
 
 export const ruleId = "E-1.160.8";

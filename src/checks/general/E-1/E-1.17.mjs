@@ -3,9 +3,13 @@ import { fail, pass } from "../../check-result.mjs";
 import { join } from "node:path";
 import { collectRepositoryFiles } from "./collect-repository-files.mjs";
 import { collectRepositoryDirectories } from "./collect-repository-directories.mjs";
-import { findMirrorViolations, findDuplicatePathViolations, findOrphanTestViolations, findTestContractViolations } from "./validate-mirror-structure.mjs";
+import { findMirrorViolations } from "./find-source-test-mirror-violations.mjs";
+import { findDuplicatePathViolations } from "./find-duplicate-test-path-violations.mjs";
+import { findOrphanTestViolations } from "./find-orphan-test-violations.mjs";
+import { findTestContractViolations } from "./find-test-contract-violations.mjs";
 import { findMisplacedArtifacts } from "./validate-test-artifacts.mjs";
 import { findGeneratedSource } from "./validate-generated-source.mjs";
+import { validateFocusedSourceTestPair } from "./validate-focused-source-test-pair.mjs";
 
 export const ruleId = "E-1.17";
 export const parentRuleId = "E-1";
@@ -48,21 +52,6 @@ export async function run({ root, focusedScope = null }) {
 }
 
 async function runFocused(root, { sourcePath, testPath }) {
-  const source = sourcePath.replace(/^src\//u, "");
-  const test = testPath.replace(/^(?:tests?|specs?)\//iu, "");
-  const sourceFile = join(root, "src", source);
-  const testFile = join(root, "tests", test);
-  try {
-    const content = await readFile(testFile, "utf8");
-    const findings = [];
-    try { await readFile(sourceFile, "utf8"); } catch { findings.push(`missing mirrored source: ${source}`); }
-    if (source.replace(/\.mjs$/u, ".test.mjs") !== test)
-      findings.push(`focused source/test paths do not mirror: ${source} and ${test}`);
-    if (!/\b(?:test|it|describe)\s*\(/u.test(content)) findings.push(`${test} is not a Jest test file`);
-    if (!/(?:from|import|require\s*\()[\s\S]*src[\\/]\S+\.mjs/u.test(content))
-      findings.push(`${test} does not reference an implementation module`);
-    return findings.length ? fail(ruleId, `Source/test structure is not mirrored; ${findings.join("; ")}.`) : pass(ruleId);
-  } catch {
-    return fail(ruleId, `Focused test file is missing: ${test}`);
-  }
+  const findings = await validateFocusedSourceTestPair(root, { sourcePath, testPath });
+  return findings.length ? fail(ruleId, `Source/test structure is not mirrored; ${findings.join("; ")}.`) : pass(ruleId);
 }

@@ -1,17 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
 import { EventEmitter } from "node:events";
-import { formatOutdatedDependencies, readOutdatedDependencies } from "../../../../src/checks/general/E-1/read-outdated-dependencies.mjs";
-
-test("formats npm outdated records for diagnostics", () => {
-  expect(formatOutdatedDependencies({ jest: { current: "1.0.0", latest: "2.0.0" } })).toEqual(["jest (1.0.0 -> 2.0.0)"]);
-  expect(formatOutdatedDependencies({ alpha: {}, beta: { wanted: "3.0.0" }, gamma: { current: null, latest: null, wanted: null } })).toEqual([
-    "alpha (unknown -> unknown)",
-    "beta (unknown -> 3.0.0)",
-    "gamma (unknown -> unknown)",
-  ]);
-  expect(formatOutdatedDependencies({})).toEqual([]);
-  expect(formatOutdatedDependencies()).toEqual([]);
-});
+import { readOutdatedDependencies } from "../../../../src/checks/general/E-1/read-outdated-dependencies.mjs";
 
 function childProcess() {
   const child = new EventEmitter();

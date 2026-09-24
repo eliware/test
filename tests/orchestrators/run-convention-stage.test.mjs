@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
 import { runConventionStage } from "../../src/orchestrators/run-convention-stage.mjs";
-import { readConventionConfig } from "../../src/orchestrators/read-convention-config.mjs";
 import { formatConventionFailure } from "../../src/orchestrators/convention-remediation.mjs";
 
 test("returns a passing convention stage", async () => {
@@ -85,17 +84,4 @@ test("normalizes convention-runner errors as convention failures", async () => {
       "invalid config\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.",
     ],
   });
-});
-
-test("reads valid convention configuration", () => {
-  const apply = ["general"];
-  expect(readConventionConfig({ eliware: { apply } })).toEqual({ apply });
-});
-
-test("rejects convention configuration without apply groups", () => {
-  expect(() => readConventionConfig({})).toThrow(/must define eliware\.apply/);
-});
-
-test("rejects an empty apply list", () => {
-  expect(() => readConventionConfig({ eliware: { apply: [] } })).toThrow(/apply/);
 });

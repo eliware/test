@@ -3,6 +3,8 @@ import { classifyJestResult } from "../../../../../src/checks/general/E-1/E-1.20
 
 test("classifies timeout, failure, and success results", () => {
   expect(classifyJestResult("E-1.20", { timedOut: true }, "timed out").status).toBe("fail");
+  expect(classifyJestResult("E-1.20", { timedOut: true }).message)
+    .toBe("Jest timed out after 15 seconds without progress.");
   expect(classifyJestResult("E-1.20", { code: 1, stdout: "out", stderr: "err" }).message)
     .toBe("Jest failed: out\nerr");
   expect(classifyJestResult("E-1.20", { code: 1, stdout: "", stderr: "" }).message)

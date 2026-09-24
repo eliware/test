@@ -5,4 +5,5 @@ test("validates scoped package identity and semantic version", () => {
   expect(validatePackageIdentity({ name: "@eliware/example", version: "8.0.0" })).toBeNull();
   expect(validatePackageIdentity({ name: "example", version: "8.0.0" })).toContain("scoped");
   expect(validatePackageIdentity({ name: "@eliware/example", version: "8" })).toContain("semantic");
+  expect(validatePackageIdentity({ name: "@eliware/example" })).toContain("semantic");
 });

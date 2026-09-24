@@ -3,7 +3,12 @@ import { isForbiddenPath } from "../../../../../src/checks/general/E-1/E-1.6/sen
 
 test("classifies sensitive paths while permitting the environment template", () => {
   expect(isForbiddenPath("credentials.json")).toBe(true);
+  expect(isForbiddenPath("private-conversations.json")).toBe(true);
+  expect(isForbiddenPath("database-state.sqlite")).toBe(true);
+  expect(isForbiddenPath("production.dump")).toBe(true);
+  expect(isForbiddenPath("id_ed25519")).toBe(true);
   expect(isForbiddenPath("src/reference-registration-key.mjs")).toBe(false);
   expect(isForbiddenPath(".env.example")).toBe(false);
   expect(isForbiddenPath("docs/readme.md")).toBe(false);
+  expect(isForbiddenPath("nested\\credentials.pem")).toBe(true);
 });

@@ -40,6 +40,7 @@ test("rejects malformed authority and apply values", () => {
   for (const apply of [null, [], [""], [1]]) {
     expect(run({ packageJson: { eliware: { apply, authority, crosslinks: [{ path: "x", relation: "r", authoritativeFor: "a" }] } } })).toEqual(expect.objectContaining({ status: "fail" }));
   }
+  expect(run({ packageJson: { eliware: { apply: ["unknown"], authority, crosslinks: [{ path: "x", relation: "r", authoritativeFor: "a" }] } } })).toEqual(expect.objectContaining({ status: "fail" }));
   for (const crosslinks of [null, [{ path: "", relation: "r", authoritativeFor: "a" }], [{ path: "x", relation: "", authoritativeFor: "a" }], [{ path: "x", relation: "r", authoritativeFor: "" }], [null]]) {
     expect(run({ packageJson: { eliware: { apply: ["general"], authority, crosslinks } } })).toEqual(expect.objectContaining({ status: "fail" }));
   }

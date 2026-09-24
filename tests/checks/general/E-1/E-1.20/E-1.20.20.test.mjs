@@ -8,26 +8,11 @@ test("passes when Jest is not executed or has already failed", async () => {
   });
 });
 
-test("passes quiet Jest output and fails unexpected output", async () => {
+test("maps an unexpected-output finding to the check result", async () => {
   await expect(run({ executeJest: true, jestResult: { code: 0, stdout: "PASS tests/example.test.mjs\n" } })).resolves.toEqual({
     ruleId: "E-1.20.20", status: "pass", message: "",
   });
   await expect(run({ executeJest: true, jestResult: { code: 0, stdout: "console leak\n" } })).resolves.toEqual({
     ruleId: "E-1.20.20", status: "fail", message: "Unexpected test-process output detected: Unexpected output from unknown test suite: console leak",
-  });
-});
-
-test("fails when a test exceeds the five-second diagnostic threshold", async () => {
-  await expect(run({
-    executeJest: true,
-    jestResult: {
-      code: 0,
-      stdout: "PASS tests/example.test.mjs\n",
-      stderr: "[eliware-test-progress] slow tests/example.test.mjs :: slow case :: 5.001s\n",
-    },
-  })).resolves.toEqual({
-    ruleId: "E-1.20.20",
-    status: "fail",
-    message: "Unexpected test-process output detected: Slow test in tests/example.test.mjs: slow case took 5.001s (limit: 5s).",
   });
 });

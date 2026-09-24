@@ -1,15 +1,9 @@
-const PROFILE_NAMES = new Set(["general", "application", "cli", "web", "discord", "mcp-server", "library", "documentation", "workspace", "infrastructure", "npm-published", "ghcr-published", "private", "fork"]);
+import { validatePackagePublicationMetadata } from "./validate-package-publication-metadata.mjs";
+import { validatePackageExemptions } from "./validate-package-exemptions.mjs";
 
 export function validateEliwarePackageMetadata(packageJson) {
   if (packageJson?.type !== "module") return "package.json.type must be module.";
   if (!packageJson?.scripts || typeof packageJson.scripts !== "object" || Array.isArray(packageJson.scripts) || Object.keys(packageJson.scripts).length === 0 || Object.values(packageJson.scripts).some((script) => typeof script !== "string" || !script.trim())) return "package.json.scripts must be a nonempty object of nonempty strings.";
-  const eliware = packageJson?.eliware;
-  if (!eliware || !Array.isArray(eliware.apply) || eliware.apply.length === 0 || eliware.apply.some((profile) => typeof profile !== "string" || !PROFILE_NAMES.has(profile))) return "package.json.eliware.apply must contain only known nonempty convention profiles.";
-  if (!Array.isArray(eliware.authority?.authoritativeFor) || eliware.authority.authoritativeFor.length === 0 || eliware.authority.authoritativeFor.some((value) => typeof value !== "string" || !value.trim()) || !Array.isArray(eliware.authority.notAuthoritativeFor) || eliware.authority.notAuthoritativeFor.length === 0 || eliware.authority.notAuthoritativeFor.some((value) => typeof value !== "string" || !value.trim())) return "package.json.eliware.authority must contain nonempty authoritativeFor and notAuthoritativeFor arrays.";
-  if (!Array.isArray(eliware.crosslinks) || eliware.crosslinks.length === 0 || eliware.crosslinks.some((link) => !link || typeof link !== "object" || typeof link.path !== "string" || !link.path.trim() || typeof link.relation !== "string" || !link.relation.trim() || typeof link.authoritativeFor !== "string" || !link.authoritativeFor.trim())) return "package.json.eliware.crosslinks must contain path, relation, and authoritativeFor for every link.";
-  if (Array.isArray(eliware.exempt) && eliware.exempt.some((exemption) => !exemption || typeof exemption !== "object" || typeof exemption.ruleId !== "string" || !exemption.ruleId.trim() || typeof exemption.reason !== "string" || !exemption.reason.trim() || exemption.approver !== "Eli" || typeof exemption.approvalTimestamp !== "string" || !exemption.approvalTimestamp.trim() || !(exemption.expiry === null || typeof exemption.expiry === "string"))) return "package.json.eliware.exempt entries must contain valid ruleId, reason, Eli approval, approvalTimestamp, and expiry fields.";
-  if (eliware.apply.includes("private") && packageJson.private !== true) return "Private convention repositories must set package.json.private to true.";
-  if (eliware.apply.includes("npm-published") && packageJson.private === true) return "npm-published convention repositories must not set package.json.private to true.";
-  if (eliware.apply.includes("npm-published") && packageJson.publishConfig?.provenance !== true) return "npm-published convention repositories must enable publishConfig.provenance.";
-  return null;
+  return validatePackagePublicationMetadata(packageJson)
+    ?? validatePackageExemptions(packageJson?.eliware?.exempt);
 }

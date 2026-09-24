@@ -2,7 +2,7 @@ import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
 import { steps } from "../workflow-structure.mjs";
-import { findImagePush, imageDetails } from "../ghcr-attestation-contract.mjs";
+import { findImagePush, imageDetails } from "../find-ghcr-image-push.mjs";
 
 export const ruleId = "E-1.160.7";
 export const parentRuleId = "E-1.160";

@@ -25,3 +25,12 @@ test("supports omitted output callbacks", () => {
   capture.stdout("visible");
   expect(capture.result()).toEqual({ stdout: "visible", stderr: "" });
 });
+
+test("enforces a shared output budget across stdout and stderr", () => {
+  const capture = createChildOutputCapture(10);
+  capture.stdout("1234567");
+  capture.stderr("abcdefghijk");
+  const result = capture.result();
+  expect(result.stdout.length + result.stderr.length).toBe(10);
+  expect(result.stderr).toContain("…");
+});

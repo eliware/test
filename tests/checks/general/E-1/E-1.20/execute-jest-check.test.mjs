@@ -13,6 +13,15 @@ test("executes Jest and records its start time", async () => {
   expect(result.timeoutDiagnostic).toBeUndefined();
 });
 
+test("defaults omitted Jest arguments to an empty list", async () => {
+  runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
+  await executeJestCheck({ root: "." });
+  expect(runJest).toHaveBeenCalledWith(".", [], expect.any(Function), expect.objectContaining({
+    onStderr: undefined,
+    onTimeout: expect.any(Function),
+  }));
+});
+
 test("captures timeout diagnostics and launch errors", async () => {
   runJest.mockImplementationOnce(async (root, args, execute, options) => {
     options.onTimeout("timeout diagnostic");

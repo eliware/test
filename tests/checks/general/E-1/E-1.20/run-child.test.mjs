@@ -34,16 +34,8 @@ test("uses default options when omitted", async () => {
     .resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));
 });
 
-test("bounds output and rejects spawn errors", async () => {
-  await expect(runChild(process.execPath, ["-e", "process.stdout.write('x'.repeat(101));"], { maxOutputLength: 100 }))
-    .resolves.toEqual(expect.objectContaining({ stdout: expect.stringContaining("…") }));
+test("rejects spawn errors", async () => {
   await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
-});
-
-test("bounds captured stdout and stderr together", async () => {
-  const result = await runChild(process.execPath, ["-e", "process.stdout.write('o'.repeat(80)); process.stderr.write('e'.repeat(80));"], { maxOutputLength: 100 });
-  expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(100);
-  expect(`${result.stdout}${result.stderr}`).toContain("…");
 });
 
 test("terminates a child after the configured period without progress", async () => {
