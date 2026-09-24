@@ -22,3 +22,24 @@ test("rejects a non-v6 required action from parsed uses values", async () => {
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
 });
+
+test("returns a failed check result when workflow discovery or parsing fails", async () => {
+  const missingRoot = await mkdtemp(join(tmpdir(), "eliware-test-missing-workflows-"));
+  await expect(run({ root: missingRoot })).resolves.toMatchObject({
+    ruleId: "E-1.24.2",
+    status: "fail",
+    message: expect.stringContaining("could not be read or parsed"),
+  });
+  await rm(missingRoot, { recursive: true, force: true });
+
+  const malformedRoot = await mkdtemp(join(tmpdir(), "eliware-test-malformed-workflow-"));
+  const workflowDirectory = join(malformedRoot, ".github", "workflows");
+  await mkdir(workflowDirectory, { recursive: true });
+  await writeFile(join(workflowDirectory, "ci.yml"), "jobs: [\n");
+  await expect(run({ root: malformedRoot })).resolves.toMatchObject({
+    ruleId: "E-1.24.2",
+    status: "fail",
+    message: expect.stringContaining("could not be read or parsed"),
+  });
+  await rm(malformedRoot, { recursive: true, force: true });
+});

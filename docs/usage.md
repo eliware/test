@@ -32,8 +32,8 @@ tool modes forward additional arguments to their underlying tools:
 
 ```text
 eliware-test --lint --fix
-eliware-test --format --ignore-path custom.ignore
-eliware-test --format-check --ignore-path custom.ignore
+eliware-test --format --log-level=warn
+eliware-test --format-check --log-level=debug
 eliware-test --audit --omit=dev
 eliware-test --pack --pack-destination artifacts
 ```
@@ -42,6 +42,8 @@ Tool modes may not be combined with a focused Jest test path. Paths supplied
 to a tool mode are forwarded as tool arguments; focused paths are reserved for
 the unscoped Jest validation command. Wrapper tool arguments precede arguments
 after `--`, and each group preserves its original order.
+Prettier arguments that override the selected mode, canonical formatting
+configuration, or required maintained-file coverage are rejected.
 
 The normal test command runs the configured validation stages. Use
 `npm run audit` and `npm run pack` for the isolated audit and package

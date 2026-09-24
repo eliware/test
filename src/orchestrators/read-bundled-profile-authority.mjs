@@ -1,46 +1,42 @@
-import { readdirSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import conventionRemediation from "../../specs/convention-remediation.json" with { type: "json" };
 
-const checksRoot = join(dirname(fileURLToPath(import.meta.url)), "../checks");
 export const bundledConventionVersion = "8.0";
 
-function profilesFromDirectories(root, listDirectories) {
-  return listDirectories(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort();
-}
-
-function authorityFromDirectories(names) {
-  return {
-    version: bundledConventionVersion,
-    profiles: Object.fromEntries(names.map((name) => [name, { profile: name }])),
-  };
-}
-
-// Consumers explicitly declare every applicable profile. The check-directory
-// tree is the only authority for the available profile names.
-export const bundledDirectiveAuthority = authorityFromDirectories(
-  profilesFromDirectories(checksRoot, readdirSync),
-);
-
-export function readBundledProfileAuthority({ root = checksRoot, listDirectories = readdirSync } = {}) {
-  let names;
-  try {
-    names = profilesFromDirectories(root, listDirectories);
-  } catch (error) {
-    throw new Error(`Bundled convention profiles could not be discovered: ${error.message}`);
+function authorityFromSnapshot(snapshot) {
+  if (snapshot.version !== bundledConventionVersion || !snapshot.checks) {
+    throw new Error("Bundled convention authority snapshot is missing or invalid.");
   }
-  if (names.length === 0) throw new Error("Bundled convention profile directories cannot be empty.");
-  return authorityFromDirectories(names);
+  const profiles = {};
+  const directives = {};
+  for (const [ruleId, record] of Object.entries(snapshot.checks)) {
+    if (typeof record?.source !== "string" || !record.source.endsWith(".json")) {
+      throw new Error(`Bundled directive ${ruleId} has no valid source profile.`);
+    }
+    const profile = record.source.slice(0, -".json".length);
+    if (!/^[a-z0-9-]+$/u.test(profile)) {
+      throw new Error(`Bundled directive ${ruleId} has an invalid source profile.`);
+    }
+    profiles[profile] = { profile };
+    directives[ruleId] = profile;
+  }
+  if (Object.keys(profiles).length === 0) {
+    throw new Error("Bundled convention profile authority cannot be empty.");
+  }
+  return { version: snapshot.version, profiles, directives };
+}
+
+export const bundledDirectiveAuthority = authorityFromSnapshot(conventionRemediation);
+
+export function readBundledProfileAuthority({ snapshot = conventionRemediation } = {}) {
+  return authorityFromSnapshot(snapshot);
 }
 
 export function validateAppliedProfiles(apply, authority = readBundledProfileAuthority()) {
   const selected = new Set(apply);
   const unknown = apply.filter((name) => !authority.profiles[name]);
   if (unknown.length > 0) return `Unknown convention group: ${unknown.join(", ")}.`;
-  if (selected.has("fork") && selected.size !== 1) return "The fork convention group excludes all other convention groups.";
+  if (selected.has("fork") && selected.size !== 1)
+    return "The fork convention group excludes all other convention groups.";
   return null;
 }
 

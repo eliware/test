@@ -7,9 +7,19 @@ import { run } from "../../../../src/checks/cli/E-1.60/E-1.60.1.mjs";
 test("requires an entrypoint and documented informational commands", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-check-"));
   await mkdir(join(root, "bin"));
-  await writeFile(join(root, "bin", "cli.mjs"), "console.log('--help', '--version');");
+  await writeFile(
+    join(root, "bin", "cli.mjs"),
+    `
+const argument = process.argv[2];
+if (argument === "--help") console.log("Usage: cli [options]");
+else if (argument === "--version") console.log("1.2.3");
+else process.exitCode = 1;
+`,
+  );
   await writeFile(join(root, "README.md"), "--help --version exit code");
-  await expect(run({ root, packageJson: { bin: { cli: "bin/cli.mjs" } } })).resolves.toEqual({
+  await expect(
+    run({ root, packageJson: { version: "1.2.3", bin: { cli: "bin/cli.mjs" } } }),
+  ).resolves.toEqual({
     ruleId: "E-1.60.1",
     status: "pass",
     message: "",
@@ -45,13 +55,19 @@ test("executes help and version and requires the declared package version", asyn
   const calls = [];
   const executeEntrypoint = async (_command, args) => {
     calls.push(args[1]);
-    return { code: 0, stdout: args[1] === "--version" ? "8.0.0\n" : "Usage: cli --help\n", stderr: "" };
+    return {
+      code: 0,
+      stdout: args[1] === "--version" ? "8.0.0\n" : "Usage: cli --help\n",
+      stderr: "",
+    };
   };
-  await expect(run({
-    root,
-    packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
-    executeEntrypoint,
-  })).resolves.toEqual({ ruleId: "E-1.60.1", status: "pass", message: "" });
+  await expect(
+    run({
+      root,
+      packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
+      executeEntrypoint,
+    }),
+  ).resolves.toEqual({ ruleId: "E-1.60.1", status: "pass", message: "" });
   expect(calls).toEqual(["--help", "--version"]);
   await rm(root, { recursive: true, force: true });
 });
@@ -61,15 +77,17 @@ test("supports a string bin declaration and stderr informational output", async 
   await mkdir(join(root, "bin"));
   await writeFile(join(root, "bin", "cli.mjs"), "");
   await writeFile(join(root, "README.md"), "--help --version exit code");
-  await expect(run({
-    root,
-    packageJson: { version: "8.0.0", bin: "bin/cli.mjs" },
-    executeEntrypoint: async (_command, args) => ({
-      code: 0,
-      stdout: "",
-      stderr: args[1] === "--version" ? "8.0.0\n" : "Usage\n",
+  await expect(
+    run({
+      root,
+      packageJson: { version: "8.0.0", bin: "bin/cli.mjs" },
+      executeEntrypoint: async (_command, args) => ({
+        code: 0,
+        stdout: "",
+        stderr: args[1] === "--version" ? "8.0.0\n" : "Usage\n",
+      }),
     }),
-  })).resolves.toMatchObject({ status: "pass" });
+  ).resolves.toMatchObject({ status: "pass" });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -78,26 +96,49 @@ test("rejects nonzero informational commands and inconsistent versions", async (
   await mkdir(join(root, "bin"));
   await writeFile(join(root, "bin", "cli.mjs"), "");
   await writeFile(join(root, "README.md"), "--help --version exit code");
-  await expect(run({
-    root,
-    packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
-    executeEntrypoint: async (_command, args) => ({ code: args[1] === "--help" ? 1 : 0, stdout: "8.0.1\n", stderr: "" }),
-  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("exit 0") });
-  await expect(run({
-    root,
-    packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
-    executeEntrypoint: async () => ({ code: 0, stdout: "8.0.1\n", stderr: "" }),
-  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("must report package version") });
-  await expect(run({
-    root,
-    packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
-    executeEntrypoint: async () => ({ code: 0 }),
-  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("must produce output") });
-  await expect(run({
-    root,
-    packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
-    executeEntrypoint: async () => { throw new Error("spawn failed"); },
-  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("could not execute") });
+  await expect(
+    run({
+      root,
+      packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
+      executeEntrypoint: async (_command, args) => ({
+        code: args[1] === "--help" ? 1 : 0,
+        stdout: "8.0.1\n",
+        stderr: "",
+      }),
+    }),
+  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("exit 0") });
+  await expect(
+    run({
+      root,
+      packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
+      executeEntrypoint: async () => ({ code: 0, stdout: "8.0.1\n", stderr: "" }),
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must report package version"),
+  });
+  await expect(
+    run({
+      root,
+      packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
+      executeEntrypoint: async () => ({ code: 0 }),
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must produce output"),
+  });
+  await expect(
+    run({
+      root,
+      packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
+      executeEntrypoint: async () => {
+        throw new Error("spawn failed");
+      },
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("could not execute"),
+  });
   await rm(root, { recursive: true, force: true });
 });
 

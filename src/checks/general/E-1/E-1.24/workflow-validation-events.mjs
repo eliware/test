@@ -3,8 +3,11 @@ import { normalizeWorkflowDocument } from "../../../ghcr-published/normalize-wor
 export function workflowHasValidationEvents(document) {
   document = normalizeWorkflowDocument(document);
   const raw = document?.on ?? document?.true ?? {};
-  const events = Array.isArray(raw) ? Object.fromEntries(raw.map((event) => [event, {}]))
-    : typeof raw === "string" ? { [raw]: {} } : raw;
+  const events = Array.isArray(raw)
+    ? Object.fromEntries(raw.map((event) => [event, {}]))
+    : typeof raw === "string"
+      ? { [raw]: {} }
+      : raw;
   const push = events.push;
   const mainPush = pushAllowsMain(push);
   const pullRequest = Object.hasOwn(events, "pull_request");
@@ -34,7 +37,7 @@ function branchPatternsAllowMain(patterns, defaultValue) {
   for (const pattern of patterns) {
     if (typeof pattern !== "string") continue;
     const isNegative = pattern.startsWith("!");
-    if (patternMatchesMain(pattern) || (isNegative && patternMatchesMain(pattern))) included = !isNegative;
+    if (patternMatchesMain(pattern)) included = !isNegative;
   }
   return included;
 }
@@ -45,6 +48,7 @@ function pushAllowsMain(push) {
   if (push === undefined) return false;
   if (typeof push !== "object") return true;
   const branches = push.branches;
-  if (Array.isArray(push["branches-ignore"]) && push["branches-ignore"].some(patternMatchesMain)) return false;
+  if (Array.isArray(push["branches-ignore"]) && push["branches-ignore"].some(patternMatchesMain))
+    return false;
   return branchPatternsAllowMain(branches, true);
 }

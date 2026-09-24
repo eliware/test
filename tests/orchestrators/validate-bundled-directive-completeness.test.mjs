@@ -1,16 +1,23 @@
 import { expect, test } from "@jest/globals";
 import { validateBundledDirectiveCompleteness } from "../../src/orchestrators/validate-bundled-directive-completeness.mjs";
 
-const check = (ruleId, enforcementMode = "deterministic") => ({
+const check = (ruleId, enforcementMode = "deterministic", profile = "general") => ({
   ruleId,
   enforcementMode,
-  modulePath: `general/${ruleId}.mjs`,
+  modulePath: `${profile}/${ruleId}.mjs`,
 });
 const authority = {
   version: "8.0",
   profiles: {
     general: { profile: "general", document: "general.json", version: "8.0", extends: [] },
+    application: {
+      profile: "application",
+      document: "application.json",
+      version: "8.0",
+      extends: [],
+    },
   },
+  directives: { "E-1": "general", "A-1.1": "general", "E-1.130.7": "application" },
 };
 const guidance = {
   version: "8.0",
@@ -40,7 +47,11 @@ test("fails when the bundled authority is not v8", async () => {
 
 test("handles an applied group without an authority entry", () => {
   expect(() =>
-    validateBundledDirectiveCompleteness([], ["unlisted"], { version: "8.0", profiles: {} }),
+    validateBundledDirectiveCompleteness([], ["unlisted"], {
+      version: "8.0",
+      profiles: {},
+      directives: {},
+    }),
   ).toThrow("Unknown bundled convention profiles");
 });
 
@@ -54,10 +65,10 @@ test("uses the bundled authority by default", () => {
   expect(validateBundledDirectiveCompleteness([], [])).toBe(true);
 });
 
-test("does not require non-deterministic directives to have enforcement", () => {
+test("keeps authority validation separate from deterministic enforcement status", () => {
   expect(
     validateBundledDirectiveCompleteness(
-      [check("E-1.130.7", "non-deterministic")],
+      [check("E-1.130.7", "non-deterministic", "application")],
       ["general"],
       authority,
       guidance,
@@ -87,5 +98,33 @@ test("rejects a deterministic check whose identity disagrees with its module pat
       ["general"],
       authority,
     ),
-  ).toThrow("no authority entry");
+  ).toThrow("no matching authority entry");
+});
+
+test("rejects a check ID that is absent from the bundled authority snapshot", () => {
+  expect(() =>
+    validateBundledDirectiveCompleteness([check("E-1.999")], ["general"], authority, guidance),
+  ).toThrow("general/E-1.999.mjs (E-1.999)");
+});
+
+test("rejects a canonical check placed under the wrong profile", () => {
+  expect(() =>
+    validateBundledDirectiveCompleteness(
+      [check("E-1.130.7", "deterministic", "general")],
+      ["general"],
+      authority,
+      guidance,
+    ),
+  ).toThrow("general/E-1.130.7.mjs (E-1.130.7)");
+});
+
+test("rejects unknown check profiles even when that profile is not selected", () => {
+  expect(() =>
+    validateBundledDirectiveCompleteness(
+      [{ ...check("E-1"), modulePath: "unknown/E-1.mjs" }],
+      ["general"],
+      authority,
+      guidance,
+    ),
+  ).toThrow("unknown/E-1.mjs (E-1)");
 });

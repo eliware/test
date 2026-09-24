@@ -55,10 +55,29 @@ test("returns formatter diagnostics and startup failures", async () => {
   ).resolves.toBe("Prettier could not be started: spawn failed");
 });
 
+test("rejects forwarded formatter options that can change mode, config, or file coverage", async () => {
+  const runFormatter = jest.fn(async () => ({ code: 0 }));
+  for (const toolArgs of [["--write"], ["--ignore-path", "custom.ignore"], ["--single-quote"]]) {
+    await expect(
+      executeFormatterValidation({
+        executeFormat: true,
+        mode: "format-check",
+        runFormatter,
+        toolArgs,
+      }),
+    ).resolves.toContain("conflicts with wrapper-owned");
+  }
+  expect(runFormatter).not.toHaveBeenCalled();
+});
+
 test("skips disabled or unrelated formatter stages and scopes focused paths", async () => {
   const runFormatter = jest.fn(async () => ({ code: 0 }));
-  await expect(executeFormatterValidation({ executeFormat: false, mode: "format-check", runFormatter })).resolves.toBeNull();
-  await expect(executeFormatterValidation({ executeFormat: true, mode: "lint", runFormatter })).resolves.toBeNull();
+  await expect(
+    executeFormatterValidation({ executeFormat: false, mode: "format-check", runFormatter }),
+  ).resolves.toBeNull();
+  await expect(
+    executeFormatterValidation({ executeFormat: true, mode: "lint", runFormatter }),
+  ).resolves.toBeNull();
   await executeFormatterValidation({
     root: "/repo",
     executeFormat: true,
@@ -66,7 +85,10 @@ test("skips disabled or unrelated formatter stages and scopes focused paths", as
     focusedScope: { paths: ["tests/example.test.mjs", "src/example.mjs"] },
     runFormatter,
   });
-  expect(runFormatter).toHaveBeenCalledWith("/repo", expect.objectContaining({
-    paths: ["tests/example.test.mjs", "src/example.mjs"],
-  }));
+  expect(runFormatter).toHaveBeenCalledWith(
+    "/repo",
+    expect.objectContaining({
+      paths: ["tests/example.test.mjs", "src/example.mjs"],
+    }),
+  );
 });

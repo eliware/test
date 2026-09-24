@@ -6,7 +6,13 @@ export const ruleId = "E-1.24.2";
 export const parentRuleId = "E-1.24";
 
 export async function run({ root }) {
-  for (const { name, document } of await readWorkflows(root)) {
+  let workflows;
+  try {
+    workflows = await readWorkflows(root);
+  } catch (error) {
+    return fail(ruleId, `Workflow files could not be read or parsed: ${error.message}`);
+  }
+  for (const { name, document } of workflows) {
     const actions = collectValues(document, "uses").filter((value) => typeof value === "string");
     if (
       actions.some(

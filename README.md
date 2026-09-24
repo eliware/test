@@ -1,6 +1,6 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/test/actions)
+## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yml)
 
 ## Table of Contents
 
@@ -36,19 +36,14 @@ In a consuming repository, install the public CLI as a development dependency:
 npm install --save-dev @eliware/test
 ```
 
-Because `8.0.0` has not been published, that install currently resolves the
-latest published package version, not this checkout's version.
-
 ## Usage
 
 Run validation with `eliware-test` from the consumer repository or use the
 package-level npm scripts below.
 
 `package.json` is the source of truth for the package version. The repository's
-current version is `8.0.0`, which has not been published; do not treat that
-version as installable from npm until the authorized release handoff verifies
-the exact version in the public registry. The npm badge reflects the published
-package version, not an unpublished repository version.
+current version is `8.0.0`. The npm badge reflects the version available from
+the public registry.
 
 ```text
 npm test
@@ -71,7 +66,9 @@ validates the package contents without publishing it.
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward extra
 arguments to Oxlint, Prettier, npm audit, or npm pack as appropriate.
 Wrapper arguments are emitted before arguments supplied after `--`, preserving
-their relative order within each group.
+their relative order within each group. Prettier arguments that override the
+selected mode, canonical formatting configuration, or required file coverage
+are rejected.
 
 All five tool modes are public CLI modes. The npm script forms are supported
 package-level shortcuts; arbitrary npm script names are not CLI arguments.
@@ -133,7 +130,9 @@ is `eliware-test`. `--help` prints usage; `--version` reports the package versio
 Other public modes are `--debug-timing`,
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. The five tool
 modes forward extra arguments to Oxlint, Prettier, npm audit, or npm pack as
-appropriate. Wrapper arguments precede arguments after `--`.
+appropriate. Prettier arguments cannot override the selected mode, canonical
+formatting configuration, or required maintained-file coverage. Wrapper
+arguments precede arguments after `--`.
 
 Examples and package-level shortcuts are shown under Usage. `--format` mutates
 files; `--format-check` is read-only. `--pack` is read-only package validation

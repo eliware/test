@@ -3,15 +3,11 @@
   "checks": {
     "A-1.0.0": {
       "source": "general.json",
-      "dos": [
-        "AGENTS.md must identify the repository and its purpose."
-      ]
+      "dos": ["AGENTS.md must identify the repository and its purpose."]
     },
     "A-1.0.1": {
       "source": "general.json",
-      "dos": [
-        "AGENTS.md must state the repository scope and important boundaries."
-      ]
+      "dos": ["AGENTS.md must state the repository scope and important boundaries."]
     },
     "A-1.0.10": {
       "source": "general.json",
@@ -39,27 +35,19 @@
     },
     "A-1.0.4": {
       "source": "general.json",
-      "dos": [
-        "AGENTS.md must list the repository's applicable validation commands."
-      ]
+      "dos": ["AGENTS.md must list the repository's applicable validation commands."]
     },
     "A-1.0.6": {
       "source": "general.json",
-      "dos": [
-        "AGENTS.md must state applicable security and secret-handling rules."
-      ]
+      "dos": ["AGENTS.md must state applicable security and secret-handling rules."]
     },
     "A-1.0.7": {
       "source": "general.json",
-      "dos": [
-        "AGENTS.md must document intentional deviations from shared conventions."
-      ]
+      "dos": ["AGENTS.md must document intentional deviations from shared conventions."]
     },
     "A-1.0.8": {
       "source": "general.json",
-      "dos": [
-        "AGENTS.md instructions must be actionable, current, and concise."
-      ]
+      "dos": ["AGENTS.md instructions must be actionable, current, and concise."]
     },
     "A-1.0.9": {
       "source": "general.json",
@@ -474,9 +462,7 @@
     },
     "E-1": {
       "source": "general.json",
-      "dos": [
-        "These conventions apply to every @eliware/* repository."
-      ]
+      "dos": ["These conventions apply to every @eliware/* repository."]
     },
     "E-1.0": {
       "source": "general.json",
@@ -530,9 +516,7 @@
     },
     "E-1.100": {
       "source": "documentation.json",
-      "dos": [
-        "These conventions apply to documentation-only repositories."
-      ]
+      "dos": ["These conventions apply to documentation-only repositories."]
     },
     "E-1.100.1": {
       "source": "documentation.json",
@@ -542,9 +526,7 @@
     },
     "E-1.110": {
       "source": "workspace.json",
-      "dos": [
-        "These conventions apply to workspace repositories."
-      ]
+      "dos": ["These conventions apply to workspace repositories."]
     },
     "E-1.12": {
       "source": "general.json",
@@ -570,9 +552,7 @@
     },
     "E-1.130": {
       "source": "application.json",
-      "dos": [
-        "These conventions apply to repositories containing application or service code."
-      ]
+      "dos": ["These conventions apply to repositories containing application or service code."]
     },
     "E-1.130.2": {
       "source": "application.json",
@@ -612,9 +592,7 @@
     },
     "E-1.130.9": {
       "source": "application.json",
-      "dos": [
-        "Place unit tests at the lowest module level that directly proves behavior."
-      ]
+      "dos": ["Place unit tests at the lowest module level that directly proves behavior."]
     },
     "E-1.130.10": {
       "source": "application.json",
@@ -630,15 +608,11 @@
     },
     "E-1.130.12": {
       "source": "application.json",
-      "dos": [
-        "Applications must not use pure export barrels as internal convenience modules."
-      ]
+      "dos": ["Applications must not use pure export barrels as internal convenience modules."]
     },
     "E-1.130.13": {
       "source": "application.json",
-      "dos": [
-        "Run application Jest suites through eliware-test."
-      ]
+      "dos": ["Run application Jest suites through eliware-test."]
     },
     "E-1.130.14": {
       "source": "application.json",
@@ -654,9 +628,7 @@
     },
     "E-1.130.15": {
       "source": "application.json",
-      "dos": [
-        "Keep application test execution quiet except for intentional output."
-      ]
+      "dos": ["Keep application test execution quiet except for intentional output."]
     },
     "E-1.130.16": {
       "source": "application.json",
@@ -666,9 +638,7 @@
     },
     "E-1.130.17": {
       "source": "application.json",
-      "dos": [
-        "Use dependency injection to keep application modules independently testable."
-      ]
+      "dos": ["Use dependency injection to keep application modules independently testable."]
     },
     "E-1.14": {
       "source": "general.json",
@@ -718,9 +688,7 @@
     },
     "E-1.16": {
       "source": "general.json",
-      "dos": [
-        "Align repository release versions with the convention baseline they implement."
-      ]
+      "dos": ["Align repository release versions with the convention baseline they implement."]
     },
     "E-1.160": {
       "source": "ghcr-published.json",
@@ -813,9 +781,7 @@
     },
     "E-1.20.1": {
       "source": "general.json",
-      "dos": [
-        "Maintained Node.js projects must use Node.js 26."
-      ]
+      "dos": ["Maintained Node.js projects must use Node.js 26."]
     },
     "E-1.20.12": {
       "source": "general.json",
@@ -850,39 +816,27 @@
     },
     "E-1.20.2": {
       "source": "general.json",
-      "dos": [
-        "Node.js projects must use native ESM exclusively."
-      ]
+      "dos": ["Node.js projects must use native ESM exclusively."]
     },
     "E-1.20.3": {
       "source": "general.json",
-      "dos": [
-        "Node.js projects must keep entrypoints thin."
-      ]
+      "dos": ["Node.js projects must keep entrypoints thin."]
     },
     "E-1.20.4": {
       "source": "general.json",
-      "dos": [
-        "Each Node.js module must have one primary responsibility."
-      ]
+      "dos": ["Each Node.js module must have one primary responsibility."]
     },
     "E-1.20.5": {
       "source": "general.json",
-      "dos": [
-        "Use dependency injection to keep Node.js modules easily testable."
-      ]
+      "dos": ["Use dependency injection to keep Node.js modules easily testable."]
     },
     "E-1.20.6": {
       "source": "general.json",
-      "dos": [
-        "Use npm to regenerate package-lock.json whenever it is stale."
-      ]
+      "dos": ["Use npm to regenerate package-lock.json whenever it is stale."]
     },
     "E-1.20.7": {
       "source": "general.json",
-      "dos": [
-        "Repositories using Jest must keep Jest configuration in package.json."
-      ]
+      "dos": ["Repositories using Jest must keep Jest configuration in package.json."]
     },
     "E-1.20.8": {
       "source": "general.json",
@@ -945,7 +899,7 @@
       "source": "general.json",
       "dos": [
         "Every application and library repository must maintain a root RELEASE_NOTES.md; other repository types must maintain one when they publish versioned user-visible changes.",
-        "RELEASE_NOTES.md must use the exact structure # Release Notes, ## Unreleased when pending work exists, and version headings in the form ## x.y.z — YYYY-MM-DD, with applicable Added, Changed, Fixed, Breaking changes, Migration, and Security subsections."
+        "RELEASE_NOTES.md must begin with the exact heading # Release Notes. When pending work exists, place one ## Unreleased section before all versioned entries. Use version headings in the exact form ## x.y.z — YYYY-MM-DD, with valid calendar dates, and list versioned entries in reverse chronological order: versions must be strictly descending by SemVer and dates must be non-increasing. Each release entry must contain one or more non-empty user-visible change subsections using only Added, Changed, Fixed, Breaking changes, Migration, or Security as subsection headings."
       ]
     },
     "E-1.3": {
@@ -959,24 +913,18 @@
     },
     "E-1.4": {
       "source": "general.json",
-      "dos": [
-        "Repositories must pass lint with zero errors and zero warnings."
-      ]
+      "dos": ["Repositories must pass lint with zero errors and zero warnings."]
     },
     "E-1.4.0": {
       "source": "general.json",
       "dos": [
         "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for .mjs; validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure."
       ],
-      "donts": [
-        "Do not exclude a maintained file of these types from syntax validation."
-      ]
+      "donts": ["Do not exclude a maintained file of these types from syntax validation."]
     },
     "E-1.40": {
       "source": "library.json",
-      "dos": [
-        "These conventions apply to repositories containing library code."
-      ]
+      "dos": ["These conventions apply to repositories containing library code."]
     },
     "E-1.40.2": {
       "source": "library.json",
@@ -1040,21 +988,15 @@
     },
     "E-1.40.14": {
       "source": "library.json",
-      "dos": [
-        "Allow pure export barrels only as a library's primary public entrypoint or index."
-      ]
+      "dos": ["Allow pure export barrels only as a library's primary public entrypoint or index."]
     },
     "E-1.40.15": {
       "source": "library.json",
-      "dos": [
-        "Run library Jest suites through eliware-test."
-      ]
+      "dos": ["Run library Jest suites through eliware-test."]
     },
     "E-1.40.16": {
       "source": "library.json",
-      "dos": [
-        "Library Jest coverage must report 100% statements, branches, functions, and lines."
-      ]
+      "dos": ["Library Jest coverage must report 100% statements, branches, functions, and lines."]
     },
     "A-1.40.16.0": {
       "source": "library.json",
@@ -1064,9 +1006,7 @@
     },
     "E-1.40.17": {
       "source": "library.json",
-      "dos": [
-        "Keep library test execution quiet except for intentional output."
-      ]
+      "dos": ["Keep library test execution quiet except for intentional output."]
     },
     "E-1.40.18": {
       "source": "library.json",
@@ -1076,9 +1016,7 @@
     },
     "E-1.40.19": {
       "source": "library.json",
-      "dos": [
-        "Use dependency injection to keep library modules independently testable."
-      ]
+      "dos": ["Use dependency injection to keep library modules independently testable."]
     },
     "E-1.50": {
       "source": "web.json",
@@ -1146,9 +1084,7 @@
     },
     "E-1.7": {
       "source": "general.json",
-      "dos": [
-        "Public repositories must keep Eliware infrastructure internals private."
-      ]
+      "dos": ["Public repositories must keep Eliware infrastructure internals private."]
     },
     "E-1.70": {
       "source": "discord.json",
@@ -1185,9 +1121,7 @@
     },
     "E-1.9.2": {
       "source": "general.json",
-      "dos": [
-        "package.json.eliware.apply must explicitly list applicable convention documents."
-      ]
+      "dos": ["package.json.eliware.apply must explicitly list applicable convention documents."]
     },
     "E-1.9.3": {
       "source": "general.json",

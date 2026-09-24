@@ -1,3 +1,5 @@
+import { validatePrettierArguments } from "../../../validate-prettier-arguments.mjs";
+
 export async function executeFormatterValidation({
   root,
   executeFormat,
@@ -8,6 +10,8 @@ export async function executeFormatterValidation({
 }) {
   if (!executeFormat || (mode !== null && mode !== "format" && mode !== "format-check"))
     return null;
+  const argumentError = validatePrettierArguments(toolArgs);
+  if (argumentError) return argumentError;
   try {
     const formatterOptions = { write: mode === "format", extraArgs: toolArgs };
     if (focusedScope) formatterOptions.paths = focusedScope.paths;
