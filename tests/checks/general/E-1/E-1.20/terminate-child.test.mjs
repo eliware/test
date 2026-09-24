@@ -31,7 +31,14 @@ test("uses the injected Windows process-tree terminator when available", () => {
 test("resolves the Windows tree terminator from the platform environment", () => {
   expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(/System32[\\/]taskkill\.exe$/iu);
   expect(() => resolveTaskkillExecutable({})).toThrow("SystemRoot");
-  expect(resolveTaskkillExecutable()).toMatch(/System32[\\/]taskkill\.exe$/iu);
+  const originalSystemRoot = process.env.SystemRoot;
+  process.env.SystemRoot = "C:/Windows";
+  try {
+    expect(resolveTaskkillExecutable()).toMatch(/System32[\\/]taskkill\.exe$/iu);
+  } finally {
+    if (originalSystemRoot === undefined) delete process.env.SystemRoot;
+    else process.env.SystemRoot = originalSystemRoot;
+  }
 });
 
 test("passes the effective child environment to Windows tree termination", () => {
