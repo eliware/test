@@ -17,7 +17,7 @@ const guidance = {
   checks: {
     "E-1": { dos: ["Fix E-1."] },
     "A-1.1": { dos: ["Fix A-1.1."] },
-    "E-1.11": { dos: ["Fix E-1.11."] },
+    "E-1.130.7": { dos: ["Fix E-1.130.7."] },
   },
 };
 
@@ -57,7 +57,7 @@ test("uses the bundled authority by default", () => {
 test("does not require non-deterministic directives to have enforcement", () => {
   expect(
     validateBundledDirectiveCompleteness(
-      [check("E-1.11", "non-deterministic")],
+      [check("E-1.130.7", "non-deterministic")],
       ["general"],
       authority,
       guidance,

@@ -101,9 +101,10 @@ stage-specific diagnostic and relevant repository contract.
 The v8 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 
-The architecture/common-stack requirements E-1.20.3, E-1.20.4, E-1.20.5, and
-E-1.20.9 are explicitly advisory-only in the bundled profile; their current
-runtime stubs do not claim deterministic enforcement.
+Application and library architecture guidance is selected only when the
+corresponding profile is declared in `package.json.eliware.apply`. Requirements
+that have no deterministic check are explicitly marked advisory in their
+profile-specific bundled check metadata.
 
 ## Security
 

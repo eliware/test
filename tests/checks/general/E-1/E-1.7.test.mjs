@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../src/checks/general/E-1/E-1.7.mjs";
 
 test("rejects infrastructure-internal identifiers", async () => {
@@ -64,23 +64,54 @@ test("ignores binary files", async () => {
 test("ignores invalid UTF-8 and control-character binaries without scanning their payload", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-binary-"));
   const internalLabel = ["eliware", "internal"].join("-");
-  await writeFile(join(root, "invalid.bin"), Buffer.concat([Buffer.from(internalLabel), Buffer.from([0xff])]));
-  await writeFile(join(root, "control.bin"), Buffer.from(`${internalLabel}${String.fromCharCode(0x85)}`, "utf8"));
+  await writeFile(
+    join(root, "invalid.bin"),
+    Buffer.concat([Buffer.from(internalLabel), Buffer.from([0xff])]),
+  );
+  await writeFile(
+    join(root, "control.bin"),
+    Buffer.from(`${internalLabel}${String.fromCharCode(0x85)}`, "utf8"),
+  );
   await expect(run({ root, files: ["invalid.bin", "control.bin"] })).resolves.toEqual({
-    ruleId: "E-1.7", status: "pass", message: "",
-  });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("discovers repository files when no file list is supplied", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-internal-discovery-"));
-  await writeFile(join(root, "config.json"), "{\"host\":\"localhost\"}");
-  await expect(run({ root, files: null })).resolves.toEqual({
     ruleId: "E-1.7",
     status: "pass",
     message: "",
   });
   await rm(root, { recursive: true, force: true });
+});
+
+test("inspects tracked files when no file list is supplied", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-internal-discovery-"));
+  await writeFile(join(root, "config.json"), '{"host":"localhost"}');
+  await expect(
+    run({ root, files: null, readTracked: async () => ["config.json"] }),
+  ).resolves.toEqual({
+    ruleId: "E-1.7",
+    status: "pass",
+    message: "",
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("skips public-content scanning for private repositories", async () => {
+  const readTracked = jest.fn();
+  await expect(
+    run({ root: "/repo", packageJson: { private: true }, readTracked }),
+  ).resolves.toEqual({
+    ruleId: "E-1.7",
+    status: "pass",
+    message: "",
+  });
+  expect(readTracked).not.toHaveBeenCalled();
+});
+
+test("fails closed when tracked-file inspection is unavailable", async () => {
+  await expect(run({ root: "/repo", readTracked: async () => null })).resolves.toEqual({
+    ruleId: "E-1.7",
+    status: "fail",
+    message:
+      "Git tracked-file inspection was unavailable; cannot validate public repository contents safely.",
+  });
 });
 
 test("reports unreadable repository files", async () => {

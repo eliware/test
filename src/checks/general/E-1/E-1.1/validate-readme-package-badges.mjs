@@ -22,8 +22,12 @@ export function validateReadmePackageBadges(readme, packageJson = {}) {
   if (!/\[!\[license\][\s\S]*?\]\(LICENSE\)/iu.test(heading)) {
     return "README.md must include the license badge.";
   }
-  if (!/\[!\[CI\][\s\S]*?actions\/workflows/iu.test(heading)) {
-    return "README.md must include the GitHub CI badge.";
+  if (
+    !/\[!\[CI\]\([^\s)]*\/actions\/workflows\/ci\.yml\/badge\.svg\)\]\([^\s)]*\/actions\/workflows\/ci\.yml\)/u.test(
+      heading,
+    )
+  ) {
+    return "README.md CI badge must use and link to the canonical .github/workflows/ci.yml workflow.";
   }
   return null;
 }

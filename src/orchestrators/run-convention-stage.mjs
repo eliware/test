@@ -1,9 +1,9 @@
 import { formatConventionFailure } from "./convention-remediation.mjs";
 
 function failureCode({ ruleId, message = "" }) {
-  if (ruleId === "E-1.20.10") return 10;
+  if (["E-1.130.14", "E-1.40.16"].includes(ruleId)) return 10;
   if (ruleId === "E-1.4") return /could not be started/i.test(message) ? 14 : 12;
-  if (ruleId === "E-1.20") {
+  if (["E-1.130.13", "E-1.40.15"].includes(ruleId)) {
     if (/focused test path|unsupported focused path|ambiguous focused path/i.test(message))
       return 18;
     return /could not be started/i.test(message) ? 14 : 8;

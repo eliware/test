@@ -2,16 +2,16 @@ import { expect, test } from "@jest/globals";
 import { validateRequiredStagePlan } from "../../src/orchestrators/validate-required-stage-plan.mjs";
 
 test("accepts all enabled stage owners", () => {
-  const ids = ["E-1.20", "E-1.4", "E-1.20.19", "E-1.140.1", "E-1.20.17"];
+  const ids = ["E-1.130.13", "E-1.4", "E-1.20.19", "E-1.140.1", "E-1.20.17"];
   expect(() => validateRequiredStagePlan(ids.map((ruleId) => ({ ruleId })), {
     executeJest: true, executeLint: true, executeAudit: true, executePack: true,
     executeFormat: true, executePackageChecks: true,
-    packageJson: { eliware: { apply: ["general", "npm-published"] } },
+    packageJson: { eliware: { apply: ["general", "application", "npm-published"] } },
   })).not.toThrow();
 });
 
 test("does not require the npm pack owner for repositories without the npm-published profile", () => {
-  const ids = ["E-1.20", "E-1.4", "E-1.20.19", "E-1.20.17"];
+  const ids = ["E-1.130.13", "E-1.4", "E-1.20.19", "E-1.20.17"];
   expect(() => validateRequiredStagePlan(ids.map((ruleId) => ({ ruleId })), {
     executeJest: true, executeLint: true, executeAudit: true, executePack: true,
     executeFormat: true,
@@ -20,11 +20,11 @@ test("does not require the npm pack owner for repositories without the npm-publi
 });
 
 test("still requires the npm pack owner when npm-published applies", () => {
-  const ids = ["E-1.20", "E-1.4", "E-1.20.19", "E-1.20.17"];
+  const ids = ["E-1.130.13", "E-1.4", "E-1.20.19", "E-1.20.17"];
   expect(() => validateRequiredStagePlan(ids.map((ruleId) => ({ ruleId })), {
     executeJest: true, executeLint: true, executeAudit: true, executePack: true,
     executeFormat: true,
-    packageJson: { eliware: { apply: ["general", "npm-published"] } },
+    packageJson: { eliware: { apply: ["general", "application", "npm-published"] } },
   })).toThrow("executePack (E-1.140.1)");
 });
 

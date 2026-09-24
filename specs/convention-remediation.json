@@ -213,12 +213,6 @@
         "AGENTS.md must document the Node.js version, runtime commands, runtime environment configuration (or state that none exists), module system, and Node-specific validation. Distinguish runtime environment settings from package metadata and CLI arguments."
       ]
     },
-    "A-1.20.10.0": {
-      "source": "general.json",
-      "dos": [
-        "An Eli-approved emergency exemption must be recorded in package.json.eliware.exempt with this rule ID, reason, approver, approval timestamp, and either a concrete expiry date for a temporary exemption or expiry:null for a permanent exemption."
-      ]
-    },
     "A-1.20.11": {
       "source": "general.json",
       "dos": [
@@ -503,6 +497,7 @@
       "source": "general.json",
       "dos": [
         "Every maintained non-fork repository README must use this exact base order: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; Features; Requirements; Setup; Usage; Development; Testing; Troubleshooting; Security; then any sections added by applicable profiles; then Support; License; and Links. Support, License, and Links are always the final three top-level sections, in that order.",
+        "The CI badge must use and link to the canonical .github/workflows/ci.yml workflow.",
         "The README must use the standard Eliware logo and Discord-branded support block and link the repository LICENSE from License.",
         "Build the README section list from the general baseline and every profile explicitly listed in package.json.eliware.apply. Append profile-required sections after Security and before Support, using this canonical profile order regardless of package.json array order: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published. Omit profiles that do not apply; within each applied profile, preserve the order stated by that profile. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. Do not merge sections with different headings merely because their topics overlap.",
         "The badge-bearing package or project title is the README title: place it immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in an authoritative repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
@@ -545,12 +540,6 @@
         "Documentation-only repositories must provide the required documentation indexes and link each documented surface from the applicable root index."
       ]
     },
-    "E-1.11": {
-      "source": "general.json",
-      "dos": [
-        "Request application-specific web-service ports from the external Eliware port registry."
-      ]
-    },
     "E-1.110": {
       "source": "workspace.json",
       "dos": [
@@ -579,12 +568,6 @@
         "Obtain Eli's specific authorization before creating a pull request."
       ]
     },
-    "E-1.13": {
-      "source": "general.json",
-      "dos": [
-        "Do not retain compatibility layers, legacy behavior, deprecated aliases, or fallback implementations."
-      ]
-    },
     "E-1.130": {
       "source": "application.json",
       "dos": [
@@ -595,6 +578,96 @@
       "source": "application.json",
       "dos": [
         "Every application repository must contain docs/README.md for end-user documentation."
+      ]
+    },
+    "E-1.130.4": {
+      "source": "application.json",
+      "dos": [
+        "Applications must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file."
+      ]
+    },
+    "E-1.130.5": {
+      "source": "application.json",
+      "dos": [
+        "Applications must test applicable implementation code without Istanbul coverage-ignore directives."
+      ]
+    },
+    "E-1.130.6": {
+      "source": "application.json",
+      "dos": [
+        "Application production modules must have one primary responsibility and decompose broad orchestration into focused modules."
+      ]
+    },
+    "E-1.130.7": {
+      "source": "application.json",
+      "dos": [
+        "Register application-specific web-service ports with the external Eliware port registry."
+      ]
+    },
+    "E-1.130.8": {
+      "source": "application.json",
+      "dos": [
+        "Remove superseded compatibility branches, legacy aliases, and fallback behavior when the current contract replaces them."
+      ]
+    },
+    "E-1.130.9": {
+      "source": "application.json",
+      "dos": [
+        "Place unit tests at the lowest module level that directly proves behavior."
+      ]
+    },
+    "E-1.130.10": {
+      "source": "application.json",
+      "dos": [
+        "Keep application source files to 100 lines and test files to 200 lines; decompose files that exceed those limits."
+      ]
+    },
+    "E-1.130.11": {
+      "source": "application.json",
+      "dos": [
+        "Applications must use Eliware common stack modules for redaction, logging, paths, errors, and signals where applicable."
+      ]
+    },
+    "E-1.130.12": {
+      "source": "application.json",
+      "dos": [
+        "Applications must not use pure export barrels as internal convenience modules."
+      ]
+    },
+    "E-1.130.13": {
+      "source": "application.json",
+      "dos": [
+        "Run application Jest suites through eliware-test."
+      ]
+    },
+    "E-1.130.14": {
+      "source": "application.json",
+      "dos": [
+        "Application Jest coverage must report 100% statements, branches, functions, and lines."
+      ]
+    },
+    "A-1.130.14.0": {
+      "source": "application.json",
+      "dos": [
+        "Record emergency coverage exemptions with this rule ID, approver, reason, timestamp, and expiry."
+      ]
+    },
+    "E-1.130.15": {
+      "source": "application.json",
+      "dos": [
+        "Keep application test execution quiet except for intentional output."
+      ]
+    },
+    "E-1.130.16": {
+      "source": "application.json",
+      "dos": [
+        "Application entrypoints must be thin and delegate unrelated business logic to focused modules."
+      ]
+    },
+    "E-1.130.17": {
+      "source": "application.json",
+      "dos": [
+        "Use dependency injection to keep application modules independently testable."
       ]
     },
     "E-1.14": {
@@ -717,20 +790,6 @@
         "The publication workflow must expose the pushed image digest, verify that the exact version tag resolves to that digest, and verify that the image and signed attestation are readable according to the repository visibility before reporting publication success."
       ]
     },
-    "E-1.17": {
-      "source": "general.json",
-      "dos": [
-        "Every @eliware/* repository must keep source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file.",
-        "Place fixtures, snapshots, generators, and shared test support under artifacts/ when they have no source counterpart.",
-        "Place unit tests at the lowest module level that directly proves the behavior; keep only cross-cutting and integration tests in higher-level orchestrator test directories."
-      ]
-    },
-    "E-1.18": {
-      "source": "general.json",
-      "dos": [
-        "Classify production modules by responsibility and fully decompose broad orchestrators into focused modules without moving business logic into coordination code."
-      ]
-    },
     "E-1.19": {
       "source": "general.json",
       "dos": [
@@ -758,14 +817,6 @@
         "Maintained Node.js projects must use Node.js 26."
       ]
     },
-    "E-1.20.10": {
-      "source": "general.json",
-      "dos": [
-        "Jest coverage for every repository must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code.",
-        "In-scope code includes source implementation files; generated, bundled, compiled, dependency, coverage, build, declaration, fixture, and snapshot files are excluded.",
-        "The only source exclusion is a pure export barrel that is the primary public entrypoint of a library."
-      ]
-    },
     "E-1.20.12": {
       "source": "general.json",
       "dos": [
@@ -784,24 +835,11 @@
         "Repositories must remove dependencies that are not used by their source, tests, tooling, or required runtime."
       ]
     },
-    "E-1.20.15": {
-      "source": "general.json",
-      "dos": [
-        "Allow pure export barrels only when they are the primary public entrypoint or index of a library."
-      ]
-    },
-    "E-1.20.16": {
-      "source": "general.json",
-      "dos": [
-        "Keep each non-generated, non-dependency Node.js production source file at 100 lines or fewer and each non-generated, non-dependency test file at 200 lines or fewer.",
-        "Fully decompose files that exceed a threshold into focused modules and mirrored tests.",
-        "An Eli-approved emergency exemption must be recorded in package.json.eliware.exempt with this rule ID, reason, approver, approval timestamp, and either a concrete expiry date for a temporary exemption or expiry:null for a permanent exemption."
-      ]
-    },
     "E-1.20.17": {
       "source": "general.json",
       "dos": [
-        "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check."
+        "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check.",
+        "Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation."
       ]
     },
     "E-1.20.19": {
@@ -814,13 +852,6 @@
       "source": "general.json",
       "dos": [
         "Node.js projects must use native ESM exclusively."
-      ]
-    },
-    "E-1.20.20": {
-      "source": "general.json",
-      "dos": [
-        "Test execution must keep stdout and stderr quiet unless output is the subject of the test or is an intentional failure diagnostic.",
-        "Tests that exercise logging must inject a logger mock, capture the logger, or redirect stdout and stderr through the test boundary."
       ]
     },
     "E-1.20.3": {
@@ -857,12 +888,6 @@
       "source": "general.json",
       "dos": [
         "Node.js repositories must include .env.example when they support environment configuration, documenting every supported variable, default, allowed value, and allowed range."
-      ]
-    },
-    "E-1.20.9": {
-      "source": "general.json",
-      "dos": [
-        "Projects and libraries must use the Eliware common stack modules for redaction, logging, paths, errors, and signals."
       ]
     },
     "E-1.22": {
@@ -926,7 +951,9 @@
     "E-1.3": {
       "source": "general.json",
       "dos": [
-        "Repositories must use eliware-test for the shared Jest, Oxlint, and Prettier validation stack.",
+        "Repositories must use eliware-test as the shared deterministic validation entrypoint, running the stages applicable to their declared profiles.",
+        "All repositories, including documentation, workspace, and infrastructure repositories, must run Oxlint and Prettier validation through eliware-test.",
+        "Repositories that maintain Jest tests must run them through eliware-test.",
         "ESM test files may import the Jest APIs from @jest/globals; eliware-test supplies this API transitively, so the import does not replace the shared runner or authorize a direct Jest tool dependency."
       ]
     },
@@ -934,6 +961,15 @@
       "source": "general.json",
       "dos": [
         "Repositories must pass lint with zero errors and zero warnings."
+      ]
+    },
+    "E-1.4.0": {
+      "source": "general.json",
+      "dos": [
+        "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for .mjs; validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure."
+      ],
+      "donts": [
+        "Do not exclude a maintained file of these types from syntax validation."
       ]
     },
     "E-1.40": {
@@ -960,10 +996,88 @@
         "Libraries must define a non-empty typecheck script using the repository's direct typechecker and must pass `npm run typecheck` during aggregate validation and before release consideration."
       ]
     },
-    "E-1.5": {
-      "source": "general.json",
+    "E-1.40.7": {
+      "source": "library.json",
       "dos": [
-        "Repositories must test all applicable code without Istanbul coverage-ignore directives."
+        "Libraries must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file."
+      ]
+    },
+    "E-1.40.8": {
+      "source": "library.json",
+      "dos": [
+        "Libraries must test applicable implementation code without Istanbul coverage-ignore directives."
+      ]
+    },
+    "E-1.40.9": {
+      "source": "library.json",
+      "dos": [
+        "Library production modules must have one primary responsibility and decompose broad orchestration into focused modules."
+      ]
+    },
+    "E-1.40.10": {
+      "source": "library.json",
+      "dos": [
+        "Remove superseded compatibility branches, legacy aliases, and fallback behavior when the current contract replaces them."
+      ]
+    },
+    "E-1.40.11": {
+      "source": "library.json",
+      "dos": [
+        "Library production modules must have one primary responsibility and decompose broad orchestration into focused modules."
+      ]
+    },
+    "E-1.40.12": {
+      "source": "library.json",
+      "dos": [
+        "Keep library source files to 100 lines and test files to 200 lines; decompose files that exceed those limits."
+      ]
+    },
+    "E-1.40.13": {
+      "source": "library.json",
+      "dos": [
+        "Libraries must use Eliware common stack modules for redaction, logging, paths, errors, and signals where applicable."
+      ]
+    },
+    "E-1.40.14": {
+      "source": "library.json",
+      "dos": [
+        "Allow pure export barrels only as a library's primary public entrypoint or index."
+      ]
+    },
+    "E-1.40.15": {
+      "source": "library.json",
+      "dos": [
+        "Run library Jest suites through eliware-test."
+      ]
+    },
+    "E-1.40.16": {
+      "source": "library.json",
+      "dos": [
+        "Library Jest coverage must report 100% statements, branches, functions, and lines."
+      ]
+    },
+    "A-1.40.16.0": {
+      "source": "library.json",
+      "dos": [
+        "Record emergency coverage exemptions with this rule ID, approver, reason, timestamp, and expiry."
+      ]
+    },
+    "E-1.40.17": {
+      "source": "library.json",
+      "dos": [
+        "Keep library test execution quiet except for intentional output."
+      ]
+    },
+    "E-1.40.18": {
+      "source": "library.json",
+      "dos": [
+        "Library entrypoints must be thin and delegate unrelated implementation logic to focused modules."
+      ]
+    },
+    "E-1.40.19": {
+      "source": "library.json",
+      "dos": [
+        "Use dependency injection to keep library modules independently testable."
       ]
     },
     "E-1.50": {

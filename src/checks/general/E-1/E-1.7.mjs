@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
-import { findRepositoryFiles } from "./find-repository-files.mjs";
+import { readTrackedPaths } from "./E-1.6/read-tracked-paths.mjs";
 
 export const ruleId = "E-1.7";
 export const parentRuleId = "E-1";
@@ -29,10 +29,23 @@ function containsBinaryControlCharacters(content) {
   return false;
 }
 
-export async function run({ root, files: suppliedFiles }) {
+export async function run({
+  root,
+  packageJson,
+  files: suppliedFiles,
+  readTracked = readTrackedPaths,
+}) {
+  if (packageJson?.private === true) return pass(ruleId);
   const findings = [];
   try {
-    for (const file of suppliedFiles ?? (await findRepositoryFiles(root))) {
+    const files = suppliedFiles ?? (await readTracked(root));
+    if (!Array.isArray(files)) {
+      return fail(
+        ruleId,
+        "Git tracked-file inspection was unavailable; cannot validate public repository contents safely.",
+      );
+    }
+    for (const file of files) {
       const bytes = await readFile(join(root, file));
       let content;
       try {

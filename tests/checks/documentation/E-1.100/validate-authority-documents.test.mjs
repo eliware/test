@@ -4,9 +4,16 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 const validateAuthorityRecord = jest.fn();
 const validateAuthorityMap = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/documentation/E-1.100/validate-authority-record.mjs", () => ({ validateAuthorityRecord }));
-jest.unstable_mockModule("../../../../src/checks/documentation/E-1.100/validate-authority-map.mjs", () => ({ validateAuthorityMap }));
-const { validateAuthorityDocuments } = await import("../../../../src/checks/documentation/E-1.100/validate-authority-documents.mjs");
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-1.100/validate-authority-record.mjs",
+  () => ({ validateAuthorityRecord }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-1.100/validate-authority-map.mjs",
+  () => ({ validateAuthorityMap }),
+);
+const { validateAuthorityDocuments } =
+  await import("../../../../src/checks/documentation/E-1.100/validate-authority-documents.mjs");
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -29,17 +36,39 @@ test("dispatches authority records and maps to their specialized validators", as
   await writeFile(join(root, "authority-map.json"), "{}\n");
 
   validateAuthorityRecord.mockResolvedValueOnce("record invalid");
-  await expect(validateAuthorityDocuments(root, ["specs/authority.json"])).resolves.toBe("record invalid");
-  expect(validateAuthorityRecord).toHaveBeenCalledWith(expect.objectContaining({
-    root,
-    document: {},
-  }));
+  await expect(validateAuthorityDocuments(root, ["specs/authority.json"])).resolves.toBe(
+    "record invalid",
+  );
+  expect(validateAuthorityRecord).toHaveBeenCalledWith(
+    expect.objectContaining({
+      root,
+      document: {},
+    }),
+  );
 
   validateAuthorityMap.mockResolvedValueOnce("map invalid");
-  await expect(validateAuthorityDocuments(root, ["authority-map.json"])).resolves.toBe("map invalid");
-  expect(validateAuthorityMap).toHaveBeenCalledWith(expect.objectContaining({
-    root,
-    document: {},
-  }));
+  await expect(validateAuthorityDocuments(root, ["authority-map.json"])).resolves.toBe(
+    "map invalid",
+  );
+  expect(validateAuthorityMap).toHaveBeenCalledWith(
+    expect.objectContaining({
+      root,
+      document: {},
+    }),
+  );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("does not treat an authority-map schema as a global authority registry", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-schema-"));
+  await mkdir(join(root, "specs"));
+  const schema = {
+    requiredPath: "specs/authority.json",
+    requiredFields: { repositoryRegistry: "Registry records belong in the global map." },
+  };
+  await writeFile(join(root, "specs", "authority-map.json"), `${JSON.stringify(schema)}\n`);
+
+  await expect(validateAuthorityDocuments(root, ["specs/authority-map.json"])).resolves.toBeNull();
+  expect(validateAuthorityMap).not.toHaveBeenCalled();
   await rm(root, { recursive: true, force: true });
 });

@@ -8,6 +8,17 @@ test("selects checks only from the explicitly applied profile", async () => {
   expect(checks.some(({ ruleId }) => ruleId.startsWith("E-1.130"))).toBe(true);
 });
 
+test.each(["documentation", "workspace", "infrastructure"])(
+  "keeps general lint and formatter checks selected for %s repositories",
+  async (profile) => {
+    const checks = await selectConventionChecks({ apply: ["general", profile] });
+    const ruleIds = checks.map(({ ruleId }) => ruleId);
+
+    expect(ruleIds).toContain("E-1.4");
+    expect(ruleIds).toContain("E-1.20.17");
+  },
+);
+
 test("rejects unknown convention profiles", async () => {
   await expect(selectConventionChecks({ apply: ["unknown"] })).rejects.toThrow(
     "Unknown convention group: unknown",

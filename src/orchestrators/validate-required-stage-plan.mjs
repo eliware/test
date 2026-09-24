@@ -1,5 +1,5 @@
 const stageRules = Object.freeze({
-  executeJest: ["E-1.20"],
+  executeJest: ["E-1.130.13", "E-1.40.15"],
   executeLint: ["E-1.4"],
   executeAudit: ["E-1.20.19"],
   executePack: ["E-1.140.1"],

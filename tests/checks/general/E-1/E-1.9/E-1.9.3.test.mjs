@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-1/E-1.9/E-1.9.3.mjs";
 
 const valid = {
-  ruleId: "E-1.20.10",
+  ruleId: "E-1.130.14",
   reason: "fixture",
   approver: "Eli",
   approvalTimestamp: "2026-09-13T00:00:00Z",
