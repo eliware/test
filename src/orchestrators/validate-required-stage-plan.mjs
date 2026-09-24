@@ -12,6 +12,7 @@ export function validateRequiredStagePlan(checks, context, exemptions = new Set(
   const missing = [];
   for (const [flag, rules] of Object.entries(stageRules)) {
     if (!context[flag] || rules.some((ruleId) => exemptions.has(ruleId))) continue;
+    if (flag === "executePack" && !context.packageJson?.eliware?.apply?.includes("npm-published")) continue;
     if (!rules.some((ruleId) => ids.has(ruleId))) missing.push(`${flag} (${rules.join(", ")})`);
   }
   if (missing.length > 0) throw new Error(`Aggregate validation stage checks are missing: ${missing.join("; ")}.`);
