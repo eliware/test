@@ -20,3 +20,20 @@ test("ignores unrelated declarations and rest destructuring", () => {
   expect(aliases).toEqual(new Set());
   expect(variables).toEqual(new Set());
 });
+
+test("ignores computed destructuring keys without static names", () => {
+  const ast = parse("const { [field]: value } = process.env;", { sourceType: "module" });
+  const aliases = new Set();
+  const variables = new Set();
+  collectEnvironmentBindings(ast.program.body[0].declarations[0], aliases, variables);
+  expect(variables).toEqual(new Set());
+});
+
+test("ignores non-declaration AST nodes", () => {
+  const aliases = new Set();
+  const variables = new Set();
+  collectEnvironmentBindings(null, aliases, variables);
+  collectEnvironmentBindings("not an AST node", aliases, variables);
+  expect(aliases).toEqual(new Set());
+  expect(variables).toEqual(new Set());
+});

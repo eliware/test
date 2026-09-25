@@ -14,7 +14,7 @@ const agents = [
   "## Security",
   "## Changes",
   "eliware/docs",
-  "eliware/conventions",
+  "eliware/test",
   "eliware/operations",
 ].join("\n");
 
@@ -45,13 +45,13 @@ test("fails when an authoritative repository is not referenced", async () => {
   await expect(run({ root })).resolves.toEqual({
     ruleId: "E-1.0",
     status: "fail",
-    message: "AGENTS.md must reference: eliware/conventions.",
+    message: "AGENTS.md must reference: eliware/test.",
   });
   await rm(root, { recursive: true, force: true });
 });
 
 test("fails when required AGENTS sections are missing", async () => {
-  const root = await fixture("eliware/docs\neliware/conventions\neliware/operations\n## Validation\n");
+  const root = await fixture("eliware/docs\neliware/test\neliware/operations\n## Validation\n");
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({
     ruleId: "E-1.0",
     status: "fail",

@@ -6,8 +6,8 @@
 
 - Added versioned, machine-readable convention specifications and deterministic
   discovery/completeness validation for the bundled check registry, selected
-  from each repository's declared profiles without a runtime dependency on the
-  private conventions repository.
+  from each repository's declared profiles without a runtime dependency on a
+  separate repository.
 - Added profile-aware convention stages, rule-level exemption validation,
   fail-fast configuration checks, and actionable diagnostics for missing or
   malformed package configuration and unknown convention identifiers.

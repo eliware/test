@@ -1,0 +1,44 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories that are not publicly published as npm packages.",
+  "authority": {
+    "authoritativeFor": ["Private repository metadata and publication restrictions."],
+    "notAuthoritativeFor": ["Public npm packages, runtime behavior, or deployment authorization."]
+  },
+  "crosslinks": [
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.150",
+      "dos": [
+        "Private repositories must apply private.json and set package.json private to true.",
+        "Private repositories may publish authorized GHCR images without becoming npm packages."
+      ],
+      "donts": [
+        "Private repositories must not publish npm packages or expose npm publication credentials."
+      ],
+      "directives": [
+        {
+          "id": "E-1.150.0",
+          "dos": [
+            "After the seven general AGENTS.md headings, add a ## Private distribution section. Document private distribution restrictions, access boundaries, and non-public publication rules."
+          ],
+          "donts": [
+            "Private repositories must not present public npm identity, public registry claims, or unrestricted deployment instructions."
+          ]
+        },
+        {
+          "id": "A-1.150.1",
+          "dos": [
+            "Private-repository CI must contain validation only; any authorized GHCR publication must be isolated to exact v#.#.# tags and separately approved."
+          ],
+          "donts": [
+            "Do not include npm publication jobs, npm publication tokens, or branch and pull-request publication jobs in private-repository CI."
+          ]
+        }
+      ]
+    }
+  ]
+}

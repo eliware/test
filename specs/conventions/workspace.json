@@ -1,0 +1,94 @@
+{
+  "version": "8.0",
+  "description": "Applies only to workspace repositories.",
+  "authority": {
+    "authoritativeFor": ["Leadership workspace repository requirements."],
+    "notAuthoritativeFor": [
+      "Project repositories, shared operations, deployment, or platform desired state."
+    ]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.110",
+      "dos": ["These conventions apply to workspace repositories."],
+      "donts": ["Workspace repositories must not omit applicable workspace requirements."],
+      "directives": [
+        {
+          "id": "A-1.110.0",
+          "dos": [
+            "Every workspace repository must extend the general AGENTS.md requirements with applicable workspace guidance."
+          ],
+          "donts": ["A workspace repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.110.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## Workspace section. Document workspace purpose, role boundaries, communication, runbooks, recovery, and validation."
+              ],
+              "donts": [
+                "AGENTS.md must not leave workspace ownership or operational boundaries undefined."
+              ]
+            },
+            {
+              "id": "A-1.110.0.2",
+              "dos": [
+                "Store each workspace-owned runbook as a separate JSON file under runbooks/.",
+                "Require runbooks/README.md as the navigation-only overview and index for every runbook file.",
+                "Require each runbook record to contain id, purpose, owner, boundaries, and steps.",
+                "Use runbooks/<name>.json#id=<stable-id> for machine-verifiable references.",
+                "Keep each procedure authoritative in one location and link to it from indexes."
+              ],
+              "donts": [
+                "Do not maintain a root runbooks.json file.",
+                "Do not maintain workspace workflows as a second procedure format; company-wide workflows belong in Operations.",
+                "Do not make Markdown runbooks or indexes the authoritative procedure representation.",
+                "Do not duplicate normative procedure text across README files, indexes, directives, and runbooks."
+              ]
+            },
+            {
+              "id": "A-1.110.0.3",
+              "dos": [
+                "Keep company-wide task status, assignment, sequencing, blockers, milestones, and next actions in Tasklist.",
+                "Keep workspace-specific decisions and durable policy in directives.json or the applicable structured directive file.",
+                "Keep local operational procedures in runbooks/ and reference Operations for company-wide workflows."
+              ],
+              "donts": ["Do not leave workspace recovery dependent on unavailable thread history."]
+            }
+          ]
+        },
+        {
+          "id": "A-1.110.1",
+          "dos": [
+            "Workspace README.md must add Authority, Runbooks, Communication, and Recovery, in that order, identifying ownership, operational boundaries, runbook navigation, communication channels, and recovery ownership. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+          ],
+          "donts": [
+            "Workspace README.md must not duplicate authoritative JSON runbooks or leave ownership and recovery boundaries undefined."
+          ]
+        },
+        {
+          "id": "A-1.110.2",
+          "dos": [
+            "Deterministic validation must validate every runbooks/*.json record against the workspace runbook contract and require non-empty id, purpose, owner, boundaries, and steps fields.",
+            "Deterministic validation must validate every machine-followable runbooks/<name>.json#id=<stable-id> reference against the referenced record."
+          ],
+          "donts": [
+            "Do not accept a workspace runbook with missing required fields, duplicate stable IDs, or an unresolved structured-record reference."
+          ]
+        },
+        {
+          "id": "A-1.110.3",
+          "dos": [
+            "Workspace README indexes must link runbooks/README.md and every authoritative structured directive collection."
+          ],
+          "donts": [
+            "Do not infer a runbook schema from filename alone or maintain an undocumented second procedure format."
+          ]
+        }
+      ]
+    }
+  ]
+}

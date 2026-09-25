@@ -1,0 +1,92 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories containing web application code.",
+  "authority": {
+    "authoritativeFor": ["Web application repository requirements."],
+    "notAuthoritativeFor": ["Non-web repositories, operations, deployment, or project behavior."]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
+    { "path": "./application.json", "authoritativeFor": "Shared application requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.50",
+      "dos": [
+        "These conventions apply to repositories containing web application code.",
+        "Web application repositories must also apply application.json."
+      ],
+      "donts": [
+        "Web application repositories must not omit application.json or applicable web requirements."
+      ],
+      "directives": [
+        {
+          "id": "A-1.50.0",
+          "dos": [
+            "Every web application repository must extend the application AGENTS.md requirements with applicable web guidance."
+          ],
+          "donts": ["A web application repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.50.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## Web section. Document routes and route ownership, assets and public root, runtime/build configuration, development-server ports, browser validation commands, build output paths, and deployment boundaries. State explicitly when any of these categories does not apply."
+              ],
+              "donts": [
+                "AGENTS.md must not leave web routes, assets, deployment boundaries, or port assignments undefined."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-1.50.1",
+          "dos": [
+            "Web applications must use public/ as the default public asset root and exclude dist/, build/, coverage/, node_modules/, and .git/ from public assets.",
+            "A web application may override the root only with eliware.webRoot as a non-empty package.json string and may declare exclusions only with eliware.webAssetExcludes as a string array."
+          ],
+          "donts": [
+            "Web applications must not publish generated or repository-internal output as public assets or rely on undocumented asset-root overrides."
+          ]
+        },
+        {
+          "id": "E-1.50.2",
+          "dos": [
+            "Web projects that own browser, Lighthouse, smoke, live-system, or end-to-end acceptance checks must explicitly document the required checks and expected results for owner and QA review."
+          ],
+          "donts": [
+            "Web projects must not treat undocumented browser or live-system acceptance as complete."
+          ]
+        },
+        {
+          "id": "E-1.50.4",
+          "dos": [
+            "Web applications must define a non-empty build script using the repository's direct build tool and must pass `npm run build` during aggregate validation and before release consideration."
+          ],
+          "donts": [
+            "Do not omit build, route it through eliware-test, or release a web application without passing `npm run build`."
+          ]
+        },
+        {
+          "id": "E-1.50.5",
+          "dos": [
+            "Web applications must declare Lighthouse and Puppeteer as direct dependencies and define `lighthouse` and `puppeteer` scripts that invoke those web-app-owned tools.",
+            "Web-specific Lighthouse and Puppeteer scripts are additional application checks; validation must verify their dependencies and script definitions but must not run them automatically because they require a live server."
+          ],
+          "donts": [
+            "Do not omit the Lighthouse or Puppeteer dependency or script, or treat browser validation as unavailable."
+          ]
+        },
+        {
+          "id": "A-1.50.3",
+          "dos": [
+            "Web README.md must add Configuration, Routes, Assets, Development server, Build, and Deployment, in that order, documenting runtime settings, ports, public asset root, browser validation, build output, and deployment boundaries. Configuration merges with the application Configuration heading required by application.json. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+          ],
+          "donts": [
+            "Do not place generated output in the public asset root, expose deployment credentials, or describe browser/deployment validation that was not actually performed."
+          ]
+        }
+      ]
+    }
+  ]
+}

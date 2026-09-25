@@ -28,7 +28,7 @@ test("rejects conflicting informational and validation arguments before dispatch
 test("runs convention validation and reports debug timing when requested", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-"));
   await writeFile(join(root, "README.md"), "# fixture\n");
-  await writeFile(join(root, "AGENTS.md"), "eliware/docs eliware/conventions eliware/operations\n");
+  await writeFile(join(root, "AGENTS.md"), "eliware/docs eliware/test eliware/operations\n");
   await mkdir(join(root, "specs"));
   await writeFile(
     join(root, "specs", "README.md"),
@@ -86,7 +86,7 @@ test("runs a configured convention validation target without starting Jest", asy
     }),
   );
   await writeFile(join(root, "README.md"), "# fixture\n");
-  await writeFile(join(root, "AGENTS.md"), "eliware/docs eliware/conventions eliware/operations\n");
+  await writeFile(join(root, "AGENTS.md"), "eliware/docs eliware/test eliware/operations\n");
   await mkdir(join(root, "specs"));
   await writeFile(join(root, "specs", "README.md"), "# specs\n");
   const output = [];

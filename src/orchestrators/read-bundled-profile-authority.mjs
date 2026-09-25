@@ -1,34 +1,23 @@
-import conventionRemediation from "../../specs/convention-remediation.json" with { type: "json" };
+import { readFileSync } from "node:fs";
+import { readProfileDocuments } from "./read-profile-documents.mjs";
+import { buildProfileAuthority } from "./build-profile-authority.mjs";
 
-export const bundledConventionVersion = "8.0";
+const packageJson = JSON.parse(
+  readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
+);
+export const bundledConventionVersion = packageJson.version.split(".").slice(0, 2).join(".");
+const localProfileDocuments = readProfileDocuments(
+  new URL("../../specs/conventions/", import.meta.url),
+);
+export const bundledDirectiveAuthority = buildProfileAuthority(
+  localProfileDocuments,
+  bundledConventionVersion,
+);
 
-function authorityFromSnapshot(snapshot) {
-  if (snapshot.version !== bundledConventionVersion || !snapshot.checks) {
-    throw new Error("Bundled convention authority snapshot is missing or invalid.");
-  }
-  const profiles = {};
-  const directives = {};
-  for (const [ruleId, record] of Object.entries(snapshot.checks)) {
-    if (typeof record?.source !== "string" || !record.source.endsWith(".json")) {
-      throw new Error(`Bundled directive ${ruleId} has no valid source profile.`);
-    }
-    const profile = record.source.slice(0, -".json".length);
-    if (!/^[a-z0-9-]+$/u.test(profile)) {
-      throw new Error(`Bundled directive ${ruleId} has an invalid source profile.`);
-    }
-    profiles[profile] = { profile };
-    directives[ruleId] = profile;
-  }
-  if (Object.keys(profiles).length === 0) {
-    throw new Error("Bundled convention profile authority cannot be empty.");
-  }
-  return { version: snapshot.version, profiles, directives };
-}
-
-export const bundledDirectiveAuthority = authorityFromSnapshot(conventionRemediation);
-
-export function readBundledProfileAuthority({ snapshot = conventionRemediation } = {}) {
-  return authorityFromSnapshot(snapshot);
+export function readBundledProfileAuthority({ documents = localProfileDocuments } = {}) {
+  return documents === localProfileDocuments
+    ? bundledDirectiveAuthority
+    : buildProfileAuthority(documents, bundledConventionVersion);
 }
 
 export function validateAppliedProfiles(apply, authority = readBundledProfileAuthority()) {

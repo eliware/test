@@ -11,7 +11,7 @@
       "directives": [{ "path": "./directives.json", "ids": ["E-18"] }],
       "implementation": [{ "path": "../src", "role": "validator-implementation" }],
       "consumers": ["all repositories using eliware-test"],
-      "reviewers": ["eliware/qa", "eliware/docs", "eliware/conventions"],
+      "reviewers": ["eliware/qa", "eliware/docs"],
       "evidence": [],
       "notAuthoritativeFor": [
         "the policies being validated",
@@ -26,7 +26,7 @@
       "authority": { "path": "../tests" },
       "directives": [{ "path": "./directives.json", "ids": ["E-18"] }],
       "implementation": [{ "path": "../tests", "role": "acceptance" }],
-      "consumers": ["eliware/qa", "eliware/conventions"],
+      "consumers": ["eliware/qa", "eliware/test contributors"],
       "reviewers": ["eliware/qa"],
       "evidence": [],
       "notAuthoritativeFor": ["repository policy"],

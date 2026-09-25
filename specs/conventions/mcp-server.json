@@ -1,0 +1,54 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories containing MCP server code.",
+  "authority": {
+    "authoritativeFor": ["MCP server repository requirements."],
+    "notAuthoritativeFor": ["Non-MCP repositories, operations, deployment, or project behavior."]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
+    { "path": "./application.json", "authoritativeFor": "Shared application requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.80",
+      "dos": [
+        "These conventions apply to repositories containing MCP server application code.",
+        "MCP server application repositories must also apply application.json."
+      ],
+      "donts": [
+        "MCP server application repositories must not omit application.json or applicable MCP requirements."
+      ],
+      "directives": [
+        {
+          "id": "A-1.80.0",
+          "dos": [
+            "Every MCP server repository must extend the application AGENTS.md requirements with applicable MCP guidance."
+          ],
+          "donts": ["An MCP server repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.80.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## MCP server section. Document tools, resources, prompts, transport, authentication, schemas, protocol validation commands, and network/exposure boundaries."
+              ],
+              "donts": [
+                "AGENTS.md must not leave MCP protocol behavior or authentication validation undefined."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "A-1.80.2",
+          "dos": [
+            "MCP server README.md must add Tools, Resources, Prompts, Transport, Authentication, Schemas, and Operations, in that order, including Docker, Compose, or systemd examples when supported. Operations merges with the application Operations heading required by application.json. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+          ],
+          "donts": [
+            "Do not expose bearer tokens, claim unsupported protocol behavior, or provide server-start instructions that unintentionally expose a live endpoint."
+          ]
+        }
+      ]
+    }
+  ]
+}

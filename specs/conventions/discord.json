@@ -1,0 +1,56 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories containing Discord application code.",
+  "authority": {
+    "authoritativeFor": ["Discord application repository requirements."],
+    "notAuthoritativeFor": [
+      "Non-Discord repositories, operations, deployment, or project behavior."
+    ]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
+    { "path": "./application.json", "authoritativeFor": "Shared application requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.70",
+      "dos": [
+        "These conventions apply to repositories containing Discord application code.",
+        "Discord application repositories must also apply application.json."
+      ],
+      "donts": [
+        "Discord application repositories must not omit application.json or applicable Discord requirements."
+      ],
+      "directives": [
+        {
+          "id": "A-1.70.0",
+          "dos": [
+            "Every Discord application repository must extend the application AGENTS.md requirements with applicable Discord guidance."
+          ],
+          "donts": ["A Discord application repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.70.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## Discord section. Document Discord intents, commands, events, required permissions, runtime configuration, credential handling, lifecycle, and applicable validation commands."
+              ],
+              "donts": [
+                "AGENTS.md must not leave required Discord permissions or operational validation undefined."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "A-1.70.2",
+          "dos": [
+            "Discord application README.md must add Commands, Events, Intents and permissions, and Operations, in that order, including safe startup/shutdown and deployment examples when supported. Operations merges with the application Operations heading required by application.json. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+          ],
+          "donts": [
+            "Do not publish bot credentials, imply permissions the bot does not have, or provide startup/deployment instructions that expose a live bot unintentionally."
+          ]
+        }
+      ]
+    }
+  ]
+}

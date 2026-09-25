@@ -1,0 +1,76 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories that publish a public npm package.",
+  "authority": {
+    "authoritativeFor": ["Public npm package metadata and publication requirements."],
+    "notAuthoritativeFor": ["Private repositories, non-npm distribution, or runtime behavior."]
+  },
+  "crosslinks": [
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
+    {
+      "path": "../../../operations/specs/directives.json",
+      "authoritativeFor": "Release authorization, publication verification, and handoffs."
+    },
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.140",
+      "dos": [
+        "Repositories that publish a public npm package must apply npm-published.json.",
+        "Public npm packages must set private to false."
+      ],
+      "donts": [
+        "Do not publish an npm package without applying npm-published.json or while private is true."
+      ],
+      "directives": [
+        {
+          "id": "E-1.140.0",
+          "dos": [
+            "After the seven general AGENTS.md headings, add a ## npm publication section. Document package identity and version source, exact files allowlist, pack validation command and required result, provenance mechanism, exact-version registry verification, and the release authorization/handoff boundary. Document release gates and who is authorized to approve or execute them, but do not treat this documentation or the profile as permission for an agent to publish. Publication still requires explicit authorization through the applicable Operations release handoff."
+          ],
+          "donts": ["Do not omit npm publication requirements from AGENTS.md."]
+        },
+        {
+          "id": "E-1.140.1",
+          "dos": [
+            "Public npm packages must declare engines.node compatible with Node.js 26, publishConfig.provenance true, and a non-empty files allowlist containing README.md, LICENSE, RELEASE_NOTES.md, docs/, and specs/.",
+            "Public npm package README.md must include the npm badge, npm package link, installation guidance, package entrypoints, and release/version guidance. When npm-published is applied without a library profile, include this material in Usage or an applicable profile section rather than inventing a library API section.",
+            "Public npm packages must define exactly `pack=eliware-test --pack` and must pass the harness pack stage during aggregate validation and before publication; their shared audit script is defined by general.json."
+          ],
+          "donts": [
+            "Do not omit pack, replace the shared pack stage with a direct package command, or publish a package without passing it."
+          ]
+        },
+        {
+          "id": "A-1.140.2",
+          "dos": [
+            "Public npm repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If GHCR publication is also applied, both publication profiles use this single publish.yml file.",
+            "Publication workflows must use the GitHub Actions tag filter `v[0-9]+.[0-9]+.[0-9]+` so only three-component numeric version-shaped tags start the workflow, verify that the tag exactly matches package.json, and require successful Ubuntu validation before npm publication."
+          ],
+          "donts": [
+            "Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches or pull requests, or publish a tag whose version differs from package.json."
+          ]
+        },
+        {
+          "id": "A-1.140.3",
+          "dos": [
+            "An npm publication workflow must be separate from the general validation workflow, inherit general.json validation requirements, and publish only after the required Ubuntu validation and exact tag/package-version checks succeed."
+          ],
+          "donts": [
+            "Do not treat npm publication steps as part of general CI validation or add npm publication credentials to validation-only jobs."
+          ]
+        },
+        {
+          "id": "A-1.140.4",
+          "dos": [
+            "An npm publication job must grant only the contents: read and id-token: write permissions needed for checkout and npm provenance, and the Operations release handoff must verify that the exact package version is available from the public registry before reporting publication complete."
+          ],
+          "donts": [
+            "Do not place npm publication tokens in validation-only jobs or report successful publication before exact-version registry verification."
+          ]
+        }
+      ]
+    }
+  ]
+}

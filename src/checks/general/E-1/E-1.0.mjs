@@ -7,7 +7,7 @@ import { findMissingAgentsSections } from "./validate-agents-required-sections.m
 export const ruleId = "E-1.0";
 export const parentRuleId = "E-1";
 
-const authorityReferences = ["eliware/docs", "eliware/conventions", "eliware/operations"];
+const authorityReferences = ["eliware/docs", "eliware/test", "eliware/operations"];
 
 export async function run({ root, packageJson }) {
   let content;

@@ -16,7 +16,7 @@ Keep `src/` and `tests/` mirrored, preserve native ESM module structure, and kee
 
 Read the relevant README.md, specifications, implementation, and tests before changing behavior. This AGENTS.md applies repository-wide; nearer AGENTS.md instructions apply within their subdirectories, so check them before editing nested files.
 
-Repository requirements are owned by eliware/conventions, documentation by eliware/docs, and operational procedures by eliware/operations.
+Shared repository requirements are maintained in `specs/conventions/`, documentation authority remains with eliware/docs, and operational procedures are owned by eliware/operations.
 
 ## Validation
 

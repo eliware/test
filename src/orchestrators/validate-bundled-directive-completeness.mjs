@@ -3,18 +3,17 @@ import {
   bundledDirectiveAuthority,
 } from "./read-bundled-profile-authority.mjs";
 import { createBundledCheckManifest } from "./create-bundled-check-manifest.mjs";
-import { validateRemediationCoverage } from "./convention-remediation.mjs";
 
 export function validateBundledDirectiveCompleteness(
   checks,
   groups,
   authority = bundledDirectiveAuthority,
-  remediationGuidance,
 ) {
   if (
     authority.version !== bundledConventionVersion ||
     !authority.profiles ||
-    !authority.directives
+    !authority.directives ||
+    !authority.rules
   )
     throw new Error("Bundled directive authority is missing or invalid.");
   const manifest = createBundledCheckManifest(checks);
@@ -30,7 +29,8 @@ export function validateBundledDirectiveCompleteness(
     return (
       !authority.profiles[profile] ||
       filename !== ruleId ||
-      authority.directives[ruleId] !== profile
+      authority.directives[ruleId] !== profile ||
+      !authority.rules[ruleId]
     );
   });
   if (unregistered.length)
@@ -39,6 +39,5 @@ export function validateBundledDirectiveCompleteness(
         .map(({ ruleId, modulePath }) => `${modulePath} (${ruleId})`)
         .join(", ")}.`,
     );
-  validateRemediationCoverage(checks, remediationGuidance);
   return true;
 }

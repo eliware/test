@@ -1,0 +1,119 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories containing infrastructure code.",
+  "authority": {
+    "authoritativeFor": ["Infrastructure repository requirements."],
+    "notAuthoritativeFor": [
+      "Application repositories, operations, deployment execution, or project behavior."
+    ]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.90",
+      "dos": [
+        "These conventions apply to repositories containing infrastructure code.",
+        "Keep infrastructure desired state, configuration layout, and committed deployment inputs in the owning infrastructure repository."
+      ],
+      "donts": [
+        "Infrastructure repositories must not omit applicable infrastructure requirements.",
+        "Do not commit plaintext secrets, decrypted runtime state, credentials, or live-only state."
+      ],
+      "directives": [
+        {
+          "id": "A-1.90.0",
+          "dos": [
+            "Every infrastructure repository must extend the general AGENTS.md requirements with applicable infrastructure guidance."
+          ],
+          "donts": ["An infrastructure repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.90.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## Infrastructure section. Document managed targets, ownership boundaries, validation, change control, rollback, and secret handling.",
+                "AGENTS.md must distinguish committed desired state from operational procedures and live runtime evidence."
+              ],
+              "donts": [
+                "AGENTS.md must not leave infrastructure ownership, rollback, or secret handling undefined."
+              ]
+            },
+            {
+              "id": "A-1.90.0.2",
+              "dos": [
+                "Keep committed desired state, declarative configuration, and deployment inputs in the infrastructure repository that owns them.",
+                "Keep operational procedures, rollout decisions, rollback records, and live runtime evidence in the applicable operations or owner workspace and link to them from the repository README."
+              ],
+              "donts": [
+                "Do not duplicate the same authoritative desired state or operational procedure across repositories.",
+                "Do not treat a clean commit, render, or syntax check as proof that live infrastructure is healthy."
+              ]
+            },
+            {
+              "id": "A-1.90.0.3",
+              "dos": [
+                "Organize infrastructure content by managed target and environment where both dimensions exist.",
+                "Provide a deterministic validator for applicable syntax, schema, reference, render, and safety checks before promotion."
+              ],
+              "donts": [
+                "Do not mix unrelated managed targets without an explicit boundary.",
+                "Do not rely on manual inspection when the applicable infrastructure check can be deterministic."
+              ]
+            },
+            {
+              "id": "A-1.90.0.4",
+              "dos": [
+                "Keep repository-specific authority, directives, records, runbooks, and workflows in structured JSON when those records are required by the repository's authority boundary.",
+                "Use README.md and AGENTS.md as concise indexes and contributor instructions for those structured records."
+              ],
+              "donts": [
+                "Do not maintain competing normative procedure or authority records in free-form Markdown."
+              ]
+            },
+            {
+              "id": "A-1.90.0.5",
+              "dos": [
+                "Define subtype-specific requirements in the repository's own directive records when the repository manages Kubernetes, GitOps, VyOS, storage, or another specialized platform."
+              ],
+              "donts": [
+                "Do not assume the generic infrastructure requirements define Kubernetes, GitOps, VyOS, or other platform-specific behavior."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "A-1.90.1",
+          "dos": [
+            "Infrastructure README.md must add Managed targets, Configuration, Desired state, Validation, and Change boundaries, in that order, documenting target/environment scope, runtime or deployment settings, committed desired state, deterministic checks, and change/rollback authority. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
+            "Infrastructure README.md must link operational procedures and live-state verification records without duplicating them."
+          ],
+          "donts": [
+            "Infrastructure README.md must not present operational procedures or live runtime state as committed desired state."
+          ]
+        },
+        {
+          "id": "A-1.90.2",
+          "dos": [
+            "Infrastructure repositories must declare required paths and files in their repository-specific directives or structured authority records.",
+            "Deterministic validation must verify each declared infrastructure path exists and validate its declared JSON, YAML, manifest, reference, or render schema."
+          ],
+          "donts": [
+            "Do not promote a generic infrastructure profile into an implicit requirement for apps, workspaces, or unrelated infrastructure subtypes."
+          ]
+        },
+        {
+          "id": "A-1.90.3",
+          "dos": [
+            "Infrastructure validators must enforce repository structure, committed-input safety, and deterministic syntax or schema checks.",
+            "Keep platform-specific preflights, desired-state semantics, live-cluster behavior, and rollout or rollback execution in the owning repository or operations workspace."
+          ],
+          "donts": [
+            "Do not make eliware-test claim to validate live infrastructure behavior or replace a platform-specific preflight."
+          ]
+        }
+      ]
+    }
+  ]
+}

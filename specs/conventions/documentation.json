@@ -1,0 +1,70 @@
+{
+  "version": "8.0",
+  "description": "Applies only to documentation-only repositories.",
+  "authority": {
+    "authoritativeFor": ["Documentation-only repository requirements."],
+    "notAuthoritativeFor": ["Code repositories, operations, deployment, or project behavior."]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.100",
+      "dos": ["These conventions apply to documentation-only repositories."],
+      "donts": [
+        "Documentation-only repositories must not omit applicable documentation requirements."
+      ],
+      "directives": [
+        {
+          "id": "A-1.100.0",
+          "dos": [
+            "Every documentation-only repository must extend the general AGENTS.md requirements with applicable documentation guidance."
+          ],
+          "donts": ["A documentation-only repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.100.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## Documentation section. Document documentation scope, authority boundaries, indexes, link validation, and documentation-only limits."
+              ],
+              "donts": [
+                "AGENTS.md must not allow implementation code or undocumented authoritative policy in a documentation-only repository."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-1.100.1",
+          "dos": [
+            "Documentation-only repositories must provide the required documentation indexes and link each documented surface from the applicable root index."
+          ],
+          "donts": [
+            "Documentation-only repositories must not leave required documentation surfaces undiscoverable or introduce implementation code as authoritative policy."
+          ]
+        },
+        {
+          "id": "A-1.100.2",
+          "dos": [
+            "Documentation-only README.md must add Scope, Authority, Navigation, Contribution, and Documentation validation, in that order, for repository scope, authoritative sources, indexes, contribution/setup requirements, and link/document validation. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
+            "Documentation-only README.md must link every authoritative documentation surface from its indexes."
+          ],
+          "donts": [
+            "Documentation-only README.md must not present implementation code, operational procedures, or duplicated authoritative content."
+          ]
+        },
+        {
+          "id": "A-1.100.3",
+          "dos": [
+            "Deterministic validation must verify that every documented surface, index link, structured-document path, and embedded reference resolves to its intended target.",
+            "The Docs authority map must validate repository entries, directive namespaces, structured-document paths, and reciprocal authority references when the referenced checkout is available."
+          ],
+          "donts": [
+            "Do not leave a documented path, registry entry, or embedded reference pointing to a missing or unregistered target."
+          ]
+        }
+      ]
+    }
+  ]
+}

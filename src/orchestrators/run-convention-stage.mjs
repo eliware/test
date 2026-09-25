@@ -1,4 +1,4 @@
-import { formatConventionFailure } from "./convention-remediation.mjs";
+import { formatConventionFailure } from "./format-convention-failure.mjs";
 
 function failureCode({ ruleId, message = "" }) {
   if (["E-1.130.14", "E-1.40.16"].includes(ruleId)) return 10;

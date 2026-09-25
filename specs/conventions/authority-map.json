@@ -1,0 +1,54 @@
+{
+  "version": "8.0",
+  "description": "Required schema for repository-local authority registries.",
+  "authority": {
+    "authoritativeFor": ["Local specs/authority.json structure and authority-role separation."],
+    "notAuthoritativeFor": [
+      "Global ownership in Docs authority-map.json",
+      "Directive or procedure content"
+    ]
+  },
+  "requiredPath": "specs/authority.json",
+  "requiredFields": {
+    "version": "v8 schema version.",
+    "repositoryId": "Canonical repository identifier matching the Docs registry.",
+    "globalAuthorityMap": "Repository-relative path to Docs authority-map.json.",
+    "description": "Concise local authority scope.",
+    "subjects": "Non-empty array of local normative subject records."
+  },
+  "instanceContract": {
+    "authority": "Optional local authority metadata; authority is represented by the global Docs registry and subject records.",
+    "crosslinks": "Optional local links; they do not replace global authority-map links.",
+    "subjects": "Every active normative profile or schema owned by this repository must have one subject."
+  },
+  "subjectRequiredFields": {
+    "id": "Stable subject ID, recommended repository-slug.area.",
+    "kind": "directive, specification, workflow, runbook, index, schema, module-area, record, desired-state, or test-suite.",
+    "authority": "Exactly one repository-relative path and optional anchor.",
+    "directives": "Non-empty links with directive path and IDs or namespaces.",
+    "implementation": "Implementation paths and roles; implementation does not create authority.",
+    "consumers": "Consumers that do not own the subject.",
+    "reviewers": "Reviewers that do not own the subject.",
+    "evidence": "Validation or acceptance references; evidence is not authority.",
+    "status": "active, proposed, deprecated, or superseded."
+  },
+  "rules": [
+    "Each repository has exactly one specs/authority.json.",
+    "repositoryId matches one Docs authority-map.json repositoryRegistry entry.",
+    "The global map points to local authority.json only, never directly to directive JSONs.",
+    "Every global governs ID resolves to exactly one local subject.",
+    "Each active subject has exactly one normative path/anchor target.",
+    "Local subjects cannot claim cross-repository authority beyond the global registry entry.",
+    "Authority maps cannot contain live task history, secrets, credentials, runtime output, or generated state.",
+    "Broken links, duplicate IDs, duplicate normative targets, unsupported delegation, or uncovered normative content fail validation."
+  ],
+  "anchorRules": {
+    "json": "Use a stable dotted key or named record anchor.",
+    "markdown": "Use a stable heading anchor only when the heading is normative.",
+    "module": "Use an exported symbol or named module-area anchor.",
+    "unknown": "Use no anchor rather than inventing a non-resolving anchor."
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Global repository ownership." }
+  ]
+}

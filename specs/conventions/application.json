@@ -1,0 +1,209 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories containing application or service code.",
+  "authority": {
+    "authoritativeFor": ["Application and service repository requirements."],
+    "notAuthoritativeFor": [
+      "Non-application repositories, operations, deployment, or project behavior."
+    ]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.130",
+      "dos": ["These conventions apply to repositories containing application or service code."],
+      "donts": ["Application repositories must not omit applicable application requirements."],
+      "directives": [
+        {
+          "id": "A-1.130.0",
+          "dos": [
+            "Every application repository must extend the general AGENTS.md requirements with applicable application guidance."
+          ],
+          "donts": ["An application repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.130.0.1",
+              "dos": [
+                "Applications must validate configuration before opening connections, make shutdown repeatable, and test every externally observable workflow.",
+                "Applications must provide a root README.md, document runtime configuration and user-visible workflows, and provide .env.example when environment configuration is supported."
+              ],
+              "donts": [
+                "Applications must not open connections from unvalidated configuration or leave externally observable workflows without contract or integration checks."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "A-1.130.1",
+          "dos": [
+            "Application README.md must add Configuration and Operations, in that order, documenting startup and shutdown, runtime settings and defaults (or explicitly stating that no runtime configuration exists), externally observable workflows, and operational boundaries. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
+            "After the seven general AGENTS.md headings, add a ## Application section. Document the actual runtime entrypoint(s), lifecycle behavior, runtime configuration sources/defaults (or that none exist), and safe operational boundaries; distinguish these from package metadata and deployment configuration."
+          ],
+          "donts": [
+            "Application README.md must not omit runtime configuration, operational boundaries, or user-visible behavior."
+          ]
+        },
+        {
+          "id": "E-1.130.2",
+          "dos": [
+            "Every application repository must contain docs/README.md for end-user documentation."
+          ],
+          "donts": [
+            "Application repositories must not hide user-facing behavior in internal runbooks or claim operational guarantees that the application does not provide."
+          ],
+          "directives": [
+            {
+              "id": "A-1.130.2.0",
+              "dos": [
+                "docs/ must contain the complete end-user documentation for the application; docs/README.md must provide its overview and index and index every end-user document.",
+                "Application repositories must link docs/README.md from the root README.md."
+              ],
+              "donts": [
+                "Do not duplicate authoritative operational procedures or project requirements in end-user docs."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "A-1.130.3",
+          "dos": [
+            "Application package.json must declare its runtime/start entrypoints, environment contract, and private/public distribution status when applicable.",
+            "Application repositories may include examples/ when it improves user documentation; when present, examples/README.md must index runnable examples and each example must document prerequisites, commands, and expected results."
+          ],
+          "donts": [
+            "Do not leave application startup, runtime configuration, or distribution intent undefined in package metadata, or include undocumented examples."
+          ]
+        },
+        {
+          "id": "E-1.130.4",
+          "dos": [
+            "Applications must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file.",
+            "Place fixtures, snapshots, generators, and shared test support under artifacts/ when they have no source counterpart."
+          ],
+          "donts": [
+            "Do not omit src/ or tests/, use mismatched source/test paths, use non-.test.mjs test counterparts, or duplicate lower-level assertions in higher-level tests.",
+            "Do not place generated, bundled, compiled, dependency, coverage, or build output in source/test architecture."
+          ]
+        },
+        {
+          "id": "E-1.130.5",
+          "dos": [
+            "Applications must test applicable implementation code without Istanbul coverage-ignore directives."
+          ],
+          "donts": [
+            "Do not hide uncovered production behavior with Istanbul coverage-ignore directives unless an explicit convention exemption applies."
+          ]
+        },
+        {
+          "id": "E-1.130.6",
+          "dos": [
+            "Application production modules must have one primary responsibility; decompose broad orchestration into focused modules without moving business logic into coordination code."
+          ],
+          "donts": [
+            "Do not combine unrelated responsibilities in a module or retain avoidable monoliths."
+          ]
+        },
+        {
+          "id": "E-1.130.7",
+          "dos": [
+            "Register application-specific web-service ports with the external Eliware port registry."
+          ],
+          "donts": ["Do not select arbitrary unregistered web-service ports."]
+        },
+        {
+          "id": "E-1.130.8",
+          "dos": [
+            "Remove superseded compatibility branches, legacy aliases, and fallback behavior when the current contract replaces them."
+          ],
+          "donts": ["Do not preserve obsolete contracts for consumer convenience."]
+        },
+        {
+          "id": "E-1.130.9",
+          "dos": [
+            "Place unit tests at the lowest module level that directly proves behavior; keep only cross-cutting and integration tests in higher-level orchestrator test directories."
+          ],
+          "donts": ["Do not duplicate lower-level assertions in higher-level tests."]
+        },
+        {
+          "id": "E-1.130.10",
+          "dos": [
+            "Keep each non-generated, non-dependency application source file at 100 lines or fewer and each non-generated, non-dependency test file at 200 lines or fewer.",
+            "Decompose files that exceed a threshold into focused modules and mirrored tests.",
+            "Record an Eli-approved emergency exemption in package.json.eliware.exempt with this rule ID, reason, approver, approval timestamp, and either a concrete expiry date or expiry:null."
+          ],
+          "donts": [
+            "Do not bypass monolith limits with ignore flags, undocumented exemptions, or superficial line reduction."
+          ]
+        },
+        {
+          "id": "E-1.130.11",
+          "dos": [
+            "Applications must use Eliware common stack modules for redaction, logging, paths, errors, and signals where applicable."
+          ],
+          "donts": ["Do not duplicate common stack modules without Eli's authorization."]
+        },
+        {
+          "id": "E-1.130.12",
+          "dos": ["Applications must not use pure export barrels as internal convenience modules."],
+          "donts": [
+            "Do not create pure barrel files for internal modules or unrelated convenience re-exports."
+          ]
+        },
+        {
+          "id": "E-1.130.13",
+          "dos": [
+            "Run application Jest suites through eliware-test; test files may import APIs from @jest/globals supplied transitively."
+          ],
+          "donts": [
+            "Do not invoke Jest directly, import Jest runner/CLI modules, or declare Jest packages directly."
+          ]
+        },
+        {
+          "id": "E-1.130.14",
+          "dos": [
+            "Application Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code.",
+            "Exclude generated, bundled, compiled, dependency, coverage, build, declaration, fixture, and snapshot files from in-scope code."
+          ],
+          "donts": ["Do not hide untested production logic with coverage exclusions."],
+          "directives": [
+            {
+              "id": "A-1.130.14.0",
+              "dos": [
+                "Record any Eli-approved emergency coverage exemption in package.json.eliware.exempt with this rule ID, reason, approver, timestamp, and temporary expiry or expiry:null."
+              ],
+              "donts": [
+                "Do not use a 100x4 exemption without Eli's explicit emergency authorization."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-1.130.15",
+          "dos": [
+            "Keep application test execution quiet unless output is under test or an intentional failure diagnostic."
+          ],
+          "donts": [
+            "Do not allow incidental logs, console output, debug traces, or process output to leak from normal test runs."
+          ]
+        },
+        {
+          "id": "E-1.130.16",
+          "dos": [
+            "Application entrypoints must be thin and delegate unrelated business logic to focused modules."
+          ],
+          "donts": ["Do not place unrelated business logic in an application entrypoint."]
+        },
+        {
+          "id": "E-1.130.17",
+          "dos": ["Use dependency injection to keep application modules independently testable."],
+          "donts": [
+            "Do not hard-code replaceable external dependencies when dependency injection can keep a module testable."
+          ]
+        }
+      ]
+    }
+  ]
+}

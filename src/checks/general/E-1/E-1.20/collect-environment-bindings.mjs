@@ -10,7 +10,7 @@ export function collectEnvironmentBindings(node, aliases, variables) {
   if (node.id.type === "ObjectPattern" && isProcessEnv(node.init)) {
     for (const property of node.id.properties) {
       if (property.type === "ObjectProperty") {
-        const name = propertyName(property.key);
+        const name = propertyName(property.key, property.computed);
         if (name) addVariable(variables, name);
       }
     }

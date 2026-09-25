@@ -38,6 +38,7 @@ export async function run({
   if (packageJson?.private === true) return pass(ruleId);
   const findings = [];
   try {
+    const readingTrackedFiles = suppliedFiles == null;
     const files = suppliedFiles ?? (await readTracked(root));
     if (!Array.isArray(files)) {
       return fail(
@@ -46,7 +47,13 @@ export async function run({
       );
     }
     for (const file of files) {
-      const bytes = await readFile(join(root, file));
+      let bytes;
+      try {
+        bytes = await readFile(join(root, file));
+      } catch (error) {
+        if (readingTrackedFiles && error.code === "ENOENT") continue;
+        throw error;
+      }
       let content;
       try {
         content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);

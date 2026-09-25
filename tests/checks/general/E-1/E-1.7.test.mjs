@@ -93,6 +93,14 @@ test("inspects tracked files when no file list is supplied", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("skips tracked paths deleted from the current working tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-internal-deleted-"));
+  await expect(
+    run({ root, readTracked: async () => ["scripts/removed.mjs"] }),
+  ).resolves.toEqual({ ruleId: "E-1.7", status: "pass", message: "" });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("skips public-content scanning for private repositories", async () => {
   const readTracked = jest.fn();
   await expect(

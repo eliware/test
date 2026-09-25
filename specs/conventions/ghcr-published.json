@@ -1,0 +1,147 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories that publish container images to GitHub Container Registry (GHCR). It extends general.json and the applicable public/private distribution profile without replacing their validation or publication boundaries.",
+  "authority": {
+    "authoritativeFor": [
+      "GHCR publication applicability, workflow shape, image identity, provenance, and repository-side publication requirements."
+    ],
+    "notAuthoritativeFor": [
+      "Release authorization, publication execution, artifact cleanup, deployment rollout, rollback, or live registry state."
+    ]
+  },
+  "crosslinks": [
+    { "path": "./general.json", "authoritativeFor": "Universal repository and CI requirements." },
+    {
+      "path": "./npm-published.json",
+      "authoritativeFor": "Public npm publication requirements when also applicable."
+    },
+    {
+      "path": "./private.json",
+      "authoritativeFor": "Private repository distribution restrictions when also applicable."
+    },
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    {
+      "path": "../../../operations/specs/directives.json",
+      "authoritativeFor": "Release authorization, publication execution, cleanup, and handoff."
+    },
+    {
+      "path": "../../../gitops/specs/directives.json",
+      "authoritativeFor": "Deployment rollout, digest-pinned desired state, and rollback execution."
+    },
+    {
+      "path": "../../../gitops-k8s/specs/directives.json",
+      "authoritativeFor": "Kubernetes image references and deployment configuration."
+    }
+  ],
+  "directives": [
+    {
+      "id": "E-1.160",
+      "dos": [
+        "Every repository that publishes an image to GHCR must apply ghcr-published.json in addition to general.json and its applicable public or private distribution profile.",
+        "GHCR publication is separate from general validation, npm publication, and deployment execution."
+      ],
+      "donts": [
+        "Do not treat ghcr-published.json as permission to publish, deploy, or alter a live registry."
+      ],
+      "directives": [
+        {
+          "id": "E-1.160.0",
+          "dos": [
+            "After the seven general AGENTS.md headings, add a ## GHCR publication section. Document image identity, visibility, publication workflow and required validation, provenance/signing mechanism, registry credential boundary, exact digest verification, and deployment-consumer boundary. Document release gates and the Operations handoff; do not treat this profile or its documentation as permission to publish."
+          ],
+          "donts": [
+            "Do not leave GHCR publication ownership, image identity, or secret-handling boundaries undocumented in AGENTS.md."
+          ]
+        },
+        {
+          "id": "E-1.160.1",
+          "dos": [
+            "A single-image repository must publish ghcr.io/eliware/<repository-name>.",
+            "A repository publishing multiple images must publish ghcr.io/eliware/<repository-name>-<image-name> for each image.",
+            "The project owner must propose the image mapping and Eli is the final approver with authority to override it."
+          ],
+          "donts": [
+            "Do not publish under an unapproved registry owner, repository name, or image mapping."
+          ]
+        },
+        {
+          "id": "E-1.160.2",
+          "dos": [
+            "GHCR repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If npm publication is also applied, both publication profiles use this single publish.yml file.",
+            "GHCR publication workflows must use the GitHub Actions tag filter `v[0-9]+.[0-9]+.[0-9]+` so only three-component numeric version-shaped tags start the workflow; verify the tag and approved release version before pushing, and require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary; an approved GHCR badge may be added when a standard badge URL exists."
+          ],
+          "donts": [
+            "Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches, pull requests, manual validation dispatches, unversioned tags, or an inferred release version."
+          ]
+        },
+        {
+          "id": "E-1.160.3",
+          "dos": [
+            "The GHCR publication workflow must be separate from the general validation workflow and must require successful Ubuntu validation using the inherited npm ci followed by npm test flow before publication.",
+            "A repository that also publishes npm must keep npm publication separate while reusing the inherited validation result and exact release identity."
+          ],
+          "donts": [
+            "Do not place GHCR credentials or GHCR publication steps in validation-only CI, Knit, or npm publication validation."
+          ]
+        },
+        {
+          "id": "E-1.160.4",
+          "dos": [
+            "The default GHCR authentication method must be the repository-scoped GITHUB_TOKEN with only contents: read and packages: write permissions for the publication job."
+          ],
+          "donts": [
+            "Do not commit, print, persist, or expose registry credentials, and do not grant broader workflow permissions than the publication requires."
+          ]
+        },
+        {
+          "id": "E-1.160.5",
+          "dos": [
+            "Every GHCR publication must generate a signed GitHub artifact attestation using actions/attest@v4 after the image push, with id-token: write, attestations: write, artifact-metadata: write, contents: read, and packages: write permissions as required by the attestation workflow.",
+            "The attestation must use the fully qualified image name without a tag and the pushed image digest as subject-digest, set push-to-registry: true, and record the attestation result with the release handoff."
+          ],
+          "donts": [
+            "Do not treat provenance or signing as optional project hardening, use a tag instead of the immutable digest as the attestation subject, or publish an image without its signed attestation."
+          ]
+        },
+        {
+          "id": "E-1.160.6",
+          "dos": [
+            "The project owner must own the Dockerfile or equivalent build definition, build context, and supported-architecture declaration; DevOps executes the approved build and publication.",
+            "Single-architecture builds are the baseline; multi-architecture publication requires project-specific declaration and approval before implementation."
+          ],
+          "donts": [
+            "Do not let a publication operator silently change the build context, Dockerfile, or supported architectures."
+          ]
+        },
+        {
+          "id": "E-1.160.7",
+          "dos": [
+            "The exact version tag and recorded sha256 digest together identify the published image for release and deployment.",
+            "latest may be published only as a documented mutable convenience alias and must never be the release or deployment identity."
+          ],
+          "donts": [
+            "Do not deploy, hand off, or identify a release solely by latest or another mutable tag."
+          ]
+        },
+        {
+          "id": "E-1.160.8",
+          "dos": [
+            "The publication workflow must expose the pushed image digest, verify that the exact version tag resolves to that digest, and verify that the image and signed attestation are readable according to the repository visibility before reporting publication success."
+          ],
+          "donts": [
+            "Do not report GHCR publication success without digest and attestation verification."
+          ]
+        },
+        {
+          "id": "A-1.160.9",
+          "dos": [
+            "After publication, use a separate Operations release handoff and a separate GitOps deployment handoff for any rollout; publication alone must not deploy the image."
+          ],
+          "donts": [
+            "Do not make GHCR publication automatically mutate GitOps desired state or live Kubernetes state."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -8,3 +8,12 @@ test("collects direct, aliased, and destructured environment references", () => 
   collectEnvironmentReferences(ast, new Set(), variables);
   expect([...variables].sort()).toEqual(["HOST", "PORT", "TOKEN"]);
 });
+
+test("ignores absent and non-object AST nodes", () => {
+  const aliases = new Set();
+  const variables = new Set();
+  collectEnvironmentReferences(null, aliases, variables);
+  collectEnvironmentReferences("not an AST node", aliases, variables);
+  expect(aliases).toEqual(new Set());
+  expect(variables).toEqual(new Set());
+});

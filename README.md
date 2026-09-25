@@ -99,9 +99,10 @@ The v8 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 
 Application and library architecture guidance is selected only when the
-corresponding profile is declared in `package.json.eliware.apply`. Requirements
-that have no deterministic check are explicitly marked advisory in their
-profile-specific bundled check metadata.
+corresponding profile is declared in `package.json.eliware.apply`. Some profile
+requirements remain advisory or specification-only when they do not have a
+deterministic check; their canonical wording remains in the local profile
+specifications.
 
 ## Security
 
@@ -147,10 +148,9 @@ Exit code `0` is success, `8` is Jest failure, `10` is coverage failure, `12` is
 failure, `14` is an internal tool failure, `17` is a package-check failure, and
 `18` is a convention, configuration, argument, format, or format-check failure.
 Every failed convention check includes the check ID, the observed failure, and
-a `How to resolve` line selected from the bundled Convention v8 remediation
-guidance. The bundled snapshot is regenerated from the adjacent
-`eliware/conventions/specs` directory with `node scripts/sync-convention-remediation.mjs`
-when directive guidance changes. Output also redacts recognized secret
+the complete matching directive, including all `dos`, `donts`, and examples
+when present. The canonical profile specifications live in `specs/conventions/`
+and are read directly by the harness. Output also redacts recognized secret
 patterns. The CLI performs no deploy, publish, release, or destructive
 repository operation.
 
@@ -176,7 +176,7 @@ diagnostics when requesting help.
 - [Specifications](specs/README.md)
 - [Authority distribution](specs/authority.json)
 - [Global authority map](https://github.com/eliware/docs/blob/main/authority-map.json)
-- [Bundled convention remediation snapshot](specs/convention-remediation.json)
+- [Canonical repository profile specifications](specs/conventions/README.md)
 - [Home Page](https://eliware.org)
 - [GitHub Repo](https://github.com/eliware/test)
 - [GitHub Org](https://github.com/eliware)

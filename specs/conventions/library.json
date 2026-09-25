@@ -1,0 +1,219 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories containing library code.",
+  "authority": {
+    "authoritativeFor": ["Reusable library repository requirements."],
+    "notAuthoritativeFor": [
+      "Non-library repositories, operations, deployment, or project behavior."
+    ]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.40",
+      "dos": ["These conventions apply to repositories containing library code."],
+      "donts": ["Library repositories must not omit applicable library requirements."],
+      "directives": [
+        {
+          "id": "A-1.40.0",
+          "dos": [
+            "Every library repository must extend the general AGENTS.md requirements with applicable library guidance."
+          ],
+          "donts": ["A library repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.40.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## Library section. Document public API boundaries, exports and declarations, compatibility policy, package contents/allowlist, package validation, typecheck, and consumer-validation commands."
+              ],
+              "donts": [
+                "AGENTS.md must not leave the public library contract or package validation undefined."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "A-1.40.1",
+          "dos": [
+            "Libraries must define explicit exports and declarations for typed public APIs, test the public API, use package allowlists, and provide .env.example when the library supports environment configuration.",
+            "Every library must contain examples/README.md and at least one runnable example under examples/.",
+            "Every library must contain docs/ with complete end-user documentation and docs/README.md as its overview and index.",
+            "Public Eliware packages must use the @eliware scope, repository metadata matching package.json, an approved license, the Eliware Discord, GitHub, and eliware@eliware.org support channels, and synchronized public branding."
+          ],
+          "donts": [
+            "Libraries must not omit the examples index or runnable example, publish unintended files, or leave the public package contract untested."
+          ]
+        },
+        {
+          "id": "A-1.40.3",
+          "dos": [
+            "Library README.md must add API, Packaging, and Examples, in that order, including installation, public exports, compatibility, package validation, and at least one runnable usage example. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
+            "Library README.md must link docs/README.md and examples/README.md when those surfaces are required, and every runnable example must state prerequisites, command, and expected result."
+          ],
+          "donts": [
+            "Do not document private implementation details as public API, publish undocumented examples, or imply compatibility that the package does not test."
+          ]
+        },
+        {
+          "id": "A-1.40.5",
+          "dos": [
+            "Library package.json must declare the public entrypoint or exports, typed declaration metadata when applicable, and an intentional package file allowlist.",
+            "Libraries may contain examples only when useful outside the mandatory library example contract; non-library repositories may also use examples when useful and must index them when present."
+          ],
+          "donts": [
+            "Do not publish a library with undefined exports, declarations, or package contents, and do not require examples from non-library repositories without a repository-specific need."
+          ]
+        },
+        {
+          "id": "E-1.40.2",
+          "dos": [
+            "Published libraries must validate the package contents and allowlist before publication."
+          ],
+          "donts": [
+            "Published libraries must not publish files outside the intentional package contents."
+          ]
+        },
+        {
+          "id": "E-1.40.4",
+          "dos": [
+            "Published libraries must run package dry-run validation and verify the resulting file allowlist before publication."
+          ],
+          "donts": ["Do not publish a library without validating its packed contents."]
+        },
+        {
+          "id": "E-1.40.6",
+          "dos": [
+            "Libraries must define a non-empty typecheck script using the repository's direct typechecker and must pass `npm run typecheck` during aggregate validation and before release consideration."
+          ],
+          "donts": [
+            "Do not omit typecheck, route it through eliware-test, or release a library without passing `npm run typecheck`."
+          ]
+        },
+        {
+          "id": "E-1.40.7",
+          "dos": [
+            "Libraries must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file.",
+            "Place fixtures, snapshots, generators, and shared test support under artifacts/ when they have no source counterpart."
+          ],
+          "donts": [
+            "Do not omit src/ or tests/, use mismatched source/test paths, use non-.test.mjs test counterparts, or duplicate lower-level assertions in higher-level tests.",
+            "Do not place generated, bundled, compiled, dependency, coverage, or build output in source/test architecture."
+          ]
+        },
+        {
+          "id": "E-1.40.8",
+          "dos": [
+            "Libraries must test applicable implementation code without Istanbul coverage-ignore directives."
+          ],
+          "donts": [
+            "Do not hide uncovered production behavior with Istanbul coverage-ignore directives unless an explicit convention exemption applies."
+          ]
+        },
+        {
+          "id": "E-1.40.9",
+          "dos": [
+            "Place unit tests at the lowest module level that directly proves behavior; keep only cross-cutting and integration tests in higher-level orchestrator test directories."
+          ],
+          "donts": ["Do not duplicate lower-level assertions in higher-level tests."]
+        },
+        {
+          "id": "E-1.40.10",
+          "dos": [
+            "Remove superseded compatibility branches, legacy aliases, and fallback behavior when the current contract replaces them."
+          ],
+          "donts": ["Do not preserve obsolete contracts for consumer convenience."]
+        },
+        {
+          "id": "E-1.40.11",
+          "dos": [
+            "Library production modules must have one primary responsibility; decompose broad orchestration into focused modules without moving business logic into coordination code."
+          ],
+          "donts": [
+            "Do not combine unrelated responsibilities in a module or retain avoidable monoliths."
+          ]
+        },
+        {
+          "id": "E-1.40.12",
+          "dos": [
+            "Keep each non-generated, non-dependency library source file at 100 lines or fewer and each non-generated, non-dependency test file at 200 lines or fewer.",
+            "Decompose files that exceed a threshold into focused modules and mirrored tests.",
+            "Record an Eli-approved emergency exemption in package.json.eliware.exempt with this rule ID, reason, approver, approval timestamp, and either a concrete expiry date or expiry:null."
+          ],
+          "donts": [
+            "Do not bypass monolith limits with ignore flags, undocumented exemptions, or superficial line reduction."
+          ]
+        },
+        {
+          "id": "E-1.40.13",
+          "dos": [
+            "Libraries must use Eliware common stack modules for redaction, logging, paths, errors, and signals where applicable."
+          ],
+          "donts": ["Do not duplicate common stack modules without Eli's authorization."]
+        },
+        {
+          "id": "E-1.40.14",
+          "dos": [
+            "Allow pure export barrels only as a library's primary public entrypoint or index."
+          ],
+          "donts": [
+            "Do not create pure barrel files for internal modules or unrelated convenience re-exports."
+          ]
+        },
+        {
+          "id": "E-1.40.15",
+          "dos": [
+            "Run library Jest suites through eliware-test; test files may import APIs from @jest/globals supplied transitively."
+          ],
+          "donts": [
+            "Do not invoke Jest directly, import Jest runner/CLI modules, or declare Jest packages directly."
+          ]
+        },
+        {
+          "id": "E-1.40.16",
+          "dos": [
+            "Library Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code.",
+            "Exclude generated, bundled, compiled, dependency, coverage, build, declaration, fixture, and snapshot files from in-scope code; the primary public export barrel may be excluded."
+          ],
+          "donts": ["Do not hide untested production logic with coverage exclusions."],
+          "directives": [
+            {
+              "id": "A-1.40.16.0",
+              "dos": [
+                "Record any Eli-approved emergency coverage exemption in package.json.eliware.exempt with this rule ID, reason, approver, timestamp, and temporary expiry or expiry:null."
+              ],
+              "donts": [
+                "Do not use a 100x4 exemption without Eli's explicit emergency authorization."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-1.40.17",
+          "dos": [
+            "Keep library test execution quiet unless output is under test or an intentional failure diagnostic."
+          ],
+          "donts": [
+            "Do not allow incidental logs, console output, debug traces, or process output to leak from normal test runs."
+          ]
+        },
+        {
+          "id": "E-1.40.18",
+          "dos": [
+            "Library entrypoints must be thin and delegate unrelated implementation logic to focused modules."
+          ],
+          "donts": ["Do not place unrelated implementation logic in a library entrypoint."]
+        },
+        {
+          "id": "E-1.40.19",
+          "dos": ["Use dependency injection to keep library modules independently testable."],
+          "donts": [
+            "Do not hard-code replaceable external dependencies when dependency injection can keep a library module testable."
+          ]
+        }
+      ]
+    }
+  ]
+}

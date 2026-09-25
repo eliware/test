@@ -121,7 +121,7 @@
     ],
     "authority": {
       "authoritativeFor": [
-        "Deterministic repository validation and the eliware-test CLI."
+        "Shared repository profile requirements, deterministic validation, and the eliware-test CLI."
       ],
       "notAuthoritativeFor": [
         "Semantic review, release approval, or live operations."
@@ -134,22 +134,22 @@
         "authoritativeFor": "Cross-repository ownership and platform authority."
       },
       {
-        "path": "../conventions/specs/general.json",
+        "path": "./specs/conventions/general.json",
         "relation": "relatedAuthority",
         "authoritativeFor": "Universal Eliware conventions enforced by this package."
       },
       {
-        "path": "../conventions/specs/application.json",
+        "path": "./specs/conventions/application.json",
         "relation": "relatedAuthority",
         "authoritativeFor": "Application conventions enforced by this package."
       },
       {
-        "path": "../conventions/specs/cli.json",
+        "path": "./specs/conventions/cli.json",
         "relation": "relatedAuthority",
         "authoritativeFor": "CLI conventions enforced by this package."
       },
       {
-        "path": "../conventions/specs/npm-published.json",
+        "path": "./specs/conventions/npm-published.json",
         "relation": "relatedAuthority",
         "authoritativeFor": "npm publication conventions enforced by this package."
       },

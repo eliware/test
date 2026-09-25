@@ -3,10 +3,10 @@
   "description": "Specification for the deterministic Eliware validation harness.",
   "authority": {
     "authoritativeFor": [
-      "Harness configuration, bundled-check discovery, check execution, result reporting, and validation safety."
+      "Shared repository profiles under specs/conventions, harness configuration, bundled-check discovery, check execution, result reporting, and validation safety."
     ],
     "notAuthoritativeFor": [
-      "Repository requirements, convention wording, profile applicability, exemptions, publication policy, deployment, or operations."
+      "Consumer repository implementation details, human acceptance, publication policy, deployment, or operations."
     ]
   },
   "crosslinks": [
@@ -16,22 +16,22 @@
       "authoritativeFor": "Cross-repository ownership and authority boundaries."
     },
     {
-      "path": "../../conventions/specs/general.json",
+      "path": "./conventions/general.json",
       "relation": "relatedAuthority",
       "authoritativeFor": "Universal repository conventions and profile authority."
     },
     {
-      "path": "../../conventions/specs/application.json",
+      "path": "./conventions/application.json",
       "relation": "relatedAuthority",
       "authoritativeFor": "Application repository requirements enforced by this package."
     },
     {
-      "path": "../../conventions/specs/cli.json",
+      "path": "./conventions/cli.json",
       "relation": "relatedAuthority",
       "authoritativeFor": "CLI repository requirements, public help/version behavior, and exit-code documentation."
     },
     {
-      "path": "../../conventions/specs/npm-published.json",
+      "path": "./conventions/npm-published.json",
       "relation": "relatedAuthority",
       "authoritativeFor": "npm-published package requirements and the aggregate pack-stage boundary."
     },
@@ -49,7 +49,7 @@
         "Treat overlapping validation invocations on the same worktree as unsupported; callers are responsible for avoiding them."
       ],
       "donts": [
-        "Do not define, reinterpret, duplicate, or extend repository conventions in the harness specification.",
+        "Do not define shared profile rules in this harness directive document; maintain them in specs/conventions/.",
         "Do not perform publication, deployment, synchronization, tagging, pushing, or other external state changes during validation.",
         "Do not expose internal modules, injected collaborators, or runtime-library seams as consumer APIs.",
         "Do not claim comprehensive secret detection or redaction.",
@@ -81,18 +81,18 @@
         {
           "id": "E-18.3",
           "dos": ["Keep bundled checks self-contained and organized in profile directories."],
-          "donts": ["Do not require a private external authority repository at runtime."],
+          "donts": ["Do not require an external authority repository at runtime."],
           "directives": [
             {
               "id": "A-18.3.0",
               "dos": [
-                "Discover checks deterministically from the published harness package.",
-                "Treat packaged check modules as the runtime authority snapshot.",
-                "Bundle remediation guidance for every discovered check so failed diagnostics can explain how to resolve the violated requirement without a runtime dependency on eliware/conventions."
+                "Discover check modules deterministically from the published harness package.",
+                "Load each check's profile and complete directive directly from the local specs/conventions/ documents.",
+                "Print the complete matched directive, including every dos, donts, and examples when present, with each failed check."
               ],
               "donts": [
-                "Do not use a separate runtime registry that can diverge from bundled check modules.",
-                "Do not require consumers to have the eliware/conventions repository installed to receive failure remediation."
+                "Do not maintain a generated directive snapshot that duplicates the local profile specifications.",
+                "Do not select or summarize a subset of a failed directive's requirements for the diagnostic."
               ]
             }
           ]
@@ -113,7 +113,7 @@
             {
               "id": "A-18.4.1",
               "dos": [
-                "Map each convention check to an existing directive identity in the bundled authority snapshot."
+                "Map each convention check to an existing directive identity in its local profile specification."
               ],
               "donts": ["Do not invent a convention requirement from an implementation detail."]
             }
@@ -147,7 +147,7 @@
           "id": "E-18.6",
           "dos": [
             "Make checks return only pass or fail with stable identities and actionable diagnostics.",
-            "For every failed convention check, report the check identity, the observed failure, and concise remediation guidance drawn from the bundled authority snapshot.",
+            "For every failed convention check, report the check identity, the observed failure, and the complete matching directive from the local profile specification, including all dos, donts, and examples when present.",
             "Preserve complete bounded child-process context, deterministic failure aggregation, current-run evidence ownership, and the invoking environment needed by the executed tests."
           ],
           "donts": [
@@ -159,11 +159,12 @@
               "dos": [
                 "Report each check independently and aggregate results deterministically.",
                 "Preserve failed-check diagnostics without allowing another result to erase them.",
-                "Include a clear How to resolve instruction with every failed-check diagnostic, selecting relevant guidance from the check's authoritative directive."
+                "Include the complete matched directive in every failed-check diagnostic, preserving all dos, donts, and examples when present."
               ],
               "donts": [
                 "Do not silently skip a selected check or convert uncertainty into success.",
-                "Do not report only a convention ID and failure description without explaining how to resolve the failure."
+                "Do not report only a convention ID and failure description.",
+                "Do not omit or paraphrase any part of the matched directive in the failure diagnostic."
               ]
             },
             {
@@ -357,11 +358,11 @@
           "id": "E-18.8",
           "dos": [
             "Implement the harness as a self-contained filesystem-discovered convention-check system.",
-            "Treat the published bundled checks as the complete runtime authority snapshot."
+            "Treat specs/conventions/ as the canonical local source for applicable rule content and profile applicability."
           ],
           "donts": [
-            "Do not require the private eliware/conventions repository or any other external authority repository at runtime.",
-            "Do not retain a legacy compatibility layer or a second legacy check registry."
+            "Do not require an external authority repository at runtime.",
+            "Do not maintain a generated copy or a second registry for rule content already present in specs/conventions/."
           ],
           "directives": [
             {
@@ -387,12 +388,13 @@
             {
               "id": "A-18.8.2",
               "dos": [
-                "Provision the bundled check tree from the published convention directive set so that each known directive has a discoverable implementation location.",
-                "Validate every bundled check ID and profile against the bundled versioned convention authority snapshot; check-directory names and filenames alone are not authority.",
-                "Keep directives that are not deterministically enforceable from being represented as successful enforcement merely because a scaffold exists; their implementation status must remain distinct from the harness result contract."
+                "Create check modules only for requirements with deterministic enforcement or explicit advisory handling; leave other canonical directives in their profile specifications without placeholder modules.",
+                "Validate every check ID and profile against the versioned specifications in specs/conventions/; check-directory names and filenames alone are not authority.",
+                "Mark non-deterministic check modules advisory-only so the runner does not report them as enforced success."
               ],
               "donts": [
-                "Do not claim that a placeholder module enforces a convention before its deterministic check logic exists.",
+                "Do not add a placeholder module solely to represent a directive that has no check implementation.",
+                "Do not claim that an advisory-only module enforces a convention.",
                 "Do not accept an unknown, misprofiled, or noncanonical check ID because a matching check directory or file exists."
               ]
             },

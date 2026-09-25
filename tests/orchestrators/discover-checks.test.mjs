@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 import { discoverChecks, discoverAllChecks } from "../../src/orchestrators/discover-checks.mjs";
 
 test("discovers and sorts checks from an explicit profile", async () => {
@@ -75,26 +75,4 @@ test("keeps the bundled registry unique and executable", async () => {
   expect(new Set(ids).size).toBe(ids.length);
   expect(ids.every((id) => /^([EA])-\d+(?:\.\d+)*$/.test(id))).toBe(true);
   expect(checks.every(({ run }) => typeof run === "function")).toBe(true);
-});
-
-test("bundled runtime does not import the private conventions repository", async () => {
-  async function files(root) {
-    const result = [];
-    for (const entry of await (await import("node:fs/promises")).readdir(root, {
-      withFileTypes: true,
-    })) {
-      const path = join(root, entry.name);
-      if (entry.isDirectory()) result.push(...(await files(path)));
-      else if (entry.isFile() && path.endsWith(".mjs")) result.push(path);
-    }
-    return result;
-  }
-  const references = [];
-  for (const file of await files(join(process.cwd(), "src"))) {
-    const content = await readFile(file, "utf8");
-    if (/from\s+["'][^"']*eliware\/conventions|import\(\s*["'][^"']*eliware\/conventions/.test(content)) {
-      references.push(relative(process.cwd(), file));
-    }
-  }
-  expect(references).toEqual([]);
 });

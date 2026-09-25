@@ -1,0 +1,63 @@
+{
+  "version": "8.0",
+  "description": "Applies to repositories containing CLI code.",
+  "authority": {
+    "authoritativeFor": ["CLI application repository requirements."],
+    "notAuthoritativeFor": ["Non-CLI repositories, operations, deployment, or project behavior."]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
+    { "path": "./application.json", "authoritativeFor": "Shared application requirements." }
+  ],
+  "directives": [
+    {
+      "id": "E-1.60",
+      "dos": [
+        "These conventions apply to repositories containing CLI application code.",
+        "CLI application repositories must also apply application.json."
+      ],
+      "donts": [
+        "CLI application repositories must not omit application.json or applicable CLI requirements."
+      ],
+      "directives": [
+        {
+          "id": "A-1.60.0",
+          "dos": [
+            "Every CLI repository must extend the general AGENTS.md requirements with applicable CLI guidance."
+          ],
+          "donts": ["A CLI repository must not omit AGENTS.md."],
+          "directives": [
+            {
+              "id": "A-1.60.0.1",
+              "dos": [
+                "After the seven general AGENTS.md headings, add a ## CLI section. Document each executable entrypoint and its target; command/subcommand names; option and positional-argument parsing, defaults, validation, forwarding, and errors; exit-code meanings and mapping; supported platforms and platform-specific behavior; --help and --version behavior; and destructive-action safeguards such as dry-run, confirmation, and scope limits. Include applicable validation commands."
+              ],
+              "donts": [
+                "AGENTS.md must not leave CLI entrypoints or required CLI validation undefined."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "E-1.60.1",
+          "dos": [
+            "CLI applications must contain bin/ with the executable entrypoint, implement and document --help and --version, document exit codes and redacted output, and provide dry-run or confirmation controls for destructive actions."
+          ],
+          "donts": [
+            "CLI applications must not omit bin/, --help, --version, or required safety controls, or expose secrets."
+          ]
+        },
+        {
+          "id": "A-1.60.2",
+          "dos": [
+            "CLI README.md must add Commands and Exit codes, in that order, documenting installation, each user-facing command and important options, --help, --version, safe copyable examples, supported platform behavior, exit-code meanings, and destructive-action controls. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+          ],
+          "donts": [
+            "Do not show destructive commands without dry-run, confirmation, or equivalent safety behavior, and do not claim platform support that is not validated."
+          ]
+        }
+      ]
+    }
+  ]
+}

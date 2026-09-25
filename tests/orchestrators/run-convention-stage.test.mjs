@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { runConventionStage } from "../../src/orchestrators/run-convention-stage.mjs";
-import { formatConventionFailure } from "../../src/orchestrators/convention-remediation.mjs";
+import { formatConventionFailure } from "../../src/orchestrators/format-convention-failure.mjs";
 
 test("returns a passing convention stage", async () => {
   const result = await runConventionStage(async () => [
@@ -9,7 +9,7 @@ test("returns a passing convention stage", async () => {
   expect(result).toEqual({ code: 0, category: "conventions", diagnostics: [] });
 });
 
-test("adds resolution guidance to each failed-check diagnostic", async () => {
+test("includes the complete failed directive in each check diagnostic", async () => {
   const failure = { ruleId: "E-1.0", status: "fail", message: "missing file" };
   const result = await runConventionStage(async () => [failure]);
   expect(result).toEqual({
@@ -17,7 +17,9 @@ test("adds resolution guidance to each failed-check diagnostic", async () => {
     category: "conventions",
     diagnostics: [formatConventionFailure(failure)],
   });
-  expect(result.diagnostics[0]).toContain("How to resolve:");
+  expect(result.diagnostics[0]).toContain('"dos":');
+  expect(result.diagnostics[0]).toContain('"donts":');
+  expect(result.diagnostics[0]).toContain('"id": "E-1.0"');
 });
 
 test("preserves stable failure codes for each validation stage", async () => {

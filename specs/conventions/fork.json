@@ -1,0 +1,44 @@
+{
+  "version": "8.0",
+  "description": "Applies only to external upstream forks. Eliware conventions do not apply to these repositories.",
+  "authority": {
+    "authoritativeFor": ["Eliware handling boundaries for upstream forks."],
+    "notAuthoritativeFor": [
+      "Upstream repository conventions, operations, deployment, or project behavior."
+    ]
+  },
+  "crosslinks": [
+    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    {
+      "path": "./general.json",
+      "authoritativeFor": "Reference only; external forks are excluded from Eliware convention applicability."
+    }
+  ],
+  "directives": [
+    {
+      "id": "E-1.120",
+      "dos": [
+        "External forks follow the upstream repository's own instructions, contribution rules, coding standards, and validation."
+      ],
+      "donts": ["Eliware conventions must not be applied to an external upstream fork."],
+      "directives": [
+        {
+          "id": "E-1.120.0",
+          "dos": [
+            "Use forks for upstream contributions.",
+            "Preserve the upstream remote, fork provenance, and contribution context.",
+            "Follow the fork's existing AGENTS.md, contribution guidelines, coding standards, validation, and submission process.",
+            "Verify upstream contribution status and review requirements before proposing work.",
+            "Obtain Eli's specific authorization before creating a pull request."
+          ],
+          "donts": [
+            "Do not apply, add, or enforce Eliware conventions in a fork.",
+            "Do not modify an existing AGENTS.md unless required for the upstream contribution.",
+            "Do not obscure upstream origin or contribution context.",
+            "Do not create a pull request without Eli's specific authorization."
+          ]
+        }
+      ]
+    }
+  ]
+}

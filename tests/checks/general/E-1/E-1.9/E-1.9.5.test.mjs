@@ -35,7 +35,7 @@ test("accepts a structurally valid cross-repository authority path", async () =>
   await expect(run({
     packageJson: {
       eliware: {
-        crosslinks: [{ path: "../../conventions/specs/general.json", relation: "relatedAuthority", authoritativeFor: "shared requirements" }],
+        crosslinks: [{ path: "./specs/conventions/general.json", relation: "relatedAuthority", authoritativeFor: "shared requirements" }],
       },
     },
   })).resolves.toEqual(expect.objectContaining({ status: "pass" }));

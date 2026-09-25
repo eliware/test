@@ -18,13 +18,14 @@ const authority = {
     },
   },
   directives: { "E-1": "general", "A-1.1": "general", "E-1.130.7": "application" },
-};
-const guidance = {
-  version: "8.0",
-  checks: {
-    "E-1": { dos: ["Fix E-1."] },
-    "A-1.1": { dos: ["Fix A-1.1."] },
-    "E-1.130.7": { dos: ["Fix E-1.130.7."] },
+  rules: {
+    "E-1": { id: "E-1", dos: ["Do E-1."], donts: ["Don't E-1."] },
+    "A-1.1": { id: "A-1.1", dos: ["Do A-1.1."], donts: ["Don't A-1.1."] },
+    "E-1.130.7": {
+      id: "E-1.130.7",
+      dos: ["Do E-1.130.7."],
+      donts: ["Don't E-1.130.7."],
+    },
   },
 };
 
@@ -34,7 +35,6 @@ test("accepts every authoritative bundled directive", async () => {
       [check("E-1"), check("A-1.1")],
       ["general"],
       authority,
-      guidance,
     ),
   ).toBe(true);
 });
@@ -51,6 +51,7 @@ test("handles an applied group without an authority entry", () => {
       version: "8.0",
       profiles: {},
       directives: {},
+      rules: {},
     }),
   ).toThrow("Unknown bundled convention profiles");
 });
@@ -71,18 +72,8 @@ test("keeps authority validation separate from deterministic enforcement status"
       [check("E-1.130.7", "non-deterministic", "application")],
       ["general"],
       authority,
-      guidance,
     ),
   ).toBe(true);
-});
-
-test("rejects a bundled check without failure remediation guidance", () => {
-  expect(() =>
-    validateBundledDirectiveCompleteness([check("E-1")], ["general"], authority, {
-      version: "8.0",
-      checks: {},
-    }),
-  ).toThrow("lack remediation guidance: E-1");
 });
 
 test("rejects an invalid enforcement mode instead of treating it as an implemented check", () => {
@@ -101,9 +92,9 @@ test("rejects a deterministic check whose identity disagrees with its module pat
   ).toThrow("no matching authority entry");
 });
 
-test("rejects a check ID that is absent from the bundled authority snapshot", () => {
+test("rejects a check ID that is absent from the local convention specifications", () => {
   expect(() =>
-    validateBundledDirectiveCompleteness([check("E-1.999")], ["general"], authority, guidance),
+    validateBundledDirectiveCompleteness([check("E-1.999")], ["general"], authority),
   ).toThrow("general/E-1.999.mjs (E-1.999)");
 });
 
@@ -113,7 +104,6 @@ test("rejects a canonical check placed under the wrong profile", () => {
       [check("E-1.130.7", "deterministic", "general")],
       ["general"],
       authority,
-      guidance,
     ),
   ).toThrow("general/E-1.130.7.mjs (E-1.130.7)");
 });
@@ -124,7 +114,6 @@ test("rejects unknown check profiles even when that profile is not selected", ()
       [{ ...check("E-1"), modulePath: "unknown/E-1.mjs" }],
       ["general"],
       authority,
-      guidance,
     ),
   ).toThrow("unknown/E-1.mjs (E-1)");
 });
