@@ -20,9 +20,23 @@ export async function executeConventionChecks(checks, context, exemptions) {
     if (context.modeRuleId && check.ruleId !== context.modeRuleId) continue;
     if (typeof check.run !== "function") throw new Error(`Selected check ${check.ruleId} is incomplete and cannot be executed.`);
     context.timing?.start?.(check.ruleId);
-    const result = await check.run(context);
-    results.push(assertCheckResult(result, check.ruleId));
-    context.timing?.end?.(check.ruleId);
+    try {
+      let result;
+      try {
+        result = await check.run(context);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Check threw a non-Error value.";
+        results.push({
+          ruleId: check.ruleId,
+          status: "fail",
+          message: `Check execution threw: ${message}`,
+        });
+        continue;
+      }
+      results.push(assertCheckResult(result, check.ruleId));
+    } finally {
+      context.timing?.end?.(check.ruleId);
+    }
   }
   return results;
 }

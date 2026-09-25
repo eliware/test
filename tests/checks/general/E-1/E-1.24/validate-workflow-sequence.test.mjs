@@ -79,7 +79,6 @@ test("allows bounded setup and reporting around adjacent required commands", () 
   const steps = [
     { run: "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > .env" },
     { run: "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\\n' > .env" },
-    { run: "printf '%s\\n' 'validation complete'" },
     { run: "echo starting" },
     { run: "npm ci" },
     { run: "npm test" },
@@ -97,6 +96,30 @@ test("allows bounded setup and reporting around adjacent required commands", () 
   expect(
     validateWorkflowSequence("ci.yml", [
       { command: "rm -rf ." },
+      { command: "npm ci" },
+      { command: "npm test" },
+    ]),
+  ).toContain("safe setup or reporting");
+});
+
+test("limits pre-install printf setup to the mailbox owner file", () => {
+  for (const command of [
+    "printf 'OTHER_SETTING=value\\n' > .env",
+    "printf 'MAIL_OWNER_ADDRESS=user@example.net\\n' > .env",
+    "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > README.md",
+    "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > .env.local",
+  ]) {
+    expect(
+      validateWorkflowSequence("ci.yml", [
+        { command },
+        { command: "npm ci" },
+        { command: "npm test" },
+      ]),
+    ).toContain("safe setup or reporting");
+  }
+  expect(
+    validateWorkflowSequence("ci.yml", [
+      { command: "printf '%s\\n' 'setup complete'" },
       { command: "npm ci" },
       { command: "npm test" },
     ]),

@@ -22,6 +22,5 @@ See [Troubleshooting](troubleshooting.md) for validation diagnostics and
 - [Configuration](usage.md#configuration) — convention and environment configuration.
 - [Troubleshooting](troubleshooting.md) — common validation failures.
 - [Support](support.md) — support channels and diagnostic information.
-- [Compatibility audit](compatibility-audit.md) — dead-code and fallback dispositions.
 
 [Return to the root README](../README.md).

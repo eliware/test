@@ -2,7 +2,15 @@ import { readFile, stat } from "node:fs/promises";
 import { parseDetailed } from "./parse-detailed-coverage.mjs";
 import { assertFreshCoverage } from "./coverage-freshness.mjs";
 
-export async function readJsonCoverage(path, relativePath, startedAt, read = readFile, statFile = stat, expectedFiles = []) {
+export async function readJsonCoverage(
+  path,
+  relativePath,
+  startedAt,
+  read = readFile,
+  statFile = stat,
+  expectedFiles = [],
+  expectedShapes = {},
+) {
   const before = startedAt ? await statFile(path) : null;
   const raw = await read(path, "utf8");
   const parsed = JSON.parse(raw);
@@ -13,5 +21,5 @@ export async function readJsonCoverage(path, relativePath, startedAt, read = rea
   if (relativePath.endsWith("coverage-summary.json")) {
     throw new Error(`Summary-only coverage cannot prove file-level coverage: ${relativePath}.`);
   }
-  return parseDetailed(parsed, expectedFiles);
+  return parseDetailed(parsed, expectedFiles, expectedShapes);
 }

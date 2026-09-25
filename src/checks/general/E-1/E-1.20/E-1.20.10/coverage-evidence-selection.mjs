@@ -4,6 +4,17 @@ import { parseText } from "./parse-text-coverage.mjs";
 import { readJsonCoverage } from "./coverage-report-readers.mjs";
 import { coverageCandidates as candidates } from "../cleanup-coverage.mjs";
 import { findRepositoryFiles } from "../../find-repository-files.mjs";
+import { readExpectedCoverageShapes } from "./coverage-source-shapes.mjs";
+
+function isUnusableCoverageCandidate(error) {
+  const message = error instanceof Error ? error.message : "";
+  return (
+    error.code === "ENOENT" ||
+    error instanceof SyntaxError ||
+    message.startsWith("Coverage ") ||
+    message.startsWith("Summary-only coverage")
+  );
+}
 
 export async function readCoverageEvidenceFromCandidates(
   root,
@@ -18,6 +29,8 @@ export async function readCoverageEvidenceFromCandidates(
   }
   const expectedFiles = suppliedExpectedFiles ?? (await findRepositoryFiles(root))
     .filter((file) => /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file));
+  const expectedShapes = await readExpectedCoverageShapes(root, expectedFiles);
+  let unusableCandidateError = null;
   for (const relativePath of candidates) {
     if (requireFresh && relativePath.endsWith("coverage-summary.json")) continue;
     try {
@@ -28,14 +41,16 @@ export async function readCoverageEvidenceFromCandidates(
         read,
         statFile,
         expectedFiles,
+        expectedShapes,
       );
       if (evidence) return { ...evidence, source: relativePath };
       throw new Error(`Coverage report is invalid: ${relativePath}. Rerun the tests.`);
     } catch (error) {
-      if (error.code === "ENOENT") continue;
-      throw error;
+      if (!isUnusableCoverageCandidate(error)) throw error;
+      if (error.code !== "ENOENT") unusableCandidateError = error;
     }
   }
+  if (unusableCandidateError) throw unusableCandidateError;
   const textEvidence = parseText(testOutput);
   if (textEvidence && requireFresh) {
     throw new Error(

@@ -128,7 +128,7 @@
               "id": "A-18.5.0",
               "dos": [
                 "The harness must execute every selected deterministic bundled check as part of harness validation.",
-                "Preserve each bundled check's pass/fail result and diagnostics."
+                "Preserve each bundled check's pass/fail result and diagnostics, and convert a thrown check into that check's failure while continuing to later selected checks."
               ],
               "donts": [
                 "Do not silently omit a selected deterministic check, or replace a check failure with a warning or successful output."
@@ -212,13 +212,15 @@
                 "Report missing, malformed, stale, changing, or unusable coverage evidence as a distinct actionable validation failure.",
                 "Remove documented prior coverage candidates before test execution so accepted evidence belongs to the current run.",
                 "Read coverage candidates in fixed precedence order without merging or recency-based selection.",
+                "Validate statement, branch, and function maps against the source-derived Istanbul instrumentation shape so omitted source entries cannot shrink the coverage denominator.",
+                "Continue to the next fixed-precedence candidate when a report is stale or unusable, and fail when no usable candidate remains.",
                 "Continue required post-test diagnostics after a coverage failure while preserving every failure diagnostic."
               ],
               "donts": [
                 "Do not reduce a failed test run to only its exit code or reduce coverage failures to an undifferentiated percentage.",
                 "Do not claim complete coverage when detailed evidence is unavailable or unusable.",
                 "Do not merge coverage candidates or select evidence by recency.",
-                "Do not allow stale, changing, or unstable evidence to be masked by a lower-priority candidate.",
+                "Do not accept stale evidence or merge coverage candidates; lower-priority evidence must independently pass current-run freshness and completeness checks.",
                 "Do not preserve, back up, restore, roll back, retain, move, or rename prior coverage output.",
                 "Do not create temporary coverage directories.",
                 "Do not treat unmatched Istanbul metadata and counter keys as valid evidence."

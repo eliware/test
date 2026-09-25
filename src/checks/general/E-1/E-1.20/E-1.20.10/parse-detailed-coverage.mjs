@@ -4,7 +4,7 @@ import { isInScopeSource, normalizeSourcePath } from "./coverage-source-path.mjs
 
 const metrics = ["statements", "branches", "functions", "lines"];
 
-export function parseDetailed(json, expectedFiles = []) {
+export function parseDetailed(json, expectedFiles = [], expectedShapes = {}) {
   const counts = Object.fromEntries(metrics.map((metric) => [metric, { covered: 0, total: 0 }]));
   const gaps = [];
   const entries = Object.entries(json ?? {}).filter(([file]) => isInScopeSource(file));
@@ -14,7 +14,7 @@ export function parseDetailed(json, expectedFiles = []) {
   if (omitted.length > 0) throw new Error(`Detailed coverage omits in-scope source file(s): ${omitted.join(", ")}.`);
   if (entries.length === 0) return null;
   for (const [file, data] of entries) {
-    const gap = fileGap(file, data);
+    const gap = fileGap(file, data, expectedShapes[normalizeSourcePath(file)]);
     if (gap) gaps.push(gap);
     const { values } = coverageMetricValues(data, coverageLineEntries(data));
     const requiredMaps = ["s", "b", "f", "statementMap", "branchMap", "fnMap"];

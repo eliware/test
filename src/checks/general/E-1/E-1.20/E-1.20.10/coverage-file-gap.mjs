@@ -27,8 +27,8 @@ export function coverageLineEntries(data) {
   return [...lines.entries()];
 }
 
-export function fileGap(file, data) {
-  validateCoverageFileEvidence(file, data);
+export function fileGap(file, data, expectedShape = null) {
+  validateCoverageFileEvidence(file, data, expectedShape);
   const statements = Object.entries(data.s ?? {}).filter(([, count]) => count === 0)
     .map(([id]) => ({ location: location(data.statementMap?.[id]) }));
   const branches = Object.entries(data.b ?? {}).flatMap(([id, counts]) => counts.map((count, index) =>

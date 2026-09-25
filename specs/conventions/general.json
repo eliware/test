@@ -506,9 +506,11 @@
               "id": "E-1.24.4",
               "dos": [
                 "Every active GitHub Actions validation workflow must contain only repository validation steps plus required setup and non-publishing reporting steps; its validation flow is npm ci followed by npm test.",
+                "Before npm ci, allow only safe echo reporting or the exact MAIL_OWNER_ADDRESS .env setup using an eliware.org address; reject other printf setup and shell redirections.",
                 "Publication workflows must be separate from the general validation workflow and governed by the applicable publication profile and Operations release policy."
               ],
               "donts": [
+                "Do not allow arbitrary printf commands or redirects to write repository files before npm ci.",
                 "Do not publish npm packages or GHCR images from the general validation workflow, branch or pull-request validation, or validation-only credentials."
               ]
             }
@@ -717,7 +719,7 @@
               "id": "A-1.22.0",
               "dos": [
                 "Deterministic validation must enforce unique directive IDs, valid parent-child ID prefixes, E-only ancestry for E-rules, and an E ancestor for every A-rule.",
-                "A repository's root directive namespace must match the namespace assigned to it by the authoritative repository registry when that registry entry exists."
+                "A repository's root directive namespace must match the namespace assigned to it by the authoritative repository registry when that registry entry exists, comparing namespace roots exactly at numeric segment boundaries without case sensitivity."
               ],
               "donts": [
                 "Do not accept duplicate IDs, orphaned descendants, top-level A-rules, or a directive namespace owned by another repository."

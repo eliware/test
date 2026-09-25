@@ -4,7 +4,10 @@ import { validateValidationJobConditions } from "./validate-validation-job-condi
 
 const safeReportingCommand =
   /^(?:echo|printf)(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
-const safeEnvironmentSetup = /^printf\s+'[A-Z_][A-Z0-9_]*=[A-Za-z0-9_+@.\\-]*\\n'\s+>\s+\.env$/u;
+const safePreInstallReportingCommand =
+  /^echo(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
+const safeEnvironmentSetup =
+  /^printf\s+'MAIL_OWNER_ADDRESS=[A-Za-z0-9_+.-]+@eliware\.org\\n'\s+>\s+\.env$/u;
 
 export function validateWorkflowSequence(name, commands, steps = commands, job = {}) {
   const pair = findValidationCommandPair(name, commands);
@@ -18,7 +21,7 @@ export function validateWorkflowSequence(name, commands, steps = commands, job =
     commands.some(
       ({ command }, index) =>
         index < commandIndex(install) &&
-        !safeReportingCommand.test(command) &&
+        !safePreInstallReportingCommand.test(command) &&
         !safeEnvironmentSetup.test(command),
     )
   )

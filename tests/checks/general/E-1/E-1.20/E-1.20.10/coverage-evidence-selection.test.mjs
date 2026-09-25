@@ -111,7 +111,7 @@ test("validates Jest text fallback, freshness, and file-level gaps", async () =>
   await rm(gapsRoot, { recursive: true, force: true });
 });
 
-test("fails when the highest-priority summary is invalid", async () => {
+test("skips an unusable summary and selects a later valid detailed report", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
   await mkdir(join(root, "coverage"));
   await writeFile(join(root, "coverage", "coverage-summary.json"), JSON.stringify({ total: {} }));
@@ -127,9 +127,9 @@ test("fails when the highest-priority summary is invalid", async () => {
     },
   };
   await writeFile(join(root, "coverage", "coverage.json"), JSON.stringify(detailed));
-  await expect(readCoverageEvidenceFromCandidates(root)).rejects.toThrow(
-    "coverage/coverage-summary.json",
-  );
+  await expect(readCoverageEvidenceFromCandidates(root)).resolves.toMatchObject({
+    source: "coverage/coverage.json",
+  });
   await rm(root, { recursive: true, force: true });
   const rootReport = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
   await writeFile(join(rootReport, "coverage.json"), JSON.stringify(detailed));

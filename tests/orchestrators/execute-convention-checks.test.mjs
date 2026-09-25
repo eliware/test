@@ -42,6 +42,49 @@ test("rejects a check result with the wrong identity", async () => {
   ).rejects.toThrow("invalid result");
 });
 
+test("records thrown check errors and continues to later selected checks", async () => {
+  const calls = [];
+  const timing = { start: jest.fn(), end: jest.fn() };
+  const results = await executeConventionChecks(
+    [
+      {
+        ruleId: "E-1",
+        run: async () => {
+          calls.push("E-1");
+          throw new Error("inspection failed");
+        },
+      },
+      {
+        ruleId: "E-2",
+        run: async () => {
+          calls.push("E-2");
+          return { ruleId: "E-2", status: "pass", message: "" };
+        },
+      },
+    ],
+    { timing },
+    new Set(),
+  );
+  expect(calls).toEqual(["E-1", "E-2"]);
+  expect(results).toEqual([
+    { ruleId: "E-1", status: "fail", message: "Check execution threw: inspection failed" },
+    { ruleId: "E-2", status: "pass", message: "" },
+  ]);
+  expect(timing.end).toHaveBeenCalledTimes(2);
+});
+
+test("reports a stable diagnostic when a check throws a non-Error value", async () => {
+  await expect(
+    executeConventionChecks(
+      [{ ruleId: "E-3", run: async () => { throw "failure"; } }],
+      {},
+      new Set(),
+    ),
+  ).resolves.toEqual([
+    { ruleId: "E-3", status: "fail", message: "Check execution threw: Check threw a non-Error value." },
+  ]);
+});
+
 test("rejects an incomplete selected check before execution", async () => {
   await expect(executeConventionChecks([{ ruleId: "E-1.99" }], {}, new Set())).rejects.toThrow(
     "Selected check E-1.99 is incomplete",

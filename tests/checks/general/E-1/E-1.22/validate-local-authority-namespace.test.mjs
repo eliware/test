@@ -27,6 +27,22 @@ test("reports namespaces that are not assigned", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("does not treat a numeric namespace prefix as an assignment", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-authority-namespace-"));
+  await writeAuthority(root, { subjects: [{ directives: [{ ids: ["E-180"] }] }] });
+  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain(
+    "namespace E-18 is not assigned",
+  );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("matches namespace assignments without case sensitivity", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-authority-namespace-"));
+  await writeAuthority(root, { subjects: [{ directives: [{ ids: ["e-18"] }] }] });
+  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toBeNull();
+  await rm(root, { recursive: true, force: true });
+});
+
 test.each([
   { subjects: null },
   { subjects: [] },
