@@ -26,6 +26,12 @@ test("fails when publication or attestation steps are absent", async () => {
     "name: publish\non:\n  push:\n    tags: [\"v[0-9]+.[0-9]+.[0-9]+\"]\njobs:\n  publish:\n    steps:\n      - run: docker push ghcr.io/eliware/example:latest\n",
   );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+
+  const noAttestation = await createGhcrFixture();
+  const { readFile } = await import("node:fs/promises");
+  const valid = await readFile(noAttestation.publicationPath, "utf8");
+  await writeFile(noAttestation.publicationPath, valid.replace(/      - uses: actions\/attest@v4[\s\S]*?(?=      - run: test)/u, ""));
+  await expect(run({ root: noAttestation.root })).resolves.toMatchObject({ status: "fail" });
 });
 
 test("reports workflow inspection failures", async () => {

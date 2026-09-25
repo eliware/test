@@ -3,7 +3,12 @@ import { findPureBarrels } from "./find-pure-barrels.mjs";
 import { publicEntrypoints } from "./public-entrypoints.mjs";
 
 export async function runPureExportBarrelPolicy({ root, packageJson, ruleId }) {
-  const barrels = await findPureBarrels(root);
+  let barrels;
+  try {
+    barrels = await findPureBarrels(root);
+  } catch (error) {
+    return fail(ruleId, `Source modules could not be classified for pure export barrels: ${error.message}`);
+  }
   if (barrels.length === 0) return pass(ruleId);
   const isLibrary = packageJson?.eliware?.apply?.includes("library");
   const allowed = publicEntrypoints(packageJson);

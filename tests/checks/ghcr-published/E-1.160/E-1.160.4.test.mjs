@@ -14,6 +14,17 @@ test("requires GHCR publication permissions", async () => {
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
+test("uses the job permission override as the effective permission set", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(
+    publicationPath,
+    content.replace("  publish:\n    runs-on:", "  publish:\n    permissions:\n      contents: read\n      packages: read\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n    runs-on:"),
+  );
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+});
+
 test("checks every publication job and rejects unnecessary permissions", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");

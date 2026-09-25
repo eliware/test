@@ -57,6 +57,15 @@ test("does not classify implementation text as a barrel", async () => {
   await rm(context.root, { recursive: true, force: true });
 });
 
+test("reports malformed source as a failed policy result", async () => {
+  const context = await fixture("export {\n", { eliware: { apply: ["general"] } });
+  await expect(run(context)).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("could not be classified"),
+  });
+  await rm(context.root, { recursive: true, force: true });
+});
+
 test("supports array exports and module entry metadata", async () => {
   const context = await fixture('export { value } from "./value.mjs";\n', {
     exports: ["./src/entry.mjs"],

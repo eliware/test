@@ -25,19 +25,17 @@ export async function run({ root, packageJson }) {
       continue;
     }
     const version = packageJson?.version;
-    const publicationJobs = publication.flatMap(({ job }) => [job]);
-    const verifiedVersion = typeof version === "string" && publicationJobs.some((job) => {
+    const verifiedVersion = typeof version === "string" && publication.every(({ job }) => {
       const jobSteps = steps(job);
       const verifyIndex = jobSteps.findIndex(({ run }) => typeof run === "string" &&
         /^test\s+["']?\$\(npm\s+pkg\s+get\s+version\s+--raw\)["']?\s*=\s*["']?\$\{GITHUB_REF_NAME#v\}["']?$/iu.test(run.trim()));
       const publishIndex = jobSteps.findIndex(({ run }) => /^npm\s+publish\b/iu.test(String(run).trim()));
-      return verifyIndex >= 0 && publishIndex > verifyIndex;
+      return verifyIndex >= 0 && publishIndex > verifyIndex && hasUbuntuRunner(workflow, job);
     });
     if (
       !hasExactTagTrigger(workflow) ||
       typeof version !== "string" ||
-      !verifiedVersion ||
-      !publication.some(({ job }) => hasUbuntuRunner(workflow, job))
+      !verifiedVersion
     ) {
       return fail(
         ruleId,
