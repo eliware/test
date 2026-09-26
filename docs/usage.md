@@ -71,7 +71,11 @@ by default. Jest option/value pairs are forwarded unchanged, and a value is not
 interpreted as a focused path. Tests that stop making progress for 15 seconds are
 terminated with a diagnostic, and individual tests taking more than five
 seconds are reported as slow. These safeguards apply without
-`--debug-timing`.
+`--debug-timing`. On timeout, the harness requests graceful child termination,
+escalates to forced termination after a one-second grace period, and reports
+whether the child's close was observed. It returns an unconfirmed timeout
+diagnostic if close is still not observed after the bounded confirmation
+period; cleanup of every descendant process cannot be guaranteed.
 
 Coverage and monolith checks are always enforced by the public validation
 commands; no public ignore flags bypass them.

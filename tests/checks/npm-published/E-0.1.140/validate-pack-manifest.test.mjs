@@ -4,25 +4,71 @@ import { validatePackManifest } from "../../../../src/checks/npm-published/E-0.1
 const manifest = (paths) => JSON.stringify([{ files: paths.map((path) => ({ path })) }]);
 
 test("accepts packed files covered by the allowlist and required files", () => {
-  expect(validatePackManifest(manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "src/index.mjs", "docs/README.md"]), ["src/", "docs/"])).toBeNull();
+  expect(
+    validatePackManifest(
+      manifest([
+        "package.json",
+        "README.md",
+        "LICENSE",
+        "RELEASE_NOTES.md",
+        "src/index.mjs",
+        "docs/README.md",
+      ]),
+      ["src/", "docs/"],
+    ),
+  ).toBeNull();
 });
 
 test("accepts npm's object-shaped manifest and rejects malformed file entries", () => {
   const paths = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"];
-  expect(validatePackManifest(JSON.stringify({ files: paths.map((path) => ({ path })) }), [])).toBeNull();
+  expect(
+    validatePackManifest(JSON.stringify({ files: paths.map((path) => ({ path })) }), []),
+  ).toBeNull();
   expect(validatePackManifest(manifest(paths), null)).toBeNull();
-  expect(validatePackManifest(JSON.stringify([{ files: [{ path: 7 }] }]), [])).toContain("files array");
+  expect(validatePackManifest(JSON.stringify([{ files: [{ path: 7 }] }]), [])).toContain(
+    "files array",
+  );
   expect(validatePackManifest("null", [])).toContain("files array");
 });
 
 test("accepts npm 12 scoped object-shaped manifests", () => {
   const paths = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"];
-  expect(validatePackManifest(JSON.stringify({ "@eliware/codescope": { files: paths.map((path) => ({ path })) } }), [])).toBeNull();
+  expect(
+    validatePackManifest(
+      JSON.stringify({ "@eliware/codescope": { files: paths.map((path) => ({ path })) } }),
+      [],
+    ),
+  ).toBeNull();
 });
 
 test("rejects invalid, incomplete, and over-broad pack manifests", () => {
   expect(validatePackManifest("not json", ["src/"])).toContain("invalid JSON");
   expect(validatePackManifest(manifest(["package.json"]), ["src/"])).toContain("omitted");
-  expect(validatePackManifest(manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "secret.txt"]), ["src/"])).toContain("outside");
-  expect(validatePackManifest(manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"]), ["src/"])).toContain("do not match");
+  expect(
+    validatePackManifest(
+      manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "secret.txt"]),
+      ["src/"],
+    ),
+  ).toContain("outside");
+  expect(
+    validatePackManifest(manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"]), [
+      "src/",
+    ]),
+  ).toContain("do not match");
+});
+
+test("rejects wildcard, traversal, absolute, and empty allowlist paths", () => {
+  const required = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"];
+  for (const unsafePath of ["src/**", "../secret", "./", "/etc", "C:/private", ""]) {
+    expect(validatePackManifest(manifest(required), [unsafePath])).toContain("unsafe path entry");
+  }
+});
+
+test("rejects packed paths that escape the package root", () => {
+  expect(
+    validatePackManifest(
+      manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "../secret"]),
+      [],
+    ),
+  ).toContain("unsafe file path");
 });

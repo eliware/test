@@ -1,3 +1,4 @@
+import { minimatch } from "minimatch";
 import { normalizeWorkflowDocument } from "../../../ghcr-published/normalize-workflow-document.mjs";
 
 export function workflowHasValidationEvents(document) {
@@ -24,11 +25,7 @@ export function workflowHasValidationEvents(document) {
 function patternMatchesMain(pattern) {
   if (typeof pattern !== "string") return false;
   const positive = pattern.startsWith("!") ? pattern.slice(1) : pattern;
-  const expression = positive
-    .replace(/[.+^${}()|[\]\\]/gu, "\\$&")
-    .replaceAll("*", ".*")
-    .replaceAll("?", ".");
-  return new RegExp(`^${expression}$`, "u").test("main");
+  return minimatch("main", positive, { dot: true, nonegate: true, nocomment: true });
 }
 
 function branchPatternsAllowMain(patterns, defaultValue) {

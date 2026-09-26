@@ -14,8 +14,10 @@ test("requires the exact Knit command sequence", async () => {
 });
 
 test("uses a cached parsed Knit AST when supplied by the validation run", async () => {
-  const source = 'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);';
-  const parseAst = async () => parse(source, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
+  const source =
+    'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);';
+  const parseAst = async () =>
+    parse(source, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
 
   await expect(run({ root: process.cwd(), parseAst })).resolves.toEqual({
     ruleId: "E-0.1.10.1",
@@ -25,8 +27,17 @@ test("uses a cached parsed Knit AST when supplied by the validation run", async 
 });
 
 test("reports syntax errors from the shared AST cache", async () => {
-  await expect(run({ root: process.cwd(), parseAst: async () => { throw new SyntaxError("invalid source"); } })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("not valid JavaScript: invalid source") }),
+  await expect(
+    run({
+      root: process.cwd(),
+      parseAst: async () => {
+        throw new SyntaxError("invalid source");
+      },
+    }),
+  ).resolves.toEqual(
+    expect.objectContaining({
+      message: expect.stringContaining("not valid JavaScript: invalid source"),
+    }),
   );
 });
 
@@ -46,7 +57,20 @@ test("rejects executable statements before the command sequence", async () => {
   await mkdir(join(root, ".knit"));
   await writeFile(
     join(root, ".knit", "validate.mjs"),
-    '0; import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
+    'console.log("before"); import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
+  );
+  await expect(run({ root })).resolves.toEqual(
+    expect.objectContaining({ message: expect.stringContaining("required synchronization") }),
+  );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("rejects effectful variable initializers before the command sequence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-initializer-"));
+  await mkdir(join(root, ".knit"));
+  await writeFile(
+    join(root, ".knit", "validate.mjs"),
+    'import { spawnSync } from "node:child_process"; const setup = process.env.KNIT_SETUP; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
   );
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ message: expect.stringContaining("required synchronization") }),

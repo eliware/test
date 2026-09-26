@@ -5,9 +5,20 @@ test("allows reporting and the specific mailbox owner setup before install", () 
   for (const command of [
     "echo starting",
     "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\\n' > .env",
+    "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\n' > .env",
+    "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\r\n' > .env",
+    "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\n' > .env\n",
+    "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\r\n' > .env\r\n",
   ]) {
     expect(validateWorkflowPreInstallCommands("ci.yml", [{ command }], 1)).toBeNull();
   }
+  expect(
+    validateWorkflowPreInstallCommands(
+      "ci.yml",
+      [{ command: "echo starting" }, { command: "npm ci" }],
+      1,
+    ),
+  ).toBeNull();
 });
 
 test("rejects other setup commands before install", () => {

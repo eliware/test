@@ -2,11 +2,23 @@ import { parseText } from "./parse-text-coverage.mjs";
 
 function isUnusableCandidate(error) {
   const message = error instanceof Error ? error.message : "";
-  return error.code === "ENOENT" || error instanceof SyntaxError || message.startsWith("Coverage ")
-    || message.startsWith("Summary-only coverage");
+  return (
+    error.code === "ENOENT" ||
+    error instanceof SyntaxError ||
+    message.startsWith("Coverage report does not account") ||
+    message.startsWith("Coverage report is") ||
+    message.startsWith("Coverage evidence is") ||
+    message.startsWith("Coverage map and counter keys") ||
+    message.startsWith("Summary-only coverage")
+  );
 }
 
-export async function selectCoverageEvidence(candidates, readCandidate, testOutput = "", requireFresh = false) {
+export async function selectCoverageEvidence(
+  candidates,
+  readCandidate,
+  testOutput = "",
+  requireFresh = false,
+) {
   let unusableCandidateError = null;
   for (const relativePath of candidates) {
     if (requireFresh && relativePath.endsWith("coverage-summary.json")) continue;

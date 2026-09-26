@@ -1,5 +1,8 @@
 import { expect, jest, test } from "@jest/globals";
-import { resolveTaskkillExecutable, terminateChild } from "../../../../../src/checks/general/E-0.1/E-0.1.20/terminate-child.mjs";
+import {
+  resolveTaskkillExecutable,
+  terminateChild,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.20/terminate-child.mjs";
 
 test("uses Node's supported child termination on Windows", () => {
   const kill = jest.fn();
@@ -15,7 +18,16 @@ test("falls back when the default Windows tree terminator cannot kill the child"
 
 test("reports failure when Windows direct termination fails", () => {
   expect(terminateChild({ kill: () => false }, "win32")).toBe(false);
-  expect(terminateChild({ kill: () => { throw new Error("closed"); } }, "win32")).toBe(false);
+  expect(
+    terminateChild(
+      {
+        kill: () => {
+          throw new Error("closed");
+        },
+      },
+      "win32",
+    ),
+  ).toBe(false);
 });
 
 test("uses the host defaults when platform arguments are omitted", () => {
@@ -29,7 +41,9 @@ test("uses the injected Windows process-tree terminator when available", () => {
 });
 
 test("resolves the Windows tree terminator from the platform environment", () => {
-  expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(/System32[\\/]taskkill\.exe$/iu);
+  expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(
+    /System32[\\/]taskkill\.exe$/iu,
+  );
   expect(() => resolveTaskkillExecutable({})).toThrow("SystemRoot");
   const originalSystemRoot = process.env.SystemRoot;
   process.env.SystemRoot = "C:/Windows";
@@ -44,7 +58,9 @@ test("resolves the Windows tree terminator from the platform environment", () =>
 test("passes the effective child environment to Windows tree termination", () => {
   const killTree = jest.fn();
   const env = { SystemRoot: "D:/CustomWindows" };
-  expect(terminateChild({ pid: 42, kill: jest.fn() }, "win32", process.kill, killTree, env)).toBe(true);
+  expect(terminateChild({ pid: 42, kill: jest.fn() }, "win32", process.kill, killTree, env)).toBe(
+    true,
+  );
   expect(killTree).toHaveBeenCalledWith(42, env);
 });
 
@@ -55,7 +71,12 @@ test("falls back to terminating the child when no process group exists", () => {
 });
 
 test("terminates a POSIX process group and falls back when the group is unavailable", () => {
-  const kill = jest.spyOn(process, "kill").mockImplementationOnce(() => {}).mockImplementationOnce(() => { throw new Error("missing"); });
+  const kill = jest
+    .spyOn(process, "kill")
+    .mockImplementationOnce(() => {})
+    .mockImplementationOnce(() => {
+      throw new Error("missing");
+    });
   try {
     const child = { kill: jest.fn(), pid: 123 };
     expect(terminateChild(child, "linux")).toBe(true);
@@ -77,6 +98,24 @@ test("uses the injected process-group terminator at the adapter boundary", () =>
   expect(killProcess).toHaveBeenCalledWith(-7, "SIGTERM");
 });
 
+test("uses the requested signal for process-group escalation", () => {
+  const killProcess = jest.fn();
+  expect(
+    terminateChild({ pid: 7, kill: jest.fn() }, "linux", killProcess, undefined, {}, "SIGKILL"),
+  ).toBe(true);
+  expect(killProcess).toHaveBeenCalledWith(-7, "SIGKILL");
+});
+
 test("reports failure when direct termination also fails", () => {
-  expect(terminateChild({ pid: 0, kill: () => { throw new Error("closed"); } }, "linux")).toBe(false);
+  expect(
+    terminateChild(
+      {
+        pid: 0,
+        kill: () => {
+          throw new Error("closed");
+        },
+      },
+      "linux",
+    ),
+  ).toBe(false);
 });

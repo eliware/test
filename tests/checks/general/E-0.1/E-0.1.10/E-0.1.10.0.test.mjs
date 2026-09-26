@@ -15,7 +15,8 @@ test("rejects publication and deployment commands from Knit validation", async (
 
 test("uses a cached parsed Knit AST when supplied by the validation run", async () => {
   const source = 'import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);';
-  const parseAst = async () => parse(source, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
+  const parseAst = async () =>
+    parse(source, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
 
   await expect(run({ root: process.cwd(), parseAst })).resolves.toEqual({
     ruleId: "E-0.1.10.0",
@@ -25,11 +26,19 @@ test("uses a cached parsed Knit AST when supplied by the validation run", async 
 });
 
 test("reports syntax errors from the shared AST cache", async () => {
-  await expect(run({ root: process.cwd(), parseAst: async () => { throw new SyntaxError("invalid source"); } })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("not valid JavaScript: invalid source") }),
+  await expect(
+    run({
+      root: process.cwd(),
+      parseAst: async () => {
+        throw new SyntaxError("invalid source");
+      },
+    }),
+  ).resolves.toEqual(
+    expect.objectContaining({
+      message: expect.stringContaining("not valid JavaScript: invalid source"),
+    }),
   );
 });
-
 
 test.each([
   ["npm", ["publish"]],
@@ -57,6 +66,34 @@ test("rejects dynamic Knit subprocess commands", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("rejects imported child-process functions outside the subprocess allowlist", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-import-"));
+  await mkdir(join(root, ".knit"));
+  await writeFile(
+    join(root, ".knit", "validate.mjs"),
+    'import { fork } from "node:child_process"; fork("worker.mjs");',
+  );
+  await expect(run({ root })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("unsupported dynamic or state-mutating operation"),
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("rejects subprocess calls hidden in an invoked local function", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-local-function-"));
+  await mkdir(join(root, ".knit"));
+  await writeFile(
+    join(root, ".knit", "validate.mjs"),
+    'import { spawnSync } from "node:child_process"; function deploy() { spawnSync("npm", ["publish"]); } deploy();',
+  );
+  await expect(run({ root })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("unsupported dynamic or state-mutating operation"),
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("rejects filesystem and dynamic module side effects", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-"));
   await mkdir(join(root, ".knit"));
@@ -71,8 +108,13 @@ test("rejects filesystem and dynamic module side effects", async () => {
 test("rejects non-allowlisted static commands", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-"));
   await mkdir(join(root, ".knit"));
-  await writeFile(join(root, ".knit", "validate.mjs"), 'import { spawnSync } from "node:child_process"; spawnSync("curl", ["https://example.test"]);');
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("allowlist") }));
+  await writeFile(
+    join(root, ".knit", "validate.mjs"),
+    'import { spawnSync } from "node:child_process"; spawnSync("curl", ["https://example.test"]);',
+  );
+  await expect(run({ root })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("allowlist") }),
+  );
   await rm(root, { recursive: true, force: true });
 });
 

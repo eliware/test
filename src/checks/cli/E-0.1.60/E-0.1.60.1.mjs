@@ -1,56 +1,21 @@
-import { readRepositoryText } from "../../read-repository-text.mjs";
-import { access } from "node:fs/promises";
-import { join, resolve } from "node:path";
 import { execute } from "../../execute-child-process.mjs";
 import { fail, pass } from "../../check-result.mjs";
+import { readCliEntrypointSurface } from "./read-cli-entrypoint-surface.mjs";
+import { executeCliInformationCommands } from "./execute-cli-information-commands.mjs";
 
 export const ruleId = "E-0.1.60.1";
 export const parentRuleId = "E-0.1.60";
 
 export async function run(context) {
   const { root, packageJson, executeEntrypoint = execute } = context;
-  const entrypoints = typeof packageJson?.bin === "string"
-    ? [packageJson.bin]
-    : Object.values(packageJson?.bin ?? {});
-  if (entrypoints.length === 0)
-    return fail(ruleId, "CLI repositories must declare a bin entrypoint.");
-  let readme;
-  try {
-    readme = await readRepositoryText(context, join(root, "README.md"));
-    for (const entrypoint of entrypoints) await access(join(root, entrypoint));
-  } catch {
-    return fail(ruleId, "Every declared CLI bin entrypoint and README.md must exist.");
-  }
-  for (const term of ["--help", "--version", "exit code"]) {
-    if (!readme.toLowerCase().includes(term.toLowerCase()))
-      return fail(ruleId, `CLI README.md must document ${term}.`);
-  }
-  const entrypointText = await Promise.all(
-    entrypoints.map((entrypoint) => readRepositoryText(context, join(root, entrypoint))),
-  ).then((texts) => texts.join("\n"));
-  if (
-    /\b(?:publish|deploy|delete|remove|destroy|push)\b/i.test(entrypointText) &&
-    !/(?:dry[- ]run|confirm|confirmation)/i.test(`${readme}\n${entrypointText}`)
-  ) {
-    return fail(ruleId, "Destructive CLI actions must provide dry-run or confirmation controls.");
-  }
-  for (const entrypoint of entrypoints) {
-    for (const argument of ["--help", "--version"]) {
-      let result;
-      try {
-        result = await executeEntrypoint(process.execPath, [resolve(root, entrypoint), argument], { cwd: root });
-      } catch (error) {
-        return fail(ruleId, `CLI entrypoint ${entrypoint} could not execute ${argument}: ${error.message}`);
-      }
-      if (result.code !== 0) {
-        return fail(ruleId, `CLI entrypoint ${entrypoint} must exit 0 for ${argument}; received ${result.code}.`);
-      }
-      const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
-      if (!output) return fail(ruleId, `CLI entrypoint ${entrypoint} must produce output for ${argument}.`);
-      if (argument === "--version" && typeof packageJson?.version === "string" && !output.includes(packageJson.version)) {
-        return fail(ruleId, `CLI entrypoint ${entrypoint} --version must report package version ${packageJson.version}.`);
-      }
-    }
-  }
+  const surface = await readCliEntrypointSurface(context);
+  if (surface.error) return fail(ruleId, surface.error);
+  const error = await executeCliInformationCommands({
+    root,
+    entrypoints: surface.entrypoints,
+    packageVersion: packageJson?.version,
+    executeEntrypoint,
+  });
+  if (error) return fail(ruleId, error);
   return pass(ruleId);
 }

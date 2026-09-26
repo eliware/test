@@ -92,3 +92,27 @@ test("skips disabled or unrelated formatter stages and scopes focused paths", as
     }),
   );
 });
+
+test.each([
+  { paths: [] },
+  { paths: null },
+  {},
+  { paths: [""] },
+  { paths: ["../package.json"] },
+  { paths: ["."] },
+])(
+  "fails closed when a focused formatting scope has no resolved paths (%j)",
+  async (focusedScope) => {
+    const runFormatter = jest.fn(async () => ({ code: 0 }));
+    await expect(
+      executeFormatterValidation({
+        root: "/repo",
+        executeFormat: true,
+        mode: "format-check",
+        focusedScope,
+        runFormatter,
+      }),
+    ).resolves.toBe("Focused formatting requires at least one resolved path.");
+    expect(runFormatter).not.toHaveBeenCalled();
+  },
+);

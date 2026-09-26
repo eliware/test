@@ -332,6 +332,7 @@
               "dos": [
                 "Monitor test execution progress during every Jest run, whether or not --debug-timing is enabled.",
                 "Terminate Jest early when no observable test progress has occurred for 15 seconds.",
+                "After requesting graceful termination, escalate to a forceful child-process termination after a bounded grace period and report termination as confirmed only after observing the child close.",
                 "Report the currently running suite or test when the no-progress watchdog terminates execution, including that it timed out after 15 seconds.",
                 "Flag every individual test case that takes longer than 5 seconds, including its suite, test name, and measured duration.",
                 "Treat watchdog termination as a test failure with actionable diagnostics while preserving the existing failure result and exit-code contract."
@@ -340,7 +341,9 @@
                 "Do not impose a global maximum duration on the complete Jest run.",
                 "Do not require --debug-timing for progress monitoring, watchdog termination, or slow-test diagnostics.",
                 "Do not terminate an active test merely because it exceeds 5 seconds when progress is still being observed; the 5-second threshold is a diagnostic flag, not the watchdog timeout.",
-                "Do not report a watchdog timeout without identifying the last known running suite or test when Jest provides that information."
+                "Do not report a watchdog timeout without identifying the last known running suite or test when Jest provides that information.",
+                "Do not wait indefinitely for termination confirmation when the child process does not close after forceful termination.",
+                "Do not promise cleanup of every descendant process beyond the supported process-group or platform process-tree termination behavior."
               ]
             },
             {
@@ -429,9 +432,13 @@
             {
               "id": "A-0.0.8.7",
               "dos": [
-                "Keep focused test execution available through the public harness boundary without reporting unrelated-module coverage failures."
+                "Keep focused test execution available through the public harness boundary without reporting unrelated-module coverage failures.",
+                "When focused formatting is requested, pass its resolved paths to the formatter and fail closed if the focused scope has no valid paths."
               ],
-              "donts": ["Do not broaden a focused run into unrelated validation."]
+              "donts": [
+                "Do not broaden a focused run into unrelated validation.",
+                "Do not fall back to repository-wide formatting when a focused scope is empty or invalid."
+              ]
             }
           ]
         }

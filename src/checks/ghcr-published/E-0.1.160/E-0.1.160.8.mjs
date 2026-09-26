@@ -3,32 +3,53 @@ import { readWorkflows } from "../read-workflows.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
 import { findAttestation, findAttestationVerification } from "../find-ghcr-attestation.mjs";
 import { findDigestHandoff } from "../find-ghcr-digest-handoff.mjs";
-import { findDigestInspection, findVersionTagDigestVerification } from "../find-ghcr-digest-verification.mjs";
-import { findImagePush, imageDetails } from "../find-ghcr-image-push.mjs";
+import {
+  findDigestInspection,
+  findVersionTagDigestVerification,
+} from "../find-ghcr-digest-verification.mjs";
+import { findImagePushes, imageDetails } from "../find-ghcr-image-push.mjs";
 import { steps } from "../workflow-structure.mjs";
 
 export const ruleId = "E-0.1.160.8";
 export const parentRuleId = "E-0.1.160";
 export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
+function hasOrderedVerificationChain(job) {
+  const jobSteps = steps(job);
+  const pushes = findImagePushes(job);
+  return pushes.some((push) => {
+    const pushIndex = jobSteps.indexOf(push);
+    const nextPushIndex =
+      pushes.map((candidate) => jobSteps.indexOf(candidate)).find((index) => index > pushIndex) ??
+      jobSteps.length;
+    const segment = { ...job, steps: jobSteps.slice(pushIndex + 1, nextPushIndex) };
+    const details = imageDetails(push);
+    if (!details.image || !details.digestReference) return false;
+    const verificationSteps = [
+      findAttestation(segment, details),
+      findVersionTagDigestVerification(segment, details),
+      findDigestInspection(segment, details),
+      findAttestationVerification(segment, details),
+      findDigestHandoff(segment, details),
+    ];
+    const verificationIndices = verificationSteps.map((step) => segment.steps.indexOf(step));
+    return (
+      verificationSteps.every(Boolean) &&
+      verificationIndices.every(
+        (index, position) =>
+          index >= 0 && (position === 0 || index > verificationIndices[position - 1]),
+      )
+    );
+  });
+}
+
 export async function run(context) {
   const { root } = context;
   try {
     const publications = (await readWorkflows(root, context)).filter(isPublicationWorkflow);
-    const verified = publications.some((publication) => publicationJobs(publication).some(({ job }) => {
-      const push = findImagePush(job);
-      const details = imageDetails(push);
-      const attestation = details.image && findAttestation(job, details);
-      const inspection = details.image && findDigestInspection(job, details);
-      const tagVerification = details.image && findVersionTagDigestVerification(job, details);
-      const attestationVerification = details.image && findAttestationVerification(job, details);
-      const handoff = details.image && findDigestHandoff(job, details);
-      const orderedSteps = [push, attestation, tagVerification, inspection, attestationVerification, handoff];
-      const indices = orderedSteps.map((step) => step ? steps(job).indexOf(step) : -1);
-      return details.image && orderedSteps.every(Boolean) && indices.every((index, position) =>
-        index >= 0 && (position === 0 || index > indices[position - 1]),
-      );
-    }));
+    const verified = publications.some((publication) =>
+      publicationJobs(publication).some(({ job }) => hasOrderedVerificationChain(job)),
+    );
     if (publications.length === 0 || !verified)
       return fail(ruleId, "GHCR publication must expose and verify the pushed image digest.");
   } catch (error) {

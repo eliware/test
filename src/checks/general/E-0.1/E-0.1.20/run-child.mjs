@@ -3,6 +3,7 @@ import { handleChildProgress } from "./handle-child-progress.mjs";
 import { createProgressTimeout } from "./create-progress-timeout.mjs";
 import { terminateChild } from "./terminate-child.mjs";
 import { createChildOutputCapture } from "./capture-child-output.mjs";
+import { scheduleChildTermination } from "./schedule-child-termination.mjs";
 
 export function runChild(command, args, options = {}) {
   const maxOutputLength = options.maxOutputLength;
@@ -21,12 +22,12 @@ export function runChild(command, args, options = {}) {
     const output = createChildOutputCapture(outputLimit, { ...options, env: environment });
     let settled = false;
     let timedOut = false;
-    let hardKillTimer;
+    let cancelChildTermination;
     const settleError = (error) => {
       if (settled) return;
       settled = true;
       timeout.stop();
-      if (hardKillTimer) clearTimeout(hardKillTimer);
+      cancelChildTermination?.();
       reject(error);
     };
     const timeout = createTimeout({
@@ -36,13 +37,31 @@ export function runChild(command, args, options = {}) {
         timeout.stop();
         timedOut = true;
         options.onTimeout?.();
-        terminateChild(child, process.platform, process.kill, options.killTree, environment);
-        hardKillTimer = setTimeout(() => {
-          terminateChild(child, process.platform, process.kill, options.killTree, environment);
-          settled = true;
-          timeout.stop();
-          resolve({ code: null, signal: "SIGTERM", ...output.result(), timedOut: true, terminationRequested: true, terminationConfirmed: false });
-        }, options.terminationGraceMs ?? 1000);
+        cancelChildTermination = scheduleChildTermination(
+          child,
+          {
+            terminateChild: options.terminateChild ?? terminateChild,
+            platform: options.terminationPlatform ?? process.platform,
+            killProcess: options.killProcess ?? process.kill,
+            killTree: options.killTree,
+            environment,
+            terminationGraceMs: options.terminationGraceMs ?? 1000,
+            forceKillConfirmationMs: options.forceKillConfirmationMs ?? 1000,
+          },
+          () => {
+            if (settled) return;
+            settled = true;
+            timeout.stop();
+            resolve({
+              code: null,
+              signal: "SIGKILL",
+              ...output.result(),
+              timedOut: true,
+              terminationRequested: true,
+              terminationConfirmed: false,
+            });
+          },
+        );
       },
     });
     const resetProgressTimer = timeout.reset;
@@ -62,8 +81,15 @@ export function runChild(command, args, options = {}) {
       if (settled) return;
       settled = true;
       timeout.stop();
-      if (hardKillTimer) clearTimeout(hardKillTimer);
-      resolve({ code, signal, ...output.result(), ...(timedOut ? { timedOut: true, terminationConfirmed: true } : {}) });
+      cancelChildTermination?.();
+      resolve({
+        code,
+        signal,
+        ...output.result(),
+        ...(timedOut
+          ? { timedOut: true, terminationRequested: true, terminationConfirmed: true }
+          : {}),
+      });
     });
   });
 }

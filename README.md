@@ -38,8 +38,9 @@ npm install --save-dev @eliware/test
 
 ## Usage
 
-Run validation with `eliware-test` from the consumer repository or use the
-package-level npm scripts below.
+After installing the package in a consuming repository, run validation with
+`npm exec -- eliware-test` or add `eliware-test` to one of that repository's npm
+scripts. The package-level scripts below are for this repository.
 
 `package.json` is the source of truth for the package version. The repository's
 current version is `8.0.0`. The npm badge reflects the version available from
@@ -88,7 +89,8 @@ focused regression tests for behavior changes.
 ## Testing
 
 Run `npm test` for the aggregate Jest, lint, format-check, audit, and pack
-validation stages. Focused test paths can be supplied to `eliware-test`.
+validation stages. A single focused test path under `tests/` can be supplied
+to `eliware-test`; `.test.*` and `.spec.*` paths are supported.
 
 ## Troubleshooting
 
@@ -171,7 +173,7 @@ diagnostics when requesting help.
 
 ## Links
 
-- Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [RELEASE_NOTES.md](RELEASE_NOTES.md) · [examples](examples/README.md)
+- Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md) · [RELEASE_NOTES.md](RELEASE_NOTES.md)
 - [Documentation](docs/README.md)
 - [Specifications](specs/README.md)
 - [Authority distribution](specs/authority.json)

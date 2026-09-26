@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { classifyCall, rootIdentifier } from "../../../../../src/checks/general/E-0.1/E-0.1.10/knit-call-analysis.mjs";
+import {
+  classifyCall,
+  rootIdentifier,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.10/knit-call-analysis.mjs";
 
 const identifier = (name) => ({ type: "Identifier", name });
 const call = (callee, type = "CallExpression") => ({ type, callee, arguments: [] });
@@ -11,18 +14,45 @@ const imports = (overrides = {}) => ({
 });
 
 test("classifies directly imported and namespace subprocess functions", () => {
-  const direct = classifyCall(call(identifier("spawn")), imports({ names: new Map([["spawn", "spawn"]]) }));
+  const direct = classifyCall(
+    call(identifier("spawn")),
+    imports({ names: new Map([["spawn", "spawn"]]) }),
+  );
   expect(direct.isSubprocess).toBe(true);
   expect(direct.isUnsupported).toBe(false);
 
   const namespace = classifyCall(
-    call({ type: "MemberExpression", object: identifier("child"), property: identifier("execFileSync") }),
+    call({
+      type: "MemberExpression",
+      object: identifier("child"),
+      property: identifier("execFileSync"),
+    }),
     imports({ namespaces: new Set(["child"]) }),
   );
   expect(namespace.isSubprocess).toBe(true);
-  expect(rootIdentifier({ type: "MemberExpression", object: { type: "MemberExpression", object: identifier("child") } })).toBe("child");
+  expect(
+    rootIdentifier({
+      type: "MemberExpression",
+      object: { type: "MemberExpression", object: identifier("child") },
+    }),
+  ).toBe("child");
   expect(rootIdentifier(identifier("spawn"))).toBe("spawn");
   expect(rootIdentifier(null)).toBeUndefined();
+});
+
+test("classifies aliases by their canonical child-process export", () => {
+  const alias = classifyCall(
+    call(identifier("runCommand")),
+    imports({ names: new Map([["runCommand", "execSync"]]) }),
+  );
+  expect(alias.direct).toBe("execSync");
+  expect(alias.isSubprocess).toBe(true);
+
+  const unsupported = classifyCall(
+    call(identifier("fork")),
+    imports({ names: new Map([["fork", "node:child_process:fork"]]) }),
+  );
+  expect(unsupported.isSubprocess).toBe(false);
 });
 
 test("identifies side-effect imports and unsupported calls", () => {
@@ -39,17 +69,41 @@ test("identifies side-effect imports and unsupported calls", () => {
   expect(namespaceSideEffect.isSideEffect).toBe(true);
 
   expect(classifyCall(call(identifier("unknown")), imports()).isUnsupported).toBe(true);
-  expect(classifyCall(call({ type: "MemberExpression", object: identifier("object"), property: identifier("run") }), imports()).isUnsupported).toBe(true);
+  expect(classifyCall(call(identifier("fetch")), imports()).isUnsupported).toBe(true);
+  expect(
+    classifyCall(
+      call({ type: "MemberExpression", object: identifier("object"), property: identifier("run") }),
+      imports(),
+    ).isUnsupported,
+  ).toBe(true);
+  expect(
+    classifyCall(call(identifier("fetch"), "OptionalCallExpression"), imports()).isUnsupported,
+  ).toBe(true);
 });
 
 test("allows imported namespace calls and process.cwd while rejecting dynamic execution", () => {
   const namespaceCall = call({
     type: "MemberExpression",
-    object: { type: "MemberExpression", object: identifier("child"), property: identifier("nested") },
+    object: {
+      type: "MemberExpression",
+      object: identifier("child"),
+      property: identifier("nested"),
+    },
     property: identifier("spawnSync"),
   });
-  expect(classifyCall(namespaceCall, imports({ namespaces: new Set(["child"]) })).isUnsupported).toBe(false);
-  expect(classifyCall(call({ type: "MemberExpression", object: identifier("process"), property: identifier("cwd") }), imports()).isUnsupported).toBe(false);
+  expect(
+    classifyCall(namespaceCall, imports({ namespaces: new Set(["child"]) })).isUnsupported,
+  ).toBe(false);
+  expect(
+    classifyCall(
+      call({
+        type: "MemberExpression",
+        object: identifier("process"),
+        property: identifier("cwd"),
+      }),
+      imports(),
+    ).isUnsupported,
+  ).toBe(false);
   expect(classifyCall(call({ type: "Import" }), imports()).isDynamic).toBe(true);
   expect(classifyCall(call(identifier("require")), imports()).isDynamic).toBe(true);
   expect(classifyCall(call(identifier("eval")), imports()).isDynamic).toBe(true);

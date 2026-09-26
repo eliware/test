@@ -4,7 +4,11 @@ import { analyzeKnitScriptAst } from "./analyze-knit-script-ast.mjs";
 export function parseKnitScript(content, parsedAst = null) {
   let ast = parsedAst;
   try {
-    ast ??= parse(content, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
+    ast ??= parse(content, {
+      sourceType: "module",
+      plugins: ["importAttributes", "topLevelAwait"],
+      allowUndeclaredExports: true,
+    });
   } catch (error) {
     return { error: `Knit validation script is not valid JavaScript: ${error.message}`, calls: [] };
   }

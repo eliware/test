@@ -7,29 +7,42 @@ export function resolveTaskkillExecutable(env = process.env) {
 }
 
 function defaultKillTree(pid, env) {
-  execFileSync(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], { windowsHide: true, stdio: "ignore" });
+  execFileSync(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], {
+    windowsHide: true,
+    stdio: "ignore",
+  });
 }
 
-export function terminateChild(child, platform = process.platform, killProcess = process.kill, killTree = defaultKillTree, env = process.env) {
+export function terminateChild(
+  child,
+  platform = process.platform,
+  killProcess = process.kill,
+  killTree = defaultKillTree,
+  env = process.env,
+  signal = "SIGTERM",
+) {
   if (!child || typeof child.kill !== "function") return false;
   if (platform === "win32") {
     if (Number.isInteger(child.pid) && child.pid > 0) {
-      try { killTree(child.pid, env); return true; } catch {}
+      try {
+        killTree(child.pid, env);
+        return true;
+      } catch {}
     }
     try {
-      return child.kill("SIGTERM") !== false;
+      return child.kill(signal) !== false;
     } catch {
       return false;
     }
   }
   if (Number.isInteger(child.pid) && child.pid > 0) {
     try {
-      killProcess(-child.pid, "SIGTERM");
+      killProcess(-child.pid, signal);
       return true;
     } catch {}
   }
   try {
-    child.kill("SIGTERM");
+    child.kill(signal);
   } catch {
     return false;
   }

@@ -11,3 +11,16 @@ test("rejects malformed directive nodes and ancestry violations", () => {
   ]);
   expect(errors.join(" ")).toContain("must be nested");
 });
+
+test("rejects top-level AI rules and non-array child collections", () => {
+  expect(validateDirectiveTree([{ id: "A-0.1" }, { id: "E-1", directives: "invalid" }])).toEqual(
+    expect.arrayContaining([
+      "Top-level directive A-0.1 must be an E-rule.",
+      "A-rule A-0.1 must have an E-rule ancestor.",
+      "Directive E-1.directives must be an array.",
+    ]),
+  );
+  expect(validateDirectiveTree([{ id: "E-2" }, { id: "E-2" }])).toContain(
+    "Directive IDs must be unique: E-2.",
+  );
+});

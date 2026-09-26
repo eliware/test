@@ -11,7 +11,9 @@ test("collects statically bound subprocess calls", () => {
   const calls = [];
   const unsupported = [];
   collectCalls(program, new Map(), collectImports(program), calls, unsupported);
-  expect(calls).toEqual([expect.objectContaining({ kind: "spawnSync", command: "npm", args: ["test"] })]);
+  expect(calls).toEqual([
+    expect.objectContaining({ kind: "spawnSync", command: "npm", args: ["test"] }),
+  ]);
   expect(unsupported).toEqual([]);
 });
 
@@ -49,6 +51,21 @@ test("marks dynamic and unsupported call forms", () => {
     'import { rm } from "node:fs"; import * as fs from "node:fs"; import { spawnSync } from "node:child_process"; rm("x"); fs.rm("x"); unknown(); require("x"); eval("x"); import("x"); process.cwd(); object.run(); spawnSync("echo", []);',
   );
   expect(unsupported.length).toBeGreaterThanOrEqual(6);
+});
+
+test("rejects unbound optional global calls", () => {
+  const { unsupported } = collect("fetch?.('https://example.test');");
+  expect(unsupported).toHaveLength(1);
+});
+
+test("rejects subprocess calls hidden in invoked local functions", () => {
+  const { calls, unsupported } = collect(
+    'import { spawnSync } from "node:child_process"; function deploy() { spawnSync("npm", ["publish"]); } deploy();',
+  );
+  expect(calls).toEqual([
+    expect.objectContaining({ kind: "spawnSync", command: "npm", args: ["publish"] }),
+  ]);
+  expect(unsupported).toHaveLength(1);
 });
 
 test("covers nested member roots and exec argument handling", () => {

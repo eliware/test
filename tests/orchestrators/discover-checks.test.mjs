@@ -7,7 +7,8 @@ import { discoverChecks, discoverAllChecks } from "../../src/orchestrators/disco
 test("discovers and sorts checks from an explicit profile", async () => {
   const checks = await discoverChecks(["application"]);
   expect(checks.length).toBeGreaterThan(0);
-  expect(checks[0].ruleId).toBe("E-0.1.130");
+  expect(checks.some((check) => check.ruleId === "E-0.1.130")).toBe(false);
+  expect(checks.some((check) => check.ruleId.startsWith("A-0.1.130."))).toBe(true);
   expect(checks.every((check) => typeof check.run === "function")).toBe(true);
 });
 
@@ -22,8 +23,14 @@ test("discovers nested checks, ignores unrelated files, and validates module con
   await mkdir(join(group, "misc"));
   await writeFile(join(group, "E-2.mjs"), 'export const ruleId = "E-2"; export function run() {}');
   await writeFile(join(group, "A-2.mjs"), 'export const ruleId = "A-2"; export function run() {}');
-  await writeFile(join(group, "E-9", "A-9.1.mjs"), 'export const ruleId = "A-9.1"; export function run() {}');
-  await writeFile(join(group, "misc", "E-3.mjs"), 'export const ruleId = "E-3"; export function run() {}');
+  await writeFile(
+    join(group, "E-9", "A-9.1.mjs"),
+    'export const ruleId = "A-9.1"; export function run() {}',
+  );
+  await writeFile(
+    join(group, "misc", "E-3.mjs"),
+    'export const ruleId = "E-3"; export function run() {}',
+  );
   await writeFile(join(group, "README.md"), "ignored");
   const checks = await discoverChecks(["demo"], { root });
   expect(checks.map(({ ruleId, parentRuleId }) => ({ ruleId, parentRuleId }))).toEqual([
@@ -38,14 +45,25 @@ test("discovers nested checks, ignores unrelated files, and validates module con
 test("rejects invalid and duplicate check modules", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-discovery-invalid-"));
   await mkdir(join(root, "demo"), { recursive: true });
-  await writeFile(join(root, "demo", "E-2.mjs"), 'export const ruleId = "wrong"; export function run() {}');
+  await writeFile(
+    join(root, "demo", "E-2.mjs"),
+    'export const ruleId = "wrong"; export function run() {}',
+  );
   await expect(discoverChecks(["demo"], { root })).rejects.toThrow("Invalid check module");
   const duplicateRoot = await mkdtemp(join(tmpdir(), "eliware-test-discovery-duplicate-"));
   await mkdir(join(duplicateRoot, "demo"));
   await mkdir(join(duplicateRoot, "other"));
-  await writeFile(join(duplicateRoot, "demo", "E-2.mjs"), 'export const ruleId = "E-2"; export function run() {}');
-  await writeFile(join(duplicateRoot, "other", "E-2.mjs"), 'export const ruleId = "E-2"; export function run() {}');
-  await expect(discoverChecks(["demo", "other"], { root: duplicateRoot })).rejects.toThrow("Duplicate check module");
+  await writeFile(
+    join(duplicateRoot, "demo", "E-2.mjs"),
+    'export const ruleId = "E-2"; export function run() {}',
+  );
+  await writeFile(
+    join(duplicateRoot, "other", "E-2.mjs"),
+    'export const ruleId = "E-2"; export function run() {}',
+  );
+  await expect(discoverChecks(["demo", "other"], { root: duplicateRoot })).rejects.toThrow(
+    "Duplicate check module",
+  );
   await rm(root, { recursive: true, force: true });
   await rm(duplicateRoot, { recursive: true, force: true });
 });
@@ -56,8 +74,14 @@ test("discovers all visible groups in sorted order", async () => {
   await mkdir(join(root, "a-group"));
   await mkdir(join(root, ".hidden"));
   await writeFile(join(root, "README.md"), "ignored");
-  await writeFile(join(root, "z-group", "E-10.mjs"), 'export const ruleId = "E-10"; export function run() {}');
-  await writeFile(join(root, "a-group", "E-2.mjs"), 'export const ruleId = "E-2"; export function run() {}');
+  await writeFile(
+    join(root, "z-group", "E-10.mjs"),
+    'export const ruleId = "E-10"; export function run() {}',
+  );
+  await writeFile(
+    join(root, "a-group", "E-2.mjs"),
+    'export const ruleId = "E-2"; export function run() {}',
+  );
   const checks = await discoverAllChecks({ root });
   expect(checks.map(({ ruleId }) => ruleId)).toEqual(["E-2", "E-10"]);
   await rm(root, { recursive: true, force: true });

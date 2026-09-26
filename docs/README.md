@@ -19,7 +19,7 @@ See [Troubleshooting](troubleshooting.md) for validation diagnostics and
 ## Contents
 
 - [Usage](usage.md) — setup and supported commands.
-- [Configuration](usage.md#configuration) — convention and environment configuration.
+- [Configuration](usage.md#configuration) — package convention metadata and exemptions.
 - [Troubleshooting](troubleshooting.md) — common validation failures.
 - [Support](support.md) — support channels and diagnostic information.
 

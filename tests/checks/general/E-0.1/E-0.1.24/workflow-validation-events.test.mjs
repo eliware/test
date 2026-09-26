@@ -87,3 +87,16 @@ test("applies ordered branch exclusions and re-inclusions to YAML event-key alia
     }),
   ).toBe(true);
 });
+
+test("matches GitHub glob semantics for overlapping branch filters", () => {
+  const jobs = { validate: { "runs-on": "ubuntu-latest" } };
+  const workflow = (branches) => ({
+    on: { push: { branches }, pull_request: {} },
+    jobs,
+  });
+
+  expect(workflowHasValidationEvents(workflow(["**/main", "!**/main"]))).toBe(false);
+  expect(workflowHasValidationEvents(workflow(["**", "!**/main"]))).toBe(false);
+  expect(workflowHasValidationEvents(workflow(["**", "!**/main", "main"]))).toBe(true);
+  expect(workflowHasValidationEvents(workflow(["**", "!**/main", "main", "!main"]))).toBe(false);
+});

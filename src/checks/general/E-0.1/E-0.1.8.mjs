@@ -7,14 +7,26 @@ import { inspectLocalMailboxOwner } from "./inspect-local-mailbox-owner.mjs";
 export const ruleId = "E-0.1.8";
 export const parentRuleId = "E-0.1";
 
-export async function run({ root, packageJson, trackedFiles, readTracked, repositoryInventory, findFiles = findRepositoryFiles, checkIgnored }) {
+export async function run({
+  root,
+  packageJson,
+  trackedFiles,
+  readTracked,
+  repositoryInventory,
+  findFiles = findRepositoryFiles,
+  checkIgnored,
+}) {
   const repositoryName = packageJson?.name?.replace(/^@[^/]+\//, "");
   if (!repositoryName) {
     return fail(ruleId, "package.json.name is required to derive the mailbox owner.");
   }
 
   const expected = `${repositoryName}@eliware.org`;
-  const owner = await inspectLocalMailboxOwner(root, expected, { trackedFiles, readTracked, checkIgnored });
+  const owner = await inspectLocalMailboxOwner(root, expected, {
+    trackedFiles,
+    readTracked,
+    checkIgnored,
+  });
   if (owner.error) return fail(ruleId, owner.error);
 
   let files;
@@ -25,7 +37,12 @@ export async function run({ root, packageJson, trackedFiles, readTracked, reposi
   } catch (error) {
     return fail(ruleId, `Environment files could not be inspected: ${error.message}`);
   }
-  const templateFiles = await resolveMailboxTemplateFiles(files, owner.trackedFiles);
+  const templateFiles = await resolveMailboxTemplateFiles(
+    root,
+    files,
+    owner.trackedFiles,
+    checkIgnored,
+  );
   const templateError = await validateMailboxTemplates(
     root,
     templateFiles,

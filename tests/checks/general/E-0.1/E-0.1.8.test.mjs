@@ -4,10 +4,21 @@ const inspectLocalMailboxOwner = jest.fn();
 const findRepositoryFiles = jest.fn();
 const resolveMailboxTemplateFiles = jest.fn();
 const validateMailboxTemplates = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/inspect-local-mailbox-owner.mjs", () => ({ inspectLocalMailboxOwner }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/find-repository-files.mjs", () => ({ findRepositoryFiles }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/resolve-mailbox-template-files.mjs", () => ({ resolveMailboxTemplateFiles }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-mailbox-templates.mjs", () => ({ validateMailboxTemplates }));
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/inspect-local-mailbox-owner.mjs",
+  () => ({ inspectLocalMailboxOwner }),
+);
+jest.unstable_mockModule("../../../../src/checks/general/E-0.1/find-repository-files.mjs", () => ({
+  findRepositoryFiles,
+}));
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/resolve-mailbox-template-files.mjs",
+  () => ({ resolveMailboxTemplateFiles }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-mailbox-templates.mjs",
+  () => ({ validateMailboxTemplates }),
+);
 
 const { run } = await import("../../../../src/checks/general/E-0.1/E-0.1.8.mjs");
 
@@ -20,20 +31,27 @@ beforeEach(() => {
 });
 
 test("derives the owner and composes local and template validation", async () => {
-  await expect(run({
-    root: "/repo",
-    packageJson: { name: "@eliware/fixture" },
-    trackedFiles: [".env"],
-    readTracked: [".env"],
-    checkIgnored: jest.fn(),
-  })).resolves.toEqual({ ruleId: "E-0.1.8", status: "pass", message: "" });
+  await expect(
+    run({
+      root: "/repo",
+      packageJson: { name: "@eliware/fixture" },
+      trackedFiles: [".env"],
+      readTracked: [".env"],
+      checkIgnored: jest.fn(),
+    }),
+  ).resolves.toEqual({ ruleId: "E-0.1.8", status: "pass", message: "" });
   expect(inspectLocalMailboxOwner).toHaveBeenCalledWith("/repo", "fixture@eliware.org", {
     trackedFiles: [".env"],
     readTracked: [".env"],
     checkIgnored: expect.any(Function),
   });
   expect(findRepositoryFiles).toHaveBeenCalledWith("/repo");
-  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith([".env.example"], [".env"]);
+  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith(
+    "/repo",
+    [".env.example"],
+    [".env"],
+    expect.any(Function),
+  );
   expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], null);
 });
 
@@ -43,8 +61,15 @@ test("uses the shared file list when inventory context is supplied", async () =>
     run({ root: "/repo", packageJson: { name: "fixture" }, repositoryInventory }),
   ).resolves.toMatchObject({ status: "pass" });
   expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
-  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith([".env.example"], [".env"]);
-  expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], { repositoryInventory });
+  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith(
+    "/repo",
+    [".env.example"],
+    [".env"],
+    undefined,
+  );
+  expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], {
+    repositoryInventory,
+  });
 });
 
 test("requires package identity and stops after a local-owner failure", async () => {
