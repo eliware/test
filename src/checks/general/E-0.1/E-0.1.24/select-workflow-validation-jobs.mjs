@@ -1,6 +1,6 @@
 import { isValidationJob, workflowCommands, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
 import { findPublicationCommand, findUnsupportedCommands, isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
-import { validateWorkflowPreInstallCommands } from "./validate-workflow-pre-install-commands.mjs";
+import { validateWorkflowSiblingJobs } from "./validate-workflow-sibling-jobs.mjs";
 
 export function selectWorkflowValidationJobs(name, document) {
   const commands = workflowCommands(document);
@@ -22,21 +22,12 @@ export function selectWorkflowValidationJobs(name, document) {
     }
   }
   const validationJobIds = new Set(validationJobs.map(({ id }) => id));
-  for (const { id, job } of jobs) {
-    if (validationJobIds.has(id)) continue;
-    if (publicationWorkflow) continue;
-    const commandsForJob = workflowRunSteps(job);
-    const unsupported = findUnsupportedCommands(commandsForJob);
-    if (unsupported.length > 0) {
-      return { error: `${name} contains non-validation command(s): ${unsupported.join(", ")}.`, jobs: [] };
-    }
-    const validationCommands = commandsForJob.filter(({ command }) => /^npm\s+(?:ci|test)$/iu.test(command));
-    if (validationCommands.length > 0) {
-      return { error: `${name} job ${id} must keep npm ci and npm test in a validation job.`, jobs: [] };
-    }
-    const setupCommands = commandsForJob.filter(({ command }) => /^(?:echo|printf)\b/iu.test(command));
-    const setupError = validateWorkflowPreInstallCommands(`${name} job ${id}`, setupCommands, setupCommands.length);
-    if (setupError) return { error: setupError, jobs: [] };
-  }
+  const siblingError = validateWorkflowSiblingJobs(
+    name,
+    jobs.map(({ id, job }) => ({ id, commands: workflowRunSteps(job) })),
+    validationJobIds,
+    publicationWorkflow,
+  );
+  if (siblingError) return { error: siblingError, jobs: [] };
   return { error: null, jobs: validationJobs };
 }

@@ -34,6 +34,14 @@ test("fails when publication or attestation steps are absent", async () => {
   await expect(run({ root: noAttestation.root })).resolves.toMatchObject({ status: "fail" });
 });
 
+test("requires attestations for every image-publishing job", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(publicationPath, `${content}\n  publish_secondary:\n    runs-on: ubuntu-latest\n    steps:\n      - id: secondary_push\n        uses: docker/build-push-action@v6\n        with:\n          context: .\n          file: ./Dockerfile\n          push: true\n          tags: ghcr.io/eliware/secondary:v1.2.3\n`);
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+});
+
 test("reports workflow inspection failures", async () => {
   await expect(run({ root: "C:\\missing-ghcr-repository" })).resolves.toEqual(
     expect.objectContaining({

@@ -1,52 +1,23 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { readKnitScript } from "./read-knit-script.mjs";
-import { commandTokens } from "./knit-command-tokens.mjs";
+import { validateKnitCommandStructure } from "./validate-knit-command-structure.mjs";
+import { validateKnitSourceOperations } from "./validate-knit-source-operations.mjs";
+import { validateKnitPublicationCommands } from "./validate-knit-publication-commands.mjs";
 
 export const ruleId = "E-0.1.10.0";
 export const parentRuleId = "E-0.1.10";
-const allowedCommands = new Set(["node", "npm", "npx", "git", "echo"]);
 
 export async function run(context) {
   try {
     const { source, parsed, error } = await readKnitScript(context);
     if (error) return fail(ruleId, error);
     if (parsed.error) return fail(ruleId, parsed.error);
-    if (parsed.leadingExecutable) {
-      return fail(
-        ruleId,
-        ".knit/validate.mjs must not execute JavaScript before the required subprocess commands.",
-      );
-    }
-    if (parsed.unsupported?.length > 0) {
-      return fail(
-        ruleId,
-        ".knit/validate.mjs contains an unsupported dynamic or state-mutating operation.",
-      );
-    }
-    if (parsed.calls.some((call) => !commandTokens(call))) {
-      return fail(
-        ruleId,
-        ".knit/validate.mjs must use statically inspectable child-process commands.",
-      );
-    }
-    if (parsed.calls.some((call) => !allowedCommands.has(commandTokens(call)[0].replace(/^.*[\\/]/u, "").toLowerCase()))) {
-      return fail(ruleId, ".knit/validate.mjs uses a command outside the read-only validation allowlist.");
-    }
-    if (
-      /(?:node:)?(?:fs|fs\/promises)\.(?:rm|rmdir|unlink|rename|writeFile|chmod)|\b(?:fetch|https?\.request|net\.connect|process\.exit)\s*\(/iu.test(
-        source,
-      )
-    ) {
-      return fail(ruleId, ".knit/validate.mjs contains an unsupported filesystem, network, process, or subprocess operation.");
-    }
-    const prohibited =
-      /^(?:npm\s+(?:publish|login|adduser)|docker\s+(?:push|login)|kubectl\s+(?:apply|delete|patch|replace)|git\s+(?:tag|push|reset|clean)|(?:sudo\s+)?(?:reboot|shutdown|systemctl\s+(?:start|stop|restart))|rm\s+-rf)\b/i;
-    if (parsed.calls.some((call) => prohibited.test(commandTokens(call).join(" ")))) {
-      return fail(
-        ruleId,
-        ".knit/validate.mjs must not publish, deploy, release, or mutate external state.",
-      );
-    }
+    const commandError = validateKnitCommandStructure(parsed);
+    if (commandError) return fail(ruleId, commandError);
+    const sourceError = validateKnitSourceOperations(source);
+    if (sourceError) return fail(ruleId, sourceError);
+    const publicationError = validateKnitPublicationCommands(parsed.calls);
+    if (publicationError) return fail(ruleId, publicationError);
   } catch {
     return fail(ruleId, ".knit/validate.mjs is required for Knit validation.");
   }

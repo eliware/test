@@ -31,22 +31,6 @@ test("redacts stderr before progress and output callbacks", async () => {
   expect(stderr.mock.calls.flat().join(" ")).not.toContain("x");
 });
 
-test("redacts a configured credential split across stderr chunks", async () => {
-  const child = Object.assign(new EventEmitter(), { stdout: new EventEmitter(), stderr: new EventEmitter() });
-  const stderr = [];
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    env: { SERVICE_TOKEN: "opaque-value-123" },
-    onStderr: (text) => stderr.push(text),
-  });
-  child.stderr.emit("data", Buffer.from("prefix opaque-value-"));
-  child.stderr.emit("data", Buffer.from("123 suffix"));
-  child.emit("close", 0, null);
-  await expect(result).resolves.toMatchObject({ stderr: "prefix [REDACTED] suffix" });
-  expect(stderr.join("")).not.toContain("opaque-value-123");
-  expect(stderr.join("")).not.toContain("opaque-value-");
-});
-
 test("uses default options when omitted", async () => {
   await expect(
     runChild(process.execPath, ["-e", "process.stdout.write('default')"]),

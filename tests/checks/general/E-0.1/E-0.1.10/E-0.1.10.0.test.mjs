@@ -1,176 +1,85 @@
-import { expect, test } from "@jest/globals";
-import { parse } from "@babel/parser";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.0.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("rejects publication and deployment commands from Knit validation", async () => {
-  await expect(run({ root: process.cwd() })).resolves.toEqual({
+const readKnitScript = jest.fn();
+const validateKnitCommandStructure = jest.fn();
+const validateKnitSourceOperations = jest.fn();
+const validateKnitPublicationCommands = jest.fn();
+jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/read-knit-script.mjs", () => ({ readKnitScript }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-command-structure.mjs", () => ({ validateKnitCommandStructure }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-source-operations.mjs", () => ({ validateKnitSourceOperations }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-publication-commands.mjs", () => ({ validateKnitPublicationCommands }));
+
+const { run } = await import("../../../../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.0.mjs");
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  readKnitScript.mockResolvedValue({ source: "source", parsed: { calls: [] } });
+  validateKnitCommandStructure.mockReturnValue(null);
+  validateKnitSourceOperations.mockReturnValue(null);
+  validateKnitPublicationCommands.mockReturnValue(null);
+});
+
+test("coordinates command, source, and publication policies in order", async () => {
+  await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-0.1.10.0",
     status: "pass",
     message: "",
   });
+  expect(readKnitScript).toHaveBeenCalledWith({ root: "/repo" });
+  expect(validateKnitCommandStructure).toHaveBeenCalledWith({ calls: [] });
+  expect(validateKnitSourceOperations).toHaveBeenCalledWith("source");
+  expect(validateKnitPublicationCommands).toHaveBeenCalledWith([]);
+  const order = [
+    validateKnitCommandStructure,
+    validateKnitSourceOperations,
+    validateKnitPublicationCommands,
+  ].map((phase) => phase.mock.invocationCallOrder[0]);
+  expect(order).toEqual([...order].sort((left, right) => left - right));
 });
 
-test("uses a cached parsed Knit AST when supplied by the validation run", async () => {
-  const source = 'import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);';
-  const parseAst = async () =>
-    parse(source, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
-
-  await expect(run({ root: process.cwd(), parseAst })).resolves.toEqual({
+test("maps missing and syntactically invalid Knit script findings", async () => {
+  readKnitScript.mockResolvedValueOnce({ error: "Knit script could not be read" });
+  await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-0.1.10.0",
-    status: "pass",
-    message: "",
-  });
-});
-
-test("reports syntax errors from the shared AST cache", async () => {
-  await expect(
-    run({
-      root: process.cwd(),
-      parseAst: async () => {
-        throw new SyntaxError("invalid source");
-      },
-    }),
-  ).resolves.toEqual(
-    expect.objectContaining({
-      message: expect.stringContaining("not valid JavaScript: invalid source"),
-    }),
-  );
-});
-
-test.each([
-  ["npm", ["publish"]],
-  ["kubectl", ["apply", "-f", "production.yaml"]],
-  ["git", ["push", "origin", "main"]],
-])("rejects prohibited Knit command %s", async (command, args) => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    `import { spawnSync } from "node:child_process"; spawnSync(${JSON.stringify(command)}, ${JSON.stringify(args)});\n`,
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects dynamic Knit subprocess commands", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; spawnSync(command, args);\n',
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await rm(root, { recursive: true, force: true });
-});
-
-test.each([
-  'process.env.X; import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);',
-  'new Function("return 1")(); import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);',
-])("rejects executable global expressions before validation commands", async (source) => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-global-side-effect-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(join(root, ".knit", "validate.mjs"), source);
-  await expect(run({ root })).resolves.toMatchObject({
     status: "fail",
-    message: expect.stringContaining("must not execute JavaScript"),
+    message: "Knit script could not be read",
   });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects imported child-process functions outside the subprocess allowlist", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-import-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { fork } from "node:child_process"; fork("worker.mjs");',
-  );
-  await expect(run({ root })).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining("must not execute JavaScript"),
-  });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects subprocess calls hidden in an invoked local function", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-local-function-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; function deploy() { spawnSync("npm", ["publish"]); } deploy();',
-  );
-  await expect(run({ root })).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining("unsupported dynamic or state-mutating operation"),
-  });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects filesystem and dynamic module side effects", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import * as fs from "node:fs"; fs.rm("./output", { recursive: true });\n',
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects non-allowlisted static commands", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; spawnSync("curl", ["https://example.test"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("allowlist") }),
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reports malformed and missing Knit scripts", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-errors-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(join(root, ".knit", "validate.mjs"), "export const = ;");
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("not valid JavaScript") }),
-  );
-  await rm(root, { recursive: true, force: true });
-  const missing = await mkdtemp(join(tmpdir(), "eliware-test-knit-missing-"));
-  await expect(run({ root: missing })).resolves.toEqual({
+  readKnitScript.mockRejectedValueOnce(new Error("missing"));
+  await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-0.1.10.0",
     status: "fail",
     message: ".knit/validate.mjs is required for Knit validation.",
   });
-  await rm(missing, { recursive: true, force: true });
+  readKnitScript.mockResolvedValueOnce({ parsed: { error: "invalid JavaScript" } });
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "E-0.1.10.0",
+    status: "fail",
+    message: "invalid JavaScript",
+  });
+  expect(validateKnitCommandStructure).not.toHaveBeenCalled();
 });
 
-test("rejects calls whose command tokens are not statically inspectable", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-tokens-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; spawnSync(123, ["ok"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("statically inspectable") }),
-  );
-  await rm(root, { recursive: true, force: true });
+test("stops at the first policy finding", async () => {
+  validateKnitCommandStructure.mockReturnValueOnce("command structure invalid");
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
+    status: "fail",
+    message: "command structure invalid",
+  });
+  expect(validateKnitSourceOperations).not.toHaveBeenCalled();
+
+  validateKnitSourceOperations.mockReturnValueOnce("source operation invalid");
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
+    status: "fail",
+    message: "source operation invalid",
+  });
+  expect(validateKnitPublicationCommands).not.toHaveBeenCalled();
 });
 
-test("rejects filesystem mutation found in otherwise static Knit source", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-static-side-effect-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    `import { spawnSync } from "node:child_process"; const note = 'fs.rm("output")'; spawnSync("echo", ["ok"]);`,
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("unsupported filesystem") }),
-  );
-  await rm(root, { recursive: true, force: true });
+test("maps publication policy findings to the rule result", async () => {
+  validateKnitPublicationCommands.mockReturnValueOnce("publication command prohibited");
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "E-0.1.10.0",
+    status: "fail",
+    message: "publication command prohibited",
+  });
 });

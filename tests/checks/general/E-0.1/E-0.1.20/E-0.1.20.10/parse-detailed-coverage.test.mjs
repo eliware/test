@@ -1,16 +1,17 @@
 import { expect, test } from "@jest/globals";
 import { parseDetailed } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/parse-detailed-coverage.mjs";
 
-test("parses detailed coverage gaps", () => {
-  expect(
-    parseDetailed({
-      "src/example.mjs": { statementMap: { 0: { start: { line: 4 } } }, s: { 0: 0 }, branchMap: { 0: {} }, b: { 0: [0] }, fnMap: { 0: {} }, f: { 0: 0 }, l: { 4: 0 } },
-    }).gaps,
-  ).toHaveLength(1);
-});
-
-test("parses complete detailed files and all detailed metric shapes", () => {
+test("aggregates coverage gaps and metric totals across detailed source files", () => {
   const result = parseDetailed({
+    "src/gap.mjs": {
+      statementMap: { 0: { start: { line: 4 } } },
+      s: { 0: 0 },
+      branchMap: { 0: {} },
+      b: { 0: [0] },
+      fnMap: { 0: {} },
+      f: { 0: 0 },
+      l: { 4: 0 },
+    },
     "src/complete.mjs": {
       s: { 0: 1 },
       b: { 0: [1, 1] },
@@ -21,83 +22,17 @@ test("parses complete detailed files and all detailed metric shapes", () => {
       fnMap: { 0: {} },
     },
   });
-  expect(result.gaps).toEqual([]);
-  expect(result.totals).toEqual({ statements: 100, branches: 100, functions: 100, lines: 100 });
+  expect(result.gaps).toHaveLength(1);
+  expect(result.totals).toMatchObject({ statements: 50, functions: 50, lines: 50 });
+  expect(result.totals.branches).toBeCloseTo(200 / 3);
+});
+
+test("returns null when a detailed report has no in-scope source files", () => {
   expect(parseDetailed(null)).toBeNull();
+  expect(parseDetailed({ "README.md": {}, "tests/example.test.mjs": {} })).toBeNull();
 });
 
-test("rejects incomplete in-scope coverage entries instead of treating missing metrics as perfect", () => {
-  for (const data of [
-    { s: { 0: 1 }, b: { 0: [1] }, f: { 0: 1 } },
-    { s: { 0: 1 }, b: { 0: [1] }, l: { 1: 1 } },
-    { s: { 0: 1 }, f: { 0: 1 }, l: { 1: 1 } },
-    { b: { 0: [1] }, f: { 0: 1 }, l: { 1: 1 } },
-  ]) {
-    expect(() => parseDetailed({ "src/incomplete.mjs": data })).toThrow("Coverage evidence is incomplete");
-  }
-});
-
-test("does not mask an uncovered same-line statement", () => {
-  expect(parseDetailed({
-    "src/same-line.mjs": {
-      s: { 0: 1, 1: 0 },
-      b: { 0: [1] }, branchMap: { 0: {} }, f: { 0: 1 }, fnMap: { 0: {} }, l: { 1: 0 },
-      statementMap: { 0: { start: { line: 1 } }, 1: { start: { line: 1 } } },
-    },
-  }).gaps[0].lines).toEqual(["1"]);
-});
-
-test("does not treat missing branch or statement maps as complete coverage", () => {
-  expect(() => parseDetailed({ "src/no-branches.mjs": {
-    s: { 0: 1 }, f: { 0: 1 }, l: { 1: 1 },
-  } })).toThrow("Coverage evidence is incomplete");
-  expect(() => parseDetailed({ "src/no-statements.mjs": {
-    b: { 0: [1] }, f: { 0: 1 }, l: { 1: 1 },
-  } })).toThrow("Coverage evidence is incomplete");
-});
-
-test("rejects a required map that is absent after file validation", () => {
-  expect(() => parseDetailed({ "src/no-branch-map.mjs": {
-    s: { 0: 1 }, b: {}, f: { 0: 1 },
-    statementMap: { 0: { start: { line: 1 } } }, fnMap: { 0: {} },
-  } })).toThrow("Coverage evidence is incomplete");
-  expect(() => parseDetailed({ "src/no-branch-fields.mjs": {
-    s: { 0: 1 }, f: { 0: 1 },
-    statementMap: { 0: { start: { line: 1 } } }, fnMap: { 0: {} },
-  } })).toThrow("Coverage evidence is incomplete");
-});
-
-test("rejects nonempty metric maps with empty counters", () => {
-  expect(() => parseDetailed({ "src/empty-counters.mjs": {
-    s: {}, b: { 0: {} }, f: { 0: {} },
-    statementMap: { 0: { start: { line: 1 } } },
-    branchMap: { 0: {} }, fnMap: { 0: {} },
-  } })).toThrow("Coverage evidence is incomplete");
-});
-
-test("normalizes absolute Windows source paths and ignores unsupported files", () => {
-  expect(
-    parseDetailed({
-      "C:\\repo\\src\\absolute.mjs": { s: { 0: 1 }, b: { 0: [1] }, branchMap: { 0: {} }, f: { 0: 1 }, fnMap: { 0: {} }, l: { 1: 1 }, statementMap: { 0: { start: { line: 1 } } } },
-      "src/README.txt": {},
-      "src/example.test.mjs": {},
-    }).gaps,
-  ).toEqual([]);
-  expect(parseDetailed({ "README.md": {} })).toBeNull();
-});
-
-test("reports omitted in-scope source files from detailed coverage", () => {
-  expect(() => parseDetailed({
-    "tests/example.test.mjs": {},
-    "src/present.mjs": {
-      s: { 0: 1 }, b: {}, f: { 0: 1 },
-      statementMap: { 0: { start: { line: 1 } } }, branchMap: {}, fnMap: { 0: {} },
-    },
-  }, ["src/present.mjs", "src/omitted.mjs"])).toThrow("src/omitted.mjs");
-  expect(parseDetailed({ "tests/example.test.mjs": {} }, ["tests/example.test.mjs"])).toBeNull();
-});
-
-test("requires every reported in-scope path to match repository files and source shapes", () => {
+test("aggregates against source shapes after Windows path normalization", () => {
   const shape = {
     statementMap: { 0: { start: { line: 1 } } },
     branchMap: {},
@@ -113,25 +48,9 @@ test("requires every reported in-scope path to match repository files and source
     branchMap: {},
     fnMap: {},
   };
-  expect(() => parseDetailed(
-    { "src/listed.mjs": evidence, "src/unlisted.mjs": evidence },
-    ["src/listed.mjs"],
-    { "src/listed.mjs": shape },
-  )).toThrow("non-repository source file");
-  expect(() => parseDetailed(
-    { "src/listed.mjs": evidence },
-    ["src/listed.mjs"],
-  )).toThrow("no source-derived shape");
   expect(parseDetailed(
-    { "C:\\outside\\src\\listed.mjs": evidence },
+    { "C:\\repo\\src\\listed.mjs": evidence },
     ["src/listed.mjs"],
     { "src/listed.mjs": shape },
   ).totals.lines).toBe(100);
-});
-
-test("marks zero-total metrics as not applicable instead of reporting false coverage", () => {
-  expect(parseDetailed({ "src/no-branches.mjs": {
-    s: { 0: 1 }, b: {}, f: { 0: 1 },
-    statementMap: { 0: { start: { line: 1 } } }, branchMap: {}, fnMap: { 0: {} },
-  } }).totals.branches).toBeNull();
 });

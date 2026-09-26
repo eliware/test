@@ -45,3 +45,20 @@ test("accepts only fixed literal PowerShell mailbox setup", () => {
     { command: "Set-Content .env 'MAIL_OWNER_ADDRESS=$(Get-ChildItem)@eliware.org'" },
   ], 1)).toContain("safe setup");
 });
+
+test("allows the approved setup actions and rejects unreviewed actions before install", () => {
+  const install = { run: "npm ci" };
+  const commands = [{ command: install.run, index: 1, step: install }];
+  expect(validateWorkflowPreInstallCommands(
+    "ci.yml",
+    commands,
+    1,
+    [{ uses: "actions/checkout@v6" }, install],
+  )).toBeNull();
+  expect(validateWorkflowPreInstallCommands(
+    "ci.yml",
+    commands,
+    1,
+    [{ uses: "someone/unreviewed-action@v1" }, install],
+  )).toContain("safe setup or reporting");
+});
