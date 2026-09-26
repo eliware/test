@@ -1,7 +1,7 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, test } from "@jest/globals";
+import { afterEach, expect, jest, test } from "@jest/globals";
 import { validateMaintainedFileSyntax } from "../../../../src/checks/general/E-0.1/validate-maintained-file-syntax.mjs";
 
 let root;
@@ -58,4 +58,15 @@ test("reports read failures as file syntax diagnostics", async () => {
   await expect(validateMaintainedFileSyntax("/repo", ["README.md"])).resolves.toEqual([
     expect.stringContaining("README.md:"),
   ]);
+});
+
+test("uses the shared AST cache for maintained module syntax", async () => {
+  const read = jest.fn();
+  const parseAst = jest.fn().mockResolvedValue({ type: "File" });
+
+  await expect(
+    validateMaintainedFileSyntax("/repo", ["src/module.mjs"], { read, parseAst }),
+  ).resolves.toEqual([]);
+  expect(read).not.toHaveBeenCalled();
+  expect(parseAst).toHaveBeenCalledWith("/repo", "src/module.mjs", { sourceType: "module" });
 });

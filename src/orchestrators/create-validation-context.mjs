@@ -1,3 +1,5 @@
+import { createRepositoryAstCache } from "../checks/create-repository-ast-cache.mjs";
+
 export function createValidationContext(root, packageJson, options = {}) {
   return {
     root,
@@ -14,6 +16,7 @@ export function createValidationContext(root, packageJson, options = {}) {
     toolArgs: options.toolArgs ?? [],
     timing: options.timing,
     writeOutput: options.writeOutput,
+    parseAst: options.parseAst ?? createRepositoryAstCache(),
     ...(options.repositoryFiles ? { repositoryFiles: options.repositoryFiles } : {}),
     ...(options.focusedScope ? { focusedScope: options.focusedScope } : {}),
   };

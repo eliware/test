@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { parse } from "@babel/parser";
 import {
   commandTokens,
   parseKnitScript,
@@ -16,6 +17,14 @@ test("parses static child-process commands and loop bindings", () => {
     ["git", "pull", "--ff-only", "origin", "main"],
     ["npm", "ci"],
   ]);
+});
+
+test("analyzes a shared parsed AST without parsing the source again", () => {
+  const source = 'import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);';
+  const options = { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] };
+  const ast = parse(source, options);
+
+  expect(parseKnitScript("invalid source", ast)).toEqual(parseKnitScript(source));
 });
 
 test("reports dynamic subprocess commands as uninspectable", () => {

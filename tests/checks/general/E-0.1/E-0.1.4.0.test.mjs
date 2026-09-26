@@ -28,7 +28,7 @@ test("validates the repository inventory for lint mode", async () => {
     status: "pass",
     message: "",
   });
-  expect(validateFiles).toHaveBeenCalledWith("/repo", ["README.md"]);
+  expect(validateFiles).toHaveBeenCalledWith("/repo", ["README.md"], { parseAst: undefined });
 });
 
 test("runs the default syntax validator when lint execution is enabled without a mode", async () => {
@@ -46,7 +46,7 @@ test("uses focused paths instead of the repository inventory", async () => {
     focusedScope: { paths: ["tests/a.test.mjs"] },
     validateFiles,
   });
-  expect(validateFiles).toHaveBeenCalledWith("/repo", ["tests/a.test.mjs"]);
+  expect(validateFiles).toHaveBeenCalledWith("/repo", ["tests/a.test.mjs"], { parseAst: undefined });
 });
 
 test("fails closed when the repository inventory is unavailable", async () => {

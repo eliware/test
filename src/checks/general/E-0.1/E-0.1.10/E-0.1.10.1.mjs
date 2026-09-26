@@ -6,9 +6,22 @@ import { commandTokens, parseKnitScript } from "./parse-knit-script.mjs";
 export const ruleId = "E-0.1.10.1";
 export const parentRuleId = "E-0.1.10";
 
-export async function run({ root }) {
+const parserOptions = { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] };
+
+export async function run({ root, parseAst }) {
   try {
-    const parsed = parseKnitScript(await readFile(join(root, ".knit", "validate.mjs"), "utf8"));
+    const source = parseAst
+      ? ""
+      : await readFile(join(root, ".knit", "validate.mjs"), "utf8");
+    let ast = null;
+    if (parseAst) {
+      try {
+        ast = await parseAst(root, ".knit/validate.mjs", parserOptions);
+      } catch (error) {
+        return fail(ruleId, `Knit validation script is not valid JavaScript: ${error.message}`);
+      }
+    }
+    const parsed = parseKnitScript(source, ast);
     if (parsed.error) return fail(ruleId, parsed.error);
     if (parsed.leadingExecutable) {
       return fail(

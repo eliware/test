@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { parse } from "@babel/parser";
+import { moduleParserOptions } from "../../create-repository-ast-cache.mjs";
 import { parse as parseYaml } from "yaml";
 import prettier from "prettier";
 import { join } from "node:path";
@@ -15,7 +16,7 @@ const parsers = new Map([
 export async function validateMaintainedFileSyntax(
   root,
   files,
-  { read = readFile, syntaxParsers = parsers } = {},
+  { read = readFile, syntaxParsers = parsers, parseAst } = {},
 ) {
   const failures = [];
   for (const file of files) {
@@ -23,7 +24,8 @@ export async function validateMaintainedFileSyntax(
     const parseFile = syntaxParsers.get(extension);
     if (!parseFile) continue;
     try {
-      await parseFile(await read(join(root, file), "utf8"));
+      if (extension === ".mjs" && parseAst) await parseAst(root, file, moduleParserOptions);
+      else await parseFile(await read(join(root, file), "utf8"));
     } catch (error) {
       failures.push(`${file}: ${error.message}`);
     }

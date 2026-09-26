@@ -2,6 +2,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
+import { parse } from "@babel/parser";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.1.mjs";
 
 test("requires the exact Knit command sequence", async () => {
@@ -10,6 +11,23 @@ test("requires the exact Knit command sequence", async () => {
     status: "pass",
     message: "",
   });
+});
+
+test("uses a cached parsed Knit AST when supplied by the validation run", async () => {
+  const source = 'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);';
+  const parseAst = async () => parse(source, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
+
+  await expect(run({ root: process.cwd(), parseAst })).resolves.toEqual({
+    ruleId: "E-0.1.10.1",
+    status: "pass",
+    message: "",
+  });
+});
+
+test("reports syntax errors from the shared AST cache", async () => {
+  await expect(run({ root: process.cwd(), parseAst: async () => { throw new SyntaxError("invalid source"); } })).resolves.toEqual(
+    expect.objectContaining({ message: expect.stringContaining("not valid JavaScript: invalid source") }),
+  );
 });
 
 test("rejects commands that appear before the required prefix", async () => {

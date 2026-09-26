@@ -2,10 +2,10 @@ import { parse } from "@babel/parser";
 import { collectCalls } from "./knit-ast-traversal.mjs";
 import { collectImports } from "./knit-import-analysis.mjs";
 
-export function parseKnitScript(content) {
-  let ast;
+export function parseKnitScript(content, parsedAst = null) {
+  let ast = parsedAst;
   try {
-    ast = parse(content, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
+    ast ??= parse(content, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
   } catch (error) {
     return { error: `Knit validation script is not valid JavaScript: ${error.message}`, calls: [] };
   }

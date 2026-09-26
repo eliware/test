@@ -7,10 +7,20 @@ export const ruleId = "E-0.1.10.0";
 export const parentRuleId = "E-0.1.10";
 const allowedCommands = new Set(["node", "npm", "npx", "git", "echo"]);
 
-export async function run({ root }) {
+const parserOptions = { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] };
+
+export async function run({ root, parseAst }) {
   try {
     const source = await readFile(join(root, ".knit", "validate.mjs"), "utf8");
-    const parsed = parseKnitScript(source);
+    let ast = null;
+    if (parseAst) {
+      try {
+        ast = await parseAst(root, ".knit/validate.mjs", parserOptions);
+      } catch (error) {
+        return fail(ruleId, `Knit validation script is not valid JavaScript: ${error.message}`);
+      }
+    }
+    const parsed = parseKnitScript(source, ast);
     if (parsed.error) return fail(ruleId, parsed.error);
     if (parsed.unsupported?.length > 0) {
       return fail(

@@ -5,8 +5,8 @@ export function walk(node, findings, file) {
   return collectCommonJsFindings(node, findings, file);
 }
 
-export async function findCommonJsUses(root, packageJson) {
-  const findings = await scanCommonJsFiles(root);
+export async function findCommonJsUses(root, packageJson, repositoryFiles, parseAst) {
+  const findings = await scanCommonJsFiles(root, repositoryFiles, parseAst);
   const serialized = JSON.stringify(packageJson ?? {});
   if (/(?:^|["'])[^"']+\.(?:cjs|cts)(?:["']|$)/i.test(serialized))
     findings.push("package.json: CommonJS entrypoint or export");

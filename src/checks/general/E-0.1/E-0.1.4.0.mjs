@@ -11,13 +11,14 @@ export async function run({
   executeLint = false,
   mode = null,
   focusedScope = null,
+  parseAst,
   validateFiles = validateMaintainedFileSyntax,
 }) {
   if (!executeLint || (mode !== null && mode !== "lint")) return pass(ruleId);
   const files = focusedScope?.paths ?? repositoryFiles;
   if (!Array.isArray(files))
     return fail(ruleId, "Repository file inventory is unavailable for syntax validation.");
-  const failures = await validateFiles(root, files);
+  const failures = await validateFiles(root, files, { parseAst });
   return failures.length
     ? fail(ruleId, `Maintained files must parse successfully:\n${failures.join("\n")}`)
     : pass(ruleId);

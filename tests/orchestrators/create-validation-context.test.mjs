@@ -34,6 +34,7 @@ test("creates the complete execution context from validation options", () => {
     executeFormat: true,
     mode: "focused",
     modeRuleId: null,
+    parseAst: expect.any(Function),
     jestArgs: ["tests/example.test.mjs"],
     toolArgs: ["--watch"],
     timing,
@@ -53,9 +54,39 @@ test("creates default options without enabling stages", () => {
     executeFormat: false,
     mode: null,
     modeRuleId: null,
+    parseAst: expect.any(Function),
     jestArgs: [],
     toolArgs: [],
     timing: undefined,
     writeOutput: undefined,
   });
+});
+
+test("preserves a shared AST parser and optional run scope data", () => {
+  const parseAst = () => {};
+  const repositoryFiles = ["src/index.mjs"];
+  const focusedScope = { paths: repositoryFiles };
+
+  expect(
+    createValidationContext("root", {}, { parseAst, repositoryFiles, focusedScope }),
+  ).toEqual({
+    root: "root",
+    packageJson: {},
+    executeJest: false,
+    executeLint: false,
+    executeAudit: false,
+    executePack: false,
+    executePackageChecks: false,
+    executeFormat: false,
+    mode: null,
+    modeRuleId: null,
+    jestArgs: [],
+    toolArgs: [],
+    timing: undefined,
+    writeOutput: undefined,
+    parseAst,
+    repositoryFiles,
+    focusedScope,
+  },
+  );
 });

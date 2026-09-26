@@ -17,10 +17,12 @@ test("finds imports, re-exports, dynamic imports, requires, scripts, and config 
     export { load, delta };
   `,
   );
+  await writeFile(join(root, "src", "module.js"), 'import "zeta";\n');
   await writeFile(join(root, "oxlint.config.json"), JSON.stringify({ plugin: "epsilon" }));
   const packageJson = {
     dependencies: {
       alpha: "1.0.0",
+      zeta: "1.0.0",
       "@scope/beta": "1.0.0",
       gamma: "1.0.0",
       delta: "1.0.0",
@@ -35,7 +37,7 @@ test("finds imports, re-exports, dynamic imports, requires, scripts, and config 
     oxlint: { plugins: ["oxlint"] },
   };
   await expect(findDependencyReferences(root, packageJson)).resolves.toEqual(
-    expect.arrayContaining(["alpha", "@scope/beta", "gamma", "delta", "epsilon", "jest", "prettier", "oxlint"]),
+    expect.arrayContaining(["alpha", "@scope/beta", "gamma", "delta", "epsilon", "jest", "prettier", "oxlint", "zeta"]),
   );
   await rm(root, { recursive: true, force: true });
 });
