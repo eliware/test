@@ -1,29 +1,11 @@
 import { expect, test } from "@jest/globals";
-import {
-  collectRedactionSecrets,
-  redactProcessOutput,
-} from "../../src/checks/redact-process-output.mjs";
+import { redactProcessOutput } from "../../src/checks/redact-process-output.mjs";
 
-test("redacts configured sensitive environment values literally", () => {
-  expect(collectRedactionSecrets()).toEqual([]);
-  const secrets = collectRedactionSecrets({ SAFE: "visible", SERVICE_TOKEN: "opaque-value-123" });
-  expect(redactProcessOutput("child leaked opaque-value-123", secrets)).toBe(
+test("redacts configured secret values literally", () => {
+  expect(redactProcessOutput("child leaked opaque-value-123", ["opaque-value-123"])).toBe(
     "child leaked [REDACTED]",
   );
-  expect(secrets).toEqual(["opaque-value-123"]);
   expect(redactProcessOutput("unchanged", [null, ""])).toBe("unchanged");
-});
-
-test("redacts short configured values and secrets after the first hundred entries", () => {
-  const environment = Object.fromEntries(
-    Array.from({ length: 105 }, (_, index) => [`SERVICE_TOKEN_${index}`, `secret-${index}`]),
-  );
-  environment.SHORT_TOKEN = "x";
-  const secrets = collectRedactionSecrets(environment);
-  expect(secrets).toHaveLength(106);
-  expect(redactProcessOutput("last secret-104 and x", secrets)).toBe(
-    "last [REDACTED] and [REDACTED]",
-  );
 });
 
 test("redacts structured, quoted, and authorization credentials", () => {

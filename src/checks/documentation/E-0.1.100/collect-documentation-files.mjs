@@ -20,7 +20,14 @@ export async function collectDocumentationFiles(directory, root = directory, pre
   return files;
 }
 
-export const jsonFiles = (root) =>
-  collectDocumentationFiles(root, root, (name) => name.endsWith(".json"));
-export const repositoryFiles = (root) =>
-  collectDocumentationFiles(root, root, (name) => /\.(?:json|md)$/iu.test(name));
+export function jsonFiles(root, inventory) {
+  return inventory
+    ? inventory.documentationFiles({ directory: root, predicate: (name) => name.endsWith(".json") })
+    : collectDocumentationFiles(root, root, (name) => name.endsWith(".json"));
+}
+
+export function repositoryFiles(root, inventory) {
+  return inventory
+    ? inventory.documentationFiles({ directory: root, predicate: (name) => /\.(?:json|md)$/iu.test(name) })
+    : collectDocumentationFiles(root, root, (name) => /\.(?:json|md)$/iu.test(name));
+}

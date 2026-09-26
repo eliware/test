@@ -1,8 +1,7 @@
-import { readFile } from "node:fs/promises";
 import { fail, pass } from "../../check-result.mjs";
 import { join } from "node:path";
-import { collectRepositoryFiles } from "./collect-repository-files.mjs";
-import { collectRepositoryDirectories } from "./collect-repository-directories.mjs";
+import { readSourceTestMirrorInventory } from "./read-source-test-mirror-inventory.mjs";
+import { readSourceTestContents } from "./read-source-test-test-contents.mjs";
 import { findMirrorViolations } from "./find-source-test-mirror-violations.mjs";
 import { findDuplicatePathViolations } from "./find-duplicate-test-path-violations.mjs";
 import { findOrphanTestViolations } from "./find-orphan-test-violations.mjs";
@@ -13,48 +12,19 @@ import { validateFocusedSourceTestPair } from "./validate-focused-source-test-pa
 
 export async function runSourceTestMirroring({ root, ruleId, focusedScope = null, repositoryInventory }) {
   if (focusedScope) return runFocused(root, focusedScope, ruleId, repositoryInventory);
-  let sourceFiles;
-  let testFiles;
-  let sourceDirectories;
-  let testDirectories;
+  let mirrorInventory;
   try {
-    if (repositoryInventory) {
-      const [sourceRecords, testRecords] = await Promise.all([
-        repositoryInventory.entriesUnder(join(root, "src")),
-        repositoryInventory.entriesUnder(join(root, "tests")),
-      ]);
-      sourceFiles = sourceRecords
-        .filter(({ path, type }) => type === "file" && path.startsWith("src/"))
-        .map(({ path }) => path.slice("src/".length));
-      testFiles = testRecords
-        .filter(({ path, type }) => type === "file" && path.startsWith("tests/"))
-        .map(({ path }) => path.slice("tests/".length));
-      sourceDirectories = sourceRecords
-        .filter(({ path, type }) => type === "directory" && path.startsWith("src/"))
-        .map(({ path }) => path.slice("src/".length));
-      testDirectories = testRecords
-        .filter(({ path, type }) => type === "directory" && path.startsWith("tests/"))
-        .map(({ path }) => path.slice("tests/".length));
-    } else {
-      sourceFiles = await collectRepositoryFiles(join(root, "src"), join(root, "src"));
-      testFiles = await collectRepositoryFiles(join(root, "tests"), join(root, "tests"));
-      sourceDirectories = await collectRepositoryDirectories(join(root, "src"), join(root, "src"));
-      testDirectories = await collectRepositoryDirectories(join(root, "tests"), join(root, "tests"));
-    }
+    mirrorInventory = await readSourceTestMirrorInventory(root, repositoryInventory);
   } catch {
     return fail(ruleId, "src/ is required for source/test mirroring.");
   }
+  const { sourceFiles, testFiles, sourceDirectories, testDirectories } = mirrorInventory;
   const findings = findMirrorViolations(sourceFiles, testFiles, sourceDirectories, testDirectories);
   const sourceModules = sourceFiles.filter((file) => file.endsWith(".mjs"));
   const expectedTests = new Set(sourceModules.map((source) => source.replace(/\.mjs$/u, ".test.mjs")));
   findings.push(...findDuplicatePathViolations(sourceFiles, testFiles));
   findings.push(...findOrphanTestViolations(testFiles, expectedTests).map((file) => `orphan test is not an approved cross-cutting suite: ${file}`));
-  const testContents = new Map();
-  for (const file of testFiles.filter((candidate) => candidate.endsWith(".test.mjs"))) {
-    testContents.set(file, repositoryInventory
-      ? await repositoryInventory.readText(join(root, "tests", file))
-      : await readFile(join(root, "tests", file), "utf8"));
-  }
+  const testContents = await readSourceTestContents(root, testFiles, repositoryInventory);
   findings.push(...findTestContractViolations(sourceModules, testContents));
   const misplacedArtifacts = findMisplacedArtifacts(sourceFiles, testFiles);
   if (misplacedArtifacts.length > 0)

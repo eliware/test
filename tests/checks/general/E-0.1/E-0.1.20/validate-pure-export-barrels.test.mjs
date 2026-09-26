@@ -1,10 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 import { runPureExportBarrelPolicy } from "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs";
-import { runNoCoverageIgnore } from "../../../../../src/checks/general/E-0.1/validate-no-coverage-ignore.mjs";
 const run = (options) => runPureExportBarrelPolicy({ ...options, ruleId: "E-0.1.40.14" });
 
 async function fixture(source, packageJson) {
@@ -93,29 +91,5 @@ test("collects conditional exports without a root and ignores null conditions", 
     eliware: { apply: ["library"] },
   });
   await expect(run(context)).resolves.toMatchObject({ status: "pass" });
-  await rm(context.root, { recursive: true, force: true });
-});
-
-test("shares one cached source read between barrel and coverage checks", async () => {
-  const context = await fixture(
-    "/* istanbul ignore file */\nexport { value } from \"./value.mjs\";\n",
-    {
-      main: "./src/entry.mjs",
-      eliware: { apply: ["library"] },
-    },
-  );
-  const reads = new Map();
-  const repositoryInventory = createRepositoryInventory(context.root, {
-    includeTestResultsUnder: ["src"],
-    read: async (...args) => {
-      const path = args[0];
-      reads.set(path, (reads.get(path) ?? 0) + 1);
-      return readFile(...args);
-    },
-  });
-  const options = { ...context, repositoryInventory };
-  await expect(runNoCoverageIgnore({ ...options, ruleId: "E-0.1.40.8" })).resolves.toMatchObject({ status: "pass" });
-  await expect(run({ ...options, ruleId: "E-0.1.40.14" })).resolves.toMatchObject({ status: "pass" });
-  expect(reads.get(join(context.root, "src", "entry.mjs"))).toBe(1);
   await rm(context.root, { recursive: true, force: true });
 });

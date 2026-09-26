@@ -1,9 +1,8 @@
 import { fail, pass } from "../../../check-result.mjs";
-import { isValidationJob, workflowCommands, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
 import { readWorkflows } from "./read-workflow-files.mjs";
-import { findPublicationCommand, findUnsupportedCommands, isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
 import { validateWorkflowSequence } from "./validate-workflow-sequence.mjs";
 import { validateWorkflowFileSet } from "./validate-workflow-file-set.mjs";
+import { selectWorkflowValidationJobs } from "./select-workflow-validation-jobs.mjs";
 
 export const ruleId = "E-0.1.24.4";
 export const parentRuleId = "E-0.1.24";
@@ -20,20 +19,9 @@ export async function run({ root, packageJson, repositoryInventory }) {
   );
   if (fileSetError) return fail(ruleId, fileSetError);
   for (const { name, document } of workflows) {
-    const commands = workflowCommands(document);
-    const jobs = workflowJobs(document);
-    const validationJobs = jobs
-      .filter(({ id, job }) => isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps))
-      .map(({ id, job }) => ({ id, job, commands: workflowRunSteps(job) }));
-    const publicationWorkflow = Boolean(findPublicationCommand(commands));
-    if (publicationWorkflow && validationJobs.length === 0)
-      return fail(ruleId, `${name} publication workflow must contain a separate validation job.`);
-    if (validationJobs.length === 0)
-      return fail(ruleId, `${name} must validate with npm ci followed by npm test.`);
-    for (const { id, job, commands: jobCommands } of validationJobs) {
-      const unsupported = findUnsupportedCommands(jobCommands);
-      if (unsupported.length > 0)
-        return fail(ruleId, `${name} contains non-validation command(s): ${unsupported.join(", ")}.`);
+    const selection = selectWorkflowValidationJobs(name, document);
+    if (selection.error) return fail(ruleId, selection.error);
+    for (const { id, job, commands: jobCommands } of selection.jobs) {
       const sequenceError = validateWorkflowSequence(`${name} job ${id}`, jobCommands, job.steps, job);
       if (sequenceError) return fail(ruleId, sequenceError);
     }

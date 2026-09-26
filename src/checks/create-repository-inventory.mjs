@@ -4,6 +4,7 @@ import { createRepositoryDiscovery } from "./create-repository-inventory-discove
 import { createRepositoryFileViews } from "./create-repository-inventory-views.mjs";
 import { createRepositoryContentCache } from "./create-repository-inventory-content.mjs";
 import { createDocumentationFileView } from "./create-repository-inventory-documentation.mjs";
+import { createRepositoryDirectoryEntries } from "./create-repository-directory-entries.mjs";
 
 export function createRepositoryInventory(root, options = {}) {
   const {
@@ -29,13 +30,21 @@ export function createRepositoryInventory(root, options = {}) {
   const views = createRepositoryFileViews(discovery.entries, focusedScope);
   const content = createRepositoryContentCache(root, read, parseSource);
   const documentationFiles = createDocumentationFileView(root, discovery.entriesUnder);
+  const directoryEntries = createRepositoryDirectoryEntries({
+    root,
+    entries: discovery.entries,
+    readDirectory: discovery.readDirectoryCached,
+    hasFullDiscovery: discovery.hasFullDiscovery,
+  });
 
   return Object.freeze({
     root,
     mode,
     modeRuleId,
     focusedScope,
-    ...discovery,
+    entries: discovery.entries,
+    entriesUnder: discovery.entriesUnder,
+    directoryEntries,
     ...views,
     documentationFiles,
     ...content,

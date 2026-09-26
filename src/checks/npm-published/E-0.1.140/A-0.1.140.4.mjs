@@ -1,7 +1,7 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
 import { permissions } from "../../ghcr-published/workflow-permissions.mjs";
-import { npmPublicationJobs } from "../../ghcr-published/workflow-publication.mjs";
+import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
 import { stepText, steps } from "../../ghcr-published/workflow-structure.mjs";
 
 export const ruleId = "A-0.1.140.4";

@@ -1,6 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
-import { jsonFiles } from "./documentation-surface.mjs";
-import { validateAuthoritySurfaces } from "./validate-authority-surfaces.mjs";
+import { jsonFiles } from "./collect-documentation-files.mjs";
+import { validateAuthorityDocuments } from "./validate-authority-documents.mjs";
 import { validateDocumentationLinks } from "./validate-documentation-links.mjs";
 import { validateStructuredReferences } from "./validate-structured-references.mjs";
 
@@ -13,7 +13,7 @@ export async function run(context) {
   try {
     const files = await jsonFiles(root, context.repositoryInventory);
     await validateStructuredReferences(root, files, context.repositoryInventory);
-    const authorityError = await validateAuthoritySurfaces(root, files, context.repositoryInventory);
+    const authorityError = await validateAuthorityDocuments(root, files, context.repositoryInventory);
     if (authorityError) return fail(ruleId, authorityError);
     const linkError = await validateDocumentationLinks(root, context);
     if (linkError) return fail(ruleId, linkError);

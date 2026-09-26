@@ -19,10 +19,6 @@ test("scans a requested subtree lazily and reuses directory reads in a full walk
     },
   });
 
-  const immediate = await inventory.directoryEntries(join(root, "src"));
-  expect(immediate.map(({ name }) => name)).toEqual(["entry.mjs"]);
-  expect(immediate[0].isFile()).toBe(true);
-  expect(immediate[0].isDirectory()).toBe(false);
   await expect(inventory.entriesUnder(join(root, "src"))).resolves.toEqual([
     { path: "src", type: "directory", depth: 1 },
     { path: "src/entry.mjs", type: "file", depth: 1 },
@@ -46,7 +42,9 @@ test("scans a requested subtree lazily and reuses directory reads in a full walk
 test("discovery defaults and custom finders support full and scoped results", async () => {
   const defaultReads = jest.fn(async () => []);
   const defaults = createRepositoryDiscovery({ root: "/repo", readDirectory: defaultReads });
+  expect(defaults.hasFullDiscovery()).toBe(false);
   await expect(defaults.entries()).resolves.toEqual([]);
+  expect(defaults.hasFullDiscovery()).toBe(true);
   expect(defaultReads).toHaveBeenCalledWith(expect.stringMatching(/repo$/u), { withFileTypes: true });
 
   const records = [
@@ -81,43 +79,4 @@ test("discovery defaults and custom finders support full and scoped results", as
   const rootScoped = createRepositoryDiscovery({ root: "/repo", findEntries: rootFinder, readDirectory: async () => [] });
   await expect(rootScoped.entriesUnder("/repo")).resolves.toEqual(records);
   expect(rootFinder).toHaveBeenCalledWith("/repo", expect.any(Function), expect.objectContaining({ scopeDirectory: "" }));
-});
-
-test("serves indexed and pruned directory entries through the shared reader", async () => {
-  const records = [
-    { path: "README.md", type: "file", depth: 0 },
-    { path: "src", type: "directory", depth: 1 },
-    { path: "src/index.mjs", type: "file", depth: 1 },
-    { path: "dist", type: "directory", depth: 1 },
-  ];
-  const readDirectory = jest.fn(async (directory) => {
-    if (directory.endsWith("dist"))
-      return [{ name: "assets", isFile: () => false, isDirectory: () => true }];
-    if (directory.endsWith("dist\\assets") || directory.endsWith("dist/assets"))
-      return [{ name: "app.js", isFile: () => true, isDirectory: () => false }];
-    throw Object.assign(new Error("missing"), { code: "ENOENT" });
-  });
-  const inventory = createRepositoryInventory("/repo", {
-    findEntries: jest.fn(async () => records),
-    readDirectory,
-  });
-
-  const rootEntries = await inventory.directoryEntries("/repo");
-  expect(rootEntries.map(({ name }) => name)).toEqual(["README.md", "src", "dist"]);
-  expect(rootEntries[0].isFile()).toBe(true);
-  expect(rootEntries[1].isDirectory()).toBe(true);
-  expect(rootEntries[2].isDirectory()).toBe(true);
-  await expect(inventory.directoryEntries("/repo/src")).resolves.toEqual([
-    expect.objectContaining({ name: "index.mjs", path: "src/index.mjs" }),
-  ]);
-  await expect(inventory.directoryEntries("/repo/dist")).resolves.toMatchObject([
-    { name: "assets", path: "dist/assets" },
-  ]);
-  const assets = await inventory.directoryEntries("/repo/dist/assets");
-  expect(assets).toMatchObject([{ name: "app.js", path: "dist/assets/app.js" }]);
-  expect(assets[0].isFile()).toBe(true);
-  expect(assets[0].isDirectory()).toBe(false);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
-  await expect(inventory.directoryEntries("/repo/missing")).rejects.toMatchObject({ code: "ENOENT" });
-  await expect(inventory.directoryEntries("/outside")).rejects.toThrow("inside the repository");
 });

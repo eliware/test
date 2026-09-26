@@ -2,7 +2,7 @@ import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
 import { hasExactTagTrigger } from "../../ghcr-published/has-exact-tag-trigger.mjs";
 import { hasUbuntuRunner } from "../../ghcr-published/has-ubuntu-runner.mjs";
-import { npmPublicationJobs } from "../../ghcr-published/workflow-publication.mjs";
+import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
 import { steps } from "../../ghcr-published/workflow-structure.mjs";
 
 export const ruleId = "A-0.1.140.2";

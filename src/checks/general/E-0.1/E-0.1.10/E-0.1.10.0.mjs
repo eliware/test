@@ -1,28 +1,15 @@
-import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
-import { readRepositoryText } from "../../../read-repository-text.mjs";
-import { parseKnitScript } from "./parse-knit-script.mjs";
+import { readKnitScript } from "./read-knit-script.mjs";
 import { commandTokens } from "./knit-command-tokens.mjs";
 
 export const ruleId = "E-0.1.10.0";
 export const parentRuleId = "E-0.1.10";
 const allowedCommands = new Set(["node", "npm", "npx", "git", "echo"]);
 
-const parserOptions = { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] };
-
 export async function run(context) {
-  const { root, parseAst } = context;
   try {
-    const source = await readRepositoryText(context, join(root, ".knit", "validate.mjs"));
-    let ast = null;
-    if (parseAst) {
-      try {
-        ast = await parseAst(root, ".knit/validate.mjs", parserOptions);
-      } catch (error) {
-        return fail(ruleId, `Knit validation script is not valid JavaScript: ${error.message}`);
-      }
-    }
-    const parsed = parseKnitScript(source, ast);
+    const { source, parsed, error } = await readKnitScript(context);
+    if (error) return fail(ruleId, error);
     if (parsed.error) return fail(ruleId, parsed.error);
     if (parsed.unsupported?.length > 0) {
       return fail(

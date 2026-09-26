@@ -1,6 +1,8 @@
 import { readConventionConfig } from "./read-convention-config.mjs";
 import { createValidationContext } from "./create-validation-context.mjs";
 import { resolveFocusedScope } from "../cli/resolve-focused-scope.mjs";
+import { selectExecutionChecks } from "./select-execution-checks.mjs";
+import { collectValidationInventoryOptions } from "./collect-validation-inventory-options.mjs";
 
 export async function prepareValidationPlan(root, ignoredRuleIds, options, dependencies) {
   const packageJson = await dependencies.loadValidationTarget(root);
@@ -12,27 +14,8 @@ export async function prepareValidationPlan(root, ignoredRuleIds, options, depen
   const allChecks = await dependencies.discoverAllChecks();
   const checks = await dependencies.selectConventionChecks(conventions, allChecks);
   const focusedScope = resolveFocusedScope(options.jestArgs ?? []);
-  const executionChecks = focusedScope ? checks.filter(({ focusedSafe }) => focusedSafe === true) : checks;
-  const inventoryChecks = options.modeRuleId
-    ? executionChecks.filter(({ ruleId }) => ruleId === options.modeRuleId)
-    : executionChecks;
-  const expandedDirectories = [
-    ...new Set(
-      inventoryChecks.flatMap(({ repositoryInventoryOptions }) =>
-        repositoryInventoryOptions?.expandedDirectories ?? [],
-      ),
-    ),
-  ];
-  const includeTestResults = inventoryChecks.some(
-    ({ repositoryInventoryOptions }) => repositoryInventoryOptions?.includeTestResults === true,
-  );
-  const includeTestResultsUnder = [
-    ...new Set(
-      inventoryChecks.flatMap(({ repositoryInventoryOptions }) =>
-        repositoryInventoryOptions?.includeTestResultsUnder ?? [],
-      ),
-    ),
-  ];
+  const executionChecks = selectExecutionChecks(checks, focusedScope);
+  const inventoryOptions = collectValidationInventoryOptions(executionChecks, options.modeRuleId);
   await dependencies.validateBundledDirectiveCompleteness(allChecks, conventions.apply);
   const exemptions = dependencies.prepareValidationExemptions(packageJson, allChecks, ignoredRuleIds);
   return {
@@ -40,9 +23,7 @@ export async function prepareValidationPlan(root, ignoredRuleIds, options, depen
     context: createValidationContext(root, packageJson, {
       ...options,
       focusedScope,
-      expandedDirectories,
-      includeTestResults,
-      includeTestResultsUnder,
+      ...inventoryOptions,
       findRepositoryEntries: dependencies.findRepositoryEntries,
     }),
     exemptions,

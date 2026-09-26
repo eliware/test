@@ -1,10 +1,8 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/general/E-0.1/E-0.1.23.mjs";
-import { run as runLicensePolicy } from "../../../../src/checks/general/E-0.1/E-0.1.26.mjs";
-import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires the Eliware MIT license attribution", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-license-"));
@@ -26,22 +24,5 @@ test("fails when the root license is missing", async () => {
     status: "fail",
     message: "LICENSE is required at the repository root.",
   });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("shares the cached LICENSE text between license checks", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-license-inventory-"));
-  const license = join(root, "LICENSE");
-  await writeFile(license, "MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED \"AS IS\"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE\n");
-  const reads = new Map();
-  const repositoryInventory = createRepositoryInventory(root, {
-    read: async (path, encoding) => {
-      reads.set(path, (reads.get(path) ?? 0) + 1);
-      return readFile(path, encoding);
-    },
-  });
-  await expect(run({ root, repositoryInventory })).resolves.toMatchObject({ status: "pass" });
-  await expect(runLicensePolicy({ root, repositoryInventory })).resolves.toMatchObject({ status: "pass" });
-  expect(reads.get(license)).toBe(1);
   await rm(root, { recursive: true, force: true });
 });

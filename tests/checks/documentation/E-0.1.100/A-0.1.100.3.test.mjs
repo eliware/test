@@ -4,9 +4,9 @@ const jsonFiles = jest.fn();
 const validateStructuredReferences = jest.fn();
 const validateAuthoritySurfaces = jest.fn();
 const validateDocumentationLinks = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/documentation/E-0.1.100/documentation-surface.mjs", () => ({ jsonFiles }));
+jest.unstable_mockModule("../../../../src/checks/documentation/E-0.1.100/collect-documentation-files.mjs", () => ({ jsonFiles }));
 jest.unstable_mockModule("../../../../src/checks/documentation/E-0.1.100/validate-structured-references.mjs", () => ({ validateStructuredReferences }));
-jest.unstable_mockModule("../../../../src/checks/documentation/E-0.1.100/validate-authority-surfaces.mjs", () => ({ validateAuthoritySurfaces }));
+jest.unstable_mockModule("../../../../src/checks/documentation/E-0.1.100/validate-authority-documents.mjs", () => ({ validateAuthorityDocuments: validateAuthoritySurfaces }));
 jest.unstable_mockModule("../../../../src/checks/documentation/E-0.1.100/validate-documentation-links.mjs", () => ({ validateDocumentationLinks }));
 
 const { run } = await import("../../../../src/checks/documentation/E-0.1.100/A-0.1.100.3.mjs");

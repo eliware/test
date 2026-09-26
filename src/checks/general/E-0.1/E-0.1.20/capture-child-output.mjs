@@ -1,4 +1,5 @@
-import { collectRedactionSecrets, redactProcessOutput } from "../../../redact-process-output.mjs";
+import { collectRedactionSecrets } from "../../../collect-redaction-secrets.mjs";
+import { redactProcessOutput } from "../../../redact-process-output.mjs";
 
 export function createChildOutputCapture(options, { onStdout, onStderr, captureStderr, env } = {}) {
   const outputLimit = options;

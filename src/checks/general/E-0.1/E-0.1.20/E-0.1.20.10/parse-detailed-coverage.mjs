@@ -1,12 +1,11 @@
 import { fileGap } from "./coverage-file-gap.mjs";
 import { coverageLineEntries } from "./coverage-line-entries.mjs";
 import { coverageMetricValues } from "./coverage-metrics.mjs";
+import { coverageMetricTotals } from "./coverage-metric-totals.mjs";
 import { isInScopeSource, normalizeSourcePath } from "./coverage-source-path.mjs";
 
-const metrics = ["statements", "branches", "functions", "lines"];
-
 export function parseDetailed(json, expectedFiles = [], expectedShapes = {}) {
-  const counts = Object.fromEntries(metrics.map((metric) => [metric, { covered: 0, total: 0 }]));
+  const metricValuesByFile = [];
   const gaps = [];
   const entries = Object.entries(json ?? {}).filter(([file]) => isInScopeSource(file));
   if (entries.length === 0 && expectedFiles.length === 0) return null;
@@ -22,20 +21,10 @@ export function parseDetailed(json, expectedFiles = [], expectedShapes = {}) {
     if (requiredMaps.some((key) => !Object.hasOwn(data, key))) {
       throw new Error(`Coverage evidence is incomplete for ${file}.`);
     }
-    for (const [metric, metricValues] of Object.entries(values)) {
-      counts[metric].total += metricValues.length;
-      counts[metric].covered += metricValues.filter((count) => count > 0).length;
-    }
+    metricValuesByFile.push(values);
   }
   return {
     gaps,
-    totals: Object.fromEntries(
-      metrics.map((metric) => [
-        metric,
-        counts[metric].total > 0
-          ? (counts[metric].covered / counts[metric].total) * 100
-          : null,
-      ]),
-    ),
+    totals: coverageMetricTotals(metricValuesByFile),
   };
 }

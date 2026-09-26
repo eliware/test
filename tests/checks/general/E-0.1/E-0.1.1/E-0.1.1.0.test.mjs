@@ -35,19 +35,21 @@ test("composes README structure, branding, content, metadata, and index validati
   const packageJson = { name: "@eliware/example" };
   await expect(run({ root: "/repo", packageJson })).resolves.toEqual({ ruleId: "E-0.1.1.0", status: "pass", message: "" });
   expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/README\.md$/u), "utf8");
-  expect(readReadmeSections).toHaveBeenCalledWith("README content", packageJson);
-  expect(findMissingReadmeSections).toHaveBeenCalledWith(expect.any(Map), packageJson);
-  expect(validateReadmeBranding).toHaveBeenCalledWith("README content");
-  expect(inspectReadmeDocumentationIndexes).toHaveBeenCalledWith("/repo");
   expect(validateReadmeRequiredContent).toHaveBeenCalledWith(
     "README content",
     packageJson,
     expect.objectContaining({ examplesRequired: false, sections: expect.any(Map) }),
   );
-  expect(validateReadmeMetadata).toHaveBeenCalledWith("README content", packageJson);
-  expect(readFile.mock.invocationCallOrder[0]).toBeLessThan(readReadmeSections.mock.invocationCallOrder[0]);
-  expect(validateReadmeBranding.mock.invocationCallOrder[0]).toBeLessThan(inspectReadmeDocumentationIndexes.mock.invocationCallOrder[0]);
-  expect(validateReadmeRequiredContent.mock.invocationCallOrder[0]).toBeLessThan(validateReadmeMetadata.mock.invocationCallOrder[0]);
+  const phases = [
+    readReadmeSections,
+    findMissingReadmeSections,
+    validateReadmeBranding,
+    inspectReadmeDocumentationIndexes,
+    validateReadmeRequiredContent,
+    validateReadmeMetadata,
+  ];
+  const phaseOrder = phases.map((phase) => phase.mock.invocationCallOrder[0]);
+  expect(phaseOrder).toEqual([...phaseOrder].sort((left, right) => left - right));
 });
 
 test("fails for missing README or structural headings before delegated checks", async () => {

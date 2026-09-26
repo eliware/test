@@ -1,7 +1,8 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { runNpmAudit } from "./run-npm-audit.mjs";
 import { runChild } from "./run-child.mjs";
-import { collectRedactionSecrets, redactProcessOutput } from "../../../redact-process-output.mjs";
+import { collectRedactionSecrets } from "../../../collect-redaction-secrets.mjs";
+import { redactProcessOutput } from "../../../redact-process-output.mjs";
 
 export const ruleId = "E-0.1.20.19";
 export const parentRuleId = "E-0.1.20";

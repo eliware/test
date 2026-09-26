@@ -11,10 +11,15 @@ async function workflowRoot(contents) {
   return root;
 }
 
-test("passes when the validation workflow complies with the aggregate policy", async () => {
-  await expect(run({ root: process.cwd() })).resolves.toEqual({
-    ruleId: "A-0.1.24.0", status: "pass", message: "",
-  });
+test("passes when a temporary validation workflow complies with the aggregate policy", async () => {
+  const root = await workflowRoot("jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n");
+  try {
+    await expect(run({ root })).resolves.toEqual({
+      ruleId: "A-0.1.24.0", status: "pass", message: "",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("maps a workflow without a compliant validation job to the rule result", async () => {

@@ -1,5 +1,8 @@
-import { jest } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { parse } from "@babel/parser";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createRepositoryAstCache } from "../../src/checks/create-repository-ast-cache.mjs";
 import { scanCommonJsFiles } from "../../src/checks/general/E-0.1/E-0.1.20/scan-commonjs-files.mjs";
 import { scanDependencyFiles } from "../../src/checks/general/E-0.1/E-0.1.20/scan-dependency-files.mjs";
@@ -47,14 +50,19 @@ test("AST cache does not share across different parser configurations", async ()
     expect(parseSource).toHaveBeenCalledTimes(2);
 });
 
-test("dependency and CommonJS scans share one parsed AST", async () => {
-    const parseSource = jest.fn(parse);
-    const parseAst = createRepositoryAstCache({ parseSource });
-    const files = ["src/checks/create-repository-ast-cache.mjs"];
-
-    await scanDependencyFiles(process.cwd(), [], new Set(), { value: false }, files, parseAst);
-    await scanCommonJsFiles(process.cwd(), files, parseAst);
-    await validateMaintainedFileSyntax(process.cwd(), files, { parseAst });
-
+test("source analyzers share one parsed AST through the run cache", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-ast-sharing-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "module.mjs"), "export const value = 1;\n");
+  const parseSource = jest.fn(parse);
+  const parseAst = createRepositoryAstCache({ parseSource });
+  const files = ["src/module.mjs"];
+  try {
+    await scanDependencyFiles(root, [], new Set(), {}, files, parseAst);
+    await expect(scanCommonJsFiles(root, files, parseAst)).resolves.toEqual([]);
+    await expect(validateMaintainedFileSyntax(root, files, { parseAst })).resolves.toEqual([]);
     expect(parseSource).toHaveBeenCalledTimes(1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

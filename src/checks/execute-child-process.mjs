@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { collectRedactionSecrets, redactProcessOutput } from "./redact-process-output.mjs";
+import { collectRedactionSecrets } from "./collect-redaction-secrets.mjs";
+import { redactProcessOutput } from "./redact-process-output.mjs";
 
 const MAX_OUTPUT_LENGTH = 100_000;
 

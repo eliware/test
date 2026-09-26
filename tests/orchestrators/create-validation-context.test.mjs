@@ -1,5 +1,23 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createValidationContext } from "../../src/orchestrators/create-validation-context.mjs";
+import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
+import { run as runKnitSecurity } from "../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.0.mjs";
+import { run as runKnitOrder } from "../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.1.mjs";
+import { run as runLicense } from "../../src/checks/general/E-0.1/E-0.1.23.mjs";
+import { run as runLicensePolicy } from "../../src/checks/general/E-0.1/E-0.1.26.mjs";
+import { runPureExportBarrelPolicy } from "../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs";
+import { runNoCoverageIgnore } from "../../src/checks/general/E-0.1/validate-no-coverage-ignore.mjs";
+import { run as runDependencyAge } from "../../src/checks/general/E-0.1/E-0.1.14.mjs";
+import { run as runDependencyStability } from "../../src/checks/general/E-0.1/E-0.1.15.mjs";
+import { run as runLicenseVersionPolicy } from "../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.12.mjs";
+import { run as runStableDependencies } from "../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.13.mjs";
+
+async function fixture(prefix) {
+  return mkdtemp(join(tmpdir(), prefix));
+}
 
 test("creates the complete execution context from validation options", () => {
   const timing = {};
@@ -100,4 +118,75 @@ test("preserves a shared AST parser and optional run scope data", () => {
     focusedScope,
   },
   );
+});
+
+test("dependency checks share one outdated lookup through the run context", async () => {
+  const readOutdated = jest.fn(async () => ({}));
+  const context = createValidationContext("fixture", { dependencies: { alpha: "1" } });
+  context.readOutdated = readOutdated;
+
+  await expect(Promise.all([
+    runDependencyAge(context),
+    runDependencyStability(context),
+    runLicenseVersionPolicy(context),
+    runStableDependencies(context),
+  ])).resolves.toEqual([
+    expect.objectContaining({ status: "pass" }),
+    expect.objectContaining({ status: "pass" }),
+    expect.objectContaining({ status: "pass" }),
+    expect.objectContaining({ status: "pass" }),
+  ]);
+  expect(readOutdated).toHaveBeenCalledTimes(1);
+});
+
+test("Knit checks share the script read and AST through the execution context", async () => {
+  const root = await fixture("eliware-knit-cache-sharing-");
+  const script = join(root, ".knit", "validate.mjs");
+  await mkdir(join(root, ".knit"), { recursive: true });
+  await writeFile(script, 'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);\n');
+  const reads = new Map();
+  const repositoryInventory = createRepositoryInventory(root, {
+    read: async (...args) => {
+      const path = args[0];
+      reads.set(path, (reads.get(path) ?? 0) + 1);
+      return readFile(...args);
+    },
+  });
+  const context = createValidationContext(root, {}, { repositoryInventory });
+  try {
+    await expect(runKnitSecurity(context)).resolves.toMatchObject({ status: "pass" });
+    await expect(runKnitOrder(context)).resolves.toMatchObject({ status: "pass" });
+    expect(reads.get(script)).toBe(1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("independent repository checks share cached LICENSE and source text", async () => {
+  const root = await fixture("eliware-content-cache-sharing-");
+  await mkdir(join(root, "src"));
+  const license = join(root, "LICENSE");
+  const barrel = join(root, "src", "entry.mjs");
+  await writeFile(license, 'MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE\n');
+  await writeFile(barrel, "/* istanbul ignore file */\nexport { value } from \"./value.mjs\";\n");
+  const reads = new Map();
+  const repositoryInventory = createRepositoryInventory(root, {
+    includeTestResultsUnder: ["src"],
+    read: async (...args) => {
+      const path = args[0];
+      reads.set(path, (reads.get(path) ?? 0) + 1);
+      return readFile(...args);
+    },
+  });
+  const context = createValidationContext(root, { main: "./src/entry.mjs", eliware: { apply: ["library"] } }, { repositoryInventory });
+  try {
+    await expect(runLicense(context)).resolves.toMatchObject({ status: "pass" });
+    await expect(runLicensePolicy(context)).resolves.toMatchObject({ status: "pass" });
+    await expect(runNoCoverageIgnore({ ...context, ruleId: "E-0.1.40.8" })).resolves.toMatchObject({ status: "pass" });
+    await expect(runPureExportBarrelPolicy({ ...context, ruleId: "E-0.1.40.14" })).resolves.toMatchObject({ status: "pass" });
+    expect(reads.get(license)).toBe(1);
+    expect(reads.get(barrel)).toBe(1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
