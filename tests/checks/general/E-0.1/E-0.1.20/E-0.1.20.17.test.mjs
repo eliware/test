@@ -20,6 +20,12 @@ test("requires the exact shared validation scripts", async () => {
   );
 });
 
+test("allows optional typecheck and build scripts", async () => {
+  await expect(
+    run({ packageJson: { scripts: { ...scripts, typecheck: "tsc --noEmit", build: "vite build" } } }),
+  ).resolves.toMatchObject({ status: "pass" });
+});
+
 test("requires the pack script when the npm publication profile applies", async () => {
   await expect(
     run({
@@ -37,16 +43,20 @@ test("requires the pack script when the npm publication profile applies", async 
   });
 });
 
-test("allows only recognized capability scripts and web profile scripts", async () => {
-  const capabilityScripts = {
-    ...scripts,
-    typecheck: "tsc --noEmit",
-    build: "vite build",
-    lighthouse: "lighthouse",
-    puppeteer: "node browser-check.mjs",
-  };
+test("allows Lighthouse and Puppeteer scripts for the applied web profile", async () => {
+  for (const [name, command] of [
+    ["lighthouse", "lighthouse"],
+    ["puppeteer", "node browser-check.mjs"],
+  ]) {
+    await expect(run({
+      packageJson: { scripts: { ...scripts, [name]: command }, eliware: { apply: ["web"] } },
+    })).resolves.toMatchObject({ status: "pass" });
+  }
   await expect(run({
-    packageJson: { scripts: capabilityScripts, eliware: { apply: ["web"] } },
+    packageJson: {
+      scripts: { ...scripts, lighthouse: "lighthouse", puppeteer: "node browser-check.mjs" },
+      eliware: { apply: ["web"] },
+    },
   })).resolves.toMatchObject({ status: "pass" });
 });
 

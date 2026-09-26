@@ -26,3 +26,9 @@ test("accepts normalized boolean-key aliases and event-array triggers", () => {
     jobs: { validate: validationJob },
   })).toBe(true);
 });
+
+test("rejects malformed scalar event configurations instead of treating them as unrestricted", () => {
+  expect(workflowHasValidationEvents(workflow({ push: "main", pull_request: {} }))).toBe(false);
+  expect(workflowHasValidationEvents(workflow({ push: {}, pull_request: "main" }))).toBe(false);
+  expect(workflowHasValidationEvents({ on: 7, jobs: { validate: validationJob } })).toBe(false);
+});

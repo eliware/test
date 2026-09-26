@@ -3,7 +3,8 @@ import { pullRequestTargetsMain, pushTargetsMain } from "./workflow-targets-main
 import { containsCompliantValidationJob } from "./contains-compliant-validation-job.mjs";
 
 export function workflowHasValidationEvents(document) {
-  const { document: normalized, events } = normalizeWorkflowEvents(document);
+  const { document: normalized, events, valid } = normalizeWorkflowEvents(document);
+  if (!valid) return false;
   return Boolean(
     pushTargetsMain(events.push) &&
     pullRequestTargetsMain(events.pull_request) &&

@@ -20,14 +20,15 @@ export async function run({
   if (mode !== null && mode !== "format" && mode !== "format-check") {
     return fail(ruleId, `Unsupported formatter mode: ${mode}.`);
   }
+  const appliedProfiles = new Set(
+    Array.isArray(packageJson?.eliware?.apply) ? packageJson.eliware.apply : [],
+  );
   const scriptError = validateRequiredScripts(packageJson?.scripts, {
-    requiresPack:
-      Array.isArray(packageJson?.eliware?.apply) &&
-      packageJson.eliware.apply.includes("npm-published"),
+    requiresPack: appliedProfiles.has("npm-published"),
     allowedAdditionalScripts: [
       ...(packageJson?.scripts?.typecheck !== undefined ? ["typecheck"] : []),
       ...(packageJson?.scripts?.build !== undefined ? ["build"] : []),
-      ...(packageJson?.eliware?.apply?.includes?.("web") ? ["lighthouse", "puppeteer"] : []),
+      ...(appliedProfiles.has("web") ? ["lighthouse", "puppeteer"] : []),
     ],
   });
   if (scriptError) return fail(ruleId, scriptError);
