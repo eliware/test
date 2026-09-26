@@ -8,10 +8,11 @@ import { steps } from "../../ghcr-published/workflow-structure.mjs";
 export const ruleId = "A-0.1.140.2";
 export const parentRuleId = "E-0.1.140";
 
-export async function run({ root, packageJson }) {
+export async function run(context) {
+  const { root, packageJson } = context;
   let workflows;
   try {
-    workflows = await readWorkflows(root);
+    workflows = await readWorkflows(root, context);
   } catch (error) {
     return fail(ruleId, `npm publication workflows could not be read: ${error.message}`);
   }

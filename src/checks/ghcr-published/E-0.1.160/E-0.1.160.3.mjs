@@ -7,9 +7,10 @@ import { isPublicationWorkflow } from "../workflow-publication.mjs";
 export const ruleId = "E-0.1.160.3";
 export const parentRuleId = "E-0.1.160";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const workflows = await readWorkflows(root);
+    const workflows = await readWorkflows(root, context);
     const validation = workflows.filter((workflow) =>
       findValidationJobs(workflow).some(({ job }) => hasUbuntuRunner(workflow, job)),
     );

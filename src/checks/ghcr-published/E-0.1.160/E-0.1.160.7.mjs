@@ -7,9 +7,10 @@ import { findImagePush, imageDetails } from "../find-ghcr-image-push.mjs";
 export const ruleId = "E-0.1.160.7";
 export const parentRuleId = "E-0.1.160";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const publications = (await readWorkflows(root)).filter(isPublicationWorkflow);
+    const publications = (await readWorkflows(root, context)).filter(isPublicationWorkflow);
     const published = publications.some((publication) => publicationJobs(publication).some(({ job }) => {
       const push = findImagePush(job);
       const details = imageDetails(push);

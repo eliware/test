@@ -21,10 +21,11 @@ export function isOwnedBuildStep(step) {
   return !file || file === "Dockerfile" || file === "./Dockerfile";
 }
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
     await access(join(root, "Dockerfile"));
-    const publication = (await readWorkflows(root)).find(isPublicationWorkflow);
+    const publication = (await readWorkflows(root, context)).find(isPublicationWorkflow);
     if (
       !publication ||
       !publicationJobs(publication).some(({ job }) =>

@@ -8,6 +8,7 @@ test("validates local Markdown links and fragments", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-"));
   await mkdir(join(root, "docs"));
   await writeFile(join(root, "docs", "index.md"), "# Heading");
+  await writeFile(join(root, "terms.txt"), "Terms");
   await writeFile(join(root, "README.md"), "[Docs](docs/index.md#heading)");
   await expect(validateMarkdownLinks(root, ["README.md", "docs/index.md"])).resolves.toBeNull();
   await writeFile(join(root, "README.md"), "[Docs][guide]\n[guide]: docs/index.md");
@@ -17,6 +18,8 @@ test("validates local Markdown links and fragments", async () => {
   await writeFile(join(root, "README.md"), "[Undefined][missing]");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("reference is undefined");
   await writeFile(join(root, "README.md"), "[External](https://example.test)");
+  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
+  await writeFile(join(root, "README.md"), "[Terms](terms.txt)");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
   await writeFile(join(root, "README.md"), "<https://example.test/docs> <mailto:support@example.test>");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();

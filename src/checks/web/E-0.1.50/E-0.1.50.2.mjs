@@ -1,11 +1,12 @@
-import { readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "E-0.1.50.2";
 export const parentRuleId = "E-0.1.50";
 
-export async function run({ root, packageJson }) {
+export async function run(context) {
+  const { root, packageJson } = context;
   const signals = [
     ...Object.keys(packageJson?.dependencies ?? {}),
     ...Object.keys(packageJson?.devDependencies ?? {}),
@@ -15,7 +16,7 @@ export async function run({ root, packageJson }) {
     return pass(ruleId);
   }
   try {
-    const readme = (await readFile(join(root, "README.md"), "utf8")).toLowerCase();
+    const readme = (await readRepositoryText(context, join(root, "README.md"))).toLowerCase();
     const missing = ["browser", "validation"].filter((term) => !readme.includes(term));
     return missing.length === 0
       ? pass(ruleId)

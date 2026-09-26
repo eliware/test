@@ -1,4 +1,5 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../../read-repository-text.mjs";
+import { readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 
@@ -15,11 +16,12 @@ async function collect(directory) {
   return files;
 }
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
     const docs = join(root, "docs");
     const files = await collect(docs);
-    const index = await readFile(join(docs, "README.md"), "utf8");
+    const index = await readRepositoryText(context, join(docs, "README.md"));
     for (const requirement of ["Purpose", "scope", "Setup", "usage", "validation", "support"]) {
       if (!index.toLowerCase().includes(requirement.toLowerCase()))
         return fail(ruleId, `docs/README.md must document ${requirement}.`);

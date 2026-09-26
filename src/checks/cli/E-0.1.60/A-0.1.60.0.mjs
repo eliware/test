@@ -1,13 +1,14 @@
-import { readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "A-0.1.60.0";
 export const parentRuleId = "E-0.1.60";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    const agents = await readRepositoryText(context, join(root, "AGENTS.md"));
     const section =
       agents
         .split(/^## CLI\s*$/imu)[1]

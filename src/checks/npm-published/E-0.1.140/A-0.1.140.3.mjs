@@ -12,9 +12,10 @@ export function publicationNeeds(job) {
   return Array.isArray(job?.needs) ? job.needs : job?.needs ? [job.needs] : [];
 }
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const workflows = await readWorkflows(root);
+    const workflows = await readWorkflows(root, context);
     if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0)) return fail(ruleId, "npm-published repositories must define a publication workflow.");
     for (const workflow of workflows) {
       const publication = npmPublicationJobs(workflow);

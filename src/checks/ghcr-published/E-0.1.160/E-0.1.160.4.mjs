@@ -7,9 +7,10 @@ import { steps } from "../workflow-structure.mjs";
 export const ruleId = "E-0.1.160.4";
 export const parentRuleId = "E-0.1.160";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const publications = (await readWorkflows(root)).filter(isPublicationWorkflow);
+    const publications = (await readWorkflows(root, context)).filter(isPublicationWorkflow);
     if (publications.length === 0) return fail(ruleId, "GHCR publication must grant only the required permissions.");
     for (const publication of publications) for (const { job } of publicationJobs(publication)) {
       const granted = permissions(publication, job);

@@ -1,15 +1,17 @@
-import { access, readdir, readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
+import { access, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "A-0.1.110.3";
 export const parentRuleId = "E-0.1.110";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const readme = await readFile(join(root, "README.md"), "utf8");
+    const readme = await readRepositoryText(context, join(root, "README.md"));
     const runbooks = join(root, "runbooks");
-    const runbookReadme = await readFile(join(runbooks, "README.md"), "utf8");
+    const runbookReadme = await readRepositoryText(context, join(runbooks, "README.md"));
     if (!readme.includes("runbooks/README.md"))
       return fail(ruleId, "Workspace README.md must link runbooks/README.md.");
     const records = (await readdir(runbooks, { withFileTypes: true })).filter(

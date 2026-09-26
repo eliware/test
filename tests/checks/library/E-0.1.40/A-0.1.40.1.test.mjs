@@ -20,12 +20,13 @@ test("inspects, executes, and validates package contents in order", async () => 
   const root = "/repo";
   const packageJson = { files: ["src/"] };
   const executeExample = jest.fn();
-  await expect(run({ root, packageJson, executeExample })).resolves.toEqual({
+  const context = { root, packageJson, executeExample };
+  await expect(run(context)).resolves.toEqual({
     ruleId: "A-0.1.40.1",
     status: "pass",
     message: "",
   });
-  expect(inspectLibraryExamples).toHaveBeenCalledWith(root);
+  expect(inspectLibraryExamples).toHaveBeenCalledWith(root, context);
   expect(executeLibraryExamples).toHaveBeenCalledWith(root, ["examples/basic.mjs"], executeExample);
   expect(validateLibraryPackageAllowlist).toHaveBeenCalledWith(packageJson);
   expect(inspectLibraryExamples.mock.invocationCallOrder[0]).toBeLessThan(executeLibraryExamples.mock.invocationCallOrder[0]);

@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 
@@ -7,9 +7,10 @@ export const parentRuleId = "A-0.1.50.0";
 
 const terms = ["routes", "assets", "configuration", "browser", "deployment", "port"];
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const text = (await readFile(join(root, "AGENTS.md"), "utf8")).toLowerCase();
+    const text = (await readRepositoryText(context, join(root, "AGENTS.md"))).toLowerCase();
     const missing = terms.filter((term) => !text.includes(term));
     return missing.length === 0
       ? pass(ruleId)

@@ -1,15 +1,17 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
+import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "E-0.1.100.1";
 export const parentRuleId = "E-0.1.100";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
     const [rootReadme, docsReadme] = await Promise.all([
-      readFile(join(root, "README.md"), "utf8"),
-      readFile(join(root, "docs", "README.md"), "utf8"),
+      readRepositoryText(context, join(root, "README.md")),
+      readRepositoryText(context, join(root, "docs", "README.md")),
     ]);
     if (!rootReadme.includes("docs/README.md"))
       return fail(ruleId, "Root README.md must link docs/README.md.");

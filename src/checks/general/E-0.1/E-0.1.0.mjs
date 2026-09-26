@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 import { join } from "node:path";
 import { pass } from "../../check-result.mjs";
 import { fail } from "../../check-result.mjs";
@@ -9,10 +9,11 @@ export const parentRuleId = "E-0.1";
 
 const authorityReferences = ["eliware/docs", "eliware/test", "eliware/operations"];
 
-export async function run({ root, packageJson }) {
+export async function run(context) {
+  const { root, packageJson } = context;
   let content;
   try {
-    content = await readFile(join(root, "AGENTS.md"), "utf8");
+    content = await readRepositoryText(context, join(root, "AGENTS.md"));
   } catch {
     return fail(ruleId, "AGENTS.md is required at the repository root.");
   }

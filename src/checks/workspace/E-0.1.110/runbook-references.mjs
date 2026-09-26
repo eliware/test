@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 import { dirname, join, resolve } from "node:path";
 
 export function referencesIn(text) {
@@ -9,12 +9,12 @@ export function referencesIn(text) {
   ].map(([, path, id]) => ({ path, id }));
 }
 
-export async function validateReferences(root, filesByPath, indexedPaths) {
+export async function validateReferences(root, filesByPath, indexedPaths, context) {
   const surfaces = [join(root, "README.md"), join(root, "runbooks", "README.md")];
   for (const surface of surfaces) {
     let content;
     try {
-      content = await readFile(surface, "utf8");
+      content = await readRepositoryText(context, surface);
     } catch {
       continue;
     }

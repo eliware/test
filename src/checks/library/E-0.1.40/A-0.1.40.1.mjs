@@ -6,9 +6,10 @@ import { validateLibraryPackageAllowlist } from "./validate-library-package-allo
 export const ruleId = "A-0.1.40.1";
 export const parentRuleId = "E-0.1.40";
 
-export async function run({ root, packageJson, executeExample }) {
+export async function run(context) {
+  const { root, packageJson, executeExample } = context;
   try {
-    const surface = await inspectLibraryExamples(root);
+    const surface = await inspectLibraryExamples(root, context);
     if (surface.error) return fail(ruleId, surface.error);
     const executionError = await executeLibraryExamples(root, surface.examples, executeExample);
     if (executionError) return fail(ruleId, executionError);

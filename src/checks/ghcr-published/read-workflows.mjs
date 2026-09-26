@@ -3,7 +3,20 @@ import { join } from "node:path";
 import { parse } from "yaml";
 import { normalizeWorkflowDocument } from "./normalize-workflow-document.mjs";
 
-export async function readWorkflows(root) {
+const workflowsByContext = new WeakMap();
+
+export function readWorkflows(root, context) {
+  if (context && typeof context === "object") {
+    const cached = workflowsByContext.get(context);
+    if (cached) return cached;
+    const pending = loadWorkflows(root);
+    workflowsByContext.set(context, pending);
+    return pending;
+  }
+  return loadWorkflows(root);
+}
+
+async function loadWorkflows(root) {
   const directory = join(root, ".github", "workflows");
   const entries = await readdir(directory, { withFileTypes: true });
   return Promise.all(

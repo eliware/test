@@ -7,9 +7,10 @@ import { workflowText } from "../workflow-structure.mjs";
 export const ruleId = "E-0.1.160.2";
 export const parentRuleId = "E-0.1.160";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const workflows = await readWorkflows(root);
+    const workflows = await readWorkflows(root, context);
     if (
       !workflows.some(
         (workflow) =>

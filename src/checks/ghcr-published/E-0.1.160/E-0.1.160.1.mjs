@@ -5,12 +5,13 @@ import { stepText, stepsForWorkflow } from "../workflow-structure.mjs";
 export const ruleId = "E-0.1.160.1";
 export const parentRuleId = "E-0.1.160";
 
-export async function run({ root, packageJson }) {
+export async function run(context) {
+  const { root, packageJson } = context;
   try {
     const repository = String(packageJson?.name ?? "").replace(/^@[^/]+\//, "");
     if (!repository) return fail(ruleId, "Package name is required to determine the GHCR image.");
     const image = `ghcr.io/eliware/${repository}`;
-    const workflows = await readWorkflows(root);
+    const workflows = await readWorkflows(root, context);
     if (
       !workflows.some((workflow) =>
         stepsForWorkflow(workflow).some((step) =>

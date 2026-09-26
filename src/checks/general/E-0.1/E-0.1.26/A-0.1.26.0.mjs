@@ -1,3 +1,4 @@
+import { readRepositoryText } from "../../../read-repository-text.mjs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
@@ -19,13 +20,14 @@ function hasReleaseNotesLink(readme) {
   return /\[[^\]]+\]\((?:\.\/)?RELEASE_NOTES\.md(?:#[^)]+)?\)/iu.test(linksSection);
 }
 
-export async function run({ root, packageJson }) {
+export async function run(context) {
+  const { root, packageJson } = context;
   let notes;
   let readme;
   try {
     [notes, readme] = await Promise.all([
       readFile(join(root, "RELEASE_NOTES.md"), "utf8"),
-      readFile(join(root, "README.md"), "utf8"),
+      readRepositoryText(context, join(root, "README.md")),
     ]);
   } catch {
     return fail(

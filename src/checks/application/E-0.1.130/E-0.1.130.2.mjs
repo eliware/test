@@ -1,14 +1,16 @@
-import { access, readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
+import { access } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "E-0.1.130.2";
 export const parentRuleId = "E-0.1.130";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
     await access(join(root, "docs", "README.md"));
-    const readme = await readFile(join(root, "README.md"), "utf8");
+    const readme = await readRepositoryText(context, join(root, "README.md"));
     if (!readme.includes("docs/README.md"))
       return fail(ruleId, "README.md must link docs/README.md for application documentation.");
   } catch {

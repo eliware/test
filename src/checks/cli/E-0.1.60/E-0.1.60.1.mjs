@@ -1,3 +1,4 @@
+import { readRepositoryText } from "../../read-repository-text.mjs";
 import { access, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { execute } from "../../execute-child-process.mjs";
@@ -6,7 +7,8 @@ import { fail, pass } from "../../check-result.mjs";
 export const ruleId = "E-0.1.60.1";
 export const parentRuleId = "E-0.1.60";
 
-export async function run({ root, packageJson, executeEntrypoint = execute }) {
+export async function run(context) {
+  const { root, packageJson, executeEntrypoint = execute } = context;
   const entrypoints = typeof packageJson?.bin === "string"
     ? [packageJson.bin]
     : Object.values(packageJson?.bin ?? {});
@@ -14,7 +16,7 @@ export async function run({ root, packageJson, executeEntrypoint = execute }) {
     return fail(ruleId, "CLI repositories must declare a bin entrypoint.");
   let readme;
   try {
-    readme = await readFile(join(root, "README.md"), "utf8");
+    readme = await readRepositoryText(context, join(root, "README.md"));
     for (const entrypoint of entrypoints) await access(join(root, entrypoint));
   } catch {
     return fail(ruleId, "Every declared CLI bin entrypoint and README.md must exist.");

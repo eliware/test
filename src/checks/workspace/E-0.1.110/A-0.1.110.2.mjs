@@ -8,10 +8,11 @@ import { validateRunbookRecords } from "./validate-runbook-records.mjs";
 export const ruleId = "A-0.1.110.2";
 export const parentRuleId = "E-0.1.110";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   let loaded;
   try {
-    loaded = await loadRunbookRecords(root);
+    loaded = await loadRunbookRecords(root, context);
   } catch {
     return fail(
       ruleId,
@@ -22,7 +23,7 @@ export async function run({ root }) {
     const validation = validateRunbookRecords(await readRunbookRecords(loaded.files));
     if (validation.error) return fail(ruleId, validation.error);
     const indexedPaths = new Set();
-    const referenceError = await validateReferences(root, validation.filesByPath, indexedPaths);
+    const referenceError = await validateReferences(root, validation.filesByPath, indexedPaths, context);
     if (referenceError) return fail(ruleId, referenceError);
     const unindexed = loaded.files.filter((file) => !indexedPaths.has(file));
     if (unindexed.length > 0)

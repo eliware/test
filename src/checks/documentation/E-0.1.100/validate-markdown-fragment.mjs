@@ -1,13 +1,13 @@
-import { readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 
 export function markdownSlug(value) {
   return value.toLowerCase().trim().replace(/[`*_~]/g, "")
     .replace(/[^\p{Letter}\p{Number}\s-]/gu, "").replace(/\s+/g, "-");
 }
 
-export async function hasMarkdownFragment(target, fragment) {
+export async function hasMarkdownFragment(target, fragment, context) {
   if (!fragment || !target.toLowerCase().endsWith(".md")) return true;
-  const content = await readFile(target, "utf8");
+  const content = await readRepositoryText(context, target);
   const wanted = decodeURIComponent(fragment).toLowerCase();
   return content.split(/\r?\n/u).some((line) => {
     const heading = /^(?:#{1,6})\s+(.+?)\s*#*$/u.exec(line);

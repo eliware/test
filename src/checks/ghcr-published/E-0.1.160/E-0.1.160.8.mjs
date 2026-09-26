@@ -10,9 +10,10 @@ import { steps } from "../workflow-structure.mjs";
 export const ruleId = "E-0.1.160.8";
 export const parentRuleId = "E-0.1.160";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const publications = (await readWorkflows(root)).filter(isPublicationWorkflow);
+    const publications = (await readWorkflows(root, context)).filter(isPublicationWorkflow);
     const verified = publications.some((publication) => publicationJobs(publication).some(({ job }) => {
       const push = findImagePush(job);
       const details = imageDetails(push);

@@ -16,9 +16,10 @@ function publicationIndex(job, packageName) {
   });
 }
 
-export async function run({ root, packageJson }) {
+export async function run(context) {
+  const { root, packageJson } = context;
   try {
-    const workflows = await readWorkflows(root);
+    const workflows = await readWorkflows(root, context);
     if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0)) return fail(ruleId, "npm-published repositories must define a publication workflow.");
     for (const workflow of workflows) {
       const publication = npmPublicationJobs(workflow);

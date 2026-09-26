@@ -1,5 +1,6 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 
 async function collectRunbooks(directory) {
   return (await readdir(directory, { withFileTypes: true }))
@@ -7,9 +8,9 @@ async function collectRunbooks(directory) {
     .map((entry) => join(directory, entry.name));
 }
 
-export async function loadRunbookRecords(root) {
+export async function loadRunbookRecords(root, context) {
   const directory = join(root, "runbooks");
-  await readFile(join(directory, "README.md"), "utf8");
+  await readRepositoryText(context, join(directory, "README.md"));
   const files = await collectRunbooks(directory);
   return { directory, files };
 }

@@ -1,13 +1,14 @@
-import { readFile } from "node:fs/promises";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "A-0.1.80.2";
 export const parentRuleId = "E-0.1.80";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const text = (await readFile(join(root, "README.md"), "utf8")).toLowerCase();
+    const text = (await readRepositoryText(context, join(root, "README.md"))).toLowerCase();
     const missing = [
       "purpose",
       "requirements",
