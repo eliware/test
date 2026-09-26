@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { join } from "node:path";
@@ -6,6 +5,7 @@ import { fail, pass } from "../../../check-result.mjs";
 import { readTrackedPaths } from "../E-0.1.6/read-tracked-paths.mjs";
 import { hasExplicitIgnoreRule, prohibitedTrackedPath } from "./git-ignore-policy.mjs";
 import { resolveGitExecutable } from "./resolve-git-executable.mjs";
+import { readRepositoryText } from "../../../read-repository-text.mjs";
 
 export const ruleId = "A-0.1.22.1";
 export const parentRuleId = "E-0.1.22";
@@ -32,10 +32,11 @@ export async function gitIgnores(root, path, runGit = execFileAsync, resolveGit 
   }
 }
 
-export async function run({ root, checkIgnored = gitIgnores, trackedPaths = readTrackedPaths }) {
+export async function run(context) {
+  const { root, checkIgnored = gitIgnores, trackedPaths = readTrackedPaths } = context;
   let ignoreText;
   try {
-    ignoreText = await readFile(join(root, ".gitignore"), "utf8");
+    ignoreText = await readRepositoryText(context, join(root, ".gitignore"));
   } catch {
     return fail(ruleId, ".gitignore is required.");
   }

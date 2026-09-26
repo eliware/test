@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { readCoverageEvidenceFromCandidates } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-evidence-selection.mjs";
+import { createRepositoryInventory } from "../../../../../../src/checks/create-repository-inventory.mjs";
 
 async function fixture(name, contents) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-evidence-"));
@@ -11,19 +12,15 @@ async function fixture(name, contents) {
   return root;
 }
 
-test("rejects aggregate summary evidence", async () => {
-  const root = await fixture(
-    "coverage-summary.json",
-    JSON.stringify({
-      total: {
-        statements: { pct: 100, covered: 1, total: 1 },
-        branches: { pct: 99, covered: 99, total: 100 },
-        functions: { pct: 100, covered: 1, total: 1 },
-        lines: { pct: 100, covered: 1, total: 1 },
-      },
-    }),
-  );
-  await expect(readCoverageEvidenceFromCandidates(root)).rejects.toThrow("file-level coverage");
+test("uses the shared coverage-source view and text cache", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-coverage-inventory-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "expected.mjs"), "export const value = 1;\n");
+  const repositoryInventory = createRepositoryInventory(root);
+
+  await expect(
+    readCoverageEvidenceFromCandidates(root, "", 0, { inventory: repositoryInventory }),
+  ).rejects.toThrow("Coverage evidence is missing");
   await rm(root, { recursive: true, force: true });
 });
 

@@ -4,10 +4,11 @@ import { readWorkflows } from "./read-workflow-files.mjs";
 
 export const ruleId = "A-0.1.24.1";
 export const parentRuleId = "E-0.1.24";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-export async function run({ root }) {
+export async function run({ root, repositoryInventory }) {
   try {
-    for (const { name, document } of await readWorkflows(root)) {
+    for (const { name, document } of await readWorkflows(root, repositoryInventory)) {
       const values = collectValues(document, "run").concat(collectValues(document, "uses"));
       if (values.some((value) => typeof value === "string" && /codescope/iu.test(value)))
         return fail(ruleId, `GitHub workflow must not invoke CodeScope: ${name}.`);

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/general/E-0.1/E-0.1.24.mjs";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires a workflow that handles push or pull request validation", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-"));
@@ -11,7 +12,11 @@ test("requires a workflow that handles push or pull request validation", async (
     join(root, ".github", "workflows", "validation.yml"),
     "on:\n  push:\n    branches: [main]\n  pull_request:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n",
   );
-  await expect(run({ root })).resolves.toEqual({ ruleId: "E-0.1.24", status: "pass", message: "" });
+  await expect(run({ root, repositoryInventory: createRepositoryInventory(root) })).resolves.toEqual({
+    ruleId: "E-0.1.24",
+    status: "pass",
+    message: "",
+  });
   await rm(root, { recursive: true, force: true });
 });
 test("rejects a workflow without validation events", async () => {

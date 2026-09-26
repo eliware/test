@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { validateStructuredReferences } from "../../../../src/checks/documentation/E-0.1.100/validate-structured-references.mjs";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("accepts local structured references", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-structured-refs-"));
@@ -35,6 +36,19 @@ test("accepts local structured references", async () => {
     JSON.stringify({ items: [{ path: "./target.json" }] }),
   );
   await expect(validateStructuredReferences(root, ["specs/nested-index.json"])).resolves.toBeNull();
+  await rm(root, { recursive: true, force: true });
+});
+
+test("uses cached JSON reads from the shared inventory", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-structured-refs-inventory-"));
+  await mkdir(join(root, "specs"));
+  await writeFile(join(root, "specs", "target.json"), "{}");
+  await writeFile(join(root, "specs", "index.json"), JSON.stringify({ path: "./target.json" }));
+  const inventory = createRepositoryInventory(root);
+
+  await expect(
+    validateStructuredReferences(root, ["specs/index.json"], inventory),
+  ).resolves.toBeNull();
   await rm(root, { recursive: true, force: true });
 });
 

@@ -3,6 +3,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.7.mjs";
+import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires Jest configuration in package.json", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-valid-"));
@@ -21,7 +22,11 @@ test("requires Jest configuration in package.json", async () => {
 test("rejects separate Jest configuration files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-config-"));
   await writeFile(join(root, "jest.config.mjs"), "export default {};\n");
-  await expect(run({ root, packageJson: { jest: {} } })).resolves.toEqual(
+  await expect(run({
+    root,
+    packageJson: { jest: {} },
+    repositoryInventory: createRepositoryInventory(root, { includeTestResults: true }),
+  })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
   await rm(root, { recursive: true, force: true });

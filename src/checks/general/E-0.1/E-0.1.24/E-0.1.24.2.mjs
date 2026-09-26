@@ -4,11 +4,12 @@ import { readWorkflows } from "./read-workflow-files.mjs";
 
 export const ruleId = "E-0.1.24.2";
 export const parentRuleId = "E-0.1.24";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-export async function run({ root }) {
+export async function run({ root, repositoryInventory }) {
   let workflows;
   try {
-    workflows = await readWorkflows(root);
+    workflows = await readWorkflows(root, repositoryInventory);
   } catch (error) {
     return fail(ruleId, `Workflow files could not be read or parsed: ${error.message}`);
   }

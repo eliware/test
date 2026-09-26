@@ -10,7 +10,14 @@ export function excludedFile(file) {
   return name.endsWith(".d.mts") || name.endsWith(".snap.mjs") || name.includes(".generated.");
 }
 
-export async function collectMonolithFiles(directory) {
+export async function collectMonolithFiles(directory, inventory = null) {
+  if (inventory) {
+    const repositoryRoot = inventory.root;
+    const directoryPath = directory.slice(repositoryRoot.length + 1).replaceAll("\\", "/");
+    return (await inventory.files("monolithSource"))
+      .filter((file) => file.startsWith(`${directoryPath}/`))
+      .map((file) => join(repositoryRoot, file));
+  }
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);

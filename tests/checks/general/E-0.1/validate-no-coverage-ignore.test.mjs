@@ -2,6 +2,7 @@ import { expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 import { runNoCoverageIgnore } from "../../../../src/checks/general/E-0.1/validate-no-coverage-ignore.mjs";
 const run = (options) => runNoCoverageIgnore({ ruleId: "E-0.1.130.5", ...options });
 
@@ -95,6 +96,18 @@ test("reports source discovery failures", async () => {
   await expect(run({ root, packageJson: {} })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("uses the run-scoped source view and cached reads", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-ignore-inventory-"));
+  await mkdir(join(root, "src"), { recursive: true });
+  await mkdir(join(root, "tests"), { recursive: true });
+  await writeFile(join(root, "src", "clean.mjs"), "export const value = 1;\n");
+  await writeFile(join(root, "src", "legacy.cts"), "module.exports = {};\n");
+  await writeFile(join(root, "tests", "helper.mjs"), "export const testHelper = true;\n");
+  const repositoryInventory = createRepositoryInventory(root, { includeTestResultsUnder: ["src"] });
+  await expect(run({ root, packageJson: {}, repositoryInventory })).resolves.toMatchObject({ status: "pass" });
   await rm(root, { recursive: true, force: true });
 });
 

@@ -6,6 +6,7 @@ import { stepText, steps } from "../../ghcr-published/workflow-structure.mjs";
 
 export const ruleId = "A-0.1.140.4";
 export const parentRuleId = "E-0.1.140";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 function publicationIndex(job, packageName) {
   const escapedName = packageName.replaceAll("/", "\\/");

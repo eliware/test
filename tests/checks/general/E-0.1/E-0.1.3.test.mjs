@@ -28,6 +28,23 @@ test("composes script, dependency, and repository-source checks", async () => {
   expect(findDirectToolUses).toHaveBeenCalledWith("/repo", ["README.md"]);
 });
 
+test("reuses the run inventory for discovery and file reads", async () => {
+  const repositoryInventory = {
+    repositoryFiles: jest.fn(async () => ["README.md"]),
+    readText: jest.fn(async () => "content"),
+  };
+  findDirectToolUses.mockImplementationOnce(async (_root, _files, readText) => {
+    await readText("README.md");
+    return [];
+  });
+
+  await expect(run({ root: "/repo", packageJson: {}, repositoryInventory })).resolves.toMatchObject({
+    status: "pass",
+  });
+  expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
+  expect(repositoryInventory.readText).toHaveBeenCalledWith("README.md");
+});
+
 test.each([
   [findInvalidValidationScripts, ["test"], "Validation scripts must use eliware-test rather than direct tools: test."],
   [findDirectValidationDependencies, ["jest"], "Repositories must not directly declare shared validation tools: jest."],

@@ -33,6 +33,7 @@ export async function run({
   root,
   packageJson,
   files: suppliedFiles,
+  repositoryInventory,
   readTracked = readTrackedPaths,
 }) {
   if (packageJson?.private === true) return pass(ruleId);
@@ -49,7 +50,9 @@ export async function run({
     for (const file of files) {
       let bytes;
       try {
-        bytes = await readFile(join(root, file));
+        bytes = repositoryInventory
+          ? await repositoryInventory.readBytes(join(root, file))
+          : await readFile(join(root, file));
       } catch (error) {
         if (readingTrackedFiles && error.code === "ENOENT") continue;
         throw error;

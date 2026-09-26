@@ -4,10 +4,11 @@ import { containsCompliantValidationJob } from "./contains-compliant-validation-
 
 export const ruleId = "A-0.1.24.0";
 export const parentRuleId = "E-0.1.24";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-export async function run({ root }) {
+export async function run({ root, repositoryInventory }) {
   let workflows;
-  try { workflows = await readWorkflows(root); } catch (error) {
+  try { workflows = await readWorkflows(root, repositoryInventory); } catch (error) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
   for (const { name, document } of workflows) {

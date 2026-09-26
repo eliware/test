@@ -7,7 +7,7 @@ import { findRepositoryFiles } from "./find-repository-files.mjs";
 export const ruleId = "E-0.1.3";
 export const parentRuleId = "E-0.1";
 
-export async function run({ packageJson, root, files }) {
+export async function run({ packageJson, root, files, repositoryInventory }) {
   const invalidScripts = findInvalidValidationScripts(packageJson?.scripts);
   if (invalidScripts.length > 0) {
     return fail(
@@ -24,7 +24,11 @@ export async function run({ packageJson, root, files }) {
   }
   if (root) {
     try {
-      const directUses = await findDirectToolUses(root, files ?? (await findRepositoryFiles(root)));
+      const repositoryFiles =
+        files ?? (repositoryInventory ? await repositoryInventory.repositoryFiles() : await findRepositoryFiles(root));
+      const directUses = repositoryInventory
+        ? await findDirectToolUses(root, repositoryFiles, (file) => repositoryInventory.readText(file))
+        : await findDirectToolUses(root, repositoryFiles);
       if (directUses.length > 0)
         return fail(
           ruleId,

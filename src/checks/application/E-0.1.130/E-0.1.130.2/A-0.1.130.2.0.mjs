@@ -5,8 +5,21 @@ import { fail, pass } from "../../../check-result.mjs";
 
 export const ruleId = "A-0.1.130.2.0";
 export const parentRuleId = "E-0.1.130.2";
+export const repositoryInventoryOptions = {
+  expandedDirectories: ["docs"],
+  includeTestResultsUnder: ["docs"],
+};
 
-async function collect(directory) {
+async function collect(directory, repositoryInventory) {
+  if (repositoryInventory) {
+    return (await repositoryInventory.documentationFiles({
+      directory,
+      predicate: (name) => name.endsWith(".md"),
+      maxDepth: Infinity,
+      maxFiles: Infinity,
+      includeGenerated: true,
+    })).map((file) => join(directory, file));
+  }
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
@@ -20,7 +33,7 @@ export async function run(context) {
   const { root } = context;
   try {
     const docs = join(root, "docs");
-    const files = await collect(docs);
+    const files = await collect(docs, context.repositoryInventory);
     const index = await readRepositoryText(context, join(docs, "README.md"));
     for (const requirement of ["Purpose", "scope", "Setup", "usage", "validation", "support"]) {
       if (!index.toLowerCase().includes(requirement.toLowerCase()))

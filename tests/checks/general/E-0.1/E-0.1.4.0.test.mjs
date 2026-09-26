@@ -31,6 +31,21 @@ test("validates the repository inventory for lint mode", async () => {
   expect(validateFiles).toHaveBeenCalledWith("/repo", ["README.md"], { parseAst: undefined });
 });
 
+test("obtains maintained files from the shared inventory", async () => {
+  const validateFiles = jest.fn(async () => []);
+  const repositoryInventory = { files: jest.fn(async () => ["src/index.mjs"]) };
+  await expect(
+    run({
+      root: "/repo",
+      executeLint: true,
+      repositoryInventory,
+      validateFiles,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  expect(repositoryInventory.files).toHaveBeenCalledWith("maintained");
+  expect(validateFiles).toHaveBeenCalledWith("/repo", ["src/index.mjs"], { parseAst: undefined });
+});
+
 test("runs the default syntax validator when lint execution is enabled without a mode", async () => {
   await expect(
     run({ root: process.cwd(), repositoryFiles: ["package.json"], executeLint: true }),

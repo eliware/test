@@ -14,7 +14,10 @@ export async function run(context) {
     const runbookReadme = await readRepositoryText(context, join(runbooks, "README.md"));
     if (!readme.includes("runbooks/README.md"))
       return fail(ruleId, "Workspace README.md must link runbooks/README.md.");
-    const records = (await readdir(runbooks, { withFileTypes: true })).filter(
+    const entries = context.repositoryInventory
+      ? await context.repositoryInventory.directoryEntries(runbooks)
+      : await readdir(runbooks, { withFileTypes: true });
+    const records = entries.filter(
       (entry) => entry.isFile() && entry.name.endsWith(".json"),
     );
     for (const record of records) {

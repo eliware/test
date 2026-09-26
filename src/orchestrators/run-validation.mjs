@@ -5,7 +5,7 @@ import { prepareValidationExemptions } from "./prepare-validation-exemptions.mjs
 import { discoverAllChecks } from "./discover-checks.mjs";
 import { validateBundledDirectiveCompleteness } from "./validate-bundled-directive-completeness.mjs";
 import { prepareValidationPlan } from "./prepare-validation-plan.mjs";
-import { findRepositoryFiles } from "../checks/general/E-0.1/find-repository-files.mjs";
+import { findRepositoryEntries } from "../checks/general/E-0.1/find-repository-files.mjs";
 
 export const validationDependencies = Object.freeze({
   loadValidationTarget,
@@ -14,7 +14,7 @@ export const validationDependencies = Object.freeze({
   validateBundledDirectiveCompleteness,
   prepareValidationExemptions,
   executeValidationPlan,
-  findRepositoryFiles,
+  findRepositoryEntries,
 });
 
 export function resolveValidationDependencies(dependencies = validationDependencies) {
@@ -29,7 +29,7 @@ export async function runValidation(root, ignoredRuleIds, options = {}) {
     discoverAllChecks: discoverChecks,
     validateBundledDirectiveCompleteness: validateCompleteness,
     prepareValidationExemptions: prepareExemptions,
-    findRepositoryFiles: findFiles,
+    findRepositoryEntries: findFiles,
     executeValidationPlan: executePlan,
   } = dependencies;
   const plan = await prepareValidationPlan(root, ignoredRuleIds, options, {
@@ -38,7 +38,7 @@ export async function runValidation(root, ignoredRuleIds, options = {}) {
     discoverAllChecks: discoverChecks,
     validateBundledDirectiveCompleteness: validateCompleteness,
     prepareValidationExemptions: prepareExemptions,
-    findRepositoryFiles: findFiles,
+    findRepositoryEntries: findFiles,
   });
   return executePlan(plan.checks, plan.context, plan.exemptions);
 }

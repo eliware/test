@@ -7,6 +7,7 @@ import { steps } from "../../ghcr-published/workflow-structure.mjs";
 
 export const ruleId = "A-0.1.140.3";
 export const parentRuleId = "E-0.1.140";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export function publicationNeeds(job) {
   return Array.isArray(job?.needs) ? job.needs : job?.needs ? [job.needs] : [];

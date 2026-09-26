@@ -10,16 +10,21 @@ export async function runNoCoverageIgnore({
   root,
   ruleId,
   packageJson,
+  repositoryInventory,
   findBarrels = findPureBarrels,
   isPureBarrel = isPureBarrelSource,
 }) {
   try {
     const sourceRoot = join(root, "src");
-    const files = await findSourceFiles(sourceRoot);
-    const barrels = new Set(await findBarrels(root));
+    const files = repositoryInventory
+      ? (await repositoryInventory.entriesUnder(sourceRoot))
+          .filter(({ path, type }) => type === "file" && /\.(?:mjs|js|cjs|ts|tsx)$/u.test(path))
+          .map(({ path }) => join(root, path))
+      : await findSourceFiles(sourceRoot);
+    const barrels = new Set(await findBarrels(root, undefined, repositoryInventory));
     const allowedBarrels = new Set(findLibraryEntryPoints(packageJson));
     for (const file of files) {
-      const source = await readFile(file, "utf8");
+      const source = repositoryInventory ? await repositoryInventory.readText(file) : await readFile(file, "utf8");
       const relativePath = file.slice(root.length + 1).replaceAll("\\", "/");
       if (
         hasIstanbulIgnoreDirective(source) &&

@@ -1,0 +1,46 @@
+import { expect, jest, test } from "@jest/globals";
+import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
+
+const records = [
+  { path: "README.md", type: "file", depth: 0 },
+  { path: "docs", type: "directory", depth: 1 },
+  { path: "docs/index.md", type: "file", depth: 1 },
+  { path: "docs/record.json", type: "file", depth: 1 },
+  { path: "docs/nested", type: "directory", depth: 2 },
+  { path: "docs/nested/record.json", type: "file", depth: 2 },
+  { path: "docs/build", type: "directory", depth: 2 },
+  { path: "docs/build/index.md", type: "file", depth: 2 },
+];
+
+test("shares scoped documentation discovery and enforces traversal limits", async () => {
+  const findEntries = jest.fn(async () => records);
+  const inventory = createRepositoryInventory("/repo", { findEntries });
+
+  await expect(inventory.documentationFiles({ directory: "/repo/docs" })).resolves.toEqual([
+    "index.md",
+    "record.json",
+    "nested/record.json",
+  ]);
+  await expect(inventory.documentationFiles()).resolves.toContain("README.md");
+  await expect(inventory.documentationFiles({
+    directory: "/repo/docs",
+    predicate: (name) => name.endsWith(".json"),
+    maxFiles: 1,
+  })).rejects.toThrow("file limit");
+  await expect(inventory.documentationFiles({ directory: "/repo/docs", maxDepth: 0 })).rejects.toThrow("depth limit");
+  await expect(inventory.documentationFiles({ directory: "/repo/missing" })).rejects.toMatchObject({ code: "ENOENT" });
+  await expect(inventory.documentationFiles({ directory: "/outside" })).rejects.toThrow("inside the repository");
+  expect(findEntries).toHaveBeenCalledTimes(3);
+});
+
+test("allows generated documentation only when requested", async () => {
+  const inventory = createRepositoryInventory("/repo", {
+    findEntries: jest.fn(async () => records),
+  });
+
+  await expect(inventory.documentationFiles({ directory: "/repo/docs" })).resolves.not.toContain("build/index.md");
+  await expect(inventory.documentationFiles({
+    directory: "/repo/docs",
+    includeGenerated: true,
+  })).resolves.toContain("build/index.md");
+});

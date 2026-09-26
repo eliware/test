@@ -5,9 +5,10 @@ import { isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
 
 export const ruleId = "E-0.1.24.3";
 export const parentRuleId = "E-0.1.24";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-export async function run({ root }) {
-  for (const { name, document } of await readWorkflows(root)) {
+export async function run({ root, repositoryInventory }) {
+  for (const { name, document } of await readWorkflows(root, repositoryInventory)) {
     const hasValidationJob = workflowJobs(document).some(({ id, job }) =>
       isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
     );

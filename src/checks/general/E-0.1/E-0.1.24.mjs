@@ -4,11 +4,12 @@ import { workflowHasValidationEvents } from "./E-0.1.24/workflow-validation-even
 
 export const ruleId = "E-0.1.24";
 export const parentRuleId = "E-0.1";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-export async function run({ root }) {
+export async function run({ root, repositoryInventory }) {
   let workflows;
   try {
-    workflows = await readWorkflows(root);
+    workflows = await readWorkflows(root, repositoryInventory);
   } catch {
     return fail(ruleId, ".github/workflows must contain a GitHub Actions validation workflow.");
   }

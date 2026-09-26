@@ -1,6 +1,6 @@
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
+import { readRepositoryText } from "../../../read-repository-text.mjs";
 import { commandTokens, parseKnitScript } from "./parse-knit-script.mjs";
 
 export const ruleId = "E-0.1.10.0";
@@ -9,9 +9,10 @@ const allowedCommands = new Set(["node", "npm", "npx", "git", "echo"]);
 
 const parserOptions = { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] };
 
-export async function run({ root, parseAst }) {
+export async function run(context) {
+  const { root, parseAst } = context;
   try {
-    const source = await readFile(join(root, ".knit", "validate.mjs"), "utf8");
+    const source = await readRepositoryText(context, join(root, ".knit", "validate.mjs"));
     let ast = null;
     if (parseAst) {
       try {

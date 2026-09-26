@@ -1,8 +1,9 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { gitIgnores, run } from "../../../../../src/checks/general/E-0.1/E-0.1.22/A-0.1.22.1.mjs";
+import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires the deterministic repository ignore categories", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-"));
@@ -11,6 +12,24 @@ test("requires the deterministic repository ignore categories", async () => {
   expect((await run({ root, checkIgnored, trackedPaths: async () => [] })).status).toBe("pass");
   await writeFile(join(root, ".gitignore"), "node_modules/\n");
   expect((await run({ root, checkIgnored: async (_root, path) => path === "node_modules/eliware-test", trackedPaths: async () => [] })).status).toBe("fail");
+});
+
+test("uses cached inventory text for .gitignore", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-inventory-"));
+  const ignoreFile = join(root, ".gitignore");
+  await writeFile(ignoreFile, "node_modules/\n.git/\ncoverage/\ndist/\nbuild/\n.cache/\n.env*\n.vscode/\n.idea/\n");
+  const reads = new Map();
+  const repositoryInventory = createRepositoryInventory(root, {
+    read: async (path, encoding) => {
+      reads.set(path, (reads.get(path) ?? 0) + 1);
+      return readFile(path, encoding);
+    },
+  });
+  const checkIgnored = async () => true;
+  await expect(run({ root, repositoryInventory, checkIgnored, trackedPaths: async () => [] })).resolves.toMatchObject({
+    status: "pass",
+  });
+  expect(reads.get(ignoreFile)).toBe(1);
 });
 
 test("fails when .gitignore is absent", async () => {

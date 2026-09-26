@@ -18,11 +18,13 @@ function contentWithoutApprovedTestApi(file, content) {
     : content;
 }
 
-export async function findDirectToolUses(root, files) {
+export async function findDirectToolUses(root, files, readText) {
   const findings = [];
   for (const file of files ?? (await findRepositoryFiles(root))) {
     if (file === "package.json" || !inspectable.test(file)) continue;
-    const content = await readFile(join(root, file), "utf8");
+    const content = readText
+      ? await readText(join(root, file))
+      : await readFile(join(root, file), "utf8");
     const inspectedContent = contentWithoutApprovedTestApi(file, content);
     if (directCommand.test(inspectedContent) || directImport.test(inspectedContent)) {
       findings.push(file);

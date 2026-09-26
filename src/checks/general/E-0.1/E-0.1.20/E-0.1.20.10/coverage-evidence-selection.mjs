@@ -20,16 +20,25 @@ export async function readCoverageEvidenceFromCandidates(
   root,
   testOutput = "",
   startedAt = 0,
-  { read = readFile, statFile = stat, requireFresh = false, expectedFiles: suppliedExpectedFiles } = {},
+  {
+    read = readFile,
+    statFile = stat,
+    requireFresh = false,
+    expectedFiles: suppliedExpectedFiles,
+    inventory,
+  } = {},
 ) {
   if (requireFresh && !startedAt) {
     throw new Error(
       "Coverage evidence cannot be bound to the current Jest run. Rerun Jest with coverage enabled.",
     );
   }
-  const expectedFiles = suppliedExpectedFiles ?? (await findRepositoryFiles(root))
-    .filter((file) => /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file));
-  const expectedShapes = await readExpectedCoverageShapes(root, expectedFiles);
+  const expectedFiles = suppliedExpectedFiles ?? (inventory
+    ? await inventory.files("coverageSource")
+    : (await findRepositoryFiles(root)).filter((file) => /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file)));
+  const readRepositoryText = inventory?.readText ?? read;
+  const readCoverageFile = inventory ? (path) => inventory.readText(path) : read;
+  const expectedShapes = await readExpectedCoverageShapes(root, expectedFiles, readRepositoryText);
   let unusableCandidateError = null;
   for (const relativePath of candidates) {
     if (requireFresh && relativePath.endsWith("coverage-summary.json")) continue;
@@ -38,7 +47,7 @@ export async function readCoverageEvidenceFromCandidates(
         join(root, relativePath),
         relativePath,
         startedAt,
-        read,
+        readCoverageFile,
         statFile,
         expectedFiles,
         expectedShapes,

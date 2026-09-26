@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.2.mjs";
+import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires native ESM", async () => {
   expect(await run({ packageJson: { type: "module" } })).toEqual({
@@ -56,5 +57,21 @@ test("passes when inspected ESM sources contain no CommonJS artifacts", async ()
     status: "pass",
     message: "",
   });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("uses the shared inventory and AST cache for ESM source scans", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-esm-inventory-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "module.mjs"), "export const value = 1;\n");
+  const repositoryInventory = createRepositoryInventory(root);
+  await expect(
+    run({
+      root,
+      packageJson: { type: "module" },
+      repositoryInventory,
+      parseAst: repositoryInventory.parseAst,
+    }),
+  ).resolves.toEqual({ ruleId: "E-0.1.20.2", status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });
 });

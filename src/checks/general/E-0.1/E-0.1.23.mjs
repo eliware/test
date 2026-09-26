@@ -1,13 +1,14 @@
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
+import { readRepositoryText } from "../../read-repository-text.mjs";
 
 export const ruleId = "E-0.1.23";
 export const parentRuleId = "E-0.1";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root } = context;
   try {
-    const license = await readFile(join(root, "LICENSE"), "utf8");
+    const license = await readRepositoryText(context, join(root, "LICENSE"));
     const required = [
       "MIT License",
       "Copyright (c) 2026 Eliware",

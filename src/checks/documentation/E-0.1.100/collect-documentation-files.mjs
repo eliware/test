@@ -20,16 +20,7 @@ export async function collectDocumentationFiles(directory, root = directory, pre
   return files;
 }
 
-const cache = new Map();
-function cached(root, key, predicate) {
-  const cacheKey = `${key}:${root}`;
-  if (cache.size >= 32 && !cache.has(cacheKey)) cache.delete(cache.keys().next().value);
-  if (!cache.has(cacheKey)) {
-    const pending = collectDocumentationFiles(root, root, predicate);
-    cache.set(cacheKey, pending);
-    pending.catch(() => { cache.delete(cacheKey); });
-  }
-  return cache.get(cacheKey);
-}
-export const jsonFiles = (root) => cached(root, "json", (name) => name.endsWith(".json"));
-export const repositoryFiles = (root) => cached(root, "repository", (name) => /\.(?:json|md)$/iu.test(name));
+export const jsonFiles = (root) =>
+  collectDocumentationFiles(root, root, (name) => name.endsWith(".json"));
+export const repositoryFiles = (root) =>
+  collectDocumentationFiles(root, root, (name) => /\.(?:json|md)$/iu.test(name));

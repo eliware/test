@@ -1,20 +1,20 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export async function validateFocusedSourceTestPair(root, { sourcePath, testPath }) {
+export async function validateFocusedSourceTestPair(root, { sourcePath, testPath }, readText = readFile) {
   const source = sourcePath.replace(/^src\//u, "");
   const test = testPath.replace(/^(?:tests?|specs?)\//iu, "");
   const sourceFile = join(root, "src", source);
   const testFile = join(root, "tests", test);
   let content;
   try {
-    content = await readFile(testFile, "utf8");
+    content = await readText(testFile, "utf8");
   } catch {
     return [`Focused test file is missing: ${test}`];
   }
   const findings = [];
   try {
-    await readFile(sourceFile, "utf8");
+    await readText(sourceFile, "utf8");
   } catch {
     findings.push(`missing mirrored source: ${source}`);
   }

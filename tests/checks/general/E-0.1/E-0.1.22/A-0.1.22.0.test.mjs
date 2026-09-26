@@ -1,8 +1,9 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.22/A-0.1.22.0.mjs";
+import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 async function fixture(directives) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
@@ -72,4 +73,23 @@ test("rejects missing, invalid, and empty directive documents", async () => {
     message: "specs/directives.json must contain one or more directives.",
   });
   await rm(empty, { recursive: true, force: true });
+});
+
+test("reads directive and authority JSON through the shared parsed cache", async () => {
+  const root = await fixture([{ id: "E-0.0", directives: [{ id: "A-0.0.1" }] }]);
+  await writeFile(
+    join(root, "specs", "authority.json"),
+    JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0"] }] }] }),
+  );
+  const reads = new Map();
+  const repositoryInventory = createRepositoryInventory(root, {
+    read: async (path, encoding) => {
+      reads.set(path, (reads.get(path) ?? 0) + 1);
+      return readFile(path, encoding);
+    },
+  });
+  await expect(run({ root, repositoryInventory })).resolves.toMatchObject({ status: "pass" });
+  expect(reads.get(join(root, "specs", "directives.json"))).toBe(1);
+  expect(reads.get(join(root, "specs", "authority.json"))).toBe(1);
+  await rm(root, { recursive: true, force: true });
 });

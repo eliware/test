@@ -93,6 +93,14 @@ test("inspects tracked files when no file list is supplied", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("reads tracked source bytes through the shared repository inventory", async () => {
+  const repositoryInventory = { readBytes: jest.fn(async () => Buffer.from("Public content.")) };
+  await expect(
+    run({ root: "/repo", files: ["src/public.mjs"], repositoryInventory }),
+  ).resolves.toEqual({ ruleId: "E-0.1.7", status: "pass", message: "" });
+  expect(repositoryInventory.readBytes).toHaveBeenCalledWith(join("/repo", "src/public.mjs"));
+});
+
 test("skips tracked paths deleted from the current working tree", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-internal-deleted-"));
   await expect(

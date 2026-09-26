@@ -4,12 +4,13 @@ import { findCommonJsUses } from "./find-commonjs-uses.mjs";
 export const ruleId = "E-0.1.20.2";
 export const parentRuleId = "E-0.1.20";
 
-export async function run({ root, packageJson, repositoryFiles, parseAst }) {
+export async function run({ root, packageJson, repositoryFiles, repositoryInventory, parseAst }) {
   if (packageJson?.type !== "module")
     return fail(ruleId, "Node.js repositories must use native ESM with package.json.type=module.");
   if (root) {
     try {
-      const findings = await findCommonJsUses(root, packageJson, repositoryFiles, parseAst);
+      const files = repositoryFiles ?? (repositoryInventory ? await repositoryInventory.repositoryFiles() : null);
+      const findings = await findCommonJsUses(root, packageJson, files, parseAst);
       if (findings.length > 0)
         return fail(ruleId, `CommonJS or mixed-module artifacts found: ${findings.join(", ")}.`);
     } catch (error) {

@@ -34,6 +34,8 @@ export async function validateMarkdownLinks(root, files, context) {
       const [, fragment] = reference.split("#", 2);
       try {
         if (target.toLowerCase().endsWith(".md")) await readRepositoryText(context, target);
+        else if (context?.repositoryInventory?.readBytes)
+          await context.repositoryInventory.readBytes(target);
         else await readFile(target);
         if (!(await hasMarkdownFragment(target, fragment, context))) return `Documentation link fragment does not resolve: ${reference} in ${relativeFile}.`;
       } catch {

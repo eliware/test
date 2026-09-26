@@ -1,8 +1,9 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { inspectLibraryExamples } from "../../../../src/checks/library/E-0.1.40/inspect-library-examples.mjs";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 async function createSurface(indexText, example = true) {
   const root = await mkdtemp(join(tmpdir(), "eliware-library-surface-"));
@@ -19,9 +20,18 @@ const validIndex = "Purpose\nPrerequisites\nCommand\nExpected result\n[basic.mjs
 test("discovers runnable example files after validating the documentation index", async () => {
   const root = await createSurface(validIndex);
   try {
-    await expect(inspectLibraryExamples(root)).resolves.toEqual({
+    const directories = [];
+    const repositoryInventory = createRepositoryInventory(root, {
+      readDirectory: async (directory, options) => {
+        directories.push(directory);
+        return readdir(directory, options);
+      },
+      read: readFile,
+    });
+    await expect(inspectLibraryExamples(root, { repositoryInventory })).resolves.toEqual({
       examples: [expect.objectContaining({ name: "basic.mjs" })],
     });
+    expect(directories).toEqual([join(root, "examples")]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

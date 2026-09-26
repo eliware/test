@@ -1,8 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../src/checks/web/E-0.1.50/E-0.1.50.1.mjs";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires a clean public asset root", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-web-"));
@@ -11,6 +12,20 @@ test("requires a clean public asset root", async () => {
   expect((await run({ root, packageJson: {} })).status).toBe("pass");
   await mkdir(join(root, "public", "dist"));
   expect((await run({ root, packageJson: {} })).status).toBe("fail");
+});
+
+test("uses shared directory discovery for the web asset tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-web-inventory-"));
+  await mkdir(join(root, "public", "assets"), { recursive: true });
+  await writeFile(join(root, "public", "assets", "app.js"), "ok");
+  const repositoryInventory = createRepositoryInventory(root);
+
+  await expect(run({ root, packageJson: {}, repositoryInventory })).resolves.toEqual({
+    ruleId: "E-0.1.50.1",
+    status: "pass",
+    message: "",
+  });
+  await rm(root, { recursive: true, force: true });
 });
 
 test("supports configured asset roots and exclusions", async () => {

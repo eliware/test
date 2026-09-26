@@ -7,6 +7,7 @@ import { steps } from "../workflow-structure.mjs";
 
 export const ruleId = "E-0.1.160.6";
 export const parentRuleId = "E-0.1.160";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export function isOwnedBuildStep(step) {
   if (/docker\/build-push-action/i.test(step.uses ?? "")) {

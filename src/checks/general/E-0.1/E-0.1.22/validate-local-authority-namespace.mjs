@@ -5,9 +5,12 @@ function namespaceRoot(id) {
   return id.match(/^[EA]-\d+(?=\.|$)/iu)?.[0].toUpperCase();
 }
 
-export async function validateLocalAuthorityNamespace(root, directives) {
+export async function validateLocalAuthorityNamespace(root, directives, repositoryInventory) {
   try {
-    const authority = JSON.parse(await readFile(join(root, "specs", "authority.json"), "utf8"));
+    const file = join(root, "specs", "authority.json");
+    const authority = repositoryInventory
+      ? await repositoryInventory.readParsed(file, "json", JSON.parse)
+      : JSON.parse(await readFile(file, "utf8"));
     const assigned = new Set(
       (authority.subjects ?? []).flatMap((subject) =>
         (subject.directives ?? []).flatMap((entry) => entry?.ids ?? [])),

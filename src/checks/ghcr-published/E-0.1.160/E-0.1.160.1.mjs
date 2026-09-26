@@ -4,6 +4,7 @@ import { stepText, stepsForWorkflow } from "../workflow-structure.mjs";
 
 export const ruleId = "E-0.1.160.1";
 export const parentRuleId = "E-0.1.160";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run(context) {
   const { root, packageJson } = context;

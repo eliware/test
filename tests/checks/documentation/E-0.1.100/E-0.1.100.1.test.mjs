@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/documentation/E-0.1.100/E-0.1.100.1.mjs";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires linked documentation indexes", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-index-"));
@@ -53,6 +54,24 @@ test("reports documentation files missing from the docs index", async () => {
     ruleId: "E-0.1.100.1",
     status: "fail",
     message: "docs/README.md must index: reference.md.",
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("indexes files under generated documentation subdirectories through the shared inventory", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-doc-index-generated-"));
+  await mkdir(join(root, "docs", "build"), { recursive: true });
+  await writeFile(join(root, "README.md"), "docs/README.md");
+  await writeFile(join(root, "docs", "README.md"), "build.md");
+  await writeFile(join(root, "docs", "build", "build.md"), "generated documentation");
+  const repositoryInventory = createRepositoryInventory(root, {
+    expandedDirectories: ["docs"],
+  });
+
+  await expect(run({ root, repositoryInventory })).resolves.toEqual({
+    ruleId: "E-0.1.100.1",
+    status: "pass",
+    message: "",
   });
   await rm(root, { recursive: true, force: true });
 });

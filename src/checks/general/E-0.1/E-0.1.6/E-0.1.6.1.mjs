@@ -8,9 +8,12 @@ const prohibitedName =
   /(?:^|[._-])(backup|backups|dump|dumps|restore|restores|runtime[-_ ]?state)(?:$|[._-])/i;
 const prohibitedExtension = /\.(?:bak|dump|dmp|sql\.gz|tar\.gz|zip)$/i;
 
-export async function run({ root }, findFiles = findRepositoryFiles) {
+export async function run({ root, repositoryInventory }, findFiles = findRepositoryFiles) {
   try {
-    const findings = (await findFiles(root)).filter(
+    const files = repositoryInventory
+      ? await repositoryInventory.repositoryFiles()
+      : await findFiles(root);
+    const findings = files.filter(
       (file) => prohibitedName.test(file) || prohibitedExtension.test(file),
     );
     return findings.length === 0

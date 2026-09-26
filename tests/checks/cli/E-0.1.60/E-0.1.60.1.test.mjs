@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../src/checks/cli/E-0.1.60/E-0.1.60.1.mjs";
 
 test("requires an entrypoint and documented informational commands", async () => {
@@ -17,16 +17,24 @@ else process.exitCode = 1;
 `,
   );
   await writeFile(join(root, "README.md"), "--help --version exit code");
+  const readText = jest.fn(async (file) =>
+    file.endsWith("README.md") ? "--help --version exit code" : "console.log('safe');",
+  );
   await expect(
-    run({ root, packageJson: { version: "1.2.3", bin: { cli: "bin/cli.mjs" } } }),
+    run({
+      root,
+      packageJson: { version: "1.2.3", bin: { cli: "bin/cli.mjs" } },
+      repositoryInventory: { readText },
+    }),
   ).resolves.toEqual({
     ruleId: "E-0.1.60.1",
     status: "pass",
     message: "",
   });
+  expect(readText).toHaveBeenCalledWith(join(root, "README.md"));
+  expect(readText).toHaveBeenCalledWith(join(root, "bin", "cli.mjs"));
   await rm(root, { recursive: true, force: true });
 });
-
 test("fails when no CLI bin entrypoint is declared", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-no-bin-"));
   await expect(run({ root, packageJson: {} })).resolves.toEqual({

@@ -1,7 +1,7 @@
 import { access, readFile, stat } from "node:fs/promises";
 import { referenceTarget } from "./reference-target.mjs";
 
-export async function readAuthorityTarget({ root, file, reference, label }) {
+export async function readAuthorityTarget({ root, file, reference, label, inventory }) {
   const resolved = referenceTarget(root, file, reference);
   if (resolved.error) return { error: `${label} ${resolved.error}.` };
   try {
@@ -10,7 +10,11 @@ export async function readAuthorityTarget({ root, file, reference, label }) {
     return {
       ...resolved,
       details,
-      document: details.isFile() ? JSON.parse(await readFile(resolved.target, "utf8")) : null,
+      document: details.isFile()
+        ? inventory
+          ? await inventory.readParsed(resolved.target, "json", JSON.parse)
+          : JSON.parse(await readFile(resolved.target, "utf8"))
+        : null,
     };
   } catch (error) {
     if (resolved.external) return { ...resolved, unavailable: true };

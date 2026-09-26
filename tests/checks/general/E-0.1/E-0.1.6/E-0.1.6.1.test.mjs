@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -19,4 +19,10 @@ test("returns the repository discovery error", async () => {
     status: "fail",
     message: "discovery failed",
   });
+});
+
+test("uses the run-scoped repository inventory when available", async () => {
+  const repositoryInventory = { repositoryFiles: jest.fn(async () => ["README.md"]) };
+  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({ status: "pass" });
+  expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
 });

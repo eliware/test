@@ -33,7 +33,7 @@ beforeEach(() => {
 
 test("selects validation jobs and checks their command sequence", async () => {
   await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-0.1.24.4", status: "pass", message: "" });
-  expect(readWorkflows).toHaveBeenCalledWith("/repo");
+  expect(readWorkflows).toHaveBeenCalledWith("/repo", undefined);
   expect(workflowCommands).toHaveBeenCalledWith({});
   expect(workflowJobs).toHaveBeenCalledWith({});
   expect(workflowRunSteps).toHaveBeenCalledWith(job);

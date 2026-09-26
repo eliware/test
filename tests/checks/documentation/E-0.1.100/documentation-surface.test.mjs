@@ -7,6 +7,7 @@ import {
   repositoryFiles,
   validateMarkdownLinks,
 } from "../../../../src/checks/documentation/E-0.1.100/documentation-surface.mjs";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("discovers JSON files and resolves Markdown fragments", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-doc-surface-"));
@@ -30,6 +31,21 @@ test("ignores excluded discovery directories and non-markdown files", async () =
   expect(await jsonFiles(root)).toEqual([]);
   expect(await repositoryFiles(root)).toEqual([]);
   expect(await validateMarkdownLinks(root, ["notes.txt"])).toBeNull();
+  await rm(root, { recursive: true, force: true });
+});
+
+test("uses the shared inventory for documentation file views", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-doc-inventory-"));
+  await mkdir(join(root, "docs"));
+  await writeFile(join(root, "docs", "index.md"), "# Docs\n");
+  await writeFile(join(root, "docs", "record.json"), "{}\n");
+  const inventory = createRepositoryInventory(root);
+
+  await expect(jsonFiles(root, inventory)).resolves.toEqual(["docs/record.json"]);
+  await expect(repositoryFiles(root, inventory)).resolves.toEqual([
+    "docs/index.md",
+    "docs/record.json",
+  ]);
   await rm(root, { recursive: true, force: true });
 });
 

@@ -6,6 +6,7 @@ import { findImagePush, imageDetails } from "../find-ghcr-image-push.mjs";
 
 export const ruleId = "E-0.1.160.7";
 export const parentRuleId = "E-0.1.160";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run(context) {
   const { root } = context;

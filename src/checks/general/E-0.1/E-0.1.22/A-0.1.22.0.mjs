@@ -7,10 +7,14 @@ import { validateLocalAuthorityNamespace } from "./validate-local-authority-name
 export const ruleId = "A-0.1.22.0";
 export const parentRuleId = "E-0.1.22";
 
-export async function run({ root }) {
+export async function run(context) {
+  const { root, repositoryInventory } = context;
   let document;
   try {
-    document = JSON.parse(await readFile(join(root, "specs", "directives.json"), "utf8"));
+    const file = join(root, "specs", "directives.json");
+    document = repositoryInventory
+      ? await repositoryInventory.readParsed(file, "json", JSON.parse)
+      : JSON.parse(await readFile(file, "utf8"));
   } catch {
     return fail(ruleId, "specs/directives.json is required and must be valid JSON.");
   }
@@ -18,7 +22,7 @@ export async function run({ root }) {
     return fail(ruleId, "specs/directives.json must contain one or more directives.");
   }
   const errors = validateDirectiveTree(document.directives);
-  const namespaceError = await validateLocalAuthorityNamespace(root, document.directives);
+  const namespaceError = await validateLocalAuthorityNamespace(root, document.directives, repositoryInventory);
   if (namespaceError) errors.push(namespaceError);
   return errors.length > 0 ? fail(ruleId, errors.join(" ")) : pass(ruleId);
 }

@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -19,4 +19,12 @@ test("accepts ordinary source files and empty source collections", async () => {
   await expect(findGeneratedSource(root, ["module.mjs"])).resolves.toEqual([]);
   await expect(findGeneratedSource(root, [])).resolves.toEqual([]);
   await rm(root, { recursive: true, force: true });
+});
+
+test("reads source text through the supplied shared reader", async () => {
+  const readText = jest.fn(async () => "webpackJsonp([]);");
+  await expect(findGeneratedSource("/repo", ["bundle.mjs"], readText)).resolves.toEqual([
+    "bundle.mjs",
+  ]);
+  expect(readText).toHaveBeenCalledWith("bundle.mjs");
 });

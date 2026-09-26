@@ -11,13 +11,12 @@ test("collects documentation files while excluding generated directories", async
   await writeFile(join(root, "docs", "index.md"), "# Docs");
   await writeFile(join(root, "docs", "data.json"), "{}");
   await writeFile(join(root, "node_modules", "ignored.json"), "{}");
-  expect(jsonFiles(root)).toBe(jsonFiles(root));
-  expect(repositoryFiles(root)).toBe(repositoryFiles(root));
+  expect(jsonFiles(root)).not.toBe(jsonFiles(root));
+  expect(repositoryFiles(root)).not.toBe(repositoryFiles(root));
   await expect(jsonFiles(root)).resolves.toEqual(["docs/data.json"]);
   await expect(repositoryFiles(root)).resolves.toEqual(["docs/data.json", "docs/index.md"]);
   await rm(root, { recursive: true, force: true });
 });
-
 test("bounds traversal depth and file count", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-limits-"));
   let deep = root;
@@ -33,24 +32,4 @@ test("bounds traversal depth and file count", async () => {
   await expect(collectDocumentationFiles(shallow)).resolves.toEqual(["one.md"]);
   await expect(collectDocumentationFiles(shallow, shallow, () => true, { maxFiles: 0 })).rejects.toThrow("file limit");
   await rm(shallow, { recursive: true, force: true });
-});
-
-test("bounds cached repository roots", async () => {
-  const roots = [];
-  for (let index = 0; index < 33; index += 1) {
-    const root = await mkdtemp(join(tmpdir(), `eliware-doc-cache-${index}-`));
-    roots.push(root);
-    await writeFile(join(root, "README.md"), "# Docs");
-    await expect(repositoryFiles(root)).resolves.toEqual(["README.md"]);
-  }
-  await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
-});
-
-test("evicts rejected cached scans", async () => {
-  const root = join(tmpdir(), `eliware-doc-retry-${Date.now()}-`);
-  await expect(repositoryFiles(root)).rejects.toThrow();
-  await mkdir(root);
-  await writeFile(join(root, "README.md"), "# Docs");
-  await expect(repositoryFiles(root)).resolves.toEqual(["README.md"]);
-  await rm(root, { recursive: true, force: true });
 });

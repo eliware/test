@@ -4,8 +4,9 @@ import { findJestConfigFiles } from "./find-jest-config-files.mjs";
 export const ruleId = "E-0.1.20.7";
 export const parentRuleId = "E-0.1.20";
 export const focusedSafe = true;
+export const repositoryInventoryOptions = { includeTestResults: true };
 
-export async function run({ root, packageJson }) {
+export async function run({ root, packageJson, repositoryInventory }) {
   if (
     !packageJson?.jest ||
     typeof packageJson.jest !== "object" ||
@@ -14,7 +15,7 @@ export async function run({ root, packageJson }) {
     return fail(ruleId, "Jest configuration must be declared in package.json.");
   }
   try {
-    const configs = await findJestConfigFiles(root);
+    const configs = await findJestConfigFiles(root, repositoryInventory);
     if (configs.length > 0)
       return fail(
         ruleId,

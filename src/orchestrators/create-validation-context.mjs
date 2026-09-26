@@ -1,6 +1,17 @@
-import { createRepositoryAstCache } from "../checks/create-repository-ast-cache.mjs";
+import { createRepositoryInventory } from "../checks/create-repository-inventory.mjs";
 
 export function createValidationContext(root, packageJson, options = {}) {
+  const repositoryInventory =
+    options.repositoryInventory ??
+    createRepositoryInventory(root, {
+      mode: options.mode,
+      modeRuleId: options.modeRuleId,
+      focusedScope: options.focusedScope,
+      findEntries: options.findRepositoryEntries,
+      expandedDirectories: options.expandedDirectories,
+      includeTestResults: options.includeTestResults,
+      includeTestResultsUnder: options.includeTestResultsUnder,
+    });
   return {
     root,
     packageJson,
@@ -16,7 +27,8 @@ export function createValidationContext(root, packageJson, options = {}) {
     toolArgs: options.toolArgs ?? [],
     timing: options.timing,
     writeOutput: options.writeOutput,
-    parseAst: options.parseAst ?? createRepositoryAstCache(),
+    repositoryInventory,
+    parseAst: options.parseAst ?? repositoryInventory.parseAst,
     ...(options.repositoryFiles ? { repositoryFiles: options.repositoryFiles } : {}),
     ...(options.focusedScope ? { focusedScope: options.focusedScope } : {}),
   };

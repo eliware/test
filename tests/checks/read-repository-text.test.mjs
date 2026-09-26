@@ -78,3 +78,18 @@ test("does not cache parsed results without a validation context", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("delegates text and parsed reads to the run inventory", async () => {
+  const repositoryInventory = {
+    readText: jest.fn(async () => "shared"),
+    readParsed: jest.fn(async (_filePath, _cacheKey, parse) => parse("{\"value\":1}")),
+  };
+  const context = { repositoryInventory };
+
+  await expect(readRepositoryText(context, "README.md")).resolves.toBe("shared");
+  await expect(readRepositoryParsed(context, "record.json", "json", JSON.parse)).resolves.toEqual({
+    value: 1,
+  });
+  expect(repositoryInventory.readText).toHaveBeenCalledWith("README.md");
+  expect(repositoryInventory.readParsed).toHaveBeenCalledWith("record.json", "json", JSON.parse);
+});

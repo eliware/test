@@ -6,6 +6,7 @@ import { normalizeWorkflowDocument } from "./normalize-workflow-document.mjs";
 const workflowsByContext = new WeakMap();
 
 export function readWorkflows(root, context) {
+  if (context?.repositoryInventory) return loadWorkflows(root, context.repositoryInventory);
   if (context && typeof context === "object") {
     const cached = workflowsByContext.get(context);
     if (cached) return cached;
@@ -16,15 +17,23 @@ export function readWorkflows(root, context) {
   return loadWorkflows(root);
 }
 
-async function loadWorkflows(root) {
+async function loadWorkflows(root, repositoryInventory) {
   const directory = join(root, ".github", "workflows");
-  const entries = await readdir(directory, { withFileTypes: true });
+  const entries = repositoryInventory
+    ? await repositoryInventory.directoryEntries(directory)
+    : await readdir(directory, { withFileTypes: true });
   return Promise.all(
     entries
       .filter((entry) => entry.isFile() && /\.(?:yml|yaml)$/i.test(entry.name))
       .map(async (entry) => {
-        const content = await readFile(join(directory, entry.name), "utf8");
-        return { name: entry.name, content, document: normalizeWorkflowDocument(parse(content)) };
+        const file = join(directory, entry.name);
+        const content = repositoryInventory
+          ? await repositoryInventory.readText(file)
+          : await readFile(file, "utf8");
+        const document = repositoryInventory
+          ? normalizeWorkflowDocument(await repositoryInventory.readParsed(file, "yaml-document", parse))
+          : normalizeWorkflowDocument(parse(content));
+        return { name: entry.name, content, document };
       }),
   );
 }

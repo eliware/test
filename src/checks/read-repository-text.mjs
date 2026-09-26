@@ -5,6 +5,8 @@ const readsByContext = new WeakMap();
 const parsedByContext = new WeakMap();
 
 export function readRepositoryText(context, filePath) {
+  if (context?.repositoryInventory?.readText)
+    return context.repositoryInventory.readText(filePath);
   if (!context || typeof context !== "object") return readFile(filePath, "utf8");
 
   let reads = readsByContext.get(context);
@@ -23,6 +25,8 @@ export function readRepositoryText(context, filePath) {
 }
 
 export async function readRepositoryParsed(context, filePath, cacheKey, parse) {
+  if (context?.repositoryInventory?.readParsed)
+    return context.repositoryInventory.readParsed(filePath, cacheKey, parse);
   const text = await readRepositoryText(context, filePath);
   if (!context || typeof context !== "object") return parse(text);
 

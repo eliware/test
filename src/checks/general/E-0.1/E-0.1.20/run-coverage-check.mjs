@@ -20,7 +20,7 @@ export async function runCoverageCheck(context, ruleId, readEvidence = readCover
       context.root,
       context.jestResult.stdout,
       context.jestResult.startedAt,
-      { requireFresh: true, expectedFiles },
+      { requireFresh: true, expectedFiles, inventory: context.repositoryInventory },
     );
     const assessment = assessCoverageEvidence(evidence, { focusedPath: Boolean(focusedPath) });
     if (assessment.aggregateGaps.length > 0 || assessment.hasFileGaps) {

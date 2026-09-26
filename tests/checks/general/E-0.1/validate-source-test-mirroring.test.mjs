@@ -1,7 +1,8 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 const collectRepositoryFiles = jest.fn();
 const collectRepositoryDirectories = jest.fn();
@@ -40,7 +41,11 @@ beforeEach(() => {
 
 async function createRoot() {
   const root = await mkdtemp(join(tmpdir(), "eliware-source-test-check-"));
+  await mkdir(join(root, "src"), { recursive: true });
   await mkdir(join(root, "tests"), { recursive: true });
+  await mkdir(join(root, "src", "nested"), { recursive: true });
+  await mkdir(join(root, "tests", "nested"), { recursive: true });
+  await writeFile(join(root, "src", "module.mjs"), "export const value = 1;\n");
   await writeFile(join(root, "tests", "module.test.mjs"), 'import "../../src/module.mjs"; test("ok", () => {});');
   return root;
 }
@@ -56,7 +61,7 @@ test("collects the repository surfaces and composes structural validators", asyn
       ["module.mjs"],
       new Map([["module.test.mjs", 'import "../../src/module.mjs"; test("ok", () => {});']]),
     );
-    expect(findGeneratedSource).toHaveBeenCalledWith(root, ["module.mjs"]);
+    expect(findGeneratedSource).toHaveBeenCalledWith(root, ["module.mjs"], undefined);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -99,8 +104,86 @@ test("normalizes missing source/test roots and delegates focused validation", as
     status: "fail",
     message: "Source/test structure is not mirrored; focused pair invalid.",
   });
-  expect(validateFocusedSourceTestPair).toHaveBeenCalledWith("/repo", focusedScope);
+  expect(validateFocusedSourceTestPair).toHaveBeenCalledWith("/repo", focusedScope, undefined);
   expect(collectRepositoryFiles).toHaveBeenCalledTimes(1);
+});
+
+test("uses the run inventory for complete source and test traversal and shared reads", async () => {
+  const root = await createRoot();
+  try {
+    const directories = [];
+    const inventory = createRepositoryInventory(root, {
+      expandedDirectories: ["src", "tests"],
+      includeTestResultsUnder: ["src", "tests"],
+      readDirectory: async (directory, options) => {
+        directories.push(directory);
+        return readdir(directory, options);
+      },
+    });
+    findGeneratedSource.mockImplementationOnce(async (_root, _files, readText) => {
+      expect(await readText("module.mjs")).toBe("export const value = 1;\n");
+      return [];
+    });
+    await expect(run({ root, repositoryInventory: inventory })).resolves.toMatchObject({ status: "pass" });
+    expect(findMirrorViolations).toHaveBeenCalledWith(
+      ["module.mjs"], ["module.test.mjs"], ["nested"], ["nested"],
+    );
+    expect(findTestContractViolations).toHaveBeenCalledWith(
+      ["module.mjs"],
+      new Map([[
+        "module.test.mjs",
+        'import "../../src/module.mjs"; test("ok", () => {});',
+      ]]),
+    );
+    expect(directories).toContain(join(root, "src"));
+    expect(directories).toContain(join(root, "tests"));
+    expect(directories).not.toContain(root);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("reports missing source/test roots from inventory discovery", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-source-test-missing-"));
+  try {
+    await mkdir(join(root, "tests"));
+    const repositoryInventory = createRepositoryInventory(root, {
+      expandedDirectories: ["src", "tests"],
+      includeTestResultsUnder: ["src", "tests"],
+    });
+    await expect(run({ root, repositoryInventory })).resolves.toEqual({
+      ruleId: "E-0.1.130.4",
+      status: "fail",
+      message: "src/ is required for source/test mirroring.",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("focused inventory reads only the selected source/test pair", async () => {
+  const root = await createRoot();
+  try {
+    const repositoryInventory = createRepositoryInventory(root, {
+      focusedScope: { paths: ["src/module.mjs", "tests/module.test.mjs"] },
+    });
+    validateFocusedSourceTestPair.mockImplementationOnce(async (_root, _scope, readText) => {
+      expect(await readText(join(root, "src", "module.mjs"))).toBe("export const value = 1;\n");
+      return [];
+    });
+    await expect(run({
+      root,
+      focusedScope: { sourcePath: "src/module.mjs", testPath: "tests/module.test.mjs" },
+      repositoryInventory,
+    })).resolves.toMatchObject({ status: "pass" });
+    expect(validateFocusedSourceTestPair).toHaveBeenCalledWith(
+      root,
+      { sourcePath: "src/module.mjs", testPath: "tests/module.test.mjs" },
+      expect.any(Function),
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("passes focused validation when the selected source/test pair is clean", async () => {

@@ -1,9 +1,11 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.0.mjs";
+import { run as runKnitOrder } from "../../../../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.1.mjs";
+import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 test("rejects publication and deployment commands from Knit validation", async () => {
   await expect(run({ root: process.cwd() })).resolves.toEqual({
@@ -28,6 +30,28 @@ test("reports syntax errors from the shared AST cache", async () => {
   await expect(run({ root: process.cwd(), parseAst: async () => { throw new SyntaxError("invalid source"); } })).resolves.toEqual(
     expect.objectContaining({ message: expect.stringContaining("not valid JavaScript: invalid source") }),
   );
+});
+
+test("shares cached Knit source text and AST between the two Knit checks", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-inventory-"));
+  const script = join(root, ".knit", "validate.mjs");
+  await mkdir(join(root, ".knit"), { recursive: true });
+  await writeFile(
+    script,
+    'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);\n',
+  );
+  const reads = new Map();
+  const repositoryInventory = createRepositoryInventory(root, {
+    read: async (path, encoding) => {
+      reads.set(path, (reads.get(path) ?? 0) + 1);
+      return readFile(path, encoding);
+    },
+  });
+  const context = { root, repositoryInventory, parseAst: repositoryInventory.parseAst };
+  await expect(run(context)).resolves.toMatchObject({ status: "pass" });
+  await expect(runKnitOrder(context)).resolves.toMatchObject({ status: "pass" });
+  expect(reads.get(script)).toBe(1);
+  await rm(root, { recursive: true, force: true });
 });
 
 test.each([

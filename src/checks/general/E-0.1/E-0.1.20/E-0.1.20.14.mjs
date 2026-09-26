@@ -4,7 +4,7 @@ import { findDependencyReferences } from "./find-dependency-references.mjs";
 export const ruleId = "E-0.1.20.14";
 export const parentRuleId = "E-0.1.20";
 
-export async function run({ root, packageJson, referencedDependencies, repositoryFiles, parseAst }) {
+export async function run({ root, packageJson, referencedDependencies, repositoryFiles, repositoryInventory, parseAst }) {
   const declared = [
     ...Object.keys(packageJson?.dependencies ?? {}),
     ...Object.keys(packageJson?.devDependencies ?? {}),
@@ -14,7 +14,17 @@ export async function run({ root, packageJson, referencedDependencies, repositor
   if (declared.length === 0) return pass(ruleId);
   let referenced;
   try {
-    referenced = referencedDependencies ?? (await findDependencyReferences(root, packageJson, repositoryFiles, parseAst));
+    if (referencedDependencies) referenced = referencedDependencies;
+    else {
+      const files = repositoryFiles ?? (repositoryInventory ? await repositoryInventory.repositoryFiles() : null);
+      referenced = await findDependencyReferences(
+        root,
+        packageJson,
+        files,
+        parseAst,
+        repositoryInventory,
+      );
+    }
   } catch (error) {
     return fail(ruleId, `Dependency usage could not be inspected: ${error.message}`);
   }

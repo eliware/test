@@ -13,12 +13,38 @@ export async function prepareValidationPlan(root, ignoredRuleIds, options, depen
   const checks = await dependencies.selectConventionChecks(conventions, allChecks);
   const focusedScope = resolveFocusedScope(options.jestArgs ?? []);
   const executionChecks = focusedScope ? checks.filter(({ focusedSafe }) => focusedSafe === true) : checks;
+  const inventoryChecks = options.modeRuleId
+    ? executionChecks.filter(({ ruleId }) => ruleId === options.modeRuleId)
+    : executionChecks;
+  const expandedDirectories = [
+    ...new Set(
+      inventoryChecks.flatMap(({ repositoryInventoryOptions }) =>
+        repositoryInventoryOptions?.expandedDirectories ?? [],
+      ),
+    ),
+  ];
+  const includeTestResults = inventoryChecks.some(
+    ({ repositoryInventoryOptions }) => repositoryInventoryOptions?.includeTestResults === true,
+  );
+  const includeTestResultsUnder = [
+    ...new Set(
+      inventoryChecks.flatMap(({ repositoryInventoryOptions }) =>
+        repositoryInventoryOptions?.includeTestResultsUnder ?? [],
+      ),
+    ),
+  ];
   await dependencies.validateBundledDirectiveCompleteness(allChecks, conventions.apply);
   const exemptions = dependencies.prepareValidationExemptions(packageJson, allChecks, ignoredRuleIds);
-  const repositoryFiles = await dependencies.findRepositoryFiles(root);
   return {
     checks: executionChecks,
-    context: createValidationContext(root, packageJson, { ...options, focusedScope, repositoryFiles }),
+    context: createValidationContext(root, packageJson, {
+      ...options,
+      focusedScope,
+      expandedDirectories,
+      includeTestResults,
+      includeTestResultsUnder,
+      findRepositoryEntries: dependencies.findRepositoryEntries,
+    }),
     exemptions,
   };
 }

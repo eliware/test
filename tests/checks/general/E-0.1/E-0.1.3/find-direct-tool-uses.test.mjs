@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { findDirectToolUses } from "../../../../../src/checks/general/E-0.1/E-0.1.3/find-direct-tool-uses.mjs";
 
 test("finds direct commands and imports on validation surfaces", async () => {
@@ -60,5 +60,15 @@ test("continues to reject Jest runner package imports from test files", async ()
   await mkdir(join(root, "tests"));
   await writeFile(join(root, "tests", "sample.test.mjs"), 'import "@jest/core";\n');
   await expect(findDirectToolUses(root, ["tests/sample.test.mjs"])).resolves.toEqual(["tests/sample.test.mjs"]);
+  await rm(root, { recursive: true, force: true });
+});
+
+test("uses run-scoped text reads when provided", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-direct-tools-inventory-"));
+  const readText = jest.fn(async () => "import 'jest';\n");
+  await expect(findDirectToolUses(root, ["src/tool.mjs"], readText)).resolves.toEqual([
+    "src/tool.mjs",
+  ]);
+  expect(readText).toHaveBeenCalledWith(join(root, "src/tool.mjs"));
   await rm(root, { recursive: true, force: true });
 });

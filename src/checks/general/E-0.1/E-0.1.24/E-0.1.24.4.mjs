@@ -7,10 +7,11 @@ import { validateWorkflowFileSet } from "./validate-workflow-file-set.mjs";
 
 export const ruleId = "E-0.1.24.4";
 export const parentRuleId = "E-0.1.24";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-export async function run({ root, packageJson }) {
+export async function run({ root, packageJson, repositoryInventory }) {
   let workflows;
-  try { workflows = await readWorkflows(root); } catch (error) {
+  try { workflows = await readWorkflows(root, repositoryInventory); } catch (error) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
   const fileSetError = validateWorkflowFileSet(

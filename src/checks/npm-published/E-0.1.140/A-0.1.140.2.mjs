@@ -7,6 +7,7 @@ import { steps } from "../../ghcr-published/workflow-structure.mjs";
 
 export const ruleId = "A-0.1.140.2";
 export const parentRuleId = "E-0.1.140";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run(context) {
   const { root, packageJson } = context;

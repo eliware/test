@@ -29,6 +29,16 @@ test("ignores unrelated JSON documents", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("uses the inventory parsed-document cache", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-inventory-"));
+  await writeFile(join(root, "other.json"), "{}\n");
+  const inventory = { readParsed: jest.fn(async () => ({})) };
+
+  await expect(validateAuthorityDocuments(root, ["other.json"], inventory)).resolves.toBeNull();
+  expect(inventory.readParsed).toHaveBeenCalledWith(join(root, "other.json"), "json", JSON.parse);
+  await rm(root, { recursive: true, force: true });
+});
+
 test("dispatches authority records and maps to their specialized validators", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-docs-"));
   await mkdir(join(root, "specs"));

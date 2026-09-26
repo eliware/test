@@ -1,13 +1,14 @@
 import { resolve } from "node:path";
 import { readAuthorityTarget } from "./read-authority-target.mjs";
 
-export async function validateAuthorityReciprocity({ root, file, entries }) {
+export async function validateAuthorityReciprocity({ root, file, entries, inventory }) {
   for (const entry of entries) {
     const authority = await readAuthorityTarget({
       root,
       file,
       reference: entry.authorityFile,
       label: `${entry.repository}.authorityFile`,
+      inventory,
     });
     if (authority.error) return authority.error;
     if (!authority.unavailable && authority.document?.repositoryId !== entry.repository) {
@@ -24,6 +25,7 @@ export async function validateAuthorityReciprocity({ root, file, entries }) {
         file: authority.target,
         reference: authority.document.globalAuthorityMap,
         label: `${entry.repository}.globalAuthorityMap`,
+        inventory,
       });
       if (reciprocal.error) return reciprocal.error;
       if (!reciprocal.unavailable && resolve(reciprocal.target) !== resolve(file)) {

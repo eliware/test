@@ -1,5 +1,5 @@
 import { readRepositoryText } from "../../read-repository-text.mjs";
-import { access, readFile } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { execute } from "../../execute-child-process.mjs";
 import { fail, pass } from "../../check-result.mjs";
@@ -26,7 +26,7 @@ export async function run(context) {
       return fail(ruleId, `CLI README.md must document ${term}.`);
   }
   const entrypointText = await Promise.all(
-    entrypoints.map((entrypoint) => readFile(join(root, entrypoint), "utf8")),
+    entrypoints.map((entrypoint) => readRepositoryText(context, join(root, entrypoint))),
   ).then((texts) => texts.join("\n"));
   if (
     /\b(?:publish|deploy|delete|remove|destroy|push)\b/i.test(entrypointText) &&

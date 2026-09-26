@@ -2,10 +2,10 @@ import { fail, pass } from "../../../check-result.mjs";
 import { findPureBarrels } from "./find-pure-barrels.mjs";
 import { publicEntrypoints } from "./public-entrypoints.mjs";
 
-export async function runPureExportBarrelPolicy({ root, packageJson, ruleId }) {
+export async function runPureExportBarrelPolicy({ root, packageJson, ruleId, repositoryInventory }) {
   let barrels;
   try {
-    barrels = await findPureBarrels(root);
+    barrels = await findPureBarrels(root, undefined, repositoryInventory);
   } catch (error) {
     return fail(ruleId, `Source modules could not be classified for pure export barrels: ${error.message}`);
   }

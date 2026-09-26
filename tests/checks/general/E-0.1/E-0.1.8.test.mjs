@@ -34,7 +34,17 @@ test("derives the owner and composes local and template validation", async () =>
   });
   expect(findRepositoryFiles).toHaveBeenCalledWith("/repo");
   expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith([".env.example"], [".env"]);
-  expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"]);
+  expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], null);
+});
+
+test("uses the shared file list when inventory context is supplied", async () => {
+  const repositoryInventory = { repositoryFiles: jest.fn(async () => [".env.example"]) };
+  await expect(
+    run({ root: "/repo", packageJson: { name: "fixture" }, repositoryInventory }),
+  ).resolves.toMatchObject({ status: "pass" });
+  expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
+  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith([".env.example"], [".env"]);
+  expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], { repositoryInventory });
 });
 
 test("requires package identity and stops after a local-owner failure", async () => {

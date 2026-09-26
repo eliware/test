@@ -20,7 +20,9 @@ export async function run(context) {
     );
   }
   try {
-    const validation = validateRunbookRecords(await readRunbookRecords(loaded.files));
+    const validation = validateRunbookRecords(
+      await readRunbookRecords(loaded.files, context.repositoryInventory),
+    );
     if (validation.error) return fail(ruleId, validation.error);
     const indexedPaths = new Set();
     const referenceError = await validateReferences(root, validation.filesByPath, indexedPaths, context);

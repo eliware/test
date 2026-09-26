@@ -1,8 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/A-0.1.20.11/A-0.1.20.11.0.mjs";
+import { createRepositoryInventory } from "../../../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires declared stages in CI", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-stage-"));
@@ -35,4 +36,22 @@ test("requires workflow files when a declared stage has no CI directory", async 
     status: "fail",
     message: "CI workflow files are required when typecheck or build validation is declared.",
   });
+});
+
+test("uses inventory workflow discovery and shared content reads", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-inventory-"));
+  const workflow = join(root, ".github", "workflows", "ci.yaml");
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(workflow, "run: npm run build\n");
+  const repositoryInventory = createRepositoryInventory(root, {
+    read: async (path, encoding) => {
+      expect(path).toBe(workflow);
+      return readFile(path, encoding);
+    },
+  });
+  await expect(run({
+    root,
+    packageJson: { scripts: { build: "build" } },
+    repositoryInventory,
+  })).resolves.toMatchObject({ status: "pass" });
 });

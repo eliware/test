@@ -19,7 +19,7 @@ function createDependencies(overrides = {}) {
       loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general"] } })),
       selectConventionChecks: jest.fn(async () => checks),
       discoverAllChecks: jest.fn(async () => checks),
-      findRepositoryFiles: jest.fn(async () => []),
+      findRepositoryEntries: jest.fn(async () => []),
       validateBundledDirectiveCompleteness: jest.fn(async () => true),
       prepareValidationExemptions: jest.fn(() => new Set(["E-9"])),
       executeValidationPlan,

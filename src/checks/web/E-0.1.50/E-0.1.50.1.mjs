@@ -5,13 +5,20 @@ import { fail, pass } from "../../check-result.mjs";
 export const ruleId = "E-0.1.50.1";
 export const parentRuleId = "E-0.1.50";
 
-async function collectAssetPaths(directory, prefix = "") {
-  const entries = await readdir(directory, { withFileTypes: true });
+async function collectAssetPaths(directory, prefix = "", inventory, exclusions) {
+  const entries = inventory
+    ? await inventory.directoryEntries(directory)
+    : await readdir(directory, { withFileTypes: true });
   const paths = [];
   for (const entry of entries) {
     const path = prefix ? `${prefix}/${entry.name}` : entry.name;
     paths.push(path);
-    if (entry.isDirectory()) paths.push(...await collectAssetPaths(resolve(directory, entry.name), path));
+    if (
+      entry.isDirectory() &&
+      !exclusions.some((exclusion) => matchesExclusion(path, exclusion))
+    ) {
+      paths.push(...await collectAssetPaths(resolve(directory, entry.name), path, inventory, exclusions));
+    }
   }
   return paths;
 }
@@ -23,7 +30,7 @@ function matchesExclusion(path, exclusion) {
   return new RegExp(`(?:^|/)${pattern}(?:/|$)`, "u").test(normalizedPath);
 }
 
-export async function run({ root, packageJson }) {
+export async function run({ root, packageJson, repositoryInventory }) {
   const assetRoot =
     typeof packageJson?.eliware?.webRoot === "string" && packageJson.eliware.webRoot.trim()
       ? packageJson.eliware.webRoot.trim()
@@ -48,7 +55,7 @@ export async function run({ root, packageJson }) {
   if (isAbsolute(assetRoot) || (relative(resolvedRoot, resolvedAssets).startsWith(`..${sep}`) || relative(resolvedRoot, resolvedAssets) === ".."))
     return fail(ruleId, "eliware.webRoot must resolve inside the repository root.");
   try {
-    const paths = await collectAssetPaths(resolvedAssets);
+    const paths = await collectAssetPaths(resolvedAssets, undefined, repositoryInventory, exclusions);
     const excluded = paths.find((path) => exclusions.some((exclusion) => matchesExclusion(path, exclusion)));
     if (excluded)
       return fail(ruleId, `Web public assets must not include excluded output: ${excluded}.`);

@@ -1,8 +1,9 @@
-import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { expect, jest, test } from "@jest/globals";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateMarkdownLinks } from "../../../../src/checks/documentation/E-0.1.100/validate-markdown-links.mjs";
+import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("validates local Markdown links and fragments", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-"));
@@ -37,5 +38,19 @@ test("validates local Markdown links and fragments", async () => {
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("fragment");
   await writeFile(join(root, "README.md"), "[Missing](docs/nope.md)");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("does not resolve");
+  await rm(root, { recursive: true, force: true });
+});
+
+test("reuses inventory reads for repeated non-Markdown link targets", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-inventory-"));
+  await writeFile(join(root, "README.md"), "[Terms](terms.txt) [Again](terms.txt)");
+  await writeFile(join(root, "terms.txt"), "Terms");
+  const read = jest.fn((...args) => readFile(...args));
+  const repositoryInventory = createRepositoryInventory(root, { read });
+
+  await expect(
+    validateMarkdownLinks(root, ["README.md"], { repositoryInventory }),
+  ).resolves.toBeNull();
+  expect(read).toHaveBeenCalledTimes(2);
   await rm(root, { recursive: true, force: true });
 });

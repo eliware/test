@@ -4,6 +4,7 @@ import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "A-0.1.160.9";
 export const parentRuleId = "E-0.1.160";
+export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run(context) {
   const { root } = context;

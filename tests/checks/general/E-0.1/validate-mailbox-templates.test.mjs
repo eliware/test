@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -16,5 +16,17 @@ test("rejects owner declarations in templates and accepts other templates", asyn
 test("reports unreadable templates", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-template-"));
   await expect(validateMailboxTemplates(root, [".env.local"])).resolves.toContain("could not be inspected");
+  await rm(root, { recursive: true, force: true });
+});
+
+test("reads templates through the repository inventory when supplied", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-template-inventory-"));
+  const file = join(root, ".env.example");
+  const readText = jest.fn(async () => "OTHER=value\n");
+  await expect(
+    validateMailboxTemplates(root, [".env.example"], { repositoryInventory: { readText } }),
+  ).resolves.toBeNull();
+  expect(readText).toHaveBeenCalledTimes(1);
+  expect(readText).toHaveBeenCalledWith(file);
   await rm(root, { recursive: true, force: true });
 });

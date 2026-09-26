@@ -5,6 +5,10 @@ import { fail, pass } from "../../check-result.mjs";
 
 export const ruleId = "E-0.1.100.1";
 export const parentRuleId = "E-0.1.100";
+export const repositoryInventoryOptions = Object.freeze({
+  expandedDirectories: Object.freeze(["docs"]),
+  includeTestResultsUnder: Object.freeze(["docs"]),
+});
 
 export async function run(context) {
   const { root } = context;
@@ -15,10 +19,17 @@ export async function run(context) {
     ]);
     if (!rootReadme.includes("docs/README.md"))
       return fail(ruleId, "Root README.md must link docs/README.md.");
-    const entries = await readdir(join(root, "docs"), { withFileTypes: true, recursive: true });
-    const missing = entries
-      .filter((entry) => entry.isFile() && entry.name !== "README.md")
-      .map((entry) => entry.name)
+    const files = context.repositoryInventory
+      ? await context.repositoryInventory.documentationFiles({
+          directory: join(root, "docs"),
+          maxDepth: Number.POSITIVE_INFINITY,
+          maxFiles: Number.POSITIVE_INFINITY,
+          includeGenerated: true,
+        })
+      : await collectDocsFiles(join(root, "docs"));
+    const missing = files
+      .map((file) => file.split(/[\\/]/u).at(-1))
+      .filter((name) => name !== "README.md")
       .filter((name) => !docsReadme.includes(name));
     if (missing.length > 0)
       return fail(ruleId, `docs/README.md must index: ${missing.join(", ")}.`);
@@ -29,4 +40,9 @@ export async function run(context) {
     );
   }
   return pass(ruleId);
+}
+
+async function collectDocsFiles(directory) {
+  const entries = await readdir(directory, { withFileTypes: true, recursive: true });
+  return entries.filter((entry) => entry.isFile()).map((entry) => entry.name);
 }
