@@ -1,7 +1,7 @@
 import { readSection } from "./read-readme-section.mjs";
 
-export function validateReadmeProfileContent(readme, packageJson = {}) {
-  const section = (heading) => readSection(readme, heading);
+export function validateReadmeProfileContent(readme, packageJson = {}, sections) {
+  const section = (heading) => readSection(readme, heading, sections);
   const missing = [];
   const applied = new Set(packageJson?.eliware?.apply ?? []);
 

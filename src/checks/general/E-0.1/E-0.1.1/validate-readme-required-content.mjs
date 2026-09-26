@@ -10,11 +10,11 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, options 
   const validations = [
     () => validateReadmeStructure(readme, packageJson),
     () => validateReadmePackageBadges(readme, packageJson),
-    () => validateReadmeProfileContent(readme, packageJson),
+    () => validateReadmeProfileContent(readme, packageJson, options.sections),
     () => validateReadmeDocumentationNavigation(readme, options),
-    () => validateReadmeSupport(readme),
-    () => validateReadmeLinks(readme, packageJson),
-    () => validateReadmeLicense(readme),
+    () => validateReadmeSupport(readme, options.sections),
+    () => validateReadmeLinks(readme, packageJson, options.sections),
+    () => validateReadmeLicense(readme, options.sections),
   ];
   for (const validate of validations) {
     const error = validate();

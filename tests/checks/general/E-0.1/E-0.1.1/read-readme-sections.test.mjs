@@ -2,6 +2,7 @@ import { expect, test } from "@jest/globals";
 import {
   expectedReadmeHeadings,
   readReadmeSections,
+  readmeSectionsCacheKey,
   requiredReadmeSections,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.1/read-readme-sections.mjs";
 
@@ -11,6 +12,13 @@ test("extracts the required README sections", () => {
   expect(sections.get("Features")).toBe("content");
   expect(sections.get("Usage")).toBe("run it");
   expect(sections.get("License")).toBe("");
+});
+
+test("creates a stable section-cache key from applied README profiles", () => {
+  expect(readmeSectionsCacheKey()).toBe("readme:sections:[]");
+  expect(readmeSectionsCacheKey({ eliware: { apply: ["cli", "application"] } })).toBe(
+    'readme:sections:["cli","application"]',
+  );
 });
 
 test("uses profile headings in canonical order regardless of package declaration order", () => {

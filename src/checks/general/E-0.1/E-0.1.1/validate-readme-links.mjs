@@ -1,6 +1,6 @@
 import { readSection } from "./read-readme-section.mjs";
 
-export function validateReadmeLinks(readme, packageJson = {}) {
+export function validateReadmeLinks(readme, packageJson = {}, sections) {
   const repository =
     typeof packageJson?.repository === "string"
       ? packageJson.repository
@@ -13,7 +13,7 @@ export function validateReadmeLinks(readme, packageJson = {}) {
     return "README.md repository links require a valid GitHub repository URL in package.json.";
   }
 
-  const linksContent = readSection(readme, "Links");
+  const linksContent = readSection(readme, "Links", sections);
   const npmPublished = packageJson?.eliware?.apply?.includes("npm-published") === true;
   const repositoryPath = repositoryUrl.replace("https://github.com/", "").split("/");
   const organizationUrl = `https://github.com/${repositoryPath[0]}`;

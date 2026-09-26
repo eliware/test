@@ -1,15 +1,25 @@
-import { readRepositoryText } from "../read-repository-text.mjs";
+import { readRepositoryParsed } from "../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../check-result.mjs";
 
 export async function checkAgents(root, ruleId, groups, { context, section } = {}) {
+  const agentsPath = join(root, "AGENTS.md");
   let content;
   try {
-    content = (await readRepositoryText(context, join(root, "AGENTS.md"))).toLowerCase();
+    content = await readRepositoryParsed(context, agentsPath, "agents:lowercase", (text) =>
+      text.toLowerCase(),
+    );
   } catch {
     return fail(ruleId, "AGENTS.md is required.");
   }
-  const sectionContent = section ? readSection(content, section) : content;
+  const sectionContent = section
+    ? await readRepositoryParsed(
+        context,
+        agentsPath,
+        `agents:section:${section.toLowerCase()}`,
+        () => readSection(content, section),
+      )
+    : content;
   const missing = groups
     .filter((group) => !group.some((term) => sectionContent.includes(term)))
     .map((group) => group[0]);

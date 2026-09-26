@@ -65,6 +65,10 @@ export function expectedReadmeHeadings(packageJson = {}) {
   ];
 }
 
+export function readmeSectionsCacheKey(packageJson = {}) {
+  return `readme:sections:${JSON.stringify(packageJson?.eliware?.apply ?? [])}`;
+}
+
 export function readReadmeSections(readme, packageJson = {}) {
   const lines = readme.split(/\r?\n/);
   return new Map(
@@ -81,7 +85,8 @@ export function readReadmeSections(readme, packageJson = {}) {
         lines
           .slice(headingIndex + 1, end < 0 ? lines.length : end)
           .join("\n")
-          .trim(),
+          .trim()
+          .toLowerCase(),
       ];
     }),
   );

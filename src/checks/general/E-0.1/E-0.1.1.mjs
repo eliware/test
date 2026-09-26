@@ -1,20 +1,26 @@
-import { readRepositoryText } from "../../read-repository-text.mjs";
+import { readRepositoryParsed } from "../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
+import { readReadmeSections, readmeSectionsCacheKey } from "./E-0.1.1/read-readme-sections.mjs";
 
 export const ruleId = "E-0.1.1";
 export const parentRuleId = "E-0.1";
 
 export async function run(context) {
   const { root } = context;
-  let readme;
+  let sections;
   try {
-    readme = await readRepositoryText(context, join(root, "README.md"));
+    sections = await readRepositoryParsed(
+      context,
+      join(root, "README.md"),
+      readmeSectionsCacheKey(context.packageJson),
+      (content) => readReadmeSections(content, context.packageJson),
+    );
   } catch {
     return fail(ruleId, "README.md is required.");
   }
-  const features = readSection(readme, "Features");
-  const usage = readSection(readme, "Usage");
+  const features = sections.get("Features");
+  const usage = sections.get("Usage");
   if (!features || !usage) {
     return fail(
       ruleId,
@@ -22,12 +28,4 @@ export async function run(context) {
     );
   }
   return pass(ruleId);
-}
-
-function readSection(readme, heading) {
-  const lines = readme.split(/\r?\n/u);
-  const start = lines.findIndex((line) => new RegExp(`^##\\s+${heading}\\s*$`, "iu").test(line));
-  if (start < 0) return "";
-  const end = lines.findIndex((line, index) => index > start && /^#{1,6}\s+\S/u.test(line));
-  return lines.slice(start + 1, end < 0 ? lines.length : end).join("\n").trim();
 }

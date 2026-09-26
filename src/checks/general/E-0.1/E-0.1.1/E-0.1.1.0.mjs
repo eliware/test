@@ -1,7 +1,11 @@
-import { readRepositoryText } from "../../../read-repository-text.mjs";
+import { readRepositoryParsed, readRepositoryText } from "../../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
-import { readReadmeSections, expectedReadmeHeadings } from "./read-readme-sections.mjs";
+import {
+  readReadmeSections,
+  readmeSectionsCacheKey,
+  expectedReadmeHeadings,
+} from "./read-readme-sections.mjs";
 import { validateReadmeBranding } from "./validate-readme-branding.mjs";
 import { validateReadmeMetadata } from "./validate-readme-metadata.mjs";
 import { validateReadmeRequiredContent } from "./validate-readme-required-content.mjs";
@@ -18,7 +22,12 @@ export async function run(context) {
   } catch {
     return fail(ruleId, "README.md is required.");
   }
-  const sections = readReadmeSections(readme, packageJson);
+  const sections = await readRepositoryParsed(
+    context,
+    join(root, "README.md"),
+    readmeSectionsCacheKey(packageJson),
+    (content) => readReadmeSections(content, packageJson),
+  );
   const missing = expectedReadmeHeadings(packageJson).filter((section) => section !== "Table of Contents" && !sections.get(section));
   if (missing.length > 0) {
     return fail(ruleId, `README.md is missing required sections: ${missing.join(", ")}.`);
@@ -27,7 +36,10 @@ export async function run(context) {
   if (brandingError) return fail(ruleId, brandingError);
   const indexes = await inspectReadmeDocumentationIndexes(root);
   const examplesRequired = indexes.examplesRequired;
-  const requiredContentError = validateReadmeRequiredContent(readme, packageJson, { examplesRequired });
+  const requiredContentError = validateReadmeRequiredContent(readme, packageJson, {
+    examplesRequired,
+    sections,
+  });
   if (requiredContentError) return fail(ruleId, requiredContentError);
   const metadataError = validateReadmeMetadata(readme, packageJson);
   if (metadataError) return fail(ruleId, metadataError);

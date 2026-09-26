@@ -1,4 +1,4 @@
-import { readRepositoryText } from "../../read-repository-text.mjs";
+import { readRepositoryParsed } from "../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 
@@ -8,12 +8,16 @@ export const parentRuleId = "E-0.1.60";
 export async function run(context) {
   const { root } = context;
   try {
-    const agents = await readRepositoryText(context, join(root, "AGENTS.md"));
-    const section =
-      agents
-        .split(/^## CLI\s*$/imu)[1]
-        ?.split(/^##\s+/mu)[0]
-        ?.toLowerCase() ?? "";
+    const section = await readRepositoryParsed(
+      context,
+      join(root, "AGENTS.md"),
+      "agents:section:cli",
+      (agents) =>
+        agents
+          .split(/^## CLI\s*$/imu)[1]
+          ?.split(/^##\s+/mu)[0]
+          ?.toLowerCase() ?? "",
+    );
     const requirements = [
       ["entrypoint", "executable"],
       ["parse", "argument", "option", "delimiter", "prompt text", "repeatable"],

@@ -1,4 +1,5 @@
-export function readSection(readme, heading) {
+export function readSection(readme, heading, sections) {
+  if (sections?.has(heading)) return sections.get(heading) ?? "";
   const lines = readme.split(/\r?\n/u);
   const start = lines.findIndex((line) =>
     new RegExp(`^##\\s+${escapeRegExp(heading)}\\s*$`, "iu").test(line),

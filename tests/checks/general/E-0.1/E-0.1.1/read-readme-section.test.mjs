@@ -10,3 +10,9 @@ test("returns an empty string for a missing section and supports punctuation in 
   expect(readSection("## Usage\nrun command", "Missing")).toBe("");
   expect(readSection("## Exit codes\n0 means success", "Exit codes")).toBe("0 means success");
 });
+
+test("uses a cached section when present and parses when the cache has no value", () => {
+  expect(readSection("## Usage\nparsed", "Usage", new Map([ ["Usage", "cached"] ]))).toBe("cached");
+  expect(readSection("## Usage\nparsed", "Usage", new Map())).toBe("parsed");
+  expect(readSection("## Usage\nparsed", "Usage", new Map([ ["Usage", undefined] ]))).toBe("");
+});
