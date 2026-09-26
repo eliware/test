@@ -1,9 +1,15 @@
 const safeReportingCommand =
   /^(?:echo|printf)(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
+const approvedReportingActions = new Set(["actions/upload-artifact@v4"]);
 
-export function validateWorkflowPostTestCommands(name, commands, testIndex) {
+export function validateWorkflowPostTestCommands(name, commands, testIndex, steps = commands) {
   const invalidReporting = commands.some(
-    ({ command }, index) => index > testIndex && !safeReportingCommand.test(command),
+    ({ command, index }, position) => (index ?? position) > testIndex && !safeReportingCommand.test(command),
   );
-  return invalidReporting ? `${name} may only run reporting commands after npm test.` : null;
+  const invalidAction = steps.some((step, index) =>
+    index > testIndex && typeof step?.uses === "string" && !approvedReportingActions.has(step.uses),
+  );
+  return invalidReporting || invalidAction
+    ? `${name} may only run reporting commands after npm test or approved reporting actions.`
+    : null;
 }

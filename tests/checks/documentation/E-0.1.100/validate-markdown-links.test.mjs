@@ -22,6 +22,10 @@ test("validates local Markdown links and fragments", async () => {
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
   await writeFile(join(root, "README.md"), "[Terms](terms.txt)");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
+  await mkdir(join(root, "host"));
+  await writeFile(join(root, "host", "path"), "unrelated local target");
+  await writeFile(join(root, "README.md"), "[Protocol relative](//host/path)");
+  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("is invalid");
   await writeFile(join(root, "README.md"), "<https://example.test/docs> <mailto:support@example.test>");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
   await writeFile(join(root, "README.md"), "[Bad](https://)");

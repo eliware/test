@@ -47,6 +47,18 @@ test("leaves publication-job commands to publication-specific validation", () =>
   });
 });
 
+test("rejects unrelated unsafe jobs in a publication workflow", () => {
+  const validate = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
+  const publish = { steps: [{ run: "npm publish --provenance" }] };
+  const inspect = { steps: [{ run: "curl example.test" }] };
+  expect(selectWorkflowValidationJobs("publish.yml", {
+    jobs: { validate, publish, inspect },
+  })).toMatchObject({
+    error: "publish.yml contains non-validation command(s): curl example.test.",
+    jobs: [],
+  });
+});
+
 test("rejects unsupported commands in validation jobs", () => {
   expect(selectWorkflowValidationJobs("ci.yml", {
     jobs: { validate: { steps: [{ run: "npm ci" }, { run: "npm test" }, { run: "curl example.test" }] } },
@@ -66,7 +78,7 @@ test("rejects unsupported or unsafe commands in sibling workflow jobs", () => {
       setup: { steps: [{ run: "printf 'arbitrary=value\\n' > .env" }] },
     },
   })).toEqual({
-    error: "ci.yml job setup may only run safe setup or reporting commands before npm ci.",
+    error: "ci.yml job setup may only use approved actions; other steps must be safe setup or reporting commands.",
     jobs: [],
   });
   expect(selectWorkflowValidationJobs("ci.yml", {

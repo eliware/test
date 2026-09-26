@@ -9,7 +9,7 @@ test("recognizes supported source files under relative and absolute src roots", 
 });
 
 test("excludes paths outside src, unsupported extensions, and non-production subtrees", () => {
-  for (const file of ["README.md", "tests/app.mjs", "src/README.txt", "src/tests/app.test.mjs", "src/fixture/app.mjs", "src/generated/app.mjs", "src/dist/app.mjs", "src/build/app.mjs"]) {
+  for (const file of ["README.md", "tests/app.mjs", "src/README.txt", "src/tests/app.test.mjs", "src/fixture/app.mjs", "src/generated/app.mjs", "src/dist/app.mjs", "src/build/app.mjs", "src/__snapshots__/component.snap.mjs", "src/component.snap.mjs"]) {
     expect(isInScopeSource(file)).toBe(false);
   }
 });

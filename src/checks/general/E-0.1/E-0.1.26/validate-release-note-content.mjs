@@ -11,10 +11,14 @@ export function validateReleaseNoteContent(entries, currentVersion) {
       return `must give ${heading} at least one change category.`;
     }
     for (const category of entry.categories) {
-      if (category.content.length === 0) {
-        return `must not leave the ${category.name} category empty.`;
+      if (!category.content.some(isMeaningfulChangeLine)) {
+        return `must give the ${category.name} category user-visible change text.`;
       }
     }
   }
   return null;
+}
+
+function isMeaningfulChangeLine(line) {
+  return typeof line === "string" && !/^\s{0,3}#{1,6}(?:\s|$)/u.test(line) && /[\p{L}\p{N}]/u.test(line);
 }

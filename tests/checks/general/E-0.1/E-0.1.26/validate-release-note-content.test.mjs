@@ -26,13 +26,19 @@ test("accepts any supported non-empty change category without requiring Added or
   ).toBeNull();
 });
 
-test("rejects entries without categories and empty category headings", () => {
+test("rejects entries without categories and categories without user-visible change text", () => {
   expect(validateReleaseNoteContent([release("1.0.0", [])], "1.0.0")).toContain(
     "at least one change category",
   );
   expect(validateReleaseNoteContent([release("1.0.0", [change("Fixed")])], "1.0.0")).toContain(
-    "must not leave the Fixed category empty",
+    "must give the Fixed category user-visible change text",
   );
+  for (const content of ["   ", "**", "---", "### Details"]) {
+    expect(validateReleaseNoteContent(
+      [release("1.0.0", [change("Fixed", content)])],
+      "1.0.0",
+    )).toContain("user-visible change text");
+  }
   expect(
     validateReleaseNoteContent(
       [{ type: "unreleased", categories: [] }, release("1.0.0", [change("Added", "Feature")])],

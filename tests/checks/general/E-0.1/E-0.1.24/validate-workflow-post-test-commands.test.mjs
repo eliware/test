@@ -12,3 +12,14 @@ test("rejects other commands after npm test", () => {
     "reporting commands after npm test",
   );
 });
+
+test("checks actions after npm test against the reporting allowlist", () => {
+  expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
+    { run: "npm test" },
+    { uses: "actions/upload-artifact@v4" },
+  ])).toBeNull();
+  expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
+    { run: "npm test" },
+    { uses: "untrusted/action@v1" },
+  ])).toContain("approved reporting actions");
+});

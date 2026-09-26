@@ -70,7 +70,10 @@ function selectManifestEntry(manifest, packageName) {
   if (Array.isArray(manifest?.files)) {
     return !packageName || manifest.name === packageName ? manifest : null;
   }
-  if (packageName) return manifest?.[packageName] ?? null;
+  if (packageName) {
+    const entry = manifest?.[packageName];
+    return entry?.name === packageName ? entry : null;
+  }
   const candidates = Object.values(manifest).filter((entry) => Array.isArray(entry?.files));
   return candidates.length === 1 ? candidates[0] : null;
 }

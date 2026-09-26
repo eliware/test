@@ -5,6 +5,8 @@ command for validation. Package scripts such as `npm test` and
 `npm run format:check` are available only when working inside this package's
 own repository. Use `eliware-test --help` for the supported CLI modes,
 including linting, formatting, timing diagnostics, and focused Jest execution.
+Focused test paths under `tests/` support `.test.*` and `.spec.*` filenames
+with `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 
 ## Configuration
 
@@ -33,15 +35,18 @@ The following npm scripts are available only in this package's own repository:
 only when the `npm-published` profile is selected.
 
 The normal test command runs the configured validation stages. The five public
-tool modes forward additional arguments to their underlying tools:
+tool modes forward additional arguments supported by their underlying tools;
+wrapper-owned settings and arguments that weaken required checks are rejected:
 
 ```text
 eliware-test --lint --fix
 eliware-test --format --log-level=warn
 eliware-test --format-check --log-level=debug
 eliware-test --audit --omit=dev
-eliware-test --pack --ignore-scripts
 ```
+
+The `--pack` mode runs `npm pack` validation. The npm package contract it checks
+applies to repositories that select the `npm-published` profile.
 
 Tool modes may not be combined with a focused Jest test path. Paths supplied
 to a tool mode are forwarded as tool arguments; focused paths are reserved for
@@ -70,9 +75,9 @@ npm test -- tests/example.test.mjs
 
 `--debug-timing` streams completed stage and test timing while validation is
 running. The timing stream is written to the CLI writer supplied by the
-invocation; programmatic callers that omit a writer receive diagnostics through
-the normal result instead of an implicit process-global sink. Jest runs in-band
-by default. Jest option/value pairs are forwarded unchanged, and a value is not
+invocation; programmatic callers that omit a writer receive no live timing
+stream. Jest runs in-band by default. Jest option/value pairs are forwarded
+unchanged, and a value is not
 interpreted as a focused path. If Jest produces no observable progress for 15
 seconds, the watchdog terminates the run; this is a no-progress limit rather
 than a per-test or total-duration limit. Individual tests taking more than five
@@ -91,9 +96,13 @@ Compatibility boundaries
 The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
 repository or supported Node.js/Windows executable locations. Workflow parsing
 normalizes YAML 1.1 `true` keys and equivalent runner/input spellings before
-domain checks consume them. External authority references may be unavailable
-only when they are registered in `docs/authority-map.json` as cross-repository
-references; unregistered or local references must resolve and fail otherwise.
+domain checks consume them. The validator resolves `specs/authority.json`'s
+`globalAuthorityMap` setting, then uses that map's `repositoryRegistry` to
+identify external repository roots. References within registered roots may
+be unavailable. If the registered repository map cannot be loaded, external
+targets fail validation whether or not their checkout is available. Unavailable
+external targets are accepted only when their paths belong to registered roots;
+unregistered or local references must resolve.
 Git-sensitive checks use Git
 metadata when available and retain filesystem discovery only for non-Git test
 fixtures.

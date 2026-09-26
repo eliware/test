@@ -1,18 +1,22 @@
 export function coverageLineEntries(data, sourceStatementMap = data.statementMap) {
-  const explicit = Object.entries(data.l ?? {});
   const lines = new Map();
+  const counters = data.s ?? {};
   for (const [id, entry] of Object.entries(sourceStatementMap ?? {})) {
+    if (!Object.hasOwn(counters, id)) {
+      throw new Error(`Coverage evidence is incomplete: statement counter ${id} is missing.`);
+    }
     const line = entry?.start?.line;
     if (line) {
-      const count = Number(data.s?.[id] ?? 0);
+      const count = Number(counters[id]);
       const key = String(line);
-      lines.set(key, lines.has(key) ? Math.min(lines.get(key), count) : count);
+      const previous = lines.get(key);
+      if (previous === undefined || count > previous) lines.set(key, count);
     }
   }
   if (sourceStatementMap !== undefined && lines.size > 0) {
     const derived = [...lines.entries()];
     if (Object.hasOwn(data, "l")) {
-      const explicitByLine = new Map(explicit);
+      const explicitByLine = new Map(Object.entries(data.l));
       if (
         explicitByLine.size !== lines.size ||
         [...lines].some(([line, count]) => explicitByLine.get(line) !== count)
@@ -22,6 +26,7 @@ export function coverageLineEntries(data, sourceStatementMap = data.statementMap
     }
     return derived;
   }
+  const explicit = Object.entries(data.l ?? {});
   if (explicit.length > 0) return explicit;
   return [...lines.entries()];
 }

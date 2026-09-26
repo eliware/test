@@ -9,6 +9,39 @@ test("redacts a configured secret split across text chunks", () => {
   expect(output.finish()).toBe("");
 });
 
+test("redacts complete progress text", () => {
+  const output = createRedactedTextStream(["opaque-token"], 100);
+  expect(output.redactComplete("progress opaque-token")).toBe("progress [REDACTED]");
+});
+
+test("redacts complete secrets before trimming a trailing partial secret", () => {
+  const output = createRedactedTextStream(["opaque-token", "credential-value"], 100);
+  expect(output.redactComplete("progress opaque-token credential-")).toBe(
+    "progress [REDACTED] ",
+  );
+});
+
+test("matches multiple overlapping secret values", () => {
+  const separate = createRedactedTextStream(["alpha-secret", "beta-secret"], 100);
+  expect(separate.redactComplete("alpha-secret between beta-secret")).toBe(
+    "[REDACTED] between [REDACTED]",
+  );
+  const overlap = createRedactedTextStream(["abc", "bcde"], 100);
+  expect(overlap.redactComplete("abcde")).toBe("[REDACTED]");
+});
+
+test("suppresses complete diagnostics when matcher work exceeds its bounded budget", () => {
+  const output = createRedactedTextStream(["a"], 600_000);
+  expect(output.redactComplete("a".repeat(500_000))).toBe("");
+});
+
+test("suppresses an incomplete final byte sequence when completion exceeds the search budget", () => {
+  const output = createRedactedTextStream(["zzzz"], 10, { maxSearchWorkPerChunk: 3 });
+  expect(output.push(Buffer.from("abc"))).toBe("");
+  expect(output.push(Buffer.from([0xf0]))).toBe("");
+  expect(output.finish()).toBe("");
+});
+
 test("decodes UTF-8 secrets split across byte chunks", () => {
   const output = createRedactedTextStream(["🔐secret"], 100);
   const value = Buffer.from("before 🔐secret after");
@@ -38,4 +71,50 @@ test("bounds sanitized output and suppresses output for oversized secrets", () =
   const suppressed = createRedactedTextStream(["x".repeat(5)], 4);
   expect(suppressed.push("output")).toBe("");
   expect(suppressed.finish()).toBe("");
+  expect(suppressed.redactComplete("x".repeat(5))).toBe("");
+});
+
+test("bounds per-chunk secret search work by suppressing excessive environments", () => {
+  const secrets = Array.from({ length: 300 }, (_, index) => `${index}`.padStart(3, "0") + "x".repeat(97));
+  const output = createRedactedTextStream(secrets, 100_000);
+  expect(output.redactComplete("diagnostic".repeat(400))).toBe("");
+  expect(output.push("o".repeat(4_096))).toBe("");
+  expect(output.finish()).toBe("");
+});
+
+test("suppresses an excessive pending secret scan when a stream finishes", () => {
+  const secrets = Array.from({ length: 300 }, (_, index) => `${index}`.padStart(3, "0") + "x".repeat(4_000));
+  const output = createRedactedTextStream(secrets, 5_000);
+  expect(output.push("o".repeat(3_500))).toBe("");
+  expect(output.finish()).toBe("");
+});
+
+test("bounds repeated scans while a long secret keeps the pending suffix large", () => {
+  const secret = "s".repeat(10_000);
+  const output = createRedactedTextStream([secret], 20_000, { maxSearchWorkPerChunk: 10_000 });
+  expect(output.push("s".repeat(4_096))).toBe("");
+  expect(output.push("s".repeat(4_096))).toBe("");
+  expect(output.finish()).toBe("");
+});
+
+test("suppresses stream output when matcher work exceeds its estimate", () => {
+  const output = createRedactedTextStream(["ab"], 5_000, { maxSearchWorkPerChunk: 4_096 });
+  expect(output.push("a".repeat(3_000))).toBe("");
+  expect(output.finish()).toBe("");
+});
+
+test("emits no current chunk after budget exhaustion following a safe prefix", () => {
+  const output = createRedactedTextStream(["z"], 20_000, { maxSearchWorkPerChunk: 5_000 });
+  expect(output.push(`safe${"x".repeat(4_092)}`)).toContain("safe");
+  expect(output.push("x".repeat(4_096))).toBe("");
+  expect(output.finish()).toBe("");
+});
+
+
+
+test("bounds matcher work when finishing a retained pending suffix", () => {
+  const secret = "s".repeat(5_000);
+  const output = createRedactedTextStream([secret], 6_000, { maxSearchWorkPerChunk: 6_000 });
+  expect(output.push("s".repeat(4_096))).toBe("");
+  expect(output.finish()).toBe("");
 });

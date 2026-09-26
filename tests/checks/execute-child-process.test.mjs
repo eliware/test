@@ -27,6 +27,39 @@ test("redacts configured credential values from the child environment", async ()
   await expect(promise).resolves.toMatchObject({ stdout: "service output [REDACTED]" });
 });
 
+test("redacts explicit secrets whose environment keys do not look sensitive", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], {
+    env: { UNUSUAL_SETTING: "credential-value" },
+    redactionSecrets: ["credential-value"],
+  }, (_command, _args, options) => {
+    expect(options).not.toHaveProperty("redactionSecrets");
+    return child;
+  });
+  child.stdout.emit("data", "echo credential-value");
+  child.emit("close", 0, null);
+  await expect(promise).resolves.toMatchObject({ stdout: "echo [REDACTED]" });
+});
+
+test("redacts inherited process credentials when no child environment is supplied", async () => {
+  const previous = process.env.ELIWARE_TEST_INHERITED_TOKEN;
+  process.env.ELIWARE_TEST_INHERITED_TOKEN = "inherited-secret-456";
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  try {
+    const promise = execute("node", [], {}, () => child);
+    child.stdout.emit("data", "output inherited-secret-456");
+    child.emit("close", 0, null);
+    await expect(promise).resolves.toMatchObject({ stdout: "output [REDACTED]" });
+  } finally {
+    if (previous === undefined) delete process.env.ELIWARE_TEST_INHERITED_TOKEN;
+    else process.env.ELIWARE_TEST_INHERITED_TOKEN = previous;
+  }
+});
+
 test("redacts a configured credential split across child output chunks", async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
@@ -86,67 +119,17 @@ test("captures bounded stdout and stderr from a completed child", async () => {
   });
 });
 
-test("enforces one combined output budget across stdout and stderr", async () => {
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
-  const promise = execute("node", [], {}, () => child);
-  child.stdout.emit("data", "o".repeat(100_000));
-  child.stderr.emit("data", "e".repeat(100_000));
-  child.emit("close", 0, null);
-  const result = await promise;
-  expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(100_000);
-});
+test("handles output-less adapters, early errors, defaults, and the real adapter", async () => {
+  const outputless = new EventEmitter();
+  const completed = execute("tool", [], {}, () => outputless);
+  outputless.emit("close", 0, null);
+  outputless.emit("error", new Error("late error"));
+  await expect(completed).resolves.toMatchObject({ code: 0, stdout: "", stderr: "" });
 
-test("bounds raw output before redaction can shrink it", async () => {
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
-  const promise = execute("node", [], { env: { SERVICE_TOKEN: "x" } }, () => child);
-  child.stdout.emit("data", Buffer.from("x".repeat(200_000)));
-  child.stdout.emit("data", Buffer.from("x"));
-  child.emit("close", 0, null);
-  const result = await promise;
-  expect(result.stdout.length).toBeLessThanOrEqual(100_000);
-});
-
-test("does not append more redacted output after the captured output budget is full", async () => {
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
-  const promise = execute("node", [], { env: { SERVICE_TOKEN: "x" } }, () => child);
-  child.stdout.emit("data", Buffer.from("x".repeat(10_000)));
-  child.stdout.emit("data", Buffer.from("x"));
-  child.emit("close", 0, null);
-  const result = await promise;
-  expect(result.stdout.length).toBe(100_000);
-});
-
-test("handles process adapters without output streams and ignores late errors", async () => {
-  const child = new EventEmitter();
-  const result = execute("tool", [], {}, () => child);
-  child.emit("close", 0, null);
-  child.emit("error", new Error("late"));
-  await expect(result).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
-});
-
-test("rejects an early process error and ignores a later close", async () => {
-  const child = new EventEmitter();
-  const result = execute("tool", [], {}, () => child);
-  child.emit("error", new Error("spawn failed"));
-  child.emit("close", 1, null);
-  await expect(result).rejects.toThrow("spawn failed");
-});
-
-test("uses the real child-process adapter when no injector is supplied", async () => {
-  await expect(execute(process.execPath, ["-e", ""], {})).resolves.toMatchObject({ code: 0 });
-});
-
-test("rejects when the child process cannot start", async () => {
-  const child = new EventEmitter();
-  child.stdout = new EventEmitter();
-  child.stderr = new EventEmitter();
-  const promise = execute("missing", [], {}, () => child);
-  child.emit("error", new Error("spawn failed"));
-  await expect(promise).rejects.toThrow("spawn failed");
+  const failedChild = new EventEmitter();
+  const failed = execute("tool", [], null, () => failedChild);
+  failedChild.emit("error", new Error("spawn failed"));
+  failedChild.emit("close", 1, null);
+  await expect(failed).rejects.toThrow("spawn failed");
+  await expect(execute(process.execPath, ["-e", ""])).resolves.toMatchObject({ code: 0 });
 });

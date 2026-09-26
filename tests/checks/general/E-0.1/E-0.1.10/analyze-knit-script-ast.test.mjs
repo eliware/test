@@ -90,6 +90,9 @@ test("handles inert exports, rejects re-export execution, and sorts command call
 
   const inertDeclaration = analyze(`export const value = { nested: 1 }; ${commands}`);
   expect(inertDeclaration.leadingExecutable).toBe(false);
+
+  const executableExport = analyze(`export const setup = initialize(); ${commands}`);
+  expect(executableExport.leadingExecutable).toBe(true);
 });
 
 test("returns no commands for an empty script", () => {

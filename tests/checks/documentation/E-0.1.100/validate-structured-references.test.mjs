@@ -146,3 +146,14 @@ test("requires a registered map before accepting an existing external target", a
   );
   await rm(parent, { recursive: true, force: true });
 });
+
+test("requires a registered map before accepting an unavailable external target", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-cross-repo-refs-no-map-"));
+  await writeFile(join(root, "package.json"), JSON.stringify({
+    eliware: { crosslinks: [{ path: "../missing-repository/target.json" }] },
+  }));
+  await expect(validateStructuredReferences(root, ["package.json"])).rejects.toThrow(
+    "cannot be verified without the registered repository map",
+  );
+  await rm(root, { recursive: true, force: true });
+});

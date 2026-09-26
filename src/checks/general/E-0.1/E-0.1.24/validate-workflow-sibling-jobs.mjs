@@ -1,9 +1,10 @@
-import { findUnsupportedCommands } from "./classify-workflow-commands.mjs";
+import { findPublicationCommand, findUnsupportedCommands } from "./classify-workflow-commands.mjs";
 import { validateWorkflowPreInstallCommands } from "./validate-workflow-pre-install-commands.mjs";
 
 export function validateWorkflowSiblingJobs(name, jobs, validationJobIds, publicationWorkflow) {
-  for (const { id, commands } of jobs) {
-    if (validationJobIds.has(id) || publicationWorkflow) continue;
+  for (const { id, job, commands } of jobs) {
+    const publicationJob = publicationWorkflow && findPublicationCommand(commands);
+    if (validationJobIds.has(id) || publicationJob) continue;
     const unsupported = findUnsupportedCommands(commands);
     if (unsupported.length > 0) {
       return `${name} contains non-validation command(s): ${unsupported.join(", ")}.`;
@@ -14,11 +15,12 @@ export function validateWorkflowSiblingJobs(name, jobs, validationJobIds, public
     if (validationCommands.length > 0) {
       return `${name} job ${id} must keep npm ci and npm test in a validation job.`;
     }
-    const setupCommands = commands.filter(({ command }) => /^(?:echo|printf)\b/iu.test(command));
     const setupError = validateWorkflowPreInstallCommands(
       `${name} job ${id}`,
-      setupCommands,
-      setupCommands.length,
+      commands,
+      job?.steps?.length ?? commands.length,
+      job?.steps ?? commands.map(({ step }) => step),
+      job,
     );
     if (setupError) return setupError;
   }

@@ -78,3 +78,11 @@ test("requires each table-of-contents link exactly once in document order", () =
     ),
   ).toContain("document order");
 });
+
+test("does not count links placed in a content section as table-of-contents entries", () => {
+  const readme = fixture().replace("[Testing](#testing)", "");
+  const misplacedLink = "\n[Testing](#testing)\n";
+  expect(
+    validateReadmeStructure(readme.replace("## Features\ncontent", `## Features\ncontent${misplacedLink}`)),
+  ).toContain("Table of Contents");
+});

@@ -37,13 +37,34 @@ test("rejects other setup commands before install", () => {
   }
 });
 
-test("accepts only fixed literal PowerShell mailbox setup", () => {
+test("accepts fixed literal PowerShell mailbox setup only with a PowerShell shell", () => {
   expect(validateWorkflowPreInstallCommands("ci.yml", [
-    { command: "Set-Content .env 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org'" },
+    {
+      command: "Set-Content .env 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org'",
+      step: { shell: "pwsh" },
+    },
   ], 1)).toBeNull();
   expect(validateWorkflowPreInstallCommands("ci.yml", [
-    { command: "Set-Content .env 'MAIL_OWNER_ADDRESS=$(Get-ChildItem)@eliware.org'" },
+    { command: "Set-Content .env 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org'" },
   ], 1)).toContain("safe setup");
+  expect(validateWorkflowPreInstallCommands("ci.yml", [
+    {
+      command: "Set-Content .env 'MAIL_OWNER_ADDRESS=$(Get-ChildItem)@eliware.org'",
+      step: { shell: "pwsh" },
+    },
+  ], 1)).toContain("safe setup");
+  for (const value of [
+    "$(Get-ChildItem)@eliware.org",
+    "`$(Get-ChildItem)@eliware.org",
+    "ops&ci@eliware.org",
+  ]) {
+    expect(validateWorkflowPreInstallCommands("ci.yml", [
+      {
+        command: `Set-Content .env 'MAIL_OWNER_ADDRESS=${value}'`,
+        step: { shell: "pwsh" },
+      },
+    ], 1)).toContain("safe setup");
+  }
 });
 
 test("allows the approved setup actions and rejects unreviewed actions before install", () => {
@@ -61,4 +82,26 @@ test("allows the approved setup actions and rejects unreviewed actions before in
     1,
     [{ uses: "someone/unreviewed-action@v1" }, install],
   )).toContain("safe setup or reporting");
+  expect(validateWorkflowPreInstallCommands(
+    "ci.yml",
+    [{ command: "npm ci", index: 2 }],
+    2,
+    [
+      { uses: "actions/checkout@v6" },
+      { uses: "someone/unreviewed-action@v1" },
+      { run: "npm ci" },
+    ],
+  )).toContain("safe setup or reporting");
+});
+
+test("ignores unapproved actions after install", () => {
+  const install = { run: "npm ci" };
+  const testStep = { run: "npm test" };
+  const reporting = { uses: "someone/reporting-action@v1" };
+  const steps = [install, testStep, reporting];
+  const commands = [
+    { command: "npm ci", index: 0, step: install },
+    { command: "npm test", index: 1, step: testStep },
+  ];
+  expect(validateWorkflowPreInstallCommands("ci.yml", commands, 0, steps)).toBeNull();
 });

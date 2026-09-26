@@ -38,6 +38,16 @@ test("AST cache reads and parses a repository file once per parser configuration
     expect(parseSource).toHaveBeenCalledTimes(1);
 });
 
+test("AST cache canonicalizes parser option property order", async () => {
+  const read = jest.fn().mockResolvedValue("const value = 1;");
+  const parseSource = jest.fn().mockReturnValue({ type: "File" });
+  const parseAst = createRepositoryAstCache({ read, parseSource });
+  await parseAst(".", "src/example.ts", { sourceType: "module", allowAwaitOutsideFunction: true });
+  await parseAst(".", "src/example.ts", { allowAwaitOutsideFunction: true, sourceType: "module" });
+  expect(read).toHaveBeenCalledTimes(1);
+  expect(parseSource).toHaveBeenCalledTimes(1);
+});
+
 test("AST cache does not share across different parser configurations", async () => {
     const read = jest.fn().mockResolvedValue("const value = 1;");
     const parseSource = jest.fn((source, options) => ({ source, options }));

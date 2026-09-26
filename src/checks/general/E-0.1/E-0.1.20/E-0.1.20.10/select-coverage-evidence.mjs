@@ -5,10 +5,12 @@ function isUnusableCandidate(error) {
   return (
     error.code === "ENOENT" ||
     error instanceof SyntaxError ||
+    message.startsWith("Detailed coverage") ||
     message.startsWith("Coverage report does not account") ||
     message.startsWith("Coverage report is") ||
     message.startsWith("Coverage evidence is") ||
     message.startsWith("Coverage map and counter keys") ||
+    message.startsWith("Coverage line counters do not match source-derived line coverage") ||
     message.startsWith("Summary-only coverage")
   );
 }

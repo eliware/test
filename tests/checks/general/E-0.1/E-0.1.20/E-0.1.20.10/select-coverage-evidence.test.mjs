@@ -52,6 +52,51 @@ test("continues after a report omits source entries and selects a later valid re
   expect(readCandidate).toHaveBeenCalledTimes(2);
 });
 
+test("continues after detailed coverage validation rejects a candidate", async () => {
+  const readCandidate = jest.fn(async (path) => {
+    if (path === "incomplete.json") {
+      throw new Error("Detailed coverage omits in-scope source file(s): src/example.mjs.");
+    }
+    return { totals: { lines: 100 }, gaps: [] };
+  });
+  await expect(selectCoverageEvidence(["incomplete.json", "valid.json"], readCandidate))
+    .resolves.toMatchObject({ source: "valid.json" });
+  expect(readCandidate).toHaveBeenCalledTimes(2);
+
+  await expect(
+    selectCoverageEvidence(["incomplete.json"], async () => {
+      throw new Error("Detailed coverage omits in-scope source file(s): src/example.mjs.");
+    }),
+  ).rejects.toThrow("Detailed coverage omits in-scope source file(s)");
+});
+
+test("falls back when detailed evidence has no source-derived shape", async () => {
+  const readCandidate = jest.fn(async (path) => {
+    if (path === "unshaped.json") {
+      throw new Error("Detailed coverage has no source-derived shape for src/example.mjs.");
+    }
+    return { totals: { lines: 100 }, gaps: [] };
+  });
+  await expect(selectCoverageEvidence(["unshaped.json", "valid.json"], readCandidate))
+    .resolves.toMatchObject({ source: "valid.json" });
+  expect(readCandidate).toHaveBeenCalledTimes(2);
+});
+
+test("falls through after malformed map/counter evidence and fails when no candidate is usable", async () => {
+  const malformed = new Error("Coverage evidence is incomplete for src/example.mjs.");
+  await expect(
+    selectCoverageEvidence(["malformed.json", "valid.json"], async (path) => {
+      if (path === "malformed.json") throw malformed;
+      return { totals: { lines: 100 }, gaps: [] };
+    }),
+  ).resolves.toMatchObject({ source: "valid.json" });
+  await expect(
+    selectCoverageEvidence(["malformed.json"], async () => {
+      throw malformed;
+    }),
+  ).rejects.toBe(malformed);
+});
+
 test("classifies missing and summary-only candidates as unusable", async () => {
   await expect(selectCoverageEvidence(["empty.json"], async () => null)).rejects.toThrow(
     "Coverage report is invalid: empty.json",

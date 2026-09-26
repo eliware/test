@@ -18,7 +18,7 @@ export async function inspectGitIgnorePaths(root, paths, runGit = execFileAsync,
     if (error?.code !== 1) return null;
     stdout = error.stdout ?? "";
   }
-  return new Set(stdout.split(/\r?\n/u).filter(Boolean));
+  return new Set(stdout.split(/\r?\n/u).filter(Boolean).map((path) => path.replaceAll("\\", "/")));
 }
 
 export async function gitIgnores(root, path, runGit, resolveGit) {

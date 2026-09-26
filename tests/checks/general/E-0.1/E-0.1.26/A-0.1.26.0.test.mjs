@@ -58,7 +58,7 @@ test.each([
     "contains an empty category",
     validNotes.replace("- New capability.", ""),
     "8.0.0",
-    "must not leave the Added category empty",
+    "must give the Added category user-visible change text",
   ],
 ])("rejects release notes that %s", async (_label, notes, version, expectedMessage) => {
   const root = await createFixture(notes);

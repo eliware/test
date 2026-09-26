@@ -14,6 +14,17 @@ test("requires GHCR publication permissions", async () => {
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
+test("requires attestation permissions even when the attestation step is missing", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  const withoutAttestation = content
+    .replace(/  id-token: write\n  attestations: write\n  artifact-metadata: write\n/u, "")
+    .replace(/      - uses: actions\/attest@v4[\s\S]*?(?=      - run: test)/u, "");
+  await writeFile(publicationPath, withoutAttestation);
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+});
+
 test("uses the job permission override as the effective permission set", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");
@@ -29,7 +40,7 @@ test("checks every publication job and rejects unnecessary permissions", async (
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
-  await writeFile(publicationPath, content.replace("  publish:\n", "  extra:\n    permissions:\n      contents: read\n      packages: write\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n    steps:\n      - run: docker push ghcr.io/eliware/example:v1.2.3\n  publish:\n"));
+  await writeFile(publicationPath, content.replace("  publish:\n", "  extra:\n    permissions:\n      contents: read\n      packages: write\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n      actions: write\n    steps:\n      - run: docker push ghcr.io/eliware/example:v1.2.3\n  publish:\n"));
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 

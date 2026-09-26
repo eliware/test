@@ -43,6 +43,8 @@ test("reports statement, branch, function, and line locations", () => {
     functions: [{ name: "missing", location: "8" }, { name: "anonymous", location: "unknown" }],
   });
   expect(gap.branches).toEqual(expect.arrayContaining([{ location: "6" }, { location: "unknown" }, { location: "7" }]));
+  expect(gap.metrics.branches).toBeLessThan(100);
+  expect(gap.metrics.branches).toBe(25);
 });
 
 test("uses explicit line data and handles empty or incomplete coverage maps", () => {

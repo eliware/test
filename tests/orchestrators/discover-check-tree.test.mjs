@@ -25,6 +25,18 @@ test("discovers a root-level module with default parent handling", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("discovers advisory-only metadata without a placeholder runner", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-check-tree-advisory-"));
+  await writeFile(
+    join(root, "E-3.mjs"),
+    'export const ruleId = "E-3"; export const applicability = "advisory-only";',
+  );
+  const checks = await discoverCheckTree(root, (url) => import(url));
+  expect(checks[0]).toMatchObject({ ruleId: "E-3", applicability: "advisory-only" });
+  expect(checks[0].run).toBeUndefined();
+  await rm(root, { recursive: true, force: true });
+});
+
 test("ignores unrelated entries and rejects invalid modules", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-check-tree-invalid-"));
   await writeFile(join(root, "README.md"), "ignored");

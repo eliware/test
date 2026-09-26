@@ -9,6 +9,13 @@ test("maps supported diagnostic flags and preserves Jest arguments", () => {
   expect(() => readDiagnosticOptions(["--lint", "--audit"])).toThrow(/mutually exclusive/);
 });
 
+test("accepts each documented focused test extension", () => {
+  for (const extension of ["js", "jsx", "ts", "tsx", "mjs", "cjs", "mts", "cts"]) {
+    expect(readDiagnosticOptions([`tests/example.spec.${extension}`]).jestArgs)
+      .toEqual([`tests/example.spec.${extension}`]);
+  }
+});
+
 test("forwards non-wrapper Jest options unchanged", () => {
   expect(readDiagnosticOptions(["--runInBand"]).jestArgs).toEqual(["--runInBand"]);
 });

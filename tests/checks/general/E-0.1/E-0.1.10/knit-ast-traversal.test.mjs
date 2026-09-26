@@ -41,9 +41,17 @@ test("handles static loops and bindings while collecting commands", () => {
   const { calls, unsupported } = collect(
     'import { spawnSync } from "node:child_process"; const command = "npm"; const args = ["test"]; const [destructured] = ["x"]; const dynamic = unknown; for (const [name, values] of [[command, args]]) { spawnSync(name, values); } for (item of [["x"]]) { spawnSync(item, []); } for (item of unknown) { spawnSync(item, []); }',
   );
-  expect(calls).toHaveLength(3);
+  expect(calls).toHaveLength(2);
   expect(calls[0]).toEqual(expect.objectContaining({ command: "npm", args: ["test"] }));
   expect(unsupported).toHaveLength(1);
+});
+
+test("does not analyze subprocess calls inside a non-static loop as verified commands", () => {
+  const result = collect(
+    'import { spawnSync } from "node:child_process"; for (const command of getCommands()) { spawnSync(command, ["test"]); }',
+  );
+  expect(result.calls).toEqual([]);
+  expect(result.unsupported).toHaveLength(1);
 });
 
 test("invalidates reassigned bindings across branches and scopes block declarations", () => {
@@ -90,6 +98,14 @@ test("marks dynamic and unsupported call forms", () => {
 test("rejects unbound optional global calls", () => {
   const { unsupported } = collect("fetch?.('https://example.test');");
   expect(unsupported).toHaveLength(1);
+});
+
+test("rejects import.meta.require dynamic calls", () => {
+  const { calls, unsupported } = collect(
+    'import.meta.require("node:child_process").execSync("npm publish");',
+  );
+  expect(calls).toEqual([]);
+  expect(unsupported).toHaveLength(2);
 });
 
 test("rejects subprocess calls hidden in invoked local functions", () => {

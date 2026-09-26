@@ -48,6 +48,9 @@ export function classifyCall(node, imports) {
   const isDynamic =
     isCall &&
     (node.callee.type === "Import" ||
-      (node.callee.type === "Identifier" && ["require", "eval"].includes(node.callee.name)));
+      (node.callee.type === "Identifier" && ["require", "eval"].includes(node.callee.name)) ||
+      (node.callee.type === "MemberExpression" &&
+        node.callee.object?.type === "MetaProperty" &&
+        node.callee.property?.name === "require"));
   return { direct, namespace, member, isSubprocess, isSideEffect, isUnsupported, isDynamic };
 }

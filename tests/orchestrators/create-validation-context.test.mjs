@@ -7,7 +7,6 @@ import { createRepositoryInventory } from "../../src/checks/create-repository-in
 import { run as runKnitSecurity } from "../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.0.mjs";
 import { run as runKnitOrder } from "../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.1.mjs";
 import { run as runLicense } from "../../src/checks/general/E-0.1/E-0.1.23.mjs";
-import { run as runLicensePolicy } from "../../src/checks/general/E-0.1/E-0.1.26.mjs";
 import { runPureExportBarrelPolicy } from "../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs";
 import { runNoCoverageIgnore } from "../../src/checks/general/E-0.1/validate-no-coverage-ignore.mjs";
 import { run as runDependencyAge } from "../../src/checks/general/E-0.1/E-0.1.14.mjs";
@@ -181,7 +180,6 @@ test("independent repository checks share cached LICENSE and source text", async
   const context = createValidationContext(root, { main: "./src/entry.mjs", eliware: { apply: ["library"] } }, { repositoryInventory });
   try {
     await expect(runLicense(context)).resolves.toMatchObject({ status: "pass" });
-    await expect(runLicensePolicy(context)).resolves.toMatchObject({ status: "pass" });
     await expect(runNoCoverageIgnore({ ...context, ruleId: "E-0.1.40.8" })).resolves.toMatchObject({ status: "pass" });
     await expect(runPureExportBarrelPolicy({ ...context, ruleId: "E-0.1.40.14" })).resolves.toMatchObject({ status: "pass" });
     expect(reads.get(license)).toBe(1);

@@ -39,6 +39,20 @@ test("accepts npm 12 scoped object-shaped manifests", () => {
       [],
     ),
   ).toBeNull();
+  expect(
+    validatePackManifest(
+      JSON.stringify({ "@eliware/codescope": { name: "@eliware/codescope", files: paths.map((path) => ({ path })) } }),
+      [],
+      "@eliware/codescope",
+    ),
+  ).toBeNull();
+  expect(
+    validatePackManifest(
+      JSON.stringify({ "@eliware/codescope": { name: "@eliware/other", files: paths.map((path) => ({ path })) } }),
+      [],
+      "@eliware/codescope",
+    ),
+  ).toContain("requested package");
 });
 
 test("selects the manifest for the package being packed and rejects ambiguity", () => {
@@ -52,9 +66,12 @@ test("selects the manifest for the package being packed and rejects ambiguity", 
   expect(validatePackManifest(JSON.stringify({ name: "@eliware/target", files }), [], "@eliware/target")).toBeNull();
   expect(validatePackManifest(JSON.stringify({ name: "@eliware/other", files }), [], "@eliware/target")).toContain("requested package");
   expect(validatePackManifest(JSON.stringify({
-    "@eliware/target": { files },
+    "@eliware/target": { name: "@eliware/target", files },
     "@eliware/other": { files: [{ path: "wrong.txt" }] },
   }), [], "@eliware/target")).toBeNull();
+  expect(validatePackManifest(JSON.stringify({
+    "@eliware/target": { name: "@eliware/wrong", files },
+  }), [], "@eliware/target")).toContain("requested package");
   expect(validatePackManifest(JSON.stringify({ "@eliware/target": { files } }), [])).toBeNull();
   expect(validatePackManifest(JSON.stringify({ "@eliware/target": { files }, "@eliware/other": { files } }), [])).toContain("requested package");
   expect(validatePackManifest(JSON.stringify({ "@eliware/other": { files } }), [], "@eliware/target")).toContain("requested package");

@@ -17,7 +17,10 @@ export async function discoverCheckTree(directory, importCheck, parentRuleId = n
     if (!match) continue;
     const id = entry.name.slice(0, -4);
     const module = await importCheck(pathToFileURL(join(directory, entry.name)));
-    if (module.ruleId !== id || typeof module.run !== "function") throw new Error(`Invalid check module: ${entry.name}`);
+    if (
+      module.ruleId !== id ||
+      (typeof module.run !== "function" && module.applicability !== "advisory-only")
+    ) throw new Error(`Invalid check module: ${entry.name}`);
     modules.push({ ...module, parentRuleId, modulePath: relative(root, join(directory, entry.name)).replaceAll("\\", "/") });
   }
   return modules.sort((left, right) => compareRuleIds(left.ruleId, right.ruleId));

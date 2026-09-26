@@ -12,6 +12,8 @@ export function resolveGitExecutable({
       .flatMap((value) => value.split(win32.delimiter).filter(Boolean)),
     env.ProgramFiles && win32.join(env.ProgramFiles, "Git", "cmd"),
     env.ProgramFiles && win32.join(env.ProgramFiles, "Git", "bin"),
+    env.ProgramW6432 && win32.join(env.ProgramW6432, "Git", "cmd"),
+    env.ProgramW6432 && win32.join(env.ProgramW6432, "Git", "bin"),
     env["ProgramFiles(x86)"] && win32.join(env["ProgramFiles(x86)"], "Git", "cmd"),
     env["ProgramFiles(x86)"] && win32.join(env["ProgramFiles(x86)"], "Git", "bin"),
     env.LOCALAPPDATA && win32.join(env.LOCALAPPDATA, "Programs", "Git", "cmd"),

@@ -52,3 +52,8 @@ test("redacts credentials split between child output chunks", () => {
   });
   expect(streamed.join("")).not.toContain("opaque-value-123");
 });
+
+test("suppresses complete progress output when a configured secret exceeds the capture limit", () => {
+  const capture = createChildOutputCapture(4, { env: { SERVICE_TOKEN: "secret-value" } });
+  expect(capture.redactComplete("secret-value")).toBe("");
+});

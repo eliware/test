@@ -40,6 +40,32 @@ test("terminates and rejects npm outdated output that exceeds its capture limit"
   expect(child.kill).toHaveBeenCalledWith("SIGTERM");
 });
 
+test("bounds termination when oversized output never closes", async () => {
+  const child = childProcess();
+  child.kill = jest.fn();
+  const result = readOutdatedDependencies("fixture", () => {
+    queueMicrotask(() => child.stdout.emit("data", "x".repeat(100_001)));
+    return child;
+  }, { terminationGracePeriodMs: 5 });
+  await expect(result).rejects.toThrow("output exceeded 100000 characters");
+  expect(child.kill.mock.calls).toEqual([["SIGTERM"], ["SIGKILL"]]);
+});
+
+test("terminates the Windows npm process tree when output exceeds its limit", async () => {
+  const child = childProcess();
+  child.pid = 2468;
+  child.kill = jest.fn();
+  const killTree = jest.fn();
+  const env = { SystemRoot: "C:\\Windows" };
+  const result = readOutdatedDependencies("fixture", () => {
+    queueMicrotask(() => child.stdout.emit("data", "x".repeat(100_001)));
+    return child;
+  }, { platform: "win32", env, killTree, terminationGracePeriodMs: 5 });
+  await expect(result).rejects.toThrow("output exceeded 100000 characters");
+  expect(killTree.mock.calls).toEqual([[2468, env], [2468, env]]);
+  expect(child.kill).not.toHaveBeenCalled();
+});
+
 test("builds the non-Windows npm command", async () => {
   const child = childProcess();
   const originalPlatform = process.platform;
@@ -61,6 +87,19 @@ test("builds the non-Windows npm command", async () => {
   }
 });
 
+test("resolves npm from the invoking Windows environment", async () => {
+  const child = childProcess();
+  const env = { npm_execpath: "C:\\node\\npm-cli.js", marker: "preserved" };
+  const promise = readOutdatedDependencies("fixture", (executable, args, options) => {
+    expect(executable).toBe("C:\\node\\node.exe");
+    expect(args).toEqual(["C:\\node\\npm-cli.js", "outdated", "--json"]);
+    expect(options.env).toMatchObject({ ...env, npm_config_loglevel: "error" });
+    queueMicrotask(() => { child.stdout.emit("data", "{}"); child.emit("close", 0); });
+    return child;
+  }, { env, platform: "win32", execPath: "C:\\node\\node.exe" });
+  await expect(promise).resolves.toEqual({});
+});
+
 test("uses the default process adapter and handles empty successful output", async () => {
   const child = childProcess();
   const originalProgramFiles = process.env.ProgramFiles;
@@ -73,7 +112,10 @@ test("uses the default process adapter and handles empty successful output", asy
     else process.env.ProgramFiles = originalProgramFiles;
   }
   const empty = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => child.emit("close", 0));
+    queueMicrotask(() => {
+      child.emit("close", 0);
+      child.emit("close", 0);
+    });
     return child;
   });
   await expect(empty).resolves.toEqual({});
@@ -86,6 +128,16 @@ test("rejects process errors, empty failures, and invalid JSON", async () => {
     return errorChild;
   });
   await expect(errorPromise).rejects.toThrow("spawn failed");
+
+  const errorThenClose = childProcess();
+  const errorThenClosePromise = readOutdatedDependencies("fixture", () => {
+    queueMicrotask(() => {
+      errorThenClose.emit("error", new Error("spawn failed first"));
+      errorThenClose.emit("close", 2);
+    });
+    return errorThenClose;
+  });
+  await expect(errorThenClosePromise).rejects.toThrow("spawn failed first");
 
   const failedChild = childProcess();
   const failedPromise = readOutdatedDependencies("fixture", () => {

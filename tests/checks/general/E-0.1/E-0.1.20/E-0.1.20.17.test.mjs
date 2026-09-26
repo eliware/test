@@ -26,6 +26,21 @@ test("allows optional typecheck and build scripts", async () => {
   ).resolves.toMatchObject({ status: "pass" });
 });
 
+test("allows the runtime entrypoint for the application profile and rejects unrelated scripts", async () => {
+  await expect(run({
+    packageJson: {
+      scripts: { ...scripts, start: "node server.mjs" },
+      eliware: { apply: ["application"] },
+    },
+  })).resolves.toMatchObject({ status: "pass" });
+  await expect(run({
+    packageJson: {
+      scripts: { ...scripts, start: "node server.mjs", deploy: "node deploy.mjs" },
+      eliware: { apply: ["application"] },
+    },
+  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("deploy") });
+});
+
 test("requires the pack script when the npm publication profile applies", async () => {
   await expect(
     run({

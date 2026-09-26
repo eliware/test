@@ -1,0 +1,29 @@
+import { expect, test } from "@jest/globals";
+import { createSecretTextMatcher } from "../../src/checks/create-secret-text-matcher.mjs";
+
+test("finds overlapping secrets with failure-link matching", () => {
+  const findSecretEnds = createSecretTextMatcher(["he", "she", "hers"]);
+  const ends = findSecretEnds("ushers");
+  expect(ends[1]).toBe(4);
+  expect(ends[2]).toBe(6);
+});
+
+test("returns no matches for an empty environment and bounds scan work", () => {
+  expect(createSecretTextMatcher([])("plain")).toEqual([0, 0, 0, 0, 0, 0]);
+  expect(createSecretTextMatcher(["a"])("a".repeat(1_000_001))).toBeNull();
+  expect(createSecretTextMatcher(["a"], { maxScanWork: 1 })("bb")).toBeNull();
+  expect(createSecretTextMatcher(["abc"], { maxScanWork: 2 })("abx")).toBeNull();
+});
+
+test("builds suffix fallback links when an earlier prefix cannot continue", () => {
+  const ends = createSecretTextMatcher(["abcd", "bcx"])("abcx");
+  expect(ends[1]).toBe(4);
+});
+
+test("matches non-BMP secrets using JavaScript string offsets", () => {
+  const secret = "🔐secret";
+  const text = `before ${secret} after`;
+  const ends = createSecretTextMatcher([secret])(text);
+  const start = text.indexOf(secret);
+  expect(ends[start]).toBe(start + secret.length);
+});

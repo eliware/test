@@ -28,6 +28,7 @@ export async function run({
     allowedAdditionalScripts: [
       ...(packageJson?.scripts?.typecheck !== undefined ? ["typecheck"] : []),
       ...(packageJson?.scripts?.build !== undefined ? ["build"] : []),
+      ...(appliedProfiles.has("application") ? ["start"] : []),
       ...(appliedProfiles.has("web") ? ["lighthouse", "puppeteer"] : []),
     ],
   });

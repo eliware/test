@@ -36,13 +36,13 @@ export function readDiagnosticOptions(args) {
     }
   }
   const candidateFocused = parseFocusedArguments(wrapperArgs).positional;
-  if (modes.length > 0 && candidateFocused.some((argument) => /^tests?[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))) {
+  if (modes.length > 0 && candidateFocused.some((argument) => /^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument))) {
     throw new Error("Focused test paths cannot be combined with tool modes.");
   }
   const focused = modes.length === 0 ? candidateFocused : [];
   if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
   if (
-    focused.some((argument) => !/^tests?[\\/].+\.(?:test|spec)\.[cm]?[jt]sx?$/iu.test(argument))
+    focused.some((argument) => !/^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument))
   ) {
     throw new Error("Focused paths must be under tests/.");
   }

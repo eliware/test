@@ -36,6 +36,9 @@ test("rejects unrelated scripts and malformed capability scripts", () => {
 });
 
 test("accepts only explicitly permitted capability and web profile scripts", () => {
+  expect(validateRequiredScripts({ ...scripts, start: "node server.mjs" }, {
+    allowedAdditionalScripts: ["start"],
+  })).toBeNull();
   expect(validateRequiredScripts({ ...scripts, typecheck: "tsc --noEmit", build: "vite build" }, {
     allowedAdditionalScripts: ["typecheck", "build"],
   })).toBeNull();

@@ -87,7 +87,7 @@
         {
           "id": "E-0.1.160.4",
           "dos": [
-            "The default GHCR authentication method must be the repository-scoped GITHUB_TOKEN with only contents: read and packages: write permissions for the publication job."
+            "The GHCR publication job must use the repository-scoped GITHUB_TOKEN and grant exactly contents: read, packages: write, id-token: write, attestations: write, and artifact-metadata: write for image publication and its mandatory signed attestation."
           ],
           "donts": [
             "Do not commit, print, persist, or expose registry credentials, and do not grant broader workflow permissions than the publication requires."

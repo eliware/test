@@ -33,6 +33,18 @@ test("returns command-pair and adjacency findings before later policy checks", (
   );
 });
 
+test("rejects an action inserted between install and test", () => {
+  const install = { run: "npm ci" };
+  const action = { uses: "someone/unreviewed-action@v1" };
+  const testStep = { run: "npm test" };
+  const steps = [install, action, testStep];
+  const commands = [
+    { command: install.run, step: install, index: 0 },
+    { command: testStep.run, step: testStep, index: 2 },
+  ];
+  expect(validateWorkflowSequence("ci.yml", commands, steps)).toContain("no intervening steps");
+});
+
 test("checks validation job conditions before setup policy", () => {
   const input = sequence([{ run: "touch .env" }]);
   expect(validateWorkflowSequence("ci.yml", input.commands, input.steps, { if: "false" })).toContain(
@@ -49,4 +61,23 @@ test("reports setup policy before post-test reporting policy", () => {
   expect(validateWorkflowSequence("ci.yml", invalidReporting.commands, invalidReporting.steps)).toContain(
     "reporting commands after npm test",
   );
+});
+
+test("allows only approved reporting actions", () => {
+  const input = sequence([], [{ uses: "actions/upload-artifact@v4" }]);
+  expect(validateWorkflowSequence("ci.yml", input.commands, input.steps)).toBeNull();
+  const unapproved = sequence([], [{ uses: "someone/unreviewed-action@v1" }]);
+  expect(validateWorkflowSequence("ci.yml", unapproved.commands, unapproved.steps)).toContain(
+    "approved reporting actions",
+  );
+});
+
+test("requires an explicit PowerShell shell for PowerShell mailbox setup", () => {
+  const input = sequence([
+    { run: "Set-Content .env 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org'" },
+  ]);
+  expect(validateWorkflowSequence("ci.yml", input.commands, input.steps)).toContain("safe setup");
+  expect(validateWorkflowSequence("ci.yml", input.commands, input.steps, {
+    defaults: { run: { shell: "pwsh" } },
+  })).toBeNull();
 });

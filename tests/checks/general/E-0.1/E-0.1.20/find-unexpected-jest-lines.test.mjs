@@ -5,6 +5,13 @@ test("allows Jest summaries, assertion markers, and harness timing lines", () =>
   expect(findUnexpectedJestLines("\u001b[32mPASS\u001b[39m tests/example.test.mjs\n\u001b[32m  ✓ works (1 ms)\u001b[39m\nTest Suites: 1 passed\nTests: 1 passed\n\u001b[36m[eliware-test-progress] start suite\u001b[39m\n")).toEqual([]);
 });
 
+test("allows timed Jest reporter lines whose assertion marker was redacted", () => {
+  expect(findUnexpectedJestLines("[REDACTED] handles the test (1 ms)\n")).toEqual([]);
+  expect(findUnexpectedJestLines("[REDACTED] application output")).toEqual([
+    "[REDACTED] application output",
+  ]);
+});
+
 test("allows progress lines with framing whitespace", () => {
   expect(findUnexpectedJestLines("  [eliware-test-progress] complete suite 0.100s  \n")).toEqual([]);
 });

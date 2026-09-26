@@ -18,6 +18,9 @@ export async function validateMarkdownLinks(root, files, context) {
         if (externalError) return externalError;
         continue;
       }
+      if (reference.startsWith("//")) {
+        return `Documentation link is invalid: ${reference}.`;
+      }
       const target = resolveMarkdownLinkTarget(root, relativeFile, reference);
       if (!target) {
         return `Documentation link escapes the repository: ${reference} in ${relativeFile}.`;

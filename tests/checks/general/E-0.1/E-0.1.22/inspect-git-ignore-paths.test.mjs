@@ -17,6 +17,16 @@ test("reads partial match output from the real Git command", async () => {
   ).resolves.toEqual(new Set(["node_modules/eliware-test"]));
 });
 
+test("normalizes Windows separators returned by Git before matching", async () => {
+  const ignored = await inspectGitIgnorePaths(
+    "C:/repo",
+    ["node_modules/eliware-test"],
+    async () => ({ stdout: "node_modules\\eliware-test\r\n" }),
+    () => "git.exe",
+  );
+  expect(ignored).toEqual(new Set(["node_modules/eliware-test"]));
+});
+
 test("returns an empty set without starting Git when no paths need inspection", async () => {
   const runGit = jest.fn();
   await expect(inspectGitIgnorePaths("C:/repo", [], runGit)).resolves.toEqual(new Set());

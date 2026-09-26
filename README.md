@@ -64,8 +64,10 @@ node bin/eliware-test.mjs tests/example.test.mjs
 `--format` mutates files; `--format-check` only validates formatting. `--pack`
 validates the package contents without publishing it.
 
-`--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward extra
-arguments to Oxlint, Prettier, npm audit, or npm pack as appropriate.
+`--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward
+additional arguments supported by Oxlint, Prettier, npm audit, or npm pack.
+Arguments that override wrapper-owned settings or weaken required checks are
+rejected.
 Wrapper arguments are emitted before arguments supplied after `--`, preserving
 their relative order within each group. Prettier arguments that override the
 selected mode, canonical formatting configuration, or required file coverage
@@ -89,8 +91,9 @@ focused regression tests for behavior changes.
 ## Testing
 
 Run `npm test` for the aggregate Jest, lint, format-check, audit, and pack
-validation stages. A single focused test path under `tests/` can be supplied
-to `eliware-test`; `.test.*` and `.spec.*` paths are supported.
+validation stages. One focused test path under `tests/` can be supplied to
+`eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,
+`.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 
 ## Troubleshooting
 
@@ -132,10 +135,9 @@ The CLI command entrypoint is `bin/eliware-test.mjs`; the installed executable
 is `eliware-test`. `--help` prints usage; `--version` reports the package version.
 Other public modes are `--debug-timing`,
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. The five tool
-modes forward extra arguments to Oxlint, Prettier, npm audit, or npm pack as
-appropriate. Prettier arguments cannot override the selected mode, canonical
-formatting configuration, or required maintained-file coverage. Wrapper
-arguments precede arguments after `--`.
+modes forward additional arguments supported by Oxlint, Prettier, npm audit,
+or npm pack. Wrapper-owned settings and options that weaken required checks are
+rejected. Wrapper arguments precede arguments after `--`.
 
 Examples and package-level shortcuts are shown under Usage. `--format` mutates
 files; `--format-check` is read-only. `--pack` is read-only package validation

@@ -52,8 +52,13 @@ export async function run({ root, packageJson, repositoryInventory }) {
   ];
   const resolvedRoot = resolve(root);
   const resolvedAssets = resolve(resolvedRoot, assetRoot);
-  if (isAbsolute(assetRoot) || (relative(resolvedRoot, resolvedAssets).startsWith(`..${sep}`) || relative(resolvedRoot, resolvedAssets) === ".."))
-    return fail(ruleId, "eliware.webRoot must resolve inside the repository root.");
+  const relativeAssets = relative(resolvedRoot, resolvedAssets);
+  if (
+    isAbsolute(assetRoot) || !relativeAssets ||
+    relativeAssets.startsWith(`..${sep}`) || relativeAssets === ".."
+  ) {
+    return fail(ruleId, "eliware.webRoot must resolve to a non-root directory inside the repository root.");
+  }
   try {
     const paths = await collectAssetPaths(resolvedAssets, undefined, repositoryInventory, exclusions);
     const excluded = paths.find((path) => exclusions.some((exclusion) => matchesExclusion(path, exclusion)));

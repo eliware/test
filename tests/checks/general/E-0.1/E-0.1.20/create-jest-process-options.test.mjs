@@ -39,3 +39,27 @@ test("passes a defensive copy of the complete subprocess environment", () => {
   if (original === undefined) delete process.env[secretKey];
   else process.env[secretKey] = original;
 });
+
+test("preserves already configured Node runtime options", () => {
+  const previous = process.env.NODE_OPTIONS;
+  process.env.NODE_OPTIONS = "--experimental-vm-modules --no-warnings";
+  try {
+    const options = createJestProcessOptions("C:/fixture");
+    expect(options.env.NODE_OPTIONS).toBe(process.env.NODE_OPTIONS);
+  } finally {
+    if (previous === undefined) delete process.env.NODE_OPTIONS;
+    else process.env.NODE_OPTIONS = previous;
+  }
+});
+
+test("adds required Node runtime options when none are configured", () => {
+  const previous = process.env.NODE_OPTIONS;
+  delete process.env.NODE_OPTIONS;
+  try {
+    const options = createJestProcessOptions("C:/fixture");
+    expect(options.env.NODE_OPTIONS).toBe("--experimental-vm-modules --no-warnings");
+  } finally {
+    if (previous === undefined) delete process.env.NODE_OPTIONS;
+    else process.env.NODE_OPTIONS = previous;
+  }
+});

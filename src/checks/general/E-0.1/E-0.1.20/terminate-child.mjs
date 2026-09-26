@@ -7,9 +7,14 @@ export function resolveTaskkillExecutable(env = process.env) {
 }
 
 function defaultKillTree(pid, env) {
-  execFileSync(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], {
+  killWindowsProcessTree(pid, env);
+}
+
+export function killWindowsProcessTree(pid, env = process.env, execute = execFileSync) {
+  execute(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], {
     windowsHide: true,
     stdio: "ignore",
+    timeout: 1_000,
   });
 }
 

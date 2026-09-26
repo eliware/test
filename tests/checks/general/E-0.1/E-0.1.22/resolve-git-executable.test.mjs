@@ -38,6 +38,8 @@ test.each([
     { "ProgramFiles(x86)": "C:\\Program Files (x86)" },
     "C:\\Program Files (x86)\\Git\\cmd\\git.exe",
   ],
+  [{ ProgramW6432: "C:\\Program Files" }, "C:\\Program Files\\Git\\bin\\git.exe"],
+  [{ ProgramW6432: "C:\\Program Files" }, "C:\\Program Files\\Git\\cmd\\git.exe"],
   [{ LOCALAPPDATA: "C:\\Temp\\Local" }, "C:\\Temp\\Local\\Programs\\Git\\bin\\git.exe"],
   [{ LOCALAPPDATA: "C:\\Temp\\Local" }, "C:\\Temp\\Local\\Programs\\Git\\cmd\\git.exe"],
 ])("searches each Windows Git location independently", (env, expected) => {

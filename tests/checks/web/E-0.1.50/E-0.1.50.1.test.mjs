@@ -61,6 +61,10 @@ test("rejects invalid exclusions and missing asset roots", async () => {
       message: "public/ is required as the web public asset root.",
     }),
   );
+  for (const webRoot of [".", "assets/.."])
+    await expect(run({ root, packageJson: { eliware: { webRoot } } })).resolves.toEqual(
+      expect.objectContaining({ status: "fail", message: expect.stringContaining("non-root directory") }),
+    );
   await expect(run({ root, packageJson: { eliware: { webRoot: "../outside" } } })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("inside the repository root") }),
   );

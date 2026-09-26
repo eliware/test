@@ -18,5 +18,5 @@ export function coverageMetricValues(data, lineEntries) {
     const counterKeys = Object.keys(counters).sort();
     return mapKeys.length === counterKeys.length && mapKeys.every((key, index) => key === counterKeys[index]);
   });
-  return { values, hasCounters, hasMaps };
+  return { values, hasCounters, hasMaps: hasMaps && hasCounters };
 }

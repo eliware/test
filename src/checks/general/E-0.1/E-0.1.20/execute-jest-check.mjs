@@ -8,6 +8,7 @@ export async function executeJestCheck(context) {
     const result = await runJest(context.root, context.jestArgs ?? [], runChild, {
       onStderr: context.writeOutput,
       onTimeout: (message) => { timeoutDiagnostic = message; },
+      retainCoverageDirectory: true,
     });
     return { result: { ...result, startedAt }, timeoutDiagnostic };
   } catch (error) {

@@ -52,3 +52,14 @@ test("rejects malformed 100x4 exemptions", () => {
 test("accepts a package without a 100x4 exemption", () => {
   expect(run({ packageJson: {} })).toEqual({ ruleId, status: "pass", message: "" });
 });
+
+test("returns check failures for malformed exemption collections and entries", () => {
+  expect(run({ packageJson: { eliware: { exempt: {} } } })).toMatchObject({
+    status: "fail",
+    message: "Package exemptions must be an array.",
+  });
+  expect(run({ packageJson: { eliware: { exempt: [null] } } })).toMatchObject({
+    status: "fail",
+    message: "Package exemptions must contain objects.",
+  });
+});

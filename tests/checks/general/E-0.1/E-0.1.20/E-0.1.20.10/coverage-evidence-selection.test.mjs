@@ -47,6 +47,28 @@ test("returns the first valid detailed candidate with its selected path", async 
   }
 });
 
+test("falls back after a detailed report has malformed source-derived line counters", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-malformed-coverage-fallback-"));
+  const coverageDirectory = join(root, "coverage");
+  await mkdir(join(root, "src"));
+  await mkdir(coverageDirectory);
+  await writeFile(join(root, "src", "example.mjs"), "export const value = 1;\n");
+  const malformedReport = structuredClone(detailedReport);
+  malformedReport["src/example.mjs"].l = { 2: 1 };
+  const validReport = structuredClone(detailedReport);
+  Object.assign(validReport["src/example.mjs"], { branchMap: {}, b: {}, fnMap: {}, f: {} });
+  await writeFile(join(coverageDirectory, "coverage-final.json"), JSON.stringify(malformedReport));
+  await writeFile(join(coverageDirectory, "coverage.json"), JSON.stringify(validReport));
+  try {
+    await expect(readCoverageEvidenceFromCandidates(root, "", 0, {
+      coverageDirectory,
+      expectedFiles: ["src/example.mjs"],
+    })).resolves.toMatchObject({ source: "coverage.json", gaps: [] });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("reads the run-local reporter filenames inside isolated coverage output", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-run-local-coverage-"));
   const coverageDirectory = join(root, "isolated-output");

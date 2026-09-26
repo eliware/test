@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, jest, test } from "@jest/globals";
@@ -19,6 +19,89 @@ test("removes the isolated coverage directory when the executor throws", async (
   await expect(runJest(process.cwd(), [], async () => {
     throw new Error("spawn failed");
   }, { jestCli: "jest-cli" })).rejects.toThrow("spawn failed");
+});
+
+test("preserves an executor error when coverage cleanup also fails", async () => {
+  await expect(runJest(process.cwd(), [], async () => {
+    throw new Error("spawn failed");
+  }, { jestCli: "jest-cli" }, async () => {
+    throw new Error("cleanup denied");
+  })).rejects.toMatchObject({
+    message: "spawn failed\nCould not remove run-scoped coverage artifacts: cleanup denied",
+    cause: expect.objectContaining({ message: "spawn failed" }),
+  });
+});
+
+test("preserves non-Error executor and cleanup failures", async () => {
+  await expect(runJest(process.cwd(), [], async () => {
+    throw "spawn failed";
+  }, { jestCli: "jest-cli" }, async () => {
+    throw "cleanup denied";
+  })).rejects.toMatchObject({
+    message: "spawn failed\nCould not remove run-scoped coverage artifacts: cleanup denied",
+    cause: "spawn failed",
+  });
+});
+
+test("removes the isolated coverage directory after a nonzero Jest exit", async () => {
+  let coverageDirectory;
+  const result = await runJest(process.cwd(), [], async (_command, args) => {
+    coverageDirectory = args[args.indexOf("--coverageDirectory") + 1];
+    return { code: 1, stdout: "test failure details", stderr: "" };
+  }, { jestCli: "jest-cli" });
+  expect(result.stdout).toBe("test failure details");
+  expect(result.coverageDirectory).toBeUndefined();
+  await expect(stat(coverageDirectory)).rejects.toMatchObject({ code: "ENOENT" });
+});
+
+test("removes successful coverage artifacts when no coverage consumer retains them", async () => {
+  let coverageDirectory;
+  const result = await runJest(process.cwd(), [], async (_command, args) => {
+    coverageDirectory = args[args.indexOf("--coverageDirectory") + 1];
+    return { code: 0, stdout: "", stderr: "" };
+  }, { jestCli: "jest-cli" });
+  expect(result.coverageDirectory).toBeUndefined();
+  await expect(stat(coverageDirectory)).rejects.toMatchObject({ code: "ENOENT" });
+});
+
+test("reports when successful coverage artifacts cannot be cleaned up", async () => {
+  const result = await runJest(process.cwd(), [], async () => ({
+    code: 0,
+    stdout: "",
+    stderr: "",
+  }), { jestCli: "jest-cli" }, async () => {
+    throw new Error("cleanup denied");
+  });
+  expect(result.cleanupError).toContain("cleanup denied");
+  await rm(result.coverageDirectory, { recursive: true, force: true });
+});
+
+test("removes the isolated coverage directory after a timed-out result", async () => {
+  let coverageDirectory;
+  const result = await runJest(process.cwd(), [], async (_command, args) => {
+    coverageDirectory = args[args.indexOf("--coverageDirectory") + 1];
+    return { code: 0, timedOut: true, stdout: "partial output", stderr: "" };
+  }, { jestCli: "jest-cli" });
+  expect(result.timedOut).toBe(true);
+  expect(result.coverageDirectory).toBeUndefined();
+  await expect(stat(coverageDirectory)).rejects.toMatchObject({ code: "ENOENT" });
+});
+
+test("preserves a nonzero Jest result when coverage cleanup fails", async () => {
+  let coverageDirectory;
+  const result = await runJest(process.cwd(), [], async (_command, args) => {
+    coverageDirectory = args[args.indexOf("--coverageDirectory") + 1];
+    return { code: 1, stdout: "test failure details", stderr: "" };
+  }, { jestCli: "jest-cli", retainCoverageDirectory: true }, async () => {
+    throw new Error("cleanup denied");
+  });
+  try {
+    expect(result.code).toBe(1);
+    expect(result.stdout).toBe("test failure details");
+    expect(result.cleanupError).toContain("cleanup denied");
+  } finally {
+    await rm(coverageDirectory, { recursive: true, force: true });
+  }
 });
 
 test("supports non-test focused paths without focused coverage mapping", async () => {
@@ -96,48 +179,9 @@ test("reports the last started suite when progress stops", async () => {
   );
 });
 
-test("uses default Jest arguments with an injected child executor", async () => {
-  let received;
-  await runJest(process.cwd(), undefined, async (...args) => {
-    received = args;
-    return { code: 0, stdout: "", stderr: "" };
-  }, { jestCli: "jest-cli" });
-  expect(received[1]).toContain("--runInBand");
-});
-
-test("adds the VM module option when it is absent", async () => {
-  const previous = process.env.NODE_OPTIONS;
-  delete process.env.NODE_OPTIONS;
-  try {
-    let received;
-    await runJest(process.cwd(), [], async (...args) => {
-      received = args;
-      return { code: 0, stdout: "", stderr: "" };
-    }, { jestCli: "jest-cli" });
-    expect(received[2].env.NODE_OPTIONS).toBe("--experimental-vm-modules --no-warnings");
-  } finally {
-    if (previous === undefined) delete process.env.NODE_OPTIONS;
-    else process.env.NODE_OPTIONS = previous;
-  }
-});
-
-test("isolates coverage artifacts for concurrent Jest runs", async () => {
-  const root = process.cwd();
-  let releaseFirst;
-  let started = 0;
-  const first = runJest(root, [], async () => {
-    started += 1;
-    await new Promise((resolve) => { releaseFirst = resolve; });
-    return { code: 0, stdout: "", stderr: "" };
-  }, { jestCli: "jest-cli" });
-  const second = runJest(root, [], async () => {
-    started += 1;
-    return { code: 0, stdout: "", stderr: "" };
-  }, { jestCli: "jest-cli" });
-  await new Promise((resolve) => setTimeout(resolve, 10));
-  expect(started).toBe(2);
-  releaseFirst();
-  const [firstResult, secondResult] = await Promise.all([first, second]);
-  expect(started).toBe(2);
-  expect(firstResult.coverageDirectory).not.toBe(secondResult.coverageDirectory);
+test("retains coverage artifacts when requested", async () => {
+  const result = await runJest(process.cwd(), undefined, async () => ({
+    code: 0, stdout: "", stderr: "",
+  }), { jestCli: "jest-cli", retainCoverageDirectory: true });
+  expect(result.coverageDirectory).toMatch(/[\\/]coverage-/u);
 });

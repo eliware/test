@@ -13,6 +13,11 @@ afterEach(async () => {
 
 test.each([
   ["module.mjs", "export const value = 1;"],
+  ["module.js", "export const value = 1;"],
+  ["module.cjs", "const value = 1;"],
+  ["module.jsx", "export const view = <div />;"],
+  ["module.ts", "export const value: number = 1;"],
+  ["module.tsx", "export const view = <div />;"],
   ["package.json", '{"name":"valid"}'],
   ["workflow.yml", "name: ci\n"],
   ["workflow.yaml", "name: ci\n"],
@@ -25,6 +30,8 @@ test.each([
 
 test.each([
   ["module.mjs", "export const = ;"],
+  ["module.js", "export const = ;"],
+  ["module.ts", "export const value: = 1;"],
   ["package.json", '{"name":}'],
   ["workflow.yml", "name: [unterminated"],
   ["workflow.yaml", "name: [unterminated"],
@@ -52,6 +59,14 @@ test("reports a Markdown parser failure", async () => {
 
 test("ignores extensions outside the maintained syntax policy", async () => {
   await expect(validateMaintainedFileSyntax("/repo", ["image.svg"])).resolves.toEqual([]);
+});
+
+test("fails closed when a required maintained extension has no parser", async () => {
+  await expect(validateMaintainedFileSyntax("/repo", ["README.md"], {
+    syntaxParsers: new Map(),
+  })).resolves.toEqual([
+    "README.md: no syntax parser is configured for maintained .md files.",
+  ]);
 });
 
 test("reports read failures as file syntax diagnostics", async () => {

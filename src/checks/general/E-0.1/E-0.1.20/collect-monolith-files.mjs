@@ -13,10 +13,15 @@ export function excludedFile(file) {
 export async function collectMonolithFiles(directory, inventory = null) {
   if (inventory) {
     const repositoryRoot = inventory.root;
-    const directoryPath = directory.slice(repositoryRoot.length + 1).replaceAll("\\", "/");
-    return (await inventory.files("monolithSource"))
-      .filter((file) => file.startsWith(`${directoryPath}/`))
-      .map((file) => join(repositoryRoot, file));
+    const entries = await inventory.entriesUnder(directory);
+    return entries
+      .filter(({ path, type }) => {
+        const segments = path.split("/");
+        return type === "file" && path.endsWith(".mjs") &&
+          !segments.some((segment) => excludedDirectories.has(segment)) &&
+          !excludedFile(path);
+      })
+      .map(({ path }) => join(repositoryRoot, path));
   }
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {

@@ -3,6 +3,7 @@ const JEST_LINES = [
   /^Coverage summary/, /^File\s+\|/, /^[\s|%_.-]+$/, /^\s*(?:All files|[^\s|]+)\s+\|/,
   /^\s*(?:Expected|Received|Difference):/, /^\s*at\s/, /^\s*[✓√✕×○]\s/, /^\s*●\s/, /^\s*>\s/,
   /^\s*Node\.js\s+v/, /^\s*Test Suites:/, /^\s*Tests:/, /^\s*Snapshots:/,
+  /^\[REDACTED\].+\(\d+(?:\.\d+)?\s(?:ms|s)\)$/u,
 ];
 const ANSI_ESCAPE = new RegExp(`${String.fromCodePoint(0x1b)}\\[[0-?]*[ -/]*[@-~]`, "gu");
 

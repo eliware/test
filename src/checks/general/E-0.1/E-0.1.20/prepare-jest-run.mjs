@@ -1,8 +1,7 @@
 import { fileURLToPath } from "node:url";
-import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createJestCoverageDirectory } from "./create-jest-coverage-directory.mjs";
 import { createJestProcessOptions } from "./create-jest-process-options.mjs";
 import { buildJestArguments } from "./build-jest-arguments.mjs";
 import { resolveFocusedCoverage } from "./resolve-focused-coverage.mjs";
@@ -23,7 +22,7 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   }
   const reporters = [...new Set([...configuredReporters, "default", PROGRESS_REPORTER])];
   if (args.includes("--debug-timing")) reporters.push(TIMING_REPORTER);
-  const coverageDirectory = join(tmpdir(), "eliware-test", `coverage-${randomUUID()}`);
+  const coverageDirectory = createJestCoverageDirectory();
   return {
     coverageDirectory,
     command: process.execPath,

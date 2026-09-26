@@ -8,8 +8,11 @@ import { rm } from "node:fs/promises";
 
 export async function runCoverageCheck(context, ruleId, readEvidence = readCoverageEvidenceFromCandidates, remove = rm) {
   if (!context.executeJest) return pass(ruleId);
-  if (!context.jestResult || context.jestResult.code !== 0) {
-    const result = fail(ruleId, "Jest results are unavailable or indicate a failed test run.");
+  if (!context.jestResult || context.jestResult.code !== 0 || context.jestResult.timedOut) {
+    const diagnostic = context.jestResult?.cleanupError
+      ? `Jest results are unavailable or indicate a failed test run.\n${context.jestResult.cleanupError}`
+      : "Jest results are unavailable or indicate a failed test run.";
+    const result = fail(ruleId, diagnostic);
     const cleanupError = await removeRunCoverage(context, remove);
     return cleanupError ? fail(ruleId, `${result.message}\n${cleanupError}`) : result;
   }

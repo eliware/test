@@ -113,3 +113,32 @@ test("allows a profile without tests to enforce source limits only", async () =>
   });
   await rm(root, { recursive: true, force: true });
 });
+
+test("preserves inventory permission errors instead of reporting a missing directory", async () => {
+  const inventoryError = Object.assign(new Error("permission denied"), { code: "EACCES" });
+  await expect(run({
+    root: "/repo",
+    repositoryInventory: { entriesUnder: async () => { throw inventoryError; } },
+  })).resolves.toEqual({
+    ruleId: "E-0.1.130.10",
+    status: "fail",
+    message: "Could not validate src/ monolith limits: permission denied",
+  });
+});
+
+test("preserves inventory errors while checking required test files", async () => {
+  const inventoryError = Object.assign(new Error("tests access denied"), { code: "EACCES" });
+  await expect(run({
+    root: "/repo",
+    repositoryInventory: {
+      entriesUnder: async (directory) => {
+        if (directory.endsWith("tests")) throw inventoryError;
+        return [];
+      },
+    },
+  })).resolves.toEqual({
+    ruleId: "E-0.1.130.10",
+    status: "fail",
+    message: "Could not validate tests/ monolith limits: tests access denied",
+  });
+});

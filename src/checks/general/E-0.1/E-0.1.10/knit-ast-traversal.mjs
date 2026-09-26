@@ -48,7 +48,6 @@ export function collectCalls(node, bindings, imports, calls, unsupported) {
       }
     } else {
       unsupported.push(node.start);
-      collectCalls(node.body, bindings, imports, calls, unsupported);
     }
     return;
   }

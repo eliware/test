@@ -24,7 +24,7 @@ export function selectWorkflowValidationJobs(name, document) {
   const validationJobIds = new Set(validationJobs.map(({ id }) => id));
   const siblingError = validateWorkflowSiblingJobs(
     name,
-    jobs.map(({ id, job }) => ({ id, commands: workflowRunSteps(job) })),
+    jobs.map(({ id, job }) => ({ id, job, commands: workflowRunSteps(job) })),
     validationJobIds,
     publicationWorkflow,
   );

@@ -59,7 +59,8 @@ export function validateReadmeStructure(readme, packageJson = {}) {
     return "README.md top-level headings must exactly match the general and applied-profile order; do not add unapproved headings.";
   }
 
-  const tocContent = lines.slice(tocIndex, indices[0]).join("\n");
+  const tocEndIndex = headings.find(({ index }) => index > tocIndex).index;
+  const tocContent = lines.slice(tocIndex, tocEndIndex).join("\n");
   const actualLinks = [...tocContent.matchAll(/\[[^\]]*\]\(#([^)]+)\)/gu)].map((match) => match[1]);
   const expectedLinks = required.map((heading) => heading.toLowerCase().replaceAll(" ", "-"));
   if (JSON.stringify(actualLinks) !== JSON.stringify(expectedLinks)) {

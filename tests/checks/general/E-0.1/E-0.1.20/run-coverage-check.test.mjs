@@ -19,6 +19,17 @@ test("skips coverage when Jest is disabled and rejects unavailable or failed res
     status: "fail",
     message: "Jest results are unavailable or indicate a failed test run.",
   });
+  await expect(run({
+    executeJest: true,
+    jestResult: {
+      code: 1,
+      cleanupError: "Could not remove run-scoped coverage artifacts: cleanup denied",
+    },
+  })).resolves.toEqual({
+    ruleId,
+    status: "fail",
+    message: "Jest results are unavailable or indicate a failed test run.\nCould not remove run-scoped coverage artifacts: cleanup denied",
+  });
 });
 
 test("accepts complete evidence from the coverage reader", async () => {
@@ -27,6 +38,23 @@ test("accepts complete evidence from the coverage reader", async () => {
     executeJest: true,
     jestResult: { code: 0, startedAt: 1 },
   }, async () => completeEvidence)).resolves.toEqual({ ruleId, status: "pass", message: "" });
+});
+
+test("rejects timed-out Jest results even when the child exits with code zero", async () => {
+  const readEvidence = jest.fn(async () => completeEvidence);
+  const remove = jest.fn(async () => {});
+  const context = {
+    executeJest: true,
+    jestResult: { code: 0, timedOut: true },
+    jestCoverageDirectory: "/tmp/run-coverage",
+  };
+  await expect(run(context, readEvidence, remove)).resolves.toMatchObject({
+    status: "fail",
+    message: "Jest results are unavailable or indicate a failed test run.",
+  });
+  expect(readEvidence).not.toHaveBeenCalled();
+  expect(remove).toHaveBeenCalledWith("/tmp/run-coverage", { recursive: true, force: true });
+  expect(context.jestCoverageDirectory).toBeUndefined();
 });
 
 test("reads and removes coverage evidence from the run-specific directory", async () => {

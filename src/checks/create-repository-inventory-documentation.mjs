@@ -15,10 +15,14 @@ export function createDocumentationFileView(root, entriesUnder) {
     const prefix = base ? `${base}/` : "";
     const records = await entriesUnder(directory);
     const directories = records.filter(({ path, type }) => type === "directory" && (includeGenerated || !generatedPath.test(path)));
-    const baseDepth = base ? base.split("/").length : 0;
     if (base && !directories.some(({ path }) => path === base))
       throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), { code: "ENOENT" });
-    if (directories.some(({ path, depth }) => path.startsWith(prefix) && depth - baseDepth > maxDepth))
+    const exceedsDepth = directories.some(({ path }) => {
+      if (base && path === base) return false;
+      const relativePath = base ? path.slice(prefix.length) : path;
+      return relativePath.split("/").length > maxDepth;
+    });
+    if (exceedsDepth)
       throw new Error(`Documentation traversal exceeded the ${maxDepth}-level depth limit.`);
     const result = [];
     for (const record of records) {

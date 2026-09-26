@@ -5,6 +5,9 @@ const protectedOptions = new Set([
 ]);
 
 export function validateAuditArguments(args = []) {
+  if (!Array.isArray(args) || args.some((argument) => typeof argument !== "string")) {
+    return "Audit arguments must be an array of strings.";
+  }
   for (const argument of args) {
     const option = argument.split("=", 1)[0];
     if (argument === "--" || protectedOptions.has(option)) {

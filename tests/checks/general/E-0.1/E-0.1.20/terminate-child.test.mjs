@@ -1,6 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
 import {
   resolveTaskkillExecutable,
+  killWindowsProcessTree,
   terminateChild,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.20/terminate-child.mjs";
 
@@ -8,6 +9,40 @@ test("uses Node's supported child termination on Windows", () => {
   const kill = jest.fn();
   expect(terminateChild({ kill }, "win32")).toBe(true);
   expect(kill).toHaveBeenCalledWith("SIGTERM");
+});
+
+test("bounds the taskkill wait time", () => {
+  const execute = jest.fn();
+  killWindowsProcessTree(42, { SystemRoot: "C:/Windows" }, execute);
+  expect(execute).toHaveBeenCalledWith(
+    expect.stringMatching(/System32[\\/]taskkill\.exe$/iu),
+    ["/pid", "42", "/t", "/f"],
+    expect.objectContaining({ timeout: 1_000, windowsHide: true, stdio: "ignore" }),
+  );
+});
+
+test("uses the process environment when resolving taskkill by default", () => {
+  const previous = process.env.SystemRoot;
+  process.env.SystemRoot = "C:/Windows";
+  const execute = jest.fn();
+  try {
+    killWindowsProcessTree(42, undefined, execute);
+    expect(execute).toHaveBeenCalledWith(
+      expect.stringMatching(/System32[\\/]taskkill\.exe$/iu),
+      ["/pid", "42", "/t", "/f"],
+      expect.objectContaining({ timeout: 1_000 }),
+    );
+  } finally {
+    if (previous === undefined) delete process.env.SystemRoot;
+    else process.env.SystemRoot = previous;
+  }
+});
+
+test("falls back to child termination when bounded taskkill expires", () => {
+  const child = { pid: 42, kill: jest.fn() };
+  const killTree = jest.fn(() => { throw new Error("taskkill timed out"); });
+  expect(terminateChild(child, "win32", process.kill, killTree)).toBe(true);
+  expect(child.kill).toHaveBeenCalledWith("SIGTERM");
 });
 
 test("falls back when the default Windows tree terminator cannot kill the child", () => {

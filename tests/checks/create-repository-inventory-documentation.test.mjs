@@ -3,6 +3,7 @@ import { createRepositoryInventory } from "../../src/checks/create-repository-in
 
 const records = [
   { path: "README.md", type: "file", depth: 0 },
+  { path: "examples", type: "directory", depth: 1 },
   { path: "docs", type: "directory", depth: 1 },
   { path: "docs/index.md", type: "file", depth: 1 },
   { path: "docs/record.json", type: "file", depth: 1 },
@@ -43,4 +44,25 @@ test("allows generated documentation only when requested", async () => {
     directory: "/repo/docs",
     includeGenerated: true,
   })).resolves.toContain("build/index.md");
+});
+
+test("measures documentation depth relative to a deeply nested requested scope", async () => {
+  const nested = [
+    { path: "docs", type: "directory", depth: 1 },
+    { path: "docs/one", type: "directory", depth: 2 },
+    { path: "docs/one/two", type: "directory", depth: 3 },
+    { path: "docs/one/two/three", type: "directory", depth: 4 },
+    { path: "docs/one/two/three/file.md", type: "file", depth: 4 },
+  ];
+  const inventory = createRepositoryInventory("/repo", {
+    findEntries: jest.fn(async () => nested),
+  });
+  await expect(inventory.documentationFiles({
+    directory: "/repo/docs/one/two",
+    maxDepth: 0,
+  })).rejects.toThrow("depth limit");
+  await expect(inventory.documentationFiles({
+    directory: "/repo/docs/one/two",
+    maxDepth: 1,
+  })).resolves.toEqual(["three/file.md"]);
 });

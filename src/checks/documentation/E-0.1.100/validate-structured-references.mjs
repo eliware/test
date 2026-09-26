@@ -21,12 +21,14 @@ export async function validateStructuredReferences(root, files, inventory) {
           registeredRepositoryRoots = await readRegisteredRepositoryRoots(root, inventory);
           registryLoaded = true;
         }
-        if (
-          registeredRepositoryRoots &&
-          !registeredRepositoryRoots.some((repositoryRoot) =>
+        if (registeredRepositoryRoots === null) {
+          throw new Error(
+            `${reference.path} cannot be verified without the registered repository map`,
+          );
+        }
+        if (!registeredRepositoryRoots.some((repositoryRoot) =>
             isWithinRegisteredRepository(resolved.target, repositoryRoot),
-          )
-        ) {
+          )) {
           throw new Error(`${reference.path} is outside every registered repository path`);
         }
       }
@@ -35,11 +37,6 @@ export async function validateStructuredReferences(root, files, inventory) {
       } catch (error) {
         if (resolved.external && error.code === "ENOENT") continue;
         throw error;
-      }
-      if (resolved.external && registeredRepositoryRoots === null) {
-        throw new Error(
-          `${reference.path} cannot be verified without the registered repository map`,
-        );
       }
     }
   }

@@ -13,3 +13,18 @@ test("builds focused and default Jest argument lists", () => {
     "--coverage", "--json", "--runTestsByPath", "tests/sample.test.mjs", "--runInBand", "--watch",
   ]);
 });
+
+test.each([
+  ["--coverage=false"],
+  ["--no-coverage"],
+  ["--coverageDirectory", "other"],
+  ["--coverageReporters=json-summary"],
+  ["--collectCoverageFrom", "src/other.mjs"],
+  ["--reporters", "default"],
+  ["--outputFile=result.json"],
+  ["--json"],
+  ["--runTestsByPath", "tests/other.test.mjs"],
+  ["--testPathPattern=tests/other"],
+])("rejects forwarded wrapper-owned Jest options: %s", (...args) => {
+  expect(() => buildJestArguments(args)).toThrow("controlled by eliware-test");
+});

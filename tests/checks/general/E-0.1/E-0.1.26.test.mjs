@@ -1,29 +1,10 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../../src/checks/general/E-0.1/E-0.1.26.mjs";
+import { applicability, parentRuleId, ruleId } from "../../../../src/checks/general/E-0.1/E-0.1.26.mjs";
 
-test("passes with the approved license record", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-license-"));
-  await writeFile(join(root, "LICENSE"), `MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE`);
-  await expect(run({ root })).resolves.toEqual({ ruleId, status: "pass", message: "" });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reports missing approved license markers", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-license-missing-"));
-  await writeFile(join(root, "LICENSE"), "MIT License\n");
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({
-    ruleId,
-    status: "fail",
-    message: expect.stringContaining("Copyright"),
-  }));
-  await rm(root, { recursive: true, force: true });
-});
-
-test("fails when the license file is unavailable", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-license-absent-"));
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ ruleId, status: "fail" }));
-  await rm(root, { recursive: true, force: true });
+test("declares the parent convention without duplicating its child implementation", () => {
+  expect({ applicability, parentRuleId, ruleId }).toEqual({
+    applicability: "advisory-only",
+    parentRuleId: "E-0.1",
+    ruleId: "E-0.1.26",
+  });
 });

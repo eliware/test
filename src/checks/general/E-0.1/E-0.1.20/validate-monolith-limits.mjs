@@ -5,15 +5,17 @@ export async function runMonolithLimits({ root, ruleId, repositoryInventory, req
   let sourceViolations;
   try {
     sourceViolations = await findMonolithViolations(root, "src", 100, repositoryInventory);
-  } catch {
-    return fail(ruleId, "src/ is required for monolith-limit validation.");
+  } catch (error) {
+    if (error.code === "ENOENT") return fail(ruleId, "src/ is required for monolith-limit validation.");
+    return fail(ruleId, `Could not validate src/ monolith limits: ${error.message}`);
   }
   let testViolations = [];
   if (requireTests) {
     try {
       testViolations = await findMonolithViolations(root, "tests", 200, repositoryInventory);
-    } catch {
-      return fail(ruleId, "tests/ is required for monolith-limit validation.");
+    } catch (error) {
+      if (error.code === "ENOENT") return fail(ruleId, "tests/ is required for monolith-limit validation.");
+      return fail(ruleId, `Could not validate tests/ monolith limits: ${error.message}`);
     }
   }
   const violations = [...sourceViolations, ...testViolations];
