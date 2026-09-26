@@ -21,6 +21,8 @@ test("rejects malformed records and invalid expiry dates", () => {
   expect(() => validateExemptionRecords([record({ expiry: "not-a-date" })])).toThrow();
   expect(() => validateExemptionRecords([record({ approvalTimestamp: "" })])).toThrow();
   expect(() => validateExemptionRecords([record({ approvalTimestamp: "not-a-timestamp" })])).toThrow();
+  expect(() => validateExemptionRecords([record({ approvalTimestamp: "January 1, 2026" })])).toThrow();
+  expect(() => validateExemptionRecords([record({ approvalTimestamp: "2026-02-30T00:00:00Z" })])).toThrow();
   expect(() => validateExemptionRecords([record({ expiry: "2020-01-01" })])).toThrow();
 });
 

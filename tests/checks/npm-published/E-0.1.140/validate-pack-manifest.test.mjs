@@ -41,6 +41,26 @@ test("accepts npm 12 scoped object-shaped manifests", () => {
   ).toBeNull();
 });
 
+test("selects the manifest for the package being packed and rejects ambiguity", () => {
+  const files = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"].map((path) => ({ path }));
+  const output = JSON.stringify([
+    { name: "@eliware/unrelated", files: [{ path: "package.json" }] },
+    { name: "@eliware/target", files },
+  ]);
+  expect(validatePackManifest(output, [], "@eliware/target")).toBeNull();
+  expect(validatePackManifest(output, [], "@eliware/missing")).toContain("requested package");
+  expect(validatePackManifest(JSON.stringify({ name: "@eliware/target", files }), [], "@eliware/target")).toBeNull();
+  expect(validatePackManifest(JSON.stringify({ name: "@eliware/other", files }), [], "@eliware/target")).toContain("requested package");
+  expect(validatePackManifest(JSON.stringify({
+    "@eliware/target": { files },
+    "@eliware/other": { files: [{ path: "wrong.txt" }] },
+  }), [], "@eliware/target")).toBeNull();
+  expect(validatePackManifest(JSON.stringify({ "@eliware/target": { files } }), [])).toBeNull();
+  expect(validatePackManifest(JSON.stringify({ "@eliware/target": { files }, "@eliware/other": { files } }), [])).toContain("requested package");
+  expect(validatePackManifest(JSON.stringify({ "@eliware/other": { files } }), [], "@eliware/target")).toContain("requested package");
+  expect(validatePackManifest("{}", [])).toContain("requested package");
+});
+
 test("rejects invalid, incomplete, and over-broad pack manifests", () => {
   expect(validatePackManifest("not json", ["src/"])).toContain("invalid JSON");
   expect(validatePackManifest(manifest(["package.json"]), ["src/"])).toContain("omitted");

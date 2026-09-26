@@ -52,3 +52,17 @@ test("cancels pending escalation or confirmation timers after child close", () =
     jest.useRealTimers();
   }
 });
+
+test("contains termination adapter exceptions and still confirms its timeout", () => {
+  jest.useFakeTimers();
+  try {
+    const terminateChild = jest.fn(() => { throw new Error("termination failed"); });
+    const onUnconfirmed = jest.fn();
+    scheduleChildTermination({}, { ...options([]), terminateChild }, onUnconfirmed);
+    jest.advanceTimersByTime(125);
+    expect(terminateChild).toHaveBeenCalledTimes(2);
+    expect(onUnconfirmed).toHaveBeenCalledTimes(1);
+  } finally {
+    jest.useRealTimers();
+  }
+});

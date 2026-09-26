@@ -1,7 +1,9 @@
 # Usage
 
-Install dependencies with `npm ci`, then run `npm test` or
-`npm run format:check`. Use `eliware-test --help` for the supported CLI modes,
+Install `@eliware/test` in the consumer repository and use its `eliware-test`
+command for validation. Package scripts such as `npm test` and
+`npm run format:check` are available only when working inside this package's
+own repository. Use `eliware-test --help` for the supported CLI modes,
 including linting, formatting, timing diagnostics, and focused Jest execution.
 
 ## Configuration
@@ -17,15 +19,18 @@ applicability from its files, dependencies, or project shape.
 ## Common commands
 
 ```text
-npm test
-npm run lint
-npm run format
-npm run format:check
-npm run audit
-npm run pack
 eliware-test --help
 eliware-test --version
+eliware-test
+eliware-test --lint
+eliware-test --format-check
+eliware-test --audit
 ```
+
+The following npm scripts are available only in this package's own repository:
+`npm test`, `npm run lint`, `npm run format`, `npm run format:check`,
+`npm run audit`, and `npm run pack`. Package validation with `--pack` applies
+only when the `npm-published` profile is selected.
 
 The normal test command runs the configured validation stages. The five public
 tool modes forward additional arguments to their underlying tools:
@@ -35,7 +40,7 @@ eliware-test --lint --fix
 eliware-test --format --log-level=warn
 eliware-test --format-check --log-level=debug
 eliware-test --audit --omit=dev
-eliware-test --pack --pack-destination artifacts
+eliware-test --pack --ignore-scripts
 ```
 
 Tool modes may not be combined with a focused Jest test path. Paths supplied
@@ -68,8 +73,9 @@ running. The timing stream is written to the CLI writer supplied by the
 invocation; programmatic callers that omit a writer receive diagnostics through
 the normal result instead of an implicit process-global sink. Jest runs in-band
 by default. Jest option/value pairs are forwarded unchanged, and a value is not
-interpreted as a focused path. Tests that stop making progress for 15 seconds are
-terminated with a diagnostic, and individual tests taking more than five
+interpreted as a focused path. If Jest produces no observable progress for 15
+seconds, the watchdog terminates the run; this is a no-progress limit rather
+than a per-test or total-duration limit. Individual tests taking more than five
 seconds are reported as slow. These safeguards apply without
 `--debug-timing`. On timeout, the harness requests graceful child termination,
 escalates to forced termination after a one-second grace period, and reports

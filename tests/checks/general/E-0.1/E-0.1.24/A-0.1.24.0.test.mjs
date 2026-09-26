@@ -35,6 +35,17 @@ test("maps a workflow without a compliant validation job to the rule result", as
   }
 });
 
+test("leaves publication jobs to their publication profile validators", async () => {
+  const root = await workflowRoot("jobs:\n  publish:\n    steps:\n      - run: npm publish --provenance\n");
+  try {
+    await expect(run({ root })).resolves.toEqual({
+      ruleId: "A-0.1.24.0", status: "pass", message: "",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("normalizes invalid workflow YAML", async () => {
   const root = await workflowRoot("jobs: [\n");
   try {

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { runMonolithLimits } from "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-monolith-limits.mjs";
-const run = (options) => runMonolithLimits({ ruleId: "E-0.1.130.10", ...options });
+const run = (options) => runMonolithLimits({ ruleId: "E-0.1.130.10", requireTests: true, ...options });
 
 async function fixture(lines) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-monolith-"));
@@ -87,7 +87,29 @@ test("fails when the required source or test directory is missing", async () => 
   await expect(run({ root })).resolves.toEqual({
     ruleId: "E-0.1.130.10",
     status: "fail",
-    message: "src/ and tests/ are required for monolith-limit validation.",
+    message: "src/ is required for monolith-limit validation.",
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("reports a missing required tests directory after scanning source", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-missing-tests-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "module.mjs"), "export {};\n");
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "E-0.1.130.10",
+    status: "fail",
+    message: "tests/ is required for monolith-limit validation.",
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("allows a profile without tests to enforce source limits only", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-source-only-monolith-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "module.mjs"), "export {};\n");
+  await expect(runMonolithLimits({ root, ruleId: "E-0.1.130.10" })).resolves.toMatchObject({
+    status: "pass",
   });
   await rm(root, { recursive: true, force: true });
 });

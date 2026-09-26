@@ -4,6 +4,7 @@ import { hasExactTagTrigger } from "../../ghcr-published/has-exact-tag-trigger.m
 import { hasUbuntuRunner } from "../../ghcr-published/has-ubuntu-runner.mjs";
 import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
 import { steps } from "../../ghcr-published/workflow-structure.mjs";
+import { hasReleaseTagGuard, isTagRelease, tagMatchesPackageVersion } from "../../ghcr-published/release-version-tag.mjs";
 
 export const ruleId = "A-0.1.140.2";
 export const parentRuleId = "E-0.1.140";
@@ -11,6 +12,7 @@ export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run(context) {
   const { root, packageJson } = context;
+  const env = context.env ?? process.env;
   let workflows;
   try {
     workflows = await readWorkflows(root, context);
@@ -27,10 +29,11 @@ export async function run(context) {
       continue;
     }
     const version = packageJson?.version;
-    const verifiedVersion = typeof version === "string" && publication.every(({ job }) => {
+    const verifiedVersion = typeof version === "string" &&
+      (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, version)) &&
+      publication.every(({ job }) => {
       const jobSteps = steps(job);
-      const verifyIndex = jobSteps.findIndex(({ run }) => typeof run === "string" &&
-        /^test\s+["']?\$\(npm\s+pkg\s+get\s+version\s+--raw\)["']?\s*=\s*["']?\$\{GITHUB_REF_NAME#v\}["']?$/iu.test(run.trim()));
+      const verifyIndex = jobSteps.findIndex(({ run }) => hasReleaseTagGuard(run));
       const publishIndex = jobSteps.findIndex(({ run }) => /^npm\s+publish\b/iu.test(String(run).trim()));
       return verifyIndex >= 0 && publishIndex > verifyIndex && hasUbuntuRunner(workflow, job);
     });

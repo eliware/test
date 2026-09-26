@@ -8,13 +8,15 @@ function parseRow(line) {
   return { file: columns[0], values };
 }
 
-export function parseText(text) {
+export function parseText(text, expectedFiles = []) {
   const rows = text.split(/\r?\n/).map(parseRow).filter(Boolean);
   const aggregate = rows.find(({ file }) => /^All files$/iu.test(file));
   const fileRows = rows.filter(({ file }) => !/^All files$/iu.test(file));
   if (!aggregate || fileRows.length === 0) return null;
   const invalidRows = fileRows.filter(({ file }) => !isSourcePath(file));
   if (invalidRows.length > 0) throw new Error(`Text coverage contains non-source file row(s): ${invalidRows.map(({ file }) => file).join(", ")}.`);
+  if (expectedFiles.length === 0) return null;
+  assertCompleteRows(fileRows, expectedFiles);
 
   return {
     gaps: fileRows
@@ -29,6 +31,25 @@ export function parseText(text) {
       })),
     totals: Object.fromEntries(metrics.map((metric, index) => [metric, aggregate.values[index]])),
   };
+}
+
+function assertCompleteRows(fileRows, expectedFiles) {
+  const actual = fileRows.map(({ file }) => normalizeSource(file));
+  const expected = expectedFiles.map(normalizeSource);
+  const missing = expected.filter((file) => !actual.includes(file));
+  const unexpected = actual.filter((file) => !expected.includes(file));
+  const duplicates = actual.filter((file, index) => actual.indexOf(file) !== index);
+  if (missing.length || unexpected.length || duplicates.length) {
+    throw new Error(
+      `Text coverage source rows do not match discovered source files (missing: ${missing.join(", ") || "none"}; unexpected: ${unexpected.join(", ") || "none"}; duplicate: ${duplicates.join(", ") || "none"}).`,
+    );
+  }
+}
+
+function normalizeSource(file) {
+  const normalized = file.replaceAll("\\", "/").replace(/^\.\//u, "");
+  const sourceIndex = normalized.lastIndexOf("/src/");
+  return sourceIndex < 0 ? normalized : normalized.slice(sourceIndex + 1);
 }
 
 function isSourcePath(file) {

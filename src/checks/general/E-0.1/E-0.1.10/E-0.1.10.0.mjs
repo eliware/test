@@ -11,6 +11,12 @@ export async function run(context) {
     const { source, parsed, error } = await readKnitScript(context);
     if (error) return fail(ruleId, error);
     if (parsed.error) return fail(ruleId, parsed.error);
+    if (parsed.leadingExecutable) {
+      return fail(
+        ruleId,
+        ".knit/validate.mjs must not execute JavaScript before the required subprocess commands.",
+      );
+    }
     if (parsed.unsupported?.length > 0) {
       return fail(
         ruleId,

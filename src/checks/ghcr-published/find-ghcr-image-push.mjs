@@ -19,18 +19,27 @@ export function findImagePushes(job) {
       requiredStep(step) &&
       step?.uses === "docker/build-push-action@v6" &&
       step?.with?.push === true &&
-      typeof step?.with?.tags === "string" &&
-      /^ghcr\.io\/[\w.-]+\/[\w.-]+:v\d+\.\d+\.\d+$/u.test(step.with.tags),
+      imageTags(step?.with?.tags).some((tag) =>
+        /^ghcr\.io\/[\w.-]+\/[\w.-]+:v\d+\.\d+\.\d+$/u.test(tag),
+      ),
   );
 }
 
 export function imageDetails(push) {
-  const tag = push?.with?.tags;
-  const match = typeof tag === "string" ? tag.match(/^(.*):v\d+\.\d+\.\d+$/u) : null;
+  const tag = imageTags(push?.with?.tags).find((value) =>
+    /^ghcr\.io\/[\w.-]+\/[\w.-]+:v\d+\.\d+\.\d+$/u.test(value),
+  );
+  const match = tag?.match(/^(.*):v\d+\.\d+\.\d+$/u) ?? null;
   const id = typeof push?.id === "string" && /^[A-Za-z_][\w-]*$/u.test(push.id) ? push.id : null;
   return {
     image: match?.[1] ?? null,
     tag: match?.[0] ?? null,
     digestReference: id ? `\${{ steps.${id}.outputs.digest }}` : null,
   };
+}
+
+export function imageTags(value) {
+  return typeof value === "string"
+    ? value.split(/\r?\n/u).map((tag) => tag.trim()).filter(Boolean)
+    : [];
 }

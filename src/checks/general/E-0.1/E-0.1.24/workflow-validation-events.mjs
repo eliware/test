@@ -1,5 +1,6 @@
 import { minimatch } from "minimatch";
 import { normalizeWorkflowDocument } from "../../../ghcr-published/normalize-workflow-document.mjs";
+import { containsCompliantValidationJob } from "./contains-compliant-validation-job.mjs";
 
 export function workflowHasValidationEvents(document) {
   document = normalizeWorkflowDocument(document);
@@ -11,15 +12,18 @@ export function workflowHasValidationEvents(document) {
       : raw;
   const push = events.push;
   const mainPush = pushAllowsMain(push);
-  const pullRequest = Object.hasOwn(events, "pull_request");
-  const jobs = Object.values(document?.jobs ?? {});
-  const ubuntu = jobs.some(
-    (job) =>
-      job &&
-      (job["runs-on"] === "ubuntu-latest" ||
-        (Array.isArray(job["runs-on"]) && job["runs-on"].includes("ubuntu-latest"))),
-  );
-  return Boolean(mainPush && pullRequest && ubuntu);
+  const pullRequest = pullRequestAllowsMain(events.pull_request);
+  const compliantValidation = containsCompliantValidationJob("workflow.yml", document);
+  return Boolean(mainPush && pullRequest && compliantValidation);
+}
+
+function pullRequestAllowsMain(event) {
+  if (event === undefined || event === null || event === false) return false;
+  if (typeof event !== "object" || Array.isArray(event)) return true;
+  if (Array.isArray(event["branches-ignore"]) && event["branches-ignore"].some(patternMatchesMain)) {
+    return false;
+  }
+  return branchPatternsAllowMain(event.branches, true);
 }
 
 function patternMatchesMain(pattern) {

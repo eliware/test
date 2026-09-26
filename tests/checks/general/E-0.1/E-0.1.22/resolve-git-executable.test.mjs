@@ -17,6 +17,15 @@ test("finds a native Git installation outside PATH on Windows", () => {
   expect(resolved).toBe(expected);
 });
 
+test("searches both Windows PATH key casings when both are present", () => {
+  const expected = "C:\\Git\\cmd\\git.exe";
+  expect(resolveGitExecutable({
+    platform: "win32",
+    env: { Path: "C:\\Missing", PATH: "C:\\Git\\cmd" },
+    exists: (candidate) => candidate === expected,
+  })).toBe(expected);
+});
+
 test.each([
   [{ Path: "C:\\Git\\cmd" }, "C:\\Git\\cmd\\git.exe"],
   [{ PATH: "C:\\Git\\cmd" }, "C:\\Git\\cmd\\git.exe"],

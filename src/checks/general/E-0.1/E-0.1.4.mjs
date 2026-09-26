@@ -17,7 +17,7 @@ export async function run({
   if (typeof packageJson?.scripts?.lint !== "string" || !packageJson.scripts.lint.trim()) {
     return fail(ruleId, "Repositories must define a lint validation command.");
   }
-  if (!executeLint || (mode !== null && mode !== "lint")) return pass(ruleId);
+  if (!(executeLint || mode === "lint") || (mode !== null && mode !== "lint")) return pass(ruleId);
   try {
     const result = await runLint(root, undefined, undefined, toolArgs, focusedScope?.paths ?? []);
     if (result.code !== 0) {

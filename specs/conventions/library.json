@@ -106,10 +106,10 @@
         {
           "id": "E-0.1.40.8",
           "dos": [
-            "Libraries must test applicable implementation code without Istanbul coverage-ignore directives."
+            "Libraries must test applicable implementation code without Istanbul coverage-ignore directives; the exact pure export barrel declared as a public package entrypoint is the sole barrel exception."
           ],
           "donts": [
-            "Do not hide uncovered production behavior with Istanbul coverage-ignore directives unless an explicit convention exemption applies."
+            "Do not hide uncovered production behavior with Istanbul coverage-ignore directives unless an explicit convention exemption applies or the file is the pure export barrel declared as a public package entrypoint."
           ]
         },
         {

@@ -148,6 +148,14 @@ test("accepts source-shaped evidence and empty expected source maps", () => {
   expect(
     validateCoverageFileEvidence("src/decision.mjs", completeEvidence(shape), shape),
   ).toBeUndefined();
+  const shapeWithoutLineMap = { ...shape, lineMap: undefined };
+  expect(
+    validateCoverageFileEvidence(
+      "src/decision.mjs",
+      completeEvidence(shape),
+      shapeWithoutLineMap,
+    ),
+  ).toBeUndefined();
   expect(
     validateCoverageFileEvidence(
       "empty.mjs",
@@ -155,4 +163,22 @@ test("accepts source-shaped evidence and empty expected source maps", () => {
       { statementMap: undefined, branchMap: undefined, fnMap: undefined },
     ),
   ).toBeUndefined();
+});
+
+test("rejects omitted or altered line counters against source-derived lines", () => {
+  const shape = expectedCoverageShape(
+    "export function decide(value) { if (value) return 1; return 0; }",
+    "src/decision.mjs",
+  );
+  const omittedLine = completeEvidence(shape);
+  delete omittedLine.l[Object.keys(omittedLine.l)[0]];
+  expect(() => validateCoverageFileEvidence("src/decision.mjs", omittedLine, shape)).toThrow(
+    "every source line entry",
+  );
+
+  const alteredLine = completeEvidence(shape);
+  alteredLine.l[Object.keys(alteredLine.l)[0]] = 0;
+  expect(() => validateCoverageFileEvidence("src/decision.mjs", alteredLine, shape)).toThrow(
+    "source-derived line coverage",
+  );
 });

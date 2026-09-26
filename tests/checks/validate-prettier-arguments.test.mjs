@@ -21,8 +21,10 @@ test.each([
   expect(validatePrettierArguments([argument])).toContain(argument);
 });
 
-test("allows harmless forwarded options and additional paths", () => {
-  expect(validatePrettierArguments(["--log-level=debug", "src/example.mjs"])).toBeNull();
+test("allows harmless forwarded options and rejects path operands that can narrow coverage", () => {
+  expect(validatePrettierArguments(["--log-level=debug"])).toBeNull();
+  expect(validatePrettierArguments(["src/example.mjs"])).toContain("wrapper-owned file coverage");
+  expect(validatePrettierArguments(["--", "src/example.mjs"])).toContain("wrapper-owned file coverage");
 });
 
 test("rejects malformed argument collections", () => {

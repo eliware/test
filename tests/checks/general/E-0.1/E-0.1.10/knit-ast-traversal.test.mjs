@@ -46,6 +46,40 @@ test("handles static loops and bindings while collecting commands", () => {
   expect(unsupported).toHaveLength(1);
 });
 
+test("invalidates reassigned bindings across branches and scopes block declarations", () => {
+  const reassigned = collect(
+    'import { spawnSync } from "node:child_process"; let command = "npm"; if (enabled) { command = "curl"; } spawnSync(command, ["test"]);',
+  );
+  expect(reassigned.calls).toEqual([
+    expect.objectContaining({ command: undefined }),
+  ]);
+  expect(reassigned.unsupported).toHaveLength(1);
+
+  const scoped = collect(
+    'import { spawnSync } from "node:child_process"; const command = "npm"; { const command = "curl"; spawnSync(command, ["bad"]); } spawnSync(command, ["test"]);',
+  );
+  expect(scoped.calls.map(({ command }) => command)).toEqual(["curl", "npm"]);
+  expect(scoped.unsupported).toEqual([]);
+
+  const updated = collect(
+    'import { spawnSync } from "node:child_process"; let command = "npm"; command++; spawnSync(command, ["test"]); process.env.X = "changed";',
+  );
+  expect(updated.unsupported).toHaveLength(2);
+  expect(updated.calls).toEqual([expect.objectContaining({ command: undefined })]);
+  expect(collect(
+    'import { spawnSync } from "node:child_process"; { const [command] = ["npm"]; spawnSync(command, ["test"]); }',
+  ).calls).toEqual([expect.objectContaining({ command: undefined })]);
+  expect(collect("process.exitCode = 1;").unsupported).toEqual([]);
+  for (const assignment of [
+    'process.env.X = "changed";',
+    "other.exitCode = 1;",
+    'process["exitCode"] = 1;',
+    'process.env = "changed";',
+  ]) {
+    expect(collect(assignment).unsupported).toHaveLength(1);
+  }
+});
+
 test("marks dynamic and unsupported call forms", () => {
   const { unsupported } = collect(
     'import { rm } from "node:fs"; import * as fs from "node:fs"; import { spawnSync } from "node:child_process"; rm("x"); fs.rm("x"); unknown(); require("x"); eval("x"); import("x"); process.cwd(); object.run(); spawnSync("echo", []);',

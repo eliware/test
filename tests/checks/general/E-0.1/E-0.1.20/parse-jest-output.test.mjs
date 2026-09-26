@@ -9,4 +9,18 @@ test("parses valid Jest JSON and preserves malformed or absent JSON as text", ()
     text: "noise\nnoise\n{not-json}", report: null,
   });
   expect(parseJsonOutput("plain")).toEqual({ text: "plain", report: null });
+  expect(parseJsonOutput('{"numFailedTestSuites":}')).toEqual({
+    text: '{"numFailedTestSuites":}', report: null,
+  });
+  expect(parseJsonOutput('"numFailedTestSuites": 0')).toEqual({
+    text: '"numFailedTestSuites": 0', report: null,
+  });
+});
+
+test("parses whitespace-prefixed pretty-printed Jest JSON", () => {
+  const output = `progress\n  {\n    "numFailedTestSuites": 0,\n    "testResults": [{ "assertionResults": [] }]\n  }  `;
+  expect(parseJsonOutput(output)).toEqual({
+    text: "progress\n  ",
+    report: { numFailedTestSuites: 0, testResults: [{ assertionResults: [] }] },
+  });
 });

@@ -1,8 +1,9 @@
 import { fail, pass } from "../../../check-result.mjs";
+import { executeAuditProcess } from "./execute-audit-process.mjs";
 import { runNpmAudit } from "./run-npm-audit.mjs";
-import { runChild } from "./run-child.mjs";
-import { collectRedactionSecrets } from "../../../collect-redaction-secrets.mjs";
-import { redactProcessOutput } from "../../../redact-process-output.mjs";
+import { runChild as defaultRunChild } from "./run-child.mjs";
+import { formatNpmAuditFailure, formatNpmAuditStartupFailure } from "./format-npm-audit-diagnostic.mjs";
+import { validateAuditArguments } from "./validate-audit-arguments.mjs";
 
 export const ruleId = "E-0.1.20.19";
 export const parentRuleId = "E-0.1.20";
@@ -11,9 +12,11 @@ export async function run({
   packageJson,
   root,
   executeAudit = false,
-  runAudit = runNpmAudit,
+  mode = null,
   toolArgs = [],
-    env = process.env,
+  runAudit = runNpmAudit,
+  runChild = defaultRunChild,
+  env = process.env,
 }) {
   if (packageJson?.scripts?.audit !== "eliware-test --audit") {
     return fail(
@@ -21,19 +24,16 @@ export async function run({
       "The aggregate validation must execute the shared audit stage through npm run audit.",
     );
   }
-  if (!executeAudit) return pass(ruleId);
-  const redactionSecrets = collectRedactionSecrets(env);
+  if (!executeAudit && mode !== "audit") return pass(ruleId);
+  const argumentError = validateAuditArguments(toolArgs);
+  if (argumentError) return fail(ruleId, argumentError);
   try {
-    const result = await runAudit(root, runChild, undefined, toolArgs);
+    const result = await executeAuditProcess({ root, runAudit, runChild, toolArgs, env });
     if (result.code !== 0) {
-      const detail = redactProcessOutput([result.stdout, result.stderr].filter(Boolean).join("\n").trim(), redactionSecrets);
-      return fail(
-        ruleId,
-        detail ? `npm audit failed: ${detail}` : "npm audit failed without diagnostics.",
-      );
+      return fail(ruleId, formatNpmAuditFailure(result, env));
     }
   } catch (error) {
-    return fail(ruleId, `npm audit could not be started: ${redactProcessOutput(error.message, redactionSecrets)}`);
+    return fail(ruleId, formatNpmAuditStartupFailure(error, env));
   }
   return pass(ruleId);
 }

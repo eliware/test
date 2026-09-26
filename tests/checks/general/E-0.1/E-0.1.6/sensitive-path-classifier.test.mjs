@@ -7,7 +7,13 @@ test("classifies sensitive paths while permitting the environment template", () 
   expect(isForbiddenPath("database-state.sqlite")).toBe(true);
   expect(isForbiddenPath("production.dump")).toBe(true);
   expect(isForbiddenPath("id_ed25519")).toBe(true);
-  expect(isForbiddenPath("src/reference-registration-key.mjs")).toBe(false);
+  expect(isForbiddenPath("src/private-key.mjs")).toBe(true);
+  expect(isForbiddenPath("src/checks/collect-redaction-secrets.mjs")).toBe(false);
+  expect(isForbiddenPath("tests/checks/redact-credential-fields.test.mjs")).toBe(false);
+  expect(isForbiddenPath("src/secrets/collect-redaction-secrets.mjs")).toBe(true);
+  expect(isForbiddenPath("src/reference-registration-key.mjs")).toBe(true);
+  expect(isForbiddenPath("other/collect-redaction-secrets.mjs")).toBe(true);
+  expect(isForbiddenPath("src/secrets/collect-redaction-secrets.mjs")).toBe(true);
   expect(isForbiddenPath(".env.example")).toBe(false);
   expect(isForbiddenPath("docs/readme.md")).toBe(false);
   expect(isForbiddenPath("nested\\credentials.pem")).toBe(true);

@@ -24,7 +24,7 @@ export async function executeCliInformationCommands({
       if (
         argument === "--version" &&
         typeof packageVersion === "string" &&
-        output !== packageVersion
+        !output.split(/\s+/u).includes(packageVersion)
       ) {
         return `CLI entrypoint ${entrypoint} --version must report package version ${packageVersion}.`;
       }

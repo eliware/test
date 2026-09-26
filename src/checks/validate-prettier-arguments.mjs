@@ -60,6 +60,9 @@ export function validatePrettierArguments(args) {
   if (!Array.isArray(args)) return "Prettier arguments must be an array of strings.";
   for (const argument of args) {
     if (typeof argument !== "string") return "Prettier arguments must be an array of strings.";
+    if (!argument.startsWith("-") || argument === "--") {
+      return `Prettier path argument ${argument} conflicts with wrapper-owned file coverage.`;
+    }
     const option = argument.split("=", 1)[0];
     if (wrapperOwnedOptions.has(option) || option.startsWith("--experimental-")) {
       return `Prettier argument ${argument} conflicts with wrapper-owned formatting mode, configuration, or file coverage.`;

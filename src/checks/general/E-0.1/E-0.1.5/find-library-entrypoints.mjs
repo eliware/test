@@ -1,5 +1,7 @@
 export function findLibraryEntryPoints(packageJson = {}) {
-  if (!Array.isArray(packageJson.eliware?.apply) || !packageJson.eliware.apply.includes("library")) return [];
+  const profiles = packageJson.eliware?.apply;
+  if (!Array.isArray(profiles)) return [];
+  if (!profiles.includes("library")) return [];
   const exportsRoot = packageJson.exports?.["."] ?? packageJson.exports;
   const targets = [];
   const collect = (value) => {

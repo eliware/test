@@ -68,7 +68,7 @@
           "id": "E-0.1.160.2",
           "dos": [
             "GHCR repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If npm publication is also applied, both publication profiles use this single publish.yml file.",
-            "GHCR publication workflows must use the GitHub Actions tag filter `v[0-9]+.[0-9]+.[0-9]+` so only three-component numeric version-shaped tags start the workflow; verify the tag and approved release version before pushing, and require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary; an approved GHCR badge may be added when a standard badge URL exists."
+            "GHCR publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form and verify it matches the approved package version before pushing. Require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary; an approved GHCR badge may be added when a standard badge URL exists."
           ],
           "donts": [
             "Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches, pull requests, manual validation dispatches, unversioned tags, or an inferred release version."
@@ -139,6 +139,15 @@
           ],
           "donts": [
             "Do not make GHCR publication automatically mutate GitOps desired state or live Kubernetes state."
+          ]
+        },
+        {
+          "id": "A-0.1.160.10",
+          "dos": [
+            "Before pushing a GHCR image, the publication job must verify that npm package.json's exact version matches the version without the v prefix in GITHUB_REF_NAME using npm pkg get version --raw, then target the protected ghcr-publish GitHub environment configured with Eli as a required reviewer through the Operations release handoff."
+          ],
+          "donts": [
+            "Do not treat tag-shaped text, a semver comment, or an unprotected environment as release-version verification or Eli's publication authorization."
           ]
         }
       ]

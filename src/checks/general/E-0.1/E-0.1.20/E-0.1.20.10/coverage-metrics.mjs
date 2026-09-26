@@ -8,9 +8,15 @@ const metricValues = (data, lineEntries) => ({
 export function coverageMetricValues(data, lineEntries) {
   const values = metricValues(data, lineEntries);
   const hasCounters = Object.values(values).some((counts) => counts.length > 0);
-  const hasMaps = Object.keys(data.statementMap ?? {}).length > 0 ||
-    Object.keys(data.branchMap ?? {}).length > 0 ||
-    Object.keys(data.fnMap ?? {}).length > 0 ||
-    Object.keys(data.l ?? {}).length > 0;
+  const hasMaps = [
+    [data.statementMap, data.s],
+    [data.branchMap, data.b],
+    [data.fnMap, data.f],
+  ].every(([map, counters]) => {
+    if (!map || !counters || typeof map !== "object" || typeof counters !== "object") return false;
+    const mapKeys = Object.keys(map).sort();
+    const counterKeys = Object.keys(counters).sort();
+    return mapKeys.length === counterKeys.length && mapKeys.every((key, index) => key === counterKeys[index]);
+  });
   return { values, hasCounters, hasMaps };
 }

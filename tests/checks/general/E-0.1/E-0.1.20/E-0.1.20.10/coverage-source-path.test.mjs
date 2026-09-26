@@ -5,10 +5,11 @@ test("recognizes supported source files under relative and absolute src roots", 
   expect(isInScopeSource("src/app.mjs")).toBe(true);
   expect(isInScopeSource("C:\\repo\\src\\app.js")).toBe(true);
   expect(isInScopeSource("/repo/src/app.cjs")).toBe(true);
+  expect(isInScopeSource("src/tests/production-check.mjs")).toBe(true);
 });
 
 test("excludes paths outside src, unsupported extensions, and non-production subtrees", () => {
-  for (const file of ["README.md", "tests/app.mjs", "src/README.txt", "src/tests/app.mjs", "src/fixture/app.mjs", "src/generated/app.mjs", "src/dist/app.mjs", "src/build/app.mjs"]) {
+  for (const file of ["README.md", "tests/app.mjs", "src/README.txt", "src/tests/app.test.mjs", "src/fixture/app.mjs", "src/generated/app.mjs", "src/dist/app.mjs", "src/build/app.mjs"]) {
     expect(isInScopeSource(file)).toBe(false);
   }
 });

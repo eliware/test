@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { collectRedactionSecrets } from "./collect-redaction-secrets.mjs";
-import { redactProcessOutput } from "./redact-process-output.mjs";
+import { createRedactedTextStream } from "./create-redacted-text-stream.mjs";
 
 const MAX_OUTPUT_LENGTH = 100_000;
 
@@ -8,24 +8,24 @@ export function execute(command, args, options, spawnProcess = spawn) {
   return new Promise((resolveResult, reject) => {
     const child = spawnProcess(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
     const redactionSecrets = collectRedactionSecrets(options?.env);
+    const stdoutCapture = createRedactedTextStream(redactionSecrets, MAX_OUTPUT_LENGTH);
+    const stderrCapture = createRedactedTextStream(redactionSecrets, MAX_OUTPUT_LENGTH);
+    let captured = 0;
     let stdout = "";
     let stderr = "";
-    let captured = 0;
-    let capturedRawBytes = 0;
-    const append = (current, chunk) => {
-      const rawChunk = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
-      const rawRemaining = Math.max(0, MAX_OUTPUT_LENGTH - capturedRawBytes);
-      if (rawRemaining === 0) return current;
-      const boundedRawChunk = rawChunk.subarray(0, rawRemaining);
-      capturedRawBytes += boundedRawChunk.length;
+    const append = (stream, text) => {
       const remaining = Math.max(0, MAX_OUTPUT_LENGTH - captured);
-      if (remaining === 0) return current;
-      const value = redactProcessOutput(boundedRawChunk.toString(), redactionSecrets).slice(0, remaining);
-      captured += value.length;
-      return `${current}${value}`;
+      const bounded = text.slice(0, remaining);
+      captured += bounded.length;
+      if (stream === "stdout") stdout += bounded;
+      else stderr += bounded;
     };
-    child.stdout?.on("data", (chunk) => { stdout = append(stdout, chunk); });
-    child.stderr?.on("data", (chunk) => { stderr = append(stderr, chunk); });
+    const capture = (stream, redactor, chunk) => {
+      if (captured >= MAX_OUTPUT_LENGTH) return;
+      append(stream, redactor.push(chunk));
+    };
+    child.stdout?.on("data", (chunk) => capture("stdout", stdoutCapture, chunk));
+    child.stderr?.on("data", (chunk) => capture("stderr", stderrCapture, chunk));
     let settled = false;
     child.on("error", (error) => {
       if (settled) return;
@@ -35,6 +35,10 @@ export function execute(command, args, options, spawnProcess = spawn) {
     child.on("close", (code, signal) => {
       if (settled) return;
       settled = true;
+      if (captured < MAX_OUTPUT_LENGTH) {
+        append("stdout", stdoutCapture.finish());
+        append("stderr", stderrCapture.finish());
+      }
       resolveResult({ code, signal, stdout, stderr });
     });
   });

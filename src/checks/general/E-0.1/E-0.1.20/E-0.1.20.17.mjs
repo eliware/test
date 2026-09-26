@@ -15,11 +15,21 @@ export async function run({
   runFormatter = runPrettier,
   toolArgs = [],
   focusedScope = null,
+  env = process.env,
 }) {
   if (mode !== null && mode !== "format" && mode !== "format-check") {
     return fail(ruleId, `Unsupported formatter mode: ${mode}.`);
   }
-  const scriptError = validateRequiredScripts(packageJson?.scripts);
+  const scriptError = validateRequiredScripts(packageJson?.scripts, {
+    requiresPack:
+      Array.isArray(packageJson?.eliware?.apply) &&
+      packageJson.eliware.apply.includes("npm-published"),
+    allowedAdditionalScripts: [
+      ...(packageJson?.scripts?.typecheck !== undefined ? ["typecheck"] : []),
+      ...(packageJson?.scripts?.build !== undefined ? ["build"] : []),
+      ...(packageJson?.eliware?.apply?.includes?.("web") ? ["lighthouse", "puppeteer"] : []),
+    ],
+  });
   if (scriptError) return fail(ruleId, scriptError);
   const formatterError = await executeFormatterValidation({
     root,
@@ -28,6 +38,7 @@ export async function run({
     runFormatter,
     toolArgs,
     focusedScope,
+    env,
   });
   return formatterError === null || formatterError === ""
     ? pass(ruleId)

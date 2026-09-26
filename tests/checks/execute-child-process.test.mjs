@@ -27,6 +27,44 @@ test("redacts configured credential values from the child environment", async ()
   await expect(promise).resolves.toMatchObject({ stdout: "service output [REDACTED]" });
 });
 
+test("redacts a configured credential split across child output chunks", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], { env: { SERVICE_TOKEN: "opaque-value-123" } }, () => child);
+  child.stdout.emit("data", "prefix opaque-value-");
+  child.stdout.emit("data", "123 suffix");
+  child.emit("close", 0, null);
+  await expect(promise).resolves.toMatchObject({
+    stdout: "prefix [REDACTED] suffix",
+  });
+});
+
+test("omits an incomplete credential suffix when the raw output limit cuts it", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const secret = "opaque-value-123";
+  const rawLimit = 100_000 + Buffer.byteLength(secret);
+  const promise = execute("node", [], { env: { SERVICE_TOKEN: secret } }, () => child);
+  child.stdout.emit("data", Buffer.from("o".repeat(rawLimit - 4)));
+  child.stdout.emit("data", Buffer.from(secret.slice(0, 4)));
+  child.emit("close", 0, null);
+  const result = await promise;
+  expect(result.stdout).not.toContain(secret.slice(0, 4));
+});
+
+test("suppresses output when an environment credential exceeds the bounded capture size", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("node", [], { env: { SERVICE_TOKEN: "x".repeat(100_001) } }, () => child);
+  child.stdout.emit("data", "possibly sensitive output");
+  child.stderr.emit("data", "possibly sensitive diagnostic");
+  child.emit("close", 0, null);
+  await expect(promise).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
+});
+
 test("captures bounded stdout and stderr from a completed child", async () => {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();

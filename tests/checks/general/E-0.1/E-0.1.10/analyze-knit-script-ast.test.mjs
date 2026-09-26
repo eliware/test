@@ -48,6 +48,7 @@ test("detects executable initializers and statements before the required command
   for (const statement of [
     "const setup = initialize();",
     "class Setup { static value = initialize(); }",
+    "process.env.X;",
     'if (enabled) { initialize("before"); }',
   ]) {
     expect(
@@ -55,6 +56,21 @@ test("detects executable initializers and statements before the required command
         .leadingExecutable,
     ).toBe(true);
   }
+  for (const declaration of [
+    "class Setup { static { initialize(); } }",
+    "class Setup { static value = initialize(); }",
+    "class Setup { [initialize()]() {} }",
+    "class Setup extends initialize() {}",
+  ]) {
+    expect(
+      analyze(`${prefix} ${declaration} spawnSync("git", ["pull", "--ff-only", "origin", "main"]);`)
+        .leadingExecutable,
+    ).toBe(true);
+  }
+  expect(
+    analyze(`${prefix} class Setup { static value = true; } spawnSync("git", ["pull"]);`)
+      .leadingExecutable,
+  ).toBe(false);
 });
 
 test("handles inert exports, rejects re-export execution, and sorts command calls", () => {

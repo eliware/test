@@ -7,10 +7,16 @@ export function expectedCoverageShape(source, filename) {
   const instrumenter = createInstrumenter({ esModules: true, produceSourceMap: false });
   instrumenter.instrumentSync(source, filename);
   const coverage = instrumenter.lastFileCoverage();
+  const lineMap = Object.fromEntries(
+    [...new Set(Object.values(coverage.statementMap).map(({ start }) => String(start.line)))].map(
+      (line) => [line, {}],
+    ),
+  );
   return {
     statementMap: coverage.statementMap,
     branchMap: coverage.branchMap,
     fnMap: coverage.fnMap,
+    lineMap,
   };
 }
 

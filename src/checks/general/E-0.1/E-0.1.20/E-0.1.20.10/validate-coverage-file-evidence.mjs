@@ -1,51 +1,14 @@
+import { validateCoverageSourceShape } from "./validate-coverage-source-shape.mjs";
+
 function validCounter(value) {
   return typeof value === "number" && Number.isFinite(value) && value >= 0;
 }
 
-function requireMatchingSourceEntries(file, actual, expected, metric) {
-  const actualKeys = Object.keys(actual ?? {}).sort();
-  const expectedKeys = Object.keys(expected ?? {}).sort();
-  if (
-    actualKeys.length !== expectedKeys.length ||
-    actualKeys.some((key, index) => key !== expectedKeys[index])
-  ) {
-    throw new Error(
-      `Coverage report does not account for every source ${metric} entry in ${file}.`,
-    );
-  }
+function hasEvidence(data, fields) {
+  return fields.some((field) => Object.keys(data[field] ?? {}).length > 0);
 }
 
-function sameBranchLocation(actual, expected) {
-  const samePoint = (actualPoint, expectedPoint) => {
-    return (
-      actualPoint !== null &&
-      actualPoint !== undefined &&
-      expectedPoint !== null &&
-      expectedPoint !== undefined &&
-      actualPoint.line === expectedPoint.line &&
-      actualPoint.column === expectedPoint.column
-    );
-  };
-  return ["start", "end"].every((edge) => {
-    const actualPoint = actual?.[edge];
-    const expectedPoint = expected?.[edge];
-    return samePoint(actualPoint, expectedPoint);
-  });
-}
-
-export function validateCoverageFileEvidence(file, data, expectedShape = null) {
-  const hasCounterData =
-    Object.keys(data.s ?? {}).length > 0 ||
-    Object.keys(data.b ?? {}).length > 0 ||
-    Object.keys(data.f ?? {}).length > 0 ||
-    Object.keys(data.l ?? {}).length > 0;
-  const hasMapData =
-    Object.keys(data.statementMap ?? {}).length > 0 ||
-    Object.keys(data.branchMap ?? {}).length > 0 ||
-    Object.keys(data.fnMap ?? {}).length > 0 ||
-    Object.keys(data.lineMap ?? {}).length > 0;
-  if (hasCounterData !== hasMapData)
-    throw new Error(`Coverage evidence is incomplete for ${file}.`);
+function requireMatchingMapCounters(file, data) {
   for (const [map, counters, required] of [
     [data.statementMap, data.s, Object.hasOwn(data, "statementMap") || Object.hasOwn(data, "s")],
     [data.branchMap, data.b, Object.hasOwn(data, "branchMap") || Object.hasOwn(data, "b")],
@@ -63,31 +26,15 @@ export function validateCoverageFileEvidence(file, data, expectedShape = null) {
     )
       throw new Error(`Coverage map and counter keys do not match for ${file}.`);
   }
-  if (expectedShape) {
-    for (const [map, counters, metric] of [
-      ["statementMap", "s", "statement"],
-      ["branchMap", "b", "branch"],
-      ["fnMap", "f", "function"],
-    ]) {
-      requireMatchingSourceEntries(file, data[map], expectedShape[map], metric);
-      requireMatchingSourceEntries(file, data[counters], expectedShape[map], metric);
-    }
-    for (const [id, branch] of Object.entries(expectedShape.branchMap ?? {})) {
-      if (
-        !Array.isArray(data.branchMap?.[id]?.locations) ||
-        data.branchMap[id].locations.length !== branch.locations.length ||
-        branch.locations.some(
-          (location, index) => !sameBranchLocation(data.branchMap[id].locations[index], location),
-        ) ||
-        !Array.isArray(data.b?.[id]) ||
-        data.b[id].length !== branch.locations.length
-      ) {
-        throw new Error(
-          `Coverage report does not account for every source branch path in ${file}.`,
-        );
-      }
-    }
-  }
+}
+
+export function validateCoverageFileEvidence(file, data, expectedShape = null) {
+  const hasCounterData = hasEvidence(data, ["s", "b", "f", "l"]);
+  const hasMapData = hasEvidence(data, ["statementMap", "branchMap", "fnMap", "lineMap"]);
+  if (hasCounterData !== hasMapData)
+    throw new Error(`Coverage evidence is incomplete for ${file}.`);
+  requireMatchingMapCounters(file, data);
+  if (expectedShape) validateCoverageSourceShape(file, data, expectedShape);
   const counterValues = [
     ...Object.values(data.s ?? {}),
     ...Object.values(data.b ?? {}).flat(),

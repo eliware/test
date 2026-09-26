@@ -54,3 +54,13 @@ test("does not compare a version when package metadata omits it", async () => {
     }),
   ).resolves.toBe("");
 });
+
+test("accepts a matching version token alongside informational output", async () => {
+  await expect(executeCliInformationCommands({
+    ...context,
+    executeEntrypoint: async (_command, args) => ({
+      code: 0,
+      stdout: args[1] === "--version" ? "eliware-test version 1.2.3\n" : "Usage",
+    }),
+  })).resolves.toBe("");
+});

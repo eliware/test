@@ -4,5 +4,5 @@ export const ruleId = "E-0.1.130.10";
 export const parentRuleId = "E-0.1.130";
 
 export function run(options) {
-  return runMonolithLimits({ ...options, ruleId });
+  return runMonolithLimits({ ...options, ruleId, requireTests: true });
 }

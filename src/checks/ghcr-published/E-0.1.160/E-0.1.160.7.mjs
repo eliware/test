@@ -2,7 +2,10 @@ import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
 import { steps } from "../workflow-structure.mjs";
-import { findImagePush, imageDetails } from "../find-ghcr-image-push.mjs";
+import { findImagePush, imageDetails, imageTags } from "../find-ghcr-image-push.mjs";
+import { readRepositoryText } from "../../read-repository-text.mjs";
+import { join } from "node:path";
+import { hasDocumentedLatestAlias } from "../has-documented-latest-alias.mjs";
 
 export const ruleId = "E-0.1.160.7";
 export const parentRuleId = "E-0.1.160";
@@ -17,12 +20,19 @@ export async function run(context) {
       const details = imageDetails(push);
       return Boolean(push && details.image && details.digestReference);
     }));
+    const usesLatest = publications.some((publication) => publicationJobs(publication).some(({ job }) =>
+      steps(job).some((step) =>
+        step?.uses === "docker/build-push-action@v6" &&
+        imageTags(step?.with?.tags).some((tag) => /:latest$/iu.test(tag)),
+      ),
+    ));
+    const latestDocumented = !usesLatest || hasDocumentedLatestAlias(
+      await readRepositoryText(context, join(root, "README.md")),
+    );
     if (
       publications.length === 0 ||
       !published ||
-      publications.some((publication) => publicationJobs(publication).some(({ job }) => steps(job).some((step) =>
-        typeof step?.with?.tags === "string" && /:latest\b/iu.test(step.with.tags),
-      )))
+      !latestDocumented
     )
       return fail(
         ruleId,

@@ -1,0 +1,22 @@
+import { expect, test } from "@jest/globals";
+import { validatePackArguments } from "../../../../src/checks/npm-published/E-0.1.140/validate-pack-arguments.mjs";
+
+test("rejects arguments that can disable dry-run or alter selected pack output", () => {
+  for (const args of [
+    ["--dry-run=false"], ["--no-dry-run"], ["--json=false"], ["--no-json"],
+    ["--pack-destination", "out"], ["--workspace=other"], ["-w", "other"],
+    ["--prefix=other"], ["@scope/package@1.0.0"], ["--", "--no-dry-run"],
+    ["--loglevel", "--no-dry-run"],
+    ["-wother"],
+  ]) {
+    expect(validatePackArguments(args)).toMatch(/cannot/u);
+  }
+});
+
+test("allows safe options while requiring their values", () => {
+  expect(validatePackArguments()).toBeNull();
+  expect(validatePackArguments(["--ignore-scripts", "--loglevel", "verbose"])).toBeNull();
+  expect(validatePackArguments(["--loglevel=verbose"])).toBeNull();
+  expect(validatePackArguments(["--loglevel"])).toContain("requires a value");
+  expect(validatePackArguments(["--loglevel", "--unknown"])).toContain("requires a value");
+});

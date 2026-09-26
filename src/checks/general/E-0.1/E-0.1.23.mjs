@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 import { readRepositoryText } from "../../read-repository-text.mjs";
+import { validateApprovedLicense } from "./validate-approved-license.mjs";
 
 export const ruleId = "E-0.1.23";
 export const parentRuleId = "E-0.1";
@@ -9,17 +10,8 @@ export async function run(context) {
   const { root } = context;
   try {
     const license = await readRepositoryText(context, join(root, "LICENSE"));
-    const required = [
-      "MIT License",
-      "Copyright (c) 2026 Eliware",
-      "Permission is hereby granted",
-      "THE SOFTWARE IS PROVIDED \"AS IS\"",
-      "WITHOUT WARRANTY OF ANY KIND",
-      "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE",
-    ];
-    const normalized = license.replace(/\s+/gu, " ");
-    const missing = required.filter((marker) => !normalized.includes(marker.replace(/\s+/gu, " ")));
-    if (missing.length > 0) return fail(ruleId, `LICENSE is missing approved MIT text: ${missing.join(", ")}.`);
+    const licenseError = validateApprovedLicense(license);
+    if (licenseError) return fail(ruleId, licenseError);
   } catch {
     return fail(ruleId, "LICENSE is required at the repository root.");
   }

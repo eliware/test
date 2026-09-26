@@ -9,7 +9,8 @@ test("accepts omitted or empty exemption lists", () => {
 test("requires complete Eli-approved exemption records", () => {
   const valid = { ruleId: "E-0.1", reason: "approved exception", approver: "Eli", approvalTimestamp: "2026-01-01T00:00:00Z", expiry: null };
   expect(validatePackageExemptions([valid])).toBeNull();
-  for (const item of [null, {}, { ...valid, ruleId: "" }, { ...valid, reason: "" }, { ...valid, approver: "Other" }, { ...valid, approvalTimestamp: "" }, { ...valid, expiry: 1 }]) {
+  for (const item of [null, {}, { ...valid, ruleId: "" }, { ...valid, reason: "" }, { ...valid, approver: "Other" }, { ...valid, approvalTimestamp: "" }, { ...valid, approvalTimestamp: "January 1, 2026" }, { ...valid, expiry: 1 }]) {
     expect(validatePackageExemptions([item])).toContain("exempt");
   }
+  expect(validatePackageExemptions("invalid")).toContain("exempt");
 });

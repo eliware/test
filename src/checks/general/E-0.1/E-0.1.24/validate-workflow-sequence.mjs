@@ -12,7 +12,7 @@ export function validateWorkflowSequence(name, commands, steps = commands, job =
     return `${name} must run npm ci immediately followed by npm test with no intervening steps.`;
   const conditionError = validateValidationJobConditions(install, test, job);
   if (conditionError) return `${name} ${conditionError}`;
-  const setupError = validateWorkflowPreInstallCommands(name, commands, commandIndex(install));
+  const setupError = validateWorkflowPreInstallCommands(name, commands, commandIndex(install), steps);
   if (setupError) return setupError;
   const reportingError = validateWorkflowPostTestCommands(name, commands, commandIndex(test));
   if (reportingError) return reportingError;

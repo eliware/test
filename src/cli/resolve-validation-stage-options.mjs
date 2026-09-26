@@ -12,11 +12,12 @@ export function resolveValidationStageOptions(diagnosticOptions, options) {
   const focused = parseFocusedArguments(diagnosticOptions.jestArgs ?? []).positional.length > 0;
   return {
     executeJest: options.executeJest !== false && diagnosticOptions.mode === null,
-    executeLint: focused ? true : options.executeLint ?? options.executeJest ?? true,
-    executeAudit: focused ? false : options.executeAudit ?? options.executeJest ?? true,
-    executePack: focused ? false : options.executePack ?? options.executeJest ?? true,
+    executeLint: diagnosticOptions.mode === "lint" || (focused ? true : options.executeLint ?? options.executeJest ?? true),
+    executeAudit: !focused && (diagnosticOptions.mode === "audit" || (options.executeAudit ?? options.executeJest ?? true)),
+    executePack: !focused && (diagnosticOptions.mode === "pack" || (options.executePack ?? options.executeJest ?? true)),
     executePackageChecks: focused ? false : options.executePackageChecks ?? true,
-    executeFormat: focused ? true : options.executeFormat ?? options.executeJest ?? true,
+    executeFormat: diagnosticOptions.mode === "format" || diagnosticOptions.mode === "format-check" ||
+      (focused ? true : options.executeFormat ?? options.executeJest ?? true),
     mode: diagnosticOptions.mode,
     modeRuleId: modeRuleIds[diagnosticOptions.mode] ?? null,
   };

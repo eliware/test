@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { runNpmAudit } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-npm-audit.mjs";
 
 test("runs npm audit in the repository root", async () => {
@@ -41,7 +41,7 @@ test("forwards additional npm audit arguments", async () => {
     () => ["npm", []],
     ["--omit=dev"],
   );
-  expect(calls[0][1]).toEqual(["audit", "--json", "--audit-level=high", "--omit=dev"]);
+  expect(calls[0][1]).toEqual(["audit", "--omit=dev", "--json", "--audit-level=high"]);
 });
 
 test("uses npm's executable when npm invokes the harness", async () => {
@@ -59,4 +59,27 @@ test("uses npm's executable when npm invokes the harness", async () => {
   }
   expect(calls[0][0]).toBe(process.execPath);
   expect(calls[0][1][0]).toBe("C:\\npm\\cli.js");
+});
+
+test("uses the invocation environment for executable selection and child execution", async () => {
+  const calls = [];
+  const env = { npm_execpath: "C:\\selected\\npm-cli.js", PATH: "C:\\selected-bin", npm_config_registry: "https://example.invalid/" };
+  await runNpmAudit("C:\\repo", async (...args) => {
+    calls.push(args);
+    return { code: 0 };
+  }, (options) => {
+    expect(options.env).toBe(env);
+    return [process.execPath, [env.npm_execpath]];
+  }, [], env);
+  expect(calls[0][1][0]).toBe(env.npm_execpath);
+  expect(calls[0][2].env).toEqual(env);
+});
+
+test("rejects audit overrides before executable resolution or child execution", async () => {
+  const run = jest.fn();
+  const resolve = jest.fn(() => ["npm", []]);
+  await expect(runNpmAudit("C:\\repo", run, resolve, ["--audit-level=low"], {}))
+    .rejects.toThrow("cannot override");
+  expect(run).not.toHaveBeenCalled();
+  expect(resolve).not.toHaveBeenCalled();
 });

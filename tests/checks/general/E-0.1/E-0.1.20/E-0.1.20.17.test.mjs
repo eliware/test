@@ -20,6 +20,36 @@ test("requires the exact shared validation scripts", async () => {
   );
 });
 
+test("requires the pack script when the npm publication profile applies", async () => {
+  await expect(
+    run({
+      packageJson: {
+        scripts: { ...scripts, pack: "eliware-test --pack" },
+        eliware: { apply: ["npm-published"] },
+      },
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run({ packageJson: { scripts, eliware: { apply: ["npm-published"] } } }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: "package.json.scripts.pack must be exactly eliware-test --pack.",
+  });
+});
+
+test("allows only recognized capability scripts and web profile scripts", async () => {
+  const capabilityScripts = {
+    ...scripts,
+    typecheck: "tsc --noEmit",
+    build: "vite build",
+    lighthouse: "lighthouse",
+    puppeteer: "node browser-check.mjs",
+  };
+  await expect(run({
+    packageJson: { scripts: capabilityScripts, eliware: { apply: ["web"] } },
+  })).resolves.toMatchObject({ status: "pass" });
+});
+
 test("rejects unsupported direct formatter modes", async () => {
   await expect(run({ packageJson: { scripts }, mode: "unrecognized" })).resolves.toEqual({
     ruleId: "E-0.1.20.17",

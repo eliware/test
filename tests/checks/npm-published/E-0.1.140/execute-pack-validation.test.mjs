@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { executePackValidation } from "../../../../src/checks/npm-published/E-0.1.140/execute-pack-validation.mjs";
 
 test("skips pack execution outside the pack stage", async () => {
@@ -52,6 +52,20 @@ test("reports successful pack execution", async () => {
       runPack: async () => ({ code: 0, stdout: JSON.stringify([{ files: ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"].map((path) => ({ path })) }]) }),
     }),
   ).resolves.toBeNull();
+});
+
+test("executes pack for explicit pack mode when aggregate execution is disabled", async () => {
+  const runPack = jest.fn(async () => ({ code: 0, stdout: JSON.stringify([{ files: [
+    "package.json", "README.md", "LICENSE", "RELEASE_NOTES.md",
+  ].map((path) => ({ path })) }]) }));
+  await expect(executePackValidation({
+    root: "C:\\repo",
+    packageJson: { files: ["README.md", "LICENSE", "RELEASE_NOTES.md"] },
+    executePack: false,
+    mode: "pack",
+    runPack,
+  })).resolves.toBeNull();
+  expect(runPack).toHaveBeenCalledTimes(1);
 });
 
 test("rejects a successful pack without usable manifest output", async () => {

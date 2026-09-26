@@ -6,6 +6,7 @@ import { dispatchInformationalCommand } from "./dispatch-informational-command.m
 import { createValidationRunOptions } from "./create-validation-run-options.mjs";
 import { writeValidationResults } from "./write-validation-results.mjs";
 import { normalizeCliError } from "./normalize-cli-error.mjs";
+import { formatExitCode } from "./format-exit-code.mjs";
 
 export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
   try {
@@ -26,8 +27,11 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
       createValidationRunOptions(args, diagnosticOptions, options, timing, write),
     ));
     writeValidationResults(result, write, args.includes("--debug-timing"), timing, startedAt);
+    if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
     return result.code;
   } catch (error) {
-    return normalizeCliError(error, write);
+    const exitCode = normalizeCliError(error, write);
+    write(formatExitCode(exitCode));
+    return exitCode;
   }
 }

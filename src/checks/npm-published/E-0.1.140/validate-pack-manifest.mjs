@@ -15,18 +15,18 @@ function safeAllowlistEntry(entry) {
   return safeRelativePath(entry) && !/[*!?{}()[\]]/u.test(entry) && !entry.startsWith("!");
 }
 
-export function validatePackManifest(stdout, files) {
+export function validatePackManifest(stdout, files, packageName) {
   let manifest;
   try {
     manifest = JSON.parse(stdout);
   } catch {
     return "npm pack returned invalid JSON manifest.";
   }
-  const packed = Array.isArray(manifest)
-    ? manifest[0]?.files
-    : Array.isArray(manifest?.files)
-      ? manifest.files
-      : Object.values(manifest ?? {}).find((entry) => Array.isArray(entry?.files))?.files;
+  if (manifest === null || typeof manifest !== "object")
+    return "npm pack JSON manifest must contain a files array with paths.";
+  const entry = selectManifestEntry(manifest, packageName);
+  if (!entry) return "npm pack JSON manifest does not contain exactly the requested package.";
+  const packed = entry.files;
   if (!Array.isArray(packed) || packed.some((entry) => typeof entry?.path !== "string")) {
     return "npm pack JSON manifest must contain a files array with paths.";
   }
@@ -58,4 +58,19 @@ export function validatePackManifest(stdout, files) {
     return `package.json.files entries do not match packed files: ${unused.join(", ")}.`;
   }
   return null;
+}
+
+function selectManifestEntry(manifest, packageName) {
+  if (Array.isArray(manifest)) {
+    const candidates = packageName
+      ? manifest.filter((entry) => entry?.name === packageName)
+      : manifest;
+    return candidates.length === 1 ? candidates[0] : null;
+  }
+  if (Array.isArray(manifest?.files)) {
+    return !packageName || manifest.name === packageName ? manifest : null;
+  }
+  if (packageName) return manifest?.[packageName] ?? null;
+  const candidates = Object.values(manifest).filter((entry) => Array.isArray(entry?.files));
+  return candidates.length === 1 ? candidates[0] : null;
 }

@@ -43,3 +43,19 @@ test("rejects invalid tags and step identities", () => {
     digestReference: null,
   });
 });
+
+test("recognizes version identity when a documented latest alias shares the tag list", () => {
+  const push = {
+    id: "push",
+    uses: "docker/build-push-action@v6",
+    with: {
+      push: true,
+      tags: "ghcr.io/eliware/example:v1.2.3\nghcr.io/eliware/example:latest",
+    },
+  };
+  expect(findImagePush({ steps: [push] })).toBe(push);
+  expect(imageDetails(push)).toMatchObject({
+    image: "ghcr.io/eliware/example",
+    tag: "ghcr.io/eliware/example:v1.2.3",
+  });
+});

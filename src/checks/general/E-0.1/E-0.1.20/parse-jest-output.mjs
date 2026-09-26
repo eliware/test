@@ -1,5 +1,7 @@
 export function parseJsonOutput(output) {
-  const start = output.indexOf('{"numFailedTestSuites"');
+  const key = output.indexOf('"numFailedTestSuites"');
+  if (key < 0) return { text: output, report: null };
+  const start = output.lastIndexOf("{", key);
   if (start < 0) return { text: output, report: null };
   const json = output.slice(start);
   try {

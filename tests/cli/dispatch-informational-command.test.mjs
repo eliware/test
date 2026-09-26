@@ -8,6 +8,8 @@ test("dispatches version and help commands", () => {
   output.length = 0;
   expect(dispatchInformationalCommand(["--help"], (value) => output.push(value))).toBe(0);
   expect(output[0]).toContain("Usage: eliware-test");
+  expect(output[0]).toContain("tests/path.test.mjs or tests/path.spec.mjs [-- Jest arguments]");
+  expect(output[0]).toContain("forwarded to Jest");
 });
 
 test("returns no result for validation commands", () => {

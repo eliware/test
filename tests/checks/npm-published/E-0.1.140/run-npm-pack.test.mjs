@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { runNpmPack } from "../../../../src/checks/npm-published/E-0.1.140/run-npm-pack.mjs";
 
 test("runs npm pack in the repository root", async () => {
@@ -13,7 +13,7 @@ test("runs npm pack in the repository root", async () => {
   expect(calls[0][2]).toEqual({ cwd: "C:\\repo" });
 });
 
-test("forwards additional npm pack arguments", async () => {
+test("forwards safe npm pack arguments without overriding required flags", async () => {
   const calls = [];
   await runNpmPack(
     "C:\\repo",
@@ -22,9 +22,15 @@ test("forwards additional npm pack arguments", async () => {
       return { code: 0, stdout: "{}" };
     },
     () => ["npm", []],
-    ["--pack-destination", "out"],
+    ["--ignore-scripts"],
   );
-  expect(calls[0][1]).toEqual(["pack", "--dry-run", "--json", "--pack-destination", "out"]);
+  expect(calls[0][1]).toEqual(["pack", "--ignore-scripts", "--dry-run", "--json"]);
+  const run = jest.fn();
+  const resolve = jest.fn(() => ["npm", []]);
+  await expect(runNpmPack("C:\\repo", run, resolve, ["--no-dry-run"]))
+    .rejects.toThrow("cannot override");
+  expect(run).not.toHaveBeenCalled();
+  expect(resolve).not.toHaveBeenCalled();
 });
 
 test("uses npm's executable when npm invokes the harness", async () => {

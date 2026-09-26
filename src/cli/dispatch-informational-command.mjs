@@ -11,7 +11,7 @@ export function dispatchInformationalCommand(args, write) {
   }
   if (informational.length === 1 && informational[0] === "--help") {
     write(
-      "Usage: eliware-test [--help|--version|--lint|--format|--format-check|--audit|--pack|--debug-timing] [focused-test-path...]",
+      "Usage: eliware-test [--help|--version|--lint|--format|--format-check|--audit|--pack|--debug-timing] [focused-test-path...]\nFocused tests: eliware-test tests/path.test.mjs or tests/path.spec.mjs [-- Jest arguments]\nSupply one .test.* or .spec.* file under tests/; arguments after -- are forwarded to Jest.",
     );
     return 0;
   }

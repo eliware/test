@@ -28,9 +28,20 @@ test("rejects other setup commands before install", () => {
     "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > README.md",
     "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > .env.local",
     "printf '%s\\n' 'setup complete'",
+    "printf 'MAIL_OWNER_ADDRESS=$(touch /tmp/pwned)@eliware.org\\n' > .env",
+    "printf 'MAIL_OWNER_ADDRESS=`touch /tmp/pwned`@eliware.org\\n' > .env",
   ]) {
     expect(validateWorkflowPreInstallCommands("ci.yml", [{ command }], 1)).toContain(
       "safe setup or reporting",
     );
   }
+});
+
+test("accepts only fixed literal PowerShell mailbox setup", () => {
+  expect(validateWorkflowPreInstallCommands("ci.yml", [
+    { command: "Set-Content .env 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org'" },
+  ], 1)).toBeNull();
+  expect(validateWorkflowPreInstallCommands("ci.yml", [
+    { command: "Set-Content .env 'MAIL_OWNER_ADDRESS=$(Get-ChildItem)@eliware.org'" },
+  ], 1)).toContain("safe setup");
 });

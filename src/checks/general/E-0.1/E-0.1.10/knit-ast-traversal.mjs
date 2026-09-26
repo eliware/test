@@ -3,6 +3,40 @@ import { classifyCall } from "./knit-call-analysis.mjs";
 
 export function collectCalls(node, bindings, imports, calls, unsupported) {
   if (!node || typeof node !== "object") return;
+  if (node.type === "BlockStatement") {
+    const blockBindings = new Map(bindings);
+    const blockDeclarations = new Set(
+      node.body.flatMap((statement) =>
+        statement.type === "VariableDeclaration"
+          ? statement.declarations.flatMap((declaration) =>
+              declaration.id.type === "Identifier" ? [declaration.id.name] : [],
+            )
+          : [],
+      ),
+    );
+    for (const statement of node.body) {
+      collectCalls(statement, blockBindings, imports, calls, unsupported);
+    }
+    for (const [name, value] of bindings) {
+      if (blockDeclarations.has(name)) continue;
+      if (!blockBindings.has(name) || blockBindings.get(name) !== value) bindings.delete(name);
+    }
+    return;
+  }
+  if (node.type === "AssignmentExpression" || node.type === "UpdateExpression") {
+    const target = node.type === "AssignmentExpression" ? node.left : node.argument;
+    const reportsSubprocessStatus =
+      node.type === "AssignmentExpression" &&
+      target?.type === "MemberExpression" &&
+      target.object?.type === "Identifier" &&
+      target.object.name === "process" &&
+      target.property?.type === "Identifier" &&
+      target.property.name === "exitCode";
+    if (!reportsSubprocessStatus) {
+      if (target?.type === "Identifier") bindings.delete(target.name);
+      unsupported.push(node.start);
+    }
+  }
   if (node.type === "ForOfStatement") {
     const values = staticValue(node.right, bindings);
     if (Array.isArray(values)) {

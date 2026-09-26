@@ -18,6 +18,7 @@ export async function selectCoverageEvidence(
   readCandidate,
   testOutput = "",
   requireFresh = false,
+  expectedFiles = [],
 ) {
   let unusableCandidateError = null;
   for (const relativePath of candidates) {
@@ -32,7 +33,7 @@ export async function selectCoverageEvidence(
     }
   }
   if (unusableCandidateError) throw unusableCandidateError;
-  const textEvidence = parseText(testOutput);
+  const textEvidence = parseText(testOutput, expectedFiles);
   if (textEvidence && requireFresh) {
     throw new Error(
       "Jest text coverage evidence cannot prove freshness for the current run. Rerun Jest with detailed coverage enabled.",

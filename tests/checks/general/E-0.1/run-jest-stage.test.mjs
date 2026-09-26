@@ -53,3 +53,12 @@ test("maps execution errors without recording or classifying a result", async ()
   expect(recordJestContext).not.toHaveBeenCalled();
   expect(classifyJestResult).not.toHaveBeenCalled();
 });
+
+test("maps unexpected execution throws to a stable Jest startup failure", async () => {
+  executeJestCheck.mockRejectedValueOnce(new Error("preparation failed"));
+  await expect(run({ executeJest: true })).resolves.toEqual({
+    ruleId,
+    status: "fail",
+    message: "Jest could not be started: preparation failed",
+  });
+});

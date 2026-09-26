@@ -18,8 +18,13 @@ export function classifyCall(node, imports) {
   const direct =
     node.callee?.type === "Identifier" ? imports.names.get(node.callee.name) : undefined;
   const namespace = rootIdentifier(node.callee?.object);
+  const property = node.callee?.property;
   const member =
-    node.callee?.property?.type === "Identifier" ? node.callee.property.name : undefined;
+    property?.type === "Identifier"
+      ? property.name
+      : node.callee?.computed && property?.type === "StringLiteral"
+        ? property.value
+        : undefined;
   const isCall = callExpressionTypes.has(node.type);
   const isSubprocess = Boolean(
     isCall &&
@@ -35,11 +40,10 @@ export function classifyCall(node, imports) {
     ((node.callee.type === "Identifier" && !imports.names.has(node.callee.name)) ||
       (node.callee.type === "MemberExpression" &&
         !(
-          imports.namespaces.has(rootIdentifier(node.callee.object)) ||
+          (imports.namespaces.has(namespace) && subprocessFunctions.has(member)) ||
           imports.sideEffectNamespaces.has(rootIdentifier(node.callee.object)) ||
           (rootIdentifier(node.callee.object) === "process" &&
-            node.callee.property.type === "Identifier" &&
-            node.callee.property.name === "cwd")
+            member === "cwd")
         )));
   const isDynamic =
     isCall &&

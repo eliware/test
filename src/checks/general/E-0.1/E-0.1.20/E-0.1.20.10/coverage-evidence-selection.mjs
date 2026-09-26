@@ -1,7 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { readJsonCoverage } from "./coverage-report-readers.mjs";
-import { coverageCandidates as candidates } from "../cleanup-coverage.mjs";
+import { coverageCandidates as candidates } from "../coverage-report-candidates.mjs";
 import { findRepositoryFiles } from "../../find-repository-files.mjs";
 import { readExpectedCoverageShapes } from "./coverage-source-shapes.mjs";
 import { selectCoverageEvidence } from "./select-coverage-evidence.mjs";
@@ -16,6 +16,7 @@ export async function readCoverageEvidenceFromCandidates(
     requireFresh = false,
     expectedFiles: suppliedExpectedFiles,
     inventory,
+    coverageDirectory,
   } = {},
 ) {
   if (requireFresh && !startedAt) {
@@ -29,14 +30,17 @@ export async function readCoverageEvidenceFromCandidates(
   const readRepositoryText = inventory?.readText ?? read;
   const readCoverageFile = inventory ? (path) => inventory.readText(path) : read;
   const expectedShapes = await readExpectedCoverageShapes(root, expectedFiles, readRepositoryText);
-  return selectCoverageEvidence(candidates, (relativePath) =>
+  const candidatePaths = coverageDirectory
+    ? candidates.map((path) => path.slice(path.lastIndexOf("/") + 1))
+    : candidates;
+  return selectCoverageEvidence(candidatePaths, (relativePath) =>
     readJsonCoverage(
-        join(root, relativePath),
+        join(coverageDirectory ?? root, relativePath),
         relativePath,
         startedAt,
         readCoverageFile,
         statFile,
         expectedFiles,
         expectedShapes,
-      ), testOutput, requireFresh);
+      ), testOutput, requireFresh, expectedFiles);
 }

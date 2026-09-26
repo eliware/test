@@ -36,7 +36,7 @@ test("allows coverage-ignore directives in pure export barrels", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("rejects pure barrels that are not the library public entrypoint", async () => {
+test("rejects pure barrels that are not an exported public entrypoint", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-barrel-ignore-"));
   await mkdir(join(root, "src"));
   await writeFile(
@@ -49,6 +49,27 @@ test("rejects pure barrels that are not the library public entrypoint", async ()
       packageJson: { eliware: { apply: ["library"] }, exports: { ".": "./src/index.mjs" } },
     }),
   ).resolves.toMatchObject({ status: "fail" });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("allows an application public entrypoint barrel but rejects an internal application barrel", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-app-barrel-ignore-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "index.mjs"), "// istanbul ignore file\nexport * from './value.mjs';\n");
+  await writeFile(join(root, "src", "internal.mjs"), "export * from './value.mjs';\n");
+  await expect(run({
+    root,
+    packageJson: { eliware: { apply: ["application"] }, exports: { ".": "./src/index.mjs" } },
+    findBarrels: async () => ["src/index.mjs"],
+    isPureBarrel: () => true,
+  })).resolves.toMatchObject({ status: "pass" });
+  await writeFile(join(root, "src", "internal.mjs"), "// istanbul ignore file\nexport * from './value.mjs';\n");
+  await expect(run({
+    root,
+    packageJson: { eliware: { apply: ["application"] }, exports: { ".": "./src/index.mjs" } },
+    findBarrels: async () => ["src/index.mjs", "src/internal.mjs"],
+    isPureBarrel: () => true,
+  })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
 });
 

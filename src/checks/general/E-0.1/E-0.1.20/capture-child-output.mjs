@@ -1,9 +1,11 @@
 import { collectRedactionSecrets } from "../../../collect-redaction-secrets.mjs";
-import { redactProcessOutput } from "../../../redact-process-output.mjs";
+import { createRedactedTextStream } from "../../../create-redacted-text-stream.mjs";
 
 export function createChildOutputCapture(options, { onStdout, onStderr, captureStderr, env } = {}) {
   const outputLimit = options;
   const redactionSecrets = collectRedactionSecrets(env);
+  const stdoutRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1);
+  const stderrRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1);
   const stdoutChunks = [];
   const stderrChunks = [];
   let capturedLength = 0;
@@ -19,26 +21,39 @@ export function createChildOutputCapture(options, { onStdout, onStderr, captureS
   };
 
   const stream = (callback, text) => {
-    if (!callback || streamed >= outputLimit) return;
+    if (!callback || streamed >= outputLimit || text.length === 0) return;
     const remaining = outputLimit - streamed;
-    const bounded = redactProcessOutput(text, redactionSecrets).slice(0, remaining);
+    const bounded = text.slice(0, remaining);
     streamed += bounded.length;
     callback(bounded);
   };
 
+  const appendStdout = (text) => {
+    stream(onStdout, text);
+    capture(stdoutChunks, text);
+  };
+  const appendStderr = (text) => {
+    stream(onStderr, text);
+    capture(stderrChunks, captureStderr?.(text) ?? text);
+  };
+
   return {
-    redact(text) {
-      return redactProcessOutput(text, redactionSecrets);
-    },
     stdout(text) {
-      const redacted = this.redact(text);
-      stream(onStdout, redacted);
-      capture(stdoutChunks, redacted);
+      appendStdout(stdoutRedactor.push(text));
     },
     stderr(text) {
-      const redacted = this.redact(text);
-      stream(onStderr, redacted);
-      capture(stderrChunks, captureStderr?.(redacted) ?? redacted);
+      const redacted = stderrRedactor.push(text);
+      appendStderr(redacted);
+      return redacted;
+    },
+    redactComplete(text) {
+      return stderrRedactor.redactComplete(text);
+    },
+    flush() {
+      appendStdout(stdoutRedactor.finish());
+      const stderr = stderrRedactor.finish();
+      appendStderr(stderr);
+      return { stdout: "", stderr };
     },
     result() {
       return { stdout: stdoutChunks.join(""), stderr: stderrChunks.join("") };

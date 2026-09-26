@@ -69,15 +69,21 @@ test("classifies missing and summary-only candidates as unusable", async () => {
 });
 
 test("uses text evidence only when it is parseable and fresh evidence is not required", async () => {
-  await expect(selectCoverageEvidence([], jest.fn(), text)).resolves.toMatchObject({
+  await expect(selectCoverageEvidence([], jest.fn(), text, false, ["src/example.mjs"])).resolves.toMatchObject({
     source: "Jest text output",
     totals: { lines: 100 },
     gaps: [],
   });
-  await expect(selectCoverageEvidence([], jest.fn(), text, true)).rejects.toThrow(
+  await expect(selectCoverageEvidence([], jest.fn(), text, true, ["src/example.mjs"])).rejects.toThrow(
     "cannot prove freshness",
   );
   await expect(selectCoverageEvidence([], jest.fn(), "not a report")).rejects.toThrow(
+    "Coverage evidence is missing",
+  );
+});
+
+test("does not trust text coverage when discovered source files are unavailable", async () => {
+  await expect(selectCoverageEvidence([], jest.fn(), text)).rejects.toThrow(
     "Coverage evidence is missing",
   );
 });

@@ -66,6 +66,20 @@ test("rejects dynamic Knit subprocess commands", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test.each([
+  'process.env.X; import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);',
+  'new Function("return 1")(); import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);',
+])("rejects executable global expressions before validation commands", async (source) => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-global-side-effect-"));
+  await mkdir(join(root, ".knit"));
+  await writeFile(join(root, ".knit", "validate.mjs"), source);
+  await expect(run({ root })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must not execute JavaScript"),
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("rejects imported child-process functions outside the subprocess allowlist", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-import-"));
   await mkdir(join(root, ".knit"));
@@ -75,7 +89,7 @@ test("rejects imported child-process functions outside the subprocess allowlist"
   );
   await expect(run({ root })).resolves.toMatchObject({
     status: "fail",
-    message: expect.stringContaining("unsupported dynamic or state-mutating operation"),
+    message: expect.stringContaining("must not execute JavaScript"),
   });
   await rm(root, { recursive: true, force: true });
 });

@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.19.mjs";
 
 test("requires the shared audit stage script", async () => {
@@ -89,6 +89,18 @@ test("passes when the audit stage succeeds", async () => {
   ).resolves.toEqual({ ruleId: "E-0.1.20.19", status: "pass", message: "" });
 });
 
+test("executes audit for the explicit audit mode even when aggregate execution is disabled", async () => {
+  const runAudit = jest.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
+  await expect(run({
+    packageJson: { scripts: { audit: "eliware-test --audit" } },
+    root: "C:\\repo",
+    mode: "audit",
+    executeAudit: false,
+    runAudit,
+  })).resolves.toMatchObject({ status: "pass" });
+  expect(runAudit).toHaveBeenCalledTimes(1);
+});
+
 test("executes audit during the aggregate validation mode", async () => {
   let called = false;
   await expect(
@@ -100,4 +112,36 @@ test("executes audit during the aggregate validation mode", async () => {
     }),
   ).resolves.toEqual({ ruleId: "E-0.1.20.19", status: "pass", message: "" });
   expect(called).toBe(true);
+});
+
+test("passes the invocation environment through the audit adapter", async () => {
+  const env = { npm_execpath: "selected-npm-cli.js" };
+  let received;
+  await run({
+    packageJson: { scripts: { audit: "eliware-test --audit" } },
+    root: "C:\\repo",
+    executeAudit: true,
+    env,
+    runAudit: async (...args) => {
+      received = args;
+      return { code: 0 };
+    },
+  });
+  expect(received[4]).toBe(env);
+});
+
+test("rejects arguments that could weaken the audit contract", async () => {
+  const runAudit = jest.fn();
+  await expect(run({
+    packageJson: { scripts: { audit: "eliware-test --audit" } },
+    root: "C:\\repo",
+    executeAudit: true,
+    toolArgs: ["--audit-level=low"],
+    runAudit,
+  })).resolves.toMatchObject({
+    ruleId: "E-0.1.20.19",
+    status: "fail",
+    message: expect.stringContaining("cannot override"),
+  });
+  expect(runAudit).not.toHaveBeenCalled();
 });

@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { coverageMetricValues } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-metrics.mjs";
 
 test("centralizes coverage counters and completeness detection", () => {
-  expect(coverageMetricValues({ s: { 0: 1 }, b: { 0: [0] }, f: {}, l: { 1: 1 }, statementMap: { 0: {} } }, [["1", 1]])).toEqual({
+  expect(coverageMetricValues({ s: { 0: 1 }, b: { 0: [0] }, f: {}, l: { 1: 1 }, statementMap: { 0: {} }, branchMap: { 0: {} }, fnMap: {} }, [["1", 1]])).toEqual({
     values: { statements: [1], branches: [0], functions: [], lines: [1] },
     hasCounters: true,
     hasMaps: true,
@@ -12,4 +12,14 @@ test("centralizes coverage counters and completeness detection", () => {
     hasCounters: false,
     hasMaps: false,
   });
+});
+
+test("rejects missing or mismatched per-metric map and counter pairs", () => {
+  for (const incomplete of [
+    { s: { 0: 1 }, statementMap: { 0: {} } },
+    { s: { 0: 1 }, statementMap: { 1: {} }, b: {}, branchMap: {}, f: {}, fnMap: {} },
+    { s: { 0: 1 }, statementMap: { 0: {} }, b: {}, branchMap: {}, f: {} },
+  ]) {
+    expect(coverageMetricValues(incomplete, []).hasMaps).toBe(false);
+  }
 });

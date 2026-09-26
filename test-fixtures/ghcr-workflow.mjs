@@ -1,6 +1,7 @@
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { releaseTagFilter, releaseTagGuard } from "../src/checks/ghcr-published/release-version-tag.mjs";
 
 const agents = "GHCR image visibility publication workflow provenance deployment managed image.";
 const validation =
@@ -8,7 +9,7 @@ const validation =
 const publication = `name: publish
 on:
   push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+    tags: ["${releaseTagFilter}"]
 permissions:
   contents: read
   packages: write
@@ -18,11 +19,13 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: ghcr-publish
     if: startsWith(github.ref, 'refs/tags/v')
     env:
       RELEASE_REF: refs/tags/v1.2.3
     steps:
       - uses: actions/checkout@v6
+      - run: '${releaseTagGuard}'
       - id: push
         uses: docker/build-push-action@v6
         with:

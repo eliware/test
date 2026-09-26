@@ -22,7 +22,10 @@ test("reports the convention-only help contract", async () => {
 test("rejects conflicting informational and validation arguments before dispatch", async () => {
   const output = [];
   await expect(runCli(["--help", "--lint"], (value) => output.push(value))).resolves.toBe(18);
-  expect(output).toEqual(["Informational commands cannot be combined with validation arguments."]);
+  expect(output).toEqual([
+    "Informational commands cannot be combined with validation arguments.",
+    "Exit-code: 18 (convention, configuration, argument, format, or format-check failure)",
+  ]);
 });
 
 test("runs convention validation and reports debug timing when requested", async () => {
@@ -47,7 +50,8 @@ test("runs convention validation and reports debug timing when requested", async
   await expect(
     runCli(["--debug-timing"], (value) => output.push(value), root, { executeJest: false }),
   ).resolves.toBe(0);
-  expect(output.at(-1)).toMatch(/^Validation time: \d+ms$/);
+  expect(output.some((line) => /^Validation time: \d+ms$/u.test(line))).toBe(true);
+  expect(output.at(-1)).toBe("Exit-code: 0");
   expect(output.some((line) => /completed, starting/.test(line))).toBe(false);
 });
 
@@ -58,7 +62,8 @@ test("fails when package metadata cannot be read", async () => {
       executeJest: false,
     }),
   ).resolves.toBe(18);
-  expect(output).toHaveLength(1);
+  expect(output).toHaveLength(2);
+  expect(output[1]).toContain("Exit-code: 18 (");
   expect(output[0]).toMatch(/package\.json|ENOENT/i);
 });
 
@@ -71,6 +76,7 @@ test("fails fast when package.json.eliware is absent", async () => {
   ).resolves.toBe(18);
   expect(output).toEqual([
     "package.json.eliware is required for Eliware validation.\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.",
+    "Exit-code: 18 (convention, configuration, argument, format, or format-check failure)",
   ]);
 });
 
@@ -143,7 +149,10 @@ test("normalizes unexpected validation errors", async () => {
       },
     }),
   ).resolves.toBe(18);
-  expect(output).toEqual(["validation exploded"]);
+  expect(output).toEqual([
+    "validation exploded",
+    "Exit-code: 18 (convention, configuration, argument, format, or format-check failure)",
+  ]);
 });
 
 test("uses CLI defaults when optional arguments are omitted", async () => {

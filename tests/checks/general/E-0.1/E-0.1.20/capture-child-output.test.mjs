@@ -34,3 +34,21 @@ test("enforces a shared output budget across stdout and stderr", () => {
   expect(result.stdout.length + result.stderr.length).toBe(10);
   expect(result.stderr).toContain("…");
 });
+
+test("redacts credentials split between child output chunks", () => {
+  const streamed = [];
+  const capture = createChildOutputCapture(100, {
+    env: { SERVICE_TOKEN: "opaque-value-123" },
+    onStderr: (text) => streamed.push(text),
+  });
+  expect(capture.redactComplete("opaque-value-123")).toBe("[REDACTED]");
+  capture.stderr("diagnostic opaque-value-");
+  capture.stdout("ordinary output");
+  capture.stderr("123 tail");
+  capture.flush();
+  expect(capture.result()).toEqual({
+    stdout: "ordinary output",
+    stderr: "diagnostic [REDACTED] tail",
+  });
+  expect(streamed.join("")).not.toContain("opaque-value-123");
+});

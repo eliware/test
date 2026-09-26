@@ -9,8 +9,8 @@ test("requires a workflow that handles push or pull request validation", async (
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "validation.yml"),
-    "on:\n  push:\n    branches: [main]\n  pull_request:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n",
+    join(root, ".github", "workflows", "ci.yml"),
+    "on:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
   );
   await expect(run({ root, repositoryInventory: createRepositoryInventory(root) })).resolves.toEqual({
     ruleId: "E-0.1.24",
@@ -23,10 +23,27 @@ test("rejects a workflow without validation events", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "validation.yml"),
+    join(root, ".github", "workflows", "ci.yml"),
     "on:\n  workflow_dispatch:\n",
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("does not combine CI events from one workflow with validation in another", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-split-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(
+    join(root, ".github", "workflows", "ci.yml"),
+    "on:\n  push:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+  );
+  await writeFile(
+    join(root, ".github", "workflows", "publish.yml"),
+    "on:\n  push:\n    branches: [main]\n  pull_request:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+  );
+  await expect(run({ root, repositoryInventory: createRepositoryInventory(root) })).resolves.toMatchObject({
+    status: "fail",
+  });
   await rm(root, { recursive: true, force: true });
 });
 

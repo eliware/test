@@ -15,9 +15,16 @@ test("rejects a missing focused test before invoking Jest", async () => {
   expect(invoked).toBe(false);
 });
 
+test("removes the isolated coverage directory when the executor throws", async () => {
+  await expect(runJest(process.cwd(), [], async () => {
+    throw new Error("spawn failed");
+  }, { jestCli: "jest-cli" })).rejects.toThrow("spawn failed");
+});
+
 test("supports non-test focused paths without focused coverage mapping", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-"));
   await mkdir(join(root, "tests"));
+  await writeFile(join(root, "package.json"), "{}\n");
   await writeFile(join(root, "tests", "README.md"), "notes\n");
   let received;
   await runJest(root, ["tests/README.md"], async (...args) => {
@@ -33,7 +40,7 @@ test("preserves an existing VM module option and forwards non-focused arguments"
   process.env.NODE_OPTIONS = "--experimental-vm-modules --trace-warnings";
   try {
     let received;
-    await runJest("C:/fixture", ["--watch"], async (...args) => {
+    await runJest(process.cwd(), ["--watch"], async (...args) => {
       received = args;
       return { code: 0, stdout: "", stderr: "" };
     }, { jestCli: "jest-cli" });
@@ -49,7 +56,7 @@ test("raises the bounded debug-timing capture without making it unlimited", asyn
   let received;
   const onStderr = jest.fn();
   await runJest(
-    "C:/fixture",
+    process.cwd(),
     ["--debug-timing"],
     async (...args) => {
       received = args;
@@ -69,7 +76,7 @@ test("raises the bounded debug-timing capture without making it unlimited", asyn
 test("reports the last started suite when progress stops", async () => {
   let received;
   await runJest(
-    "C:/fixture",
+    process.cwd(),
     ["--debug-timing"],
     async (...args) => {
       received = args;
@@ -91,7 +98,7 @@ test("reports the last started suite when progress stops", async () => {
 
 test("uses default Jest arguments with an injected child executor", async () => {
   let received;
-  await runJest("C:/fixture", undefined, async (...args) => {
+  await runJest(process.cwd(), undefined, async (...args) => {
     received = args;
     return { code: 0, stdout: "", stderr: "" };
   }, { jestCli: "jest-cli" });
@@ -114,8 +121,8 @@ test("adds the VM module option when it is absent", async () => {
   }
 });
 
-test("leaves same-worktree run exclusion to the caller", async () => {
-  const root = "C:/shared-consumer";
+test("isolates coverage artifacts for concurrent Jest runs", async () => {
+  const root = process.cwd();
   let releaseFirst;
   let started = 0;
   const first = runJest(root, [], async () => {
@@ -130,6 +137,7 @@ test("leaves same-worktree run exclusion to the caller", async () => {
   await new Promise((resolve) => setTimeout(resolve, 10));
   expect(started).toBe(2);
   releaseFirst();
-  await Promise.all([first, second]);
+  const [firstResult, secondResult] = await Promise.all([first, second]);
   expect(started).toBe(2);
+  expect(firstResult.coverageDirectory).not.toBe(secondResult.coverageDirectory);
 });

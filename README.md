@@ -173,7 +173,7 @@ diagnostics when requesting help.
 
 ## Links
 
-- Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md) · [RELEASE_NOTES.md](RELEASE_NOTES.md)
+- Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
 - [Documentation](docs/README.md)
 - [Specifications](specs/README.md)
 - [Authority distribution](specs/authority.json)

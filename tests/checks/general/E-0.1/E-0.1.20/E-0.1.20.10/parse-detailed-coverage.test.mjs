@@ -80,7 +80,7 @@ test("normalizes absolute Windows source paths and ignores unsupported files", (
     parseDetailed({
       "C:\\repo\\src\\absolute.mjs": { s: { 0: 1 }, b: { 0: [1] }, branchMap: { 0: {} }, f: { 0: 1 }, fnMap: { 0: {} }, l: { 1: 1 }, statementMap: { 0: { start: { line: 1 } } } },
       "src/README.txt": {},
-      "src/tests/example.mjs": {},
+      "src/example.test.mjs": {},
     }).gaps,
   ).toEqual([]);
   expect(parseDetailed({ "README.md": {} })).toBeNull();
@@ -95,6 +95,38 @@ test("reports omitted in-scope source files from detailed coverage", () => {
     },
   }, ["src/present.mjs", "src/omitted.mjs"])).toThrow("src/omitted.mjs");
   expect(parseDetailed({ "tests/example.test.mjs": {} }, ["tests/example.test.mjs"])).toBeNull();
+});
+
+test("requires every reported in-scope path to match repository files and source shapes", () => {
+  const shape = {
+    statementMap: { 0: { start: { line: 1 } } },
+    branchMap: {},
+    fnMap: {},
+    lineMap: { 1: {} },
+  };
+  const evidence = {
+    s: { 0: 1 },
+    b: {},
+    f: {},
+    l: { 1: 1 },
+    statementMap: shape.statementMap,
+    branchMap: {},
+    fnMap: {},
+  };
+  expect(() => parseDetailed(
+    { "src/listed.mjs": evidence, "src/unlisted.mjs": evidence },
+    ["src/listed.mjs"],
+    { "src/listed.mjs": shape },
+  )).toThrow("non-repository source file");
+  expect(() => parseDetailed(
+    { "src/listed.mjs": evidence },
+    ["src/listed.mjs"],
+  )).toThrow("no source-derived shape");
+  expect(parseDetailed(
+    { "C:\\outside\\src\\listed.mjs": evidence },
+    ["src/listed.mjs"],
+    { "src/listed.mjs": shape },
+  ).totals.lines).toBe(100);
 });
 
 test("marks zero-total metrics as not applicable instead of reporting false coverage", () => {

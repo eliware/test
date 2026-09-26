@@ -15,7 +15,9 @@ export async function run({ root, repositoryInventory }) {
   }
   if (workflows.length === 0)
     return fail(ruleId, ".github/workflows must contain a GitHub Actions validation workflow.");
-  const workflow = workflows.find(({ document }) => workflowHasValidationEvents(document));
+  const workflow = workflows.find(
+    ({ name, document }) => name === "ci.yml" && workflowHasValidationEvents(document),
+  );
   if (!workflow)
     return fail(
       ruleId,

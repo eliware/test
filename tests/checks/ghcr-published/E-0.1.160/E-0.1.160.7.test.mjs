@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { createGhcrFixture } from "../../../../test-fixtures/ghcr-workflow.mjs";
 import { run } from "../../../../src/checks/ghcr-published/E-0.1.160/E-0.1.160.7.mjs";
 
-test("requires digest identity and rejects latest", async () => {
+test("requires an exact version tag and digest as release identity", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
   const { readFile, writeFile } = await import("node:fs/promises");
@@ -11,6 +11,26 @@ test("requires digest identity and rejects latest", async () => {
     publicationPath,
     content.replace("ghcr.io/eliware/example:v1.2.3", "ghcr.io/eliware/example:latest"),
   );
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+});
+
+test("allows a documented latest convenience alias beside the immutable version tag", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(
+    publicationPath,
+    content.replace(
+      "tags: ghcr.io/eliware/example:v1.2.3",
+      "tags: |\n            ghcr.io/eliware/example:v1.2.3\n            ghcr.io/eliware/example:latest",
+    ),
+  );
+  await writeFile(
+    `${root}/README.md`,
+    "The latest tag is a mutable convenience alias and is never the release or deployment identity.\n",
+  );
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await writeFile(`${root}/README.md`, "The latest tag is a mutable convenience alias.\n");
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 

@@ -2,13 +2,6 @@ import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
 import { runChild } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-child.mjs";
 
-function createChild() {
-  return Object.assign(new EventEmitter(), {
-    stdout: new EventEmitter(),
-    stderr: new EventEmitter(),
-  });
-}
-
 test("captures child output and reports process results", async () => {
   const output = [];
   await expect(
@@ -38,6 +31,22 @@ test("redacts stderr before progress and output callbacks", async () => {
   expect(stderr.mock.calls.flat().join(" ")).not.toContain("x");
 });
 
+test("redacts a configured credential split across stderr chunks", async () => {
+  const child = Object.assign(new EventEmitter(), { stdout: new EventEmitter(), stderr: new EventEmitter() });
+  const stderr = [];
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    env: { SERVICE_TOKEN: "opaque-value-123" },
+    onStderr: (text) => stderr.push(text),
+  });
+  child.stderr.emit("data", Buffer.from("prefix opaque-value-"));
+  child.stderr.emit("data", Buffer.from("123 suffix"));
+  child.emit("close", 0, null);
+  await expect(result).resolves.toMatchObject({ stderr: "prefix [REDACTED] suffix" });
+  expect(stderr.join("")).not.toContain("opaque-value-123");
+  expect(stderr.join("")).not.toContain("opaque-value-");
+});
+
 test("uses default options when omitted", async () => {
   await expect(
     runChild(process.execPath, ["-e", "process.stdout.write('default')"]),
@@ -48,147 +57,96 @@ test("rejects spawn errors", async () => {
   await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
 });
 
-test("terminates a child after the configured period without progress", async () => {
-  const timeout = jest.fn();
-  const result = await runChild(process.execPath, ["-e", "setTimeout(() => {}, 30000)"], {
-    progressPattern: /^progress$/m,
-    progressTimeoutMs: 1_000,
-    onTimeout: timeout,
-  });
-  expect(result).toEqual(expect.objectContaining({ timedOut: true }));
-  expect(timeout).toHaveBeenCalledTimes(1);
-});
-
-test("resets the watchdog and reports progress markers", async () => {
-  const progress = jest.fn();
-  const result = await runChild(
-    process.execPath,
-    [
-      "-e",
-      "process.stderr.write('[eliware-test-progress] start suite\\n'); setTimeout(() => {}, 30000)",
-    ],
-    {
-      progressPattern: /start suite/,
-      progressTimeoutMs: 1_000,
-      onProgress: progress,
-      captureStderr: (text) => text.replace(/^\[eliware-test-progress\].*\r?\n?/gmu, ""),
-    },
-  );
-  expect(result).toEqual(expect.objectContaining({ timedOut: true, stderr: "" }));
-  expect(progress).toHaveBeenCalledWith(expect.stringContaining("start suite"));
-});
-
-test("reports an unconfirmed failure when a child does not close after SIGKILL", async () => {
-  const child = createChild();
-  child.kill = jest.fn(() => true);
+test("ignores duplicate close, late error, progress, and watchdog events", async () => {
+  const child = Object.assign(new EventEmitter(), { stdout: new EventEmitter(), stderr: new EventEmitter() });
+  const reset = jest.fn();
   let onTimeout;
   const result = runChild("ignored", [], {
     spawnProcess: () => child,
-    terminationPlatform: "win32",
+    progressPattern: /late/u,
+    createProgressTimeout: (options) => {
+      onTimeout = options.onTimeout;
+      return { reset, stop: jest.fn() };
+    },
+  });
+  child.emit("close", 0, null);
+  child.emit("close", 1, null);
+  child.emit("error", new Error("late error"));
+  child.stderr.emit("data", "late\n");
+  onTimeout();
+  await expect(result).resolves.toMatchObject({ code: 0 });
+  expect(reset).toHaveBeenCalledTimes(1);
+});
+
+test("resets progress and confirms a child that closes after timeout", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  let onTimeout;
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    progressPattern: /started/u,
+    createProgressTimeout: (options) => {
+      onTimeout = options.onTimeout;
+      return { reset: jest.fn(), stop: jest.fn() };
+    },
+  });
+  child.stderr.emit("data", "started\n");
+  onTimeout();
+  child.emit("close", null, "SIGTERM");
+  await expect(result).resolves.toMatchObject({
+    timedOut: true,
+    terminationRequested: true,
+    terminationConfirmed: true,
+  });
+});
+
+test("reports a timeout when the child never confirms termination", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  let onTimeout;
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
     terminationGraceMs: 1,
     forceKillConfirmationMs: 1,
     createProgressTimeout: (options) => {
       onTimeout = options.onTimeout;
       return { reset: jest.fn(), stop: jest.fn() };
     },
+    terminateChild: () => true,
   });
   onTimeout();
   await expect(result).resolves.toMatchObject({
     timedOut: true,
     terminationRequested: true,
     terminationConfirmed: false,
-    signal: "SIGKILL",
   });
 });
 
-test("does not replace a close result when termination callbacks arrive late", async () => {
-  const child = createChild();
+test("settles boundedly when timeout and termination callbacks throw", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
   let onTimeout;
-  const signals = [];
   const result = runChild("ignored", [], {
     spawnProcess: () => child,
     terminationGraceMs: 1,
     forceKillConfirmationMs: 1,
+    onTimeout: () => { throw new Error("timeout callback failed"); },
     createProgressTimeout: (options) => {
       onTimeout = options.onTimeout;
       return { reset: jest.fn(), stop: jest.fn() };
     },
-    terminateChild: (_child, _platform, _killProcess, _killTree, _env, signal) => {
-      signals.push(signal);
-      if (signal === "SIGTERM") child.emit("close", 0, null);
-      return true;
-    },
+    terminateChild: () => { throw new Error("termination failed"); },
   });
   onTimeout();
-  await expect(result).resolves.toMatchObject({ code: 0, timedOut: true });
-  await new Promise((resolve) => setTimeout(resolve, 5));
-  expect(signals).toEqual(["SIGTERM", "SIGKILL"]);
-});
-
-test("ignores an error emitted after the child has closed", async () => {
-  const child = createChild();
-  const result = runChild("ignored", [], { spawnProcess: () => child });
-  child.emit("close", 0, null);
-  child.emit("error", new Error("late spawn error"));
-  await expect(result).resolves.toMatchObject({ code: 0, signal: null });
-});
-
-test("does not timeout after the child has already closed", async () => {
-  const child = createChild();
-  const onTimeout = jest.fn();
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    progressTimeoutMs: 5,
-    onTimeout,
+  await expect(result).resolves.toMatchObject({
+    timedOut: true,
+    terminationRequested: true,
+    terminationConfirmed: false,
   });
-  child.emit("close", 0, null);
-  await new Promise((resolve) => setTimeout(resolve, 15));
-  await expect(result).resolves.toMatchObject({ code: 0 });
-  expect(onTimeout).not.toHaveBeenCalled();
-});
-
-test("guards a watchdog callback that arrives after close", async () => {
-  const child = createChild();
-  let onTimeout;
-  const timeout = { reset: jest.fn(), stop: jest.fn(), wasTriggered: () => false };
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return timeout;
-    },
-  });
-  child.emit("close", 0, null);
-  onTimeout();
-  await expect(result).resolves.toMatchObject({ code: 0 });
-});
-
-test("clears the escalation timer when timeout is followed by close", async () => {
-  const child = createChild();
-  let onTimeout;
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return { reset: jest.fn(), stop: jest.fn() };
-    },
-  });
-  onTimeout();
-  child.emit("close", null, "SIGTERM");
-  await expect(result).resolves.toMatchObject({ timedOut: true, signal: "SIGTERM" });
-});
-
-test("clears the escalation timer when timeout is followed by an error", async () => {
-  const child = createChild();
-  let onTimeout;
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return { reset: jest.fn(), stop: jest.fn() };
-    },
-  });
-  onTimeout();
-  child.emit("error", new Error("late failure"));
-  await expect(result).rejects.toThrow("late failure");
 });

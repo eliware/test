@@ -4,33 +4,55 @@ import { readCoverageEvidenceFromCandidates } from "./E-0.1.20.10/coverage-evide
 import { formatCoverageGaps } from "./E-0.1.20.10/format-coverage-gaps.mjs";
 import { focusedPathFrom } from "./build-jest-arguments.mjs";
 import { resolveFocusedCoverage } from "./resolve-focused-coverage.mjs";
+import { rm } from "node:fs/promises";
 
-export async function runCoverageCheck(context, ruleId, readEvidence = readCoverageEvidenceFromCandidates) {
+export async function runCoverageCheck(context, ruleId, readEvidence = readCoverageEvidenceFromCandidates, remove = rm) {
   if (!context.executeJest) return pass(ruleId);
   if (!context.jestResult || context.jestResult.code !== 0) {
-    return fail(ruleId, "Jest results are unavailable or indicate a failed test run.");
+    const result = fail(ruleId, "Jest results are unavailable or indicate a failed test run.");
+    const cleanupError = await removeRunCoverage(context, remove);
+    return cleanupError ? fail(ruleId, `${result.message}\n${cleanupError}`) : result;
   }
+  let result;
   try {
     const focusedPath = focusedPathFrom(context.jestArgs ?? []);
     const focusedCoverage = await resolveFocusedCoverage(context.root, focusedPath);
     const expectedFiles = focusedCoverage.includes("--collectCoverageFrom")
       ? [focusedCoverage[focusedCoverage.indexOf("--collectCoverageFrom") + 1]]
       : undefined;
+    const evidenceOptions = { requireFresh: true, expectedFiles, inventory: context.repositoryInventory };
+    if (context.jestCoverageDirectory) evidenceOptions.coverageDirectory = context.jestCoverageDirectory;
     const evidence = await readEvidence(
       context.root,
       context.jestResult.stdout,
       context.jestResult.startedAt,
-      { requireFresh: true, expectedFiles, inventory: context.repositoryInventory },
+      evidenceOptions,
     );
     const assessment = assessCoverageEvidence(evidence, { focusedPath: Boolean(focusedPath) });
     if (assessment.aggregateGaps.length > 0 || assessment.hasFileGaps) {
-      return fail(
+      result = fail(
         ruleId,
         `${formatCoverageGaps(evidence)}\nAggregate gaps: ${assessment.aggregateGaps.join(", ") || "file-level gaps"}.`,
       );
-    }
+    } else result = pass(ruleId);
   } catch (error) {
-    return fail(ruleId, error.message);
+    result = fail(ruleId, error.message);
   }
-  return pass(ruleId);
+  const cleanupError = await removeRunCoverage(context, remove);
+  if (!cleanupError) return result;
+  const message = result.status === "fail" && result.message
+    ? `${result.message}\n${cleanupError}`
+    : cleanupError;
+  return fail(ruleId, message);
+}
+
+async function removeRunCoverage(context, remove) {
+  if (!context.jestCoverageDirectory) return null;
+  try {
+    await remove(context.jestCoverageDirectory, { recursive: true, force: true });
+    context.jestCoverageDirectory = undefined;
+    return null;
+  } catch (error) {
+    return `Could not remove run-scoped coverage artifacts: ${error.message}`;
+  }
 }

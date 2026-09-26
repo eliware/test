@@ -22,7 +22,16 @@ export async function runNoCoverageIgnore({
           .map(({ path }) => join(root, path))
       : await findSourceFiles(sourceRoot);
     const barrels = new Set(await findBarrels(root, undefined, repositoryInventory));
-    const allowedBarrels = new Set(findLibraryEntryPoints(packageJson));
+    const profiles = packageJson?.eliware?.apply ?? [];
+    const barrelExemptProfiles = profiles.filter((profile) => profile === "application" || profile === "library");
+    const allowedBarrels = new Set(
+      barrelExemptProfiles.length
+        ? findLibraryEntryPoints({
+            ...packageJson,
+            eliware: { ...packageJson.eliware, apply: [...profiles, "library"] },
+          })
+        : [],
+    );
     for (const file of files) {
       const source = repositoryInventory ? await repositoryInventory.readText(file) : await readFile(file, "utf8");
       const relativePath = file.slice(root.length + 1).replaceAll("\\", "/");

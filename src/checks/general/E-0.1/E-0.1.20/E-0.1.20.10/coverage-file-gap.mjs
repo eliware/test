@@ -23,7 +23,7 @@ export function fileGap(file, data, expectedShape = null) {
   ).filter(Boolean));
   const functions = Object.entries(data.f ?? {}).filter(([, count]) => count === 0)
     .map(([id]) => ({ name: data.fnMap?.[id]?.name ?? "anonymous", location: location(data.fnMap?.[id]) }));
-  const lineEntries = coverageLineEntries(data);
+  const lineEntries = coverageLineEntries(data, expectedShape?.statementMap);
   const lines = lineEntries.filter(([, count]) => count === 0).map(([line]) => line);
   const { values: metricCounters, hasCounters, hasMaps } = coverageMetricValues(data, lineEntries);
   const values = Object.fromEntries(metrics.map((metric) => [

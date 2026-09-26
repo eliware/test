@@ -33,7 +33,16 @@ function isValidDate(value) {
 }
 
 function isValidTimestamp(value) {
-  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+  if (
+    typeof value !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u.test(value)
+  ) {
+    return false;
+  }
+  const date = new Date(value);
+  const datePart = value.slice(0, 10);
+  const calendarDate = new Date(`${datePart}T00:00:00.000Z`);
+  return !Number.isNaN(date.valueOf()) && calendarDate.toISOString().slice(0, 10) === datePart;
 }
 
 function isExpired(value) {

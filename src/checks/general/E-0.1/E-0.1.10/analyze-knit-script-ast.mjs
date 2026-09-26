@@ -28,6 +28,13 @@ function containsExecutableExpression(node) {
 function isInertStatement(statement) {
   if (["ImportDeclaration", "FunctionDeclaration", "EmptyStatement"].includes(statement.type))
     return true;
+  if (statement.type === "ClassDeclaration") {
+    return !statement.superClass && !(statement.decorators?.length) && !statement.body.body.some((element) => {
+      if (element.decorators?.length || element.computed) return true;
+      if (element.type === "StaticBlock") return element.body.some((child) => !isInertStatement(child));
+      return Boolean(element.static && element.value && containsExecutableExpression(element.value));
+    });
+  }
   if (statement.type === "VariableDeclaration")
     return statement.declarations.every(
       (declaration) => !containsExecutableExpression(declaration.init),

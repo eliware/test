@@ -6,7 +6,9 @@ test("resolves npm through npm_execpath or the platform executable", () => {
     "node.exe",
     ["npm-cli.js"],
   ]);
-  expect(resolvePackExecutable({}, "win32", "node.exe")).toEqual(["npm.cmd", []]);
+  expect(() => resolvePackExecutable({}, "win32", "node.exe")).toThrow(
+    "Unable to resolve the npm CLI on Windows",
+  );
   expect(resolvePackExecutable({}, "linux", "node")).toEqual(["npm", []]);
   expect(resolvePackExecutable()).toHaveLength(2);
 });

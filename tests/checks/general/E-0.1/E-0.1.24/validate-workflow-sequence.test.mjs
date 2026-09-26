@@ -61,6 +61,18 @@ test("allows bounded setup and reporting around adjacent required commands", () 
   expect(validateWorkflowSequence("ci.yml", commands, steps, {})).toBeNull();
 });
 
+test("allows approved setup actions and rejects unreviewed actions before npm ci", () => {
+  const checkout = { uses: "actions/checkout@v6" };
+  const setupNode = { uses: "actions/setup-node@v6" };
+  const install = { run: "npm ci" };
+  const testStep = { run: "npm test" };
+  const commands = [install, testStep].map((step, index) => ({ command: step.run, index: index + 2, step }));
+  expect(validateWorkflowSequence("ci.yml", commands, [checkout, setupNode, install, testStep])).toBeNull();
+  expect(validateWorkflowSequence("ci.yml", commands, [
+    { uses: "someone/unreviewed-action@v1" }, setupNode, install, testStep,
+  ])).toContain("safe setup or reporting");
+});
+
 test("maps unsafe setup and post-test commands through sequence validation", () => {
   expect(validateWorkflowSequence("ci.yml", [
     { command: "rm -rf ." }, { command: "npm ci" }, { command: "npm test" },

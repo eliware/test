@@ -6,7 +6,7 @@ import { ruleId, run } from "../../../../src/checks/general/E-0.1/E-0.1.26.mjs";
 
 test("passes with the approved license record", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-license-"));
-  await writeFile(join(root, "LICENSE"), "MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted");
+  await writeFile(join(root, "LICENSE"), `MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE`);
   await expect(run({ root })).resolves.toEqual({ ruleId, status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });
 });
