@@ -3,13 +3,14 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 const readFile = jest.fn();
 const readReadmeSections = jest.fn();
 const readmeSectionsCacheKey = jest.fn();
-const expectedReadmeHeadings = jest.fn();
+const findMissingReadmeSections = jest.fn();
 const validateReadmeBranding = jest.fn();
 const validateReadmeMetadata = jest.fn();
 const validateReadmeRequiredContent = jest.fn();
 const inspectReadmeDocumentationIndexes = jest.fn();
 jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
-jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/read-readme-sections.mjs", () => ({ readReadmeSections, readmeSectionsCacheKey, expectedReadmeHeadings }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/read-readme-sections.mjs", () => ({ readReadmeSections, readmeSectionsCacheKey }));
+jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/find-missing-readme-sections.mjs", () => ({ findMissingReadmeSections }));
 jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-branding.mjs", () => ({ validateReadmeBranding }));
 jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-metadata.mjs", () => ({ validateReadmeMetadata }));
 jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-required-content.mjs", () => ({ validateReadmeRequiredContent }));
@@ -23,7 +24,7 @@ beforeEach(() => {
   readFile.mockResolvedValue("README content");
   readReadmeSections.mockReturnValue(new Map(headings.map((heading) => [heading, "section"])));
   readmeSectionsCacheKey.mockReturnValue("readme:sections:[]");
-  expectedReadmeHeadings.mockReturnValue(headings);
+  findMissingReadmeSections.mockReturnValue([]);
   validateReadmeBranding.mockReturnValue(null);
   validateReadmeMetadata.mockReturnValue(null);
   validateReadmeRequiredContent.mockReturnValue(null);
@@ -35,6 +36,7 @@ test("composes README structure, branding, content, metadata, and index validati
   await expect(run({ root: "/repo", packageJson })).resolves.toEqual({ ruleId: "E-0.1.1.0", status: "pass", message: "" });
   expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/README\.md$/u), "utf8");
   expect(readReadmeSections).toHaveBeenCalledWith("README content", packageJson);
+  expect(findMissingReadmeSections).toHaveBeenCalledWith(expect.any(Map), packageJson);
   expect(validateReadmeBranding).toHaveBeenCalledWith("README content");
   expect(inspectReadmeDocumentationIndexes).toHaveBeenCalledWith("/repo");
   expect(validateReadmeRequiredContent).toHaveBeenCalledWith(
@@ -53,7 +55,7 @@ test("fails for missing README or structural headings before delegated checks", 
   await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-0.1.1.0", status: "fail", message: "README.md is required." });
   expect(readReadmeSections).not.toHaveBeenCalled();
 
-  readReadmeSections.mockReturnValueOnce(new Map());
+  findMissingReadmeSections.mockReturnValueOnce(["Features", "Requirements"]);
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-0.1.1.0",
     status: "fail",

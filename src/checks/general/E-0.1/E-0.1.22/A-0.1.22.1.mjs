@@ -1,15 +1,12 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 import { readTrackedPaths } from "../E-0.1.6/read-tracked-paths.mjs";
 import { hasExplicitIgnoreRule, prohibitedTrackedPath } from "./git-ignore-policy.mjs";
-import { resolveGitExecutable } from "./resolve-git-executable.mjs";
+import { inspectGitIgnorePaths } from "./inspect-git-ignore-paths.mjs";
 import { readRepositoryText } from "../../../read-repository-text.mjs";
 
 export const ruleId = "A-0.1.22.1";
 export const parentRuleId = "E-0.1.22";
-const execFileAsync = promisify(execFile);
 const requiredPaths = new Map([
   ["dependencies", "node_modules/eliware-test"],
   ["vcs state", ".git/config"],
@@ -22,18 +19,8 @@ const requiredPaths = new Map([
   ["machine-specific files", ".idea/workspace.xml"],
 ]);
 
-export async function gitIgnores(root, path, runGit = execFileAsync, resolveGit = resolveGitExecutable) {
-  try {
-    await runGit(resolveGit(), ["-C", root, "check-ignore", "-q", "--no-index", "--", path.replaceAll("\\", "/")], { windowsHide: true });
-    return true;
-  } catch (error) {
-    if (error?.code === 1) return false;
-    return null;
-  }
-}
-
 export async function run(context) {
-  const { root, checkIgnored = gitIgnores, trackedPaths = readTrackedPaths } = context;
+  const { root, checkIgnored, checkIgnoredPaths = inspectGitIgnorePaths, trackedPaths = readTrackedPaths } = context;
   let ignoreText;
   try {
     ignoreText = await readRepositoryText(context, join(root, ".gitignore"));
@@ -41,12 +28,16 @@ export async function run(context) {
     return fail(ruleId, ".gitignore is required.");
   }
   const missing = [];
+  const explicitlyIgnoredPaths = [...requiredPaths.values()].filter((path) => hasExplicitIgnoreRule(ignoreText, path));
+  const ignoredPaths = checkIgnored ? null : await checkIgnoredPaths(root, explicitlyIgnoredPaths);
+  if (!checkIgnored && ignoredPaths === null)
+    return fail(ruleId, "Git ignore inspection was unavailable; cannot validate required ignored paths safely.");
   for (const [category, path] of requiredPaths) {
     if (!hasExplicitIgnoreRule(ignoreText, path)) {
       missing.push(category);
       continue;
     }
-    const ignored = await checkIgnored(root, path);
+    const ignored = checkIgnored ? await checkIgnored(root, path) : ignoredPaths.has(path);
     if (ignored === null) return fail(ruleId, "Git ignore inspection was unavailable; cannot validate required ignored paths safely.");
     if (!ignored) missing.push(category);
   }

@@ -1,7 +1,8 @@
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 import { readRepositoryText } from "../../../read-repository-text.mjs";
-import { commandTokens, parseKnitScript } from "./parse-knit-script.mjs";
+import { parseKnitScript } from "./parse-knit-script.mjs";
+import { commandTokens } from "./knit-command-tokens.mjs";
 
 export const ruleId = "E-0.1.10.1";
 export const parentRuleId = "E-0.1.10";

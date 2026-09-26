@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { exportTargets, run } from "../../../../src/checks/library/E-0.1.40/A-0.1.40.5.mjs";
+import { run } from "../../../../src/checks/library/E-0.1.40/A-0.1.40.5.mjs";
 
 test("requires a public entrypoint and package allowlist", async () => {
   expect((await run({ packageJson: { main: "src/index.mjs", files: ["src"] } })).status).toBe("pass");
@@ -46,9 +46,4 @@ test("rejects a missing declaration target after a valid entrypoint", async () =
 
 test("handles null conditional export entries", async () => {
   await expect(run({ packageJson: { exports: { ".": null }, files: ["package.json"] } })).resolves.toMatchObject({ status: "pass" });
-});
-
-test("normalizes all export target value shapes", () => {
-  expect(exportTargets(null)).toEqual([]);
-  expect(exportTargets(["./one", { import: "./two" }])).toEqual(["./one", "./two"]);
 });

@@ -1,33 +1,9 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 import { readTrackedPaths } from "./E-0.1.6/read-tracked-paths.mjs";
+import { findInfrastructureInternalIdentifiers } from "./find-infrastructure-internal-identifiers.mjs";
 
 export const ruleId = "E-0.1.7";
 export const parentRuleId = "E-0.1";
-
-const internalLabel = ["eliware", "internal"].join("-");
-const internalPatterns = [
-  new RegExp(`(?:^|[^a-z0-9_-])${internalLabel}(?:$|[^a-z0-9_-])`, "i"),
-  /\b(?:[a-z0-9-]+\.)*(?:internal|private)\.eliware\.org\b/i,
-  /[a-z]:[\\/]+(?:users|home|srv|var[\\/]lib)[\\/]+[^\s"'`,;\])]+/i,
-  /\/(?:home|users|srv|var\/lib)\/[^\s"'`,;\])]+/i,
-  /(?:^|[^a-z0-9])(?:C:|D:)[\\/]+(?:eliware|Users[\\/]\w+[\\/]src)(?:[\\/]|$)/i,
-  /(?:^|[^a-z0-9])file:\/\/(?:internal|private|[^/]+\.internal\.eliware\.org)(?:[\\/]|$)/i,
-];
-
-function containsBinaryControlCharacters(content) {
-  for (const character of content) {
-    const codePoint = character.codePointAt(0);
-    if (
-      (codePoint < 0x20 && ![0x09, 0x0a, 0x0d].includes(codePoint)) ||
-      (codePoint >= 0x7f && codePoint <= 0x9f)
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
 
 export async function run({
   root,
@@ -37,7 +13,6 @@ export async function run({
   readTracked = readTrackedPaths,
 }) {
   if (packageJson?.private === true) return pass(ruleId);
-  const findings = [];
   try {
     const readingTrackedFiles = suppliedFiles == null;
     const files = suppliedFiles ?? (await readTracked(root));
@@ -47,33 +22,20 @@ export async function run({
         "Git tracked-file inspection was unavailable; cannot validate public repository contents safely.",
       );
     }
-    for (const file of files) {
-      let bytes;
-      try {
-        bytes = repositoryInventory
-          ? await repositoryInventory.readBytes(join(root, file))
-          : await readFile(join(root, file));
-      } catch (error) {
-        if (readingTrackedFiles && error.code === "ENOENT") continue;
-        throw error;
-      }
-      let content;
-      try {
-        content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-      } catch {
-        continue;
-      }
-      if (containsBinaryControlCharacters(content)) continue;
-      if (internalPatterns.some((pattern) => pattern.test(content))) findings.push(file);
+    const findings = await findInfrastructureInternalIdentifiers(root, files, {
+      readBytes: repositoryInventory
+        ? (path) => repositoryInventory.readBytes(path)
+        : undefined,
+      skipMissingFiles: readingTrackedFiles,
+    });
+    if (findings.length > 0) {
+      return fail(
+        ruleId,
+        `Infrastructure-internal identifiers found in public repository files: ${findings.join(", ")}.`,
+      );
     }
   } catch (error) {
     return fail(ruleId, `Repository files could not be inspected: ${error.message}`);
-  }
-  if (findings.length > 0) {
-    return fail(
-      ruleId,
-      `Infrastructure-internal identifiers found in public repository files: ${findings.join(", ")}.`,
-    );
   }
   return pass(ruleId);
 }

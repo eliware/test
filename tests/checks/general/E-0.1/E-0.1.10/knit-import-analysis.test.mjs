@@ -4,7 +4,7 @@ import { collectImports } from "../../../../../src/checks/general/E-0.1/E-0.1.10
 
 test("collects process and side-effect import bindings", () => {
   const imports = collectImports(parse(
-    'import { spawn } from "node:child_process"; import * as fs from "node:fs"; import cp from "node:child_process";',
+    'const value = 1; import { spawn } from "node:child_process"; import * as fs from "node:fs"; import cp from "node:child_process";',
     { sourceType: "module" },
   ).program);
   expect(imports.names.get("spawn")).toBe("spawn");

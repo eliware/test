@@ -4,16 +4,7 @@ import { readRepositoryText } from "../../read-repository-text.mjs";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { resolveMarkdownLinkTarget } from "./resolve-markdown-link-target.mjs";
 import { hasMarkdownFragment } from "./validate-markdown-fragment.mjs";
-
-function validateExternalReference(reference) {
-  if (/^mailto:/iu.test(reference)) return /^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/iu.test(reference) ? null : `Documentation link is invalid: ${reference}.`;
-  try {
-    const url = new URL(reference);
-    return ["http:", "https:"].includes(url.protocol) && url.hostname ? null : `Documentation link is invalid: ${reference}.`;
-  } catch {
-    return `Documentation link is invalid: ${reference}.`;
-  }
-}
+import { validateExternalDocumentationLink } from "./validate-external-documentation-link.mjs";
 
 export async function validateMarkdownLinks(root, files, context) {
   for (const relativeFile of files.filter((file) => file.endsWith(".md"))) {
@@ -23,7 +14,7 @@ export async function validateMarkdownLinks(root, files, context) {
         return `Documentation link reference is undefined: ${referenceLabel} in ${relativeFile}.`;
       }
       if (/^[a-z][a-z\d+.-]*:/iu.test(reference)) {
-        const externalError = validateExternalReference(reference);
+        const externalError = validateExternalDocumentationLink(reference);
         if (externalError) return externalError;
         continue;
       }

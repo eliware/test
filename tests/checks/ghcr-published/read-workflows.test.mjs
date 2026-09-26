@@ -74,10 +74,13 @@ test("shares workflow discovery, source text, and parsed YAML through the run in
   try {
     const raw = await readGeneralWorkflows(root, repositoryInventory);
     const normalized = await readWorkflows(root, context);
-    const repeated = await readWorkflows(root, context);
+    const repeatedPromise = readWorkflows(root, context);
+    const repeated = await repeatedPromise;
     expect(raw[0].document).toEqual({ name: "ci", jobs: {} });
     expect(normalized[0].content).toBe("name: ci\njobs: {}\n");
     expect(repeated[0].document).toEqual(normalized[0].document);
+    expect(repeatedPromise).toBe(readWorkflows(root, context));
+    expect(repeated).toBe(normalized);
     expect(reads.get(workflowPath)).toBe(1);
     expect(directories).toEqual([workflowsDirectory]);
   } finally {

@@ -1,9 +1,9 @@
-import { basename } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 import { loadRunbookRecords } from "./load-runbook-records.mjs";
 import { readRunbookRecords } from "./read-runbook-records.mjs";
 import { validateReferences } from "./runbook-references.mjs";
 import { validateRunbookRecords } from "./validate-runbook-records.mjs";
+import { validateRunbookIndexCoverage } from "./validate-runbook-index-coverage.mjs";
 
 export const ruleId = "A-0.1.110.2";
 export const parentRuleId = "E-0.1.110";
@@ -27,12 +27,8 @@ export async function run(context) {
     const indexedPaths = new Set();
     const referenceError = await validateReferences(root, validation.filesByPath, indexedPaths, context);
     if (referenceError) return fail(ruleId, referenceError);
-    const unindexed = loaded.files.filter((file) => !indexedPaths.has(file));
-    if (unindexed.length > 0)
-      return fail(
-        ruleId,
-        `Runbook records must be indexed: ${unindexed.map((file) => basename(file)).join(", ")}.`,
-      );
+    const indexError = validateRunbookIndexCoverage(loaded.files, indexedPaths);
+    if (indexError) return fail(ruleId, indexError);
   } catch (error) {
     return fail(ruleId, `Runbook records must be valid JSON: ${error.message}`);
   }

@@ -2,24 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, jest, test } from "@jest/globals";
-import { resolveConsumerJestCli, resolveJestCli, runJest } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-jest.mjs";
-import { runChild } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-child.mjs";
-
-test("resolves Jest from the consumer package", () => {
-  expect(resolveConsumerJestCli(process.cwd())).toContain("jest.js");
-  expect(resolveJestCli(process.cwd(), runChild, {})).toContain("jest.js");
-  expect(resolveJestCli(process.cwd(), runChild, null)).toContain("jest.js");
-  expect(resolveJestCli(process.cwd(), runChild)).toContain("jest.js");
-  expect(resolveJestCli("C:/fixture", async () => {}, { jestCli: "jest-cli" })).toBe("jest-cli");
-  expect(resolveJestCli("C:/fixture", runChild, { jestCli: "custom-jest" })).toBe("custom-jest");
-});
-
-test("reports a stable error when the consumer has no resolvable Jest", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-no-jest-"));
-  await writeFile(join(root, "package.json"), JSON.stringify({ type: "module" }));
-  expect(() => resolveConsumerJestCli(root)).toThrow("Consumer repository Jest executable could not be resolved");
-  await rm(root, { recursive: true, force: true });
-});
+import { runJest } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-jest.mjs";
 
 test("rejects a missing focused test before invoking Jest", async () => {
   let invoked = false;

@@ -1,4 +1,5 @@
-import { coverageLineEntries, fileGap } from "./coverage-file-gap.mjs";
+import { fileGap } from "./coverage-file-gap.mjs";
+import { coverageLineEntries } from "./coverage-line-entries.mjs";
 import { coverageMetricValues } from "./coverage-metrics.mjs";
 import { isInScopeSource, normalizeSourcePath } from "./coverage-source-path.mjs";
 

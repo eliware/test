@@ -2,7 +2,20 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "yaml";
 
-export async function readWorkflows(root, repositoryInventory) {
+const workflowsByInventory = new WeakMap();
+
+export function readWorkflows(root, repositoryInventory) {
+  if (repositoryInventory) {
+    const cached = workflowsByInventory.get(repositoryInventory);
+    if (cached) return cached;
+    const pending = loadWorkflows(root, repositoryInventory);
+    workflowsByInventory.set(repositoryInventory, pending);
+    return pending;
+  }
+  return loadWorkflows(root);
+}
+
+async function loadWorkflows(root, repositoryInventory) {
   const directory = join(root, ".github", "workflows");
   const entries = (repositoryInventory
     ? await repositoryInventory.directoryEntries(directory)

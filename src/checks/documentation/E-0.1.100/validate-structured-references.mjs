@@ -1,65 +1,20 @@
 import { readFile, stat } from "node:fs/promises";
-import { dirname, join, relative, resolve } from "node:path";
-
-const uriPattern = /^[A-Za-z][A-Za-z\d+.-]*:/u;
-
-function resolveReference(root, file, reference, allowCrossRepository) {
-  const [path] = reference.split("#", 1);
-  if (!path || uriPattern.test(path)) return null;
-  const target = path.startsWith("/") ? resolve(root, path.slice(1)) : resolve(dirname(file), path);
-  const fromRoot = relative(root, target);
-  const external = fromRoot.startsWith("..") || fromRoot.includes(":");
-  if (external && !allowCrossRepository)
-    throw new Error(`${reference} resolves outside the repository`);
-  return { target, external };
-}
-
-async function readJson(file, inventory) {
-  return inventory
-    ? inventory.readParsed(file, "json", JSON.parse)
-    : JSON.parse(await readFile(file, "utf8"));
-}
-
-async function readRegisteredRepositoryRoots(root, inventory) {
-  try {
-    const authorityFile = join(root, "specs", "authority.json");
-    const authority = await readJson(authorityFile, inventory);
-    if (typeof authority.globalAuthorityMap !== "string") return null;
-    const mapPath = resolve(dirname(authorityFile), authority.globalAuthorityMap);
-    const map = await readJson(mapPath, inventory);
-    if (!Array.isArray(map.repositoryRegistry)) return null;
-    return map.repositoryRegistry
-      .filter((entry) => typeof entry?.path === "string")
-      .map((entry) => resolve(dirname(mapPath), entry.path));
-  } catch {
-    return null;
-  }
-}
-
-function isWithinRepository(target, repositoryRoot) {
-  const path = relative(repositoryRoot, target);
-  return !/^(?:\.\.(?:[/\\]|$)|[A-Za-z]:)/u.test(path);
-}
+import { join } from "node:path";
+import { collectStructuredReferences } from "./collect-structured-references.mjs";
+import { isWithinRegisteredRepository, resolveStructuredReference } from "./resolve-structured-reference.mjs";
+import { readRegisteredRepositoryRoots } from "./read-registered-repository-roots.mjs";
 
 export async function validateStructuredReferences(root, files, inventory) {
   let registeredRepositoryRoots;
   let registryLoaded = false;
   for (const relativeFile of files) {
     const file = join(root, relativeFile);
-    const document = await readJson(file, inventory);
-    const references = [];
-    const visit = (value, crossRepository = false) => {
-      if (!value || typeof value !== "object") return;
-      if (!Array.isArray(value) && typeof value.path === "string") {
-        references.push({ path: value.path, crossRepository });
-      }
-      for (const [key, child] of Object.entries(value)) {
-        visit(child, crossRepository || key === "crosslinks");
-      }
-    };
-    visit(document);
+    const document = inventory
+      ? await inventory.readParsed(file, "json", JSON.parse)
+      : JSON.parse(await readFile(file, "utf8"));
+    const references = collectStructuredReferences(document);
     for (const reference of references) {
-      const resolved = resolveReference(root, file, reference.path, reference.crossRepository);
+      const resolved = resolveStructuredReference(root, file, reference.path, reference.crossRepository);
       if (!resolved) continue;
       if (resolved.external) {
         if (!registryLoaded) {
@@ -69,7 +24,7 @@ export async function validateStructuredReferences(root, files, inventory) {
         if (
           registeredRepositoryRoots &&
           !registeredRepositoryRoots.some((repositoryRoot) =>
-            isWithinRepository(resolved.target, repositoryRoot),
+            isWithinRegisteredRepository(resolved.target, repositoryRoot),
           )
         ) {
           throw new Error(`${reference.path} is outside every registered repository path`);

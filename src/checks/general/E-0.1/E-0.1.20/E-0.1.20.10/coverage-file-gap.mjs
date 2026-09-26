@@ -1,5 +1,6 @@
 import { coverageMetricValues } from "./coverage-metrics.mjs";
 import { validateCoverageFileEvidence } from "./validate-coverage-file-evidence.mjs";
+import { coverageLineEntries } from "./coverage-line-entries.mjs";
 
 const metrics = ["statements", "branches", "functions", "lines"];
 
@@ -11,20 +12,6 @@ function location(entry) {
   return entry?.start?.line
     ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ""}`
     : "unknown";
-}
-
-export function coverageLineEntries(data) {
-  const explicit = Object.entries(data.l ?? {});
-  if (explicit.length > 0) return explicit;
-  const lines = new Map();
-  for (const [id, entry] of Object.entries(data.statementMap ?? {})) {
-    const line = entry?.start?.line;
-    if (line) {
-      const count = Number(data.s?.[id] ?? 0);
-      lines.set(String(line), lines.has(String(line)) ? Math.min(lines.get(String(line)), count) : count);
-    }
-  }
-  return [...lines.entries()];
 }
 
 export function fileGap(file, data, expectedShape = null) {

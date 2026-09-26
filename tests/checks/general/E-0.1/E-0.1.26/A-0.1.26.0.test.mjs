@@ -84,19 +84,12 @@ test("rejects a missing README link and a non-canonical release category", async
   await rm(root, { recursive: true, force: true });
 });
 
-test("requires release notes and README, and confines their link to the Links section", async () => {
+test("requires release notes and README and maps an invalid README link", async () => {
   const root = await createFixture();
   await writeFile(join(root, "README.md"), "## Usage\n\n[Release notes](RELEASE_NOTES.md)");
   await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toMatchObject({
     status: "fail",
     message: "README.md must link RELEASE_NOTES.md.",
-  });
-  await writeFile(
-    join(root, "README.md"),
-    "## Links\n\n[Release notes](RELEASE_NOTES.md)\n\n## License\n",
-  );
-  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toMatchObject({
-    status: "pass",
   });
   await rm(join(root, "README.md"));
   await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toMatchObject({

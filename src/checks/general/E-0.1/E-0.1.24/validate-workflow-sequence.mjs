@@ -1,13 +1,8 @@
 import { findValidationCommandPair } from "./find-validation-command-pair.mjs";
 import { hasAdjacentValidationSteps } from "./has-adjacent-validation-steps.mjs";
 import { validateValidationJobConditions } from "./validate-validation-job-conditions.mjs";
-
-const safeReportingCommand =
-  /^(?:echo|printf)(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
-const safePreInstallReportingCommand =
-  /^echo(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
-const safeEnvironmentSetup =
-  /^printf\s+'MAIL_OWNER_ADDRESS=[A-Za-z0-9_+.-]+@eliware\.org\\n'\s+>\s+\.env$/u;
+import { validateWorkflowPreInstallCommands } from "./validate-workflow-pre-install-commands.mjs";
+import { validateWorkflowPostTestCommands } from "./validate-workflow-post-test-commands.mjs";
 
 export function validateWorkflowSequence(name, commands, steps = commands, job = {}) {
   const pair = findValidationCommandPair(name, commands);
@@ -17,20 +12,9 @@ export function validateWorkflowSequence(name, commands, steps = commands, job =
     return `${name} must run npm ci immediately followed by npm test with no intervening steps.`;
   const conditionError = validateValidationJobConditions(install, test, job);
   if (conditionError) return `${name} ${conditionError}`;
-  if (
-    commands.some(
-      ({ command }, index) =>
-        index < commandIndex(install) &&
-        !safePreInstallReportingCommand.test(command) &&
-        !safeEnvironmentSetup.test(command),
-    )
-  )
-    return `${name} may only run safe setup or reporting commands before npm ci.`;
-  if (
-    commands.some(
-      ({ command }, index) => index > commandIndex(test) && !safeReportingCommand.test(command),
-    )
-  )
-    return `${name} may only run reporting commands after npm test.`;
+  const setupError = validateWorkflowPreInstallCommands(name, commands, commandIndex(install));
+  if (setupError) return setupError;
+  const reportingError = validateWorkflowPostTestCommands(name, commands, commandIndex(test));
+  if (reportingError) return reportingError;
   return null;
 }

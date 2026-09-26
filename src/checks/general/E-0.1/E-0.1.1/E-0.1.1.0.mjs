@@ -4,8 +4,8 @@ import { fail, pass } from "../../../check-result.mjs";
 import {
   readReadmeSections,
   readmeSectionsCacheKey,
-  expectedReadmeHeadings,
 } from "./read-readme-sections.mjs";
+import { findMissingReadmeSections } from "./find-missing-readme-sections.mjs";
 import { validateReadmeBranding } from "./validate-readme-branding.mjs";
 import { validateReadmeMetadata } from "./validate-readme-metadata.mjs";
 import { validateReadmeRequiredContent } from "./validate-readme-required-content.mjs";
@@ -28,7 +28,7 @@ export async function run(context) {
     readmeSectionsCacheKey(packageJson),
     (content) => readReadmeSections(content, packageJson),
   );
-  const missing = expectedReadmeHeadings(packageJson).filter((section) => section !== "Table of Contents" && !sections.get(section));
+  const missing = findMissingReadmeSections(sections, packageJson);
   if (missing.length > 0) {
     return fail(ruleId, `README.md is missing required sections: ${missing.join(", ")}.`);
   }

@@ -4,9 +4,17 @@ import { parse } from "yaml";
 import { normalizeWorkflowDocument } from "./normalize-workflow-document.mjs";
 
 const workflowsByContext = new WeakMap();
+const workflowsByInventory = new WeakMap();
 
 export function readWorkflows(root, context) {
-  if (context?.repositoryInventory) return loadWorkflows(root, context.repositoryInventory);
+  if (context?.repositoryInventory) {
+    const inventory = context.repositoryInventory;
+    const cached = workflowsByInventory.get(inventory);
+    if (cached) return cached;
+    const pending = loadWorkflows(root, inventory);
+    workflowsByInventory.set(inventory, pending);
+    return pending;
+  }
   if (context && typeof context === "object") {
     const cached = workflowsByContext.get(context);
     if (cached) return cached;

@@ -33,6 +33,7 @@ test("reads and parses workflows through the run inventory cache", async () => {
   });
   const first = await readWorkflows(root, repositoryInventory);
   const second = await readWorkflows(root, repositoryInventory);
+  expect(second).toBe(first);
   expect(first).toEqual([{ name: "ci.yml", document: { name: "ci", jobs: {} } }]);
   expect(second[0].document).toBe(first[0].document);
   expect(reads.get(join(workflows, "ci.yml"))).toBe(1);

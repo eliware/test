@@ -2,7 +2,7 @@ import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
-import { gitIgnores, run } from "../../../../../src/checks/general/E-0.1/E-0.1.22/A-0.1.22.1.mjs";
+import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.22/A-0.1.22.1.mjs";
 import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 test("requires the deterministic repository ignore categories", async () => {
@@ -32,6 +32,25 @@ test("uses cached inventory text for .gitignore", async () => {
   expect(reads.get(ignoreFile)).toBe(1);
 });
 
+test("batches explicit Git ignore checks into a single lookup", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-batch-"));
+  await writeFile(join(root, ".gitignore"), "node_modules/\n.git/\ncoverage/\ndist/\nbuild/\n.cache/\n.env*\n.vscode/\n.idea/\n");
+  let calls = 0;
+  const checkIgnoredPaths = async (_root, paths) => { calls += 1; return new Set(paths); };
+  await expect(run({ root, checkIgnoredPaths, trackedPaths: async () => [] })).resolves.toMatchObject({ status: "pass" });
+  expect(calls).toBe(1);
+});
+
+test("fails closed when the batched Git ignore lookup is unavailable", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-batch-failure-"));
+  await writeFile(join(root, ".gitignore"), "node_modules/\n.git/\ncoverage/\ndist/\nbuild/\n.cache/\n.env*\n.vscode/\n.idea/\n");
+  await expect(run({ root, checkIgnoredPaths: async () => null })).resolves.toEqual({
+    ruleId: "A-0.1.22.1",
+    status: "fail",
+    message: "Git ignore inspection was unavailable; cannot validate required ignored paths safely.",
+  });
+});
+
 test("fails when .gitignore is absent", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-"));
   await expect(run({ root })).resolves.toEqual({
@@ -39,31 +58,6 @@ test("fails when .gitignore is absent", async () => {
     status: "fail",
     message: ".gitignore is required.",
   });
-});
-
-test("uses Git ignore machinery and handles an unignored path", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-"));
-  await writeFile(join(root, ".gitignore"), "node_modules/\n");
-  expect(await gitIgnores(root, "not-ignored.txt")).toBe(null);
-  expect(await gitIgnores(process.cwd(), "node_modules/eliware-test")).toBe(true);
-});
-
-test("fails closed when Git returns an unexpected error", async () => {
-  await expect(gitIgnores("C:/repo", "file", async () => { throw { code: 2 }; })).resolves.toBe(null);
-  await expect(gitIgnores("C:/repo", "file", async () => { throw { code: 1 }; })).resolves.toBe(false);
-});
-
-test("uses the platform Git executable adapter", async () => {
-  let command;
-  await gitIgnores("C:/repo", "file", async (resolved) => { command = resolved; }, () => "git.exe");
-  expect(command).toBe("git.exe");
-});
-
-test("uses an explicitly resolved native Git path for ignore inspection", async () => {
-  const nativeGit = "C:\\Program Files\\Git\\cmd\\git.exe";
-  let command;
-  await gitIgnores("C:/repo", "file", async (resolved) => { command = resolved; }, () => nativeGit);
-  expect(command).toBe(nativeGit);
 });
 
 test("reports an omitted dependency category", async () => {

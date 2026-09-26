@@ -1,31 +1,12 @@
-import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
 import { prepareJestRun } from "./prepare-jest-run.mjs";
-export function resolveConsumerJestCli(root) {
-  const requireFromConsumer = createRequire(join(root, "package.json"));
-  for (const candidate of ["jest-cli/bin/jest.js", "jest/bin/jest.js"]) {
-    try {
-      return requireFromConsumer.resolve(candidate);
-    } catch {}
-  }
-  try {
-    const packageEntry = requireFromConsumer.resolve("jest-cli");
-    return join(dirname(packageEntry), "..", "bin", "jest.js");
-  } catch (error) {
-    throw new Error(`Consumer repository Jest executable could not be resolved: ${error.message}`, { cause: error });
-  }
-}
-
-export function resolveJestCli(root, execute, options = {}) {
-  return options?.jestCli ?? resolveConsumerJestCli(root);
-}
+import { resolveJestCli } from "./resolve-jest-cli.mjs";
 
 export async function runJest(root, args, execute, options) {
   args ??= [];
   const prepared = await prepareJestRun(
     root,
     args,
-    (consumerRoot, prepareOptions) => resolveJestCli(consumerRoot, execute, prepareOptions),
+    (consumerRoot, prepareOptions) => resolveJestCli(consumerRoot, prepareOptions),
     options,
   );
   return execute(prepared.command, prepared.args, prepared.options);

@@ -5,20 +5,10 @@ import { fail, pass } from "../../../check-result.mjs";
 import { parseReleaseNotes } from "./parse-release-notes.mjs";
 import { validateReleaseNoteContent } from "./validate-release-note-content.mjs";
 import { validateReleaseNoteOrder } from "./validate-release-note-order.mjs";
+import { validateReadmeReleaseNotesLink } from "./validate-readme-release-notes-link.mjs";
 
 export const ruleId = "A-0.1.26.0";
 export const parentRuleId = "E-0.1.26";
-
-function hasReleaseNotesLink(readme) {
-  const lines = readme.split(/\r?\n/u);
-  const linksHeading = lines.findIndex((line) => /^## Links\s*$/u.test(line));
-  if (linksHeading < 0) return false;
-  const nextSection = lines.findIndex((line, index) => index > linksHeading && /^##\s/u.test(line));
-  const linksSection = lines
-    .slice(linksHeading + 1, nextSection < 0 ? undefined : nextSection)
-    .join("\n");
-  return /\[[^\]]+\]\((?:\.\/)?RELEASE_NOTES\.md(?:#[^)]+)?\)/iu.test(linksSection);
-}
 
 export async function run(context) {
   const { root, packageJson } = context;
@@ -42,6 +32,7 @@ export async function run(context) {
   if (contentError) return fail(ruleId, `RELEASE_NOTES.md ${contentError}`);
   const orderError = validateReleaseNoteOrder(parsed.entries);
   if (orderError) return fail(ruleId, `RELEASE_NOTES.md ${orderError}`);
-  if (!hasReleaseNotesLink(readme)) return fail(ruleId, "README.md must link RELEASE_NOTES.md.");
+  const linkError = validateReadmeReleaseNotesLink(readme);
+  if (linkError) return fail(ruleId, linkError);
   return pass(ruleId);
 }

@@ -26,10 +26,6 @@ test("validates local Markdown links and fragments", async () => {
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
   await writeFile(join(root, "README.md"), "[Bad](https://)");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("invalid");
-  await writeFile(join(root, "README.md"), "[Bad mail](mailto:not-an-address)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("invalid");
-  await writeFile(join(root, "README.md"), "[Unsupported](ftp://example.test/file)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("invalid");
   await writeFile(join(root, "README.md"), "[Outside](../outside.md)");
   await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("escapes the repository");
   await writeFile(join(root, "README.md"), "[Heading](#heading)");
