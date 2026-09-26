@@ -5,7 +5,7 @@ import { prepareValidationExemptions } from "./prepare-validation-exemptions.mjs
 import { discoverAllChecks } from "./discover-checks.mjs";
 import { validateBundledDirectiveCompleteness } from "./validate-bundled-directive-completeness.mjs";
 import { prepareValidationPlan } from "./prepare-validation-plan.mjs";
-import { findRepositoryFiles } from "../checks/general/E-1/find-repository-files.mjs";
+import { findRepositoryFiles } from "../checks/general/E-0.1/find-repository-files.mjs";
 
 export const validationDependencies = Object.freeze({
   loadValidationTarget,

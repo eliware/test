@@ -13,12 +13,12 @@ const profileDocuments = [
       version: "8.0",
       directives: [
         {
-          id: "E-1",
+          id: "E-0.1",
           dos: ["General rule."],
           donts: ["General prohibition."],
           directives: [
             {
-              id: "A-1.0",
+              id: "A-0.1.0",
               dos: ["Specific rule."],
               donts: ["Specific prohibition."],
               examples: [{ purpose: "Example", markdown: "A literal example." }],
@@ -32,7 +32,7 @@ const profileDocuments = [
     source: "application.json",
     document: {
       version: "8.0",
-      directives: [{ id: "E-1.130", dos: ["Application rule."], donts: ["Bad application."] }],
+      directives: [{ id: "E-0.1.130", dos: ["Application rule."], donts: ["Bad application."] }],
     },
   },
 ];
@@ -42,12 +42,12 @@ test("derives profiles and complete rule records from local specification docume
   expect(authority.version).toBe(bundledConventionVersion);
   expect(Object.keys(authority.profiles)).toEqual(["general", "application"]);
   expect(authority.directives).toEqual({
-    "E-1": "general",
-    "A-1.0": "general",
-    "E-1.130": "application",
+    "E-0.1": "general",
+    "A-0.1.0": "general",
+    "E-0.1.130": "application",
   });
-  expect(authority.rules["A-1.0"]).toEqual({
-    id: "A-1.0",
+  expect(authority.rules["A-0.1.0"]).toEqual({
+    id: "A-0.1.0",
     dos: ["Specific rule."],
     donts: ["Specific prohibition."],
     examples: [{ purpose: "Example", markdown: "A literal example." }],
@@ -89,7 +89,7 @@ test("rejects empty, mismatched, duplicate, or malformed local profile specs", (
         { source: "other.json", document: profileDocuments[0].document },
       ],
     }),
-  ).toThrow("Duplicate bundled convention directive ID: E-1");
+  ).toThrow("Duplicate bundled convention directive ID: E-0.1");
   expect(() =>
     readBundledProfileAuthority({
       documents: [{ source: "../general.json", document: profileDocuments[0].document }],
@@ -120,7 +120,7 @@ test("rejects empty, mismatched, duplicate, or malformed local profile specs", (
           source: "general.json",
           document: {
             version: bundledConventionVersion,
-            directives: [{ id: "E-1", dos: ["rule"], donts: ["bad"], examples: {} }],
+            directives: [{ id: "E-0.1", dos: ["rule"], donts: ["bad"], examples: {} }],
           },
         },
       ],

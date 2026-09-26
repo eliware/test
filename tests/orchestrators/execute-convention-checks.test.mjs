@@ -5,18 +5,18 @@ test("skips an exempted parent and all descendants", async () => {
   const calls = [];
   const checks = [
     {
-      ruleId: "E-1",
+      ruleId: "E-0.1",
       run: async () => {
         calls.push("parent");
-        return { ruleId: "E-1", status: "pass", message: "" };
+        return { ruleId: "E-0.1", status: "pass", message: "" };
       },
     },
     {
-      ruleId: "A-1.0",
-      parentRuleId: "E-1",
+      ruleId: "A-0.1.0",
+      parentRuleId: "E-0.1",
       run: async () => {
         calls.push("child");
-        return { ruleId: "A-1.0", status: "pass", message: "" };
+        return { ruleId: "A-0.1.0", status: "pass", message: "" };
       },
     },
     {
@@ -27,7 +27,7 @@ test("skips an exempted parent and all descendants", async () => {
       },
     },
   ];
-  const results = await executeConventionChecks(checks, {}, new Set(["E-1"]));
+  const results = await executeConventionChecks(checks, {}, new Set(["E-0.1"]));
   expect(calls).toEqual(["other"]);
   expect(results).toEqual([{ ruleId: "E-2", status: "pass", message: "" }]);
 });
@@ -35,7 +35,7 @@ test("skips an exempted parent and all descendants", async () => {
 test("rejects a check result with the wrong identity", async () => {
   await expect(
     executeConventionChecks(
-      [{ ruleId: "E-1", run: async () => ({ ruleId: "E-2", status: "pass", message: "" }) }],
+      [{ ruleId: "E-0.1", run: async () => ({ ruleId: "E-2", status: "pass", message: "" }) }],
       {},
       new Set(),
     ),
@@ -48,9 +48,9 @@ test("records thrown check errors and continues to later selected checks", async
   const results = await executeConventionChecks(
     [
       {
-        ruleId: "E-1",
+        ruleId: "E-0.1",
         run: async () => {
-          calls.push("E-1");
+          calls.push("E-0.1");
           throw new Error("inspection failed");
         },
       },
@@ -65,9 +65,9 @@ test("records thrown check errors and continues to later selected checks", async
     { timing },
     new Set(),
   );
-  expect(calls).toEqual(["E-1", "E-2"]);
+  expect(calls).toEqual(["E-0.1", "E-2"]);
   expect(results).toEqual([
-    { ruleId: "E-1", status: "fail", message: "Check execution threw: inspection failed" },
+    { ruleId: "E-0.1", status: "fail", message: "Check execution threw: inspection failed" },
     { ruleId: "E-2", status: "pass", message: "" },
   ]);
   expect(timing.end).toHaveBeenCalledTimes(2);
@@ -86,30 +86,30 @@ test("reports a stable diagnostic when a check throws a non-Error value", async 
 });
 
 test("rejects an incomplete selected check before execution", async () => {
-  await expect(executeConventionChecks([{ ruleId: "E-1.99" }], {}, new Set())).rejects.toThrow(
-    "Selected check E-1.99 is incomplete",
+  await expect(executeConventionChecks([{ ruleId: "E-0.1.99" }], {}, new Set())).rejects.toThrow(
+    "Selected check E-0.1.99 is incomplete",
   );
 });
 
 test("runs only the selected operational check for an explicit mode", async () => {
   const calls = [];
-  const checks = ["E-1.4", "E-1.20.17", "E-1.20.19"].map((ruleId) => ({
+  const checks = ["E-0.1.4", "E-0.1.20.17", "E-0.1.20.19"].map((ruleId) => ({
     ruleId,
     run: async () => {
       calls.push(ruleId);
       return { ruleId, status: "pass", message: "" };
     },
   }));
-  await expect(executeConventionChecks(checks, { modeRuleId: "E-1.20.17" }, new Set())).resolves.toEqual([
-    { ruleId: "E-1.20.17", status: "pass", message: "" },
+  await expect(executeConventionChecks(checks, { modeRuleId: "E-0.1.20.17" }, new Set())).resolves.toEqual([
+    { ruleId: "E-0.1.20.17", status: "pass", message: "" },
   ]);
-  expect(calls).toEqual(["E-1.20.17"]);
+  expect(calls).toEqual(["E-0.1.20.17"]);
 });
 
 test("fails when an explicit mode has no selected owner", async () => {
   await expect(executeConventionChecks(
-    [{ ruleId: "E-1.4", run: async () => ({ ruleId: "E-1.4", status: "pass", message: "" }) }],
-    { modeRuleId: "E-1.20.19" },
+    [{ ruleId: "E-0.1.4", run: async () => ({ ruleId: "E-0.1.4", status: "pass", message: "" }) }],
+    { modeRuleId: "E-0.1.20.19" },
     new Set(),
   )).rejects.toThrow("is unavailable in the selected checks");
 });
@@ -132,7 +132,7 @@ test("executes selected non-deterministic checks instead of silently skipping th
 test("does not execute advisory-only placeholder checks", async () => {
   const run = jest.fn();
   const results = await executeConventionChecks(
-    [{ ruleId: "E-1.20.3", applicability: "advisory-only", run }],
+    [{ ruleId: "E-0.1.20.3", applicability: "advisory-only", run }],
     {},
     new Set(),
   );

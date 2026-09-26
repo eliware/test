@@ -10,7 +10,7 @@ test("builds profile applicability and complete directive records", () => {
           version: "8.0",
           directives: [
             {
-              id: "E-1",
+              id: "E-0.1",
               dos: ["Do this."],
               donts: ["Do not do that."],
               examples: [{ markdown: "example" }],
@@ -22,8 +22,8 @@ test("builds profile applicability and complete directive records", () => {
     "8.0",
   );
   expect(authority.profiles.general).toEqual({ profile: "general" });
-  expect(authority.rules["E-1"]).toEqual({
-    id: "E-1",
+  expect(authority.rules["E-0.1"]).toEqual({
+    id: "E-0.1",
     dos: ["Do this."],
     donts: ["Do not do that."],
     examples: [{ markdown: "example" }],

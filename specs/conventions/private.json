@@ -11,7 +11,7 @@
   ],
   "directives": [
     {
-      "id": "E-1.150",
+      "id": "E-0.1.150",
       "dos": [
         "Private repositories must apply private.json and set package.json private to true.",
         "Private repositories may publish authorized GHCR images without becoming npm packages."
@@ -21,7 +21,7 @@
       ],
       "directives": [
         {
-          "id": "E-1.150.0",
+          "id": "E-0.1.150.0",
           "dos": [
             "After the seven general AGENTS.md headings, add a ## Private distribution section. Document private distribution restrictions, access boundaries, and non-public publication rules."
           ],
@@ -30,7 +30,7 @@
           ]
         },
         {
-          "id": "A-1.150.1",
+          "id": "A-0.1.150.1",
           "dos": [
             "Private-repository CI must contain validation only; any authorized GHCR publication must be isolated to exact v#.#.# tags and separately approved."
           ],

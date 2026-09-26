@@ -12,7 +12,7 @@
   ],
   "directives": [
     {
-      "id": "E-1.50",
+      "id": "E-0.1.50",
       "dos": [
         "These conventions apply to repositories containing web application code.",
         "Web application repositories must also apply application.json."
@@ -22,14 +22,14 @@
       ],
       "directives": [
         {
-          "id": "A-1.50.0",
+          "id": "A-0.1.50.0",
           "dos": [
             "Every web application repository must extend the application AGENTS.md requirements with applicable web guidance."
           ],
           "donts": ["A web application repository must not omit AGENTS.md."],
           "directives": [
             {
-              "id": "A-1.50.0.1",
+              "id": "A-0.1.50.0.1",
               "dos": [
                 "After the seven general AGENTS.md headings, add a ## Web section. Document routes and route ownership, assets and public root, runtime/build configuration, development-server ports, browser validation commands, build output paths, and deployment boundaries. State explicitly when any of these categories does not apply."
               ],
@@ -40,7 +40,7 @@
           ]
         },
         {
-          "id": "E-1.50.1",
+          "id": "E-0.1.50.1",
           "dos": [
             "Web applications must use public/ as the default public asset root and exclude dist/, build/, coverage/, node_modules/, and .git/ from public assets.",
             "A web application may override the root only with eliware.webRoot as a non-empty package.json string and may declare exclusions only with eliware.webAssetExcludes as a string array."
@@ -50,7 +50,7 @@
           ]
         },
         {
-          "id": "E-1.50.2",
+          "id": "E-0.1.50.2",
           "dos": [
             "Web projects that own browser, Lighthouse, smoke, live-system, or end-to-end acceptance checks must explicitly document the required checks and expected results for owner and QA review."
           ],
@@ -59,7 +59,7 @@
           ]
         },
         {
-          "id": "E-1.50.4",
+          "id": "E-0.1.50.4",
           "dos": [
             "Web applications must define a non-empty build script using the repository's direct build tool and must pass `npm run build` during aggregate validation and before release consideration."
           ],
@@ -68,7 +68,7 @@
           ]
         },
         {
-          "id": "E-1.50.5",
+          "id": "E-0.1.50.5",
           "dos": [
             "Web applications must declare Lighthouse and Puppeteer as direct dependencies and define `lighthouse` and `puppeteer` scripts that invoke those web-app-owned tools.",
             "Web-specific Lighthouse and Puppeteer scripts are additional application checks; validation must verify their dependencies and script definitions but must not run them automatically because they require a live server."
@@ -78,7 +78,7 @@
           ]
         },
         {
-          "id": "A-1.50.3",
+          "id": "A-0.1.50.3",
           "dos": [
             "Web README.md must add Configuration, Routes, Assets, Development server, Build, and Deployment, in that order, documenting runtime settings, ports, public asset root, browser validation, build output, and deployment boundaries. Configuration merges with the application Configuration heading required by application.json. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
           ],

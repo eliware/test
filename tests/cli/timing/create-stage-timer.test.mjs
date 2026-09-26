@@ -16,10 +16,10 @@ test("streams one live line per check", () => {
   let now = 1000;
   const output = [];
   const timer = createStageTimer(true, () => now, (text) => output.push(text));
-  timer.start("E-1");
+  timer.start("E-0.1");
   now = 2500;
-  timer.end("E-1");
-  expect(output).toEqual(["[eliware-test] Running E-1...", " E-1 completed — 1.500s\n"]);
+  timer.end("E-0.1");
+  expect(output).toEqual(["[eliware-test] Running E-0.1...", " E-0.1 completed — 1.500s\n"]);
 });
 
 test("retains stage transitions for non-check orchestration timing", () => {
@@ -34,9 +34,9 @@ test("retains stage transitions for non-check orchestration timing", () => {
 test("does not emit check timing when disabled", () => {
   const output = [];
   const timer = createStageTimer(false, () => 1000, (text) => output.push(text));
-  timer.start("E-1");
-  timer.step("E-1", "done");
-  timer.end("E-1");
+  timer.start("E-0.1");
+  timer.step("E-0.1", "done");
+  timer.end("E-0.1");
   expect(output).toEqual([]);
 });
 

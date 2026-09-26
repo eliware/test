@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateRequiredStagePlan } from "../../src/orchestrators/validate-required-stage-plan.mjs";
 
 test("accepts all enabled stage owners", () => {
-  const ids = ["E-1.130.13", "E-1.4", "E-1.20.19", "E-1.140.1", "E-1.20.17"];
+  const ids = ["E-0.1.130.13", "E-0.1.4", "E-0.1.20.19", "E-0.1.140.1", "E-0.1.20.17"];
   expect(() =>
     validateRequiredStagePlan(
       ids.map((ruleId) => ({ ruleId })),
@@ -20,7 +20,7 @@ test("accepts all enabled stage owners", () => {
 });
 
 test("does not require the npm pack owner for repositories without the npm-published profile", () => {
-  const ids = ["E-1.130.13", "E-1.4", "E-1.20.19", "E-1.20.17"];
+  const ids = ["E-0.1.130.13", "E-0.1.4", "E-0.1.20.19", "E-0.1.20.17"];
   expect(() =>
     validateRequiredStagePlan(
       ids.map((ruleId) => ({ ruleId })),
@@ -37,7 +37,7 @@ test("does not require the npm pack owner for repositories without the npm-publi
 });
 
 test("still requires the npm pack owner when npm-published applies", () => {
-  const ids = ["E-1.130.13", "E-1.4", "E-1.20.19", "E-1.20.17"];
+  const ids = ["E-0.1.130.13", "E-0.1.4", "E-0.1.20.19", "E-0.1.20.17"];
   expect(() =>
     validateRequiredStagePlan(
       ids.map((ruleId) => ({ ruleId })),
@@ -50,12 +50,12 @@ test("still requires the npm pack owner when npm-published applies", () => {
         packageJson: { eliware: { apply: ["general", "application", "npm-published"] } },
       },
     ),
-  ).toThrow("executePack (E-1.140.1)");
+  ).toThrow("executePack (E-0.1.140.1)");
 });
 
 test("allows an explicitly exempted stage owner", () => {
   expect(() =>
-    validateRequiredStagePlan([], { executeAudit: true }, new Set(["E-1.20.19"])),
+    validateRequiredStagePlan([], { executeAudit: true }, new Set(["E-0.1.20.19"])),
   ).not.toThrow();
 });
 
@@ -76,5 +76,5 @@ test("does not let an unresolved positional Jest argument bypass stage ownership
       executeAudit: true,
       jestArgs: ["tests/example.test.mjs", "extra-positional"],
     }),
-  ).toThrow("executeAudit (E-1.20.19)");
+  ).toThrow("executeAudit (E-0.1.20.19)");
 });

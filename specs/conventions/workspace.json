@@ -13,19 +13,19 @@
   ],
   "directives": [
     {
-      "id": "E-1.110",
+      "id": "E-0.1.110",
       "dos": ["These conventions apply to workspace repositories."],
       "donts": ["Workspace repositories must not omit applicable workspace requirements."],
       "directives": [
         {
-          "id": "A-1.110.0",
+          "id": "A-0.1.110.0",
           "dos": [
             "Every workspace repository must extend the general AGENTS.md requirements with applicable workspace guidance."
           ],
           "donts": ["A workspace repository must not omit AGENTS.md."],
           "directives": [
             {
-              "id": "A-1.110.0.1",
+              "id": "A-0.1.110.0.1",
               "dos": [
                 "After the seven general AGENTS.md headings, add a ## Workspace section. Document workspace purpose, role boundaries, communication, runbooks, recovery, and validation."
               ],
@@ -34,7 +34,7 @@
               ]
             },
             {
-              "id": "A-1.110.0.2",
+              "id": "A-0.1.110.0.2",
               "dos": [
                 "Store each workspace-owned runbook as a separate JSON file under runbooks/.",
                 "Require runbooks/README.md as the navigation-only overview and index for every runbook file.",
@@ -50,7 +50,7 @@
               ]
             },
             {
-              "id": "A-1.110.0.3",
+              "id": "A-0.1.110.0.3",
               "dos": [
                 "Keep company-wide task status, assignment, sequencing, blockers, milestones, and next actions in Tasklist.",
                 "Keep workspace-specific decisions and durable policy in directives.json or the applicable structured directive file.",
@@ -61,7 +61,7 @@
           ]
         },
         {
-          "id": "A-1.110.1",
+          "id": "A-0.1.110.1",
           "dos": [
             "Workspace README.md must add Authority, Runbooks, Communication, and Recovery, in that order, identifying ownership, operational boundaries, runbook navigation, communication channels, and recovery ownership. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
           ],
@@ -70,7 +70,7 @@
           ]
         },
         {
-          "id": "A-1.110.2",
+          "id": "A-0.1.110.2",
           "dos": [
             "Deterministic validation must validate every runbooks/*.json record against the workspace runbook contract and require non-empty id, purpose, owner, boundaries, and steps fields.",
             "Deterministic validation must validate every machine-followable runbooks/<name>.json#id=<stable-id> reference against the referenced record."
@@ -80,7 +80,7 @@
           ]
         },
         {
-          "id": "A-1.110.3",
+          "id": "A-0.1.110.3",
           "dos": [
             "Workspace README indexes must link runbooks/README.md and every authoritative structured directive collection."
           ],

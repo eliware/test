@@ -43,7 +43,7 @@
   ],
   "directives": [
     {
-      "id": "E-18",
+      "id": "E-0.0",
       "dos": [
         "Provide a deterministic Eliware validation harness.",
         "Treat overlapping validation invocations on the same worktree as unsupported; callers are responsible for avoiding them."
@@ -57,19 +57,19 @@
       ],
       "directives": [
         {
-          "id": "E-18.2",
+          "id": "E-0.0.2",
           "dos": ["Fail fast when required repository configuration is missing or malformed."],
           "donts": ["Do not begin partial validation with invalid repository configuration."],
           "directives": [
             {
-              "id": "A-18.2.0",
+              "id": "A-0.0.2.0",
               "dos": [
                 "Read the repository's declared harness configuration before validation begins."
               ],
               "donts": ["Do not begin check execution before configuration parsing has completed."]
             },
             {
-              "id": "A-18.2.1",
+              "id": "A-0.0.2.1",
               "dos": ["Require explicit configuration wherever the harness contract requires it."],
               "donts": [
                 "Do not infer applicability from repository shape, dependencies, files, scripts, entrypoints, or runtime behavior.",
@@ -79,12 +79,12 @@
           ]
         },
         {
-          "id": "E-18.3",
+          "id": "E-0.0.3",
           "dos": ["Keep bundled checks self-contained and organized in profile directories."],
           "donts": ["Do not require an external authority repository at runtime."],
           "directives": [
             {
-              "id": "A-18.3.0",
+              "id": "A-0.0.3.0",
               "dos": [
                 "Discover check modules deterministically from the published harness package.",
                 "Load each check's profile and complete directive directly from the local specs/conventions/ documents.",
@@ -98,12 +98,12 @@
           ]
         },
         {
-          "id": "E-18.4",
+          "id": "E-0.0.4",
           "dos": ["Give every requirement an individually identifiable check module."],
           "donts": ["Do not combine unrelated requirements into an unidentifiable check."],
           "directives": [
             {
-              "id": "A-18.4.0",
+              "id": "A-0.0.4.0",
               "dos": [
                 "Make each check's module identity, bundled location, and reported identity agree.",
                 "Reject duplicate, malformed, missing, or invalid check identities."
@@ -111,7 +111,7 @@
               "donts": ["Do not silently overwrite or merge duplicate check identities."]
             },
             {
-              "id": "A-18.4.1",
+              "id": "A-0.0.4.1",
               "dos": [
                 "Map each convention check to an existing directive identity in its local profile specification."
               ],
@@ -120,12 +120,12 @@
           ]
         },
         {
-          "id": "E-18.5",
+          "id": "E-0.0.5",
           "dos": ["Execute applicable bundled architecture checks."],
           "donts": ["Do not silently skip an applicable bundled architecture check."],
           "directives": [
             {
-              "id": "A-18.5.0",
+              "id": "A-0.0.5.0",
               "dos": [
                 "The harness must execute every selected deterministic bundled check as part of harness validation.",
                 "Preserve each bundled check's pass/fail result and diagnostics, and convert a thrown check into that check's failure while continuing to later selected checks."
@@ -135,7 +135,7 @@
               ]
             },
             {
-              "id": "A-18.5.1",
+              "id": "A-0.0.5.1",
               "dos": [
                 "Keep the harness implementation native ESM, modular, injectable, and covered by its native test suite."
               ],
@@ -144,7 +144,7 @@
           ]
         },
         {
-          "id": "E-18.6",
+          "id": "E-0.0.6",
           "dos": [
             "Make checks return only pass or fail with stable identities and actionable diagnostics.",
             "For every failed convention check, report the check identity, the observed failure, and the complete matching directive from the local profile specification, including all dos, donts, and examples when present.",
@@ -155,7 +155,7 @@
           ],
           "directives": [
             {
-              "id": "A-18.6.0",
+              "id": "A-0.0.6.0",
               "dos": [
                 "Report each check independently and aggregate results deterministically.",
                 "Preserve failed-check diagnostics without allowing another result to erase them.",
@@ -168,7 +168,7 @@
               ]
             },
             {
-              "id": "A-18.6.1",
+              "id": "A-0.0.6.1",
               "dos": [
                 "Keep filesystem traversal, path handling, subprocess execution, and captured diagnostics bounded and platform-neutral.",
                 "Invoke child processes with argument arrays and preserve useful failure context.",
@@ -186,7 +186,7 @@
               ]
             },
             {
-              "id": "A-18.6.2",
+              "id": "A-0.0.6.2",
               "dos": [
                 "Use stable failure categories and deterministic precedence for process results."
               ],
@@ -195,7 +195,7 @@
               ]
             },
             {
-              "id": "A-18.6.3",
+              "id": "A-0.0.6.3",
               "dos": [
                 "Keep validation read-only with respect to external systems and publication state."
               ],
@@ -204,7 +204,7 @@
               ]
             },
             {
-              "id": "A-18.6.4",
+              "id": "A-0.0.6.4",
               "dos": [
                 "Preserve the complete bounded test-process output needed to diagnose failed tests, including both standard output and standard error.",
                 "When coverage evidence identifies gaps, report them at file level with each available metric, uncovered lines, and uncovered statement, branch, or function details.",
@@ -229,12 +229,12 @@
           ]
         },
         {
-          "id": "E-18.7",
+          "id": "E-0.0.7",
           "dos": ["Support focused testing without silently broadening the requested scope."],
           "donts": ["Do not replace a focused request with an unrelated broad run."],
           "directives": [
             {
-              "id": "A-18.7.0",
+              "id": "A-0.0.7.0",
               "dos": [
                 "Expose focused execution through the public eliware-test command.",
                 "Validate focused paths and report failures within the requested scope."
@@ -244,7 +244,7 @@
               ]
             },
             {
-              "id": "A-18.7.1",
+              "id": "A-0.0.7.1",
               "dos": [
                 "Keep unrelated sources and checks out of focused failure reporting unless explicitly requested."
               ],
@@ -253,7 +253,7 @@
               ]
             },
             {
-              "id": "A-18.7.2",
+              "id": "A-0.0.7.2",
               "dos": [
                 "Expose exactly these public harness commands and diagnostic options: --help, --version, --debug-timing, --lint, --format, --format-check, --audit, and --pack.",
                 "For --lint, --format, --format-check, --audit, and --pack, forward additional non-wrapper CLI arguments unchanged to the corresponding Oxlint, Prettier, or npm operation.",
@@ -266,7 +266,7 @@
               ]
             },
             {
-              "id": "A-18.7.3",
+              "id": "A-0.0.7.3",
               "dos": [
                 "Treat --help and --version as informational commands that perform no validation and return exit code 0.",
                 "Require explicit convention profile selection in package.json.eliware.apply for normal validation.",
@@ -277,7 +277,7 @@
               ]
             },
             {
-              "id": "A-18.7.4",
+              "id": "A-0.0.7.4",
               "dos": [
                 "Keep normal validation limited to bundled convention checks and their orchestration.",
                 "Keep publication, deployment, release, synchronization, and external package commands outside the harness runtime."
@@ -287,7 +287,7 @@
               ]
             },
             {
-              "id": "A-18.7.5",
+              "id": "A-0.0.7.5",
               "dos": [
                 "Allow a recognized focused path with the selected test-related stage and keep discovery, diagnostics, and failures within that requested scope.",
                 "Keep stage selection and path focus orthogonal: a focused path does not add stages, and a stage flag does not broaden the path.",
@@ -299,7 +299,7 @@
               ]
             },
             {
-              "id": "A-18.7.6",
+              "id": "A-0.0.7.6",
               "dos": [
                 "Use these stable result categories and exit codes: 0 success, 8 Jest/test failure, 10 coverage failure, 12 lint failure, 14 internal tool/process failure, 17 package-check failure, and 18 convention, configuration, applicability, argument, format, or format-check failure.",
                 "Stop before test execution for invalid configuration, unsupported arguments, or inapplicable selected stages; preserve the stable failure result and diagnostics.",
@@ -311,7 +311,7 @@
               ]
             },
             {
-              "id": "A-18.7.7",
+              "id": "A-0.0.7.7",
               "dos": [
                 "Make --debug-timing useful for diagnosing slow or hanging tests by streaming timing diagnostics while validation is still running.",
                 "Report when each test suite starts so the last reported Running line identifies the suite that may be hanging.",
@@ -328,7 +328,7 @@
               ]
             },
             {
-              "id": "A-18.7.8",
+              "id": "A-0.0.7.8",
               "dos": [
                 "Monitor test execution progress during every Jest run, whether or not --debug-timing is enabled.",
                 "Terminate Jest early when no observable test progress has occurred for 15 seconds.",
@@ -344,7 +344,7 @@
               ]
             },
             {
-              "id": "A-18.7.9",
+              "id": "A-0.0.7.9",
               "dos": [
                 "When validation succeeds without diagnostics, emit exactly one concise human-readable line: All tests passed | 100x4 coverage | 0 lint warnings.",
                 "Keep the clean-run line unchanged across normal successful invocations."
@@ -357,7 +357,7 @@
           ]
         },
         {
-          "id": "E-18.8",
+          "id": "E-0.0.8",
           "dos": [
             "Implement the harness as a self-contained filesystem-discovered convention-check system.",
             "Treat specs/conventions/ as the canonical local source for applicable rule content and profile applicability."
@@ -368,7 +368,7 @@
           ],
           "directives": [
             {
-              "id": "A-18.8.0",
+              "id": "A-0.0.8.0",
               "dos": [
                 "Store checks under src/checks/<profile>/ using filenames that are the exact published directive IDs.",
                 "Use subdirectories to represent the directive parent/child hierarchy, with the same hierarchy available to exemption traversal."
@@ -378,7 +378,7 @@
               ]
             },
             {
-              "id": "A-18.8.1",
+              "id": "A-0.0.8.1",
               "dos": [
                 "Give each bundled directive module a stable ruleId and a single check entry point that returns a pass or fail result for that exact rule.",
                 "Require the module filename, exported identity, and reported result identity to agree."
@@ -388,7 +388,7 @@
               ]
             },
             {
-              "id": "A-18.8.2",
+              "id": "A-0.0.8.2",
               "dos": [
                 "Create check modules only for requirements with deterministic enforcement or explicit advisory handling; leave other canonical directives in their profile specifications without placeholder modules.",
                 "Validate every check ID and profile against the versioned specifications in specs/conventions/; check-directory names and filenames alone are not authority.",
@@ -401,7 +401,7 @@
               ]
             },
             {
-              "id": "A-18.8.3",
+              "id": "A-0.0.8.3",
               "dos": [
                 "Skip an exempted rule and every discovered child rule beneath that rule before executing check logic.",
                 "Validate exemption IDs against the complete bundled check tree, not only the currently selected profiles."
@@ -411,7 +411,7 @@
               ]
             },
             {
-              "id": "A-18.8.4",
+              "id": "A-0.0.8.4",
               "dos": [
                 "Keep applicability selection and exemption evaluation separate from check implementation."
               ],
@@ -420,14 +420,14 @@
               ]
             },
             {
-              "id": "A-18.8.5",
+              "id": "A-0.0.8.5",
               "dos": [
                 "Treat missing or malformed harness configuration as a fast configuration failure for an in-scope validation target."
               ],
               "donts": ["Do not begin partial validation with missing or invalid configuration."]
             },
             {
-              "id": "A-18.8.7",
+              "id": "A-0.0.8.7",
               "dos": [
                 "Keep focused test execution available through the public harness boundary without reporting unrelated-module coverage failures."
               ],

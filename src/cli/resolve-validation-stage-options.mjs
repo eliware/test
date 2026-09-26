@@ -1,11 +1,11 @@
 import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
 
 const modeRuleIds = Object.freeze({
-  lint: "E-1.4",
-  format: "E-1.20.17",
-  "format-check": "E-1.20.17",
-  audit: "E-1.20.19",
-  pack: "E-1.140.1",
+  lint: "E-0.1.4",
+  format: "E-0.1.20.17",
+  "format-check": "E-0.1.20.17",
+  audit: "E-0.1.20.19",
+  pack: "E-0.1.140.1",
 });
 
 export function resolveValidationStageOptions(diagnosticOptions, options) {

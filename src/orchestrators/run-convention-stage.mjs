@@ -1,14 +1,14 @@
 import { formatConventionFailure } from "./format-convention-failure.mjs";
 
 function failureCode({ ruleId, message = "" }) {
-  if (["E-1.130.14", "E-1.40.16"].includes(ruleId)) return 10;
-  if (ruleId === "E-1.4") return /could not be started/i.test(message) ? 14 : 12;
-  if (["E-1.130.13", "E-1.40.15"].includes(ruleId)) {
+  if (["E-0.1.130.14", "E-0.1.40.16"].includes(ruleId)) return 10;
+  if (ruleId === "E-0.1.4") return /could not be started/i.test(message) ? 14 : 12;
+  if (["E-0.1.130.13", "E-0.1.40.15"].includes(ruleId)) {
     if (/focused test path|unsupported focused path|ambiguous focused path/i.test(message))
       return 18;
     return /could not be started/i.test(message) ? 14 : 8;
   }
-  if (/^E-1\.140(?:\.|$)/.test(ruleId) || /^E-1\.20\.(?:12|13|14|19)$/.test(ruleId)) return 17;
+  if (/^E-0.1\.140(?:\.|$)/.test(ruleId) || /^E-0.1\.20\.(?:12|13|14|19)$/.test(ruleId)) return 17;
   return 18;
 }
 

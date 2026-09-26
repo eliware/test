@@ -1,9 +1,9 @@
 const stageRules = Object.freeze({
-  executeJest: ["E-1.130.13", "E-1.40.15"],
-  executeLint: ["E-1.4"],
-  executeAudit: ["E-1.20.19"],
-  executePack: ["E-1.140.1"],
-  executeFormat: ["E-1.20.17"],
+  executeJest: ["E-0.1.130.13", "E-0.1.40.15"],
+  executeLint: ["E-0.1.4"],
+  executeAudit: ["E-0.1.20.19"],
+  executePack: ["E-0.1.140.1"],
+  executeFormat: ["E-0.1.20.17"],
 });
 
 export function validateRequiredStagePlan(checks, context, exemptions = new Set()) {

@@ -16,14 +16,14 @@
   ],
   "directives": [
     {
-      "id": "E-1.120",
+      "id": "E-0.1.120",
       "dos": [
         "External forks follow the upstream repository's own instructions, contribution rules, coding standards, and validation."
       ],
       "donts": ["Eliware conventions must not be applied to an external upstream fork."],
       "directives": [
         {
-          "id": "E-1.120.0",
+          "id": "E-0.1.120.0",
           "dos": [
             "Use forks for upstream contributions.",
             "Preserve the upstream remote, fork provenance, and contribution context.",

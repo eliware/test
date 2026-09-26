@@ -10,7 +10,7 @@ test("returns validated exemption rule IDs", () => {
       eliware: {
         exempt: [
           {
-            ruleId: "E-1.130.14",
+            ruleId: "E-0.1.130.14",
             reason: "x",
             approver: "Eli",
             approvalTimestamp: "2026-09-13T00:00:00Z",
@@ -19,12 +19,12 @@ test("returns validated exemption rule IDs", () => {
         ],
       },
     }),
-  ).toEqual(new Set(["E-1.130.14"]));
+  ).toEqual(new Set(["E-0.1.130.14"]));
   expect(() =>
     readExemptions({
       eliware: {
         exempt: [
-          { ruleId: "E-1", reason: "", approver: "Eli", approvalTimestamp: "x", expiry: null },
+          { ruleId: "E-0.1", reason: "", approver: "Eli", approvalTimestamp: "x", expiry: null },
         ],
       },
     }),

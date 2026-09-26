@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateExemptionRecords } from "../../src/orchestrators/validate-exemption-records.mjs";
 
 const record = (overrides = {}) => ({
-  ruleId: "E-1.130.14",
+  ruleId: "E-0.1.130.14",
   reason: "Temporary migration exception.",
   approver: "Eli",
   approvalTimestamp: "2026-09-13T00:00:00Z",
@@ -12,7 +12,7 @@ const record = (overrides = {}) => ({
 
 test("accepts valid temporary and permanent exemptions", () => {
   expect(() =>
-    validateExemptionRecords([record({ review: "2026-09-20" }), record({ ruleId: "E-1.3", expiry: null })]),
+    validateExemptionRecords([record({ review: "2026-09-20" }), record({ ruleId: "E-0.1.3", expiry: null })]),
   ).not.toThrow();
 });
 

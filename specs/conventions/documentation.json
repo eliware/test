@@ -11,21 +11,21 @@
   ],
   "directives": [
     {
-      "id": "E-1.100",
+      "id": "E-0.1.100",
       "dos": ["These conventions apply to documentation-only repositories."],
       "donts": [
         "Documentation-only repositories must not omit applicable documentation requirements."
       ],
       "directives": [
         {
-          "id": "A-1.100.0",
+          "id": "A-0.1.100.0",
           "dos": [
             "Every documentation-only repository must extend the general AGENTS.md requirements with applicable documentation guidance."
           ],
           "donts": ["A documentation-only repository must not omit AGENTS.md."],
           "directives": [
             {
-              "id": "A-1.100.0.1",
+              "id": "A-0.1.100.0.1",
               "dos": [
                 "After the seven general AGENTS.md headings, add a ## Documentation section. Document documentation scope, authority boundaries, indexes, link validation, and documentation-only limits."
               ],
@@ -36,7 +36,7 @@
           ]
         },
         {
-          "id": "E-1.100.1",
+          "id": "E-0.1.100.1",
           "dos": [
             "Documentation-only repositories must provide the required documentation indexes and link each documented surface from the applicable root index."
           ],
@@ -45,7 +45,7 @@
           ]
         },
         {
-          "id": "A-1.100.2",
+          "id": "A-0.1.100.2",
           "dos": [
             "Documentation-only README.md must add Scope, Authority, Navigation, Contribution, and Documentation validation, in that order, for repository scope, authoritative sources, indexes, contribution/setup requirements, and link/document validation. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
             "Documentation-only README.md must link every authoritative documentation surface from its indexes."
@@ -55,7 +55,7 @@
           ]
         },
         {
-          "id": "A-1.100.3",
+          "id": "A-0.1.100.3",
           "dos": [
             "Deterministic validation must verify that every documented surface, index link, structured-document path, and embedded reference resolves to its intended target.",
             "The Docs authority map must validate repository entries, directive namespaces, structured-document paths, and reciprocal authority references when the referenced checkout is available."

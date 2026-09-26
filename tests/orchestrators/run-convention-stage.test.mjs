@@ -4,13 +4,13 @@ import { formatConventionFailure } from "../../src/orchestrators/format-conventi
 
 test("returns a passing convention stage", async () => {
   const result = await runConventionStage(async () => [
-    { ruleId: "E-1.0", status: "pass", message: "" },
+    { ruleId: "E-0.1.0", status: "pass", message: "" },
   ]);
   expect(result).toEqual({ code: 0, category: "conventions", diagnostics: [] });
 });
 
 test("includes the complete failed directive in each check diagnostic", async () => {
-  const failure = { ruleId: "E-1.0", status: "fail", message: "missing file" };
+  const failure = { ruleId: "E-0.1.0", status: "fail", message: "missing file" };
   const result = await runConventionStage(async () => [failure]);
   expect(result).toEqual({
     code: 18,
@@ -19,19 +19,19 @@ test("includes the complete failed directive in each check diagnostic", async ()
   });
   expect(result.diagnostics[0]).toContain('"dos":');
   expect(result.diagnostics[0]).toContain('"donts":');
-  expect(result.diagnostics[0]).toContain('"id": "E-1.0"');
+  expect(result.diagnostics[0]).toContain('"id": "E-0.1.0"');
 });
 
 test("preserves stable failure codes for each validation stage", async () => {
   const cases = [
-    ["E-1.130.13", "Jest failed", 8],
-    ["E-1.130.14", "coverage gap", 10],
-    ["E-1.4", "Oxlint failed", 12],
-    ["E-1.4", "process could not be started", 14],
-    ["E-1.140.1", "pack failed", 17],
-    ["E-1.40.15", "Jest could not be started", 14],
-    ["E-1.130.13", "unsupported focused path", 18],
-    ["E-1.20.12", "publication metadata", 17],
+    ["E-0.1.130.13", "Jest failed", 8],
+    ["E-0.1.130.14", "coverage gap", 10],
+    ["E-0.1.4", "Oxlint failed", 12],
+    ["E-0.1.4", "process could not be started", 14],
+    ["E-0.1.140.1", "pack failed", 17],
+    ["E-0.1.40.15", "Jest could not be started", 14],
+    ["E-0.1.130.13", "unsupported focused path", 18],
+    ["E-0.1.20.12", "publication metadata", 17],
   ];
   for (const [ruleId, message, code] of cases) {
     const failure = { ruleId, status: "fail", message };
@@ -45,8 +45,8 @@ test("preserves stable failure codes for each validation stage", async () => {
 
 test("uses the highest code when several checks fail and preserves each remediation", async () => {
   const failures = [
-    { ruleId: "E-1.0", status: "fail", message: "first" },
-    { ruleId: "E-1.130.14", status: "fail", message: "coverage" },
+    { ruleId: "E-0.1.0", status: "fail", message: "first" },
+    { ruleId: "E-0.1.130.14", status: "fail", message: "coverage" },
   ];
   const result = await runConventionStage(async () => failures);
   expect(result.code).toBe(18);
@@ -54,7 +54,7 @@ test("uses the highest code when several checks fail and preserves each remediat
 });
 
 test("provides remediation even when a check omitted its message", async () => {
-  const failure = { ruleId: "E-1.0", status: "fail" };
+  const failure = { ruleId: "E-0.1.0", status: "fail" };
   await expect(runConventionStage(async () => [failure])).resolves.toEqual({
     code: 18,
     category: "conventions",
@@ -64,7 +64,7 @@ test("provides remediation even when a check omitted its message", async () => {
 
 test("classifies invalid focused paths as argument failures and provides guidance", async () => {
   const failure = {
-    ruleId: "E-1.130.13",
+    ruleId: "E-0.1.130.13",
     status: "fail",
     message: "Jest could not be started: Focused test path does not exist: tests/missing.test.mjs",
   };

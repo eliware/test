@@ -7,7 +7,7 @@ import { discoverChecks, discoverAllChecks } from "../../src/orchestrators/disco
 test("discovers and sorts checks from an explicit profile", async () => {
   const checks = await discoverChecks(["application"]);
   expect(checks.length).toBeGreaterThan(0);
-  expect(checks[0].ruleId).toBe("E-1.130");
+  expect(checks[0].ruleId).toBe("E-0.1.130");
   expect(checks.every((check) => typeof check.run === "function")).toBe(true);
 });
 

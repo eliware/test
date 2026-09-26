@@ -6,7 +6,7 @@ import {
 } from "../../src/orchestrators/run-validation.mjs";
 
 function createDependencies(overrides = {}) {
-  const checks = [{ ruleId: "E-1", run: jest.fn() }];
+  const checks = [{ ruleId: "E-0.1", run: jest.fn() }];
   const executeValidationPlan = jest.fn(async (selected, context, exemptions) => ({
     selected,
     context,
