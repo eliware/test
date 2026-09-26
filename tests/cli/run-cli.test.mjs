@@ -93,7 +93,7 @@ test("runs a configured convention validation target without starting Jest", asy
   await expect(
     runCli([], (value) => output.push(value), root, { executeJest: false }),
   ).resolves.toBe(0);
-  expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings"]);
+  expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0"]);
 });
 
 test("passes explicit stage controls to injected validation", async () => {
@@ -131,7 +131,7 @@ test("passes explicit stage controls to injected validation", async () => {
     timing: expect.any(Object),
     writeOutput: undefined,
   });
-  expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings"]);
+  expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0"]);
 });
 
 test("normalizes unexpected validation errors", async () => {

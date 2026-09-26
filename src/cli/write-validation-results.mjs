@@ -6,7 +6,7 @@ export function writeValidationResults(result, write, debugTiming, timing, start
   writeStageDiagnostics(result, write);
   if (!debugTiming) {
     if (result.code === 0 && !(result.diagnostics?.length) && !result.output) {
-      write("All tests passed | 100x4 coverage | 0 lint warnings");
+      write("All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0");
     }
     return;
   }
