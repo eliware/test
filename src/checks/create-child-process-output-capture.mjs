@@ -36,7 +36,14 @@ export function createChildProcessOutputCapture(options, suppliedSecrets, output
 
   return {
     redactDiagnostic(text) {
-      return redactors.stdout.redactComplete(String(text)).slice(0, outputLimit);
+      const redacted = redactors.stdout.redactComplete(String(text));
+      let end = Math.min(redacted.length, outputLimit);
+      if (end > 0 && end < redacted.length) {
+        const last = redacted.charCodeAt(end - 1);
+        const next = redacted.charCodeAt(end);
+        if (last >= 0xd800 && last <= 0xdbff && next >= 0xdc00 && next <= 0xdfff) end -= 1;
+      }
+      return redacted.slice(0, end);
     },
     push(stream, chunk) {
       if (!redactors[stream] || capturedBytes >= outputLimit) return;

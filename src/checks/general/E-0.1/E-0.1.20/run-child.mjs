@@ -59,10 +59,10 @@ export function runChild(command, args, options = {}) {
       redactProgressText: output.redactComplete,
     });
     timeout.reset();
-    child.stdout.on("data", (chunk) => {
+    child.stdout?.on("data", (chunk) => {
       output.stdout(chunk);
     });
-    child.stderr.on("data", (chunk) => {
+    child.stderr?.on("data", (chunk) => {
       progress.push(chunk);
       output.stderr(chunk);
     });

@@ -36,18 +36,25 @@ test("spawns without shell interpretation and returns captured process results",
   });
 });
 
-test("settles once on spawn errors and redacts their diagnostic messages", async () => {
+test("redacts secrets from asynchronous child error events", async () => {
   const child = childProcess();
   const promise = execute("node", [], { env: { SERVICE_TOKEN: "spawn-secret" } }, () => child);
   const error = new Error("spawn failed with spawn-secret");
   error.code = "ENOENT";
   child.emit("error", error);
-  child.emit("error", new Error("late error"));
-  child.emit("close", 1, null);
   await expect(promise).rejects.toMatchObject({
     message: "spawn failed with [REDACTED]",
     code: "ENOENT",
   });
+});
+
+test("settles only once after asynchronous child errors", async () => {
+  const child = childProcess();
+  const promise = execute("node", [], {}, () => child);
+  child.emit("error", new Error("spawn failed"));
+  child.emit("error", new Error("late error"));
+  child.emit("close", 1, null);
+  await expect(promise).rejects.toThrow("spawn failed");
 });
 
 test("redacts output using configured secrets before returning it", async () => {

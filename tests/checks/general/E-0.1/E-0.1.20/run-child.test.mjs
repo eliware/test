@@ -19,6 +19,13 @@ test("uses process defaults when options are omitted", async () => {
   ).resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));
 });
 
+test("handles children without piped output streams", async () => {
+  const child = new EventEmitter();
+  const result = runChild("ignored", [], { spawnProcess: () => child });
+  child.emit("close", 0, null);
+  await expect(result).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
+});
+
 test("rejects failures raised during process creation", async () => {
   await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
 });

@@ -21,6 +21,8 @@ test("caps captured output on valid UTF-8 boundaries and accepts missing explici
   const capture = createChildProcessOutputCapture({ env: {} }, null, 4);
   capture.push("stdout", "abc🔐");
   expect(capture.finish()).toEqual({ stdout: "abc", stderr: "" });
+  expect(capture.redactDiagnostic("abc🔐")).toBe("abc");
+  expect(capture.redactDiagnostic("abcdef")).toBe("abcd");
 });
 
 test("uses inherited environment by default and accepts binary chunks", () => {

@@ -6,6 +6,12 @@ test("adds the required Jest Node options while preserving supported warning set
   expect(createJestNodeOptions(" --experimental-vm-modules --trace-warnings ")).toBe(
     "--experimental-vm-modules --trace-warnings",
   );
+  expect(createJestNodeOptions("--trace-warnings=true")).toBe(
+    "--trace-warnings=true --experimental-vm-modules",
+  );
+  expect(createJestNodeOptions("--trace-warnings=false")).toBe(
+    "--trace-warnings=false --experimental-vm-modules",
+  );
   expect(createJestNodeOptions("--no-warnings")).toBe(
     "--no-warnings --experimental-vm-modules",
   );
@@ -16,6 +22,7 @@ test("rejects inherited Node options that could alter or preload Jest execution"
     "--require=./inject.mjs",
     "--import=./inject.mjs",
     "--inspect",
+    "--trace-warnings=inject.mjs",
     '--trace-warnings="--import=./inject.mjs"',
   ]) {
     expect(() => createJestNodeOptions(option)).toThrow(
