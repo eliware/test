@@ -1,7 +1,7 @@
-export function scheduleChildTermination(child, options, onUnconfirmed) {
+export function scheduleChildTermination(child, options, onUnconfirmed, onAttempt) {
   const terminate = (signal) => {
     try {
-      options.terminateChild(
+      const result = options.terminateChild(
         child,
         options.platform,
         options.killProcess,
@@ -9,7 +9,10 @@ export function scheduleChildTermination(child, options, onUnconfirmed) {
         options.environment,
         signal,
       );
-    } catch {}
+      onAttempt?.(result !== false);
+    } catch {
+      onAttempt?.(false);
+    }
   };
   terminate("SIGTERM");
   let timer = setTimeout(() => {

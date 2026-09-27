@@ -3,7 +3,7 @@ import { readWorkflows } from "../read-workflows.mjs";
 import { hasExactTagTrigger } from "../has-exact-tag-trigger.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
 import { steps } from "../workflow-structure.mjs";
-import { findImagePush } from "../find-ghcr-image-push.mjs";
+import { findImagePushes, imageTags } from "../find-ghcr-image-push.mjs";
 import { hasReleaseTagGuard, isTagRelease, tagMatchesPackageVersion } from "../release-version-tag.mjs";
 
 export const ruleId = "E-0.1.160.2";
@@ -19,20 +19,24 @@ export async function run(context) {
     const valid =
       typeof packageJson?.version === "string" &&
       (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, packageJson.version)) &&
-      publications.some(
-        (workflow) =>
-          hasExactTagTrigger(workflow) &&
-          publicationJobs(workflow).every(({ job }) => {
+      publications.some((workflow) => {
+        const publicationJobList = publicationJobs(workflow);
+        return hasExactTagTrigger(workflow) && publicationJobList.length > 0 &&
+          publicationJobList.every(({ job }) => {
             const jobSteps = steps(job);
             const versionCheckIndex = jobSteps.findIndex(({ run }) => hasReleaseTagGuard(run));
-            const push = findImagePush(job);
+            const pushes = findImagePushes(job);
+            const pushSteps = jobSteps.filter((step) => step?.uses === "docker/build-push-action@v6" && step?.with?.push === true);
+            const exactPush = pushSteps.length === 1 && pushes.length === 1 && imageTags(pushes[0].with?.tags).length === 1 &&
+              imageTags(pushes[0].with?.tags)[0].endsWith(`:v${packageJson.version}`);
             return (
               job.environment === "ghcr-publish" &&
               versionCheckIndex >= 0 &&
-              jobSteps.indexOf(push) > versionCheckIndex
+              exactPush &&
+              jobSteps.indexOf(pushes[0]) > versionCheckIndex
             );
-          }),
-      );
+          });
+      });
     if (!valid)
       return fail(
         ruleId,

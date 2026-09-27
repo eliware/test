@@ -37,11 +37,15 @@ test("reads tracked source bytes through the shared repository inventory", async
   expect(repositoryInventory.readBytes).toHaveBeenCalledWith(join("/repo", "src/public.mjs"));
 });
 
-test("skips tracked paths deleted from the current working tree", async () => {
+test("fails closed when a tracked path is deleted from the current working tree", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-internal-deleted-"));
   await expect(
     run({ root, readTracked: async () => ["scripts/removed.mjs"] }),
-  ).resolves.toEqual({ ruleId: "E-0.1.7", status: "pass", message: "" });
+  ).resolves.toEqual({
+    ruleId: "E-0.1.7",
+    status: "fail",
+    message: expect.stringContaining("Repository files could not be inspected"),
+  });
   await rm(root, { recursive: true, force: true });
 });
 

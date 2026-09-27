@@ -27,7 +27,7 @@ test("coordinates command, source, and publication policies in order", async () 
   });
   expect(readKnitScript).toHaveBeenCalledWith({ root: "/repo" });
   expect(validateKnitCommandStructure).toHaveBeenCalledWith({ calls: [] });
-  expect(validateKnitSourceOperations).toHaveBeenCalledWith("source");
+  expect(validateKnitSourceOperations).toHaveBeenCalledWith("source", undefined);
   expect(validateKnitPublicationCommands).toHaveBeenCalledWith([]);
   const order = [
     validateKnitCommandStructure,

@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
 import { npmCommand } from "../../npm-command.mjs";
 import { killWindowsProcessTree, terminateChild } from "./E-0.1.20/terminate-child.mjs";
+import { collectRedactionSecrets } from "../../collect-redaction-secrets.mjs";
+import { redactProcessOutput } from "../../redact-process-output.mjs";
 
 const maxStdoutLength = 100_000;
 
@@ -69,13 +71,19 @@ export function readOutdatedDependencies(
     child.on("close", (code) => {
       if (oversized)
         return rejectOnce(new Error(`npm outdated output exceeded ${maxStdoutLength} characters.`));
-      if (code !== 0 && !stdout.trim())
-        return rejectOnce(new Error(stderr || `npm outdated exited with ${code}.`));
+      if (code !== 0 && !stdout.trim()) {
+        const diagnostic = redactProcessOutput(stderr, collectRedactionSecrets(env)).trim();
+        return rejectOnce(new Error(diagnostic || `npm outdated exited with ${code}.`));
+      }
       try {
         resolveOnce(JSON.parse(stdout || "{}"));
       } catch {
-        // Reject through the settlement helper so timers are cleared and later events are ignored.
-        rejectOnce(new Error("npm outdated returned invalid JSON."));
+        const diagnostic = redactProcessOutput(stderr, collectRedactionSecrets(env)).trim();
+        rejectOnce(new Error(
+          diagnostic
+            ? `npm outdated returned invalid JSON: ${diagnostic}`
+            : "npm outdated returned invalid JSON.",
+        ));
       }
     });
   });

@@ -16,7 +16,7 @@ export function runChild(command, args, options = {}) {
       env: environment,
       stdio: ["ignore", "pipe", "pipe"],
       shell: false,
-      detached: process.platform !== "win32",
+      detached: (options.terminationPlatform ?? process.platform) !== "win32",
     });
     const output = createChildOutputCapture(outputLimit, { ...options, env: environment });
     let settled = false;
@@ -73,7 +73,11 @@ export function runChild(command, args, options = {}) {
         signal,
         ...output.result(),
         ...(termination.wasTimedOut()
-          ? { timedOut: true, terminationRequested: true, terminationConfirmed: true }
+          ? {
+              timedOut: true,
+              terminationRequested: true,
+              terminationConfirmed: termination.terminationConfirmed(),
+            }
           : {}),
       });
     });

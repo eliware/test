@@ -22,5 +22,5 @@ export async function readKnitScript(context, { includeSource = true } = {}) {
       return { source, error: `Knit validation script is not valid JavaScript: ${error.message}` };
     }
   }
-  return { source, parsed: parseKnitScript(source, ast) };
+  return { source, parsed: parseKnitScript(source, ast), ast };
 }

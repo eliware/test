@@ -30,7 +30,7 @@ export function validatePackManifest(stdout, files, packageName) {
   if (!Array.isArray(packed) || packed.some((entry) => typeof entry?.path !== "string")) {
     return "npm pack JSON manifest must contain a files array with paths.";
   }
-  const allowlist = Array.isArray(files) ? files : [];
+  const allowlist = Array.isArray(files) ? [...new Set(files)] : [];
   const unsafeAllowlistIndex = allowlist.findIndex((entry) => !safeAllowlistEntry(entry));
   if (unsafeAllowlistIndex !== -1) {
     return `package.json.files contains an unsafe path entry: ${allowlist[unsafeAllowlistIndex]}.`;

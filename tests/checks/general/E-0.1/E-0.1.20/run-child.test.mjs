@@ -71,6 +71,7 @@ test("resets progress and confirms a child that closes after timeout", async () 
   const result = runChild("ignored", [], {
     spawnProcess: () => child,
     progressPattern: /started/u,
+    terminateChild: () => true,
     createProgressTimeout: (options) => {
       onTimeout = options.onTimeout;
       return { reset: jest.fn(), stop: jest.fn() };
@@ -83,6 +84,29 @@ test("resets progress and confirms a child that closes after timeout", async () 
     timedOut: true,
     terminationRequested: true,
     terminationConfirmed: true,
+  });
+});
+
+test("does not report tree termination as confirmed after direct-signal fallback", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  let onTimeout;
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    createProgressTimeout: (options) => {
+      onTimeout = options.onTimeout;
+      return { reset: jest.fn(), stop: jest.fn() };
+    },
+    terminateChild: () => false,
+  });
+  onTimeout();
+  child.emit("close", null, "SIGTERM");
+  await expect(result).resolves.toMatchObject({
+    timedOut: true,
+    terminationRequested: true,
+    terminationConfirmed: false,
   });
 });
 
@@ -100,7 +124,7 @@ test("reports a timeout when the child never confirms termination", async () => 
       onTimeout = options.onTimeout;
       return { reset: jest.fn(), stop: jest.fn() };
     },
-    terminateChild: () => true,
+    terminateChild: () => false,
   });
   onTimeout();
   await expect(result).resolves.toMatchObject({

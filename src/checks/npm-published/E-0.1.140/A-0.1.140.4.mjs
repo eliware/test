@@ -12,7 +12,7 @@ function publicationIndex(job, packageName) {
   const escapedName = packageName.replaceAll("/", "\\/");
   return steps(job).findIndex((step) => {
     const command = stepText(step).trim();
-    return new RegExp(`^npm\\s+publish(?:\\s+--[A-Za-z0-9_-]+(?:\\s+[^\\s-][^\\s]*)?)*$`, "iu").test(command) &&
+    return /^npm\s+publish(?:\s+(?:--provenance|--access\s+(?:public|restricted)|--tag\s+[A-Za-z0-9._-]+))*$/iu.test(command) &&
       !new RegExp(`\\s${escapedName}(?:\\s|$)`, "u").test(command);
   });
 }

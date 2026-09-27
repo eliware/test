@@ -14,6 +14,6 @@ export async function resolveFocusedCoverage(root, focusedPath) {
     await access(sourcePath);
     return ["--collectCoverageFrom", sourceRelative.replaceAll("\\", "/")];
   } catch {
-    return [];
+    throw new Error(`Focused test has no mirrored source file: ${sourceRelative}.`);
   }
 }

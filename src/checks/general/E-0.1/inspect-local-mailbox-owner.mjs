@@ -20,7 +20,7 @@ export async function inspectLocalMailboxOwner(
   const gitTracked = trackedFiles ?? await readTracked(root);
   if (!Array.isArray(gitTracked))
     return { error: "Git tracking inspection was unavailable; cannot validate the local mailbox owner safely." };
-  if (new Set(gitTracked).has(".env"))
+  if (gitTracked.some((path) => typeof path === "string" && path.toLowerCase() === ".env"))
     return { error: "The local mailbox owner file .env must remain untracked." };
   if (!(await checkIgnored(root, ".env")))
     return { error: "The local mailbox owner file .env must be ignored by Git." };

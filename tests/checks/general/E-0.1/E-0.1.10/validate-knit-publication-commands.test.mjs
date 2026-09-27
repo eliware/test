@@ -7,6 +7,8 @@ test("rejects publication, deployment, release, and destructive commands", () =>
     ["docker", ["push", "ghcr.io/example/app"]],
     ["kubectl", ["apply", "-f", "production.yaml"]],
     ["git", ["push", "origin", "main"]],
+    ["git", ["checkout", "--", "README.md"]],
+    ["git", ["restore", "README.md"]],
     ["rm", ["-rf", "."]],
   ]) {
     expect(validateKnitPublicationCommands([{ kind: "spawnSync", command, args }])).toContain(

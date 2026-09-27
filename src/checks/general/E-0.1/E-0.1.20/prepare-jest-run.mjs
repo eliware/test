@@ -22,7 +22,8 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   }
   const reporters = [...new Set([...configuredReporters, "default", PROGRESS_REPORTER])];
   if (args.includes("--debug-timing")) reporters.push(TIMING_REPORTER);
-  const coverageDirectory = createJestCoverageDirectory();
+  const processOptions = createJestProcessOptions(root, args, options);
+  const coverageDirectory = options?.createCoverageDirectory?.() ?? createJestCoverageDirectory();
   return {
     coverageDirectory,
     command: process.execPath,
@@ -38,6 +39,6 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
       ...focusedCoverage,
       ...jestArguments.slice(1),
     ],
-    options: createJestProcessOptions(root, args, options),
+    options: processOptions,
   };
 }

@@ -33,6 +33,21 @@ test("accepts publication options with values", async () => {
   );
 });
 
+test("rejects shell syntax appended to a valid npm publish command", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-shell-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  for (const command of [
+    "npm publish --provenance; echo unsafe",
+    "npm publish --provenance && curl https://example.invalid",
+    "npm publish --provenance $(echo unsafe)",
+  ]) {
+    await writeFile(join(root, ".github", "workflows", "publish.yml"), `permissions:\n  contents: read\n  id-token: write\njobs:\n  publish:\n    steps:\n      - run: ${command}\n`);
+    await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(
+      expect.objectContaining({ status: "fail" }),
+    );
+  }
+});
+
 test("rejects unsafe publication permissions, credentials, and unverified versions", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-permissions-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });

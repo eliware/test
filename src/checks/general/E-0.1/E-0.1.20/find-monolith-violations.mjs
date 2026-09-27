@@ -5,11 +5,10 @@ import { countSourceLines } from "./count-source-lines.mjs";
 
 export async function findMonolithViolations(root, directory, limit, inventory = null) {
   const files = await collectMonolithFiles(join(root, directory), inventory);
-  const violations = [];
-  for (const file of files) {
+  const violations = await Promise.all(files.map(async (file) => {
     const source = inventory ? await inventory.readText(file) : await readFile(file, "utf8");
     const lines = countSourceLines(source);
-    if (lines > limit) violations.push(`${relative(root, file).replaceAll("\\", "/")} (${lines} > ${limit})`);
-  }
-  return violations;
+    return lines > limit ? `${relative(root, file).replaceAll("\\", "/")} (${lines} > ${limit})` : null;
+  }));
+  return violations.filter(Boolean);
 }

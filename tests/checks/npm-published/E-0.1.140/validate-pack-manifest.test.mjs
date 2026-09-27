@@ -109,3 +109,8 @@ test("rejects packed paths that escape the package root", () => {
     ),
   ).toContain("unsafe file path");
 });
+
+test("treats duplicate allowlist entries and trailing slashes as equivalent", () => {
+  const output = manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "src/index.mjs"]);
+  expect(validatePackManifest(output, ["src", "src/"])).toBeNull();
+});

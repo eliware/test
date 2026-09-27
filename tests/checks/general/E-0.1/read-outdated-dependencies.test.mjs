@@ -146,6 +146,16 @@ test("rejects process errors, empty failures, and invalid JSON", async () => {
   });
   await expect(failedPromise).rejects.toThrow("exited with 2");
 
+  const secretErrorChild = childProcess();
+  const secretError = readOutdatedDependencies("fixture", () => {
+    queueMicrotask(() => {
+      secretErrorChild.stderr.emit("data", "NPM_TOKEN=secret");
+      secretErrorChild.emit("close", 2);
+    });
+    return secretErrorChild;
+  }, { env: { NPM_TOKEN: "secret" } });
+  await expect(secretError).rejects.toThrow("NPM_TOKEN=[REDACTED]");
+
   const invalidChild = childProcess();
   const invalidPromise = readOutdatedDependencies("fixture", () => {
     queueMicrotask(() => {
@@ -155,4 +165,17 @@ test("rejects process errors, empty failures, and invalid JSON", async () => {
     return invalidChild;
   });
   await expect(invalidPromise).rejects.toThrow("invalid JSON");
+});
+
+test("includes redacted stderr when successful stdout is invalid JSON", async () => {
+  const child = childProcess();
+  const result = readOutdatedDependencies("fixture", () => {
+    queueMicrotask(() => {
+      child.stdout.emit("data", "not json");
+      child.stderr.emit("data", "NPM_TOKEN=secret registry unavailable");
+      child.emit("close", 0);
+    });
+    return child;
+  }, { env: { NPM_TOKEN: "secret" } });
+  await expect(result).rejects.toThrow("npm outdated returned invalid JSON: NPM_TOKEN=[REDACTED] registry unavailable");
 });

@@ -74,16 +74,16 @@ test("bounds sanitized output and suppresses output for oversized secrets", () =
   expect(suppressed.redactComplete("x".repeat(5))).toBe("");
 });
 
-test("bounds per-chunk secret search work by suppressing excessive environments", () => {
+test("bounds per-chunk secret search work across environments with many secrets", () => {
   const secrets = Array.from({ length: 300 }, (_, index) => `${index}`.padStart(3, "0") + "x".repeat(97));
   const output = createRedactedTextStream(secrets, 100_000);
   expect(output.redactComplete("diagnostic".repeat(400))).toBe("");
-  expect(output.push("o".repeat(4_096))).toBe("");
-  expect(output.finish()).toBe("");
+  expect(output.push("o".repeat(4_096))).toBe("o".repeat(3_996));
+  expect(output.finish()).toBe("o".repeat(100));
 });
 
 test("suppresses an excessive pending secret scan when a stream finishes", () => {
-  const secrets = Array.from({ length: 300 }, (_, index) => `${index}`.padStart(3, "0") + "x".repeat(4_000));
+  const secrets = Array.from({ length: 150 }, (_, index) => `${index}`.padStart(3, "0") + "x".repeat(4_897));
   const output = createRedactedTextStream(secrets, 5_000);
   expect(output.push("o".repeat(3_500))).toBe("");
   expect(output.finish()).toBe("");
@@ -114,7 +114,7 @@ test("emits no current chunk after budget exhaustion following a safe prefix", (
 
 test("bounds matcher work when finishing a retained pending suffix", () => {
   const secret = "s".repeat(5_000);
-  const output = createRedactedTextStream([secret], 6_000, { maxSearchWorkPerChunk: 6_000 });
+  const output = createRedactedTextStream([secret], 6_000, { maxSearchWorkPerChunk: 20_000 });
   expect(output.push("s".repeat(4_096))).toBe("");
   expect(output.finish()).toBe("");
 });

@@ -15,9 +15,11 @@ test("handles non-reference AST values and dynamic specifiers", () => {
   const referenced = new Set();
   const uncertain = { value: false };
   collectAstReferences(null, ["alpha"], referenced, uncertain);
+  collectAstReferences({ type: "Program", body: [null] }, ["alpha"], referenced, uncertain);
   collectAstReferences("not an AST node", ["alpha"], referenced, uncertain);
   collectAstReferences({ type: "ImportExpression", source: { type: "NumericLiteral", value: 1 } }, ["alpha"], referenced, uncertain);
   collectAstReferences({ type: "CallExpression", callee: { type: "Identifier", name: "require" }, arguments: [{ type: "NumericLiteral" }] }, ["alpha"], referenced, uncertain);
+  collectAstReferences(parse('require.resolve("unknown");', { sourceType: "module" }), ["alpha"], referenced, uncertain);
   expect([...referenced]).toEqual([]);
   expect(uncertain.value).toBe(false);
 });
@@ -54,6 +56,26 @@ test("collects static dependency resolver references", () => {
   const ast = parse('resolvePackage("alpha/package.json"); require.resolve("beta/package.json");', { sourceType: "module" });
   collectAstReferences(ast, ["alpha", "beta"], referenced);
   expect([...referenced].sort()).toEqual(["alpha", "beta"]);
+});
+
+test("ignores require.resolve when require is declared or the member is computed", () => {
+  for (const source of [
+    'const require = localRequire; require.resolve("alpha");',
+    'function require() {} require.resolve("alpha");',
+    'import require from "other"; require.resolve("alpha");',
+    'import { value as require } from "other"; require.resolve("alpha");',
+    'import * as require from "other"; require.resolve("alpha");',
+    'const value = function require() {}; require.resolve("alpha");',
+    'try {} catch (require) { require.resolve("alpha"); }',
+    'function load(require) { require.resolve("alpha"); }',
+    'require["resolve"]("alpha");',
+    'require.path("alpha");',
+    'resolver.resolve("alpha");',
+  ]) {
+    const referenced = new Set();
+    collectAstReferences(parse(source, { sourceType: "module" }).program, ["alpha"], referenced);
+    if (referenced.size > 0) throw new Error(`Unexpected dependency reference: ${source}`);
+  }
 });
 
 test("ignores non-string and undeclared dependency specifiers", () => {

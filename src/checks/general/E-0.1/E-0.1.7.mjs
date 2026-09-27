@@ -14,7 +14,6 @@ export async function run({
 }) {
   if (packageJson?.private === true) return pass(ruleId);
   try {
-    const readingTrackedFiles = suppliedFiles == null;
     const files = suppliedFiles ?? (await readTracked(root));
     if (!Array.isArray(files)) {
       return fail(
@@ -26,7 +25,6 @@ export async function run({
       readBytes: repositoryInventory
         ? (path) => repositoryInventory.readBytes(path)
         : undefined,
-      skipMissingFiles: readingTrackedFiles,
     });
     if (findings.length > 0) {
       return fail(

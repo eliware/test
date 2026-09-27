@@ -42,7 +42,7 @@ wrapper-owned settings and arguments that weaken required checks are rejected:
 eliware-test --lint --fix
 eliware-test --format --log-level=warn
 eliware-test --format-check --log-level=debug
-eliware-test --audit --omit=dev
+eliware-test --audit --no-fund
 ```
 
 The `--pack` mode runs `npm pack` validation. The npm package contract it checks
@@ -73,9 +73,10 @@ documentation, workflow, and unrelated source/test checks remain skipped:
 npm test -- tests/example.test.mjs
 ```
 
-`--debug-timing` streams completed stage and test timing while validation is
-running. The timing stream is written to the CLI writer supplied by the
-invocation; programmatic callers that omit a writer receive no live timing
+`--debug-timing` streams completed stage timing while validation is running.
+The final timing summary, including per-test durations, is written after
+validation completes. The timing stream is written to the CLI writer supplied
+by the invocation; programmatic callers that omit a writer receive no live timing
 stream. Jest runs in-band by default. Jest option/value pairs are forwarded
 unchanged, and a value is not
 interpreted as a focused path. If Jest produces no observable progress for 15

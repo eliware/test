@@ -11,11 +11,12 @@ export async function validateLocalAuthorityNamespace(root, directives, reposito
     const authority = repositoryInventory
       ? await repositoryInventory.readParsed(file, "json", JSON.parse)
       : JSON.parse(await readFile(file, "utf8"));
+    if (!authority || !Array.isArray(authority.subjects)) return "specs/authority.json must assign directive namespaces through a subjects array.";
     const assigned = new Set(
-      (authority.subjects ?? []).flatMap((subject) =>
+      authority.subjects.flatMap((subject) =>
         (subject.directives ?? []).flatMap((entry) => entry?.ids ?? [])),
     );
-    if (assigned.size === 0) return null;
+    if (assigned.size === 0) return "specs/authority.json must assign at least one directive namespace.";
     const namespaces = new Set(directives.map(({ id }) => namespaceRoot(id)).filter(Boolean));
     const assignedNamespaces = new Set([...assigned].map(namespaceRoot).filter(Boolean));
     const missing = [...namespaces].filter((namespace) => !assignedNamespaces.has(namespace));
@@ -23,6 +24,6 @@ export async function validateLocalAuthorityNamespace(root, directives, reposito
       ? `Directive namespace ${missing.join(", ")} is not assigned by specs/authority.json.`
       : null;
   } catch {
-    return null;
+    return "specs/authority.json is required and must contain valid directive namespace assignments.";
   }
 }

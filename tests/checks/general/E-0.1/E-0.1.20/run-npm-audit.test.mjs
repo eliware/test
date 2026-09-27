@@ -39,9 +39,9 @@ test("forwards additional npm audit arguments", async () => {
       return { code: 0 };
     },
     () => ["npm", []],
-    ["--omit=dev"],
+    ["--no-fund"],
   );
-  expect(calls[0][1]).toEqual(["audit", "--omit=dev", "--json", "--audit-level=high"]);
+  expect(calls[0][1]).toEqual(["audit", "--no-fund", "--json", "--audit-level=high"]);
 });
 
 test("uses npm's executable when npm invokes the harness", async () => {

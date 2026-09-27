@@ -39,8 +39,10 @@ npm install --save-dev @eliware/test
 ## Usage
 
 After installing the package in a consuming repository, run validation with
-`npm exec -- eliware-test` or add `eliware-test` to one of that repository's npm
-scripts. The package-level scripts below are for this repository.
+`eliware-test` or add the shared command to that repository's npm scripts. For
+example, add `"validate": "eliware-test"` under `scripts` in `package.json`,
+then run `npm run validate`. The package-level scripts below are for this
+repository.
 
 `package.json` is the source of truth for the package version. The repository's
 current version is `8.0.0`. The npm badge reflects the version available from
@@ -59,13 +61,16 @@ node bin/eliware-test.mjs --lint
 node bin/eliware-test.mjs --format
 node bin/eliware-test.mjs --format-check
 node bin/eliware-test.mjs tests/example.test.mjs
+eliware-test
 ```
 
 `--format` mutates files; `--format-check` only validates formatting. `--pack`
 validates the package contents without publishing it.
 
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward
-additional arguments supported by Oxlint, Prettier, npm audit, or npm pack.
+additional supported arguments to Oxlint, Prettier, npm audit, or npm pack.
+Audit accepts only `--no-fund` and `--no-progress` so its required audit scope
+and online advisory checks stay intact.
 Arguments that override wrapper-owned settings or weaken required checks are
 rejected.
 Wrapper arguments are emitted before arguments supplied after `--`, preserving

@@ -32,8 +32,22 @@ export async function run({
     if (result.code !== 0) {
       return fail(ruleId, formatNpmAuditFailure(result, env));
     }
+    if (!isSuccessfulAuditReport(result.stdout)) {
+      return fail(ruleId, "npm audit returned an invalid JSON report.");
+    }
   } catch (error) {
     return fail(ruleId, formatNpmAuditStartupFailure(error, env));
   }
   return pass(ruleId);
+}
+
+function isSuccessfulAuditReport(stdout) {
+  try {
+    const report = JSON.parse(stdout);
+    return report !== null && typeof report === "object" && !Array.isArray(report) &&
+      report.vulnerabilities !== null && typeof report.vulnerabilities === "object" &&
+      !Array.isArray(report.vulnerabilities);
+  } catch {
+    return false;
+  }
 }

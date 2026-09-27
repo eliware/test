@@ -10,9 +10,18 @@ test("finds overlapping secrets with failure-link matching", () => {
 
 test("returns no matches for an empty environment and bounds scan work", () => {
   expect(createSecretTextMatcher([])("plain")).toEqual([0, 0, 0, 0, 0, 0]);
+  expect(createSecretTextMatcher([], { maxScanWork: 0 })("x")).toBeNull();
   expect(createSecretTextMatcher(["a"])("a".repeat(1_000_001))).toBeNull();
   expect(createSecretTextMatcher(["a"], { maxScanWork: 1 })("bb")).toBeNull();
   expect(createSecretTextMatcher(["abc"], { maxScanWork: 2 })("abx")).toBeNull();
+  expect(createSecretTextMatcher(["a"], { maxScanWork: 0 })("")).toBeNull();
+  expect(createSecretTextMatcher(["abx", "bcy"], { maxScanWork: 6 })("")).toBeNull();
+  expect(createSecretTextMatcher(["abx", "bcy"], { maxScanWork: 8 })("")).toBeNull();
+  expect(createSecretTextMatcher(["ab"], { maxScanWork: 100 })("ac")).not.toBeNull();
+  expect(createSecretTextMatcher(["a"], { maxScanWork: 3 })("a")).not.toBeNull();
+  expect(createSecretTextMatcher(["ab", "bc"], { maxScanWork: 8 })("abd")).toBeNull();
+  expect(createSecretTextMatcher(["abc", "bcx"], { maxScanWork: 13 })("abz")).toBeNull();
+  expect(createSecretTextMatcher(["a"], { maxScanWork: 2 })("a")).toBeNull();
 });
 
 test("builds suffix fallback links when an earlier prefix cannot continue", () => {

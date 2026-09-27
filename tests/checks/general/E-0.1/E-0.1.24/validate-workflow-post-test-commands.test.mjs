@@ -13,6 +13,15 @@ test("rejects other commands after npm test", () => {
   );
 });
 
+test("uses original workflow positions when setup steps have no run command", () => {
+  const commandStep = { run: "rm -rf ." };
+  expect(validateWorkflowPostTestCommands("ci.yml", [{ command: commandStep.run, step: commandStep }], 1, [
+    { uses: "actions/checkout@v4" },
+    { run: "npm test" },
+    commandStep,
+  ])).toContain("reporting commands after npm test");
+});
+
 test("checks actions after npm test against the reporting allowlist", () => {
   expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
     { run: "npm test" },
@@ -20,6 +29,18 @@ test("checks actions after npm test against the reporting allowlist", () => {
   ])).toBeNull();
   expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
     { run: "npm test" },
+    { uses: "actions/upload-artifact@v4", "continue-on-error": true },
+  ])).toContain("approved reporting actions");
+  expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
+    { run: "npm test" },
     { uses: "untrusted/action@v1" },
+  ])).toContain("approved reporting actions");
+  expect(validateWorkflowPostTestCommands("publish.yml", [], 0, [
+    { run: "npm test" },
+    { uses: "actions/attest@v4" },
+  ], { allowAttestation: true })).toBeNull();
+  expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
+    { run: "npm test" },
+    { uses: "actions/attest@v4" },
   ])).toContain("approved reporting actions");
 });

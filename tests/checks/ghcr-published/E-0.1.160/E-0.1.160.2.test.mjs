@@ -31,6 +31,19 @@ test("rejects text-only version references without package verification or the p
   await expect(run({ root, packageJson: {} })).resolves.toMatchObject({ status: "fail" });
 });
 
+test("requires one image push with only the package version tag", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(publicationPath, content.replace("example:v1.2.3", "example:v1.2.4"));
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
+  await writeFile(publicationPath, content.replace(
+    "      - uses: actions/attest@v4",
+    "      - uses: docker/build-push-action@v6\n        with:\n          push: true\n          tags: ghcr.io/eliware/other:v1.2.3\n      - uses: actions/attest@v4",
+  ));
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
+});
+
 test("reports workflow inspection failures", async () => {
   await expect(run({ root: "C:\\missing-ghcr-repository" })).resolves.toEqual(
     expect.objectContaining({

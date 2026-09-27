@@ -47,6 +47,20 @@ test("reports statement, branch, function, and line locations", () => {
   expect(gap.metrics.branches).toBe(25);
 });
 
+test("reports excess branch counters without mapped locations", () => {
+  const gap = fileGap("branch-map-gap.mjs", {
+    s: { 1: 1 },
+    statementMap: { 1: { start: { line: 1 } } },
+    b: { 1: [1, 0] },
+    branchMap: { 1: { locations: [{}] } },
+    f: { 1: 1 },
+    fnMap: { 1: {} },
+    l: { 1: 1 },
+  });
+  expect(gap?.branches).toContainEqual({ location: "unknown" });
+  expect(gap?.metrics.branches).toBe(50);
+});
+
 test("uses explicit line data and handles empty or incomplete coverage maps", () => {
   expect(fileGap("lines.mjs", {
     s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1, 2: 0 }, statementMap: { 1: {} }, branchMap: { 1: { locations: [{}] } }, fnMap: { 1: {} },

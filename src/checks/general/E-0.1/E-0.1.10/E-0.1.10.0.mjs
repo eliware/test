@@ -9,12 +9,12 @@ export const parentRuleId = "E-0.1.10";
 
 export async function run(context) {
   try {
-    const { source, parsed, error } = await readKnitScript(context);
+    const { source, parsed, error, ast } = await readKnitScript(context);
     if (error) return fail(ruleId, error);
     if (parsed.error) return fail(ruleId, parsed.error);
     const commandError = validateKnitCommandStructure(parsed);
     if (commandError) return fail(ruleId, commandError);
-    const sourceError = validateKnitSourceOperations(source);
+    const sourceError = validateKnitSourceOperations(source, ast);
     if (sourceError) return fail(ruleId, sourceError);
     const publicationError = validateKnitPublicationCommands(parsed.calls);
     if (publicationError) return fail(ruleId, publicationError);

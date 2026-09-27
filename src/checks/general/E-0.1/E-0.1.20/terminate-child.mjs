@@ -11,11 +11,28 @@ function defaultKillTree(pid, env) {
 }
 
 export function killWindowsProcessTree(pid, env = process.env, execute = execFileSync) {
-  execute(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], {
-    windowsHide: true,
-    stdio: "ignore",
-    timeout: 1_000,
-  });
+  const options = { windowsHide: true, stdio: "ignore", timeout: 1_000 };
+  try {
+    execute(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], options);
+  } catch (taskkillError) {
+    const powershell = join(env.SystemRoot, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+    const script = "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
+      "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
+      "$descendants=[Collections.Generic.List[int]]::new(); [void]$known.Add($root); do { $changed=$false; " +
+      "foreach($process in $all) { if($known.Contains([int]$process.ParentProcessId) -and " +
+      "$known.Add([int]$process.ProcessId)) { $descendants.Add([int]$process.ProcessId); $changed=$true } } " +
+      "} while($changed); for($index=$descendants.Count-1; $index -ge 0; $index--) { " +
+      "Stop-Process -Id $descendants[$index] -Force -ErrorAction SilentlyContinue }; " +
+      "Stop-Process -Id $root -Force -ErrorAction SilentlyContinue";
+    try {
+      execute(powershell, ["-NoProfile", "-NonInteractive", "-Command", script], {
+        ...options,
+        env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) },
+      });
+    } catch (powershellError) {
+      throw new AggregateError([taskkillError, powershellError], "Windows process-tree termination failed.");
+    }
+  }
 }
 
 export function terminateChild(
@@ -32,13 +49,17 @@ export function terminateChild(
       try {
         killTree(child.pid, env);
         return true;
-      } catch {}
+      } catch {
+        try { child.kill(signal); } catch {}
+        return false;
+      }
     }
     try {
-      return child.kill(signal) !== false;
+      child.kill(signal);
     } catch {
-      return false;
+      // The child cannot be safely addressed without its process-tree identifier.
     }
+    return false;
   }
   if (Number.isInteger(child.pid) && child.pid > 0) {
     try {

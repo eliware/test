@@ -2,7 +2,7 @@ import { StringDecoder } from "node:string_decoder";
 import { redactProcessOutput } from "./redact-process-output.mjs";
 import { createSecretTextMatcher } from "./create-secret-text-matcher.mjs";
 import { createBoundedSecretSearch } from "./create-bounded-secret-search.mjs";
-import { redactMatchedSecrets, trimPartialSecretSuffix } from "./redact-secrets.mjs";
+import { createPartialSecretSuffixTrimmer, redactMatchedSecrets } from "./redact-secrets.mjs";
 
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
 const MAX_INPUT_CHUNK_LENGTH = 4_096;
@@ -16,6 +16,7 @@ export function createRedactedTextStream(
   const values = [...new Set(secrets.filter((secret) => typeof secret === "string" && secret.length > 0))];
   const maximumSecretLength = Math.max(0, ...values.map((secret) => secret.length));
   const findSecretEnds = createSecretTextMatcher(values, { maxScanWork: workLimit });
+  const trimSuffix = createPartialSecretSuffixTrimmer(values);
   let suppressed = maximumSecretLength > outputLimit;
   const decoder = new StringDecoder("utf8");
   let pending = "";
@@ -56,7 +57,7 @@ export function createRedactedTextStream(
       const matchEnds = findSecretEnds(value);
       if (matchEnds === null) return "";
       const redacted = redactMatchedSecrets(value, matchEnds);
-      return trimPartialSecretSuffix(redactProcessOutput(redacted, []), values);
+      return trimSuffix(redactProcessOutput(redacted, []));
     },
     push(chunk) {
       const text = decoder.write(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
@@ -74,7 +75,7 @@ export function createRedactedTextStream(
         return "";
       }
       const redacted = redactMatchedSecrets(pending, matchEnds);
-      const safeText = trimPartialSecretSuffix(redacted, values);
+      const safeText = trimSuffix(redacted);
       pending = "";
       return append(safeText, []);
     },

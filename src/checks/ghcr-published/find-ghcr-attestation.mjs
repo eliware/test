@@ -13,6 +13,7 @@ export function findAttestation(job, details) {
 }
 
 export function findAttestationVerification(job, details) {
-  const command = `gh attestation verify oci://${details.image}@${details.digestReference} --repo \${{ github.repository }}`;
+  const repositoryExpression = "${{ github.repository }}";
+  const command = `gh attestation verify oci://${details.image}@${details.digestReference} --repo ${repositoryExpression}`;
   return steps(job).find((step) => requiredStep(step) && String(step?.run ?? "").trim() === command);
 }

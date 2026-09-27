@@ -12,6 +12,7 @@ export function createChildTerminationHandler({
   markSettled,
 }) {
   let timedOut = false;
+  let terminationConfirmed = false;
   let cancelTermination;
   return {
     onTimeout() {
@@ -31,6 +32,7 @@ export function createChildTerminationHandler({
           forceKillConfirmationMs: options.forceKillConfirmationMs ?? 1000,
         },
         settleUnconfirmed,
+        (confirmed) => { terminationConfirmed = confirmed; },
       );
     },
     cancel() {
@@ -38,6 +40,9 @@ export function createChildTerminationHandler({
     },
     wasTimedOut() {
       return timedOut;
+    },
+    terminationConfirmed() {
+      return terminationConfirmed;
     },
   };
 

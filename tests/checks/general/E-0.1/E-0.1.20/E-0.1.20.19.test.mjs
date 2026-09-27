@@ -1,6 +1,8 @@
 import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.19.mjs";
 
+const cleanAuditReport = JSON.stringify({ vulnerabilities: {} });
+
 test("requires the shared audit stage script", async () => {
   await expect(
     run({ packageJson: { scripts: { audit: "eliware-test --audit" } } }),
@@ -84,13 +86,13 @@ test("passes when the audit stage succeeds", async () => {
       root: "C:\\repo",
       executeAudit: true,
       mode: "audit",
-      runAudit: async () => ({ code: 0, stdout: "", stderr: "" }),
+      runAudit: async () => ({ code: 0, stdout: cleanAuditReport, stderr: "" }),
     }),
   ).resolves.toEqual({ ruleId: "E-0.1.20.19", status: "pass", message: "" });
 });
 
 test("executes audit for the explicit audit mode even when aggregate execution is disabled", async () => {
-  const runAudit = jest.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
+  const runAudit = jest.fn(async () => ({ code: 0, stdout: cleanAuditReport, stderr: "" }));
   await expect(run({
     packageJson: { scripts: { audit: "eliware-test --audit" } },
     root: "C:\\repo",
@@ -108,7 +110,7 @@ test("executes audit during the aggregate validation mode", async () => {
       packageJson: { scripts: { audit: "eliware-test --audit" } },
       root: "C:\\repo",
       executeAudit: true,
-      runAudit: async () => { called = true; return { code: 0, stdout: "", stderr: "" }; },
+      runAudit: async () => { called = true; return { code: 0, stdout: cleanAuditReport, stderr: "" }; },
     }),
   ).resolves.toEqual({ ruleId: "E-0.1.20.19", status: "pass", message: "" });
   expect(called).toBe(true);
@@ -124,10 +126,19 @@ test("passes the invocation environment through the audit adapter", async () => 
     env,
     runAudit: async (...args) => {
       received = args;
-      return { code: 0 };
+      return { code: 0, stdout: cleanAuditReport };
     },
   });
   expect(received[4]).toBe(env);
+});
+
+test("rejects successful npm audit runs without a usable JSON report", async () => {
+  await expect(run({
+    packageJson: { scripts: { audit: "eliware-test --audit" } },
+    root: "C:\\repo",
+    executeAudit: true,
+    runAudit: async () => ({ code: 0, stdout: "not json" }),
+  })).resolves.toMatchObject({ status: "fail", message: "npm audit returned an invalid JSON report." });
 });
 
 test("rejects arguments that could weaken the audit contract", async () => {

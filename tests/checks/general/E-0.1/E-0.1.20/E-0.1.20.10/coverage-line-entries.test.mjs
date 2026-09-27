@@ -40,7 +40,7 @@ test("handles source entries without line locations and missing maps", () => {
   expect(coverageLineEntries({})).toEqual([]);
 });
 
-test("keeps a line covered when some statements on it are not covered", () => {
+test("uses Istanbul line semantics when statements share a source line", () => {
   expect(coverageLineEntries(
     { s: { first: 2, second: 5 } },
     {

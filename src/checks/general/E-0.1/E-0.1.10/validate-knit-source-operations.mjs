@@ -11,10 +11,10 @@ const processOperations = new Set(["exit", "kill", "abort"]);
 const networkOperations = new Set(["fetch", "request", "connect", "createConnection"]);
 const effectGlobals = new Set(["process", "globalThis", "fetch"]);
 
-export function validateKnitSourceOperations(source) {
-  let program;
+export function validateKnitSourceOperations(source, parsedAst = null) {
+  let program = parsedAst?.program;
   try {
-    program = parse(source, {
+    program ??= parse(source, {
       sourceType: "module",
       plugins: ["importAttributes", "topLevelAwait"],
       allowUndeclaredExports: true,
