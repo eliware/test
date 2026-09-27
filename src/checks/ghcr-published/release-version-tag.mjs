@@ -1,6 +1,6 @@
 export const releaseTagFilter = "v[0-9]*.[0-9]*.[0-9]*";
 export const releaseTagGuard =
-  '[[ "${GITHUB_REF_NAME}" =~ ^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$ ]] && test "$(npm pkg get version --json=false)" = "${GITHUB_REF_NAME#v}"';
+  '[[ "${GITHUB_REF_NAME}" =~ ^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$ ]] && test "$(node -p "require(process.argv[1]).version" ./package.json)" = "${GITHUB_REF_NAME#v}"';
 
 const semanticVersionTag = /^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/u;
 
