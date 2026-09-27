@@ -1,15 +1,9 @@
 import { expect, test } from "@jest/globals";
-import {
-  hasExplicitIgnoreRule,
-  prohibitedTrackedPath,
-} from "../../../../../src/checks/general/E-0.1/E-0.1.22/git-ignore-policy.mjs";
+import { hasExplicitIgnoreRule } from "../../../../../src/checks/general/E-0.1/E-0.1.22/git-ignore-policy.mjs";
 
-test("classifies explicit ignore rules and prohibited tracked paths", () => {
+test("classifies explicit ignore rules", () => {
   expect(hasExplicitIgnoreRule("node_modules/\n.env*\n", "node_modules/pkg")).toBe(true);
   expect(hasExplicitIgnoreRule("node_modules/\n", ".env.local")).toBe(false);
-  expect(prohibitedTrackedPath("src\\.env.local")).toBe(true);
-  expect(prohibitedTrackedPath("src/.env.example")).toBe(false);
-  expect(prohibitedTrackedPath("src/certificate.pem")).toBe(true);
 });
 
 test("recognizes root ignore rules written with Windows path separators", () => {

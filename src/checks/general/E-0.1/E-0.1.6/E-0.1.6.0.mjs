@@ -1,18 +1,25 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { isForbiddenPath } from "./sensitive-path-classifier.mjs";
-import { readTrackedPaths } from "./read-tracked-paths.mjs";
+import { findRepositoryFiles } from "../find-repository-files.mjs";
+import { isIgnoredByRepositoryRules } from "../check-repository-ignore.mjs";
 import { readSensitiveExemptions } from "./read-sensitive-exemptions.mjs";
 
 export const ruleId = "E-0.1.6.0";
 export const parentRuleId = "E-0.1.6";
 
-export async function run({ root, packageJson }, getTracked = readTrackedPaths) {
+export async function run(
+  { root, packageJson, repositoryInventory, files: suppliedFiles },
+  findFiles = findRepositoryFiles,
+) {
   const findings = [];
   const allowed = readSensitiveExemptions(packageJson, ruleId);
   try {
-    const tracked = await getTracked(root);
-    if (!Array.isArray(tracked) || tracked.length === 0) throw new Error("Git inspection returned no paths.");
-    findings.push(...tracked.filter((path) => isForbiddenPath(path) && !allowed.has(path)));
+    const files =
+      suppliedFiles ??
+      (repositoryInventory ? await repositoryInventory.repositoryFiles() : await findFiles(root));
+    const forbidden = files.filter((path) => isForbiddenPath(path) && !allowed.has(path));
+    for (const path of forbidden)
+      if (!(await isIgnoredByRepositoryRules(root, path))) findings.push(path);
   } catch {
     return fail(
       ruleId,

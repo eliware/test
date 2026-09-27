@@ -27,7 +27,11 @@ test("returns no registry roots when authority or registry documents are unusabl
   try {
     await mkdir(join(root, "specs"));
     const authorityPath = join(root, "specs", "authority.json");
+    await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
     await writeFile(authorityPath, JSON.stringify({}));
+    await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
+
+    await writeFile(authorityPath, "null");
     await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
 
     await writeFile(authorityPath, JSON.stringify({ globalAuthorityMap: "../registry/map.json" }));
@@ -35,8 +39,15 @@ test("returns no registry roots when authority or registry documents are unusabl
     await writeFile(join(root, "registry", "map.json"), JSON.stringify({}));
     await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
 
+    await writeFile(authorityPath, JSON.stringify({ globalAuthorityMap: "../registry/missing.json" }));
+    await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
+
+    await writeFile(authorityPath, JSON.stringify({ globalAuthorityMap: "../registry/map.json" }));
     await writeFile(join(root, "registry", "map.json"), "not json");
     await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
+    await expect(readRegisteredRepositoryRoots(root, {
+      readParsed: async () => { throw new Error("unavailable"); },
+    })).resolves.toBeNull();
   } finally {
     await rm(root, { recursive: true, force: true });
   }

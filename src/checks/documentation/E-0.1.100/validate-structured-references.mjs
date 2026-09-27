@@ -2,10 +2,11 @@ import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { collectStructuredReferences } from "./collect-structured-references.mjs";
 import { isWithinRegisteredRepository, resolveStructuredReference } from "./resolve-structured-reference.mjs";
-import { readRegisteredRepositoryRoots } from "./read-registered-repository-roots.mjs";
+import { readRegisteredRepositoryRootsResult } from "./read-registered-repository-roots.mjs";
 
 export async function validateStructuredReferences(root, files, inventory) {
   let registeredRepositoryRoots;
+  let registeredRepositoryError;
   let registryLoaded = false;
   for (const relativeFile of files) {
     const file = join(root, relativeFile);
@@ -18,12 +19,14 @@ export async function validateStructuredReferences(root, files, inventory) {
       if (!resolved) continue;
       if (resolved.external) {
         if (!registryLoaded) {
-          registeredRepositoryRoots = await readRegisteredRepositoryRoots(root, inventory);
+          const registry = await readRegisteredRepositoryRootsResult(root, inventory);
+          registeredRepositoryRoots = registry.roots;
+          registeredRepositoryError = registry.error;
           registryLoaded = true;
         }
         if (registeredRepositoryRoots === null) {
           throw new Error(
-            `${reference.path} cannot be verified without the registered repository map`,
+            `${reference.path} cannot be verified without the registered repository map: ${registeredRepositoryError}`,
           );
         }
         if (!registeredRepositoryRoots.some((repositoryRoot) =>

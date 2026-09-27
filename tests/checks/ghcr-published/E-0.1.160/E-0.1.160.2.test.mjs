@@ -17,6 +17,17 @@ test("requires an exact semantic-version tag gate", async () => {
   await expect(run({ root, packageJson })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
+test("requires the publisher job to depend on successful Ubuntu validation", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "pass" });
+  await writeFile(publicationPath, content.replace("    needs: validate\n", "    needs: [validate]\n"));
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "pass" });
+  await writeFile(publicationPath, content.replace("    needs: validate\n", ""));
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({ status: "fail" });
+});
+
 test("rejects text-only version references without package verification or the protected approval environment", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");

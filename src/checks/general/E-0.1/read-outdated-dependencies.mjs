@@ -1,10 +1,11 @@
 import { spawn } from "node:child_process";
-import { npmCommand } from "../../npm-command.mjs";
 import { killWindowsProcessTree, terminateChild } from "./E-0.1.20/terminate-child.mjs";
-import { collectRedactionSecrets } from "../../collect-redaction-secrets.mjs";
-import { redactProcessOutput } from "../../redact-process-output.mjs";
+import { appendBoundedOutputTail } from "./append-bounded-output-tail.mjs";
+import { createOutdatedDependenciesCommand } from "./create-outdated-dependencies-command.mjs";
+import { parseOutdatedDependenciesOutput } from "./parse-outdated-dependencies-output.mjs";
 
 const maxStdoutLength = 100_000;
+const maxStderrLength = 4_000;
 
 export function readOutdatedDependencies(
   root,
@@ -20,15 +21,8 @@ export function readOutdatedDependencies(
   } = {},
 ) {
   return new Promise((resolve, reject) => {
-    const [npmExecutable, prefix] = npmCommand(platform, env.npm_execpath ?? "", execPath);
-    const npmArgs = [...prefix, "outdated", "--json"];
-    const child = spawnProcess(npmExecutable, npmArgs, {
-      cwd: root,
-      detached: platform !== "win32",
-      shell: false,
-      stdio: ["ignore", "pipe", "pipe"],
-      env: { ...env, npm_config_loglevel: "error" },
-    });
+    const command = createOutdatedDependenciesCommand(root, { env, platform, execPath });
+    const child = spawnProcess(command.executable, command.args, command.options);
     let stdout = "";
     let stderr = "";
     let oversized = false;
@@ -65,25 +59,16 @@ export function readOutdatedDependencies(
       stdout += text;
     });
     child.stderr.on("data", (chunk) => {
-      stderr = `${stderr}${chunk}`.slice(-4000);
+      stderr = appendBoundedOutputTail(stderr, chunk, maxStderrLength);
     });
     child.on("error", rejectOnce);
     child.on("close", (code) => {
       if (oversized)
         return rejectOnce(new Error(`npm outdated output exceeded ${maxStdoutLength} characters.`));
-      if (code !== 0 && !stdout.trim()) {
-        const diagnostic = redactProcessOutput(stderr, collectRedactionSecrets(env)).trim();
-        return rejectOnce(new Error(diagnostic || `npm outdated exited with ${code}.`));
-      }
       try {
-        resolveOnce(JSON.parse(stdout || "{}"));
-      } catch {
-        const diagnostic = redactProcessOutput(stderr, collectRedactionSecrets(env)).trim();
-        rejectOnce(new Error(
-          diagnostic
-            ? `npm outdated returned invalid JSON: ${diagnostic}`
-            : "npm outdated returned invalid JSON.",
-        ));
+        resolveOnce(parseOutdatedDependenciesOutput(stdout, stderr, code, env));
+      } catch (error) {
+        rejectOnce(error);
       }
     });
   });

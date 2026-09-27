@@ -16,7 +16,7 @@ test("accepts a valid E-rooted directive tree", async () => {
   const root = await fixture([{ id: "E-0.0", directives: [{ id: "A-0.0.1" }] }]);
   await writeFile(
     join(root, "specs", "authority.json"),
-    JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0"] }] }] }),
+    JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0.0"] }] }] }),
   );
   await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.22.0", status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });
@@ -83,7 +83,7 @@ test("reads directive and authority JSON through the shared parsed cache", async
   const root = await fixture([{ id: "E-0.0", directives: [{ id: "A-0.0.1" }] }]);
   await writeFile(
     join(root, "specs", "authority.json"),
-    JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0"] }] }] }),
+    JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0.0"] }] }] }),
   );
   const reads = new Map();
   const repositoryInventory = createRepositoryInventory(root, {

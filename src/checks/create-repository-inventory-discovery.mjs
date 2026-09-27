@@ -26,16 +26,17 @@ export function createRepositoryDiscovery({
 
   async function entriesUnder(directory = root) {
     const base = inventoryDirectory(root, directory, "Repository inventory directory must be inside the repository.");
+    if (!base) return entries();
     if (entriesPromise) {
       const records = await entries();
-      return base ? records.filter(({ path }) => path === base || path.startsWith(`${base}/`)) : records;
+      return records.filter(({ path }) => path === base || path.startsWith(`${base}/`));
     }
     if (!subtreeEntries.has(base)) {
       const options = { includeTestResults, includeTestResultsUnder, expandedDirectories, scopeDirectory: base };
       const records = findEntries === findRepositoryEntries
         ? findRepositoryEntries(root, readDirectoryCached, options)
         : Promise.resolve(findEntries(root, readDirectoryCached, options)).then((found) =>
-            base ? found.filter(({ path }) => path === base || path.startsWith(`${base}/`)) : found,
+            found.filter(({ path }) => path === base || path.startsWith(`${base}/`)),
           );
       subtreeEntries.set(base, records);
     }

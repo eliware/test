@@ -20,22 +20,28 @@ test("requires the exact shared validation scripts", async () => {
   );
 });
 
-test("allows optional typecheck and build scripts", async () => {
+test("allows typecheck and build scripts only for declared capabilities", async () => {
   await expect(
     run({ packageJson: { scripts: { ...scripts, typecheck: "tsc --noEmit", build: "vite build" } } }),
+  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("typecheck") });
+  await expect(
+    run({ packageJson: {
+      scripts: { ...scripts, typecheck: "tsc --noEmit", build: "vite build" },
+      eliware: { capabilities: ["typecheck", "build"] },
+    } }),
   ).resolves.toMatchObject({ status: "pass" });
 });
 
-test("allows the runtime entrypoint for the application profile and rejects unrelated scripts", async () => {
+test("rejects undeclared runtime entrypoint and unrelated scripts", async () => {
   await expect(run({
     packageJson: {
       scripts: { ...scripts, start: "node server.mjs" },
       eliware: { apply: ["application"] },
     },
-  })).resolves.toMatchObject({ status: "pass" });
+  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("start") });
   await expect(run({
     packageJson: {
-      scripts: { ...scripts, start: "node server.mjs", deploy: "node deploy.mjs" },
+      scripts: { ...scripts, deploy: "node deploy.mjs" },
       eliware: { apply: ["application"] },
     },
   })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("deploy") });

@@ -77,7 +77,7 @@
         {
           "id": "E-0.1.160.3",
           "dos": [
-            "The GHCR publication workflow must be separate from the general validation workflow and must require successful Ubuntu validation using the inherited npm ci followed by npm test flow before publication.",
+            "The GHCR publication workflow must remain separate from the general validation workflow and its publication job must depend on a successful Ubuntu validation job using npm ci followed by npm test.",
             "A repository that also publishes npm must keep npm publication separate while reusing the inherited validation result and exact release identity."
           ],
           "donts": [

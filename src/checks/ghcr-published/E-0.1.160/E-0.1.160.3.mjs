@@ -13,18 +13,15 @@ export async function run(context) {
   try {
     const workflows = await readWorkflows(root, context);
     const validation = workflows.filter((workflow) =>
+      !isPublicationWorkflow(workflow) &&
       findValidationJobs(workflow).some(({ job }) => hasUbuntuRunner(workflow, job)),
     );
     const publication = workflows.filter(isPublicationWorkflow);
     if (
       validation.length === 0 ||
-      publication.length === 0 ||
-      publication.some(
-        (workflow) =>
-          findValidationJobs(workflow).length > 0 || /\bnpm\s+(?:ci|test)\b/i.test(workflow.content),
-      )
+      publication.length === 0
     )
-      return fail(ruleId, "GHCR publication must be separate from the npm validation workflow.");
+      return fail(ruleId, "GHCR publication must be separate from and follow the Ubuntu validation workflow.");
   } catch (error) {
     return fail(ruleId, `GHCR workflows could not be inspected: ${error.message}`);
   }

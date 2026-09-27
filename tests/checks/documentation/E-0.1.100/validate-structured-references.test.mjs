@@ -157,3 +157,13 @@ test("requires a registered map before accepting an unavailable external target"
   );
   await rm(root, { recursive: true, force: true });
 });
+
+test("identifies the missing authority map when cross-repository verification cannot proceed", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-cross-repo-refs-authority-diagnostic-"));
+  await writeFile(join(root, "package.json"), JSON.stringify({
+    eliware: { crosslinks: [{ path: "../missing-repository/target.json" }] },
+  }));
+  await expect(validateStructuredReferences(root, ["package.json"]))
+    .rejects.toThrow(join(root, "specs", "authority.json"));
+  await rm(root, { recursive: true, force: true });
+});

@@ -44,9 +44,15 @@ export async function run({
 function isSuccessfulAuditReport(stdout) {
   try {
     const report = JSON.parse(stdout);
-    return report !== null && typeof report === "object" && !Array.isArray(report) &&
-      report.vulnerabilities !== null && typeof report.vulnerabilities === "object" &&
-      !Array.isArray(report.vulnerabilities);
+    if (report === null || typeof report !== "object" || Array.isArray(report)) return false;
+    const vulnerabilities = report.vulnerabilities;
+    if (vulnerabilities === null || typeof vulnerabilities !== "object" || Array.isArray(vulnerabilities)) {
+      return false;
+    }
+    return ["high", "critical"].every((severity) =>
+      vulnerabilities[severity] === undefined ||
+      (Number.isInteger(vulnerabilities[severity]) && vulnerabilities[severity] === 0),
+    );
   } catch {
     return false;
   }

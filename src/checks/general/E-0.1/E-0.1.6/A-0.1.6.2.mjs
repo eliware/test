@@ -10,10 +10,10 @@ export function run({ packageJson }) {
       ["E-0.1.6.0", ruleId].includes(exemption.ruleId) &&
       (typeof exemption.path !== "string" || !exemption.path.trim())
     ) {
-      return fail(ruleId, "Tracked secret-file exemptions must identify one exact path.");
+      return fail(ruleId, "Secret-file exemptions must identify one exact path.");
     }
     if (typeof exemption.path === "string" && exemption.path.includes("*")) {
-      return fail(ruleId, "Tracked secret-file exemptions must not use wildcard paths.");
+      return fail(ruleId, "Secret-file exemptions must not use wildcard paths.");
     }
   }
   return pass(ruleId);

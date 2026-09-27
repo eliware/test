@@ -23,15 +23,29 @@ test("shares scoped documentation discovery and enforces traversal limits", asyn
     "nested/record.json",
   ]);
   await expect(inventory.documentationFiles()).resolves.toContain("README.md");
-  await expect(inventory.documentationFiles({
-    directory: "/repo/docs",
-    predicate: (name) => name.endsWith(".json"),
-    maxFiles: 1,
-  })).rejects.toThrow("file limit");
-  await expect(inventory.documentationFiles({ directory: "/repo/docs", maxDepth: 0 })).rejects.toThrow("depth limit");
-  await expect(inventory.documentationFiles({ directory: "/repo/missing" })).rejects.toMatchObject({ code: "ENOENT" });
-  await expect(inventory.documentationFiles({ directory: "/outside" })).rejects.toThrow("inside the repository");
-  expect(findEntries).toHaveBeenCalledTimes(3);
+  await expect(
+    inventory.documentationFiles({
+      directory: "/repo",
+      predicate: (name) => name === "README.md",
+    }),
+  ).resolves.toEqual(["README.md"]);
+  await expect(
+    inventory.documentationFiles({
+      directory: "/repo/docs",
+      predicate: (name) => name.endsWith(".json"),
+      maxFiles: 1,
+    }),
+  ).rejects.toThrow("file limit");
+  await expect(
+    inventory.documentationFiles({ directory: "/repo/docs", maxDepth: 0 }),
+  ).rejects.toThrow("depth limit");
+  await expect(inventory.documentationFiles({ directory: "/repo/missing" })).rejects.toMatchObject({
+    code: "ENOENT",
+  });
+  await expect(inventory.documentationFiles({ directory: "/outside" })).rejects.toThrow(
+    "inside the repository",
+  );
+  expect(findEntries).toHaveBeenCalledTimes(2);
 });
 
 test("allows generated documentation only when requested", async () => {
@@ -39,11 +53,15 @@ test("allows generated documentation only when requested", async () => {
     findEntries: jest.fn(async () => records),
   });
 
-  await expect(inventory.documentationFiles({ directory: "/repo/docs" })).resolves.not.toContain("build/index.md");
-  await expect(inventory.documentationFiles({
-    directory: "/repo/docs",
-    includeGenerated: true,
-  })).resolves.toContain("build/index.md");
+  await expect(inventory.documentationFiles({ directory: "/repo/docs" })).resolves.not.toContain(
+    "build/index.md",
+  );
+  await expect(
+    inventory.documentationFiles({
+      directory: "/repo/docs",
+      includeGenerated: true,
+    }),
+  ).resolves.toContain("build/index.md");
 });
 
 test("measures documentation depth relative to a deeply nested requested scope", async () => {
@@ -57,12 +75,28 @@ test("measures documentation depth relative to a deeply nested requested scope",
   const inventory = createRepositoryInventory("/repo", {
     findEntries: jest.fn(async () => nested),
   });
-  await expect(inventory.documentationFiles({
-    directory: "/repo/docs/one/two",
-    maxDepth: 0,
-  })).rejects.toThrow("depth limit");
-  await expect(inventory.documentationFiles({
-    directory: "/repo/docs/one/two",
-    maxDepth: 1,
-  })).resolves.toEqual(["three/file.md"]);
+  await expect(
+    inventory.documentationFiles({
+      directory: "/repo/docs/one/two",
+      maxDepth: 0,
+    }),
+  ).rejects.toThrow("depth limit");
+  await expect(
+    inventory.documentationFiles({
+      directory: "/repo/docs/one/two",
+      maxDepth: 1,
+    }),
+  ).resolves.toEqual(["three/file.md"]);
+});
+
+test("enforces traversal depth for files even when ancestor directory entries are missing", async () => {
+  const inventory = createRepositoryInventory("/repo", {
+    findEntries: jest.fn(async () => [
+      { path: "docs", type: "directory", depth: 1 },
+      { path: "docs/one/two/file.md", type: "file", depth: 4 },
+    ]),
+  });
+  await expect(
+    inventory.documentationFiles({ directory: "/repo/docs", maxDepth: 1 }),
+  ).rejects.toThrow("depth limit");
 });

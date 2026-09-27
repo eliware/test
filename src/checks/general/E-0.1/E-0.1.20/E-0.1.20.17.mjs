@@ -23,12 +23,14 @@ export async function run({
   const appliedProfiles = new Set(
     Array.isArray(packageJson?.eliware?.apply) ? packageJson.eliware.apply : [],
   );
+  const declaredCapabilities = new Set(
+    Array.isArray(packageJson?.eliware?.capabilities) ? packageJson.eliware.capabilities : [],
+  );
   const scriptError = validateRequiredScripts(packageJson?.scripts, {
     requiresPack: appliedProfiles.has("npm-published"),
     allowedAdditionalScripts: [
-      ...(packageJson?.scripts?.typecheck !== undefined ? ["typecheck"] : []),
-      ...(packageJson?.scripts?.build !== undefined ? ["build"] : []),
-      ...(appliedProfiles.has("application") ? ["start"] : []),
+      ...(declaredCapabilities.has("typecheck") ? ["typecheck"] : []),
+      ...(declaredCapabilities.has("build") ? ["build"] : []),
       ...(appliedProfiles.has("web") ? ["lighthouse", "puppeteer"] : []),
     ],
   });

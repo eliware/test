@@ -8,17 +8,41 @@ async function readJson(file, inventory) {
 }
 
 export async function readRegisteredRepositoryRoots(root, inventory) {
+  return (await readRegisteredRepositoryRootsResult(root, inventory)).roots;
+}
+
+export async function readRegisteredRepositoryRootsResult(root, inventory) {
+  const authorityFile = join(root, "specs", "authority.json");
+  let authority;
   try {
-    const authorityFile = join(root, "specs", "authority.json");
-    const authority = await readJson(authorityFile, inventory);
-    if (typeof authority.globalAuthorityMap !== "string") return null;
-    const mapPath = resolve(dirname(authorityFile), authority.globalAuthorityMap);
-    const map = await readJson(mapPath, inventory);
-    if (!Array.isArray(map.repositoryRegistry)) return null;
-    return map.repositoryRegistry
-      .filter((entry) => typeof entry?.path === "string")
-      .map((entry) => resolve(dirname(mapPath), entry.path));
-  } catch {
-    return null;
+    authority = await readJson(authorityFile, inventory);
+  } catch (error) {
+    return { roots: null, error: describeRegistryReadError(authorityFile, error) };
   }
+  if (!authority || typeof authority !== "object" || typeof authority.globalAuthorityMap !== "string") {
+    return { roots: null, error: `${authorityFile} must declare globalAuthorityMap.` };
+  }
+  const mapPath = resolve(dirname(authorityFile), authority.globalAuthorityMap);
+  let map;
+  try {
+    map = await readJson(mapPath, inventory);
+  } catch (error) {
+    return { roots: null, error: describeRegistryReadError(mapPath, error) };
+  }
+  if (!map || typeof map !== "object" || !Array.isArray(map.repositoryRegistry)) {
+    return { roots: null, error: `${mapPath} must contain a repositoryRegistry array.` };
+  }
+  return {
+    roots: map.repositoryRegistry
+      .filter((entry) => typeof entry?.path === "string")
+      .map((entry) => resolve(dirname(mapPath), entry.path)),
+    error: null,
+  };
+}
+
+function describeRegistryReadError(path, error) {
+  const reason = error instanceof SyntaxError
+    ? "contains invalid JSON"
+    : `could not be read (${error?.code ?? "unknown error"})`;
+  return `${path} ${reason}.`;
 }

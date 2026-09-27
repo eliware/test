@@ -9,7 +9,7 @@ function childProcess() {
   return child;
 }
 
-test("parses successful npm output and bounds stderr", async () => {
+test("parses successful npm output", async () => {
   const child = childProcess();
   const promise = readOutdatedDependencies("fixture", (executable, args, options) => {
     expect(executable).toBe(process.execPath);
@@ -43,10 +43,14 @@ test("terminates and rejects npm outdated output that exceeds its capture limit"
 test("bounds termination when oversized output never closes", async () => {
   const child = childProcess();
   child.kill = jest.fn();
-  const result = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => child.stdout.emit("data", "x".repeat(100_001)));
-    return child;
-  }, { terminationGracePeriodMs: 5 });
+  const result = readOutdatedDependencies(
+    "fixture",
+    () => {
+      queueMicrotask(() => child.stdout.emit("data", "x".repeat(100_001)));
+      return child;
+    },
+    { terminationGracePeriodMs: 5 },
+  );
   await expect(result).rejects.toThrow("output exceeded 100000 characters");
   expect(child.kill.mock.calls).toEqual([["SIGTERM"], ["SIGKILL"]]);
 });
@@ -57,47 +61,20 @@ test("terminates the Windows npm process tree when output exceeds its limit", as
   child.kill = jest.fn();
   const killTree = jest.fn();
   const env = { SystemRoot: "C:\\Windows" };
-  const result = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => child.stdout.emit("data", "x".repeat(100_001)));
-    return child;
-  }, { platform: "win32", env, killTree, terminationGracePeriodMs: 5 });
-  await expect(result).rejects.toThrow("output exceeded 100000 characters");
-  expect(killTree.mock.calls).toEqual([[2468, env], [2468, env]]);
-  expect(child.kill).not.toHaveBeenCalled();
-});
-
-test("builds the non-Windows npm command", async () => {
-  const child = childProcess();
-  const originalPlatform = process.platform;
-  const originalNpmExecPath = process.env.npm_execpath;
-  Object.defineProperty(process, "platform", { configurable: true, value: "linux" });
-  delete process.env.npm_execpath;
-  try {
-    const promise = readOutdatedDependencies("fixture", (executable, args) => {
-      expect(executable).toBe("npm");
-      expect(args).toEqual(["outdated", "--json"]);
-      queueMicrotask(() => { child.stdout.emit("data", "{}"); child.emit("close", 0); });
+  const result = readOutdatedDependencies(
+    "fixture",
+    () => {
+      queueMicrotask(() => child.stdout.emit("data", "x".repeat(100_001)));
       return child;
-    });
-    await expect(promise).resolves.toEqual({});
-  } finally {
-    Object.defineProperty(process, "platform", { configurable: true, value: originalPlatform });
-    if (originalNpmExecPath === undefined) delete process.env.npm_execpath;
-    else process.env.npm_execpath = originalNpmExecPath;
-  }
-});
-
-test("resolves npm from the invoking Windows environment", async () => {
-  const child = childProcess();
-  const env = { npm_execpath: "C:\\node\\npm-cli.js", marker: "preserved" };
-  const promise = readOutdatedDependencies("fixture", (executable, args, options) => {
-    expect(executable).toBe("C:\\node\\node.exe");
-    expect(args).toEqual(["C:\\node\\npm-cli.js", "outdated", "--json"]);
-    expect(options.env).toMatchObject({ ...env, npm_config_loglevel: "error" });
-    queueMicrotask(() => { child.stdout.emit("data", "{}"); child.emit("close", 0); });
-    return child;
-  }, { env, platform: "win32", execPath: "C:\\node\\node.exe" });
-  await expect(promise).resolves.toEqual({});
+    },
+    { platform: "win32", env, killTree, terminationGracePeriodMs: 5 },
+  );
+  await expect(result).rejects.toThrow("output exceeded 100000 characters");
+  expect(killTree.mock.calls).toEqual([
+    [2468, env],
+    [2468, env],
+  ]);
+  expect(child.kill).not.toHaveBeenCalled();
 });
 
 test("uses the default process adapter and handles empty successful output", async () => {
@@ -121,7 +98,7 @@ test("uses the default process adapter and handles empty successful output", asy
   await expect(empty).resolves.toEqual({});
 });
 
-test("rejects process errors, empty failures, and invalid JSON", async () => {
+test("rejects child process errors and settles only once", async () => {
   const errorChild = childProcess();
   const errorPromise = readOutdatedDependencies("fixture", () => {
     queueMicrotask(() => errorChild.emit("error", new Error("spawn failed")));
@@ -138,44 +115,4 @@ test("rejects process errors, empty failures, and invalid JSON", async () => {
     return errorThenClose;
   });
   await expect(errorThenClosePromise).rejects.toThrow("spawn failed first");
-
-  const failedChild = childProcess();
-  const failedPromise = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => failedChild.emit("close", 2));
-    return failedChild;
-  });
-  await expect(failedPromise).rejects.toThrow("exited with 2");
-
-  const secretErrorChild = childProcess();
-  const secretError = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => {
-      secretErrorChild.stderr.emit("data", "NPM_TOKEN=secret");
-      secretErrorChild.emit("close", 2);
-    });
-    return secretErrorChild;
-  }, { env: { NPM_TOKEN: "secret" } });
-  await expect(secretError).rejects.toThrow("NPM_TOKEN=[REDACTED]");
-
-  const invalidChild = childProcess();
-  const invalidPromise = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => {
-      invalidChild.stdout.emit("data", "not json");
-      invalidChild.emit("close", 0);
-    });
-    return invalidChild;
-  });
-  await expect(invalidPromise).rejects.toThrow("invalid JSON");
-});
-
-test("includes redacted stderr when successful stdout is invalid JSON", async () => {
-  const child = childProcess();
-  const result = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => {
-      child.stdout.emit("data", "not json");
-      child.stderr.emit("data", "NPM_TOKEN=secret registry unavailable");
-      child.emit("close", 0);
-    });
-    return child;
-  }, { env: { NPM_TOKEN: "secret" } });
-  await expect(result).rejects.toThrow("npm outdated returned invalid JSON: NPM_TOKEN=[REDACTED] registry unavailable");
 });

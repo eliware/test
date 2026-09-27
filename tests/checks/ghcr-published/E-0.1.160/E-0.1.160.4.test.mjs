@@ -31,7 +31,10 @@ test("uses the job permission override as the effective permission set", async (
   const content = await readFile(publicationPath, "utf8");
   await writeFile(
     publicationPath,
-    content.replace("  publish:\n    runs-on:", "  publish:\n    permissions:\n      contents: read\n      packages: read\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n    runs-on:"),
+    content.replace(
+      "  publish:\n    needs: validate\n    runs-on:",
+      "  publish:\n    needs: validate\n    permissions:\n      contents: read\n      packages: read\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n    runs-on:",
+    ),
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
 });
@@ -40,7 +43,13 @@ test("checks every publication job and rejects unnecessary permissions", async (
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
-  await writeFile(publicationPath, content.replace("  publish:\n", "  extra:\n    permissions:\n      contents: read\n      packages: write\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n      actions: write\n    steps:\n      - run: docker push ghcr.io/eliware/example:v1.2.3\n  publish:\n"));
+  await writeFile(
+    publicationPath,
+    content.replace(
+      "  publish:\n",
+      "  extra:\n    permissions:\n      contents: read\n      packages: write\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n      actions: write\n    steps:\n      - run: docker push ghcr.io/eliware/example:v1.2.3\n  publish:\n",
+    ),
+  );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
@@ -56,6 +65,9 @@ test("reports workflow inspection failures", async () => {
 test("fails when no GHCR publication job exists", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ghcr-empty-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "ci.yml"), "jobs:\n  test:\n    steps:\n      - run: npm test\n");
+  await writeFile(
+    join(root, ".github", "workflows", "ci.yml"),
+    "jobs:\n  test:\n    steps:\n      - run: npm test\n",
+  );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });

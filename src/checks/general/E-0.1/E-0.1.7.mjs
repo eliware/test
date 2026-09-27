@@ -1,5 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
-import { readTrackedPaths } from "./E-0.1.6/read-tracked-paths.mjs";
+import { findRepositoryFiles } from "./find-repository-files.mjs";
+import { isIgnoredByRepositoryRules } from "./check-repository-ignore.mjs";
 import { findInfrastructureInternalIdentifiers } from "./find-infrastructure-internal-identifiers.mjs";
 
 export const ruleId = "E-0.1.7";
@@ -10,21 +11,18 @@ export async function run({
   packageJson,
   files: suppliedFiles,
   repositoryInventory,
-  readTracked = readTrackedPaths,
+  findFiles = findRepositoryFiles,
 }) {
   if (packageJson?.private === true) return pass(ruleId);
   try {
-    const files = suppliedFiles ?? (await readTracked(root));
-    if (!Array.isArray(files)) {
-      return fail(
-        ruleId,
-        "Git tracked-file inspection was unavailable; cannot validate public repository contents safely.",
-      );
-    }
-    const findings = await findInfrastructureInternalIdentifiers(root, files, {
-      readBytes: repositoryInventory
-        ? (path) => repositoryInventory.readBytes(path)
-        : undefined,
+    const files =
+      suppliedFiles ??
+      (repositoryInventory ? await repositoryInventory.repositoryFiles() : await findFiles(root));
+    const visibleFiles = [];
+    for (const file of files)
+      if (!(await isIgnoredByRepositoryRules(root, file))) visibleFiles.push(file);
+    const findings = await findInfrastructureInternalIdentifiers(root, visibleFiles, {
+      readBytes: repositoryInventory ? (path) => repositoryInventory.readBytes(path) : undefined,
     });
     if (findings.length > 0) {
       return fail(

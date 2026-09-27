@@ -48,7 +48,7 @@ export function createSecretTextMatcher(secrets, { maxScanWork = MAX_SCAN_WORK }
   return function findSecretEnds(text) {
     const matchEnds = Array.from({ length: text.length + 1 }, () => 0);
     let state = 0;
-    let work = buildWork;
+    let work = 0;
     for (let index = 0; index < text.length; index += 1) {
       const character = text[index];
       while (state !== 0 && !nodes[state].transitions.has(character)) {

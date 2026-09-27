@@ -5,6 +5,8 @@ import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.
 import { steps } from "../workflow-structure.mjs";
 import { findImagePushes, imageTags } from "../find-ghcr-image-push.mjs";
 import { hasReleaseTagGuard, isTagRelease, tagMatchesPackageVersion } from "../release-version-tag.mjs";
+import { findValidationJobs } from "../find-validation-jobs.mjs";
+import { hasUbuntuRunner } from "../has-ubuntu-runner.mjs";
 
 export const ruleId = "E-0.1.160.2";
 export const parentRuleId = "E-0.1.160";
@@ -23,6 +25,11 @@ export async function run(context) {
         const publicationJobList = publicationJobs(workflow);
         return hasExactTagTrigger(workflow) && publicationJobList.length > 0 &&
           publicationJobList.every(({ job }) => {
+            const validationJobs = findValidationJobs(workflow);
+            const needs = Array.isArray(job.needs) ? job.needs : job.needs ? [job.needs] : [];
+            const dependsOnUbuntuValidation = validationJobs.some(({ id, job: validationJob }) =>
+              hasUbuntuRunner(workflow, validationJob) && needs.includes(id),
+            );
             const jobSteps = steps(job);
             const versionCheckIndex = jobSteps.findIndex(({ run }) => hasReleaseTagGuard(run));
             const pushes = findImagePushes(job);
@@ -31,6 +38,7 @@ export async function run(context) {
               imageTags(pushes[0].with?.tags)[0].endsWith(`:v${packageJson.version}`);
             return (
               job.environment === "ghcr-publish" &&
+              dependsOnUbuntuValidation &&
               versionCheckIndex >= 0 &&
               exactPush &&
               jobSteps.indexOf(pushes[0]) > versionCheckIndex

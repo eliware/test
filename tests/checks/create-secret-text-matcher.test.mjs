@@ -19,9 +19,15 @@ test("returns no matches for an empty environment and bounds scan work", () => {
   expect(createSecretTextMatcher(["abx", "bcy"], { maxScanWork: 8 })("")).toBeNull();
   expect(createSecretTextMatcher(["ab"], { maxScanWork: 100 })("ac")).not.toBeNull();
   expect(createSecretTextMatcher(["a"], { maxScanWork: 3 })("a")).not.toBeNull();
-  expect(createSecretTextMatcher(["ab", "bc"], { maxScanWork: 8 })("abd")).toBeNull();
-  expect(createSecretTextMatcher(["abc", "bcx"], { maxScanWork: 13 })("abz")).toBeNull();
-  expect(createSecretTextMatcher(["a"], { maxScanWork: 2 })("a")).toBeNull();
+  expect(createSecretTextMatcher(["ab", "bc"], { maxScanWork: 8 })("abd")).not.toBeNull();
+  expect(createSecretTextMatcher(["abc", "bcx"], { maxScanWork: 13 })("abz")).not.toBeNull();
+  expect(createSecretTextMatcher(["a"], { maxScanWork: 2 })("a")).not.toBeNull();
+  expect(createSecretTextMatcher(["aaaaa"], { maxScanWork: 9 })("aaaaax")).toBeNull();
+});
+
+test("keeps trie construction work separate from each bounded text scan", () => {
+  const findSecretEnds = createSecretTextMatcher(["a".repeat(4_500)], { maxScanWork: 9_000 });
+  expect(findSecretEnds("zz")).not.toBeNull();
 });
 
 test("builds suffix fallback links when an earlier prefix cannot continue", () => {

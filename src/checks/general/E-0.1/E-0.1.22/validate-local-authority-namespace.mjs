@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 function namespaceRoot(id) {
-  return id.match(/^[EA]-\d+(?=\.|$)/iu)?.[0].toUpperCase();
+  return id.match(/^[EA]-\d+(?:\.\d+)?(?=\.|$)/iu)?.[0].toUpperCase();
 }
 
 export async function validateLocalAuthorityNamespace(root, directives, repositoryInventory) {

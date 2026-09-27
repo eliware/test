@@ -28,6 +28,21 @@ test("bounds captured data across streams", () => {
   expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(12);
 });
 
+test("bounds captured UTF-8 output by bytes without splitting a code point", () => {
+  const capture = createChildProcessOutputCapture({ env: {} }, [], 5);
+  capture.push("stdout", "ééé");
+  const result = capture.finish();
+  expect(result.stdout).toBe("éé");
+  expect(Buffer.byteLength(result.stdout)).toBe(4);
+});
+
+test("applies the limit after redaction and retains safe text after a long secret", () => {
+  const secret = "sensitive-token";
+  const capture = createChildProcessOutputCapture({ env: {} }, [secret], 20);
+  capture.push("stdout", `safe${secret}tail!!`);
+  expect(capture.finish()).toEqual({ stdout: "safe[REDACTED]tail!!", stderr: "" });
+});
+
 test("does not expose truncated text", () => {
   const secret = "credential-boundary";
   const capture = createChildProcessOutputCapture({}, [secret], 20);
@@ -49,6 +64,6 @@ test("ignores invalid lists and later chunks", () => {
   shortened.push("stderr", "after the raw limit");
   const shortenedResult = shortened.finish();
   expect(shortenedResult.stdout.startsWith("[REDACTED]")).toBe(true);
-  expect(shortenedResult.stderr).toBe("");
+  expect(shortenedResult.stderr).toBe("af");
   expect(shortenedResult.stdout.length).toBeLessThanOrEqual(12);
 });

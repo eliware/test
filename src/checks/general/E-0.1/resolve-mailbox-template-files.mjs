@@ -1,12 +1,10 @@
-import { isIgnoredByGit } from "./check-git-ignore.mjs";
+import { isIgnoredByRepositoryRules } from "./check-repository-ignore.mjs";
 
 export async function resolveMailboxTemplateFiles(
   root,
   files,
-  trackedFiles,
-  checkIgnored = isIgnoredByGit,
+  checkIgnored = isIgnoredByRepositoryRules,
 ) {
-  if (Array.isArray(trackedFiles)) return trackedFiles;
   return (
     await Promise.all(files.map(async (file) => ((await checkIgnored(root, file)) ? null : file)))
   ).filter(Boolean);

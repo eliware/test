@@ -44,9 +44,9 @@ example, add `"validate": "eliware-test"` under `scripts` in `package.json`,
 then run `npm run validate`. The package-level scripts below are for this
 repository.
 
-`package.json` is the source of truth for the package version. The repository's
-current version is `8.0.0`. The npm badge reflects the version available from
-the public registry.
+`package.json` is the source of truth for the version in this checkout. The
+repository's current version is `8.0.0`. The npm badge shows the latest version
+published to the public registry and may differ until a release is published.
 
 ```text
 npm test
@@ -156,6 +156,8 @@ currently validates on Ubuntu.
 Exit code `0` is success, `8` is Jest failure, `10` is coverage failure, `12` is lint
 failure, `14` is an internal tool failure, `17` is a package-check failure, and
 `18` is a convention, configuration, argument, format, or format-check failure.
+Rejected wrapper arguments, unsupported mode combinations, and rejected
+forwarded tool arguments return exit code `18`.
 Every failed convention check includes the check ID, the observed failure, and
 the complete matching directive, including all `dos`, `donts`, and examples
 when present. The canonical profile specifications live in `specs/conventions/`
@@ -180,7 +182,7 @@ diagnostics when requesting help.
 
 ## Links
 
-- Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)
+- Documentation: [docs](docs/README.md) · [specifications](specs/README.md)
 - [Documentation](docs/README.md)
 - [Specifications](specs/README.md)
 - [Authority distribution](specs/authority.json)

@@ -33,6 +33,16 @@ test("keeps searching after unusable reports and reports the last unusable repor
   ).rejects.toThrow("Coverage report is invalid: invalid.json");
 });
 
+test("falls back from an explicitly invalid first candidate to a valid candidate", async () => {
+  const readCandidate = jest.fn(async (path) => {
+    if (path === "invalid.json") return null;
+    return { totals: { lines: 100 }, gaps: [] };
+  });
+  await expect(selectCoverageEvidence(["invalid.json", "valid.json"], readCandidate))
+    .resolves.toMatchObject({ source: "valid.json" });
+  expect(readCandidate).toHaveBeenCalledTimes(2);
+});
+
 test("continues after a report omits source entries and selects a later valid report", async () => {
   const readCandidate = jest.fn(async (path) => {
     if (path === "first.json") {

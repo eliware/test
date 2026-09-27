@@ -10,23 +10,35 @@ export function createChildProcessOutputCapture(options, suppliedSecrets, output
     stdout: createRedactedTextStream(redactionSecrets, outputLimit),
     stderr: createRedactedTextStream(redactionSecrets, outputLimit),
   };
-  let captured = 0;
-  let rawCaptured = 0;
+  let capturedBytes = 0;
   const result = { stdout: "", stderr: "" };
 
   function append(stream, text) {
-    const bounded = text.slice(0, Math.max(0, outputLimit - captured));
-    captured += bounded.length;
+    const remaining = Math.max(0, outputLimit - capturedBytes);
+    const encoded = Buffer.from(text);
+    let bounded = text;
+    if (encoded.length > remaining) {
+      let end = remaining;
+      bounded = "";
+      while (end > 0) {
+        const candidateBytes = encoded.subarray(0, end);
+        const candidate = candidateBytes.toString("utf8");
+        if (Buffer.byteLength(candidate) <= remaining && Buffer.from(candidate).equals(candidateBytes)) {
+          bounded = candidate;
+          break;
+        }
+        end -= 1;
+      }
+    }
+    capturedBytes += Buffer.byteLength(bounded);
     result[stream] += bounded;
   }
 
   return {
     push(stream, chunk) {
-      if (!redactors[stream] || captured >= outputLimit || rawCaptured >= outputLimit) return;
+      if (!redactors[stream] || capturedBytes >= outputLimit) return;
       const raw = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
-      const bounded = raw.subarray(0, outputLimit - rawCaptured);
-      rawCaptured += bounded.length;
-      append(stream, redactors[stream].push(bounded));
+      append(stream, redactors[stream].push(raw));
     },
     finish() {
       append("stdout", redactors.stdout.finish());

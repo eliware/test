@@ -22,7 +22,7 @@ test("reports namespaces that are not assigned", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-namespace-"));
   await writeAuthority(root, { subjects: [{ directives: [{ ids: ["E-19"] }] }] });
   await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toBe(
-    "Directive namespace E-0 is not assigned by specs/authority.json.",
+    "Directive namespace E-0.0 is not assigned by specs/authority.json.",
   );
   await rm(root, { recursive: true, force: true });
 });
@@ -31,7 +31,16 @@ test("does not treat a numeric namespace prefix as an assignment", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-namespace-"));
   await writeAuthority(root, { subjects: [{ directives: [{ ids: ["E-180"] }] }] });
   await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain(
-    "namespace E-0 is not assigned",
+    "namespace E-0.0 is not assigned",
+  );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("does not let E-0 authorize a separate E-0.99 directive root", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-authority-namespace-"));
+  await writeAuthority(root, { subjects: [{ directives: [{ ids: ["E-0"] }] }] });
+  await expect(validateLocalAuthorityNamespace(root, [{ id: "E-0.99" }])).resolves.toContain(
+    "namespace E-0.99 is not assigned",
   );
   await rm(root, { recursive: true, force: true });
 });

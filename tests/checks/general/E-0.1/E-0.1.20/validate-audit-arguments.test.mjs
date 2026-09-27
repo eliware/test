@@ -15,7 +15,10 @@ test("rejects arguments that weaken required npm audit severity or JSON output",
     expect(validateAuditArguments(args)).toMatch(/cannot override/u);
   }
   expect(validateAuditArguments()).toBeNull();
-  for (const args of [null, "--omit=dev", [null], [1]]) {
+  for (const args of [null, [null], [1]]) {
     expect(validateAuditArguments(args)).toBe("Audit arguments must be an array of strings.");
+  }
+  for (const args of [["--omit=dev"], ["--omit", "optional"]]) {
+    expect(validateAuditArguments(args)).toMatch(/cannot override/u);
   }
 });

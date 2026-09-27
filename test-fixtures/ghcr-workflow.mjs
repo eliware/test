@@ -17,7 +17,13 @@ permissions:
   attestations: write
   artifact-metadata: write
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm ci
+      - run: npm test
   publish:
+    needs: validate
     runs-on: ubuntu-latest
     environment: ghcr-publish
     if: startsWith(github.ref, 'refs/tags/v')

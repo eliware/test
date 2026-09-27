@@ -4,7 +4,11 @@ import { createInstrumenter } from "istanbul-lib-instrument";
 import { isInScopeSource, normalizeSourcePath } from "./coverage-source-path.mjs";
 
 export function expectedCoverageShape(source, filename) {
-  const instrumenter = createInstrumenter({ esModules: true, produceSourceMap: false });
+  const instrumenter = createInstrumenter({
+    esModules: true,
+    parserPlugins: ["typescript", "jsx", "topLevelAwait"],
+    produceSourceMap: false,
+  });
   instrumenter.instrumentSync(source, filename);
   const coverage = instrumenter.lastFileCoverage();
   const lineMap = Object.fromEntries(

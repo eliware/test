@@ -1,9 +1,9 @@
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
-import { readTrackedPaths } from "../E-0.1.6/read-tracked-paths.mjs";
-import { hasExplicitIgnoreRule, prohibitedTrackedPath } from "./git-ignore-policy.mjs";
-import { inspectGitIgnorePaths } from "./inspect-git-ignore-paths.mjs";
+import { hasExplicitIgnoreRule } from "./git-ignore-policy.mjs";
+import { isIgnoredByRepositoryRules } from "../check-repository-ignore.mjs";
 import { readRepositoryText } from "../../../read-repository-text.mjs";
+import { readIgnoredTrackedPaths } from "./read-ignored-tracked-paths.mjs";
 
 export const ruleId = "A-0.1.22.1";
 export const parentRuleId = "E-0.1.22";
@@ -20,7 +20,11 @@ const requiredPaths = new Map([
 ]);
 
 export async function run(context) {
-  const { root, checkIgnored, checkIgnoredPaths = inspectGitIgnorePaths, trackedPaths = readTrackedPaths } = context;
+  const {
+    root,
+    checkIgnored = isIgnoredByRepositoryRules,
+    readIgnoredPaths = readIgnoredTrackedPaths,
+  } = context;
   let ignoreText;
   try {
     ignoreText = await readRepositoryText(context, join(root, ".gitignore"));
@@ -28,24 +32,26 @@ export async function run(context) {
     return fail(ruleId, ".gitignore is required.");
   }
   const missing = [];
-  const explicitlyIgnoredPaths = [...requiredPaths.values()].filter((path) => hasExplicitIgnoreRule(ignoreText, path));
-  const ignoredPaths = checkIgnored ? null : await checkIgnoredPaths(root, explicitlyIgnoredPaths);
-  if (!checkIgnored && ignoredPaths === null)
-    return fail(ruleId, "Git ignore inspection was unavailable; cannot validate required ignored paths safely.");
   for (const [category, path] of requiredPaths) {
     if (!hasExplicitIgnoreRule(ignoreText, path)) {
       missing.push(category);
       continue;
     }
-    const ignored = checkIgnored ? await checkIgnored(root, path) : ignoredPaths.has(path);
-    if (ignored === null) return fail(ruleId, "Git ignore inspection was unavailable; cannot validate required ignored paths safely.");
+    const ignored = await checkIgnored(root, path);
     if (!ignored) missing.push(category);
   }
   if (missing.length > 0)
     return fail(ruleId, `Required .gitignore paths are not ignored: ${missing.join(", ")}.`);
-  const tracked = await trackedPaths(root);
-  if (!Array.isArray(tracked)) return fail(ruleId, "Git tracked-file inspection was unavailable; cannot validate prohibited tracked paths safely.");
-  const violations = tracked.map((path) => path.replaceAll("\\", "/")).filter(prohibitedTrackedPath);
-  if (violations.length > 0) return fail(ruleId, `Prohibited ignored paths are tracked: ${violations.join(", ")}.`);
+  const ignoredTrackedPaths = await readIgnoredPaths(root);
+  if (!Array.isArray(ignoredTrackedPaths))
+    return fail(
+      ruleId,
+      "Git index inspection was unavailable; cannot verify ignored tracked files.",
+    );
+  if (ignoredTrackedPaths.length > 0)
+    return fail(
+      ruleId,
+      `Tracked or staged files match ignore rules: ${ignoredTrackedPaths.join(", ")}.`,
+    );
   return pass(ruleId);
 }

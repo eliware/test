@@ -61,6 +61,22 @@ test("redacts audit output and startup errors using the invoking environment", a
   })).resolves.toMatchObject({ status: "fail", message: "npm audit could not be started: spawn leaked [REDACTED]" });
 });
 
+test("redacts configured secrets embedded between credential delimiters", async () => {
+  const result = await run({
+    packageJson: { scripts: { audit: "eliware-test --audit" } },
+    root: "C:\\repo",
+    executeAudit: true,
+    env: { NPM_TOKEN: "tiny-secret" },
+    runAudit: async () => ({
+      code: 1,
+      stdout: "NPM_TOKEN=prefix-tiny-secret-suffix",
+      stderr: "",
+    }),
+  });
+  expect(result.status).toBe("fail");
+  expect(result.message).not.toContain("tiny-secret");
+});
+
 test("reports audit startup failures", async () => {
   await expect(
     run({
@@ -133,12 +149,31 @@ test("passes the invocation environment through the audit adapter", async () => 
 });
 
 test("rejects successful npm audit runs without a usable JSON report", async () => {
+  for (const stdout of ["not json", "null", "[]", JSON.stringify({ vulnerabilities: null }), JSON.stringify({ vulnerabilities: [] })]) {
+    await expect(run({
+      packageJson: { scripts: { audit: "eliware-test --audit" } },
+      root: "C:\\repo",
+      executeAudit: true,
+      runAudit: async () => ({ code: 0, stdout }),
+    })).resolves.toMatchObject({ status: "fail", message: "npm audit returned an invalid JSON report." });
+  }
+});
+
+test("rejects successful npm audit reports above the required high severity threshold", async () => {
+  for (const vulnerabilities of [{ high: 1, critical: 0 }, { high: 0, critical: 1 }]) {
+    await expect(run({
+      packageJson: { scripts: { audit: "eliware-test --audit" } },
+      root: "C:\\repo",
+      executeAudit: true,
+      runAudit: async () => ({ code: 0, stdout: JSON.stringify({ vulnerabilities }) }),
+    })).resolves.toMatchObject({ status: "fail", message: "npm audit returned an invalid JSON report." });
+  }
   await expect(run({
     packageJson: { scripts: { audit: "eliware-test --audit" } },
     root: "C:\\repo",
     executeAudit: true,
-    runAudit: async () => ({ code: 0, stdout: "not json" }),
-  })).resolves.toMatchObject({ status: "fail", message: "npm audit returned an invalid JSON report." });
+    runAudit: async () => ({ code: 0, stdout: JSON.stringify({ vulnerabilities: { moderate: 2, high: 0, critical: 0 } }) }),
+  })).resolves.toMatchObject({ status: "pass" });
 });
 
 test("rejects arguments that could weaken the audit contract", async () => {

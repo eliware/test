@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.6/A-0.1.6.2.mjs";
 
-test("requires exact paths for tracked secret exceptions", () => {
+test("requires exact paths for secret-file exceptions", () => {
   const valid = {
     ruleId: "E-0.1.6.0",
     path: ".env",
@@ -18,7 +18,8 @@ test("requires exact paths for tracked secret exceptions", () => {
     "fail",
   );
   expect(
-    run({ packageJson: { eliware: { exempt: [{ ...valid, ruleId: "E-0.1.7", path: "*.env" }] } } }).status,
+    run({ packageJson: { eliware: { exempt: [{ ...valid, ruleId: "E-0.1.7", path: "*.env" }] } } })
+      .status,
   ).toBe("fail");
   expect(run({ packageJson: { eliware: {} } }).status).toBe("pass");
 });

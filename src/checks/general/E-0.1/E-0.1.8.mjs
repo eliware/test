@@ -10,8 +10,6 @@ export const parentRuleId = "E-0.1";
 export async function run({
   root,
   packageJson,
-  trackedFiles,
-  readTracked,
   repositoryInventory,
   findFiles = findRepositoryFiles,
   checkIgnored,
@@ -23,8 +21,6 @@ export async function run({
 
   const expected = `${repositoryName}@eliware.org`;
   const owner = await inspectLocalMailboxOwner(root, expected, {
-    trackedFiles,
-    readTracked,
     checkIgnored,
   });
   if (owner.error) return fail(ruleId, owner.error);
@@ -37,12 +33,7 @@ export async function run({
   } catch (error) {
     return fail(ruleId, `Environment files could not be inspected: ${error.message}`);
   }
-  const templateFiles = await resolveMailboxTemplateFiles(
-    root,
-    files,
-    owner.trackedFiles,
-    checkIgnored,
-  );
+  const templateFiles = await resolveMailboxTemplateFiles(root, files, checkIgnored);
   const templateError = await validateMailboxTemplates(
     root,
     templateFiles,

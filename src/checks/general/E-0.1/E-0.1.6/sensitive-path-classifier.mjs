@@ -30,5 +30,6 @@ export function isForbiddenPath(path) {
   const hasForbiddenName =
     parts.slice(0, -1).some((part) => forbiddenName.test(part)) ||
     (forbiddenName.test(fileName) && !benignSecurityCode);
-  return (hasForbiddenName && !benignSecurityCode) || forbiddenExtension.test(normalized);
+  if (forbiddenExtension.test(normalized)) return true;
+  return hasForbiddenName && !benignSecurityCode;
 }

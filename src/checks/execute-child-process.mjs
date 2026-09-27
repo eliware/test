@@ -6,7 +6,7 @@ const MAX_OUTPUT_LENGTH = 100_000;
 export function execute(command, args, options = {}, spawnProcess = spawn) {
   return new Promise((resolveResult, reject) => {
     const { redactionSecrets: suppliedSecrets = [], ...childOptions } = options ?? {};
-    const child = spawnProcess(command, args, { ...childOptions, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawnProcess(command, args, { ...childOptions, shell: false, stdio: ["ignore", "pipe", "pipe"] });
     const output = createChildProcessOutputCapture(childOptions, suppliedSecrets, MAX_OUTPUT_LENGTH);
     child.stdout?.on("data", (chunk) => output.push("stdout", chunk));
     child.stderr?.on("data", (chunk) => output.push("stderr", chunk));

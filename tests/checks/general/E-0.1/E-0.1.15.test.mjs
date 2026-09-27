@@ -12,6 +12,9 @@ test("skips registry lookup when the package has no dependencies", async () => {
   });
 });
 
-test("uses the default read-only registry adapter when no result is injected", async () => {
-  await expect(run({ root: "Z:\\eliware-test-missing-root", packageJson: { dependencies: { alpha: "1" } } })).rejects.toBeTruthy();
+test("returns a stable failure result when the read-only registry adapter fails", async () => {
+  await expect(run({
+    packageJson: { dependencies: { alpha: "1" } },
+    readOutdated: () => Promise.reject("registry unavailable"),
+  })).resolves.toMatchObject({ ruleId, status: "fail", message: expect.stringContaining("registry unavailable") });
 });

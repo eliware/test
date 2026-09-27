@@ -24,7 +24,7 @@ const { run } = await import("../../../../src/checks/general/E-0.1/E-0.1.8.mjs")
 
 beforeEach(() => {
   jest.resetAllMocks();
-  inspectLocalMailboxOwner.mockResolvedValue({ trackedFiles: [".env"] });
+  inspectLocalMailboxOwner.mockResolvedValue({ error: null });
   findRepositoryFiles.mockResolvedValue([".env.example"]);
   resolveMailboxTemplateFiles.mockReturnValue([".env.example"]);
   validateMailboxTemplates.mockResolvedValue(null);
@@ -35,21 +35,16 @@ test("derives the owner and composes local and template validation", async () =>
     run({
       root: "/repo",
       packageJson: { name: "@eliware/fixture" },
-      trackedFiles: [".env"],
-      readTracked: [".env"],
       checkIgnored: jest.fn(),
     }),
   ).resolves.toEqual({ ruleId: "E-0.1.8", status: "pass", message: "" });
   expect(inspectLocalMailboxOwner).toHaveBeenCalledWith("/repo", "fixture@eliware.org", {
-    trackedFiles: [".env"],
-    readTracked: [".env"],
     checkIgnored: expect.any(Function),
   });
   expect(findRepositoryFiles).toHaveBeenCalledWith("/repo");
   expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith(
     "/repo",
     [".env.example"],
-    [".env"],
     expect.any(Function),
   );
   expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], null);
@@ -61,12 +56,7 @@ test("uses the shared file list when inventory context is supplied", async () =>
     run({ root: "/repo", packageJson: { name: "fixture" }, repositoryInventory }),
   ).resolves.toMatchObject({ status: "pass" });
   expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
-  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith(
-    "/repo",
-    [".env.example"],
-    [".env"],
-    undefined,
-  );
+  expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith("/repo", [".env.example"], undefined);
   expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], {
     repositoryInventory,
   });

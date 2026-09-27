@@ -17,6 +17,14 @@ test("derives expected statement, branch, and function maps from source", () => 
   expect(Object.keys(shape.fnMap).length).toBeGreaterThan(0);
 });
 
+test.each([
+  ["TypeScript", "export const value: number = 1;"],
+  ["JSX", "export const view = <main />;"],
+])("instruments supported %s source syntax", (_syntax, source) => {
+  const shape = expectedCoverageShape(source, "src/example.js");
+  expect(Object.keys(shape.statementMap)).toHaveLength(1);
+});
+
 test("reads source shapes only for in-scope source files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-coverage-shapes-"));
   await mkdir(join(root, "src"), { recursive: true });

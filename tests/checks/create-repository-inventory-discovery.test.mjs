@@ -78,5 +78,6 @@ test("discovery defaults and custom finders support full and scoped results", as
   const rootFinder = jest.fn(async () => records);
   const rootScoped = createRepositoryDiscovery({ root: "/repo", findEntries: rootFinder, readDirectory: async () => [] });
   await expect(rootScoped.entriesUnder("/repo")).resolves.toEqual(records);
-  expect(rootFinder).toHaveBeenCalledWith("/repo", expect.any(Function), expect.objectContaining({ scopeDirectory: "" }));
+  expect(rootFinder).toHaveBeenCalledTimes(1);
+  expect(rootFinder.mock.calls[0][2]).not.toHaveProperty("scopeDirectory");
 });

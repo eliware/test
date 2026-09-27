@@ -105,7 +105,7 @@ test("captures bounded stdout and stderr from a completed child", async () => {
   const promise = execute("node", ["--version"], { cwd: "C:/repo" }, (command, args, options) => {
     expect(command).toBe("node");
     expect(args).toEqual(["--version"]);
-    expect(options).toMatchObject({ cwd: "C:/repo", stdio: ["ignore", "pipe", "pipe"] });
+    expect(options).toMatchObject({ cwd: "C:/repo", shell: false, stdio: ["ignore", "pipe", "pipe"] });
     return child;
   });
   child.stdout.emit("data", Buffer.from("output"));
@@ -117,6 +117,18 @@ test("captures bounded stdout and stderr from a completed child", async () => {
     stdout: "output",
     stderr: "warning",
   });
+});
+
+test("does not permit callers to enable shell interpretation", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const promise = execute("tool", [], { shell: true }, (_command, _args, options) => {
+    expect(options.shell).toBe(false);
+    return child;
+  });
+  child.emit("close", 0, null);
+  await expect(promise).resolves.toMatchObject({ code: 0 });
 });
 
 test("handles output-less adapters, early errors, defaults, and the real adapter", async () => {

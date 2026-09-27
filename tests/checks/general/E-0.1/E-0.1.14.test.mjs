@@ -21,8 +21,24 @@ test("reads the registry when dependencies exist and no injected result is suppl
   });
 });
 
-test("uses the default read-only registry adapter when no adapter is supplied", async () => {
-  await expect(run({ root: "Z:\\eliware-test-missing-root", packageJson: { dependencies: { alpha: "1" } } })).rejects.toBeTruthy();
+test("returns a stable failure result when the read-only registry adapter fails", async () => {
+  await expect(run({
+    packageJson: { dependencies: { alpha: "1" } },
+    env: { NPM_TOKEN: "private-token" },
+    readOutdated: async () => { throw new Error("NPM_TOKEN=private-token registry unavailable"); },
+  })).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining("NPM_TOKEN=[REDACTED]"),
+  });
+  await expect(run({
+    packageJson: { dependencies: { alpha: "1" } },
+    readOutdated: async () => { throw new Error(""); },
+  })).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining("unknown registry lookup error"),
+  });
 });
 
 test("defaults the lookup root to the current repository", async () => {

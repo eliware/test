@@ -8,7 +8,10 @@
     ]
   },
   "crosslinks": [
-    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." }
+    {
+      "path": "../../../docs/authority-map.json",
+      "authoritativeFor": "Cross-repository ownership."
+    }
   ],
   "directives": [
     {
@@ -250,8 +253,8 @@
             {
               "id": "A-0.1.6.2",
               "dos": [
-                "Deterministic validation must inspect version-controlled paths for secret-like files and reject unauthorized matches.",
-                "A tracked-file exception must identify the exact path, rule ID, approver, reason, and expiry or review condition in package.json.eliware.exempt."
+                "Deterministic validation must inspect current repository files on disk for secret-like files and reject unauthorized matches, including files not yet staged.",
+                "A secret-file exception must identify the exact path, rule ID, approver, reason, and expiry or review condition in package.json.eliware.exempt."
               ],
               "donts": [
                 "Do not treat a broad filename pattern or an undocumented encrypted or generated path as an automatic exception."
@@ -273,10 +276,10 @@
         {
           "id": "E-0.1.8",
           "dos": [
-            "Every repository must define MAIL_OWNER_ADDRESS in its local untracked .env file as <repository-name>@eliware.org."
+            "Every repository must define MAIL_OWNER_ADDRESS in its local .env file as <repository-name>@eliware.org and ignore that file using its root .gitignore."
           ],
           "donts": [
-            "Repositories must not place the mailbox owner address in .env.example or any committed environment template."
+            "Repositories must not place the mailbox owner address in .env.example or any environment template."
           ]
         },
         {
@@ -632,7 +635,7 @@
             {
               "id": "A-0.1.20.11",
               "dos": [
-                "When a repository declares typechecking or a production build capability, define explicit read-only typecheck and build validation commands and keep generated output outside the repository."
+                "Declare typecheck and build capabilities in package.json.eliware.capabilities; each declared capability requires an explicit read-only script, and generated output must remain outside the repository."
               ],
               "donts": [
                 "Do not infer or silently skip declared typecheck or build validation, and do not add placeholder commands for absent capabilities."
@@ -679,7 +682,7 @@
             {
               "id": "E-0.1.20.17",
               "dos": [
-                "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applicable profile or declared capability requires them: pack for npm publication; typecheck and build when those validation capabilities are declared; and lighthouse and puppeteer for web projects.",
+                "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applicable profile or declared capability requires them: pack for npm publication; typecheck and build when package.json.eliware.capabilities declares them; and lighthouse and puppeteer for web projects.",
                 "Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation."
               ],
               "donts": [
@@ -728,10 +731,11 @@
             {
               "id": "A-0.1.22.1",
               "dos": [
-                "Every repository must use .gitignore rules that exclude dependencies, VCS state, coverage, build output, runtime state, secrets, and machine-specific files."
+                "Every repository must use .gitignore rules that exclude dependencies, VCS state, coverage, build output, runtime state, secrets, and machine-specific files.",
+                "Deterministic validation must inspect the Git index and reject tracked or staged files that match any ignore rule."
               ],
               "donts": [
-                "Do not track node_modules, .git state, coverage, build output, runtime state, secrets, or machine-specific files."
+                "Do not include node_modules, .git state, coverage, build output, runtime state, secrets, or machine-specific files in repository contents."
               ]
             }
           ]

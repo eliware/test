@@ -5,7 +5,8 @@ import { createBoundedSecretSearch } from "./create-bounded-secret-search.mjs";
 import { createPartialSecretSuffixTrimmer, redactMatchedSecrets } from "./redact-secrets.mjs";
 
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
-const MAX_INPUT_CHUNK_LENGTH = 4_096;
+const MAX_RETAINED_PENDING_LENGTH = 64_000;
+const MAX_INPUT_CHUNK_LENGTH = MAX_RETAINED_PENDING_LENGTH;
 
 export function createRedactedTextStream(
   secrets,
@@ -15,14 +16,18 @@ export function createRedactedTextStream(
   const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, maxSearchWorkPerChunk));
   const values = [...new Set(secrets.filter((secret) => typeof secret === "string" && secret.length > 0))];
   const maximumSecretLength = Math.max(0, ...values.map((secret) => secret.length));
-  const findSecretEnds = createSecretTextMatcher(values, { maxScanWork: workLimit });
+  let suppressed = maximumSecretLength > outputLimit || maximumSecretLength > MAX_RETAINED_PENDING_LENGTH;
+  const findSecretEnds = suppressed
+    ? null
+    : createSecretTextMatcher(values, { maxScanWork: workLimit });
   const trimSuffix = createPartialSecretSuffixTrimmer(values);
-  let suppressed = maximumSecretLength > outputLimit;
   const decoder = new StringDecoder("utf8");
   let pending = "";
   let outputLength = 0;
   let finished = false;
-  const findSafeBoundary = createBoundedSecretSearch(values, workLimit, findSecretEnds);
+  const findSafeBoundary = suppressed
+    ? null
+    : createBoundedSecretSearch(values, workLimit, findSecretEnds);
 
   function append(text, matchEnds) {
     const remaining = Math.max(0, outputLimit - outputLength);
