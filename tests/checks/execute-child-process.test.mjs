@@ -80,10 +80,10 @@ test("handles synchronous spawn failures and children without output streams", a
   });
 });
 
-test("uses default execution options and preserves non-Error spawn diagnostics", async () => {
+test("uses default execution options and preserves diagnostics without redaction secrets", async () => {
   await expect(execute(process.execPath, ["-e", ""])).resolves.toMatchObject({ code: 0 });
   const child = childProcess();
-  const promise = execute("tool", [], {}, () => child);
+  const promise = execute("tool", [], { env: {} }, () => child);
   child.emit("error", "adapter failure");
   await expect(promise).rejects.toMatchObject({ name: "Error", message: "adapter failure" });
 });

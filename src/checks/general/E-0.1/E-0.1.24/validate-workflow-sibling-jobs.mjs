@@ -20,7 +20,6 @@ export function validateWorkflowSiblingJobs(name, jobs, validationJobIds, public
       commands,
       job?.steps?.length ?? commands.length,
       job?.steps ?? commands.map(({ step }) => step),
-      job,
     );
     if (setupError) return setupError;
   }

@@ -285,7 +285,7 @@
         {
           "id": "E-0.1.8",
           "dos": [
-            "Every repository must define MAIL_OWNER_ADDRESS in its local .env file as <repository-name>@eliware.org and ignore that file using its root .gitignore."
+            "If a repository has a local .env file, it must define MAIL_OWNER_ADDRESS as <repository-name>@eliware.org and the root .gitignore must ignore that file. The file is optional."
           ],
           "donts": [
             "Repositories must not place the mailbox owner address in .env.example or any environment template."
@@ -518,7 +518,7 @@
               "id": "E-0.1.24.4",
               "dos": [
                 "Every active GitHub Actions validation workflow must contain only repository validation steps plus required setup and non-publishing reporting steps; its validation flow is npm ci followed by npm test.",
-                "Before npm ci, allow only safe echo reporting or the exact MAIL_OWNER_ADDRESS .env setup using an eliware.org address; reject other printf setup and shell redirections.",
+                "Before npm ci, allow only safe echo reporting in run steps and approved setup actions; reject file creation, shell redirections, and other setup commands.",
                 "Publication workflows must be separate from the general validation workflow and governed by the applicable publication profile and Operations release policy."
               ],
               "donts": [

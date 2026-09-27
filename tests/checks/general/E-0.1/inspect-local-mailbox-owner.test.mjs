@@ -22,18 +22,33 @@ test("validates the owner declaration using only current files and local ignore 
   }
 });
 
-test("requires the local .env file to exist", async () => {
+test("allows the local .env file to be absent", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-owner-missing-"));
   try {
-    await expect(inspectLocalMailboxOwner(root, expected)).resolves.toEqual({
-      error: `Local .env must define the mailbox owner as ${expected}.`,
-    });
+    await expect(inspectLocalMailboxOwner(root, expected)).resolves.toEqual({ error: null });
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
 
-test.each(["MAILBOX_OWNER=fixture@eliware.org", "MAIL_OWNER_ADDRESS=other@eliware.org"])(
+test("reports local .env read failures other than absence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-mailbox-owner-unreadable-"));
+  try {
+    await expect(inspectLocalMailboxOwner(root, expected, {
+      readEnvironment: async () => {
+        throw Object.assign(new Error("access denied"), { code: "EACCES" });
+      },
+    })).resolves.toEqual({ error: "Local .env could not be read: access denied" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test.each([
+  "MAILBOX_OWNER=fixture@eliware.org",
+  "OTHER=value",
+  "MAIL_OWNER_ADDRESS=other@eliware.org",
+])(
   "rejects a non-canonical local owner: %s",
   async (content) => {
     const root = await createOwnerFile(content);

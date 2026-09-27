@@ -6,13 +6,14 @@ import { isIgnoredByRepositoryRules } from "./check-repository-ignore.mjs";
 export async function inspectLocalMailboxOwner(
   root,
   expected,
-  { checkIgnored = isIgnoredByRepositoryRules } = {},
+  { checkIgnored = isIgnoredByRepositoryRules, readEnvironment = readFile } = {},
 ) {
   let localEnvironment;
   try {
-    localEnvironment = await readFile(join(root, ".env"), "utf8");
-  } catch {
-    return { error: `Local .env must define the mailbox owner as ${expected}.` };
+    localEnvironment = await readEnvironment(join(root, ".env"), "utf8");
+  } catch (error) {
+    if (error?.code === "ENOENT") return { error: null };
+    return { error: `Local .env could not be read: ${error.message}` };
   }
   if (!validateMailboxOwner(localEnvironment, expected))
     return { error: `Local .env must define the mailbox owner as ${expected}.` };

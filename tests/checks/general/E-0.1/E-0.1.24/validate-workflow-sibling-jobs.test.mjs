@@ -22,7 +22,7 @@ test("rejects unsafe commands and validation commands placed in sibling jobs", (
 test("applies pre-install safety policy to sibling reporting and setup steps", () => {
   expect(validateWorkflowSiblingJobs("ci.yml", [{ id: "setup", commands: commands("echo setup") }], validationIds, false)).toBeNull();
   expect(validateWorkflowSiblingJobs("ci.yml", [{ id: "setup", commands: commands("printf 'arbitrary=value\\n' > .env") }], validationIds, false)).toBe(
-    "ci.yml job setup may only use approved actions; other steps must be safe setup or reporting commands.",
+    "ci.yml job setup may only use approved actions; other steps must be safe reporting commands.",
   );
 });
 

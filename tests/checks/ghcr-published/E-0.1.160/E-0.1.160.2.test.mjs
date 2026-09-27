@@ -1,6 +1,8 @@
 import { expect, test } from "@jest/globals";
 import { createGhcrFixture } from "../../../../test-fixtures/ghcr-workflow.mjs";
-import { run } from "../../../../src/checks/ghcr-published/E-0.1.160/E-0.1.160.2.mjs";
+import { run as checkGhcrPublicationWorkflow } from "../../../../src/checks/ghcr-published/E-0.1.160/E-0.1.160.2.mjs";
+
+const run = (context) => checkGhcrPublicationWorkflow({ env: {}, ...context });
 
 test("requires an exact semantic-version tag gate", async () => {
   const { root, publicationPath } = await createGhcrFixture();
@@ -15,6 +17,23 @@ test("requires an exact semantic-version tag gate", async () => {
     "name: publish\non:\n  push:\n    branches: [main]\nrun: docker push ghcr.io/eliware/example:latest\n",
   );
   await expect(run({ root, packageJson })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+});
+
+test("uses the process environment when invocation context omits one", async () => {
+  const { root } = await createGhcrFixture();
+  const previousRefType = process.env.GITHUB_REF_TYPE;
+  const previousRefName = process.env.GITHUB_REF_NAME;
+  process.env.GITHUB_REF_TYPE = "branch";
+  process.env.GITHUB_REF_NAME = "main";
+  try {
+    await expect(checkGhcrPublicationWorkflow({ root, packageJson: { version: "1.2.3" } }))
+      .resolves.toMatchObject({ status: "pass" });
+  } finally {
+    if (previousRefType === undefined) delete process.env.GITHUB_REF_TYPE;
+    else process.env.GITHUB_REF_TYPE = previousRefType;
+    if (previousRefName === undefined) delete process.env.GITHUB_REF_NAME;
+    else process.env.GITHUB_REF_NAME = previousRefName;
+  }
 });
 
 test("requires the publisher job to depend on successful Ubuntu validation", async () => {

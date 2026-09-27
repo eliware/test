@@ -3,7 +3,9 @@ import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { releaseTagFilter, releaseTagGuard } from "../../../../src/checks/ghcr-published/release-version-tag.mjs";
-import { run } from "../../../../src/checks/npm-published/E-0.1.140/A-0.1.140.2.mjs";
+import { run as checkPublicationWorkflow } from "../../../../src/checks/npm-published/E-0.1.140/A-0.1.140.2.mjs";
+
+const run = (context) => checkPublicationWorkflow({ env: {}, ...context });
 
 function withValidationDependency(workflow) {
   return workflow
@@ -31,6 +33,25 @@ jobs:
   expect((await run({ root, packageJson: { version: "1.2.3" } })).status).toBe("pass");
   await writeFile(join(root, ".github", "workflows", "publish.yml"), "npm publish\n");
   expect((await run({ root, packageJson: { version: "1.2.3" } })).status).toBe("fail");
+});
+
+test("uses the process environment when invocation context omits one", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-process-env-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(join(root, ".github", "workflows", "publish.yml"), withValidationDependency(`on:\n  push:\n    tags: ["${releaseTagFilter}"]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: '${releaseTagGuard}'\n      - run: npm publish\n`));
+  const previousRefType = process.env.GITHUB_REF_TYPE;
+  const previousRefName = process.env.GITHUB_REF_NAME;
+  process.env.GITHUB_REF_TYPE = "branch";
+  process.env.GITHUB_REF_NAME = "main";
+  try {
+    await expect(checkPublicationWorkflow({ root, packageJson: { version: "1.2.3" } }))
+      .resolves.toMatchObject({ status: "pass" });
+  } finally {
+    if (previousRefType === undefined) delete process.env.GITHUB_REF_TYPE;
+    else process.env.GITHUB_REF_TYPE = previousRefType;
+    if (previousRefName === undefined) delete process.env.GITHUB_REF_NAME;
+    else process.env.GITHUB_REF_NAME = previousRefName;
+  }
 });
 
 test("rejects an npm publication job without a successful Ubuntu validation dependency", async () => {

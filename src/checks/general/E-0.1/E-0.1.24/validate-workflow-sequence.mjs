@@ -23,7 +23,6 @@ export function validateWorkflowSequence(
     commands,
     commandIndex(install),
     steps,
-    job,
   );
   if (setupError) return setupError;
   const reportingError = validateWorkflowPostTestCommands(
