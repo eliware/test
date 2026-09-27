@@ -73,8 +73,9 @@ their relative order within each group. Prettier arguments that override the
 selected mode, canonical formatting configuration, or required file coverage
 are rejected.
 
-All five tool modes are public CLI modes. The npm script forms are supported
-package-level shortcuts; arbitrary npm script names are not CLI arguments.
+The five public tool modes are `--lint`, `--format`, `--format-check`,
+`--audit`, and `--pack`. The npm script forms are supported package-level
+shortcuts; arbitrary npm script names are not CLI arguments.
 
 Legacy `--ignore-*` flags are unsupported. Coverage and monolith enforcement
 remain enabled for all validation modes.

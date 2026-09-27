@@ -176,7 +176,8 @@
             {
               "id": "A-0.1.130.14.0",
               "dos": [
-                "Record any Eli-approved emergency coverage exemption in package.json.eliware.exempt with this rule ID, reason, approver, timestamp, and temporary expiry or expiry:null."
+                "Record any Eli-approved emergency coverage exemption in package.json.eliware.exempt with this rule ID, reason, approver, timestamp, and temporary expiry or expiry:null.",
+                "The exemption metadata check passes when no exemption is configured; the parent coverage requirement remains mandatory unless a valid exemption is explicitly configured."
               ],
               "donts": [
                 "Do not use a 100x4 exemption without Eli's explicit emergency authorization."

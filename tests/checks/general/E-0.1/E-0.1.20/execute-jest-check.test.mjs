@@ -29,6 +29,15 @@ test("defaults omitted Jest arguments to an empty list", async () => {
   }));
 });
 
+test("forwards the selected output writer for streamed Jest stderr", async () => {
+  const writeOutput = jest.fn();
+  runJest.mockResolvedValueOnce({ code: 0, stdout: "captured output", stderr: "timing output" });
+  await executeJestCheck({ root: ".", writeOutput });
+  expect(runJest).toHaveBeenCalledWith(".", [], expect.any(Function), expect.objectContaining({
+    onStderr: writeOutput,
+  }));
+});
+
 test("forwards the invocation environment to the Jest process builder", async () => {
   const env = { PATH: "consumer-path", TOKEN: "consumer-token" };
   runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });

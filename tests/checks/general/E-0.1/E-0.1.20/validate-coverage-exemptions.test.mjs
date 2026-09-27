@@ -49,7 +49,7 @@ test("rejects malformed 100x4 exemptions", () => {
   ).toEqual(expect.objectContaining({ status: "fail" }));
 });
 
-test("accepts a package without a 100x4 exemption", () => {
+test("allows absent optional exemption metadata while parent coverage enforcement remains required", () => {
   expect(run({ packageJson: {} })).toEqual({ ruleId, status: "pass", message: "" });
 });
 
