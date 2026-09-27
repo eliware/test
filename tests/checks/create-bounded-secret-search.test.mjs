@@ -63,6 +63,18 @@ test("keeps only overlapping matches inside the pending window", () => {
   expect(filtered("defg").boundary).toBe(1);
 });
 
+test("keeps the boundary before a matched interval extending beyond the pending window", () => {
+  const matcher = () => [];
+  matcher.createStream = () => () => ({ matches: [{ start: 2, end: 9 }], work: 1 });
+  const search = createBoundedSecretSearch(["abc"], 100, matcher);
+  const pending = "abcdef";
+  const matchStart = 2;
+  const { boundary } = search(pending);
+
+  expect(boundary).toBeLessThanOrEqual(matchStart);
+  expect(pending.slice(0, boundary)).not.toContain(pending.slice(matchStart));
+});
+
 test("merges newly discovered intervals into the retained interval order", () => {
   let call = 0;
   const matcher = () => [];

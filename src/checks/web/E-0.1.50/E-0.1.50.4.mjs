@@ -11,6 +11,7 @@ export async function run({
   executePackageChecks = false,
   mode = null,
   runScript = runNpmScript,
+  env = process.env,
 }) {
   if (typeof packageJson?.scripts?.build !== "string" || !packageJson.scripts.build.trim()) {
     return fail(ruleId, "Web applications must define a nonempty build script.");
@@ -19,7 +20,7 @@ export async function run({
   if (directToolError) return fail(ruleId, directToolError);
   if (!executePackageChecks || (mode !== null && mode !== "build")) return pass(ruleId);
   try {
-    const result = await runScript(root, "build");
+    const result = await runScript(root, "build", undefined, undefined, env);
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return fail(ruleId, detail ? `build failed: ${detail}` : "build failed without diagnostics.");

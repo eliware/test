@@ -22,6 +22,12 @@ test("disables Jest for a package-validation mode", () => {
     .toEqual(expect.objectContaining({ executeJest: false, mode: "audit", modeRuleId: "E-0.1.20.19" }));
 });
 
+test("preserves an invocation environment for validation checks", () => {
+  const env = { PATH: "invocation-path" };
+  expect(createValidationRunOptions([], { mode: null, jestArgs: [] }, { env }, {}, undefined))
+    .toEqual(expect.objectContaining({ env }));
+});
+
 test("keeps aggregate package stages enabled when Jest execution is independently disabled", () => {
   expect(createValidationRunOptions([], { mode: null, jestArgs: [] }, { executeJest: false }, {}, undefined))
     .toEqual(expect.objectContaining({ executeJest: false, executePackageChecks: true, mode: null }));

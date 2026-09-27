@@ -77,6 +77,17 @@ test("rejects computed and unresolved filesystem and network operations", () => 
   }
 });
 
+test("rejects mutating operations inside uncalled helper functions", () => {
+  for (const source of [
+    'import * as fs from "node:fs"; function dormant() { fs.writeFileSync("output", "data"); }',
+    'function dormant() { fetch("https://example.test"); }',
+  ]) {
+    expect(validateKnitSourceOperations(source)).toContain(
+      "unsupported filesystem, network, process",
+    );
+  }
+});
+
 test("rejects invalid JavaScript rather than skipping source operation checks", () => {
   expect(validateKnitSourceOperations("const value = ;")).toContain("not valid JavaScript");
 });

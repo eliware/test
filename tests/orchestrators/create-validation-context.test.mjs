@@ -48,8 +48,6 @@ test("creates the complete execution context from validation options", () => {
     mode: "focused",
     modeRuleId: null,
     repositoryInventory: expect.objectContaining({
-      mode: "focused",
-      modeRuleId: null,
       files: expect.any(Function),
     }),
     parseAst: expect.any(Function),
@@ -73,8 +71,6 @@ test("creates default options without enabling stages", () => {
     mode: null,
     modeRuleId: null,
     repositoryInventory: expect.objectContaining({
-      mode: null,
-      modeRuleId: null,
       files: expect.any(Function),
     }),
     parseAst: expect.any(Function),
@@ -83,6 +79,11 @@ test("creates default options without enabling stages", () => {
     timing: undefined,
     writeOutput: undefined,
   });
+});
+
+test("preserves an invocation environment in the validation context", () => {
+  const env = { PATH: "invocation-path" };
+  expect(createValidationContext("root", {}, { env })).toEqual(expect.objectContaining({ env }));
 });
 
 test("preserves a shared AST parser and optional run scope data", () => {

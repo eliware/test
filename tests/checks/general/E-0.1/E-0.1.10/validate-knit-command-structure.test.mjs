@@ -5,6 +5,7 @@ const call = (command, args = []) => ({ kind: "spawnSync", command, args });
 
 test("accepts statically inspectable commands in the validation allowlist", () => {
   expect(validateKnitCommandStructure({ calls: [call("npm", ["test"])] })).toBeNull();
+  expect(validateKnitCommandStructure({ calls: [call("C:\\Program Files\\nodejs\\npm.cmd", ["test"])] })).toBeNull();
 });
 
 test("rejects executable or unsupported AST operations", () => {

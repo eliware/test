@@ -20,6 +20,11 @@ test("rejects workflows when either trigger does not target main", () => {
   expect(workflowHasValidationEvents(workflow({ push: { branches: ["main"] }, pull_request: { branches: ["release/*"] } }))).toBe(false);
 });
 
+test("rejects absent or empty trigger maps despite a compliant validation job", () => {
+  expect(workflowHasValidationEvents({ jobs: { validate: validationJob } })).toBe(false);
+  expect(workflowHasValidationEvents(workflow({}, { validate: validationJob }))).toBe(false);
+});
+
 test("accepts normalized boolean-key aliases and event-array triggers", () => {
   expect(workflowHasValidationEvents({
     true: { push: ["main"], pull_request: [] },

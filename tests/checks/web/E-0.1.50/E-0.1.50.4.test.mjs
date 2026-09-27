@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../src/checks/web/E-0.1.50/E-0.1.50.4.mjs";
 
 test("requires and executes the build script", async () => {
@@ -67,4 +67,18 @@ test("executes only for aggregate or matching build mode", async () => {
   await expect(run({ packageJson: { scripts: { build: "webpack" } }, executePackageChecks: true, mode: "build", runScript })).resolves.toMatchObject({ status: "pass" });
   await expect(run({ packageJson: { scripts: { build: "webpack" } }, executePackageChecks: true, mode: "typecheck", runScript })).resolves.toMatchObject({ status: "pass" });
   expect(calls).toEqual(["build"]);
+});
+
+test("forwards the invocation environment to the build script runner", async () => {
+  const env = { PATH: "invocation-path", npm_execpath: "C:/npm/npm-cli.js" };
+  const runScript = jest.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
+  await run({
+    root: "C:/repo",
+    packageJson: { scripts: { build: "webpack" } },
+    executePackageChecks: true,
+    mode: "build",
+    runScript,
+    env,
+  });
+  expect(runScript).toHaveBeenCalledWith("C:/repo", "build", undefined, undefined, env);
 });

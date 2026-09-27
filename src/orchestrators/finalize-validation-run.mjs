@@ -28,13 +28,17 @@ export async function finalizeValidationRun({
 
   const diagnostic = `Could not remove run-scoped coverage artifacts: ${errorMessage(cleanupFailure.error)}`;
   if (!Array.isArray(result)) throw new Error(diagnostic);
-  const coverageFailure = result.find((entry) => entry.ruleId === "E-0.1.130.14");
+  const coverageRuleIds = ["E-0.1.130.14", "E-0.1.40.16"];
+  const coverageFailure = result.find((entry) => coverageRuleIds.includes(entry.ruleId));
   if (coverageFailure) {
     return result.map((entry) => entry === coverageFailure
       ? { ...entry, message: `${entry.message}\n${diagnostic}` }
       : entry);
   }
-  return [...result, { ruleId: "E-0.1.130.14", status: "fail", message: diagnostic }];
+  const coverageRuleId = context.packageJson?.eliware?.apply?.includes("library")
+    ? "E-0.1.40.16"
+    : "E-0.1.130.14";
+  return [...result, { ruleId: coverageRuleId, status: "fail", message: diagnostic }];
 }
 
 function errorMessage(error) {

@@ -10,6 +10,7 @@ test("accepts existing maintained files and rejects invalid focused scopes", asy
   await writeFile(join(root, "src", "example.mjs"), "export {};\n");
   try {
     await expect(resolveFocusedFormatterPaths(root, { paths: ["src/example.mjs"] })).resolves.toEqual(["src/example.mjs"]);
+    await expect(resolveFocusedFormatterPaths(root, { paths: ["src\\example.mjs"] })).resolves.toEqual(["src/example.mjs"]);
     for (const focusedScope of [null, {}, { paths: null }, { paths: [] }, ...["", "src/../package.json", "src/./example.mjs", "docs/example.md", 7].map((path) => ({ paths: [path] }))]) {
       await expect(resolveFocusedFormatterPaths(root, focusedScope)).resolves.toBeNull();
     }

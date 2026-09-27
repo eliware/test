@@ -39,10 +39,7 @@ npm install --save-dev @eliware/test
 ## Usage
 
 After installing the package in a consuming repository, run validation with
-`eliware-test` or add the shared command to that repository's npm scripts. For
-example, add `"validate": "eliware-test"` under `scripts` in `package.json`,
-then run `npm run validate`. The package-level scripts below are for this
-repository.
+`eliware-test`. The package-level scripts below are for this repository.
 
 `package.json` is the source of truth for the version in this checkout. The
 repository's current version is `8.0.0`. The npm badge shows the latest version
@@ -69,7 +66,7 @@ validates the package contents without publishing it.
 
 Each of `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` accepts
 only arguments allowed for that mode. Audit accepts only `--no-fund` and
-`--no-progress`; pack has its own allowlist. Arguments that override
+`--no-progress`; lint accepts only `--threads=<positive-count>`; pack has its own allowlist. Arguments that override
 wrapper-owned settings, file coverage, or required checks are rejected.
 Wrapper arguments are emitted before arguments supplied after `--`, preserving
 their relative order within each group. Prettier arguments that override the
@@ -140,7 +137,7 @@ is `eliware-test`. `--help` prints usage; `--version` reports the package versio
 Other public modes are `--debug-timing`,
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. Each tool mode
 has mode-specific accepted arguments. Audit accepts only `--no-fund` and
-`--no-progress`, and pack uses its own allowlist. Wrapper-owned settings and
+`--no-progress`, lint accepts only `--threads=<positive-count>`, and pack uses its own allowlist. Wrapper-owned settings and
 options that weaken required checks are rejected. Wrapper arguments precede
 arguments after `--`.
 

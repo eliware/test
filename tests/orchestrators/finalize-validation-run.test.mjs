@@ -47,6 +47,21 @@ test("adds a coverage failure when cleanup fails without an existing coverage di
   })]);
 });
 
+test("attributes cleanup failure to library coverage for library-only validation", async () => {
+  await expect(finalizeValidationRun({
+    result: [],
+    context: {
+      jestCoverageDirectory: "/run/coverage",
+      packageJson: { eliware: { apply: ["library"] } },
+    },
+    removeCoverage: async () => { throw new Error("cleanup denied"); },
+  })).resolves.toEqual([expect.objectContaining({
+    ruleId: "E-0.1.40.16",
+    status: "fail",
+    message: expect.stringContaining("cleanup denied"),
+  })]);
+});
+
 test("throws when cleanup fails and the validation result is not an array", async () => {
   await expect(finalizeValidationRun({
     result: { result: true },

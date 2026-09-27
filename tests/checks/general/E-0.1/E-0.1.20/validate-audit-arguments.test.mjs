@@ -11,6 +11,9 @@ test("allows only harmless flags and rejects audit-scope overrides", () => {
     expect(validateAuditArguments(args)).toMatch(/cannot override/u);
   }
   expect(validateAuditArguments(["--no-fund", "--no-progress"])).toBeNull();
+  for (const argument of ["--no-fund=false", "--no-progress=false", "--no-fund=true", "--no-progress=true"]) {
+    expect(validateAuditArguments([argument])).toMatch(/cannot override/u);
+  }
   // npm audit has no positional package selector; audit scope comes from the project/workspaces.
   for (const args of [["alpha"], ["--", "alpha"], ["--workspace", "package-a"], ["--invented-option"]]) {
     expect(validateAuditArguments(args)).toMatch(/cannot override/u);

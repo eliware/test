@@ -35,3 +35,14 @@ test("rejects missing or mismatched per-metric map and counter pairs", () => {
     expect(coverageMetricValues(incomplete, []).hasMaps).toBe(false);
   }
 });
+
+test("rejects fractional execution counters before calculating coverage totals", () => {
+  for (const data of [
+    { s: { 0: 0.5 } },
+    { b: { 0: [0.5] } },
+    { f: { 0: 0.5 } },
+  ]) {
+    expect(() => coverageMetricValues(data, [])).toThrow("non-negative safe integers");
+  }
+  expect(() => coverageMetricValues({}, [["1", 0.5]])).toThrow("non-negative safe integers");
+});

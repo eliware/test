@@ -7,9 +7,9 @@ export function normalizeWorkflowEvents(document) {
     normalized && typeof normalized === "object" && !Array.isArray(normalized),
   );
   const validTriggerType =
-    typeof raw === "string" ||
-    (Array.isArray(raw) && raw.every((event) => typeof event === "string" && event.length > 0)) ||
-    Boolean(raw && typeof raw === "object" && !Array.isArray(raw));
+    (typeof raw === "string" && raw.length > 0) ||
+    (Array.isArray(raw) && raw.length > 0 && raw.every((event) => typeof event === "string" && event.length > 0)) ||
+    Boolean(raw && typeof raw === "object" && !Array.isArray(raw) && Object.keys(raw).length > 0);
   const events = Array.isArray(raw)
     ? Object.fromEntries(raw.map((event) => [event, {}]))
     : typeof raw === "string"

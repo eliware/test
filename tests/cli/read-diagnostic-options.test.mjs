@@ -41,6 +41,12 @@ test("rejects multiple focused paths", () => {
   );
 });
 
+test("rejects an unrecognized positional argument alongside a focused test path", () => {
+  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "unexpected-selector"])).toThrow(
+    "Only one focused test path",
+  );
+});
+
 test("rejects unsupported focused path roots", () => {
   expect(() => readDiagnosticOptions(["src/example.mjs"])).toThrow("must be under tests/");
 });

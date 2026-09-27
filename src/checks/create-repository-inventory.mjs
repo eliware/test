@@ -8,8 +8,6 @@ import { createRepositoryDirectoryEntries } from "./create-repository-directory-
 
 export function createRepositoryInventory(root, options = {}) {
   const {
-    mode = null,
-    modeRuleId = null,
     focusedScope = null,
     findEntries = findRepositoryEntries,
     expandedDirectories = [],
@@ -39,8 +37,6 @@ export function createRepositoryInventory(root, options = {}) {
 
   return Object.freeze({
     root,
-    mode,
-    modeRuleId,
     focusedScope,
     entries: discovery.entries,
     entriesUnder: discovery.entriesUnder,

@@ -36,8 +36,9 @@ only when the `npm-published` profile is selected.
 
 The normal test command runs the configured validation stages. Each public
 tool mode has its own accepted arguments. Audit accepts only `--no-fund` and
-`--no-progress`; options such as `--omit` that narrow the dependency scope are
-rejected. Pack also has its own allowlist. Wrapper-owned settings and arguments
+`--no-progress`; lint accepts only `--threads=<positive-count>`. Options such
+as `--omit` that narrow the dependency scope are rejected. Pack also has its
+own allowlist. Wrapper-owned settings and arguments
 that weaken required checks are rejected:
 
 ```text
@@ -46,6 +47,11 @@ eliware-test --format --log-level=warn
 eliware-test --format-check --log-level=debug
 eliware-test --audit --no-fund
 ```
+
+Lint argument forwarding is limited to a positive Oxlint thread count. Other
+lint options are rejected before Oxlint starts. Validation modes select the
+applicable check; repository inventory remains lazy and traverses the paths
+requested by that check when it asks for repository-wide entries.
 
 The `--pack` mode runs `npm pack` validation. The npm package contract it checks
 applies to repositories that select the `npm-published` profile.
@@ -94,7 +100,7 @@ period; cleanup of every descendant process cannot be guaranteed.
 Coverage and monolith checks are always enforced by the public validation
 commands; no public ignore flags bypass them.
 
-Compatibility boundaries
+## Compatibility boundaries
 
 The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
 repository or supported Node.js/Windows executable locations. Workflow parsing

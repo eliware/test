@@ -13,6 +13,13 @@ test("executes Jest and records its start time", async () => {
   expect(result.timeoutDiagnostic).toBeUndefined();
 });
 
+test("preserves stderr timing JSON when stdout contains ordinary output", async () => {
+  const result = { code: 0, stdout: "ordinary Jest output", stderr: '{"numFailedTestSuites":0}' };
+  runJest.mockResolvedValueOnce(result);
+  await expect(executeJestCheck({ root: ".", jestArgs: ["--debug-timing"] }))
+    .resolves.toMatchObject({ result: { stdout: result.stdout, stderr: result.stderr } });
+});
+
 test("defaults omitted Jest arguments to an empty list", async () => {
   runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
   await executeJestCheck({ root: "." });

@@ -41,9 +41,9 @@ test("forwards additional Oxlint arguments", async () => {
       return { code: 0 };
     },
     async () => "C:/pkg/oxlint.js",
-    ["--quiet"],
+    ["--threads=2"],
   );
-  expect(calls[0][1]).toEqual(["C:/pkg/oxlint.js", "--deny-warnings", ".", "--quiet"]);
+  expect(calls[0][1]).toEqual(["C:/pkg/oxlint.js", "--deny-warnings", ".", "--threads=2"]);
 });
 
 test("supports the default child-process runner", async () => {

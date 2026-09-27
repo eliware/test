@@ -1,24 +1,38 @@
 import { expect, jest, test } from "@jest/globals";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
 
-test("wires the inventory facade to one lazy mode-scoped discovery", async () => {
+test("wires the inventory facade to one lazy repository discovery", async () => {
   const findEntries = jest.fn(async () => [
     { path: "README.md", type: "file", depth: 0 },
     { path: "src", type: "directory", depth: 1 },
     { path: "src/index.mjs", type: "file", depth: 1 },
   ]);
   const inventory = createRepositoryInventory("/repo", {
-    mode: "audit",
-    modeRuleId: "E-0.1.20.19",
     findEntries,
   });
 
   expect(Object.isFrozen(inventory)).toBe(true);
   expect(inventory.root).toBe("/repo");
-  expect(inventory.mode).toBe("audit");
   await expect(inventory.repositoryFiles()).resolves.toEqual(["README.md", "src/index.mjs"]);
   expect(findEntries).toHaveBeenCalledTimes(1);
-  expect(createRepositoryInventory("/repo").mode).toBeNull();
+  expect(findEntries).toHaveBeenCalledWith("/repo", expect.any(Function), expect.objectContaining({
+    includeTestResults: false,
+    includeTestResultsUnder: [],
+    expandedDirectories: [],
+  }));
+});
+
+test("uses default repository discovery when no custom finder is supplied", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-inventory-default-"));
+  try {
+    const inventory = createRepositoryInventory(root);
+    await expect(inventory.repositoryFiles()).resolves.toEqual([]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("serves focused paths without discovering unrelated repository files", async () => {

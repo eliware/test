@@ -13,10 +13,10 @@ test("records Jest output and timing context", () => {
 test("uses the lazy timing output handoff when supported", () => {
   const setJestOutputGetter = jest.fn();
   const context = { timing: { setJestOutputGetter } };
-  const result = { code: 0, stdout: "lazy", stderr: "" };
+  const result = { code: 0, stdout: "ordinary output", stderr: '{"numFailedTestSuites":0}' };
   recordJestContext(context, result);
   expect(setJestOutputGetter).toHaveBeenCalledTimes(1);
-  expect(setJestOutputGetter.mock.calls[0][0]()).toBe("lazy");
+  expect(setJestOutputGetter.mock.calls[0][0]()).toBe(result.stderr);
 });
 
 test("falls back to stderr when Jest writes its timing JSON there", () => {

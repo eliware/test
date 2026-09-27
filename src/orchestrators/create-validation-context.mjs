@@ -4,8 +4,6 @@ export function createValidationContext(root, packageJson, options = {}) {
   const repositoryInventory =
     options.repositoryInventory ??
     createRepositoryInventory(root, {
-      mode: options.mode,
-      modeRuleId: options.modeRuleId,
       focusedScope: options.focusedScope,
       findEntries: options.findRepositoryEntries,
       expandedDirectories: options.expandedDirectories,
@@ -15,6 +13,7 @@ export function createValidationContext(root, packageJson, options = {}) {
   return {
     root,
     packageJson,
+    ...(options.env ? { env: options.env } : {}),
     executeJest: options.executeJest === true,
     executeLint: options.executeLint === true,
     executeAudit: options.executeAudit === true,

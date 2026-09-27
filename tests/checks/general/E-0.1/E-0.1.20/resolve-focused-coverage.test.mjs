@@ -19,6 +19,20 @@ test("maps an existing mirrored test to its source coverage", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("maps .mts and .cts tests to the native ESM source module", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-typed-test-"));
+  await mkdir(join(root, "src"));
+  await mkdir(join(root, "tests"));
+  await writeFile(join(root, "src", "sample.mjs"), "export {};" );
+  for (const extension of ["mts", "cts"]) {
+    await writeFile(join(root, "tests", `sample.test.${extension}`), "test(\"sample\", () => {});");
+    await expect(resolveFocusedCoverage(root, `tests/sample.test.${extension}`)).resolves.toEqual([
+      "--collectCoverageFrom", "src/sample.mjs",
+    ]);
+  }
+  await rm(root, { recursive: true, force: true });
+});
+
 test("ignores aggregate and non-test arguments", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
   await expect(resolveFocusedCoverage(root, null)).resolves.toEqual([]);

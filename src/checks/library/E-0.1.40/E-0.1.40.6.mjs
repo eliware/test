@@ -11,6 +11,7 @@ export async function run({
   executePackageChecks = false,
   mode = null,
   runScript = runNpmScript,
+  env = process.env,
 }) {
   if (typeof packageJson?.scripts?.typecheck !== "string" || !packageJson.scripts.typecheck.trim())
     return fail(ruleId, "Libraries must define a nonempty typecheck script.");
@@ -18,7 +19,7 @@ export async function run({
   if (directToolError) return fail(ruleId, directToolError);
   if (!executePackageChecks || (mode !== null && mode !== "typecheck")) return pass(ruleId);
   try {
-    const result = await runScript(root, "typecheck");
+    const result = await runScript(root, "typecheck", undefined, undefined, env);
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
       return fail(

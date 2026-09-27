@@ -20,6 +20,7 @@ See [Troubleshooting](troubleshooting.md) for validation diagnostics and
 
 - [Usage](usage.md) — setup and supported commands.
 - [Configuration](usage.md#configuration) — package convention metadata and exemptions.
+- [Compatibility boundaries](usage.md#compatibility-boundaries) — dependency and external-reference resolution limits.
 - [Troubleshooting](troubleshooting.md) — common validation failures.
 - [Support](support.md) — support channels and diagnostic information.
 

@@ -24,3 +24,16 @@ test("parses whitespace-prefixed pretty-printed Jest JSON", () => {
     report: { numFailedTestSuites: 0, testResults: [{ assertionResults: [] }] },
   });
 });
+
+test("extracts complete nested report objects and retains surrounding diagnostics", () => {
+  const output = 'before {"numFailedTestSuites":0,"testResults":[{"assertionResults":[{"title":"nested"}]}]} after';
+  expect(parseJsonOutput(output)).toEqual({
+    text: "before  after",
+    report: { numFailedTestSuites: 0, testResults: [{ assertionResults: [{ title: "nested" }] }] },
+  });
+});
+
+test("does not parse nested report keys as a truncated top-level report", () => {
+  const output = 'before {"payload":{"numFailedTestSuites":0}} after';
+  expect(parseJsonOutput(output)).toEqual({ text: output, report: null });
+});

@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { parse } from "yaml";
 import { validateWorkflowPostTestCommands } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-post-test-commands.mjs";
 
 test("allows reporting commands after npm test", () => {
@@ -25,6 +26,14 @@ test("rejects shell expansion, redirection, and newline command injection", () =
       "reporting commands after npm test",
     );
   }
+});
+
+test("rejects a multiline reporting block scalar after YAML parsing", () => {
+  const workflow = parse("steps:\n  - run: |\n      echo done\n      touch .env\n");
+  const command = workflow.steps[0].run.trim();
+  expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toContain(
+    "reporting commands after npm test",
+  );
 });
 
 test("uses original workflow positions when setup steps have no run command", () => {

@@ -30,6 +30,19 @@ test("executes and reports the bundled lint result when requested", async () => 
   ).resolves.toMatchObject({ status: "fail" });
 });
 
+test("rejects policy-changing lint arguments before invoking Oxlint", async () => {
+  const runLint = jest.fn();
+  await expect(run({
+    packageJson: { scripts: { lint: "eliware-test --lint" } },
+    root: "C:/repo",
+    executeLint: true,
+    mode: "lint",
+    toolArgs: ["--quiet"],
+    runLint,
+  })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("positive --threads") });
+  expect(runLint).not.toHaveBeenCalled();
+});
+
 test("does not execute lint outside the lint stage", async () => {
   const runLint = jest.fn();
   const packageJson = { scripts: { lint: "eliware-test --lint" } };

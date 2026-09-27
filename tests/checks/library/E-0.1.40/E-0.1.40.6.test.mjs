@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../src/checks/library/E-0.1.40/E-0.1.40.6.mjs";
 
 test("requires and executes typecheck", async () => {
@@ -65,4 +65,18 @@ test("executes only for aggregate or matching typecheck mode", async () => {
   await expect(run({ packageJson: { scripts: { typecheck: "tsc" } }, executePackageChecks: true, mode: "typecheck", runScript })).resolves.toMatchObject({ status: "pass" });
   await expect(run({ packageJson: { scripts: { typecheck: "tsc" } }, executePackageChecks: true, mode: "build", runScript })).resolves.toMatchObject({ status: "pass" });
   expect(calls).toEqual(["typecheck"]);
+});
+
+test("forwards the invocation environment to the typecheck script runner", async () => {
+  const env = { PATH: "invocation-path", npm_execpath: "C:/npm/npm-cli.js" };
+  const runScript = jest.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
+  await run({
+    root: "C:/repo",
+    packageJson: { scripts: { typecheck: "tsc" } },
+    executePackageChecks: true,
+    mode: "typecheck",
+    runScript,
+    env,
+  });
+  expect(runScript).toHaveBeenCalledWith("C:/repo", "typecheck", undefined, undefined, env);
 });

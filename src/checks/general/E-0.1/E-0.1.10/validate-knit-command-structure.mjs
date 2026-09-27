@@ -12,7 +12,10 @@ export function validateKnitCommandStructure(parsed) {
   if (parsed.calls.some((call) => !commandTokens(call))) {
     return ".knit/validate.mjs must use statically inspectable child-process commands.";
   }
-  if (parsed.calls.some((call) => !allowedCommands.has(commandTokens(call)[0].replace(/^.*[\\/]/u, "").toLowerCase()))) {
+  if (parsed.calls.some((call) => {
+    const executable = commandTokens(call)[0].replaceAll("\\", "/").split("/").at(-1).toLowerCase();
+    return !allowedCommands.has(executable.replace(/\.(?:cmd|exe|bat)$/u, ""));
+  })) {
     return ".knit/validate.mjs uses a command outside the read-only validation allowlist.";
   }
   return null;

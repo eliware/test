@@ -6,7 +6,8 @@ export function validateWorkflowPostTestCommands(name, commands, testIndex, step
   const invalidReporting = commands.some(
     ({ command, index, step }, position) => {
       const originalIndex = step ? steps.indexOf(step) : index ?? position;
-      return originalIndex > testIndex && !safeReportingCommand.test(command);
+      return originalIndex > testIndex &&
+        (/[\r\n]/u.test(command) || !safeReportingCommand.test(command));
     },
   );
   const invalidAction = steps.some((step, index) => {

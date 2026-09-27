@@ -5,6 +5,7 @@ export function createValidationRunOptions(args, diagnosticOptions, options, tim
   const focusedScope = resolveFocusedScope(diagnosticOptions.jestArgs);
   return {
     ...resolveValidationStageOptions(diagnosticOptions, options),
+    ...(options.env ? { env: options.env } : {}),
     jestArgs: diagnosticOptions.jestArgs,
     toolArgs: focusedScope ? [] : diagnosticOptions.toolArgs,
     timing,

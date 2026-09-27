@@ -17,9 +17,8 @@ export function validateAuditArguments(args = []) {
     return "Audit arguments must be an array of strings.";
   }
   for (const argument of suppliedArguments) {
-    const option = argument.split("=", 1)[0];
-    if (argument === "--" || protectedOptions.has(option) || option.startsWith("--omit") ||
-        (!argument.startsWith("-") || !allowedOptions.has(option))) {
+    if (argument === "--" || protectedOptions.has(argument) || argument.startsWith("--omit") ||
+        !allowedOptions.has(argument)) {
       return `Audit arguments cannot override the required JSON output or high audit severity: ${argument}.`;
     }
   }

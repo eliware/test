@@ -77,6 +77,24 @@ test("rejects files in the Git index that match ignore rules", async () => {
   }
 });
 
+test("rejects a root .env file only when it is tracked or staged against ignore rules", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-env-"));
+  try {
+    await writeFile(join(root, ".gitignore"), ignoreRules);
+    await expect(run({ root, readIgnoredPaths: readNoIgnoredPaths })).resolves.toMatchObject({ status: "pass" });
+    await expect(run({ root, readIgnoredPaths: async () => [".env"] })).resolves.toMatchObject({
+      status: "fail",
+      message: "Tracked or staged files match ignore rules: .env.",
+    });
+    await expect(run({ root, readIgnoredPaths: async () => [".env.example"] })).resolves.toMatchObject({
+      status: "fail",
+      message: "Tracked or staged files match ignore rules: .env.example.",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("fails when .gitignore is absent", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-"));
   try {

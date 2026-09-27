@@ -256,7 +256,7 @@
               "id": "A-0.0.7.2",
               "dos": [
                 "Expose exactly these public harness commands and diagnostic options: --help, --version, --debug-timing, --lint, --format, --format-check, --audit, and --pack.",
-                "For --lint, --format, --format-check, --audit, and --pack, forward additional non-wrapper CLI arguments unchanged to the corresponding Oxlint, Prettier, or npm operation.",
+                "For --lint, accept only --threads=<positive-count>; for --format, --format-check, --audit, and --pack, validate additional arguments against each mode's allowlist before forwarding accepted arguments to Oxlint, Prettier, or npm.",
                 "Reject formatter arguments that override the wrapper-selected format/write mode, canonical Prettier configuration, or required maintained-file coverage.",
                 "Run the bundled convention-check execution path for a normal invocation and return its stable result and diagnostics through the public CLI contract."
               ],

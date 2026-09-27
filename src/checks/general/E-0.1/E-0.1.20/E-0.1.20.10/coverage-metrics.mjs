@@ -1,3 +1,5 @@
+import { validateCoverageCounters } from "./validate-coverage-counters.mjs";
+
 const metricValues = (data, lineEntries) => ({
   statements: Object.values(data.s ?? {}),
   branches: Object.values(data.b ?? {}).flat(),
@@ -7,6 +9,8 @@ const metricValues = (data, lineEntries) => ({
 
 export function coverageMetricValues(data, lineEntries) {
   const values = metricValues(data, lineEntries);
+  const counterError = validateCoverageCounters(values);
+  if (counterError) throw new Error(counterError);
   const hasCounters = Object.values(values).some((counts) => counts.length > 0);
   const hasMaps = [
     [data.statementMap, data.s],

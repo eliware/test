@@ -45,6 +45,13 @@ test("falls back to child signaling when a POSIX process group is unavailable", 
   expect(child.kill).toHaveBeenCalledWith("SIGTERM");
 });
 
+test("reports failure when POSIX process-group and child signaling both fail", () => {
+  const child = { kill: () => { throw new Error("child signal failed"); }, pid: 123 };
+  const killProcess = () => { throw new Error("group signal failed"); };
+
+  expect(terminateChild(child, "linux", killProcess)).toBe(false);
+});
+
 test("returns false when the child is invalid or direct signaling fails", () => {
   expect(terminateChild(null, "linux")).toBe(false);
   expect(terminateChild({ pid: 0, kill: () => { throw new Error("closed"); } }, "linux")).toBe(false);
