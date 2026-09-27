@@ -50,7 +50,7 @@ test("keeps only overlapping matches inside the pending window", () => {
     work: 1,
   });
   const search = createBoundedSecretSearch(["abc"], 100, matcher);
-  expect(search("abcdef")).toMatchObject({ boundary: 0, matchEnds: expect.arrayContaining([0, 5]) });
+  expect(search("abcdef")).toMatchObject({ boundary: 1, matchEnds: expect.arrayContaining([0, 5]) });
 
   let filteredCall = 0;
   const filteredMatcher = () => [];

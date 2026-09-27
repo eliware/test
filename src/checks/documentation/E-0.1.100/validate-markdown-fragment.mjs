@@ -8,7 +8,12 @@ export function markdownSlug(value) {
 export async function hasMarkdownFragment(target, fragment, context) {
   if (!fragment || !target.toLowerCase().endsWith(".md")) return true;
   const content = await readRepositoryText(context, target);
-  const wanted = decodeURIComponent(fragment).toLowerCase();
+  let wanted;
+  try {
+    wanted = decodeURIComponent(fragment).toLowerCase();
+  } catch {
+    return false;
+  }
   return content.split(/\r?\n/u).some((line) => {
     const heading = /^(?:#{1,6})\s+(.+?)\s*#*$/u.exec(line);
     const id = /\bid=["']([^"']+)["']/iu.exec(line);

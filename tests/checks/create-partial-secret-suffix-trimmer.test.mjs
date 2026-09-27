@@ -23,3 +23,8 @@ test("handles repeated-prefix secrets without rescanning unbounded text", () => 
 test("preserves an overlapping partial prefix after a complete secret occurrence", () => {
   expect(trimPartialSecretSuffix("abababa", ["abab"])).toBe("abab");
 });
+
+test("declines secret sets whose bounded preprocessing estimate is too large", () => {
+  expect(createPartialSecretSuffixTrimmer(["x".repeat(10)], 20)).toBeNull();
+  expect(createPartialSecretSuffixTrimmer(["x", "y"], 1)).toBeNull();
+});

@@ -28,6 +28,7 @@ test.each([
     "# Release Notes\n\n## 1.0.0 — 2026-09-01\n\n### Added\n- Detail\n\n#### Subheading\n",
   ],
   ["no release entry", "# Release Notes\n"],
+  ["Unreleased-only document", "# Release Notes\n\n## Unreleased\n\n### Changed\n- Pending\n"],
 ])("rejects %s", (_label, notes) => {
   expect(parseReleaseNotes(notes).error).toEqual(expect.any(String));
 });

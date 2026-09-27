@@ -1,21 +1,29 @@
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
+import { resolveJestBin } from "./resolve-jest-bin.mjs";
 
 export function resolveConsumerJestCli(root) {
   const requireFromConsumer = createRequire(join(root, "package.json"));
-  for (const candidate of ["jest-cli/bin/jest.js", "jest/bin/jest.js"]) {
-    try {
-      return requireFromConsumer.resolve(candidate);
-    } catch {}
-  }
-  try {
-    const packageEntry = requireFromConsumer.resolve("jest-cli");
-    return join(dirname(packageEntry), "..", "bin", "jest.js");
-  } catch (error) {
-    throw new Error(`Consumer repository Jest executable could not be resolved: ${error.message}`, { cause: error });
-  }
+  const executable = resolveJestBin(requireFromConsumer, "jest") ??
+    resolveJestBin(requireFromConsumer, "jest-cli");
+  if (executable) return executable;
+  throw new Error("Consumer repository Jest executable could not be resolved.");
 }
 
 export function resolveJestCli(root, options = {}) {
-  return options?.jestCli ?? resolveConsumerJestCli(root);
+  if (options?.jestCli) return options.jestCli;
+  try {
+    return resolveConsumerJestCli(root);
+  } catch (consumerError) {
+    const bundled = options?.resolveBundledJestCli
+      ? options.resolveBundledJestCli()
+      : resolveHarnessJestCli();
+    if (bundled) return bundled;
+    throw consumerError;
+  }
+}
+
+export function resolveHarnessJestCli(resolveBin = resolveJestBin, requireFromHarness = createRequire(import.meta.url)) {
+  return resolveBin(requireFromHarness, "jest") ??
+    resolveBin(requireFromHarness, "jest-cli");
 }

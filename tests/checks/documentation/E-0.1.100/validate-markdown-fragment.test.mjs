@@ -12,6 +12,7 @@ test("matches heading and id fragments", async () => {
   await expect(hasMarkdownFragment(target, "hello-world")).resolves.toBe(true);
   await expect(hasMarkdownFragment(target, "custom")).resolves.toBe(true);
   await expect(hasMarkdownFragment(target, "missing")).resolves.toBe(false);
+  await expect(hasMarkdownFragment(target, "%")).resolves.toBe(false);
   await expect(hasMarkdownFragment(target, "")).resolves.toBe(true);
   await rm(root, { recursive: true, force: true });
 });

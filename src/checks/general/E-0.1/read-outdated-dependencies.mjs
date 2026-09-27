@@ -5,6 +5,7 @@ import { createOutdatedDependenciesOutput } from "./create-outdated-dependencies
 import { createOutdatedDependenciesCommand } from "./create-outdated-dependencies-command.mjs";
 import { parseOutdatedDependenciesOutput } from "./parse-outdated-dependencies-output.mjs";
 import { createOutdatedDependenciesOverflowHandler } from "./create-outdated-dependencies-overflow-handler.mjs";
+import { formatOutdatedDependencyError } from "./format-outdated-dependency-error.mjs";
 
 const maxStdoutLength = 100_000;
 const maxStderrLength = 4_000;
@@ -23,8 +24,6 @@ export function readOutdatedDependencies(
   } = {},
 ) {
   return new Promise((resolve, reject) => {
-    const command = createOutdatedDependenciesCommand(root, { env, platform, execPath });
-    const child = spawnProcess(command.executable, command.args, command.options);
     const output = createOutdatedDependenciesOutput(maxStdoutLength, maxStderrLength);
     let oversized = false;
     let settled = false;
@@ -33,7 +32,7 @@ export function readOutdatedDependencies(
       if (settled) return;
       settled = true;
       overflowHandler?.cancel();
-      reject(error);
+      reject(new Error(formatOutdatedDependencyError(error, env)));
     };
     const resolveOnce = (value) => {
       if (settled) return;
@@ -41,6 +40,14 @@ export function readOutdatedDependencies(
       overflowHandler?.cancel();
       resolve(value);
     };
+    let child;
+    try {
+      const command = createOutdatedDependenciesCommand(root, { env, platform, execPath });
+      child = spawnProcess(command.executable, command.args, command.options);
+    } catch (error) {
+      rejectOnce(error);
+      return;
+    }
     overflowHandler = createOutdatedDependenciesOverflowHandler({
       child,
       maxOutputLength: maxStdoutLength,

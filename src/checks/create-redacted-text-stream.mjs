@@ -18,10 +18,11 @@ export function createRedactedTextStream(
   const values = [...new Set(secrets.filter((secret) => typeof secret === "string" && secret.length > 0))];
   const maximumSecretLength = Math.max(0, ...values.map((secret) => secret.length));
   let suppressed = maximumSecretLength > outputLimit || maximumSecretLength > MAX_RETAINED_PENDING_LENGTH;
+  const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
+  if (!trimSuffix) suppressed = true;
   const findSecretEnds = suppressed
     ? null
     : createSecretTextMatcher(values, { maxScanWork: workLimit });
-  const trimSuffix = createPartialSecretSuffixTrimmer(values);
   const decoder = new StringDecoder("utf8");
   let pending = "";
   let outputLength = 0;

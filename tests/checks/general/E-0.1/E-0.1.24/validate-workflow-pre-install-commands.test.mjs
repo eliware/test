@@ -21,6 +21,13 @@ test("allows reporting and the specific mailbox owner setup before install", () 
   ).toBeNull();
 });
 
+test("accepts a multiline YAML block-scalar mailbox setup command", () => {
+  const blockScalarCommand = "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\n' > .env\n";
+
+  expect(validateWorkflowPreInstallCommands("publish.yml", [{ command: blockScalarCommand }], 1))
+    .toBeNull();
+});
+
 test("rejects other setup commands before install", () => {
   for (const command of [
     "printf 'OTHER_SETTING=value\\n' > .env",

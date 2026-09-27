@@ -12,8 +12,11 @@ export function validateAuditArguments(args = []) {
   if (!Array.isArray(args)) {
     return "Audit arguments must be an array of strings.";
   }
-  for (const argument of args) {
-    if (typeof argument !== "string") return "Audit arguments must be an array of strings.";
+  const suppliedArguments = Array.from(args);
+  if (suppliedArguments.some((argument) => typeof argument !== "string")) {
+    return "Audit arguments must be an array of strings.";
+  }
+  for (const argument of suppliedArguments) {
     const option = argument.split("=", 1)[0];
     if (argument === "--" || protectedOptions.has(option) || option.startsWith("--omit") ||
         (!argument.startsWith("-") || !allowedOptions.has(option))) {

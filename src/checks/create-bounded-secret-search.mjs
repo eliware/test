@@ -46,12 +46,14 @@ function createIncrementalSearch(values, workLimit, createStream) {
       }
     }
 
-    let boundary = Math.max(0, pending.length - maximumSecretLength);
-    for (let index = matches.length - 1; index >= 0; index -= 1) {
-      const { start, end } = matches[index];
+    const candidateBoundary = Math.max(0, pending.length - maximumSecretLength);
+    let boundary = candidateBoundary;
+    for (const { start, end } of matches) {
       const localStart = start - pendingStart;
       const localEnd = end - pendingStart;
-      if (localStart < boundary && localEnd > boundary) boundary = Math.max(0, localStart);
+      if (localStart < candidateBoundary && localEnd > candidateBoundary) {
+        boundary = Math.max(0, Math.min(boundary, localStart));
+      }
     }
     previousPending = pending;
     previousBoundary = boundary;

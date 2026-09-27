@@ -67,12 +67,10 @@ eliware-test
 `--format` mutates files; `--format-check` only validates formatting. `--pack`
 validates the package contents without publishing it.
 
-`--lint`, `--format`, `--format-check`, `--audit`, and `--pack` forward
-additional supported arguments to Oxlint, Prettier, npm audit, or npm pack.
-Audit accepts only `--no-fund` and `--no-progress` so its required audit scope
-and online advisory checks stay intact.
-Arguments that override wrapper-owned settings or weaken required checks are
-rejected.
+Each of `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` accepts
+only arguments allowed for that mode. Audit accepts only `--no-fund` and
+`--no-progress`; pack has its own allowlist. Arguments that override
+wrapper-owned settings, file coverage, or required checks are rejected.
 Wrapper arguments are emitted before arguments supplied after `--`, preserving
 their relative order within each group. Prettier arguments that override the
 selected mode, canonical formatting configuration, or required file coverage
@@ -140,10 +138,11 @@ changes, which are controlled by the applicable Eliware runbooks.
 The CLI command entrypoint is `bin/eliware-test.mjs`; the installed executable
 is `eliware-test`. `--help` prints usage; `--version` reports the package version.
 Other public modes are `--debug-timing`,
-`--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. The five tool
-modes forward additional arguments supported by Oxlint, Prettier, npm audit,
-or npm pack. Wrapper-owned settings and options that weaken required checks are
-rejected. Wrapper arguments precede arguments after `--`.
+`--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. Each tool mode
+has mode-specific accepted arguments. Audit accepts only `--no-fund` and
+`--no-progress`, and pack uses its own allowlist. Wrapper-owned settings and
+options that weaken required checks are rejected. Wrapper arguments precede
+arguments after `--`.
 
 Examples and package-level shortcuts are shown under Usage. `--format` mutates
 files; `--format-check` is read-only. `--pack` is read-only package validation

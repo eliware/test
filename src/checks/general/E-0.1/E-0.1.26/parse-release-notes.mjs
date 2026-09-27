@@ -84,7 +84,7 @@ export function parseReleaseNotes(text) {
     }
   }
 
-  if (entries.length === 0)
+  if (!entries.some((entry) => entry.type === "version"))
     return { error: "must contain at least one versioned release entry.", entries };
   return { error: null, entries };
 }

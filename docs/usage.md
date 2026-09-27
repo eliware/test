@@ -34,11 +34,11 @@ The following npm scripts are available only in this package's own repository:
 `npm run audit`, and `npm run pack`. Package validation with `--pack` applies
 only when the `npm-published` profile is selected.
 
-The normal test command runs the configured validation stages. The five public
-tool modes forward additional arguments supported by their underlying tools.
-The audit mode accepts only `--no-fund` and `--no-progress`; options such as
-`--omit` that narrow the dependency scope are rejected. Wrapper-owned settings
-and arguments that weaken required checks are also rejected:
+The normal test command runs the configured validation stages. Each public
+tool mode has its own accepted arguments. Audit accepts only `--no-fund` and
+`--no-progress`; options such as `--omit` that narrow the dependency scope are
+rejected. Pack also has its own allowlist. Wrapper-owned settings and arguments
+that weaken required checks are rejected:
 
 ```text
 eliware-test --lint --fix

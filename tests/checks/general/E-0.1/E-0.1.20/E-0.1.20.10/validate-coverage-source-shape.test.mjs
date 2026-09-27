@@ -56,6 +56,11 @@ test("rejects absent source entries and altered branch locations", () => {
   expect(() => validateCoverageSourceShape("src/decision.mjs", altered, shape)).toThrow(
     "every source branch path",
   );
+  const alteredType = completeEvidence(shape);
+  alteredType.branchMap[Object.keys(shape.branchMap)[0]].type = "altered-branch-type";
+  expect(() => validateCoverageSourceShape("src/decision.mjs", alteredType, shape)).toThrow(
+    "every source branch path",
+  );
   const missingLocations = completeEvidence(shape);
   delete missingLocations.branchMap[Object.keys(shape.branchMap)[0]].locations;
   expect(() => validateCoverageSourceShape("src/decision.mjs", missingLocations, shape)).toThrow(

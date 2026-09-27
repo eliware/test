@@ -62,7 +62,9 @@ test("coordinates sequence validators in order with their owning inputs", () => 
   expect(hasAdjacentValidationSteps).toHaveBeenCalledWith(install, testCommand, steps, commands);
   expect(validateValidationJobConditions).toHaveBeenCalledWith(install, testCommand, job);
   expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yml", commands, 1, steps, job);
-  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith("ci.yml", commands, 2, steps);
+  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith("ci.yml", commands, 2, steps, {
+    allowAttestation: false,
+  });
 });
 
 test("returns the first finding and skips later validation phases", () => {

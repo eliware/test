@@ -26,7 +26,29 @@ test("composes workflow loading, validation-job selection, and sequence validati
   await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-0.1.24.4", status: "pass", message: "" });
   expect(readWorkflows).toHaveBeenCalledWith("/repo", undefined);
   expect(selectWorkflowValidationJobs).toHaveBeenCalledWith("ci.yml", document);
-  expect(validateWorkflowSequence).toHaveBeenCalledWith("ci.yml job validate", commands, job.steps, job);
+  expect(validateWorkflowSequence).toHaveBeenCalledWith(
+    "ci.yml job validate",
+    commands,
+    job.steps,
+    job,
+    { allowAttestation: false },
+  );
+});
+
+test("allows post-test attestations only for repositories with the GHCR profile", async () => {
+  readWorkflows.mockResolvedValueOnce([
+    { name: "ci.yml", document },
+    { name: "publish.yml", document },
+  ]);
+  await run({ root: "/repo", packageJson: { eliware: { apply: ["ghcr-published"] } } });
+
+  expect(validateWorkflowSequence).toHaveBeenCalledWith(
+    "ci.yml job validate",
+    commands,
+    job.steps,
+    job,
+    { allowAttestation: true },
+  );
 });
 
 test("reports workflow-set errors before checking workflow jobs", async () => {

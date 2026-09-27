@@ -47,6 +47,8 @@ export function validateCoverageSourceShape(file, data, expectedShape) {
   coverageLineEntries(data, expectedShape.statementMap);
   for (const [id, branch] of Object.entries(expectedShape.branchMap ?? {})) {
     if (
+      data.branchMap[id].type !== branch.type ||
+      data.branchMap[id].line !== branch.line ||
       !Array.isArray(data.branchMap?.[id]?.locations) ||
       data.branchMap[id].locations.length !== branch.locations.length ||
       branch.locations.some(

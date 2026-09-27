@@ -11,24 +11,32 @@ export function runChild(command, args, options = {}) {
   const createTimeout = options.createProgressTimeout ?? createProgressTimeout;
   const environment = options.env ?? process.env;
   return new Promise((resolve, reject) => {
-    const child = spawnProcess(command, args, {
-      cwd: options.cwd,
-      env: environment,
-      stdio: ["ignore", "pipe", "pipe"],
-      shell: false,
-      detached: (options.terminationPlatform ?? process.platform) !== "win32",
-    });
     const output = createChildOutputCapture(outputLimit, { ...options, env: environment });
     let settled = false;
     let termination;
+    let timeout;
     const settleError = (error) => {
       if (settled) return;
       settled = true;
-      timeout.stop();
+      timeout?.stop();
       termination?.cancel();
-      reject(error);
+      const diagnostic = output.redactComplete(error instanceof Error ? error.message : String(error));
+      reject(new Error(diagnostic || "Child process could not be started."));
     };
-    const timeout = createTimeout({
+    let child;
+    try {
+      child = spawnProcess(command, args, {
+        cwd: options.cwd,
+        env: environment,
+        stdio: ["ignore", "pipe", "pipe"],
+        shell: false,
+        detached: (options.terminationPlatform ?? process.platform) !== "win32",
+      });
+    } catch (error) {
+      settleError(error);
+      return;
+    }
+    timeout = createTimeout({
       timeoutMs: options.progressTimeoutMs,
       onTimeout: () => termination.onTimeout(),
     });
@@ -63,11 +71,15 @@ export function runChild(command, args, options = {}) {
     });
     child.on("close", (code, signal) => {
       if (settled) return;
-      settled = true;
       output.flush();
       progress.flush();
       timeout.stop();
       termination.cancel();
+      if (code === null && !termination.wasTimedOut()) {
+        settleError(new Error(`Child process exited without an exit code${signal ? ` (${signal})` : ""}.`));
+        return;
+      }
+      settled = true;
       resolve({
         code,
         signal,

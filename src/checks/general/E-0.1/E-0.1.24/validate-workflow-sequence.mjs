@@ -4,7 +4,13 @@ import { validateValidationJobConditions } from "./validate-validation-job-condi
 import { validateWorkflowPreInstallCommands } from "./validate-workflow-pre-install-commands.mjs";
 import { validateWorkflowPostTestCommands } from "./validate-workflow-post-test-commands.mjs";
 
-export function validateWorkflowSequence(name, commands, steps = commands, job = {}) {
+export function validateWorkflowSequence(
+  name,
+  commands,
+  steps = commands,
+  job = {},
+  { allowAttestation = false } = {},
+) {
   const pair = findValidationCommandPair(name, commands);
   if (pair.error) return pair.error;
   const { install, test, commandIndex } = pair;
@@ -20,7 +26,13 @@ export function validateWorkflowSequence(name, commands, steps = commands, job =
     job,
   );
   if (setupError) return setupError;
-  const reportingError = validateWorkflowPostTestCommands(name, commands, commandIndex(test), steps);
+  const reportingError = validateWorkflowPostTestCommands(
+    name,
+    commands,
+    commandIndex(test),
+    steps,
+    { allowAttestation },
+  );
   if (reportingError) return reportingError;
   return null;
 }

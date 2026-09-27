@@ -116,3 +116,18 @@ test("rejects child process errors and settles only once", async () => {
   });
   await expect(errorThenClosePromise).rejects.toThrow("spawn failed first");
 });
+
+test("redacts errors thrown synchronously while starting npm outdated", async () => {
+  const env = { API_TOKEN: "private-token-value" };
+  const result = readOutdatedDependencies("fixture", () => {
+    throw new Error("spawn failed with private-token-value");
+  }, { env });
+
+  let error;
+  try {
+    await result;
+  } catch (caught) {
+    error = caught;
+  }
+  expect(error.message).toBe("spawn failed with [REDACTED]");
+});

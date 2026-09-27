@@ -1,8 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import {
-  formatOutdatedDependencyError,
-  getOutdatedDependencies,
-} from "../../../../src/checks/general/E-0.1/get-outdated-dependencies.mjs";
+import { getOutdatedDependencies } from "../../../../src/checks/general/E-0.1/get-outdated-dependencies.mjs";
 
 test("uses outdated dependency results already present in the context", async () => {
   const outdatedDependencies = { alpha: { current: "1", latest: "2" } };
@@ -44,12 +41,4 @@ test("uses the current working directory when the context has no root", async ()
   await expect(getOutdatedDependencies({}, readOutdated)).resolves.toEqual({});
 
   expect(readOutdated).toHaveBeenCalledWith(process.cwd());
-});
-
-test("formats non-Error lookup failures and supplies a fallback message", () => {
-  expect(formatOutdatedDependencyError(new Error("registry unavailable"))).toBe(
-    "registry unavailable",
-  );
-  expect(formatOutdatedDependencyError({ message: "failure" }, {})).toBe("[object Object]");
-  expect(formatOutdatedDependencyError(null, {})).toBe("unknown registry lookup error");
 });

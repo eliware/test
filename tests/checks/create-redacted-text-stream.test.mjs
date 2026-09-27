@@ -18,6 +18,23 @@ test("redacts equal-start secrets of different lengths across stream chunks", ()
   expect(result).toContain("suffix");
 });
 
+test("moves successive output boundaries before crossing overlapping secret intervals", () => {
+  const secrets = ["abcdefghijkl", "fghijklmnop", "klmnopqrst"];
+  const output = createRedactedTextStream(secrets, 1_000);
+  const input = "safe---abcdefghijklmnopqrst---tail";
+  let result = "";
+
+  for (let index = 0; index < input.length; index += 3) {
+    result += output.push(input.slice(index, index + 3));
+  }
+  result += output.finish();
+
+  expect(result).toContain("safe---");
+  expect(result).toContain("---tail");
+  for (const secret of secrets) expect(result).not.toContain(secret);
+  expect(result).not.toContain("abcdefgh");
+});
+
 test("redacts complete progress text", () => {
   const output = createRedactedTextStream(["opaque-token"], 100);
   expect(output.redactComplete("progress opaque-token")).toBe("progress [REDACTED]");
@@ -94,6 +111,15 @@ test("suppresses output for secrets longer than the retained matcher window", ()
   const output = createRedactedTextStream(["x".repeat(64_001)], 100_000);
   expect(output.push("safe diagnostic")).toBe("");
   expect(output.finish()).toBe("");
+});
+
+test("suppresses stream output when suffix preprocessing exceeds its work budget", () => {
+  const secrets = Array.from({ length: 6 }, (_, index) => `${index}${"x".repeat(59_999)}`);
+  const output = createRedactedTextStream(secrets, 100_000);
+
+  expect(output.push("safe output")).toBe("");
+  expect(output.finish()).toBe("");
+  expect(output.redactComplete("safe output")).toBe("");
 });
 
 test("bounds per-chunk secret search work across environments with many secrets", () => {

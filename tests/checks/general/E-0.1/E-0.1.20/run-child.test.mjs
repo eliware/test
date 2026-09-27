@@ -23,6 +23,31 @@ test("rejects failures raised during process creation", async () => {
   await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
 });
 
+test("normalizes and redacts synchronous spawn failures before process setup", async () => {
+  const createProgressTimeout = jest.fn();
+  const result = runChild("ignored", [], {
+    env: { API_TOKEN: "private-token-value" },
+    spawnProcess: () => { throw new Error("spawn failed with private-token-value"); },
+    createProgressTimeout,
+  });
+
+  let error;
+  try {
+    await result;
+  } catch (caught) {
+    error = caught;
+  }
+  expect(error.message).toBe("spawn failed with [REDACTED]");
+  expect(createProgressTimeout).not.toHaveBeenCalled();
+});
+
+test("normalizes non-Error synchronous spawn failures", async () => {
+  await expect(runChild("ignored", [], { spawnProcess: () => { throw "launch failed"; } }))
+    .rejects.toThrow("launch failed");
+  await expect(runChild("ignored", [], { spawnProcess: () => { throw new Error(""); } }))
+    .rejects.toThrow("Child process could not be started.");
+});
+
 test("settles once when the child emits duplicate close and late error events", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
@@ -35,6 +60,30 @@ test("settles once when the child emits duplicate close and late error events", 
   child.emit("error", new Error("late error"));
 
   await expect(result).resolves.toMatchObject({ code: 0 });
+});
+
+test("rejects a child that closes without an exit code outside the watchdog path", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  const result = runChild("ignored", [], { spawnProcess: () => child });
+
+  child.emit("close", null, "SIGTERM");
+
+  await expect(result).rejects.toThrow("Child process exited without an exit code (SIGTERM).");
+});
+
+test("formats a missing exit code without a signal", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  const result = runChild("ignored", [], { spawnProcess: () => child });
+
+  child.emit("close", null, null);
+
+  await expect(result).rejects.toThrow("Child process exited without an exit code.");
 });
 
 test("wires progress, timeout, output, and timed-out child settlement", async () => {

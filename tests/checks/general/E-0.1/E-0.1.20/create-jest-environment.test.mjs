@@ -28,3 +28,9 @@ test("preserves configured Node options and adds only missing requirements", () 
     "--no-warnings --experimental-vm-modules",
   );
 });
+
+test("rejects unsupported inherited Node options for Jest", () => {
+  expect(() => createJestEnvironment({ NODE_OPTIONS: "--require=./setup.mjs" })).toThrow(
+    "Unsupported inherited NODE_OPTIONS for the Jest validation process.",
+  );
+});
