@@ -1,16 +1,61 @@
-import { expect, test } from "@jest/globals";
-import { validateEliwarePackageMetadata } from "../../../../src/checks/general/E-0.1/validate-eliware-package-metadata.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const valid = { type: "module", scripts: { test: "eliware-test" }, eliware: { apply: ["general"], authority: { authoritativeFor: ["metadata"], notAuthoritativeFor: ["behavior"] }, crosslinks: [{ path: "../docs/authority-map.json", relation: "relatedAuthority", authoritativeFor: "ownership" }] } };
+const validatePackagePublicationMetadata = jest.fn();
+const validatePackageExemptions = jest.fn();
+const validatePackageModuleType = jest.fn();
+const validatePackageScripts = jest.fn();
 
-test("composes package metadata validators in stable first-failure order", () => {
-  expect(validateEliwarePackageMetadata(valid)).toBeNull();
-  expect(validateEliwarePackageMetadata({ ...valid, type: "commonjs", eliware: { ...valid.eliware, apply: ["unknown"] } })).toContain("type");
-  expect(validateEliwarePackageMetadata({ ...valid, eliware: { ...valid.eliware, exempt: [{}] } })).toContain("exempt");
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-package-publication-metadata.mjs",
+  () => ({ validatePackagePublicationMetadata }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-package-exemptions.mjs",
+  () => ({ validatePackageExemptions }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-package-module-type.mjs",
+  () => ({ validatePackageModuleType }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-package-scripts.mjs",
+  () => ({ validatePackageScripts }),
+);
+
+const { validateEliwarePackageMetadata } = await import(
+  "../../../../src/checks/general/E-0.1/validate-eliware-package-metadata.mjs"
+);
+const validators = [
+  validatePackageModuleType,
+  validatePackageScripts,
+  validatePackagePublicationMetadata,
+  validatePackageExemptions,
+];
+
+function resetValidators() {
+  jest.resetAllMocks();
+  for (const validator of validators) validator.mockReturnValue(null);
+}
+
+beforeEach(resetValidators);
+
+test("coordinates package policies in order and passes exemptions to their validator", () => {
+  const packageJson = { type: "module", scripts: { test: "npm test" }, eliware: { exempt: [] } };
+
+  expect(validateEliwarePackageMetadata(packageJson)).toBeNull();
+  const phases = validators.map((validator) => validator.mock.invocationCallOrder[0]);
+  expect(phases).toEqual([...phases].sort((left, right) => left - right));
+  expect(validatePackageExemptions).toHaveBeenCalledWith([]);
 });
 
-test("rejects invalid package module and script declarations", () => {
-  expect(validateEliwarePackageMetadata({ ...valid, type: "commonjs" })).toContain("type");
-  expect(validateEliwarePackageMetadata({ ...valid, scripts: {} })).toContain("scripts");
-  expect(validateEliwarePackageMetadata({ ...valid, scripts: { test: "" } })).toContain("scripts");
+test("stops at the first package-policy failure", () => {
+  for (const [index, validator] of validators.entries()) {
+    resetValidators();
+    validator.mockReturnValueOnce("package policy invalid");
+
+    expect(validateEliwarePackageMetadata({})).toBe("package policy invalid");
+    for (const laterValidator of validators.slice(index + 1)) {
+      expect(laterValidator).not.toHaveBeenCalled();
+    }
+  }
 });

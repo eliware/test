@@ -1,4 +1,4 @@
-import { expectedReadmeHeadings } from "./read-readme-sections.mjs";
+import { expectedReadmeHeadings } from "./resolve-readme-headings.mjs";
 
 const STANDARD_BRAND_LINE =
   "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";

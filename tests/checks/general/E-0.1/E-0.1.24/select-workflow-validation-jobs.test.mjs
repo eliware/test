@@ -1,10 +1,36 @@
-import { expect, test } from "@jest/globals";
-import { selectWorkflowValidationJobs } from "../../../../../src/checks/general/E-0.1/E-0.1.24/select-workflow-validation-jobs.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
+const findPublicationCommand = jest.fn();
+const findUnsupportedCommands = jest.fn();
+const isValidationWorkflowJob = jest.fn();
+const validateWorkflowSiblingJobs = jest.fn();
+
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.24/classify-workflow-commands.mjs",
+  () => ({ findPublicationCommand, findUnsupportedCommands, isValidationWorkflowJob }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-sibling-jobs.mjs",
+  () => ({ validateWorkflowSiblingJobs }),
+);
+
+const { selectWorkflowValidationJobs } = await import(
+  "../../../../../src/checks/general/E-0.1/E-0.1.24/select-workflow-validation-jobs.mjs"
+);
 const validJob = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
 
-test("selects a validation job and carries its normalized commands", () => {
-  expect(selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } })).toEqual({
+beforeEach(() => {
+  jest.resetAllMocks();
+  findPublicationCommand.mockReturnValue(undefined);
+  findUnsupportedCommands.mockReturnValue([]);
+  isValidationWorkflowJob.mockReturnValue(false);
+  validateWorkflowSiblingJobs.mockReturnValue(null);
+});
+
+test("selects validation jobs and returns their normalized commands", () => {
+  const result = selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } });
+
+  expect(result).toEqual({
     error: null,
     jobs: [{
       id: "validate",
@@ -15,62 +41,37 @@ test("selects a validation job and carries its normalized commands", () => {
       ],
     }],
   });
+  expect(validateWorkflowSiblingJobs).toHaveBeenCalledWith(
+    "ci.yml",
+    expect.arrayContaining([expect.objectContaining({ id: "validate" })]),
+    new Set(["validate"]),
+    false,
+  );
 });
 
-test("requires validation in both publication and ordinary workflows", () => {
-  expect(selectWorkflowValidationJobs("publish.yml", {
-    jobs: { publish: { steps: [{ run: "npm publish" }] } },
-  })).toEqual({ error: "publish.yml publication workflow must contain a separate validation job.", jobs: [] });
+test("maps missing validation jobs according to whether the workflow publishes", () => {
+  findPublicationCommand.mockReturnValueOnce({ command: "npm publish" });
+  expect(selectWorkflowValidationJobs("publish.yml", { jobs: { publish: { steps: [] } } })).toEqual({
+    error: "publish.yml publication workflow must contain a separate validation job.",
+    jobs: [],
+  });
   expect(selectWorkflowValidationJobs("ci.yml", { jobs: {} })).toEqual({
     error: "ci.yml must validate with npm ci followed by npm test.",
     jobs: [],
   });
 });
 
-test("leaves publication-job commands to publication-specific validation", () => {
-  const validate = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
-  const publish = { needs: "validate", steps: [{ run: "npm publish --provenance" }] };
-  expect(
-    selectWorkflowValidationJobs("publish.yml", { jobs: { validate, publish } }),
-  ).toEqual({
-    error: null,
-    jobs: [
-      {
-        id: "validate",
-        job: validate,
-        commands: [
-          { name: undefined, command: "npm ci", step: validate.steps[0], index: 0 },
-          { name: undefined, command: "npm test", step: validate.steps[1], index: 1 },
-        ],
-      },
-    ],
-  });
-});
-
-test("rejects unrelated unsafe jobs in a publication workflow", () => {
-  const validate = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
-  const publish = { steps: [{ run: "npm publish --provenance" }] };
-  const inspect = { steps: [{ run: "curl example.test" }] };
-  expect(selectWorkflowValidationJobs("publish.yml", {
-    jobs: { validate, publish, inspect },
-  })).toMatchObject({
-    error: "publish.yml contains non-validation command(s): curl example.test.",
+test("maps command-classification and sibling-validation findings", () => {
+  findUnsupportedCommands.mockReturnValueOnce(["curl example.test"]);
+  expect(selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } })).toEqual({
+    error: "ci.yml contains non-validation command(s): curl example.test.",
     jobs: [],
   });
-});
+  expect(validateWorkflowSiblingJobs).not.toHaveBeenCalled();
 
-test("rejects unsupported commands in validation jobs", () => {
-  expect(selectWorkflowValidationJobs("ci.yml", {
-    jobs: { validate: { steps: [{ run: "npm ci" }, { run: "npm test" }, { run: "curl example.test" }] } },
-  })).toEqual({ error: "ci.yml contains non-validation command(s): curl example.test.", jobs: [] });
-});
-
-test("rejects unsupported or unsafe commands in sibling workflow jobs", () => {
-  const result = selectWorkflowValidationJobs("ci.yml", {
-    jobs: {
-      validate: validJob,
-      deploy: { steps: [{ run: "curl example.test" }] },
-    },
+  validateWorkflowSiblingJobs.mockReturnValueOnce("sibling job invalid");
+  expect(selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } })).toEqual({
+    error: "sibling job invalid",
+    jobs: [],
   });
-  expect(result).toEqual({ error: "ci.yml contains non-validation command(s): curl example.test.", jobs: [] });
 });

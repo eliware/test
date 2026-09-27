@@ -1,40 +1,86 @@
-import { expect, test } from "@jest/globals";
-import { validateReadmeRequiredContent } from "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-required-content.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const readme = `# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
-## @eliware/fixture [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yml)
-## Table of Contents
-[Features](#features) · [Requirements](#requirements) · [Setup](#setup) · [Usage](#usage) · [Development](#development) · [Testing](#testing) · [Troubleshooting](#troubleshooting) · [Security](#security) · [Support](#support) · [License](#license) · [Links](#links)
-## Features
-Content.
-## Requirements
-Content.
-## Setup
-Content.
-## Usage
-Content.
-## Development
-Content.
-## Testing
-Content.
-## Troubleshooting
-Content.
-## Security
-Content.
-## Support
-https://discord.gg/M6aTR9eTwN eliware.org on Discord
-## License
-[license](LICENSE)
-## Links
-Documentation: [docs](docs/README.md) [specifications](specs/README.md) [examples](examples/README.md)
-https://eliware.org https://github.com/eliware https://github.com/eliware/fixture`;
+const validateReadmeDocumentationNavigation = jest.fn();
+const validateReadmeLicense = jest.fn();
+const validateReadmeLinks = jest.fn();
+const validateReadmePackageBadges = jest.fn();
+const validateReadmeProfileContent = jest.fn();
+const validateReadmeStructure = jest.fn();
+const validateReadmeSupport = jest.fn();
 
-test("composes the focused README validators", () => {
-  expect(
-    validateReadmeRequiredContent(readme, {
-      name: "@eliware/fixture",
-      repository: "https://github.com/eliware/fixture",
-    }),
-  ).toBeNull();
-  expect(validateReadmeRequiredContent(readme.replace("# [!", "# [bad!"))).toBeTruthy();
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-documentation-navigation.mjs",
+  () => ({ validateReadmeDocumentationNavigation }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-license.mjs",
+  () => ({ validateReadmeLicense }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-links.mjs",
+  () => ({ validateReadmeLinks }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-package-badges.mjs",
+  () => ({ validateReadmePackageBadges }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-profile-content.mjs",
+  () => ({ validateReadmeProfileContent }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-structure.mjs",
+  () => ({ validateReadmeStructure }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-support.mjs",
+  () => ({ validateReadmeSupport }),
+);
+
+const { validateReadmeRequiredContent } = await import(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-required-content.mjs"
+);
+const validators = [
+  validateReadmeStructure,
+  validateReadmePackageBadges,
+  validateReadmeProfileContent,
+  validateReadmeDocumentationNavigation,
+  validateReadmeSupport,
+  validateReadmeLinks,
+  validateReadmeLicense,
+];
+
+function resetValidators() {
+  jest.resetAllMocks();
+  for (const validator of validators) validator.mockReturnValue(null);
+}
+
+beforeEach(resetValidators);
+
+test("runs focused README validators in order and passes their shared inputs", () => {
+  const readme = "README";
+  const packageJson = { name: "@eliware/fixture" };
+  const options = { sections: new Map(), examplesRequired: true };
+
+  expect(validateReadmeRequiredContent(readme, packageJson, options)).toBeNull();
+  expect(validators.map((validator) => validator.mock.invocationCallOrder[0])).toEqual(
+    [...validators].map((validator) => validator.mock.invocationCallOrder[0]).sort((a, b) => a - b),
+  );
+  expect(validateReadmeProfileContent).toHaveBeenCalledWith(readme, packageJson, options.sections);
+  expect(validateReadmeDocumentationNavigation).toHaveBeenCalledWith(readme, options);
+  expect(validateReadmeSupport).toHaveBeenCalledWith(readme, options.sections);
+  expect(validateReadmeLinks).toHaveBeenCalledWith(readme, packageJson, options.sections);
+  expect(validateReadmeLicense).toHaveBeenCalledWith(readme, options.sections);
+});
+
+test("returns the first validation finding and skips later validators", () => {
+  for (const [index, validator] of validators.entries()) {
+    resetValidators();
+    validator.mockReturnValueOnce("invalid README");
+
+    expect(validateReadmeRequiredContent("README")).toBe("invalid README");
+    for (const laterValidator of validators.slice(index + 1)) {
+      expect(laterValidator).not.toHaveBeenCalled();
+    }
+  }
 });

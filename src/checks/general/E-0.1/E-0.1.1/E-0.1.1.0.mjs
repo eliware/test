@@ -3,8 +3,8 @@ import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 import {
   readReadmeSections,
-  readmeSectionsCacheKey,
 } from "./read-readme-sections.mjs";
+import { expectedReadmeHeadings, readmeSectionsCacheKey } from "./resolve-readme-headings.mjs";
 import { findMissingReadmeSections } from "./find-missing-readme-sections.mjs";
 import { validateReadmeBranding } from "./validate-readme-branding.mjs";
 import { validateReadmeMetadata } from "./validate-readme-metadata.mjs";
@@ -26,7 +26,7 @@ export async function run(context) {
     context,
     join(root, "README.md"),
     readmeSectionsCacheKey(packageJson),
-    (content) => readReadmeSections(content, packageJson),
+    (content) => readReadmeSections(content, expectedReadmeHeadings(packageJson)),
   );
   const missing = findMissingReadmeSections(sections, packageJson);
   if (missing.length > 0) {

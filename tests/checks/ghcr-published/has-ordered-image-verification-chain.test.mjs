@@ -1,49 +1,89 @@
-import { expect, test } from "@jest/globals";
-import { hasOrderedImageVerificationChain } from "../../../src/checks/ghcr-published/has-ordered-image-verification-chain.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const image = "ghcr.io/eliware/example";
-const digest = "${{ steps.push.outputs.digest }}";
-const push = {
-  id: "push",
-  uses: "docker/build-push-action@v6",
-  with: { push: true, tags: `${image}:v1.2.3` },
-};
-const verification = [
-  { uses: "actions/attest@v4", with: { pushToRegistry: true, subjectName: image, subjectDigest: digest } },
-  { run: `test "$(docker buildx imagetools inspect ${image}:v1.2.3 --format '{{.Manifest.Digest}}')" = "${digest}"` },
-  { run: `docker buildx imagetools inspect ${image}@${digest}` },
-  { run: `gh attestation verify oci://${image}@${digest} --repo \${{ github.repository }}` },
-  { run: `echo verified ${digest} >> "$GITHUB_STEP_SUMMARY"` },
+const findAttestation = jest.fn();
+const findAttestationVerification = jest.fn();
+const findDigestHandoff = jest.fn();
+const findDigestInspection = jest.fn();
+const findVersionTagDigestVerification = jest.fn();
+const findImagePushes = jest.fn();
+const imageDetails = jest.fn();
+const steps = jest.fn();
+
+jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-attestation.mjs", () => ({
+  findAttestation,
+  findAttestationVerification,
+}));
+jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-digest-handoff.mjs", () => ({ findDigestHandoff }));
+jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-digest-verification.mjs", () => ({
+  findDigestInspection,
+  findVersionTagDigestVerification,
+}));
+jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-image-push.mjs", () => ({
+  findImagePushes,
+  imageDetails,
+}));
+jest.unstable_mockModule("../../../src/checks/ghcr-published/workflow-structure.mjs", () => ({ steps }));
+
+const { hasOrderedImageVerificationChain } = await import(
+  "../../../src/checks/ghcr-published/has-ordered-image-verification-chain.mjs"
+);
+
+const pushes = [{ id: "first" }, { id: "second" }];
+const verification = (id) => [
+  { id: `${id}-attestation` },
+  { id: `${id}-tag` },
+  { id: `${id}-inspection` },
+  { id: `${id}-verification` },
+  { id: `${id}-handoff` },
+];
+const firstVerification = verification("first");
+const secondVerification = verification("second");
+const jobSteps = [pushes[0], ...firstVerification, pushes[1], ...secondVerification];
+const expectedStages = [
+  findAttestation,
+  findVersionTagDigestVerification,
+  findDigestInspection,
+  findAttestationVerification,
+  findDigestHandoff,
 ];
 
-test("accepts a complete ordered verification chain", () => {
-  expect(hasOrderedImageVerificationChain({ steps: [push, ...verification] })).toBe(true);
+beforeEach(() => {
+  jest.resetAllMocks();
+  steps.mockReturnValue(jobSteps);
+  findImagePushes.mockReturnValue(pushes);
+  imageDetails.mockImplementation((push) => ({ digestReference: `digest:${push.id}` }));
+  expectedStages.forEach((stage, stageIndex) => {
+    stage.mockImplementation((segment) => segment.steps[stageIndex]);
+  });
 });
 
-test("rejects missing or out-of-order verification evidence", () => {
-  expect(hasOrderedImageVerificationChain({ steps: [push, ...verification.slice(0, 3)] })).toBe(false);
-  expect(hasOrderedImageVerificationChain({ steps: [push, verification[1], verification[0], ...verification.slice(2)] })).toBe(false);
+test("composes each push's evidence in stage order and confines it to that push segment", () => {
+  expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(true);
+
+  for (const stage of expectedStages) {
+    expect(stage).toHaveBeenCalledTimes(2);
+    expect(stage.mock.calls[0][0].steps).toEqual(firstVerification);
+    expect(stage.mock.calls[1][0].steps).toEqual(secondVerification);
+  }
+  expect(imageDetails).toHaveBeenCalledWith(pushes[0]);
+  expect(imageDetails).toHaveBeenCalledWith(pushes[1]);
+  expect(findAttestation.mock.calls.map(([segment, details]) => [segment.steps[0], details])).toEqual([
+    [firstVerification[0], { digestReference: "digest:first" }],
+    [secondVerification[0], { digestReference: "digest:second" }],
+  ]);
+});
+
+test("rejects absent pushes, unusable digests, incomplete evidence, and out-of-order evidence", () => {
+  findImagePushes.mockReturnValueOnce([]);
   expect(hasOrderedImageVerificationChain({ steps: [] })).toBe(false);
-});
+  expect(findAttestation).not.toHaveBeenCalled();
 
-test("rejects pushes without a usable digest reference", () => {
-  expect(hasOrderedImageVerificationChain({ steps: [{ ...push, id: "bad id" }, ...verification] })).toBe(false);
-});
+  imageDetails.mockReturnValueOnce({ digestReference: null });
+  expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
 
-test("requires every pushed image to have its own verification chain", () => {
-  const secondPush = {
-    id: "second",
-    uses: "docker/build-push-action@v6",
-    with: { push: true, tags: "ghcr.io/eliware/other:v1.2.3" },
-  };
-  const secondDigest = "${{ steps.second.outputs.digest }}";
-  const secondVerification = [
-    { uses: "actions/attest@v4", with: { pushToRegistry: true, subjectName: "ghcr.io/eliware/other", subjectDigest: secondDigest } },
-    { run: `test "$(docker buildx imagetools inspect ghcr.io/eliware/other:v1.2.3 --format '{{.Manifest.Digest}}')" = "${secondDigest}"` },
-    { run: `docker buildx imagetools inspect ghcr.io/eliware/other@${secondDigest}` },
-    { run: `gh attestation verify oci://ghcr.io/eliware/other@${secondDigest} --repo \${{ github.repository }}` },
-    { run: `echo verified ${secondDigest} >> "$GITHUB_STEP_SUMMARY"` },
-  ];
-  expect(hasOrderedImageVerificationChain({ steps: [push, ...verification, secondPush, ...secondVerification] })).toBe(true);
-  expect(hasOrderedImageVerificationChain({ steps: [push, ...verification, secondPush] })).toBe(false);
+  findDigestHandoff.mockReturnValueOnce(undefined);
+  expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
+
+  findVersionTagDigestVerification.mockReturnValueOnce(firstVerification[0]);
+  expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
 });

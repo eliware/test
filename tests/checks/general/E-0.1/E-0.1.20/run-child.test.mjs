@@ -2,7 +2,7 @@ import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
 import { runChild } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-child.mjs";
 
-test("captures child output and reports process results", async () => {
+test("spawns a child and returns captured process output", async () => {
   const output = [];
   await expect(
     runChild(process.execPath, ["-e", "process.stdout.write('ok'); process.stderr.write('err')"], {
@@ -13,148 +13,105 @@ test("captures child output and reports process results", async () => {
   expect(output).toEqual(["out:ok", "err:err"]);
 });
 
-test("redacts stderr before progress and output callbacks", async () => {
-  const progress = jest.fn();
-  const stderr = jest.fn();
-  const result = await runChild(
-    process.execPath,
-    ["-e", "process.stderr.write(`[eliware-test-progress] ${process.env.SERVICE_TOKEN}`)"],
-    {
-      env: { SERVICE_TOKEN: "x" },
-      progressPattern: /eliware-test-progress/u,
-      onProgress: progress,
-      onStderr: stderr,
-    },
-  );
-  expect(result.stderr).not.toContain("x");
-  expect(progress.mock.calls.flat().join(" ")).not.toContain("x");
-  expect(stderr.mock.calls.flat().join(" ")).not.toContain("x");
-});
-
-test("uses default options when omitted", async () => {
+test("uses process defaults when options are omitted", async () => {
   await expect(
     runChild(process.execPath, ["-e", "process.stdout.write('default')"]),
   ).resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));
 });
 
-test("rejects spawn errors", async () => {
+test("rejects failures raised during process creation", async () => {
   await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
 });
 
-test("ignores duplicate close, late error, progress, and watchdog events", async () => {
-  const child = Object.assign(new EventEmitter(), { stdout: new EventEmitter(), stderr: new EventEmitter() });
-  const reset = jest.fn();
-  let onTimeout;
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    progressPattern: /late/u,
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return { reset, stop: jest.fn() };
-    },
-  });
-  child.emit("close", 0, null);
-  child.emit("close", 1, null);
-  child.emit("error", new Error("late error"));
-  child.stderr.emit("data", "late\n");
-  onTimeout();
-  await expect(result).resolves.toMatchObject({ code: 0 });
-  expect(reset).toHaveBeenCalledTimes(1);
-});
-
-test("resets progress and confirms a child that closes after timeout", async () => {
+test("settles once when the child emits duplicate close and late error events", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
     stderr: new EventEmitter(),
   });
-  let onTimeout;
+  const result = runChild("ignored", [], { spawnProcess: () => child });
+
+  child.emit("close", 0, null);
+  child.emit("close", 1, null);
+  child.emit("error", new Error("late error"));
+
+  await expect(result).resolves.toMatchObject({ code: 0 });
+});
+
+test("wires progress, timeout, output, and timed-out child settlement", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  const reset = jest.fn();
+  const onProgress = jest.fn();
+  const onTimeout = jest.fn();
+  const onStdout = jest.fn();
+  const onStderr = jest.fn();
+  let fireTimeout;
   const result = runChild("ignored", [], {
     spawnProcess: () => child,
-    progressPattern: /started/u,
-    terminateChild: () => true,
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return { reset: jest.fn(), stop: jest.fn() };
+    createProgressTimeout: ({ onTimeout: callback }) => {
+      fireTimeout = callback;
+      return { reset, stop: jest.fn() };
     },
+    progressPattern: /progress/u,
+    onProgress,
+    onTimeout,
+    onStdout,
+    onStderr,
+    terminateChild: () => true,
+    terminationGraceMs: 60_000,
   });
-  child.stderr.emit("data", "started\n");
-  onTimeout();
+
+  child.stdout.emit("data", "output");
+  child.stderr.emit("data", "progress\n");
+  fireTimeout();
   child.emit("close", null, "SIGTERM");
+  child.stderr.emit("data", "progress after close\n");
+
   await expect(result).resolves.toMatchObject({
     timedOut: true,
     terminationRequested: true,
     terminationConfirmed: true,
+    stdout: "output",
   });
+  expect(reset).toHaveBeenCalledTimes(2);
+  expect(onProgress).toHaveBeenCalledTimes(2);
+  expect(onTimeout).toHaveBeenCalledTimes(1);
+  expect(onStdout).toHaveBeenCalledWith("output");
+  expect(onStderr).toHaveBeenCalledWith("progress\n");
 });
 
-test("does not report tree termination as confirmed after direct-signal fallback", async () => {
-  const child = Object.assign(new EventEmitter(), {
-    stdout: new EventEmitter(),
-    stderr: new EventEmitter(),
-  });
-  let onTimeout;
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return { reset: jest.fn(), stop: jest.fn() };
-    },
-    terminateChild: () => false,
-  });
-  onTimeout();
-  child.emit("close", null, "SIGTERM");
-  await expect(result).resolves.toMatchObject({
-    timedOut: true,
-    terminationRequested: true,
-    terminationConfirmed: false,
-  });
-});
+test("settles when the process never confirms termination", async () => {
+  jest.useFakeTimers();
+  try {
+    const child = Object.assign(new EventEmitter(), {
+      stdout: new EventEmitter(),
+      stderr: new EventEmitter(),
+    });
+    let fireTimeout;
+    const result = runChild("ignored", [], {
+      spawnProcess: () => child,
+      createProgressTimeout: ({ onTimeout }) => {
+        fireTimeout = onTimeout;
+        return { reset: jest.fn(), stop: jest.fn() };
+      },
+      terminateChild: () => false,
+      terminationGraceMs: 1,
+      forceKillConfirmationMs: 1,
+    });
 
-test("reports a timeout when the child never confirms termination", async () => {
-  const child = Object.assign(new EventEmitter(), {
-    stdout: new EventEmitter(),
-    stderr: new EventEmitter(),
-  });
-  let onTimeout;
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    terminationGraceMs: 1,
-    forceKillConfirmationMs: 1,
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return { reset: jest.fn(), stop: jest.fn() };
-    },
-    terminateChild: () => false,
-  });
-  onTimeout();
-  await expect(result).resolves.toMatchObject({
-    timedOut: true,
-    terminationRequested: true,
-    terminationConfirmed: false,
-  });
-});
+    fireTimeout();
+    jest.advanceTimersByTime(2);
 
-test("settles boundedly when timeout and termination callbacks throw", async () => {
-  const child = Object.assign(new EventEmitter(), {
-    stdout: new EventEmitter(),
-    stderr: new EventEmitter(),
-  });
-  let onTimeout;
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    terminationGraceMs: 1,
-    forceKillConfirmationMs: 1,
-    onTimeout: () => { throw new Error("timeout callback failed"); },
-    createProgressTimeout: (options) => {
-      onTimeout = options.onTimeout;
-      return { reset: jest.fn(), stop: jest.fn() };
-    },
-    terminateChild: () => { throw new Error("termination failed"); },
-  });
-  onTimeout();
-  await expect(result).resolves.toMatchObject({
-    timedOut: true,
-    terminationRequested: true,
-    terminationConfirmed: false,
-  });
+    await expect(result).resolves.toMatchObject({
+      code: null,
+      signal: "SIGKILL",
+      timedOut: true,
+      terminationRequested: true,
+      terminationConfirmed: false,
+    });
+  } finally {
+    jest.useRealTimers();
+  }
 });

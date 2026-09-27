@@ -1,4 +1,4 @@
-import { expectedReadmeHeadings } from "./read-readme-sections.mjs";
+import { expectedReadmeHeadings } from "./resolve-readme-headings.mjs";
 
 export function findMissingReadmeSections(sections, packageJson = {}) {
   return expectedReadmeHeadings(packageJson).filter(

@@ -1,187 +1,124 @@
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { expect, jest, test } from "@jest/globals";
-import { runCli } from "../../src/cli/run-cli.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("reports the package version", async () => {
-  const output = [];
-  await expect(runCli(["--version"], (value) => output.push(value))).resolves.toBe(0);
-  expect(output).toEqual(["8.0.0"]);
-});
+const readDiagnosticOptions = jest.fn();
+const createStageTimer = jest.fn();
+const runConventionStage = jest.fn();
+const runValidation = jest.fn();
+const dispatchInformationalCommand = jest.fn();
+const createValidationRunOptions = jest.fn();
+const writeValidationResults = jest.fn();
+const normalizeCliError = jest.fn();
+const formatExitCode = jest.fn();
 
-test("reports the convention-only help contract", async () => {
-  const output = [];
-  await expect(runCli(["--help"], (value) => output.push(value))).resolves.toBe(0);
-  expect(output[0]).toContain("Usage: eliware-test");
-  expect(output[0]).toContain("--debug-timing");
-  expect(output[0]).toContain("--audit");
-  expect(output[0]).toContain("--pack");
-});
+jest.unstable_mockModule("../../src/cli/read-diagnostic-options.mjs", () => ({ readDiagnosticOptions }));
+jest.unstable_mockModule("../../src/cli/timing/create-stage-timer.mjs", () => ({ createStageTimer }));
+jest.unstable_mockModule("../../src/orchestrators/run-convention-stage.mjs", () => ({ runConventionStage }));
+jest.unstable_mockModule("../../src/orchestrators/run-validation.mjs", () => ({ runValidation }));
+jest.unstable_mockModule("../../src/cli/dispatch-informational-command.mjs", () => ({ dispatchInformationalCommand }));
+jest.unstable_mockModule("../../src/cli/create-validation-run-options.mjs", () => ({ createValidationRunOptions }));
+jest.unstable_mockModule("../../src/cli/write-validation-results.mjs", () => ({ writeValidationResults }));
+jest.unstable_mockModule("../../src/cli/normalize-cli-error.mjs", () => ({ normalizeCliError }));
+jest.unstable_mockModule("../../src/cli/format-exit-code.mjs", () => ({ formatExitCode }));
 
-test("rejects conflicting informational and validation arguments before dispatch", async () => {
-  const output = [];
-  await expect(runCli(["--help", "--lint"], (value) => output.push(value))).resolves.toBe(18);
-  expect(output).toEqual([
-    "Informational commands cannot be combined with validation arguments.",
-    "Exit-code: 18 (convention, configuration, argument, format, or format-check failure)",
-  ]);
-});
+const { runCli } = await import("../../src/cli/run-cli.mjs");
+const diagnosticOptions = { ignoredRuleIds: ["E-0.1.4"], jestArgs: ["tests/sample.test.mjs"] };
+const timing = { getLines: jest.fn(() => []), getJestOutput: jest.fn(() => "") };
+const validationResult = { code: 0, category: "validation", diagnostics: [] };
 
-test("runs convention validation and reports debug timing when requested", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-"));
-  await writeFile(join(root, "README.md"), "# fixture\n");
-  await writeFile(join(root, "AGENTS.md"), "eliware/docs eliware/test eliware/operations\n");
-  await mkdir(join(root, "specs"));
-  await writeFile(
-    join(root, "specs", "README.md"),
-    "# specs\n- [authority.json](authority.json)\n- [directives.json](directives.json)\n",
-  );
-  await writeFile(
-    join(root, "specs", "authority.json"),
-    "{}",
-  );
-  await writeFile(
-    join(root, "specs", "directives.json"),
-    "{}",
-  );
-  await writeFile(join(root, "package.json"), JSON.stringify({ eliware: { apply: ["fork"] } }));
-  const output = [];
-  await expect(
-    runCli(["--debug-timing"], (value) => output.push(value), root, { executeJest: false }),
-  ).resolves.toBe(0);
-  expect(output.some((line) => /^Validation time: \d+ms$/u.test(line))).toBe(true);
-  expect(output.at(-1)).toBe("Exit-code: 0");
-  expect(output.some((line) => /completed, starting/.test(line))).toBe(false);
-});
-
-test("fails when package metadata cannot be read", async () => {
-  const output = [];
-  await expect(
-    runCli([], (value) => output.push(value), "C:/path-that-does-not-exist", {
-      executeJest: false,
-    }),
-  ).resolves.toBe(18);
-  expect(output).toHaveLength(2);
-  expect(output[1]).toContain("Exit-code: 18 (");
-  expect(output[0]).toMatch(/package\.json|ENOENT/i);
-});
-
-test("fails fast when package.json.eliware is absent", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-no-meta-"));
-  await writeFile(join(root, "package.json"), JSON.stringify({ name: "fixture" }));
-  const output = [];
-  await expect(
-    runCli([], (value) => output.push(value), root, { executeJest: false }),
-  ).resolves.toBe(18);
-  expect(output).toEqual([
-    "package.json.eliware is required for Eliware validation.\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.",
-    "Exit-code: 18 (convention, configuration, argument, format, or format-check failure)",
-  ]);
-});
-
-test("runs a configured convention validation target without starting Jest", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-configured-"));
-  await writeFile(
-    join(root, "package.json"),
-    JSON.stringify({
-      name: "fixture",
-      version: "1.0.0",
-      type: "module",
-      eliware: { apply: ["fork"] },
-    }),
-  );
-  await writeFile(join(root, "README.md"), "# fixture\n");
-  await writeFile(join(root, "AGENTS.md"), "eliware/docs eliware/test eliware/operations\n");
-  await mkdir(join(root, "specs"));
-  await writeFile(join(root, "specs", "README.md"), "# specs\n");
-  const output = [];
-  await expect(
-    runCli([], (value) => output.push(value), root, { executeJest: false }),
-  ).resolves.toBe(0);
-  expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0"]);
-});
-
-test("passes explicit stage controls to injected validation", async () => {
-  let received;
-  const output = [];
-  await expect(
-    runCli([], (value) => output.push(value), process.cwd(), {
-      executeJest: true,
-      executeLint: false,
-      executeAudit: false,
-      executePack: false,
-      executePackageChecks: false,
-      executeFormat: false,
-      runValidation: async (...args) => {
-        received = args;
-        return [];
-      },
-      runConventionStage: async (runChecks) => {
-        await runChecks();
-        return { code: 0, category: "conventions", diagnostics: [] };
-      },
-    }),
-  ).resolves.toBe(0);
-  expect(received[2]).toEqual({
-    executeJest: true,
-    executeLint: false,
-    executeAudit: false,
-    executePack: false,
-    executePackageChecks: false,
-    executeFormat: false,
-    mode: null,
-    modeRuleId: null,
-    jestArgs: [],
-    toolArgs: [],
-    timing: expect.any(Object),
-    writeOutput: undefined,
+function resetCli() {
+  jest.resetAllMocks();
+  validationResult.code = 0;
+  readDiagnosticOptions.mockReturnValue(diagnosticOptions);
+  createStageTimer.mockReturnValue(timing);
+  runConventionStage.mockImplementation(async (runChecks) => {
+    await runChecks();
+    return validationResult;
   });
-  expect(output).toEqual(["All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0"]);
+  runValidation.mockResolvedValue([]);
+  dispatchInformationalCommand.mockReturnValue(null);
+  createValidationRunOptions.mockReturnValue({ runOption: true });
+  writeValidationResults.mockImplementation(() => {});
+  normalizeCliError.mockReturnValue(18);
+  formatExitCode.mockReturnValue("formatted exit code");
+}
+
+beforeEach(resetCli);
+
+test("returns informational command results before starting validation", async () => {
+  dispatchInformationalCommand.mockReturnValueOnce(0);
+  const write = jest.fn();
+
+  await expect(runCli(["--version"], write, "/repo")).resolves.toBe(0);
+
+  expect(dispatchInformationalCommand).toHaveBeenCalledWith(["--version"], write);
+  expect(readDiagnosticOptions).toHaveBeenCalledWith(["--version"]);
+  expect(createStageTimer).not.toHaveBeenCalled();
+  expect(runConventionStage).not.toHaveBeenCalled();
 });
 
-test("normalizes unexpected validation errors", async () => {
-  const output = [];
-  await expect(
-    runCli([], (value) => output.push(value), process.cwd(), {
-      runConventionStage: async () => {
-        throw new Error("validation exploded");
-      },
-    }),
-  ).resolves.toBe(18);
-  expect(output).toEqual([
-    "validation exploded",
-    "Exit-code: 18 (convention, configuration, argument, format, or format-check failure)",
-  ]);
+test("uses the default output writer for informational commands", async () => {
+  dispatchInformationalCommand.mockReturnValueOnce(0);
+
+  await expect(runCli(["--version"])).resolves.toBe(0);
 });
 
-test("uses CLI defaults when optional arguments are omitted", async () => {
-  const log = jest.spyOn(console, "log").mockImplementation(() => {});
-  try {
-    await expect(runCli(["--version"])).resolves.toBe(0);
-  } finally {
-    log.mockRestore();
-  }
+test("coordinates diagnostic parsing, convention and validation stages, and result writing", async () => {
+  const write = jest.fn();
+  const options = { runOption: true };
 
-  let received;
-  await expect(
-    runCli([], () => {}, process.cwd(), {
-      runValidation: async (...args) => {
-        received = args;
-        return [];
-      },
-      runConventionStage: async (runChecks) => {
-        await runChecks();
-        return { code: 0, category: "conventions", diagnostics: [] };
-      },
-    }),
-  ).resolves.toBe(0);
-  expect(received[2]).toMatchObject({
-    executeJest: true,
-    executeLint: true,
-    executeAudit: true,
-    executePack: true,
-    executePackageChecks: true,
-    executeFormat: true,
+  await expect(runCli([], write, "/repo")).resolves.toBe(0);
+
+  expect(readDiagnosticOptions).toHaveBeenCalledWith([]);
+  expect(createStageTimer).toHaveBeenCalledWith(false, expect.any(Function), undefined);
+  expect(createStageTimer.mock.calls[0][1]()).toEqual(expect.any(Number));
+  expect(runConventionStage).toHaveBeenCalledWith(expect.any(Function));
+  expect(runValidation).toHaveBeenCalledWith("/repo", diagnosticOptions.ignoredRuleIds, options);
+  expect(createValidationRunOptions).toHaveBeenCalledWith(
+    [],
+    diagnosticOptions,
+    {},
+    timing,
+    write,
+  );
+  expect(writeValidationResults).toHaveBeenCalledWith(validationResult, write, false, timing, expect.any(Number));
+  expect(formatExitCode).not.toHaveBeenCalled();
+});
+
+test("enables timing output and formats nonzero or debug exit codes", async () => {
+  const write = jest.fn();
+
+  await expect(runCli(["--debug-timing"], write, "/repo")).resolves.toBe(0);
+
+  expect(createStageTimer).toHaveBeenCalledWith(true, expect.any(Function), write);
+  expect(writeValidationResults).toHaveBeenCalledWith(
+    validationResult,
+    write,
+    true,
+    timing,
+    expect.any(Number),
+  );
+  expect(formatExitCode).toHaveBeenCalledWith(0);
+  expect(write).toHaveBeenCalledWith("formatted exit code");
+});
+
+test("formats a nonzero result even when timing output is disabled", async () => {
+  runConventionStage.mockImplementationOnce(async (runChecks) => {
+    await runChecks();
+    return { ...validationResult, code: 12 };
   });
+
+  await expect(runCli([], jest.fn(), "/repo")).resolves.toBe(12);
+  expect(formatExitCode).toHaveBeenCalledWith(12);
+});
+
+test("normalizes and formats failures raised by the CLI pipeline", async () => {
+  const error = new Error("validation failed");
+  runConventionStage.mockRejectedValueOnce(error);
+  const write = jest.fn();
+
+  await expect(runCli([], write)).resolves.toBe(18);
+
+  expect(normalizeCliError).toHaveBeenCalledWith(error, write);
+  expect(formatExitCode).toHaveBeenCalledWith(18);
+  expect(write).toHaveBeenCalledWith("formatted exit code");
 });

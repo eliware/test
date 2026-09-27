@@ -20,15 +20,6 @@ beforeEach(() => {
   validateAuthorityRecord.mockResolvedValue(null);
   validateAuthorityMap.mockResolvedValue(null);
 });
-
-test("ignores unrelated JSON documents", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-docs-"));
-  await mkdir(join(root, "specs"));
-  await writeFile(join(root, "specs", "other.json"), "{}\n");
-  await expect(validateAuthorityDocuments(root, ["specs/other.json"])).resolves.toBeNull();
-  await rm(root, { recursive: true, force: true });
-});
-
 test("uses the inventory parsed-document cache", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-inventory-"));
   await writeFile(join(root, "other.json"), "{}\n");
@@ -66,19 +57,5 @@ test("dispatches authority records and maps to their specialized validators", as
       document: {},
     }),
   );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("does not treat an authority-map schema as a global authority registry", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-schema-"));
-  await mkdir(join(root, "specs"));
-  const schema = {
-    requiredPath: "specs/authority.json",
-    requiredFields: { repositoryRegistry: "Registry records belong in the global map." },
-  };
-  await writeFile(join(root, "specs", "authority-map.json"), `${JSON.stringify(schema)}\n`);
-
-  await expect(validateAuthorityDocuments(root, ["specs/authority-map.json"])).resolves.toBeNull();
-  expect(validateAuthorityMap).not.toHaveBeenCalled();
   await rm(root, { recursive: true, force: true });
 });

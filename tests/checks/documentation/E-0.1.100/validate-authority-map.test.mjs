@@ -1,64 +1,86 @@
-import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { validateAuthorityMap } from "../../../../src/checks/documentation/E-0.1.100/validate-authority-map.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-function entry(overrides = {}) {
-  return {
-    repository: "eliware/example",
-    path: ".",
-    package: "./package.json",
-    authorityFile: "./specs/authority.json",
-    reference: "./README.md",
-    governs: ["example.subject"],
-    directiveNamespaces: ["E-0.1"],
-    ...overrides,
-  };
-}
+const validateAuthorityMapPaths = jest.fn();
+const validateAuthorityReciprocity = jest.fn();
+const validateAuthorityRegistry = jest.fn();
 
-async function createFixture(authority = { repositoryId: "eliware/example" }) {
-  const root = await mkdtemp(join(tmpdir(), "eliware-authority-map-composition-"));
-  await mkdir(join(root, "specs"));
-  await writeFile(join(root, "package.json"), "{}");
-  await writeFile(join(root, "README.md"), "# Example");
-  await writeFile(join(root, "specs", "authority.json"), JSON.stringify(authority));
-  return { root, file: join(root, "authority-map.json") };
-}
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-map-paths.mjs",
+  () => ({ validateAuthorityMapPaths }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-reciprocity.mjs",
+  () => ({ validateAuthorityReciprocity }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry.mjs",
+  () => ({ validateAuthorityRegistry }),
+);
 
-test("composes registry, reciprocal authority, and path validation", async () => {
-  const context = await createFixture();
-  await expect(validateAuthorityMap({
-    ...context,
-    document: {
-      repositoryRegistry: [entry()],
-      crosslinks: [{ path: "./README.md" }],
-      structuredDocuments: [{ path: "./specs/authority.json" }],
-    },
-  })).resolves.toBeNull();
+const { validateAuthorityMap } = await import(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-map.mjs"
+);
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  validateAuthorityRegistry.mockResolvedValue(null);
+  validateAuthorityReciprocity.mockResolvedValue(null);
+  validateAuthorityMapPaths.mockResolvedValue(null);
 });
 
-test("rejects a missing document and propagates registry validation errors", async () => {
-  const context = await createFixture();
-  await expect(validateAuthorityMap({ ...context, document: null })).resolves.toBe(
+test("requires a structured authority-map document", async () => {
+  await expect(validateAuthorityMap({ document: null })).resolves.toBe(
     "authority-map.json must declare repositoryRegistry.",
   );
-  await expect(validateAuthorityMap({
-    ...context,
-    document: { repositoryRegistry: [entry({ directiveNamespaces: ["invalid"] })] },
-  })).resolves.toContain("valid directiveNamespaces");
+  expect(validateAuthorityRegistry).not.toHaveBeenCalled();
 });
 
-test("propagates reciprocal authority and path validation errors", async () => {
-  const mismatch = await createFixture({ repositoryId: "other/repository" });
-  await expect(validateAuthorityMap({
-    ...mismatch,
-    document: { repositoryRegistry: [entry()] },
-  })).resolves.toContain("repositoryId does not match");
+test("validates registry, reciprocity, and paths in order", async () => {
+  const context = {
+    root: "/repo",
+    file: "/repo/authority-map.json",
+    inventory: { readParsed: jest.fn() },
+    document: {
+      repositoryRegistry: [{ repository: "eliware/example" }],
+      crosslinks: [{ path: "README.md" }],
+      structuredDocuments: [{ path: "specs/authority.json" }],
+    },
+  };
 
-  const valid = await createFixture();
-  await expect(validateAuthorityMap({
-    ...valid,
-    document: { repositoryRegistry: [entry()], crosslinks: [{ path: "./missing.json" }] },
-  })).resolves.toContain("crosslinks[0] does not resolve");
+  await expect(validateAuthorityMap(context)).resolves.toBeNull();
+  expect(validateAuthorityRegistry).toHaveBeenCalledWith({
+    root: context.root,
+    file: context.file,
+    entries: context.document.repositoryRegistry,
+  });
+  expect(validateAuthorityReciprocity).toHaveBeenCalledWith({
+    root: context.root,
+    file: context.file,
+    entries: context.document.repositoryRegistry,
+    inventory: context.inventory,
+  });
+  expect(validateAuthorityMapPaths).toHaveBeenCalledWith({
+    root: context.root,
+    file: context.file,
+    crosslinks: context.document.crosslinks,
+    structuredDocuments: context.document.structuredDocuments,
+    inventory: context.inventory,
+  });
+  const phaseOrder = [
+    validateAuthorityRegistry.mock.invocationCallOrder[0],
+    validateAuthorityReciprocity.mock.invocationCallOrder[0],
+    validateAuthorityMapPaths.mock.invocationCallOrder[0],
+  ];
+  expect(phaseOrder).toEqual([...phaseOrder].sort((left, right) => left - right));
+});
+
+test("stops at the first delegated validation failure", async () => {
+  const context = { root: "/repo", file: "/repo/map.json", document: { repositoryRegistry: [] } };
+  validateAuthorityRegistry.mockResolvedValueOnce("registry invalid");
+  await expect(validateAuthorityMap(context)).resolves.toBe("registry invalid");
+  expect(validateAuthorityReciprocity).not.toHaveBeenCalled();
+
+  validateAuthorityReciprocity.mockResolvedValueOnce("reciprocal authority invalid");
+  await expect(validateAuthorityMap(context)).resolves.toBe("reciprocal authority invalid");
+  expect(validateAuthorityMapPaths).not.toHaveBeenCalled();
 });

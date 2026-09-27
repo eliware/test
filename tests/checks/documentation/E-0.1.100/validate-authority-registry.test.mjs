@@ -1,56 +1,100 @@
-import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { validateAuthorityRegistry } from "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const entry = (overrides = {}) => ({
-  repository: "eliware/example",
-  path: "repositories/example",
-  package: "package.json",
-  authorityFile: "specs/authority.json",
-  reference: "README.md",
-  governs: ["example.subject"],
-  directiveNamespaces: ["E-0.1"],
-  ...overrides,
+const validateAuthorityRegistryShape = jest.fn();
+const validateAuthorityRegistryEntryShape = jest.fn();
+const validateAuthorityRegistryReferences = jest.fn();
+const validateAuthorityRegistryGovernance = jest.fn();
+const validateAuthorityRegistryDelegation = jest.fn();
+const validateAuthorityRegistryDirectiveNamespaces = jest.fn();
+
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry-shape.mjs",
+  () => ({ validateAuthorityRegistryShape, validateAuthorityRegistryEntryShape }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry-references.mjs",
+  () => ({ validateAuthorityRegistryReferences }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry-governance.mjs",
+  () => ({ validateAuthorityRegistryGovernance }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry-delegation.mjs",
+  () => ({ validateAuthorityRegistryDelegation }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry-directive-namespaces.mjs",
+  () => ({ validateAuthorityRegistryDirectiveNamespaces }),
+);
+
+const { validateAuthorityRegistry } = await import(
+  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry.mjs"
+);
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  validateAuthorityRegistryShape.mockReturnValue(null);
+  validateAuthorityRegistryEntryShape.mockReturnValue(null);
+  validateAuthorityRegistryReferences.mockResolvedValue(null);
+  validateAuthorityRegistryGovernance.mockReturnValue(null);
+  validateAuthorityRegistryDelegation.mockReturnValue(null);
+  validateAuthorityRegistryDirectiveNamespaces.mockReturnValue(null);
 });
 
-test("coordinates reference and policy validation for each repository", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-authority-registry-"));
-  const repositoryRoot = join(root, "repositories", "example");
-  await mkdir(join(repositoryRoot, "specs"), { recursive: true });
-  await writeFile(join(repositoryRoot, "package.json"), "{}");
-  await writeFile(join(repositoryRoot, "specs", "authority.json"), "{}");
-  await writeFile(join(repositoryRoot, "README.md"), "example");
-  const context = { root, file: join(root, "authority-map.json") };
-  try {
-    await expect(validateAuthorityRegistry({ ...context, entries: [entry()] })).resolves.toBeNull();
-    await expect(
-      validateAuthorityRegistry({ ...context, entries: [entry({ package: "missing.json" })] }),
-    ).resolves.toContain("does not resolve");
-    await expect(
-      validateAuthorityRegistry({ ...context, entries: [entry({ directiveNamespaces: ["bad"] })] }),
-    ).resolves.toContain("valid directiveNamespaces");
-    await expect(
-      validateAuthorityRegistry({ ...context, entries: [entry({ governs: [] })] }),
-    ).resolves.toContain("valid governs");
-    await expect(
-      validateAuthorityRegistry({ ...context, entries: [entry({ baselineFor: ["missing"] })] }),
-    ).resolves.toContain("unsupported delegation");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+test("returns top-level and entry-shape failures before deeper validation", async () => {
+  validateAuthorityRegistryShape.mockReturnValueOnce("registry invalid");
+  await expect(validateAuthorityRegistry({ entries: null })).resolves.toBe("registry invalid");
+  expect(validateAuthorityRegistryEntryShape).not.toHaveBeenCalled();
+
+  validateAuthorityRegistryEntryShape.mockReturnValueOnce("entry invalid");
+  await expect(validateAuthorityRegistry({ entries: [{}] })).resolves.toBe("entry invalid");
+  expect(validateAuthorityRegistryReferences).not.toHaveBeenCalled();
 });
 
-test("maps malformed registries and duplicate repository errors", async () => {
-  const context = { root: process.cwd(), file: join(process.cwd(), "authority-map.json") };
-  await expect(validateAuthorityRegistry({ ...context, entries: null })).resolves.toContain(
-    "repositoryRegistry",
-  );
-  await expect(validateAuthorityRegistry({ ...context, entries: [null] })).resolves.toContain(
-    "declare a repository",
-  );
+async function expectEntryFailure(validator, message) {
+  validator.mockResolvedValueOnce(message);
   await expect(
-    validateAuthorityRegistry({ ...context, entries: [entry(), entry()] }),
-  ).resolves.toContain("Duplicate authority repository");
+    validateAuthorityRegistry({
+      root: "/repo",
+      file: "/repo/authority-map.json",
+      entries: [{ repository: "eliware/example" }],
+    }),
+  ).resolves.toBe(message);
+  expect(validator).toHaveBeenCalledTimes(1);
+}
+
+test("returns reference errors without running later checks", async () => {
+  await expectEntryFailure(validateAuthorityRegistryReferences, "reference invalid");
+  expect(validateAuthorityRegistryGovernance).not.toHaveBeenCalled();
+});
+
+test("returns governance errors without running later checks", async () => {
+  await expectEntryFailure(validateAuthorityRegistryGovernance, "governance invalid");
+  expect(validateAuthorityRegistryDelegation).not.toHaveBeenCalled();
+});
+
+test("returns delegation errors without running namespace checks", async () => {
+  await expectEntryFailure(validateAuthorityRegistryDelegation, "delegation invalid");
+  expect(validateAuthorityRegistryDirectiveNamespaces).not.toHaveBeenCalled();
+});
+
+test("returns namespace errors", async () => {
+  await expectEntryFailure(validateAuthorityRegistryDirectiveNamespaces, "namespace invalid");
+});
+
+test("validates entries in order with shared repository and governance sets", async () => {
+  const entries = [
+    { repository: "eliware/one" },
+    { repository: "eliware/two" },
+  ];
+  await expect(validateAuthorityRegistry({ root: "/repo", file: "/repo/map.json", entries })).resolves.toBeNull();
+
+  expect(validateAuthorityRegistryEntryShape).toHaveBeenCalledTimes(2);
+  expect(validateAuthorityRegistryReferences).toHaveBeenCalledTimes(2);
+  expect(validateAuthorityRegistryGovernance).toHaveBeenCalledTimes(2);
+  const repositories = validateAuthorityRegistryDelegation.mock.calls[0][1];
+  expect(repositories).toEqual(new Set(["eliware/one", "eliware/two"]));
+  expect(validateAuthorityRegistryDelegation).toHaveBeenCalledTimes(2);
+  expect(validateAuthorityRegistryDirectiveNamespaces).toHaveBeenCalledTimes(2);
 });

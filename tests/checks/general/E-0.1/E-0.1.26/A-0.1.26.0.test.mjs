@@ -1,100 +1,104 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { expect, test } from "@jest/globals";
-import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.26/A-0.1.26.0.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const validNotes = `# Release Notes
+const readFile = jest.fn();
+const readRepositoryText = jest.fn();
+const parseReleaseNotes = jest.fn();
+const validateReleaseNoteContent = jest.fn();
+const validateReleaseNoteOrder = jest.fn();
+const validateReadmeReleaseNotesLink = jest.fn();
 
-## 8.0.0 — 2026-09-24
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
+jest.unstable_mockModule("../../../../../src/checks/read-repository-text.mjs", () => ({ readRepositoryText }));
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.26/parse-release-notes.mjs",
+  () => ({ parseReleaseNotes }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.26/validate-release-note-content.mjs",
+  () => ({ validateReleaseNoteContent }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.26/validate-release-note-order.mjs",
+  () => ({ validateReleaseNoteOrder }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.26/validate-readme-release-notes-link.mjs",
+  () => ({ validateReadmeReleaseNotesLink }),
+);
 
-### Added
-- New capability.
+const { run } = await import("../../../../../src/checks/general/E-0.1/E-0.1.26/A-0.1.26.0.mjs");
 
-## 6.0.1 — 2026-09-06
-
-### Changed
-- Updated validation.
-`;
-
-async function createFixture(notes = validNotes) {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-release-notes-"));
-  await writeFile(join(root, "README.md"), "## Links\n\n[Release notes](RELEASE_NOTES.md)");
-  await writeFile(join(root, "RELEASE_NOTES.md"), notes);
-  return root;
+function resetValidators() {
+  jest.resetAllMocks();
+  readFile.mockResolvedValue("release notes");
+  readRepositoryText.mockResolvedValue("README");
+  parseReleaseNotes.mockReturnValue({ entries: [] });
+  validateReleaseNoteContent.mockReturnValue(null);
+  validateReleaseNoteOrder.mockReturnValue(null);
+  validateReadmeReleaseNotesLink.mockReturnValue(null);
 }
 
-test("accepts complete reverse-chronological release notes and README indexing", async () => {
-  const root = await createFixture();
-  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toEqual({
+beforeEach(resetValidators);
+
+test("coordinates release-note parsing, validation, and README indexing in order", async () => {
+  const context = { root: "/repo", packageJson: { version: "8.0.0" } };
+
+  await expect(run(context)).resolves.toEqual({ ruleId: "A-0.1.26.0", status: "pass", message: "" });
+  expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/RELEASE_NOTES\.md$/u), "utf8");
+  expect(readRepositoryText).toHaveBeenCalledWith(context, expect.stringMatching(/README\.md$/u));
+  expect(validateReleaseNoteContent).toHaveBeenCalledWith([], "8.0.0");
+  const phases = [
+    parseReleaseNotes.mock.invocationCallOrder[0],
+    validateReleaseNoteContent.mock.invocationCallOrder[0],
+    validateReleaseNoteOrder.mock.invocationCallOrder[0],
+    validateReadmeReleaseNotesLink.mock.invocationCallOrder[0],
+  ];
+  expect(phases).toEqual([...phases].sort((left, right) => left - right));
+});
+
+test("maps missing input files to the check result", async () => {
+  readFile.mockRejectedValueOnce(new Error("missing notes"));
+
+  await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "A-0.1.26.0",
-    status: "pass",
-    message: "",
+    status: "fail",
+    message: "RELEASE_NOTES.md and README.md are required for release-bearing repositories.",
   });
-  await rm(root, { recursive: true, force: true });
+  expect(parseReleaseNotes).not.toHaveBeenCalled();
 });
 
-test.each([
-  [
-    "does not begin with the required title",
-    validNotes.replace("# Release Notes", "# Release notes"),
-    "8.0.0",
-    "must begin with the exact heading",
-  ],
-  ["omits the current package version", validNotes, "9.0.0", "current package version"],
-  [
-    "orders versions incorrectly",
-    validNotes.replace("## 6.0.1", "## 9.0.0"),
-    "8.0.0",
-    "strictly descending SemVer",
-  ],
-  [
-    "orders dates incorrectly",
-    validNotes.replace("6.0.1 — 2026-09-06", "6.0.1 — 2026-09-25"),
-    "8.0.0",
-    "reverse chronological order",
-  ],
-  [
-    "contains an empty category",
-    validNotes.replace("- New capability.", ""),
-    "8.0.0",
-    "must give the Added category user-visible change text",
-  ],
-])("rejects release notes that %s", async (_label, notes, version, expectedMessage) => {
-  const root = await createFixture(notes);
-  await expect(run({ root, packageJson: { version } })).resolves.toMatchObject({
+async function expectFirstFailure(validator, validationError, expectedMessage, laterValidators) {
+  validator.mockReturnValueOnce(validationError);
+  await expect(run({ root: "/repo", packageJson: { version: "8.0.0" } })).resolves.toEqual({
+    ruleId: "A-0.1.26.0",
     status: "fail",
-    message: expect.stringContaining(expectedMessage),
+    message: expectedMessage,
   });
-  await rm(root, { recursive: true, force: true });
-});
+  for (const laterValidator of laterValidators) expect(laterValidator).not.toHaveBeenCalled();
+}
 
-test("rejects a missing README link and a non-canonical release category", async () => {
-  const root = await createFixture(validNotes.replace("### Added", "### Features"));
-  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toMatchObject({
+test("stops at the first parsed or delegated release-note error", async () => {
+  parseReleaseNotes.mockReturnValueOnce({ error: "is malformed" });
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
     status: "fail",
-    message: expect.stringContaining("unsupported category"),
+    message: "RELEASE_NOTES.md is malformed",
   });
-  await writeFile(join(root, "RELEASE_NOTES.md"), validNotes);
-  await writeFile(join(root, "README.md"), "## Usage\n\n[Release notes](RELEASE_NOTES.md)");
-  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toMatchObject({
-    status: "fail",
-    message: "README.md must link RELEASE_NOTES.md.",
-  });
-  await rm(root, { recursive: true, force: true });
-});
+  expect(validateReleaseNoteContent).not.toHaveBeenCalled();
 
-test("requires release notes and README and maps an invalid README link", async () => {
-  const root = await createFixture();
-  await writeFile(join(root, "README.md"), "## Usage\n\n[Release notes](RELEASE_NOTES.md)");
-  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toMatchObject({
-    status: "fail",
-    message: "README.md must link RELEASE_NOTES.md.",
-  });
-  await rm(join(root, "README.md"));
-  await expect(run({ root, packageJson: { version: "8.0.0" } })).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining("are required"),
-  });
-  await rm(root, { recursive: true, force: true });
+  resetValidators();
+  await expectFirstFailure(
+    validateReleaseNoteContent,
+    "content invalid",
+    "RELEASE_NOTES.md content invalid",
+    [validateReleaseNoteOrder, validateReadmeReleaseNotesLink],
+  );
+  resetValidators();
+  await expectFirstFailure(
+    validateReleaseNoteOrder,
+    "order invalid",
+    "RELEASE_NOTES.md order invalid",
+    [validateReadmeReleaseNotesLink],
+  );
+  resetValidators();
+  await expectFirstFailure(validateReadmeReleaseNotesLink, "link invalid", "link invalid", []);
 });

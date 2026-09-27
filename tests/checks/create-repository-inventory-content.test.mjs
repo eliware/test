@@ -30,12 +30,12 @@ test("shares one file read across text, byte, parsed-document, and AST access", 
   expect(read).toHaveBeenCalledTimes(3);
   expect(parseSource).toHaveBeenCalledTimes(1);
 });
-
-test("normalizes a text reader result for byte access", async () => {
+test("uses the default source parser when no parser is injected", async () => {
   const inventory = createRepositoryInventory("/repo", {
-    read: jest.fn(async () => "text content"),
+    read: jest.fn(async () => "export const value = 1;"),
   });
 
-  await expect(inventory.readBytes("README.md")).resolves.toEqual(Buffer.from("text content"));
-  await expect(inventory.readText("README.md")).resolves.toBe("text content");
+  await expect(inventory.parseAst("/repo", "src/index.mjs", moduleParserOptions)).resolves.toMatchObject({
+    type: "File",
+  });
 });

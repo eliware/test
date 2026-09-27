@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { expectedReadmeHeadings } from "../../../../../src/checks/general/E-0.1/E-0.1.1/read-readme-sections.mjs";
+import { expectedReadmeHeadings } from "../../../../../src/checks/general/E-0.1/E-0.1.1/resolve-readme-headings.mjs";
 import { validateReadmeStructure } from "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-structure.mjs";
 
 const brand =
