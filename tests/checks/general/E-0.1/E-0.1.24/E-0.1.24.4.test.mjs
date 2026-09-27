@@ -64,16 +64,6 @@ test("allows post-test attestations only for repositories with the GHCR profile"
   );
 });
 
-test("reports workflow-set errors before checking workflow jobs", async () => {
-  await expect(
-    run({ root: "/repo", packageJson: { eliware: { apply: ["npm-published"] } } }),
-  ).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining("publish.yml"),
-  });
-  expect(selectWorkflowValidationJobs).not.toHaveBeenCalled();
-});
-
 test("returns job-selection and sequence failures without inspecting later workflows", async () => {
   selectWorkflowValidationJobs.mockReturnValueOnce({ error: "validation job missing", jobs: [] });
   await expect(run({ root: "/repo" })).resolves.toMatchObject({

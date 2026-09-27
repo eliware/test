@@ -47,6 +47,9 @@ test("rejects malformed 100x4 exemptions", () => {
       },
     }),
   ).toEqual(expect.objectContaining({ status: "fail" }));
+  expect(run({ packageJson: { eliware: { exempt: [{ ruleId: coverageRuleId }] } } })).toMatchObject(
+    { status: "fail", message: expect.stringContaining("approvalTimestamp") },
+  );
 });
 
 test("allows absent optional exemption metadata while parent coverage enforcement remains required", () => {

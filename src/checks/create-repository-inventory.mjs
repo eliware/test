@@ -31,6 +31,7 @@ export function createRepositoryInventory(root, options = {}) {
   const directoryEntries = createRepositoryDirectoryEntries({
     root,
     entries: discovery.entries,
+    entriesUnder: discovery.entriesUnder,
     readDirectory: discovery.readDirectoryCached,
     hasFullDiscovery: discovery.hasFullDiscovery,
   });

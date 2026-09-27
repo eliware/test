@@ -33,6 +33,30 @@ test("accepts existing crosslinks and structured documents", async () => {
   }
 });
 
+test("accepts unavailable external paths only when their repository is registered", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-authority-registered-path-"));
+  try {
+    await expect(
+      validateAuthorityMapPaths({
+        root,
+        file: join(root, "authority-map.json"),
+        repositoryRegistry: [{ path: "../registered-repository" }],
+        crosslinks: [{ path: "../registered-repository/specs/authority.json" }],
+      }),
+    ).resolves.toBeNull();
+    await expect(
+      validateAuthorityMapPaths({
+        root,
+        file: join(root, "authority-map.json"),
+        repositoryRegistry: [{ path: "../registered-repository" }],
+        structuredDocuments: [{ path: "../unregistered-repository/specs/authority.json" }],
+      }),
+    ).resolves.toContain("outside every registered repository path");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("rejects malformed and unresolved path records", async () => {
   await expect(validateAuthorityMapPaths({ ...context, crosslinks: [null] })).resolves.toContain(
     "crosslinks[0]",

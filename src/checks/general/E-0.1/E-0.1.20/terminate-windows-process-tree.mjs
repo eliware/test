@@ -42,6 +42,7 @@ export function createWindowsProcessTreeKiller(executeProcess = execFileSync) {
       try {
         execute(powershell, ["-NoProfile", "-NonInteractive", "-Command", script], {
           ...options,
+          timeout: 1_000,
           env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) },
         });
       } catch (powershellError) {

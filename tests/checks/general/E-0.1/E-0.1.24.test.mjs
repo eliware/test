@@ -29,6 +29,24 @@ test("rejects a workflow without validation events", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("enforces the exact workflow file set in the required CI check", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-extra-workflow-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(
+    join(root, ".github", "workflows", "ci.yml"),
+    "on:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+  );
+  await writeFile(join(root, ".github", "workflows", "extra.yml"), "name: Extra\n");
+  await expect(
+    run({ root, packageJson: { eliware: { apply: ["general"] } } }),
+  ).resolves.toMatchObject({
+    ruleId: "E-0.1.24",
+    status: "fail",
+    message: expect.stringContaining("extra.yml"),
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("does not combine CI events from one workflow with validation in another", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-split-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });

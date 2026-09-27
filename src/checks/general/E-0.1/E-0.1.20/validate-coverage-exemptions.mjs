@@ -1,5 +1,5 @@
 import { fail, pass } from "../../../check-result.mjs";
-import { readExemptions } from "../../../../orchestrators/read-exemptions.mjs";
+import { validateExemptionRecords } from "../../../../orchestrators/validate-exemption-records.mjs";
 
 export function runCoverageExemptionCheck({ packageJson }, { ruleId, coverageRuleId }) {
   try {
@@ -13,8 +13,9 @@ export function runCoverageExemptionCheck({ packageJson }, { ruleId, coverageRul
       throw new Error("Package exemptions must contain objects.");
     }
     // The validation plan checks rule-ID scope; validate every record here as well.
-    const exemptionIds = readExemptions(packageJson);
-    if (exemptionIds.has(coverageRuleId)) return pass(ruleId);
+    validateExemptionRecords(exemptions);
+    if (exemptions.some(({ ruleId: exemptedRuleId }) => exemptedRuleId === coverageRuleId))
+      return pass(ruleId);
   } catch (error) {
     return fail(ruleId, error.message);
   }

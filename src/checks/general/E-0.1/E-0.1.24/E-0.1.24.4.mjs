@@ -1,7 +1,6 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { readWorkflows } from "./read-workflow-files.mjs";
 import { validateWorkflowSequence } from "./validate-workflow-sequence.mjs";
-import { validateWorkflowFileSet } from "./validate-workflow-file-set.mjs";
 import { selectWorkflowValidationJobs } from "./select-workflow-validation-jobs.mjs";
 
 export const ruleId = "E-0.1.24.4";
@@ -15,11 +14,6 @@ export async function run({ root, packageJson, repositoryInventory }) {
   } catch (error) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
-  const fileSetError = validateWorkflowFileSet(
-    workflows.map(({ name }) => name),
-    packageJson,
-  );
-  if (fileSetError) return fail(ruleId, fileSetError);
   const allowAttestation =
     Array.isArray(packageJson?.eliware?.apply) &&
     packageJson.eliware.apply.includes("ghcr-published");

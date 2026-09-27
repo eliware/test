@@ -1,6 +1,12 @@
 import { validateAuthorityReference } from "./validate-authority-reference.mjs";
 
-export async function validatePathRecords({ root, file, records, label }) {
+export async function validatePathRecords({
+  root,
+  file,
+  records,
+  label,
+  registeredRepositoryRoots = [],
+}) {
   if (!Array.isArray(records)) return `${label} must be an array.`;
   for (const [index, record] of records.entries()) {
     if (!record || typeof record !== "object" || typeof record.path !== "string") {
@@ -11,6 +17,7 @@ export async function validatePathRecords({ root, file, records, label }) {
       file,
       reference: record.path,
       label: `${label}[${index}]`,
+      registeredRepositoryRoots,
     });
     if (error) return error;
   }

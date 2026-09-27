@@ -1,11 +1,16 @@
+import { dirname, resolve } from "node:path";
 import { validateAuthorityReference } from "./validate-authority-reference.mjs";
 
 export async function validateAuthorityMapPaths({
   root,
   file,
+  repositoryRegistry = [],
   crosslinks = [],
   structuredDocuments = [],
 }) {
+  const registeredRepositoryRoots = repositoryRegistry
+    .filter((entry) => typeof entry?.path === "string")
+    .map((entry) => resolve(dirname(file), entry.path));
   for (const [index, link] of crosslinks.entries()) {
     if (!link || typeof link.path !== "string") {
       return `authority-map crosslinks[${index}] must contain a path.`;
@@ -15,6 +20,7 @@ export async function validateAuthorityMapPaths({
       file,
       reference: link.path,
       label: `authority-map crosslinks[${index}]`,
+      registeredRepositoryRoots,
     });
     if (error) return error;
   }
@@ -27,6 +33,7 @@ export async function validateAuthorityMapPaths({
       file,
       reference: record.path,
       label: `authority-map structuredDocuments[${index}]`,
+      registeredRepositoryRoots,
     });
     if (error) return error;
   }

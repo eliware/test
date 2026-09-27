@@ -14,11 +14,9 @@ export function validateKnitCommandStructure(parsed) {
   }
   if (
     parsed.calls.some((call) => {
-      const executable = commandTokens(call)[0]
-        .replaceAll("\\", "/")
-        .split("/")
-        .at(-1)
-        .toLowerCase();
+      const command = commandTokens(call)[0];
+      if (/[\\/]/u.test(command)) return true;
+      const executable = command.toLowerCase();
       return !allowedCommands.has(executable.replace(/\.(?:cmd|exe|bat)$/u, ""));
     })
   ) {

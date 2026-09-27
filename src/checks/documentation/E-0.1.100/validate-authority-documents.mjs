@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { classifyAuthorityDocument } from "./classify-authority-document.mjs";
 import { validateAuthorityRecord } from "./validate-authority-record.mjs";
 import { validateAuthorityMap } from "./validate-authority-map.mjs";
+import { readRegisteredRepositoryRoots } from "./read-registered-repository-roots.mjs";
 
 export async function validateAuthorityDocuments(root, files, inventory) {
   for (const relativeFile of files.filter((file) => file.endsWith(".json"))) {
@@ -15,7 +16,13 @@ export async function validateAuthorityDocuments(root, files, inventory) {
       kind === "map"
         ? await validateAuthorityMap({ root, file, document, inventory })
         : kind === "record"
-          ? await validateAuthorityRecord({ root, file, document })
+          ? await validateAuthorityRecord({
+              root,
+              file,
+              document,
+              registeredRepositoryRoots:
+                (await readRegisteredRepositoryRoots(root, inventory)) ?? [],
+            })
           : null;
     if (result) return result;
   }

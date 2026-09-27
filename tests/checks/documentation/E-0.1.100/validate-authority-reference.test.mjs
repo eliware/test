@@ -16,10 +16,23 @@ test("resolves local authority targets and defers unavailable external targets",
     validateAuthorityReference({
       root,
       file,
-      reference: "../../external/authority.json",
+      reference: "../../registered/authority.json",
       label: "target",
+      registeredRepositoryRoots: [join(root, "..", "registered")],
     }),
   ).resolves.toBeNull();
+});
+
+test("rejects unavailable external authority targets outside registered repositories", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-authority-reference-unregistered-"));
+  await expect(
+    validateAuthorityReference({
+      root,
+      file: join(root, "authority.json"),
+      reference: "../unregistered/authority.json",
+      label: "target",
+    }),
+  ).resolves.toContain("outside every registered repository path");
 });
 
 test("rejects malformed and missing local authority targets", async () => {

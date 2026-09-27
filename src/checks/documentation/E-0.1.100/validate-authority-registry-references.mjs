@@ -20,6 +20,7 @@ export async function validateAuthorityRegistryReferences({ root, file, entry })
     file,
     reference: entry.path,
     label: `${entry.repository}.path`,
+    registeredRepositoryRoots: [repositoryRoot],
   });
   if (repositoryError) return repositoryError;
   const repositoryAnchor = resolve(repositoryRoot, "authority-registry-reference.json");
@@ -34,6 +35,7 @@ export async function validateAuthorityRegistryReferences({ root, file, entry })
       file: repositoryAnchor,
       reference: entry[field],
       label: `${entry.repository}.${field}`,
+      registeredRepositoryRoots: [repositoryRoot],
     });
     if (error) return error;
   }

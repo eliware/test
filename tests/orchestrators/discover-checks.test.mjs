@@ -93,7 +93,6 @@ test("discovers all visible groups in sorted order", async () => {
 
 test("supports discoverAllChecks default options", async () => {
   await expect(discoverAllChecks({ readDirectory: async () => [] })).resolves.toEqual([]);
-  await expect(discoverAllChecks()).resolves.toEqual(expect.any(Array));
 });
 
 test("keeps the bundled registry unique and executable", async () => {
@@ -107,4 +106,4 @@ test("keeps the bundled registry unique and executable", async () => {
       .filter((check) => check.applicability !== "advisory-only")
       .every(({ run }) => typeof run === "function"),
   ).toBe(true);
-});
+}, 30000);

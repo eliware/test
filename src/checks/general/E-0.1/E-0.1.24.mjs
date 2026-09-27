@@ -1,12 +1,13 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "./E-0.1.24/read-workflow-files.mjs";
 import { workflowHasValidationEvents } from "./E-0.1.24/workflow-validation-events.mjs";
+import { validateWorkflowFileSet } from "./E-0.1.24/validate-workflow-file-set.mjs";
 
 export const ruleId = "E-0.1.24";
 export const parentRuleId = "E-0.1";
 export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-export async function run({ root, repositoryInventory }) {
+export async function run({ root, packageJson, repositoryInventory }) {
   let workflows;
   try {
     workflows = await readWorkflows(root, repositoryInventory);
@@ -15,6 +16,11 @@ export async function run({ root, repositoryInventory }) {
   }
   if (workflows.length === 0)
     return fail(ruleId, ".github/workflows must contain a GitHub Actions validation workflow.");
+  const fileSetError = validateWorkflowFileSet(
+    workflows.map(({ name }) => name),
+    packageJson,
+  );
+  if (fileSetError) return fail(ruleId, fileSetError);
   const workflow = workflows.find(
     ({ name, document }) => name === "ci.yml" && workflowHasValidationEvents(document),
   );

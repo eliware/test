@@ -3,11 +3,9 @@ import { validateKnitCommandStructure } from "../../../../../src/checks/general/
 
 const call = (command, args = []) => ({ kind: "spawnSync", command, args });
 
-test("accepts statically inspectable commands in the validation allowlist", () => {
+test("accepts bare statically inspectable commands in the validation allowlist", () => {
   expect(validateKnitCommandStructure({ calls: [call("npm", ["test"])] })).toBeNull();
-  expect(
-    validateKnitCommandStructure({ calls: [call("C:\\Program Files\\nodejs\\npm.cmd", ["test"])] }),
-  ).toBeNull();
+  expect(validateKnitCommandStructure({ calls: [call("npm.cmd", ["test"])] })).toBeNull();
 });
 
 test("rejects executable or unsupported AST operations", () => {
@@ -26,4 +24,9 @@ test("requires static command tokens and an allowlisted executable", () => {
   expect(
     validateKnitCommandStructure({ calls: [call("curl", ["https://example.test"])] }),
   ).toContain("outside the read-only validation allowlist");
+  for (const command of ["C:\\Program Files\\nodejs\\npm.cmd", "../npm", "/usr/bin/npm"]) {
+    expect(validateKnitCommandStructure({ calls: [call(command, ["test"])] })).toContain(
+      "outside the read-only validation allowlist",
+    );
+  }
 });

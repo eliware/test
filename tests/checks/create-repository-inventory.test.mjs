@@ -65,6 +65,38 @@ test("scans a requested subtree lazily and reuses directory reads in a full walk
   await rm(root, { recursive: true, force: true });
 });
 
+test("directory entries apply generated and test-results discovery policies before full scan", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-inventory-directory-scope-"));
+  try {
+    await mkdir(join(root, "docs", "test-results"), { recursive: true });
+    await mkdir(join(root, "docs", "node_modules"), { recursive: true });
+    await writeFile(join(root, "docs", "guide.md"), "guide\n");
+    await writeFile(join(root, "docs", "test-results", "report.json"), "{}\n");
+    await writeFile(join(root, "docs", "node_modules", "dependency.js"), "module\n");
+    const inventory = createRepositoryInventory(root);
+
+    const children = await inventory.directoryEntries(join(root, "docs"));
+    expect(children.map(({ name }) => name)).toEqual(["guide.md", "node_modules"]);
+    await expect(
+      inventory.directoryEntries(join(root, "docs", "test-results")),
+    ).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+
+    const inclusiveInventory = createRepositoryInventory(root, { includeTestResults: true });
+    await expect(inclusiveInventory.directoryEntries(join(root, "docs"))).resolves.toMatchObject([
+      { name: "guide.md", path: "docs/guide.md" },
+      { name: "node_modules", path: "docs/node_modules" },
+      { name: "test-results", path: "docs/test-results" },
+    ]);
+    await expect(
+      inclusiveInventory.directoryEntries(join(root, "docs", "test-results")),
+    ).resolves.toMatchObject([{ name: "report.json", path: "docs/test-results/report.json" }]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("uses default repository discovery when no custom finder is supplied", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-inventory-default-"));
   try {

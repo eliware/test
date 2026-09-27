@@ -11,31 +11,41 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
       suppliedSecrets,
       MAX_OUTPUT_LENGTH,
     );
-    let child;
+    let settled = false;
+    const rejectOnce = (error) => {
+      if (settled) return;
+      settled = true;
+      reject(redactSpawnError(error, output));
+    };
     try {
-      child = spawnProcess(command, args, {
+      const child = spawnProcess(command, args, {
         ...childOptions,
         shell: false,
         stdio: ["ignore", "pipe", "pipe"],
       });
+      if (!child || typeof child.on !== "function") {
+        throw new TypeError("Child process adapter returned an invalid child process.");
+      }
+      child.on("error", rejectOnce);
+      attachOutputStream(child.stdout, "stdout", output);
+      attachOutputStream(child.stderr, "stderr", output);
+      child.on("close", (code, signal) => {
+        if (settled) return;
+        settled = true;
+        resolveResult({ code, signal, ...output.finish() });
+      });
     } catch (error) {
-      reject(redactSpawnError(error, output));
-      return;
+      rejectOnce(error);
     }
-    child.stdout?.on("data", (chunk) => output.push("stdout", chunk));
-    child.stderr?.on("data", (chunk) => output.push("stderr", chunk));
-    let settled = false;
-    child.on("error", (error) => {
-      if (settled) return;
-      settled = true;
-      reject(redactSpawnError(error, output));
-    });
-    child.on("close", (code, signal) => {
-      if (settled) return;
-      settled = true;
-      resolveResult({ code, signal, ...output.finish() });
-    });
   });
+}
+
+function attachOutputStream(stream, name, output) {
+  if (stream == null) return;
+  if (typeof stream.on !== "function") {
+    throw new TypeError(`Child process adapter returned an invalid ${name} stream.`);
+  }
+  stream.on("data", (chunk) => output.push(name, chunk));
 }
 
 function redactSpawnError(error, output) {

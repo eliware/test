@@ -24,6 +24,15 @@ export async function findRepositoryEntries(
       includeTestResultsUnder.some((scope) => parent === scope || parent.startsWith(`${scope}/`))
     );
   };
+  const includesScopedTestResults = (scopePath) => {
+    let current = "";
+    for (const segment of scopePath.split("/")) {
+      current = current ? `${current}/${segment}` : segment;
+      if (segment === "test-results" && !includesTestResultsAt(current)) return false;
+    }
+    return true;
+  };
+  if (scope && !includesScopedTestResults(scope)) return entries;
   async function visit(directory, depth) {
     const children = await readDirectory(directory, { withFileTypes: true });
     for (const entry of children.toSorted((left, right) => left.name.localeCompare(right.name))) {

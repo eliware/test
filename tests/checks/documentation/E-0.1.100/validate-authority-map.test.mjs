@@ -63,6 +63,7 @@ test("validates registry, reciprocity, and paths in order", async () => {
     file: context.file,
     crosslinks: context.document.crosslinks,
     structuredDocuments: context.document.structuredDocuments,
+    repositoryRegistry: context.document.repositoryRegistry,
     inventory: context.inventory,
   });
   const phaseOrder = [

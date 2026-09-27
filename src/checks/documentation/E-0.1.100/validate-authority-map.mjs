@@ -21,6 +21,7 @@ export async function validateAuthorityMap({ root, file, document, inventory }) 
   return validateAuthorityMapPaths({
     root,
     file,
+    repositoryRegistry: document.repositoryRegistry,
     crosslinks: document.crosslinks,
     structuredDocuments: document.structuredDocuments,
     inventory,

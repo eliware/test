@@ -6,6 +6,7 @@ const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$
 export function createRepositoryDirectoryEntries({
   root,
   entries,
+  entriesUnder,
   readDirectory,
   hasFullDiscovery,
 }) {
@@ -19,13 +20,20 @@ export function createRepositoryDirectoryEntries({
       "Repository inventory directory must be inside the repository.",
     );
     if (base && !hasFullDiscovery()) {
-      const children = await readDirectory(base);
-      return children.map((entry) => ({
-        name: entry.name,
-        path: `${base}/${entry.name}`,
-        isFile: () => entry.isFile(),
-        isDirectory: () => entry.isDirectory(),
-      }));
+      const records = await entriesUnder(directory);
+      if (!records.some((record) => record.path === base)) {
+        throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
+          code: "ENOENT",
+        });
+      }
+      return records
+        .filter((record) => dirname(record.path).replaceAll("\\", "/") === base)
+        .map((record) => ({
+          name: basename(record.path),
+          path: record.path,
+          isFile: () => record.type === "file",
+          isDirectory: () => record.type === "directory",
+        }));
     }
     const records = await entries();
     if (!childIndex) {

@@ -95,6 +95,31 @@ test("handles synchronous spawn failures and children without output streams", a
   });
 });
 
+test("normalizes malformed child adapters and stream-wiring failures", async () => {
+  await expect(execute("tool", [], {}, () => ({}))).rejects.toMatchObject({
+    name: "TypeError",
+    message: "Child process adapter returned an invalid child process.",
+  });
+
+  const child = new EventEmitter();
+  child.stdout = {
+    on() {
+      throw new Error("stream setup failed with setup-secret");
+    },
+  };
+  const promise = execute("tool", [], { redactionSecrets: ["setup-secret"] }, () => child);
+  child.emit("error", new Error("late adapter failure"));
+  await expect(promise).rejects.toMatchObject({
+    message: "stream setup failed with [REDACTED]",
+  });
+
+  const invalidStreamChild = new EventEmitter();
+  invalidStreamChild.stdout = {};
+  await expect(execute("tool", [], {}, () => invalidStreamChild)).rejects.toMatchObject({
+    message: "Child process adapter returned an invalid stdout stream.",
+  });
+});
+
 test("uses default execution options and preserves diagnostics without redaction secrets", async () => {
   await expect(execute(process.execPath, ["-e", ""])).resolves.toMatchObject({ code: 0 });
   const child = childProcess();

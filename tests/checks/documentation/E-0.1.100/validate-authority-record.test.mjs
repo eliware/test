@@ -11,6 +11,11 @@ test("validates authority record subjects and references", async () => {
     validateAuthorityRecord({
       root,
       file,
+      registeredRepositoryRoots: [
+        join(root, "..", "docs"),
+        join(root, "..", "external"),
+        join(root, "..", "src"),
+      ],
       document: {
         repositoryId: "eliware/example",
         globalAuthorityMap: "../../docs/authority-map.json",

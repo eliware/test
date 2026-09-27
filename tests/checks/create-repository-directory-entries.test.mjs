@@ -4,11 +4,16 @@ import { createRepositoryDirectoryEntries } from "../../src/checks/create-reposi
 const fileEntry = (name) => ({ name, isFile: () => true, isDirectory: () => false });
 const directoryEntry = (name) => ({ name, isFile: () => false, isDirectory: () => true });
 
-test("projects an unexpanded directory directly through the cached reader", async () => {
+test("projects unexpanded directory entries from scoped inventory discovery", async () => {
   const readDirectory = jest.fn(async () => [fileEntry("entry.mjs")]);
+  const entriesUnder = jest.fn(async () => [
+    { path: "src", type: "directory" },
+    { path: "src/entry.mjs", type: "file" },
+  ]);
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
     entries: jest.fn(),
+    entriesUnder,
     readDirectory,
     hasFullDiscovery: () => false,
   });
@@ -24,7 +29,17 @@ test("projects an unexpanded directory directly through the cached reader", asyn
   ]);
   expect(children[0].isFile()).toBe(true);
   expect(children[0].isDirectory()).toBe(false);
-  expect(readDirectory).toHaveBeenCalledWith("src");
+  expect(entriesUnder).toHaveBeenCalledWith("/repo/src");
+  expect(readDirectory).not.toHaveBeenCalled();
+
+  const missingDirectoryEntries = createRepositoryDirectoryEntries({
+    root: "/repo",
+    entries: jest.fn(),
+    entriesUnder: jest.fn(async () => []),
+    readDirectory: jest.fn(),
+    hasFullDiscovery: () => false,
+  });
+  await expect(missingDirectoryEntries("/repo/missing")).rejects.toMatchObject({ code: "ENOENT" });
 });
 
 test("projects indexed root and directory records", async () => {
@@ -36,6 +51,7 @@ test("projects indexed root and directory records", async () => {
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
     entries: jest.fn(async () => records),
+    entriesUnder: jest.fn(),
     readDirectory: jest.fn(),
     hasFullDiscovery: () => true,
   });
@@ -59,6 +75,7 @@ test("falls back to reading descendants of pruned directories", async () => {
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
     entries: jest.fn(async () => records),
+    entriesUnder: jest.fn(),
     readDirectory,
     hasFullDiscovery: () => true,
   });
@@ -77,6 +94,7 @@ test("rejects unknown and external directory paths", async () => {
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
     entries: jest.fn(async () => []),
+    entriesUnder: jest.fn(),
     readDirectory: jest.fn(),
     hasFullDiscovery: () => true,
   });

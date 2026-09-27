@@ -31,6 +31,7 @@ test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
   expect(calls[0].options).toMatchObject({ timeout: 1_000, windowsHide: true, shell: false });
   expect(calls[1].command).toMatch(/WindowsPowerShell[\\/]v1\.0[\\/]powershell\.exe$/iu);
   expect(calls[1].args.at(-1)).toContain("Get-CimInstance Win32_Process");
+  expect(calls[1].options.timeout).toBe(1_000);
   expect(calls[1].options.env.ELIWARE_TEST_PROCESS_ID).toBe("42");
 });
 

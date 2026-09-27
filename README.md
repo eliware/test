@@ -48,6 +48,7 @@ latest version on the public registry.
 ```text
 npm test
 npm run lint
+npm run format
 npm run format:check
 npm run audit
 npm run pack
@@ -61,13 +62,19 @@ node bin/eliware-test.mjs tests/example.test.mjs
 eliware-test
 ```
 
-`--format` mutates files; `--format-check` only validates formatting. `--pack`
-validates the package contents without publishing it.
+`npm run format` and `--format` mutate files; `npm run format:check` and
+`--format-check` only validate formatting. `--pack` validates the package
+contents without publishing it.
 
-Each of `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` accepts
-only arguments allowed for that mode. Audit accepts only `--no-fund` and
-`--no-progress`; lint accepts only `--threads=<positive-count>`; pack has its own allowlist. Arguments that override
-wrapper-owned settings, file coverage, or required checks are rejected.
+Each of `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` uses a
+mode-specific argument policy. Audit accepts only `--no-fund` and
+`--no-progress`; lint accepts only `--threads=<positive-count>`; pack has its
+own allowlist. For `--format` and `--format-check`, extra arguments must be
+Prettier options, not paths. The wrapper rejects options that replace its
+selected write/check mode, canonical configuration, or required file coverage.
+Other option arguments are forwarded to Prettier, which rejects unsupported
+options. Arguments that override wrapper-owned settings, file coverage, or
+required checks are rejected.
 Wrapper arguments are emitted before arguments supplied after `--`, preserving
 their relative order within each group. Prettier arguments that override the
 selected mode, canonical formatting configuration, or required file coverage
@@ -137,10 +144,13 @@ The CLI command entrypoint is `bin/eliware-test.mjs`; the installed executable
 is `eliware-test`. `--help` prints usage; `--version` reports the package version.
 Other public modes are `--debug-timing`,
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. Each tool mode
-has mode-specific accepted arguments. Audit accepts only `--no-fund` and
-`--no-progress`, lint accepts only `--threads=<positive-count>`, and pack uses its own allowlist. Wrapper-owned settings and
-options that weaken required checks are rejected. Wrapper arguments precede
-arguments after `--`.
+has a mode-specific argument policy. Audit accepts only `--no-fund` and
+`--no-progress`, lint accepts only `--threads=<positive-count>`, and pack uses
+its own allowlist. For formatting, non-path Prettier options are forwarded
+unless they replace the wrapper's write/check mode, canonical configuration, or
+required file coverage; Prettier rejects unsupported options. Wrapper-owned
+settings and options that weaken required checks are rejected. Wrapper
+arguments precede arguments after `--`.
 
 Examples and package-level shortcuts are shown under Usage. `--format` mutates
 files; `--format-check` is read-only. `--pack` is read-only package validation

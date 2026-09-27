@@ -41,6 +41,9 @@ test("returns directory depth metadata and can include test-results for document
 
   await expect(findRepositoryEntries(root)).resolves.toEqual([]);
   await expect(
+    findRepositoryEntries(root, undefined, { scopeDirectory: "test-results" }),
+  ).resolves.toEqual([]);
+  await expect(
     findRepositoryEntries(root, undefined, { includeTestResults: true }),
   ).resolves.toEqual([
     { path: "test-results", type: "directory", depth: 1 },
@@ -66,6 +69,16 @@ test("includes test-results only beneath requested inventory scopes", async () =
     { path: "src/test-results/nested", type: "directory", depth: 3 },
     { path: "src/test-results/nested/report.json", type: "file", depth: 3 },
   ]);
+  await expect(
+    findRepositoryEntries(root, undefined, {
+      includeTestResultsUnder: ["src"],
+      scopeDirectory: "src/test-results",
+    }),
+  ).resolves.toContainEqual({
+    path: "src/test-results/nested/report.json",
+    type: "file",
+    depth: 3,
+  });
   await rm(root, { recursive: true, force: true });
 });
 

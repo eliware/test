@@ -79,3 +79,22 @@ test("uses explicit line data and handles empty or incomplete coverage maps", ()
     "Coverage evidence is incomplete",
   );
 });
+
+test("rejects evidence that omits source statement entries", () => {
+  const expectedShape = {
+    statementMap: {
+      1: { start: { line: 1 } },
+      2: { start: { line: 8 } },
+    },
+    branchMap: {},
+    fnMap: {},
+  };
+  const incompleteEvidence = {
+    statementMap: { 1: { start: { line: 1 } } },
+    s: { 1: 1 },
+  };
+
+  expect(() => fileGap("incomplete.mjs", incompleteEvidence, expectedShape)).toThrow(
+    "Coverage report does not account for every source statement entry",
+  );
+});
