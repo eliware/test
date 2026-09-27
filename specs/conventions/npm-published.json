@@ -46,16 +46,24 @@
           "id": "A-0.1.140.2",
           "dos": [
             "Public npm repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If GHCR publication is also applied, both publication profiles use this single publish.yml file.",
-            "Publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form in the publish job and require that it matches package.json. The publication job must depend on successful Ubuntu validation using npm ci followed by npm test. The npm publish step must be unconditional and must not set continue-on-error."
+            "Publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form in the publish job and require that it matches package.json. The publication job must depend on successful Ubuntu validation using npm ci followed by npm test. The npm publish step must be unconditional and must not set continue-on-error.",
+            "Use the copyable GitHub Actions workflow example below as the canonical npm publication workflow; adapt only package-specific names or required project validation commands."
           ],
           "donts": [
             "Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches or pull requests, or publish a tag whose version differs from package.json."
+          ],
+          "examples": [
+            {
+              "purpose": "Copyable GitHub Actions workflow for npm Trusted Publishing with a separate validation gate",
+              "markdown": "```yaml\nname: Publish\n\non:\n  push:\n    tags:\n      - \"v[0-9]*.[0-9]*.[0-9]*\"\n\nconcurrency:\n  group: ${{ github.repository }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          cache: npm\n      - run: npm ci\n      - run: npm test\n\n  publish:\n    needs: validate\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n      - run: npm ci\n      - shell: bash\n        run: |\n          [[ \"${GITHUB_REF_NAME}\" =~ ^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$ ]] && test \"$(node -p \"require(process.argv[1]).version\" ./package.json)\" = \"${GITHUB_REF_NAME#v}\"\n      - run: npm publish --provenance\n```"
+            }
           ]
         },
         {
           "id": "A-0.1.140.3",
           "dos": [
-            "An npm publication workflow must be separate from the general validation workflow, inherit general.json validation requirements, and make its publication job depend on successful Ubuntu validation using npm ci followed by npm test, as well as exact tag/package-version checks."
+            "An npm publication workflow must be separate from the general validation workflow, inherit general.json validation requirements, and make its publication job depend on successful Ubuntu validation using npm ci followed by npm test, as well as exact tag/package-version checks.",
+            "The validation job must not receive id-token: write; scope that permission to the publication job only."
           ],
           "donts": [
             "Do not treat npm publication steps as part of general CI validation or add npm publication credentials to validation-only jobs."
@@ -64,10 +72,23 @@
         {
           "id": "A-0.1.140.4",
           "dos": [
-            "An npm publication job must grant only the contents: read and id-token: write permissions needed for checkout and npm provenance, and the Operations release handoff must verify that the exact package version is available from the public registry before reporting publication complete."
+            "An npm publication job must grant only the contents: read and id-token: write permissions needed for checkout and npm provenance, and the Operations release handoff must verify that the exact package version is available from the public registry before reporting publication complete.",
+            "GitHub Actions npm Trusted Publishing must run on a GitHub-hosted runner with Node.js 26 and npm 11.5.1 or later, use actions/setup-node@v7, and publish with npm publish --provenance.",
+            "Configure the npm Trusted Publisher with the exact GitHub owner, repository, and workflow filename publish.yml; its optional environment must match the workflow job environment, and direct npm publish must be allowed for workflows that use that command.",
+            "Grant id-token: write only to the publication job. Do not pass NPM_TOKEN or NODE_AUTH_TOKEN or configure token-based npm publishing credentials in the workflow."
           ],
           "donts": [
-            "Do not place npm publication tokens in validation-only jobs or report successful publication before exact-version registry verification."
+            "Do not place npm publication tokens in validation-only jobs or report successful publication before exact-version registry verification.",
+            "Do not grant OIDC permissions to validation jobs, use a workflow identity that differs from the npm Trusted Publisher configuration, or use npm CLI below 11.5.1 for a trusted publish."
+          ]
+        },
+        {
+          "id": "A-0.1.140.5",
+          "dos": [
+            "A GitHub npm publication workflow must use npm Trusted Publishing without static npm credentials, grant id-token: write only to its publication job, use the documented setup-node v7 runtime configuration, and publish with provenance."
+          ],
+          "donts": [
+            "Do not inherit id-token: write from workflow-level permissions, grant it to a validation job, pass NPM_TOKEN or NODE_AUTH_TOKEN, or publish without the provenance option."
           ]
         }
       ]

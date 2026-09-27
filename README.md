@@ -188,7 +188,7 @@ diagnostics when requesting help.
 - [Global authority map](https://github.com/eliware/docs/blob/main/authority-map.json)
 - [Canonical repository profile specifications](specs/conventions/README.md)
 - [Home Page](https://eliware.org)
-- [GitHub Repo](https://github.com/eliware/test)
+- [GitHub Repo](https://github.com/eliware/test) (`git+https://github.com/eliware/test.git`)
 - [GitHub Org](https://github.com/eliware)
 - [npm Package](https://www.npmjs.com/package/@eliware/test)
 - [Release Notes](RELEASE_NOTES.md)

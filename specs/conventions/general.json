@@ -482,6 +482,12 @@
               ],
               "donts": [
                 "Do not replace npm test with partial checks, run npm update or npm install in CI, or duplicate lint and format checks owned by eliware-test."
+              ],
+              "examples": [
+                {
+                  "purpose": "Copyable Ubuntu validation workflow for .github/workflows/ci.yml",
+                  "markdown": "```yaml\nname: Validation\n\non:\n  push:\n    branches:\n      - main\n  pull_request:\n    branches:\n      - main\n\nconcurrency:\n  group: ${{ github.repository }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          cache: npm\n      - run: npm ci\n      - run: npm test\n```"
+                }
               ]
             },
             {
@@ -496,11 +502,11 @@
             {
               "id": "E-0.1.24.2",
               "dos": [
-                "Every GitHub Actions CI workflow must use the approved v6 major version for each required action, including actions/checkout and actions/setup-node when those actions are used.",
+                "CI validation and publication workflows must use actions/checkout@v6 and actions/setup-node@v7 when those actions are used.",
                 "An explicitly authorized future exception must be recorded in package.json.eliware.exempt with this rule ID, the exact action and version, reason, approver, and approvalTimestamp, and must be either temporary with a concrete expiry date or permanent with expiry:null."
               ],
               "donts": [
-                "Do not use v4 or another unapproved major version for a required GitHub Actions CI action, and do not require periodic review, renewal, or re-justification for a permanent exception unless Eli explicitly revokes or replaces it."
+                "Do not use action versions other than those approved for the workflow type, and do not require periodic review, renewal, or re-justification for a permanent exception unless Eli explicitly revokes or replaces it."
               ]
             },
             {

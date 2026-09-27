@@ -12,13 +12,30 @@ test("accepts the repository workflow action versions", async () => {
   });
 });
 
-test("rejects a non-v6 required action from parsed uses values", async () => {
+test("rejects an unapproved required action version from parsed uses values", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
     join(root, ".github", "workflows", "ci.yml"),
     "jobs:\n  test:\n    steps:\n      - uses: actions/checkout@v4\n",
   );
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("requires setup-node v7 in CI and npm publication workflows", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-versions-"));
+  const directory = join(root, ".github", "workflows");
+  await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, "ci.yml"), "jobs:\n  test:\n    steps:\n      - uses: actions/setup-node@v7\n      - uses: actions/cache@v4\n");
+  await writeFile(join(directory, "publish.yml"), "jobs:\n  publish:\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n");
+  await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
+
+  await writeFile(join(directory, "ci.yml"), "jobs:\n  test:\n    steps:\n      - uses: actions/setup-node@v6\n");
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+
+  await writeFile(join(directory, "ci.yml"), "jobs:\n  test:\n    steps:\n      - uses: actions/setup-node@v7\n");
+  await writeFile(join(directory, "publish.yml"), "jobs:\n  publish:\n    steps:\n      - uses: actions/setup-node@v6\n");
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
 });

@@ -15,14 +15,14 @@ export async function run({ root, repositoryInventory }) {
   }
   for (const { name, document } of workflows) {
     const actions = collectValues(document, "uses").filter((value) => typeof value === "string");
-    if (
-      actions.some(
-        (value) =>
-          /^actions\/(?:checkout|setup-node)@/iu.test(value) &&
-          !/^actions\/(?:checkout|setup-node)@v6(?:\.|$)/iu.test(value),
-      )
-    )
-      return fail(ruleId, `${name} must use v6 for checkout and setup-node.`);
+    const invalidAction = actions.find((value) => {
+      const action = value.match(/^actions\/(checkout|setup-node)@/iu)?.[1]?.toLowerCase();
+      if (!action) return false;
+      const approvedVersion = action === "setup-node" ? "v7" : "v6";
+      return !value.match(new RegExp(`^actions/${action}@${approvedVersion}(?:\\.|$)`, "iu"));
+    });
+    if (invalidAction)
+      return fail(ruleId, `${name} uses an unapproved workflow action version: ${invalidAction}.`);
   }
   return pass(ruleId);
 }

@@ -64,6 +64,28 @@ test("allows the approved setup actions and rejects unreviewed actions before in
   )).toContain("safe reporting");
 });
 
+test("allows setup-node v7 in CI and publication workflows", () => {
+  const setup = { uses: "actions/setup-node@v7" };
+  expect(validateWorkflowPreInstallCommands(
+    "publish.yml job validate",
+    [{ command: "npm ci", index: 1 }],
+    1,
+    [setup, { run: "npm ci" }],
+  )).toBeNull();
+  expect(validateWorkflowPreInstallCommands(
+    "ci.yml job test",
+    [{ command: "npm ci", index: 1 }],
+    1,
+    [setup, { run: "npm ci" }],
+  )).toBeNull();
+  expect(validateWorkflowPreInstallCommands(
+    "ci.yml job test",
+    [{ command: "npm ci", index: 1 }],
+    1,
+    [{ uses: "actions/setup-node@v6" }, { run: "npm ci" }],
+  )).toContain("approved actions");
+});
+
 test("ignores unapproved actions after install", () => {
   const install = { run: "npm ci" };
   const testStep = { run: "npm test" };

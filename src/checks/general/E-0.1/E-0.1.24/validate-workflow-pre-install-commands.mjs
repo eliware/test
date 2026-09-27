@@ -1,6 +1,6 @@
 const safePreInstallReportingCommand =
   /^echo(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
-const approvedSetupActions = new Set(["actions/checkout@v6", "actions/setup-node@v6"]);
+const approvedSetupActions = new Set(["actions/checkout@v6", "actions/setup-node@v7"]);
 
 export function validateWorkflowPreInstallCommands(
   name,
