@@ -61,13 +61,18 @@ function createIncrementalSearch(values, workLimit, createStream) {
 
 function mergeMatches(retained, discovered) {
   if (discovered.length === 0) return retained;
-  const ordered = discovered.toSorted((left, right) => left.start - right.start || left.end - right.end);
+  const ordered = discovered.toSorted(compareMatchIntervals);
   const merged = [];
   let retainedIndex = 0;
   let discoveredIndex = 0;
   while (retainedIndex < retained.length && discoveredIndex < ordered.length) {
-    if (retained[retainedIndex].start <= ordered[discoveredIndex].start) merged.push(retained[retainedIndex++]);
+    if (compareMatchIntervals(retained[retainedIndex], ordered[discoveredIndex]) <= 0)
+      merged.push(retained[retainedIndex++]);
     else merged.push(ordered[discoveredIndex++]);
   }
   return [...merged, ...retained.slice(retainedIndex), ...ordered.slice(discoveredIndex)];
+}
+
+function compareMatchIntervals(left, right) {
+  return left.start - right.start || right.end - left.end;
 }

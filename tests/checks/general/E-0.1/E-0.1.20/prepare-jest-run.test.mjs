@@ -12,7 +12,9 @@ test("coordinates Jest preparation into one executable process request", async (
   expect(prepared.command).toBe(process.execPath);
   expect(prepared.args[0]).toBe("consumer-jest");
   expect(prepared.args).toContain("--coverageReporters=json");
-  expect(prepared.args).toContain("--coverageDirectory");
+  const coverageDirectoryOption = prepared.args.indexOf("--coverageDirectory");
+  expect(coverageDirectoryOption).toBeGreaterThan(-1);
+  expect(prepared.args[coverageDirectoryOption + 1]).toBe(prepared.coverageDirectory);
   expect(prepared.coverageDirectory).toContain("eliware-test");
   expect(prepared.coverageDirectory).not.toContain("node_modules");
   expect(prepared.options).toEqual(expect.objectContaining({ env: expect.any(Object) }));

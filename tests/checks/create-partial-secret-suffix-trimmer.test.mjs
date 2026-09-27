@@ -19,3 +19,7 @@ test("keeps all text when no secret suffix can match", () => {
 test("handles repeated-prefix secrets without rescanning unbounded text", () => {
   expect(trimPartialSecretSuffix("prefix ababab", ["ababac"])).toBe("prefix ab");
 });
+
+test("preserves an overlapping partial prefix after a complete secret occurrence", () => {
+  expect(trimPartialSecretSuffix("abababa", ["abab"])).toBe("abab");
+});

@@ -64,9 +64,17 @@ export function validatePrettierArguments(args) {
       return `Prettier path argument ${argument} conflicts with wrapper-owned file coverage.`;
     }
     const option = argument.split("=", 1)[0];
-    if (wrapperOwnedOptions.has(option) || option.startsWith("--experimental-")) {
+    if (isWrapperOwnedOption(option) || option.startsWith("--experimental-")) {
       return `Prettier argument ${argument} conflicts with wrapper-owned formatting mode, configuration, or file coverage.`;
     }
   }
   return null;
+}
+
+function isWrapperOwnedOption(option) {
+  if (wrapperOwnedOptions.has(option)) return true;
+  if (!option.startsWith("--")) return false;
+  return [...wrapperOwnedOptions].some(
+    (ownedOption) => ownedOption.startsWith("--") && ownedOption.startsWith(option),
+  );
 }

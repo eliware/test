@@ -95,8 +95,9 @@ focused regression tests for behavior changes.
 
 ## Testing
 
-Run `npm test` for the aggregate Jest, lint, format-check, audit, and pack
-validation stages. One focused test path under `tests/` can be supplied to
+In this repository, `npm test` runs aggregate Jest, lint, format-check, audit,
+and pack validation under its declared npm-published profile. Pack validation
+is profile-dependent in other repositories. One focused test path under `tests/` can be supplied to
 `eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 
@@ -183,6 +184,7 @@ diagnostics when requesting help.
 ## Links
 
 - Documentation: [docs](docs/README.md) · [specifications](specs/README.md)
+- [Usage](docs/usage.md) · [Troubleshooting](docs/troubleshooting.md) · [Support](docs/support.md)
 - [Documentation](docs/README.md)
 - [Specifications](specs/README.md)
 - [Authority distribution](specs/authority.json)

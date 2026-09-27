@@ -19,7 +19,7 @@ test("cleans coverage artifacts when command execution throws", async () => {
   await expect(runJest(
     process.cwd(),
     undefined,
-    async () => { throw new Error("Jest could not start"); },
+    () => { throw new Error("Jest could not start"); },
     { jestCli: "jest-cli" },
     removeCoverage,
   )).rejects.toThrow("Jest could not start");

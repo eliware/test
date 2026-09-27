@@ -14,7 +14,7 @@ export async function run(context) {
     if (parsed.error) return fail(ruleId, parsed.error);
     const commandError = validateKnitCommandStructure(parsed);
     if (commandError) return fail(ruleId, commandError);
-    const sourceError = validateKnitSourceOperations(source, ast);
+    const sourceError = validateKnitSourceOperations(source, ast, parsed.calls);
     if (sourceError) return fail(ruleId, sourceError);
     const publicationError = validateKnitPublicationCommands(parsed.calls);
     if (publicationError) return fail(ruleId, publicationError);

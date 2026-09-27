@@ -12,6 +12,7 @@ export function createPartialSecretSuffixTrimmer(secrets) {
     let safeLength = text.length;
     for (const { secret, prefixLengths } of patterns) {
       let prefixLength = 0;
+      // The held-back suffix is shorter than the secret, so the terminal KMP state is unreachable.
       const scanLimit = Math.min(text.length, secret.length - 1);
       for (let index = text.length - scanLimit; index < text.length; index += 1) {
         while (prefixLength > 0 && text[index] !== secret[prefixLength]) {

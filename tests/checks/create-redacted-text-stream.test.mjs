@@ -9,6 +9,15 @@ test("redacts a configured secret split across text chunks", () => {
   expect(output.finish()).toBe("");
 });
 
+test("redacts equal-start secrets of different lengths across stream chunks", () => {
+  const output = createRedactedTextStream(["abc", "abcdef"], 100);
+  const result = output.push("prefix abc") + output.push("def suffix") + output.finish();
+
+  expect(result).not.toContain("abc");
+  expect(result).toContain("[REDACTED]");
+  expect(result).toContain("suffix");
+});
+
 test("redacts complete progress text", () => {
   const output = createRedactedTextStream(["opaque-token"], 100);
   expect(output.redactComplete("progress opaque-token")).toBe("progress [REDACTED]");

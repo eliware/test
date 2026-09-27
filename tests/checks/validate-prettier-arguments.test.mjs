@@ -21,8 +21,16 @@ test.each([
   expect(validatePrettierArguments([argument])).toContain(argument);
 });
 
+test.each(["--w", "--w=true", "--wr=true", "--conf=custom.json", "--pars=babel"])(
+  "rejects abbreviated wrapper-owned Prettier option %s",
+  (argument) => {
+    expect(validatePrettierArguments([argument])).toContain(argument);
+  },
+);
+
 test("allows harmless forwarded options and rejects path operands that can narrow coverage", () => {
   expect(validatePrettierArguments(["--log-level=debug"])).toBeNull();
+  expect(validatePrettierArguments(["-z"])).toBeNull();
   expect(validatePrettierArguments(["src/example.mjs"])).toContain("wrapper-owned file coverage");
   expect(validatePrettierArguments(["--", "src/example.mjs"])).toContain("wrapper-owned file coverage");
 });

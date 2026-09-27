@@ -32,6 +32,11 @@ test("rejects other setup commands before install", () => {
     "printf '%s\\n' 'setup complete'",
     "printf 'MAIL_OWNER_ADDRESS=$(touch /tmp/pwned)@eliware.org\\n' > .env",
     "printf 'MAIL_OWNER_ADDRESS=`touch /tmp/pwned`@eliware.org\\n' > .env",
+    "echo $(touch /tmp/pwned)",
+    "echo `touch /tmp/pwned`",
+    "echo setup; touch /tmp/pwned",
+    "echo setup | tee /tmp/output",
+    "echo setup > .env",
   ]) {
     expect(validateWorkflowPreInstallCommands("ci.yml", [{ command }], 1)).toContain(
       "safe setup or reporting",

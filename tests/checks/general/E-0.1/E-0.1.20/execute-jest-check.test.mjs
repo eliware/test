@@ -37,7 +37,7 @@ test("captures timeout diagnostics and launch errors", async () => {
   await expect(executeJestCheck({ root: ".", jestArgs: [], writeOutput: jest.fn() })).resolves.toEqual(
     expect.objectContaining({ timeoutDiagnostic: "timeout diagnostic" }),
   );
-  runJest.mockRejectedValueOnce(new Error("spawn failed"));
+  runJest.mockImplementationOnce(() => { throw new Error("spawn failed"); });
   await expect(executeJestCheck({ root: ".", jestArgs: [] })).resolves.toEqual({
     error: expect.objectContaining({ message: "spawn failed" }),
   });
