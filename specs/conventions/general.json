@@ -127,6 +127,15 @@
               "donts": [
                 "Do not impose library, application, documentation, infrastructure, or workspace files on a repository type to which they do not apply."
               ]
+            },
+            {
+              "id": "A-0.1.0.12",
+              "dos": [
+                "AGENTS.md Development guidance must define single responsibility as one cohesive purpose and one reason to change; state that business-logic modules and coordinators are valid, including coordinators of coordinators, when each module does only its own responsibility; direct every distinct new responsibility into a focused submodule wired through its owner instead of adding it to an existing module; require contributors to refactor mixed responsibilities they notice during ordinary review; and state that line counts do not establish single responsibility or permit mixing responsibilities below any applicable blocking maxima."
+              ],
+              "donts": [
+                "Do not let compliance with line counts or applicable maxima excuse mixed responsibilities, add new responsibilities to existing modules for convenience, or defer an evident responsibility split found during review."
+              ]
             }
           ]
         },
@@ -584,6 +593,17 @@
                 "Do not use release notes as a second authority for requirements, procedures, or project behavior."
               ]
             }
+          ]
+        },
+        {
+          "id": "E-0.1.27",
+          "dos": [
+            "Every maintained software source and test module must have a single responsibility, defined as one cohesive purpose and one reason to change. The responsibility may be business logic or coordination; coordinators may coordinate modules or other coordinators while remaining responsible only for coordination.",
+            "When a change introduces a distinct responsibility, add it in a focused submodule with a matching test and wire it through the existing owner or coordinator; do not add the distinct responsibility to an existing module. During ordinary review, refactor mixed responsibilities that are noticed instead of deferring them.",
+            "Apply single responsibility independently of file length. Any source or test line-count maxima specified by an applicable profile are separate blocking requirements; passing them does not prove cohesion or excuse mixed responsibilities."
+          ],
+          "donts": [
+            "Do not combine distinct responsibilities in a module because it is small, because a coordinator is convenient, or because an existing module already handles related work. Do not defer a responsibility split discovered during review."
           ]
         },
         {

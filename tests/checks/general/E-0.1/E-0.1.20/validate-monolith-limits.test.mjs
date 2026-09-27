@@ -3,7 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { runMonolithLimits } from "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-monolith-limits.mjs";
-const run = (options) => runMonolithLimits({ ruleId: "E-0.1.130.10", requireTests: true, ...options });
+const run = (options) =>
+  runMonolithLimits({ ruleId: "E-0.1.130.10", requireTests: true, ...options });
 
 async function fixture(lines) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-monolith-"));
@@ -29,10 +30,13 @@ test("passes when source and test files remain within their limits", async () =>
   await rm(root, { recursive: true, force: true });
 });
 
-test("reports source files over the 100-line limit", async () => {
+test("fails when a source file exceeds 100 lines", async () => {
   const root = await fixture(101);
   await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("src/module.mjs") }),
+    expect.objectContaining({
+      status: "fail",
+      message: expect.stringContaining("src/module.mjs (102 > 100)"),
+    }),
   );
   await rm(root, { recursive: true, force: true });
 });
@@ -47,7 +51,7 @@ test("counts a file without a trailing newline accurately", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("enforces the 200-line test limit", async () => {
+test("fails when a test file exceeds 200 lines", async () => {
   const root = await fixture(10);
   await writeLines(root, "tests", "module.test.mjs", 201);
   await expect(run({ root })).resolves.toMatchObject({
@@ -116,10 +120,16 @@ test("allows a profile without tests to enforce source limits only", async () =>
 
 test("preserves inventory permission errors instead of reporting a missing directory", async () => {
   const inventoryError = Object.assign(new Error("permission denied"), { code: "EACCES" });
-  await expect(run({
-    root: "/repo",
-    repositoryInventory: { entriesUnder: async () => { throw inventoryError; } },
-  })).resolves.toEqual({
+  await expect(
+    run({
+      root: "/repo",
+      repositoryInventory: {
+        entriesUnder: async () => {
+          throw inventoryError;
+        },
+      },
+    }),
+  ).resolves.toEqual({
     ruleId: "E-0.1.130.10",
     status: "fail",
     message: "Could not validate src/ monolith limits: permission denied",
@@ -128,15 +138,17 @@ test("preserves inventory permission errors instead of reporting a missing direc
 
 test("preserves inventory errors while checking required test files", async () => {
   const inventoryError = Object.assign(new Error("tests access denied"), { code: "EACCES" });
-  await expect(run({
-    root: "/repo",
-    repositoryInventory: {
-      entriesUnder: async (directory) => {
-        if (directory.endsWith("tests")) throw inventoryError;
-        return [];
+  await expect(
+    run({
+      root: "/repo",
+      repositoryInventory: {
+        entriesUnder: async (directory) => {
+          if (directory.endsWith("tests")) throw inventoryError;
+          return [];
+        },
       },
-    },
-  })).resolves.toEqual({
+    }),
+  ).resolves.toEqual({
     ruleId: "E-0.1.130.10",
     status: "fail",
     message: "Could not validate tests/ monolith limits: tests access denied",

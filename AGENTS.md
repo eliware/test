@@ -16,6 +16,8 @@ Keep `src/` and `tests/` mirrored, preserve native ESM module structure, and kee
 
 Read the relevant README.md, specifications, implementation, and tests before changing behavior. This AGENTS.md applies repository-wide; nearer AGENTS.md instructions apply within their subdirectories, so check them before editing nested files.
 
+Every source and test module must have a single responsibility: one cohesive purpose and one reason to change. Business-logic modules and coordinators are both valid, including coordinators of coordinators, when each module does only its own responsibility. When a change introduces a distinct responsibility, create a focused submodule with a mirrored test and wire it through its owner; do not add the new responsibility to an existing module. During ordinary review, do not ignore mixed responsibilities you notice; refactor them as part of the change. The enforced maxima of 100 source lines and 200 test lines are separate blocking limits: passing them does not prove a module is cohesive or permit mixed responsibilities.
+
 Shared repository requirements are maintained in `specs/conventions/`, documentation authority remains with eliware/docs, and operational procedures are owned by eliware/operations.
 
 ## Validation
