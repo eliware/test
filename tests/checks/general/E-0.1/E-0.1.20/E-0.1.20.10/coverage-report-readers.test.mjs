@@ -36,3 +36,17 @@ test("rejects a report replaced during the read", async () => {
     async () => ({ mtimeMs: 2 }),
   )).rejects.toThrow("changed while being read");
 });
+
+test("accepts run-scoped coverage reports with same-millisecond timestamps", async () => {
+  const report = JSON.stringify({});
+  await expect(readJsonCoverage(
+    "coverage-final.json",
+    "coverage-final.json",
+    100,
+    async () => report,
+    async () => ({ mtimeMs: 100 }),
+    [],
+    {},
+    true,
+  )).resolves.toBeNull();
+});

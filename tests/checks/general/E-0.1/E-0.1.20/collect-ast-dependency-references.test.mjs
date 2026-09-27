@@ -65,7 +65,6 @@ test("ignores require.resolve when require is declared or the member is computed
     'import require from "other"; require.resolve("alpha");',
     'import { value as require } from "other"; require.resolve("alpha");',
     'import * as require from "other"; require.resolve("alpha");',
-    'const value = function require() {}; require.resolve("alpha");',
     'try {} catch (require) { require.resolve("alpha"); }',
     'function load(require) { require.resolve("alpha"); }',
     'require["resolve"]("alpha");',
@@ -76,6 +75,32 @@ test("ignores require.resolve when require is declared or the member is computed
     collectAstReferences(parse(source, { sourceType: "module" }).program, ["alpha"], referenced);
     if (referenced.size > 0) throw new Error(`Unexpected dependency reference: ${source}`);
   }
+});
+
+test("limits a named function-expression require binding to its own scope", () => {
+  const referenced = new Set();
+  const ast = parse('const value = function require() { require.resolve("ignored"); }; require.resolve("alpha");', {
+    sourceType: "module",
+  });
+  collectAstReferences(ast.program, ["alpha"], referenced);
+  expect([...referenced]).toEqual(["alpha"]);
+});
+
+test("collects unshadowed requires beside nested and block-scoped require bindings", () => {
+  const referenced = new Set();
+  const ast = parse(
+    'require("alpha"); function local(require) { require("ignored"); } { const require = mock; require("ignored"); } require.resolve("alpha/path");',
+    { sourceType: "module" },
+  );
+  collectAstReferences(ast.program, ["alpha"], referenced);
+  expect([...referenced]).toEqual(["alpha"]);
+});
+
+test("collects outer requires when a block declares a var require", () => {
+  const referenced = new Set();
+  const ast = parse('require("alpha"); { var require = mock; require("ignored"); }', { sourceType: "module" });
+  collectAstReferences(ast.program, ["alpha"], referenced);
+  expect([...referenced]).toEqual([]);
 });
 
 test("ignores non-string and undeclared dependency specifiers", () => {

@@ -1,8 +1,9 @@
+import { collectRequireBindingScopes } from "./collect-require-binding-scopes.mjs";
+
 function dependencyFor(specifier, declared) {
   if (typeof specifier !== "string") return undefined;
   return declared.find((name) => specifier === name || specifier.startsWith(`${name}/`));
 }
-
 function mayNameDeclaredDependency(node, declared) {
   if (!node) return false;
   if (node.type === "StringLiteral") return declared.some((name) => node.value === name || node.value.startsWith(`${name}/`));
@@ -13,13 +14,13 @@ function mayNameDeclaredDependency(node, declared) {
 
 export function collectAstReferences(node, declared, referenced, uncertain = { value: false }) {
   if (!node || typeof node !== "object") return;
-  const requireShadowed = (node.type === "Program" || node.type === "File") &&
-    declaresRequire(node);
-  collectAstNodeReferences(node, declared, referenced, uncertain, requireShadowed);
+  const requireBindingScopes = collectRequireBindingScopes(node);
+  collectAstNodeReferences(node, declared, referenced, uncertain, false, requireBindingScopes);
 }
 
-function collectAstNodeReferences(node, declared, referenced, uncertain, requireShadowed) {
+function collectAstNodeReferences(node, declared, referenced, uncertain, requireShadowed, requireBindingScopes) {
   if (!node || typeof node !== "object") return;
+  requireShadowed ||= requireBindingScopes.has(node);
   if (["ImportDeclaration", "ExportNamedDeclaration", "ExportAllDeclaration"].includes(node.type)) {
     const name = dependencyFor(node.source?.value, declared);
     if (name) referenced.add(name);
@@ -52,21 +53,7 @@ function collectAstNodeReferences(node, declared, referenced, uncertain, require
   }
   for (const [key, value] of Object.entries(node)) {
     if (["loc", "start", "end"].includes(key)) continue;
-    if (Array.isArray(value)) value.forEach((child) => collectAstNodeReferences(child, declared, referenced, uncertain, requireShadowed));
-    else if (value && typeof value === "object") collectAstNodeReferences(value, declared, referenced, uncertain, requireShadowed);
+    if (Array.isArray(value)) value.forEach((child) => collectAstNodeReferences(child, declared, referenced, uncertain, requireShadowed, requireBindingScopes));
+    else if (value && typeof value === "object") collectAstNodeReferences(value, declared, referenced, uncertain, requireShadowed, requireBindingScopes);
   }
-}
-
-function declaresRequire(node) {
-  if (!node || typeof node !== "object") return false;
-  if ((node.type === "VariableDeclarator" && node.id?.type === "Identifier" && node.id.name === "require") ||
-      (node.type === "FunctionDeclaration" && node.id?.name === "require") ||
-      (node.type === "ImportSpecifier" && node.local?.name === "require") ||
-      (node.type === "ImportDefaultSpecifier" && node.local?.name === "require") ||
-      (node.type === "ImportNamespaceSpecifier" && node.local?.name === "require") ||
-      (node.type === "FunctionExpression" && node.id?.name === "require") ||
-      (node.type === "CatchClause" && node.param?.type === "Identifier" && node.param.name === "require") ||
-      (node.type === "FunctionDeclaration" && node.params?.some((parameter) => parameter.type === "Identifier" && parameter.name === "require"))) return true;
-  return Object.entries(node).some(([key, value]) => !["loc", "start", "end"].includes(key) &&
-    (Array.isArray(value) ? value.some(declaresRequire) : value && typeof value === "object" && declaresRequire(value)));
 }

@@ -8,6 +8,19 @@ test("finds overlapping secrets with failure-link matching", () => {
   expect(ends[2]).toBe(6);
 });
 
+test("streams matches across chunk boundaries without resetting matcher state", () => {
+  const stream = createSecretTextMatcher(["secret"]).createStream();
+  expect(stream("safe se").matches).toEqual([]);
+  const result = stream("cret");
+  expect(result.matches).toEqual([{ start: 5, end: 11 }]);
+  expect(result.work).toBeLessThan(7);
+});
+
+test("stops a stream scan when its bounded work budget is exceeded", () => {
+  const stream = createSecretTextMatcher(["a"], { maxScanWork: 3 }).createStream();
+  expect(stream("aa")).toBeNull();
+});
+
 test("returns no matches for an empty environment and bounds scan work", () => {
   expect(createSecretTextMatcher([])("plain")).toEqual([0, 0, 0, 0, 0, 0]);
   expect(createSecretTextMatcher([], { maxScanWork: 0 })("x")).toBeNull();

@@ -35,6 +35,9 @@ export function createChildProcessOutputCapture(options, suppliedSecrets, output
   }
 
   return {
+    redactDiagnostic(text) {
+      return redactors.stdout.redactComplete(String(text)).slice(0, outputLimit);
+    },
     push(stream, chunk) {
       if (!redactors[stream] || capturedBytes >= outputLimit) return;
       const raw = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));

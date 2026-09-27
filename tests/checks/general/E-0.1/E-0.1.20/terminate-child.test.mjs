@@ -22,7 +22,7 @@ test("uses PowerShell to terminate the tree when taskkill fails", () => {
   expect(calls[1].command).toMatch(/WindowsPowerShell[\\/]v1\.0[\\/]powershell\.exe$/iu);
   expect(calls[1].args).toContain("-Command");
   expect(calls[1].args.at(-1)).toContain("Get-CimInstance Win32_Process");
-  expect(calls[1].options).toMatchObject({ timeout: 1_000, windowsHide: true });
+  expect(calls[1].options).toMatchObject({ timeout: 1_000, windowsHide: true, shell: false });
   expect(calls[1].options.env.ELIWARE_TEST_PROCESS_ID).toBe("42");
 });
 
@@ -40,7 +40,7 @@ test("bounds the taskkill wait time", () => {
   expect(execute).toHaveBeenCalledWith(
     expect.stringMatching(/System32[\\/]taskkill\.exe$/iu),
     ["/pid", "42", "/t", "/f"],
-    expect.objectContaining({ timeout: 1_000, windowsHide: true, stdio: "ignore" }),
+    expect.objectContaining({ timeout: 1_000, windowsHide: true, stdio: "ignore", shell: false }),
   );
 });
 
@@ -109,6 +109,8 @@ test("resolves the Windows tree terminator from the platform environment", () =>
     /System32[\\/]taskkill\.exe$/iu,
   );
   expect(() => resolveTaskkillExecutable({})).toThrow("SystemRoot");
+  expect(() => resolveTaskkillExecutable({ SystemRoot: "relative\\Windows" })).toThrow("absolute SystemRoot");
+  expect(() => resolveTaskkillExecutable({ SystemRoot: "C:\\Windows\\..\\Temp" })).toThrow("absolute SystemRoot");
   const originalSystemRoot = process.env.SystemRoot;
   process.env.SystemRoot = "C:/Windows";
   try {

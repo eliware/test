@@ -26,6 +26,8 @@ test("rejects other setup commands before install", () => {
     "printf 'OTHER_SETTING=value\\n' > .env",
     "printf 'MAIL_OWNER_ADDRESS=user@example.net\\n' > .env",
     "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > README.md",
+    "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\\n' > README.md",
+    "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\\n' > .env.local",
     "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > .env.local",
     "printf '%s\\n' 'setup complete'",
     "printf 'MAIL_OWNER_ADDRESS=$(touch /tmp/pwned)@eliware.org\\n' > .env",

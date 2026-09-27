@@ -1,9 +1,17 @@
 import { execFileSync } from "node:child_process";
-import { join } from "node:path";
+import { win32 } from "node:path";
+
+function resolveWindowsExecutable(env, ...parts) {
+  const systemRoot = env?.SystemRoot;
+  if (typeof systemRoot !== "string" || !win32.isAbsolute(systemRoot) ||
+      systemRoot.split(/[\\/]+/u).some((part) => part === "." || part === "..")) {
+    throw new Error("Windows process-tree termination requires an absolute SystemRoot path.");
+  }
+  return win32.resolve(systemRoot, ...parts);
+}
 
 export function resolveTaskkillExecutable(env = process.env) {
-  if (!env.SystemRoot) throw new Error("Windows process-tree termination requires SystemRoot.");
-  return join(env.SystemRoot, "System32", "taskkill.exe");
+  return resolveWindowsExecutable(env, "System32", "taskkill.exe");
 }
 
 function defaultKillTree(pid, env) {
@@ -11,11 +19,11 @@ function defaultKillTree(pid, env) {
 }
 
 export function killWindowsProcessTree(pid, env = process.env, execute = execFileSync) {
-  const options = { windowsHide: true, stdio: "ignore", timeout: 1_000 };
+  const options = { windowsHide: true, stdio: "ignore", timeout: 1_000, shell: false };
   try {
     execute(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], options);
   } catch (taskkillError) {
-    const powershell = join(env.SystemRoot, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+    const powershell = resolveWindowsExecutable(env, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
     const script = "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
       "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
       "$descendants=[Collections.Generic.List[int]]::new(); [void]$known.Add($root); do { $changed=$false; " +

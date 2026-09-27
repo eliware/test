@@ -3,6 +3,7 @@ import { executeAuditProcess } from "./execute-audit-process.mjs";
 import { runNpmAudit } from "./run-npm-audit.mjs";
 import { runChild as defaultRunChild } from "./run-child.mjs";
 import { formatNpmAuditFailure, formatNpmAuditStartupFailure } from "./format-npm-audit-diagnostic.mjs";
+import { isSuccessfulNpmAuditReport } from "./is-successful-npm-audit-report.mjs";
 import { validateAuditArguments } from "./validate-audit-arguments.mjs";
 
 export const ruleId = "E-0.1.20.19";
@@ -32,28 +33,11 @@ export async function run({
     if (result.code !== 0) {
       return fail(ruleId, formatNpmAuditFailure(result, env));
     }
-    if (!isSuccessfulAuditReport(result.stdout)) {
+    if (!isSuccessfulNpmAuditReport(result.stdout)) {
       return fail(ruleId, "npm audit returned an invalid JSON report.");
     }
   } catch (error) {
     return fail(ruleId, formatNpmAuditStartupFailure(error, env));
   }
   return pass(ruleId);
-}
-
-function isSuccessfulAuditReport(stdout) {
-  try {
-    const report = JSON.parse(stdout);
-    if (report === null || typeof report !== "object" || Array.isArray(report)) return false;
-    const vulnerabilities = report.vulnerabilities;
-    if (vulnerabilities === null || typeof vulnerabilities !== "object" || Array.isArray(vulnerabilities)) {
-      return false;
-    }
-    return ["high", "critical"].every((severity) =>
-      vulnerabilities[severity] === undefined ||
-      (Number.isInteger(vulnerabilities[severity]) && vulnerabilities[severity] === 0),
-    );
-  } catch {
-    return false;
-  }
 }

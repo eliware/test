@@ -1,6 +1,6 @@
 const safePreInstallReportingCommand =
   /^echo(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
-const safeEnvironmentSetup =
+const safeMailboxOwnerFileSetup =
   /^printf\s+'MAIL_OWNER_ADDRESS=[A-Za-z0-9_+.-]+@eliware\.org\\n'\s+>\s+\.env$/u;
 const safePowerShellSetup =
   /^Set-Content\s+\.env\s+'MAIL_OWNER_ADDRESS=[-A-Za-z0-9_.+]+@eliware\.org'$/iu;
@@ -23,7 +23,7 @@ export function validateWorkflowPreInstallCommands(
     const normalizedCommand = command.trim().replace(/\r?\n/gu, "\\n");
     return (
       !safePreInstallReportingCommand.test(normalizedCommand) &&
-      !safeEnvironmentSetup.test(normalizedCommand) &&
+      !safeMailboxOwnerFileSetup.test(normalizedCommand) &&
       !(
         safePowerShellSetup.test(normalizedCommand) &&
         /^(?:pwsh|powershell)$/iu.test(String(step?.shell ?? job?.defaults?.run?.shell ?? ""))

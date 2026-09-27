@@ -2,11 +2,10 @@ import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
 import { hasExactTagTrigger } from "../has-exact-tag-trigger.mjs";
 import { isPublicationWorkflow, publicationJobs } from "../workflow-publication.mjs";
-import { steps } from "../workflow-structure.mjs";
-import { findImagePushes, imageTags } from "../find-ghcr-image-push.mjs";
-import { hasReleaseTagGuard, isTagRelease, tagMatchesPackageVersion } from "../release-version-tag.mjs";
+import { isTagRelease, tagMatchesPackageVersion } from "../release-version-tag.mjs";
 import { findValidationJobs } from "../find-validation-jobs.mjs";
-import { hasUbuntuRunner } from "../has-ubuntu-runner.mjs";
+import { dependsOnUbuntuValidation } from "../depends-on-ubuntu-validation.mjs";
+import { hasVersionedImagePushAfterGuard } from "../has-versioned-image-push-after-guard.mjs";
 
 export const ruleId = "E-0.1.160.2";
 export const parentRuleId = "E-0.1.160";
@@ -18,32 +17,18 @@ export async function run(context) {
   try {
     const workflows = await readWorkflows(root, context);
     const publications = workflows.filter(isPublicationWorkflow);
+    const validationJobsByWorkflow = new Map(
+      publications.map((workflow) => [workflow, findValidationJobs(workflow)]),
+    );
     const valid =
       typeof packageJson?.version === "string" &&
       (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, packageJson.version)) &&
       publications.some((workflow) => {
         const publicationJobList = publicationJobs(workflow);
         return hasExactTagTrigger(workflow) && publicationJobList.length > 0 &&
-          publicationJobList.every(({ job }) => {
-            const validationJobs = findValidationJobs(workflow);
-            const needs = Array.isArray(job.needs) ? job.needs : job.needs ? [job.needs] : [];
-            const dependsOnUbuntuValidation = validationJobs.some(({ id, job: validationJob }) =>
-              hasUbuntuRunner(workflow, validationJob) && needs.includes(id),
-            );
-            const jobSteps = steps(job);
-            const versionCheckIndex = jobSteps.findIndex(({ run }) => hasReleaseTagGuard(run));
-            const pushes = findImagePushes(job);
-            const pushSteps = jobSteps.filter((step) => step?.uses === "docker/build-push-action@v6" && step?.with?.push === true);
-            const exactPush = pushSteps.length === 1 && pushes.length === 1 && imageTags(pushes[0].with?.tags).length === 1 &&
-              imageTags(pushes[0].with?.tags)[0].endsWith(`:v${packageJson.version}`);
-            return (
-              job.environment === "ghcr-publish" &&
-              dependsOnUbuntuValidation &&
-              versionCheckIndex >= 0 &&
-              exactPush &&
-              jobSteps.indexOf(pushes[0]) > versionCheckIndex
-            );
-          });
+          publicationJobList.every(({ job }) => job.environment === "ghcr-publish" &&
+            dependsOnUbuntuValidation(workflow, job, validationJobsByWorkflow.get(workflow)) &&
+            hasVersionedImagePushAfterGuard(job, packageJson.version));
       });
     if (!valid)
       return fail(

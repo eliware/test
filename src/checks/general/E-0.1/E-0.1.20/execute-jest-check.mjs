@@ -9,6 +9,7 @@ export async function executeJestCheck(context) {
       onStderr: context.writeOutput,
       onTimeout: (message) => { timeoutDiagnostic = message; },
       retainCoverageDirectory: true,
+      env: context.env ?? process.env,
     });
     return { result: { ...result, startedAt }, timeoutDiagnostic };
   } catch (error) {

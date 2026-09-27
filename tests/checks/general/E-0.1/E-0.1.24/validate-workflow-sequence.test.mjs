@@ -64,8 +64,12 @@ test("reports setup policy before post-test reporting policy", () => {
 });
 
 test("allows only approved reporting actions", () => {
-  const input = sequence([], [{ uses: "actions/upload-artifact@v4" }]);
+  const input = sequence([], [{ uses: "actions/upload-artifact@v6" }]);
   expect(validateWorkflowSequence("ci.yml", input.commands, input.steps)).toBeNull();
+  const legacy = sequence([], [{ uses: "actions/upload-artifact@v4" }]);
+  expect(validateWorkflowSequence("ci.yml", legacy.commands, legacy.steps)).toContain(
+    "approved reporting actions",
+  );
   const unapproved = sequence([], [{ uses: "someone/unreviewed-action@v1" }]);
   expect(validateWorkflowSequence("ci.yml", unapproved.commands, unapproved.steps)).toContain(
     "approved reporting actions",

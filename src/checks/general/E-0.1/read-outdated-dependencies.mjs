@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { killWindowsProcessTree, terminateChild } from "./E-0.1.20/terminate-child.mjs";
-import { appendBoundedOutputTail } from "./append-bounded-output-tail.mjs";
+import { createOutdatedDependenciesOutput } from "./create-outdated-dependencies-output.mjs";
 import { createOutdatedDependenciesCommand } from "./create-outdated-dependencies-command.mjs";
 import { parseOutdatedDependenciesOutput } from "./parse-outdated-dependencies-output.mjs";
 
@@ -23,8 +23,7 @@ export function readOutdatedDependencies(
   return new Promise((resolve, reject) => {
     const command = createOutdatedDependenciesCommand(root, { env, platform, execPath });
     const child = spawnProcess(command.executable, command.args, command.options);
-    let stdout = "";
-    let stderr = "";
+    const output = createOutdatedDependenciesOutput(maxStdoutLength, maxStderrLength);
     let oversized = false;
     let settled = false;
     let terminationTimer;
@@ -42,8 +41,7 @@ export function readOutdatedDependencies(
     };
     child.stdout.on("data", (chunk) => {
       if (oversized || settled) return;
-      const text = chunk.toString();
-      if (stdout.length + text.length > maxStdoutLength) {
+      if (!output.appendStdout(chunk)) {
         oversized = true;
         try {
           terminateProcess(child, platform, killProcess, killTree, env, "SIGTERM");
@@ -56,17 +54,16 @@ export function readOutdatedDependencies(
         }, terminationGracePeriodMs);
         return;
       }
-      stdout += text;
     });
     child.stderr.on("data", (chunk) => {
-      stderr = appendBoundedOutputTail(stderr, chunk, maxStderrLength);
+      output.appendStderr(chunk);
     });
     child.on("error", rejectOnce);
     child.on("close", (code) => {
       if (oversized)
         return rejectOnce(new Error(`npm outdated output exceeded ${maxStdoutLength} characters.`));
       try {
-        resolveOnce(parseOutdatedDependenciesOutput(stdout, stderr, code, env));
+        resolveOnce(parseOutdatedDependenciesOutput(output.stdout, output.stderr, code, env));
       } catch (error) {
         rejectOnce(error);
       }

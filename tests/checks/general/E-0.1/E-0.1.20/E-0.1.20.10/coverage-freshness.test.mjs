@@ -14,3 +14,7 @@ test("rejects stale or changed coverage evidence", () => {
 test("rejects a report timestamp equal to the Jest start time", () => {
   expect(() => assertFreshCoverage({ mtimeMs: 10 }, { mtimeMs: 10 }, "coverage.json", 10)).toThrow("stale");
 });
+
+test("accepts equal timestamps for reports owned by an isolated Jest run directory", () => {
+  expect(() => assertFreshCoverage({ mtimeMs: 10 }, { mtimeMs: 10 }, "coverage.json", 10, true)).not.toThrow();
+});

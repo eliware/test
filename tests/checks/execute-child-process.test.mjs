@@ -145,3 +145,31 @@ test("handles output-less adapters, early errors, defaults, and the real adapter
   await expect(failed).rejects.toThrow("spawn failed");
   await expect(execute(process.execPath, ["-e", ""])).resolves.toMatchObject({ code: 0 });
 });
+
+test("redacts configured secrets from asynchronous and synchronous spawn failures", async () => {
+  const options = { env: { SERVICE_TOKEN: "spawn-secret-value" } };
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const asynchronous = execute("node", [], options, () => child);
+  child.emit("error", new Error("spawn failed with spawn-secret-value"));
+  await expect(asynchronous).rejects.toThrow("spawn failed with [REDACTED]");
+  await expect(execute("node", [], options, () => {
+    throw new Error("adapter failed with spawn-secret-value");
+  })).rejects.toThrow("adapter failed with [REDACTED]");
+});
+
+test("preserves spawn error metadata and handles nonstandard adapter failures", async () => {
+  const child = new EventEmitter();
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  const named = new Error("missing tool");
+  named.name = "SystemError";
+  named.code = "ENOENT";
+  const eventFailure = execute("tool", [], {}, () => child);
+  child.emit("error", named);
+  await expect(eventFailure).rejects.toMatchObject({ name: "SystemError", code: "ENOENT" });
+
+  await expect(execute("tool", [], {}, () => { throw "adapter failure"; })).rejects.toThrow("adapter failure");
+  await expect(execute("tool", [], {}, () => { throw { message: "plain failure" }; })).rejects.toThrow("plain failure");
+});

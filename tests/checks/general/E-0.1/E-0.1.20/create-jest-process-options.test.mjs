@@ -63,3 +63,11 @@ test("adds required Node runtime options when none are configured", () => {
     else process.env.NODE_OPTIONS = previous;
   }
 });
+
+test("builds the child environment from the invoking environment", () => {
+  const options = createJestProcessOptions("C:/fixture", [], { env: { NODE_OPTIONS: "--trace-warnings", TOKEN: "provided" } });
+  expect(options.env).toEqual({
+    NODE_OPTIONS: "--trace-warnings --experimental-vm-modules",
+    TOKEN: "provided",
+  });
+});

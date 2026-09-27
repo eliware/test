@@ -1,6 +1,6 @@
 const safeReportingCommand =
-  /^(?:echo|printf)(?:\s+(?:"[^"`$;&|<>]*"|'[^'`;|&<>]*'|[\w./:@=-]+))*$/u;
-const approvedReportingActions = new Set(["actions/upload-artifact@v4"]);
+  /^(?:echo|printf)(?:[ \t]+(?:"[^"`$;&|<>\r\n]*"|'[^'`;|&<>\r\n]*'|[\w./:@=-]+))*$/u;
+const approvedReportingActions = new Set(["actions/upload-artifact@v6"]);
 
 export function validateWorkflowPostTestCommands(name, commands, testIndex, steps = commands, { allowAttestation = false } = {}) {
   const invalidReporting = commands.some(

@@ -1,7 +1,6 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { isForbiddenPath } from "./sensitive-path-classifier.mjs";
 import { findRepositoryFiles } from "../find-repository-files.mjs";
-import { isIgnoredByRepositoryRules } from "../check-repository-ignore.mjs";
 import { readSensitiveExemptions } from "./read-sensitive-exemptions.mjs";
 
 export const ruleId = "E-0.1.6.0";
@@ -18,8 +17,7 @@ export async function run(
       suppliedFiles ??
       (repositoryInventory ? await repositoryInventory.repositoryFiles() : await findFiles(root));
     const forbidden = files.filter((path) => isForbiddenPath(path) && !allowed.has(path));
-    for (const path of forbidden)
-      if (!(await isIgnoredByRepositoryRules(root, path))) findings.push(path);
+    findings.push(...forbidden);
   } catch {
     return fail(
       ruleId,

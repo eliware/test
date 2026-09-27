@@ -3,17 +3,15 @@ import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
 import { permissions } from "../../ghcr-published/workflow-permissions.mjs";
 import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
 import { stepText, steps } from "../../ghcr-published/workflow-structure.mjs";
+import { isApprovedNpmPublishCommand } from "./is-approved-npm-publish-command.mjs";
 
 export const ruleId = "A-0.1.140.4";
 export const parentRuleId = "E-0.1.140";
 export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
-function publicationIndex(job, packageName) {
-  const escapedName = packageName.replaceAll("/", "\\/");
+function publicationIndex(job) {
   return steps(job).findIndex((step) => {
-    const command = stepText(step).trim();
-    return /^npm\s+publish(?:\s+(?:--provenance|--access\s+(?:public|restricted)|--tag\s+[A-Za-z0-9._-]+))*$/iu.test(command) &&
-      !new RegExp(`\\s${escapedName}(?:\\s|$)`, "u").test(command);
+    return isApprovedNpmPublishCommand(stepText(step));
   });
 }
 
@@ -31,9 +29,9 @@ export async function run(context) {
         const granted = permissions(workflow, job);
         const allowed = new Set(["contents", "id-token"]);
         const packageName = typeof packageJson?.name === "string" ? packageJson.name : "";
-        const publishAt = packageName ? publicationIndex(job, packageName) : -1;
+        const publishAt = publicationIndex(job);
         if (
-          (publishAt < 0 ||
+          (!packageName || publishAt < 0 ||
             (granted.contents !== "read" ||
             granted["id-token"] !== "write" ||
             Object.keys(granted).some((key) => !allowed.has(key)) ||

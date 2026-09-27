@@ -13,6 +13,9 @@ test("maps an existing mirrored test to its source coverage", async () => {
   await expect(resolveFocusedCoverage(root, "tests/sample.test.mjs")).resolves.toEqual([
     "--collectCoverageFrom", "src/sample.mjs",
   ]);
+  await expect(resolveFocusedCoverage(root, "tests\\sample.test.mjs")).resolves.toEqual([
+    "--collectCoverageFrom", "src/sample.mjs",
+  ]);
   await rm(root, { recursive: true, force: true });
 });
 

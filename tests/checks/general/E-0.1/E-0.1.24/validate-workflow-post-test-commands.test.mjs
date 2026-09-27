@@ -13,6 +13,20 @@ test("rejects other commands after npm test", () => {
   );
 });
 
+test("rejects shell expansion, redirection, and newline command injection", () => {
+  for (const command of [
+    'echo "$(touch .env)"',
+    'echo "`touch .env`"',
+    "echo safe > .env",
+    "echo safe\ntouch .env",
+    "printf safe\r\ntouch .env",
+  ]) {
+    expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toContain(
+      "reporting commands after npm test",
+    );
+  }
+});
+
 test("uses original workflow positions when setup steps have no run command", () => {
   const commandStep = { run: "rm -rf ." };
   expect(validateWorkflowPostTestCommands("ci.yml", [{ command: commandStep.run, step: commandStep }], 1, [
@@ -25,11 +39,11 @@ test("uses original workflow positions when setup steps have no run command", ()
 test("checks actions after npm test against the reporting allowlist", () => {
   expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
     { run: "npm test" },
-    { uses: "actions/upload-artifact@v4" },
+    { uses: "actions/upload-artifact@v6" },
   ])).toBeNull();
   expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
     { run: "npm test" },
-    { uses: "actions/upload-artifact@v4", "continue-on-error": true },
+    { uses: "actions/upload-artifact@v6", "continue-on-error": true },
   ])).toContain("approved reporting actions");
   expect(validateWorkflowPostTestCommands("ci.yml", [], 0, [
     { run: "npm test" },

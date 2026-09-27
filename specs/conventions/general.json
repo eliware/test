@@ -262,7 +262,7 @@
             {
               "id": "A-0.1.6.2",
               "dos": [
-                "Deterministic validation must inspect current repository files on disk for secret-like files and reject unauthorized matches, including files not yet staged.",
+                "Deterministic validation must inspect current repository files on disk for secret-like files and reject unauthorized matches, including files not yet staged. A root .env file is permitted as local configuration, and a root .env.example file is permitted as a template; the Git-index check must still reject either if tracked or staged against an ignore rule.",
                 "A secret-file exception must identify the exact path, rule ID, approver, reason, and expiry or review condition in package.json.eliware.exempt."
               ],
               "donts": [

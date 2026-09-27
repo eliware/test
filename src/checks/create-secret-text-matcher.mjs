@@ -45,9 +45,10 @@ export function createSecretTextMatcher(secrets, { maxScanWork = MAX_SCAN_WORK }
     }
   }
 
-  return function findSecretEnds(text) {
+  function scan(text, initialState = 0, offset = 0) {
     const matchEnds = Array.from({ length: text.length + 1 }, () => 0);
-    let state = 0;
+    const matches = [];
+    let state = initialState;
     let work = 0;
     for (let index = 0; index < text.length; index += 1) {
       const character = text[index];
@@ -67,10 +68,30 @@ export function createSecretTextMatcher(secrets, { maxScanWork = MAX_SCAN_WORK }
           if (work > maxScanWork) return null;
           const start = index - length + 1;
           matchEnds[start] = Math.max(matchEnds[start], index + 1);
+          matches.push({ start: offset + start, end: offset + index + 1 });
         }
       }
     }
-    Object.defineProperty(matchEnds, "work", { value: work });
-    return matchEnds;
+    return { matchEnds, matches, state, work };
+  }
+
+  function findSecretEnds(text) {
+    const result = scan(text);
+    if (!result) return null;
+    Object.defineProperty(result.matchEnds, "work", { value: result.work });
+    return result.matchEnds;
+  }
+
+  findSecretEnds.createStream = () => {
+    let state = 0;
+    let offset = 0;
+    return (text) => {
+      const result = scan(text, state, offset);
+      if (!result) return null;
+      state = result.state;
+      offset += text.length;
+      return { matches: result.matches, work: result.work };
+    };
   };
+  return findSecretEnds;
 }

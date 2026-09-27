@@ -42,5 +42,6 @@ export async function readCoverageEvidenceFromCandidates(
         statFile,
         expectedFiles,
         expectedShapes,
+        Boolean(coverageDirectory),
       ), testOutput, requireFresh, expectedFiles);
 }

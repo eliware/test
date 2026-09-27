@@ -63,3 +63,10 @@ test("returns check failures for malformed exemption collections and entries", (
     message: "Package exemptions must contain objects.",
   });
 });
+
+test("rejects malformed exemptions even when they target another rule", () => {
+  expect(run({ packageJson: { eliware: { exempt: [{ ruleId: "E-0.1.3" }] } } })).toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("Every exemption must identify"),
+  });
+});

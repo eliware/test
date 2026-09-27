@@ -42,6 +42,13 @@ test("suppresses an incomplete final byte sequence when completion exceeds the s
   expect(output.finish()).toBe("");
 });
 
+test("suppresses pending diagnostics when final decoding exhausts cumulative search work", () => {
+  const output = createRedactedTextStream(["z"], 100, { maxSearchWorkPerChunk: 30 });
+  expect(output.push("a".repeat(30))).toBe("a".repeat(29));
+  expect(output.push(Buffer.from([0xf0]))).toBe("");
+  expect(output.finish()).toBe("");
+});
+
 test("decodes UTF-8 secrets split across byte chunks", () => {
   const output = createRedactedTextStream(["🔐secret"], 100);
   const value = Buffer.from("before 🔐secret after");
@@ -103,6 +110,19 @@ test("bounds repeated scans while a long secret keeps the pending suffix large",
   expect(output.finish()).toBe("");
 });
 
+test("scans only new stream text when a long secret spans several chunks", () => {
+  const secret = Array.from({ length: 10_000 }, (_, index) => String.fromCharCode(0x1000 + index)).join("");
+  const output = createRedactedTextStream([secret], 30_000, { maxSearchWorkPerChunk: 30_000 });
+  const text = secret + secret;
+  const emitted = [];
+  for (let start = 0; start < text.length; start += 4_096) {
+    emitted.push(output.push(text.slice(start, start + 4_096)));
+  }
+  const result = emitted.join("") + output.finish();
+  expect(result).not.toContain(secret);
+  expect(result).toContain("[REDACTED]");
+});
+
 test("suppresses stream output when matcher work exceeds its estimate", () => {
   const output = createRedactedTextStream(["ab"], 5_000, { maxSearchWorkPerChunk: 4_096 });
   expect(output.push("a".repeat(3_000))).toBe("");
@@ -118,9 +138,9 @@ test("emits no current chunk after budget exhaustion following a safe prefix", (
 
 
 
-test("bounds matcher work when finishing a retained pending suffix", () => {
+test("reuses matcher state when finishing a retained pending suffix", () => {
   const secret = "s".repeat(3_000);
   const output = createRedactedTextStream([secret], 10_000, { maxSearchWorkPerChunk: 6_500 });
   expect(output.push("s".repeat(4_096))).toBe("");
-  expect(output.finish()).toBe("");
+  expect(output.finish()).toBe("[REDACTED]");
 });

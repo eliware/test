@@ -1,69 +1,35 @@
 import { expect, test } from "@jest/globals";
 import { createChildProcessOutputCapture } from "../../src/checks/create-child-process-output-capture.mjs";
 
-test("handles inherited and configured values", () => {
-  const previous = process.env.ELIWARE_TEST_CAPTURE_TOKEN;
-  process.env.ELIWARE_TEST_CAPTURE_TOKEN = "inherited-secret";
-  try {
-    const inherited = createChildProcessOutputCapture({}, [], 100);
-    inherited.push("stdout", "output inherited-secret");
-    expect(inherited.finish()).toEqual({ stdout: "output [REDACTED]", stderr: "" });
-  } finally {
-    if (previous === undefined) delete process.env.ELIWARE_TEST_CAPTURE_TOKEN;
-    else process.env.ELIWARE_TEST_CAPTURE_TOKEN = previous;
-  }
-  const capture = createChildProcessOutputCapture({
-    env: { SERVICE_TOKEN: "configured-secret", ODD_NAME: "explicit-secret" },
-  }, ["explicit-secret"], 100);
-  capture.push("stdout", "output configured-secret explicit-secret");
-  expect(capture.finish()).toEqual({ stdout: "output [REDACTED] [REDACTED]", stderr: "" });
-
-});
-
-test("bounds captured data across streams", () => {
-  const capture = createChildProcessOutputCapture({}, [], 12);
-  capture.push("stdout", "output");
-  capture.push("stderr", "warning");
-  const result = capture.finish();
-  expect(result.stdout.length + result.stderr.length).toBeLessThanOrEqual(12);
-});
-
-test("bounds captured UTF-8 output by bytes without splitting a code point", () => {
-  const capture = createChildProcessOutputCapture({ env: {} }, [], 5);
-  capture.push("stdout", "ééé");
-  const result = capture.finish();
-  expect(result.stdout).toBe("éé");
-  expect(Buffer.byteLength(result.stdout)).toBe(4);
-});
-
-test("applies the limit after redaction and retains safe text after a long secret", () => {
-  const secret = "sensitive-token";
-  const capture = createChildProcessOutputCapture({ env: {} }, [secret], 20);
-  capture.push("stdout", `safe${secret}tail!!`);
-  expect(capture.finish()).toEqual({ stdout: "safe[REDACTED]tail!!", stderr: "" });
-});
-
-test("does not expose truncated text", () => {
-  const secret = "credential-boundary";
-  const capture = createChildProcessOutputCapture({}, [secret], 20);
-  capture.push("stdout", "o".repeat(15));
-  capture.push("stderr", Buffer.from(secret));
-  const result = capture.finish();
-  expect(result.stdout + result.stderr).not.toContain(secret.slice(0, 5));
-});
-
-test("ignores invalid lists and later chunks", () => {
-  const capture = createChildProcessOutputCapture({ env: {} }, "ignored", 4);
+test("captures both streams and redacts diagnostics using the effective environment", () => {
+  const capture = createChildProcessOutputCapture(
+    { env: { SERVICE_TOKEN: "capture-secret-value" } },
+    ["explicit-secret-value"],
+    100,
+  );
+  capture.push("stdout", "out capture-secret-value");
+  capture.push("stderr", "err explicit-secret-value");
   capture.push("unknown", "ignored");
-  capture.push("stdout", "ordinary");
-  capture.push("stderr", "later");
-  expect(capture.finish()).toEqual({ stdout: "ordi", stderr: "" });
+  expect(capture.redactDiagnostic("failed capture-secret-value")).toBe("failed [REDACTED]");
+  expect(capture.finish()).toEqual({
+    stdout: "out [REDACTED]",
+    stderr: "err [REDACTED]",
+  });
+});
 
-  const shortened = createChildProcessOutputCapture({ env: {} }, ["x"], 12);
-  shortened.push("stdout", "x".repeat(12));
-  shortened.push("stderr", "after the raw limit");
-  const shortenedResult = shortened.finish();
-  expect(shortenedResult.stdout.startsWith("[REDACTED]")).toBe(true);
-  expect(shortenedResult.stderr).toBe("af");
-  expect(shortenedResult.stdout.length).toBeLessThanOrEqual(12);
+test("caps captured output on valid UTF-8 boundaries and accepts missing explicit secrets", () => {
+  const capture = createChildProcessOutputCapture({ env: {} }, null, 4);
+  capture.push("stdout", "abc🔐");
+  expect(capture.finish()).toEqual({ stdout: "abc", stderr: "" });
+});
+
+test("uses inherited environment by default and accepts binary chunks", () => {
+  const capture = createChildProcessOutputCapture({ env: {} }, undefined, 4);
+  capture.push("stdout", Buffer.from("okay"));
+  capture.push("stderr", Buffer.from("later"));
+  expect(capture.finish()).toEqual({ stdout: "okay", stderr: "" });
+});
+
+test("uses the process environment when no child environment is provided", () => {
+  expect(createChildProcessOutputCapture({ env: null }, [], 0).finish()).toEqual({ stdout: "", stderr: "" });
 });

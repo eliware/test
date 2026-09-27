@@ -35,8 +35,10 @@ The following npm scripts are available only in this package's own repository:
 only when the `npm-published` profile is selected.
 
 The normal test command runs the configured validation stages. The five public
-tool modes forward additional arguments supported by their underlying tools;
-wrapper-owned settings and arguments that weaken required checks are rejected:
+tool modes forward additional arguments supported by their underlying tools.
+The audit mode accepts only `--no-fund` and `--no-progress`; options such as
+`--omit` that narrow the dependency scope are rejected. Wrapper-owned settings
+and arguments that weaken required checks are also rejected:
 
 ```text
 eliware-test --lint --fix

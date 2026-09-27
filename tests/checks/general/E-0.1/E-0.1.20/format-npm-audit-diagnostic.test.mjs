@@ -27,3 +27,11 @@ test("formats startup errors with secret redaction", () => {
     NPM_TOKEN: "hidden",
   })).toBe("npm audit could not be started: spawn exposed [REDACTED]");
 });
+
+test("redacts configured secrets embedded between credential delimiters", () => {
+  expect(formatNpmAuditFailure({
+    code: 1,
+    stdout: "NPM_TOKEN=prefix-tiny-secret-suffix",
+    stderr: "",
+  }, { NPM_TOKEN: "tiny-secret" })).toBe("npm audit failed: NPM_TOKEN=[REDACTED]");
+});

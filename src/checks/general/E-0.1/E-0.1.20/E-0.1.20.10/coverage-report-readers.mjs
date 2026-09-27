@@ -10,12 +10,13 @@ export async function readJsonCoverage(
   statFile = stat,
   expectedFiles = [],
   expectedShapes = {},
+  isolatedRunDirectory = false,
 ) {
   const before = startedAt ? await statFile(path) : null;
   const raw = await read(path, "utf8");
   const parsed = JSON.parse(raw);
   const after = startedAt ? await statFile(path) : null;
-  assertFreshCoverage(before, after, relativePath, startedAt);
+  assertFreshCoverage(before, after, relativePath, startedAt, isolatedRunDirectory);
   if (startedAt && (await read(path, "utf8")) !== raw)
     throw new Error(`Coverage report changed while being read: ${relativePath}. Rerun the tests.`);
   if (relativePath.endsWith("coverage-summary.json")) {

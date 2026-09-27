@@ -86,12 +86,18 @@ test("fails safely when current repository files cannot be enumerated", async ()
   });
 });
 
-test("ignores runtime artifacts according to the repository's on-disk .gitignore", async () => {
+test("allows the root local .env file while rejecting other ignored secret paths", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-secrets-ignore-"));
   try {
-    await writeFile(join(root, ".gitignore"), ".env*\n");
+    await writeFile(join(root, ".gitignore"), ".env*\ncredentials.json\n");
     await writeFile(join(root, ".env"), "local state");
-    await expect(run({ root })).resolves.toEqual({
+    await writeFile(join(root, "credentials.json"), "secret");
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("credentials.json"),
+    });
+    await rm(join(root, "credentials.json"));
+    await expect(run({ root })).resolves.toMatchObject({
       ruleId: "E-0.1.6.0",
       status: "pass",
       message: "",

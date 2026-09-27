@@ -23,7 +23,7 @@ const benignSecurityPaths = new Set([
 
 export function isForbiddenPath(path) {
   const normalized = path.replaceAll("\\", "/");
-  if (normalized.split("/").at(-1) === ".env.example") return false;
+  if (normalized === ".env" || normalized === ".env.example") return false;
   const parts = normalized.split("/");
   const benignSecurityCode = benignSecurityPaths.has(normalized.toLowerCase());
   const fileName = parts.at(-1);
