@@ -144,7 +144,7 @@
         {
           "id": "A-0.1.160.10",
           "dos": [
-            "Before pushing a GHCR image, the publication job must verify that npm package.json's exact version matches the version without the v prefix in GITHUB_REF_NAME using npm pkg get version --raw, then target the protected ghcr-publish GitHub environment configured with Eli as a required reviewer through the Operations release handoff."
+            "Before pushing a GHCR image, the publication job must verify that npm package.json's exact version matches the version without the v prefix in GITHUB_REF_NAME, then target the protected ghcr-publish GitHub environment configured with Eli as a required reviewer through the Operations release handoff."
           ],
           "donts": [
             "Do not treat tag-shaped text, a semver comment, or an unprotected environment as release-version verification or Eli's publication authorization."
