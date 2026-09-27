@@ -1,5 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
 import { executeConventionChecks } from "../../src/orchestrators/execute-convention-checks.mjs";
+import { discoverAllChecks } from "../../src/orchestrators/discover-checks.mjs";
 
 test("skips an exempted parent and all descendants", async () => {
   const calls = [];
@@ -127,6 +128,20 @@ test("executes selected non-deterministic checks instead of silently skipping th
   );
   expect(calls).toBe(1);
   expect(results).toEqual([{ ruleId: "E-3", status: "pass", message: "" }]);
+});
+
+test("preserves the pass contract for discovered non-deterministic placeholders", async () => {
+  const placeholderRuleIds = [
+    "E-0.1.130.6", "E-0.1.130.7", "E-0.1.130.8", "E-0.1.130.9",
+    "E-0.1.40.9", "E-0.1.40.10", "E-0.1.40.11", "E-0.1.40.18", "E-0.1.40.19",
+    "A-0.1.90.0.2", "A-0.1.90.0.3", "A-0.1.90.0.4", "A-0.1.90.0.5", "A-0.1.90.2", "A-0.1.90.3",
+    "A-0.1.110.0.2", "A-0.1.110.0.3", "E-0.1.120.0",
+  ];
+  const checks = (await discoverAllChecks()).filter(({ ruleId }) => placeholderRuleIds.includes(ruleId));
+  expect(checks.map(({ ruleId }) => ruleId).sort()).toEqual([...placeholderRuleIds].sort());
+
+  const results = await executeConventionChecks(checks, {}, new Set());
+  expect(results).toEqual(checks.map(({ ruleId }) => ({ ruleId, status: "pass", message: "" })));
 });
 
 test("does not execute advisory-only placeholder checks", async () => {

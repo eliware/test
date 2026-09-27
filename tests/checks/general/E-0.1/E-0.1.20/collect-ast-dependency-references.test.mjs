@@ -2,111 +2,47 @@ import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
 import { collectAstReferences } from "../../../../../src/checks/general/E-0.1/E-0.1.20/collect-ast-dependency-references.mjs";
 
-test("collects static imports, exports, dynamic imports, and requires", () => {
+function collect(source, declared = ["alpha", "beta"]) {
   const referenced = new Set();
-  const ast = parse(`export { value } from "alpha"; export * from "beta/subpath"; import("gamma"); import(dynamicName); require("delta"); require(dynamicName);`, { sourceType: "unambiguous" });
   const uncertain = { value: false };
-  collectAstReferences(ast, ["alpha", "beta", "gamma", "delta"], referenced, uncertain);
-  expect([...referenced].sort()).toEqual(["alpha", "beta", "delta", "gamma"]);
-  expect(uncertain.value).toBe(false);
+  collectAstReferences(parse(source, { sourceType: "module", createImportExpressions: true }).program, declared, referenced, uncertain);
+  return { referenced: [...referenced], uncertain: uncertain.value };
+}
+
+test("collects references recursively across static, dynamic, and resolver syntax", () => {
+  expect(
+    collect(`
+      import "alpha";
+      export { value } from "beta/subpath";
+      import("alpha/lazy");
+      require.resolve("beta/package.json");
+      resolvePackage("alpha/package.json");
+    `),
+  ).toEqual({ referenced: ["alpha", "beta"], uncertain: false });
 });
 
-test("handles non-reference AST values and dynamic specifiers", () => {
+test("marks dynamic import calls uncertain when their expression may name a dependency", () => {
+  expect(collect('import("alpha/" + suffix);')).toEqual({ referenced: [], uncertain: true });
+  expect(collect('import("unrelated/" + suffix);')).toEqual({ referenced: [], uncertain: false });
+});
+
+test("ignores require calls shadowed in their lexical scope", () => {
+  expect(collect('require("alpha"); function nested(require) { require("beta"); }')).toEqual({
+    referenced: ["alpha"],
+    uncertain: false,
+  });
+});
+
+test("ignores absent, primitive, and location metadata nodes", () => {
   const referenced = new Set();
   const uncertain = { value: false };
   collectAstReferences(null, ["alpha"], referenced, uncertain);
-  collectAstReferences({ type: "Program", body: [null] }, ["alpha"], referenced, uncertain);
-  collectAstReferences("not an AST node", ["alpha"], referenced, uncertain);
-  collectAstReferences({ type: "ImportExpression", source: { type: "NumericLiteral", value: 1 } }, ["alpha"], referenced, uncertain);
-  collectAstReferences({ type: "CallExpression", callee: { type: "Identifier", name: "require" }, arguments: [{ type: "NumericLiteral" }] }, ["alpha"], referenced, uncertain);
-  collectAstReferences(parse('require.resolve("unknown");', { sourceType: "module" }), ["alpha"], referenced, uncertain);
-  expect([...referenced]).toEqual([]);
+  collectAstReferences(1, ["alpha"], referenced, uncertain);
+  const program = parse("", { sourceType: "module" }).program;
+  program.loc = { type: "BlockStatement", body: [{ type: "ImportDeclaration", source: { value: "alpha" } }] };
+  program.body.push(null, "not-an-ast-node");
+  collectAstReferences(program, ["alpha"], referenced, uncertain);
+  collectAstReferences(program, ["alpha"], referenced);
+  expect(referenced).toEqual(new Set());
   expect(uncertain.value).toBe(false);
-});
-
-test("flags dynamic specifiers that visibly construct a declared dependency", () => {
-  const referenced = new Set();
-  const uncertain = { value: false };
-  collectAstReferences({ type: "ImportExpression", source: { type: "TemplateLiteral", quasis: [{ value: { raw: "alpha/" } }] } }, ["alpha"], referenced, uncertain);
-  expect(uncertain.value).toBe(true);
-});
-
-test("handles dynamic string and binary dependency expressions", () => {
-  const referenced = new Set();
-  const uncertain = { value: false };
-  collectAstReferences({ type: "CallExpression", callee: { type: "Identifier", name: "require" }, arguments: [{ type: "StringLiteral", value: "alpha/subpath" }] }, ["alpha"], referenced, uncertain);
-  collectAstReferences({ type: "ImportExpression", source: { type: "BinaryExpression", left: { type: "StringLiteral", value: "alpha/" }, right: { type: "Identifier", name: "suffix" } } }, ["alpha"], referenced, uncertain);
-  expect([...referenced]).toEqual(["alpha"]);
-  expect(uncertain.value).toBe(true);
-  collectAstReferences({ type: "ImportExpression", source: { type: "TemplateLiteral", quasis: [{ value: { raw: "other/" } }] } }, ["alpha"], referenced, { value: false });
-  collectAstReferences({ type: "ImportExpression", source: { type: "BinaryExpression", left: { type: "Identifier", name: "prefix" }, right: { type: "Identifier", name: "suffix" } } }, ["alpha"], referenced, { value: false });
-  collectAstReferences({ type: "CallExpression", callee: { type: "Import" }, arguments: [{ type: "StringLiteral", value: "alpha" }] }, ["alpha"], referenced);
-  collectAstReferences({ type: "CallExpression", callee: { type: "Identifier", name: "require" }, arguments: [{ type: "TemplateLiteral", quasis: [{ value: { raw: "alpha/" } }] }] }, ["alpha"], referenced, uncertain);
-  collectAstReferences({ type: "CallExpression", callee: { type: "Identifier", name: "require" }, arguments: [] }, ["alpha"], referenced, uncertain);
-});
-
-test("collects a static ImportExpression reference", () => {
-  const referenced = new Set();
-  collectAstReferences({ type: "ImportExpression", source: { type: "StringLiteral", value: "alpha/subpath" } }, ["alpha"], referenced);
-  expect([...referenced]).toEqual(["alpha"]);
-});
-
-test("collects static dependency resolver references", () => {
-  const referenced = new Set();
-  const ast = parse('resolvePackage("alpha/package.json"); require.resolve("beta/package.json");', { sourceType: "module" });
-  collectAstReferences(ast, ["alpha", "beta"], referenced);
-  expect([...referenced].sort()).toEqual(["alpha", "beta"]);
-});
-
-test("ignores require.resolve when require is declared or the member is computed", () => {
-  for (const source of [
-    'const require = localRequire; require.resolve("alpha");',
-    'function require() {} require.resolve("alpha");',
-    'import require from "other"; require.resolve("alpha");',
-    'import { value as require } from "other"; require.resolve("alpha");',
-    'import * as require from "other"; require.resolve("alpha");',
-    'try {} catch (require) { require.resolve("alpha"); }',
-    'function load(require) { require.resolve("alpha"); }',
-    'require["resolve"]("alpha");',
-    'require.path("alpha");',
-    'resolver.resolve("alpha");',
-  ]) {
-    const referenced = new Set();
-    collectAstReferences(parse(source, { sourceType: "module" }).program, ["alpha"], referenced);
-    if (referenced.size > 0) throw new Error(`Unexpected dependency reference: ${source}`);
-  }
-});
-
-test("limits a named function-expression require binding to its own scope", () => {
-  const referenced = new Set();
-  const ast = parse('const value = function require() { require.resolve("ignored"); }; require.resolve("alpha");', {
-    sourceType: "module",
-  });
-  collectAstReferences(ast.program, ["alpha"], referenced);
-  expect([...referenced]).toEqual(["alpha"]);
-});
-
-test("collects unshadowed requires beside nested and block-scoped require bindings", () => {
-  const referenced = new Set();
-  const ast = parse(
-    'require("alpha"); function local(require) { require("ignored"); } { const require = mock; require("ignored"); } require.resolve("alpha/path");',
-    { sourceType: "module" },
-  );
-  collectAstReferences(ast.program, ["alpha"], referenced);
-  expect([...referenced]).toEqual(["alpha"]);
-});
-
-test("collects outer requires when a block declares a var require", () => {
-  const referenced = new Set();
-  const ast = parse('require("alpha"); { var require = mock; require("ignored"); }', { sourceType: "module" });
-  collectAstReferences(ast.program, ["alpha"], referenced);
-  expect([...referenced]).toEqual([]);
-});
-
-test("ignores non-string and undeclared dependency specifiers", () => {
-  const referenced = new Set();
-  collectAstReferences({ type: "ImportDeclaration", source: { type: "NumericLiteral", value: 1 } }, ["alpha"], referenced);
-  collectAstReferences({ type: "Program", body: [{ type: "ImportExpression", source: { type: "StringLiteral", value: "unknown" } }, { type: "CallExpression", callee: { type: "Import" }, arguments: [{ type: "StringLiteral", value: "unknown" }] }, { type: "CallExpression", callee: { type: "Identifier", name: "require" }, arguments: [{ type: "StringLiteral", value: "unknown" }] }] }, ["alpha"], referenced);
-  collectAstReferences({ type: "CallExpression", callee: { type: "Identifier", name: "resolvePackage" }, arguments: [{ type: "StringLiteral", value: "unknown" }] }, ["alpha"], referenced);
-  expect([...referenced]).toEqual([]);
 });

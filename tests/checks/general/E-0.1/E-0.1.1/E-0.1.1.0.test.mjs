@@ -1,17 +1,15 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const readFile = jest.fn();
-const readReadmeSections = jest.fn();
-const readmeSectionsCacheKey = jest.fn();
-const expectedReadmeHeadings = jest.fn();
+const loadReadmeValidationInputs = jest.fn();
 const findMissingReadmeSections = jest.fn();
 const validateReadmeBranding = jest.fn();
 const validateReadmeMetadata = jest.fn();
 const validateReadmeRequiredContent = jest.fn();
 const inspectReadmeDocumentationIndexes = jest.fn();
-jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
-jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/read-readme-sections.mjs", () => ({ readReadmeSections }));
-jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/resolve-readme-headings.mjs", () => ({ readmeSectionsCacheKey, expectedReadmeHeadings }));
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.1/load-readme-validation-inputs.mjs",
+  () => ({ loadReadmeValidationInputs }),
+);
 jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/find-missing-readme-sections.mjs", () => ({ findMissingReadmeSections }));
 jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-branding.mjs", () => ({ validateReadmeBranding }));
 jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-metadata.mjs", () => ({ validateReadmeMetadata }));
@@ -19,14 +17,12 @@ jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/valida
 jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.1/inspect-readme-documentation-indexes.mjs", () => ({ inspectReadmeDocumentationIndexes }));
 
 const { run } = await import("../../../../../src/checks/general/E-0.1/E-0.1.1/E-0.1.1.0.mjs");
-const headings = ["Table of Contents", "Features", "Requirements"];
+const sections = new Map([["Features", "section"]]);
+const inputs = { readme: "README content", sections };
 
 beforeEach(() => {
   jest.resetAllMocks();
-  readFile.mockResolvedValue("README content");
-  readReadmeSections.mockReturnValue(new Map(headings.map((heading) => [heading, "section"])));
-  readmeSectionsCacheKey.mockReturnValue("readme:sections:[]");
-  expectedReadmeHeadings.mockReturnValue(headings);
+  loadReadmeValidationInputs.mockResolvedValue(inputs);
   findMissingReadmeSections.mockReturnValue([]);
   validateReadmeBranding.mockReturnValue(null);
   validateReadmeMetadata.mockReturnValue(null);
@@ -34,17 +30,18 @@ beforeEach(() => {
   inspectReadmeDocumentationIndexes.mockResolvedValue({ examplesRequired: false, error: null });
 });
 
-test("composes README structure, branding, content, metadata, and index validation", async () => {
+test("coordinates README validation phases using loaded inputs", async () => {
   const packageJson = { name: "@eliware/example" };
   await expect(run({ root: "/repo", packageJson })).resolves.toEqual({ ruleId: "E-0.1.1.0", status: "pass", message: "" });
-  expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/README\.md$/u), "utf8");
+  expect(loadReadmeValidationInputs).toHaveBeenCalledWith({ root: "/repo", packageJson });
+  expect(findMissingReadmeSections).toHaveBeenCalledWith(sections, packageJson);
   expect(validateReadmeRequiredContent).toHaveBeenCalledWith(
-    "README content",
+    inputs.readme,
     packageJson,
-    expect.objectContaining({ examplesRequired: false, sections: expect.any(Map) }),
+    expect.objectContaining({ examplesRequired: false, sections }),
   );
   const phases = [
-    readReadmeSections,
+    loadReadmeValidationInputs,
     findMissingReadmeSections,
     validateReadmeBranding,
     inspectReadmeDocumentationIndexes,
@@ -56,9 +53,9 @@ test("composes README structure, branding, content, metadata, and index validati
 });
 
 test("fails for missing README or structural headings before delegated checks", async () => {
-  readFile.mockRejectedValueOnce(new Error("missing"));
+  loadReadmeValidationInputs.mockResolvedValueOnce(null);
   await expect(run({ root: "/repo" })).resolves.toEqual({ ruleId: "E-0.1.1.0", status: "fail", message: "README.md is required." });
-  expect(readReadmeSections).not.toHaveBeenCalled();
+  expect(findMissingReadmeSections).not.toHaveBeenCalled();
 
   findMissingReadmeSections.mockReturnValueOnce(["Features", "Requirements"]);
   await expect(run({ root: "/repo" })).resolves.toEqual({
@@ -88,8 +85,8 @@ test("reports index validation errors after validating README content", async ()
     message: "examples index missing",
   });
   expect(validateReadmeRequiredContent).toHaveBeenCalledWith(
-    "README content",
+    inputs.readme,
     undefined,
-    expect.objectContaining({ examplesRequired: true, sections: expect.any(Map) }),
+    expect.objectContaining({ examplesRequired: true, sections }),
   );
 });

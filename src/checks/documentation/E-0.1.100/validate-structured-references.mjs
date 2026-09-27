@@ -1,8 +1,10 @@
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { collectStructuredReferences } from "./collect-structured-references.mjs";
-import { isWithinRegisteredRepository, resolveStructuredReference } from "./resolve-structured-reference.mjs";
+import { resolveStructuredReference } from "./resolve-structured-reference.mjs";
 import { readRegisteredRepositoryRootsResult } from "./read-registered-repository-roots.mjs";
+import { validateLocalStructuredReference } from "./validate-local-structured-reference.mjs";
+import { validateRegisteredStructuredReference } from "./validate-registered-structured-reference.mjs";
 
 export async function validateStructuredReferences(root, files, inventory) {
   let registeredRepositoryRoots;
@@ -24,23 +26,15 @@ export async function validateStructuredReferences(root, files, inventory) {
           registeredRepositoryError = registry.error;
           registryLoaded = true;
         }
-        if (registeredRepositoryRoots === null) {
-          throw new Error(
-            `${reference.path} cannot be verified without the registered repository map: ${registeredRepositoryError}`,
-          );
-        }
-        if (!registeredRepositoryRoots.some((repositoryRoot) =>
-            isWithinRegisteredRepository(resolved.target, repositoryRoot),
-          )) {
-          throw new Error(`${reference.path} is outside every registered repository path`);
-        }
+        await validateRegisteredStructuredReference({
+          reference: reference.path,
+          target: resolved.target,
+          registeredRepositoryRoots,
+          registryError: registeredRepositoryError,
+        });
+        continue;
       }
-      try {
-        await stat(resolved.target);
-      } catch (error) {
-        if (resolved.external && error.code === "ENOENT") continue;
-        throw error;
-      }
+      await validateLocalStructuredReference(resolved.target);
     }
   }
   return null;

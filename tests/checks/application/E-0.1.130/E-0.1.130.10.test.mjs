@@ -1,6 +1,20 @@
-import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../../src/checks/application/E-0.1.130/E-0.1.130.10.mjs";
+import { expect, jest, test } from "@jest/globals";
 
-test("reports missing source/test roots under the application directive", async () => {
-  await expect(run({ root: "/repo" })).resolves.toMatchObject({ ruleId, status: "fail" });
+const runMonolithLimits = jest.fn();
+jest.unstable_mockModule("../../../../src/checks/general/E-0.1/E-0.1.20/validate-monolith-limits.mjs", () => ({
+  runMonolithLimits,
+}));
+const { parentRuleId, ruleId, run } = await import(
+  "../../../../src/checks/application/E-0.1.130/E-0.1.130.10.mjs"
+);
+
+test("forwards application identity and requires mirrored tests", () => {
+  const options = { root: "/repo", focusedScope: { paths: ["src/a.mjs"] } };
+  const result = { status: "pass" };
+  runMonolithLimits.mockReturnValueOnce(result);
+
+  expect(ruleId).toBe("E-0.1.130.10");
+  expect(parentRuleId).toBe("E-0.1.130");
+  expect(run(options)).toBe(result);
+  expect(runMonolithLimits).toHaveBeenCalledWith({ ...options, ruleId, requireTests: true });
 });

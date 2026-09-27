@@ -1,10 +1,20 @@
-import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../../src/checks/application/E-0.1.130/E-0.1.130.12.mjs";
+import { expect, jest, test } from "@jest/globals";
 
-test("passes when an application has no pure export barrels", async () => {
-  await expect(run({ root: "/repo", packageJson: { eliware: { apply: ["application"] } } })).resolves.toEqual({
-    ruleId,
-    status: "pass",
-    message: "",
-  });
+const runPureExportBarrelPolicy = jest.fn();
+jest.unstable_mockModule("../../../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs", () => ({
+  runPureExportBarrelPolicy,
+}));
+const { parentRuleId, repositoryInventoryOptions, ruleId, run } = await import(
+  "../../../../src/checks/application/E-0.1.130/E-0.1.130.12.mjs"
+);
+
+test("forwards application identity and source inventory requirements", () => {
+  const options = { root: "/repo", packageJson: {} };
+  const result = { status: "pass" };
+  runPureExportBarrelPolicy.mockReturnValueOnce(result);
+  expect(ruleId).toBe("E-0.1.130.12");
+  expect(parentRuleId).toBe("E-0.1.130");
+  expect(repositoryInventoryOptions).toEqual({ includeTestResultsUnder: ["src"] });
+  expect(run(options)).toBe(result);
+  expect(runPureExportBarrelPolicy).toHaveBeenCalledWith({ ...options, ruleId });
 });

@@ -1,41 +1,56 @@
-import { expect, jest, test } from "@jest/globals";
-import { join } from "node:path";
-import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
-import { moduleParserOptions } from "../../src/checks/create-repository-ast-cache.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("shares one file read across text, byte, parsed-document, and AST access", async () => {
-  const read = jest.fn(async (filePath) => {
-    if (filePath.endsWith("package.json")) return Buffer.from('{"name":"fixture"}');
-    if (filePath.endsWith("icon.png")) return Buffer.from([0x89, 0x50, 0x4e, 0x47]);
-    return Buffer.from("export const value = 1;");
-  });
-  const parseSource = jest.fn(() => ({ type: "File" }));
-  const inventory = createRepositoryInventory("/repo", { read, parseSource });
+const createRepositoryAstCache = jest.fn();
+const createRepositoryFileContentCache = jest.fn();
+const createRepositoryParsedContentCache = jest.fn();
+jest.unstable_mockModule("../../src/checks/create-repository-ast-cache.mjs", () => ({
+  createRepositoryAstCache,
+}));
+jest.unstable_mockModule("../../src/checks/create-repository-file-content-cache.mjs", () => ({
+  createRepositoryFileContentCache,
+}));
+jest.unstable_mockModule("../../src/checks/create-repository-parsed-content-cache.mjs", () => ({
+  createRepositoryParsedContentCache,
+}));
 
-  const text = await inventory.readText("src/index.mjs");
-  const bytes = await inventory.readBytes("src/index.mjs");
-  const parsed = await inventory.readParsed("package.json", "json", JSON.parse);
-  const parsedAgain = await inventory.readParsed(join("/repo", "package.json"), "json", JSON.parse);
-  const ast = await inventory.parseAst("/repo", "src/index.mjs", moduleParserOptions);
-  const astAgain = await inventory.parseAst("/repo", "src/index.mjs", moduleParserOptions);
-  const image = await inventory.readBytes("docs/icon.png");
-  const imageAgain = await inventory.readBytes(join("/repo", "docs", "icon.png"));
+const { createRepositoryContentCache } = await import(
+  "../../src/checks/create-repository-inventory-content.mjs"
+);
 
-  expect(text).toBe("export const value = 1;");
-  expect(bytes).toEqual(Buffer.from(text));
-  expect(parsed).toEqual({ name: "fixture" });
-  expect(parsedAgain).toBe(parsed);
-  expect(astAgain).toBe(ast);
-  expect(imageAgain).toBe(image);
-  expect(read).toHaveBeenCalledTimes(3);
-  expect(parseSource).toHaveBeenCalledTimes(1);
+beforeEach(() => {
+  jest.resetAllMocks();
 });
-test("uses the default source parser when no parser is injected", async () => {
-  const inventory = createRepositoryInventory("/repo", {
-    read: jest.fn(async () => "export const value = 1;"),
-  });
 
-  await expect(inventory.parseAst("/repo", "src/index.mjs", moduleParserOptions)).resolves.toMatchObject({
-    type: "File",
+test("composes byte, text, parsed-content, and AST cache collaborators", () => {
+  const readText = jest.fn();
+  const readBytes = jest.fn();
+  const content = { readText, readBytes };
+  const readParsed = jest.fn();
+  const parseAst = jest.fn();
+  const read = jest.fn();
+  const parseSource = jest.fn();
+  createRepositoryFileContentCache.mockReturnValue(content);
+  createRepositoryParsedContentCache.mockReturnValue(readParsed);
+  createRepositoryAstCache.mockReturnValue(parseAst);
+
+  expect(createRepositoryContentCache("/repo", read, parseSource)).toEqual({
+    readText,
+    readBytes,
+    readParsed,
+    parseAst,
   });
+  expect(createRepositoryFileContentCache).toHaveBeenCalledWith("/repo", read);
+  expect(createRepositoryParsedContentCache).toHaveBeenCalledWith("/repo", readText);
+  expect(createRepositoryAstCache).toHaveBeenCalledWith({ read: readText, parseSource });
+});
+
+test("uses the default AST parser when no parser is supplied", () => {
+  const readText = jest.fn();
+  createRepositoryFileContentCache.mockReturnValue({ readText, readBytes: jest.fn() });
+  createRepositoryParsedContentCache.mockReturnValue(jest.fn());
+  createRepositoryAstCache.mockReturnValue(jest.fn());
+
+  createRepositoryContentCache("/repo", jest.fn());
+
+  expect(createRepositoryAstCache).toHaveBeenCalledWith({ read: readText });
 });

@@ -1,6 +1,11 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../../src/checks/infrastructure/E-0.1.90/A-0.1.90.2.mjs";
+import { enforcementMode, parentRuleId, ruleId, run } from "../../../../src/checks/infrastructure/E-0.1.90/A-0.1.90.2.mjs";
 
-test("passes the non-deterministic infrastructure rule", () => {
-  expect(run()).toEqual({ ruleId, status: "pass", message: "" });
+test("exports the expected identity for its non-deterministic rule", () => {
+  expect({ ruleId, parentRuleId, enforcementMode }).toEqual({
+    ruleId: "A-0.1.90.2",
+    parentRuleId: "E-0.1.90",
+    enforcementMode: "non-deterministic",
+  });
+  expect(run().ruleId).toBe(ruleId);
 });

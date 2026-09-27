@@ -29,6 +29,7 @@ export function classifyAstDependencyReference(node, declared, referenced, uncer
   }
   if (node.type === "CallExpression" && node.callee?.type === "Import") {
     if (node.arguments?.[0]?.type === "StringLiteral") addSpecifier(node.arguments[0].value);
+    else if (mayNameDeclaredDependency(node.arguments?.[0], declared)) uncertain.value = true;
   }
   if (node.type === "CallExpression" && !requireShadowed && node.callee?.type === "Identifier" && node.callee.name === "require") {
     if (node.arguments?.[0]?.type === "StringLiteral") addSpecifier(node.arguments[0].value);

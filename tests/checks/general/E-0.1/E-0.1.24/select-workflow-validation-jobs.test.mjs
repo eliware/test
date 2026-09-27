@@ -1,17 +1,21 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 
 const findPublicationCommand = jest.fn();
-const findUnsupportedCommands = jest.fn();
 const isValidationWorkflowJob = jest.fn();
 const validateWorkflowSiblingJobs = jest.fn();
+const validateWorkflowValidationJobs = jest.fn();
 
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.24/classify-workflow-commands.mjs",
-  () => ({ findPublicationCommand, findUnsupportedCommands, isValidationWorkflowJob }),
+  () => ({ findPublicationCommand, isValidationWorkflowJob }),
 );
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-sibling-jobs.mjs",
   () => ({ validateWorkflowSiblingJobs }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-validation-jobs.mjs",
+  () => ({ validateWorkflowValidationJobs }),
 );
 
 const { selectWorkflowValidationJobs } = await import(
@@ -22,7 +26,7 @@ const validJob = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
 beforeEach(() => {
   jest.resetAllMocks();
   findPublicationCommand.mockReturnValue(undefined);
-  findUnsupportedCommands.mockReturnValue([]);
+  validateWorkflowValidationJobs.mockReturnValue(null);
   isValidationWorkflowJob.mockReturnValue(false);
   validateWorkflowSiblingJobs.mockReturnValue(null);
 });
@@ -61,8 +65,8 @@ test("maps missing validation jobs according to whether the workflow publishes",
   });
 });
 
-test("maps command-classification and sibling-validation findings", () => {
-  findUnsupportedCommands.mockReturnValueOnce(["curl example.test"]);
+test("maps validation-command and sibling-validation findings", () => {
+  validateWorkflowValidationJobs.mockReturnValueOnce("ci.yml contains non-validation command(s): curl example.test.");
   expect(selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } })).toEqual({
     error: "ci.yml contains non-validation command(s): curl example.test.",
     jobs: [],

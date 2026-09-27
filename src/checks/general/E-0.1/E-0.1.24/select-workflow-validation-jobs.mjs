@@ -1,6 +1,7 @@
 import { isValidationJob, workflowCommands, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
-import { findPublicationCommand, findUnsupportedCommands, isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
+import { findPublicationCommand, isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
 import { validateWorkflowSiblingJobs } from "./validate-workflow-sibling-jobs.mjs";
+import { validateWorkflowValidationJobs } from "./validate-workflow-validation-jobs.mjs";
 
 export function selectWorkflowValidationJobs(name, document) {
   const commands = workflowCommands(document);
@@ -15,12 +16,8 @@ export function selectWorkflowValidationJobs(name, document) {
   if (validationJobs.length === 0) {
     return { error: `${name} must validate with npm ci followed by npm test.`, jobs: [] };
   }
-  for (const { commands: jobCommands } of validationJobs) {
-    const unsupported = findUnsupportedCommands(jobCommands);
-    if (unsupported.length > 0) {
-      return { error: `${name} contains non-validation command(s): ${unsupported.join(", ")}.`, jobs: [] };
-    }
-  }
+  const validationError = validateWorkflowValidationJobs(name, validationJobs);
+  if (validationError) return { error: validationError, jobs: [] };
   const validationJobIds = new Set(validationJobs.map(({ id }) => id));
   const siblingError = validateWorkflowSiblingJobs(
     name,

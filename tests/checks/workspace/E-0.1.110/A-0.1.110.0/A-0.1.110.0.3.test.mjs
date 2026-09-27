@@ -1,6 +1,11 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../../../src/checks/workspace/E-0.1.110/A-0.1.110.0/A-0.1.110.0.3.mjs";
+import { enforcementMode, parentRuleId, ruleId, run } from "../../../../../src/checks/workspace/E-0.1.110/A-0.1.110.0/A-0.1.110.0.3.mjs";
 
-test("passes the non-deterministic workspace child rule", () => {
-  expect(run()).toEqual({ ruleId, status: "pass", message: "" });
+test("exports the expected identity for its non-deterministic rule", () => {
+  expect({ ruleId, parentRuleId, enforcementMode }).toEqual({
+    ruleId: "A-0.1.110.0.3",
+    parentRuleId: "A-0.1.110.0",
+    enforcementMode: "non-deterministic",
+  });
+  expect(run().ruleId).toBe(ruleId);
 });

@@ -1,6 +1,17 @@
-import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../../src/checks/application/E-0.1.130/E-0.1.130.13.mjs";
+import { expect, jest, test } from "@jest/globals";
 
-test("skips Jest when the application test stage is disabled", async () => {
-  await expect(run({ executeJest: false })).resolves.toEqual({ ruleId, status: "pass", message: "" });
+const runJestStage = jest.fn();
+jest.unstable_mockModule("../../../../src/checks/general/E-0.1/run-jest-stage.mjs", () => ({ runJestStage }));
+const { focusedSafe, parentRuleId, ruleId, run } = await import(
+  "../../../../src/checks/application/E-0.1.130/E-0.1.130.13.mjs"
+);
+
+test("forwards application identity and context to the shared Jest stage", () => {
+  const context = { executeJest: false };
+  const result = { status: "pass" };
+  runJestStage.mockReturnValueOnce(result);
+  expect(parentRuleId).toBe("E-0.1.130");
+  expect(focusedSafe).toBe(true);
+  expect(run(context)).toBe(result);
+  expect(runJestStage).toHaveBeenCalledWith(context, ruleId);
 });
