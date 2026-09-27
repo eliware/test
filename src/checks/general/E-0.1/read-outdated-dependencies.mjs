@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
-import { killWindowsProcessTree, terminateChild } from "./E-0.1.20/terminate-child.mjs";
+import { terminateChild } from "./E-0.1.20/terminate-child.mjs";
+import { killWindowsProcessTree } from "./E-0.1.20/terminate-windows-process-tree.mjs";
 import { createOutdatedDependenciesOutput } from "./create-outdated-dependencies-output.mjs";
 import { createOutdatedDependenciesCommand } from "./create-outdated-dependencies-command.mjs";
 import { parseOutdatedDependenciesOutput } from "./parse-outdated-dependencies-output.mjs";

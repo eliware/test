@@ -2,7 +2,8 @@ import { StringDecoder } from "node:string_decoder";
 import { redactProcessOutput } from "./redact-process-output.mjs";
 import { createSecretTextMatcher } from "./create-secret-text-matcher.mjs";
 import { createBoundedSecretSearch } from "./create-bounded-secret-search.mjs";
-import { createPartialSecretSuffixTrimmer, redactMatchedSecrets } from "./redact-secrets.mjs";
+import { createPartialSecretSuffixTrimmer } from "./create-partial-secret-suffix-trimmer.mjs";
+import { redactMatchedSecrets } from "./redact-secrets.mjs";
 
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
 const MAX_RETAINED_PENDING_LENGTH = 64_000;

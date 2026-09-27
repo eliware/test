@@ -1,4 +1,6 @@
-import { expandAppliedProfiles, readBundledProfileAuthority, validateAppliedProfiles } from "./read-bundled-profile-authority.mjs";
+import { readBundledProfileAuthority } from "./read-bundled-profile-authority.mjs";
+import { expandAppliedProfiles } from "./expand-applied-profiles.mjs";
+import { validateAppliedProfiles } from "./validate-applied-profiles.mjs";
 
 export function readConventionConfig(packageJson) {
   const apply = packageJson?.eliware?.apply;

@@ -11,12 +11,17 @@ test("accepts local structured references", async () => {
   await writeFile(join(root, "specs", "target.json"), "{}");
   await writeFile(join(root, "specs", "index.json"), JSON.stringify({ path: "./target.json" }));
   await expect(validateStructuredReferences(root, ["specs/index.json"])).resolves.toBeNull();
-  await writeFile(
-    join(root, "specs", "external-url.json"),
-    JSON.stringify({ path: "https://example.test/reference.json" }),
-  );
-  await expect(validateStructuredReferences(root, ["specs/external-url.json"])).resolves.toBeNull();
   await rm(root, { recursive: true, force: true });
+});
+
+test("skips non-file references while validating documents", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-structured-refs-url-"));
+  try {
+    await writeFile(join(root, "index.json"), JSON.stringify({ path: "https://example.test/reference.json" }));
+    await expect(validateStructuredReferences(root, ["index.json"])).resolves.toBeNull();
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("uses cached JSON reads from the shared inventory", async () => {
@@ -119,51 +124,23 @@ test("rejects an external crosslink outside registered repository paths", async 
   await rm(parent, { recursive: true, force: true });
 });
 
-test("does not allow external targets outside declared crosslinks", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-external-ref-"));
-  await writeFile(
-    join(root, "index.json"),
-    JSON.stringify({ authority: { path: "../authority.json" } }),
-  );
-  await expect(validateStructuredReferences(root, ["index.json"])).rejects.toThrow(
-    "resolves outside the repository",
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("requires a registered map before accepting an existing external target", async () => {
-  const parent = await mkdtemp(join(tmpdir(), "eliware-cross-repo-refs-registry-"));
+test.each([true, false])("requires a registered map before accepting an external target (exists: %s)", async (targetExists) => {
+  const parent = await mkdtemp(join(tmpdir(), "eliware-cross-repo-refs-no-map-"));
   const root = join(parent, "repository");
-  const docs = join(parent, "docs");
-  await mkdir(join(root, "specs"), { recursive: true });
-  await mkdir(docs);
-  await writeFile(join(docs, "target.json"), "{}");
-  await writeFile(join(root, "package.json"), JSON.stringify({
-    eliware: { crosslinks: [{ path: "../docs/target.json" }] },
-  }));
-  await expect(validateStructuredReferences(root, ["package.json"])).rejects.toThrow(
-    "cannot be verified without the registered repository map",
-  );
-  await rm(parent, { recursive: true, force: true });
-});
-
-test("requires a registered map before accepting an unavailable external target", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-cross-repo-refs-no-map-"));
-  await writeFile(join(root, "package.json"), JSON.stringify({
-    eliware: { crosslinks: [{ path: "../missing-repository/target.json" }] },
-  }));
-  await expect(validateStructuredReferences(root, ["package.json"])).rejects.toThrow(
-    "cannot be verified without the registered repository map",
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("identifies the missing authority map when cross-repository verification cannot proceed", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-cross-repo-refs-authority-diagnostic-"));
-  await writeFile(join(root, "package.json"), JSON.stringify({
-    eliware: { crosslinks: [{ path: "../missing-repository/target.json" }] },
-  }));
-  await expect(validateStructuredReferences(root, ["package.json"]))
-    .rejects.toThrow(join(root, "specs", "authority.json"));
-  await rm(root, { recursive: true, force: true });
+  const targetRoot = join(parent, targetExists ? "docs" : "missing-repository");
+  try {
+    await mkdir(root, { recursive: true });
+    if (targetExists) {
+      await mkdir(targetRoot);
+      await writeFile(join(targetRoot, "target.json"), "{}");
+    }
+    const repositoryPath = targetExists ? "../docs/target.json" : "../missing-repository/target.json";
+    await writeFile(join(root, "package.json"), JSON.stringify({
+      eliware: { crosslinks: [{ path: repositoryPath }] },
+    }));
+    await expect(validateStructuredReferences(root, ["package.json"]))
+      .rejects.toThrow(join(root, "specs", "authority.json"));
+  } finally {
+    await rm(parent, { recursive: true, force: true });
+  }
 });

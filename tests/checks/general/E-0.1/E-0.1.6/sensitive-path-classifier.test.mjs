@@ -9,6 +9,8 @@ test("classifies sensitive paths while permitting the environment template", () 
   expect(isForbiddenPath("id_ed25519")).toBe(true);
   expect(isForbiddenPath("src/private-key.mjs")).toBe(true);
   expect(isForbiddenPath("src/checks/collect-redaction-secrets.mjs")).toBe(false);
+  expect(isForbiddenPath("src/checks/create-partial-secret-suffix-trimmer.mjs")).toBe(false);
+  expect(isForbiddenPath("tests/checks/create-partial-secret-suffix-trimmer.test.mjs")).toBe(false);
   expect(isForbiddenPath("tests/checks/redact-credential-fields.test.mjs")).toBe(false);
   expect(isForbiddenPath("src/checks/create-secret-text-matcher.mjs.pem")).toBe(true);
   expect(isForbiddenPath("tests/checks/redact-credential-fields.test.mjs.key")).toBe(true);

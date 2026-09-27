@@ -1,94 +1,36 @@
-import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
-import { validateAuthorityReference } from "./validate-authority-reference.mjs";
-
-const namespacePattern = /^[EA]-\d+(?:\.\d+)*$/;
-
-function isWithin(directory, target) {
-  const pathFromDirectory = relative(directory, target);
-  return (
-    pathFromDirectory === "" ||
-    (pathFromDirectory !== ".." &&
-      !pathFromDirectory.startsWith(`..${sep}`) &&
-      !isAbsolute(pathFromDirectory))
-  );
-}
+import {
+  validateAuthorityRegistryEntryShape,
+  validateAuthorityRegistryShape,
+} from "./validate-authority-registry-shape.mjs";
+import { validateAuthorityRegistryReferences } from "./validate-authority-registry-references.mjs";
+import { validateAuthorityRegistryGovernance } from "./validate-authority-registry-governance.mjs";
+import { validateAuthorityRegistryDelegation } from "./validate-authority-registry-delegation.mjs";
+import { validateAuthorityRegistryDirectiveNamespaces } from "./validate-authority-registry-directive-namespaces.mjs";
 
 export async function validateAuthorityRegistry({ root, file, entries }) {
-  if (!Array.isArray(entries)) return "authority-map.json must declare repositoryRegistry.";
+  const shapeError = validateAuthorityRegistryShape(entries);
+  if (shapeError) return shapeError;
   const repositories = new Set(
     entries
       .filter((entry) => entry && typeof entry.repository === "string")
       .map((entry) => entry.repository),
   );
-  if (
-    repositories.size !==
-    entries.filter((entry) => entry && typeof entry.repository === "string").length
-  ) {
-    return `Duplicate authority repository: ${entries.find((entry, index) => entry && typeof entry.repository === "string" && entries.findIndex((candidate) => candidate?.repository === entry.repository) !== index)?.repository}.`;
-  }
   const governedTargets = new Set();
   for (const [index, entry] of entries.entries()) {
-    if (!entry || typeof entry !== "object" || typeof entry.repository !== "string") {
-      return `repositoryRegistry[${index}] must declare a repository.`;
-    }
-    if (typeof entry.path !== "string" || !entry.path.trim())
-      return `${entry.repository} must declare path.`;
-    const mapDirectory = dirname(file);
-    const repositoryRoot = resolve(mapDirectory, entry.path);
-    const repositoryError = await validateAuthorityReference({
+    const entryShapeError = validateAuthorityRegistryEntryShape(entry, index);
+    if (entryShapeError) return entryShapeError;
+    const referenceError = await validateAuthorityRegistryReferences({
       root,
       file,
-      reference: entry.path,
-      label: `${entry.repository}.path`,
+      entry,
     });
-    if (repositoryError) return repositoryError;
-    const repositoryAnchor = resolve(repositoryRoot, "authority-registry-reference.json");
-    for (const field of ["package", "authorityFile", "reference"]) {
-      if (typeof entry[field] !== "string") return `${entry.repository} must declare ${field}.`;
-      const target = resolve(repositoryRoot, entry[field]);
-      if (!isWithin(repositoryRoot, target)) {
-        return `${entry.repository}.${field} must resolve within its repository path.`;
-      }
-      const error = await validateAuthorityReference({
-        root,
-        file: repositoryAnchor,
-        reference: entry[field],
-        label: `${entry.repository}.${field}`,
-      });
-      if (error) return error;
-    }
-    if (
-      !Array.isArray(entry.governs) ||
-      entry.governs.length === 0 ||
-      entry.governs.some((target) => typeof target !== "string" || !target.trim())
-    ) {
-      return `${entry.repository} must declare valid governs targets.`;
-    }
-    for (const target of entry.governs) {
-      if (governedTargets.has(target)) return `Duplicate normative authority target: ${target}.`;
-      governedTargets.add(target);
-    }
-    for (const field of ["baselineFor"]) {
-      if (
-        entry[field] !== undefined &&
-        (!Array.isArray(entry[field]) ||
-          entry[field].some((repository) => !repositories.has(repository)))
-      ) {
-        return `${entry.repository}.${field} contains unsupported delegation.`;
-      }
-    }
-    if (
-      entry.inheritsSharedBaselineFrom !== undefined &&
-      !repositories.has(entry.inheritsSharedBaselineFrom)
-    ) {
-      return `${entry.repository}.inheritsSharedBaselineFrom contains unsupported delegation.`;
-    }
-    if (
-      !Array.isArray(entry.directiveNamespaces) ||
-      entry.directiveNamespaces.some((namespace) => !namespacePattern.test(namespace))
-    ) {
-      return `${entry.repository} must declare valid directiveNamespaces.`;
-    }
+    if (referenceError) return referenceError;
+    const governanceError = validateAuthorityRegistryGovernance(entry, governedTargets);
+    if (governanceError) return governanceError;
+    const delegationError = validateAuthorityRegistryDelegation(entry, repositories);
+    if (delegationError) return delegationError;
+    const namespaceError = validateAuthorityRegistryDirectiveNamespaces(entry);
+    if (namespaceError) return namespaceError;
   }
   return null;
 }

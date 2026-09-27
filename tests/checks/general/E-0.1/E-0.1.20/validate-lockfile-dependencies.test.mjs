@@ -13,6 +13,8 @@ test("validates dependency maps and direct package entries", () => {
   expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": { version: "1.0.0", resolved: "file:alpha", dependencies: { missing: "1.0.0" } } } }, {})).toMatch(/missing dependency/);
   expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": { version: "1.0.0", resolved: "file:alpha", peerDependencies: { optional: "1.0.0" }, peerDependenciesMeta: { optional: { optional: true } } } } }, {})).toBeNull();
   expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": null } }, {})).toMatch(/valid package version/);
+  expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": { name: 1, version: "1.0.0", resolved: "file:alpha" } } }, {})).toMatch(/valid package version/);
+  expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": { name: "", version: "1.0.0", resolved: "file:alpha" } } }, {})).toMatch(/valid package version/);
   expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": { version: "1.0.0", link: true } } }, {})).toBeNull();
   expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": { version: "1.0.0", resolved: "https://registry", dependencies: [] } } }, {})).toMatch(/invalid dependencies/);
   expect(validateLockfileDependencies({ packages: { "": {}, "node_modules/a/node_modules/alpha": { version: "1.0.0", resolved: "file:alpha", dependencies: { beta: "1.0.0" } }, "node_modules/beta": { version: "1.0.0", resolved: "https://registry" } } }, {})).toBeNull();

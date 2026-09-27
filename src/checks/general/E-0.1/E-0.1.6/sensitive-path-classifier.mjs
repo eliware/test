@@ -9,6 +9,7 @@ const benignSecurityPaths = new Set([
   "src/checks/redact-http-credentials.mjs",
   "src/checks/redact-known-token-formats.mjs",
   "src/checks/create-bounded-secret-search.mjs",
+  "src/checks/create-partial-secret-suffix-trimmer.mjs",
   "src/checks/create-secret-text-matcher.mjs",
   "src/checks/redact-secrets.mjs",
   "tests/checks/collect-redaction-secrets.test.mjs",
@@ -17,6 +18,7 @@ const benignSecurityPaths = new Set([
   "tests/checks/redact-http-credentials.test.mjs",
   "tests/checks/redact-known-token-formats.test.mjs",
   "tests/checks/create-bounded-secret-search.test.mjs",
+  "tests/checks/create-partial-secret-suffix-trimmer.test.mjs",
   "tests/checks/create-secret-text-matcher.test.mjs",
   "tests/checks/redact-secrets.test.mjs",
 ].map((path) => path.toLowerCase()));

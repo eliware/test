@@ -1,5 +1,6 @@
 import { fail, pass } from "../../../check-result.mjs";
-import { readBundledProfileAuthority, validateAppliedProfiles } from "../../../../orchestrators/read-bundled-profile-authority.mjs";
+import { readBundledProfileAuthority } from "../../../../orchestrators/read-bundled-profile-authority.mjs";
+import { validateAppliedProfiles } from "../../../../orchestrators/validate-applied-profiles.mjs";
 
 export const ruleId = "E-0.1.9.2";
 export const parentRuleId = "E-0.1.9";

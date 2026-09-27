@@ -1,9 +1,7 @@
 import { discoverChecks } from "./discover-checks.mjs";
-import {
-  expandAppliedProfiles,
-  readBundledProfileAuthority,
-  validateAppliedProfiles,
-} from "./read-bundled-profile-authority.mjs";
+import { readBundledProfileAuthority } from "./read-bundled-profile-authority.mjs";
+import { expandAppliedProfiles } from "./expand-applied-profiles.mjs";
+import { validateAppliedProfiles } from "./validate-applied-profiles.mjs";
 
 export async function selectConventionChecks(conventions, availableChecks = null) {
   const authority = readBundledProfileAuthority();

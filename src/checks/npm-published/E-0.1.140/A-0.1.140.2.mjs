@@ -6,17 +6,11 @@ import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
 import { steps } from "../../ghcr-published/workflow-structure.mjs";
 import { findValidationJobs } from "../../ghcr-published/find-validation-jobs.mjs";
 import { hasReleaseTagGuard, isTagRelease, tagMatchesPackageVersion } from "../../ghcr-published/release-version-tag.mjs";
+import { hasUnconditionalPublishStep } from "./has-unconditional-publish-step.mjs";
 
 export const ruleId = "A-0.1.140.2";
 export const parentRuleId = "E-0.1.140";
 export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
-
-function publishStepIsUnconditionalAndFailClosed(step) {
-  const continueOnError = step["continue-on-error"] ?? step.continueOnError;
-  const allowsContinueOnError = continueOnError !== undefined &&
-    continueOnError !== false && String(continueOnError).trim().toLowerCase() !== "false";
-  return !Object.hasOwn(step, "if") && !allowsContinueOnError;
-}
 
 export async function run(context) {
   const { root, packageJson } = context;
@@ -49,7 +43,7 @@ export async function run(context) {
       const publishIndex = jobSteps.findIndex(({ run }) => /^npm\s+publish\b/iu.test(String(run).trim()));
       return verifyIndex >= 0 && publishIndex > verifyIndex &&
         hasValidationDependency &&
-        publishStepIsUnconditionalAndFailClosed(jobSteps[publishIndex]) &&
+        hasUnconditionalPublishStep(jobSteps[publishIndex]) &&
         hasUbuntuRunner(workflow, job);
     });
     if (

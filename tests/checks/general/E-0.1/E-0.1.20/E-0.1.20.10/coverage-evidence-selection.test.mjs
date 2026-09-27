@@ -1,9 +1,8 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, jest, test } from "@jest/globals";
+import { expect, test } from "@jest/globals";
 import { readCoverageEvidenceFromCandidates } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-evidence-selection.mjs";
-import { createRepositoryInventory } from "../../../../../../src/checks/create-repository-inventory.mjs";
 
 const textReport = "src/example.mjs | 100 | 100 | 100 | 100 |\nAll files | 100 | 100 | 100 | 100 |";
 const detailedReport = {
@@ -17,20 +16,6 @@ const detailedReport = {
     l: { 1: 1 },
   },
 };
-
-test("uses the shared coverage-source view and cached source text", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-coverage-inventory-"));
-  await mkdir(join(root, "src"));
-  await writeFile(join(root, "src", "expected.mjs"), "export const value = 1;\n");
-  const repositoryInventory = createRepositoryInventory(root);
-  try {
-    await expect(
-      readCoverageEvidenceFromCandidates(root, "", 0, { inventory: repositoryInventory }),
-    ).rejects.toThrow("Coverage evidence is missing");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
 
 test("returns the first valid detailed candidate with its selected path", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-coverage-selection-"));
@@ -83,29 +68,6 @@ test("reads the run-local reporter filenames inside isolated coverage output", a
       coverageDirectory,
       expectedFiles: ["src/example.mjs"],
     })).resolves.toMatchObject({ source: "coverage-final.json", gaps: [] });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("reads isolated run reports through the injected inventory reader", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-inventory-coverage-reader-"));
-  const coverageDirectory = join(root, "reports-that-do-not-exist");
-  await mkdir(join(root, "src"));
-  await writeFile(join(root, "src", "example.mjs"), "export const value = 1;\n");
-  const simpleReport = structuredClone(detailedReport);
-  Object.assign(simpleReport["src/example.mjs"], { branchMap: {}, b: {}, fnMap: {}, f: {} });
-  const read = jest.fn(async (path) => path.endsWith("coverage-final.json")
-    ? JSON.stringify(simpleReport)
-    : readFile(path));
-  const inventory = createRepositoryInventory(root, { read });
-  try {
-    await expect(readCoverageEvidenceFromCandidates(root, "", 0, {
-      inventory,
-      coverageDirectory,
-      expectedFiles: ["src/example.mjs"],
-    })).resolves.toMatchObject({ source: "coverage-final.json", gaps: [] });
-    expect(read).toHaveBeenCalledWith(join(coverageDirectory, "coverage-final.json"));
   } finally {
     await rm(root, { recursive: true, force: true });
   }

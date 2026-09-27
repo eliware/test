@@ -41,15 +41,17 @@ test("reports syntax errors from the shared AST cache", async () => {
   );
 });
 
-test("rejects commands that appear before the required prefix", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    "console.log('before');\ngit pull --ff-only origin main\nnpm ci\nnpm test\n",
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await rm(root, { recursive: true, force: true });
+test("maps syntax errors parsed from the Knit source to a rule failure", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-malformed-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    await writeFile(join(root, ".knit", "validate.mjs"), "export const = ;");
+    await expect(run({ root })).resolves.toEqual(
+      expect.objectContaining({ message: expect.stringContaining("not valid JavaScript") }),
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("rejects executable statements before the command sequence", async () => {
@@ -58,19 +60,6 @@ test("rejects executable statements before the command sequence", async () => {
   await writeFile(
     join(root, ".knit", "validate.mjs"),
     'console.log("before"); import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("required synchronization") }),
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects effectful variable initializers before the command sequence", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-initializer-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; const setup = process.env.KNIT_SETUP; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
   );
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ message: expect.stringContaining("required synchronization") }),
@@ -90,21 +79,15 @@ test("rejects reordered structured subprocess commands", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("reports malformed or missing Knit scripts", async () => {
+test("maps missing Knit scripts to a rule failure", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-errors-"));
   await mkdir(join(root, ".knit"));
-  await writeFile(join(root, ".knit", "validate.mjs"), "export const = ;");
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("not valid JavaScript") }),
-  );
-  await rm(root, { recursive: true, force: true });
-  const missing = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-missing-"));
-  await expect(run({ root: missing })).resolves.toEqual({
+  await expect(run({ root })).resolves.toEqual({
     ruleId: "E-0.1.10.1",
     status: "fail",
     message: ".knit/validate.mjs is required for Knit validation.",
   });
-  await rm(missing, { recursive: true, force: true });
+  await rm(root, { recursive: true, force: true });
 });
 
 test("rejects incomplete and dynamically tokenized command sequences", async () => {

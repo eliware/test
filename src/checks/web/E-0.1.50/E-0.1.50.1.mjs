@@ -1,71 +1,21 @@
-import { readdir } from "node:fs/promises";
-import { isAbsolute, relative, resolve, sep } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
+import { collectWebAssetPaths } from "./collect-web-asset-paths.mjs";
+import { matchesWebAssetExclusion } from "./matches-web-asset-exclusion.mjs";
+import { resolveWebAssetSettings } from "./resolve-web-asset-settings.mjs";
 
 export const ruleId = "E-0.1.50.1";
 export const parentRuleId = "E-0.1.50";
 
-async function collectAssetPaths(directory, prefix = "", inventory, exclusions) {
-  const entries = inventory
-    ? await inventory.directoryEntries(directory)
-    : await readdir(directory, { withFileTypes: true });
-  const paths = [];
-  for (const entry of entries) {
-    const path = prefix ? `${prefix}/${entry.name}` : entry.name;
-    paths.push(path);
-    if (
-      entry.isDirectory() &&
-      !exclusions.some((exclusion) => matchesExclusion(path, exclusion))
-    ) {
-      paths.push(...await collectAssetPaths(resolve(directory, entry.name), path, inventory, exclusions));
-    }
-  }
-  return paths;
-}
-
-function matchesExclusion(path, exclusion) {
-  const normalizedPath = path.replaceAll("\\", "/");
-  const normalizedExclusion = exclusion.trim().replaceAll("\\", "/").replace(/^\.\//u, "").replace(/\/+$/u, "");
-  const pattern = normalizedExclusion.replace(/[.+^${}()|[\]\\]/gu, "\\$&").replaceAll("*", ".*");
-  return new RegExp(`(?:^|/)${pattern}(?:/|$)`, "u").test(normalizedPath);
-}
-
 export async function run({ root, packageJson, repositoryInventory }) {
-  const assetRoot =
-    typeof packageJson?.eliware?.webRoot === "string" && packageJson.eliware.webRoot.trim()
-      ? packageJson.eliware.webRoot.trim()
-      : "public";
-  const configuredExclusions = packageJson?.eliware?.webAssetExcludes;
-  if (
-    configuredExclusions !== undefined &&
-    (!Array.isArray(configuredExclusions) || configuredExclusions.some((value) => typeof value !== "string" || !value.trim()))
-  ) {
-    return fail(ruleId, "eliware.webAssetExcludes must be a string array when provided.");
-  }
-  const exclusions = [
-    "dist",
-    "build",
-    "coverage",
-    "node_modules",
-    ".git",
-    ...(configuredExclusions ?? []),
-  ];
-  const resolvedRoot = resolve(root);
-  const resolvedAssets = resolve(resolvedRoot, assetRoot);
-  const relativeAssets = relative(resolvedRoot, resolvedAssets);
-  if (
-    isAbsolute(assetRoot) || !relativeAssets ||
-    relativeAssets.startsWith(`..${sep}`) || relativeAssets === ".."
-  ) {
-    return fail(ruleId, "eliware.webRoot must resolve to a non-root directory inside the repository root.");
-  }
+  const settings = resolveWebAssetSettings(root, packageJson);
+  if (settings.error) return fail(ruleId, settings.error);
   try {
-    const paths = await collectAssetPaths(resolvedAssets, undefined, repositoryInventory, exclusions);
-    const excluded = paths.find((path) => exclusions.some((exclusion) => matchesExclusion(path, exclusion)));
+    const paths = await collectWebAssetPaths(settings.resolvedAssets, undefined, repositoryInventory, settings.exclusions);
+    const excluded = paths.find((path) => settings.exclusions.some((exclusion) => matchesWebAssetExclusion(path, exclusion)));
     if (excluded)
       return fail(ruleId, `Web public assets must not include excluded output: ${excluded}.`);
   } catch {
-    return fail(ruleId, `${assetRoot}/ is required as the web public asset root.`);
+    return fail(ruleId, `${settings.assetRoot}/ is required as the web public asset root.`);
   }
   return pass(ruleId);
 }

@@ -127,5 +127,10 @@ test("allows imported namespace calls and process.cwd while rejecting dynamic ex
   ).isUnsupported).toBe(true);
   expect(classifyCall(call(identifier("require")), imports()).isDynamic).toBe(true);
   expect(classifyCall(call(identifier("eval")), imports()).isDynamic).toBe(true);
+  expect(classifyCall(call({
+    type: "MemberExpression",
+    object: { type: "MetaProperty" },
+    property: { name: "require" },
+  }), imports()).isDynamic).toBe(true);
   expect(classifyCall({ type: "Identifier", name: "value" }, imports()).isDynamic).toBe(false);
 });

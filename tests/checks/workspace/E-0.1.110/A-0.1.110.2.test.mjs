@@ -1,70 +1,88 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { expect, test } from "@jest/globals";
-import { run } from "../../../../src/checks/workspace/E-0.1.110/A-0.1.110.2.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("composes runbook discovery, validation, and documentation references", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-workspace-runbooks-"));
-  await mkdir(join(root, "runbooks"));
-  await writeFile(join(root, "README.md"), "runbooks/deploy.json#id=deploy");
-  await writeFile(join(root, "runbooks", "README.md"), "index");
-  await writeFile(
-    join(root, "runbooks", "deploy.json"),
-    JSON.stringify({
-      id: "deploy",
-      purpose: "Deploy",
-      owner: "Ops",
-      boundaries: { owns: ["Production"], excludes: ["Development"] },
-      steps: ["verify"],
-    }),
-  );
-  await expect(run({ root })).resolves.toEqual({
+const loadRunbookRecords = jest.fn();
+const readRunbookRecords = jest.fn();
+const validateReferences = jest.fn();
+const validateRunbookRecords = jest.fn();
+const validateRunbookIndexCoverage = jest.fn();
+jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/load-runbook-records.mjs", () => ({ loadRunbookRecords }));
+jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/read-runbook-records.mjs", () => ({ readRunbookRecords }));
+jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/runbook-references.mjs", () => ({ validateReferences }));
+jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/validate-runbook-records.mjs", () => ({ validateRunbookRecords }));
+jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/validate-runbook-index-coverage.mjs", () => ({ validateRunbookIndexCoverage }));
+
+const { run } = await import("../../../../src/checks/workspace/E-0.1.110/A-0.1.110.2.mjs");
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  loadRunbookRecords.mockResolvedValue({ files: ["runbooks/deploy.json"] });
+  readRunbookRecords.mockResolvedValue([{ file: "runbooks/deploy.json", record: {} }]);
+  validateRunbookRecords.mockReturnValue({ error: null, filesByPath: new Map() });
+  validateReferences.mockResolvedValue(null);
+  validateRunbookIndexCoverage.mockReturnValue(null);
+});
+
+test("coordinates each runbook validation phase in order", async () => {
+  const context = { root: "/repo", repositoryInventory: {} };
+  await expect(run(context)).resolves.toEqual({
     ruleId: "A-0.1.110.2",
     status: "pass",
     message: "",
   });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("maps missing runbook indexes and malformed JSON to rule failures", async () => {
-  const missing = await mkdtemp(join(tmpdir(), "eliware-workspace-runbooks-"));
-  await expect(run({ root: missing })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await mkdir(join(missing, "runbooks"));
-  await expect(run({ root: missing })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await writeFile(join(missing, "runbooks", "README.md"), "index");
-  await writeFile(join(missing, "runbooks", "broken.json"), "not json");
-  await expect(run({ root: missing })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("valid JSON") }),
+  expect(loadRunbookRecords).toHaveBeenCalledWith("/repo", context);
+  expect(readRunbookRecords).toHaveBeenCalledWith(["runbooks/deploy.json"], context.repositoryInventory);
+  expect(validateReferences).toHaveBeenCalledWith(
+    "/repo",
+    expect.any(Map),
+    expect.any(Set),
+    expect.objectContaining(context),
   );
-  await rm(missing, { recursive: true, force: true });
+  expect(validateRunbookIndexCoverage).toHaveBeenCalledWith(["runbooks/deploy.json"], expect.any(Set));
+  const phaseOrder = [
+    loadRunbookRecords,
+    readRunbookRecords,
+    validateRunbookRecords,
+    validateReferences,
+    validateRunbookIndexCoverage,
+  ].map((phase) => phase.mock.invocationCallOrder[0]);
+  expect(phaseOrder).toEqual([...phaseOrder].sort((left, right) => left - right));
 });
 
-test("maps record, reference, and index findings through the rule", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-workspace-runbook-findings-"));
-  await mkdir(join(root, "runbooks"));
-  await writeFile(join(root, "README.md"), "runbooks/deploy.json#id=deploy");
-  await writeFile(join(root, "runbooks", "README.md"), "index");
-  const validRecord = {
-    id: "deploy",
-    purpose: "Deploy",
-    owner: "Ops",
-    boundaries: { owns: ["Production"], excludes: ["Development"] },
-    steps: ["verify"],
-  };
-  const deployPath = join(root, "runbooks", "deploy.json");
-  await writeFile(deployPath, JSON.stringify({ ...validRecord, boundaries: "Production" }));
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("generic") });
-
-  await writeFile(deployPath, JSON.stringify(validRecord));
-  await writeFile(join(root, "README.md"), "runbooks/deploy.json#id=missing");
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("missing") });
-
-  await writeFile(join(root, "README.md"), "runbooks/deploy.json#id=deploy");
-  await writeFile(join(root, "runbooks", "notify.json"), JSON.stringify({ ...validRecord, id: "notify" }));
-  await expect(run({ root })).resolves.toMatchObject({
+test("maps a missing runbook index to a rule failure", async () => {
+  loadRunbookRecords.mockRejectedValueOnce(new Error("index missing"));
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "A-0.1.110.2",
     status: "fail",
-    message: "Runbook records must be indexed: notify.json.",
+    message: "Workspace repositories require runbooks/README.md and JSON runbook records.",
   });
-  await rm(root, { recursive: true, force: true });
+  expect(readRunbookRecords).not.toHaveBeenCalled();
+});
+
+test.each([
+  ["record schema", () => validateRunbookRecords.mockReturnValueOnce({ error: "record invalid" })],
+  ["reference resolution", () => validateReferences.mockResolvedValueOnce("reference invalid")],
+  ["index coverage", () => validateRunbookIndexCoverage.mockReturnValueOnce("index incomplete")],
+])("maps %s findings and stops later phases", async (_phase, prepareFailure) => {
+  prepareFailure();
+  const result = await run({ root: "/repo" });
+  expect(result).toMatchObject({ ruleId: "A-0.1.110.2", status: "fail" });
+  if (_phase === "record schema") {
+    expect(result.message).toBe("record invalid");
+    expect(validateReferences).not.toHaveBeenCalled();
+  }
+  if (_phase === "reference resolution") {
+    expect(result.message).toBe("reference invalid");
+    expect(validateRunbookIndexCoverage).not.toHaveBeenCalled();
+  }
+  if (_phase === "index coverage") expect(result.message).toBe("index incomplete");
+});
+
+test("maps record-reading errors to a JSON validation failure", async () => {
+  readRunbookRecords.mockRejectedValueOnce(new SyntaxError("unexpected token"));
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "A-0.1.110.2",
+    status: "fail",
+    message: "Runbook records must be valid JSON: unexpected token",
+  });
+  expect(validateRunbookRecords).not.toHaveBeenCalled();
 });

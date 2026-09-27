@@ -1,22 +1,5 @@
 import { expect, test } from "@jest/globals";
 import { fileGap } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-file-gap.mjs";
-import { expectedCoverageShape } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-source-shapes.mjs";
-
-function completeEvidence(shape) {
-  const lines = [...new Set(Object.values(shape.statementMap).map(({ start }) => String(start.line)))];
-  return {
-    statementMap: structuredClone(shape.statementMap),
-    s: Object.fromEntries(Object.keys(shape.statementMap).map((id) => [id, 1])),
-    branchMap: structuredClone(shape.branchMap),
-    b: Object.fromEntries(
-      Object.entries(shape.branchMap).map(([id, branch]) => [id, branch.locations.map(() => 1)]),
-    ),
-    fnMap: structuredClone(shape.fnMap),
-    f: Object.fromEntries(Object.keys(shape.fnMap).map((id) => [id, 1])),
-    l: Object.fromEntries(lines.map((line) => [line, 1])),
-  };
-}
-
 test("returns no gap for fully covered files and diagnostics for uncovered files", () => {
   const complete = { s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1 }, statementMap: { 1: {} }, branchMap: { 1: { locations: [{}] } }, fnMap: { 1: {} } };
   expect(fileGap("complete.mjs", complete)).toBeNull();
@@ -68,12 +51,4 @@ test("uses explicit line data and handles empty or incomplete coverage maps", ()
   expect(fileGap("empty.mjs", {})).toEqual(expect.objectContaining({ file: "empty.mjs" }));
   expect(() => fileGap("map-only.mjs", { statementMap: { 1: {} } })).toThrow("Coverage evidence is incomplete");
   expect(() => fileGap("counter-only.mjs", { s: { 0: 1 } })).toThrow("Coverage evidence is incomplete");
-});
-
-test("calculates gaps from valid source-shaped evidence", () => {
-  const shape = expectedCoverageShape(
-    "export function decide(value) { if (value) return 1; return 0; }",
-    "src/decision.mjs",
-  );
-  expect(fileGap("src/decision.mjs", completeEvidence(shape), shape)).toBeNull();
 });

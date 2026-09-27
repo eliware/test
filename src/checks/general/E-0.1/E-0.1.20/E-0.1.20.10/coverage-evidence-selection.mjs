@@ -1,9 +1,7 @@
-import { readFile, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import { readJsonCoverage } from "./coverage-report-readers.mjs";
-import { coverageCandidates as candidates } from "../coverage-report-candidates.mjs";
-import { findRepositoryFiles } from "../../find-repository-files.mjs";
-import { readExpectedCoverageShapes } from "./coverage-source-shapes.mjs";
+import { prepareCoverageEvidenceCandidates } from "./prepare-coverage-evidence-candidates.mjs";
 import { selectCoverageEvidence } from "./select-coverage-evidence.mjs";
 
 export async function readCoverageEvidenceFromCandidates(
@@ -11,7 +9,7 @@ export async function readCoverageEvidenceFromCandidates(
   testOutput = "",
   startedAt = 0,
   {
-    read = readFile,
+    read,
     statFile = stat,
     requireFresh = false,
     expectedFiles: suppliedExpectedFiles,
@@ -24,21 +22,16 @@ export async function readCoverageEvidenceFromCandidates(
       "Coverage evidence cannot be bound to the current Jest run. Rerun Jest with coverage enabled.",
     );
   }
-  const expectedFiles = suppliedExpectedFiles ?? (inventory
-    ? await inventory.files("coverageSource")
-    : (await findRepositoryFiles(root)).filter((file) => /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file)));
-  const readRepositoryText = inventory?.readText ?? read;
-  const readCoverageFile = inventory ? (path) => inventory.readText(path) : read;
-  const expectedShapes = await readExpectedCoverageShapes(root, expectedFiles, readRepositoryText);
-  const candidatePaths = coverageDirectory
-    ? candidates.map((path) => path.slice(path.lastIndexOf("/") + 1))
-    : candidates;
-  return selectCoverageEvidence(candidatePaths, (relativePath) =>
+  const { expectedFiles, expectedShapes, candidates, readCoverage } = await prepareCoverageEvidenceCandidates(
+    root,
+    { read, expectedFiles: suppliedExpectedFiles, inventory, coverageDirectory },
+  );
+  return selectCoverageEvidence(candidates, (relativePath) =>
     readJsonCoverage(
         join(coverageDirectory ?? root, relativePath),
         relativePath,
         startedAt,
-        readCoverageFile,
+        readCoverage,
         statFile,
         expectedFiles,
         expectedShapes,

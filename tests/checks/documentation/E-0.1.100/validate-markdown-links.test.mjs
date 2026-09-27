@@ -5,52 +5,53 @@ import { join } from "node:path";
 import { validateMarkdownLinks } from "../../../../src/checks/documentation/E-0.1.100/validate-markdown-links.mjs";
 import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
-test("validates local Markdown links and fragments", async () => {
+test("coordinates local, fragment, non-Markdown, and external link validation", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-"));
-  await mkdir(join(root, "docs"));
-  await writeFile(join(root, "docs", "index.md"), "# Heading");
-  await writeFile(join(root, "terms.txt"), "Terms");
-  await writeFile(join(root, "README.md"), "[Docs](docs/index.md#heading)");
-  await expect(validateMarkdownLinks(root, ["README.md", "docs/index.md"])).resolves.toBeNull();
-  await writeFile(join(root, "README.md"), "[Docs][guide]\n[guide]: docs/index.md");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
-  await writeFile(join(root, "README.md"), "[Missing][guide]\n[guide]: docs/nope.md");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("does not resolve");
-  await writeFile(join(root, "README.md"), "[Undefined][missing]");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("reference is undefined");
-  await writeFile(join(root, "README.md"), "[External](https://example.test)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
-  await writeFile(join(root, "README.md"), "[Terms](terms.txt)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
-  await mkdir(join(root, "host"));
-  await writeFile(join(root, "host", "path"), "unrelated local target");
-  await writeFile(join(root, "README.md"), "[Protocol relative](//host/path)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("is invalid");
-  await writeFile(join(root, "README.md"), "<https://example.test/docs> <mailto:support@example.test>");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
-  await writeFile(join(root, "README.md"), "[Bad](https://)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("invalid");
-  await writeFile(join(root, "README.md"), "[Outside](../outside.md)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("escapes the repository");
-  await writeFile(join(root, "README.md"), "[Heading](#heading)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("fragment");
-  await writeFile(join(root, "README.md"), "[Missing heading](docs/index.md#missing)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("fragment");
-  await writeFile(join(root, "README.md"), "[Missing](docs/nope.md)");
-  await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("does not resolve");
-  await rm(root, { recursive: true, force: true });
+  try {
+    await mkdir(join(root, "docs"));
+    await writeFile(join(root, "docs", "index.md"), "# Heading");
+    await writeFile(join(root, "terms.txt"), "Terms");
+    await writeFile(
+      join(root, "README.md"),
+      "[Docs](docs/index.md#heading) [Terms](terms.txt) [Web](https://example.test)",
+    );
+    await expect(validateMarkdownLinks(root, ["README.md", "docs/index.md"])).resolves.toBeNull();
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test.each([
+  ["missing target", "[Missing][guide]\n[guide]: docs/nope.md", "does not resolve"],
+  ["undefined reference", "[Undefined][missing]", "reference is undefined"],
+  ["malformed external URL", "[Bad](https://)", "invalid"],
+  ["protocol-relative URL", "[Protocol relative](//host/path)", "is invalid"],
+  ["repository escape", "[Outside](../outside.md)", "escapes the repository"],
+  ["missing heading", "[Missing heading](docs/index.md#missing)", "fragment"],
+])("maps invalid %s links to a validation message", async (_label, markdown, message) => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-invalid-"));
+  try {
+    await mkdir(join(root, "docs"));
+    await writeFile(join(root, "docs", "index.md"), "# Heading");
+    await writeFile(join(root, "README.md"), markdown);
+    await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain(message);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("reuses inventory reads for repeated non-Markdown link targets", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-inventory-"));
-  await writeFile(join(root, "README.md"), "[Terms](terms.txt) [Again](terms.txt)");
-  await writeFile(join(root, "terms.txt"), "Terms");
-  const read = jest.fn((...args) => readFile(...args));
-  const repositoryInventory = createRepositoryInventory(root, { read });
-
-  await expect(
-    validateMarkdownLinks(root, ["README.md"], { repositoryInventory }),
-  ).resolves.toBeNull();
-  expect(read).toHaveBeenCalledTimes(2);
-  await rm(root, { recursive: true, force: true });
+  try {
+    await writeFile(join(root, "README.md"), "[Terms](terms.txt) [Again](terms.txt)");
+    await writeFile(join(root, "terms.txt"), "Terms");
+    const read = jest.fn((...args) => readFile(...args));
+    const repositoryInventory = createRepositoryInventory(root, { read });
+    await expect(
+      validateMarkdownLinks(root, ["README.md"], { repositoryInventory }),
+    ).resolves.toBeNull();
+    expect(read).toHaveBeenCalledTimes(2);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
