@@ -22,7 +22,8 @@ test("defaults to a defensive copy of the process environment", () => {
 
 test("preserves configured Node options and adds only missing requirements", () => {
   expect(
-    createJestEnvironment({ NODE_OPTIONS: "--experimental-vm-modules --trace-warnings" }).NODE_OPTIONS,
+    createJestEnvironment({ NODE_OPTIONS: "--experimental-vm-modules --trace-warnings" })
+      .NODE_OPTIONS,
   ).toBe("--experimental-vm-modules --trace-warnings");
   expect(createJestEnvironment({ NODE_OPTIONS: "--no-warnings" }).NODE_OPTIONS).toBe(
     "--no-warnings --experimental-vm-modules",

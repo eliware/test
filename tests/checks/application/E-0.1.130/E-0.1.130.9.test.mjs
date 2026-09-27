@@ -1,5 +1,10 @@
 import { expect, test } from "@jest/globals";
-import { enforcementMode, parentRuleId, ruleId, run } from "../../../../src/checks/application/E-0.1.130/E-0.1.130.9.mjs";
+import {
+  enforcementMode,
+  parentRuleId,
+  ruleId,
+  run,
+} from "../../../../src/checks/application/E-0.1.130/E-0.1.130.9.mjs";
 
 test("exports the expected identity for its non-deterministic rule", () => {
   expect({ ruleId, parentRuleId, enforcementMode }).toEqual({

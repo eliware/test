@@ -12,16 +12,17 @@ export async function run(context) {
   const { root } = context;
   try {
     const workflows = await readWorkflows(root, context);
-    const validation = workflows.filter((workflow) =>
-      !isPublicationWorkflow(workflow) &&
-      findValidationJobs(workflow).some(({ job }) => hasUbuntuRunner(workflow, job)),
+    const validation = workflows.filter(
+      (workflow) =>
+        !isPublicationWorkflow(workflow) &&
+        findValidationJobs(workflow).some(({ job }) => hasUbuntuRunner(workflow, job)),
     );
     const publication = workflows.filter(isPublicationWorkflow);
-    if (
-      validation.length === 0 ||
-      publication.length === 0
-    )
-      return fail(ruleId, "GHCR publication must be separate from and follow the Ubuntu validation workflow.");
+    if (validation.length === 0 || publication.length === 0)
+      return fail(
+        ruleId,
+        "GHCR publication must be separate from and follow the Ubuntu validation workflow.",
+      );
   } catch (error) {
     return fail(ruleId, `GHCR workflows could not be inspected: ${error.message}`);
   }

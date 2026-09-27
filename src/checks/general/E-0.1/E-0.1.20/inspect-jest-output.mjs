@@ -13,7 +13,12 @@ export function findUnexpectedJestOutput({ stdout = "", stderr = "" } = {}) {
   findings.push(...findJestConsoleOutput(parsed.report));
   findings.push(
     ...findUnexpectedJestLines(stderr)
-      .filter((line) => line !== "…" && !/^\[?eliware-test(?:-progress)?\b/u.test(line) && !/^E-0.1\.20(?::|\.)/.test(line))
+      .filter(
+        (line) =>
+          line !== "…" &&
+          !/^\[?eliware-test(?:-progress)?\b/u.test(line) &&
+          !/^E-0.1\.20(?::|\.)/.test(line),
+      )
       .map((line) => formatUnexpected(line, suite)),
   );
   return [...new Set(findings)];

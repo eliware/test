@@ -13,20 +13,26 @@ jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-attestati
   findAttestation,
   findAttestationVerification,
 }));
-jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-digest-handoff.mjs", () => ({ findDigestHandoff }));
-jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-digest-verification.mjs", () => ({
-  findDigestInspection,
-  findVersionTagDigestVerification,
+jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-digest-handoff.mjs", () => ({
+  findDigestHandoff,
 }));
+jest.unstable_mockModule(
+  "../../../src/checks/ghcr-published/find-ghcr-digest-verification.mjs",
+  () => ({
+    findDigestInspection,
+    findVersionTagDigestVerification,
+  }),
+);
 jest.unstable_mockModule("../../../src/checks/ghcr-published/find-ghcr-image-push.mjs", () => ({
   findImagePushes,
   imageDetails,
 }));
-jest.unstable_mockModule("../../../src/checks/ghcr-published/workflow-structure.mjs", () => ({ steps }));
+jest.unstable_mockModule("../../../src/checks/ghcr-published/workflow-structure.mjs", () => ({
+  steps,
+}));
 
-const { hasOrderedImageVerificationChain } = await import(
-  "../../../src/checks/ghcr-published/has-ordered-image-verification-chain.mjs"
-);
+const { hasOrderedImageVerificationChain } =
+  await import("../../../src/checks/ghcr-published/has-ordered-image-verification-chain.mjs");
 
 const pushes = [{ id: "first" }, { id: "second" }];
 const verification = (id) => [
@@ -67,7 +73,9 @@ test("composes each push's evidence in stage order and confines it to that push 
   }
   expect(imageDetails).toHaveBeenCalledWith(pushes[0]);
   expect(imageDetails).toHaveBeenCalledWith(pushes[1]);
-  expect(findAttestation.mock.calls.map(([segment, details]) => [segment.steps[0], details])).toEqual([
+  expect(
+    findAttestation.mock.calls.map(([segment, details]) => [segment.steps[0], details]),
+  ).toEqual([
     [firstVerification[0], { digestReference: "digest:first" }],
     [secondVerification[0], { digestReference: "digest:second" }],
   ]);

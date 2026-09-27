@@ -18,8 +18,10 @@ test("rejects publication, deployment, release, and destructive commands", () =>
 });
 
 test("allows validation commands and incidental command text", () => {
-  expect(validateKnitPublicationCommands([
-    { kind: "spawnSync", command: "npm", args: ["test"] },
-    { kind: "echo", command: "echo", args: ["npm publish"] },
-  ])).toBeNull();
+  expect(
+    validateKnitPublicationCommands([
+      { kind: "spawnSync", command: "npm", args: ["test"] },
+      { kind: "echo", command: "echo", args: ["npm publish"] },
+    ]),
+  ).toBeNull();
 });

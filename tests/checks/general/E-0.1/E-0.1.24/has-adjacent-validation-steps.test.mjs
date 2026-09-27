@@ -4,8 +4,17 @@ import { hasAdjacentValidationSteps } from "../../../../../src/checks/general/E-
 test("recognizes adjacent workflow steps and rejects an intervening reporting step", () => {
   const install = { run: "npm ci" };
   const testStep = { run: "npm test" };
-  expect(hasAdjacentValidationSteps({ step: install }, { step: testStep }, [install, testStep], [])).toBe(true);
-  expect(hasAdjacentValidationSteps({ step: install }, { step: testStep }, [install, { run: "echo reporting" }, testStep], [])).toBe(false);
+  expect(
+    hasAdjacentValidationSteps({ step: install }, { step: testStep }, [install, testStep], []),
+  ).toBe(true);
+  expect(
+    hasAdjacentValidationSteps(
+      { step: install },
+      { step: testStep },
+      [install, { run: "echo reporting" }, testStep],
+      [],
+    ),
+  ).toBe(false);
 });
 
 test("uses the command sequence when workflow-step references are unavailable", () => {

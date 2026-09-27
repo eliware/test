@@ -12,7 +12,11 @@ const valid = {
 test("accepts approved permanent and temporary exemption metadata", () => {
   expect(
     run({
-      packageJson: { eliware: { exempt: [valid, { ...valid, ruleId: "E-0.1.3", expiry: null, review: undefined }] } },
+      packageJson: {
+        eliware: {
+          exempt: [valid, { ...valid, ruleId: "E-0.1.3", expiry: null, review: undefined }],
+        },
+      },
     }),
   ).toEqual({ ruleId: "E-0.1.9.3", status: "pass", message: "" });
 });
@@ -43,14 +47,11 @@ test("accepts repositories without exemptions and rejects malformed metadata sha
   );
 });
 
-test.each(["random-user", "eli", "Eliware", ""]) (
-  "rejects non-Eli approver %j",
-  (approver) => {
-    expect(run({ packageJson: { eliware: { exempt: [{ ...valid, approver }] } } })).toEqual(
-      expect.objectContaining({ status: "fail" }),
-    );
-  },
-);
+test.each(["random-user", "eli", "Eliware", ""])("rejects non-Eli approver %j", (approver) => {
+  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, approver }] } } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+});
 
 test("accepts canonical temporary exemptions without review metadata", () => {
   expect(run({ packageJson: { eliware: { exempt: [valid] } } }).status).toBe("pass");

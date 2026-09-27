@@ -7,7 +7,11 @@ import { run } from "../../../../src/checks/discord/E-0.1.70/A-0.1.70.0.mjs";
 test("requires Discord guidance", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-discord-"));
   await writeFile(join(root, "AGENTS.md"), "discord configuration validation");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.70.0", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.70.0",
+    status: "pass",
+    message: "",
+  });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -27,7 +31,8 @@ test("fails when Discord configuration or validation guidance is incomplete", as
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.70.0",
     status: "fail",
-    message: "Discord repositories must document Discord configuration and validation in AGENTS.md.",
+    message:
+      "Discord repositories must document Discord configuration and validation in AGENTS.md.",
   });
   await rm(root, { recursive: true, force: true });
 });

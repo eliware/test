@@ -7,9 +7,13 @@ export async function prepareCoverageEvidenceCandidates(
   root,
   { read = readFile, expectedFiles: suppliedExpectedFiles, inventory, coverageDirectory } = {},
 ) {
-  const expectedFiles = suppliedExpectedFiles ?? (inventory
-    ? await inventory.files("coverageSource")
-    : (await findRepositoryFiles(root)).filter((file) => /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file)));
+  const expectedFiles =
+    suppliedExpectedFiles ??
+    (inventory
+      ? await inventory.files("coverageSource")
+      : (await findRepositoryFiles(root)).filter((file) =>
+          /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file),
+        ));
   const readSource = inventory?.readText ?? read;
   const readCoverage = inventory ? (path) => inventory.readText(path) : read;
   const expectedShapes = await readExpectedCoverageShapes(root, expectedFiles, readSource);

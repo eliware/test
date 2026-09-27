@@ -7,12 +7,16 @@ export function selectRepositorySourceView(view, repositoryFiles) {
   if (view === "source") return repositoryFiles.filter((path) => sourceFile.test(path));
   if (view === "coverageSource") {
     return repositoryFiles.filter(
-      (path) => coverageSourceFile.test(path) && !isRepositoryFixturePath(path) && !/\.snap\./u.test(path),
+      (path) =>
+        coverageSourceFile.test(path) && !isRepositoryFixturePath(path) && !/\.snap\./u.test(path),
     );
   }
   if (view === "monolithSource") {
     return repositoryFiles.filter(
-      (path) => path.endsWith(".mjs") && !isRepositoryFixturePath(path) && !/\.d\.mts$|\.snap\.mjs$|\.generated\./u.test(path),
+      (path) =>
+        path.endsWith(".mjs") &&
+        !isRepositoryFixturePath(path) &&
+        !/\.d\.mts$|\.snap\.mjs$|\.generated\./u.test(path),
     );
   }
   return undefined;

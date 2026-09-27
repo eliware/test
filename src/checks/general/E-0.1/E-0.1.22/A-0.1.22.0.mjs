@@ -22,7 +22,11 @@ export async function run(context) {
     return fail(ruleId, "specs/directives.json must contain one or more directives.");
   }
   const errors = validateDirectiveTree(document.directives);
-  const namespaceError = await validateLocalAuthorityNamespace(root, document.directives, repositoryInventory);
+  const namespaceError = await validateLocalAuthorityNamespace(
+    root,
+    document.directives,
+    repositoryInventory,
+  );
   if (namespaceError) errors.push(namespaceError);
   return errors.length > 0 ? fail(ruleId, errors.join(" ")) : pass(ruleId);
 }

@@ -3,7 +3,9 @@ import { validateWorkflowFileSet } from "../../../../../src/checks/general/E-0.1
 
 test("requires only ci.yml without publication profiles", () => {
   expect(validateWorkflowFileSet(["ci.yml"], { eliware: { apply: ["general"] } })).toBeNull();
-  expect(validateWorkflowFileSet(["ci.yml", "extra.yml"])).toContain("must be exactly .github/workflows/ci.yml");
+  expect(validateWorkflowFileSet(["ci.yml", "extra.yml"])).toContain(
+    "must be exactly .github/workflows/ci.yml",
+  );
   expect(validateWorkflowFileSet(["nodejs.yml"])).toContain("found .github/workflows/nodejs.yml");
   expect(validateWorkflowFileSet([])).toContain("found none");
 });
@@ -14,8 +16,12 @@ test.each(["npm-published", "ghcr-published"])(
     const packageJson = { eliware: { apply: ["general", profile] } };
     expect(validateWorkflowFileSet(["ci.yml", "publish.yml"], packageJson)).toBeNull();
     expect(validateWorkflowFileSet(["ci.yml"], packageJson)).toContain("publish.yml");
-    expect(validateWorkflowFileSet(["ci.yml", "publish.yml", "extra.yaml"], packageJson)).toContain("extra.yaml");
-    expect(validateWorkflowFileSet(["ci.yml", "publish.yaml"], packageJson)).toContain("publish.yml");
+    expect(validateWorkflowFileSet(["ci.yml", "publish.yml", "extra.yaml"], packageJson)).toContain(
+      "extra.yaml",
+    );
+    expect(validateWorkflowFileSet(["ci.yml", "publish.yaml"], packageJson)).toContain(
+      "publish.yml",
+    );
   },
 );
 

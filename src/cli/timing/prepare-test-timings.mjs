@@ -4,7 +4,8 @@ export function prepareTestTimings(report, limit = 10) {
     .map((result) => {
       const start = Number(result?.perfStats?.start ?? result?.startTime);
       const end = Number(result?.perfStats?.end ?? result?.endTime);
-      const duration = Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) : 0;
+      const duration =
+        Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) : 0;
       const filePath = result?.testFilePath ?? result?.name;
       return {
         duration,

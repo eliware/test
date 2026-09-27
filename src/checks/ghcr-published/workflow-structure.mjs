@@ -7,7 +7,13 @@ export function steps(job) {
 }
 
 export function stepText(step) {
-  return [step?.run, step?.uses, step?.with?.tags, step?.with?.subjectName, step?.with?.subjectDigest]
+  return [
+    step?.run,
+    step?.uses,
+    step?.with?.tags,
+    step?.with?.subjectName,
+    step?.with?.subjectDigest,
+  ]
     .filter((value) => typeof value === "string")
     .join(" ");
 }

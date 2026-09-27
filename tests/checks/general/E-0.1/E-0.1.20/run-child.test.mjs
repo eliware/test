@@ -34,7 +34,9 @@ test("normalizes and redacts synchronous spawn failures before process setup", a
   const createProgressTimeout = jest.fn();
   const result = runChild("ignored", [], {
     env: { API_TOKEN: "private-token-value" },
-    spawnProcess: () => { throw new Error("spawn failed with private-token-value"); },
+    spawnProcess: () => {
+      throw new Error("spawn failed with private-token-value");
+    },
     createProgressTimeout,
   });
 
@@ -49,10 +51,20 @@ test("normalizes and redacts synchronous spawn failures before process setup", a
 });
 
 test("normalizes non-Error synchronous spawn failures", async () => {
-  await expect(runChild("ignored", [], { spawnProcess: () => { throw "launch failed"; } }))
-    .rejects.toThrow("launch failed");
-  await expect(runChild("ignored", [], { spawnProcess: () => { throw new Error(""); } }))
-    .rejects.toThrow("Child process could not be started.");
+  await expect(
+    runChild("ignored", [], {
+      spawnProcess: () => {
+        throw "launch failed";
+      },
+    }),
+  ).rejects.toThrow("launch failed");
+  await expect(
+    runChild("ignored", [], {
+      spawnProcess: () => {
+        throw new Error("");
+      },
+    }),
+  ).rejects.toThrow("Child process could not be started.");
 });
 
 test("settles once when the child emits duplicate close and late error events", async () => {

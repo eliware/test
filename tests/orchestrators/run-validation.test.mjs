@@ -54,7 +54,9 @@ test("prepares and executes a plan with the requested target and exemptions", as
 test("propagates plan-preparation failures without executing the plan", async () => {
   const executeValidationPlan = jest.fn();
   const { dependencies } = createDependencies({
-    loadValidationTarget: jest.fn(async () => { throw new Error("target unavailable"); }),
+    loadValidationTarget: jest.fn(async () => {
+      throw new Error("target unavailable");
+    }),
     executeValidationPlan,
   });
   await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("target unavailable");
@@ -63,7 +65,9 @@ test("propagates plan-preparation failures without executing the plan", async ()
 
 test("propagates plan execution failures when no coverage cleanup is needed", async () => {
   const { dependencies } = createDependencies({
-    executeValidationPlan: jest.fn(async () => { throw new Error("plan failed"); }),
+    executeValidationPlan: jest.fn(async () => {
+      throw new Error("plan failed");
+    }),
   });
   await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("plan failed");
 });

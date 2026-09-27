@@ -11,16 +11,9 @@ export async function scanDependencyFiles(
   parseAst = null,
   inventory = null,
 ) {
-  const files = repositoryFiles ?? await findRepositoryFiles(root);
+  const files = repositoryFiles ?? (await findRepositoryFiles(root));
   const sourceFiles = repositoryFiles ? files.filter((file) => file.startsWith("src/")) : files;
 
-  await scanSourceDependencyFiles(
-    root,
-    sourceFiles,
-    declared,
-    referenced,
-    uncertain,
-    parseAst,
-  );
+  await scanSourceDependencyFiles(root, sourceFiles, declared, referenced, uncertain, parseAst);
   await scanStructuredDependencyFiles(root, files, declared, referenced, inventory);
 }

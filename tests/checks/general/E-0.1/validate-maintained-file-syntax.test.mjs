@@ -62,11 +62,11 @@ test("ignores extensions outside the maintained syntax policy", async () => {
 });
 
 test("fails closed when a required maintained extension has no parser", async () => {
-  await expect(validateMaintainedFileSyntax("/repo", ["README.md"], {
-    syntaxParsers: new Map(),
-  })).resolves.toEqual([
-    "README.md: no syntax parser is configured for maintained .md files.",
-  ]);
+  await expect(
+    validateMaintainedFileSyntax("/repo", ["README.md"], {
+      syntaxParsers: new Map(),
+    }),
+  ).resolves.toEqual(["README.md: no syntax parser is configured for maintained .md files."]);
 });
 
 test("reports read failures as file syntax diagnostics", async () => {

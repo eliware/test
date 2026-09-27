@@ -10,8 +10,15 @@ export async function run({ root, packageJson, repositoryInventory }) {
   const settings = resolveWebAssetSettings(root, packageJson);
   if (settings.error) return fail(ruleId, settings.error);
   try {
-    const paths = await collectWebAssetPaths(settings.resolvedAssets, undefined, repositoryInventory, settings.exclusions);
-    const excluded = paths.find((path) => settings.exclusions.some((exclusion) => matchesWebAssetExclusion(path, exclusion)));
+    const paths = await collectWebAssetPaths(
+      settings.resolvedAssets,
+      undefined,
+      repositoryInventory,
+      settings.exclusions,
+    );
+    const excluded = paths.find((path) =>
+      settings.exclusions.some((exclusion) => matchesWebAssetExclusion(path, exclusion)),
+    );
     if (excluded)
       return fail(ruleId, `Web public assets must not include excluded output: ${excluded}.`);
   } catch {

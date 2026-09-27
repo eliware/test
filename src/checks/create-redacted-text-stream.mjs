@@ -15,9 +15,12 @@ export function createRedactedTextStream(
   { maxSearchWorkPerChunk = MAX_SECRET_SEARCH_WORK_PER_CHUNK } = {},
 ) {
   const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, maxSearchWorkPerChunk));
-  const values = [...new Set(secrets.filter((secret) => typeof secret === "string" && secret.length > 0))];
+  const values = [
+    ...new Set(secrets.filter((secret) => typeof secret === "string" && secret.length > 0)),
+  ];
   const maximumSecretLength = Math.max(0, ...values.map((secret) => secret.length));
-  let suppressed = maximumSecretLength > outputLimit || maximumSecretLength > MAX_RETAINED_PENDING_LENGTH;
+  let suppressed =
+    maximumSecretLength > outputLimit || maximumSecretLength > MAX_RETAINED_PENDING_LENGTH;
   const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
   if (!trimSuffix) suppressed = true;
   const findSecretEnds = suppressed
@@ -33,7 +36,10 @@ export function createRedactedTextStream(
 
   function append(text, matchEnds) {
     const remaining = Math.max(0, outputLimit - outputLength);
-    const output = redactProcessOutput(redactMatchedSecrets(text, matchEnds), []).slice(0, remaining);
+    const output = redactProcessOutput(redactMatchedSecrets(text, matchEnds), []).slice(
+      0,
+      remaining,
+    );
     outputLength += output.length;
     return output;
   }
@@ -41,7 +47,11 @@ export function createRedactedTextStream(
   function addText(text) {
     if (suppressed || finished || outputLength >= outputLimit) return "";
     let output = "";
-    for (let start = 0; start < text.length && !suppressed && outputLength < outputLimit; start += MAX_INPUT_CHUNK_LENGTH) {
+    for (
+      let start = 0;
+      start < text.length && !suppressed && outputLength < outputLimit;
+      start += MAX_INPUT_CHUNK_LENGTH
+    ) {
       pending += text.slice(start, start + MAX_INPUT_CHUNK_LENGTH);
       const { boundary, matchEnds, suppressed: searchSuppressed } = findSafeBoundary(pending);
       if (searchSuppressed) {

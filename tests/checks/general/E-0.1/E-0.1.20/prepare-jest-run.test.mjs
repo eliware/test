@@ -2,12 +2,9 @@ import { expect, test } from "@jest/globals";
 import { prepareJestRun } from "../../../../../src/checks/general/E-0.1/E-0.1.20/prepare-jest-run.mjs";
 
 test("coordinates Jest preparation into one executable process request", async () => {
-  const prepared = await prepareJestRun(
-    process.cwd(),
-    [],
-    (_root, options) => options.jestCli,
-    { jestCli: "consumer-jest" },
-  );
+  const prepared = await prepareJestRun(process.cwd(), [], (_root, options) => options.jestCli, {
+    jestCli: "consumer-jest",
+  });
 
   expect(prepared.command).toBe(process.execPath);
   expect(prepared.args[0]).toBe("consumer-jest");
@@ -22,24 +19,18 @@ test("coordinates Jest preparation into one executable process request", async (
 
 test("uses an injected run-scoped coverage directory", async () => {
   const createCoverageDirectory = () => "C:/run/coverage";
-  const prepared = await prepareJestRun(
-    process.cwd(),
-    [],
-    () => "consumer-jest",
-    { createCoverageDirectory },
-  );
+  const prepared = await prepareJestRun(process.cwd(), [], () => "consumer-jest", {
+    createCoverageDirectory,
+  });
 
   expect(prepared.coverageDirectory).toBe("C:/run/coverage");
   expect(prepared.args).toContain("C:/run/coverage");
 });
 
 test("falls back when the injected coverage-directory factory has no result", async () => {
-  const prepared = await prepareJestRun(
-    process.cwd(),
-    [],
-    () => "consumer-jest",
-    { createCoverageDirectory: () => undefined },
-  );
+  const prepared = await prepareJestRun(process.cwd(), [], () => "consumer-jest", {
+    createCoverageDirectory: () => undefined,
+  });
 
   expect(prepared.coverageDirectory).toContain("eliware-test");
 });

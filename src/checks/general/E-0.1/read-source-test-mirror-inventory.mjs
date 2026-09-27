@@ -17,8 +17,14 @@ export async function readSourceTestMirrorInventory(root, repositoryInventory) {
   }
   const sourceFiles = await collectRepositoryFiles(join(root, "src"), join(root, "src"));
   const testFiles = await collectRepositoryFiles(join(root, "tests"), join(root, "tests"));
-  const sourceDirectories = await collectRepositoryDirectories(join(root, "src"), join(root, "src"));
-  const testDirectories = await collectRepositoryDirectories(join(root, "tests"), join(root, "tests"));
+  const sourceDirectories = await collectRepositoryDirectories(
+    join(root, "src"),
+    join(root, "src"),
+  );
+  const testDirectories = await collectRepositoryDirectories(
+    join(root, "tests"),
+    join(root, "tests"),
+  );
   return { sourceFiles, testFiles, sourceDirectories, testDirectories };
 }
 

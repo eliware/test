@@ -16,21 +16,45 @@ function location(entry) {
 
 export function fileGap(file, data, expectedShape = null) {
   validateCoverageFileEvidence(file, data, expectedShape);
-  const statements = Object.entries(data.s ?? {}).filter(([, count]) => count === 0)
+  const statements = Object.entries(data.s ?? {})
+    .filter(([, count]) => count === 0)
     .map(([id]) => ({ location: location(data.statementMap?.[id]) }));
-  const branches = Object.entries(data.b ?? {}).flatMap(([id, counts]) => counts.map((count, index) =>
-    count === 0 ? { location: location(data.branchMap?.[id]?.locations?.[index] ?? data.branchMap?.[id]) } : null,
-  ).filter(Boolean));
-  const functions = Object.entries(data.f ?? {}).filter(([, count]) => count === 0)
-    .map(([id]) => ({ name: data.fnMap?.[id]?.name ?? "anonymous", location: location(data.fnMap?.[id]) }));
+  const branches = Object.entries(data.b ?? {}).flatMap(([id, counts]) =>
+    counts
+      .map((count, index) =>
+        count === 0
+          ? { location: location(data.branchMap?.[id]?.locations?.[index] ?? data.branchMap?.[id]) }
+          : null,
+      )
+      .filter(Boolean),
+  );
+  const functions = Object.entries(data.f ?? {})
+    .filter(([, count]) => count === 0)
+    .map(([id]) => ({
+      name: data.fnMap?.[id]?.name ?? "anonymous",
+      location: location(data.fnMap?.[id]),
+    }));
   const lineEntries = coverageLineEntries(data, expectedShape?.statementMap);
   const lines = lineEntries.filter(([, count]) => count === 0).map(([line]) => line);
   const { values: metricCounters, hasCounters, hasMaps } = coverageMetricValues(data, lineEntries);
-  const values = Object.fromEntries(metrics.map((metric) => [
-    metric,
-    percentage(metricCounters[metric].filter((count) => count > 0).length, metricCounters[metric].length),
-  ]));
-  if (!hasCounters || !hasMaps) return { file, metrics: { statements: 0, branches: 0, functions: 0, lines: 0 }, lines, statements, branches, functions };
+  const values = Object.fromEntries(
+    metrics.map((metric) => [
+      metric,
+      percentage(
+        metricCounters[metric].filter((count) => count > 0).length,
+        metricCounters[metric].length,
+      ),
+    ]),
+  );
+  if (!hasCounters || !hasMaps)
+    return {
+      file,
+      metrics: { statements: 0, branches: 0, functions: 0, lines: 0 },
+      lines,
+      statements,
+      branches,
+      functions,
+    };
   return metrics.every((metric) => values[metric] === 100)
     ? null
     : { file, metrics: values, lines, statements, branches, functions };

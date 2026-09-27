@@ -13,7 +13,13 @@ test("rejects non-repository-relative authority references", async () => {
     file: "C:\\repo\\authority.json",
     document: {
       globalAuthorityMap: "../global-map.json",
-      subjects: [{ id: "subject", authority: { path: "../authority.json" }, implementation: [{ path: "https://example.test" }] }],
+      subjects: [
+        {
+          id: "subject",
+          authority: { path: "../authority.json" },
+          implementation: [{ path: "https://example.test" }],
+        },
+      ],
     },
   });
   expect(subjectResult).toContain("repository-relative");

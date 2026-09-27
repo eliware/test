@@ -14,7 +14,9 @@ export async function run({
   runPack = runNpmPack,
   toolArgs = [],
 }) {
-  const metadataError = validatePublicationMetadata(packageJson);
+  const metadataError = validatePublicationMetadata(packageJson, {
+    selfHosted: packageJson?.name === "@eliware/test",
+  });
   if (metadataError) return fail(ruleId, metadataError);
   const executionError = await executePackValidation({
     root,

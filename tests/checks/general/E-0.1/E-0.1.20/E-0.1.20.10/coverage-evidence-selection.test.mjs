@@ -45,10 +45,12 @@ test("falls back after a detailed report has malformed source-derived line count
   await writeFile(join(coverageDirectory, "coverage-final.json"), JSON.stringify(malformedReport));
   await writeFile(join(coverageDirectory, "coverage.json"), JSON.stringify(validReport));
   try {
-    await expect(readCoverageEvidenceFromCandidates(root, "", 0, {
-      coverageDirectory,
-      expectedFiles: ["src/example.mjs"],
-    })).resolves.toMatchObject({ source: "coverage.json", gaps: [] });
+    await expect(
+      readCoverageEvidenceFromCandidates(root, "", 0, {
+        coverageDirectory,
+        expectedFiles: ["src/example.mjs"],
+      }),
+    ).resolves.toMatchObject({ source: "coverage.json", gaps: [] });
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -64,10 +66,12 @@ test("reads the run-local reporter filenames inside isolated coverage output", a
   Object.assign(simpleReport["src/example.mjs"], { branchMap: {}, b: {}, fnMap: {}, f: {} });
   await writeFile(join(coverageDirectory, "coverage-final.json"), JSON.stringify(simpleReport));
   try {
-    await expect(readCoverageEvidenceFromCandidates(root, "", 1, {
-      coverageDirectory,
-      expectedFiles: ["src/example.mjs"],
-    })).resolves.toMatchObject({ source: "coverage-final.json", gaps: [] });
+    await expect(
+      readCoverageEvidenceFromCandidates(root, "", 1, {
+        coverageDirectory,
+        expectedFiles: ["src/example.mjs"],
+      }),
+    ).resolves.toMatchObject({ source: "coverage-final.json", gaps: [] });
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -82,13 +86,15 @@ test("falls back to text evidence only when detailed evidence is not required", 
       source: "Jest text output",
       gaps: [],
     });
-    await expect(readCoverageEvidenceFromCandidates(root, textReport, 1, { requireFresh: true }))
-      .rejects.toThrow("cannot prove freshness");
+    await expect(
+      readCoverageEvidenceFromCandidates(root, textReport, 1, { requireFresh: true }),
+    ).rejects.toThrow("cannot prove freshness");
     await expect(readCoverageEvidenceFromCandidates(root, "not a report")).rejects.toThrow(
       "Coverage evidence is missing",
     );
-    await expect(readCoverageEvidenceFromCandidates(root, "", 0, { requireFresh: true }))
-      .rejects.toThrow("bound to the current Jest run");
+    await expect(
+      readCoverageEvidenceFromCandidates(root, "", 0, { requireFresh: true }),
+    ).rejects.toThrow("bound to the current Jest run");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -100,11 +106,13 @@ test("skips a stale higher-priority report and selects a fresh later report", as
   await writeFile(join(root, "coverage", "coverage-final.json"), JSON.stringify(detailedReport));
   await writeFile(join(root, "coverage", "coverage.json"), JSON.stringify(detailedReport));
   try {
-    await expect(readCoverageEvidenceFromCandidates(root, "", 1, {
-      requireFresh: true,
-      expectedFiles: [],
-      statFile: async (path) => ({ mtimeMs: path.endsWith("coverage-final.json") ? 0 : 2 }),
-    })).resolves.toMatchObject({ source: "coverage/coverage.json" });
+    await expect(
+      readCoverageEvidenceFromCandidates(root, "", 1, {
+        requireFresh: true,
+        expectedFiles: [],
+        statFile: async (path) => ({ mtimeMs: path.endsWith("coverage-final.json") ? 0 : 2 }),
+      }),
+    ).resolves.toMatchObject({ source: "coverage/coverage.json" });
   } finally {
     await rm(root, { recursive: true, force: true });
   }

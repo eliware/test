@@ -10,7 +10,8 @@ export function createPartialSecretSuffixTrimmer(secrets, maxWork = MAX_SUFFIX_T
   const patterns = secrets.map((secret) => {
     const prefixLengths = Array.from({ length: secret.length }, () => 0);
     for (let index = 1, prefixLength = 0; index < secret.length; index += 1) {
-      while (prefixLength > 0 && secret[index] !== secret[prefixLength]) prefixLength = prefixLengths[prefixLength - 1];
+      while (prefixLength > 0 && secret[index] !== secret[prefixLength])
+        prefixLength = prefixLengths[prefixLength - 1];
       if (secret[index] === secret[prefixLength]) prefixLength += 1;
       prefixLengths[index] = prefixLength;
     }

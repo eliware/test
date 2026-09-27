@@ -25,16 +25,31 @@ test("reports a missing library README", async () => {
 
 test("rejects an incomplete optional examples index", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-library-"));
-  await writeFile(join(root, "README.md"), "purpose requirements setup configuration usage api validation packaging security support license docs/ examples/");
+  await writeFile(
+    join(root, "README.md"),
+    "purpose requirements setup configuration usage api validation packaging security support license docs/ examples/",
+  );
   await mkdir(join(root, "examples"));
   await writeFile(join(root, "examples", "README.md"), "Purpose\nCommand");
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail", message: expect.stringContaining("prerequisites") }));
+  await expect(run({ root })).resolves.toEqual(
+    expect.objectContaining({ status: "fail", message: expect.stringContaining("prerequisites") }),
+  );
 });
 
 test("accepts a complete optional examples index", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-library-"));
-  await writeFile(join(root, "README.md"), "purpose requirements setup configuration usage api validation packaging security support license docs/ examples/");
+  await writeFile(
+    join(root, "README.md"),
+    "purpose requirements setup configuration usage api validation packaging security support license docs/ examples/",
+  );
   await mkdir(join(root, "examples"));
-  await writeFile(join(root, "examples", "README.md"), "Purpose\nPrerequisites\nCommand\nExpected result");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.40.3", status: "pass", message: "" });
+  await writeFile(
+    join(root, "examples", "README.md"),
+    "Purpose\nPrerequisites\nCommand\nExpected result",
+  );
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.40.3",
+    status: "pass",
+    message: "",
+  });
 });

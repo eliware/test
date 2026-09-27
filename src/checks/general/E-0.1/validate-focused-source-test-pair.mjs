@@ -1,7 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export async function validateFocusedSourceTestPair(root, { sourcePath, testPath }, readText = readFile) {
+export async function validateFocusedSourceTestPair(
+  root,
+  { sourcePath, testPath },
+  readText = readFile,
+) {
   const source = sourcePath.replace(/^src\//u, "");
   const test = testPath.replace(/^(?:tests?|specs?)\//iu, "");
   const sourceFile = join(root, "src", source);

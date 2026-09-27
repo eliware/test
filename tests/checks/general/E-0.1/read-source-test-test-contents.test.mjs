@@ -6,7 +6,9 @@ import { readSourceTestContents } from "../../../../src/checks/general/E-0.1/rea
 
 test("reads only Jest test files through the run inventory", async () => {
   const readText = jest.fn(async () => "test('ok', () => {});");
-  const contents = await readSourceTestContents("/repo", ["helper.mjs", "nested/module.test.mjs"], { readText });
+  const contents = await readSourceTestContents("/repo", ["helper.mjs", "nested/module.test.mjs"], {
+    readText,
+  });
 
   expect(contents).toEqual(new Map([["nested/module.test.mjs", "test('ok', () => {});"]]));
   expect(readText).toHaveBeenCalledWith(join("/repo", "tests", "nested/module.test.mjs"));

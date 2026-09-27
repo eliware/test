@@ -7,7 +7,9 @@ test("resolves string and named Oxlint package binaries and rejects missing meta
     resolveOxlintExecutable(requireFactory, async () => JSON.stringify({ bin: "bin/oxlint.js" })),
   ).resolves.toMatch(/[\\/]pkg[\\/]oxlint[\\/]bin[\\/]oxlint\.js$/u);
   await expect(
-    resolveOxlintExecutable(requireFactory, async () => JSON.stringify({ bin: { oxlint: "bin/cli.js" } })),
+    resolveOxlintExecutable(requireFactory, async () =>
+      JSON.stringify({ bin: { oxlint: "bin/cli.js" } }),
+    ),
   ).resolves.toMatch(/[\\/]pkg[\\/]oxlint[\\/]bin[\\/]cli\.js$/u);
   await expect(
     resolveOxlintExecutable(requireFactory, async () => JSON.stringify({ bin: {} })),

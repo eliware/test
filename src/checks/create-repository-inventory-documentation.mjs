@@ -11,20 +11,33 @@ export function createDocumentationFileView(root, entriesUnder) {
     maxFiles = 10_000,
     includeGenerated = false,
   } = {}) {
-    const base = inventoryDirectory(root, directory, "Documentation inventory directory must be inside the repository.");
+    const base = inventoryDirectory(
+      root,
+      directory,
+      "Documentation inventory directory must be inside the repository.",
+    );
     const prefix = base ? `${base}/` : "";
     const records = await entriesUnder(directory);
-    const directories = records.filter(({ path, type }) => type === "directory" && (includeGenerated || !generatedPath.test(path)));
+    const directories = records.filter(
+      ({ path, type }) => type === "directory" && (includeGenerated || !generatedPath.test(path)),
+    );
     const directoryExists = base === "" || directories.some(({ path }) => path === base);
     if (!directoryExists)
-      throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), { code: "ENOENT" });
+      throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
+        code: "ENOENT",
+      });
     const exceedsDirectoryDepth = directories.some(({ path }) => {
       if (base && path === base) return false;
       const relativePath = base ? path.slice(prefix.length) : path;
       return relativePath.split("/").length > maxDepth;
     });
     const exceedsFileDepth = records.some(({ path, type }) => {
-      if (type !== "file" || !path.startsWith(prefix) || (!includeGenerated && generatedPath.test(path))) return false;
+      if (
+        type !== "file" ||
+        !path.startsWith(prefix) ||
+        (!includeGenerated && generatedPath.test(path))
+      )
+        return false;
       const relativePath = path.slice(prefix.length);
       return relativePath.split("/").length - 1 > maxDepth;
     });
@@ -33,11 +46,17 @@ export function createDocumentationFileView(root, entriesUnder) {
       throw new Error(`Documentation traversal exceeded the ${maxDepth}-level depth limit.`);
     const result = [];
     for (const record of records) {
-      if (record.type !== "file" || !record.path.startsWith(prefix) || (!includeGenerated && generatedPath.test(record.path))) continue;
+      if (
+        record.type !== "file" ||
+        !record.path.startsWith(prefix) ||
+        (!includeGenerated && generatedPath.test(record.path))
+      )
+        continue;
       const file = record.path.slice(prefix.length);
       if (!predicate(basename(file))) continue;
       result.push(file);
-      if (result.length > maxFiles) throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);
+      if (result.length > maxFiles)
+        throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);
     }
     return result;
   };

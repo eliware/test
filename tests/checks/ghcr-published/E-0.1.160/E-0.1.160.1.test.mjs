@@ -16,7 +16,9 @@ test("requires the Eliware GHCR image name", async () => {
 });
 
 test("reports workflow inspection failures", async () => {
-  await expect(run({ root: "C:\\missing-ghcr-repository", packageJson: { name: "@eliware/example" } })).resolves.toEqual(
+  await expect(
+    run({ root: "C:\\missing-ghcr-repository", packageJson: { name: "@eliware/example" } }),
+  ).resolves.toEqual(
     expect.objectContaining({
       status: "fail",
       message: expect.stringContaining("GHCR workflows could not be inspected"),

@@ -2,14 +2,16 @@ import { expect, test } from "@jest/globals";
 import { collectRedactionSecrets } from "../../src/checks/collect-redaction-secrets.mjs";
 
 test("collects unique string values from sensitive environment keys", () => {
-  expect(collectRedactionSecrets({
-    SAFE: "visible",
-    SERVICE_TOKEN: "long-secret",
-    API_KEY: "short",
-    REFRESH_TOKEN: "long-secret",
-    EMPTY_SECRET: "",
-    NUMERIC_PASSWORD: 123,
-  })).toEqual(["long-secret", "short"]);
+  expect(
+    collectRedactionSecrets({
+      SAFE: "visible",
+      SERVICE_TOKEN: "long-secret",
+      API_KEY: "short",
+      REFRESH_TOKEN: "long-secret",
+      EMPTY_SECRET: "",
+      NUMERIC_PASSWORD: 123,
+    }),
+  ).toEqual(["long-secret", "short"]);
 });
 
 test("returns no secrets for missing or non-object environments", () => {

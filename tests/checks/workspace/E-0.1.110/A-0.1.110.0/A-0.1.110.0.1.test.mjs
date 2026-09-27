@@ -24,7 +24,8 @@ test("reports missing instruction topics and AGENTS files", async () => {
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.110.0.1",
     status: "fail",
-    message: "AGENTS.md is missing workspace instruction topics: communication, runbook, validation.",
+    message:
+      "AGENTS.md is missing workspace instruction topics: communication, runbook, validation.",
   });
   await rm(root, { recursive: true, force: true });
   await expect(run({ root })).resolves.toEqual({

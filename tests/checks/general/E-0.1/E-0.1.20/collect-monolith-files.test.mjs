@@ -2,7 +2,10 @@ import { expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { collectMonolithFiles, excludedFile } from "../../../../../src/checks/general/E-0.1/E-0.1.20/collect-monolith-files.mjs";
+import {
+  collectMonolithFiles,
+  excludedFile,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.20/collect-monolith-files.mjs";
 
 test("collects module files and excludes generated/artifact directories", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-monolith-files-"));

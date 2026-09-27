@@ -12,8 +12,10 @@ export async function executeFormatterValidation({
   focusedScope = null,
   env = process.env,
 }) {
-  if (!(executeFormat || mode === "format" || mode === "format-check") ||
-    (mode !== null && mode !== "format" && mode !== "format-check"))
+  if (
+    !(executeFormat || mode === "format" || mode === "format-check") ||
+    (mode !== null && mode !== "format" && mode !== "format-check")
+  )
     return null;
   const argumentError = validatePrettierArguments(toolArgs);
   if (argumentError) return argumentError;

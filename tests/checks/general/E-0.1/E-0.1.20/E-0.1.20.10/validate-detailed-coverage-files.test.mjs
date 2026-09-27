@@ -6,7 +6,9 @@ const complete = { s: {}, b: {}, f: {}, statementMap: {}, branchMap: {}, fnMap: 
 test("filters non-source reports and accepts an unscoped empty report", () => {
   const source = { "src/example.mjs": complete };
   expect(validateDetailedCoverageFiles(source)).toEqual(Object.entries(source));
-  expect(validateDetailedCoverageFiles({ "tests/example.test.mjs": {}, "README.md": {} })).toEqual([]);
+  expect(validateDetailedCoverageFiles({ "tests/example.test.mjs": {}, "README.md": {} })).toEqual(
+    [],
+  );
   expect(validateDetailedCoverageFiles(null)).toEqual([]);
 });
 
@@ -18,15 +20,16 @@ test("requires every in-scope repository source file to be reported", () => {
 });
 
 test("rejects unlisted source files and missing source-derived shapes", () => {
-  expect(() => validateDetailedCoverageFiles(
-    { "src/listed.mjs": complete, "src/unlisted.mjs": complete },
-    ["src/listed.mjs"],
-    { "src/listed.mjs": {} },
-  )).toThrow("non-repository source file: src/unlisted.mjs");
-  expect(() => validateDetailedCoverageFiles(
-    { "src/listed.mjs": complete },
-    ["src/listed.mjs"],
-  )).toThrow("no source-derived shape for src/listed.mjs");
+  expect(() =>
+    validateDetailedCoverageFiles(
+      { "src/listed.mjs": complete, "src/unlisted.mjs": complete },
+      ["src/listed.mjs"],
+      { "src/listed.mjs": {} },
+    ),
+  ).toThrow("non-repository source file: src/unlisted.mjs");
+  expect(() =>
+    validateDetailedCoverageFiles({ "src/listed.mjs": complete }, ["src/listed.mjs"]),
+  ).toThrow("no source-derived shape for src/listed.mjs");
 });
 
 test("requires each detailed source entry to provide all coverage maps", () => {
@@ -40,9 +43,9 @@ test("requires each detailed source entry to provide all coverage maps", () => {
 
 test("matches normalized Windows paths against repository files", () => {
   const entries = [["C:\\repo\\src\\listed.mjs", complete]];
-  expect(validateDetailedCoverageFiles(
-    Object.fromEntries(entries),
-    ["src/listed.mjs"],
-    { "src/listed.mjs": {} },
-  )).toEqual(entries);
+  expect(
+    validateDetailedCoverageFiles(Object.fromEntries(entries), ["src/listed.mjs"], {
+      "src/listed.mjs": {},
+    }),
+  ).toEqual(entries);
 });

@@ -1,7 +1,9 @@
 export function normalizeWorkflowDocument(document) {
   if (!document || typeof document !== "object") return document;
   const trigger = document.on ?? document.true;
-  const jobs = Object.fromEntries(Object.entries(document.jobs ?? {}).map(([id, job]) => [id, normalizeWorkflowJob(job)]));
+  const jobs = Object.fromEntries(
+    Object.entries(document.jobs ?? {}).map(([id, job]) => [id, normalizeWorkflowJob(job)]),
+  );
   return { ...document, on: trigger, jobs };
 }
 
@@ -23,9 +25,15 @@ function normalizeWorkflowStep(step) {
     ...step,
     with: {
       ...withValues,
-      ...(withValues.subjectName === undefined && withValues["subject-name"] !== undefined ? { subjectName: withValues["subject-name"] } : {}),
-      ...(withValues.subjectDigest === undefined && withValues["subject-digest"] !== undefined ? { subjectDigest: withValues["subject-digest"] } : {}),
-      ...(withValues.pushToRegistry === undefined && withValues["push-to-registry"] !== undefined ? { pushToRegistry: withValues["push-to-registry"] } : {}),
+      ...(withValues.subjectName === undefined && withValues["subject-name"] !== undefined
+        ? { subjectName: withValues["subject-name"] }
+        : {}),
+      ...(withValues.subjectDigest === undefined && withValues["subject-digest"] !== undefined
+        ? { subjectDigest: withValues["subject-digest"] }
+        : {}),
+      ...(withValues.pushToRegistry === undefined && withValues["push-to-registry"] !== undefined
+        ? { pushToRegistry: withValues["push-to-registry"] }
+        : {}),
     },
   };
 }

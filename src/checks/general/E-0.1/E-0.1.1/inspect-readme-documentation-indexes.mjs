@@ -11,14 +11,20 @@ export async function inspectReadmeDocumentationIndexes(root) {
     try {
       await access(join(root, path));
     } catch {
-      return { examplesRequired, error: `README.md links to required documentation index ${path}, but it does not exist.` };
+      return {
+        examplesRequired,
+        error: `README.md links to required documentation index ${path}, but it does not exist.`,
+      };
     }
   }
   if (examplesRequired) {
     try {
       await access(join(root, "examples", "README.md"));
     } catch {
-      return { examplesRequired, error: "README.md links to examples/README.md, but it does not exist." };
+      return {
+        examplesRequired,
+        error: "README.md links to examples/README.md, but it does not exist.",
+      };
     }
   }
   return { examplesRequired, error: null };

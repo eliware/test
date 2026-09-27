@@ -10,7 +10,11 @@ test("requires infrastructure README topics", async () => {
     join(root, "README.md"),
     "purpose managed targets requirements setup configuration desired state validation change boundaries security support license",
   );
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.90.1", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.90.1",
+    status: "pass",
+    message: "",
+  });
   await rm(root, { recursive: true, force: true });
 });
 

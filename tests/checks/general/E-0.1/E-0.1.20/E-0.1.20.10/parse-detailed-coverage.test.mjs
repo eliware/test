@@ -1,5 +1,15 @@
 import { expect, test } from "@jest/globals";
 import { parseDetailed } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/parse-detailed-coverage.mjs";
+import { expectedCoverageShape } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-source-shapes.mjs";
+
+test("rejects missing evidence for an expected source with no instrumentable statements", () => {
+  const file = "src/empty.mjs";
+  const shape = expectedCoverageShape("// no instrumentable statements", file);
+  expect(Object.keys(shape.statementMap)).toHaveLength(0);
+  expect(() => parseDetailed({}, [file], { [file]: shape })).toThrow(
+    "Detailed coverage omits in-scope source file(s): src/empty.mjs.",
+  );
+});
 
 test("aggregates coverage gaps and metric totals across detailed source files", () => {
   const result = parseDetailed({
@@ -48,9 +58,9 @@ test("aggregates against source shapes after Windows path normalization", () => 
     branchMap: {},
     fnMap: {},
   };
-  expect(parseDetailed(
-    { "C:\\repo\\src\\listed.mjs": evidence },
-    ["src/listed.mjs"],
-    { "src/listed.mjs": shape },
-  ).totals.lines).toBe(100);
+  expect(
+    parseDetailed({ "C:\\repo\\src\\listed.mjs": evidence }, ["src/listed.mjs"], {
+      "src/listed.mjs": shape,
+    }).totals.lines,
+  ).toBe(100);
 });

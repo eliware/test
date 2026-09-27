@@ -9,8 +9,11 @@ test("discovers and sorts checks from an explicit profile", async () => {
   expect(checks.length).toBeGreaterThan(0);
   expect(checks.some((check) => check.ruleId === "E-0.1.130")).toBe(false);
   expect(checks.some((check) => check.ruleId.startsWith("A-0.1.130."))).toBe(true);
-  expect(checks.filter((check) => check.applicability !== "advisory-only")
-    .every((check) => typeof check.run === "function")).toBe(true);
+  expect(
+    checks
+      .filter((check) => check.applicability !== "advisory-only")
+      .every((check) => typeof check.run === "function"),
+  ).toBe(true);
 });
 
 test("rejects an unknown profile", async () => {
@@ -99,6 +102,9 @@ test("keeps the bundled registry unique and executable", async () => {
   expect(checks.length).toBeGreaterThan(0);
   expect(new Set(ids).size).toBe(ids.length);
   expect(ids.every((id) => /^([EA])-\d+(?:\.\d+)*$/.test(id))).toBe(true);
-  expect(checks.filter((check) => check.applicability !== "advisory-only")
-    .every(({ run }) => typeof run === "function")).toBe(true);
+  expect(
+    checks
+      .filter((check) => check.applicability !== "advisory-only")
+      .every(({ run }) => typeof run === "function"),
+  ).toBe(true);
 });

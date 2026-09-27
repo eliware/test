@@ -15,5 +15,7 @@ export function hasVersionedImagePushAfterGuard(job, packageVersion) {
 
   const tags = imageTags(pushes[0].with?.tags);
   const pushIndex = jobSteps.indexOf(pushes[0]);
-  return tags.length === 1 && tags[0].endsWith(`:v${packageVersion}`) && pushIndex > versionCheckIndex;
+  return (
+    tags.length === 1 && tags[0].endsWith(`:v${packageVersion}`) && pushIndex > versionCheckIndex
+  );
 }

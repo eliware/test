@@ -3,19 +3,25 @@ import { findMisplacedArtifacts } from "../../../../src/checks/general/E-0.1/val
 
 test("finds fixture-like files outside artifacts", () => {
   expect(findMisplacedArtifacts(["fixture.mjs"], ["nested.test-utils.test.mjs"])).toEqual([
-    "fixture.mjs", "nested.test-utils.test.mjs",
+    "fixture.mjs",
+    "nested.test-utils.test.mjs",
   ]);
   expect(findMisplacedArtifacts(["artifacts/fixture.mjs"], [])).toEqual([]);
 });
 
 test("finds snapshots, generated data, and test helpers by structure", () => {
-  expect(findMisplacedArtifacts([], [
-    "__snapshots__/module.test.mjs.snap",
-    "generated/values.json",
-    "support/loader.mjs",
-    "data/fixture-values.json",
-    "arbitrary-helper.mjs",
-  ])).toEqual([
+  expect(
+    findMisplacedArtifacts(
+      [],
+      [
+        "__snapshots__/module.test.mjs.snap",
+        "generated/values.json",
+        "support/loader.mjs",
+        "data/fixture-values.json",
+        "arbitrary-helper.mjs",
+      ],
+    ),
+  ).toEqual([
     "__snapshots__/module.test.mjs.snap",
     "generated/values.json",
     "support/loader.mjs",
@@ -25,17 +31,24 @@ test("finds snapshots, generated data, and test helpers by structure", () => {
 });
 
 test("does not flag artifact content already under artifacts", () => {
-  expect(findMisplacedArtifacts([], [
-    "artifacts/__snapshots__/module.test.mjs.snap",
-    "artifacts/generated/values.json",
-    "artifacts/support/loader.mjs",
-    "artifacts/arbitrary-helper.mjs",
-  ])).toEqual([]);
+  expect(
+    findMisplacedArtifacts(
+      [],
+      [
+        "artifacts/__snapshots__/module.test.mjs.snap",
+        "artifacts/generated/values.json",
+        "artifacts/support/loader.mjs",
+        "artifacts/arbitrary-helper.mjs",
+      ],
+    ),
+  ).toEqual([]);
 });
 
 test("allows ordinary source, test, and data files outside artifact locations", () => {
-  expect(findMisplacedArtifacts(
-    ["checks/module.mjs", "data/records.json"],
-    ["checks/module.test.mjs", "data/records.txt"],
-  )).toEqual([]);
+  expect(
+    findMisplacedArtifacts(
+      ["checks/module.mjs", "data/records.json"],
+      ["checks/module.test.mjs", "data/records.txt"],
+    ),
+  ).toEqual([]);
 });

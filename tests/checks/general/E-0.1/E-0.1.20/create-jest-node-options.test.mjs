@@ -12,9 +12,7 @@ test("adds the required Jest Node options while preserving supported warning set
   expect(createJestNodeOptions("--trace-warnings=false")).toBe(
     "--trace-warnings=false --experimental-vm-modules",
   );
-  expect(createJestNodeOptions("--no-warnings")).toBe(
-    "--no-warnings --experimental-vm-modules",
-  );
+  expect(createJestNodeOptions("--no-warnings")).toBe("--no-warnings --experimental-vm-modules");
 });
 
 test("rejects inherited Node options that could alter or preload Jest execution", () => {

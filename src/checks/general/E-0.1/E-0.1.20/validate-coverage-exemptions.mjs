@@ -5,7 +5,11 @@ export function runCoverageExemptionCheck({ packageJson }, { ruleId, coverageRul
   try {
     const exemptions = packageJson?.eliware?.exempt ?? [];
     if (!Array.isArray(exemptions)) throw new Error("Package exemptions must be an array.");
-    if (exemptions.some((entry) => entry === null || typeof entry !== "object" || Array.isArray(entry))) {
+    if (
+      exemptions.some(
+        (entry) => entry === null || typeof entry !== "object" || Array.isArray(entry),
+      )
+    ) {
       throw new Error("Package exemptions must contain objects.");
     }
     // The validation plan checks rule-ID scope; validate every record here as well.

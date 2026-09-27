@@ -28,8 +28,9 @@ test("forwards safe npm pack arguments without overriding required flags", async
   expect(calls[0][1]).toEqual(["pack", "--ignore-scripts", "--dry-run", "--json"]);
   const run = jest.fn();
   const resolve = jest.fn(() => ["npm", []]);
-  await expect(runNpmPack("C:\\repo", run, resolve, ["--no-dry-run"]))
-    .rejects.toThrow("cannot override");
+  await expect(runNpmPack("C:\\repo", run, resolve, ["--no-dry-run"])).rejects.toThrow(
+    "cannot override",
+  );
   expect(run).not.toHaveBeenCalled();
   expect(resolve).not.toHaveBeenCalled();
 });

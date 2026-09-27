@@ -5,7 +5,10 @@ export const parentRuleId = "E-0.1.20";
 
 export function run({ packageJson }) {
   const capabilities = packageJson?.eliware?.capabilities ?? [];
-  if (!Array.isArray(capabilities) || capabilities.some((name) => !["typecheck", "build"].includes(name))) {
+  if (
+    !Array.isArray(capabilities) ||
+    capabilities.some((name) => !["typecheck", "build"].includes(name))
+  ) {
     return fail(ruleId, "package.json.eliware.capabilities must contain only typecheck and build.");
   }
   for (const name of ["typecheck", "build"]) {
@@ -13,7 +16,10 @@ export function run({ packageJson }) {
     if (capabilities.includes(name) && (typeof script !== "string" || !script.trim()))
       return fail(ruleId, `Declared ${name} capability requires a nonempty npm script.`);
     if (script !== undefined && !capabilities.includes(name))
-      return fail(ruleId, `package.json.scripts.${name} requires a declared package.json.eliware.capabilities entry.`);
+      return fail(
+        ruleId,
+        `package.json.scripts.${name} requires a declared package.json.eliware.capabilities entry.`,
+      );
   }
   return pass(ruleId);
 }

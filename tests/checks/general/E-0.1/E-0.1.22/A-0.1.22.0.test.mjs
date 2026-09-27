@@ -18,7 +18,11 @@ test("accepts a valid E-rooted directive tree", async () => {
     join(root, "specs", "authority.json"),
     JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0.0"] }] }] }),
   );
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.22.0", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.22.0",
+    status: "pass",
+    message: "",
+  });
   await rm(root, { recursive: true, force: true });
 });
 test("rejects invalid hierarchy and duplicate IDs", async () => {

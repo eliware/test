@@ -1,6 +1,9 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { isProcessEnv, propertyName } from "../../../../../src/checks/general/E-0.1/E-0.1.20/environment-reference-syntax.mjs";
+import {
+  isProcessEnv,
+  propertyName,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.20/environment-reference-syntax.mjs";
 
 test("recognizes direct and computed process.env syntax", () => {
   const ast = parse("process.env.PORT; process['env']['TOKEN'];", { sourceType: "module" });
@@ -18,11 +21,12 @@ test("recognizes statically resolvable computed template names", () => {
 });
 
 test("rejects dynamic or non-environment member syntax", () => {
-  const ast = parse(
-    "process.env[`MAIL_${OWNER}`]; process.env[HOST]; other.env.PORT;",
-    { sourceType: "module" },
+  const ast = parse("process.env[`MAIL_${OWNER}`]; process.env[HOST]; other.env.PORT;", {
+    sourceType: "module",
+  });
+  const [dynamic, dynamicIdentifier, unrelated] = ast.program.body.map(
+    ({ expression }) => expression,
   );
-  const [dynamic, dynamicIdentifier, unrelated] = ast.program.body.map(({ expression }) => expression);
   expect(propertyName(dynamic.property)).toBeUndefined();
   expect(isProcessEnv(dynamic.object)).toBe(true);
   expect(propertyName(dynamicIdentifier.property, dynamicIdentifier.computed)).toBeUndefined();

@@ -19,14 +19,18 @@ function walk(node, bindings, unsupported = []) {
 }
 
 test("scopes block declarations and invalidates mutated outer bindings", () => {
-  const ast = parse('let value = "npm"; { const value = "curl"; value++; }', { sourceType: "module" }).program;
+  const ast = parse('let value = "npm"; { const value = "curl"; value++; }', {
+    sourceType: "module",
+  }).program;
   const bindings = new Map([["value", "npm"]]);
   const result = walk(ast.body[1], bindings);
   expect(result.handled).toBe(true);
   expect(bindings.has("value")).toBe(true);
   expect(result.unsupported).toHaveLength(1);
 
-  const outerMutation = parse('let command = "npm"; { command = "curl"; }', { sourceType: "module" }).program;
+  const outerMutation = parse('let command = "npm"; { command = "curl"; }', {
+    sourceType: "module",
+  }).program;
   const outerBindings = new Map([["command", "npm"]]);
   walk(outerMutation.body[1], outerBindings);
   expect(outerBindings.has("command")).toBe(false);
@@ -48,35 +52,47 @@ test("scopes block declarations and invalidates mutated outer bindings", () => {
 test("propagates reassignment and preserves allowed process exit-code reporting", () => {
   const unsupported = [];
   const bindings = new Map([["command", "npm"]]);
-  const reassignment = parse('command = "curl";', { sourceType: "module" }).program.body[0].expression;
+  const reassignment = parse('command = "curl";', { sourceType: "module" }).program.body[0]
+    .expression;
   traverseKnitBindingNode(reassignment, bindings, () => {}, unsupported);
   expect(bindings.has("command")).toBe(false);
-  const exitCode = parse("process.exitCode = 1;", { sourceType: "module" }).program.body[0].expression;
+  const exitCode = parse("process.exitCode = 1;", { sourceType: "module" }).program.body[0]
+    .expression;
   traverseKnitBindingNode(exitCode, bindings, () => {}, unsupported);
-  const memberMutation = parse("process.env.VALUE = 'changed';", { sourceType: "module" }).program.body[0].expression;
+  const memberMutation = parse("process.env.VALUE = 'changed';", { sourceType: "module" }).program
+    .body[0].expression;
   traverseKnitBindingNode(memberMutation, bindings, () => {}, unsupported);
   expect(unsupported).toEqual([reassignment.start, memberMutation.start]);
 });
 
 test("visits statically expanded loops and rejects dynamic loops", () => {
   const bindings = new Map([["commands", ["npm", "node"]]]);
-  const staticLoop = parse('for (const command of commands) { run(command); }', { sourceType: "module" }).program.body[0];
+  const staticLoop = parse("for (const command of commands) { run(command); }", {
+    sourceType: "module",
+  }).program.body[0];
   const staticResult = walk(staticLoop, bindings);
   expect(staticResult.handled).toBe(true);
   expect(staticResult.visited.filter(({ type }) => type === "BlockStatement")).toHaveLength(2);
 
-  const dynamicLoop = parse('for (const command of unknown) { run(command); }', { sourceType: "module" }).program.body[0];
+  const dynamicLoop = parse("for (const command of unknown) { run(command); }", {
+    sourceType: "module",
+  }).program.body[0];
   const dynamicResult = walk(dynamicLoop, new Map());
   expect(dynamicResult.handled).toBe(true);
   expect(dynamicResult.unsupported).toEqual([dynamicLoop.start]);
 
-  const assignmentLoop = parse('for (command of ["npm"]) run(command);', { sourceType: "module" }).program.body[0];
+  const assignmentLoop = parse('for (command of ["npm"]) run(command);', { sourceType: "module" })
+    .program.body[0];
   expect(walk(assignmentLoop, new Map()).handled).toBe(true);
 });
 
 test("adds only resolvable identifier declarations to static bindings", () => {
-  const declarations = parse('const command = "npm"; const dynamic = unknown; const [destructured] = ["x"];', { sourceType: "module" }).program.body;
+  const declarations = parse(
+    'const command = "npm"; const dynamic = unknown; const [destructured] = ["x"];',
+    { sourceType: "module" },
+  ).program.body;
   const bindings = new Map();
-  for (const declaration of declarations) traverseKnitBindingNode(declaration, bindings, () => {}, []);
+  for (const declaration of declarations)
+    traverseKnitBindingNode(declaration, bindings, () => {}, []);
   expect(bindings).toEqual(new Map([["command", "npm"]]));
 });

@@ -3,6 +3,7 @@ import { createChildProgressHandler } from "./handle-child-progress.mjs";
 import { createProgressTimeout } from "./create-progress-timeout.mjs";
 import { createChildOutputCapture } from "./capture-child-output.mjs";
 import { createChildTerminationHandler } from "./create-child-termination-handler.mjs";
+import { wireChildOutput } from "./wire-child-output.mjs";
 
 export function runChild(command, args, options = {}) {
   const maxOutputLength = options.maxOutputLength;
@@ -20,7 +21,9 @@ export function runChild(command, args, options = {}) {
       settled = true;
       timeout?.stop();
       termination?.cancel();
-      const diagnostic = output.redactComplete(error instanceof Error ? error.message : String(error));
+      const diagnostic = output.redactComplete(
+        error instanceof Error ? error.message : String(error),
+      );
       reject(new Error(diagnostic || "Child process could not be started."));
     };
     let child;
@@ -48,7 +51,9 @@ export function runChild(command, args, options = {}) {
       output,
       resolve,
       isSettled: () => settled,
-      markSettled: () => { settled = true; },
+      markSettled: () => {
+        settled = true;
+      },
     });
     const resetProgressTimer = () => {
       if (!settled) timeout.reset();
@@ -59,24 +64,19 @@ export function runChild(command, args, options = {}) {
       redactProgressText: output.redactComplete,
     });
     timeout.reset();
-    child.stdout?.on("data", (chunk) => {
-      output.stdout(chunk);
-    });
-    child.stderr?.on("data", (chunk) => {
-      progress.push(chunk);
-      output.stderr(chunk);
-    });
+    const flushOutput = wireChildOutput(child, output, progress);
     child.on("error", (error) => {
       settleError(error);
     });
     child.on("close", (code, signal) => {
       if (settled) return;
-      output.flush();
-      progress.flush();
+      flushOutput();
       timeout.stop();
       termination.cancel();
       if (code === null && !termination.wasTimedOut()) {
-        settleError(new Error(`Child process exited without an exit code${signal ? ` (${signal})` : ""}.`));
+        settleError(
+          new Error(`Child process exited without an exit code${signal ? ` (${signal})` : ""}.`),
+        );
         return;
       }
       settled = true;

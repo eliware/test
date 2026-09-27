@@ -6,8 +6,7 @@ export function inventoryPath(root, filePath) {
 
 export function inventoryDirectory(root, directory, errorMessage) {
   const base = relative(resolve(root), resolve(directory)).split(sep).join("/");
-  if (base === ".." || base.startsWith("../") || base.includes(":"))
-    throw new Error(errorMessage);
+  if (base === ".." || base.startsWith("../") || base.includes(":")) throw new Error(errorMessage);
   return base;
 }
 
@@ -16,7 +15,10 @@ export function createDirectoryReadCache(root, readDirectory) {
   return function readDirectoryCached(directoryPath) {
     const key = inventoryPath(root, directoryPath);
     if (!reads.has(key))
-      reads.set(key, Promise.resolve().then(() => readDirectory(key, { withFileTypes: true })));
+      reads.set(
+        key,
+        Promise.resolve().then(() => readDirectory(key, { withFileTypes: true })),
+      );
     return reads.get(key);
   };
 }

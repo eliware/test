@@ -1,8 +1,4 @@
-const allowedOptions = new Set([
-  "--experimental-vm-modules",
-  "--no-warnings",
-  "--trace-warnings",
-]);
+const allowedOptions = new Set(["--experimental-vm-modules", "--no-warnings", "--trace-warnings"]);
 
 export function createJestNodeOptions(value = "") {
   if (typeof value === "string" && /["'\\]/u.test(value)) {
@@ -14,7 +10,12 @@ export function createJestNodeOptions(value = "") {
   }
   const options = new Set(inherited);
   options.add("--experimental-vm-modules");
-  if (![...options].some((option) => option === "--trace-warnings" || option.startsWith("--trace-warnings=")) && !options.has("--no-warnings")) {
+  if (
+    ![...options].some(
+      (option) => option === "--trace-warnings" || option.startsWith("--trace-warnings="),
+    ) &&
+    !options.has("--no-warnings")
+  ) {
     options.add("--no-warnings");
   }
   return [...options].join(" ");

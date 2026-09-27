@@ -12,7 +12,7 @@ test("returns an empty string for a missing section and supports punctuation in 
 });
 
 test("uses a cached section when present and parses when the cache has no value", () => {
-  expect(readSection("## Usage\nparsed", "Usage", new Map([ ["Usage", "cached"] ]))).toBe("cached");
+  expect(readSection("## Usage\nparsed", "Usage", new Map([["Usage", "cached"]]))).toBe("cached");
   expect(readSection("## Usage\nparsed", "Usage", new Map())).toBe("parsed");
-  expect(readSection("## Usage\nparsed", "Usage", new Map([ ["Usage", undefined] ]))).toBe("");
+  expect(readSection("## Usage\nparsed", "Usage", new Map([["Usage", undefined]]))).toBe("");
 });

@@ -5,8 +5,18 @@ import { referenceTarget } from "../../../../src/checks/documentation/E-0.1.100/
 test("rejects invalid authority reference shapes", () => {
   const root = resolve("fixture-repo");
   const file = resolve("fixture-repo", "authority.json");
-  for (const reference of [undefined, "", " target.json", "C:\\other.json", "\\\\server\\share", "https://example.test"]) {
+  for (const reference of [
+    undefined,
+    "",
+    " target.json",
+    "C:\\other.json",
+    "\\\\server\\share",
+    "https://example.test",
+  ]) {
     expect(referenceTarget(root, file, reference).error).toMatch(/repository-relative|nonempty/);
   }
-  expect(referenceTarget(root, file, "./target.json#section")).toEqual({ target: resolve("fixture-repo", "target.json"), external: false });
+  expect(referenceTarget(root, file, "./target.json#section")).toEqual({
+    target: resolve("fixture-repo", "target.json"),
+    external: false,
+  });
 });

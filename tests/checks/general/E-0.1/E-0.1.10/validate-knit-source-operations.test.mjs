@@ -33,9 +33,12 @@ test("allows analyzed top-level subprocess commands and rejects helper subproces
   const topLevel = 'import * as child from "node:child_process"; child.execSync("npm", ["test"]);';
   const topLevelAst = parse(topLevel, { sourceType: "module" });
   const topLevelCall = topLevelAst.program.body[1].expression;
-  expect(validateKnitSourceOperations(topLevel, topLevelAst, [{ start: topLevelCall.start }])).toBeNull();
+  expect(
+    validateKnitSourceOperations(topLevel, topLevelAst, [{ start: topLevelCall.start }]),
+  ).toBeNull();
 
-  const helper = 'import * as child from "node:child_process"; function helper() { child.execSync("node", ["-e", "work"]); }';
+  const helper =
+    'import * as child from "node:child_process"; function helper() { child.execSync("node", ["-e", "work"]); }';
   const helperAst = parse(helper, { sourceType: "module" });
   const helperCall = helperAst.program.body[1].body.body[0].expression;
   expect(validateKnitSourceOperations(helper, helperAst, [{ start: helperCall.start }])).toContain(

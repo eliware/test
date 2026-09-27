@@ -2,7 +2,16 @@ import { readdir } from "node:fs/promises";
 import { basename, join } from "node:path";
 
 export const excludedDirectories = new Set([
-  ".git", "build", "coverage", "dist", "generated", "node_modules", "test-fixtures", "fixtures", "__fixtures__", "__snapshots__",
+  ".git",
+  "build",
+  "coverage",
+  "dist",
+  "generated",
+  "node_modules",
+  "test-fixtures",
+  "fixtures",
+  "__fixtures__",
+  "__snapshots__",
 ]);
 
 export function excludedFile(file) {
@@ -17,9 +26,12 @@ export async function collectMonolithFiles(directory, inventory = null) {
     return entries
       .filter(({ path, type }) => {
         const segments = path.split("/");
-        return type === "file" && path.endsWith(".mjs") &&
+        return (
+          type === "file" &&
+          path.endsWith(".mjs") &&
           !segments.some((segment) => excludedDirectories.has(segment)) &&
-          !excludedFile(path);
+          !excludedFile(path)
+        );
       })
       .map(({ path }) => join(repositoryRoot, path));
   }
@@ -27,8 +39,9 @@ export async function collectMonolithFiles(directory, inventory = null) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) {
-      if (!excludedDirectories.has(entry.name)) files.push(...await collectMonolithFiles(path));
-    } else if (entry.isFile() && entry.name.endsWith(".mjs") && !excludedFile(path)) files.push(path);
+      if (!excludedDirectories.has(entry.name)) files.push(...(await collectMonolithFiles(path)));
+    } else if (entry.isFile() && entry.name.endsWith(".mjs") && !excludedFile(path))
+      files.push(path);
   }
   return files;
 }

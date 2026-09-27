@@ -1,4 +1,9 @@
-import { isValidationJob, workflowCommands, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
+import {
+  isValidationJob,
+  workflowCommands,
+  workflowJobs,
+  workflowRunSteps,
+} from "./read-workflows.mjs";
 import { findPublicationCommand, isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
 import { validateWorkflowSiblingJobs } from "./validate-workflow-sibling-jobs.mjs";
 import { validateWorkflowValidationJobs } from "./validate-workflow-validation-jobs.mjs";
@@ -7,11 +12,16 @@ export function selectWorkflowValidationJobs(name, document) {
   const commands = workflowCommands(document);
   const jobs = workflowJobs(document);
   const validationJobs = jobs
-    .filter(({ id, job }) => isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps))
+    .filter(
+      ({ id, job }) => isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
+    )
     .map(({ id, job }) => ({ id, job, commands: workflowRunSteps(job) }));
   const publicationWorkflow = Boolean(findPublicationCommand(commands));
   if (publicationWorkflow && validationJobs.length === 0) {
-    return { error: `${name} publication workflow must contain a separate validation job.`, jobs: [] };
+    return {
+      error: `${name} publication workflow must contain a separate validation job.`,
+      jobs: [],
+    };
   }
   if (validationJobs.length === 0) {
     return { error: `${name} must validate with npm ci followed by npm test.`, jobs: [] };

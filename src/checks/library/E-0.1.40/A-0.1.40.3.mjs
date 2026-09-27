@@ -27,7 +27,9 @@ export async function run(context) {
     ]) {
       if (!readme.includes(term)) return fail(ruleId, `Library README.md must document ${term}.`);
     }
-    const examples = await readRepositoryText(context, join(root, "examples", "README.md")).catch(() => null);
+    const examples = await readRepositoryText(context, join(root, "examples", "README.md")).catch(
+      () => null,
+    );
     if (examples) {
       const error = validateExamplesIndex(examples);
       if (error) return fail(ruleId, error);

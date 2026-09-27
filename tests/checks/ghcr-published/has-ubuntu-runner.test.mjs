@@ -8,6 +8,8 @@ test("recognizes supported Ubuntu runner labels after workflow normalization", (
   expect(hasUbuntuRunner({}, { "runs-on": "my-ubuntu-latest-runner" })).toBe(false);
   expect(hasUbuntuRunner({}, { "runs-on": "${{ matrix.runner }} ubuntu-latest" })).toBe(false);
   expect(hasUbuntuRunner({}, { "runs-on": ["self-hosted", "ubuntu-22.04"] })).toBe(true);
-  expect(hasUbuntuRunner({}, { "runs-on": ["self-hosted", "my-ubuntu-latest-runner"] })).toBe(false);
+  expect(hasUbuntuRunner({}, { "runs-on": ["self-hosted", "my-ubuntu-latest-runner"] })).toBe(
+    false,
+  );
   expect(hasUbuntuRunner({}, null)).toBe(false);
 });

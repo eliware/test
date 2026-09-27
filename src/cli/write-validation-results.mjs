@@ -5,7 +5,7 @@ import { formatDebugTiming } from "./timing/format-debug-timing.mjs";
 export function writeValidationResults(result, write, debugTiming, timing, startedAt) {
   writeStageDiagnostics(result, write);
   if (!debugTiming) {
-    if (result.code === 0 && !(result.diagnostics?.length) && !result.output) {
+    if (result.code === 0 && !result.diagnostics?.length && !result.output) {
       write("All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0");
     }
     return;

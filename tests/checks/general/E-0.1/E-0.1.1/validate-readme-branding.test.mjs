@@ -8,7 +8,13 @@ test("accepts complete branding", () => {
 });
 
 test("reports missing branding, CI, or license", () => {
-  expect(validateReadmeBranding(complete.replace("eliware.org/logos/brand.png", "brand"))).toContain("branding");
-  expect(validateReadmeBranding(complete.replace("actions/workflows/ci/badge.svg", "ci"))).toContain("CI badge");
-  expect(validateReadmeBranding(complete.replace("[license]", "license text"))).toContain("license");
+  expect(
+    validateReadmeBranding(complete.replace("eliware.org/logos/brand.png", "brand")),
+  ).toContain("branding");
+  expect(
+    validateReadmeBranding(complete.replace("actions/workflows/ci/badge.svg", "ci")),
+  ).toContain("CI badge");
+  expect(validateReadmeBranding(complete.replace("[license]", "license text"))).toContain(
+    "license",
+  );
 });

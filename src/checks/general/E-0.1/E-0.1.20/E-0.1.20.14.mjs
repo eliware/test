@@ -4,7 +4,14 @@ import { findDependencyReferences } from "./find-dependency-references.mjs";
 export const ruleId = "E-0.1.20.14";
 export const parentRuleId = "E-0.1.20";
 
-export async function run({ root, packageJson, referencedDependencies, repositoryFiles, repositoryInventory, parseAst }) {
+export async function run({
+  root,
+  packageJson,
+  referencedDependencies,
+  repositoryFiles,
+  repositoryInventory,
+  parseAst,
+}) {
   const declared = [
     ...Object.keys(packageJson?.dependencies ?? {}),
     ...Object.keys(packageJson?.devDependencies ?? {}),
@@ -16,7 +23,9 @@ export async function run({ root, packageJson, referencedDependencies, repositor
   try {
     if (referencedDependencies) referenced = referencedDependencies;
     else {
-      const files = repositoryFiles ?? (repositoryInventory ? await repositoryInventory.repositoryFiles() : null);
+      const files =
+        repositoryFiles ??
+        (repositoryInventory ? await repositoryInventory.repositoryFiles() : null);
       referenced = await findDependencyReferences(
         root,
         packageJson,
@@ -29,7 +38,10 @@ export async function run({ root, packageJson, referencedDependencies, repositor
     return fail(ruleId, `Dependency usage could not be inspected: ${error.message}`);
   }
   if (referenced.uncertain)
-    return fail(ruleId, "Dependency usage is dynamically constructed and cannot be proven unused or used.");
+    return fail(
+      ruleId,
+      "Dependency usage is dynamically constructed and cannot be proven unused or used.",
+    );
   const unused = declared.filter((name) => !referenced.includes(name));
   if (unused.length > 0) return fail(ruleId, `Unused direct dependencies: ${unused.join(", ")}.`);
   return pass(ruleId);

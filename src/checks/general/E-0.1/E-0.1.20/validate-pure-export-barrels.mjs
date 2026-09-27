@@ -2,12 +2,20 @@ import { fail, pass } from "../../../check-result.mjs";
 import { findPureBarrels } from "./find-pure-barrels.mjs";
 import { publicEntrypoints } from "./public-entrypoints.mjs";
 
-export async function runPureExportBarrelPolicy({ root, packageJson, ruleId, repositoryInventory }) {
+export async function runPureExportBarrelPolicy({
+  root,
+  packageJson,
+  ruleId,
+  repositoryInventory,
+}) {
   let barrels;
   try {
     barrels = await findPureBarrels(root, undefined, repositoryInventory);
   } catch (error) {
-    return fail(ruleId, `Source modules could not be classified for pure export barrels: ${error.message}`);
+    return fail(
+      ruleId,
+      `Source modules could not be classified for pure export barrels: ${error.message}`,
+    );
   }
   if (barrels.length === 0) return pass(ruleId);
   const isLibrary = packageJson?.eliware?.apply?.includes("library");

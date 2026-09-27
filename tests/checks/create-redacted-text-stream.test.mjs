@@ -42,9 +42,7 @@ test("redacts complete progress text", () => {
 
 test("redacts complete secrets before trimming a trailing partial secret", () => {
   const output = createRedactedTextStream(["opaque-token", "credential-value"], 100);
-  expect(output.redactComplete("progress opaque-token credential-")).toBe(
-    "progress [REDACTED] ",
-  );
+  expect(output.redactComplete("progress opaque-token credential-")).toBe("progress [REDACTED] ");
 });
 
 test("matches multiple overlapping secret values", () => {
@@ -123,7 +121,10 @@ test("suppresses stream output when suffix preprocessing exceeds its work budget
 });
 
 test("bounds per-chunk secret search work across environments with many secrets", () => {
-  const secrets = Array.from({ length: 300 }, (_, index) => `${index}`.padStart(3, "0") + "x".repeat(97));
+  const secrets = Array.from(
+    { length: 300 },
+    (_, index) => `${index}`.padStart(3, "0") + "x".repeat(97),
+  );
   const output = createRedactedTextStream(secrets, 100_000);
   expect(output.redactComplete("diagnostic".repeat(400))).toBe("");
   expect(output.push("o".repeat(4_096))).toBe("o".repeat(3_996));
@@ -131,7 +132,10 @@ test("bounds per-chunk secret search work across environments with many secrets"
 });
 
 test("suppresses an excessive pending secret scan when a stream finishes", () => {
-  const secrets = Array.from({ length: 150 }, (_, index) => `${index}`.padStart(3, "0") + "x".repeat(4_897));
+  const secrets = Array.from(
+    { length: 150 },
+    (_, index) => `${index}`.padStart(3, "0") + "x".repeat(4_897),
+  );
   const output = createRedactedTextStream(secrets, 5_000);
   expect(output.push("o".repeat(3_500))).toBe("");
   expect(output.finish()).toBe("");
@@ -146,7 +150,9 @@ test("bounds repeated scans while a long secret keeps the pending suffix large",
 });
 
 test("scans only new stream text when a long secret spans several chunks", () => {
-  const secret = Array.from({ length: 10_000 }, (_, index) => String.fromCharCode(0x1000 + index)).join("");
+  const secret = Array.from({ length: 10_000 }, (_, index) =>
+    String.fromCharCode(0x1000 + index),
+  ).join("");
   const output = createRedactedTextStream([secret], 30_000, { maxSearchWorkPerChunk: 30_000 });
   const text = secret + secret;
   const emitted = [];
@@ -170,8 +176,6 @@ test("emits no current chunk after budget exhaustion following a safe prefix", (
   expect(output.push("x".repeat(4_096))).toBe("");
   expect(output.finish()).toBe("");
 });
-
-
 
 test("reuses matcher state when finishing a retained pending suffix", () => {
   const secret = "s".repeat(3_000);

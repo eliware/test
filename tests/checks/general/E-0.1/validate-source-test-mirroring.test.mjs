@@ -10,17 +10,45 @@ const findTestContractViolations = jest.fn();
 const findMisplacedArtifacts = jest.fn();
 const findGeneratedSource = jest.fn();
 const validateFocusedSourceTestPair = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/read-source-test-mirror-inventory.mjs", () => ({ readSourceTestMirrorInventory }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/read-source-test-test-contents.mjs", () => ({ readSourceTestContents }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/find-source-test-mirror-violations.mjs", () => ({ findMirrorViolations }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/find-duplicate-test-path-violations.mjs", () => ({ findDuplicatePathViolations }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/find-orphan-test-violations.mjs", () => ({ findOrphanTestViolations }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/find-test-contract-violations.mjs", () => ({ findTestContractViolations }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-test-artifacts.mjs", () => ({ findMisplacedArtifacts }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-generated-source.mjs", () => ({ findGeneratedSource }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-focused-source-test-pair.mjs", () => ({ validateFocusedSourceTestPair }));
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/read-source-test-mirror-inventory.mjs",
+  () => ({ readSourceTestMirrorInventory }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/read-source-test-test-contents.mjs",
+  () => ({ readSourceTestContents }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/find-source-test-mirror-violations.mjs",
+  () => ({ findMirrorViolations }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/find-duplicate-test-path-violations.mjs",
+  () => ({ findDuplicatePathViolations }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/find-orphan-test-violations.mjs",
+  () => ({ findOrphanTestViolations }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/find-test-contract-violations.mjs",
+  () => ({ findTestContractViolations }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-test-artifacts.mjs",
+  () => ({ findMisplacedArtifacts }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-generated-source.mjs",
+  () => ({ findGeneratedSource }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-focused-source-test-pair.mjs",
+  () => ({ validateFocusedSourceTestPair }),
+);
 
-const { runSourceTestMirroring } = await import("../../../../src/checks/general/E-0.1/validate-source-test-mirroring.mjs");
+const { runSourceTestMirroring } =
+  await import("../../../../src/checks/general/E-0.1/validate-source-test-mirroring.mjs");
 const run = (options) => runSourceTestMirroring({ ruleId: "E-0.1.130.4", ...options });
 const inventory = {
   sourceFiles: ["module.mjs"],
@@ -28,7 +56,9 @@ const inventory = {
   sourceDirectories: [],
   testDirectories: [],
 };
-const contents = new Map([["module.test.mjs", 'import "../src/module.mjs"; test("ok", () => {});']]);
+const contents = new Map([
+  ["module.test.mjs", 'import "../src/module.mjs"; test("ok", () => {});'],
+]);
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -54,11 +84,27 @@ test("coordinates full-tree validators and aggregates their findings", async () 
 
   const result = await run({ root: "/repo", repositoryInventory });
   expect(result).toMatchObject({ ruleId: "E-0.1.130.4", status: "fail" });
-  for (const finding of ["mirror mismatch", "duplicate path", "orphan test", "test contract invalid", "test artifacts", "generated or bundled source"])
+  for (const finding of [
+    "mirror mismatch",
+    "duplicate path",
+    "orphan test",
+    "test contract invalid",
+    "test artifacts",
+    "generated or bundled source",
+  ])
     expect(result.message).toContain(finding);
   expect(readSourceTestMirrorInventory).toHaveBeenCalledWith("/repo", repositoryInventory);
-  expect(readSourceTestContents).toHaveBeenCalledWith("/repo", inventory.testFiles, repositoryInventory);
-  expect(findMirrorViolations).toHaveBeenCalledWith(inventory.sourceFiles, inventory.testFiles, [], []);
+  expect(readSourceTestContents).toHaveBeenCalledWith(
+    "/repo",
+    inventory.testFiles,
+    repositoryInventory,
+  );
+  expect(findMirrorViolations).toHaveBeenCalledWith(
+    inventory.sourceFiles,
+    inventory.testFiles,
+    [],
+    [],
+  );
   expect(findTestContractViolations).toHaveBeenCalledWith(inventory.sourceFiles, contents);
   expect(findGeneratedSource).toHaveBeenCalledWith("/repo", ["module.mjs"], expect.any(Function));
 });
@@ -109,10 +155,12 @@ test("maps full-tree discovery failures and dispatches focused validation", asyn
 
 test("reports focused-pair violations from the focused validator", async () => {
   validateFocusedSourceTestPair.mockResolvedValueOnce(["focused pair invalid"]);
-  await expect(run({
-    root: "/repo",
-    focusedScope: { sourcePath: "src/module.mjs", testPath: "tests/module.test.mjs" },
-  })).resolves.toEqual({
+  await expect(
+    run({
+      root: "/repo",
+      focusedScope: { sourcePath: "src/module.mjs", testPath: "tests/module.test.mjs" },
+    }),
+  ).resolves.toEqual({
     ruleId: "E-0.1.130.4",
     status: "fail",
     message: "Source/test structure is not mirrored; focused pair invalid.",
@@ -126,10 +174,12 @@ test("passes focused inventory reads to the focused-pair validator", async () =>
     return [];
   });
 
-  await expect(run({
-    root: "/repo",
-    focusedScope: { sourcePath: "src/module.mjs", testPath: "tests/module.test.mjs" },
-    repositoryInventory: { readText },
-  })).resolves.toEqual({ ruleId: "E-0.1.130.4", status: "pass", message: "" });
+  await expect(
+    run({
+      root: "/repo",
+      focusedScope: { sourcePath: "src/module.mjs", testPath: "tests/module.test.mjs" },
+      repositoryInventory: { readText },
+    }),
+  ).resolves.toEqual({ ruleId: "E-0.1.130.4", status: "pass", message: "" });
   expect(readText).toHaveBeenCalledWith("src/module.mjs");
 });

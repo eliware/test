@@ -9,14 +9,16 @@ export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run({ root, repositoryInventory }) {
   for (const { name, document } of await readWorkflows(root, repositoryInventory)) {
-    const hasValidationJob = workflowJobs(document).some(({ id, job }) =>
-      isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
+    const hasValidationJob = workflowJobs(document).some(
+      ({ id, job }) => isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
     );
     if (!hasValidationJob) continue;
     const concurrency = document?.concurrency;
     const group = concurrency?.group;
-    const identifiesRepository = typeof group === "string" && /\bgithub\.repository\b/iu.test(group);
-    const identifiesRef = typeof group === "string" && /\bgithub\.(?:ref|ref_name|head_ref)\b/iu.test(group);
+    const identifiesRepository =
+      typeof group === "string" && /\bgithub\.repository\b/iu.test(group);
+    const identifiesRef =
+      typeof group === "string" && /\bgithub\.(?:ref|ref_name|head_ref)\b/iu.test(group);
     if (
       !concurrency ||
       typeof concurrency !== "object" ||

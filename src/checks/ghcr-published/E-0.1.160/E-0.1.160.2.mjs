@@ -25,10 +25,16 @@ export async function run(context) {
       (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, packageJson.version)) &&
       publications.some((workflow) => {
         const publicationJobList = publicationJobs(workflow);
-        return hasExactTagTrigger(workflow) && publicationJobList.length > 0 &&
-          publicationJobList.every(({ job }) => job.environment === "ghcr-publish" &&
-            dependsOnUbuntuValidation(workflow, job, validationJobsByWorkflow.get(workflow)) &&
-            hasVersionedImagePushAfterGuard(job, packageJson.version));
+        return (
+          hasExactTagTrigger(workflow) &&
+          publicationJobList.length > 0 &&
+          publicationJobList.every(
+            ({ job }) =>
+              job.environment === "ghcr-publish" &&
+              dependsOnUbuntuValidation(workflow, job, validationJobsByWorkflow.get(workflow)) &&
+              hasVersionedImagePushAfterGuard(job, packageJson.version),
+          )
+        );
       });
     if (!valid)
       return fail(

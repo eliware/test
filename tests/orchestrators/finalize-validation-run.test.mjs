@@ -18,10 +18,16 @@ test("removes the run-scoped coverage directory and clears its context path", as
 });
 
 test("appends cleanup failures to an existing coverage diagnostic", async () => {
-  const coverageFailure = { ruleId: "E-0.1.130.14", status: "fail", message: "Coverage is missing." };
+  const coverageFailure = {
+    ruleId: "E-0.1.130.14",
+    status: "fail",
+    message: "Coverage is missing.",
+  };
   const otherFailure = { ruleId: "E-0.1.4", status: "fail", message: "lint failed" };
   const result = [otherFailure, coverageFailure];
-  const removeCoverage = jest.fn(async () => { throw new Error("cleanup denied"); });
+  const removeCoverage = jest.fn(async () => {
+    throw new Error("cleanup denied");
+  });
 
   const finalized = await finalizeValidationRun({
     result,
@@ -36,56 +42,78 @@ test("appends cleanup failures to an existing coverage diagnostic", async () => 
 });
 
 test("adds a coverage failure when cleanup fails without an existing coverage diagnostic", async () => {
-  await expect(finalizeValidationRun({
-    result: [],
-    context: { jestCoverageDirectory: "/run/coverage" },
-    removeCoverage: async () => { throw "cleanup denied"; },
-  })).resolves.toEqual([expect.objectContaining({
-    ruleId: "E-0.1.130.14",
-    status: "fail",
-    message: expect.stringContaining("cleanup denied"),
-  })]);
+  await expect(
+    finalizeValidationRun({
+      result: [],
+      context: { jestCoverageDirectory: "/run/coverage" },
+      removeCoverage: async () => {
+        throw "cleanup denied";
+      },
+    }),
+  ).resolves.toEqual([
+    expect.objectContaining({
+      ruleId: "E-0.1.130.14",
+      status: "fail",
+      message: expect.stringContaining("cleanup denied"),
+    }),
+  ]);
 });
 
 test("attributes cleanup failure to library coverage for library-only validation", async () => {
-  await expect(finalizeValidationRun({
-    result: [],
-    context: {
-      jestCoverageDirectory: "/run/coverage",
-      packageJson: { eliware: { apply: ["library"] } },
-    },
-    removeCoverage: async () => { throw new Error("cleanup denied"); },
-  })).resolves.toEqual([expect.objectContaining({
-    ruleId: "E-0.1.40.16",
-    status: "fail",
-    message: expect.stringContaining("cleanup denied"),
-  })]);
+  await expect(
+    finalizeValidationRun({
+      result: [],
+      context: {
+        jestCoverageDirectory: "/run/coverage",
+        packageJson: { eliware: { apply: ["library"] } },
+      },
+      removeCoverage: async () => {
+        throw new Error("cleanup denied");
+      },
+    }),
+  ).resolves.toEqual([
+    expect.objectContaining({
+      ruleId: "E-0.1.40.16",
+      status: "fail",
+      message: expect.stringContaining("cleanup denied"),
+    }),
+  ]);
 });
 
 test("throws when cleanup fails and the validation result is not an array", async () => {
-  await expect(finalizeValidationRun({
-    result: { result: true },
-    context: { jestCoverageDirectory: "/run/coverage" },
-    removeCoverage: async () => { throw new Error("cleanup denied"); },
-  })).rejects.toThrow("cleanup denied");
+  await expect(
+    finalizeValidationRun({
+      result: { result: true },
+      context: { jestCoverageDirectory: "/run/coverage" },
+      removeCoverage: async () => {
+        throw new Error("cleanup denied");
+      },
+    }),
+  ).rejects.toThrow("cleanup denied");
 });
 
 test("preserves a plan error when coverage cleanup succeeds", async () => {
   const planError = new Error("plan failed");
-  await expect(finalizeValidationRun({
-    planFailure: { error: planError },
-    context: { jestCoverageDirectory: "/run/coverage" },
-    removeCoverage: jest.fn(),
-  })).rejects.toBe(planError);
+  await expect(
+    finalizeValidationRun({
+      planFailure: { error: planError },
+      context: { jestCoverageDirectory: "/run/coverage" },
+      removeCoverage: jest.fn(),
+    }),
+  ).rejects.toBe(planError);
 });
 
 test("combines plan and cleanup failures while preserving the plan error as the cause", async () => {
   const planError = "plan failed";
-  await expect(finalizeValidationRun({
-    planFailure: { error: planError },
-    context: { jestCoverageDirectory: "/run/coverage" },
-    removeCoverage: async () => { throw null; },
-  })).rejects.toMatchObject({
+  await expect(
+    finalizeValidationRun({
+      planFailure: { error: planError },
+      context: { jestCoverageDirectory: "/run/coverage" },
+      removeCoverage: async () => {
+        throw null;
+      },
+    }),
+  ).rejects.toMatchObject({
     message: "plan failed\nCould not remove run-scoped coverage artifacts: null",
     cause: planError,
   });

@@ -15,7 +15,10 @@ export async function run(context) {
     const imageJobs = publications.flatMap((publication) =>
       publicationJobs(publication).filter(({ job }) => findImagePushes(job).length > 0),
     );
-    if (imageJobs.length === 0 || imageJobs.some(({ job }) => !hasOrderedImageVerificationChain(job)))
+    if (
+      imageJobs.length === 0 ||
+      imageJobs.some(({ job }) => !hasOrderedImageVerificationChain(job))
+    )
       return fail(ruleId, "GHCR publication must expose and verify the pushed image digest.");
   } catch (error) {
     return fail(ruleId, `GHCR workflows could not be inspected: ${error.message}`);

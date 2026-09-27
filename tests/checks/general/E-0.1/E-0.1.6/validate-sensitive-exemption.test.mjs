@@ -15,9 +15,15 @@ test("accepts an exact, approved, unexpired sensitive-path exemption", () => {
 });
 
 test("rejects malformed path and approval fields", () => {
-  for (const entry of [null, {}, { ...valid, path: " " }, { ...valid, path: "secret*.json" },
-    { ...valid, reason: " " }, { ...valid, approver: "Other" },
-    { ...valid, approvalTimestamp: "not a timestamp" }]) {
+  for (const entry of [
+    null,
+    {},
+    { ...valid, path: " " },
+    { ...valid, path: "secret*.json" },
+    { ...valid, reason: " " },
+    { ...valid, approver: "Other" },
+    { ...valid, approvalTimestamp: "not a timestamp" },
+  ]) {
     expect(isValidSensitiveExemption(entry)).toBe(false);
   }
 });

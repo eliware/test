@@ -2,8 +2,12 @@ import { expect, test } from "@jest/globals";
 import { readDiagnosticOptions } from "../../src/cli/read-diagnostic-options.mjs";
 
 test("maps modes and preserves tool arguments for downstream policy validation", () => {
-  expect(readDiagnosticOptions(["tests/example.test.mjs"]).jestArgs).toEqual(["tests/example.test.mjs"]);
-  expect(() => readDiagnosticOptions(["--ignore-100x4"])).toThrow("Legacy ignore flags are no longer supported");
+  expect(readDiagnosticOptions(["tests/example.test.mjs"]).jestArgs).toEqual([
+    "tests/example.test.mjs",
+  ]);
+  expect(() => readDiagnosticOptions(["--ignore-100x4"])).toThrow(
+    "Legacy ignore flags are no longer supported",
+  );
   expect(readDiagnosticOptions(["--lint"]).mode).toBe("lint");
   expect(readDiagnosticOptions(["--audit", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
   expect(() => readDiagnosticOptions(["--lint", "--audit"])).toThrow(/mutually exclusive/);
@@ -11,8 +15,9 @@ test("maps modes and preserves tool arguments for downstream policy validation",
 
 test("accepts each documented focused test extension", () => {
   for (const extension of ["js", "jsx", "ts", "tsx", "mjs", "cjs", "mts", "cts"]) {
-    expect(readDiagnosticOptions([`tests/example.spec.${extension}`]).jestArgs)
-      .toEqual([`tests/example.spec.${extension}`]);
+    expect(readDiagnosticOptions([`tests/example.spec.${extension}`]).jestArgs).toEqual([
+      `tests/example.spec.${extension}`,
+    ]);
   }
 });
 
@@ -21,8 +26,7 @@ test("forwards non-wrapper Jest options unchanged", () => {
 });
 
 test("preserves the delegation separator and its following arguments for policy validation", () => {
-  expect(readDiagnosticOptions(["--audit", "--", "--omit=dev"]).toolArgs)
-    .toEqual(["--omit=dev"]);
+  expect(readDiagnosticOptions(["--audit", "--", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
 });
 
 test("rejects conflicting informational commands", () => {
@@ -52,21 +56,31 @@ test("rejects unsupported focused path roots", () => {
 });
 
 test("does not treat option values as focused paths and preserves them for Jest", () => {
-  expect(readDiagnosticOptions([
-    "--testNamePattern", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs",
-  ])).toMatchObject({
+  expect(
+    readDiagnosticOptions([
+      "--testNamePattern",
+      "tests/looks-like-a-path.test.mjs",
+      "tests/example.test.mjs",
+    ]),
+  ).toMatchObject({
     jestArgs: ["--testNamePattern", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
   });
 });
 
 test("rejects specs paths because focused Jest execution is rooted under tests", () => {
-  expect(() => readDiagnosticOptions(["specs/example.spec.mjs"])).toThrow("Focused paths must be under tests/");
+  expect(() => readDiagnosticOptions(["specs/example.spec.mjs"])).toThrow(
+    "Focused paths must be under tests/",
+  );
 });
 
 test("recognizes values for common Jest options", () => {
-  expect(readDiagnosticOptions([
-    "--moduleNameMapper", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs",
-  ])).toMatchObject({
+  expect(
+    readDiagnosticOptions([
+      "--moduleNameMapper",
+      "tests/looks-like-a-path.test.mjs",
+      "tests/example.test.mjs",
+    ]),
+  ).toMatchObject({
     jestArgs: ["--moduleNameMapper", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
   });
 });
@@ -82,11 +96,11 @@ test("rejects informational commands combined with validation", () => {
 });
 
 test("rejects focused Jest paths combined with tool modes", () => {
-  expect(() => readDiagnosticOptions(["--audit", "tests/example.test.mjs"])).toThrow("cannot be combined");
+  expect(() => readDiagnosticOptions(["--audit", "tests/example.test.mjs"])).toThrow(
+    "cannot be combined",
+  );
 });
 
 test("rejects wrapper arguments placed before a tool mode", () => {
-  expect(() => readDiagnosticOptions(["--runInBand", "--audit"])).toThrow(
-    "must follow --audit",
-  );
+  expect(() => readDiagnosticOptions(["--runInBand", "--audit"])).toThrow("must follow --audit");
 });

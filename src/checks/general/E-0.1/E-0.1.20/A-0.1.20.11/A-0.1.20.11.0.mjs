@@ -14,10 +14,11 @@ export async function run({ root, packageJson, repositoryInventory }) {
   let contents;
   try {
     const directory = join(root, ".github", "workflows");
-    const files = (repositoryInventory
-      ? await repositoryInventory.directoryEntries(directory)
-      : await readdir(directory, { withFileTypes: true }))
-      .filter((entry) => entry.isFile() && /\.(?:yml|yaml)$/i.test(entry.name));
+    const files = (
+      repositoryInventory
+        ? await repositoryInventory.directoryEntries(directory)
+        : await readdir(directory, { withFileTypes: true })
+    ).filter((entry) => entry.isFile() && /\.(?:yml|yaml)$/i.test(entry.name));
     contents = await Promise.all(
       files.map((file) => {
         const path = join(directory, file.name);

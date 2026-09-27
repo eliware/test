@@ -2,19 +2,23 @@ import { expect, test } from "@jest/globals";
 import { focusedPathFrom, parseFocusedArguments } from "../../src/cli/parse-focused-arguments.mjs";
 
 test("separates option values from focused positional paths", () => {
-  expect(parseFocusedArguments([
-    "--moduleNameMapper", "tests/value.test.mjs", "tests/example.test.mjs",
-  ]).positional).toEqual(["tests/example.test.mjs"]);
+  expect(
+    parseFocusedArguments(["--moduleNameMapper", "tests/value.test.mjs", "tests/example.test.mjs"])
+      .positional,
+  ).toEqual(["tests/example.test.mjs"]);
 });
 
 test("preserves separator semantics for delegated option-looking arguments", () => {
-  expect(parseFocusedArguments(["--", "--runInBand", "tests/example.test.mjs"]).positional)
-    .toEqual(["tests/example.test.mjs"]);
+  expect(parseFocusedArguments(["--", "--runInBand", "tests/example.test.mjs"]).positional).toEqual(
+    ["tests/example.test.mjs"],
+  );
 });
 
 test("treats equals-form option values as delegated values", () => {
-  expect(parseFocusedArguments(["--testNamePattern=tests/value.test.mjs", "tests/example.test.mjs"]).positional)
-    .toEqual(["tests/example.test.mjs"]);
+  expect(
+    parseFocusedArguments(["--testNamePattern=tests/value.test.mjs", "tests/example.test.mjs"])
+      .positional,
+  ).toEqual(["tests/example.test.mjs"]);
 });
 
 test("handles empty and non-string argument values", () => {
@@ -27,8 +31,10 @@ test("handles empty and non-string argument values", () => {
   expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).positional).toEqual([
     "tests/example.test.mjs",
   ]);
-  expect(parseFocusedArguments(["--testNamePattern", "tests/example.test.mjs", "tests/example.test.mjs"]).positional)
-    .toEqual([]);
+  expect(
+    parseFocusedArguments(["--testNamePattern", "tests/example.test.mjs", "tests/example.test.mjs"])
+      .positional,
+  ).toEqual([]);
   expect(focusedPathFrom(["tests/example.test.mjs"])).toBe("tests/example.test.mjs");
   expect(focusedPathFrom(["specs/example.spec.mjs"])).toBeUndefined();
   expect(focusedPathFrom(["src/example.mjs"])).toBeUndefined();

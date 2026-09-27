@@ -1,8 +1,17 @@
 import { expect, test } from "@jest/globals";
-import { isPublicationWorkflow, publicationJobs } from "../../../src/checks/ghcr-published/workflow-publication.mjs";
+import {
+  isPublicationWorkflow,
+  publicationJobs,
+} from "../../../src/checks/ghcr-published/workflow-publication.mjs";
 
 test("classifies publication and command semantics", () => {
-  const workflow = { document: { jobs: { publish: { steps: [{ run: "docker push ghcr.io/example" }, { run: "npm publish" }] } } } };
+  const workflow = {
+    document: {
+      jobs: {
+        publish: { steps: [{ run: "docker push ghcr.io/example" }, { run: "npm publish" }] },
+      },
+    },
+  };
   expect(isPublicationWorkflow(workflow)).toBe(true);
   expect(publicationJobs(workflow)).toHaveLength(1);
 });

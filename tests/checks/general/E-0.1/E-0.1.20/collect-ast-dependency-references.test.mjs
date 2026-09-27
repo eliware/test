@@ -5,7 +5,12 @@ import { collectAstReferences } from "../../../../../src/checks/general/E-0.1/E-
 function collect(source, declared = ["alpha", "beta"]) {
   const referenced = new Set();
   const uncertain = { value: false };
-  collectAstReferences(parse(source, { sourceType: "module", createImportExpressions: true }).program, declared, referenced, uncertain);
+  collectAstReferences(
+    parse(source, { sourceType: "module", createImportExpressions: true }).program,
+    declared,
+    referenced,
+    uncertain,
+  );
   return { referenced: [...referenced], uncertain: uncertain.value };
 }
 
@@ -39,7 +44,10 @@ test("ignores absent, primitive, and location metadata nodes", () => {
   collectAstReferences(null, ["alpha"], referenced, uncertain);
   collectAstReferences(1, ["alpha"], referenced, uncertain);
   const program = parse("", { sourceType: "module" }).program;
-  program.loc = { type: "BlockStatement", body: [{ type: "ImportDeclaration", source: { value: "alpha" } }] };
+  program.loc = {
+    type: "BlockStatement",
+    body: [{ type: "ImportDeclaration", source: { value: "alpha" } }],
+  };
   program.body.push(null, "not-an-ast-node");
   collectAstReferences(program, ["alpha"], referenced, uncertain);
   collectAstReferences(program, ["alpha"], referenced);

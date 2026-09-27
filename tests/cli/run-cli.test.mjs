@@ -10,13 +10,25 @@ const writeValidationResults = jest.fn();
 const normalizeCliError = jest.fn();
 const formatExitCode = jest.fn();
 
-jest.unstable_mockModule("../../src/cli/read-diagnostic-options.mjs", () => ({ readDiagnosticOptions }));
-jest.unstable_mockModule("../../src/cli/timing/create-stage-timer.mjs", () => ({ createStageTimer }));
-jest.unstable_mockModule("../../src/orchestrators/run-convention-stage.mjs", () => ({ runConventionStage }));
+jest.unstable_mockModule("../../src/cli/read-diagnostic-options.mjs", () => ({
+  readDiagnosticOptions,
+}));
+jest.unstable_mockModule("../../src/cli/timing/create-stage-timer.mjs", () => ({
+  createStageTimer,
+}));
+jest.unstable_mockModule("../../src/orchestrators/run-convention-stage.mjs", () => ({
+  runConventionStage,
+}));
 jest.unstable_mockModule("../../src/orchestrators/run-validation.mjs", () => ({ runValidation }));
-jest.unstable_mockModule("../../src/cli/dispatch-informational-command.mjs", () => ({ dispatchInformationalCommand }));
-jest.unstable_mockModule("../../src/cli/create-validation-run-options.mjs", () => ({ createValidationRunOptions }));
-jest.unstable_mockModule("../../src/cli/write-validation-results.mjs", () => ({ writeValidationResults }));
+jest.unstable_mockModule("../../src/cli/dispatch-informational-command.mjs", () => ({
+  dispatchInformationalCommand,
+}));
+jest.unstable_mockModule("../../src/cli/create-validation-run-options.mjs", () => ({
+  createValidationRunOptions,
+}));
+jest.unstable_mockModule("../../src/cli/write-validation-results.mjs", () => ({
+  writeValidationResults,
+}));
 jest.unstable_mockModule("../../src/cli/normalize-cli-error.mjs", () => ({ normalizeCliError }));
 jest.unstable_mockModule("../../src/cli/format-exit-code.mjs", () => ({ formatExitCode }));
 
@@ -73,14 +85,14 @@ test("coordinates diagnostic parsing, convention and validation stages, and resu
   expect(createStageTimer.mock.calls[0][1]()).toEqual(expect.any(Number));
   expect(runConventionStage).toHaveBeenCalledWith(expect.any(Function));
   expect(runValidation).toHaveBeenCalledWith("/repo", diagnosticOptions.ignoredRuleIds, options);
-  expect(createValidationRunOptions).toHaveBeenCalledWith(
-    [],
-    diagnosticOptions,
-    {},
-    timing,
+  expect(createValidationRunOptions).toHaveBeenCalledWith([], diagnosticOptions, {}, timing, write);
+  expect(writeValidationResults).toHaveBeenCalledWith(
+    validationResult,
     write,
+    false,
+    timing,
+    expect.any(Number),
   );
-  expect(writeValidationResults).toHaveBeenCalledWith(validationResult, write, false, timing, expect.any(Number));
   expect(formatExitCode).not.toHaveBeenCalled();
 });
 

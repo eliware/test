@@ -12,16 +12,14 @@ const moduleExtension = /\.(?:mjs|js|cjs|ts|tsx)$/i;
 
 export async function scanCommonJsFiles(root, repositoryFiles = null, parseAst = null) {
   const findings = [];
-  const files = repositoryFiles ?? await findRepositoryFiles(root);
+  const files = repositoryFiles ?? (await findRepositoryFiles(root));
   for (const file of files.filter((candidate) => moduleExtension.test(candidate))) {
     if (/\.(?:cjs|cts)$/i.test(file)) {
       findings.push(`${file}: CommonJS module extension`);
       continue;
     }
     try {
-      const options = file.endsWith(".mjs")
-        ? moduleParserOptions
-        : repositorySourceParserOptions;
+      const options = file.endsWith(".mjs") ? moduleParserOptions : repositorySourceParserOptions;
       const ast = parseAst
         ? await parseAst(root, file, options)
         : parse(await readFile(join(root, file), "utf8"), options);

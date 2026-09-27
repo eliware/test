@@ -2,10 +2,15 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 
 const validateRequiredStagePlan = jest.fn();
 const executeConventionChecks = jest.fn();
-jest.unstable_mockModule("../../src/orchestrators/validate-required-stage-plan.mjs", () => ({ validateRequiredStagePlan }));
-jest.unstable_mockModule("../../src/orchestrators/execute-convention-checks.mjs", () => ({ executeConventionChecks }));
+jest.unstable_mockModule("../../src/orchestrators/validate-required-stage-plan.mjs", () => ({
+  validateRequiredStagePlan,
+}));
+jest.unstable_mockModule("../../src/orchestrators/execute-convention-checks.mjs", () => ({
+  executeConventionChecks,
+}));
 
-const { executeValidationPlan } = await import("../../src/orchestrators/execute-validation-plan.mjs");
+const { executeValidationPlan } =
+  await import("../../src/orchestrators/execute-validation-plan.mjs");
 
 beforeEach(() => {
   jest.resetAllMocks();

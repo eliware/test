@@ -28,6 +28,7 @@ export async function run({
   );
   const scriptError = validateRequiredScripts(packageJson?.scripts, {
     requiresPack: appliedProfiles.has("npm-published"),
+    selfHosted: packageJson?.name === "@eliware/test",
     allowedAdditionalScripts: [
       ...(declaredCapabilities.has("typecheck") ? ["typecheck"] : []),
       ...(declaredCapabilities.has("build") ? ["build"] : []),

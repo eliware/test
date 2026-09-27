@@ -25,7 +25,9 @@ export function createOutdatedDependenciesOverflowHandler({
       terminate("SIGTERM");
       terminationTimer = setTimeout(() => {
         terminate("SIGKILL");
-        onGracePeriodExpired(new Error(`npm outdated output exceeded ${maxOutputLength} characters.`));
+        onGracePeriodExpired(
+          new Error(`npm outdated output exceeded ${maxOutputLength} characters.`),
+        );
       }, terminationGracePeriodMs);
     },
     cancel() {

@@ -23,7 +23,9 @@ test("collects typed values recursively without inspecting source text", () => {
 });
 
 test("normalizes valid jobs and rejects missing, array, and null job maps", () => {
-  const job = { steps: [{ name: "install", run: "  npm ci  " }, null, { uses: "actions/checkout@v6" }] };
+  const job = {
+    steps: [{ name: "install", run: "  npm ci  " }, null, { uses: "actions/checkout@v6" }],
+  };
   expect(workflowJobs({ jobs: { test: job, empty: null, scalar: "bad" } })).toEqual([
     { id: "test", job },
   ]);

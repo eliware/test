@@ -31,14 +31,12 @@ test("reads structured documents through the shared inventory cache", async () =
   };
   const referenced = new Set();
 
-  await scanStructuredDependencyFiles(
-    "/repo",
-    ["package.json"],
-    ["dep"],
-    referenced,
-    inventory,
-  );
+  await scanStructuredDependencyFiles("/repo", ["package.json"], ["dep"], referenced, inventory);
 
-  expect(inventory.readParsed).toHaveBeenCalledWith(join("/repo", "package.json"), "json", JSON.parse);
+  expect(inventory.readParsed).toHaveBeenCalledWith(
+    join("/repo", "package.json"),
+    "json",
+    JSON.parse,
+  );
   expect(referenced.has("dep")).toBe(true);
 });

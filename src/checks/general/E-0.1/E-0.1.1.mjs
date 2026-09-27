@@ -2,7 +2,10 @@ import { readRepositoryParsed } from "../../read-repository-text.mjs";
 import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
 import { readReadmeSections } from "./E-0.1.1/read-readme-sections.mjs";
-import { expectedReadmeHeadings, readmeSectionsCacheKey } from "./E-0.1.1/resolve-readme-headings.mjs";
+import {
+  expectedReadmeHeadings,
+  readmeSectionsCacheKey,
+} from "./E-0.1.1/resolve-readme-headings.mjs";
 
 export const ruleId = "E-0.1.1";
 export const parentRuleId = "E-0.1";

@@ -46,10 +46,12 @@ test("limits an inventory directory to its repository subtree", async () => {
 test("rejects inventory directories outside the repository or missing from it", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-invalid-dir-"));
   const repositoryInventory = createRepositoryInventory(root);
-  await expect(findJestConfigFiles(join(root, "..", "outside"), repositoryInventory)).rejects.toThrow(
-    "must be inside the repository",
-  );
-  await expect(findJestConfigFiles(join(root, "missing"), repositoryInventory)).rejects.toMatchObject({
+  await expect(
+    findJestConfigFiles(join(root, "..", "outside"), repositoryInventory),
+  ).rejects.toThrow("must be inside the repository");
+  await expect(
+    findJestConfigFiles(join(root, "missing"), repositoryInventory),
+  ).rejects.toMatchObject({
     code: "ENOENT",
   });
   await rm(root, { recursive: true, force: true });

@@ -8,6 +8,8 @@ export function validateEliwarePackageMetadata(packageJson) {
   if (moduleTypeError) return moduleTypeError;
   const scriptsError = validatePackageScripts(packageJson);
   if (scriptsError) return scriptsError;
-  return validatePackagePublicationMetadata(packageJson)
-    ?? validatePackageExemptions(packageJson?.eliware?.exempt);
+  return (
+    validatePackagePublicationMetadata(packageJson) ??
+    validatePackageExemptions(packageJson?.eliware?.exempt)
+  );
 }

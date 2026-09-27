@@ -11,7 +11,10 @@
       "path": "../../../operations/specs/directives.json",
       "authoritativeFor": "Release authorization, publication verification, and handoffs."
     },
-    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." }
+    {
+      "path": "../../../docs/authority-map.json",
+      "authoritativeFor": "Cross-repository ownership."
+    }
   ],
   "directives": [
     {
@@ -36,10 +39,12 @@
           "dos": [
             "Public npm packages must declare engines.node compatible with Node.js 26, publishConfig.provenance true, and a non-empty files allowlist containing README.md, LICENSE, RELEASE_NOTES.md, docs/, and specs/.",
             "Public npm package README.md must include the npm badge, npm package link, installation guidance, package entrypoints, and release/version guidance. When npm-published is applied without a library profile, include this material in Usage or an applicable profile section rather than inventing a library API section.",
-            "Public npm packages must define exactly `pack=eliware-test --pack` and must pass the harness pack stage during aggregate validation and before publication; their shared audit script is defined by general.json."
+            "Public npm packages must define exactly `pack=eliware-test --pack` and must pass the harness pack stage during aggregate validation and before publication; their shared audit script is defined by general.json.",
+            "An explicitly authorized self-hosting exception may let @eliware/test's pack script invoke its local bin entrypoint instead of the canonical eliware-test command. This exception applies only to the script-command requirement; aggregate validation and pre-publication validation must still execute the pack stage and validate its result."
           ],
           "donts": [
-            "Do not omit pack, replace the shared pack stage with a direct package command, or publish a package without passing it."
+            "Do not omit pack, replace the shared pack stage with a direct package command, or publish a package without passing it.",
+            "Do not treat a self-hosting pack script exception as an exemption from pack validation."
           ]
         },
         {

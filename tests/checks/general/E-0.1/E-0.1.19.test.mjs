@@ -5,11 +5,26 @@ const validatePackageIdentity = jest.fn();
 const validatePackageMetadata = jest.fn();
 const validatePackageRuntime = jest.fn();
 const validatePublicationFiles = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-eliware-package-metadata.mjs", () => ({ validateEliwarePackageMetadata }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-package-identity.mjs", () => ({ validatePackageIdentity }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-package-metadata.mjs", () => ({ validatePackageMetadata }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-package-runtime.mjs", () => ({ validatePackageRuntime }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-publication-files.mjs", () => ({ validatePublicationFiles }));
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-eliware-package-metadata.mjs",
+  () => ({ validateEliwarePackageMetadata }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-package-identity.mjs",
+  () => ({ validatePackageIdentity }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-package-metadata.mjs",
+  () => ({ validatePackageMetadata }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-package-runtime.mjs",
+  () => ({ validatePackageRuntime }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-publication-files.mjs",
+  () => ({ validatePublicationFiles }),
+);
 
 const { run } = await import("../../../../src/checks/general/E-0.1/E-0.1.19.mjs");
 const validators = [
@@ -27,7 +42,11 @@ beforeEach(() => {
 
 test("runs package validators in order and passes the root to publication validation", () => {
   const packageJson = {};
-  expect(run({ root: "/repo", packageJson })).toEqual({ ruleId: "E-0.1.19", status: "pass", message: "" });
+  expect(run({ root: "/repo", packageJson })).toEqual({
+    ruleId: "E-0.1.19",
+    status: "pass",
+    message: "",
+  });
   const invocationOrder = validators.map((validator) => validator.mock.invocationCallOrder[0]);
   expect(invocationOrder).toEqual([...invocationOrder].sort((left, right) => left - right));
   expect(validatePublicationFiles).toHaveBeenCalledWith(packageJson, "/repo");

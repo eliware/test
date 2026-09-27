@@ -27,19 +27,27 @@ test("spawns npm outdated and parses its process output", async () => {
 
 test("redacts errors thrown synchronously while starting npm outdated", async () => {
   const env = { API_TOKEN: "private-token-value" };
-  const result = readOutdatedDependencies("fixture", () => {
-    throw new Error("spawn failed with private-token-value");
-  }, { env });
+  const result = readOutdatedDependencies(
+    "fixture",
+    () => {
+      throw new Error("spawn failed with private-token-value");
+    },
+    { env },
+  );
   await expect(result).rejects.toThrow("spawn failed with [REDACTED]");
 });
 
 test("redacts asynchronous process errors", async () => {
   const child = childProcess();
   const env = { API_TOKEN: "private-token-value" };
-  const result = readOutdatedDependencies("fixture", () => {
-    queueMicrotask(() => child.emit("error", new Error("spawn failed with private-token-value")));
-    return child;
-  }, { env });
+  const result = readOutdatedDependencies(
+    "fixture",
+    () => {
+      queueMicrotask(() => child.emit("error", new Error("spawn failed with private-token-value")));
+      return child;
+    },
+    { env },
+  );
   await expect(result).rejects.toThrow("spawn failed with [REDACTED]");
 });
 

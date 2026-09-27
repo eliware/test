@@ -9,10 +9,10 @@ export function coverageMetricTotals(valuesByFile) {
       counts[metric].covered += metricValues.filter((count) => count > 0).length;
     }
   }
-  return Object.fromEntries(metrics.map((metric) => [
-    metric,
-    counts[metric].total > 0
-      ? (counts[metric].covered / counts[metric].total) * 100
-      : null,
-  ]));
+  return Object.fromEntries(
+    metrics.map((metric) => [
+      metric,
+      counts[metric].total > 0 ? (counts[metric].covered / counts[metric].total) * 100 : null,
+    ]),
+  );
 }

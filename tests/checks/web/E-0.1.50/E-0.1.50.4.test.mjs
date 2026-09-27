@@ -8,7 +8,11 @@ test("requires and executes the build script", async () => {
     message: "",
   });
   await expect(
-    run({ packageJson: { scripts: { build: "webpack" } }, executePackageChecks: true, mode: "focused" }),
+    run({
+      packageJson: { scripts: { build: "webpack" } },
+      executePackageChecks: true,
+      mode: "focused",
+    }),
   ).resolves.toEqual({ ruleId: "E-0.1.50.4", status: "pass", message: "" });
   await expect(
     run({
@@ -44,7 +48,10 @@ test("requires and executes the build script", async () => {
       },
     }),
   ).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: "build could not be started: spawn failed" }),
+    expect.objectContaining({
+      status: "fail",
+      message: "build could not be started: spawn failed",
+    }),
   );
   await expect(run({ packageJson: { scripts: {} } })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
@@ -53,8 +60,13 @@ test("requires and executes the build script", async () => {
   await expect(run({ packageJson: { scripts: { build: "npm test" } } })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
-  await expect(run({ packageJson: { scripts: { build: "echo build succeeded" } } })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("recognized direct") }),
+  await expect(
+    run({ packageJson: { scripts: { build: "echo build succeeded" } } }),
+  ).resolves.toEqual(
+    expect.objectContaining({
+      status: "fail",
+      message: expect.stringContaining("recognized direct"),
+    }),
   );
 });
 
@@ -64,8 +76,22 @@ test("executes only for aggregate or matching build mode", async () => {
     calls.push(name);
     return { code: 0, stdout: "", stderr: "" };
   };
-  await expect(run({ packageJson: { scripts: { build: "webpack" } }, executePackageChecks: true, mode: "build", runScript })).resolves.toMatchObject({ status: "pass" });
-  await expect(run({ packageJson: { scripts: { build: "webpack" } }, executePackageChecks: true, mode: "typecheck", runScript })).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run({
+      packageJson: { scripts: { build: "webpack" } },
+      executePackageChecks: true,
+      mode: "build",
+      runScript,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run({
+      packageJson: { scripts: { build: "webpack" } },
+      executePackageChecks: true,
+      mode: "typecheck",
+      runScript,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
   expect(calls).toEqual(["build"]);
 });
 

@@ -19,7 +19,9 @@ export function createChildTerminationHandler({
       if (isSettled()) return;
       timeout.stop();
       timedOut = true;
-      try { options.onTimeout?.(); } catch {}
+      try {
+        options.onTimeout?.();
+      } catch {}
       cancelTermination = scheduleChildTermination(
         child,
         {
@@ -32,7 +34,9 @@ export function createChildTerminationHandler({
           forceKillConfirmationMs: options.forceKillConfirmationMs ?? 1000,
         },
         settleUnconfirmed,
-        (confirmed) => { terminationConfirmed = confirmed; },
+        (confirmed) => {
+          terminationConfirmed = confirmed;
+        },
       );
     },
     cancel() {

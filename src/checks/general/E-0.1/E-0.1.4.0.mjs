@@ -16,7 +16,9 @@ export async function run({
   validateFiles = validateMaintainedFileSyntax,
 }) {
   if (!executeLint || (mode !== null && mode !== "lint")) return pass(ruleId);
-  const files = focusedScope?.paths ?? repositoryFiles ??
+  const files =
+    focusedScope?.paths ??
+    repositoryFiles ??
     (repositoryInventory ? await repositoryInventory.files("maintained") : null);
   if (!Array.isArray(files))
     return fail(ruleId, "Repository file inventory is unavailable for syntax validation.");

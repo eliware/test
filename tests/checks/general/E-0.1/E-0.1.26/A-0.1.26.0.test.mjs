@@ -8,7 +8,9 @@ const validateReleaseNoteOrder = jest.fn();
 const validateReadmeReleaseNotesLink = jest.fn();
 
 jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
-jest.unstable_mockModule("../../../../../src/checks/read-repository-text.mjs", () => ({ readRepositoryText }));
+jest.unstable_mockModule("../../../../../src/checks/read-repository-text.mjs", () => ({
+  readRepositoryText,
+}));
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.26/parse-release-notes.mjs",
   () => ({ parseReleaseNotes }),
@@ -43,7 +45,11 @@ beforeEach(resetValidators);
 test("coordinates release-note parsing, validation, and README indexing in order", async () => {
   const context = { root: "/repo", packageJson: { version: "8.0.0" } };
 
-  await expect(run(context)).resolves.toEqual({ ruleId: "A-0.1.26.0", status: "pass", message: "" });
+  await expect(run(context)).resolves.toEqual({
+    ruleId: "A-0.1.26.0",
+    status: "pass",
+    message: "",
+  });
   expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/RELEASE_NOTES\.md$/u), "utf8");
   expect(readRepositoryText).toHaveBeenCalledWith(context, expect.stringMatching(/README\.md$/u));
   expect(validateReleaseNoteContent).toHaveBeenCalledWith([], "8.0.0");

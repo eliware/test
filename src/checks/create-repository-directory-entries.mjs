@@ -3,12 +3,21 @@ import { inventoryDirectory } from "./repository-inventory-paths.mjs";
 
 const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
 
-export function createRepositoryDirectoryEntries({ root, entries, readDirectory, hasFullDiscovery }) {
+export function createRepositoryDirectoryEntries({
+  root,
+  entries,
+  readDirectory,
+  hasFullDiscovery,
+}) {
   let childIndex;
   let knownDirectories;
   let prunedDirectories;
   return async function directoryEntries(directory) {
-    const base = inventoryDirectory(root, directory, "Repository inventory directory must be inside the repository.");
+    const base = inventoryDirectory(
+      root,
+      directory,
+      "Repository inventory directory must be inside the repository.",
+    );
     if (base && !hasFullDiscovery()) {
       const children = await readDirectory(base);
       return children.map((entry) => ({
@@ -45,7 +54,9 @@ export function createRepositoryDirectoryEntries({ root, entries, readDirectory,
       }
     }
     if (base && !knownDirectory && !prunedDirectory)
-      throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), { code: "ENOENT" });
+      throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
+        code: "ENOENT",
+      });
     let children = childIndex.get(base || ".") ?? [];
     if (base && children.length === 0 && prunedDirectory) {
       children = (await readDirectory(base)).map((entry) => ({

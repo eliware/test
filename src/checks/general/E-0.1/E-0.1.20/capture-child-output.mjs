@@ -13,9 +13,10 @@ export function createChildOutputCapture(options, { onStdout, onStderr, captureS
 
   const capture = (chunks, text) => {
     const remaining = Math.max(0, outputLimit - capturedLength);
-    const bounded = text.length > remaining && remaining > 0
-      ? `${text.slice(0, remaining - 1)}…`.slice(0, remaining)
-      : text.slice(0, remaining);
+    const bounded =
+      text.length > remaining && remaining > 0
+        ? `${text.slice(0, remaining - 1)}…`.slice(0, remaining)
+        : text.slice(0, remaining);
     if (bounded) chunks.push(bounded);
     capturedLength += bounded.length;
   };

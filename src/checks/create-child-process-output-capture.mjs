@@ -23,7 +23,10 @@ export function createChildProcessOutputCapture(options, suppliedSecrets, output
       while (end > 0) {
         const candidateBytes = encoded.subarray(0, end);
         const candidate = candidateBytes.toString("utf8");
-        if (Buffer.byteLength(candidate) <= remaining && Buffer.from(candidate).equals(candidateBytes)) {
+        if (
+          Buffer.byteLength(candidate) <= remaining &&
+          Buffer.from(candidate).equals(candidateBytes)
+        ) {
           bounded = candidate;
           break;
         }

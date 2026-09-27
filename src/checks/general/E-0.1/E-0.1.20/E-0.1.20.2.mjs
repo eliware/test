@@ -9,7 +9,9 @@ export async function run({ root, packageJson, repositoryFiles, repositoryInvent
     return fail(ruleId, "Node.js repositories must use native ESM with package.json.type=module.");
   if (root) {
     try {
-      const files = repositoryFiles ?? (repositoryInventory ? await repositoryInventory.repositoryFiles() : null);
+      const files =
+        repositoryFiles ??
+        (repositoryInventory ? await repositoryInventory.repositoryFiles() : null);
       const findings = await findCommonJsUses(root, packageJson, files, parseAst);
       if (findings.length > 0)
         return fail(ruleId, `CommonJS or mixed-module artifacts found: ${findings.join(", ")}.`);

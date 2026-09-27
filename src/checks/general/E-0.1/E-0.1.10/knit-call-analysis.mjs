@@ -42,8 +42,7 @@ export function classifyCall(node, imports) {
         !(
           (imports.namespaces.has(namespace) && subprocessFunctions.has(member)) ||
           imports.sideEffectNamespaces.has(rootIdentifier(node.callee.object)) ||
-          (rootIdentifier(node.callee.object) === "process" &&
-            member === "cwd")
+          (rootIdentifier(node.callee.object) === "process" && member === "cwd")
         )));
   const isDynamic =
     isCall &&

@@ -11,11 +11,12 @@ export async function validateAuthorityDocuments(root, files, inventory) {
       ? await inventory.readParsed(file, "json", JSON.parse)
       : JSON.parse(await readFile(file, "utf8"));
     const kind = classifyAuthorityDocument(relativeFile, document);
-    const result = kind === "map"
-      ? await validateAuthorityMap({ root, file, document, inventory })
-      : kind === "record"
-        ? await validateAuthorityRecord({ root, file, document })
-        : null;
+    const result =
+      kind === "map"
+        ? await validateAuthorityMap({ root, file, document, inventory })
+        : kind === "record"
+          ? await validateAuthorityRecord({ root, file, document })
+          : null;
     if (result) return result;
   }
   return null;

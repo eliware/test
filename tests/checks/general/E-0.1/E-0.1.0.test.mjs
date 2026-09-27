@@ -52,10 +52,12 @@ test("fails when an authoritative repository is not referenced", async () => {
 
 test("fails when required AGENTS sections are missing", async () => {
   const root = await fixture("eliware/docs\neliware/test\neliware/operations\n## Validation\n");
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({
-    ruleId: "E-0.1.0",
-    status: "fail",
-    message: expect.stringContaining("required sections"),
-  }));
+  await expect(run({ root })).resolves.toEqual(
+    expect.objectContaining({
+      ruleId: "E-0.1.0",
+      status: "fail",
+      message: expect.stringContaining("required sections"),
+    }),
+  );
   await rm(root, { recursive: true, force: true });
 });

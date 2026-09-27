@@ -10,13 +10,19 @@ test("loads only registered repository paths from the authority registry", async
   try {
     await mkdir(join(root, "specs"));
     await mkdir(join(root, "registry"));
-    await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ globalAuthorityMap: "../registry/map.json" }));
-    await writeFile(join(root, "registry", "map.json"), JSON.stringify({ repositoryRegistry: [
-      { path: "../docs" }, { path: 42 }, {},
-    ] }));
+    await writeFile(
+      join(root, "specs", "authority.json"),
+      JSON.stringify({ globalAuthorityMap: "../registry/map.json" }),
+    );
+    await writeFile(
+      join(root, "registry", "map.json"),
+      JSON.stringify({ repositoryRegistry: [{ path: "../docs" }, { path: 42 }, {}] }),
+    );
     const expected = [resolve(root, "docs")];
     await expect(readRegisteredRepositoryRoots(root)).resolves.toEqual(expected);
-    await expect(readRegisteredRepositoryRoots(root, createRepositoryInventory(root))).resolves.toEqual(expected);
+    await expect(
+      readRegisteredRepositoryRoots(root, createRepositoryInventory(root)),
+    ).resolves.toEqual(expected);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -39,15 +45,22 @@ test("returns no registry roots when authority or registry documents are unusabl
     await writeFile(join(root, "registry", "map.json"), JSON.stringify({}));
     await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
 
-    await writeFile(authorityPath, JSON.stringify({ globalAuthorityMap: "../registry/missing.json" }));
+    await writeFile(
+      authorityPath,
+      JSON.stringify({ globalAuthorityMap: "../registry/missing.json" }),
+    );
     await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
 
     await writeFile(authorityPath, JSON.stringify({ globalAuthorityMap: "../registry/map.json" }));
     await writeFile(join(root, "registry", "map.json"), "not json");
     await expect(readRegisteredRepositoryRoots(root)).resolves.toBeNull();
-    await expect(readRegisteredRepositoryRoots(root, {
-      readParsed: async () => { throw new Error("unavailable"); },
-    })).resolves.toBeNull();
+    await expect(
+      readRegisteredRepositoryRoots(root, {
+        readParsed: async () => {
+          throw new Error("unavailable");
+        },
+      }),
+    ).resolves.toBeNull();
   } finally {
     await rm(root, { recursive: true, force: true });
   }

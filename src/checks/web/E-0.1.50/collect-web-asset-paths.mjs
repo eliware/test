@@ -10,8 +10,18 @@ export async function collectWebAssetPaths(directory, prefix = "", inventory, ex
   for (const entry of entries) {
     const path = prefix ? `${prefix}/${entry.name}` : entry.name;
     paths.push(path);
-    if (entry.isDirectory() && !exclusions.some((exclusion) => matchesWebAssetExclusion(path, exclusion))) {
-      paths.push(...await collectWebAssetPaths(resolve(directory, entry.name), path, inventory, exclusions));
+    if (
+      entry.isDirectory() &&
+      !exclusions.some((exclusion) => matchesWebAssetExclusion(path, exclusion))
+    ) {
+      paths.push(
+        ...(await collectWebAssetPaths(
+          resolve(directory, entry.name),
+          path,
+          inventory,
+          exclusions,
+        )),
+      );
     }
   }
   return paths;

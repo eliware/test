@@ -48,7 +48,10 @@ test("allows the Jest ESM API import only in test files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-api-import-"));
   await mkdir(join(root, "tests"));
   await mkdir(join(root, "src"));
-  await writeFile(join(root, "tests", "sample.test.mjs"), 'import { jest } from "@jest/globals";\n');
+  await writeFile(
+    join(root, "tests", "sample.test.mjs"),
+    'import { jest } from "@jest/globals";\n',
+  );
   await writeFile(join(root, "src", "module.mjs"), 'import { jest } from "@jest/globals";\n');
   await expect(findDirectToolUses(root, ["tests/sample.test.mjs"])).resolves.toEqual([]);
   await expect(findDirectToolUses(root, ["src/module.mjs"])).resolves.toEqual(["src/module.mjs"]);
@@ -59,7 +62,9 @@ test("continues to reject Jest runner package imports from test files", async ()
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-runner-import-"));
   await mkdir(join(root, "tests"));
   await writeFile(join(root, "tests", "sample.test.mjs"), 'import "@jest/core";\n');
-  await expect(findDirectToolUses(root, ["tests/sample.test.mjs"])).resolves.toEqual(["tests/sample.test.mjs"]);
+  await expect(findDirectToolUses(root, ["tests/sample.test.mjs"])).resolves.toEqual([
+    "tests/sample.test.mjs",
+  ]);
   await rm(root, { recursive: true, force: true });
 });
 

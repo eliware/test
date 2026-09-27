@@ -28,14 +28,17 @@ test("discovers nested pure barrels and excludes non-source directories", async 
   await mkdir(join(root, "src", "dist"), { recursive: true });
   await writeFile(join(root, "src", "index.mjs"), 'export * from "./value.mjs";\n');
   await writeFile(join(root, "src", "implementation.mjs"), "const value = 1;\n");
-  await writeFile(join(root, "src", "nested", "entry.mjs"), 'export { value } from "../value.mjs";\n');
+  await writeFile(
+    join(root, "src", "nested", "entry.mjs"),
+    'export { value } from "../value.mjs";\n',
+  );
   await writeFile(join(root, "src", "nested", "notes.txt"), "not a module\n");
-  await writeFile(join(root, "src", "node_modules", "ignored.mjs"), 'export * from "./value.mjs";\n');
+  await writeFile(
+    join(root, "src", "node_modules", "ignored.mjs"),
+    'export * from "./value.mjs";\n',
+  );
   await writeFile(join(root, "src", "dist", "ignored.mjs"), 'export * from "./value.mjs";\n');
-  await expect(findPureBarrels(root)).resolves.toEqual([
-    "src/index.mjs",
-    "src/nested/entry.mjs",
-  ]);
+  await expect(findPureBarrels(root)).resolves.toEqual(["src/index.mjs", "src/nested/entry.mjs"]);
   await rm(root, { recursive: true, force: true });
 });
 

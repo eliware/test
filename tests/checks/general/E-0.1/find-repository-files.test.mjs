@@ -40,7 +40,9 @@ test("returns directory depth metadata and can include test-results for document
   await writeFile(join(root, "test-results", "nested", "report.md"), "report");
 
   await expect(findRepositoryEntries(root)).resolves.toEqual([]);
-  await expect(findRepositoryEntries(root, undefined, { includeTestResults: true })).resolves.toEqual([
+  await expect(
+    findRepositoryEntries(root, undefined, { includeTestResults: true }),
+  ).resolves.toEqual([
     { path: "test-results", type: "directory", depth: 1 },
     { path: "test-results/nested", type: "directory", depth: 2 },
     { path: "test-results/nested/report.md", type: "file", depth: 2 },
@@ -56,7 +58,9 @@ test("includes test-results only beneath requested inventory scopes", async () =
   await writeFile(join(root, "src", "test-results", "nested", "report.json"), "{}");
   await writeFile(join(root, "test-results", "report.json"), "{}");
 
-  await expect(findRepositoryEntries(root, undefined, { includeTestResultsUnder: ["src"] })).resolves.toEqual([
+  await expect(
+    findRepositoryEntries(root, undefined, { includeTestResultsUnder: ["src"] }),
+  ).resolves.toEqual([
     { path: "src", type: "directory", depth: 1 },
     { path: "src/test-results", type: "directory", depth: 2 },
     { path: "src/test-results/nested", type: "directory", depth: 3 },
@@ -69,19 +73,21 @@ test("walks a requested subtree and rejects scopes outside the repository", asyn
   const root = await mkdtemp(join(tmpdir(), "eliware-scoped-repository-entries-"));
   await mkdir(join(root, "docs"), { recursive: true });
   await writeFile(join(root, "docs", "guide.md"), "guide");
-  await expect(findRepositoryEntries(root, undefined, { scopeDirectory: "docs" })).resolves.toEqual([
-    { path: "docs", type: "directory", depth: 1 },
-    { path: "docs/guide.md", type: "file", depth: 1 },
-  ]);
+  await expect(findRepositoryEntries(root, undefined, { scopeDirectory: "docs" })).resolves.toEqual(
+    [
+      { path: "docs", type: "directory", depth: 1 },
+      { path: "docs/guide.md", type: "file", depth: 1 },
+    ],
+  );
   await expect(findRepositoryEntries(root, undefined, { scopeDirectory: ".." })).rejects.toThrow(
     "inside the repository",
   );
-  await expect(findRepositoryEntries(root, undefined, { scopeDirectory: "../outside" })).rejects.toThrow(
-    "inside the repository",
-  );
-  await expect(findRepositoryEntries(root, undefined, { scopeDirectory: "C:/outside" })).rejects.toThrow(
-    "inside the repository",
-  );
+  await expect(
+    findRepositoryEntries(root, undefined, { scopeDirectory: "../outside" }),
+  ).rejects.toThrow("inside the repository");
+  await expect(
+    findRepositoryEntries(root, undefined, { scopeDirectory: "C:/outside" }),
+  ).rejects.toThrow("inside the repository");
   await rm(root, { recursive: true, force: true });
 });
 
@@ -92,9 +98,9 @@ test("expands only explicitly selected generated subtrees", async () => {
   await writeFile(join(root, "docs", "build", "index.md"), "generated docs");
   await writeFile(join(root, "dist", "bundle.js"), "bundle");
 
-  await expect(findRepositoryEntries(root, undefined, { includeTestResults: true })).resolves.not.toContainEqual(
-    expect.objectContaining({ path: "docs/build/index.md" }),
-  );
+  await expect(
+    findRepositoryEntries(root, undefined, { includeTestResults: true }),
+  ).resolves.not.toContainEqual(expect.objectContaining({ path: "docs/build/index.md" }));
   await expect(
     findRepositoryEntries(root, undefined, {
       includeTestResults: true,

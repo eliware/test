@@ -7,7 +7,12 @@ import { resolveFocusedCoverage } from "./resolve-focused-coverage.mjs";
 import { rm } from "node:fs/promises";
 import { removeRunCoverageArtifacts } from "./remove-run-coverage-artifacts.mjs";
 
-export async function runCoverageCheck(context, ruleId, readEvidence = readCoverageEvidenceFromCandidates, remove = rm) {
+export async function runCoverageCheck(
+  context,
+  ruleId,
+  readEvidence = readCoverageEvidenceFromCandidates,
+  remove = rm,
+) {
   if (!context.executeJest) return pass(ruleId);
   if (!context.jestResult || context.jestResult.code !== 0 || context.jestResult.timedOut) {
     const diagnostic = context.jestResult?.cleanupError
@@ -24,8 +29,13 @@ export async function runCoverageCheck(context, ruleId, readEvidence = readCover
     const expectedFiles = focusedCoverage.includes("--collectCoverageFrom")
       ? [focusedCoverage[focusedCoverage.indexOf("--collectCoverageFrom") + 1]]
       : undefined;
-    const evidenceOptions = { requireFresh: true, expectedFiles, inventory: context.repositoryInventory };
-    if (context.jestCoverageDirectory) evidenceOptions.coverageDirectory = context.jestCoverageDirectory;
+    const evidenceOptions = {
+      requireFresh: true,
+      expectedFiles,
+      inventory: context.repositoryInventory,
+    };
+    if (context.jestCoverageDirectory)
+      evidenceOptions.coverageDirectory = context.jestCoverageDirectory;
     const evidence = await readEvidence(
       context.root,
       context.jestResult.stdout,
@@ -44,8 +54,9 @@ export async function runCoverageCheck(context, ruleId, readEvidence = readCover
   }
   const cleanupError = await removeRunCoverageArtifacts(context, remove);
   if (!cleanupError) return result;
-  const message = result.status === "fail" && result.message
-    ? `${result.message}\n${cleanupError}`
-    : cleanupError;
+  const message =
+    result.status === "fail" && result.message
+      ? `${result.message}\n${cleanupError}`
+      : cleanupError;
   return fail(ruleId, message);
 }

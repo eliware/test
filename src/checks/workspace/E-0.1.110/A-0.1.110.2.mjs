@@ -25,7 +25,12 @@ export async function run(context) {
     );
     if (validation.error) return fail(ruleId, validation.error);
     const indexedPaths = new Set();
-    const referenceError = await validateReferences(root, validation.filesByPath, indexedPaths, context);
+    const referenceError = await validateReferences(
+      root,
+      validation.filesByPath,
+      indexedPaths,
+      context,
+    );
     if (referenceError) return fail(ruleId, referenceError);
     const indexError = validateRunbookIndexCoverage(loaded.files, indexedPaths);
     if (indexError) return fail(ruleId, indexError);

@@ -10,7 +10,12 @@ import { findMisplacedArtifacts } from "./validate-test-artifacts.mjs";
 import { findGeneratedSource } from "./validate-generated-source.mjs";
 import { validateFocusedSourceTestPair } from "./validate-focused-source-test-pair.mjs";
 
-export async function runSourceTestMirroring({ root, ruleId, focusedScope = null, repositoryInventory }) {
+export async function runSourceTestMirroring({
+  root,
+  ruleId,
+  focusedScope = null,
+  repositoryInventory,
+}) {
   if (focusedScope) return runFocused(root, focusedScope, ruleId, repositoryInventory);
   let mirrorInventory;
   try {
@@ -21,18 +26,29 @@ export async function runSourceTestMirroring({ root, ruleId, focusedScope = null
   const { sourceFiles, testFiles, sourceDirectories, testDirectories } = mirrorInventory;
   const findings = findMirrorViolations(sourceFiles, testFiles, sourceDirectories, testDirectories);
   const sourceModules = sourceFiles.filter((file) => file.endsWith(".mjs"));
-  const expectedTests = new Set(sourceModules.map((source) => source.replace(/\.mjs$/u, ".test.mjs")));
+  const expectedTests = new Set(
+    sourceModules.map((source) => source.replace(/\.mjs$/u, ".test.mjs")),
+  );
   findings.push(...findDuplicatePathViolations(sourceFiles, testFiles));
-  findings.push(...findOrphanTestViolations(testFiles, expectedTests).map((file) => `orphan test is not an approved cross-cutting suite: ${file}`));
+  findings.push(
+    ...findOrphanTestViolations(testFiles, expectedTests).map(
+      (file) => `orphan test is not an approved cross-cutting suite: ${file}`,
+    ),
+  );
   const testContents = await readSourceTestContents(root, testFiles, repositoryInventory);
   findings.push(...findTestContractViolations(sourceModules, testContents));
   const misplacedArtifacts = findMisplacedArtifacts(sourceFiles, testFiles);
   if (misplacedArtifacts.length > 0)
     findings.push(`test artifacts must be under artifacts/: ${misplacedArtifacts.join(", ")}`);
-  const bundled = await findGeneratedSource(root, sourceModules, repositoryInventory
-    ? (file) => repositoryInventory.readText(join(root, "src", file))
-    : undefined);
-  if (bundled.length > 0) findings.push(`generated or bundled source is not allowed: ${bundled.join(", ")}`);
+  const bundled = await findGeneratedSource(
+    root,
+    sourceModules,
+    repositoryInventory
+      ? (file) => repositoryInventory.readText(join(root, "src", file))
+      : undefined,
+  );
+  if (bundled.length > 0)
+    findings.push(`generated or bundled source is not allowed: ${bundled.join(", ")}`);
   if (findings.length > 0) {
     return fail(ruleId, `Source/test structure is not exactly mirrored; ${findings.join("; ")}.`);
   }
@@ -40,8 +56,12 @@ export async function runSourceTestMirroring({ root, ruleId, focusedScope = null
 }
 
 async function runFocused(root, { sourcePath, testPath }, ruleId, repositoryInventory) {
-  const findings = await validateFocusedSourceTestPair(root, { sourcePath, testPath }, repositoryInventory
-    ? (file) => repositoryInventory.readText(file)
-    : undefined);
-  return findings.length ? fail(ruleId, `Source/test structure is not mirrored; ${findings.join("; ")}.`) : pass(ruleId);
+  const findings = await validateFocusedSourceTestPair(
+    root,
+    { sourcePath, testPath },
+    repositoryInventory ? (file) => repositoryInventory.readText(file) : undefined,
+  );
+  return findings.length
+    ? fail(ruleId, `Source/test structure is not mirrored; ${findings.join("; ")}.`)
+    : pass(ruleId);
 }

@@ -9,30 +9,65 @@ test("validates repository identity and reciprocal map links", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-reciprocity-"));
   await mkdir(join(root, "specs"));
   const file = join(root, "authority-map.json");
-  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ repositoryId: "eliware/example", subjects: [{ id: "example.subject" }] }));
-  await expect(validateAuthorityReciprocity({
-    root, file, entries: [{ repository: "eliware/example", authorityFile: "./specs/authority.json", governs: ["example.subject"] }],
-  })).resolves.toBeNull();
+  await writeFile(
+    join(root, "specs", "authority.json"),
+    JSON.stringify({ repositoryId: "eliware/example", subjects: [{ id: "example.subject" }] }),
+  );
+  await expect(
+    validateAuthorityReciprocity({
+      root,
+      file,
+      entries: [
+        {
+          repository: "eliware/example",
+          authorityFile: "./specs/authority.json",
+          governs: ["example.subject"],
+        },
+      ],
+    }),
+  ).resolves.toBeNull();
 });
 
 test("rejects mismatched repository identities", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-reciprocity-"));
   await mkdir(join(root, "specs"));
   const file = join(root, "authority-map.json");
-  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ repositoryId: "other/repository", subjects: [] }));
-  await expect(validateAuthorityReciprocity({
-    root, file, entries: [{ repository: "eliware/example", authorityFile: "./specs/authority.json", governs: [] }],
-  })).resolves.toContain("does not match");
+  await writeFile(
+    join(root, "specs", "authority.json"),
+    JSON.stringify({ repositoryId: "other/repository", subjects: [] }),
+  );
+  await expect(
+    validateAuthorityReciprocity({
+      root,
+      file,
+      entries: [
+        { repository: "eliware/example", authorityFile: "./specs/authority.json", governs: [] },
+      ],
+    }),
+  ).resolves.toContain("does not match");
 });
 
 test("rejects governs targets missing from the local authority record", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-reciprocity-"));
   await mkdir(join(root, "specs"));
   const file = join(root, "authority-map.json");
-  await writeFile(join(root, "specs", "authority.json"), JSON.stringify({ repositoryId: "eliware/example", subjects: [{ id: "known.subject" }] }));
-  await expect(validateAuthorityReciprocity({
-    root, file, entries: [{ repository: "eliware/example", authorityFile: "./specs/authority.json", governs: ["missing.subject"] }],
-  })).resolves.toContain("does not resolve to a local subject");
+  await writeFile(
+    join(root, "specs", "authority.json"),
+    JSON.stringify({ repositoryId: "eliware/example", subjects: [{ id: "known.subject" }] }),
+  );
+  await expect(
+    validateAuthorityReciprocity({
+      root,
+      file,
+      entries: [
+        {
+          repository: "eliware/example",
+          authorityFile: "./specs/authority.json",
+          governs: ["missing.subject"],
+        },
+      ],
+    }),
+  ).resolves.toContain("does not resolve to a local subject");
 });
 
 test("shares parsed authority documents with the inventory", async () => {
@@ -42,7 +77,11 @@ test("shares parsed authority documents with the inventory", async () => {
   await writeFile(file, "{}\n");
   await writeFile(
     join(root, "specs", "authority.json"),
-    JSON.stringify({ repositoryId: "eliware/example", globalAuthorityMap: "../authority-map.json", subjects: [] }),
+    JSON.stringify({
+      repositoryId: "eliware/example",
+      globalAuthorityMap: "../authority-map.json",
+      subjects: [],
+    }),
   );
   const inventory = createRepositoryInventory(root);
 

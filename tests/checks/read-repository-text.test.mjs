@@ -32,7 +32,9 @@ test("reads directly without a validation context", async () => {
 
   try {
     await writeFile(filePath, "first");
-    await expect(readRepositoryText(null, filePath)).resolves.toBe(await readFile(filePath, "utf8"));
+    await expect(readRepositoryText(null, filePath)).resolves.toBe(
+      await readFile(filePath, "utf8"),
+    );
     await writeFile(filePath, "second");
     await expect(readRepositoryText(null, filePath)).resolves.toBe("second");
   } finally {
@@ -57,7 +59,9 @@ test("caches parsed sections by repository path and cache key within one run", a
     await readRepositoryParsed(context, filePath, "section:other", parse);
     expect(parse).toHaveBeenCalledTimes(2);
     await writeFile(filePath, "## Project\nChanged");
-    await expect(readRepositoryParsed({}, filePath, "section:project", parse)).resolves.toBe("Changed");
+    await expect(readRepositoryParsed({}, filePath, "section:project", parse)).resolves.toBe(
+      "Changed",
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -82,7 +86,7 @@ test("does not cache parsed results without a validation context", async () => {
 test("delegates text and parsed reads to the run inventory", async () => {
   const repositoryInventory = {
     readText: jest.fn(async () => "shared"),
-    readParsed: jest.fn(async (_filePath, _cacheKey, parse) => parse("{\"value\":1}")),
+    readParsed: jest.fn(async (_filePath, _cacheKey, parse) => parse('{"value":1}')),
   };
   const context = { repositoryInventory };
 

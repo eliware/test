@@ -150,11 +150,7 @@ test("accepts source-shaped evidence and empty expected source maps", () => {
   ).toBeUndefined();
   const shapeWithoutLineMap = { ...shape, lineMap: undefined };
   expect(
-    validateCoverageFileEvidence(
-      "src/decision.mjs",
-      completeEvidence(shape),
-      shapeWithoutLineMap,
-    ),
+    validateCoverageFileEvidence("src/decision.mjs", completeEvidence(shape), shapeWithoutLineMap),
   ).toBeUndefined();
   expect(
     validateCoverageFileEvidence(

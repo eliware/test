@@ -14,11 +14,13 @@ export function validatePackageMetadata(packageJson) {
     !Array.isArray(packageJson.keywords) ||
     packageJson.keywords.length === 0 ||
     packageJson.keywords.some((keyword) => !nonempty(keyword))
-  ) return "package.json must use the MIT license and declare nonempty string keywords.";
+  )
+    return "package.json must use the MIT license and declare nonempty string keywords.";
   const repository = packageJson.repository;
   if (!(
     nonempty(repository) ||
     (repository && typeof repository === "object" && nonempty(repository.url))
-  )) return "package.json.repository must identify a nonempty repository URL.";
+  ))
+    return "package.json.repository must identify a nonempty repository URL.";
   return null;
 }

@@ -3,8 +3,11 @@ import { win32 } from "node:path";
 
 function resolveWindowsExecutable(env, ...parts) {
   const systemRoot = env?.SystemRoot;
-  if (typeof systemRoot !== "string" || !win32.isAbsolute(systemRoot) ||
-      systemRoot.split(/[\\/]+/u).some((part) => part === "." || part === "..")) {
+  if (
+    typeof systemRoot !== "string" ||
+    !win32.isAbsolute(systemRoot) ||
+    systemRoot.split(/[\\/]+/u).some((part) => part === "." || part === "..")
+  ) {
     throw new Error("Windows process-tree termination requires an absolute SystemRoot path.");
   }
   return win32.resolve(systemRoot, ...parts);
@@ -20,8 +23,15 @@ export function createWindowsProcessTreeKiller(executeProcess = execFileSync) {
     try {
       execute(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], options);
     } catch (taskkillError) {
-      const powershell = resolveWindowsExecutable(env, "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
-      const script = "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
+      const powershell = resolveWindowsExecutable(
+        env,
+        "System32",
+        "WindowsPowerShell",
+        "v1.0",
+        "powershell.exe",
+      );
+      const script =
+        "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
         "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
         "$descendants=[Collections.Generic.List[int]]::new(); [void]$known.Add($root); do { $changed=$false; " +
         "foreach($process in $all) { if($known.Contains([int]$process.ParentProcessId) -and " +
@@ -35,7 +45,10 @@ export function createWindowsProcessTreeKiller(executeProcess = execFileSync) {
           env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) },
         });
       } catch (powershellError) {
-        throw new AggregateError([taskkillError, powershellError], "Windows process-tree termination failed.");
+        throw new AggregateError(
+          [taskkillError, powershellError],
+          "Windows process-tree termination failed.",
+        );
       }
     }
   };

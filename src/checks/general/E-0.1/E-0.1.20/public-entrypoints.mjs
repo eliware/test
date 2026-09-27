@@ -4,7 +4,8 @@ function normalizePath(value) {
 
 export function publicEntrypoints(packageJson) {
   const exportMap = packageJson?.exports;
-  const values = typeof exportMap === "string" ? [exportMap] : Array.isArray(exportMap) ? exportMap : [];
+  const values =
+    typeof exportMap === "string" ? [exportMap] : Array.isArray(exportMap) ? exportMap : [];
   if (exportMap && typeof exportMap === "object" && !Array.isArray(exportMap)) {
     const exportRoot = Object.hasOwn(exportMap, ".") ? exportMap["."] : exportMap;
     const collect = (value) => {
@@ -14,5 +15,9 @@ export function publicEntrypoints(packageJson) {
     };
     values.push(...collect(exportRoot));
   }
-  return new Set([packageJson?.main, packageJson?.module, ...values, "src/index.mjs"].map(normalizePath).filter(Boolean));
+  return new Set(
+    [packageJson?.main, packageJson?.module, ...values, "src/index.mjs"]
+      .map(normalizePath)
+      .filter(Boolean),
+  );
 }

@@ -7,5 +7,7 @@ test("accepts unconditional required validation steps", () => {
 
 test("rejects skippable jobs and required steps", () => {
   expect(validateValidationJobConditions({}, {}, { if: "false" })).toContain("validation job");
-  expect(validateValidationJobConditions({ step: { if: "false" } }, { step: {} }, {})).toContain("npm ci or npm test");
+  expect(validateValidationJobConditions({ step: { if: "false" } }, { step: {} }, {})).toContain(
+    "npm ci or npm test",
+  );
 });

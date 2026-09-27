@@ -1,14 +1,27 @@
 const reportKey = '"numFailedTestSuites"';
 
 export function extractJestJsonReport(output) {
-  for (let keyIndex = output.indexOf(reportKey); keyIndex >= 0; keyIndex = output.indexOf(reportKey, keyIndex + 1)) {
-    for (let start = output.indexOf("{"); start >= 0 && start < keyIndex; start = output.indexOf("{", start + 1)) {
+  for (
+    let keyIndex = output.indexOf(reportKey);
+    keyIndex >= 0;
+    keyIndex = output.indexOf(reportKey, keyIndex + 1)
+  ) {
+    for (
+      let start = output.indexOf("{");
+      start >= 0 && start < keyIndex;
+      start = output.indexOf("{", start + 1)
+    ) {
       const end = findObjectEnd(output, start);
       if (end < keyIndex) continue;
       try {
         const report = JSON.parse(output.slice(start, end + 1));
-        if (report && typeof report === "object" && !Array.isArray(report) &&
-            Object.hasOwn(report, "numFailedTestSuites")) return { start, end: end + 1, report };
+        if (
+          report &&
+          typeof report === "object" &&
+          !Array.isArray(report) &&
+          Object.hasOwn(report, "numFailedTestSuites")
+        )
+          return { start, end: end + 1, report };
         break;
       } catch {
         continue;

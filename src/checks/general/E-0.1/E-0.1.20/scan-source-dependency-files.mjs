@@ -25,6 +25,8 @@ export async function scanSourceDependencyFiles(
         ? await parseAst(root, file, options)
         : parse(await readFile(join(root, file), "utf8"), options);
       collectAstReferences(ast, declared, referenced, uncertain);
-    } catch { /* Invalid source is reported by the syntax checks. */ }
+    } catch {
+      /* Invalid source is reported by the syntax checks. */
+    }
   }
 }

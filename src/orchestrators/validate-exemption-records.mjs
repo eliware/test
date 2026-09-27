@@ -13,7 +13,8 @@ export function validateExemptionRecords(records) {
         typeof entry.approvalTimestamp !== "string" ||
         !isValidTimestamp(entry.approvalTimestamp) ||
         (entry.expiry !== null && typeof entry.expiry !== "string") ||
-        (typeof entry.expiry === "string" && (!isValidDate(entry.expiry) || isExpired(entry.expiry)))
+        (typeof entry.expiry === "string" &&
+          (!isValidDate(entry.expiry) || isExpired(entry.expiry)))
       );
     })
   ) {

@@ -8,7 +8,12 @@ export const parentRuleId = "E-0.1.20";
 export const enforcementMode = "deterministic";
 
 export async function run(context) {
-  const outdated = await getOutdatedDependencies(context, context.readOutdated ?? readOutdatedDependencies);
+  const outdated = await getOutdatedDependencies(
+    context,
+    context.readOutdated ?? readOutdatedDependencies,
+  );
   const findings = formatOutdatedDependencies(outdated);
-  return findings.length ? fail(ruleId, `Direct dependencies are outdated before release: ${findings.join(", ")}.`) : pass(ruleId);
+  return findings.length
+    ? fail(ruleId, `Direct dependencies are outdated before release: ${findings.join(", ")}.`)
+    : pass(ruleId);
 }

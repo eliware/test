@@ -25,9 +25,14 @@ export async function run({ packageJson, root, files, repositoryInventory }) {
   if (root) {
     try {
       const repositoryFiles =
-        files ?? (repositoryInventory ? await repositoryInventory.repositoryFiles() : await findRepositoryFiles(root));
+        files ??
+        (repositoryInventory
+          ? await repositoryInventory.repositoryFiles()
+          : await findRepositoryFiles(root));
       const directUses = repositoryInventory
-        ? await findDirectToolUses(root, repositoryFiles, (file) => repositoryInventory.readText(file))
+        ? await findDirectToolUses(root, repositoryFiles, (file) =>
+            repositoryInventory.readText(file),
+          )
         : await findDirectToolUses(root, repositoryFiles);
       if (directUses.length > 0)
         return fail(

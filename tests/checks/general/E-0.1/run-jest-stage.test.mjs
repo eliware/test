@@ -3,9 +3,18 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 const executeJestCheck = jest.fn();
 const recordJestContext = jest.fn();
 const classifyJestResult = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/E-0.1.20/execute-jest-check.mjs", () => ({ executeJestCheck }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/E-0.1.20/record-jest-context.mjs", () => ({ recordJestContext }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/E-0.1.20/classify-jest-result.mjs", () => ({ classifyJestResult }));
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/E-0.1.20/execute-jest-check.mjs",
+  () => ({ executeJestCheck }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/E-0.1.20/record-jest-context.mjs",
+  () => ({ recordJestContext }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/E-0.1.20/classify-jest-result.mjs",
+  () => ({ classifyJestResult }),
+);
 
 const { runJestStage } = await import("../../../../src/checks/general/E-0.1/run-jest-stage.mjs");
 const ruleId = "E-0.1.130.13";

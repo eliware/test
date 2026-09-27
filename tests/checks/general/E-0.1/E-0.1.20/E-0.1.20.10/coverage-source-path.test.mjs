@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { isInScopeSource, normalizeSourcePath } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-source-path.mjs";
+import {
+  isInScopeSource,
+  normalizeSourcePath,
+} from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-source-path.mjs";
 
 test("recognizes supported source files under relative and absolute src roots", () => {
   expect(isInScopeSource("src/app.mjs")).toBe(true);
@@ -9,7 +12,19 @@ test("recognizes supported source files under relative and absolute src roots", 
 });
 
 test("excludes paths outside src, unsupported extensions, and non-production subtrees", () => {
-  for (const file of ["README.md", "tests/app.mjs", "src/README.txt", "src/tests/app.test.mjs", "src/fixture/app.mjs", "src/fixtures/app.mjs", "src/generated/app.mjs", "src/dist/app.mjs", "src/build/app.mjs", "src/__snapshots__/component.snap.mjs", "src/component.snap.mjs"]) {
+  for (const file of [
+    "README.md",
+    "tests/app.mjs",
+    "src/README.txt",
+    "src/tests/app.test.mjs",
+    "src/fixture/app.mjs",
+    "src/fixtures/app.mjs",
+    "src/generated/app.mjs",
+    "src/dist/app.mjs",
+    "src/build/app.mjs",
+    "src/__snapshots__/component.snap.mjs",
+    "src/component.snap.mjs",
+  ]) {
     expect(isInScopeSource(file)).toBe(false);
   }
 });

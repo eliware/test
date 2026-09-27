@@ -1,4 +1,7 @@
-import { isGeneratedRepositoryPath, isRepositoryIgnoredPath } from "./repository-inventory-path-filters.mjs";
+import {
+  isGeneratedRepositoryPath,
+  isRepositoryIgnoredPath,
+} from "./repository-inventory-path-filters.mjs";
 import { selectRepositoryDocumentationView } from "./select-repository-documentation-view.mjs";
 import { selectRepositorySourceView } from "./select-repository-source-view.mjs";
 
@@ -10,19 +13,28 @@ export function createRepositoryFileViews(entries, focusedScope) {
       return files("repository");
     }
     if (!views.has(view)) {
-      views.set(view, entries().then((records) => {
-        const allFiles = records.filter(({ type }) => type === "file").map(({ path }) => path);
-        if (view === "all") return allFiles;
-        const repository = allFiles.filter((path) => !isRepositoryIgnoredPath(path) && !isGeneratedRepositoryPath(path));
-        if (view === "repository" || view === "maintained") return repository;
-        const sourceView = selectRepositorySourceView(view, repository);
-        if (sourceView !== undefined) return sourceView;
-        const documentationView = selectRepositoryDocumentationView(view, allFiles);
-        if (documentationView !== undefined) return documentationView;
-        throw new Error(`Unknown repository inventory view: ${view}.`);
-      }));
+      views.set(
+        view,
+        entries().then((records) => {
+          const allFiles = records.filter(({ type }) => type === "file").map(({ path }) => path);
+          if (view === "all") return allFiles;
+          const repository = allFiles.filter(
+            (path) => !isRepositoryIgnoredPath(path) && !isGeneratedRepositoryPath(path),
+          );
+          if (view === "repository" || view === "maintained") return repository;
+          const sourceView = selectRepositorySourceView(view, repository);
+          if (sourceView !== undefined) return sourceView;
+          const documentationView = selectRepositoryDocumentationView(view, allFiles);
+          if (documentationView !== undefined) return documentationView;
+          throw new Error(`Unknown repository inventory view: ${view}.`);
+        }),
+      );
     }
     return views.get(view);
   }
-  return { files, repositoryFiles: () => files("repository"), focusedFiles: () => files("focused") };
+  return {
+    files,
+    repositoryFiles: () => files("repository"),
+    focusedFiles: () => files("focused"),
+  };
 }

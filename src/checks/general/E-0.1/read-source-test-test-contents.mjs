@@ -6,9 +6,10 @@ export async function readSourceTestContents(root, testFiles, repositoryInventor
   const contents = new Map();
   for (const file of testCases) {
     const path = join(root, "tests", file);
-    contents.set(file, repositoryInventory
-      ? await repositoryInventory.readText(path)
-      : await readFile(path, "utf8"));
+    contents.set(
+      file,
+      repositoryInventory ? await repositoryInventory.readText(path) : await readFile(path, "utf8"),
+    );
   }
   return contents;
 }

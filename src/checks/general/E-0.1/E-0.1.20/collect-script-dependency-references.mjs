@@ -3,7 +3,8 @@ export function collectScriptReferences(scripts, declared, referenced) {
     if (typeof script !== "string") continue;
     for (const name of declared) {
       const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      if (new RegExp(`(?:^|\\s|[\\"'])${escaped}(?:$|\\s|[/\\"'])`).test(script)) referenced.add(name);
+      if (new RegExp(`(?:^|\\s|[\\"'])${escaped}(?:$|\\s|[/\\"'])`).test(script))
+        referenced.add(name);
     }
   }
 }

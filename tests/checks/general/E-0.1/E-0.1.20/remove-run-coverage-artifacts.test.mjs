@@ -17,11 +17,15 @@ test("removes the run directory and clears it from context", async () => {
 
 test("returns a cleanup diagnostic while retaining the directory for recovery", async () => {
   const context = { jestCoverageDirectory: "/run/coverage" };
-  await expect(removeRunCoverageArtifacts(context, async () => {
-    throw new Error("access denied");
-  })).resolves.toBe("Could not remove run-scoped coverage artifacts: access denied");
+  await expect(
+    removeRunCoverageArtifacts(context, async () => {
+      throw new Error("access denied");
+    }),
+  ).resolves.toBe("Could not remove run-scoped coverage artifacts: access denied");
   expect(context.jestCoverageDirectory).toBe("/run/coverage");
-  await expect(removeRunCoverageArtifacts(context, async () => {
-    throw "cleanup denied";
-  })).resolves.toBe("Could not remove run-scoped coverage artifacts: cleanup denied");
+  await expect(
+    removeRunCoverageArtifacts(context, async () => {
+      throw "cleanup denied";
+    }),
+  ).resolves.toBe("Could not remove run-scoped coverage artifacts: cleanup denied");
 });

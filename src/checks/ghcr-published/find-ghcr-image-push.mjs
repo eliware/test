@@ -40,6 +40,9 @@ export function imageDetails(push) {
 
 export function imageTags(value) {
   return typeof value === "string"
-    ? value.split(/\r?\n/u).map((tag) => tag.trim()).filter(Boolean)
+    ? value
+        .split(/\r?\n/u)
+        .map((tag) => tag.trim())
+        .filter(Boolean)
     : [];
 }

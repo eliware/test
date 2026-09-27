@@ -4,6 +4,10 @@ import { collectScriptReferences } from "../../../../../src/checks/general/E-0.1
 test("collects dependency names from scripts and ignores non-string scripts", () => {
   const referenced = new Set();
   collectScriptReferences(undefined, ["a.b"], referenced);
-  collectScriptReferences({ alpha: "alpha --flag", beta: "run 'beta/subpath'", noMatch: "alphabet", ignored: null }, ["alpha", "beta"], referenced);
+  collectScriptReferences(
+    { alpha: "alpha --flag", beta: "run 'beta/subpath'", noMatch: "alphabet", ignored: null },
+    ["alpha", "beta"],
+    referenced,
+  );
   expect([...referenced].sort()).toEqual(["alpha", "beta"]);
 });

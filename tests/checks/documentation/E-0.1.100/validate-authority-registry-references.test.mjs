@@ -35,27 +35,36 @@ test("accepts repository and referenced files that resolve", async () => {
 });
 
 test("requires repository paths and all three repository references", async () => {
-  await expect(validateAuthorityRegistryReferences({ ...context, entry: { ...context.entry, path: " " } }))
-    .resolves.toContain("must declare path");
+  await expect(
+    validateAuthorityRegistryReferences({ ...context, entry: { ...context.entry, path: " " } }),
+  ).resolves.toContain("must declare path");
   for (const field of ["package", "authorityFile", "reference"]) {
-    await expect(validateAuthorityRegistryReferences({
-      ...context,
-      entry: { ...context.entry, [field]: null },
-    })).resolves.toContain(`must declare ${field}`);
+    await expect(
+      validateAuthorityRegistryReferences({
+        ...context,
+        entry: { ...context.entry, [field]: null },
+      }),
+    ).resolves.toContain(`must declare ${field}`);
   }
 });
 
 test("rejects unresolved and escaping references", async () => {
-  await expect(validateAuthorityRegistryReferences({
-    ...context,
-    entry: { ...context.entry, path: "missing" },
-  })).resolves.toContain("does not resolve");
-  await expect(validateAuthorityRegistryReferences({
-    ...context,
-    entry: { ...context.entry, package: "../outside.json" },
-  })).resolves.toContain("within its repository path");
-  await expect(validateAuthorityRegistryReferences({
-    ...context,
-    entry: { ...context.entry, package: "missing.json" },
-  })).resolves.toContain("does not resolve");
+  await expect(
+    validateAuthorityRegistryReferences({
+      ...context,
+      entry: { ...context.entry, path: "missing" },
+    }),
+  ).resolves.toContain("does not resolve");
+  await expect(
+    validateAuthorityRegistryReferences({
+      ...context,
+      entry: { ...context.entry, package: "../outside.json" },
+    }),
+  ).resolves.toContain("within its repository path");
+  await expect(
+    validateAuthorityRegistryReferences({
+      ...context,
+      entry: { ...context.entry, package: "missing.json" },
+    }),
+  ).resolves.toContain("does not resolve");
 });

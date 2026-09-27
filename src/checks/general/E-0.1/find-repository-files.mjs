@@ -19,8 +19,9 @@ export async function findRepositoryEntries(
     throw new Error("Repository inventory scope must be inside the repository.");
   const includesTestResultsAt = (directoryPath) => {
     const parent = directoryPath.slice(0, directoryPath.lastIndexOf("/"));
-    return includeTestResults || includeTestResultsUnder.some(
-      (scope) => parent === scope || parent.startsWith(`${scope}/`),
+    return (
+      includeTestResults ||
+      includeTestResultsUnder.some((scope) => parent === scope || parent.startsWith(`${scope}/`))
     );
   };
   async function visit(directory, depth) {

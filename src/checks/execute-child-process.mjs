@@ -6,10 +6,18 @@ const MAX_OUTPUT_LENGTH = 100_000;
 export function execute(command, args, options = {}, spawnProcess = spawn) {
   return new Promise((resolveResult, reject) => {
     const { redactionSecrets: suppliedSecrets = [], ...childOptions } = options ?? {};
-    const output = createChildProcessOutputCapture(childOptions, suppliedSecrets, MAX_OUTPUT_LENGTH);
+    const output = createChildProcessOutputCapture(
+      childOptions,
+      suppliedSecrets,
+      MAX_OUTPUT_LENGTH,
+    );
     let child;
     try {
-      child = spawnProcess(command, args, { ...childOptions, shell: false, stdio: ["ignore", "pipe", "pipe"] });
+      child = spawnProcess(command, args, {
+        ...childOptions,
+        shell: false,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
     } catch (error) {
       reject(redactSpawnError(error, output));
       return;

@@ -32,7 +32,9 @@ test("allows harmless forwarded options and rejects path operands that can narro
   expect(validatePrettierArguments(["--log-level=debug"])).toBeNull();
   expect(validatePrettierArguments(["-z"])).toBeNull();
   expect(validatePrettierArguments(["src/example.mjs"])).toContain("wrapper-owned file coverage");
-  expect(validatePrettierArguments(["--", "src/example.mjs"])).toContain("wrapper-owned file coverage");
+  expect(validatePrettierArguments(["--", "src/example.mjs"])).toContain(
+    "wrapper-owned file coverage",
+  );
 });
 
 test("rejects malformed argument collections", () => {

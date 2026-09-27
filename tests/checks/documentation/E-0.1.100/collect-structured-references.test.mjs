@@ -2,15 +2,21 @@ import { expect, test } from "@jest/globals";
 import { collectStructuredReferences } from "../../../../src/checks/documentation/E-0.1.100/collect-structured-references.mjs";
 
 test("collects nested path fields and marks crosslinks at every depth", () => {
-  expect(collectStructuredReferences({
-    path: "./index.json",
-    items: [{ path: "./local.json" }],
-    crosslinks: [{ path: "../docs/authority-map.json", nested: { path: "../test/README.md" } }],
-  })).toEqual([
+  expect(
+    collectStructuredReferences({
+      path: "./index.json",
+      items: [{ path: "./local.json" }],
+      crosslinks: [{ path: "../docs/authority-map.json", nested: { path: "../test/README.md" } }],
+      repositoryRegistry: [{ path: "../operations", package: "../operations/package.json" }],
+      structuredDocuments: [{ path: "../operations/specs/authority.json" }],
+    }),
+  ).toEqual([
     { path: "./index.json", crossRepository: false },
     { path: "./local.json", crossRepository: false },
     { path: "../docs/authority-map.json", crossRepository: true },
     { path: "../test/README.md", crossRepository: true },
+    { path: "../operations", crossRepository: true },
+    { path: "../operations/specs/authority.json", crossRepository: true },
   ]);
 });
 

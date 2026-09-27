@@ -14,7 +14,14 @@ test("projects an unexpanded directory directly through the cached reader", asyn
   });
 
   const children = await directoryEntries("/repo/src");
-  expect(children).toEqual([{ name: "entry.mjs", path: "src/entry.mjs", isFile: expect.any(Function), isDirectory: expect.any(Function) }]);
+  expect(children).toEqual([
+    {
+      name: "entry.mjs",
+      path: "src/entry.mjs",
+      isFile: expect.any(Function),
+      isDirectory: expect.any(Function),
+    },
+  ]);
   expect(children[0].isFile()).toBe(true);
   expect(children[0].isDirectory()).toBe(false);
   expect(readDirectory).toHaveBeenCalledWith("src");
@@ -37,7 +44,9 @@ test("projects indexed root and directory records", async () => {
   expect(rootEntries.map(({ name }) => name)).toEqual(["README.md", "src"]);
   expect(rootEntries[0].isFile()).toBe(true);
   expect(rootEntries[1].isDirectory()).toBe(true);
-  await expect(directoryEntries("/repo/src")).resolves.toMatchObject([{ name: "index.mjs", path: "src/index.mjs" }]);
+  await expect(directoryEntries("/repo/src")).resolves.toMatchObject([
+    { name: "index.mjs", path: "src/index.mjs" },
+  ]);
 });
 
 test("falls back to reading descendants of pruned directories", async () => {
@@ -54,7 +63,9 @@ test("falls back to reading descendants of pruned directories", async () => {
     hasFullDiscovery: () => true,
   });
 
-  await expect(directoryEntries("/repo/dist")).resolves.toMatchObject([{ name: "assets", path: "dist/assets" }]);
+  await expect(directoryEntries("/repo/dist")).resolves.toMatchObject([
+    { name: "assets", path: "dist/assets" },
+  ]);
   const assets = await directoryEntries("/repo/dist/assets");
   expect(assets).toMatchObject([{ name: "app.js", path: "dist/assets/app.js" }]);
   expect(assets[0].isFile()).toBe(true);

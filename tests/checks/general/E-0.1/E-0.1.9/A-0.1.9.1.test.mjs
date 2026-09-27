@@ -22,5 +22,7 @@ test.each([
 });
 
 test("rejects profiles absent from the bundled authority", () => {
-  expect(run({ packageJson: { version: "8.0.0", eliware: { apply: ["missing"] } } })).toMatchObject({ status: "fail" });
+  expect(run({ packageJson: { version: "8.0.0", eliware: { apply: ["missing"] } } })).toMatchObject(
+    { status: "fail" },
+  );
 });

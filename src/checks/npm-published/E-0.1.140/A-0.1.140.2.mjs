@@ -1,12 +1,7 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../../ghcr-published/read-workflows.mjs";
-import { hasExactTagTrigger } from "../../ghcr-published/has-exact-tag-trigger.mjs";
-import { hasUbuntuRunner } from "../../ghcr-published/has-ubuntu-runner.mjs";
 import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
-import { steps } from "../../ghcr-published/workflow-structure.mjs";
-import { findValidationJobs } from "../../ghcr-published/find-validation-jobs.mjs";
-import { hasReleaseTagGuard, isTagRelease, tagMatchesPackageVersion } from "../../ghcr-published/release-version-tag.mjs";
-import { hasUnconditionalPublishStep } from "./has-unconditional-publish-step.mjs";
+import { validateNpmPublicationWorkflow } from "./validate-npm-publication-workflow.mjs";
 
 export const ruleId = "A-0.1.140.2";
 export const parentRuleId = "E-0.1.140";
@@ -21,7 +16,8 @@ export async function run(context) {
   } catch (error) {
     return fail(ruleId, `npm publication workflows could not be read: ${error.message}`);
   }
-  if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0)) return fail(ruleId, "npm-published repositories must define a publication workflow.");
+  if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0))
+    return fail(ruleId, "npm-published repositories must define a publication workflow.");
   for (const workflow of workflows) {
     const publication = npmPublicationJobs(workflow);
     if (publication.length === 0) {
@@ -30,27 +26,7 @@ export async function run(context) {
       }
       continue;
     }
-    const version = packageJson?.version;
-    const verifiedVersion = typeof version === "string" &&
-      (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, version)) &&
-      publication.every(({ job }) => {
-      const jobSteps = steps(job);
-      const needs = Array.isArray(job.needs) ? job.needs : job.needs ? [job.needs] : [];
-      const hasValidationDependency = findValidationJobs(workflow).some(({ id, job: validationJob }) =>
-        hasUbuntuRunner(workflow, validationJob) && needs.includes(id),
-      );
-      const verifyIndex = jobSteps.findIndex(({ run }) => hasReleaseTagGuard(run));
-      const publishIndex = jobSteps.findIndex(({ run }) => /^npm\s+publish\b/iu.test(String(run).trim()));
-      return verifyIndex >= 0 && publishIndex > verifyIndex &&
-        hasValidationDependency &&
-        hasUnconditionalPublishStep(jobSteps[publishIndex]) &&
-        hasUbuntuRunner(workflow, job);
-    });
-    if (
-      !hasExactTagTrigger(workflow) ||
-      typeof version !== "string" ||
-      !verifiedVersion
-    ) {
+    if (!validateNpmPublicationWorkflow(workflow, packageJson?.version, env)) {
       return fail(
         ruleId,
         `Publication workflow must use exact version tags, verify package version, and validate on Ubuntu: ${workflow.name}.`,

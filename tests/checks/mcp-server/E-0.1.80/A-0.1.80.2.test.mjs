@@ -10,7 +10,11 @@ test("requires MCP README topics", async () => {
     join(root, "README.md"),
     "purpose requirements setup configuration tools resources prompts transport authentication schemas validation operations security support license",
   );
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.80.2", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.80.2",
+    status: "pass",
+    message: "",
+  });
   await rm(root, { recursive: true, force: true });
 });
 

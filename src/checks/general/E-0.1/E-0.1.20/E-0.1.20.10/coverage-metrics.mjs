@@ -20,7 +20,10 @@ export function coverageMetricValues(data, lineEntries) {
     if (!map || !counters || typeof map !== "object" || typeof counters !== "object") return false;
     const mapKeys = Object.keys(map).sort();
     const counterKeys = Object.keys(counters).sort();
-    return mapKeys.length === counterKeys.length && mapKeys.every((key, index) => key === counterKeys[index]);
+    return (
+      mapKeys.length === counterKeys.length &&
+      mapKeys.every((key, index) => key === counterKeys[index])
+    );
   });
   return { values, hasCounters, hasMaps: hasMaps && hasCounters };
 }

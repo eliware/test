@@ -8,14 +8,19 @@ test("loads YAML workflow files and normalizes documents", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-load-workflows-"));
   const directory = join(root, ".github", "workflows");
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, "ci.yml"), "name: ci\njobs:\n  test:\n    runs-on: ubuntu-latest\n");
+  await writeFile(
+    join(directory, "ci.yml"),
+    "name: ci\njobs:\n  test:\n    runs-on: ubuntu-latest\n",
+  );
   await writeFile(join(directory, "notes.txt"), "ignored");
   try {
-    await expect(loadWorkflows(root)).resolves.toEqual([{
-      name: "ci.yml",
-      content: "name: ci\njobs:\n  test:\n    runs-on: ubuntu-latest\n",
-      document: { name: "ci", jobs: { test: { "runs-on": "ubuntu-latest" } } },
-    }]);
+    await expect(loadWorkflows(root)).resolves.toEqual([
+      {
+        name: "ci.yml",
+        content: "name: ci\njobs:\n  test:\n    runs-on: ubuntu-latest\n",
+        document: { name: "ci", jobs: { test: { "runs-on": "ubuntu-latest" } } },
+      },
+    ]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -34,11 +39,13 @@ test("uses inventory discovery, text, and parsed-content collaborators", async (
     readParsed: async () => ({ name: "ci" }),
   };
   try {
-    await expect(loadWorkflows(root, inventory)).resolves.toEqual([{
-      name: "ci.yaml",
-      content,
-      document: { name: "ci", on: undefined, jobs: {} },
-    }]);
+    await expect(loadWorkflows(root, inventory)).resolves.toEqual([
+      {
+        name: "ci.yaml",
+        content,
+        document: { name: "ci", on: undefined, jobs: {} },
+      },
+    ]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

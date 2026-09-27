@@ -13,7 +13,9 @@ function createHandler(options = {}, settledState = { value: false }) {
     output,
     resolve,
     isSettled: () => settledState.value,
-    markSettled: () => { settledState.value = true; },
+    markSettled: () => {
+      settledState.value = true;
+    },
   });
   return { handler, resolve, timeout, output, settledState };
 }
@@ -27,10 +29,12 @@ test("settles as unconfirmed after graceful and forced termination", () => {
     handler.onTimeout();
     expect(handler.wasTimedOut()).toBe(true);
     jest.advanceTimersByTime(20);
-    expect(resolve).toHaveBeenCalledWith(expect.objectContaining({
-      terminationConfirmed: false,
-      signal: "SIGKILL",
-    }));
+    expect(resolve).toHaveBeenCalledWith(
+      expect.objectContaining({
+        terminationConfirmed: false,
+        signal: "SIGKILL",
+      }),
+    );
     expect(settledState.value).toBe(true);
     expect(timeout.stop).toHaveBeenCalledTimes(2);
     expect(output.flush).toHaveBeenCalledTimes(1);
@@ -66,8 +70,12 @@ test("contains timeout callback and termination errors while settling", () => {
   jest.useFakeTimers();
   try {
     const { handler, resolve } = createHandler({
-      onTimeout: () => { throw new Error("timeout callback failure"); },
-      terminateChild: () => { throw new Error("termination failure"); },
+      onTimeout: () => {
+        throw new Error("timeout callback failure");
+      },
+      terminateChild: () => {
+        throw new Error("termination failure");
+      },
     });
     handler.onTimeout();
     jest.advanceTimersByTime(20);

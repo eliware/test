@@ -23,7 +23,9 @@ export async function runNoCoverageIgnore({
       : await findSourceFiles(sourceRoot);
     const barrels = new Set(await findBarrels(root, undefined, repositoryInventory));
     const profiles = packageJson?.eliware?.apply ?? [];
-    const barrelExemptProfiles = profiles.filter((profile) => profile === "application" || profile === "library");
+    const barrelExemptProfiles = profiles.filter(
+      (profile) => profile === "application" || profile === "library",
+    );
     const allowedBarrels = new Set(
       barrelExemptProfiles.length
         ? findLibraryEntryPoints({
@@ -33,7 +35,9 @@ export async function runNoCoverageIgnore({
         : [],
     );
     for (const file of files) {
-      const source = repositoryInventory ? await repositoryInventory.readText(file) : await readFile(file, "utf8");
+      const source = repositoryInventory
+        ? await repositoryInventory.readText(file)
+        : await readFile(file, "utf8");
       const relativePath = file.slice(root.length + 1).replaceAll("\\", "/");
       if (
         hasIstanbulIgnoreDirective(source) &&

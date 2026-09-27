@@ -26,9 +26,12 @@ export function hasOrderedImageVerificationChain(job) {
       findDigestHandoff(segment, details),
     ];
     const verificationIndices = verificationSteps.map((step) => segment.steps.indexOf(step));
-    return verificationSteps.every(Boolean) && verificationIndices.every(
-      (stepIndex, position) =>
-        stepIndex >= 0 && (position === 0 || stepIndex > verificationIndices[position - 1]),
+    return (
+      verificationSteps.every(Boolean) &&
+      verificationIndices.every(
+        (stepIndex, position) =>
+          stepIndex >= 0 && (position === 0 || stepIndex > verificationIndices[position - 1]),
+      )
     );
   });
 }

@@ -8,13 +8,15 @@ test("maps an existing mirrored test to its source coverage", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
   await mkdir(join(root, "src"));
   await mkdir(join(root, "tests"));
-  await writeFile(join(root, "src", "sample.mjs"), "export {};" );
-  await writeFile(join(root, "tests", "sample.test.mjs"), "test(\"sample\", () => {});");
+  await writeFile(join(root, "src", "sample.mjs"), "export {};");
+  await writeFile(join(root, "tests", "sample.test.mjs"), 'test("sample", () => {});');
   await expect(resolveFocusedCoverage(root, "tests/sample.test.mjs")).resolves.toEqual([
-    "--collectCoverageFrom", "src/sample.mjs",
+    "--collectCoverageFrom",
+    "src/sample.mjs",
   ]);
   await expect(resolveFocusedCoverage(root, "tests\\sample.test.mjs")).resolves.toEqual([
-    "--collectCoverageFrom", "src/sample.mjs",
+    "--collectCoverageFrom",
+    "src/sample.mjs",
   ]);
   await rm(root, { recursive: true, force: true });
 });
@@ -23,11 +25,12 @@ test("maps .mts and .cts tests to the native ESM source module", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-typed-test-"));
   await mkdir(join(root, "src"));
   await mkdir(join(root, "tests"));
-  await writeFile(join(root, "src", "sample.mjs"), "export {};" );
+  await writeFile(join(root, "src", "sample.mjs"), "export {};");
   for (const extension of ["mts", "cts"]) {
-    await writeFile(join(root, "tests", `sample.test.${extension}`), "test(\"sample\", () => {});");
+    await writeFile(join(root, "tests", `sample.test.${extension}`), 'test("sample", () => {});');
     await expect(resolveFocusedCoverage(root, `tests/sample.test.${extension}`)).resolves.toEqual([
-      "--collectCoverageFrom", "src/sample.mjs",
+      "--collectCoverageFrom",
+      "src/sample.mjs",
     ]);
   }
   await rm(root, { recursive: true, force: true });
@@ -44,9 +47,10 @@ test("ignores aggregate and non-test arguments", async () => {
 test("maps spec paths and propagates non-missing filesystem errors", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
   await mkdir(join(root, "src"));
-  await writeFile(join(root, "src", "specimen.mjs"), "export {};" );
+  await writeFile(join(root, "src", "specimen.mjs"), "export {};");
   await expect(resolveFocusedCoverage(root, "specs/specimen.spec.mjs")).resolves.toEqual([
-    "--collectCoverageFrom", "src/specimen.mjs",
+    "--collectCoverageFrom",
+    "src/specimen.mjs",
   ]);
   const fileRoot = join(root, "not-a-directory");
   await writeFile(fileRoot, "file");

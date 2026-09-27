@@ -15,7 +15,11 @@ test("records cumulative and since-previous-step timings", () => {
 test("streams one live line per check", () => {
   let now = 1000;
   const output = [];
-  const timer = createStageTimer(true, () => now, (text) => output.push(text));
+  const timer = createStageTimer(
+    true,
+    () => now,
+    (text) => output.push(text),
+  );
   timer.start("E-0.1");
   now = 2500;
   timer.end("E-0.1");
@@ -25,7 +29,11 @@ test("streams one live line per check", () => {
 test("retains stage transitions for non-check orchestration timing", () => {
   let now = 1000;
   const output = [];
-  const timer = createStageTimer(true, () => now, (text) => output.push(text));
+  const timer = createStageTimer(
+    true,
+    () => now,
+    (text) => output.push(text),
+  );
   now = 2500;
   timer.step("configuration", "checks");
   expect(output).toEqual([" configuration completed — starting checks\n"]);
@@ -33,7 +41,11 @@ test("retains stage transitions for non-check orchestration timing", () => {
 
 test("does not emit check timing when disabled", () => {
   const output = [];
-  const timer = createStageTimer(false, () => 1000, (text) => output.push(text));
+  const timer = createStageTimer(
+    false,
+    () => 1000,
+    (text) => output.push(text),
+  );
   timer.start("E-0.1");
   timer.step("E-0.1", "done");
   timer.end("E-0.1");

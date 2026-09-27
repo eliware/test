@@ -56,7 +56,9 @@ test("cancels pending escalation or confirmation timers after child close", () =
 test("contains termination adapter exceptions and still confirms its timeout", () => {
   jest.useFakeTimers();
   try {
-    const terminateChild = jest.fn(() => { throw new Error("termination failed"); });
+    const terminateChild = jest.fn(() => {
+      throw new Error("termination failed");
+    });
     const onUnconfirmed = jest.fn();
     scheduleChildTermination({}, { ...options([]), terminateChild }, onUnconfirmed);
     jest.advanceTimersByTime(125);
@@ -71,9 +73,10 @@ test("reports tree-termination outcomes for graceful and forced attempts", () =>
   jest.useFakeTimers();
   try {
     const outcomes = [];
-    const settings = { ...options([]), terminateChild: jest.fn()
-      .mockReturnValueOnce(false)
-      .mockReturnValueOnce(true) };
+    const settings = {
+      ...options([]),
+      terminateChild: jest.fn().mockReturnValueOnce(false).mockReturnValueOnce(true),
+    };
     scheduleChildTermination({}, settings, jest.fn(), (confirmed) => outcomes.push(confirmed));
     jest.advanceTimersByTime(50);
     expect(outcomes).toEqual([false, true]);

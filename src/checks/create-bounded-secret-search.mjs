@@ -1,9 +1,13 @@
 export function createBoundedSecretSearch(values, workLimit, findSecretEnds) {
   let consumedWork = 0;
   const createStream = findSecretEnds.createStream;
-  if (typeof createStream === "function") return createIncrementalSearch(values, workLimit, createStream);
+  if (typeof createStream === "function")
+    return createIncrementalSearch(values, workLimit, createStream);
   return function findSafeBoundary(pending) {
-    let boundary = Math.max(0, pending.length - Math.max(0, ...values.map((secret) => secret.length)));
+    let boundary = Math.max(
+      0,
+      pending.length - Math.max(0, ...values.map((secret) => secret.length)),
+    );
     const matchEnds = findSecretEnds(pending);
     if (matchEnds === null) return { boundary: 0, matchEnds: [], suppressed: true };
     consumedWork += matchEnds.work ?? pending.length;

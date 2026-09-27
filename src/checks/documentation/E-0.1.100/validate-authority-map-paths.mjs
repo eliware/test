@@ -1,6 +1,11 @@
 import { validateAuthorityReference } from "./validate-authority-reference.mjs";
 
-export async function validateAuthorityMapPaths({ root, file, crosslinks = [], structuredDocuments = [] }) {
+export async function validateAuthorityMapPaths({
+  root,
+  file,
+  crosslinks = [],
+  structuredDocuments = [],
+}) {
   for (const [index, link] of crosslinks.entries()) {
     if (!link || typeof link.path !== "string") {
       return `authority-map crosslinks[${index}] must contain a path.`;

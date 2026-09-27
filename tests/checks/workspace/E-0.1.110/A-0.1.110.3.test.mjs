@@ -58,7 +58,10 @@ test("reports missing workspace links and optional structured-record links", asy
   await mkdir(join(root, "specs"));
   await writeFile(join(root, "specs", "directives.json"), "{}");
   await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: "Workspace README.md must link specs/directives.json." }),
+    expect.objectContaining({
+      status: "fail",
+      message: "Workspace README.md must link specs/directives.json.",
+    }),
   );
   await writeFile(join(root, "README.md"), "runbooks/README.md specs/directives.json");
   await expect(run({ root })).resolves.toEqual({

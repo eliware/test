@@ -81,12 +81,16 @@ test("rejects a root .env file only when it is tracked or staged against ignore 
   const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-env-"));
   try {
     await writeFile(join(root, ".gitignore"), ignoreRules);
-    await expect(run({ root, readIgnoredPaths: readNoIgnoredPaths })).resolves.toMatchObject({ status: "pass" });
+    await expect(run({ root, readIgnoredPaths: readNoIgnoredPaths })).resolves.toMatchObject({
+      status: "pass",
+    });
     await expect(run({ root, readIgnoredPaths: async () => [".env"] })).resolves.toMatchObject({
       status: "fail",
       message: "Tracked or staged files match ignore rules: .env.",
     });
-    await expect(run({ root, readIgnoredPaths: async () => [".env.example"] })).resolves.toMatchObject({
+    await expect(
+      run({ root, readIgnoredPaths: async () => [".env.example"] }),
+    ).resolves.toMatchObject({
       status: "fail",
       message: "Tracked or staged files match ignore rules: .env.example.",
     });

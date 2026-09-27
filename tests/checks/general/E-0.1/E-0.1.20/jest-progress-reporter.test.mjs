@@ -2,9 +2,8 @@ import { afterEach, beforeEach, expect, test } from "@jest/globals";
 
 const writes = [];
 const originalWrite = process.stderr.write.bind(process.stderr);
-const { default: JestProgressReporter } = await import(
-  "../../../../../src/checks/general/E-0.1/E-0.1.20/jest-progress-reporter.mjs"
-);
+const { default: JestProgressReporter } =
+  await import("../../../../../src/checks/general/E-0.1/E-0.1.20/jest-progress-reporter.mjs");
 
 beforeEach(() => {
   writes.length = 0;
@@ -37,7 +36,9 @@ test("reports slow tests only above five seconds", () => {
     { path: "tests/slow.test.mjs" },
     { assertionResults: [{ title: "unknown duration" }, { title: "slow case", duration: 5_001 }] },
   );
-  expect(writes).toContain("[eliware-test-progress] slow tests/slow.test.mjs :: slow case :: 5.001s\n");
+  expect(writes).toContain(
+    "[eliware-test-progress] slow tests/slow.test.mjs :: slow case :: 5.001s\n",
+  );
 });
 
 test("reports a normal timed test without a slow marker", () => {

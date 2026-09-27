@@ -3,7 +3,9 @@ import { validateCoverageSourceShape } from "../../../../../../src/checks/genera
 import { expectedCoverageShape } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-source-shapes.mjs";
 
 function completeEvidence(shape) {
-  const lines = [...new Set(Object.values(shape.statementMap).map(({ start }) => String(start.line)))];
+  const lines = [
+    ...new Set(Object.values(shape.statementMap).map(({ start }) => String(start.line))),
+  ];
   return {
     statementMap: structuredClone(shape.statementMap),
     s: Object.fromEntries(Object.keys(shape.statementMap).map((id) => [id, 1])),
@@ -22,7 +24,9 @@ test("accepts evidence matching source statements, branches, functions, and line
     "export function decide(value) { if (value) return 1; return 0; }",
     "src/decision.mjs",
   );
-  expect(() => validateCoverageSourceShape("src/decision.mjs", completeEvidence(shape), shape)).not.toThrow();
+  expect(() =>
+    validateCoverageSourceShape("src/decision.mjs", completeEvidence(shape), shape),
+  ).not.toThrow();
 });
 
 test("derives expected lines when source line maps are absent", () => {

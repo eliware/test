@@ -8,6 +8,9 @@ export function createRepositoryContentCache(root, read, parseSource) {
   return {
     ...content,
     readParsed: createRepositoryParsedContentCache(root, content.readText),
-    parseAst: createRepositoryAstCache({ read: content.readText, ...(parseSource ? { parseSource } : {}) }),
+    parseAst: createRepositoryAstCache({
+      read: content.readText,
+      ...(parseSource ? { parseSource } : {}),
+    }),
   };
 }

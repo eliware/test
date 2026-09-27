@@ -17,9 +17,7 @@ export async function run(context) {
     const entries = context.repositoryInventory
       ? await context.repositoryInventory.directoryEntries(runbooks)
       : await readdir(runbooks, { withFileTypes: true });
-    const records = entries.filter(
-      (entry) => entry.isFile() && entry.name.endsWith(".json"),
-    );
+    const records = entries.filter((entry) => entry.isFile() && entry.name.endsWith(".json"));
     for (const record of records) {
       if (!new RegExp(`${record.name.replace(".", "\\.")}#id=[A-Za-z0-9._-]+`).test(runbookReadme))
         return fail(ruleId, `runbooks/README.md must index ${record.name} with its stable ID.`);

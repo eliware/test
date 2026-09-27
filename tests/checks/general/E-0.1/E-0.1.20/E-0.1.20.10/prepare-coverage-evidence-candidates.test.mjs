@@ -39,9 +39,9 @@ test("maps isolated run candidates to basenames and uses the injected inventory 
   const coverageDirectory = join(root, "isolated");
   await mkdir(join(root, "src"));
   await writeFile(join(root, "src", "expected.mjs"), "export const value = 1;\n");
-  const read = jest.fn(async (path) => path.endsWith("expected.mjs")
-    ? "export const value = 1;\n"
-    : "coverage report");
+  const read = jest.fn(async (path) =>
+    path.endsWith("expected.mjs") ? "export const value = 1;\n" : "coverage report",
+  );
   const inventory = createRepositoryInventory(root, { read });
   try {
     const context = await prepareCoverageEvidenceCandidates(root, {

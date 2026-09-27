@@ -36,11 +36,15 @@ export function validateCoverageSourceShape(file, data, expectedShape) {
     requireMatchingSourceEntries(file, data[map], expectedShape[map], metric);
     requireMatchingSourceEntries(file, data[counters], expectedShape[map], metric);
   }
-  const expectedLines = expectedShape.lineMap ?? Object.fromEntries(
-    [...new Set(Object.values(expectedShape.statementMap ?? {}).map(({ start }) => String(start.line)))].map(
-      (line) => [line, {}],
-    ),
-  );
+  const expectedLines =
+    expectedShape.lineMap ??
+    Object.fromEntries(
+      [
+        ...new Set(
+          Object.values(expectedShape.statementMap ?? {}).map(({ start }) => String(start.line)),
+        ),
+      ].map((line) => [line, {}]),
+    );
   if (Object.hasOwn(data, "l")) {
     requireMatchingSourceEntries(file, data.l, expectedLines, "line");
   }
@@ -57,9 +61,7 @@ export function validateCoverageSourceShape(file, data, expectedShape) {
       !Array.isArray(data.b?.[id]) ||
       data.b[id].length !== branch.locations.length
     ) {
-      throw new Error(
-        `Coverage report does not account for every source branch path in ${file}.`,
-      );
+      throw new Error(`Coverage report does not account for every source branch path in ${file}.`);
     }
   }
 }

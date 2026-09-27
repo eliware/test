@@ -10,7 +10,11 @@ test("requires Discord README topics", async () => {
     join(root, "README.md"),
     "purpose requirements setup configuration commands events intents permissions validation operations security support license",
   );
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.70.2", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.70.2",
+    status: "pass",
+    message: "",
+  });
   await rm(root, { recursive: true, force: true });
 });
 

@@ -21,7 +21,9 @@ test("fails when either validation or publication workflows are absent", async (
 
   const second = await createGhcrFixture();
   await rm(`${second.root}/.github/workflows/publish.yml`);
-  await expect(run({ root: second.root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  await expect(run({ root: second.root })).resolves.toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
 });
 
 test("reports workflow inspection failures", async () => {

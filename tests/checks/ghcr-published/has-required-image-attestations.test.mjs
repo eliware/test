@@ -34,14 +34,28 @@ test("requires an ordered matching signed attestation for every pushed image", (
   const image = "ghcr.io/eliware/example";
   const job = { steps: [push("build", image), attestation("build", image)] };
   expect(hasRequiredImageAttestations(publication, job)).toBe(true);
-  expect(hasRequiredImageAttestations(publication, { steps: [attestation("build", image), push("build", image)] })).toBe(false);
+  expect(
+    hasRequiredImageAttestations(publication, {
+      steps: [attestation("build", image), push("build", image)],
+    }),
+  ).toBe(false);
   expect(hasRequiredImageAttestations(publication, { steps: [push("build", image)] })).toBe(false);
 });
 
 test("rejects a missing digest identity or insufficient attestation permissions", () => {
-  const job = { steps: [push("bad id", "ghcr.io/eliware/example"), attestation("bad id", "ghcr.io/eliware/example")] };
+  const job = {
+    steps: [
+      push("bad id", "ghcr.io/eliware/example"),
+      attestation("bad id", "ghcr.io/eliware/example"),
+    ],
+  };
   expect(hasRequiredImageAttestations(publication, job)).toBe(false);
-  expect(hasRequiredImageAttestations({ document: { permissions: { ...permissions, attestations: "read" } } }, job)).toBe(false);
+  expect(
+    hasRequiredImageAttestations(
+      { document: { permissions: { ...permissions, attestations: "read" } } },
+      job,
+    ),
+  ).toBe(false);
 });
 
 test("requires a separate matching attestation for every image push", () => {
@@ -49,10 +63,14 @@ test("requires a separate matching attestation for every image push", () => {
   const second = "ghcr.io/eliware/second";
   const firstPush = push("first", first);
   const secondPush = push("second", second);
-  expect(hasRequiredImageAttestations(publication, {
-    steps: [firstPush, attestation("first", first), secondPush, attestation("second", second)],
-  })).toBe(true);
-  expect(hasRequiredImageAttestations(publication, {
-    steps: [firstPush, attestation("first", first), secondPush],
-  })).toBe(false);
+  expect(
+    hasRequiredImageAttestations(publication, {
+      steps: [firstPush, attestation("first", first), secondPush, attestation("second", second)],
+    }),
+  ).toBe(true);
+  expect(
+    hasRequiredImageAttestations(publication, {
+      steps: [firstPush, attestation("first", first), secondPush],
+    }),
+  ).toBe(false);
 });

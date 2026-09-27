@@ -5,7 +5,9 @@ export function validateAuthorityRegistryShape(entries) {
     .map((entry) => entry.repository);
   const uniqueRepositories = new Set(repositories);
   if (uniqueRepositories.size !== repositories.length) {
-    const duplicate = repositories.find((repository, index) => repositories.indexOf(repository) !== index);
+    const duplicate = repositories.find(
+      (repository, index) => repositories.indexOf(repository) !== index,
+    );
     return `Duplicate authority repository: ${duplicate}.`;
   }
   return null;

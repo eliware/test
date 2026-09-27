@@ -44,7 +44,10 @@ export async function findInfrastructureInternalIdentifiers(
     } catch {
       continue;
     }
-    if (!containsBinaryControlCharacters(content) && internalPatterns.some((pattern) => pattern.test(content))) {
+    if (
+      !containsBinaryControlCharacters(content) &&
+      internalPatterns.some((pattern) => pattern.test(content))
+    ) {
       findings.push(file);
     }
   }

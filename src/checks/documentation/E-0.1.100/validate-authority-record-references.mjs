@@ -17,7 +17,9 @@ export async function validateAuthorityRecordReferences({ root, file, document }
       label: `authority subject ${subject.id}`,
     });
     if (authorityError) return authorityError;
-    for (const [field, records] of Object.entries(subject).filter(([key]) => ["directives", "implementation", "evidence"].includes(key))) {
+    for (const [field, records] of Object.entries(subject).filter(([key]) =>
+      ["directives", "implementation", "evidence"].includes(key),
+    )) {
       const error = await validatePathRecords({
         root,
         file,

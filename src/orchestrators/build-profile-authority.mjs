@@ -47,7 +47,9 @@ export function buildProfileAuthority(documents, expectedVersion) {
       throw new Error(`Bundled convention profile ${source} has an invalid name.`);
     }
     if (document?.version !== expectedVersion) {
-      throw new Error(`Bundled convention profile ${source} must match Convention v${expectedVersion}.`);
+      throw new Error(
+        `Bundled convention profile ${source} must match Convention v${expectedVersion}.`,
+      );
     }
     if (authority.profiles[profile]) {
       throw new Error(`Duplicate bundled convention profile: ${profile}.`);

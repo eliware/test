@@ -17,10 +17,16 @@ test("runs a package script in the repository root", async () => {
 test("uses the invocation environment for npm resolution and child execution", async () => {
   const calls = [];
   const env = { npm_execpath: "C:/custom/npm-cli.js", TOKEN: "invocation-token" };
-  await runNpmScript("C:/repo", "typecheck", async (...args) => {
-    calls.push(args);
-    return { code: 0 };
-  }, undefined, env);
+  await runNpmScript(
+    "C:/repo",
+    "typecheck",
+    async (...args) => {
+      calls.push(args);
+      return { code: 0 };
+    },
+    undefined,
+    env,
+  );
 
   expect(calls[0][0]).toBe(process.execPath);
   expect(calls[0][1]).toContain("C:/custom/npm-cli.js");
@@ -30,10 +36,16 @@ test("uses the invocation environment for npm resolution and child execution", a
 
 test("uses the platform npm fallback when invocation omits npm_execpath", async () => {
   const calls = [];
-  await runNpmScript("C:/repo", "typecheck", async (...args) => {
-    calls.push(args);
-    return { code: 0 };
-  }, undefined, {});
+  await runNpmScript(
+    "C:/repo",
+    "typecheck",
+    async (...args) => {
+      calls.push(args);
+      return { code: 0 };
+    },
+    undefined,
+    {},
+  );
 
   if (process.platform === "win32") expect(calls[0][0]).toBe(process.execPath);
   else expect(calls[0][0]).toBe("npm");

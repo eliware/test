@@ -1,42 +1,9 @@
-import { assertCheckResult } from "../checks/check-result.mjs";
+import { executeConventionCheck } from "./execute-convention-check.mjs";
+import { filterConventionChecksForExecution } from "./filter-convention-checks-for-execution.mjs";
 
 export async function executeConventionChecks(checks, context, exemptions) {
   const results = [];
-  const byRuleId = new Map(checks.map((check) => [check.ruleId, check]));
-  if (context.modeRuleId && !byRuleId.has(context.modeRuleId)) {
-    throw new Error(`Validation mode ${context.modeRuleId} is unavailable in the selected checks.`);
-  }
-  const isExempt = (ruleId) => {
-    let current = byRuleId.get(ruleId);
-    while (current) {
-      if (exemptions.has(current.ruleId)) return true;
-      current = byRuleId.get(current.parentRuleId);
-    }
-    return false;
-  };
-  for (const check of checks) {
-    if (check.applicability === "advisory-only") continue;
-    if (isExempt(check.ruleId)) continue;
-    if (context.modeRuleId && check.ruleId !== context.modeRuleId) continue;
-    if (typeof check.run !== "function") throw new Error(`Selected check ${check.ruleId} is incomplete and cannot be executed.`);
-    context.timing?.start?.(check.ruleId);
-    try {
-      let result;
-      try {
-        result = await check.run(context);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Check threw a non-Error value.";
-        results.push({
-          ruleId: check.ruleId,
-          status: "fail",
-          message: `Check execution threw: ${message}`,
-        });
-        continue;
-      }
-      results.push(assertCheckResult(result, check.ruleId));
-    } finally {
-      context.timing?.end?.(check.ruleId);
-    }
-  }
+  for (const check of filterConventionChecksForExecution(checks, context, exemptions))
+    results.push(await executeConventionCheck(check, context));
   return results;
 }

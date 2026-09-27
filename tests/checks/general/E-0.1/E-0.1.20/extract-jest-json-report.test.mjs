@@ -2,11 +2,15 @@ import { expect, test } from "@jest/globals";
 import { extractJestJsonReport } from "../../../../../src/checks/general/E-0.1/E-0.1.20/extract-jest-json-report.mjs";
 
 test("extracts a complete nested Jest report and ignores trailing output", () => {
-  const output = 'prefix {"numFailedTestSuites":0,"testResults":[{"assertionResults":[{"title":"brace } in text"}]}]} trailing';
+  const output =
+    'prefix {"numFailedTestSuites":0,"testResults":[{"assertionResults":[{"title":"brace } in text"}]}]} trailing';
   expect(extractJestJsonReport(output)).toEqual({
     start: 7,
     end: output.indexOf(" trailing"),
-    report: { numFailedTestSuites: 0, testResults: [{ assertionResults: [{ title: "brace } in text" }] }] },
+    report: {
+      numFailedTestSuites: 0,
+      testResults: [{ assertionResults: [{ title: "brace } in text" }] }],
+    },
   });
 });
 

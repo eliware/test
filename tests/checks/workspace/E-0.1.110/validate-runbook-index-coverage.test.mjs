@@ -7,8 +7,10 @@ test("accepts records indexed by either workspace documentation surface", () => 
 });
 
 test("reports each unindexed record by filename", () => {
-  expect(validateRunbookIndexCoverage(
-    ["C:/repo/runbooks/deploy.json", "C:/repo/runbooks/notify.json"],
-    new Set(["C:/repo/runbooks/deploy.json"]),
-  )).toBe("Runbook records must be indexed: notify.json.");
+  expect(
+    validateRunbookIndexCoverage(
+      ["C:/repo/runbooks/deploy.json", "C:/repo/runbooks/notify.json"],
+      new Set(["C:/repo/runbooks/deploy.json"]),
+    ),
+  ).toBe("Runbook records must be indexed: notify.json.");
 });

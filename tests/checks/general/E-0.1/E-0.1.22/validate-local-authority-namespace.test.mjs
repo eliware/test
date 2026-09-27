@@ -56,7 +56,9 @@ test("reads authoritative namespace assignments through the repository inventory
   const repositoryInventory = {
     readParsed: async () => ({ subjects: [{ directives: [{ ids: ["E-0.0"] }] }] }),
   };
-  await expect(validateLocalAuthorityNamespace("/repo", directives, repositoryInventory)).resolves.toBeNull();
+  await expect(
+    validateLocalAuthorityNamespace("/repo", directives, repositoryInventory),
+  ).resolves.toBeNull();
 });
 
 test.each([
@@ -68,15 +70,21 @@ test.each([
 ])("rejects authority metadata without assigned namespaces: %j", async (authority) => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-namespace-"));
   await writeAuthority(root, authority);
-  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain("authority.json");
+  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain(
+    "authority.json",
+  );
   await rm(root, { recursive: true, force: true });
 });
 
 test("rejects unavailable or invalid authority metadata", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-namespace-"));
-  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain("authority.json");
+  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain(
+    "authority.json",
+  );
   await mkdir(join(root, "specs"));
   await writeFile(join(root, "specs", "authority.json"), "not json");
-  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain("authority.json");
+  await expect(validateLocalAuthorityNamespace(root, directives)).resolves.toContain(
+    "authority.json",
+  );
   await rm(root, { recursive: true, force: true });
 });

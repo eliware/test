@@ -2,7 +2,9 @@ import { expect, test } from "@jest/globals";
 import { validateWorkflowPreInstallCommands } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-pre-install-commands.mjs";
 
 test("allows safe reporting before install", () => {
-  expect(validateWorkflowPreInstallCommands("ci.yml", [{ command: "echo starting" }], 1)).toBeNull();
+  expect(
+    validateWorkflowPreInstallCommands("ci.yml", [{ command: "echo starting" }], 1),
+  ).toBeNull();
   expect(
     validateWorkflowPreInstallCommands(
       "ci.yml",
@@ -40,50 +42,49 @@ test("rejects file creation and other setup commands before install", () => {
 test("allows the approved setup actions and rejects unreviewed actions before install", () => {
   const install = { run: "npm ci" };
   const commands = [{ command: install.run, index: 1, step: install }];
-  expect(validateWorkflowPreInstallCommands(
-    "ci.yml",
-    commands,
-    1,
-    [{ uses: "actions/checkout@v6" }, install],
-  )).toBeNull();
-  expect(validateWorkflowPreInstallCommands(
-    "ci.yml",
-    commands,
-    1,
-    [{ uses: "someone/unreviewed-action@v1" }, install],
-  )).toContain("safe reporting");
-  expect(validateWorkflowPreInstallCommands(
-    "ci.yml",
-    [{ command: "npm ci", index: 2 }],
-    2,
-    [
+  expect(
+    validateWorkflowPreInstallCommands("ci.yml", commands, 1, [
+      { uses: "actions/checkout@v6" },
+      install,
+    ]),
+  ).toBeNull();
+  expect(
+    validateWorkflowPreInstallCommands("ci.yml", commands, 1, [
+      { uses: "someone/unreviewed-action@v1" },
+      install,
+    ]),
+  ).toContain("safe reporting");
+  expect(
+    validateWorkflowPreInstallCommands("ci.yml", [{ command: "npm ci", index: 2 }], 2, [
       { uses: "actions/checkout@v6" },
       { uses: "someone/unreviewed-action@v1" },
       { run: "npm ci" },
-    ],
-  )).toContain("safe reporting");
+    ]),
+  ).toContain("safe reporting");
 });
 
 test("allows setup-node v7 in CI and publication workflows", () => {
   const setup = { uses: "actions/setup-node@v7" };
-  expect(validateWorkflowPreInstallCommands(
-    "publish.yml job validate",
-    [{ command: "npm ci", index: 1 }],
-    1,
-    [setup, { run: "npm ci" }],
-  )).toBeNull();
-  expect(validateWorkflowPreInstallCommands(
-    "ci.yml job test",
-    [{ command: "npm ci", index: 1 }],
-    1,
-    [setup, { run: "npm ci" }],
-  )).toBeNull();
-  expect(validateWorkflowPreInstallCommands(
-    "ci.yml job test",
-    [{ command: "npm ci", index: 1 }],
-    1,
-    [{ uses: "actions/setup-node@v6" }, { run: "npm ci" }],
-  )).toContain("approved actions");
+  expect(
+    validateWorkflowPreInstallCommands(
+      "publish.yml job validate",
+      [{ command: "npm ci", index: 1 }],
+      1,
+      [setup, { run: "npm ci" }],
+    ),
+  ).toBeNull();
+  expect(
+    validateWorkflowPreInstallCommands("ci.yml job test", [{ command: "npm ci", index: 1 }], 1, [
+      setup,
+      { run: "npm ci" },
+    ]),
+  ).toBeNull();
+  expect(
+    validateWorkflowPreInstallCommands("ci.yml job test", [{ command: "npm ci", index: 1 }], 1, [
+      { uses: "actions/setup-node@v6" },
+      { run: "npm ci" },
+    ]),
+  ).toContain("approved actions");
 });
 
 test("ignores unapproved actions after install", () => {

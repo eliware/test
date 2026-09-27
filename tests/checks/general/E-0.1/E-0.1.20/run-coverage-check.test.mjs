@@ -32,11 +32,11 @@ jest.unstable_mockModule(
   () => ({ removeRunCoverageArtifacts }),
 );
 
-const { runCoverageCheck } = await import(
-  "../../../../../src/checks/general/E-0.1/E-0.1.20/run-coverage-check.mjs"
-);
+const { runCoverageCheck } =
+  await import("../../../../../src/checks/general/E-0.1/E-0.1.20/run-coverage-check.mjs");
 const ruleId = "E-0.1.130.14";
-const run = (context, readEvidence, remove) => runCoverageCheck(context, ruleId, readEvidence, remove);
+const run = (context, readEvidence, remove) =>
+  runCoverageCheck(context, ruleId, readEvidence, remove);
 const evidence = { totals: {}, aggregateGaps: [], gaps: [] };
 
 function resetValidators() {
@@ -52,7 +52,11 @@ function resetValidators() {
 beforeEach(resetValidators);
 
 test("skips disabled coverage and maps unavailable Jest results", async () => {
-  await expect(run({ executeJest: false })).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  await expect(run({ executeJest: false })).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
   expect(readCoverageEvidenceFromCandidates).not.toHaveBeenCalled();
 
   await expect(run({ executeJest: true, jestResult: { code: 1 } })).resolves.toEqual({
@@ -70,14 +74,18 @@ test("skips disabled coverage and maps unavailable Jest results", async () => {
 
 test("includes prior cleanup diagnostics and maps timed-out runs", async () => {
   removeRunCoverageArtifacts.mockResolvedValueOnce("current cleanup failed");
-  await expect(run({
-    executeJest: true,
-    jestResult: { code: 1, cleanupError: "prior cleanup failed" },
-  })).resolves.toMatchObject({
+  await expect(
+    run({
+      executeJest: true,
+      jestResult: { code: 1, cleanupError: "prior cleanup failed" },
+    }),
+  ).resolves.toMatchObject({
     message: expect.stringContaining("prior cleanup failed\ncurrent cleanup failed"),
   });
 
-  await expect(run({ executeJest: true, jestResult: { code: 0, timedOut: true } })).resolves.toMatchObject({
+  await expect(
+    run({ executeJest: true, jestResult: { code: 0, timedOut: true } }),
+  ).resolves.toMatchObject({
     status: "fail",
     message: "Jest results are unavailable or indicate a failed test run.",
   });
@@ -94,12 +102,11 @@ test("loads evidence with freshness and inventory context before assessing it", 
   };
 
   await expect(run(context)).resolves.toEqual({ ruleId, status: "pass", message: "" });
-  expect(readCoverageEvidenceFromCandidates).toHaveBeenCalledWith(
-    "/repo",
-    "result",
-    100,
-    { requireFresh: true, expectedFiles: undefined, inventory: context.repositoryInventory },
-  );
+  expect(readCoverageEvidenceFromCandidates).toHaveBeenCalledWith("/repo", "result", 100, {
+    requireFresh: true,
+    expectedFiles: undefined,
+    inventory: context.repositoryInventory,
+  });
   expect(assessCoverageEvidence).toHaveBeenCalledWith(evidence, { focusedPath: false });
   expect(removeRunCoverageArtifacts).toHaveBeenCalledWith(context, expect.any(Function));
 });
@@ -116,23 +123,26 @@ test("selects focused evidence and attaches the run-specific directory", async (
   };
 
   await expect(run(context)).resolves.toEqual({ ruleId, status: "pass", message: "" });
-  expect(readCoverageEvidenceFromCandidates).toHaveBeenCalledWith(
-    "/repo",
-    "result",
-    100,
-    { requireFresh: true, expectedFiles: ["src/focus.mjs"], coverageDirectory: "/run/coverage" },
-  );
+  expect(readCoverageEvidenceFromCandidates).toHaveBeenCalledWith("/repo", "result", 100, {
+    requireFresh: true,
+    expectedFiles: ["src/focus.mjs"],
+    coverageDirectory: "/run/coverage",
+  });
   expect(assessCoverageEvidence).toHaveBeenCalledWith(evidence, { focusedPath: true });
 });
 
 test("formats aggregate and file-level gaps from coverage evidence", async () => {
   assessCoverageEvidence.mockReturnValueOnce({ aggregateGaps: ["branches"], hasFileGaps: false });
-  await expect(run({ executeJest: true, root: "/repo", jestResult: { code: 0 } })).resolves.toMatchObject({
+  await expect(
+    run({ executeJest: true, root: "/repo", jestResult: { code: 0 } }),
+  ).resolves.toMatchObject({
     status: "fail",
     message: "coverage gaps\nAggregate gaps: branches.",
   });
   assessCoverageEvidence.mockReturnValueOnce({ aggregateGaps: [], hasFileGaps: true });
-  await expect(run({ executeJest: true, root: "/repo", jestResult: { code: 0 } })).resolves.toMatchObject({
+  await expect(
+    run({ executeJest: true, root: "/repo", jestResult: { code: 0 } }),
+  ).resolves.toMatchObject({
     status: "fail",
     message: "coverage gaps\nAggregate gaps: file-level gaps.",
   });
@@ -141,16 +151,20 @@ test("formats aggregate and file-level gaps from coverage evidence", async () =>
 test("maps evidence errors and cleanup failures into the final result", async () => {
   readCoverageEvidenceFromCandidates.mockRejectedValueOnce(new Error("evidence missing"));
   removeRunCoverageArtifacts.mockResolvedValueOnce("cleanup failed");
-  await expect(run({ executeJest: true, root: "/repo", jestResult: { code: 0 } })).resolves.toEqual({
-    ruleId,
-    status: "fail",
-    message: "evidence missing\ncleanup failed",
-  });
+  await expect(run({ executeJest: true, root: "/repo", jestResult: { code: 0 } })).resolves.toEqual(
+    {
+      ruleId,
+      status: "fail",
+      message: "evidence missing\ncleanup failed",
+    },
+  );
 
   removeRunCoverageArtifacts.mockResolvedValueOnce("cleanup failed");
-  await expect(run({ executeJest: true, root: "/repo", jestResult: { code: 0 } })).resolves.toEqual({
-    ruleId,
-    status: "fail",
-    message: "cleanup failed",
-  });
+  await expect(run({ executeJest: true, root: "/repo", jestResult: { code: 0 } })).resolves.toEqual(
+    {
+      ruleId,
+      status: "fail",
+      message: "cleanup failed",
+    },
+  );
 });

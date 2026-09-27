@@ -12,6 +12,17 @@ test("accepts the public package publication contract", () => {
   expect(validatePublicationMetadata(validPackage)).toBeNull();
 });
 
+test("allows the self-hosted pack script only when requested", () => {
+  const selfHostedPackage = {
+    ...validPackage,
+    scripts: { pack: "node bin/eliware-test.mjs --pack" },
+  };
+  expect(validatePublicationMetadata(selfHostedPackage, { selfHosted: true })).toBeNull();
+  expect(validatePublicationMetadata(selfHostedPackage)).toContain(
+    "Public npm packages must define pack=eliware-test --pack.",
+  );
+});
+
 test.each([
   { engines: { node: ">=25" } },
   { publishConfig: {} },

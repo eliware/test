@@ -14,5 +14,7 @@ test("rejects exemptions for unknown checks", () => {
 });
 
 test("validates CLI ignored IDs against the complete registry", () => {
-  expect(() => validateExemptionIds({ eliware: { exempt: [] } }, [{ ruleId: "E-0.1" }], ["E-9"])).toThrow("Unknown convention exemption rule ID: E-9");
+  expect(() =>
+    validateExemptionIds({ eliware: { exempt: [] } }, [{ ruleId: "E-0.1" }], ["E-9"]),
+  ).toThrow("Unknown convention exemption rule ID: E-9");
 });

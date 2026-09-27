@@ -38,8 +38,9 @@ test("falls back from an explicitly invalid first candidate to a valid candidate
     if (path === "invalid.json") return null;
     return { totals: { lines: 100 }, gaps: [] };
   });
-  await expect(selectCoverageEvidence(["invalid.json", "valid.json"], readCandidate))
-    .resolves.toMatchObject({ source: "valid.json" });
+  await expect(
+    selectCoverageEvidence(["invalid.json", "valid.json"], readCandidate),
+  ).resolves.toMatchObject({ source: "valid.json" });
   expect(readCandidate).toHaveBeenCalledTimes(2);
 });
 
@@ -69,8 +70,9 @@ test("continues after detailed coverage validation rejects a candidate", async (
     }
     return { totals: { lines: 100 }, gaps: [] };
   });
-  await expect(selectCoverageEvidence(["incomplete.json", "valid.json"], readCandidate))
-    .resolves.toMatchObject({ source: "valid.json" });
+  await expect(
+    selectCoverageEvidence(["incomplete.json", "valid.json"], readCandidate),
+  ).resolves.toMatchObject({ source: "valid.json" });
   expect(readCandidate).toHaveBeenCalledTimes(2);
 
   await expect(
@@ -87,8 +89,9 @@ test("falls back when detailed evidence has no source-derived shape", async () =
     }
     return { totals: { lines: 100 }, gaps: [] };
   });
-  await expect(selectCoverageEvidence(["unshaped.json", "valid.json"], readCandidate))
-    .resolves.toMatchObject({ source: "valid.json" });
+  await expect(
+    selectCoverageEvidence(["unshaped.json", "valid.json"], readCandidate),
+  ).resolves.toMatchObject({ source: "valid.json" });
   expect(readCandidate).toHaveBeenCalledTimes(2);
 });
 
@@ -124,14 +127,16 @@ test("classifies missing and summary-only candidates as unusable", async () => {
 });
 
 test("uses text evidence only when it is parseable and fresh evidence is not required", async () => {
-  await expect(selectCoverageEvidence([], jest.fn(), text, false, ["src/example.mjs"])).resolves.toMatchObject({
+  await expect(
+    selectCoverageEvidence([], jest.fn(), text, false, ["src/example.mjs"]),
+  ).resolves.toMatchObject({
     source: "Jest text output",
     totals: { lines: 100 },
     gaps: [],
   });
-  await expect(selectCoverageEvidence([], jest.fn(), text, true, ["src/example.mjs"])).rejects.toThrow(
-    "cannot prove freshness",
-  );
+  await expect(
+    selectCoverageEvidence([], jest.fn(), text, true, ["src/example.mjs"]),
+  ).rejects.toThrow("cannot prove freshness");
   await expect(selectCoverageEvidence([], jest.fn(), "not a report")).rejects.toThrow(
     "Coverage evidence is missing",
   );

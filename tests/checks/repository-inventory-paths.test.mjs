@@ -1,6 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { inventoryDirectory, inventoryPath, createDirectoryReadCache } from "../../src/checks/repository-inventory-paths.mjs";
+import {
+  inventoryDirectory,
+  inventoryPath,
+  createDirectoryReadCache,
+} from "../../src/checks/repository-inventory-paths.mjs";
 
 test("normalizes relative and absolute repository paths", () => {
   const root = join(process.cwd(), "inventory-fixture");

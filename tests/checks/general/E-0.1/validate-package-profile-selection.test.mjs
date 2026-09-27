@@ -2,7 +2,22 @@ import { expect, test } from "@jest/globals";
 import { validatePackageProfileSelection } from "../../../../src/checks/general/E-0.1/validate-package-profile-selection.mjs";
 
 test("accepts each declared Eliware profile", () => {
-  for (const profile of ["general", "application", "cli", "web", "discord", "mcp-server", "library", "documentation", "workspace", "infrastructure", "npm-published", "ghcr-published", "private", "fork"]) {
+  for (const profile of [
+    "general",
+    "application",
+    "cli",
+    "web",
+    "discord",
+    "mcp-server",
+    "library",
+    "documentation",
+    "workspace",
+    "infrastructure",
+    "npm-published",
+    "ghcr-published",
+    "private",
+    "fork",
+  ]) {
     expect(validatePackageProfileSelection({ eliware: { apply: [profile] } })).toBeNull();
   }
 });

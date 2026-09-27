@@ -9,7 +9,9 @@ export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run({ root, repositoryInventory }) {
   let workflows;
-  try { workflows = await readWorkflows(root, repositoryInventory); } catch (error) {
+  try {
+    workflows = await readWorkflows(root, repositoryInventory);
+  } catch (error) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
   for (const { name, document } of workflows) {

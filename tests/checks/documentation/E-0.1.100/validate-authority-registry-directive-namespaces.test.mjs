@@ -5,12 +5,16 @@ test("requires every namespace to use the directive identifier format", () => {
   expect(validateAuthorityRegistryDirectiveNamespaces({ repository: "example" })).toContain(
     "valid directiveNamespaces",
   );
-  expect(validateAuthorityRegistryDirectiveNamespaces({
-    repository: "example",
-    directiveNamespaces: ["E-0.1", "A-2.4.6"],
-  })).toBeNull();
-  expect(validateAuthorityRegistryDirectiveNamespaces({
-    repository: "example",
-    directiveNamespaces: ["invalid"],
-  })).toContain("valid directiveNamespaces");
+  expect(
+    validateAuthorityRegistryDirectiveNamespaces({
+      repository: "example",
+      directiveNamespaces: ["E-0.1", "A-2.4.6"],
+    }),
+  ).toBeNull();
+  expect(
+    validateAuthorityRegistryDirectiveNamespaces({
+      repository: "example",
+      directiveNamespaces: ["invalid"],
+    }),
+  ).toContain("valid directiveNamespaces");
 });

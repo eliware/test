@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../src/checks/npm-published/E-0.1.140/E-0.1.140.1.mjs";
 
 test("requires the public package publication contract", async () => {
@@ -40,6 +40,36 @@ test("reports pack diagnostics when the pack stage fails", async () => {
   });
 });
 
+test("accepts the local pack script and still runs pack validation", async () => {
+  const packageJson = {
+    name: "@eliware/test",
+    engines: { node: ">=26 <27" },
+    publishConfig: { provenance: true },
+    files: ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs/", "specs/"],
+    scripts: { pack: "node bin/eliware-test.mjs --pack" },
+  };
+  const manifest = JSON.stringify([
+    {
+      name: "@eliware/test",
+      files: [
+        "package.json",
+        "README.md",
+        "LICENSE",
+        "RELEASE_NOTES.md",
+        "docs/README.md",
+        "specs/README.md",
+      ].map((path) => ({ path })),
+    },
+  ]);
+  const runPack = jest.fn(async () => ({ code: 0, stdout: manifest, stderr: "" }));
+  await expect(
+    run({ packageJson, executePack: true, mode: "pack", runPack }),
+  ).resolves.toMatchObject({
+    status: "pass",
+  });
+  expect(runPack).toHaveBeenCalledTimes(1);
+});
+
 const validPackage = {
   engines: { node: ">=26 <27" },
   publishConfig: { provenance: true },
@@ -59,16 +89,54 @@ test.each([
 });
 
 test("handles successful and skipped pack execution", async () => {
-  await expect(run({ packageJson: validPackage, executePack: true, mode: "other", runPack: async () => ({ code: 0 }) })).resolves.toEqual(
-    expect.objectContaining({ status: "pass" }),
-  );
-  await expect(run({ packageJson: validPackage, executePack: true, mode: "pack", runPack: async () => ({ code: 0, stdout: JSON.stringify([{ files: ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "docs/README.md", "specs/README.md"].map((path) => ({ path })) }]) }) })).resolves.toEqual(
-    expect.objectContaining({ status: "pass" }),
-  );
-  await expect(run({ packageJson: validPackage, executePack: true, mode: "pack", runPack: async () => ({ code: 1, stdout: "", stderr: "" }) })).resolves.toEqual(
-    expect.objectContaining({ message: "npm pack failed without diagnostics." }),
-  );
-  await expect(run({ packageJson: validPackage, executePack: true, mode: "pack", runPack: async () => { throw new Error("spawn failed"); } })).resolves.toEqual(
+  await expect(
+    run({
+      packageJson: validPackage,
+      executePack: true,
+      mode: "other",
+      runPack: async () => ({ code: 0 }),
+    }),
+  ).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await expect(
+    run({
+      packageJson: validPackage,
+      executePack: true,
+      mode: "pack",
+      runPack: async () => ({
+        code: 0,
+        stdout: JSON.stringify([
+          {
+            files: [
+              "package.json",
+              "README.md",
+              "LICENSE",
+              "RELEASE_NOTES.md",
+              "docs/README.md",
+              "specs/README.md",
+            ].map((path) => ({ path })),
+          },
+        ]),
+      }),
+    }),
+  ).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await expect(
+    run({
+      packageJson: validPackage,
+      executePack: true,
+      mode: "pack",
+      runPack: async () => ({ code: 1, stdout: "", stderr: "" }),
+    }),
+  ).resolves.toEqual(expect.objectContaining({ message: "npm pack failed without diagnostics." }));
+  await expect(
+    run({
+      packageJson: validPackage,
+      executePack: true,
+      mode: "pack",
+      runPack: async () => {
+        throw new Error("spawn failed");
+      },
+    }),
+  ).resolves.toEqual(
     expect.objectContaining({ message: "npm pack could not be started: spawn failed" }),
   );
 });

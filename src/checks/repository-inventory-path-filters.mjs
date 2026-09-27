@@ -1,6 +1,7 @@
 const repositoryIgnoredPath = /(?:^|\/)test-results(?:\/|$)/u;
 const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
-const fixturePath = /(?:^|\/)(?:generated|test-fixtures|fixtures|__fixtures__|__snapshots__)(?:\/|$)/u;
+const fixturePath =
+  /(?:^|\/)(?:generated|test-fixtures|fixtures|__fixtures__|__snapshots__)(?:\/|$)/u;
 
 export function isRepositoryIgnoredPath(path) {
   return repositoryIgnoredPath.test(path);

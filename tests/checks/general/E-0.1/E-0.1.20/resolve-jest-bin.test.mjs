@@ -56,6 +56,7 @@ test("returns no path when package resolution or bin metadata is invalid", async
   } finally {
     await rm(fixture.root, { recursive: true, force: true });
   }
-  expect(resolveJestBin(createRequire(join(tmpdir(), "no-consumer-package.json")), "jest"))
-    .toBeUndefined();
+  expect(
+    resolveJestBin(createRequire(join(tmpdir(), "no-consumer-package.json")), "jest"),
+  ).toBeUndefined();
 });

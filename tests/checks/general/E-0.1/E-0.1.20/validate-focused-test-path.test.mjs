@@ -7,10 +7,14 @@ import { validateFocusedTestPath } from "../../../../../src/checks/general/E-0.1
 test("validates focused test paths before execution", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
   await mkdir(join(root, "tests"));
-  await writeFile(join(root, "tests", "sample.test.mjs"), "test(\"sample\", () => {});");
+  await writeFile(join(root, "tests", "sample.test.mjs"), 'test("sample", () => {});');
   await expect(validateFocusedTestPath(root)).resolves.toBeNull();
-  await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toBe("tests/sample.test.mjs");
-  await expect(validateFocusedTestPath(root, ["tests/missing.test.mjs"])).rejects.toThrow("does not exist");
+  await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toBe(
+    "tests/sample.test.mjs",
+  );
+  await expect(validateFocusedTestPath(root, ["tests/missing.test.mjs"])).rejects.toThrow(
+    "does not exist",
+  );
   await expect(validateFocusedTestPath(root, ["tests"])).rejects.toThrow("regular file");
   await rm(root, { recursive: true, force: true });
 });
@@ -25,10 +29,12 @@ test("rejects traversal and symlinks that escape the repository", async () => {
   await writeFile(join(outside, "linked.test.mjs"), "test('linked', () => {});");
   try {
     await symlink(outside, join(tests, "external"), "junction");
-    await expect(validateFocusedTestPath(root, [`tests/../../${basename(outsideFile)}`]))
-      .rejects.toThrow("must resolve inside the repository");
-    await expect(validateFocusedTestPath(root, ["tests/external/linked.test.mjs"]))
-      .rejects.toThrow("must resolve inside the repository");
+    await expect(
+      validateFocusedTestPath(root, [`tests/../../${basename(outsideFile)}`]),
+    ).rejects.toThrow("must resolve inside the repository");
+    await expect(validateFocusedTestPath(root, ["tests/external/linked.test.mjs"])).rejects.toThrow(
+      "must resolve inside the repository",
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
     await rm(outside, { recursive: true, force: true });

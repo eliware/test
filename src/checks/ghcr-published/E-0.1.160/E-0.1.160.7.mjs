@@ -15,25 +15,26 @@ export async function run(context) {
   const { root } = context;
   try {
     const publications = (await readWorkflows(root, context)).filter(isPublicationWorkflow);
-    const published = publications.some((publication) => publicationJobs(publication).some(({ job }) => {
-      const push = findImagePush(job);
-      const details = imageDetails(push);
-      return Boolean(push && details.image && details.digestReference);
-    }));
-    const usesLatest = publications.some((publication) => publicationJobs(publication).some(({ job }) =>
-      steps(job).some((step) =>
-        step?.uses === "docker/build-push-action@v6" &&
-        imageTags(step?.with?.tags).some((tag) => /:latest$/iu.test(tag)),
-      ),
-    ));
-    const latestDocumented = !usesLatest || hasDocumentedLatestAlias(
-      await readRepositoryText(context, join(root, "README.md")),
+    const published = publications.some((publication) =>
+      publicationJobs(publication).some(({ job }) => {
+        const push = findImagePush(job);
+        const details = imageDetails(push);
+        return Boolean(push && details.image && details.digestReference);
+      }),
     );
-    if (
-      publications.length === 0 ||
-      !published ||
-      !latestDocumented
-    )
+    const usesLatest = publications.some((publication) =>
+      publicationJobs(publication).some(({ job }) =>
+        steps(job).some(
+          (step) =>
+            step?.uses === "docker/build-push-action@v6" &&
+            imageTags(step?.with?.tags).some((tag) => /:latest$/iu.test(tag)),
+        ),
+      ),
+    );
+    const latestDocumented =
+      !usesLatest ||
+      hasDocumentedLatestAlias(await readRepositoryText(context, join(root, "README.md")));
+    if (publications.length === 0 || !published || !latestDocumented)
       return fail(
         ruleId,
         "GHCR release identity must use an exact version tag and recorded digest, not latest.",

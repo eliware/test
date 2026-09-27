@@ -13,9 +13,8 @@ jest.unstable_mockModule("../../src/checks/create-repository-parsed-content-cach
   createRepositoryParsedContentCache,
 }));
 
-const { createRepositoryContentCache } = await import(
-  "../../src/checks/create-repository-inventory-content.mjs"
-);
+const { createRepositoryContentCache } =
+  await import("../../src/checks/create-repository-inventory-content.mjs");
 
 beforeEach(() => {
   jest.resetAllMocks();

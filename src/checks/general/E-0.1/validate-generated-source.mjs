@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const generatedPattern = /^(?:\s*(?:\/\/|\/\*|\*\/?))?\s*(?:webpackJsonp|__webpack_require__|parcelRequire|rollupStart|sourceMappingURL=)/mu;
+const generatedPattern =
+  /^(?:\s*(?:\/\/|\/\*|\*\/?))?\s*(?:webpackJsonp|__webpack_require__|parcelRequire|rollupStart|sourceMappingURL=)/mu;
 
 export async function findGeneratedSource(root, sourceFiles, readText) {
   const findings = [];

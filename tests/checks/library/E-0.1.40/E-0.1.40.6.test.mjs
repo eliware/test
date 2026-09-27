@@ -2,9 +2,11 @@ import { expect, jest, test } from "@jest/globals";
 import { run } from "../../../../src/checks/library/E-0.1.40/E-0.1.40.6.mjs";
 
 test("requires and executes typecheck", async () => {
-  await expect(
-    run({ packageJson: { scripts: { typecheck: "tsc" } } }),
-  ).resolves.toEqual({ ruleId: "E-0.1.40.6", status: "pass", message: "" });
+  await expect(run({ packageJson: { scripts: { typecheck: "tsc" } } })).resolves.toEqual({
+    ruleId: "E-0.1.40.6",
+    status: "pass",
+    message: "",
+  });
   await expect(
     run({
       packageJson: { scripts: { typecheck: "tsc" } },
@@ -46,13 +48,19 @@ test("requires and executes typecheck", async () => {
       },
     }),
   ).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: "typecheck could not be started: spawn failed" }),
+    expect.objectContaining({
+      status: "fail",
+      message: "typecheck could not be started: spawn failed",
+    }),
   );
   await expect(run({ packageJson: { scripts: {} } })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
   await expect(run({ packageJson: { scripts: { typecheck: "echo skipped" } } })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("recognized direct") }),
+    expect.objectContaining({
+      status: "fail",
+      message: expect.stringContaining("recognized direct"),
+    }),
   );
 });
 
@@ -62,8 +70,22 @@ test("executes only for aggregate or matching typecheck mode", async () => {
     calls.push(name);
     return { code: 0, stdout: "", stderr: "" };
   };
-  await expect(run({ packageJson: { scripts: { typecheck: "tsc" } }, executePackageChecks: true, mode: "typecheck", runScript })).resolves.toMatchObject({ status: "pass" });
-  await expect(run({ packageJson: { scripts: { typecheck: "tsc" } }, executePackageChecks: true, mode: "build", runScript })).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run({
+      packageJson: { scripts: { typecheck: "tsc" } },
+      executePackageChecks: true,
+      mode: "typecheck",
+      runScript,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run({
+      packageJson: { scripts: { typecheck: "tsc" } },
+      executePackageChecks: true,
+      mode: "build",
+      runScript,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
   expect(calls).toEqual(["typecheck"]);
 });
 

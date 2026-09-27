@@ -1,16 +1,19 @@
 import { createOutdatedDependenciesOutput } from "./create-outdated-dependencies-output.mjs";
 import { createOutdatedDependenciesOverflowHandler } from "./create-outdated-dependencies-overflow-handler.mjs";
 
-export function collectOutdatedDependenciesProcessOutput(child, {
-  maxStdoutLength,
-  maxStderrLength,
-  terminationGracePeriodMs,
-  terminateProcess,
-  platform,
-  killProcess,
-  killTree,
-  env,
-}) {
+export function collectOutdatedDependenciesProcessOutput(
+  child,
+  {
+    maxStdoutLength,
+    maxStderrLength,
+    terminationGracePeriodMs,
+    terminateProcess,
+    platform,
+    killProcess,
+    killTree,
+    env,
+  },
+) {
   return new Promise((resolve, reject) => {
     const output = createOutdatedDependenciesOutput(maxStdoutLength, maxStderrLength);
     let oversized = false;

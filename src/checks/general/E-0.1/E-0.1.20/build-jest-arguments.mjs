@@ -22,9 +22,7 @@ export function buildJestArguments(args = []) {
   }
   const focusedPath = focusedPathFrom(args);
   const forwarded = args.filter(
-    (argument) =>
-      argument !== focusedPath &&
-      argument !== "--debug-timing",
+    (argument) => argument !== focusedPath && argument !== "--debug-timing",
   );
   const concurrency = ["--runInBand"];
   const timing = args.includes("--debug-timing") ? ["--json"] : [];

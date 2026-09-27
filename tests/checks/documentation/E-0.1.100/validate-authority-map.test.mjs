@@ -17,9 +17,8 @@ jest.unstable_mockModule(
   () => ({ validateAuthorityRegistry }),
 );
 
-const { validateAuthorityMap } = await import(
-  "../../../../src/checks/documentation/E-0.1.100/validate-authority-map.mjs"
-);
+const { validateAuthorityMap } =
+  await import("../../../../src/checks/documentation/E-0.1.100/validate-authority-map.mjs");
 
 beforeEach(() => {
   jest.resetAllMocks();

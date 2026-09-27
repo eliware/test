@@ -24,7 +24,10 @@ test("reports a timed-out process", () => {
 
 test("does not invoke timeout repeatedly after the terminal callback", () => {
   let callback;
-  const setTimeoutSpy = jest.spyOn(global, "setTimeout").mockImplementation((handler) => { callback = handler; return 1; });
+  const setTimeoutSpy = jest.spyOn(global, "setTimeout").mockImplementation((handler) => {
+    callback = handler;
+    return 1;
+  });
   const clearTimeoutSpy = jest.spyOn(global, "clearTimeout").mockImplementation(() => {});
   const onTimeout = jest.fn();
   const timeout = createProgressTimeout({ timeoutMs: 5, onTimeout });

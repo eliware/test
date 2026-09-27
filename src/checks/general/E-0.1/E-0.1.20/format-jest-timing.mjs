@@ -13,7 +13,9 @@ export function formatTestResult(test, result) {
   for (const assertion of result.assertionResults ?? []) {
     if (!Number.isFinite(assertion.duration)) continue;
     const duration = assertion.duration / 1000;
-    lines.push(`  ${assertion.status === "passed" ? "PASS" : assertion.status.toUpperCase()} ${assertion.fullName ?? assertion.title} — ${duration.toFixed(3)}s`);
+    lines.push(
+      `  ${assertion.status === "passed" ? "PASS" : assertion.status.toUpperCase()} ${assertion.fullName ?? assertion.title} — ${duration.toFixed(3)}s`,
+    );
   }
   return lines;
 }

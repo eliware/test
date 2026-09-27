@@ -25,6 +25,8 @@ test("uses the shared file list and skips non-source files", async () => {
   await mkdir(join(root, "src"));
   await writeFile(join(root, "src", "module.mjs"), "export const port = process.env.PORT;");
   await writeFile(join(root, "README.md"), "process.env.IGNORED");
-  await expect(discoverEnvironmentReferences(root, ["src/module.mjs", "tests/example.mjs", "README.md"])).resolves.toEqual(["PORT"]);
+  await expect(
+    discoverEnvironmentReferences(root, ["src/module.mjs", "tests/example.mjs", "README.md"]),
+  ).resolves.toEqual(["PORT"]);
   await rm(root, { recursive: true, force: true });
 });

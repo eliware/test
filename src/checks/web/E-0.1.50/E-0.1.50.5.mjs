@@ -11,7 +11,10 @@ export function run({ packageJson }) {
       return fail(ruleId, `Web applications must define a ${name} script.`);
     const command = packageJson.scripts[name].trim().split(/\s+/u)[0].split(/[\\/]/u).pop();
     if (command !== name)
-      return fail(ruleId, `Web applications' ${name} script must invoke the local ${name} command directly.`);
+      return fail(
+        ruleId,
+        `Web applications' ${name} script must invoke the local ${name} command directly.`,
+      );
   }
   return pass(ruleId);
 }

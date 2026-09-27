@@ -9,13 +9,22 @@ test("requires non-empty Features and Usage sections without requiring a Purpose
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ ruleId: "E-0.1.1", status: "fail" }),
   );
-  await writeFile(join(root, "README.md"), "# Fixture\n\n## Features\nA test repository.\n\n## Usage\nRun its tests.\n");
+  await writeFile(
+    join(root, "README.md"),
+    "# Fixture\n\n## Features\nA test repository.\n\n## Usage\nRun its tests.\n",
+  );
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-0.1.1", status: "pass", message: "" });
-  await writeFile(join(root, "README.md"), "# Fixture\n\n## Features\nA test repository.\n\n## Usage\n\n");
+  await writeFile(
+    join(root, "README.md"),
+    "# Fixture\n\n## Features\nA test repository.\n\n## Usage\n\n",
+  );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await writeFile(join(root, "README.md"), "# Fixture\n\n## Usage\nRun its tests.\n");
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await writeFile(join(root, "README.md"), "# Fixture\n\n## Features\nA test repository.\n\n## Usage\nRun its tests.\n");
+  await writeFile(
+    join(root, "README.md"),
+    "# Fixture\n\n## Features\nA test repository.\n\n## Usage\nRun its tests.\n",
+  );
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-0.1.1", status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });
 });

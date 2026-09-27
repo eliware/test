@@ -21,7 +21,9 @@ export function createSecretTextMatcher(secrets, { maxScanWork = MAX_SCAN_WORK }
     nodes[state].lengths.push(secret.length);
   }
 
-  if (nodes.length === 1) return (text) => text.length > maxScanWork ? null : Array.from({ length: text.length + 1 }, () => 0);
+  if (nodes.length === 1)
+    return (text) =>
+      text.length > maxScanWork ? null : Array.from({ length: text.length + 1 }, () => 0);
 
   const queue = [...nodes[0].transitions.values()];
   for (const state of queue) nodes[state].failure = 0;
@@ -38,9 +40,8 @@ export function createSecretTextMatcher(secrets, { maxScanWork = MAX_SCAN_WORK }
       if (buildWork > maxScanWork) return exhausted();
       nodes[next].failure = nodes[failure].transitions.get(character) ?? 0;
       const fallback = nodes[next].failure;
-      nodes[next].outputLink = nodes[fallback].lengths.length > 0
-        ? fallback
-        : nodes[fallback].outputLink;
+      nodes[next].outputLink =
+        nodes[fallback].lengths.length > 0 ? fallback : nodes[fallback].outputLink;
       queue.push(next);
     }
   }
@@ -60,9 +61,11 @@ export function createSecretTextMatcher(secrets, { maxScanWork = MAX_SCAN_WORK }
       state = nodes[state].transitions.get(character) ?? 0;
       work += 1;
       if (work > maxScanWork) return null;
-      for (let output = nodes[state].lengths.length > 0 ? state : nodes[state].outputLink;
+      for (
+        let output = nodes[state].lengths.length > 0 ? state : nodes[state].outputLink;
         output !== 0;
-        output = nodes[output].outputLink) {
+        output = nodes[output].outputLink
+      ) {
         for (const length of nodes[output].lengths) {
           work += 1;
           if (work > maxScanWork) return null;

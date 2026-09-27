@@ -3,11 +3,10 @@ export function hasExactTagTrigger(workflow) {
   const tags = trigger?.push?.tags;
   return Boolean(
     trigger &&
-      Object.keys(trigger).every((event) => event === "push") &&
-      Array.isArray(tags) &&
-      tags.length === 1 &&
-      tags[0] === releaseTagFilter,
+    Object.keys(trigger).every((event) => event === "push") &&
+    Array.isArray(tags) &&
+    tags.length === 1 &&
+    tags[0] === releaseTagFilter,
   );
 }
 import { releaseTagFilter } from "./release-version-tag.mjs";
-

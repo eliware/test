@@ -9,13 +9,17 @@ export async function resolveFocusedFormatterPaths(root, focusedScope) {
     paths.length === 0 ||
     !paths.every(isSupportedFocusedPath) ||
     !(await focusedFilesExist(root, paths))
-  ) return null;
+  )
+    return null;
   return paths;
 }
 
 function isSupportedFocusedPath(path) {
-  return typeof path === "string" && /^(?:tests|src)\//u.test(path) &&
-    path.split("/").every((segment) => segment && segment !== "." && segment !== "..");
+  return (
+    typeof path === "string" &&
+    /^(?:tests|src)\//u.test(path) &&
+    path.split("/").every((segment) => segment && segment !== "." && segment !== "..")
+  );
 }
 
 async function focusedFilesExist(root, paths) {
@@ -24,7 +28,12 @@ async function focusedFilesExist(root, paths) {
     for (const path of paths) {
       const realFile = await realpath(join(realRoot, path));
       const fromRoot = relative(realRoot, realFile);
-      if (fromRoot === "" || fromRoot === ".." || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot))
+      if (
+        fromRoot === "" ||
+        fromRoot === ".." ||
+        fromRoot.startsWith(`..${sep}`) ||
+        isAbsolute(fromRoot)
+      )
         return false;
       if (!(await stat(realFile)).isFile()) return false;
     }

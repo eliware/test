@@ -38,7 +38,10 @@ test("formats empty gaps and truncates long diagnostic lists", () => {
         lines: [],
         statements: Array.from({ length: 21 }, (_, index) => ({ location: String(index) })),
         branches: Array.from({ length: 21 }, (_, index) => ({ location: String(index) })),
-        functions: Array.from({ length: 21 }, (_, index) => ({ name: `fn${index}`, location: String(index) })),
+        functions: Array.from({ length: 21 }, (_, index) => ({
+          name: `fn${index}`,
+          location: String(index),
+        })),
       },
     ],
   });

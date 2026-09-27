@@ -17,7 +17,11 @@ export async function prepareValidationPlan(root, ignoredRuleIds, options, depen
   const executionChecks = selectExecutionChecks(checks, focusedScope);
   const inventoryOptions = collectValidationInventoryOptions(executionChecks, options.modeRuleId);
   await dependencies.validateBundledDirectiveCompleteness(allChecks, conventions.apply);
-  const exemptions = dependencies.prepareValidationExemptions(packageJson, allChecks, ignoredRuleIds);
+  const exemptions = dependencies.prepareValidationExemptions(
+    packageJson,
+    allChecks,
+    ignoredRuleIds,
+  );
   return {
     checks: executionChecks,
     context: createValidationContext(root, packageJson, {

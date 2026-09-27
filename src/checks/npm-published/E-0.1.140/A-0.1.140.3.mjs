@@ -17,7 +17,8 @@ export async function run(context) {
   const { root } = context;
   try {
     const workflows = await readWorkflows(root, context);
-    if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0)) return fail(ruleId, "npm-published repositories must define a publication workflow.");
+    if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0))
+      return fail(ruleId, "npm-published repositories must define a publication workflow.");
     for (const workflow of workflows) {
       const publication = npmPublicationJobs(workflow);
       if (publication.length === 0) {
@@ -29,12 +30,18 @@ export async function run(context) {
       const validation = findValidationJobs(workflow);
       if (
         validation.length === 0 ||
-        !validation.some(({ job }) => hasUbuntuRunner(workflow, job) &&
-          steps(job).some(({ run }) => /^npm\s+ci$/iu.test(String(run ?? "").trim())) &&
-          steps(job).some(({ run }) => /^npm\s+test$/iu.test(String(run ?? "").trim()))) ||
+        !validation.some(
+          ({ job }) =>
+            hasUbuntuRunner(workflow, job) &&
+            steps(job).some(({ run }) => /^npm\s+ci$/iu.test(String(run ?? "").trim())) &&
+            steps(job).some(({ run }) => /^npm\s+test$/iu.test(String(run ?? "").trim())),
+        ) ||
         publication.some(({ job }) => {
           const needs = publicationNeeds(job);
-          return !needs.some((id) => validation.some((item) => item.id === id)) || /always\s*\(/iu.test(String(job.if ?? ""));
+          return (
+            !needs.some((id) => validation.some((item) => item.id === id)) ||
+            /always\s*\(/iu.test(String(job.if ?? ""))
+          );
         })
       )
         return fail(

@@ -5,5 +5,7 @@ test("requires an approved npm publish command with provenance", () => {
   expect(hasNpmProvenancePublish({ steps: [{ run: "npm publish --provenance" }] })).toBe(true);
   expect(hasNpmProvenancePublish({ steps: [{ run: "npm publish" }] })).toBe(false);
   expect(hasNpmProvenancePublish({ steps: [{}] })).toBe(false);
-  expect(hasNpmProvenancePublish({ steps: [{ run: "npm publish --provenance && echo extra" }] })).toBe(false);
+  expect(
+    hasNpmProvenancePublish({ steps: [{ run: "npm publish --provenance && echo extra" }] }),
+  ).toBe(false);
 });

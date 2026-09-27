@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { buildJestArguments, focusedPathFrom } from "../../../../../src/checks/general/E-0.1/E-0.1.20/build-jest-arguments.mjs";
+import {
+  buildJestArguments,
+  focusedPathFrom,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.20/build-jest-arguments.mjs";
 
 test("builds focused and default Jest argument lists", () => {
   expect(focusedPathFrom()).toBeUndefined();
@@ -7,10 +10,19 @@ test("builds focused and default Jest argument lists", () => {
   expect(buildJestArguments([])).toEqual(["--coverage", "--runInBand"]);
   expect(buildJestArguments(undefined)).toEqual(["--coverage", "--runInBand"]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing"])).toEqual([
-    "--coverage", "--json", "--runTestsByPath", "tests/sample.test.mjs", "--runInBand",
+    "--coverage",
+    "--json",
+    "--runTestsByPath",
+    "tests/sample.test.mjs",
+    "--runInBand",
   ]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing", "--watch"])).toEqual([
-    "--coverage", "--json", "--runTestsByPath", "tests/sample.test.mjs", "--runInBand", "--watch",
+    "--coverage",
+    "--json",
+    "--runTestsByPath",
+    "tests/sample.test.mjs",
+    "--runInBand",
+    "--watch",
   ]);
 });
 

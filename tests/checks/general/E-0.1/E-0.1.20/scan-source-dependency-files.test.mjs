@@ -8,10 +8,15 @@ test("parses source files and collects dependency references", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-source-dependency-scan-"));
   try {
     await mkdir(join(root, "src"));
-    await writeFile(join(root, "src", "module.mjs"), "import dependency from 'dep'; export { dependency };");
+    await writeFile(
+      join(root, "src", "module.mjs"),
+      "import dependency from 'dep'; export { dependency };",
+    );
     const referenced = new Set();
 
-    await scanSourceDependencyFiles(root, ["src/module.mjs"], ["dep"], referenced, { value: false });
+    await scanSourceDependencyFiles(root, ["src/module.mjs"], ["dep"], referenced, {
+      value: false,
+    });
 
     expect(referenced.has("dep")).toBe(true);
   } finally {
@@ -40,6 +45,13 @@ test("ignores parse failures for diagnostics owned by syntax validation", async 
     throw new Error("invalid source");
   });
   await expect(
-    scanSourceDependencyFiles("/repo", ["src/module.mjs"], [], new Set(), { value: false }, parseAst),
+    scanSourceDependencyFiles(
+      "/repo",
+      ["src/module.mjs"],
+      [],
+      new Set(),
+      { value: false },
+      parseAst,
+    ),
   ).resolves.toBeUndefined();
 });

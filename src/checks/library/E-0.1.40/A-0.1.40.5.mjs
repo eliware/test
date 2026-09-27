@@ -32,7 +32,12 @@ export async function run({ root, packageJson }) {
     const entryError = await requireFiles(root, entryTargets, "Library entrypoint");
     if (entryError) return fail(ruleId, entryError);
     const declarationTargets = [packageJson.types, packageJson.typings].filter(Boolean);
-    if (packageJson.exports) declarationTargets.push(...collectLibraryExportTargets(packageJson.exports).filter((target) => target.endsWith(".d.ts")));
+    if (packageJson.exports)
+      declarationTargets.push(
+        ...collectLibraryExportTargets(packageJson.exports).filter((target) =>
+          target.endsWith(".d.ts"),
+        ),
+      );
     const declarationError = await requireFiles(root, declarationTargets, "Library declaration");
     if (declarationError) return fail(ruleId, declarationError);
   }

@@ -18,6 +18,8 @@ test("returns no result for validation commands", () => {
 });
 
 test("owns informational conflict validation", () => {
-  expect(() => dispatchInformationalCommand(["--help", "--help"], () => {})).toThrow("cannot be repeated");
+  expect(() => dispatchInformationalCommand(["--help", "--help"], () => {})).toThrow(
+    "cannot be repeated",
+  );
   expect(() => dispatchInformationalCommand(["--help", "--lint"], () => {})).toThrow("combined");
 });

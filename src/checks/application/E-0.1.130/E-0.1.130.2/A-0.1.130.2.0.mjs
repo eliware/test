@@ -12,13 +12,15 @@ export const repositoryInventoryOptions = {
 
 async function collect(directory, repositoryInventory) {
   if (repositoryInventory) {
-    return (await repositoryInventory.documentationFiles({
-      directory,
-      predicate: (name) => name.endsWith(".md"),
-      maxDepth: Infinity,
-      maxFiles: Infinity,
-      includeGenerated: true,
-    })).map((file) => join(directory, file));
+    return (
+      await repositoryInventory.documentationFiles({
+        directory,
+        predicate: (name) => name.endsWith(".md"),
+        maxDepth: Infinity,
+        maxFiles: Infinity,
+        includeGenerated: true,
+      })
+    ).map((file) => join(directory, file));
   }
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {

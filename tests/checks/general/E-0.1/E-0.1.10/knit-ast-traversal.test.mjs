@@ -15,7 +15,9 @@ test("collects statically bound subprocess commands", () => {
   const { calls, unsupported } = collect(
     'import { spawnSync } from "node:child_process"; const command = "npm"; spawnSync(command, ["test"]);',
   );
-  expect(calls).toEqual([expect.objectContaining({ kind: "spawnSync", command: "npm", args: ["test"] })]);
+  expect(calls).toEqual([
+    expect.objectContaining({ kind: "spawnSync", command: "npm", args: ["test"] }),
+  ]);
   expect(unsupported).toEqual([]);
 });
 
@@ -46,7 +48,9 @@ test("finds subprocess commands inside invoked local functions", () => {
   const { calls, unsupported } = collect(
     'import { spawnSync } from "node:child_process"; function deploy() { spawnSync("npm", ["publish"]); } deploy();',
   );
-  expect(calls).toEqual([expect.objectContaining({ kind: "spawnSync", command: "npm", args: ["publish"] })]);
+  expect(calls).toEqual([
+    expect.objectContaining({ kind: "spawnSync", command: "npm", args: ["publish"] }),
+  ]);
   expect(unsupported).toHaveLength(1);
 });
 

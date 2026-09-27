@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { pullRequestTargetsMain, pushTargetsMain } from "../../../../../src/checks/general/E-0.1/E-0.1.24/workflow-targets-main.mjs";
+import {
+  pullRequestTargetsMain,
+  pushTargetsMain,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.24/workflow-targets-main.mjs";
 
 test("evaluates push branch shapes and main inclusion", () => {
   expect(pushTargetsMain(["main"])).toBe(true);

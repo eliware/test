@@ -18,9 +18,8 @@ jest.unstable_mockModule(
   () => ({ validateWorkflowValidationJobs }),
 );
 
-const { selectWorkflowValidationJobs } = await import(
-  "../../../../../src/checks/general/E-0.1/E-0.1.24/select-workflow-validation-jobs.mjs"
-);
+const { selectWorkflowValidationJobs } =
+  await import("../../../../../src/checks/general/E-0.1/E-0.1.24/select-workflow-validation-jobs.mjs");
 const validJob = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
 
 beforeEach(() => {
@@ -36,14 +35,16 @@ test("selects validation jobs and returns their normalized commands", () => {
 
   expect(result).toEqual({
     error: null,
-    jobs: [{
-      id: "validate",
-      job: validJob,
-      commands: [
-        { name: undefined, command: "npm ci", step: validJob.steps[0], index: 0 },
-        { name: undefined, command: "npm test", step: validJob.steps[1], index: 1 },
-      ],
-    }],
+    jobs: [
+      {
+        id: "validate",
+        job: validJob,
+        commands: [
+          { name: undefined, command: "npm ci", step: validJob.steps[0], index: 0 },
+          { name: undefined, command: "npm test", step: validJob.steps[1], index: 1 },
+        ],
+      },
+    ],
   });
   expect(validateWorkflowSiblingJobs).toHaveBeenCalledWith(
     "ci.yml",
@@ -55,10 +56,12 @@ test("selects validation jobs and returns their normalized commands", () => {
 
 test("maps missing validation jobs according to whether the workflow publishes", () => {
   findPublicationCommand.mockReturnValueOnce({ command: "npm publish" });
-  expect(selectWorkflowValidationJobs("publish.yml", { jobs: { publish: { steps: [] } } })).toEqual({
-    error: "publish.yml publication workflow must contain a separate validation job.",
-    jobs: [],
-  });
+  expect(selectWorkflowValidationJobs("publish.yml", { jobs: { publish: { steps: [] } } })).toEqual(
+    {
+      error: "publish.yml publication workflow must contain a separate validation job.",
+      jobs: [],
+    },
+  );
   expect(selectWorkflowValidationJobs("ci.yml", { jobs: {} })).toEqual({
     error: "ci.yml must validate with npm ci followed by npm test.",
     jobs: [],
@@ -66,7 +69,9 @@ test("maps missing validation jobs according to whether the workflow publishes",
 });
 
 test("maps validation-command and sibling-validation findings", () => {
-  validateWorkflowValidationJobs.mockReturnValueOnce("ci.yml contains non-validation command(s): curl example.test.");
+  validateWorkflowValidationJobs.mockReturnValueOnce(
+    "ci.yml contains non-validation command(s): curl example.test.",
+  );
   expect(selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } })).toEqual({
     error: "ci.yml contains non-validation command(s): curl example.test.",
     jobs: [],

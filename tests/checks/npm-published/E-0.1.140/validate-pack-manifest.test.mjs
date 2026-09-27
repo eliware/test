@@ -41,14 +41,21 @@ test("accepts npm 12 scoped object-shaped manifests", () => {
   ).toBeNull();
   expect(
     validatePackManifest(
-      JSON.stringify({ "@eliware/codescope": { name: "@eliware/codescope", files: paths.map((path) => ({ path })) } }),
+      JSON.stringify({
+        "@eliware/codescope": {
+          name: "@eliware/codescope",
+          files: paths.map((path) => ({ path })),
+        },
+      }),
       [],
       "@eliware/codescope",
     ),
   ).toBeNull();
   expect(
     validatePackManifest(
-      JSON.stringify({ "@eliware/codescope": { name: "@eliware/other", files: paths.map((path) => ({ path })) } }),
+      JSON.stringify({
+        "@eliware/codescope": { name: "@eliware/other", files: paths.map((path) => ({ path })) },
+      }),
       [],
       "@eliware/codescope",
     ),
@@ -56,25 +63,50 @@ test("accepts npm 12 scoped object-shaped manifests", () => {
 });
 
 test("selects the manifest for the package being packed and rejects ambiguity", () => {
-  const files = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"].map((path) => ({ path }));
+  const files = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"].map((path) => ({
+    path,
+  }));
   const output = JSON.stringify([
     { name: "@eliware/unrelated", files: [{ path: "package.json" }] },
     { name: "@eliware/target", files },
   ]);
   expect(validatePackManifest(output, [], "@eliware/target")).toBeNull();
   expect(validatePackManifest(output, [], "@eliware/missing")).toContain("requested package");
-  expect(validatePackManifest(JSON.stringify({ name: "@eliware/target", files }), [], "@eliware/target")).toBeNull();
-  expect(validatePackManifest(JSON.stringify({ name: "@eliware/other", files }), [], "@eliware/target")).toContain("requested package");
-  expect(validatePackManifest(JSON.stringify({
-    "@eliware/target": { name: "@eliware/target", files },
-    "@eliware/other": { files: [{ path: "wrong.txt" }] },
-  }), [], "@eliware/target")).toBeNull();
-  expect(validatePackManifest(JSON.stringify({
-    "@eliware/target": { name: "@eliware/wrong", files },
-  }), [], "@eliware/target")).toContain("requested package");
+  expect(
+    validatePackManifest(JSON.stringify({ name: "@eliware/target", files }), [], "@eliware/target"),
+  ).toBeNull();
+  expect(
+    validatePackManifest(JSON.stringify({ name: "@eliware/other", files }), [], "@eliware/target"),
+  ).toContain("requested package");
+  expect(
+    validatePackManifest(
+      JSON.stringify({
+        "@eliware/target": { name: "@eliware/target", files },
+        "@eliware/other": { files: [{ path: "wrong.txt" }] },
+      }),
+      [],
+      "@eliware/target",
+    ),
+  ).toBeNull();
+  expect(
+    validatePackManifest(
+      JSON.stringify({
+        "@eliware/target": { name: "@eliware/wrong", files },
+      }),
+      [],
+      "@eliware/target",
+    ),
+  ).toContain("requested package");
   expect(validatePackManifest(JSON.stringify({ "@eliware/target": { files } }), [])).toBeNull();
-  expect(validatePackManifest(JSON.stringify({ "@eliware/target": { files }, "@eliware/other": { files } }), [])).toContain("requested package");
-  expect(validatePackManifest(JSON.stringify({ "@eliware/other": { files } }), [], "@eliware/target")).toContain("requested package");
+  expect(
+    validatePackManifest(
+      JSON.stringify({ "@eliware/target": { files }, "@eliware/other": { files } }),
+      [],
+    ),
+  ).toContain("requested package");
+  expect(
+    validatePackManifest(JSON.stringify({ "@eliware/other": { files } }), [], "@eliware/target"),
+  ).toContain("requested package");
   expect(validatePackManifest("{}", [])).toContain("requested package");
 });
 
@@ -111,6 +143,12 @@ test("rejects packed paths that escape the package root", () => {
 });
 
 test("treats duplicate allowlist entries and trailing slashes as equivalent", () => {
-  const output = manifest(["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md", "src/index.mjs"]);
+  const output = manifest([
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "RELEASE_NOTES.md",
+    "src/index.mjs",
+  ]);
   expect(validatePackManifest(output, ["src", "src/"])).toBeNull();
 });

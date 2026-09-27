@@ -4,7 +4,10 @@ import { buildAuditArguments } from "../../../../../src/checks/general/E-0.1/E-0
 test("builds the strict JSON audit command", () => {
   expect(buildAuditArguments()).toEqual(["audit", "--json", "--audit-level=high"]);
   expect(buildAuditArguments(["--no-fund"])).toEqual([
-    "audit", "--no-fund", "--json", "--audit-level=high",
+    "audit",
+    "--no-fund",
+    "--json",
+    "--audit-level=high",
   ]);
   expect(() => buildAuditArguments(["--audit-level=low"])).toThrow("cannot override");
   expect(() => buildAuditArguments(["--no-json"])).toThrow("cannot override");

@@ -91,9 +91,7 @@ test("preserves a shared AST parser and optional run scope data", () => {
   const repositoryFiles = ["src/index.mjs"];
   const focusedScope = { paths: repositoryFiles };
 
-  expect(
-    createValidationContext("root", {}, { parseAst, repositoryFiles, focusedScope }),
-  ).toEqual({
+  expect(createValidationContext("root", {}, { parseAst, repositoryFiles, focusedScope })).toEqual({
     root: "root",
     packageJson: {},
     executeJest: false,
@@ -112,15 +110,17 @@ test("preserves a shared AST parser and optional run scope data", () => {
     parseAst,
     repositoryFiles,
     focusedScope,
-  },
-  );
+  });
 });
 
 test("Knit checks share the script read and AST through the execution context", async () => {
   const root = await fixture("eliware-knit-cache-sharing-");
   const script = join(root, ".knit", "validate.mjs");
   await mkdir(join(root, ".knit"), { recursive: true });
-  await writeFile(script, 'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);\n');
+  await writeFile(
+    script,
+    'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);\n',
+  );
   const reads = new Map();
   const repositoryInventory = createRepositoryInventory(root, {
     read: async (...args) => {
@@ -144,8 +144,11 @@ test("independent repository checks share cached LICENSE and source text", async
   await mkdir(join(root, "src"));
   const license = join(root, "LICENSE");
   const barrel = join(root, "src", "entry.mjs");
-  await writeFile(license, 'MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE\n');
-  await writeFile(barrel, "/* istanbul ignore file */\nexport { value } from \"./value.mjs\";\n");
+  await writeFile(
+    license,
+    'MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE\n',
+  );
+  await writeFile(barrel, '/* istanbul ignore file */\nexport { value } from "./value.mjs";\n');
   const reads = new Map();
   const repositoryInventory = createRepositoryInventory(root, {
     includeTestResultsUnder: ["src"],
@@ -155,11 +158,19 @@ test("independent repository checks share cached LICENSE and source text", async
       return readFile(...args);
     },
   });
-  const context = createValidationContext(root, { main: "./src/entry.mjs", eliware: { apply: ["library"] } }, { repositoryInventory });
+  const context = createValidationContext(
+    root,
+    { main: "./src/entry.mjs", eliware: { apply: ["library"] } },
+    { repositoryInventory },
+  );
   try {
     await expect(runLicense(context)).resolves.toMatchObject({ status: "pass" });
-    await expect(runNoCoverageIgnore({ ...context, ruleId: "E-0.1.40.8" })).resolves.toMatchObject({ status: "pass" });
-    await expect(runPureExportBarrelPolicy({ ...context, ruleId: "E-0.1.40.14" })).resolves.toMatchObject({ status: "pass" });
+    await expect(runNoCoverageIgnore({ ...context, ruleId: "E-0.1.40.8" })).resolves.toMatchObject({
+      status: "pass",
+    });
+    await expect(
+      runPureExportBarrelPolicy({ ...context, ruleId: "E-0.1.40.14" }),
+    ).resolves.toMatchObject({ status: "pass" });
     expect(reads.get(license)).toBe(1);
     expect(reads.get(barrel)).toBe(1);
   } finally {

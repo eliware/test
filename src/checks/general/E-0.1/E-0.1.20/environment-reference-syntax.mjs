@@ -12,6 +12,7 @@ export function propertyName(node, computed = false) {
   if (!node) return undefined;
   if (!computed && node.type === "Identifier") return node.name;
   if (node.type === "StringLiteral") return node.value;
-  if (node.type === "TemplateLiteral" && node.expressions.length === 0) return node.quasis[0]?.value?.cooked;
+  if (node.type === "TemplateLiteral" && node.expressions.length === 0)
+    return node.quasis[0]?.value?.cooked;
   return undefined;
 }

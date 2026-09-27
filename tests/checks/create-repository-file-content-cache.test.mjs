@@ -12,7 +12,10 @@ test("shares one byte read across byte and text access", async () => {
 });
 
 test("normalizes text reader results for byte access", async () => {
-  const cache = createRepositoryFileContentCache("/repo", jest.fn(async () => "text content"));
+  const cache = createRepositoryFileContentCache(
+    "/repo",
+    jest.fn(async () => "text content"),
+  );
 
   await expect(cache.readBytes("README.md")).resolves.toEqual(Buffer.from("text content"));
   await expect(cache.readText("README.md")).resolves.toBe("text content");

@@ -16,10 +16,7 @@ export async function run(context) {
       if (!index.includes(file)) return fail(ruleId, `specs/README.md must link ${file}.`);
     }
   } catch {
-    return fail(
-      ruleId,
-      "specs/ must contain README.md, authority.json, and directives.json.",
-    );
+    return fail(ruleId, "specs/ must contain README.md, authority.json, and directives.json.");
   }
   return pass(ruleId);
 }

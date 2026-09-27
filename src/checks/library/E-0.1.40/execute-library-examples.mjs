@@ -5,7 +5,9 @@ export async function executeLibraryExamples(root, examples, executeExample = ex
   for (const example of examples) {
     let result;
     try {
-      result = await executeExample(process.execPath, [resolve(root, "examples", example.name)], { cwd: root });
+      result = await executeExample(process.execPath, [resolve(root, "examples", example.name)], {
+        cwd: root,
+      });
     } catch (error) {
       return `Example ${example.name} could not run: ${error.message}`;
     }

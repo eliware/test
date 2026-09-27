@@ -20,7 +20,9 @@ test("accepts canonical headings and a complete ordered table of contents", () =
 
 test("reports required README sections missing from the document", () => {
   const readme = fixture();
-  expect(validateReadmeStructure(readme.slice(0, readme.indexOf("## Features")))).toContain("Features section");
+  expect(validateReadmeStructure(readme.slice(0, readme.indexOf("## Features")))).toContain(
+    "Features section",
+  );
 });
 
 test("requires the standard brand line, table of contents, and title placement", () => {
@@ -83,6 +85,8 @@ test("does not count links placed in a content section as table-of-contents entr
   const readme = fixture().replace("[Testing](#testing)", "");
   const misplacedLink = "\n[Testing](#testing)\n";
   expect(
-    validateReadmeStructure(readme.replace("## Features\ncontent", `## Features\ncontent${misplacedLink}`)),
+    validateReadmeStructure(
+      readme.replace("## Features\ncontent", `## Features\ncontent${misplacedLink}`),
+    ),
   ).toContain("Table of Contents");
 });

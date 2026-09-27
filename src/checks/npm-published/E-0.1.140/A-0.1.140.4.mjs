@@ -19,7 +19,8 @@ export async function run(context) {
   const { root, packageJson } = context;
   try {
     const workflows = await readWorkflows(root, context);
-    if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0)) return fail(ruleId, "npm-published repositories must define a publication workflow.");
+    if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0))
+      return fail(ruleId, "npm-published repositories must define a publication workflow.");
     for (const workflow of workflows) {
       const publication = npmPublicationJobs(workflow);
       if (publication.length === 0 && /\bnpm\s+publish\b/i.test(workflow.content)) {
@@ -31,11 +32,12 @@ export async function run(context) {
         const packageName = typeof packageJson?.name === "string" ? packageJson.name : "";
         const publishAt = publicationIndex(job);
         if (
-          (!packageName || publishAt < 0 ||
-            (granted.contents !== "read" ||
-            granted["id-token"] !== "write" ||
-            Object.keys(granted).some((key) => !allowed.has(key)) ||
-            /NPM_TOKEN|NODE_AUTH_TOKEN/i.test(JSON.stringify(job))))
+          !packageName ||
+          publishAt < 0 ||
+          granted.contents !== "read" ||
+          granted["id-token"] !== "write" ||
+          Object.keys(granted).some((key) => !allowed.has(key)) ||
+          /NPM_TOKEN|NODE_AUTH_TOKEN/i.test(JSON.stringify(job))
         ) {
           return fail(
             ruleId,

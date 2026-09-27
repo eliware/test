@@ -8,7 +8,10 @@ import { createRepositoryInventory } from "../../../../../src/checks/create-repo
 test("requires docs README to index end-user documents", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-"));
   await mkdir(join(root, "docs"));
-  await writeFile(join(root, "docs", "README.md"), "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\n");
+  await writeFile(
+    join(root, "docs", "README.md"),
+    "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\n",
+  );
   await writeFile(join(root, "docs", "guide.md"), "# Guide");
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("docs/guide.md") }),
@@ -19,7 +22,10 @@ test("requires docs README to index end-user documents", async () => {
 test("fails when a required documentation section is absent", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-section-"));
   await mkdir(join(root, "docs"), { recursive: true });
-  await writeFile(join(root, "docs", "README.md"), "# Docs\nPurpose and scope\nSetup and usage\nValidation\n");
+  await writeFile(
+    join(root, "docs", "README.md"),
+    "# Docs\nPurpose and scope\nSetup and usage\nValidation\n",
+  );
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({ status: "fail", message: expect.stringContaining("support") }),
   );
@@ -63,7 +69,10 @@ test("fails when a nested markdown document is not indexed", async () => {
   );
   await writeFile(join(root, "docs", "guides", "deep.md"), "# Deep guide");
   await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("docs/guides/deep.md") }),
+    expect.objectContaining({
+      status: "fail",
+      message: expect.stringContaining("docs/guides/deep.md"),
+    }),
   );
   await rm(root, { recursive: true, force: true });
 });
@@ -71,7 +80,8 @@ test("fails when a nested markdown document is not indexed", async () => {
 test("uses shared documentation discovery and text reads, including generated docs", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-inventory-"));
   await mkdir(join(root, "docs", "dist"), { recursive: true });
-  const index = "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\n[Built guide](docs/dist/guide.md)\n";
+  const index =
+    "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\n[Built guide](docs/dist/guide.md)\n";
   await writeFile(join(root, "docs", "README.md"), index);
   await writeFile(join(root, "docs", "dist", "guide.md"), "# Built guide");
   const reads = new Map();

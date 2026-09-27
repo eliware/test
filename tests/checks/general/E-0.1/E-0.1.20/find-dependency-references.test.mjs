@@ -37,7 +37,17 @@ test("finds imports, re-exports, dynamic imports, requires, scripts, and config 
     oxlint: { plugins: ["oxlint"] },
   };
   await expect(findDependencyReferences(root, packageJson)).resolves.toEqual(
-    expect.arrayContaining(["alpha", "@scope/beta", "gamma", "delta", "epsilon", "jest", "prettier", "oxlint", "zeta"]),
+    expect.arrayContaining([
+      "alpha",
+      "@scope/beta",
+      "gamma",
+      "delta",
+      "epsilon",
+      "jest",
+      "prettier",
+      "oxlint",
+      "zeta",
+    ]),
   );
   await rm(root, { recursive: true, force: true });
 });
@@ -67,10 +77,12 @@ test("counts the direct linter used by the self-hosted CLI package", async () =>
   const root = await mkdtemp(join(tmpdir(), "eliware-test-self-hosted-dependencies-"));
   await mkdir(join(root, "src"));
   await writeFile(join(root, "src", "clean.mjs"), "export const value = 1;\n");
-  await expect(findDependencyReferences(root, {
-    name: "@eliware/test",
-    dependencies: { oxlint: "1.0.0" },
-    scripts: { lint: "node bin/eliware-test.mjs --lint" },
-  })).resolves.toEqual(expect.arrayContaining(["oxlint"]));
+  await expect(
+    findDependencyReferences(root, {
+      name: "@eliware/test",
+      dependencies: { oxlint: "1.0.0" },
+      scripts: { lint: "node bin/eliware-test.mjs --lint" },
+    }),
+  ).resolves.toEqual(expect.arrayContaining(["oxlint"]));
   await rm(root, { recursive: true, force: true });
 });

@@ -17,7 +17,12 @@ export async function validateStructuredReferences(root, files, inventory) {
       : JSON.parse(await readFile(file, "utf8"));
     const references = collectStructuredReferences(document);
     for (const reference of references) {
-      const resolved = resolveStructuredReference(root, file, reference.path, reference.crossRepository);
+      const resolved = resolveStructuredReference(
+        root,
+        file,
+        reference.path,
+        reference.crossRepository,
+      );
       if (!resolved) continue;
       if (resolved.external) {
         if (!registryLoaded) {

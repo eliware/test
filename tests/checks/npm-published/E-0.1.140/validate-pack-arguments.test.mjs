@@ -3,9 +3,16 @@ import { validatePackArguments } from "../../../../src/checks/npm-published/E-0.
 
 test("rejects arguments that can disable dry-run or alter selected pack output", () => {
   for (const args of [
-    ["--dry-run=false"], ["--no-dry-run"], ["--json=false"], ["--no-json"],
-    ["--pack-destination", "out"], ["--workspace=other"], ["-w", "other"],
-    ["--prefix=other"], ["@scope/package@1.0.0"], ["--", "--no-dry-run"],
+    ["--dry-run=false"],
+    ["--no-dry-run"],
+    ["--json=false"],
+    ["--no-json"],
+    ["--pack-destination", "out"],
+    ["--workspace=other"],
+    ["-w", "other"],
+    ["--prefix=other"],
+    ["@scope/package@1.0.0"],
+    ["--", "--no-dry-run"],
     ["--loglevel", "--no-dry-run"],
     ["-wother"],
   ]) {

@@ -2,7 +2,10 @@ import { fail, pass } from "../../../check-result.mjs";
 import { executeAuditProcess } from "./execute-audit-process.mjs";
 import { runNpmAudit } from "./run-npm-audit.mjs";
 import { runChild as defaultRunChild } from "./run-child.mjs";
-import { formatNpmAuditFailure, formatNpmAuditStartupFailure } from "./format-npm-audit-diagnostic.mjs";
+import {
+  formatNpmAuditFailure,
+  formatNpmAuditStartupFailure,
+} from "./format-npm-audit-diagnostic.mjs";
 import { isSuccessfulNpmAuditReport } from "./is-successful-npm-audit-report.mjs";
 import { validateAuditArguments } from "./validate-audit-arguments.mjs";
 
@@ -19,7 +22,11 @@ export async function run({
   runChild = defaultRunChild,
   env = process.env,
 }) {
-  if (packageJson?.scripts?.audit !== "eliware-test --audit") {
+  const auditScript =
+    packageJson?.name === "@eliware/test"
+      ? "node bin/eliware-test.mjs --audit"
+      : "eliware-test --audit";
+  if (packageJson?.scripts?.audit !== auditScript) {
     return fail(
       ruleId,
       "The aggregate validation must execute the shared audit stage through npm run audit.",

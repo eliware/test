@@ -19,7 +19,10 @@
       "path": "./private.json",
       "authoritativeFor": "Private repository distribution restrictions when also applicable."
     },
-    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    {
+      "path": "../../../docs/authority-map.json",
+      "authoritativeFor": "Cross-repository ownership."
+    },
     {
       "path": "../../../operations/specs/directives.json",
       "authoritativeFor": "Release authorization, publication execution, cleanup, and handoff."

@@ -8,9 +8,11 @@ export async function loadWorkflows(root, repositoryInventory) {
   const entries = repositoryInventory
     ? await repositoryInventory.directoryEntries(directory)
     : await readdir(directory, { withFileTypes: true });
-  return Promise.all(entries
-    .filter((entry) => entry.isFile() && /\.(?:yml|yaml)$/iu.test(entry.name))
-    .map(async (entry) => readWorkflow(directory, entry, repositoryInventory)));
+  return Promise.all(
+    entries
+      .filter((entry) => entry.isFile() && /\.(?:yml|yaml)$/iu.test(entry.name))
+      .map(async (entry) => readWorkflow(directory, entry, repositoryInventory)),
+  );
 }
 
 async function readWorkflow(directory, entry, repositoryInventory) {

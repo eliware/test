@@ -7,7 +7,11 @@ import { run } from "../../../../src/checks/mcp-server/E-0.1.80/A-0.1.80.0.mjs";
 test("requires MCP guidance", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-mcp-"));
   await writeFile(join(root, "AGENTS.md"), "mcp tools transport validation");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.80.0", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.80.0",
+    status: "pass",
+    message: "",
+  });
   await rm(root, { recursive: true, force: true });
 });
 

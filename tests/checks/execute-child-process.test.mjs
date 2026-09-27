@@ -11,20 +11,21 @@ function childProcess() {
 
 test("spawns without shell interpretation and returns captured process results", async () => {
   const child = childProcess();
-  const promise = execute("npm", ["run", "build"], { cwd: "C:\\repo", shell: true }, (
-    command,
-    args,
-    options,
-  ) => {
-    expect(command).toBe("npm");
-    expect(args).toEqual(["run", "build"]);
-    expect(options).toMatchObject({
-      cwd: "C:\\repo",
-      shell: false,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    return child;
-  });
+  const promise = execute(
+    "npm",
+    ["run", "build"],
+    { cwd: "C:\\repo", shell: true },
+    (command, args, options) => {
+      expect(command).toBe("npm");
+      expect(args).toEqual(["run", "build"]);
+      expect(options).toMatchObject({
+        cwd: "C:\\repo",
+        shell: false,
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      return child;
+    },
+  );
   child.stdout.emit("data", "standard output");
   child.stderr.emit("data", "diagnostic output");
   child.emit("close", 3, "SIGTERM");
@@ -59,22 +60,29 @@ test("settles only once after asynchronous child errors", async () => {
 
 test("redacts output using configured secrets before returning it", async () => {
   const child = childProcess();
-  const promise = execute("node", [], {
-    env: { UNUSUAL_SETTING: "credential-value" },
-    redactionSecrets: ["credential-value"],
-  }, (_command, _args, options) => {
-    expect(options).not.toHaveProperty("redactionSecrets");
-    return child;
-  });
+  const promise = execute(
+    "node",
+    [],
+    {
+      env: { UNUSUAL_SETTING: "credential-value" },
+      redactionSecrets: ["credential-value"],
+    },
+    (_command, _args, options) => {
+      expect(options).not.toHaveProperty("redactionSecrets");
+      return child;
+    },
+  );
   child.stdout.emit("data", "output credential-value");
   child.emit("close", 0, null);
   await expect(promise).resolves.toMatchObject({ stdout: "output [REDACTED]" });
 });
 
 test("handles synchronous spawn failures and children without output streams", async () => {
-  await expect(execute("tool", [], null, () => {
-    throw new Error("adapter failed");
-  })).rejects.toThrow("adapter failed");
+  await expect(
+    execute("tool", [], null, () => {
+      throw new Error("adapter failed");
+    }),
+  ).rejects.toThrow("adapter failed");
 
   const child = new EventEmitter();
   const result = execute("tool", [], {}, () => child);

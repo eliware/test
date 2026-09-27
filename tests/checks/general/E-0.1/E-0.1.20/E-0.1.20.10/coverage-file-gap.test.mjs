@@ -1,9 +1,19 @@
 import { expect, test } from "@jest/globals";
 import { fileGap } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-file-gap.mjs";
 test("returns no gap for fully covered files and diagnostics for uncovered files", () => {
-  const complete = { s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1 }, statementMap: { 1: {} }, branchMap: { 1: { locations: [{}] } }, fnMap: { 1: {} } };
+  const complete = {
+    s: { 1: 1 },
+    b: { 1: [1] },
+    f: { 1: 1 },
+    l: { 1: 1 },
+    statementMap: { 1: {} },
+    branchMap: { 1: { locations: [{}] } },
+    fnMap: { 1: {} },
+  };
   expect(fileGap("complete.mjs", complete)).toBeNull();
-  expect(fileGap("gap.mjs", { ...complete, s: { 1: 0 } })).toEqual(expect.objectContaining({ file: "gap.mjs" }));
+  expect(fileGap("gap.mjs", { ...complete, s: { 1: 0 } })).toEqual(
+    expect.objectContaining({ file: "gap.mjs" }),
+  );
 });
 
 test("reports statement, branch, function, and line locations", () => {
@@ -23,9 +33,14 @@ test("reports statement, branch, function, and line locations", () => {
     file: "gap.mjs",
     lines: ["4"],
     statements: [{ location: "4:2" }],
-    functions: [{ name: "missing", location: "8" }, { name: "anonymous", location: "unknown" }],
+    functions: [
+      { name: "missing", location: "8" },
+      { name: "anonymous", location: "unknown" },
+    ],
   });
-  expect(gap.branches).toEqual(expect.arrayContaining([{ location: "6" }, { location: "unknown" }, { location: "7" }]));
+  expect(gap.branches).toEqual(
+    expect.arrayContaining([{ location: "6" }, { location: "unknown" }, { location: "7" }]),
+  );
   expect(gap.metrics.branches).toBeLessThan(100);
   expect(gap.metrics.branches).toBe(25);
 });
@@ -45,10 +60,22 @@ test("reports excess branch counters without mapped locations", () => {
 });
 
 test("uses explicit line data and handles empty or incomplete coverage maps", () => {
-  expect(fileGap("lines.mjs", {
-    s: { 1: 1 }, b: { 1: [1] }, f: { 1: 1 }, l: { 1: 1, 2: 0 }, statementMap: { 1: {} }, branchMap: { 1: { locations: [{}] } }, fnMap: { 1: {} },
-  })).toMatchObject({ lines: ["2"] });
+  expect(
+    fileGap("lines.mjs", {
+      s: { 1: 1 },
+      b: { 1: [1] },
+      f: { 1: 1 },
+      l: { 1: 1, 2: 0 },
+      statementMap: { 1: {} },
+      branchMap: { 1: { locations: [{}] } },
+      fnMap: { 1: {} },
+    }),
+  ).toMatchObject({ lines: ["2"] });
   expect(fileGap("empty.mjs", {})).toEqual(expect.objectContaining({ file: "empty.mjs" }));
-  expect(() => fileGap("map-only.mjs", { statementMap: { 1: {} } })).toThrow("Coverage evidence is incomplete");
-  expect(() => fileGap("counter-only.mjs", { s: { 0: 1 } })).toThrow("Coverage evidence is incomplete");
+  expect(() => fileGap("map-only.mjs", { statementMap: { 1: {} } })).toThrow(
+    "Coverage evidence is incomplete",
+  );
+  expect(() => fileGap("counter-only.mjs", { s: { 0: 1 } })).toThrow(
+    "Coverage evidence is incomplete",
+  );
 });

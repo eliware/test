@@ -38,9 +38,9 @@ export function readOutdatedDependencies(
     killProcess,
     killTree,
     env,
-  }).then(({ stdout, stderr, code }) =>
-    parseOutdatedDependenciesOutput(stdout, stderr, code, env),
-  ).catch((error) => {
-    throw new Error(formatOutdatedDependencyError(error, env));
-  });
+  })
+    .then(({ stdout, stderr, code }) => parseOutdatedDependenciesOutput(stdout, stderr, code, env))
+    .catch((error) => {
+      throw new Error(formatOutdatedDependencyError(error, env));
+    });
 }

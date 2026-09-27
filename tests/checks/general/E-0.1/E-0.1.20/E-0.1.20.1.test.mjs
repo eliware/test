@@ -7,5 +7,7 @@ test("requires the current Node.js major", () => {
   expect(result.status).toBe("pass");
   expect(run({ nodeVersion: "25.9.0" }).status).toBe("fail");
   expect(run({ nodeVersion: "not-a-version" }).status).toBe("fail");
-  expect(run().status).toBe(Number.parseInt(process.versions.node.split(".")[0], 10) === 26 ? "pass" : "fail");
+  expect(run().status).toBe(
+    Number.parseInt(process.versions.node.split(".")[0], 10) === 26 ? "pass" : "fail",
+  );
 });

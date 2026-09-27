@@ -407,10 +407,12 @@
               "id": "A-0.0.8.3",
               "dos": [
                 "Skip an exempted rule and every discovered child rule beneath that rule before executing check logic.",
+                "A narrowly scoped, explicitly authorized exception to one requirement within a check must bypass only that requirement; it must not skip the check's other validation behavior or required aggregate stage.",
                 "Validate exemption IDs against the complete bundled check tree, not only the currently selected profiles."
               ],
               "donts": [
-                "Do not execute a check that is excluded by its applicable exemption or a parent exemption."
+                "Do not execute a check that is excluded by its applicable rule-wide exemption or a parent exemption.",
+                "Do not apply a narrowly scoped requirement exception as though it were a rule-wide exemption."
               ]
             },
             {

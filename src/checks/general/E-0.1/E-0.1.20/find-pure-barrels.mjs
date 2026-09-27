@@ -17,7 +17,9 @@ export async function findPureBarrels(root, readDirectory, repositoryInventory) 
   }
   const barrels = [];
   for (const file of files) {
-    const source = repositoryInventory ? await repositoryInventory.readText(file) : await readFile(file, "utf8");
+    const source = repositoryInventory
+      ? await repositoryInventory.readText(file)
+      : await readFile(file, "utf8");
     if (isPureBarrelSource(source)) {
       barrels.push(relative(root, file).replaceAll("\\", "/"));
     }

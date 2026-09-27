@@ -4,7 +4,6 @@ function reportLine(message) {
   process.stderr.write(`[eliware-test] ${message}\n`);
 }
 
-
 export default class JestTimingReporter {
   onTestStart(test) {
     reportLine(formatTestStart(test.path));

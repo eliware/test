@@ -33,5 +33,8 @@ test("uses inherited environment by default and accepts binary chunks", () => {
 });
 
 test("uses the process environment when no child environment is provided", () => {
-  expect(createChildProcessOutputCapture({ env: null }, [], 0).finish()).toEqual({ stdout: "", stderr: "" });
+  expect(createChildProcessOutputCapture({ env: null }, [], 0).finish()).toEqual({
+    stdout: "",
+    stderr: "",
+  });
 });

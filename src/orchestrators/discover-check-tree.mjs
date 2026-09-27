@@ -5,12 +5,26 @@ import { compareRuleIds } from "./compare-rule-ids.mjs";
 
 const rulePattern = /^([EA]-\d+(?:\.\d+)*)\.mjs$/;
 
-export async function discoverCheckTree(directory, importCheck, parentRuleId = null, readDirectory = readdir, root = directory) {
+export async function discoverCheckTree(
+  directory,
+  importCheck,
+  parentRuleId = null,
+  readDirectory = readdir,
+  root = directory,
+) {
   const entries = await readDirectory(directory, { withFileTypes: true });
   const modules = [];
   for (const entry of entries) {
     if (entry.isDirectory()) {
-      modules.push(...await discoverCheckTree(join(directory, entry.name), importCheck, rulePattern.test(`${entry.name}.mjs`) ? entry.name : parentRuleId, readDirectory, root));
+      modules.push(
+        ...(await discoverCheckTree(
+          join(directory, entry.name),
+          importCheck,
+          rulePattern.test(`${entry.name}.mjs`) ? entry.name : parentRuleId,
+          readDirectory,
+          root,
+        )),
+      );
       continue;
     }
     const match = rulePattern.exec(entry.name);
@@ -20,8 +34,13 @@ export async function discoverCheckTree(directory, importCheck, parentRuleId = n
     if (
       module.ruleId !== id ||
       (typeof module.run !== "function" && module.applicability !== "advisory-only")
-    ) throw new Error(`Invalid check module: ${entry.name}`);
-    modules.push({ ...module, parentRuleId, modulePath: relative(root, join(directory, entry.name)).replaceAll("\\", "/") });
+    )
+      throw new Error(`Invalid check module: ${entry.name}`);
+    modules.push({
+      ...module,
+      parentRuleId,
+      modulePath: relative(root, join(directory, entry.name)).replaceAll("\\", "/"),
+    });
   }
   return modules.sort((left, right) => compareRuleIds(left.ruleId, right.ruleId));
 }

@@ -10,7 +10,11 @@ export async function run({ root }) {
     const workflows = await loadWorkflows(root);
     for (const { name, document } of workflows) {
       const commands = workflowCommands(document);
-      if (commands.some(({ command }) => /^(?:npm\s+publish|docker\s+push|kubectl\s+apply|deploy(?:\s|$))/iu.test(command)))
+      if (
+        commands.some(({ command }) =>
+          /^(?:npm\s+publish|docker\s+push|kubectl\s+apply|deploy(?:\s|$))/iu.test(command),
+        )
+      )
         return fail(
           ruleId,
           `Private validation workflow contains publication or deployment: ${name}.`,

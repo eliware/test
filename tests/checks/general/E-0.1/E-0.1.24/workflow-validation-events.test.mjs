@@ -11,13 +11,23 @@ function workflow(events, jobs = { validate: validationJob }) {
 }
 
 test("combines eligible push and pull-request triggers with compliant validation", () => {
-  expect(workflowHasValidationEvents(workflow({ push: { branches: ["main"] }, pull_request: {} }))).toBe(true);
-  expect(workflowHasValidationEvents(workflow({ push: { branches: ["main"] }, pull_request: {} }, {}))).toBe(false);
+  expect(
+    workflowHasValidationEvents(workflow({ push: { branches: ["main"] }, pull_request: {} })),
+  ).toBe(true);
+  expect(
+    workflowHasValidationEvents(workflow({ push: { branches: ["main"] }, pull_request: {} }, {})),
+  ).toBe(false);
 });
 
 test("rejects workflows when either trigger does not target main", () => {
-  expect(workflowHasValidationEvents(workflow({ push: { branches: ["release/*"] }, pull_request: {} }))).toBe(false);
-  expect(workflowHasValidationEvents(workflow({ push: { branches: ["main"] }, pull_request: { branches: ["release/*"] } }))).toBe(false);
+  expect(
+    workflowHasValidationEvents(workflow({ push: { branches: ["release/*"] }, pull_request: {} })),
+  ).toBe(false);
+  expect(
+    workflowHasValidationEvents(
+      workflow({ push: { branches: ["main"] }, pull_request: { branches: ["release/*"] } }),
+    ),
+  ).toBe(false);
 });
 
 test("rejects absent or empty trigger maps despite a compliant validation job", () => {
@@ -26,14 +36,20 @@ test("rejects absent or empty trigger maps despite a compliant validation job", 
 });
 
 test("accepts normalized boolean-key aliases and event-array triggers", () => {
-  expect(workflowHasValidationEvents({
-    true: { push: ["main"], pull_request: [] },
-    jobs: { validate: validationJob },
-  })).toBe(true);
-  expect(workflowHasValidationEvents(workflow({
-    push: ["*", "!main*", "main"],
-    pull_request: {},
-  }))).toBe(true);
+  expect(
+    workflowHasValidationEvents({
+      true: { push: ["main"], pull_request: [] },
+      jobs: { validate: validationJob },
+    }),
+  ).toBe(true);
+  expect(
+    workflowHasValidationEvents(
+      workflow({
+        push: ["*", "!main*", "main"],
+        pull_request: {},
+      }),
+    ),
+  ).toBe(true);
 });
 
 test("rejects malformed scalar event configurations instead of treating them as unrestricted", () => {

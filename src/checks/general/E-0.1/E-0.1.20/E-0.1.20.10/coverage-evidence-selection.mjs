@@ -22,12 +22,17 @@ export async function readCoverageEvidenceFromCandidates(
       "Coverage evidence cannot be bound to the current Jest run. Rerun Jest with coverage enabled.",
     );
   }
-  const { expectedFiles, expectedShapes, candidates, readCoverage } = await prepareCoverageEvidenceCandidates(
-    root,
-    { read, expectedFiles: suppliedExpectedFiles, inventory, coverageDirectory },
-  );
-  return selectCoverageEvidence(candidates, (relativePath) =>
-    readJsonCoverage(
+  const { expectedFiles, expectedShapes, candidates, readCoverage } =
+    await prepareCoverageEvidenceCandidates(root, {
+      read,
+      expectedFiles: suppliedExpectedFiles,
+      inventory,
+      coverageDirectory,
+    });
+  return selectCoverageEvidence(
+    candidates,
+    (relativePath) =>
+      readJsonCoverage(
         join(coverageDirectory ?? root, relativePath),
         relativePath,
         startedAt,
@@ -36,5 +41,9 @@ export async function readCoverageEvidenceFromCandidates(
         expectedFiles,
         expectedShapes,
         Boolean(coverageDirectory),
-      ), testOutput, requireFresh, expectedFiles);
+      ),
+    testOutput,
+    requireFresh,
+    expectedFiles,
+  );
 }

@@ -22,7 +22,9 @@ test("requires declared stages in CI", async () => {
 });
 
 test("passes when no optional validation stages are declared", async () => {
-  await expect(run({ root: "C:\\missing-repository", packageJson: { scripts: {} } })).resolves.toEqual({
+  await expect(
+    run({ root: "C:\\missing-repository", packageJson: { scripts: {} } }),
+  ).resolves.toEqual({
     ruleId: "A-0.1.20.11.0",
     status: "pass",
     message: "",
@@ -49,9 +51,11 @@ test("uses inventory workflow discovery and shared content reads", async () => {
       return readFile(path, encoding);
     },
   });
-  await expect(run({
-    root,
-    packageJson: { scripts: { build: "build" } },
-    repositoryInventory,
-  })).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run({
+      root,
+      packageJson: { scripts: { build: "build" } },
+      repositoryInventory,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
 });

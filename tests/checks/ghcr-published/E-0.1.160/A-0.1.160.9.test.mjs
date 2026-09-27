@@ -7,7 +7,11 @@ import { run } from "../../../../src/checks/ghcr-published/E-0.1.160/A-0.1.160.9
 test("requires operations, GitOps, and handoff boundaries in AGENTS.md", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ghcr-handoff-"));
   await writeFile(join(root, "AGENTS.md"), "Operations GitOps handoff");
-  await expect(run({ root })).resolves.toEqual({ ruleId: "A-0.1.160.9", status: "pass", message: "" });
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "A-0.1.160.9",
+    status: "pass",
+    message: "",
+  });
   await writeFile(join(root, "AGENTS.md"), "Operations only");
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });

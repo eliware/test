@@ -14,7 +14,11 @@ test("rejects prohibited backup and runtime-state artifacts", async () => {
 });
 
 test("returns the repository discovery error", async () => {
-  await expect(run({ root: "C:/repo" }, async () => { throw new Error("discovery failed"); })).resolves.toEqual({
+  await expect(
+    run({ root: "C:/repo" }, async () => {
+      throw new Error("discovery failed");
+    }),
+  ).resolves.toEqual({
     ruleId: "E-0.1.6.1",
     status: "fail",
     message: "discovery failed",
@@ -23,6 +27,8 @@ test("returns the repository discovery error", async () => {
 
 test("uses the run-scoped repository inventory when available", async () => {
   const repositoryInventory = { repositoryFiles: jest.fn(async () => ["README.md"]) };
-  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({ status: "pass" });
+  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({
+    status: "pass",
+  });
   expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
 });

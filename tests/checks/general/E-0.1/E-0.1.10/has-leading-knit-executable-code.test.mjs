@@ -12,7 +12,8 @@ function hasLeadingCode(source) {
 }
 
 test("accepts declarations with inert initializers before command execution", () => {
-  expect(hasLeadingCode(`
+  expect(
+    hasLeadingCode(`
     import { spawnSync } from "node:child_process";
     const value = { nested: 1 };
     export const exported = 1;
@@ -23,7 +24,8 @@ test("accepts declarations with inert initializers before command execution", ()
     class Setup { static value = true; }
     class Methods { method() {} static configured() {} }
     spawnSync("npm", ["test"]);
-  `)).toBe(false);
+  `),
+  ).toBe(false);
 });
 
 test("detects executable statements and initializers before the first command", () => {
@@ -54,6 +56,7 @@ test("checks only statements before the first command", () => {
     'import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]); console.log("after");',
     { sourceType: "module" },
   ).program;
-  const source = 'import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]); console.log("after");';
+  const source =
+    'import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]); console.log("after");';
   expect(hasLeadingKnitExecutableCode(program, source.indexOf("spawnSync("))).toBe(false);
 });

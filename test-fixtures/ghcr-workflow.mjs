@@ -1,7 +1,10 @@
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { releaseTagFilter, releaseTagGuard } from "../src/checks/ghcr-published/release-version-tag.mjs";
+import {
+  releaseTagFilter,
+  releaseTagGuard,
+} from "../src/checks/ghcr-published/release-version-tag.mjs";
 
 const agents = "GHCR image visibility publication workflow provenance deployment managed image.";
 const validation =

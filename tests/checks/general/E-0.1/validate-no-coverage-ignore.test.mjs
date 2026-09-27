@@ -55,31 +55,38 @@ test("rejects pure barrels that are not an exported public entrypoint", async ()
 test("allows an application public entrypoint barrel but rejects an internal application barrel", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-app-barrel-ignore-"));
   await mkdir(join(root, "src"));
-  await writeFile(join(root, "src", "index.mjs"), "// istanbul ignore file\nexport * from './value.mjs';\n");
+  await writeFile(
+    join(root, "src", "index.mjs"),
+    "// istanbul ignore file\nexport * from './value.mjs';\n",
+  );
   await writeFile(join(root, "src", "internal.mjs"), "export * from './value.mjs';\n");
-  await expect(run({
-    root,
-    packageJson: { eliware: { apply: ["application"] }, exports: { ".": "./src/index.mjs" } },
-    findBarrels: async () => ["src/index.mjs"],
-    isPureBarrel: () => true,
-  })).resolves.toMatchObject({ status: "pass" });
-  await writeFile(join(root, "src", "internal.mjs"), "// istanbul ignore file\nexport * from './value.mjs';\n");
-  await expect(run({
-    root,
-    packageJson: { eliware: { apply: ["application"] }, exports: { ".": "./src/index.mjs" } },
-    findBarrels: async () => ["src/index.mjs", "src/internal.mjs"],
-    isPureBarrel: () => true,
-  })).resolves.toMatchObject({ status: "fail" });
+  await expect(
+    run({
+      root,
+      packageJson: { eliware: { apply: ["application"] }, exports: { ".": "./src/index.mjs" } },
+      findBarrels: async () => ["src/index.mjs"],
+      isPureBarrel: () => true,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  await writeFile(
+    join(root, "src", "internal.mjs"),
+    "// istanbul ignore file\nexport * from './value.mjs';\n",
+  );
+  await expect(
+    run({
+      root,
+      packageJson: { eliware: { apply: ["application"] }, exports: { ".": "./src/index.mjs" } },
+      findBarrels: async () => ["src/index.mjs", "src/internal.mjs"],
+      isPureBarrel: () => true,
+    }),
+  ).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
 });
 
 test("rejects a public barrel whose source is not pure", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-barrel-nonpure-"));
   await mkdir(join(root, "src"));
-  await writeFile(
-    join(root, "src", "barrel.mjs"),
-    "const value = 1;\nexport { value };\n",
-  );
+  await writeFile(join(root, "src", "barrel.mjs"), "const value = 1;\nexport { value };\n");
   await expect(
     run({
       root,
@@ -128,7 +135,8 @@ test("uses the run-scoped source view and cached reads", async () => {
   await writeFile(join(root, "src", "legacy.cts"), "module.exports = {};\n");
   await writeFile(join(root, "tests", "helper.mjs"), "export const testHelper = true;\n");
   const repositoryInventory = createRepositoryInventory(root, { includeTestResultsUnder: ["src"] });
-  await expect(run({ root, packageJson: {}, repositoryInventory })).resolves.toMatchObject({ status: "pass" });
+  await expect(run({ root, packageJson: {}, repositoryInventory })).resolves.toMatchObject({
+    status: "pass",
+  });
   await rm(root, { recursive: true, force: true });
 });
-

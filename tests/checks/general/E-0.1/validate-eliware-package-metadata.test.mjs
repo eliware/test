@@ -22,9 +22,8 @@ jest.unstable_mockModule(
   () => ({ validatePackageScripts }),
 );
 
-const { validateEliwarePackageMetadata } = await import(
-  "../../../../src/checks/general/E-0.1/validate-eliware-package-metadata.mjs"
-);
+const { validateEliwarePackageMetadata } =
+  await import("../../../../src/checks/general/E-0.1/validate-eliware-package-metadata.mjs");
 const validators = [
   validatePackageModuleType,
   validatePackageScripts,

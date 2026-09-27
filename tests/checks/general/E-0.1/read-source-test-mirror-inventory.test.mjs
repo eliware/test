@@ -5,16 +5,18 @@ import { join } from "node:path";
 import { readSourceTestMirrorInventory } from "../../../../src/checks/general/E-0.1/read-source-test-mirror-inventory.mjs";
 
 test("projects src and tests files and directories from the repository inventory", async () => {
-  const entriesUnder = jest.fn(async (directory) => directory.endsWith("src")
-    ? [
-        { path: "src/nested", type: "directory" },
-        { path: "src/nested/module.mjs", type: "file" },
-        { path: "src/other.txt", type: "file" },
-      ]
-    : [
-        { path: "tests/nested", type: "directory" },
-        { path: "tests/nested/module.test.mjs", type: "file" },
-      ]);
+  const entriesUnder = jest.fn(async (directory) =>
+    directory.endsWith("src")
+      ? [
+          { path: "src/nested", type: "directory" },
+          { path: "src/nested/module.mjs", type: "file" },
+          { path: "src/other.txt", type: "file" },
+        ]
+      : [
+          { path: "tests/nested", type: "directory" },
+          { path: "tests/nested/module.test.mjs", type: "file" },
+        ],
+  );
 
   await expect(readSourceTestMirrorInventory("/repo", { entriesUnder })).resolves.toEqual({
     sourceFiles: ["nested/module.mjs", "other.txt"],

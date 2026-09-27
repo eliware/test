@@ -5,5 +5,8 @@ export const parentRuleId = "E-0.1.0";
 
 export function run(context) {
   const { root } = context;
-  return checkAgents(root, ruleId, [["readme.md"], ["before"]], { context, section: "Development" });
+  return checkAgents(root, ruleId, [["readme.md"], ["before"]], {
+    context,
+    section: "Development",
+  });
 }

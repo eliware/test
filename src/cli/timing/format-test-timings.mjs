@@ -9,7 +9,9 @@ export function formatTestTimings(report, limit = 10) {
     for (const test of row.tests
       .filter((item) => Number.isFinite(item.duration))
       .sort((left, right) => right.duration - left.duration)) {
-      output.push(`  ${(test.duration / 1000).toFixed(3)}s ${test.fullName ?? test.title ?? "unknown test"}`);
+      output.push(
+        `  ${(test.duration / 1000).toFixed(3)}s ${test.fullName ?? test.title ?? "unknown test"}`,
+      );
     }
   }
   return output.join("\n");

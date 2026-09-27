@@ -13,9 +13,11 @@ export async function validateRegisteredStructuredReference({
       `${reference} cannot be verified without the registered repository map: ${registryError}`,
     );
   }
-  if (!registeredRepositoryRoots.some((repositoryRoot) =>
-    isWithinRegisteredRepository(target, repositoryRoot),
-  )) {
+  if (
+    !registeredRepositoryRoots.some((repositoryRoot) =>
+      isWithinRegisteredRepository(target, repositoryRoot),
+    )
+  ) {
     throw new Error(`${reference} is outside every registered repository path`);
   }
   try {

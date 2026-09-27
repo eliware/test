@@ -27,11 +27,15 @@ test("reuses automaton state instead of rescanning the retained suffix", () => {
 test("suppresses malformed incremental state and work-budget overflow", () => {
   const nullMatcher = () => [];
   nullMatcher.createStream = () => () => null;
-  expect(createBoundedSecretSearch(["x"], 10, nullMatcher)("x")).toMatchObject({ suppressed: true });
+  expect(createBoundedSecretSearch(["x"], 10, nullMatcher)("x")).toMatchObject({
+    suppressed: true,
+  });
 
   const expensiveMatcher = () => [];
   expensiveMatcher.createStream = () => () => ({ matches: [], work: 11 });
-  expect(createBoundedSecretSearch(["x"], 10, expensiveMatcher)("x")).toMatchObject({ suppressed: true });
+  expect(createBoundedSecretSearch(["x"], 10, expensiveMatcher)("x")).toMatchObject({
+    suppressed: true,
+  });
 
   const emptyMatcher = () => [];
   emptyMatcher.createStream = () => () => ({ matches: [], work: 1 });
@@ -44,13 +48,21 @@ test("keeps only overlapping matches inside the pending window", () => {
   let call = 0;
   const matcher = () => [];
   matcher.createStream = () => () => ({
-    matches: call++ === 0
-      ? [{ start: -1, end: 2 }, { start: 1, end: 5 }, { start: 3, end: 9 }]
-      : [],
+    matches:
+      call++ === 0
+        ? [
+            { start: -1, end: 2 },
+            { start: 1, end: 5 },
+            { start: 3, end: 9 },
+          ]
+        : [],
     work: 1,
   });
   const search = createBoundedSecretSearch(["abc"], 100, matcher);
-  expect(search("abcdef")).toMatchObject({ boundary: 1, matchEnds: expect.arrayContaining([0, 5]) });
+  expect(search("abcdef")).toMatchObject({
+    boundary: 1,
+    matchEnds: expect.arrayContaining([0, 5]),
+  });
 
   let filteredCall = 0;
   const filteredMatcher = () => [];
@@ -89,9 +101,13 @@ test("merges newly discovered intervals into the retained interval order", () =>
   let orderedCall = 0;
   const orderedMatcher = () => [];
   orderedMatcher.createStream = () => () => ({
-    matches: orderedCall++ === 0
-      ? [{ start: 0, end: 4 }, { start: 0, end: 5 }]
-      : [{ start: 6, end: 7 }],
+    matches:
+      orderedCall++ === 0
+        ? [
+            { start: 0, end: 4 },
+            { start: 0, end: 5 },
+          ]
+        : [{ start: 6, end: 7 }],
     work: 1,
   });
   const orderedSearch = createBoundedSecretSearch(["abcd"], 100, orderedMatcher);

@@ -9,7 +9,10 @@ export function validateWorkflowFileSet(workflowNames, packageJson = {}) {
 
   const actual = [...workflowNames].sort();
   const required = [...expected].sort();
-  if (actual.length === required.length && actual.every((name, index) => name === required[index])) {
+  if (
+    actual.length === required.length &&
+    actual.every((name, index) => name === required[index])
+  ) {
     return null;
   }
 

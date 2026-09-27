@@ -8,13 +8,15 @@ test("passes the invocation environment into the executed audit child", async ()
     await run(process.execPath, ["npm-cli.js", "audit"], { cwd: root });
     return { code: 0, receivedEnv, args };
   });
-  await expect(executeAuditProcess({
-    root: "/repo",
-    runAudit,
-    runChild,
-    toolArgs: ["--no-fund"],
-    env,
-  })).resolves.toEqual({ code: 0, receivedEnv: env, args: ["--no-fund"] });
+  await expect(
+    executeAuditProcess({
+      root: "/repo",
+      runAudit,
+      runChild,
+      toolArgs: ["--no-fund"],
+      env,
+    }),
+  ).resolves.toEqual({ code: 0, receivedEnv: env, args: ["--no-fund"] });
   expect(runChild).toHaveBeenCalledWith(process.execPath, ["npm-cli.js", "audit"], {
     cwd: "/repo",
     env,
@@ -31,12 +33,14 @@ test("lets the npm audit adapter resolve its own child arguments", async () => {
 test("passes the invocation environment through to the audit adapter", async () => {
   const env = { npm_execpath: "selected-npm-cli.js" };
   const runAudit = jest.fn(async (_root, _run, _resolve, _args, receivedEnv) => ({ receivedEnv }));
-  await expect(executeAuditProcess({
-    root: "/repo",
-    runAudit,
-    runChild: jest.fn(),
-    toolArgs: [],
-    env,
-  })).resolves.toEqual({ receivedEnv: env });
+  await expect(
+    executeAuditProcess({
+      root: "/repo",
+      runAudit,
+      runChild: jest.fn(),
+      toolArgs: [],
+      env,
+    }),
+  ).resolves.toEqual({ receivedEnv: env });
   expect(runAudit).toHaveBeenCalledWith("/repo", expect.any(Function), undefined, [], env);
 });

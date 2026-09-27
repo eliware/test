@@ -21,11 +21,13 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
     );
     const executeConvention = options.runConventionStage ?? runConventionStage;
     const executeValidation = options.runValidation ?? runValidation;
-    const result = await executeConvention(() => executeValidation(
-      root,
-      diagnosticOptions.ignoredRuleIds,
-      createValidationRunOptions(args, diagnosticOptions, options, timing, write),
-    ));
+    const result = await executeConvention(() =>
+      executeValidation(
+        root,
+        diagnosticOptions.ignoredRuleIds,
+        createValidationRunOptions(args, diagnosticOptions, options, timing, write),
+      ),
+    );
     writeValidationResults(result, write, args.includes("--debug-timing"), timing, startedAt);
     if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
     return result.code;

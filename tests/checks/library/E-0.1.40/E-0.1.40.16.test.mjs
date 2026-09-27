@@ -1,10 +1,12 @@
 import { expect, jest, test } from "@jest/globals";
 
 const runCoverageCheck = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/E-0.1.20/run-coverage-check.mjs", () => ({ runCoverageCheck }));
-const { focusedSafe, parentRuleId, ruleId, run } = await import(
-  "../../../../src/checks/library/E-0.1.40/E-0.1.40.16.mjs"
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/E-0.1.20/run-coverage-check.mjs",
+  () => ({ runCoverageCheck }),
 );
+const { focusedSafe, parentRuleId, ruleId, run } =
+  await import("../../../../src/checks/library/E-0.1.40/E-0.1.40.16.mjs");
 
 test("forwards library identity and context to the shared coverage check", () => {
   const context = { executeJest: false };

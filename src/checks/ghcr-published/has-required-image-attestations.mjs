@@ -13,14 +13,18 @@ const requiredPermissions = {
 
 export function hasRequiredImageAttestations(workflow, job) {
   const granted = permissions(workflow, job);
-  if (Object.entries(requiredPermissions).some(([name, value]) => granted[name] !== value)) return false;
+  if (Object.entries(requiredPermissions).some(([name, value]) => granted[name] !== value))
+    return false;
   const jobSteps = steps(job);
   const pushes = findImagePushes(job);
-  return pushes.length > 0 && pushes.every((push) => {
-    const details = imageDetails(push);
-    if (!details.image || !details.digestReference) return false;
-    const pushIndex = jobSteps.indexOf(push);
-    const afterPush = { ...job, steps: jobSteps.slice(pushIndex + 1) };
-    return Boolean(findAttestation(afterPush, details));
-  });
+  return (
+    pushes.length > 0 &&
+    pushes.every((push) => {
+      const details = imageDetails(push);
+      if (!details.image || !details.digestReference) return false;
+      const pushIndex = jobSteps.indexOf(push);
+      const afterPush = { ...job, steps: jobSteps.slice(pushIndex + 1) };
+      return Boolean(findAttestation(afterPush, details));
+    })
+  );
 }

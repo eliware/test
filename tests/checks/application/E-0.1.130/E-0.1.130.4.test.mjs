@@ -2,20 +2,32 @@ import { expect, jest, test } from "@jest/globals";
 
 const collectRepositoryFiles = jest.fn();
 const runSourceTestMirroring = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/collect-repository-files.mjs", () => ({ collectRepositoryFiles }));
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/validate-source-test-mirroring.mjs", () => ({ runSourceTestMirroring }));
-const { collect, focusedSafe, parentRuleId, repositoryInventoryOptions, ruleId, run } = await import(
-  "../../../../src/checks/application/E-0.1.130/E-0.1.130.4.mjs"
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/collect-repository-files.mjs",
+  () => ({ collectRepositoryFiles }),
 );
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/validate-source-test-mirroring.mjs",
+  () => ({ runSourceTestMirroring }),
+);
+const { collect, focusedSafe, parentRuleId, repositoryInventoryOptions, ruleId, run } =
+  await import("../../../../src/checks/application/E-0.1.130/E-0.1.130.4.mjs");
 
 test("wires application identity, focused scope, inventory, and collection", () => {
-  const context = { root: "/repo", focusedScope: { paths: ["src/a.mjs"] }, repositoryInventory: {} };
+  const context = {
+    root: "/repo",
+    focusedScope: { paths: ["src/a.mjs"] },
+    repositoryInventory: {},
+  };
   const result = { status: "pass" };
   runSourceTestMirroring.mockReturnValueOnce(result);
   expect(ruleId).toBe("E-0.1.130.4");
   expect(parentRuleId).toBe("E-0.1.130");
   expect(focusedSafe).toBe(true);
-  expect(repositoryInventoryOptions).toEqual({ expandedDirectories: ["src", "tests"], includeTestResultsUnder: ["src", "tests"] });
+  expect(repositoryInventoryOptions).toEqual({
+    expandedDirectories: ["src", "tests"],
+    includeTestResultsUnder: ["src", "tests"],
+  });
   expect(collect).toBe(collectRepositoryFiles);
   expect(run(context)).toBe(result);
   expect(runSourceTestMirroring).toHaveBeenCalledWith({

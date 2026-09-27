@@ -8,7 +8,10 @@
     ]
   },
   "crosslinks": [
-    { "path": "../../../docs/authority-map.json", "authoritativeFor": "Cross-repository ownership." },
+    {
+      "path": "../../../docs/authority-map.json",
+      "authoritativeFor": "Cross-repository ownership."
+    },
     { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
   ],
   "directives": [

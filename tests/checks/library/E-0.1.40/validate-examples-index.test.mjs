@@ -6,6 +6,13 @@ test("requires the runnable example index contract", () => {
 });
 
 test("requires every named example to be linked", () => {
-  expect(validateExamplesIndex("Purpose\nPrerequisites\nCommand\nExpected result", ["basic.mjs"])).toContain("basic.mjs");
-  expect(validateExamplesIndex("Purpose\nPrerequisites\nCommand\nExpected result\n[basic.mjs](basic.mjs)", ["basic.mjs"])).toBeNull();
+  expect(
+    validateExamplesIndex("Purpose\nPrerequisites\nCommand\nExpected result", ["basic.mjs"]),
+  ).toContain("basic.mjs");
+  expect(
+    validateExamplesIndex(
+      "Purpose\nPrerequisites\nCommand\nExpected result\n[basic.mjs](basic.mjs)",
+      ["basic.mjs"],
+    ),
+  ).toBeNull();
 });

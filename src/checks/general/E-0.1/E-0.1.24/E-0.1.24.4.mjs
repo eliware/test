@@ -10,7 +10,9 @@ export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run({ root, packageJson, repositoryInventory }) {
   let workflows;
-  try { workflows = await readWorkflows(root, repositoryInventory); } catch (error) {
+  try {
+    workflows = await readWorkflows(root, repositoryInventory);
+  } catch (error) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
   const fileSetError = validateWorkflowFileSet(
@@ -18,7 +20,8 @@ export async function run({ root, packageJson, repositoryInventory }) {
     packageJson,
   );
   if (fileSetError) return fail(ruleId, fileSetError);
-  const allowAttestation = Array.isArray(packageJson?.eliware?.apply) &&
+  const allowAttestation =
+    Array.isArray(packageJson?.eliware?.apply) &&
     packageJson.eliware.apply.includes("ghcr-published");
   for (const { name, document } of workflows) {
     const selection = selectWorkflowValidationJobs(name, document);

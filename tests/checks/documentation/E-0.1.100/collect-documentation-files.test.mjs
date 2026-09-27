@@ -2,7 +2,11 @@ import { expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { collectDocumentationFiles, jsonFiles, repositoryFiles } from "../../../../src/checks/documentation/E-0.1.100/collect-documentation-files.mjs";
+import {
+  collectDocumentationFiles,
+  jsonFiles,
+  repositoryFiles,
+} from "../../../../src/checks/documentation/E-0.1.100/collect-documentation-files.mjs";
 import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
 
 test("collects documentation files while excluding generated directories", async () => {
@@ -26,12 +30,16 @@ test("bounds traversal depth and file count", async () => {
     await mkdir(deep);
   }
   await writeFile(join(deep, "deep.md"), "# deep");
-  await expect(collectDocumentationFiles(root, root, () => true, { maxDepth: 32 })).rejects.toThrow("depth limit");
+  await expect(collectDocumentationFiles(root, root, () => true, { maxDepth: 32 })).rejects.toThrow(
+    "depth limit",
+  );
   await rm(root, { recursive: true, force: true });
   const shallow = await mkdtemp(join(tmpdir(), "eliware-doc-file-limit-"));
   await writeFile(join(shallow, "one.md"), "# one");
   await expect(collectDocumentationFiles(shallow)).resolves.toEqual(["one.md"]);
-  await expect(collectDocumentationFiles(shallow, shallow, () => true, { maxFiles: 0 })).rejects.toThrow("file limit");
+  await expect(
+    collectDocumentationFiles(shallow, shallow, () => true, { maxFiles: 0 }),
+  ).rejects.toThrow("file limit");
   await rm(shallow, { recursive: true, force: true });
 });
 
@@ -43,7 +51,10 @@ test("uses the shared inventory for JSON and Markdown documentation views", asyn
   const inventory = createRepositoryInventory(root);
   try {
     await expect(jsonFiles(root, inventory)).resolves.toEqual(["docs/record.json"]);
-    await expect(repositoryFiles(root, inventory)).resolves.toEqual(["docs/index.md", "docs/record.json"]);
+    await expect(repositoryFiles(root, inventory)).resolves.toEqual([
+      "docs/index.md",
+      "docs/record.json",
+    ]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

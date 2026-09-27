@@ -20,5 +20,7 @@ export function validateReleaseNoteContent(entries, currentVersion) {
 }
 
 function isMeaningfulChangeLine(line) {
-  return typeof line === "string" && !/^\s{0,3}#{1,6}(?:\s|$)/u.test(line) && /[\p{L}\p{N}]/u.test(line);
+  return (
+    typeof line === "string" && !/^\s{0,3}#{1,6}(?:\s|$)/u.test(line) && /[\p{L}\p{N}]/u.test(line)
+  );
 }

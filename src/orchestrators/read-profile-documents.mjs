@@ -9,9 +9,7 @@ export function readProfileDocuments(directory) {
   return readdirSync(path, { withFileTypes: true })
     .filter(
       (entry) =>
-        entry.isFile() &&
-        entry.name.endsWith(".json") &&
-        !nonProfileDocuments.has(entry.name),
+        entry.isFile() && entry.name.endsWith(".json") && !nonProfileDocuments.has(entry.name),
     )
     .map((entry) => ({
       source: entry.name,

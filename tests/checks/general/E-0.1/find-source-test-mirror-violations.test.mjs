@@ -7,7 +7,12 @@ test("accepts an exact source and directory mirror", () => {
 });
 
 test("reports missing and orphan files, directories, and invalid extensions", () => {
-  const findings = findMirrorViolations(["missing.mjs", "bad.js", "notes.txt"], ["orphan.test.mjs", "bad.js"], ["source-only"], ["test-only"]);
+  const findings = findMirrorViolations(
+    ["missing.mjs", "bad.js", "notes.txt"],
+    ["orphan.test.mjs", "bad.js"],
+    ["source-only"],
+    ["test-only"],
+  );
   expect(findings).toEqual([
     expect.stringContaining("counts differ"),
     expect.stringContaining("missing mirrored tests"),
@@ -21,9 +26,11 @@ test("reports missing and orphan files, directories, and invalid extensions", ()
 
 test("detects file and directory count mismatches independently", () => {
   expect(findMirrorViolations(["a.mjs"], [], [], [])).toEqual([
-    expect.stringContaining("counts differ"), expect.stringContaining("missing mirrored tests"),
+    expect.stringContaining("counts differ"),
+    expect.stringContaining("missing mirrored tests"),
   ]);
   expect(findMirrorViolations([], [], ["nested"], [])).toEqual([
-    expect.stringContaining("counts differ"), expect.stringContaining("missing mirrored directories"),
+    expect.stringContaining("counts differ"),
+    expect.stringContaining("missing mirrored directories"),
   ]);
 });

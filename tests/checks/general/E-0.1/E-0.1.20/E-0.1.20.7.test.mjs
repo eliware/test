@@ -13,22 +13,28 @@ test("requires Jest configuration in package.json", async () => {
     message: "",
   });
   expect(await run({ root, packageJson: {} })).toEqual(expect.objectContaining({ status: "fail" }));
-  expect(await run({ root, packageJson: { jest: [] } })).toEqual(expect.objectContaining({ status: "fail" }));
-  expect(await run({ root, packageJson: { jest: null } })).toEqual(expect.objectContaining({ status: "fail" }));
-  expect(await run({ root, packageJson: { jest: "jest" } })).toEqual(expect.objectContaining({ status: "fail" }));
+  expect(await run({ root, packageJson: { jest: [] } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  expect(await run({ root, packageJson: { jest: null } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  expect(await run({ root, packageJson: { jest: "jest" } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
   await rm(root, { recursive: true, force: true });
 });
 
 test("rejects separate Jest configuration files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-config-"));
   await writeFile(join(root, "jest.config.mjs"), "export default {};\n");
-  await expect(run({
-    root,
-    packageJson: { jest: {} },
-    repositoryInventory: createRepositoryInventory(root, { includeTestResults: true }),
-  })).resolves.toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
+  await expect(
+    run({
+      root,
+      packageJson: { jest: {} },
+      repositoryInventory: createRepositoryInventory(root, { includeTestResults: true }),
+    }),
+  ).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await rm(root, { recursive: true, force: true });
 });
 
@@ -46,7 +52,10 @@ test("reports failures when the repository root cannot be enumerated", async () 
   const root = join(await mkdtemp(join(tmpdir(), "eliware-test-jest-root-")), "not-a-directory");
   await writeFile(root, "not a directory");
   await expect(run({ root, packageJson: { jest: {} } })).resolves.toEqual(
-    expect.objectContaining({ status: "fail", message: expect.stringContaining("could not be inspected") }),
+    expect.objectContaining({
+      status: "fail",
+      message: expect.stringContaining("could not be inspected"),
+    }),
   );
   await rm(root, { force: true });
 });

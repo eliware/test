@@ -6,9 +6,15 @@ function normalizeSource(file) {
 
 function isSourcePath(file) {
   const segments = normalizeSource(file).split("/");
-  return segments[0] === "src" &&
-    !segments.slice(1).some((segment) => ["test", "tests", "fixture", "fixtures", "generated", "dist", "build"].includes(segment)) &&
-    /\.(?:mjs|js|cjs)$/iu.test(segments.at(-1));
+  return (
+    segments[0] === "src" &&
+    !segments
+      .slice(1)
+      .some((segment) =>
+        ["test", "tests", "fixture", "fixtures", "generated", "dist", "build"].includes(segment),
+      ) &&
+    /\.(?:mjs|js|cjs)$/iu.test(segments.at(-1))
+  );
 }
 
 export function validateTextCoverageRows(fileRows, expectedFiles) {

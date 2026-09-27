@@ -4,13 +4,24 @@ const TOOL_NAMES = {
 };
 
 function firstCommandToken(script) {
-  return script.trim().split(/\s+/u)[0].replace(/^.*[\\/]/u, "").replace(/\.(?:cmd|exe|js|mjs)$/iu, "").toLowerCase();
+  return script
+    .trim()
+    .split(/\s+/u)[0]
+    .replace(/^.*[\\/]/u, "")
+    .replace(/\.(?:cmd|exe|js|mjs)$/iu, "")
+    .toLowerCase();
 }
 
 export function validateDirectToolScript(script, kind) {
   if (typeof script !== "string" || !script.trim()) return `The ${kind} script must be nonempty.`;
   const token = firstCommandToken(script);
-  if (token === "npm" || token === "npx" || token === "pnpm" || token === "yarn" || token === "eliware-test") {
+  if (
+    token === "npm" ||
+    token === "npx" ||
+    token === "pnpm" ||
+    token === "yarn" ||
+    token === "eliware-test"
+  ) {
     return `The ${kind} script must invoke its direct tool, not another package script or eliware-test.`;
   }
   if (!TOOL_NAMES[kind]?.has(token)) {

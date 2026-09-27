@@ -28,7 +28,8 @@ export function run({ packageJson }) {
       typeof exemption.approvalTimestamp !== "string" ||
       !validTimestamp(exemption.approvalTimestamp) ||
       (exemption.expiry !== null &&
-        (typeof exemption.expiry !== "string" || !validDate(exemption.expiry) ||
+        (typeof exemption.expiry !== "string" ||
+          !validDate(exemption.expiry) ||
           Date.parse(`${exemption.expiry}T23:59:59.999Z`) < Date.now()))
     ) {
       return fail(

@@ -30,5 +30,7 @@ test("validates authority record subjects and references", async () => {
       },
     }),
   ).resolves.toBeNull();
-  await expect(validateAuthorityRecord({ root, file, document: {} })).resolves.toContain("subjects array");
+  await expect(validateAuthorityRecord({ root, file, document: {} })).resolves.toContain(
+    "subjects array",
+  );
 });

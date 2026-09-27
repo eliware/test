@@ -11,13 +11,23 @@ test("writes one concise line for a clean validation run", () => {
   const write = jest.fn();
   writeValidationResults({ code: 0, diagnostics: [] }, write, false, {}, 0);
   expect(write).toHaveBeenCalledTimes(1);
-  expect(write).toHaveBeenCalledWith("All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0");
+  expect(write).toHaveBeenCalledWith(
+    "All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0",
+  );
 });
 
 test("does not claim a clean run when output or diagnostics exist", () => {
   const write = jest.fn();
-  writeValidationResults({ code: 0, diagnostics: [], output: "unexpected output" }, write, false, {}, 0);
-  expect(write).not.toHaveBeenCalledWith("All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0");
+  writeValidationResults(
+    { code: 0, diagnostics: [], output: "unexpected output" },
+    write,
+    false,
+    {},
+    0,
+  );
+  expect(write).not.toHaveBeenCalledWith(
+    "All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0",
+  );
 });
 
 test("writes timing output when timing is enabled", () => {

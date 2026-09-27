@@ -8,6 +8,10 @@ export async function runNpmAudit(
   env = process.env,
 ) {
   const auditArguments = buildAuditArguments(extraArgs);
-  const [command, prefix] = resolveCommand({ env, platform: process.platform, execPath: process.execPath });
+  const [command, prefix] = resolveCommand({
+    env,
+    platform: process.platform,
+    execPath: process.execPath,
+  });
   return run(command, [...prefix, ...auditArguments], { cwd: root, env: { ...env } });
 }

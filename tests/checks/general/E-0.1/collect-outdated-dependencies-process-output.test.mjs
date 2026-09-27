@@ -43,7 +43,12 @@ test("rejects overflow after terminating the child", async () => {
   child.stdout.emit("data", Buffer.from("123456"));
   child.stdout.emit("data", Buffer.from("later"));
   expect(deps.terminateProcess).toHaveBeenCalledWith(
-    child, "linux", deps.killProcess, deps.killTree, {}, "SIGTERM",
+    child,
+    "linux",
+    deps.killProcess,
+    deps.killTree,
+    {},
+    "SIGTERM",
   );
   child.emit("close", null);
   await expect(result).rejects.toThrow("output exceeded 5 characters");
@@ -59,7 +64,8 @@ test("escalates overflow termination and rejects if the process does not close",
   await jest.advanceTimersByTimeAsync(20);
   await rejection;
   expect(deps.terminateProcess.mock.calls.map((call) => call.at(-1))).toEqual([
-    "SIGTERM", "SIGKILL",
+    "SIGTERM",
+    "SIGKILL",
   ]);
 });
 
@@ -74,7 +80,12 @@ test("passes Windows process-tree dependencies on overflow and ignores later eve
   child.emit("error", new Error("late error"));
   await expect(result).rejects.toThrow("output exceeded 5 characters");
   expect(deps.terminateProcess).toHaveBeenCalledWith(
-    child, "win32", deps.killProcess, deps.killTree, env, "SIGTERM",
+    child,
+    "win32",
+    deps.killProcess,
+    deps.killTree,
+    env,
+    "SIGTERM",
   );
 });
 

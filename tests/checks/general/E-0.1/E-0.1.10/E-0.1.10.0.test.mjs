@@ -4,10 +4,22 @@ const readKnitScript = jest.fn();
 const validateKnitCommandStructure = jest.fn();
 const validateKnitSourceOperations = jest.fn();
 const validateKnitPublicationCommands = jest.fn();
-jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/read-knit-script.mjs", () => ({ readKnitScript }));
-jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-command-structure.mjs", () => ({ validateKnitCommandStructure }));
-jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-source-operations.mjs", () => ({ validateKnitSourceOperations }));
-jest.unstable_mockModule("../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-publication-commands.mjs", () => ({ validateKnitPublicationCommands }));
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.10/read-knit-script.mjs",
+  () => ({ readKnitScript }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-command-structure.mjs",
+  () => ({ validateKnitCommandStructure }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-source-operations.mjs",
+  () => ({ validateKnitSourceOperations }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.10/validate-knit-publication-commands.mjs",
+  () => ({ validateKnitPublicationCommands }),
+);
 
 const { run } = await import("../../../../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.0.mjs");
 

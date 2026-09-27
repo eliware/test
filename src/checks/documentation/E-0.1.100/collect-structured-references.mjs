@@ -6,7 +6,11 @@ export function collectStructuredReferences(document) {
       references.push({ path: value.path, crossRepository });
     }
     for (const [key, child] of Object.entries(value)) {
-      visit(child, crossRepository || key === "crosslinks");
+      visit(
+        child,
+        crossRepository ||
+          ["crosslinks", "repositoryRegistry", "structuredDocuments"].includes(key),
+      );
     }
   };
   visit(document);

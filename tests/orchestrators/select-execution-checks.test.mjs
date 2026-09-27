@@ -8,6 +8,10 @@ test("keeps all checks for aggregate runs", () => {
 
 test("keeps only focused-safe checks for a focused run", () => {
   const focused = { ruleId: "E-0.1.1", focusedSafe: true };
-  expect(selectExecutionChecks([focused, { ruleId: "E-0.1.2" }, { ruleId: "E-0.1.3", focusedSafe: false }], {}))
-    .toEqual([focused]);
+  expect(
+    selectExecutionChecks(
+      [focused, { ruleId: "E-0.1.2" }, { ruleId: "E-0.1.3", focusedSafe: false }],
+      {},
+    ),
+  ).toEqual([focused]);
 });

@@ -7,7 +7,10 @@ import {
 const documents = [
   {
     source: "general.json",
-    document: { version: bundledConventionVersion, directives: [{ id: "E-0.1", dos: ["Do this."], donts: ["Avoid that."] }] },
+    document: {
+      version: bundledConventionVersion,
+      directives: [{ id: "E-0.1", dos: ["Do this."], donts: ["Avoid that."] }],
+    },
   },
 ];
 

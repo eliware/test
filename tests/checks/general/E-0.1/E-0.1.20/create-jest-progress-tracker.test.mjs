@@ -3,14 +3,20 @@ import { createJestProgressTracker } from "../../../../../src/checks/general/E-0
 
 test("reports startup timeout until progress identifies a suite and test", () => {
   const progress = createJestProgressTracker();
-  expect(progress.timeoutMessage()).toBe("Test suite Jest startup timed out after 15 seconds without progress.");
+  expect(progress.timeoutMessage()).toBe(
+    "Test suite Jest startup timed out after 15 seconds without progress.",
+  );
 
   progress.readProgress("[eliware-test-progress] start tests/hanging.test.mjs\n");
-  expect(progress.timeoutMessage()).toBe("Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.");
+  expect(progress.timeoutMessage()).toBe(
+    "Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.",
+  );
 
   progress.readProgress("[eliware-test-progress] test tests/hanging.test.mjs :: test 4 0.100s\n");
   progress.readProgress("unrecognized progress text\n");
-  expect(progress.timeoutMessage()).toBe("Test suite tests/hanging.test.mjs :: test 4 timed out after 15 seconds without progress.");
+  expect(progress.timeoutMessage()).toBe(
+    "Test suite tests/hanging.test.mjs :: test 4 timed out after 15 seconds without progress.",
+  );
 });
 
 test("supports a configured timeout duration", () => {

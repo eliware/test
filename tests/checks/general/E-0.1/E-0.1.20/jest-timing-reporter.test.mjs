@@ -2,9 +2,8 @@ import { afterEach, beforeEach, expect, test } from "@jest/globals";
 
 const writes = [];
 const originalWrite = process.stderr.write.bind(process.stderr);
-const { default: JestTimingReporter } = await import(
-  "../../../../../src/checks/general/E-0.1/E-0.1.20/jest-timing-reporter.mjs"
-);
+const { default: JestTimingReporter } =
+  await import("../../../../../src/checks/general/E-0.1/E-0.1.20/jest-timing-reporter.mjs");
 
 beforeEach(() => {
   writes.length = 0;
@@ -38,7 +37,10 @@ test("reports suite start, completion, and case timing", () => {
 
 test("does not report cases without durations", () => {
   const reporter = new JestTimingReporter();
-  reporter.onTestResult({ path: "tests/example.test.mjs" }, { assertionResults: [{ status: "failed", title: "broken" }] });
+  reporter.onTestResult(
+    { path: "tests/example.test.mjs" },
+    { assertionResults: [{ status: "failed", title: "broken" }] },
+  );
   expect(writes).toEqual(["[eliware-test] Completed tests/example.test.mjs — 0.000s\n"]);
 });
 

@@ -19,7 +19,11 @@ export async function readRegisteredRepositoryRootsResult(root, inventory) {
   } catch (error) {
     return { roots: null, error: describeRegistryReadError(authorityFile, error) };
   }
-  if (!authority || typeof authority !== "object" || typeof authority.globalAuthorityMap !== "string") {
+  if (
+    !authority ||
+    typeof authority !== "object" ||
+    typeof authority.globalAuthorityMap !== "string"
+  ) {
     return { roots: null, error: `${authorityFile} must declare globalAuthorityMap.` };
   }
   const mapPath = resolve(dirname(authorityFile), authority.globalAuthorityMap);
@@ -41,8 +45,9 @@ export async function readRegisteredRepositoryRootsResult(root, inventory) {
 }
 
 function describeRegistryReadError(path, error) {
-  const reason = error instanceof SyntaxError
-    ? "contains invalid JSON"
-    : `could not be read (${error?.code ?? "unknown error"})`;
+  const reason =
+    error instanceof SyntaxError
+      ? "contains invalid JSON"
+      : `could not be read (${error?.code ?? "unknown error"})`;
   return `${path} ${reason}.`;
 }

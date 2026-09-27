@@ -1,13 +1,46 @@
 const valueOptions = new Set([
-  "--config", "--coverageDirectory", "--coverageThreshold", "--collectCoverageFrom",
-  "--changedSince", "--findRelatedTests", "--maxConcurrency", "--maxWorkers", "--outputFile",
-  "--preset", "--projects", "--rootDir", "--runTestsByPath", "--selectProjects", "--shard",
-  "--testEnvironment", "--testMatch", "--testNamePattern", "--testPathPattern", "--testRegex",
-  "--testRunner", "--testSequencer", "--testTimeout", "--transform", "--transformIgnorePatterns",
-  "--watchPathIgnorePatterns", "--reporters", "--env", "--resolver", "--setupFiles",
-  "--setupFilesAfterEnv", "--moduleNameMapper", "--modulePathIgnorePatterns", "--testLocationInResults",
-  "--coverageReporters", "--coveragePathIgnorePatterns", "--snapshotSerializers", "--watchPlugins",
-  "-c", "-w", "-t", "-o",
+  "--config",
+  "--coverageDirectory",
+  "--coverageThreshold",
+  "--collectCoverageFrom",
+  "--changedSince",
+  "--findRelatedTests",
+  "--maxConcurrency",
+  "--maxWorkers",
+  "--outputFile",
+  "--preset",
+  "--projects",
+  "--rootDir",
+  "--runTestsByPath",
+  "--selectProjects",
+  "--shard",
+  "--testEnvironment",
+  "--testMatch",
+  "--testNamePattern",
+  "--testPathPattern",
+  "--testRegex",
+  "--testRunner",
+  "--testSequencer",
+  "--testTimeout",
+  "--transform",
+  "--transformIgnorePatterns",
+  "--watchPathIgnorePatterns",
+  "--reporters",
+  "--env",
+  "--resolver",
+  "--setupFiles",
+  "--setupFilesAfterEnv",
+  "--moduleNameMapper",
+  "--modulePathIgnorePatterns",
+  "--testLocationInResults",
+  "--coverageReporters",
+  "--coveragePathIgnorePatterns",
+  "--snapshotSerializers",
+  "--watchPlugins",
+  "-c",
+  "-w",
+  "-t",
+  "-o",
 ]);
 
 export function parseFocusedArguments(args = []) {
@@ -25,5 +58,6 @@ export function parseFocusedArguments(args = []) {
 
 export function focusedPathFrom(args = []) {
   return parseFocusedArguments(args).positional.find((argument) =>
-    /^tests?(?:[\\/]|$)/iu.test(argument));
+    /^tests?(?:[\\/]|$)/iu.test(argument),
+  );
 }

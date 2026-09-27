@@ -709,10 +709,12 @@
               "id": "E-0.1.20.17",
               "dos": [
                 "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applicable profile or declared capability requires them: pack for npm publication; typecheck and build when package.json.eliware.capabilities declares them; and lighthouse and puppeteer for web projects.",
+                "An explicitly authorized self-hosting exception may let @eliware/test scripts invoke its local bin entrypoint instead of the canonical eliware-test command. This exception applies only to the script-command requirement; aggregate validation must still execute and validate every required stage.",
                 "Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation."
               ],
               "donts": [
-                "Do not omit, rename, or replace a shared validation script, add unrelated package script names, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command."
+                "Do not omit, rename, or replace a shared validation script, add unrelated package script names, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command.",
+                "Do not let a self-hosting script-command exception skip execution or result validation for tests, lint, formatting, or audit."
               ]
             },
             {
@@ -727,10 +729,12 @@
             {
               "id": "E-0.1.20.19",
               "dos": [
-                "Every repository's aggregate test validation must execute its audit stage through the shared audit script."
+                "Every repository's aggregate test validation must execute its audit stage through the shared audit script.",
+                "An explicitly authorized self-hosting exception may change only the audit script command used by @eliware/test; aggregate validation must still run npm audit and validate its report."
               ],
               "donts": [
-                "Do not omit audit from the aggregate test validation or run a separate direct audit command."
+                "Do not omit audit from the aggregate test validation or run a separate direct audit command.",
+                "Do not treat a self-hosting audit script exception as an exemption from running audit or checking its result."
               ]
             }
           ]

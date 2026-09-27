@@ -13,7 +13,11 @@ export async function run(context) {
   try {
     const files = await jsonFiles(root, context.repositoryInventory);
     await validateStructuredReferences(root, files, context.repositoryInventory);
-    const authorityError = await validateAuthorityDocuments(root, files, context.repositoryInventory);
+    const authorityError = await validateAuthorityDocuments(
+      root,
+      files,
+      context.repositoryInventory,
+    );
     if (authorityError) return fail(ruleId, authorityError);
     const linkError = await validateDocumentationLinks(root, context);
     if (linkError) return fail(ruleId, linkError);

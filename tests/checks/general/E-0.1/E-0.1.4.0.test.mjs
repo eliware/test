@@ -61,7 +61,9 @@ test("uses focused paths instead of the repository inventory", async () => {
     focusedScope: { paths: ["tests/a.test.mjs"] },
     validateFiles,
   });
-  expect(validateFiles).toHaveBeenCalledWith("/repo", ["tests/a.test.mjs"], { parseAst: undefined });
+  expect(validateFiles).toHaveBeenCalledWith("/repo", ["tests/a.test.mjs"], {
+    parseAst: undefined,
+  });
 });
 
 test("fails closed when the repository inventory is unavailable", async () => {

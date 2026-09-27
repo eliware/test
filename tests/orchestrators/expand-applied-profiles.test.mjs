@@ -4,8 +4,9 @@ import { expandAppliedProfiles } from "../../src/orchestrators/expand-applied-pr
 const authority = { profiles: { general: {}, application: {}, cli: {} } };
 
 test("keeps known profiles in order while removing duplicates and unknown names", () => {
-  expect(expandAppliedProfiles(["general", "application", "general", "unknown"], authority))
-    .toEqual(["general", "application"]);
+  expect(
+    expandAppliedProfiles(["general", "application", "general", "unknown"], authority),
+  ).toEqual(["general", "application"]);
 });
 
 test("uses bundled profile authority by default", () => {

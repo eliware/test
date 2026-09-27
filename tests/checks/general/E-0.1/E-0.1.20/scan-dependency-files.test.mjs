@@ -10,8 +10,14 @@ test("coordinates source and structured scans using shared inventory caches", as
   try {
     await mkdir(join(root, "src"));
     await mkdir(join(root, "tests"));
-    await writeFile(join(root, "src", "module.mjs"), 'import dependency from "dep"; export { dependency };');
-    await writeFile(join(root, "tests", "ignored.mjs"), 'import dependency from "other"; export { dependency };');
+    await writeFile(
+      join(root, "src", "module.mjs"),
+      'import dependency from "dep"; export { dependency };',
+    );
+    await writeFile(
+      join(root, "tests", "ignored.mjs"),
+      'import dependency from "other"; export { dependency };',
+    );
     await writeFile(join(root, "package.json"), JSON.stringify({ dependencies: { dep: "1.0.0" } }));
     const inventory = createRepositoryInventory(root);
     const files = await inventory.repositoryFiles();
@@ -37,7 +43,10 @@ test("discovers repository files when no prebuilt file inventory is supplied", a
   const root = await mkdtemp(join(tmpdir(), "eliware-dependency-discovery-"));
   try {
     await mkdir(join(root, "src"));
-    await writeFile(join(root, "src", "module.mjs"), "import dependency from 'dep'; export { dependency };");
+    await writeFile(
+      join(root, "src", "module.mjs"),
+      "import dependency from 'dep'; export { dependency };",
+    );
     await writeFile(join(root, "package.json"), JSON.stringify({ scripts: { build: "dep" } }));
     const referenced = new Set();
 

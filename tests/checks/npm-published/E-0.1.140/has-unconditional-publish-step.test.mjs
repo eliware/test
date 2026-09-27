@@ -7,7 +7,9 @@ test("accepts a publish step without conditions or continue-on-error", () => {
 
 test("rejects conditional or failure-tolerant publish steps", () => {
   expect(hasUnconditionalPublishStep({ run: "npm publish", if: "always()" })).toBe(false);
-  expect(hasUnconditionalPublishStep({ run: "npm publish", "continue-on-error": true })).toBe(false);
+  expect(hasUnconditionalPublishStep({ run: "npm publish", "continue-on-error": true })).toBe(
+    false,
+  );
   expect(hasUnconditionalPublishStep({ run: "npm publish", continueOnError: "true" })).toBe(false);
   expect(hasUnconditionalPublishStep({ run: "npm publish", continueOnError: "false" })).toBe(true);
 });

@@ -1,8 +1,12 @@
 import { readRepositoryText } from "../../read-repository-text.mjs";
 
 export function markdownSlug(value) {
-  return value.toLowerCase().trim().replace(/[`*_~]/g, "")
-    .replace(/[^\p{Letter}\p{Number}\s-]/gu, "").replace(/\s+/g, "-");
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[`*_~]/g, "")
+    .replace(/[^\p{Letter}\p{Number}\s-]/gu, "")
+    .replace(/\s+/g, "-");
 }
 
 export async function hasMarkdownFragment(target, fragment, context) {
@@ -17,6 +21,8 @@ export async function hasMarkdownFragment(target, fragment, context) {
   return content.split(/\r?\n/u).some((line) => {
     const heading = /^(?:#{1,6})\s+(.+?)\s*#*$/u.exec(line);
     const id = /\bid=["']([^"']+)["']/iu.exec(line);
-    return (heading && markdownSlug(heading[1]) === wanted) || (id && id[1].toLowerCase() === wanted);
+    return (
+      (heading && markdownSlug(heading[1]) === wanted) || (id && id[1].toLowerCase() === wanted)
+    );
   });
 }

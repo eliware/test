@@ -9,7 +9,9 @@ test("accepts known profiles independently without inferred inheritance", () => 
 });
 
 test("rejects unknown profiles and combining the exclusive fork profile", () => {
-  expect(validateAppliedProfiles(["general", "unknown"], authority)).toBe("Unknown convention group: unknown.");
+  expect(validateAppliedProfiles(["general", "unknown"], authority)).toBe(
+    "Unknown convention group: unknown.",
+  );
   expect(validateAppliedProfiles(["general", "fork"], authority)).toContain("excludes");
   expect(validateAppliedProfiles(["fork"], authority)).toBeNull();
 });

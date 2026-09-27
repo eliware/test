@@ -1,6 +1,15 @@
 const protectedOptions = new Set([
-  "--dry-run", "--no-dry-run", "--json", "--no-json", "--pack-destination",
-  "--prefix", "--workspace", "--workspaces", "--include-workspace-root", "-w", "-C",
+  "--dry-run",
+  "--no-dry-run",
+  "--json",
+  "--no-json",
+  "--pack-destination",
+  "--prefix",
+  "--workspace",
+  "--workspaces",
+  "--include-workspace-root",
+  "-w",
+  "-C",
 ]);
 const valueOptions = new Set(["--loglevel"]);
 

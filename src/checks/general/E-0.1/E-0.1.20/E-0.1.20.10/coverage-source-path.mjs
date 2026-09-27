@@ -4,9 +4,11 @@ export function isInScopeSource(file) {
   if (sourceIndex < 0 && !normalized.startsWith("src/")) return false;
   if (!/\.(?:mjs|js|cjs)$/iu.test(normalized)) return false;
   const sourcePath = sourceIndex < 0 ? normalized.slice(4) : normalized.slice(sourceIndex + 5);
-  return !/(?:^|\/)(?:fixtures?|generated|dist|build)(?:\/|$)/iu.test(sourcePath) &&
+  return (
+    !/(?:^|\/)(?:fixtures?|generated|dist|build)(?:\/|$)/iu.test(sourcePath) &&
     !/\.snap\.(?:mjs|js|cjs)$/iu.test(sourcePath) &&
-    !/\.(?:test|spec)\.(?:mjs|js|cjs)$/iu.test(sourcePath);
+    !/\.(?:test|spec)\.(?:mjs|js|cjs)$/iu.test(sourcePath)
+  );
 }
 
 export function normalizeSourcePath(file) {

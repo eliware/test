@@ -9,7 +9,11 @@ function isPublicPackage(packageJson) {
 
 export function validatePublicationFiles(packageJson, root) {
   if (!isPublicPackage(packageJson)) return null;
-  if (!Array.isArray(packageJson.files) || packageJson.files.length === 0 || packageJson.files.some((file) => typeof file !== "string" || file.trim().length === 0))
+  if (
+    !Array.isArray(packageJson.files) ||
+    packageJson.files.length === 0 ||
+    packageJson.files.some((file) => typeof file !== "string" || file.trim().length === 0)
+  )
     return "Public npm packages must define a nonempty files allowlist.";
   if (packageJson.files.some((file) => /(?:^|[\\/])(?:\*|\*\*|\.)/.test(file)))
     return "Public npm package files must not use broad or wildcard allowlist entries.";
@@ -24,7 +28,8 @@ export function validatePublicationFiles(packageJson, root) {
     }
   }
   for (const file of allowlist) {
-    if (!existsSync(join(root, file))) return `Public npm package allowlist target is missing: ${file}.`;
+    if (!existsSync(join(root, file)))
+      return `Public npm package allowlist target is missing: ${file}.`;
   }
   return null;
 }

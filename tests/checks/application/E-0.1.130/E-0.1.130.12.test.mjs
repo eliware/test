@@ -1,12 +1,14 @@
 import { expect, jest, test } from "@jest/globals";
 
 const runPureExportBarrelPolicy = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs", () => ({
-  runPureExportBarrelPolicy,
-}));
-const { parentRuleId, repositoryInventoryOptions, ruleId, run } = await import(
-  "../../../../src/checks/application/E-0.1.130/E-0.1.130.12.mjs"
+jest.unstable_mockModule(
+  "../../../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs",
+  () => ({
+    runPureExportBarrelPolicy,
+  }),
 );
+const { parentRuleId, repositoryInventoryOptions, ruleId, run } =
+  await import("../../../../src/checks/application/E-0.1.130/E-0.1.130.12.mjs");
 
 test("forwards application identity and source inventory requirements", () => {
   const options = { root: "/repo", packageJson: {} };

@@ -5,11 +5,26 @@ const readRunbookRecords = jest.fn();
 const validateReferences = jest.fn();
 const validateRunbookRecords = jest.fn();
 const validateRunbookIndexCoverage = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/load-runbook-records.mjs", () => ({ loadRunbookRecords }));
-jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/read-runbook-records.mjs", () => ({ readRunbookRecords }));
-jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/runbook-references.mjs", () => ({ validateReferences }));
-jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/validate-runbook-records.mjs", () => ({ validateRunbookRecords }));
-jest.unstable_mockModule("../../../../src/checks/workspace/E-0.1.110/validate-runbook-index-coverage.mjs", () => ({ validateRunbookIndexCoverage }));
+jest.unstable_mockModule(
+  "../../../../src/checks/workspace/E-0.1.110/load-runbook-records.mjs",
+  () => ({ loadRunbookRecords }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/workspace/E-0.1.110/read-runbook-records.mjs",
+  () => ({ readRunbookRecords }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/workspace/E-0.1.110/runbook-references.mjs",
+  () => ({ validateReferences }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/workspace/E-0.1.110/validate-runbook-records.mjs",
+  () => ({ validateRunbookRecords }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/workspace/E-0.1.110/validate-runbook-index-coverage.mjs",
+  () => ({ validateRunbookIndexCoverage }),
+);
 
 const { run } = await import("../../../../src/checks/workspace/E-0.1.110/A-0.1.110.2.mjs");
 
@@ -30,14 +45,20 @@ test("coordinates each runbook validation phase in order", async () => {
     message: "",
   });
   expect(loadRunbookRecords).toHaveBeenCalledWith("/repo", context);
-  expect(readRunbookRecords).toHaveBeenCalledWith(["runbooks/deploy.json"], context.repositoryInventory);
+  expect(readRunbookRecords).toHaveBeenCalledWith(
+    ["runbooks/deploy.json"],
+    context.repositoryInventory,
+  );
   expect(validateReferences).toHaveBeenCalledWith(
     "/repo",
     expect.any(Map),
     expect.any(Set),
     expect.objectContaining(context),
   );
-  expect(validateRunbookIndexCoverage).toHaveBeenCalledWith(["runbooks/deploy.json"], expect.any(Set));
+  expect(validateRunbookIndexCoverage).toHaveBeenCalledWith(
+    ["runbooks/deploy.json"],
+    expect.any(Set),
+  );
   const phaseOrder = [
     loadRunbookRecords,
     readRunbookRecords,

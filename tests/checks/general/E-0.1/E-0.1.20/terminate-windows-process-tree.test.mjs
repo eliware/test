@@ -6,10 +6,16 @@ import {
 } from "../../../../../src/checks/general/E-0.1/E-0.1.20/terminate-windows-process-tree.mjs";
 
 test("resolves taskkill from an absolute Windows system root", () => {
-  expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(/System32[\\/]taskkill\.exe$/iu);
+  expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(
+    /System32[\\/]taskkill\.exe$/iu,
+  );
   expect(() => resolveTaskkillExecutable({})).toThrow("SystemRoot");
-  expect(() => resolveTaskkillExecutable({ SystemRoot: "relative\\Windows" })).toThrow("absolute SystemRoot");
-  expect(() => resolveTaskkillExecutable({ SystemRoot: "C:\\Windows\\..\\Temp" })).toThrow("absolute SystemRoot");
+  expect(() => resolveTaskkillExecutable({ SystemRoot: "relative\\Windows" })).toThrow(
+    "absolute SystemRoot",
+  );
+  expect(() => resolveTaskkillExecutable({ SystemRoot: "C:\\Windows\\..\\Temp" })).toThrow(
+    "absolute SystemRoot",
+  );
 });
 
 test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
@@ -29,7 +35,9 @@ test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
 });
 
 test("reports both failures when neither Windows tree terminator succeeds", () => {
-  const execute = jest.fn(() => { throw new Error("process unavailable"); });
+  const execute = jest.fn(() => {
+    throw new Error("process unavailable");
+  });
   expect(() => killWindowsProcessTree(42, { SystemRoot: "C:/Windows" }, execute)).toThrow(
     "Windows process-tree termination failed",
   );

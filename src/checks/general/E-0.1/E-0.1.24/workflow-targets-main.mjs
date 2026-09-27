@@ -3,9 +3,12 @@ import { minimatch } from "minimatch";
 export function pullRequestTargetsMain(event) {
   if (event === undefined || event === null || event === false) return false;
   if (typeof event !== "object" || Array.isArray(event)) return true;
-  if (Array.isArray(event["branches-ignore"]) &&
-      (event["branches-ignore"].some((pattern) => typeof pattern !== "string") ||
-        event["branches-ignore"].some(patternMatchesMain))) return false;
+  if (
+    Array.isArray(event["branches-ignore"]) &&
+    (event["branches-ignore"].some((pattern) => typeof pattern !== "string") ||
+      event["branches-ignore"].some(patternMatchesMain))
+  )
+    return false;
   return branchPatternsAllowMain(event.branches, true);
 }
 
@@ -13,9 +16,12 @@ export function pushTargetsMain(push) {
   if (Array.isArray(push)) return branchPatternsAllowMain(push, false);
   if (push === null || push === false || push === undefined) return false;
   if (typeof push !== "object") return true;
-  if (Array.isArray(push["branches-ignore"]) &&
-      (push["branches-ignore"].some((pattern) => typeof pattern !== "string") ||
-        push["branches-ignore"].some(patternMatchesMain))) return false;
+  if (
+    Array.isArray(push["branches-ignore"]) &&
+    (push["branches-ignore"].some((pattern) => typeof pattern !== "string") ||
+      push["branches-ignore"].some(patternMatchesMain))
+  )
+    return false;
   return branchPatternsAllowMain(push.branches, true);
 }
 

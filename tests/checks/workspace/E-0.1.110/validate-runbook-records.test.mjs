@@ -13,7 +13,9 @@ const record = (id = "one") => ({
 });
 
 test("rejects invalid and duplicate records", () => {
-  expect(validateRunbookRecords([{ file: "C:\\repo\\bad.json", record: {} }]).error).toContain("generic");
+  expect(validateRunbookRecords([{ file: "C:\\repo\\bad.json", record: {} }]).error).toContain(
+    "generic",
+  );
   expect(validateRunbookRecords([record(), record()]).error).toContain("unique");
 });
 

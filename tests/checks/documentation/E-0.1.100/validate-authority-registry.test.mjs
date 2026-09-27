@@ -28,9 +28,8 @@ jest.unstable_mockModule(
   () => ({ validateAuthorityRegistryDirectiveNamespaces }),
 );
 
-const { validateAuthorityRegistry } = await import(
-  "../../../../src/checks/documentation/E-0.1.100/validate-authority-registry.mjs"
-);
+const { validateAuthorityRegistry } =
+  await import("../../../../src/checks/documentation/E-0.1.100/validate-authority-registry.mjs");
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -84,11 +83,10 @@ test("returns namespace errors", async () => {
 });
 
 test("validates entries in order with shared repository and governance sets", async () => {
-  const entries = [
-    { repository: "eliware/one" },
-    { repository: "eliware/two" },
-  ];
-  await expect(validateAuthorityRegistry({ root: "/repo", file: "/repo/map.json", entries })).resolves.toBeNull();
+  const entries = [{ repository: "eliware/one" }, { repository: "eliware/two" }];
+  await expect(
+    validateAuthorityRegistry({ root: "/repo", file: "/repo/map.json", entries }),
+  ).resolves.toBeNull();
 
   expect(validateAuthorityRegistryEntryShape).toHaveBeenCalledTimes(2);
   expect(validateAuthorityRegistryReferences).toHaveBeenCalledTimes(2);

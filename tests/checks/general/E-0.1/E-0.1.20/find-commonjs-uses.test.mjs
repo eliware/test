@@ -2,7 +2,10 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
-import { findCommonJsUses, walk } from "../../../../../src/checks/general/E-0.1/E-0.1.20/find-commonjs-uses.mjs";
+import {
+  findCommonJsUses,
+  walk,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.20/find-commonjs-uses.mjs";
 
 test("finds CommonJS syntax and extensions", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-esm-"));
@@ -30,7 +33,7 @@ test("finds CommonJS exports, identifiers, import.meta require, invalid syntax, 
   await mkdir(join(root, "src"));
   await writeFile(
     join(root, "src", "mixed.mjs"),
-    "module.exports = {}; exports.value = 1; console.log(__dirname, __filename); import.meta.require(\"dep\");\n",
+    'module.exports = {}; exports.value = 1; console.log(__dirname, __filename); import.meta.require("dep");\n',
   );
   await writeFile(join(root, "src", "invalid.mjs"), "export {\n");
   await writeFile(join(root, "src", "clean.js"), "export const value = 1;\n");

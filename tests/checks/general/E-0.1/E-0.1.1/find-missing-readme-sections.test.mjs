@@ -21,7 +21,7 @@ test("reports absent and empty required README sections but excludes the table o
 });
 
 test("includes required profile sections from package metadata", () => {
-  expect(
-    findMissingReadmeSections(new Map(), { eliware: { apply: ["cli"] } }),
-  ).toContain("Commands");
+  expect(findMissingReadmeSections(new Map(), { eliware: { apply: ["cli"] } })).toContain(
+    "Commands",
+  );
 });

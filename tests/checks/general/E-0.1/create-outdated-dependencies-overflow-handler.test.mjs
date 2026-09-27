@@ -31,7 +31,12 @@ test("starts termination once and escalates after the grace period", () => {
   handler.start();
   expect(terminateProcess).toHaveBeenCalledTimes(1);
   expect(terminateProcess).toHaveBeenCalledWith(
-    { pid: 123 }, "linux", expect.any(Function), expect.any(Function), {}, "SIGTERM",
+    { pid: 123 },
+    "linux",
+    expect.any(Function),
+    expect.any(Function),
+    {},
+    "SIGTERM",
   );
 
   jest.advanceTimersByTime(25);

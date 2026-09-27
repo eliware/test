@@ -11,9 +11,13 @@ test("selects jobs that publish npm packages", () => {
     },
   };
 
-  expect(npmPublicationJobs(workflow)).toEqual([{ id: "publish", job: workflow.document.jobs.publish }]);
+  expect(npmPublicationJobs(workflow)).toEqual([
+    { id: "publish", job: workflow.document.jobs.publish },
+  ]);
 });
 
 test("ignores workflows without npm publication jobs", () => {
-  expect(npmPublicationJobs({ document: { jobs: { validate: { steps: [{ run: "npm test" }] } } } })).toEqual([]);
+  expect(
+    npmPublicationJobs({ document: { jobs: { validate: { steps: [{ run: "npm test" }] } } } }),
+  ).toEqual([]);
 });

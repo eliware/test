@@ -12,7 +12,9 @@ test.each([
   [{ code: 0 }, false],
 ])("removes artifacts when the run result does not retain them", async (result, retainCoverage) => {
   const remove = jest.fn();
-  await expect(finalizePreparedJestRun(prepared, result, retainCoverage, remove)).resolves.toMatchObject({
+  await expect(
+    finalizePreparedJestRun(prepared, result, retainCoverage, remove),
+  ).resolves.toMatchObject({
     ...result,
     coverageDirectory: undefined,
   });
@@ -29,28 +31,35 @@ test("retains artifacts for a successful run when requested", async () => {
 });
 
 test("keeps a result and reports cleanup failures", async () => {
-  await expect(finalizePreparedJestRun(prepared, { code: 1 }, false, async () => {
-    throw new Error("cleanup denied");
-  })).resolves.toMatchObject({
+  await expect(
+    finalizePreparedJestRun(prepared, { code: 1 }, false, async () => {
+      throw new Error("cleanup denied");
+    }),
+  ).resolves.toMatchObject({
     code: 1,
     coverageDirectory: "coverage-run",
     cleanupError: "Could not remove run-scoped coverage artifacts: cleanup denied",
   });
-  await expect(finalizePreparedJestRun(prepared, { code: 1 }, false, async () => {
-    throw "cleanup denied";
-  })).resolves.toMatchObject({
+  await expect(
+    finalizePreparedJestRun(prepared, { code: 1 }, false, async () => {
+      throw "cleanup denied";
+    }),
+  ).resolves.toMatchObject({
     cleanupError: "Could not remove run-scoped coverage artifacts: cleanup denied",
   });
 });
 
 test("cleans up executor failures and preserves both errors when cleanup fails", async () => {
   const remove = jest.fn();
-  await expect(cleanupAfterPreparedJestFailure(prepared, new Error("spawn failed"), remove))
-    .rejects.toThrow("spawn failed");
+  await expect(
+    cleanupAfterPreparedJestFailure(prepared, new Error("spawn failed"), remove),
+  ).rejects.toThrow("spawn failed");
   expect(remove).toHaveBeenCalledWith("coverage-run", { recursive: true, force: true });
-  await expect(cleanupAfterPreparedJestFailure(prepared, "spawn failed", async () => {
-    throw "cleanup denied";
-  })).rejects.toMatchObject({
+  await expect(
+    cleanupAfterPreparedJestFailure(prepared, "spawn failed", async () => {
+      throw "cleanup denied";
+    }),
+  ).rejects.toMatchObject({
     message: "spawn failed\nCould not remove run-scoped coverage artifacts: cleanup denied",
     cause: "spawn failed",
   });

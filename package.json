@@ -99,27 +99,6 @@
         "approver": "Eli",
         "approvalTimestamp": "2026-09-09T00:00:00Z",
         "expiry": null
-      },
-      {
-        "ruleId": "E-0.1.20.17",
-        "reason": "@eliware/test self-hosts its local CLI with node bin/eliware-test.mjs because it cannot install itself as its own development dependency.",
-        "approver": "Eli",
-        "approvalTimestamp": "2026-09-13T00:00:00Z",
-        "expiry": null
-      },
-      {
-        "ruleId": "E-0.1.20.19",
-        "reason": "@eliware/test self-hosts its audit command with node bin/eliware-test.mjs --audit because it cannot install itself as its own development dependency.",
-        "approver": "Eli",
-        "approvalTimestamp": "2026-09-13T00:00:00Z",
-        "expiry": null
-      },
-      {
-        "ruleId": "E-0.1.140.1",
-        "reason": "@eliware/test self-hosts its pack command with node bin/eliware-test.mjs --pack because it cannot install itself as its own development dependency.",
-        "approver": "Eli",
-        "approvalTimestamp": "2026-09-13T00:00:00Z",
-        "expiry": null
       }
     ],
     "authority": {

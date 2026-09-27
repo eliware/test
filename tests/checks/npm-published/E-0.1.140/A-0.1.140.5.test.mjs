@@ -11,12 +11,18 @@ afterEach(async () => {
   root = undefined;
 });
 
-async function writeWorkflow(publishStep = "npm publish --provenance", publishSetup = "actions/setup-node@v7") {
+async function writeWorkflow(
+  publishStep = "npm publish --provenance",
+  publishSetup = "actions/setup-node@v7",
+) {
   if (root) await rm(root, { recursive: true, force: true });
   root = await mkdtemp(join(tmpdir(), "eliware-test-npm-oidc-"));
   const directory = join(root, ".github", "workflows");
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, "publish.yml"), `permissions:\n  contents: read\njobs:\n  validate:\n    steps:\n      - run: npm ci\n      - run: npm test\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - uses: ${publishSetup}\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n      - run: ${publishStep}\n`);
+  await writeFile(
+    join(directory, "publish.yml"),
+    `permissions:\n  contents: read\njobs:\n  validate:\n    steps:\n      - run: npm ci\n      - run: npm test\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - uses: ${publishSetup}\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n      - run: ${publishStep}\n`,
+  );
 }
 
 test("accepts the documented Trusted Publisher job structure", async () => {
@@ -35,7 +41,10 @@ test("rejects workflows that do not follow the OIDC publish setup", async () => 
   await writeWorkflow("npm publish --provenance", "actions/setup-node@v7");
   const file = join(root, ".github", "workflows", "publish.yml");
   const workflow = await readFile(file, "utf8");
-  await writeFile(file, workflow.replace("  contents: read\njobs:", "  contents: read\n  id-token: write\njobs:"));
+  await writeFile(
+    file,
+    workflow.replace("  contents: read\njobs:", "  contents: read\n  id-token: write\njobs:"),
+  );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
 });
 

@@ -11,18 +11,20 @@ export function collectValues(value, key, output = []) {
 }
 
 export function workflowJobs(document) {
-  if (!document?.jobs || typeof document.jobs !== "object" || Array.isArray(document.jobs)) return [];
-  return Object.entries(document.jobs).map(([id, job]) => ({ id, job })).filter(({ job }) => job && typeof job === "object");
+  if (!document?.jobs || typeof document.jobs !== "object" || Array.isArray(document.jobs))
+    return [];
+  return Object.entries(document.jobs)
+    .map(([id, job]) => ({ id, job }))
+    .filter(({ job }) => job && typeof job === "object");
 }
 
 export function workflowRunSteps(job) {
   if (!Array.isArray(job?.steps)) return [];
-  return job.steps
-    .flatMap((step, index) =>
-      step && typeof step === "object" && typeof step.run === "string"
-        ? [{ name: step.name, command: step.run.trim(), step, index }]
-        : [],
-    );
+  return job.steps.flatMap((step, index) =>
+    step && typeof step === "object" && typeof step.run === "string"
+      ? [{ name: step.name, command: step.run.trim(), step, index }]
+      : [],
+  );
 }
 
 export function workflowCommands(document) {

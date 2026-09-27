@@ -10,7 +10,9 @@ import {
 test("defines a GitHub glob candidate and a strict semver tag guard", () => {
   expect(releaseTagFilter).toBe("v[0-9]*.[0-9]*.[0-9]*");
   expect(hasReleaseTagGuard(releaseTagGuard)).toBe(true);
-  expect(hasReleaseTagGuard('test "$(npm pkg get version --raw)" = "${GITHUB_REF_NAME#v}"')).toBe(false);
+  expect(hasReleaseTagGuard('test "$(npm pkg get version --raw)" = "${GITHUB_REF_NAME#v}"')).toBe(
+    false,
+  );
 });
 
 test("accepts only exact numeric version tags matching the package", () => {

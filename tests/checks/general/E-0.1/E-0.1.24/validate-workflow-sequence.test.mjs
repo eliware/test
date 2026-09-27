@@ -27,13 +27,12 @@ jest.unstable_mockModule(
   () => ({ validateWorkflowPostTestCommands }),
 );
 
-const { validateWorkflowSequence } = await import(
-  "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-sequence.mjs"
-);
+const { validateWorkflowSequence } =
+  await import("../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-sequence.mjs");
 
 const install = { command: "npm ci" };
 const testCommand = { command: "npm test" };
-const commandIndex = (command) => command === install ? 1 : 2;
+const commandIndex = (command) => (command === install ? 1 : 2);
 const pair = { install, test: testCommand, commandIndex };
 
 beforeEach(() => {
@@ -47,11 +46,26 @@ beforeEach(() => {
 
 test("coordinates sequence validators in order with their owning inputs", () => {
   const order = [];
-  findValidationCommandPair.mockImplementation(() => { order.push("pair"); return pair; });
-  hasAdjacentValidationSteps.mockImplementation(() => { order.push("adjacency"); return true; });
-  validateValidationJobConditions.mockImplementation(() => { order.push("conditions"); return null; });
-  validateWorkflowPreInstallCommands.mockImplementation(() => { order.push("setup"); return null; });
-  validateWorkflowPostTestCommands.mockImplementation(() => { order.push("reporting"); return null; });
+  findValidationCommandPair.mockImplementation(() => {
+    order.push("pair");
+    return pair;
+  });
+  hasAdjacentValidationSteps.mockImplementation(() => {
+    order.push("adjacency");
+    return true;
+  });
+  validateValidationJobConditions.mockImplementation(() => {
+    order.push("conditions");
+    return null;
+  });
+  validateWorkflowPreInstallCommands.mockImplementation(() => {
+    order.push("setup");
+    return null;
+  });
+  validateWorkflowPostTestCommands.mockImplementation(() => {
+    order.push("reporting");
+    return null;
+  });
   const commands = [install, testCommand];
   const steps = [{ name: "install" }, { name: "test" }];
   const job = { name: "validate" };

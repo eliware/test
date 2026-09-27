@@ -4,7 +4,9 @@ export function findJestConsoleOutput(report) {
     for (const output of entry.console ?? []) {
       const source = entry.testFilePath ?? entry.name ?? "unknown test suite";
       const origin = output.origin ? ` (${output.origin})` : "";
-      findings.push(`console.${output.type ?? "log"} in ${source}${origin}: ${String(output.message ?? "").trim()}`);
+      findings.push(
+        `console.${output.type ?? "log"} in ${source}${origin}: ${String(output.message ?? "").trim()}`,
+      );
     }
   }
   return findings;

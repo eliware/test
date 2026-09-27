@@ -13,7 +13,9 @@ export function isOwnedBuildStep(step) {
   if (/docker\/build-push-action/i.test(step.uses ?? "")) {
     const context = String(step.with?.context ?? ".").trim();
     const file = String(step.with?.file ?? "./Dockerfile").trim();
-    return (context === "." || context === "./") && (file === "Dockerfile" || file === "./Dockerfile");
+    return (
+      (context === "." || context === "./") && (file === "Dockerfile" || file === "./Dockerfile")
+    );
   }
   if (typeof step.run !== "string") return false;
   const command = step.run.trim();
@@ -30,10 +32,7 @@ export async function run(context) {
     if (
       !publication ||
       !publicationJobs(publication).some(({ job }) =>
-        steps(job).some(
-          (step) =>
-            isOwnedBuildStep(step),
-        ),
+        steps(job).some((step) => isOwnedBuildStep(step)),
       )
     )
       return fail(

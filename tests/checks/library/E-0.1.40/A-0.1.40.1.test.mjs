@@ -3,9 +3,18 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 const inspectLibraryExamples = jest.fn();
 const executeLibraryExamples = jest.fn();
 const validateLibraryPackageAllowlist = jest.fn();
-jest.unstable_mockModule("../../../../src/checks/library/E-0.1.40/inspect-library-examples.mjs", () => ({ inspectLibraryExamples }));
-jest.unstable_mockModule("../../../../src/checks/library/E-0.1.40/execute-library-examples.mjs", () => ({ executeLibraryExamples }));
-jest.unstable_mockModule("../../../../src/checks/library/E-0.1.40/validate-library-package-allowlist.mjs", () => ({ validateLibraryPackageAllowlist }));
+jest.unstable_mockModule(
+  "../../../../src/checks/library/E-0.1.40/inspect-library-examples.mjs",
+  () => ({ inspectLibraryExamples }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/library/E-0.1.40/execute-library-examples.mjs",
+  () => ({ executeLibraryExamples }),
+);
+jest.unstable_mockModule(
+  "../../../../src/checks/library/E-0.1.40/validate-library-package-allowlist.mjs",
+  () => ({ validateLibraryPackageAllowlist }),
+);
 
 const { run } = await import("../../../../src/checks/library/E-0.1.40/A-0.1.40.1.mjs");
 
@@ -29,8 +38,12 @@ test("inspects, executes, and validates package contents in order", async () => 
   expect(inspectLibraryExamples).toHaveBeenCalledWith(root, context);
   expect(executeLibraryExamples).toHaveBeenCalledWith(root, ["examples/basic.mjs"], executeExample);
   expect(validateLibraryPackageAllowlist).toHaveBeenCalledWith(packageJson);
-  expect(inspectLibraryExamples.mock.invocationCallOrder[0]).toBeLessThan(executeLibraryExamples.mock.invocationCallOrder[0]);
-  expect(executeLibraryExamples.mock.invocationCallOrder[0]).toBeLessThan(validateLibraryPackageAllowlist.mock.invocationCallOrder[0]);
+  expect(inspectLibraryExamples.mock.invocationCallOrder[0]).toBeLessThan(
+    executeLibraryExamples.mock.invocationCallOrder[0],
+  );
+  expect(executeLibraryExamples.mock.invocationCallOrder[0]).toBeLessThan(
+    validateLibraryPackageAllowlist.mock.invocationCallOrder[0],
+  );
 });
 
 test.each([

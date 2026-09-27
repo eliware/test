@@ -37,9 +37,8 @@ jest.unstable_mockModule(
   () => ({ validateReadmeSupport }),
 );
 
-const { validateReadmeRequiredContent } = await import(
-  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-required-content.mjs"
-);
+const { validateReadmeRequiredContent } =
+  await import("../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-required-content.mjs");
 const validators = [
   validateReadmeStructure,
   validateReadmePackageBadges,

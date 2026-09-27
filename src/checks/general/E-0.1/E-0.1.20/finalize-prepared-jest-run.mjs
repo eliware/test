@@ -18,10 +18,7 @@ async function removeCoverage(prepared, remove, result) {
 export function cleanupAfterPreparedJestFailure(prepared, error, remove) {
   return removeCoverage(prepared, remove, {}).then((result) => {
     if (!result.cleanupError) throw error;
-    throw new Error(
-      `${errorMessage(error)}\n${result.cleanupError}`,
-      { cause: error },
-    );
+    throw new Error(`${errorMessage(error)}\n${result.cleanupError}`, { cause: error });
   });
 }
 

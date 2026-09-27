@@ -8,14 +8,11 @@ const directCommand =
   /(?:^|[\s"'`=(:,/])(?:(?:npx|npm\s+(?:exec|run))\s+(?:[^\s;&|]+\s+)*)?(?:jest|oxlint|prettier)(?=$|[\s"'`=:;,)&|])/i;
 const directImport =
   /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)["'](?:@jest\/|jest(?:\/|["'])|oxlint(?:["']|\/)|prettier(?:["']|\/))/i;
-const testApiImport =
-  /^\s*import\s+(?:[\s\S]*?\s+from\s+)?["']@jest\/globals["'];?\s*$/gim;
+const testApiImport = /^\s*import\s+(?:[\s\S]*?\s+from\s+)?["']@jest\/globals["'];?\s*$/gim;
 
 function contentWithoutApprovedTestApi(file, content) {
   const normalizedPath = file.replaceAll("\\", "/");
-  return normalizedPath.startsWith("tests/")
-    ? content.replace(testApiImport, "")
-    : content;
+  return normalizedPath.startsWith("tests/") ? content.replace(testApiImport, "") : content;
 }
 
 export async function findDirectToolUses(root, files, readText) {

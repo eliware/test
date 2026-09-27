@@ -10,5 +10,7 @@ export async function runOxlint(
   paths = [],
 ) {
   const executable = await resolveExecutable();
-  return run(process.execPath, [executable, ...buildOxlintArguments(extraArgs, paths)], { cwd: root });
+  return run(process.execPath, [executable, ...buildOxlintArguments(extraArgs, paths)], {
+    cwd: root,
+  });
 }

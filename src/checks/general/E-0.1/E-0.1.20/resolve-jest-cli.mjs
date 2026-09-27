@@ -4,8 +4,8 @@ import { resolveJestBin } from "./resolve-jest-bin.mjs";
 
 export function resolveConsumerJestCli(root) {
   const requireFromConsumer = createRequire(join(root, "package.json"));
-  const executable = resolveJestBin(requireFromConsumer, "jest") ??
-    resolveJestBin(requireFromConsumer, "jest-cli");
+  const executable =
+    resolveJestBin(requireFromConsumer, "jest") ?? resolveJestBin(requireFromConsumer, "jest-cli");
   if (executable) return executable;
   throw new Error("Consumer repository Jest executable could not be resolved.");
 }
@@ -23,7 +23,9 @@ export function resolveJestCli(root, options = {}) {
   }
 }
 
-export function resolveHarnessJestCli(resolveBin = resolveJestBin, requireFromHarness = createRequire(import.meta.url)) {
-  return resolveBin(requireFromHarness, "jest") ??
-    resolveBin(requireFromHarness, "jest-cli");
+export function resolveHarnessJestCli(
+  resolveBin = resolveJestBin,
+  requireFromHarness = createRequire(import.meta.url),
+) {
+  return resolveBin(requireFromHarness, "jest") ?? resolveBin(requireFromHarness, "jest-cli");
 }

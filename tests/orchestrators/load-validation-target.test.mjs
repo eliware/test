@@ -6,7 +6,10 @@ import { loadValidationTarget } from "../../src/orchestrators/load-validation-ta
 
 test("loads the target package metadata", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-load-target-"));
-  await writeFile(join(root, "package.json"), JSON.stringify({ name: "@eliware/fixture", eliware: { apply: ["general"] } }));
+  await writeFile(
+    join(root, "package.json"),
+    JSON.stringify({ name: "@eliware/fixture", eliware: { apply: ["general"] } }),
+  );
   const packageJson = await loadValidationTarget(root);
   expect(packageJson.name).toBe("@eliware/fixture");
   expect(packageJson.eliware.apply).toEqual(["general"]);

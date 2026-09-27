@@ -19,7 +19,8 @@ export function readDiagnosticOptions(args) {
   const informational = wrapperArgs.filter(
     (argument) => argument === "--help" || argument === "--version",
   );
-  if (informational.length > 1) throw new Error("Informational commands cannot be repeated or combined.");
+  if (informational.length > 1)
+    throw new Error("Informational commands cannot be repeated or combined.");
   if (
     informational.length > 0 &&
     wrapperArgs.some((argument) => !informational.includes(argument))
@@ -29,30 +30,42 @@ export function readDiagnosticOptions(args) {
   if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
   if (modes.length > 0) {
     const modeIndex = wrapperArgs.indexOf(modes[0]);
-    const unsupportedWrapperArgs = wrapperArgs.slice(0, modeIndex)
+    const unsupportedWrapperArgs = wrapperArgs
+      .slice(0, modeIndex)
       .filter((argument) => argument !== "--debug-timing");
     if (unsupportedWrapperArgs.length > 0) {
       throw new Error(`Tool mode arguments must follow ${modes[0]} or the -- separator.`);
     }
   }
   const candidateFocused = parseFocusedArguments(wrapperArgs).positional;
-  if (modes.length > 0 && candidateFocused.some((argument) => /^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument))) {
+  if (
+    modes.length > 0 &&
+    candidateFocused.some((argument) =>
+      /^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
+    )
+  ) {
     throw new Error("Focused test paths cannot be combined with tool modes.");
   }
   const focused = modes.length === 0 ? candidateFocused : [];
   if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
   if (
-    focused.some((argument) => !/^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument))
+    focused.some(
+      (argument) =>
+        !/^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
+    )
   ) {
     throw new Error("Focused paths must be under tests/.");
   }
   return {
     ignoredRuleIds: [],
     mode: modes[0]?.slice(2) ?? null,
-    toolArgs: modes.length > 0
-      ? [...wrapperArgs.filter((argument) => !modeFlags.includes(argument)), ...delegatedArgs]
-        .filter((argument) => argument !== "--debug-timing")
-      : [],
+    toolArgs:
+      modes.length > 0
+        ? [
+            ...wrapperArgs.filter((argument) => !modeFlags.includes(argument)),
+            ...delegatedArgs,
+          ].filter((argument) => argument !== "--debug-timing")
+        : [],
     jestArgs: normalizedArgs.filter((argument) => argument !== "--debug-timing"),
   };
 }

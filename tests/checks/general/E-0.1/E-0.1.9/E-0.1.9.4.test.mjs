@@ -17,7 +17,7 @@ test.each([
   undefined,
   null,
   {},
-  { authoritativeFor: [] , notAuthoritativeFor: ["operations"] },
+  { authoritativeFor: [], notAuthoritativeFor: ["operations"] },
   { authoritativeFor: ["   "], notAuthoritativeFor: ["operations"] },
   { authoritativeFor: [7], notAuthoritativeFor: ["operations"] },
   { authoritativeFor: ["validation"], notAuthoritativeFor: [] },

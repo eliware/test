@@ -22,7 +22,7 @@ test("uses the lazy timing output handoff when supported", () => {
 test("falls back to stderr when Jest writes its timing JSON there", () => {
   const setJestOutputGetter = jest.fn();
   const context = { timing: { setJestOutputGetter } };
-  const result = { code: 0, stdout: "", stderr: "{\"numFailedTestSuites\":0}" };
+  const result = { code: 0, stdout: "", stderr: '{"numFailedTestSuites":0}' };
 
   recordJestContext(context, result);
 
