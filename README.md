@@ -42,8 +42,8 @@ After installing the package in a consuming repository, run validation with
 `eliware-test`. The package-level scripts below are for this repository.
 
 `package.json` is the source of truth for the version in this checkout. The
-repository's current version is `8.0.0`. The npm badge shows the latest version
-published to the public registry and may differ until a release is published.
+repository's current version is `8.0.0`. The npm badge links to the package's
+latest version on the public registry.
 
 ```text
 npm test
