@@ -60,7 +60,7 @@ test("terminates the Windows npm process tree when output exceeds its limit", as
   child.pid = 2468;
   child.kill = jest.fn();
   const killTree = jest.fn();
-  const env = { SystemRoot: "C:\\Windows" };
+  const env = { SystemRoot: "C:\\Windows", npm_execpath: "C:\\node\\npm-cli.js" };
   const result = readOutdatedDependencies(
     "fixture",
     () => {
