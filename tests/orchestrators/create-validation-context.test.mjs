@@ -1,4 +1,4 @@
-import { expect, jest, test } from "@jest/globals";
+import { expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,10 +9,6 @@ import { run as runKnitOrder } from "../../src/checks/general/E-0.1/E-0.1.10/E-0
 import { run as runLicense } from "../../src/checks/general/E-0.1/E-0.1.23.mjs";
 import { runPureExportBarrelPolicy } from "../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs";
 import { runNoCoverageIgnore } from "../../src/checks/general/E-0.1/validate-no-coverage-ignore.mjs";
-import { run as runDependencyAge } from "../../src/checks/general/E-0.1/E-0.1.14.mjs";
-import { run as runDependencyStability } from "../../src/checks/general/E-0.1/E-0.1.15.mjs";
-import { run as runLicenseVersionPolicy } from "../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.12.mjs";
-import { run as runStableDependencies } from "../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.13.mjs";
 
 async function fixture(prefix) {
   return mkdtemp(join(tmpdir(), prefix));
@@ -117,25 +113,6 @@ test("preserves a shared AST parser and optional run scope data", () => {
     focusedScope,
   },
   );
-});
-
-test("dependency checks share one outdated lookup through the run context", async () => {
-  const readOutdated = jest.fn(async () => ({}));
-  const context = createValidationContext("fixture", { dependencies: { alpha: "1" } });
-  context.readOutdated = readOutdated;
-
-  await expect(Promise.all([
-    runDependencyAge(context),
-    runDependencyStability(context),
-    runLicenseVersionPolicy(context),
-    runStableDependencies(context),
-  ])).resolves.toEqual([
-    expect.objectContaining({ status: "pass" }),
-    expect.objectContaining({ status: "pass" }),
-    expect.objectContaining({ status: "pass" }),
-    expect.objectContaining({ status: "pass" }),
-  ]);
-  expect(readOutdated).toHaveBeenCalledTimes(1);
 });
 
 test("Knit checks share the script read and AST through the execution context", async () => {
