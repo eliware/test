@@ -1,62 +1,45 @@
 import { findRepositoryEntries } from "./general/E-0.1/find-repository-files.mjs";
-import { createDirectoryReadCache, inventoryDirectory } from "./repository-inventory-paths.mjs";
+import { createRepositoryDirectoryReadCache } from "./create-repository-directory-read-cache.mjs";
+import { createRepositoryEntryReader } from "./create-repository-entry-reader.mjs";
+import { createRepositoryScopedEntryReader } from "./create-repository-scoped-entry-reader.mjs";
 
 export function createRepositoryDiscovery({
   root,
   findEntries = findRepositoryEntries,
   readDirectory,
+  statDirectory,
   expandedDirectories = [],
   includeTestResults = false,
   includeTestResultsUnder = [],
 }) {
-  let entriesPromise;
-  const subtreeEntries = new Map();
-  const readDirectoryCached = createDirectoryReadCache(root, readDirectory);
-
-  function entries() {
-    if (!entriesPromise) {
-      entriesPromise = findEntries(root, readDirectoryCached, {
-        includeTestResults,
-        includeTestResultsUnder,
-        expandedDirectories,
-      });
-    }
-    return entriesPromise;
-  }
-
-  async function entriesUnder(directory = root) {
-    const base = inventoryDirectory(
-      root,
-      directory,
-      "Repository inventory directory must be inside the repository.",
-    );
-    if (!base) return entries();
-    if (entriesPromise) {
-      const records = await entries();
-      return records.filter(({ path }) => path === base || path.startsWith(`${base}/`));
-    }
-    if (!subtreeEntries.has(base)) {
-      const options = {
-        includeTestResults,
-        includeTestResultsUnder,
-        expandedDirectories,
-        scopeDirectory: base,
-      };
-      const records =
-        findEntries === findRepositoryEntries
-          ? findRepositoryEntries(root, readDirectoryCached, options)
-          : Promise.resolve(findEntries(root, readDirectoryCached, options)).then((found) =>
-              found.filter(({ path }) => path === base || path.startsWith(`${base}/`)),
-            );
-      subtreeEntries.set(base, records);
-    }
-    return subtreeEntries.get(base);
-  }
+  const readDirectoryCached = createRepositoryDirectoryReadCache(
+    root,
+    readDirectory,
+    statDirectory,
+  );
+  const entryReader = createRepositoryEntryReader({
+    root,
+    findEntries,
+    readDirectoryCached,
+    includeTestResults,
+    includeTestResultsUnder,
+    expandedDirectories,
+  });
+  const { entries, hasFullDiscovery } = entryReader;
+  const entriesUnder = createRepositoryScopedEntryReader({
+    root,
+    findEntries,
+    readDirectoryCached,
+    entryReader,
+    includeTestResults,
+    includeTestResultsUnder,
+    expandedDirectories,
+  });
 
   return {
     entries,
     entriesUnder,
     readDirectoryCached,
-    hasFullDiscovery: () => Boolean(entriesPromise),
+    hasFullDiscovery,
   };
 }

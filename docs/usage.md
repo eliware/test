@@ -1,11 +1,12 @@
 # Usage
 
-Install `@eliware/test` in the consumer repository and use its `eliware-test`
-command for validation. Package scripts such as `npm test` and
-`npm run format:check` are available only when working inside this package's
-own repository. Use `eliware-test --help` for the supported CLI modes,
+Use Node.js 26 (`>=26 <27`). Install `@eliware/test` in the consumer repository
+and use its `eliware-test` command for validation. Package scripts such as `npm test` and
+`npm run format:check` are not added automatically by installing the package;
+each consumer repository defines its own scripts to invoke `eliware-test`.
+Use `eliware-test --help` for the supported CLI modes,
 including linting, formatting, timing diagnostics, and focused Jest execution.
-Focused test paths under `tests/` support `.test.*` and `.spec.*` filenames
+Focused `.test.*` and `.spec.*` test files under `tests/`
 with `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 
 ## Configuration
@@ -63,13 +64,15 @@ after `--`, and each group preserves its original order.
 Prettier arguments that override the selected mode, canonical formatting
 configuration, or required maintained-file coverage are rejected.
 
-The normal test command runs the configured validation stages. Use
-`npm run audit` and `npm run pack` for the isolated audit and package
-validation stages. The public CLI equivalents are `node bin/eliware-test.mjs
---audit` and `node bin/eliware-test.mjs --pack`; npm script names are not
-accepted as direct CLI arguments.
+The normal test command runs the configured validation stages. In the
+`@eliware/test` repository checkout only, use `npm run audit` and
+`npm run pack` for the isolated audit and package validation stages. Consumer
+repositories use `eliware-test --audit` and `eliware-test --pack` (or
+`node bin/eliware-test.mjs --audit` and `node bin/eliware-test.mjs --pack`);
+npm script names are not accepted as direct CLI arguments.
 
-To validate one focused Jest path, pass it after the npm separator. Focused
+To validate one focused Jest path, pass its repository-relative path to
+`eliware-test`. Focused
 paths are rejected when they do not exist, and coverage is narrowed to an
 unambiguous mirrored source module when possible. Focused validation also
 checks the selected Jest run's coverage and output, runs Oxlint and Prettier
@@ -78,7 +81,7 @@ test contract. Repository-wide checks such as audit, pack, dependency,
 documentation, workflow, and unrelated source/test checks remain skipped:
 
 ```text
-npm test -- tests/example.test.mjs
+eliware-test tests/example.test.mjs
 ```
 
 `--debug-timing` streams completed stage timing while validation is running.

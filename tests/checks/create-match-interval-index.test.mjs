@@ -42,6 +42,16 @@ test("compacts completed intervals from large ordered batches", () => {
   expect(index.materialize(2048, 1)).toEqual([2, 0]);
 });
 
+test("bounds stale interval entries when repeatedly extending one match", () => {
+  const index = createMatchIntervalIndex();
+  for (let end = 2; end < 5000; end += 1) index.add([{ start: 1, end }]);
+
+  index.discardThrough(1);
+  expect(index.earliestCrossing(2)).toBe(1);
+  index.discardThrough(4999);
+  expect(index.materialize(1, 0)).toEqual([0]);
+});
+
 test("repairs a heap when completed intervals are removed", () => {
   const index = createMatchIntervalIndex();
   index.add([

@@ -7,3 +7,7 @@ test("converts only fully static command and argument strings to tokens", () => 
   expect(commandTokens({ command: 1, args: [] })).toBeNull();
   expect(commandTokens({ command: "npm", args: "test" })).toBeNull();
 });
+
+test.each(["exec", "execSync"])("rejects shell-command API %s", (kind) => {
+  expect(commandTokens({ kind, command: "git pull", args: ["origin", "main"] })).toBeNull();
+});

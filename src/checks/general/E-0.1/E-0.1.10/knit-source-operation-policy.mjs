@@ -13,7 +13,11 @@ export const sideEffectModules = new Set([
   "dgram",
   "node:process",
   "process",
+  "node:child_process",
+  "child_process",
 ]);
+
+export const childProcessModules = new Set(["node:child_process", "child_process"]);
 
 export const sideEffectRoots = new Set(["fs", "fsp", "http", "https", "net", "dgram"]);
 export const processOperations = new Set(["exit", "kill", "abort"]);

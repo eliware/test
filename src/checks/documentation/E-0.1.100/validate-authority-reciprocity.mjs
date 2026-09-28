@@ -35,7 +35,11 @@ export async function validateAuthorityReciprocity({ root, file, entries, invent
           `${entry.repository}.governs target does not resolve to a local subject: ${missing.join(", ")}.`,
         );
     }
-    if (!authority.unavailable && typeof authority.document?.globalAuthorityMap === "string") {
+    if (!authority.unavailable && typeof authority.document?.globalAuthorityMap !== "string") {
+      failures.push(`${entry.repository}.authority.json must declare globalAuthorityMap.`);
+      continue;
+    }
+    if (!authority.unavailable) {
       const reciprocal = await readAuthorityTarget({
         root,
         file: authority.target,

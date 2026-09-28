@@ -65,6 +65,90 @@ test("maps successful and invalid audit reports to check results", async () => {
   });
 });
 
+test("accepts npm audit exit zero when vulnerabilities stay below the high threshold", async () => {
+  const report = JSON.parse(cleanReport);
+  report.metadata.vulnerabilities.moderate = 1;
+  report.metadata.vulnerabilities.total = 1;
+  report.vulnerabilities.example = { severity: "moderate" };
+
+  await expect(
+    runAudit({ runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }) }),
+  ).resolves.toMatchObject({ status: "pass" });
+});
+
+test("rejects zero-exit reports containing high or critical package findings", async () => {
+  for (const severity of ["high", "critical"]) {
+    const report = JSON.parse(cleanReport);
+    report.vulnerabilities.example = { severity };
+    await expect(
+      runAudit({ runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }) }),
+    ).resolves.toMatchObject({
+      status: "fail",
+      message: "npm audit returned an invalid JSON report.",
+    });
+  }
+});
+
+test("rejects clean reports whose audit tree omits declared direct dependencies", async () => {
+  const report = JSON.parse(cleanReport);
+  report.metadata.dependencies = {
+    prod: 0,
+    dev: 0,
+    optional: 0,
+    peer: 0,
+    peerOptional: 0,
+    total: 0,
+  };
+
+  await expect(
+    runAudit({
+      packageJson: { ...packageJson, dependencies: { alpha: "1.0.0" } },
+      runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }),
+    }),
+  ).resolves.toMatchObject({ status: "fail" });
+
+  report.metadata.dependencies = { prod: 0, dev: 0, optional: 0, total: 4 };
+  await expect(
+    runAudit({
+      packageJson: { ...packageJson, dependencies: { alpha: "1.0.0" } },
+      runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }),
+    }),
+  ).resolves.toMatchObject({ status: "fail" });
+
+  report.metadata.dependencies.prod = 1;
+  await expect(
+    runAudit({
+      packageJson: { ...packageJson, dependencies: { alpha: "1.0.0" } },
+      runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }),
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+
+  await expect(
+    runAudit({
+      packageJson: { ...packageJson, peerDependencies: { alpha: "1.0.0" } },
+      runAudit: async () => ({
+        code: 0,
+        stdout: JSON.stringify({
+          ...report,
+          metadata: {
+            ...report.metadata,
+            dependencies: { prod: 0, dev: 0, optional: 0, total: 0 },
+          },
+        }),
+        stderr: "",
+      }),
+    }),
+  ).resolves.toMatchObject({ status: "fail" });
+
+  report.metadata.dependencies = { prod: 0, dev: 0, optional: 0, total: 1 };
+  await expect(
+    runAudit({
+      packageJson: { ...packageJson, peerDependencies: { alpha: "1.0.0" } },
+      runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }),
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+});
+
 test("maps audit process and startup failures to check results", async () => {
   await expect(
     runAudit({ runAudit: async () => ({ code: 1, stdout: "audit findings", stderr: "" }) }),

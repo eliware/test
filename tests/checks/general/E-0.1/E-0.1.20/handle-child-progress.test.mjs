@@ -27,6 +27,7 @@ test("ignores non-matching progress and optional callbacks", () => {
     }),
   ).toBe(false);
   expect(resetProgressTimer).not.toHaveBeenCalled();
+  expect(handleChildProgress("anything", { resetProgressTimer })).toBe(false);
 });
 
 test("recognizes a progress marker divided across chunks once", () => {
@@ -49,4 +50,50 @@ test("recognizes a progress marker divided across chunks once", () => {
   progress.push("\n");
   expect(resetProgressTimer).toHaveBeenCalledTimes(2);
   expect(onProgress).toHaveBeenCalledTimes(2);
+});
+
+test("resets the watchdog for any observable output when enabled", () => {
+  const resetProgressTimer = jest.fn();
+  const onProgress = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^progress$/u,
+    resetOnAnyOutput: true,
+    resetProgressTimer,
+    onProgress,
+  });
+
+  progress.push("ordinary output\n");
+
+  expect(resetProgressTimer).toHaveBeenCalledTimes(1);
+  expect(onProgress).not.toHaveBeenCalled();
+  progress.push(Buffer.alloc(0));
+  expect(resetProgressTimer).toHaveBeenCalledTimes(1);
+});
+
+test("uses redacted progress text when recognizing reporter output", () => {
+  const resetProgressTimer = jest.fn();
+  const onProgress = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^safe progress$/u,
+    redactProgressText: () => "safe progress",
+    resetProgressTimer,
+    onProgress,
+  });
+
+  progress.push("secret progress\n");
+
+  expect(resetProgressTimer).toHaveBeenCalledTimes(1);
+  expect(onProgress).toHaveBeenCalledWith("safe progress");
+});
+
+test("forwards recognized activity without resetting the timer a second time", () => {
+  const resetProgressTimer = jest.fn();
+  expect(
+    handleChildProgress("progress", {
+      progressPattern: /^progress$/u,
+      resetOnAnyOutput: true,
+      resetProgressTimer,
+    }),
+  ).toBe(true);
+  expect(resetProgressTimer).not.toHaveBeenCalled();
 });

@@ -1,18 +1,19 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 export function resolveJestBin(requireFromConsumer, packageName) {
   try {
-    return requireFromConsumer.resolve(`${packageName}/bin/jest`);
+    const resolved = requireFromConsumer.resolve(`${packageName}/bin/jest`);
+    if (statSync(resolved).isFile()) return resolved;
   } catch {}
 
   try {
     const packagePath = requireFromConsumer.resolve(`${packageName}/package.json`);
     const metadata = JSON.parse(readFileSync(packagePath, "utf8"));
     const bin = typeof metadata.bin === "string" ? metadata.bin : metadata.bin?.jest;
-    return typeof bin === "string" && bin.length > 0
-      ? resolve(dirname(packagePath), bin)
-      : undefined;
+    if (typeof bin !== "string" || bin.length === 0) return undefined;
+    const resolved = resolve(dirname(packagePath), bin);
+    return statSync(resolved).isFile() ? resolved : undefined;
   } catch {
     return undefined;
   }

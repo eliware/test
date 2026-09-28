@@ -11,3 +11,16 @@ test("rejects skippable jobs and required steps", () => {
     "npm ci or npm test",
   );
 });
+
+test.each(["env", "shell", "working-directory", "with"])(
+  "rejects %s overrides on required npm steps",
+  (field) => {
+    expect(
+      validateValidationJobConditions(
+        { step: { [field]: field === "env" ? { NODE_OPTIONS: "--require=x" } : "override" } },
+        { step: {} },
+        {},
+      ),
+    ).toContain("override npm ci or npm test");
+  },
+);

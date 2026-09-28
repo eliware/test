@@ -74,6 +74,7 @@
           "id": "A-0.1.130.3",
           "dos": [
             "Application package.json must declare its runtime/start entrypoints, environment contract, and private/public distribution status when applicable.",
+            "A declared main or bin file entrypoint must be a nonempty repository-relative path to an existing file; a start script must be a nonempty command.",
             "Application repositories may include examples/ when it improves user documentation; when present, examples/README.md must index runnable examples and each example must document prerequisites, commands, and expected results."
           ],
           "donts": [
@@ -168,7 +169,7 @@
         {
           "id": "E-0.1.130.14",
           "dos": [
-            "Application Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code.",
+            "Application Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code; coverage scope is limited to native ESM .mjs production files under src/.",
             "Exclude generated, bundled, compiled, dependency, coverage, build, declaration, fixture, and snapshot files from in-scope code."
           ],
           "donts": ["Do not hide untested production logic with coverage exclusions."],

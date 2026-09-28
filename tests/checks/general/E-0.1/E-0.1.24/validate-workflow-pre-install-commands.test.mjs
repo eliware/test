@@ -6,6 +6,9 @@ test("allows safe reporting before install", () => {
     validateWorkflowPreInstallCommands("ci.yml", [{ command: "echo starting" }], 1),
   ).toBeNull();
   expect(
+    validateWorkflowPreInstallCommands("ci.yml", [{ command: "printf 'starting validation'" }], 1),
+  ).toBeNull();
+  expect(
     validateWorkflowPreInstallCommands(
       "ci.yml",
       [{ command: "echo starting" }, { command: "npm ci" }],
@@ -25,18 +28,36 @@ test("rejects file creation and other setup commands before install", () => {
     "printf 'MAIL_OWNER_ADDRESS=ops+ci@eliware.org\\n' > .env.local",
     "printf 'MAIL_OWNER_ADDRESS=test@eliware.org\\n' > .env.local",
     "printf '%s\\n' 'setup complete'",
+    "printf '$GITHUB_TOKEN'",
     "printf 'MAIL_OWNER_ADDRESS=$(touch /tmp/pwned)@eliware.org\\n' > .env",
     "printf 'MAIL_OWNER_ADDRESS=`touch /tmp/pwned`@eliware.org\\n' > .env",
     "echo $(touch /tmp/pwned)",
     "echo `touch /tmp/pwned`",
+    "echo $GITHUB_TOKEN",
+    "echo '$GITHUB_TOKEN'",
+    String.raw`echo safe\value`,
+    "echo '${{ secrets.TOKEN }}'",
+    'echo "${{ secrets.TOKEN }}"',
     "echo setup; touch /tmp/pwned",
     "echo setup | tee /tmp/output",
     "echo setup > .env",
+    "echo 'x' > .env",
+    'echo "x" > .env',
+    'echo "safe\\\"; touch .env"',
+    'echo "safe\\\\value"',
   ]) {
     expect(validateWorkflowPreInstallCommands("ci.yml", [{ command }], 1)).toContain(
       "safe reporting",
     );
   }
+});
+
+test("rejects unsupported script fields before install", () => {
+  expect(
+    validateWorkflowPreInstallCommands("ci.yml", [], 1, [
+      { script: "npm install attacker-package" },
+    ]),
+  ).toContain("safe reporting");
 });
 
 test("allows the approved setup actions and rejects unreviewed actions before install", () => {

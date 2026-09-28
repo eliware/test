@@ -56,6 +56,7 @@ test("rejects non-string items before parsing audit options", () => {
   );
   expect(validateAuditArguments([null])).toBe("Audit arguments must be an array of strings.");
   expect(validateAuditArguments(null)).toBe("Audit arguments must be an array of strings.");
+  expect(validateAuditArguments("--no-fund")).toBe("Audit arguments must be an array of strings.");
   const sparseArguments = ["--no-fund"];
   sparseArguments.length = 2;
   expect(validateAuditArguments(sparseArguments)).toBe(

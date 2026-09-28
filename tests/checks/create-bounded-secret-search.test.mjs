@@ -16,12 +16,39 @@ test("retains secret prefixes and suppresses work after the cumulative limit", (
   expect(failedSearch("a")).toMatchObject({ suppressed: true });
 });
 
+test("suppresses malformed fallback matcher output before calculating a boundary", () => {
+  for (const matcher of [
+    () => [0],
+    () => [0, undefined, 0],
+    () => Object.assign([], { length: 6 }),
+    () => Object.assign(Array(6).fill(0), { work: Number.NaN }),
+    () => Object.assign(Array(6).fill(0), { work: -1 }),
+  ]) {
+    expect(createBoundedSecretSearch(["secret"], 100, matcher)("secret")).toMatchObject({
+      boundary: 0,
+      suppressed: true,
+    });
+  }
+});
+
 test("reuses automaton state instead of rescanning the retained suffix", () => {
   const matcher = createSecretTextMatcher(["secret"]);
   const search = createBoundedSecretSearch(["secret"], 20, matcher);
   expect(search("safe ")).toMatchObject({ boundary: 0, suppressed: false });
   expect(search("safe secret")).toMatchObject({ boundary: 5, suppressed: false });
   expect(search("secretX")).toMatchObject({ boundary: 0, suppressed: false });
+});
+
+test("tracks the absolute start after emitting more than one pending prefix", () => {
+  const matcher = createSecretTextMatcher(["secret"]);
+  const search = createBoundedSecretSearch(["secret"], 100, matcher);
+
+  expect(search("safe ").boundary).toBe(0);
+  expect(search("safe safe ").boundary).toBe(4);
+  const result = search(" safe secret", true);
+
+  expect(result.suppressed).toBe(false);
+  expect(result.matchEnds[6]).toBe(12);
 });
 
 test("suppresses malformed incremental state and work-budget overflow", () => {

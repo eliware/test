@@ -8,7 +8,7 @@ export const parentRuleId = "E-0.1.10";
 
 export async function run(context) {
   try {
-    const { parsed, error } = await readKnitScript(context, { includeSource: false });
+    const { parsed, error } = await readKnitScript(context);
     if (error) return fail(ruleId, error);
     if (parsed.error) return fail(ruleId, parsed.error);
     const commands = parsed.calls.map((call) => {
@@ -29,8 +29,10 @@ export async function run(context) {
       );
     if (commands.some((command) => command === null))
       failures.push(".knit/validate.mjs contains a command that cannot be inspected.");
-    if (commands.length < required.length)
-      failures.push(".knit/validate.mjs must include git pull, npm ci, and npm test.");
+    if (commands.length !== required.length)
+      failures.push(
+        ".knit/validate.mjs must contain only git pull, npm ci, and npm test, in that order.",
+      );
     for (const [index, expected] of required.entries()) {
       if (commands[index] && JSON.stringify(commands[index]) !== JSON.stringify(expected))
         failures.push(`.knit/validate.mjs command ${index + 1} must be ${expected.join(" ")}.`);

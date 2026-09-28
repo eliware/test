@@ -96,6 +96,13 @@ test("rejects absent pushes, unusable digests, incomplete evidence, and out-of-o
   expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
 });
 
+test("rejects each missing evidence stage before checking its position", () => {
+  for (const stage of expectedStages) {
+    stage.mockReturnValueOnce(undefined);
+    expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
+  }
+});
+
 test("requires the final verification handoff to be the last job step", () => {
   steps.mockReturnValueOnce([...jobSteps, { run: "echo publication complete" }]);
 

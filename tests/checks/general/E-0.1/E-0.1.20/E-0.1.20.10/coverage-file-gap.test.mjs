@@ -16,6 +16,27 @@ test("returns no gap for fully covered files and diagnostics for uncovered files
   );
 });
 
+test("counts positive Istanbul counters as covered entries, independent of execution frequency", () => {
+  const singleExecution = {
+    s: { 1: 1, 2: 0 },
+    b: {},
+    f: {},
+    l: { 1: 1, 2: 0 },
+    statementMap: { 1: {}, 2: {} },
+    branchMap: {},
+    fnMap: {},
+    lineMap: { 1: {}, 2: {} },
+  };
+  const repeatedExecution = {
+    ...singleExecution,
+    s: { 1: 100, 2: 0 },
+    l: { 1: 100, 2: 0 },
+  };
+
+  expect(fileGap("single.mjs", singleExecution)?.metrics.statements).toBe(50);
+  expect(fileGap("repeated.mjs", repeatedExecution)?.metrics.statements).toBe(50);
+});
+
 test("reports statement, branch, function, and line locations", () => {
   const gap = fileGap("gap.mjs", {
     s: { 1: 0, 2: 1 },
@@ -89,13 +110,32 @@ test("uses explicit line data and handles empty or incomplete coverage maps", ()
       fnMap: { 1: {} },
     }),
   ).toMatchObject({ lines: ["2"] });
-  expect(fileGap("empty.mjs", {})).toEqual(expect.objectContaining({ file: "empty.mjs" }));
+  expect(fileGap("empty.mjs", {})).toMatchObject({
+    file: "empty.mjs",
+    metrics: { statements: null, branches: null, functions: null, lines: null },
+  });
   expect(() => fileGap("map-only.mjs", { statementMap: { 1: {} } })).toThrow(
     "Coverage evidence is incomplete",
   );
   expect(() => fileGap("counter-only.mjs", { s: { 0: 1 } })).toThrow(
     "Coverage evidence is incomplete",
   );
+});
+
+test("does not report gaps for source modules with no instrumentable counters", () => {
+  const emptyShape = { statementMap: {}, branchMap: {}, fnMap: {}, lineMap: {} };
+  const emptyEvidence = {
+    s: {},
+    b: {},
+    f: {},
+    l: {},
+    statementMap: {},
+    branchMap: {},
+    fnMap: {},
+    lineMap: {},
+  };
+
+  expect(fileGap("comment-only.mjs", emptyEvidence, emptyShape)).toBeNull();
 });
 
 test("rejects evidence that omits source statement entries", () => {
@@ -115,4 +155,24 @@ test("rejects evidence that omits source statement entries", () => {
   expect(() => fileGap("incomplete.mjs", incompleteEvidence, expectedShape)).toThrow(
     "Coverage report does not account for every source statement entry",
   );
+});
+
+test("rejects source branches with no branch paths", () => {
+  const branch = { type: "switch", line: 4, locations: [] };
+  const data = {
+    s: {},
+    b: { 1: [] },
+    f: {},
+    l: {},
+    statementMap: {},
+    branchMap: { 1: branch },
+    fnMap: {},
+  };
+  expect(() =>
+    fileGap("empty-branch.mjs", data, {
+      statementMap: {},
+      branchMap: { 1: branch },
+      fnMap: {},
+    }),
+  ).toThrow("source branch must contain at least one path");
 });

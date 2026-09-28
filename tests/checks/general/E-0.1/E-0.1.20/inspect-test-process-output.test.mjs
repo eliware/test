@@ -35,3 +35,16 @@ test("maps an unexpected-output finding to the check result", async () => {
       "Unexpected test-process output detected: Unexpected output from unknown test suite: console leak",
   });
 });
+
+test("redacts invocation environment secrets from unexpected test output", async () => {
+  await expect(
+    run({
+      executeJest: true,
+      env: { API_TOKEN: "jest-output-secret-value" },
+      jestResult: { code: 0, stdout: "leaked jest-output-secret-value\n" },
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.not.stringContaining("jest-output-secret-value"),
+  });
+});

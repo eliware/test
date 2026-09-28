@@ -18,3 +18,15 @@ test("rejects malformed email, unsupported protocol, and malformed web URLs", ()
     );
   }
 });
+
+test("rejects external URLs that embed credentials", () => {
+  for (const reference of [
+    "https://user:password@example.test/path",
+    "https://user@example.test/path",
+    "https://:password@example.test/path",
+  ]) {
+    expect(validateExternalDocumentationLink(reference)).toBe(
+      `Documentation link is invalid: ${reference}.`,
+    );
+  }
+});

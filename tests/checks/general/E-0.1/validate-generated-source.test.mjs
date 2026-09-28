@@ -12,6 +12,18 @@ test("finds generated markers in source modules", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test.each([
+  "//# sourceMappingURL=build\\bundle.js.map",
+  "//@ sourceMappingURL=build/bundle.js.map",
+  "/*# sourceMappingURL=build/bundle.js.map */",
+  "  //  sourceMappingURL = bundle.js.map",
+])("finds common source map markers: %s", async (marker) => {
+  const readText = jest.fn(async () => marker);
+  await expect(findGeneratedSource("/repo", ["bundle.mjs"], readText)).resolves.toEqual([
+    "bundle.mjs",
+  ]);
+});
+
 test("accepts ordinary source files and empty source collections", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-generated-source-clean-"));
   await mkdir(join(root, "src"));

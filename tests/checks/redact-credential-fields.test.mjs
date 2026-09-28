@@ -13,3 +13,9 @@ test("redacts key-value, quoted, whitespace-delimited, and private-key credentia
   ).toBe("[REDACTED PRIVATE KEY]");
   expect(redactCredentialFields("ordinary output")).toBe("ordinary output");
 });
+
+test("does not treat a following line as a whitespace-delimited credential value", () => {
+  expect(redactCredentialFields("secret\n  ✓ handles overlapping entries")).toBe(
+    "secret\n  ✓ handles overlapping entries",
+  );
+});

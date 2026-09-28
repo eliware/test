@@ -2,12 +2,12 @@ export function isInScopeSource(file) {
   const normalized = file.split("\\").join("/");
   const sourceIndex = normalized.lastIndexOf("/src/");
   if (sourceIndex < 0 && !normalized.startsWith("src/")) return false;
-  if (!/\.(?:mjs|js|cjs)$/iu.test(normalized)) return false;
+  if (!/\.mjs$/iu.test(normalized)) return false;
   const sourcePath = sourceIndex < 0 ? normalized.slice(4) : normalized.slice(sourceIndex + 5);
   return (
     !/(?:^|\/)(?:fixtures?|generated|dist|build)(?:\/|$)/iu.test(sourcePath) &&
-    !/\.snap\.(?:mjs|js|cjs)$/iu.test(sourcePath) &&
-    !/\.(?:test|spec)\.(?:mjs|js|cjs)$/iu.test(sourcePath)
+    !/\.snap\.mjs$/iu.test(sourcePath) &&
+    !/\.(?:test|spec)\.mjs$/iu.test(sourcePath)
   );
 }
 

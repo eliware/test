@@ -34,3 +34,23 @@ test("handles alternate publication and command shapes", () => {
   expect(isPublicationWorkflow(alternate, /never/)).toBe(false);
   expect(publicationJobs(alternate)).toHaveLength(1);
 });
+
+test("classifies a publication from its structured GHCR tag input", () => {
+  const workflow = {
+    document: {
+      jobs: {
+        publish: {
+          steps: [
+            {
+              uses: "eliware/container-publisher@v1",
+              with: { tags: "ghcr.io/eliware/app:latest" },
+            },
+          ],
+        },
+      },
+    },
+  };
+
+  expect(isPublicationWorkflow(workflow)).toBe(true);
+  expect(publicationJobs(workflow)).toHaveLength(1);
+});

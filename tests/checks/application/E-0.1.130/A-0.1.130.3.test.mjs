@@ -1,22 +1,27 @@
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/application/E-0.1.130/A-0.1.130.3.mjs";
 
-test("requires an application entrypoint and distribution status", () => {
-  expect(run({ packageJson: { bin: { app: "bin/app.mjs" }, private: true } })).toEqual({
+test("maps application entrypoint validation and distribution status", () => {
+  expect(
+    run({
+      root: process.cwd(),
+      packageJson: { bin: { app: "bin/eliware-test.mjs" }, private: true },
+    }),
+  ).toEqual({
     ruleId: "A-0.1.130.3",
     status: "pass",
     message: "",
   });
-  expect(run({ packageJson: { private: true } })).toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
-  expect(run({ packageJson: { main: "index.mjs" } })).toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
-  expect(run({ packageJson: { scripts: { start: "node index.mjs" } } })).toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
-  expect(run({ packageJson: { bin: {}, private: true } })).toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
+  expect(
+    run({ root: process.cwd(), packageJson: { bin: { app: "bin/eliware-test.mjs" } } }),
+  ).toMatchObject({ status: "fail", message: expect.stringContaining("distribution status") });
+});
+
+test("fails when no existing file entrypoint or start command is declared", () => {
+  expect(run({ packageJson: { private: true } })).toEqual({
+    ruleId: "A-0.1.130.3",
+    status: "fail",
+    message:
+      "Application package.json must declare an existing runtime file entrypoint or a nonempty start command.",
+  });
 });

@@ -1,8 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
 import { selectCoverageEvidence } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/select-coverage-evidence.mjs";
 
-const text = "src/example.mjs | 100 | 100 | 100 | 100 |\nAll files | 100 | 100 | 100 | 100 |";
-
 test("uses candidate order and skips summary reports when fresh evidence is required", async () => {
   const readCandidate = jest.fn(async (path) => {
     if (path.endsWith("coverage-final.json"))
@@ -63,6 +61,19 @@ test("continues after a report omits source entries and selects a later valid re
   expect(readCandidate).toHaveBeenCalledTimes(2);
 });
 
+test("falls back after a candidate has an invalid source shape", async () => {
+  const readCandidate = jest.fn(async (path) => {
+    if (path === "malformed-shape.json") {
+      throw new Error("Coverage evidence has an invalid shape.");
+    }
+    return { totals: { lines: 100 }, gaps: [] };
+  });
+  await expect(
+    selectCoverageEvidence(["malformed-shape.json", "valid.json"], readCandidate),
+  ).resolves.toMatchObject({ source: "valid.json" });
+  expect(readCandidate).toHaveBeenCalledTimes(2);
+});
+
 test("continues after source-derived branch shape mismatches", async () => {
   const readCandidate = jest.fn(async (path) => {
     if (path === "branch-mismatch.json") {
@@ -98,6 +109,8 @@ test("continues after detailed coverage validation rejects a candidate", async (
   ).rejects.toThrow("Detailed coverage omits in-scope source file(s)");
 });
 
+const text = "src/example.mjs | 100 | 100 | 100 | 100 |\nAll files | 100 | 100 | 100 | 100 |";
+
 test("falls back when detailed evidence has no source-derived shape", async () => {
   const readCandidate = jest.fn(async (path) => {
     if (path === "unshaped.json") {
@@ -126,22 +139,6 @@ test("falls through after malformed map/counter evidence and fails when no candi
   ).rejects.toBe(malformed);
 });
 
-test("classifies missing and summary-only candidates as unusable", async () => {
-  await expect(selectCoverageEvidence(["empty.json"], async () => null)).rejects.toThrow(
-    "Coverage report is invalid: empty.json",
-  );
-  await expect(
-    selectCoverageEvidence(["summary.json"], async () => {
-      throw new Error("Summary-only coverage cannot prove file-level coverage");
-    }),
-  ).rejects.toThrow("Summary-only coverage");
-  await expect(
-    selectCoverageEvidence(["missing.json"], async () => {
-      throw { code: "ENOENT" };
-    }),
-  ).rejects.toThrow("Coverage evidence is missing");
-});
-
 test("uses text evidence only when it is parseable and fresh evidence is not required", async () => {
   await expect(
     selectCoverageEvidence([], jest.fn(), text, false, ["src/example.mjs"]),
@@ -162,6 +159,12 @@ test("does not trust text coverage when discovered source files are unavailable"
   await expect(selectCoverageEvidence([], jest.fn(), text)).rejects.toThrow(
     "Coverage evidence is missing",
   );
+});
+
+test("does not accept an empty detailed report when no source files are discovered", async () => {
+  await expect(
+    selectCoverageEvidence(["coverage-final.json"], async () => null, "", true, []),
+  ).rejects.toThrow("Coverage report is invalid: coverage-final.json");
 });
 
 test("immediately propagates errors outside the unusable-report categories", async () => {

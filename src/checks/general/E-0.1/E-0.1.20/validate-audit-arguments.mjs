@@ -24,9 +24,11 @@ export function validateAuditArguments(args = []) {
   if (!Array.isArray(args)) {
     return "Audit arguments must be an array of strings.";
   }
-  const suppliedArguments = Array.from(args);
-  if (suppliedArguments.some((argument) => typeof argument !== "string")) {
-    return "Audit arguments must be an array of strings.";
+  const suppliedArguments = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (typeof argument !== "string") return "Audit arguments must be an array of strings.";
+    suppliedArguments.push(argument);
   }
   const failures = [];
   for (const argument of suppliedArguments) {

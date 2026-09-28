@@ -11,19 +11,24 @@ export function resolveConsumerJestCli(root) {
 }
 
 export function resolveJestCli(root, options = {}) {
-  if (options?.jestCli) return options.jestCli;
+  if (options?.jestCli !== undefined) {
+    if (typeof options.jestCli !== "string" || options.jestCli.trim().length === 0) {
+      throw new Error("Injected Jest CLI must be a nonempty string.");
+    }
+    return options.jestCli;
+  }
   try {
     return resolveConsumerJestCli(root);
   } catch (consumerError) {
     const bundled = options?.resolveBundledJestCli
       ? options.resolveBundledJestCli()
-      : resolveHarnessJestCli();
+      : resolveSharedJestCli();
     if (bundled) return bundled;
     throw consumerError;
   }
 }
 
-export function resolveHarnessJestCli(
+export function resolveSharedJestCli(
   resolveBin = resolveJestBin,
   requireFromHarness = createRequire(import.meta.url),
 ) {

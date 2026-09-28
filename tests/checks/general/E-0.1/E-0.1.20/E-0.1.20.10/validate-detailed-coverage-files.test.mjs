@@ -3,9 +3,10 @@ import { validateDetailedCoverageFiles } from "../../../../../../src/checks/gene
 
 const complete = { s: {}, b: {}, f: {}, statementMap: {}, branchMap: {}, fnMap: {} };
 
-test("filters non-source reports and accepts an unscoped empty report", () => {
-  const source = { "src/example.mjs": complete };
-  expect(validateDetailedCoverageFiles(source)).toEqual(Object.entries(source));
+test("filters non-source reports and requires inventory for in-scope files", () => {
+  expect(() => validateDetailedCoverageFiles({ "src/example.mjs": complete })).toThrow(
+    "non-repository source file: src/example.mjs",
+  );
   expect(validateDetailedCoverageFiles({ "tests/example.test.mjs": {}, "README.md": {} })).toEqual(
     [],
   );

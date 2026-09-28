@@ -29,3 +29,24 @@ test("keeps empty budgets empty and accepts exact byte-limit values", () => {
   exact.append("stderr", "okay");
   expect(exact.output.stderr).toBe("okay");
 });
+
+test("truncates large multibyte output at a bounded valid UTF-8 prefix", () => {
+  const text = "🔐".repeat(25_000);
+  const truncated = createOutputByteBudget(99_999).truncate(text);
+
+  expect(Buffer.byteLength(truncated)).toBe(99_996);
+  expect(truncated).toBe("🔐".repeat(24_999));
+});
+
+test("keeps multibyte boundaries valid when the byte limit is shared across streams", () => {
+  const budget = createOutputByteBudget(6);
+  budget.append("stdout", "ab");
+  budget.append("stderr", "🔐x");
+
+  expect(budget.output).toEqual({ stdout: "ab", stderr: "🔐" });
+  expect(Buffer.byteLength(budget.output.stdout + budget.output.stderr)).toBe(6);
+});
+
+test("returns empty output for a negative truncate limit", () => {
+  expect(createOutputByteBudget(-1).truncate("text")).toBe("");
+});

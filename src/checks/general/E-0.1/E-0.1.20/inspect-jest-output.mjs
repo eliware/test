@@ -2,8 +2,11 @@ import { parseJsonOutput } from "./parse-jest-output.mjs";
 import { findUnexpectedJestLines } from "./find-unexpected-jest-lines.mjs";
 import { findSlowTestFindings } from "./find-slow-test-findings.mjs";
 import { findJestConsoleOutput } from "./find-jest-console-output.mjs";
+import { redactProcessOutput } from "../../../redact-process-output.mjs";
 
-export function findUnexpectedJestOutput({ stdout = "", stderr = "" } = {}) {
+export function findUnexpectedJestOutput({ stdout = "", stderr = "" } = {}, secrets = []) {
+  stdout = redactProcessOutput(stdout, secrets);
+  stderr = redactProcessOutput(stderr, secrets);
   const parsed = parseJsonOutput(stdout);
   const suite = latestSuite(stderr);
   const findings = findUnexpectedJestLines(parsed.text)

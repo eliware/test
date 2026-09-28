@@ -16,7 +16,7 @@ export async function run({ root, repositoryInventory }) {
   }
   const failures = [];
   for (const { name, document } of workflows) {
-    if (isPublicationWorkflow({ name, document }, /(?:npm\s+publish|docker|ghcr\.io)/iu)) continue;
+    if (isPublicationWorkflow({ name, document })) continue;
     if (!containsCompliantValidationJob(name, document))
       failures.push(`${name} must run npm ci followed by npm test.`);
   }

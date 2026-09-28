@@ -44,6 +44,14 @@ test("records unsupported classifications from call analysis", () => {
   expect(unsupported).toHaveLength(3);
 });
 
+test("rejects unapproved namespace subprocess operations and indirect aliases", () => {
+  const { calls, unsupported } = collect(
+    'import * as child from "node:child_process"; child.fork("worker.js"); const run = child.execSync; run("npm test");',
+  );
+  expect(calls).toEqual([]);
+  expect(unsupported).toHaveLength(2);
+});
+
 test("finds subprocess commands inside invoked local functions", () => {
   const { calls, unsupported } = collect(
     'import { spawnSync } from "node:child_process"; function deploy() { spawnSync("npm", ["publish"]); } deploy();',

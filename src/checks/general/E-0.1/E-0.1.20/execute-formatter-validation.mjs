@@ -1,6 +1,5 @@
 import { validatePrettierArguments } from "../../../validate-prettier-arguments.mjs";
-import { collectRedactionSecrets } from "../../../collect-redaction-secrets.mjs";
-import { redactProcessOutput } from "../../../redact-process-output.mjs";
+import { createFormatterDiagnostic } from "./create-formatter-diagnostic.mjs";
 import { resolveFocusedFormatterPaths } from "./resolve-focused-formatter-paths.mjs";
 
 export async function executeFormatterValidation({
@@ -31,16 +30,10 @@ export async function executeFormatterValidation({
     }
     const result = await runFormatter(root, formatterOptions);
     if (result.code !== 0) {
-      const secrets = collectRedactionSecrets(env);
-      const detail = [result.stdout, result.stderr]
-        .filter(Boolean)
-        .map((text) => redactProcessOutput(text, secrets))
-        .join("\n")
-        .trim();
-      return detail ? `Prettier failed: ${detail}` : "Prettier failed without diagnostics.";
+      return createFormatterDiagnostic("Prettier failed", [result.stdout, result.stderr], env);
     }
     return "";
   } catch (error) {
-    return `Prettier could not be started: ${redactProcessOutput(error.message, collectRedactionSecrets(env))}`;
+    return createFormatterDiagnostic("Prettier could not be started", [error.message], env);
   }
 }

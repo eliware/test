@@ -1,7 +1,13 @@
 import { npmCommand } from "../../npm-command.mjs";
 
 export function createOutdatedDependenciesCommand(root, { env, platform, execPath }) {
-  const [executable, prefix] = npmCommand(platform, env.npm_execpath ?? "", execPath);
+  const [executable, prefix] = npmCommand(
+    platform,
+    env.npm_execpath ?? "",
+    execPath,
+    undefined,
+    root,
+  );
   return {
     executable,
     args: [...prefix, "outdated", "--json"],

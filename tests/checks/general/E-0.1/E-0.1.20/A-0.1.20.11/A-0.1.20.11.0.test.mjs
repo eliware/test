@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/A-0.1.20.11/A-0.1.20.11.0.mjs";
@@ -8,17 +8,25 @@ import { createRepositoryInventory } from "../../../../../../src/checks/create-r
 test("requires declared stages in CI", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-stage-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "ci.yml"), "run: npm run typecheck\n");
-  expect(
-    (await run({ root, packageJson: { scripts: { typecheck: "tsc", build: "build" } } })).status,
-  ).toBe("fail");
-  await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
-    "run: npm run typecheck\nrun: npm run build\n",
-  );
-  expect(
-    (await run({ root, packageJson: { scripts: { typecheck: "tsc", build: "build" } } })).status,
-  ).toBe("pass");
+  const workflow = join(root, ".github", "workflows", "ci.yml");
+  try {
+    await writeFile(
+      workflow,
+      `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n`,
+    );
+    expect(
+      (await run({ root, packageJson: { scripts: { typecheck: "tsc", build: "build" } } })).status,
+    ).toBe("fail");
+    await writeFile(
+      workflow,
+      `jobs:\n  report:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo npm run typecheck\n      - run: echo npm run build\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n      - run: npm run typecheck\n      - run: npm run build\n`,
+    );
+    expect(
+      (await run({ root, packageJson: { scripts: { typecheck: "tsc", build: "build" } } })).status,
+    ).toBe("pass");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("passes when no optional validation stages are declared", async () => {
@@ -33,10 +41,10 @@ test("passes when no optional validation stages are declared", async () => {
 
 test("requires workflow files when a declared stage has no CI directory", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-stage-"));
-  await expect(run({ root, packageJson: { scripts: { build: "build" } } })).resolves.toEqual({
+  await expect(run({ root, packageJson: { scripts: { build: "build" } } })).resolves.toMatchObject({
     ruleId: "A-0.1.20.11.0",
     status: "fail",
-    message: "CI workflow files are required when typecheck or build validation is declared.",
+    message: expect.stringContaining("CI workflow files could not be inspected"),
   });
 });
 
@@ -44,7 +52,10 @@ test("uses inventory workflow discovery and shared content reads", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-inventory-"));
   const workflow = join(root, ".github", "workflows", "ci.yaml");
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(workflow, "run: npm run build\n");
+  await writeFile(
+    workflow,
+    "jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n      - run: npm run build\n",
+  );
   const repositoryInventory = createRepositoryInventory(root, {
     read: async (path, encoding) => {
       expect(path).toBe(workflow);

@@ -69,7 +69,9 @@ test("propagates plan execution failures when no coverage cleanup is needed", as
       throw new Error("plan failed");
     }),
   });
-  await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("plan failed");
+  await expect(runValidation("/repo", [], { dependencies })).resolves.toEqual([
+    { ruleId: "E-0.1.20", status: "fail", message: "plan failed" },
+  ]);
 });
 
 test("uses default invocation options when omitted", async () => {

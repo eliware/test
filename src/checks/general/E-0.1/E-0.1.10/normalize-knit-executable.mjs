@@ -1,19 +1,36 @@
 const allowedExecutables = new Set(["node", "npm", "npx", "git", "echo"]);
-const windowsRoot = String.raw`(?:[a-z]:|//[^/]+/[^/]+|//\?/UNC/[^/]+/[^/]+|//\?/[a-z]:)`;
-const windowsInstallPaths = [
-  new RegExp(`^(${windowsRoot}/Program Files(?: \\(x86\\))?/nodejs)/(npm|npx)\\.cmd$`, "iu"),
-  new RegExp(`^${windowsRoot}/Program Files/Git/(?:cmd|bin)/git\\.exe$`, "iu"),
-];
 
 export function normalizeKnitExecutable(command) {
   if (typeof command !== "string" || !command) return null;
   const normalized = command.replaceAll("\\", "/");
-  if (!normalized.includes("/")) return normalizeAllowedBaseName(normalized);
-  for (const [index, pattern] of windowsInstallPaths.entries()) {
-    const match = normalized.match(pattern);
-    if (match) return index === 0 ? match[2].toLowerCase() : "git";
+  let executable = normalized;
+  if (normalized.includes("/")) {
+    const isDrivePath = /^[a-z]:\//iu.test(normalized);
+    const isUncPath = normalized.startsWith("//");
+    if (!isDrivePath && !isUncPath) return null;
+    const pathParts = normalized.slice(isDrivePath ? 3 : 2).split("/");
+    if (
+      pathParts.length < (isDrivePath ? 1 : 3) ||
+      pathParts.some((part) => !part || part === "." || part === "..")
+    )
+      return null;
+    if (!/\.(?:cmd|exe|bat)$/iu.test(pathParts.at(-1))) return null;
+    const standardGit = /^program files\/git\/(?:cmd|bin)\/git\.exe$/iu;
+    const standardNode = /^program files(?: \(x86\))?\/nodejs\/(?:npm|npx)\.cmd$/iu;
+    const userNpmShim = /^users\/[^/]+\/appdata\/roaming\/npm\/(?:npm|npx)\.cmd$/iu;
+    const uncInstall =
+      /^\/\/[^/]+\/(?:tools\/)?program files(?: \(x86\))?\/(?:git\/(?:cmd|bin)\/git\.exe|nodejs\/(?:npm|npx)\.cmd)$/iu;
+    const installedPath = pathParts.join("/");
+    if (
+      !(isUncPath && uncInstall.test(normalized)) &&
+      !standardGit.test(installedPath) &&
+      !standardNode.test(installedPath) &&
+      !userNpmShim.test(installedPath)
+    )
+      return null;
+    executable = pathParts.at(-1);
   }
-  return null;
+  return normalizeAllowedBaseName(executable);
 }
 
 function normalizeAllowedBaseName(command) {

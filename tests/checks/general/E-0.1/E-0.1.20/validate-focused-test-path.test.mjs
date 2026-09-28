@@ -12,6 +12,9 @@ test("validates focused test paths before execution", async () => {
   await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toBe(
     "tests/sample.test.mjs",
   );
+  await expect(validateFocusedTestPath(root, ["tests\\sample.test.mjs"])).resolves.toBe(
+    "tests\\sample.test.mjs",
+  );
   await expect(validateFocusedTestPath(root, ["tests/missing.test.mjs"])).rejects.toThrow(
     "does not exist",
   );
@@ -42,15 +45,24 @@ test("rejects traversal and symlinks that escape the repository", async () => {
   }
 });
 
-test("rejects absolute and drive-qualified focused test paths", async () => {
+test("rejects POSIX, UNC, and drive-qualified absolute test paths", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-absolute-"));
   try {
     await expect(validateFocusedTestPath(root, ["C:/repo/tests/a.test.mjs"])).rejects.toThrow(
-      "must resolve inside the repository",
+      "must be repository-relative",
+    );
+    await expect(validateFocusedTestPath(root, ["C:tests\\a.test.mjs"])).rejects.toThrow(
+      "must be repository-relative",
     );
     await expect(validateFocusedTestPath(root, ["C:\\repo\\tests\\a.test.mjs"])).rejects.toThrow(
-      "must resolve inside the repository",
+      "must be repository-relative",
     );
+    await expect(validateFocusedTestPath(root, ["/repo/tests/a.test.mjs"])).rejects.toThrow(
+      "must be repository-relative",
+    );
+    await expect(
+      validateFocusedTestPath(root, ["\\\\server\\share\\repo\\tests\\a.test.mjs"]),
+    ).rejects.toThrow("must be repository-relative");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

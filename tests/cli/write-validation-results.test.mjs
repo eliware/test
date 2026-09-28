@@ -12,8 +12,21 @@ test("writes one concise line for a clean validation run", () => {
   writeValidationResults({ code: 0, diagnostics: [] }, write, false, {}, 0);
   expect(write).toHaveBeenCalledTimes(1);
   expect(write).toHaveBeenCalledWith(
-    "All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0",
+    "All tests passed | 100x4 coverage | 0 lint warnings | Exit-code: 0",
   );
+});
+
+test.each([
+  ["lint", "Lint mode passed | Exit-code: 0"],
+  ["format", "Formatting completed | Exit-code: 0"],
+  ["format-check", "Format check passed | Exit-code: 0"],
+  ["audit", "Audit passed | Exit-code: 0"],
+  ["pack", "Pack validation passed | Exit-code: 0"],
+])("reports only the successful %s mode", (mode, expected) => {
+  const write = jest.fn();
+  writeValidationResults({ code: 0, diagnostics: [], mode }, write, false, {}, 0);
+  expect(write).toHaveBeenCalledWith(expected);
+  expect(write.mock.calls.join(" ")).not.toMatch(/tests passed|coverage|lint warnings/iu);
 });
 
 test("does not claim a clean run when output or diagnostics exist", () => {
@@ -26,7 +39,7 @@ test("does not claim a clean run when output or diagnostics exist", () => {
     0,
   );
   expect(write).not.toHaveBeenCalledWith(
-    "All tests passed | 100x4 coverage | 0 lint warnings  | Exit-code: 0",
+    "All tests passed | 100x4 coverage | 0 lint warnings | Exit-code: 0",
   );
 });
 

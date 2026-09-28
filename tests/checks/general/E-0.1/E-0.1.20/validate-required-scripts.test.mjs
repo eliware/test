@@ -39,10 +39,11 @@ test("allows only the local CLI scripts for the self-hosting package", () => {
   );
 });
 
-test("reports the first missing or incorrect validation script", () => {
-  expect(validateRequiredScripts({ ...scripts, test: "jest" })).toBe(
-    "package.json.scripts.test must be exactly eliware-test.",
-  );
+test("reports every incorrect required validation script", () => {
+  const result = validateRequiredScripts({ ...scripts, test: "jest", lint: "eslint" });
+
+  expect(result).toContain("package.json.scripts.test must be exactly eliware-test.");
+  expect(result).toContain("package.json.scripts.lint must be exactly eliware-test --lint.");
 });
 
 test("requires the npm publication pack script when the profile applies", () => {
@@ -57,8 +58,12 @@ test("requires the npm publication pack script when the profile applies", () => 
 test("rejects unrelated scripts and malformed capability scripts", () => {
   expect(validateRequiredScripts(null)).toBe("package.json.scripts must be an object.");
   expect(validateRequiredScripts([])).toBe("package.json.scripts must be an object.");
+  expect(validateRequiredScripts("test lint")).toBe("package.json.scripts must be an object.");
   expect(validateRequiredScripts({ ...scripts, start: "node server.mjs" })).toBe(
     "package.json.scripts.start is not allowed by an applicable profile.",
+  );
+  expect(validateRequiredScripts({ ...scripts, unexpected: "" })).toBe(
+    "package.json.scripts.unexpected is not allowed by an applicable profile.",
   );
   expect(
     validateRequiredScripts(

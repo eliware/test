@@ -1,16 +1,15 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const readFile = jest.fn();
-const readRepositoryText = jest.fn();
+const readReleaseNoteDocuments = jest.fn();
 const parseReleaseNotes = jest.fn();
 const validateReleaseNoteContent = jest.fn();
 const validateReleaseNoteOrder = jest.fn();
 const validateReadmeReleaseNotesLink = jest.fn();
 
-jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
-jest.unstable_mockModule("../../../../../src/checks/read-repository-text.mjs", () => ({
-  readRepositoryText,
-}));
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.26/read-release-note-documents.mjs",
+  () => ({ readReleaseNoteDocuments }),
+);
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.26/parse-release-notes.mjs",
   () => ({ parseReleaseNotes }),
@@ -32,8 +31,11 @@ const { run } = await import("../../../../../src/checks/general/E-0.1/E-0.1.26/A
 
 function resetValidators() {
   jest.resetAllMocks();
-  readFile.mockResolvedValue("release notes");
-  readRepositoryText.mockResolvedValue("README");
+  readReleaseNoteDocuments.mockResolvedValue({
+    notes: "release notes",
+    readme: "README",
+    failures: [],
+  });
   parseReleaseNotes.mockReturnValue({ entries: [] });
   validateReleaseNoteContent.mockReturnValue(null);
   validateReleaseNoteOrder.mockReturnValue(null);
@@ -50,8 +52,7 @@ test("coordinates release-note parsing, validation, and README indexing in order
     status: "pass",
     message: "",
   });
-  expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/RELEASE_NOTES\.md$/u), "utf8");
-  expect(readRepositoryText).toHaveBeenCalledWith(context, expect.stringMatching(/README\.md$/u));
+  expect(readReleaseNoteDocuments).toHaveBeenCalledWith(context, false);
   expect(validateReleaseNoteContent).toHaveBeenCalledWith([], "8.0.0");
   const phases = [
     parseReleaseNotes.mock.invocationCallOrder[0],
@@ -63,7 +64,10 @@ test("coordinates release-note parsing, validation, and README indexing in order
 });
 
 test("maps missing input files to the check result", async () => {
-  readFile.mockRejectedValueOnce(new Error("missing notes"));
+  readReleaseNoteDocuments.mockResolvedValueOnce({
+    readme: "README",
+    failures: ["RELEASE_NOTES.md is required for release-bearing repositories."],
+  });
 
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "A-0.1.26.0",
@@ -74,10 +78,23 @@ test("maps missing input files to the check result", async () => {
 });
 
 test("reports a missing README while validating release notes", async () => {
-  readRepositoryText.mockRejectedValueOnce(new Error("missing README"));
+  readReleaseNoteDocuments.mockResolvedValueOnce({
+    notes: "release notes",
+    failures: ["README.md is required for release-bearing repositories."],
+  });
   const result = await run({ root: "/repo", packageJson: { version: "8.0.0" } });
   expect(result.message).toContain("README.md is required");
   expect(validateReleaseNoteContent).toHaveBeenCalled();
+});
+
+test("does not require absent release notes for non-release-bearing profiles", async () => {
+  readReleaseNoteDocuments.mockResolvedValueOnce({ readme: "README", failures: [] });
+
+  await expect(
+    run({ root: "/repo", packageJson: { eliware: { apply: ["general", "documentation"] } } }),
+  ).resolves.toEqual({ ruleId: "A-0.1.26.0", status: "pass", message: "" });
+  expect(readReleaseNoteDocuments).toHaveBeenCalledWith(expect.any(Object), false);
+  expect(validateReadmeReleaseNotesLink).not.toHaveBeenCalled();
 });
 
 async function expectFirstFailure(validator, validationError, expectedMessage, laterValidators) {

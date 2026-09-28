@@ -20,7 +20,7 @@ beforeEach(() => {
   jest.resetAllMocks();
 });
 
-test("composes byte, text, parsed-content, and AST cache collaborators", () => {
+test("coordinates focused byte, text, parsed-content, and AST cache modules", () => {
   const readText = jest.fn();
   const readBytes = jest.fn();
   const content = { readText, readBytes };

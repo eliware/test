@@ -10,7 +10,15 @@ export async function run({ root, repositoryInventory }) {
   try {
     const failures = [];
     for (const { name, document } of await readWorkflows(root, repositoryInventory)) {
-      const values = collectValues(document, "run").concat(collectValues(document, "uses"));
+      const environmentValues = collectValues(document, "env").flatMap((environment) =>
+        environment && typeof environment === "object" && !Array.isArray(environment)
+          ? Object.values(environment)
+          : [],
+      );
+      const values = collectValues(document, "run").concat(
+        collectValues(document, "uses"),
+        environmentValues,
+      );
       if (values.some((value) => typeof value === "string" && /codescope/iu.test(value)))
         failures.push(`GitHub workflow must not invoke CodeScope: ${name}.`);
     }

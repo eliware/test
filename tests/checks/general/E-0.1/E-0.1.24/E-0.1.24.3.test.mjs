@@ -78,3 +78,24 @@ jobs:
   await expect(run({ root })).resolves.toMatchObject({ ruleId: "E-0.1.24.3", status: "pass" });
   await rm(root, { recursive: true, force: true });
 });
+
+test("returns actionable failures when workflow discovery or parsing fails", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-errors-"));
+  try {
+    await expect(run({ root })).resolves.toMatchObject({
+      ruleId: "E-0.1.24.3",
+      status: "fail",
+      message: expect.stringContaining("Workflow concurrency settings could not be inspected"),
+    });
+    const workflows = join(root, ".github", "workflows");
+    await mkdir(workflows, { recursive: true });
+    await writeFile(join(workflows, "ci.yml"), "jobs: [\n");
+    await expect(run({ root })).resolves.toMatchObject({
+      ruleId: "E-0.1.24.3",
+      status: "fail",
+      message: expect.stringContaining("Workflow concurrency settings could not be inspected"),
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

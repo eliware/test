@@ -9,16 +9,3 @@ export function inventoryDirectory(root, directory, errorMessage) {
   if (base === ".." || base.startsWith("../") || base.includes(":")) throw new Error(errorMessage);
   return base;
 }
-
-export function createDirectoryReadCache(root, readDirectory) {
-  const reads = new Map();
-  return function readDirectoryCached(directoryPath) {
-    const key = inventoryPath(root, directoryPath);
-    if (!reads.has(key))
-      reads.set(
-        key,
-        Promise.resolve().then(() => readDirectory(key, { withFileTypes: true })),
-      );
-    return reads.get(key);
-  };
-}

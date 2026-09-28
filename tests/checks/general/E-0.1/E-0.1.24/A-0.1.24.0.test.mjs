@@ -68,6 +68,21 @@ test("leaves publication jobs to their publication profile validators", async ()
   }
 });
 
+test("recognizes GHCR publication through structured tag inputs", async () => {
+  const root = await workflowRoot(
+    "jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+  );
+  await writeFile(
+    join(root, ".github", "workflows", "publish.yml"),
+    "jobs:\n  publish:\n    steps:\n      - uses: eliware/container-publisher@v1\n        with:\n          tags: ghcr.io/eliware/app:latest\n",
+  );
+  try {
+    await expect(run({ root })).resolves.toMatchObject({ status: "pass", message: "" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("normalizes invalid workflow YAML", async () => {
   const root = await workflowRoot("jobs: [\n");
   try {

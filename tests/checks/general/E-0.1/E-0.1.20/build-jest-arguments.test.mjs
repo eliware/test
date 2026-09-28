@@ -37,6 +37,11 @@ test.each([
   ["--json"],
   ["--runTestsByPath", "tests/other.test.mjs"],
   ["--testPathPattern=tests/other"],
+  ["--collectCoverage=false"],
+  ["--no-collectCoverage"],
+  ["--test-path-patterns=tests/other"],
+  ["-c", "jest.config.mjs"],
+  ["--find-related-tests", "src/other.mjs"],
 ])("rejects forwarded wrapper-owned Jest options: %s", (...args) => {
   expect(() => buildJestArguments(args)).toThrow("controlled by eliware-test");
 });

@@ -11,10 +11,14 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
     return "Public npm packages must enable npm provenance.";
   }
   const files = packageJson?.files;
-  const required = ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs/", "specs/"];
+  const requiredFiles = ["README.md", "LICENSE", "RELEASE_NOTES.md"];
+  const hasDocumentationDirectory = files?.includes("docs/") || files?.includes("docs");
+  const hasSpecificationsDirectory = files?.includes("specs/") || files?.includes("specs");
   if (
     !Array.isArray(files) ||
-    !required.every((value) => files.includes(value) || files.includes(value.slice(0, -1)))
+    !requiredFiles.every((file) => files.includes(file)) ||
+    !hasDocumentationDirectory ||
+    !hasSpecificationsDirectory
   ) {
     return "Public npm packages must provide a files allowlist containing README.md, LICENSE, RELEASE_NOTES.md, docs/, specs/.";
   }

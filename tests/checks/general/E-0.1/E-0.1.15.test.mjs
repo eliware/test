@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { ruleId, run } from "../../../../src/checks/general/E-0.1/E-0.1.15.mjs";
 
 test("requires latest stable direct dependency versions", async () => {
@@ -20,6 +20,16 @@ test("skips registry lookup when the package has no dependencies", async () => {
     status: "pass",
     message: "",
   });
+});
+
+test("checks dev dependencies rather than skipping the registry lookup", async () => {
+  const readOutdated = jest.fn().mockResolvedValue({});
+
+  await expect(
+    run({ packageJson: { devDependencies: { jest: "1" } }, readOutdated }),
+  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+
+  expect(readOutdated).toHaveBeenCalledTimes(1);
 });
 
 test("returns a stable failure result when the read-only registry adapter fails", async () => {

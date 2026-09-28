@@ -1,18 +1,21 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { readWorkflows } from "./read-workflow-files.mjs";
-import { isValidationJob, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
-import { isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
+import { findWorkflowValidationJobs } from "./find-workflow-validation-jobs.mjs";
 
 export const ruleId = "E-0.1.24.3";
 export const parentRuleId = "E-0.1.24";
 export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run({ root, repositoryInventory }) {
+  let workflows;
+  try {
+    workflows = await readWorkflows(root, repositoryInventory);
+  } catch (error) {
+    return fail(ruleId, `Workflow concurrency settings could not be inspected: ${error.message}`);
+  }
   const failures = [];
-  for (const { name, document } of await readWorkflows(root, repositoryInventory)) {
-    const hasValidationJob = workflowJobs(document).some(
-      ({ id, job }) => isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
-    );
+  for (const { name, document } of workflows) {
+    const hasValidationJob = findWorkflowValidationJobs(document).length > 0;
     if (!hasValidationJob) continue;
     const concurrency = document?.concurrency;
     const group = concurrency?.group;

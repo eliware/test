@@ -4,8 +4,13 @@ import { createRedactedTextStream } from "../../../create-redacted-text-stream.m
 export function createChildOutputCapture(options, { onStdout, onStderr, captureStderr, env } = {}) {
   const outputLimit = options;
   const redactionSecrets = collectRedactionSecrets(env);
-  const stdoutRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1);
-  const stderrRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1);
+  const maxPendingLength = Math.max(1, Math.floor(outputLimit / 2));
+  const stdoutRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1, {
+    maxPendingLength,
+  });
+  const stderrRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1, {
+    maxPendingLength,
+  });
   const stdoutChunks = [];
   const stderrChunks = [];
   let capturedLength = 0;

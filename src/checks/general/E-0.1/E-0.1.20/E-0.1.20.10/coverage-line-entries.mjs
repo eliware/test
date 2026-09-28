@@ -14,19 +14,19 @@ export function coverageLineEntries(data, sourceStatementMap = data.statementMap
     }
   }
   if (sourceStatementMap !== undefined && lines.size > 0) {
-    const derived = [...lines.entries()];
     if (Object.hasOwn(data, "l")) {
       const explicitByLine = new Map(Object.entries(data.l));
-      if (
-        explicitByLine.size !== lines.size ||
-        [...lines].some(([line, count]) => explicitByLine.get(line) !== count)
-      ) {
+      let mismatch = explicitByLine.size !== lines.size;
+      for (const [line, count] of lines) {
+        if (explicitByLine.get(line) !== count) mismatch = true;
+      }
+      if (mismatch) {
         throw new Error("Coverage line counters do not match source-derived line coverage.");
       }
     }
-    return derived;
+    return lines;
   }
-  const explicit = Object.entries(data.l ?? {});
-  if (explicit.length > 0) return explicit;
-  return [...lines.entries()];
+  const explicit = new Map(Object.entries(data.l ?? {}));
+  if (explicit.size > 0) return explicit;
+  return lines;
 }

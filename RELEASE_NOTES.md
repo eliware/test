@@ -15,7 +15,8 @@
   the selected test and applicable focused-file requirements without running
   unrelated repository-wide checks.
 - Added `--format`, `--format-check`, `--audit`, and `--pack` public modes;
-  tool modes forward additional arguments to their underlying tools.
+  each tool mode validates additional arguments against its own allowlist before
+  forwarding supported arguments to its underlying tool.
 - Added strict source/test mirroring and checks for canonical workflows,
   package metadata, native ESM, README/documentation surfaces, references,
   authority data, publication metadata, and repository safety.

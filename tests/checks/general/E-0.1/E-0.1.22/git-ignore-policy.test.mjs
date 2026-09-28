@@ -3,6 +3,7 @@ import { hasExplicitIgnoreRule } from "../../../../../src/checks/general/E-0.1/E
 
 test("classifies explicit ignore rules", () => {
   expect(hasExplicitIgnoreRule("node_modules/\n.env*\n", "node_modules/pkg")).toBe(true);
+  expect(hasExplicitIgnoreRule(".env\n", ".env")).toBe(true);
   expect(hasExplicitIgnoreRule("node_modules/\n", ".env.local")).toBe(false);
 });
 

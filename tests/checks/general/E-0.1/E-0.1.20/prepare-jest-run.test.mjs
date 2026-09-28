@@ -1,10 +1,21 @@
-import { expect, test } from "@jest/globals";
+import { afterEach, expect, test } from "@jest/globals";
+import { rm } from "node:fs/promises";
 import { prepareJestRun } from "../../../../../src/checks/general/E-0.1/E-0.1.20/prepare-jest-run.mjs";
+
+const temporaryCoverageDirectories = [];
+afterEach(async () => {
+  await Promise.all(
+    temporaryCoverageDirectories
+      .splice(0)
+      .map((directory) => rm(directory, { recursive: true, force: true })),
+  );
+});
 
 test("coordinates Jest preparation into one executable process request", async () => {
   const prepared = await prepareJestRun(process.cwd(), [], (_root, options) => options.jestCli, {
     jestCli: "consumer-jest",
   });
+  temporaryCoverageDirectories.push(prepared.coverageDirectory);
 
   expect(prepared.command).toBe(process.execPath);
   expect(prepared.args[0]).toBe("consumer-jest");
@@ -31,12 +42,14 @@ test("falls back when the injected coverage-directory factory has no result", as
   const prepared = await prepareJestRun(process.cwd(), [], () => "consumer-jest", {
     createCoverageDirectory: () => undefined,
   });
+  temporaryCoverageDirectories.push(prepared.coverageDirectory);
 
   expect(prepared.coverageDirectory).toContain("eliware-test");
 });
 
 test("supports an omitted options object", async () => {
   const prepared = await prepareJestRun(process.cwd(), undefined, () => "consumer-jest");
+  temporaryCoverageDirectories.push(prepared.coverageDirectory);
 
   expect(prepared.args[0]).toBe("consumer-jest");
   expect(prepared.coverageDirectory).toContain("eliware-test");

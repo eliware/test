@@ -4,7 +4,13 @@ import { steps } from "./workflow-structure.mjs";
 
 export function hasVersionedImagePushAfterGuard(job, packageVersion) {
   const jobSteps = steps(job);
-  const versionCheckIndex = jobSteps.findIndex((step) => hasReleaseTagGuard(step?.run));
+  const versionCheckIndex = jobSteps.findIndex(
+    (step) =>
+      hasReleaseTagGuard(step?.run) &&
+      /^[A-Za-z_][A-Za-z0-9_-]*$/u.test(step?.id ?? "") &&
+      step?.if === undefined &&
+      (step?.["continue-on-error"] === undefined || step?.["continue-on-error"] === false),
+  );
   if (versionCheckIndex < 0) return false;
 
   const pushSteps = jobSteps.filter(

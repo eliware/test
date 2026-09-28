@@ -12,7 +12,8 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   const jestCli = resolveCli(root, options);
   const reporters = await resolveJestReporters(root, args);
   const processOptions = createJestProcessOptions(root, args, options);
-  const coverageDirectory = options?.createCoverageDirectory?.() ?? createJestCoverageDirectory();
+  const coverageDirectory =
+    (await options?.createCoverageDirectory?.()) ?? (await createJestCoverageDirectory());
   return {
     coverageDirectory,
     command: process.execPath,

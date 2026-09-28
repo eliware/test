@@ -81,6 +81,89 @@ test("coordinates sequence validators in order with their owning inputs", () => 
   });
 });
 
+test("uses original workflow positions when command records omit their indexes", () => {
+  const installStep = { run: "npm ci" };
+  const testStep = { run: "npm test" };
+  const commands = [
+    { command: "npm ci", step: installStep },
+    { command: "npm test", step: testStep },
+  ];
+  const workflowSteps = [
+    { uses: "actions/checkout@v6" },
+    { uses: "actions/setup-node@v7" },
+    installStep,
+    testStep,
+  ];
+  findValidationCommandPair.mockReturnValueOnce({
+    install: commands[0],
+    test: commands[1],
+    commandIndex: (entry) => commands.indexOf(entry),
+  });
+
+  expect(validateWorkflowSequence("ci.yml", commands, workflowSteps)).toBeNull();
+  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith(
+    "ci.yml",
+    commands,
+    2,
+    workflowSteps,
+  );
+  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
+    "ci.yml",
+    commands,
+    3,
+    workflowSteps,
+    { allowAttestation: false },
+  );
+});
+
+test("falls back to command positions when workflow command records have no step", () => {
+  const commands = [{ command: "npm ci" }, { command: "npm test" }];
+  findValidationCommandPair.mockReturnValueOnce({
+    install: commands[0],
+    test: commands[1],
+    commandIndex: (entry) => commands.indexOf(entry),
+  });
+
+  expect(
+    validateWorkflowSequence("ci.yml", commands, [{ uses: "actions/checkout@v6" }]),
+  ).toBeNull();
+  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yml", commands, 0, [
+    { uses: "actions/checkout@v6" },
+  ]);
+  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
+    "ci.yml",
+    commands,
+    1,
+    [{ uses: "actions/checkout@v6" }],
+    { allowAttestation: false },
+  );
+});
+
+test("preserves indexes already attached to workflow commands", () => {
+  const indexedInstall = { command: "npm ci", index: 4 };
+  const indexedTest = { command: "npm test", index: 5 };
+  findValidationCommandPair.mockReturnValueOnce({
+    install: indexedInstall,
+    test: indexedTest,
+    commandIndex: () => -1,
+  });
+
+  expect(validateWorkflowSequence("ci.yml", [indexedInstall, indexedTest])).toBeNull();
+  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith(
+    "ci.yml",
+    [indexedInstall, indexedTest],
+    4,
+    [indexedInstall, indexedTest],
+  );
+  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
+    "ci.yml",
+    [indexedInstall, indexedTest],
+    5,
+    [indexedInstall, indexedTest],
+    { allowAttestation: false },
+  );
+});
+
 test("returns the first finding and skips later validation phases", () => {
   findValidationCommandPair.mockReturnValueOnce({ error: "command pair invalid" });
   expect(validateWorkflowSequence("ci.yml", [])).toBe("command pair invalid");

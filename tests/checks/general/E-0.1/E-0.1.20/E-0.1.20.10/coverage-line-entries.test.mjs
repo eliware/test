@@ -7,10 +7,12 @@ test("derives lines from independently supplied source instrumentation", () => {
       { statementMap: { 0: { start: { line: 4 } } }, s: { 0: 1, 1: 0 } },
       { 0: { start: { line: 4 } }, 1: { start: { line: 6 } } },
     ),
-  ).toEqual([
-    ["4", 1],
-    ["6", 0],
-  ]);
+  ).toEqual(
+    new Map([
+      ["4", 1],
+      ["6", 0],
+    ]),
+  );
   expect(() =>
     coverageLineEntries(
       { s: { 0: 1, 1: 0 } },
@@ -20,14 +22,16 @@ test("derives lines from independently supplied source instrumentation", () => {
 });
 
 test("preserves explicit coverage line counters", () => {
-  expect(coverageLineEntries({ l: { 4: 1 } })).toEqual([["4", 1]]);
-  expect(coverageLineEntries({ l: {} })).toEqual([]);
+  expect(coverageLineEntries({ l: { 4: 1 } })).toEqual(new Map([["4", 1]]));
+  expect(coverageLineEntries({ l: {} })).toEqual(new Map());
 });
 
 test("validates explicit counters against complete source-derived statement counters", () => {
   const statementMap = { 0: { start: { line: 4 } }, 1: { start: { line: 4 } } };
   const counters = { 0: 1, 1: 0 };
-  expect(coverageLineEntries({ s: counters, l: { 4: 1 } }, statementMap)).toEqual([["4", 1]]);
+  expect(coverageLineEntries({ s: counters, l: { 4: 1 } }, statementMap)).toEqual(
+    new Map([["4", 1]]),
+  );
   expect(() => coverageLineEntries({ s: counters, l: { 4: 0 } }, statementMap)).toThrow(
     "Coverage line counters do not match",
   );
@@ -37,11 +41,11 @@ test("validates explicit counters against complete source-derived statement coun
 });
 
 test("handles source entries without line locations and missing maps", () => {
-  expect(coverageLineEntries({ statementMap: { 0: {} }, s: { 0: 1 } })).toEqual([]);
+  expect(coverageLineEntries({ statementMap: { 0: {} }, s: { 0: 1 } })).toEqual(new Map());
   expect(() => coverageLineEntries({}, { 0: { start: { line: 1 } } })).toThrow(
     "statement counter 0 is missing",
   );
-  expect(coverageLineEntries({})).toEqual([]);
+  expect(coverageLineEntries({})).toEqual(new Map());
 });
 
 test("uses Istanbul line semantics when statements share a source line", () => {
@@ -53,7 +57,7 @@ test("uses Istanbul line semantics when statements share a source line", () => {
         second: { start: { line: 9 } },
       },
     ),
-  ).toEqual([["9", 5]]);
+  ).toEqual(new Map([["9", 5]]));
   expect(
     coverageLineEntries(
       { s: { first: 2, second: 0 } },
@@ -62,5 +66,5 @@ test("uses Istanbul line semantics when statements share a source line", () => {
         second: { start: { line: 9 } },
       },
     ),
-  ).toEqual([["9", 2]]);
+  ).toEqual(new Map([["9", 2]]));
 });

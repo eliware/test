@@ -12,5 +12,12 @@ export function validateValidationJobConditions(install, test, job) {
   ) {
     return "must not conditionally skip or ignore failure of npm ci or npm test.";
   }
+  if (
+    [install, test].some(({ step }) =>
+      ["env", "shell", "working-directory", "with"].some((field) => step?.[field] !== undefined),
+    )
+  ) {
+    return "must not override npm ci or npm test step environment, shell, or working directory.";
+  }
   return null;
 }

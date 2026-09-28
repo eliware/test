@@ -1,5 +1,6 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { createChildProcessOutputCapture } from "../../src/checks/create-child-process-output-capture.mjs";
+import { createSecretTextMatcher } from "../../src/checks/create-secret-text-matcher.mjs";
 
 test("captures both streams and redacts diagnostics using the effective environment", () => {
   const capture = createChildProcessOutputCapture(
@@ -17,11 +18,38 @@ test("captures both streams and redacts diagnostics using the effective environm
   });
 });
 
+test("builds one immutable secret matcher for both output streams", () => {
+  const makeSecretMatcher = jest.fn(createSecretTextMatcher);
+  const capture = createChildProcessOutputCapture(
+    { env: { SERVICE_TOKEN: "shared-secret" } },
+    [],
+    100,
+    makeSecretMatcher,
+  );
+  capture.push("stdout", "stdout shared-secret");
+  capture.push("stderr", "stderr shared-secret");
+
+  expect(capture.finish()).toEqual({
+    stdout: "stdout [REDACTED]",
+    stderr: "stderr [REDACTED]",
+  });
+  expect(makeSecretMatcher).toHaveBeenCalledTimes(1);
+});
+
 test("uses inherited environment by default and accepts binary chunks", () => {
   const capture = createChildProcessOutputCapture({ env: {} }, undefined, 4);
   capture.push("stdout", Buffer.from("okay"));
   capture.push("stderr", Buffer.from("later"));
   expect(capture.finish()).toEqual({ stdout: "okay", stderr: "" });
+});
+
+test("avoids creating redaction matchers when a child produces no output", () => {
+  const makeSecretMatcher = jest.fn(createSecretTextMatcher);
+  const capture = createChildProcessOutputCapture({ env: {} }, [], 100, makeSecretMatcher);
+
+  capture.push("stdout", "");
+  expect(capture.finish()).toEqual({ stdout: "", stderr: "" });
+  expect(makeSecretMatcher).not.toHaveBeenCalled();
 });
 
 test("ignores later chunks without encoding after the capture budget is exhausted", () => {
@@ -44,4 +72,12 @@ test("uses the process environment when no child environment is provided", () =>
     stdout: "",
     stderr: "",
   });
+});
+
+test("bounds combined stream redactor retention by the shared output budget", () => {
+  const secret = "s".repeat(51);
+  const capture = createChildProcessOutputCapture({ env: {} }, [secret], 100);
+  capture.push("stdout", "x".repeat(60));
+  capture.push("stderr", "y".repeat(60));
+  expect(capture.finish()).toEqual({ stdout: "", stderr: "" });
 });

@@ -1,6 +1,6 @@
 export function normalizeWorkflowDocument(document) {
   if (!document || typeof document !== "object") return document;
-  const trigger = document.on ?? document.true;
+  const trigger = Object.hasOwn(document, "on") ? document.on : document.true;
   const jobs = Object.fromEntries(
     Object.entries(document.jobs ?? {}).map(([id, job]) => [id, normalizeWorkflowJob(job)]),
   );

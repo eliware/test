@@ -1,21 +1,13 @@
-import {
-  isValidationJob,
-  workflowCommands,
-  workflowJobs,
-  workflowRunSteps,
-} from "./read-workflows.mjs";
-import { findPublicationCommand, isValidationWorkflowJob } from "./classify-workflow-commands.mjs";
+import { workflowCommands, workflowJobs, workflowRunSteps } from "./read-workflows.mjs";
+import { findPublicationCommand } from "./classify-workflow-commands.mjs";
+import { findWorkflowValidationJobs } from "./find-workflow-validation-jobs.mjs";
 import { validateWorkflowSiblingJobs } from "./validate-workflow-sibling-jobs.mjs";
 import { validateWorkflowValidationJobs } from "./validate-workflow-validation-jobs.mjs";
 
 export function selectWorkflowValidationJobs(name, document) {
   const commands = workflowCommands(document);
   const jobs = workflowJobs(document);
-  const validationJobs = jobs
-    .filter(
-      ({ id, job }) => isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
-    )
-    .map(({ id, job }) => ({ id, job, commands: workflowRunSteps(job) }));
+  const validationJobs = findWorkflowValidationJobs(document);
   const publicationWorkflow = Boolean(findPublicationCommand(commands));
   if (publicationWorkflow && validationJobs.length === 0) {
     return {

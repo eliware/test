@@ -27,6 +27,9 @@ test.each([
   { engines: { node: ">=25" } },
   { publishConfig: {} },
   { files: ["README.md"] },
+  { files: ["README.md", "LICENSE", "RELEASE_NOTES.md", "specs/"] },
+  { files: ["README.md", "LICENSE", "RELEASE_NOTES.md", "docs/"] },
+  { files: ["README.md", "LICENSE", "RELEASE_NOTES.md"] },
   { scripts: {} },
 ])("rejects incomplete package publication metadata %#", (override) => {
   expect(validatePublicationMetadata({ ...validPackage, ...override })).toBeTruthy();

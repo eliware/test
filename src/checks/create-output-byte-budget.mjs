@@ -1,7 +1,9 @@
 function truncateTextToBytes(text, byteLimit) {
   const encoded = Buffer.from(text);
   if (encoded.length <= byteLimit) return text;
-  for (let end = byteLimit; end > 0; end -= 1) {
+  const firstEnd = Math.min(byteLimit, encoded.length);
+  const lastEnd = Math.max(0, firstEnd - 3);
+  for (let end = firstEnd; end >= lastEnd; end -= 1) {
     const candidateBytes = encoded.subarray(0, end);
     const candidate = candidateBytes.toString("utf8");
     if (Buffer.byteLength(candidate) <= byteLimit && Buffer.from(candidate).equals(candidateBytes))

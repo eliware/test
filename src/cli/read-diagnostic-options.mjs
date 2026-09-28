@@ -7,10 +7,15 @@ export function readDiagnosticOptions(args) {
   const separatorIndex = normalizedArgs.indexOf("--");
   const wrapperArgs = separatorIndex < 0 ? normalizedArgs : normalizedArgs.slice(0, separatorIndex);
   const delegatedArgs = separatorIndex < 0 ? [] : normalizedArgs.slice(separatorIndex + 1);
+  const diagnosticFlagIndexes = wrapperArgs
+    .map((argument, index) => (argument === "--debug-timing" ? index : -1))
+    .filter((index) => index >= 0);
   const modes = wrapperArgs.filter((argument) => modeFlags.includes(argument));
   const invalid = normalizedArgs.filter((argument) => typeof argument !== "string");
   if (invalid.length > 0)
     throw new Error(`Unsupported validation argument: ${invalid.join(", ")}.`);
+  if (diagnosticFlagIndexes.length > 1 || delegatedArgs.includes("--debug-timing"))
+    throw new Error("--debug-timing may be supplied once as a wrapper argument.");
   if (wrapperArgs.some((argument) => removedFlags.includes(argument)))
     throw new Error("Legacy ignore flags are no longer supported.");
   if (wrapperArgs.includes("--help") && wrapperArgs.includes("--version")) {
@@ -30,6 +35,8 @@ export function readDiagnosticOptions(args) {
   if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
   if (modes.length > 0) {
     const modeIndex = wrapperArgs.indexOf(modes[0]);
+    if (diagnosticFlagIndexes.some((index) => index > modeIndex))
+      throw new Error("--debug-timing must precede a tool mode.");
     const unsupportedWrapperArgs = wrapperArgs
       .slice(0, modeIndex)
       .filter((argument) => argument !== "--debug-timing");
@@ -41,7 +48,7 @@ export function readDiagnosticOptions(args) {
   if (
     modes.length > 0 &&
     candidateFocused.some((argument) =>
-      /^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
+      /^tests[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
     )
   ) {
     throw new Error("Focused test paths cannot be combined with tool modes.");
@@ -51,13 +58,12 @@ export function readDiagnosticOptions(args) {
   if (
     focused.some(
       (argument) =>
-        !/^tests?[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
+        !/^tests[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
     )
   ) {
     throw new Error("Focused paths must be under tests/.");
   }
   return {
-    ignoredRuleIds: [],
     mode: modes[0]?.slice(2) ?? null,
     toolArgs:
       modes.length > 0

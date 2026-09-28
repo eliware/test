@@ -1,3 +1,6 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { expect, jest, test } from "@jest/globals";
 import { runNpmPack } from "../../../../src/checks/npm-published/E-0.1.140/run-npm-pack.mjs";
 
@@ -36,20 +39,26 @@ test("forwards safe npm pack arguments without overriding required flags", async
 });
 
 test("uses npm's executable when npm invokes the harness", async () => {
-  const previous = process.env.npm_execpath;
-  process.env.npm_execpath = "C:\\npm\\cli.js";
+  const root = await mkdtemp(join(tmpdir(), "eliware-pack-invoked-npm-"));
+  const npmCli = join(root, "npm-cli.js");
+  await writeFile(npmCli, "");
   const calls = [];
   try {
-    await runNpmPack("C:\\repo", async (...args) => {
-      calls.push(args);
-      return { code: 0, signal: null, stdout: "", stderr: "" };
-    });
+    await runNpmPack(
+      root,
+      async (...args) => {
+        calls.push(args);
+        return { code: 0, signal: null, stdout: "", stderr: "" };
+      },
+      undefined,
+      [],
+      { npm_execpath: "npm-cli.js" },
+    );
   } finally {
-    if (previous === undefined) delete process.env.npm_execpath;
-    else process.env.npm_execpath = previous;
+    await rm(root, { recursive: true, force: true });
   }
   expect(calls[0][0]).toBe(process.execPath);
-  expect(calls[0][1][0]).toBe("C:\\npm\\cli.js");
+  expect(calls[0][1][0]).toBe(npmCli);
 });
 
 test("passes the selected environment to resolution and execution", async () => {
@@ -57,7 +66,7 @@ test("passes the selected environment to resolution and execution", async () => 
   const resolve = jest.fn(() => ["node", ["npm-cli.js"]]);
   const run = jest.fn(async () => ({ code: 0 }));
   await runNpmPack("C:\\repo", run, resolve, [], env);
-  expect(resolve).toHaveBeenCalledWith(env, process.platform, process.execPath);
+  expect(resolve).toHaveBeenCalledWith(env, process.platform, process.execPath, "C:\\repo");
   expect(run.mock.calls[0][2].env).toEqual(env);
   expect(run.mock.calls[0][2].env).not.toBe(env);
 });

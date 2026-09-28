@@ -1,20 +1,5 @@
 import { parseText } from "./parse-text-coverage.mjs";
-
-function isUnusableCandidate(error) {
-  if (error === null || (typeof error !== "object" && typeof error !== "function")) return false;
-  const message = error instanceof Error ? error.message : "";
-  return (
-    error.code === "ENOENT" ||
-    error instanceof SyntaxError ||
-    message.startsWith("Detailed coverage") ||
-    message.startsWith("Coverage report does not account") ||
-    message.startsWith("Coverage report is") ||
-    message.startsWith("Coverage evidence is") ||
-    message.startsWith("Coverage map and counter keys") ||
-    message.startsWith("Coverage line counters do not match source-derived line coverage") ||
-    message.startsWith("Summary-only coverage")
-  );
-}
+import { isUnusableCoverageCandidateError } from "./is-unusable-coverage-candidate-error.mjs";
 
 export async function selectCoverageEvidence(
   candidates,
@@ -31,7 +16,7 @@ export async function selectCoverageEvidence(
       if (evidence) return { ...evidence, source: relativePath };
       throw new Error(`Coverage report is invalid: ${relativePath}. Rerun the tests.`);
     } catch (error) {
-      if (!isUnusableCandidate(error)) throw error;
+      if (!isUnusableCoverageCandidateError(error)) throw error;
       if (error.code !== "ENOENT") unusableCandidateError = error;
     }
   }

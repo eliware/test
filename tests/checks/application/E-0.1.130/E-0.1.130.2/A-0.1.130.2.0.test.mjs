@@ -77,6 +77,23 @@ test("fails when a nested markdown document is not indexed", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("requires distinct repository paths when documents share a basename", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-duplicate-name-"));
+  await mkdir(join(root, "docs", "one"), { recursive: true });
+  await mkdir(join(root, "docs", "two"), { recursive: true });
+  await writeFile(
+    join(root, "docs", "README.md"),
+    "# Docs\nPurpose and scope\nSetup and usage\nValidation and support\ndocs/one/setup.md\n",
+  );
+  await writeFile(join(root, "docs", "one", "setup.md"), "# First");
+  await writeFile(join(root, "docs", "two", "setup.md"), "# Second");
+  await expect(run({ root })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("docs/two/setup.md"),
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("uses shared documentation discovery and text reads, including generated docs", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-inventory-"));
   await mkdir(join(root, "docs", "dist"), { recursive: true });

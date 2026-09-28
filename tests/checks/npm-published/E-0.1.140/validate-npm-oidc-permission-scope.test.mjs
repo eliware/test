@@ -50,4 +50,25 @@ test("requires explicit publishing permission and rejects token-based auth", () 
       [validator],
     ),
   ).toContain("static npm authentication");
+  expect(
+    validateNpmOidcPermissionScope(
+      {
+        document: {
+          jobs: {
+            publish: {
+              steps: [
+                {
+                  env: {
+                    "npm_config_//registry.npmjs.org/:_auth": "${{ secrets.PUBLISH_CREDENTIAL }}",
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+      [publisher],
+      [validator],
+    ),
+  ).toContain("static npm authentication");
 });

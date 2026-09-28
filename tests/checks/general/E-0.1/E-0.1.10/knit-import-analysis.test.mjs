@@ -42,3 +42,24 @@ test("preserves canonical aliases and flags non-process child-process imports", 
   expect(imports.names.has("fork")).toBe(false);
   expect(imports.unsupported).toHaveLength(1);
 });
+
+test("recognizes both Node child-process module specifiers", () => {
+  const imports = collectImports(
+    parse('import { spawn as run } from "child_process"; import * as child from "child_process";', {
+      sourceType: "module",
+    }).program,
+  );
+  expect(imports.names.get("run")).toBe("spawn");
+  expect(imports.namespaces.has("child")).toBe(true);
+  expect(imports.unsupported).toHaveLength(0);
+});
+
+test("flags side-effect imports and re-exports of child-process APIs", () => {
+  for (const source of [
+    'import "node:child_process";',
+    'export { spawn as run } from "child_process";',
+  ]) {
+    const imports = collectImports(parse(source, { sourceType: "module" }).program);
+    expect(imports.unsupported).toHaveLength(1);
+  }
+});

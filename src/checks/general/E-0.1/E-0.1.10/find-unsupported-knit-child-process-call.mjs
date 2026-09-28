@@ -12,6 +12,7 @@ const functionTypes = new Set([
 
 export function hasUnsupportedKnitChildProcessCall(program, analyzedCalls = []) {
   const imports = collectImports(program);
+  if (imports.unsupported.length > 0) return true;
   const analyzedCallStarts = new Set(analyzedCalls.map(({ start }) => start));
   const visited = new WeakSet();
 
@@ -19,8 +20,14 @@ export function hasUnsupportedKnitChildProcessCall(program, analyzedCalls = []) 
     if (!node || typeof node !== "object" || visited.has(node)) return false;
     visited.add(node);
     if (node.type === "CallExpression" || node.type === "OptionalCallExpression") {
-      const { isSubprocess } = classifyCall(node, imports);
-      if (isSubprocess && (insideFunction || !analyzedCallStarts.has(node.start))) return true;
+      const { isSubprocess, isUnsupported, namespace } = classifyCall(node, imports);
+      const unsupportedNamespaceCall =
+        namespace && imports.namespaces.has(namespace) && isUnsupported;
+      if (
+        unsupportedNamespaceCall ||
+        (isSubprocess && (insideFunction || !analyzedCallStarts.has(node.start)))
+      )
+        return true;
     }
 
     const nestedFunction = insideFunction || functionTypes.has(node.type);

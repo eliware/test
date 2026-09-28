@@ -8,6 +8,8 @@ import {
 } from "./format-npm-audit-diagnostic.mjs";
 import { isSuccessfulNpmAuditReport } from "./is-successful-npm-audit-report.mjs";
 import { validateAuditArguments } from "./validate-audit-arguments.mjs";
+import { resolveSelfHostedScriptCommands } from "./resolve-self-hosted-script-commands.mjs";
+import { getAuditDependencyRequirements } from "./get-audit-dependency-requirements.mjs";
 
 export const ruleId = "E-0.1.20.19";
 export const parentRuleId = "E-0.1.20";
@@ -24,7 +26,7 @@ export async function run({
 }) {
   const auditScript =
     packageJson?.name === "@eliware/test"
-      ? "node bin/eliware-test.mjs --audit"
+      ? resolveSelfHostedScriptCommands(["audit"]).scripts.audit
       : "eliware-test --audit";
   if (packageJson?.scripts?.audit !== auditScript) {
     return fail(
@@ -40,7 +42,7 @@ export async function run({
     if (result.code !== 0) {
       return fail(ruleId, formatNpmAuditFailure(result, env));
     }
-    if (!isSuccessfulNpmAuditReport(result.stdout)) {
+    if (!isSuccessfulNpmAuditReport(result.stdout, getAuditDependencyRequirements(packageJson))) {
       return fail(ruleId, "npm audit returned an invalid JSON report.");
     }
   } catch (error) {

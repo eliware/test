@@ -1,14 +1,18 @@
 import { realpath, stat } from "node:fs/promises";
-import { isAbsolute, relative, resolve, sep } from "node:path";
+import { isAbsolute, posix, relative, resolve, sep, win32 } from "node:path";
 import { parseFocusedArguments } from "../../../../cli/parse-focused-arguments.mjs";
 import { focusedPathFrom } from "./build-jest-arguments.mjs";
 
 export async function validateFocusedTestPath(root, args = []) {
-  const absoluteWindowsPath = parseFocusedArguments(args).positional.find((argument) =>
-    /^[A-Za-z]:[\\/]/.test(argument),
+  const absolutePath = parseFocusedArguments(args).positional.find(
+    (argument) =>
+      /^[A-Za-z]:/u.test(argument) ||
+      isAbsolute(argument) ||
+      posix.isAbsolute(argument) ||
+      win32.isAbsolute(argument),
   );
-  if (absoluteWindowsPath) {
-    throw new Error(`Focused test path must resolve inside the repository: ${absoluteWindowsPath}`);
+  if (absolutePath) {
+    throw new Error(`Focused test path must be repository-relative: ${absolutePath}`);
   }
   const focusedPath = focusedPathFrom(args);
   if (!focusedPath) return null;

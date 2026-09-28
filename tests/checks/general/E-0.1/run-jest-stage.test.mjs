@@ -53,12 +53,14 @@ test("composes execution, context recording, and result classification", async (
 });
 
 test("maps execution errors without recording or classifying a result", async () => {
+  const context = { executeJest: true };
   executeJestCheck.mockResolvedValueOnce({ error: new Error("spawn failed") });
-  await expect(run({ executeJest: true })).resolves.toEqual({
+  await expect(run(context)).resolves.toEqual({
     ruleId,
     status: "fail",
     message: "Jest could not be started: spawn failed",
   });
+  expect(context.jestExecutionError).toBe("spawn failed");
   expect(recordJestContext).not.toHaveBeenCalled();
   expect(classifyJestResult).not.toHaveBeenCalled();
 });

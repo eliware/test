@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { readFile } from "node:fs/promises";
 import { executeConventionChecks } from "../../src/orchestrators/execute-convention-checks.mjs";
 import { discoverAllChecks } from "../../src/orchestrators/discover-checks.mjs";
 
@@ -91,4 +92,19 @@ test("preserves pass results for discovered non-deterministic placeholders", asy
 
   const results = await executeConventionChecks(checks, {}, new Set());
   expect(results).toEqual(checks.map(({ ruleId }) => ({ ruleId, status: "pass", message: "" })));
+});
+
+test("executes required release-note validation beneath its advisory parent", async () => {
+  const packageJson = JSON.parse(await readFile("package.json", "utf8"));
+  const checks = (await discoverAllChecks()).filter(({ ruleId }) =>
+    ["E-0.1.26", "A-0.1.26.0"].includes(ruleId),
+  );
+  const results = await executeConventionChecks(
+    checks,
+    { root: process.cwd(), packageJson },
+    new Set(),
+  );
+
+  expect(results.map(({ ruleId }) => ruleId)).toEqual(["A-0.1.26.0"]);
+  expect(results[0].status).toBe("pass");
 });

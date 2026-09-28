@@ -13,7 +13,7 @@ export function redactHttpCredentials(text) {
     )
     .replace(/((?:bearer|basic)\s+)[A-Za-z0-9+/=_-]{8,}/giu, "$1[REDACTED]")
     .replace(new RegExp(`([?&](?:${credentialKey})=)[^&#\\s]+`, "giu"), "$1[REDACTED]")
-    .replace(/(https?:\/\/)[^\s/@]+@/giu, "$1[REDACTED]@")
+    .replace(/(https?:\/\/)[^\s/]*@/giu, "$1[REDACTED]@")
     .replace(/((?:x-api-key|x-auth-token|x-access-token)\s*:\s*)[^\s,;}]+/giu, "$1[REDACTED]")
     .replace(/((?:cookie|set-cookie)\s*:\s*)[^\r\n]+/giu, "$1[REDACTED]");
 }

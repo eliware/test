@@ -4,7 +4,7 @@ const metricValues = (data, lineEntries) => ({
   statements: Object.values(data.s ?? {}),
   branches: Object.values(data.b ?? {}).flat(),
   functions: Object.values(data.f ?? {}),
-  lines: lineEntries.map(([, count]) => count),
+  lines: Array.from(lineEntries, (entry) => entry[1]),
 });
 
 export function coverageMetricValues(data, lineEntries) {
@@ -25,5 +25,5 @@ export function coverageMetricValues(data, lineEntries) {
       mapKeys.every((key, index) => key === counterKeys[index])
     );
   });
-  return { values, hasCounters, hasMaps: hasMaps && hasCounters };
+  return { values, hasCounters, hasMaps };
 }

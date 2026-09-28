@@ -67,42 +67,29 @@ test("normalizes non-Error synchronous spawn failures", async () => {
   ).rejects.toThrow("Child process could not be started.");
 });
 
-test("settles once when the child emits duplicate close and late error events", async () => {
-  const child = Object.assign(new EventEmitter(), {
-    stdout: new EventEmitter(),
-    stderr: new EventEmitter(),
-  });
-  const result = runChild("ignored", [], { spawnProcess: () => child });
+test("terminates a spawned child when progress-timeout setup fails", async () => {
+  const child = Object.assign(new EventEmitter(), { kill: jest.fn() });
+  const terminateChild = jest.fn(() => true);
 
-  child.emit("close", 0, null);
-  child.emit("close", 1, null);
-  child.emit("error", new Error("late error"));
+  await expect(
+    runChild("ignored", [], {
+      spawnProcess: () => child,
+      createProgressTimeout: () => {
+        throw new Error("timeout setup failed");
+      },
+      terminateChild,
+    }),
+  ).rejects.toThrow("timeout setup failed");
 
-  await expect(result).resolves.toMatchObject({ code: 0 });
-});
-
-test("rejects a child that closes without an exit code outside the watchdog path", async () => {
-  const child = Object.assign(new EventEmitter(), {
-    stdout: new EventEmitter(),
-    stderr: new EventEmitter(),
-  });
-  const result = runChild("ignored", [], { spawnProcess: () => child });
-
-  child.emit("close", null, "SIGTERM");
-
-  await expect(result).rejects.toThrow("Child process exited without an exit code (SIGTERM).");
-});
-
-test("formats a missing exit code without a signal", async () => {
-  const child = Object.assign(new EventEmitter(), {
-    stdout: new EventEmitter(),
-    stderr: new EventEmitter(),
-  });
-  const result = runChild("ignored", [], { spawnProcess: () => child });
-
-  child.emit("close", null, null);
-
-  await expect(result).rejects.toThrow("Child process exited without an exit code.");
+  expect(terminateChild).toHaveBeenCalledWith(
+    child,
+    process.platform,
+    process.kill,
+    undefined,
+    process.env,
+    "SIGTERM",
+  );
+  expect(child.kill).not.toHaveBeenCalled();
 });
 
 test("wires progress, timeout, output, and timed-out child settlement", async () => {

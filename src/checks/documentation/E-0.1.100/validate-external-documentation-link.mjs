@@ -6,7 +6,10 @@ export function validateExternalDocumentationLink(reference) {
   }
   try {
     const url = new URL(reference);
-    return ["http:", "https:"].includes(url.protocol) && url.hostname
+    return ["http:", "https:"].includes(url.protocol) &&
+      url.hostname &&
+      !url.username &&
+      !url.password
       ? null
       : `Documentation link is invalid: ${reference}.`;
   } catch {

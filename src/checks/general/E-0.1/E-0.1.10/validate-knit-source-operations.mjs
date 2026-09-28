@@ -17,7 +17,7 @@ export function validateKnitSourceOperations(source, parsedAst = null, analyzedC
   }
   const bindings = collectKnitSourceImportBindings(program);
   if (
-    hasUnsupportedKnitSourceAlias(program) ||
+    hasUnsupportedKnitSourceAlias(program, bindings) ||
     hasUnsupportedKnitSourceOperation(program, bindings) ||
     hasUnsupportedKnitChildProcessCall(program, analyzedCalls)
   )

@@ -39,6 +39,20 @@ test("uses the job permission override as the effective permission set", async (
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
 });
 
+test("rejects an empty job permission map that overrides workflow permissions", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(
+    publicationPath,
+    content.replace(
+      "  publish:\n    needs: validate\n",
+      "  publish:\n    needs: validate\n    permissions: {}\n",
+    ),
+  );
+  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+});
+
 test("checks every publication job and rejects unnecessary permissions", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");

@@ -2,7 +2,8 @@ import { normalizeWorkflowDocument } from "../../../ghcr-published/normalize-wor
 
 export function normalizeWorkflowEvents(document) {
   const normalized = normalizeWorkflowDocument(document);
-  const raw = normalized?.on ?? normalized?.true ?? {};
+  const raw =
+    normalized && Object.hasOwn(normalized, "on") ? normalized.on : (normalized?.true ?? {});
   const validDocument = Boolean(
     normalized && typeof normalized === "object" && !Array.isArray(normalized),
   );
@@ -17,15 +18,22 @@ export function normalizeWorkflowEvents(document) {
     : typeof raw === "string"
       ? { [raw]: {} }
       : raw && typeof raw === "object" && !Array.isArray(raw)
-        ? Object.fromEntries(Object.entries(raw))
+        ? Object.fromEntries(
+            Object.entries(raw).map(([event, config]) => [
+              event,
+              config === null
+                ? {}
+                : ["push", "pull_request"].includes(event) &&
+                    Array.isArray(config) &&
+                    config.length > 0 &&
+                    config.every((branch) => typeof branch === "string")
+                  ? { branches: config }
+                  : config,
+            ]),
+          )
         : {};
-  const validEventConfigs = Object.entries(events).every(
-    ([event, config]) =>
-      (config !== null && typeof config === "object" && !Array.isArray(config)) ||
-      (["push", "pull_request"].includes(event) &&
-        Array.isArray(config) &&
-        (event !== "push" || config.length > 0) &&
-        config.every((branch) => typeof branch === "string")),
+  const validEventConfigs = Object.values(events).every(
+    (config) => config !== null && typeof config === "object" && !Array.isArray(config),
   );
   return {
     document: normalized,

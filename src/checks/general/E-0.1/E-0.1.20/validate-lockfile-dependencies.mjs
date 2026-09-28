@@ -45,16 +45,18 @@ function validatePackageEntries(packages) {
   const failures = [];
   for (const [path, entry] of Object.entries(packages)) {
     if (path === "") continue;
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+      failures.push(`package-lock.json entry ${path} must contain a valid package version.`);
+      continue;
+    }
     if (
-      !entry ||
-      typeof entry !== "object" ||
-      Array.isArray(entry) ||
       (entry.name !== undefined && (typeof entry.name !== "string" || !entry.name)) ||
       typeof entry.version !== "string" ||
       !entry.version
-    )
+    ) {
       failures.push(`package-lock.json entry ${path} must contain a valid package version.`);
-    if (!entry || typeof entry !== "object" || Array.isArray(entry) || !entry.version) continue;
+      continue;
+    }
     if (entry.link === true) continue;
     if (typeof entry.resolved !== "string" && typeof entry.integrity !== "string")
       failures.push(`package-lock.json entry ${path} must contain resolved or integrity data.`);

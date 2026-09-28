@@ -14,35 +14,36 @@ test("reads and parses the Knit script using the shared AST cache when supplied"
   expect(result.source).toBe(source);
   expect(result.parsed).toEqual({ calls: [], leadingExecutable: false, unsupported: [] });
   expect(readText).toHaveBeenCalledWith(expect.stringMatching(/\.knit[\\/]validate\.mjs$/u));
-  expect(parseAst).toHaveBeenCalledWith("/repo", ".knit/validate.mjs", {
-    sourceType: "module",
-    plugins: ["importAttributes", "topLevelAwait"],
-    allowUndeclaredExports: true,
-  });
+  expect(parseAst).toHaveBeenCalledWith(
+    "/repo",
+    ".knit/validate.mjs",
+    {
+      sourceType: "module",
+      plugins: ["importAttributes", "topLevelAwait"],
+      allowUndeclaredExports: true,
+    },
+    source,
+  );
 });
 
-test("can skip reading source when only the cached AST is needed", async () => {
-  const readText = jest.fn();
-  const result = await readKnitScript(
-    {
-      root: "/repo",
-      repositoryInventory: { readText },
-      parseAst: jest.fn().mockResolvedValue({ type: "File", program: { body: [] } }),
-    },
-    { includeSource: false },
-  );
+test("supplies the exact source snapshot used by the shared AST parser", async () => {
+  const source = "export const value = 1;";
+  const readText = jest.fn().mockResolvedValue(source);
+  const parseAst = jest.fn().mockResolvedValue({ type: "File", program: { body: [] } });
+  const result = await readKnitScript({
+    root: "/repo",
+    repositoryInventory: { readText },
+    parseAst,
+  });
 
-  expect(result.source).toBe("");
-  expect(readText).not.toHaveBeenCalled();
+  expect(result.source).toBe(source);
+  expect(parseAst).toHaveBeenCalledWith("/repo", ".knit/validate.mjs", expect.any(Object), source);
 });
 
 test("reads and parses from source when no shared AST cache is supplied", async () => {
   const source = 'import { spawnSync } from "node:child_process"; spawnSync("npm", ["test"]);';
   const readText = jest.fn().mockResolvedValue(source);
-  const result = await readKnitScript(
-    { root: "/repo", repositoryInventory: { readText } },
-    { includeSource: false },
-  );
+  const result = await readKnitScript({ root: "/repo", repositoryInventory: { readText } });
 
   expect(result.source).toBe(source);
   expect(result.parsed.calls).toHaveLength(1);

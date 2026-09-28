@@ -1,6 +1,6 @@
-import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { fail, pass } from "../../../../check-result.mjs";
+import { readWorkflows } from "../../E-0.1.24/read-workflow-files.mjs";
+import { findMissingCiCapabilityStages } from "./find-missing-ci-capability-stages.mjs";
 
 export const ruleId = "A-0.1.20.11.0";
 export const parentRuleId = "A-0.1.20.11";
@@ -11,29 +11,16 @@ export async function run({ root, packageJson, repositoryInventory }) {
     (name) => typeof packageJson?.scripts?.[name] === "string" && packageJson.scripts[name].trim(),
   );
   if (required.length === 0) return pass(ruleId);
-  let contents;
+  let workflows;
   try {
-    const directory = join(root, ".github", "workflows");
-    const files = (
-      repositoryInventory
-        ? await repositoryInventory.directoryEntries(directory)
-        : await readdir(directory, { withFileTypes: true })
-    ).filter((entry) => entry.isFile() && /\.(?:yml|yaml)$/i.test(entry.name));
-    contents = await Promise.all(
-      files.map((file) => {
-        const path = join(directory, file.name);
-        return repositoryInventory ? repositoryInventory.readText(path) : readFile(path, "utf8");
-      }),
-    );
-  } catch {
+    workflows = await readWorkflows(root, repositoryInventory);
+  } catch (error) {
     return fail(
       ruleId,
-      "CI workflow files are required when typecheck or build validation is declared.",
+      `CI workflow files could not be inspected when typecheck or build validation is declared: ${error.message}`,
     );
   }
-  const missing = required.filter(
-    (name) => !contents.some((content) => new RegExp(`npm\\s+run\\s+${name}\\b`).test(content)),
-  );
+  const missing = findMissingCiCapabilityStages(required, workflows);
   return missing.length > 0
     ? fail(ruleId, `CI must run declared validation stages: ${missing.join(", ")}.`)
     : pass(ruleId);

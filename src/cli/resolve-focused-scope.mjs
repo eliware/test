@@ -4,7 +4,8 @@ export function resolveFocusedScope(args = []) {
   const testPath = focusedPathFrom(args);
   if (!testPath) return null;
   const normalizedTestPath = testPath.replaceAll("\\", "/").replace(/^\.\//u, "");
-  const match = normalizedTestPath.match(/^tests?\/(.+)$/iu);
+  const match = normalizedTestPath.match(/^tests\/(.+)$/iu);
+  if (!match) return null;
   const relativeTestPath = match[1];
   const sourcePath = relativeTestPath.replace(/\.(?:test|spec)(?=\.[^.]+$)/iu, "");
   return Object.freeze({

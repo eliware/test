@@ -11,6 +11,7 @@ test("assembles the Jest process configuration and forwards timeout diagnostics"
   expect(options).toMatchObject({
     cwd: "C:/fixture",
     progressPattern: /^\[eliware-test-progress\]/m,
+    resetOnAnyOutput: true,
     progressTimeoutMs: 15_000,
     env: { NODE_OPTIONS: "--no-warnings --experimental-vm-modules" },
   });

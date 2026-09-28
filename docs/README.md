@@ -9,19 +9,19 @@ configuration boundary.
 
 ## Setup and usage
 
-Start with [Usage](usage.md) for prerequisites and exact commands.
+Start with [Usage](../docs/usage.md) for prerequisites and exact commands.
 
 ## Validation and support
 
-See [Troubleshooting](troubleshooting.md) for validation diagnostics and
-[Support](support.md) for support channels.
+See [Troubleshooting](../docs/troubleshooting.md) for validation diagnostics and
+[Support](../docs/support.md) for support channels.
 
 ## Contents
 
-- [Usage](usage.md) — setup and supported commands.
-- [Configuration](usage.md#configuration) — package convention metadata and exemptions.
-- [Compatibility boundaries](usage.md#compatibility-boundaries) — dependency and external-reference resolution limits.
-- [Troubleshooting](troubleshooting.md) — common validation failures.
-- [Support](support.md) — support channels and diagnostic information.
+- [Usage](../docs/usage.md) — setup and supported commands.
+- [Configuration](../docs/usage.md#configuration) — package convention metadata and exemptions.
+- [Compatibility boundaries](../docs/usage.md#compatibility-boundaries) — dependency and external-reference resolution limits.
+- [Troubleshooting](../docs/troubleshooting.md) — common validation failures.
+- [Support](../docs/support.md) — support channels and diagnostic information.
 
 [Return to the root README](../README.md).

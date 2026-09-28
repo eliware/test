@@ -21,3 +21,9 @@ test("redacts URL user-info when the host is an IPv6 address", () => {
   expect(output).toBe("https://[REDACTED]@[2001:db8::1]:8443/resource");
   expect(output).not.toContain("secret");
 });
+
+test("redacts URL user-info containing additional at signs", () => {
+  const output = redactHttpCredentials("https://user:p@ss@example.test/path");
+  expect(output).toBe("https://[REDACTED]@example.test/path");
+  expect(output).not.toContain("p@ss");
+});

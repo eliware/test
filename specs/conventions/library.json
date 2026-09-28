@@ -178,7 +178,7 @@
         {
           "id": "E-0.1.40.16",
           "dos": [
-            "Library Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code.",
+            "Library Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code; coverage scope is limited to native ESM .mjs production files under src/.",
             "Exclude generated, bundled, compiled, dependency, coverage, build, declaration, fixture, and snapshot files from in-scope code; the primary public export barrel may be excluded."
           ],
           "donts": ["Do not hide untested production logic with coverage exclusions."],

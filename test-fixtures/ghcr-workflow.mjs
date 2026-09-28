@@ -34,7 +34,8 @@ jobs:
       RELEASE_REF: refs/tags/v1.2.3
     steps:
       - uses: actions/checkout@v6
-      - run: '${releaseTagGuard}'
+      - id: release-version-check
+        run: '${releaseTagGuard}'
       - id: push
         uses: docker/build-push-action@v6
         with:

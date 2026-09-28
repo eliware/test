@@ -14,7 +14,7 @@
 ## Features
 
 The CLI validates repository structure, documentation, conventions, tests,
-coverage, packaging, and supported operational checks.
+coverage, packaging, and repository checks. It does not perform live operational validation.
 
 Package description: Shared deterministic repository validation for Eliware projects. Author: Eliware <eliware@eliware.org>. License: MIT.
 
@@ -30,7 +30,8 @@ For development in this repository, install the locked dependencies:
 npm ci
 ```
 
-In a consuming repository, install the public CLI as a development dependency:
+In a consuming repository, use Node.js 26 (`>=26 <27`) and install the public
+CLI as a development dependency:
 
 ```text
 npm install --save-dev @eliware/test
@@ -39,12 +40,21 @@ npm install --save-dev @eliware/test
 ## Usage
 
 After installing the package in a consuming repository, run validation with
-`eliware-test`. Every `npm run` command in the following block is package-local;
-in particular, `npm run pack` is only available in this npm-published repository.
+`eliware-test`:
 
-`package.json` is the source of truth for the version in this checkout. The
-repository's current version is `8.0.0`. The npm badge links to the package's
-latest version on the public registry.
+```text
+eliware-test
+eliware-test --help
+eliware-test --version
+eliware-test --debug-timing # runs aggregate validation and reports timing
+eliware-test --lint
+eliware-test --format
+eliware-test --format-check
+eliware-test --audit
+eliware-test tests/example.test.mjs
+```
+
+Package-maintainer commands are available in this repository checkout:
 
 ```text
 npm test
@@ -53,15 +63,17 @@ npm run format
 npm run format:check
 npm run audit
 npm run pack
-node bin/eliware-test.mjs --help
-node bin/eliware-test.mjs --version
-node bin/eliware-test.mjs --debug-timing
-node bin/eliware-test.mjs --lint
-node bin/eliware-test.mjs --format
-node bin/eliware-test.mjs --format-check
-node bin/eliware-test.mjs tests/example.test.mjs
-eliware-test
+node bin/eliware-test.mjs --pack
 ```
+
+`package.json` is the source of truth for the version in this checkout. The
+repository's current version is `8.0.0`. The npm badge reports the version
+currently available in the public registry; it may differ from this checkout.
+
+When a repository-local Jest cannot be resolved, `eliware-test` uses the Jest
+dependency it ships while keeping the consumer repository as Jest's working
+directory. Jest discovers the consumer's `package.json`, configuration, tests,
+and source files from that root.
 
 `npm run format` and `--format` mutate files; `npm run format:check` and
 `--format-check` only validate formatting. `--pack` validates the package
@@ -70,16 +82,19 @@ contents without publishing it.
 Each of `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` uses a
 mode-specific argument policy. Audit accepts only `--no-fund` and
 `--no-progress`; lint accepts only `--threads=<positive-count>`; pack has its
-own allowlist. For `--format` and `--format-check`, extra arguments must be
-Prettier options, not paths. The wrapper rejects options that replace its
+own allowlist. For `--format` and `--format-check`, only non-path Prettier
+options are accepted; positional file paths are rejected. Formatting scope comes
+from the wrapper's maintained-file set, not positional path arguments. The wrapper rejects options that replace its
 selected write/check mode, canonical configuration, or required file coverage.
-Other option arguments are forwarded to Prettier, which rejects unsupported
-options. Arguments that override wrapper-owned settings, file coverage, or
-required checks are rejected.
-Wrapper arguments are emitted before arguments supplied after `--`, preserving
-their relative order within each group. Prettier arguments that override the
-selected mode, canonical formatting configuration, or required file coverage
-are rejected.
+Only allowlisted non-path options are forwarded to Prettier; for example,
+`--log-level=debug` is accepted. The wrapper rejects
+options outside that allowlist, including arguments that override wrapper-owned
+settings, file coverage, or required checks.
+Arguments after `--` are treated as tool arguments and must still pass the
+selected mode's argument policy; the separator does not bypass its allowlist.
+Accepted arguments are forwarded after wrapper-owned arguments. Prettier
+arguments that override the selected mode, canonical formatting configuration,
+or required file coverage are rejected.
 
 The five public tool modes are `--lint`, `--format`, `--format-check`,
 `--audit`, and `--pack`. Invoke package-level scripts with `npm run <script>`;
@@ -102,14 +117,14 @@ focused regression tests for behavior changes.
 
 In this repository, `npm test` runs aggregate Jest, lint, format-check, audit,
 and pack validation under its declared npm-published profile. Pack validation
-is profile-dependent in other repositories. One focused test path under `tests/` can be supplied to
+is profile-dependent in other repositories. One repository-relative `.test.*` or `.spec.*` file under `tests/` can be supplied to
 `eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 
 ## Troubleshooting
 
-When validation fails, rerun the reported focused path first, then inspect the
-stage-specific diagnostic and relevant repository contract.
+When validation fails, rerun the reported focused path to diagnose that test,
+then rerun `npm test` to verify the aggregate validation gate before handoff.
 
 The v8 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
@@ -148,14 +163,16 @@ Other public modes are `--debug-timing`,
 `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`. Each tool mode
 has a mode-specific argument policy. Audit accepts only `--no-fund` and
 `--no-progress`, lint accepts only `--threads=<positive-count>`, and pack uses
-its own allowlist. For formatting, non-path Prettier options are forwarded
-unless they replace the wrapper's write/check mode, canonical configuration, or
-required file coverage; Prettier rejects unsupported options. Wrapper-owned
+its own allowlist. `--debug-timing` may appear once before a tool mode and cannot
+be passed after `--`. Formatting modes accept non-path Prettier options and reject
+positional file paths. The wrapper forwards supported options unless they
+replace the write/check mode, canonical configuration, or required file
+coverage; Prettier rejects unsupported options. Wrapper-owned
 settings and options that weaken required checks are rejected. Wrapper
 arguments precede arguments after `--`.
 
-To run one focused test, pass one repository-relative path under `tests/`;
-`.test.*` and `.spec.*` filenames support `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`,
+To run one focused test, pass one existing repository-relative `.test.*` or `.spec.*` file under `tests/`;
+test filenames support `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`,
 `.cjs`, `.mts`, and `.cts` extensions:
 
 ```sh

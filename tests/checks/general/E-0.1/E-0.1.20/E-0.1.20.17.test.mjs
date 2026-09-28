@@ -44,9 +44,11 @@ test("coordinates script policy and formatter validation", async () => {
 });
 
 test("passes the aggregate null mode when no formatter mode was requested", async () => {
-  await expect(run({ packageJson: {} })).resolves.toMatchObject({ status: "pass" });
+  await expect(run({ packageJson: {}, executeFormat: true })).resolves.toMatchObject({
+    status: "pass",
+  });
   expect(executeFormatterValidation).toHaveBeenCalledWith(
-    expect.objectContaining({ mode: null, executeFormat: false }),
+    expect.objectContaining({ mode: null, executeFormat: true }),
   );
 });
 

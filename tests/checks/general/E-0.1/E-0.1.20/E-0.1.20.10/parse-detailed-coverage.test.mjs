@@ -12,11 +12,13 @@ test("rejects missing evidence for an expected source with no instrumentable sta
 });
 
 test("aggregates coverage gaps and metric totals across detailed source files", () => {
-  const result = parseDetailed({
+  const gapLocation = { start: { line: 4, column: 1 }, end: { line: 4, column: 2 } };
+  const completeLocation = { start: { line: 1, column: 1 }, end: { line: 1, column: 2 } };
+  const report = {
     "src/gap.mjs": {
       statementMap: { 0: { start: { line: 4 } } },
       s: { 0: 0 },
-      branchMap: { 0: {} },
+      branchMap: { 0: { type: "if", line: 4, locations: [gapLocation] } },
       b: { 0: [0] },
       fnMap: { 0: {} },
       f: { 0: 0 },
@@ -28,13 +30,37 @@ test("aggregates coverage gaps and metric totals across detailed source files", 
       f: { 0: 1 },
       l: { 1: 1 },
       statementMap: { 0: { start: { line: 1 } } },
-      branchMap: { 0: {} },
+      branchMap: { 0: { type: "if", line: 1, locations: [completeLocation, completeLocation] } },
       fnMap: { 0: {} },
     },
-  });
+  };
+  const expectedFiles = Object.keys(report);
+  const expectedShapes = Object.fromEntries(
+    Object.entries(report).map(([file, data]) => [
+      file,
+      {
+        statementMap: data.statementMap,
+        branchMap: data.branchMap,
+        fnMap: data.fnMap,
+        lineMap: Object.fromEntries(
+          [...new Set(Object.values(data.statementMap).map(({ start }) => String(start.line)))].map(
+            (line) => [line, {}],
+          ),
+        ),
+      },
+    ]),
+  );
+  const result = parseDetailed(report, expectedFiles, expectedShapes);
   expect(result.gaps).toHaveLength(1);
   expect(result.totals).toMatchObject({ statements: 50, functions: 50, lines: 50 });
   expect(result.totals.branches).toBeCloseTo(200 / 3);
+});
+
+test("rejects detailed source reports without an independent repository inventory", () => {
+  const complete = { s: {}, b: {}, f: {}, statementMap: {}, branchMap: {}, fnMap: {} };
+  expect(() => parseDetailed({ "src/unlisted.mjs": complete })).toThrow(
+    "Detailed coverage contains non-repository source file",
+  );
 });
 
 test("returns null when a detailed report has no in-scope source files", () => {

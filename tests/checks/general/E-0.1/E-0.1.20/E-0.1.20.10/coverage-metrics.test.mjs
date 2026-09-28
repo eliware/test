@@ -26,9 +26,8 @@ test("centralizes coverage counters and completeness detection", () => {
     hasMaps: false,
   });
   expect(
-    coverageMetricValues({ s: {}, b: {}, f: {}, statementMap: {}, branchMap: {}, fnMap: {} }, [])
-      .hasMaps,
-  ).toBe(false);
+    coverageMetricValues({ s: {}, b: {}, f: {}, statementMap: {}, branchMap: {}, fnMap: {} }, []),
+  ).toMatchObject({ hasCounters: false, hasMaps: true });
 });
 
 test("rejects missing or mismatched per-metric map and counter pairs", () => {

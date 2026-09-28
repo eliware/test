@@ -6,7 +6,10 @@ import { run } from "../../../../src/checks/application/E-0.1.130/A-0.1.130.1.mj
 
 test("requires workflows in application README", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-"));
-  await writeFile(join(root, "README.md"), "Externally observable workflow\n");
+  await writeFile(
+    join(root, "README.md"),
+    "## Table of Contents\n[Configuration](#configuration)\n[Operations](#operations)\n## Configuration\nNo runtime configuration.\n## Operations\nStartup and shutdown workflows use operational boundaries.\n",
+  );
   expect((await run({ root })).status).toBe("pass");
   await writeFile(join(root, "README.md"), "Application usage\n");
   expect((await run({ root })).status).toBe("fail");

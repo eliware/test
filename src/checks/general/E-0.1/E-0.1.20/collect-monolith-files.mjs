@@ -22,17 +22,9 @@ export function excludedFile(file) {
 export async function collectMonolithFiles(directory, inventory = null) {
   if (inventory) {
     const repositoryRoot = inventory.root;
-    const entries = await inventory.entriesUnder(directory);
+    const entries = await inventory.entriesUnder(directory, isMonolithFile);
     return entries
-      .filter(({ path, type }) => {
-        const segments = path.split("/");
-        return (
-          type === "file" &&
-          path.endsWith(".mjs") &&
-          !segments.some((segment) => excludedDirectories.has(segment)) &&
-          !excludedFile(path)
-        );
-      })
+      .filter(({ path, type }) => type === "file" && isMonolithFile(path))
       .map(({ path }) => join(repositoryRoot, path));
   }
   const files = [];
@@ -44,4 +36,13 @@ export async function collectMonolithFiles(directory, inventory = null) {
       files.push(path);
   }
   return files;
+}
+
+function isMonolithFile(path) {
+  const segments = path.split("/");
+  return (
+    path.endsWith(".mjs") &&
+    !segments.some((segment) => excludedDirectories.has(segment)) &&
+    !excludedFile(path)
+  );
 }

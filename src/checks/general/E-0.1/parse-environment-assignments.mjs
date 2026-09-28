@@ -1,4 +1,4 @@
-const assignment = /^\s*([A-Z][A-Z0-9_]*)\s*=\s*(.*?)\s*$/;
+const assignment = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/;
 
 export function parseEnvironmentAssignments(content) {
   return content

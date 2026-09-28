@@ -65,6 +65,9 @@ test("validates dependency maps and direct package entries", () => {
     validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": null } }, {}),
   ).toMatch(/valid package version/);
   expect(
+    validateLockfileDependencies({ packages: { "": {}, "node_modules/alpha": [] } }, {}),
+  ).toMatch(/valid package version/);
+  expect(
     validateLockfileDependencies(
       {
         packages: {

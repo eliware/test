@@ -7,6 +7,7 @@ import { createValidationRunOptions } from "./create-validation-run-options.mjs"
 import { writeValidationResults } from "./write-validation-results.mjs";
 import { normalizeCliError } from "./normalize-cli-error.mjs";
 import { formatExitCode } from "./format-exit-code.mjs";
+import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
 
 export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
   try {
@@ -24,11 +25,24 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
     const result = await executeConvention(() =>
       executeValidation(
         root,
-        diagnosticOptions.ignoredRuleIds,
+        [],
         createValidationRunOptions(args, diagnosticOptions, options, timing, write),
       ),
     );
-    writeValidationResults(result, write, args.includes("--debug-timing"), timing, startedAt);
+    writeValidationResults(
+      {
+        ...result,
+        mode:
+          diagnosticOptions.mode ??
+          (parseFocusedArguments(diagnosticOptions.jestArgs ?? []).positional.length > 0
+            ? "focused"
+            : null),
+      },
+      write,
+      args.includes("--debug-timing"),
+      timing,
+      startedAt,
+    );
     if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
     return result.code;
   } catch (error) {

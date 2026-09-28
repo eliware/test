@@ -86,7 +86,7 @@ test("rejects executable statements before the command sequence", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("rejects reordered structured subprocess commands", async () => {
+test("rejects reordered commands and accepts custom absolute Windows executable paths", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-"));
   await mkdir(join(root, ".knit"));
   await writeFile(
@@ -98,11 +98,39 @@ test("rejects reordered structured subprocess commands", async () => {
   await writeFile(
     join(root, ".knit", "validate.mjs"),
     'import { spawnSync } from "node:child_process";\n' +
-      'spawnSync("C:\\\\temp\\\\git.exe", ["pull", "--ff-only", "origin", "main"]); ' +
+      'spawnSync("C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe", ["pull", "--ff-only", "origin", "main"]); ' +
+      'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
+  );
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await writeFile(
+    join(root, ".knit", "validate.mjs"),
+    'import { spawnSync } from "node:child_process";\n' +
+      'spawnSync("C:\\\\temp\\\\curl.exe", ["pull", "--ff-only", "origin", "main"]); ' +
       'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
   );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await rm(root, { recursive: true, force: true });
+});
+
+test("rejects extra commands after the required validation sequence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-extra-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    await writeFile(
+      join(root, ".knit", "validate.mjs"),
+      'import { spawnSync } from "node:child_process"; ' +
+        'spawnSync("git", ["pull", "--ff-only", "origin", "main"]); ' +
+        'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]); spawnSync("npm", ["run", "prepare"]);',
+    );
+    await expect(run({ root })).resolves.toEqual(
+      expect.objectContaining({
+        status: "fail",
+        message: expect.stringContaining("must contain only git pull, npm ci, and npm test"),
+      }),
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("maps missing Knit scripts to a rule failure", async () => {

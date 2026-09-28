@@ -9,3 +9,9 @@ test("parses exported and quoted environment assignments", () => {
     ["OTHER", "value"],
   ]);
 });
+
+test("preserves valid lower-case environment assignment names", () => {
+  expect(parseEnvironmentAssignments("export local_setting=value")).toEqual([
+    ["local_setting", "value"],
+  ]);
+});

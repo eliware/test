@@ -4,11 +4,13 @@ export function createMatchIntervalIndex() {
   const activeStarts = [];
   const endEntries = [];
   let endEntryHead = 0;
+  let staleEndEntryCount = 0;
 
   function add(matches) {
     for (const { start, end } of matches) {
       const previousEnd = matchEndsByStart.get(start) ?? 0;
       if (end <= previousEnd) continue;
+      if (previousEnd > 0) staleEndEntryCount += 1;
       matchEndsByStart.set(start, end);
       // The matcher emits intervals in increasing end order, so this index is a queue.
       endEntries.push({ start, end });
@@ -39,11 +41,24 @@ export function createMatchIntervalIndex() {
     while (endEntryHead < endEntries.length && endEntries[endEntryHead].end <= boundary) {
       const { start, end } = endEntries[endEntryHead++];
       if (matchEndsByStart.get(start) === end) matchEndsByStart.delete(start);
+      else staleEndEntryCount -= 1;
     }
+    if (staleEndEntryCount > 1024) compactStaleEntries();
     if (endEntryHead > 1024 && endEntryHead * 2 >= endEntries.length) {
       endEntries.splice(0, endEntryHead);
       endEntryHead = 0;
     }
+  }
+
+  function compactStaleEntries() {
+    let writeIndex = endEntryHead;
+    for (let readIndex = endEntryHead; readIndex < endEntries.length; readIndex += 1) {
+      const entry = endEntries[readIndex];
+      if (matchEndsByStart.get(entry.start) !== entry.end) continue;
+      endEntries[writeIndex++] = entry;
+    }
+    endEntries.length = writeIndex;
+    staleEndEntryCount = 0;
   }
 
   return Object.freeze({ add, earliestCrossing, materialize, discardThrough });

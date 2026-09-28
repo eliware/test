@@ -1,3 +1,5 @@
+import { resolveSelfHostedScriptCommands } from "./resolve-self-hosted-script-commands.mjs";
+
 const requiredScripts = {
   test: "eliware-test",
   lint: "eliware-test --lint",
@@ -16,25 +18,22 @@ export function validateRequiredScripts(
   const canonicalScripts = requiresPack
     ? { ...requiredScripts, pack: "eliware-test --pack" }
     : requiredScripts;
-  const applicableScripts = selfHosted
-    ? Object.fromEntries(
-        Object.keys(canonicalScripts).map((name) => [
-          name,
-          name === "test"
-            ? "node bin/eliware-test.mjs"
-            : `node bin/eliware-test.mjs --${name === "format:check" ? "format-check" : name}`,
-        ]),
-      )
-    : canonicalScripts;
   const failures = [];
+  const selfHostedResolution = selfHosted
+    ? resolveSelfHostedScriptCommands(Object.keys(canonicalScripts))
+    : null;
+  if (selfHostedResolution) failures.push(...selfHostedResolution.failures);
+  const applicableScripts = selfHostedResolution?.scripts ?? canonicalScripts;
   for (const [name, command] of Object.entries(applicableScripts)) {
     if (scripts?.[name] !== command)
       failures.push(`package.json.scripts.${name} must be exactly ${command}.`);
   }
   const allowedNames = new Set([...Object.keys(applicableScripts), ...allowedAdditionalScripts]);
   for (const [name, command] of Object.entries(scripts)) {
-    if (!allowedNames.has(name))
+    if (!allowedNames.has(name)) {
       failures.push(`package.json.scripts.${name} is not allowed by an applicable profile.`);
+      continue;
+    }
     if (typeof command !== "string" || !command.trim()) {
       failures.push(`package.json.scripts.${name} must be a nonempty command.`);
     }

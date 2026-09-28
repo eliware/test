@@ -50,6 +50,9 @@ export function validateCoverageSourceShape(file, data, expectedShape) {
   }
   coverageLineEntries(data, expectedShape.statementMap);
   for (const [id, branch] of Object.entries(expectedShape.branchMap ?? {})) {
+    if (branch.locations.length === 0) {
+      throw new Error(`Coverage source branch must contain at least one path in ${file}.`);
+    }
     if (
       data.branchMap[id].type !== branch.type ||
       data.branchMap[id].line !== branch.line ||

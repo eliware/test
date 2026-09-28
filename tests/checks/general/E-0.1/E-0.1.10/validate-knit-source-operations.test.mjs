@@ -20,6 +20,17 @@ test("rejects source code containing unsupported external operations", () => {
   }
 });
 
+test("rejects filesystem operations aliased from imported modules", () => {
+  for (const source of [
+    'import * as fs from "node:fs"; const remove = fs.rm; remove("output");',
+    'import { rm } from "node:fs"; const remove = rm; remove("output");',
+  ]) {
+    expect(validateKnitSourceOperations(source)).toContain(
+      "unsupported filesystem, network, process",
+    );
+  }
+});
+
 test("ignores operation-like comments and string literals", () => {
   expect(
     validateKnitSourceOperations('const example = `fs.rm("output")`; // fetch("url")'),
@@ -46,12 +57,27 @@ test("allows analyzed top-level subprocess commands and rejects helper subproces
   );
 });
 
+test("rejects unsupported APIs called through child-process namespaces", () => {
+  for (const source of [
+    'import * as child from "node:child_process"; child.fork("worker.mjs");',
+    'import * as child from "child_process"; child[operation]("worker.mjs");',
+    'import * as child from "node:child_process"; child.exec("command");',
+    'import "node:child_process";',
+    'export { spawn as run } from "node:child_process";',
+  ]) {
+    expect(validateKnitSourceOperations(source)).toContain(
+      "unsupported filesystem, network, process",
+    );
+  }
+});
+
 test("rejects computed and unresolved filesystem and network operations", () => {
   for (const source of [
     'import * as fs from "node:fs"; fs["rm"]("output");',
     'import * as fs from "node:fs"; fs[operation]("output");',
     'globalThis["fetch"]("https://example.test");',
     'globalThis[operation]("https://example.test");',
+    "const { process: p } = globalThis; p.exit(1);",
     'process[operation]("SIGTERM");',
     "const p = process; p.exit(1);",
     'const f = fetch; f("https://example.test");',

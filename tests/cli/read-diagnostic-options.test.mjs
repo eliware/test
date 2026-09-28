@@ -53,6 +53,7 @@ test("rejects an unrecognized positional argument alongside a focused test path"
 
 test("rejects unsupported focused path roots", () => {
   expect(() => readDiagnosticOptions(["src/example.mjs"])).toThrow("must be under tests/");
+  expect(() => readDiagnosticOptions(["test/example.test.mjs"])).toThrow("must be under tests/");
 });
 
 test("does not treat option values as focused paths and preserves them for Jest", () => {
@@ -103,4 +104,17 @@ test("rejects focused Jest paths combined with tool modes", () => {
 
 test("rejects wrapper arguments placed before a tool mode", () => {
   expect(() => readDiagnosticOptions(["--runInBand", "--audit"])).toThrow("must follow --audit");
+});
+
+test("accepts debug timing once before a mode and rejects ambiguous placements", () => {
+  expect(readDiagnosticOptions(["--debug-timing", "--lint"]).mode).toBe("lint");
+  expect(() => readDiagnosticOptions(["--debug-timing", "--debug-timing"])).toThrow(
+    "may be supplied once",
+  );
+  expect(() => readDiagnosticOptions(["--lint", "--debug-timing"])).toThrow(
+    "must precede a tool mode",
+  );
+  expect(() => readDiagnosticOptions(["--lint", "--", "--debug-timing"])).toThrow(
+    "may be supplied once",
+  );
 });

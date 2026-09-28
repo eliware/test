@@ -92,7 +92,7 @@ test("throws when cleanup fails and the validation result is not an array", asyn
   ).rejects.toThrow("cleanup denied");
 });
 
-test("preserves a plan error when coverage cleanup succeeds", async () => {
+test("returns structured plan diagnostics when coverage cleanup succeeds", async () => {
   const planError = new Error("plan failed");
   await expect(
     finalizeValidationRun({
@@ -100,10 +100,10 @@ test("preserves a plan error when coverage cleanup succeeds", async () => {
       context: { jestCoverageDirectory: "/run/coverage" },
       removeCoverage: jest.fn(),
     }),
-  ).rejects.toBe(planError);
+  ).resolves.toEqual([{ ruleId: "E-0.1.20", status: "fail", message: "plan failed" }]);
 });
 
-test("combines plan and cleanup failures while preserving the plan error as the cause", async () => {
+test("returns structured plan and cleanup failures", async () => {
   const planError = "plan failed";
   await expect(
     finalizeValidationRun({
@@ -113,10 +113,13 @@ test("combines plan and cleanup failures while preserving the plan error as the 
         throw null;
       },
     }),
-  ).rejects.toMatchObject({
-    message: "plan failed\nCould not remove run-scoped coverage artifacts: null",
-    cause: planError,
-  });
+  ).resolves.toEqual([
+    {
+      ruleId: "E-0.1.20",
+      status: "fail",
+      message: "plan failed\nCould not remove run-scoped coverage artifacts: null",
+    },
+  ]);
 });
 
 test("returns results unchanged when no run-scoped coverage or plan error exists", async () => {

@@ -50,6 +50,25 @@ test("formats empty gaps and truncates long diagnostic lists", () => {
   expect(output).toContain("(+1 more omitted)");
 });
 
+test("labels missing coverage maps as unavailable instead of zero percent", () => {
+  const output = formatCoverageGaps({
+    gaps: [
+      {
+        file: "src/missing-maps.mjs",
+        metrics: { statements: null, branches: null, functions: null, lines: null },
+        lines: [],
+        statements: [],
+        branches: [],
+        functions: [],
+      },
+    ],
+  });
+
+  expect(output).toContain(
+    "src/missing-maps.mjs | unavailable | unavailable | unavailable | unavailable",
+  );
+});
+
 test("formats evidence with no gaps and still provides remediation guidance", () => {
   const output = formatCoverageGaps({ gaps: [] });
   expect(output).toContain("Coverage gaps:");

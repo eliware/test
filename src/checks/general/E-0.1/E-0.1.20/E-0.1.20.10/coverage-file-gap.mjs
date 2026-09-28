@@ -36,8 +36,20 @@ export function fileGap(file, data, expectedShape = null) {
     }));
   const sourceStatementMap = expectedShape?.statementMap ?? data.statementMap;
   const lineEntries = coverageLineEntries(data, sourceStatementMap);
-  const lines = lineEntries.filter(([, count]) => count === 0).map(([line]) => line);
-  const { values: metricCounters, hasCounters, hasMaps } = coverageMetricValues(data, lineEntries);
+  const lines = [];
+  for (const [line, count] of lineEntries) {
+    if (count === 0) lines.push(line);
+  }
+  const { values: metricCounters, hasMaps } = coverageMetricValues(data, lineEntries);
+  if (!hasMaps)
+    return {
+      file,
+      metrics: { statements: null, branches: null, functions: null, lines: null },
+      lines,
+      statements,
+      branches,
+      functions,
+    };
   const values = Object.fromEntries(
     metrics.map((metric) => [
       metric,
@@ -47,15 +59,6 @@ export function fileGap(file, data, expectedShape = null) {
       ),
     ]),
   );
-  if (!hasCounters || !hasMaps)
-    return {
-      file,
-      metrics: { statements: 0, branches: 0, functions: 0, lines: 0 },
-      lines,
-      statements,
-      branches,
-      functions,
-    };
   return metrics.every((metric) => values[metric] === 100)
     ? null
     : { file, metrics: values, lines, statements, branches, functions };

@@ -12,14 +12,16 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
       MAX_OUTPUT_LENGTH,
     );
     let settled = false;
+    let child;
     const rejectOnce = (error) => {
       if (settled) return;
       settled = true;
       reject(redactSpawnError(error, output));
     };
     try {
-      const child = spawnProcess(command, args, {
+      child = spawnProcess(command, args, {
         ...childOptions,
+        env: { ...(childOptions.env ?? process.env) },
         shell: false,
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -35,9 +37,19 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
         resolveResult({ code, signal, ...output.finish() });
       });
     } catch (error) {
+      terminateChild(child);
       rejectOnce(error);
     }
   });
+}
+
+function terminateChild(child) {
+  if (typeof child?.kill !== "function") return;
+  try {
+    child.kill();
+  } catch {
+    // Preserve the stream setup error as the actionable failure.
+  }
 }
 
 function attachOutputStream(stream, name, output) {

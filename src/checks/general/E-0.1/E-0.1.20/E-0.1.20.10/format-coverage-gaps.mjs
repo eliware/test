@@ -4,11 +4,15 @@ function details(items, formatter) {
   return omitted > 0 ? `${visible} (+${omitted} more omitted)` : visible;
 }
 
+function metric(value) {
+  return Number.isFinite(value) ? `${value.toFixed(2)}%` : "unavailable";
+}
+
 export function formatCoverageGaps(evidence) {
   const lines = ["Coverage gaps:", "File | Statements | Branches | Functions | Lines"];
   for (const gap of evidence.gaps) {
     lines.push(
-      `${gap.file} | ${gap.metrics.statements.toFixed(2)}% | ${gap.metrics.branches.toFixed(2)}% | ${gap.metrics.functions.toFixed(2)}% | ${gap.metrics.lines.toFixed(2)}% | uncovered lines: ${gap.lines.join(", ") || "-"}`,
+      `${gap.file} | ${metric(gap.metrics.statements)} | ${metric(gap.metrics.branches)} | ${metric(gap.metrics.functions)} | ${metric(gap.metrics.lines)} | uncovered lines: ${gap.lines.join(", ") || "-"}`,
       `  Uncovered statements: ${details(gap.statements, ({ location }) => location)}`,
       `  Uncovered branches: ${details(gap.branches, ({ location }) => `${location} (uncovered)`)}`,
       `  Uncovered functions: ${details(gap.functions, ({ name, location }) => `${name} at ${location}`)}`,

@@ -9,9 +9,14 @@ test("validates repository identity and reciprocal map links", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-reciprocity-"));
   await mkdir(join(root, "specs"));
   const file = join(root, "authority-map.json");
+  await writeFile(file, "{}\n");
   await writeFile(
     join(root, "specs", "authority.json"),
-    JSON.stringify({ repositoryId: "eliware/example", subjects: [{ id: "example.subject" }] }),
+    JSON.stringify({
+      repositoryId: "eliware/example",
+      globalAuthorityMap: "../authority-map.json",
+      subjects: [{ id: "example.subject" }],
+    }),
   );
   await expect(
     validateAuthorityReciprocity({
@@ -147,6 +152,20 @@ test("reports missing authority targets, missing reciprocal maps, and mismatched
       file,
       entries: [{ repository: "eliware/example", authorityFile: "./specs/authority.json" }],
     }),
-  ).resolves.toBeNull();
+  ).resolves.toContain("must declare globalAuthorityMap");
+  await rm(root, { recursive: true, force: true });
+});
+
+test("skips reciprocity checks for authority documents unavailable outside the checkout", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-authority-reciprocity-external-"));
+  const result = await validateAuthorityReciprocity({
+    root,
+    file: join(root, "authority-map.json"),
+    entries: [
+      { repository: "eliware/external", authorityFile: "../external/specs/authority.json" },
+    ],
+  });
+
+  expect(result).toBeNull();
   await rm(root, { recursive: true, force: true });
 });

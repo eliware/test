@@ -48,9 +48,12 @@ test("projects indexed root and directory records", async () => {
     { path: "src", type: "directory", depth: 1 },
     { path: "src/index.mjs", type: "file", depth: 1 },
   ];
+  const discovery = jest.fn(async () => records);
+  let discoveredRecords;
+  const entries = jest.fn(() => (discoveredRecords ??= discovery()));
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
-    entries: jest.fn(async () => records),
+    entries,
     entriesUnder: jest.fn(),
     readDirectory: jest.fn(),
     hasFullDiscovery: () => true,
@@ -63,6 +66,7 @@ test("projects indexed root and directory records", async () => {
   await expect(directoryEntries("/repo/src")).resolves.toMatchObject([
     { name: "index.mjs", path: "src/index.mjs" },
   ]);
+  expect(discovery).toHaveBeenCalledTimes(1);
 });
 
 test("falls back to reading descendants of pruned directories", async () => {
@@ -110,6 +114,48 @@ test("discovers a deep generated descendant when requested directly", async () =
   const images = await directoryEntries("/repo/dist/assets/images");
   expect(images).toMatchObject([{ name: "app.js", path: "dist/assets/images/app.js" }]);
   expect(readDirectory).toHaveBeenCalledWith("dist/assets/images");
+});
+
+test("builds nested paths while locating a generated descendant", async () => {
+  const records = [
+    { path: "src", type: "directory", depth: 1 },
+    { path: "src/coverage", type: "directory", depth: 2 },
+  ];
+  const readDirectory = jest.fn(async () => [fileEntry("report.json")]);
+  const directoryEntries = createRepositoryDirectoryEntries({
+    root: "/repo",
+    entries: jest.fn(async () => records),
+    entriesUnder: jest.fn(),
+    readDirectory,
+    hasFullDiscovery: () => true,
+  });
+
+  await expect(directoryEntries("/repo/src/coverage/reports")).resolves.toMatchObject([
+    { name: "report.json", path: "src/coverage/reports/report.json" },
+  ]);
+  expect(readDirectory).toHaveBeenCalledWith("src/coverage/reports");
+});
+
+test("reuses the same fallback listing for repeated generated-directory reads", async () => {
+  const records = [{ path: "dist", type: "directory", depth: 1 }];
+  let listing = [fileEntry("initial.js")];
+  const readDirectory = jest.fn(async () => listing);
+  const directoryEntries = createRepositoryDirectoryEntries({
+    root: "/repo",
+    entries: jest.fn(async () => records),
+    entriesUnder: jest.fn(),
+    readDirectory,
+    hasFullDiscovery: () => true,
+  });
+
+  await expect(directoryEntries("/repo/dist/assets")).resolves.toMatchObject([
+    { name: "initial.js", path: "dist/assets/initial.js" },
+  ]);
+  listing = [fileEntry("changed.js")];
+  await expect(directoryEntries("/repo/dist/assets")).resolves.toMatchObject([
+    { name: "initial.js", path: "dist/assets/initial.js" },
+  ]);
+  expect(readDirectory).toHaveBeenCalledTimes(1);
 });
 
 test("rejects unknown and external directory paths", async () => {

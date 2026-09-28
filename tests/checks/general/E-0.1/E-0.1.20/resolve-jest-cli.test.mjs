@@ -4,8 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   resolveConsumerJestCli,
-  resolveHarnessJestCli,
   resolveJestCli,
+  resolveSharedJestCli,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.20/resolve-jest-cli.mjs";
 
 test("resolves Jest from the consumer package and supports an injected CLI", () => {
@@ -15,12 +15,18 @@ test("resolves Jest from the consumer package and supports an injected CLI", () 
   expect(resolveJestCli(process.cwd())).toContain("jest.js");
   expect(resolveJestCli("C:/fixture", { jestCli: "jest-cli" })).toBe("jest-cli");
   expect(resolveJestCli("C:/fixture", { jestCli: "custom-jest" })).toBe("custom-jest");
+  expect(() => resolveJestCli("C:/fixture", { jestCli: "   " })).toThrow(
+    "Injected Jest CLI must be a nonempty string.",
+  );
+  expect(() => resolveJestCli("C:/fixture", { jestCli: {} })).toThrow(
+    "Injected Jest CLI must be a nonempty string.",
+  );
 });
 
-test("falls back to the bundled jest-cli package when the jest package is absent", () => {
+test("resolves the shared Jest fallback when its primary package provides jest-cli", () => {
   const calls = [];
   expect(
-    resolveHarnessJestCli(
+    resolveSharedJestCli(
       (_require, packageName) => {
         calls.push(packageName);
         return packageName === "jest-cli" ? "jest-cli/bin/jest.js" : undefined;
@@ -31,7 +37,7 @@ test("falls back to the bundled jest-cli package when the jest package is absent
   expect(calls).toEqual(["jest", "jest-cli"]);
 });
 
-test("reports a stable error when the consumer has no resolvable Jest", async () => {
+test("uses the shared Jest fallback when the consumer has no resolvable Jest", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-no-jest-"));
   try {
     await writeFile(join(root, "package.json"), JSON.stringify({ type: "module" }));

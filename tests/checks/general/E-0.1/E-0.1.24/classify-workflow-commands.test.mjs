@@ -26,4 +26,13 @@ test("identifies reusable validation jobs from their command sequence", () => {
     isValidationWorkflowJob({ steps: [{ command: "npm ci" }, { command: "npm test" }] }, steps),
   ).toBe(true);
   expect(isValidationWorkflowJob({ steps: [{ command: "npm test" }] }, steps)).toBe(false);
+  expect(
+    isValidationWorkflowJob({ steps: [{ command: "npm test" }, { command: "npm ci" }] }, steps),
+  ).toBe(false);
+  expect(
+    isValidationWorkflowJob(
+      { steps: [{ command: "npm ci" }, { command: "echo ready" }, { command: "npm test" }] },
+      steps,
+    ),
+  ).toBe(false);
 });

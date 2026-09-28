@@ -7,6 +7,7 @@ import { readRegisteredRepositoryRoots } from "./read-registered-repository-root
 
 export async function validateAuthorityDocuments(root, files, inventory) {
   const failures = [];
+  const documents = [];
   for (const relativeFile of files.filter((file) => file.endsWith(".json"))) {
     const file = join(root, relativeFile);
     let document;
@@ -18,7 +19,17 @@ export async function validateAuthorityDocuments(root, files, inventory) {
       failures.push(`${relativeFile}: ${error.message}`);
       continue;
     }
-    const kind = classifyAuthorityDocument(relativeFile, document);
+    documents.push({
+      relativeFile,
+      file,
+      document,
+      kind: classifyAuthorityDocument(relativeFile, document),
+    });
+  }
+  const registeredRepositoryRoots = documents.some(({ kind }) => kind === "record")
+    ? ((await readRegisteredRepositoryRoots(root, inventory)) ?? [])
+    : [];
+  for (const { relativeFile, file, document, kind } of documents) {
     const result =
       kind === "map"
         ? await validateAuthorityMap({ root, file, document, inventory })
@@ -27,8 +38,7 @@ export async function validateAuthorityDocuments(root, files, inventory) {
               root,
               file,
               document,
-              registeredRepositoryRoots:
-                (await readRegisteredRepositoryRoots(root, inventory)) ?? [],
+              registeredRepositoryRoots,
             })
           : null;
     if (result) failures.push(`${relativeFile}: ${result}`);

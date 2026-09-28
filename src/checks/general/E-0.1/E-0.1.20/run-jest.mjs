@@ -19,6 +19,7 @@ export async function runJest(root, args, execute, options, removeCoverage = rm)
   try {
     result = await executePreparedJestRun(prepared, execute);
   } catch (error) {
+    // codescope ignore: cleanup failure is appended before rejection, and the coverage check retries cleanup for unavailable results
     return cleanupAfterPreparedJestFailure(prepared, error, removeCoverage);
   }
   return finalizePreparedJestRun(

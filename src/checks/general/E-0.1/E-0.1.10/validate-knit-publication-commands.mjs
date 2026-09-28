@@ -1,23 +1,22 @@
 import { commandTokens } from "./knit-command-tokens.mjs";
+import { normalizeKnitExecutable } from "./normalize-knit-executable.mjs";
 
-const prohibitedCommand =
-  /^(?:npm\s+(?:publish|login|adduser)|docker\s+(?:push|login)|kubectl\s+(?:apply|delete|patch|replace)|git\s+(?:tag|push|reset|clean|checkout|restore|switch|add|commit|merge|rebase|cherry-pick|stash|apply|worktree|config|update-index|init|clone)|(?:sudo\s+)?(?:reboot|shutdown|systemctl\s+(?:start|stop|restart)))\b/iu;
+const allowedCommands = new Set(
+  [
+    ["git", "pull", "--ff-only", "origin", "main"],
+    ["npm", "ci"],
+    ["npm", "test"],
+  ].map((tokens) => JSON.stringify(tokens)),
+);
 
 export function validateKnitPublicationCommands(calls) {
-  return calls.some((call) => {
+  const containsUnapprovedCommand = calls.some((call) => {
     const tokens = commandTokens(call);
-    return tokens && (prohibitedCommand.test(tokens.join(" ")) || isRecursiveRm(tokens));
-  })
-    ? ".knit/validate.mjs must not publish, deploy, release, or mutate external state."
+    if (!tokens) return true;
+    const executable = normalizeKnitExecutable(tokens[0]);
+    return !executable || !allowedCommands.has(JSON.stringify([executable, ...tokens.slice(1)]));
+  });
+  return containsUnapprovedCommand
+    ? ".knit/validate.mjs must contain only the approved synchronization and validation commands."
     : null;
-}
-
-function isRecursiveRm([command, ...args]) {
-  if (command.toLowerCase().replaceAll("\\", "/").split("/").at(-1) !== "rm") return false;
-  for (const argument of args) {
-    if (argument === "--") return false;
-    if (/^--recursive(?:=|$)/iu.test(argument)) return true;
-    if (/^-(?!-)[^-]*[rR]/u.test(argument)) return true;
-  }
-  return false;
 }

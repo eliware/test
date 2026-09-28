@@ -8,18 +8,17 @@ export function redactCredentialFields(text) {
       "[REDACTED PRIVATE KEY]",
     )
     .replace(
-      new RegExp(`(["']?(?:${credentialKey})["']?\\s*[=:]\\s*)['"][\\s\\S]*?['"]`, "giu"),
-      "$1[REDACTED]",
-    )
-    .replace(
       new RegExp(
-        `(["']?(?:${credentialKey})["']?\\s*[=:]\\s*)(?:"(?:\\\\.|[^"\\\\])*"|'[^']*'|[^\\s,;}]+)`,
+        String.raw`(["']?(?:${credentialKey})["']?[ \t]*[=:][ \t]*)(?:"(?:\\.|[^"\\\r\n])*"|'[^'\r\n]*'|[^\s,;}]+)`,
         "giu",
       ),
       "$1[REDACTED]",
     )
     .replace(
-      new RegExp(`((?:${credentialKey})\\s+)(?:"[^"]*"|'[^']*'|[^\\s,;}]+)`, "giu"),
+      new RegExp(
+        String.raw`((?:${credentialKey})[ \t]+)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}]+)`,
+        "giu",
+      ),
       "$1[REDACTED]",
     );
 }

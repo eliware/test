@@ -11,6 +11,24 @@ test("selects the platform npm executable or npm exec path", () => {
     "C:\\node.exe",
     ["C:\\node_modules\\npm\\bin\\npm-cli.js"],
   ]);
+  expect(npmCommand("win32", "C:\\npm\\npm-cli.js", "C:\\node.exe", () => true)).toEqual([
+    "C:\\node.exe",
+    ["C:\\npm\\npm-cli.js"],
+  ]);
+  expect(
+    npmCommand("win32", "\\\\build-share\\tools\\npm-cli.js", "C:\\node.exe", () => true),
+  ).toEqual(["C:\\node.exe", ["\\\\build-share\\tools\\npm-cli.js"]]);
+  expect(
+    npmCommand("win32", "C:relative\\npm-cli.js", "C:\\node.exe", () => true, "C:\\repo"),
+  ).toEqual(["C:\\node.exe", ["C:\\repo\\relative\\npm-cli.js"]]);
+  expect(
+    npmCommand(
+      "win32",
+      "/usr/local/npm-cli.js",
+      "C:\\node.exe",
+      (path) => path === "C:\\node_modules\\npm\\bin\\npm-cli.js",
+    ),
+  ).toEqual(["C:\\node.exe", ["C:\\node_modules\\npm\\bin\\npm-cli.js"]]);
   expect(() => npmCommand("win32", "", "C:\\missing\\node.exe", () => false)).toThrow(
     "Unable to resolve the npm CLI on Windows",
   );
@@ -31,4 +49,16 @@ test("uses platform defaults when no npm executable override is set", () => {
     if (previous === undefined) delete process.env.npm_execpath;
     else process.env.npm_execpath = previous;
   }
+});
+
+test("resolves a relative Windows npm executable from the repository root", () => {
+  expect(
+    npmCommand(
+      "win32",
+      "node_modules/npm/bin/npm-cli.js",
+      "C:\\node.exe",
+      (path) => path === "C:\\repo\\node_modules\\npm\\bin\\npm-cli.js",
+      "C:\\repo",
+    ),
+  ).toEqual(["C:\\node.exe", ["C:\\repo\\node_modules\\npm\\bin\\npm-cli.js"]]);
 });

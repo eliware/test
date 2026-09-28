@@ -23,3 +23,23 @@ test("ignores documentation and arbitrary metadata strings", () => {
   );
   expect([...referenced]).toEqual(["beta"]);
 });
+
+test("counts package entrypoint and export metadata as dependency references", () => {
+  const referenced = new Set();
+  collectStructuredValues(
+    {
+      main: "runtime-entry",
+      module: "module-entry",
+      exports: { ".": { import: "export-entry" } },
+      files: ["package-entry"],
+    },
+    ["runtime-entry", "module-entry", "export-entry", "package-entry"],
+    referenced,
+  );
+  expect([...referenced].sort()).toEqual([
+    "export-entry",
+    "module-entry",
+    "package-entry",
+    "runtime-entry",
+  ]);
+});

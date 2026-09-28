@@ -34,18 +34,22 @@ test("accepts the documented Trusted Publisher job structure", async () => {
   });
 });
 
-test("rejects workflows that do not follow the OIDC publish setup", async () => {
+test("aggregates independent permission, setup, and provenance findings", async () => {
   await writeWorkflow("npm publish", "actions/setup-node@v6");
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
-
-  await writeWorkflow("npm publish --provenance", "actions/setup-node@v7");
   const file = join(root, ".github", "workflows", "publish.yml");
   const workflow = await readFile(file, "utf8");
   await writeFile(
     file,
-    workflow.replace("  contents: read\njobs:", "  contents: read\n  id-token: write\njobs:"),
+    workflow.replace(
+      "permissions:\n  contents: read",
+      "permissions:\n  id-token: write\n  contents: read",
+    ),
   );
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+  const result = await run({ root });
+  expect(result).toMatchObject({ status: "fail" });
+  expect(result.message).toContain("id-token: write must be scoped");
+  expect(result.message).toContain("setup-node@v7");
+  expect(result.message).toContain("npm publish --provenance");
 });
 
 test("requires publish.yml and an npm publication job", async () => {
@@ -65,13 +69,7 @@ test("requires publish.yml and an npm publication job", async () => {
   });
 });
 
-test("requires publish provenance and reports workflow read errors", async () => {
-  await writeWorkflow("npm publish");
-  await expect(run({ root })).resolves.toMatchObject({
-    status: "fail",
-    message: "The npm publication job must run npm publish --provenance.",
-  });
-
+test("reports workflow read errors", async () => {
   root = await mkdtemp(join(tmpdir(), "eliware-test-npm-oidc-unreadable-"));
   await expect(run({ root })).resolves.toMatchObject({
     status: "fail",

@@ -1,3 +1,4 @@
+import { valid } from "semver";
 import { fail, pass } from "../../../check-result.mjs";
 import { readBundledProfileAuthority } from "../../../../orchestrators/read-bundled-profile-authority.mjs";
 import { validateAppliedProfiles } from "../../../../orchestrators/validate-applied-profiles.mjs";
@@ -8,7 +9,7 @@ export const parentRuleId = "E-0.1.9";
 export function run({ packageJson }) {
   if (
     typeof packageJson?.version !== "string" ||
-    !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(packageJson.version)
+    valid(packageJson.version) !== packageJson.version
   ) {
     return fail(
       ruleId,

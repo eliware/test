@@ -44,21 +44,21 @@ test("forwards additional npm audit arguments", async () => {
   expect(calls[0][1]).toEqual(["audit", "--no-fund", "--json", "--audit-level=high"]);
 });
 
-test("uses npm's executable when npm invokes the harness", async () => {
-  const previous = process.env.npm_execpath;
-  process.env.npm_execpath = "C:\\npm\\cli.js";
+test("uses the npm executable path supplied by the invocation environment", async () => {
   const calls = [];
-  try {
-    await runNpmAudit("C:\\repo", async (...args) => {
+  const env = { npm_execpath: process.execPath };
+  await runNpmAudit(
+    "C:\\repo",
+    async (...args) => {
       calls.push(args);
       return { code: 0, signal: null, stdout: "", stderr: "" };
-    });
-  } finally {
-    if (previous === undefined) delete process.env.npm_execpath;
-    else process.env.npm_execpath = previous;
-  }
+    },
+    undefined,
+    [],
+    env,
+  );
   expect(calls[0][0]).toBe(process.execPath);
-  expect(calls[0][1][0]).toBe("C:\\npm\\cli.js");
+  expect(calls[0][1][0]).toBe(process.execPath);
 });
 
 test("uses the invocation environment for executable selection and child execution", async () => {
@@ -93,4 +93,14 @@ test("rejects audit overrides before executable resolution or child execution", 
   );
   expect(run).not.toHaveBeenCalled();
   expect(resolve).not.toHaveBeenCalled();
+});
+
+test("rejects scope-changing audit arguments at the runner boundary", async () => {
+  for (const argument of ["--omit=dev", "--workspace=other", "--no-package-lock"]) {
+    const run = jest.fn();
+    const resolve = jest.fn(() => ["npm", []]);
+    await expect(runNpmAudit("C:\\repo", run, resolve, [argument], {})).rejects.toThrow();
+    expect(run).not.toHaveBeenCalled();
+    expect(resolve).not.toHaveBeenCalled();
+  }
 });

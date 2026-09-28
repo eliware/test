@@ -93,3 +93,30 @@ test("reports malformed authority JSON while checking other documents", async ()
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("loads registered repository roots once for multiple authority records", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-roots-cache-"));
+  try {
+    const authorityPath = join(root, "specs", "authority.json");
+    const mapPath = join(root, "authority-map.json");
+    const authority = { globalAuthorityMap: "../authority-map.json" };
+    const inventory = {
+      readParsed: jest.fn(async (file) =>
+        file === mapPath ? { repositoryRegistry: [] } : authority,
+      ),
+    };
+
+    await validateAuthorityDocuments(
+      root,
+      ["specs/authority.json", "project/specs/authority.json"],
+      inventory,
+    );
+
+    expect(inventory.readParsed.mock.calls.filter(([file]) => file === authorityPath)).toHaveLength(
+      2,
+    );
+    expect(inventory.readParsed.mock.calls.filter(([file]) => file === mapPath)).toHaveLength(1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

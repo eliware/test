@@ -15,12 +15,14 @@ export function createRepositoryInventory(root, options = {}) {
     includeTestResultsUnder = [],
     read = readFile,
     readDirectory = readdir,
+    statDirectory,
     parseSource,
   } = options;
   const discovery = createRepositoryDiscovery({
     root,
     findEntries,
     readDirectory,
+    statDirectory,
     expandedDirectories,
     includeTestResults,
     includeTestResultsUnder,

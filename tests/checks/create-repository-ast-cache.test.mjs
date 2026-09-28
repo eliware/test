@@ -8,9 +8,8 @@ import { scanCommonJsFiles } from "../../src/checks/general/E-0.1/E-0.1.20/scan-
 import { scanDependencyFiles } from "../../src/checks/general/E-0.1/E-0.1.20/scan-dependency-files.mjs";
 import { validateMaintainedFileSyntax } from "../../src/checks/general/E-0.1/validate-maintained-file-syntax.mjs";
 
-test("AST cache uses the default filesystem reader and Babel parser", async () => {
+test("uses the default filesystem reader and Babel parser", async () => {
   const parseAst = createRepositoryAstCache();
-
   const first = await parseAst(".", "src/checks/create-repository-ast-cache.mjs", {
     sourceType: "module",
   });
@@ -22,42 +21,56 @@ test("AST cache uses the default filesystem reader and Babel parser", async () =
   expect(first.type).toBe("File");
 });
 
-test("AST cache reads and parses a repository file once per parser configuration", async () => {
-  const ast = { type: "File" };
-  const read = jest.fn().mockResolvedValue("const value = 1;");
-  const parseSource = jest.fn().mockReturnValue(ast);
-  const parseAst = createRepositoryAstCache({ read, parseSource });
-  const options = { sourceType: "unambiguous", plugins: ["typescript"] };
+test("rejects outside paths even when source text is supplied", async () => {
+  const parseSource = jest.fn();
+  const parseAst = createRepositoryAstCache({ parseSource });
 
-  const first = await parseAst(".", "src/example.ts", options);
-  const second = await parseAst(".", "src/example.ts", options);
-
-  expect(first).toBe(ast);
-  expect(second).toBe(ast);
-  expect(read).toHaveBeenCalledTimes(1);
-  expect(parseSource).toHaveBeenCalledTimes(1);
+  await expect(
+    parseAst("/repo", "../outside.mjs", { sourceType: "module" }, "export const value = 1;"),
+  ).rejects.toThrow("AST source file must be inside the repository");
+  expect(parseSource).not.toHaveBeenCalled();
 });
 
-test("AST cache canonicalizes parser option property order", async () => {
-  const read = jest.fn().mockResolvedValue("const value = 1;");
-  const parseSource = jest.fn().mockReturnValue({ type: "File" });
-  const parseAst = createRepositoryAstCache({ read, parseSource });
-  await parseAst(".", "src/example.ts", { sourceType: "module", allowAwaitOutsideFunction: true });
-  await parseAst(".", "src/example.ts", { allowAwaitOutsideFunction: true, sourceType: "module" });
-  expect(read).toHaveBeenCalledTimes(1);
-  expect(parseSource).toHaveBeenCalledTimes(1);
-});
-
-test("AST cache does not share across different parser configurations", async () => {
+test("bypasses caching for parser options it cannot canonicalize", async () => {
   const read = jest.fn().mockResolvedValue("const value = 1;");
   const parseSource = jest.fn((source, options) => ({ source, options }));
   const parseAst = createRepositoryAstCache({ read, parseSource });
+  const options = [
+    { plugins: new Map([["typescript", true]]) },
+    { plugins: new Set(["typescript"]) },
+  ];
 
-  await parseAst(".", "src/example.ts", { sourceType: "module" });
-  await parseAst(".", "src/example.ts", { sourceType: "unambiguous" });
+  await parseAst(".", "src/example.ts", options[0]);
+  await parseAst(".", "src/example.ts", options[1]);
+  await parseAst(".", "src/example.ts", options[0], "supplied source");
 
   expect(read).toHaveBeenCalledTimes(2);
-  expect(parseSource).toHaveBeenCalledTimes(2);
+  expect(parseSource).toHaveBeenCalledTimes(3);
+  expect(parseSource.mock.calls.slice(0, 2).map(([, value]) => value)).toEqual(options);
+  expect(parseSource.mock.calls[2][0]).toBe("supplied source");
+});
+
+test("parser options keep concurrent source reads in their own cache entries", async () => {
+  let resolveFirstRead;
+  const firstSource = new Promise((resolve) => {
+    resolveFirstRead = resolve;
+  });
+  const read = jest
+    .fn()
+    .mockImplementationOnce(() => firstSource)
+    .mockResolvedValueOnce("new");
+  const parseSource = jest.fn((source, options) => ({ source, options }));
+  const parseAst = createRepositoryAstCache({ read, parseSource });
+  const moduleOptions = { sourceType: "module" };
+  const scriptOptions = { sourceType: "unambiguous" };
+  const moduleAst = parseAst(".", "src/example.mjs", moduleOptions);
+  await new Promise((resolve) => setImmediate(resolve));
+  const scriptAst = parseAst(".", "src/example.mjs", scriptOptions);
+
+  await expect(scriptAst).resolves.toEqual({ source: "new", options: scriptOptions });
+  resolveFirstRead("old");
+  await expect(moduleAst).resolves.toEqual({ source: "old", options: moduleOptions });
+  expect(read).toHaveBeenCalledTimes(2);
 });
 
 test("source analyzers share one parsed AST through the run cache", async () => {

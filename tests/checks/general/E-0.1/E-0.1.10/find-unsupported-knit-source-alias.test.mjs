@@ -15,6 +15,8 @@ test("detects direct, computed, nested, and rest aliases of effectful globals", 
     'const { ["exit"]: action } = process;',
     "const { [operation]: action } = process;",
     "const { fetch: action } = globalThis;",
+    "const { process: scope } = globalThis; scope.exit(1);",
+    'const { [property]: scope } = globalThis; scope.fetch("https://example.test");',
     "const { require: action } = process;",
     "function nested() { const action = process; }",
   ])
@@ -29,4 +31,20 @@ test("allows safe declarations and handles cyclic syntax trees", () => {
   const cyclic = { type: "Program", body: [] };
   cyclic.body.push(cyclic);
   expect(hasUnsupportedKnitSourceAlias(cyclic)).toBe(false);
+});
+
+test("rejects aliases of imported namespaces and operations", () => {
+  const source = program("const alias = importedBinding;");
+  expect(
+    hasUnsupportedKnitSourceAlias(source, {
+      namespaces: new Set(["importedBinding"]),
+      importedOperations: new Set(),
+    }),
+  ).toBe(true);
+  expect(
+    hasUnsupportedKnitSourceAlias(source, {
+      namespaces: new Set(),
+      importedOperations: new Set(["importedBinding"]),
+    }),
+  ).toBe(true);
 });

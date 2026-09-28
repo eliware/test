@@ -1,3 +1,5 @@
+import { hasNpmStaticCredentials } from "./has-npm-static-credentials.mjs";
+
 export function validateNpmOidcPermissionScope(workflow, publicationJobs, validationJobs) {
   const failures = [];
   const workflowPermissions = workflow.document?.permissions ?? {};
@@ -17,11 +19,7 @@ export function validateNpmOidcPermissionScope(workflow, publicationJobs, valida
     failures.push(
       `npm publication jobs must explicitly grant id-token: write: ${unscopedPublicationJobs.join(", ")}.`,
     );
-  if (
-    /\b(?:NPM_TOKEN|NPM_AUTH_TOKEN|NODE_AUTH_TOKEN)\b|_authToken/iu.test(
-      JSON.stringify(workflow.document),
-    )
-  )
+  if (hasNpmStaticCredentials(workflow.document))
     failures.push("npm Trusted Publishing workflows must not configure static npm authentication.");
   return failures.length ? failures.join("\n") : null;
 }

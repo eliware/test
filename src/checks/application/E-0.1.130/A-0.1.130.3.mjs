@@ -1,15 +1,15 @@
 import { fail, pass } from "../../check-result.mjs";
+import { hasApplicationEntrypoint } from "./has-application-entrypoint.mjs";
 
 export const ruleId = "A-0.1.130.3";
 export const parentRuleId = "E-0.1.130";
 
-export function run({ packageJson }) {
-  const hasEntrypoint =
-    typeof packageJson?.main === "string" ||
-    Object.keys(packageJson?.bin ?? {}).length > 0 ||
-    typeof packageJson?.scripts?.start === "string";
-  if (!hasEntrypoint)
-    return fail(ruleId, "Application package.json must declare a runtime or start entrypoint.");
+export function run({ packageJson, root = process.cwd() }) {
+  if (!hasApplicationEntrypoint(packageJson, root))
+    return fail(
+      ruleId,
+      "Application package.json must declare an existing runtime file entrypoint or a nonempty start command.",
+    );
   if (typeof packageJson?.private !== "boolean")
     return fail(
       ruleId,

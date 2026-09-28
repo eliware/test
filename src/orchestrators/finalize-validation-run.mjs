@@ -13,14 +13,17 @@ export async function finalizeValidationRun({ result, planFailure, context, remo
   }
 
   if (planFailure) {
-    if (!cleanupFailure) throw planFailure.error;
     const message = errorMessage(planFailure.error);
-    throw new Error(
-      `${message}\nCould not remove run-scoped coverage artifacts: ${errorMessage(cleanupFailure.error)}`,
+    const cleanupDiagnostic = cleanupFailure
+      ? `\nCould not remove run-scoped coverage artifacts: ${errorMessage(cleanupFailure.error)}`
+      : "";
+    return [
       {
-        cause: planFailure.error,
+        ruleId: "E-0.1.20",
+        status: "fail",
+        message: `${message}${cleanupDiagnostic}`,
       },
-    );
+    ];
   }
   if (!cleanupFailure) return result;
 

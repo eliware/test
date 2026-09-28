@@ -21,14 +21,12 @@ export function validateDetailedCoverageFiles(json, expectedFiles = [], expected
     throw new Error(`Detailed coverage omits in-scope source file(s): ${omitted.join(", ")}.`);
   }
   const expected = new Set(expectedFiles.filter(isInScopeSource).map(normalizeSourcePath));
-  if (expected.size > 0) {
-    for (const file of reported) {
-      if (!expected.has(file)) {
-        throw new Error(`Detailed coverage contains non-repository source file: ${file}.`);
-      }
-      if (!expectedShapes[file]) {
-        throw new Error(`Detailed coverage has no source-derived shape for ${file}.`);
-      }
+  for (const file of reported) {
+    if (!expected.has(file)) {
+      throw new Error(`Detailed coverage contains non-repository source file: ${file}.`);
+    }
+    if (!expectedShapes[file]) {
+      throw new Error(`Detailed coverage has no source-derived shape for ${file}.`);
     }
   }
   return entries;

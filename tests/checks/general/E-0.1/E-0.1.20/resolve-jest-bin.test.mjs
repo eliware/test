@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
@@ -59,4 +59,52 @@ test("returns no path when package resolution or bin metadata is invalid", async
   expect(
     resolveJestBin(createRequire(join(tmpdir(), "no-consumer-package.json")), "jest"),
   ).toBeUndefined();
+});
+
+test("rejects a declared bin path that does not exist", async () => {
+  const fixture = await createConsumerPackage({ name: "jest", bin: { jest: "missing.mjs" } });
+  try {
+    expect(resolveJestBin(fixture.requireFromConsumer, "jest")).toBeUndefined();
+  } finally {
+    await rm(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("rejects an empty declared Jest bin path", async () => {
+  const fixture = await createConsumerPackage({ name: "jest", bin: "" });
+  try {
+    expect(resolveJestBin(fixture.requireFromConsumer, "jest")).toBeUndefined();
+  } finally {
+    await rm(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("falls back when the directly resolved Jest bin is not a file", async () => {
+  const fixture = await createConsumerPackage({ name: "jest", bin: "commands/runner.mjs" });
+  try {
+    await mkdir(join(fixture.packageRoot, "commands"));
+    const runner = join(fixture.packageRoot, "commands", "runner.mjs");
+    await writeFile(runner, "");
+    const requireFromConsumer = {
+      resolve: jest.fn((specifier) =>
+        specifier === "jest/bin/jest"
+          ? fixture.packageRoot
+          : join(fixture.packageRoot, "package.json"),
+      ),
+    };
+
+    expect(resolveJestBin(requireFromConsumer, "jest")).toBe(runner);
+  } finally {
+    await rm(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("rejects a declared Jest bin that resolves to a directory", async () => {
+  const fixture = await createConsumerPackage({ name: "jest", bin: "commands" });
+  try {
+    await mkdir(join(fixture.packageRoot, "commands"));
+    expect(resolveJestBin(fixture.requireFromConsumer, "jest")).toBeUndefined();
+  } finally {
+    await rm(fixture.root, { recursive: true, force: true });
+  }
 });

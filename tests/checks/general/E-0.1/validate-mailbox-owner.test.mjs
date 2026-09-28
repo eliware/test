@@ -19,3 +19,9 @@ test("rejects missing, duplicate, and noncanonical owners", () => {
     ),
   ).toBe(false);
 });
+
+test("requires the exact uppercase mailbox variable name", () => {
+  expect(
+    validateMailboxOwner("mail_owner_address=fixture@eliware.org", "fixture@eliware.org"),
+  ).toBe(false);
+});

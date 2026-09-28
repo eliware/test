@@ -9,10 +9,12 @@ test("uses the shared coverage inventory and cached source reads", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-coverage-inventory-"));
   await mkdir(join(root, "src"));
   await writeFile(join(root, "src", "expected.mjs"), "export const value = 1;\n");
+  await writeFile(join(root, "src", "ignored.js"), "export const ignored = 1;\n");
   const inventory = createRepositoryInventory(root);
   try {
     const context = await prepareCoverageEvidenceCandidates(root, { inventory });
     expect(context.expectedFiles).toEqual(["src/expected.mjs"]);
+    expect(context.expectedFiles).not.toContain("src/ignored.js");
     expect(Object.keys(context.expectedShapes)).toEqual(["src/expected.mjs"]);
   } finally {
     await rm(root, { recursive: true, force: true });
@@ -38,7 +40,9 @@ test("maps isolated run candidates to basenames and uses the injected inventory 
   const root = await mkdtemp(join(tmpdir(), "eliware-isolated-coverage-"));
   const coverageDirectory = join(root, "isolated");
   await mkdir(join(root, "src"));
+  await mkdir(coverageDirectory);
   await writeFile(join(root, "src", "expected.mjs"), "export const value = 1;\n");
+  await writeFile(join(coverageDirectory, "coverage-final.json"), "{}\n");
   const read = jest.fn(async (path) =>
     path.endsWith("expected.mjs") ? "export const value = 1;\n" : "coverage report",
   );

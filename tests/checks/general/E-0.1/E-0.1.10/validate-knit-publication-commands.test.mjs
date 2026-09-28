@@ -14,21 +14,33 @@ test("rejects publication, deployment, release, and destructive commands", () =>
     ["rm", ["--recursive", "."]],
     ["rm", ["--force", "--recursive", "."]],
     ["rm", ["-fR", "."]],
+    ["rm", ["-rf", "--", "target"]],
   ]) {
     expect(validateKnitPublicationCommands([{ kind: "spawnSync", command, args }])).toContain(
-      "must not publish, deploy, release, or mutate external state",
+      "only the approved synchronization and validation commands",
     );
   }
 });
 
-test("allows validation commands and incidental command text", () => {
+test("allows only the approved synchronization and validation commands", () => {
   expect(
     validateKnitPublicationCommands([
       { kind: "spawnSync", command: "npm", args: ["test"] },
-      { kind: "echo", command: "echo", args: ["npm publish"] },
+      { kind: "spawnSync", command: "git", args: ["pull", "--ff-only", "origin", "main"] },
+      { kind: "spawnSync", command: "npm", args: ["ci"] },
     ]),
   ).toBeNull();
-  expect(validateKnitPublicationCommands([{ command: "rm", args: ["--", "-r"] }])).toBeNull();
-  expect(validateKnitPublicationCommands([{ command: "rm", args: ["file.txt"] }])).toBeNull();
-  expect(validateKnitPublicationCommands([{ command: "npm" }])).toBeNull();
+  for (const call of [
+    { kind: "spawnSync", command: "git", args: ["clean", "-fd"] },
+    { kind: "spawnSync", command: "git", args: ["revert", "HEAD"] },
+    { kind: "spawnSync", command: "npm", args: ["install"] },
+    { kind: "spawnSync", command: "echo", args: ["validation"] },
+    { kind: "execSync", command: "npm test", args: [] },
+    { command: "rm", args: ["--", "-r"] },
+    { command: "npm" },
+  ]) {
+    expect(validateKnitPublicationCommands([call])).toContain(
+      "only the approved synchronization and validation commands",
+    );
+  }
 });

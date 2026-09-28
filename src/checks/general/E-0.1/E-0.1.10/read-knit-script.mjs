@@ -8,16 +8,13 @@ const parserOptions = {
   allowUndeclaredExports: true,
 };
 
-export async function readKnitScript(context, { includeSource = true } = {}) {
+export async function readKnitScript(context) {
   const { root, parseAst } = context;
-  const source =
-    includeSource || !parseAst
-      ? await readRepositoryText(context, join(root, ".knit", "validate.mjs"))
-      : "";
+  const source = await readRepositoryText(context, join(root, ".knit", "validate.mjs"));
   let ast = null;
   if (parseAst) {
     try {
-      ast = await parseAst(root, ".knit/validate.mjs", parserOptions);
+      ast = await parseAst(root, ".knit/validate.mjs", parserOptions, source);
     } catch (error) {
       return { source, error: `Knit validation script is not valid JavaScript: ${error.message}` };
     }

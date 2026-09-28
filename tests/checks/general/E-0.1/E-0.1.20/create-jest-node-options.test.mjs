@@ -21,6 +21,8 @@ test("rejects inherited Node options that could alter or preload Jest execution"
     "--import=./inject.mjs",
     "--inspect",
     "--trace-warnings=inject.mjs",
+    "--trace-warnings ./inject.mjs",
+    "--trace-warnings --require ./inject.mjs",
     '--trace-warnings="--import=./inject.mjs"',
   ]) {
     expect(() => createJestNodeOptions(option)).toThrow(

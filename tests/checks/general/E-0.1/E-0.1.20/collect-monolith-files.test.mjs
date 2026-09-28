@@ -39,6 +39,10 @@ test("uses scoped inventory discovery for one monolith subtree", async () => {
     join(root, "src/module.mjs"),
     join(root, "src/nested/module.mjs"),
   ]);
-  expect(inventory.entriesUnder).toHaveBeenCalledWith(join(root, "src"));
+  expect(inventory.entriesUnder).toHaveBeenCalledWith(join(root, "src"), expect.any(Function));
+  const fileFilter = inventory.entriesUnder.mock.calls[0][1];
+  expect(fileFilter("src/module.mjs")).toBe(true);
+  expect(fileFilter("src/generated/output.mjs")).toBe(false);
+  expect(fileFilter("src/module.ts")).toBe(false);
   expect(inventory.files).not.toHaveBeenCalled();
 });

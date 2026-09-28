@@ -2,18 +2,16 @@ import { readFile } from "node:fs/promises";
 import { coverageCandidates } from "../coverage-report-candidates.mjs";
 import { findRepositoryFiles } from "../../find-repository-files.mjs";
 import { readExpectedCoverageShapes } from "./coverage-source-shapes.mjs";
+import { isInScopeSource } from "./coverage-source-path.mjs";
 
 export async function prepareCoverageEvidenceCandidates(
   root,
   { read = readFile, expectedFiles: suppliedExpectedFiles, inventory, coverageDirectory } = {},
 ) {
-  const expectedFiles =
+  const discoveredFiles =
     suppliedExpectedFiles ??
-    (inventory
-      ? await inventory.files("coverageSource")
-      : (await findRepositoryFiles(root)).filter((file) =>
-          /^src\/.*\.(?:mjs|js|cjs)$/iu.test(file),
-        ));
+    (inventory ? await inventory.files("coverageSource") : await findRepositoryFiles(root));
+  const expectedFiles = discoveredFiles.filter(isInScopeSource);
   const readSource = inventory?.readText ?? read;
   const readCoverage = inventory ? (path) => inventory.readText(path) : read;
   const expectedShapes = await readExpectedCoverageShapes(root, expectedFiles, readSource);

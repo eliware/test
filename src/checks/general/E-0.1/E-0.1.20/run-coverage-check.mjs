@@ -15,8 +15,9 @@ export async function runCoverageCheck(
 ) {
   if (!context.executeJest) return pass(ruleId);
   if (!context.jestResult || context.jestResult.code !== 0 || context.jestResult.timedOut) {
-    const diagnostic = context.jestResult?.cleanupError
-      ? `Jest results are unavailable or indicate a failed test run.\n${context.jestResult.cleanupError}`
+    const detail = context.jestExecutionError ?? context.jestResult?.cleanupError;
+    const diagnostic = detail
+      ? `Jest results are unavailable or indicate a failed test run.\n${detail}`
       : "Jest results are unavailable or indicate a failed test run.";
     const result = fail(ruleId, diagnostic);
     const cleanupError = await removeRunCoverageArtifacts(context, remove);
@@ -57,6 +58,6 @@ export async function runCoverageCheck(
   const message =
     result.status === "fail" && result.message
       ? `${result.message}\n${cleanupError}`
-      : cleanupError;
+      : `Coverage validation cleanup failed: ${cleanupError}\nFix the cleanup issue and rerun npm test to confirm 100% statement, branch, function, and line coverage.`;
   return fail(ruleId, message);
 }

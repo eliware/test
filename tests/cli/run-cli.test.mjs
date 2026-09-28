@@ -33,7 +33,7 @@ jest.unstable_mockModule("../../src/cli/normalize-cli-error.mjs", () => ({ norma
 jest.unstable_mockModule("../../src/cli/format-exit-code.mjs", () => ({ formatExitCode }));
 
 const { runCli } = await import("../../src/cli/run-cli.mjs");
-const diagnosticOptions = { ignoredRuleIds: ["E-0.1.4"], jestArgs: ["tests/sample.test.mjs"] };
+const diagnosticOptions = { jestArgs: ["tests/sample.test.mjs"] };
 const timing = { getLines: jest.fn(() => []), getJestOutput: jest.fn(() => "") };
 const validationResult = { code: 0, category: "validation", diagnostics: [] };
 
@@ -84,16 +84,24 @@ test("coordinates diagnostic parsing, convention and validation stages, and resu
   expect(createStageTimer).toHaveBeenCalledWith(false, expect.any(Function), undefined);
   expect(createStageTimer.mock.calls[0][1]()).toEqual(expect.any(Number));
   expect(runConventionStage).toHaveBeenCalledWith(expect.any(Function));
-  expect(runValidation).toHaveBeenCalledWith("/repo", diagnosticOptions.ignoredRuleIds, options);
+  expect(runValidation).toHaveBeenCalledWith("/repo", [], options);
   expect(createValidationRunOptions).toHaveBeenCalledWith([], diagnosticOptions, {}, timing, write);
   expect(writeValidationResults).toHaveBeenCalledWith(
-    validationResult,
+    { ...validationResult, mode: "focused" },
     write,
     false,
     timing,
     expect.any(Number),
   );
   expect(formatExitCode).not.toHaveBeenCalled();
+});
+
+test("uses null mode when diagnostics contain no focused test arguments", async () => {
+  readDiagnosticOptions.mockReturnValueOnce({ mode: null, jestArgs: undefined });
+
+  await expect(runCli([], jest.fn(), "/repo")).resolves.toBe(0);
+
+  expect(writeValidationResults.mock.calls[0][0].mode).toBeNull();
 });
 
 test("enables timing output and formats nonzero or debug exit codes", async () => {
@@ -103,7 +111,7 @@ test("enables timing output and formats nonzero or debug exit codes", async () =
 
   expect(createStageTimer).toHaveBeenCalledWith(true, expect.any(Function), write);
   expect(writeValidationResults).toHaveBeenCalledWith(
-    validationResult,
+    { ...validationResult, mode: "focused" },
     write,
     true,
     timing,

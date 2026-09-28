@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { releaseTagGuard } from "../../../src/checks/ghcr-published/release-version-tag.mjs";
 import { hasVersionedImagePushAfterGuard } from "../../../src/checks/ghcr-published/has-versioned-image-push-after-guard.mjs";
 
-const guard = { run: releaseTagGuard };
+const guard = { id: "release-version-check", run: releaseTagGuard };
 const push = (tags) => ({
   uses: "docker/build-push-action@v6",
   with: { push: true, tags },
@@ -45,4 +45,25 @@ test("rejects absent guards, multiple pushes, aliases, and mismatched versions",
     ),
   ).toBe(false);
   expect(hasVersionedImagePushAfterGuard({ steps: [guard, null] }, "1.2.3")).toBe(false);
+});
+
+test("requires the image push to run only after the version guard succeeds", () => {
+  const versionPush = push("ghcr.io/example/app:v1.2.3");
+  for (const unsafeGuard of [
+    { ...guard, id: undefined },
+    { ...guard, "continue-on-error": true },
+    { ...guard, if: "always()" },
+  ]) {
+    expect(hasVersionedImagePushAfterGuard({ steps: [unsafeGuard, versionPush] }, "1.2.3")).toBe(
+      false,
+    );
+  }
+  for (const unsafeCondition of ["always()", "${{ success() }}"]) {
+    expect(
+      hasVersionedImagePushAfterGuard(
+        { steps: [guard, { ...versionPush, if: unsafeCondition }] },
+        "1.2.3",
+      ),
+    ).toBe(false);
+  }
 });

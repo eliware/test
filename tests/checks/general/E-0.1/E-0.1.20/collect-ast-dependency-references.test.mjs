@@ -38,6 +38,13 @@ test("ignores require calls shadowed in their lexical scope", () => {
   });
 });
 
+test("ignores require.resolve calls shadowed in their lexical scope", () => {
+  expect(collect('function nested(require) { require.resolve("beta/package.json"); }')).toEqual({
+    referenced: [],
+    uncertain: false,
+  });
+});
+
 test("ignores absent, primitive, and location metadata nodes", () => {
   const referenced = new Set();
   const uncertain = { value: false };

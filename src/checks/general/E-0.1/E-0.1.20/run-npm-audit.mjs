@@ -12,6 +12,7 @@ export async function runNpmAudit(
     env,
     platform: process.platform,
     execPath: process.execPath,
+    root,
   });
   return run(command, [...prefix, ...auditArguments], { cwd: root, env: { ...env } });
 }

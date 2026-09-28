@@ -1,11 +1,5 @@
 import { subprocessFunctions } from "./knit-call-analysis.mjs";
-import { sideEffectModules as sourceOperationModules } from "./knit-source-operation-policy.mjs";
-
-const sideEffectModules = new Set([
-  ...sourceOperationModules,
-  "node:child_process",
-  "child_process",
-]);
+import { childProcessModules, sideEffectModules } from "./knit-source-operation-policy.mjs";
 
 export function collectImports(program) {
   const names = new Map();
@@ -13,10 +7,17 @@ export function collectImports(program) {
   const sideEffectNamespaces = new Set();
   const unsupported = [];
   for (const statement of program.body) {
+    if (
+      statement.type === "ExportNamedDeclaration" &&
+      childProcessModules.has(statement.source?.value)
+    ) {
+      unsupported.push(statement.start);
+      continue;
+    }
     if (statement.type !== "ImportDeclaration") continue;
     if (
       sideEffectModules.has(statement.source.value) &&
-      !["node:child_process", "child_process"].includes(statement.source.value)
+      !childProcessModules.has(statement.source.value)
     ) {
       for (const specifier of statement.specifiers) {
         if (
@@ -28,7 +29,11 @@ export function collectImports(program) {
           names.set(specifier.local.name, `${statement.source.value}:${specifier.imported.name}`);
       }
     }
-    if (statement.source.value !== "node:child_process") continue;
+    if (!childProcessModules.has(statement.source.value)) continue;
+    if (statement.specifiers.length === 0) {
+      unsupported.push(statement.start);
+      continue;
+    }
     for (const specifier of statement.specifiers) {
       if (
         specifier.type === "ImportSpecifier" &&

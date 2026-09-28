@@ -14,11 +14,47 @@ test("rejects other commands after npm test", () => {
   );
 });
 
+test("rejects malformed post-test steps and unsupported action forms", () => {
+  const testStep = { run: "npm test" };
+  const malformedSteps = [
+    { name: "no executable" },
+    { script: "echo bypass" },
+    { run: "echo done", uses: "actions/upload-artifact@v6" },
+    { run: "echo done", with: { path: "report.txt" } },
+  ];
+  for (const reportingStep of malformedSteps) {
+    expect(
+      validateWorkflowPostTestCommands(
+        "ci.yml",
+        [{ command: "npm test", step: testStep, index: 0 }],
+        0,
+        [testStep, reportingStep],
+      ),
+    ).toContain("reporting commands after npm test");
+  }
+  expect(
+    validateWorkflowPostTestCommands(
+      "ci.yml",
+      [{ command: "npm test", step: testStep, index: 0 }],
+      0,
+      [testStep, { uses: "untrusted/reporting@v1", with: { value: "safe" } }],
+    ),
+  ).toContain("reporting commands after npm test");
+  expect(validateWorkflowPostTestCommands("ci.yml", [], 0, "invalid steps")).toContain(
+    "reporting commands after npm test",
+  );
+});
+
 test("rejects shell expansion, redirection, and newline command injection", () => {
   for (const command of [
     'echo "$(touch .env)"',
     'echo "`touch .env`"',
     "echo safe > .env",
+    "echo 'x' > .env",
+    'echo "x" > .env',
+    'echo "safe\\\"; touch .env"',
+    'echo "safe\\\\value"',
+    "printf '$GITHUB_TOKEN'",
     "echo safe\ntouch .env",
     "printf safe\r\ntouch .env",
   ]) {

@@ -10,6 +10,7 @@ export async function findRepositoryEntries(
     includeTestResults = false,
     includeTestResultsUnder = [],
     expandedDirectories = [],
+    fileFilter,
     scopeDirectory = "",
   } = {},
 ) {
@@ -47,7 +48,7 @@ export async function findRepositoryEntries(
           if (!pruneDirectories.has(entry.name) || expandGeneratedDirectory)
             await visit(join(directory, entry.name), depth + 1);
         }
-      } else if (entry.isFile()) {
+      } else if (entry.isFile() && (!fileFilter || fileFilter(relativePath))) {
         entries.push({ path: relativePath, type: "file", depth });
       }
     }

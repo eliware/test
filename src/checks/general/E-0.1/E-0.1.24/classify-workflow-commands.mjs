@@ -7,9 +7,9 @@ const allowedSetupPattern = /^(?:echo|printf|node\s+--version|npm\s+--version)\b
 
 export function isValidationWorkflowJob(job, workflowRunSteps) {
   const commands = workflowRunSteps(job).map(({ command }) => command);
-  return (
-    commands.some((command) => /^npm\s+ci$/iu.test(command)) &&
-    commands.some((command) => /^npm\s+test$/iu.test(command))
+  return commands.some(
+    (command, index) =>
+      /^npm\s+ci$/iu.test(command) && /^npm\s+test$/iu.test(commands[index + 1] ?? ""),
   );
 }
 

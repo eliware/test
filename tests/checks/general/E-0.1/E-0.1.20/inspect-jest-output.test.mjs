@@ -60,3 +60,20 @@ test("deduplicates findings and handles malformed or empty output", () => {
     findUnexpectedJestOutput({ stdout: '{"numFailedTestSuites":0,"testResults":[{}]}' }),
   ).toEqual([]);
 });
+
+test("redacts configured secrets from stdout, stderr, and parsed console output", () => {
+  const secret = "jest-output-secret-value";
+  const findings = findUnexpectedJestOutput(
+    {
+      stdout: `unexpected ${secret}\n`,
+      stderr: `trace ${secret}\n`,
+    },
+    [secret],
+  );
+
+  expect(findings).toEqual([
+    "Unexpected output from unknown test suite: unexpected [REDACTED]",
+    "Unexpected output from unknown test suite: trace [REDACTED]",
+  ]);
+  expect(findings.join(" ")).not.toContain(secret);
+});

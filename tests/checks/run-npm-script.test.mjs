@@ -26,6 +26,7 @@ test("uses the invocation environment for npm resolution and child execution", a
     },
     undefined,
     env,
+    "linux",
   );
 
   expect(calls[0][0]).toBe(process.execPath);
@@ -49,6 +50,26 @@ test("uses the platform npm fallback when invocation omits npm_execpath", async 
 
   if (process.platform === "win32") expect(calls[0][0]).toBe(process.execPath);
   else expect(calls[0][0]).toBe("npm");
+});
+
+test("accepts an injected platform and Node executable path", async () => {
+  const calls = [];
+  const env = { npm_execpath: "/tools/npm-cli.js" };
+  await runNpmScript(
+    "/repo",
+    "typecheck",
+    async (...args) => {
+      calls.push(args);
+      return { code: 0 };
+    },
+    undefined,
+    env,
+    "linux",
+    "/tools/node",
+  );
+
+  expect(calls[0][0]).toBe("/tools/node");
+  expect(calls[0][1]).toContain("/tools/npm-cli.js");
 });
 
 test("uses the default runner with an injected child-process adapter", async () => {

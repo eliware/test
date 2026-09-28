@@ -4,10 +4,11 @@ import {
   normalizeSourcePath,
 } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-source-path.mjs";
 
-test("recognizes supported source files under relative and absolute src roots", () => {
+test("recognizes only native ESM source files under relative and absolute src roots", () => {
   expect(isInScopeSource("src/app.mjs")).toBe(true);
-  expect(isInScopeSource("C:\\repo\\src\\app.js")).toBe(true);
-  expect(isInScopeSource("/repo/src/app.cjs")).toBe(true);
+  expect(isInScopeSource("C:\\repo\\src\\app.mjs")).toBe(true);
+  expect(isInScopeSource("/repo/src/app.js")).toBe(false);
+  expect(isInScopeSource("/repo/src/app.cjs")).toBe(false);
   expect(isInScopeSource("src/tests/production-check.mjs")).toBe(true);
 });
 

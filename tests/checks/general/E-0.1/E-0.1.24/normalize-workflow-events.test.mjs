@@ -13,6 +13,32 @@ test("normalizes event strings, arrays, and YAML boolean-key aliases", () => {
   });
 });
 
+test("accepts mapping configurations and nested activity-type arrays for other events", () => {
+  expect(
+    normalizeWorkflowEvents({
+      on: {
+        push: { branches: ["main"] },
+        pull_request: { branches: ["main"] },
+        workflow_dispatch: { inputs: { deploy: { type: "boolean" } } },
+        label: { types: ["created"] },
+      },
+    }).valid,
+  ).toBe(true);
+  expect(normalizeWorkflowEvents({ on: { push: null } })).toMatchObject({
+    events: { push: {} },
+    valid: true,
+  });
+  expect(normalizeWorkflowEvents({ on: { workflow_dispatch: ["inputs"] } }).valid).toBe(false);
+});
+
+test("allows top-level event-name arrays and normalizes push branch shorthand", () => {
+  expect(normalizeWorkflowEvents({ on: ["push", "pull_request"] }).valid).toBe(true);
+  expect(normalizeWorkflowEvents({ on: { push: ["main"] } })).toMatchObject({
+    events: { push: { branches: ["main"] } },
+    valid: true,
+  });
+});
+
 test("returns an invalid empty event map for absent or malformed documents", () => {
   expect(normalizeWorkflowEvents(null)).toEqual({ document: null, events: {}, valid: false });
   expect(normalizeWorkflowEvents({})).toEqual({
@@ -32,10 +58,14 @@ test("rejects malformed scalar trigger maps and event configurations", () => {
   expect(normalizeWorkflowEvents({ on: { push: "main", pull_request: {} } }).valid).toBe(false);
   expect(normalizeWorkflowEvents({ on: { push: false, pull_request: {} } }).valid).toBe(false);
   expect(normalizeWorkflowEvents({ on: { push: [], pull_request: {} } }).valid).toBe(false);
+  expect(
+    normalizeWorkflowEvents({ on: { push: { branches: ["main"] }, pull_request: [] } }).valid,
+  ).toBe(false);
   expect(normalizeWorkflowEvents({ on: { push: ["main"] } }).valid).toBe(true);
   expect(normalizeWorkflowEvents({ on: { push: ["main", 7] } }).valid).toBe(false);
+  expect(normalizeWorkflowEvents({ on: { pull_request: ["main"] } }).valid).toBe(true);
   expect(normalizeWorkflowEvents({ on: { push: null } })).toMatchObject({
-    events: { push: null },
-    valid: false,
+    events: { push: {} },
+    valid: true,
   });
 });

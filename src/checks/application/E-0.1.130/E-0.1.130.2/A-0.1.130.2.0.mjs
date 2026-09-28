@@ -43,7 +43,7 @@ export async function run(context) {
     const missing = files
       .filter((file) => file !== join(docs, "README.md"))
       .map((file) => relative(root, file).replaceAll("\\", "/"))
-      .filter((file) => !index.includes(file) && !index.includes(file.split("/").pop()));
+      .filter((file) => !index.includes(file));
     if (missing.length > 0) failures.push(`docs/README.md must index: ${missing.join(", ")}.`);
     if (failures.length) return fail(ruleId, failures.join("\n"));
   } catch {

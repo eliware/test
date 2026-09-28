@@ -1,6 +1,9 @@
 import { readFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
 import { parse } from "@babel/parser";
+import { createRepositoryAstParseCache } from "./create-repository-ast-parse-cache.mjs";
+import { createRepositoryAstCacheKey } from "./create-repository-ast-cache-key.mjs";
+import { createRepositoryAstSourceReader } from "./create-repository-ast-source-reader.mjs";
+import { resolveRepositoryAstFile } from "./resolve-repository-ast-file.mjs";
 
 export const moduleParserOptions = Object.freeze({ sourceType: "module" });
 export const repositorySourceParserOptions = Object.freeze({
@@ -8,29 +11,20 @@ export const repositorySourceParserOptions = Object.freeze({
   plugins: Object.freeze(["typescript", "jsx", "topLevelAwait"]),
 });
 
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (value && typeof value === "object")
-    return Object.fromEntries(
-      Object.keys(value)
-        .sort()
-        .map((key) => [key, canonicalize(value[key])]),
-    );
-  return value;
-}
-
 export function createRepositoryAstCache({ read = readFile, parseSource = parse } = {}) {
-  const asts = new Map();
+  const readSource = createRepositoryAstSourceReader(read);
+  const parseCachedSource = createRepositoryAstParseCache(parseSource);
 
-  return function parseRepositoryAst(root, file, options) {
-    const key = JSON.stringify([resolve(root), file, canonicalize(options)]);
-    if (!asts.has(key))
-      asts.set(
-        key,
-        Promise.resolve(read(join(root, file), "utf8")).then((source) =>
-          parseSource(source, options),
-        ),
-      );
-    return asts.get(key);
+  return async function parseRepositoryAst(root, file, options, suppliedSource) {
+    const repositoryAstFile = resolveRepositoryAstFile(root, file);
+    const { absoluteFile } = repositoryAstFile;
+    const parseUncached = () =>
+      (suppliedSource === undefined
+        ? Promise.resolve().then(() => read(absoluteFile, "utf8"))
+        : Promise.resolve(suppliedSource)
+      ).then((source) => parseSource(source, options));
+    const key = createRepositoryAstCacheKey(root, repositoryAstFile.repositoryFile, options);
+    if (key === null) return parseUncached();
+    return parseCachedSource(key, () => readSource(key, absoluteFile, suppliedSource), options);
   };
 }

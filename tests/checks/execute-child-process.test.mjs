@@ -102,6 +102,10 @@ test("normalizes malformed child adapters and stream-wiring failures", async () 
   });
 
   const child = new EventEmitter();
+  let killed = false;
+  child.kill = () => {
+    killed = true;
+  };
   child.stdout = {
     on() {
       throw new Error("stream setup failed with setup-secret");
@@ -112,6 +116,7 @@ test("normalizes malformed child adapters and stream-wiring failures", async () 
   await expect(promise).rejects.toMatchObject({
     message: "stream setup failed with [REDACTED]",
   });
+  expect(killed).toBe(true);
 
   const invalidStreamChild = new EventEmitter();
   invalidStreamChild.stdout = {};
@@ -126,4 +131,23 @@ test("uses default execution options and preserves diagnostics without redaction
   const promise = execute("tool", [], { env: {} }, () => child);
   child.emit("error", "adapter failure");
   await expect(promise).rejects.toMatchObject({ name: "Error", message: "adapter failure" });
+});
+
+test("passes a defensive copy of the invoking environment to child processes", async () => {
+  const key = "ELIWARE_TEST_CHILD_ENV_COPY";
+  const previous = process.env[key];
+  process.env[key] = "visible-to-child";
+  try {
+    const child = childProcess();
+    const promise = execute("tool", [], {}, (_command, _args, options) => {
+      expect(options.env[key]).toBe("visible-to-child");
+      expect(options.env).not.toBe(process.env);
+      return child;
+    });
+    child.emit("close", 0, null);
+    await expect(promise).resolves.toMatchObject({ code: 0 });
+  } finally {
+    if (previous === undefined) delete process.env[key];
+    else process.env[key] = previous;
+  }
 });

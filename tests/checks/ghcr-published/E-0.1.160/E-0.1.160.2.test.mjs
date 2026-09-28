@@ -4,7 +4,7 @@ import { run as checkGhcrPublicationWorkflow } from "../../../../src/checks/ghcr
 
 const run = (context) => checkGhcrPublicationWorkflow({ env: {}, ...context });
 
-test("requires an exact semantic-version tag gate", async () => {
+test("validates the tag gate on ordinary runs and enforces tag-release identity", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const packageJson = { version: "1.2.3" };
   await expect(run({ root, packageJson })).resolves.toEqual(

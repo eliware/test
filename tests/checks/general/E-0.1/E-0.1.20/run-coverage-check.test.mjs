@@ -69,7 +69,11 @@ test("skips disabled coverage and maps unavailable Jest results", async () => {
     status: "fail",
     message: "Jest results are unavailable or indicate a failed test run.",
   });
+  await expect(
+    run({ executeJest: true, jestResult: { stdout: "malformed result" } }),
+  ).resolves.toMatchObject({ status: "fail" });
   expect(removeRunCoverageArtifacts).toHaveBeenCalled();
+  expect(readCoverageEvidenceFromCandidates).not.toHaveBeenCalled();
 });
 
 test("includes prior cleanup diagnostics and maps timed-out runs", async () => {
@@ -90,6 +94,31 @@ test("includes prior cleanup diagnostics and maps timed-out runs", async () => {
     message: "Jest results are unavailable or indicate a failed test run.",
   });
   expect(readCoverageEvidenceFromCandidates).not.toHaveBeenCalled();
+});
+
+test("preserves the Jest launch diagnostic when coverage cannot run", async () => {
+  await expect(run({ executeJest: true, jestExecutionError: "spawn denied" })).resolves.toEqual({
+    ruleId,
+    status: "fail",
+    message: "Jest results are unavailable or indicate a failed test run.\nspawn denied",
+  });
+  expect(readCoverageEvidenceFromCandidates).not.toHaveBeenCalled();
+});
+
+test("reports cleanup failures after a Jest startup failure", async () => {
+  removeRunCoverageArtifacts.mockResolvedValueOnce("current cleanup failed");
+  await expect(
+    run({
+      executeJest: true,
+      jestExecutionError: "Jest could not start\nprior cleanup failed",
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining(
+      "Jest results are unavailable or indicate a failed test run.\nJest could not start\nprior cleanup failed\ncurrent cleanup failed",
+    ),
+  });
+  expect(removeRunCoverageArtifacts).toHaveBeenCalled();
 });
 
 test("loads evidence with freshness and inventory context before assessing it", async () => {
@@ -164,7 +193,8 @@ test("maps evidence errors and cleanup failures into the final result", async ()
     {
       ruleId,
       status: "fail",
-      message: "cleanup failed",
+      message:
+        "Coverage validation cleanup failed: cleanup failed\nFix the cleanup issue and rerun npm test to confirm 100% statement, branch, function, and line coverage.",
     },
   );
 });

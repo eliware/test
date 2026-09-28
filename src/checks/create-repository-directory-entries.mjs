@@ -13,6 +13,7 @@ export function createRepositoryDirectoryEntries({
   let childIndex;
   let knownDirectories;
   let prunedDirectories;
+  const fallbackChildren = new Map();
   return async function directoryEntries(directory) {
     const base = inventoryDirectory(
       root,
@@ -54,8 +55,9 @@ export function createRepositoryDirectoryEntries({
     const knownDirectory = knownDirectories.has(base);
     const baseParts = base ? base.split("/") : [];
     let prunedDirectory;
-    for (let length = baseParts.length; length > 0; length -= 1) {
-      const candidate = baseParts.slice(0, length).join("/");
+    let candidate = "";
+    for (const part of baseParts) {
+      candidate = candidate ? `${candidate}/${part}` : part;
       if (prunedDirectories.has(candidate)) {
         prunedDirectory = candidate;
         break;
@@ -67,10 +69,18 @@ export function createRepositoryDirectoryEntries({
       });
     let children = childIndex.get(base || ".") ?? [];
     if (base && children.length === 0 && prunedDirectory) {
-      children = (await readDirectory(base)).map((entry) => ({
-        path: `${base}/${entry.name}`,
-        type: entry.isDirectory() ? "directory" : "file",
-      }));
+      if (!fallbackChildren.has(base)) {
+        fallbackChildren.set(
+          base,
+          Promise.resolve(readDirectory(base)).then((entries) =>
+            entries.map((entry) => ({
+              path: `${base}/${entry.name}`,
+              type: entry.isDirectory() ? "directory" : "file",
+            })),
+          ),
+        );
+      }
+      children = await fallbackChildren.get(base);
     }
     return children.map((record) => ({
       name: basename(record.path),

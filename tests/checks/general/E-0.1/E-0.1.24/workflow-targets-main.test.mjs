@@ -11,9 +11,9 @@ test("evaluates push branch shapes and main inclusion", () => {
   expect(pushTargetsMain(["*", "!main*", "main"])).toBe(true);
   expect(pushTargetsMain(["dev"])).toBe(false);
   for (const push of [undefined, null, false]) expect(pushTargetsMain(push)).toBe(false);
-  expect(pushTargetsMain(true)).toBe(true);
-  expect(pushTargetsMain({})).toBe(true);
-  expect(pushTargetsMain({ branches: [] })).toBe(true);
+  expect(pushTargetsMain(true)).toBe(false);
+  expect(pushTargetsMain({})).toBe(false);
+  expect(pushTargetsMain({ branches: [] })).toBe(false);
   expect(pushTargetsMain({ branches: ["*", null, "!release/*"] })).toBe(false);
   expect(pushTargetsMain({ branches: ["main", "!main"] })).toBe(false);
   expect(pushTargetsMain({ branches: ["*", "!main", "main"] })).toBe(true);
@@ -23,9 +23,10 @@ test("evaluates push branch shapes and main inclusion", () => {
 
 test("evaluates pull-request branch shapes and main exclusions", () => {
   for (const event of [undefined, null, false]) expect(pullRequestTargetsMain(event)).toBe(false);
-  expect(pullRequestTargetsMain("pull_request")).toBe(true);
-  expect(pullRequestTargetsMain([])).toBe(true);
-  expect(pullRequestTargetsMain({})).toBe(true);
+  expect(pullRequestTargetsMain("pull_request")).toBe(false);
+  expect(pullRequestTargetsMain([])).toBe(false);
+  expect(pullRequestTargetsMain({})).toBe(false);
+  expect(pullRequestTargetsMain({ branches: ["main"] })).toBe(true);
   expect(pullRequestTargetsMain({ branches: ["!main"] })).toBe(false);
   expect(pullRequestTargetsMain({ branches: ["*", "!main", "main"] })).toBe(true);
   expect(pullRequestTargetsMain({ "branches-ignore": ["main"] })).toBe(false);
@@ -33,8 +34,12 @@ test("evaluates pull-request branch shapes and main exclusions", () => {
   expect(pullRequestTargetsMain({ branches: ["main", 42] })).toBe(false);
 });
 
-test("matches overlapping GitHub globs in order", () => {
+test("matches GitHub branch patterns with ordered inclusion and exclusion", () => {
   expect(pushTargetsMain({ branches: ["**/main", "!**/main"] })).toBe(false);
   expect(pushTargetsMain({ branches: ["**", "!**/main", "main"] })).toBe(true);
+  expect(pushTargetsMain({ branches: ["main", "!main", "*"] })).toBe(true);
+  expect(pushTargetsMain({ branches: ["*", "!main", "!m*"] })).toBe(false);
   expect(pushTargetsMain({ branches: ["main", "release/*"] })).toBe(true);
+  expect(pushTargetsMain({ branches: ["!release/*"] })).toBe(false);
+  expect(pushTargetsMain({ branches: ["*", "!release/*"] })).toBe(true);
 });

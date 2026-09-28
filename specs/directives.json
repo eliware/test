@@ -213,6 +213,7 @@
                 "Remove documented prior coverage candidates before test execution so accepted evidence belongs to the current run.",
                 "Read coverage candidates in fixed precedence order without merging or recency-based selection.",
                 "Validate statement, branch, and function maps against the source-derived Istanbul instrumentation shape so omitted source entries cannot shrink the coverage denominator.",
+                "Calculate Istanbul coverage percentages by counting instrumented entries with positive execution counters as covered; execution frequency does not increase an entry's coverage weight.",
                 "Continue to the next fixed-precedence candidate when a report is stale or unusable, and fail when no usable candidate remains.",
                 "Continue required post-test diagnostics after a coverage failure while preserving every failure diagnostic."
               ],
@@ -256,6 +257,7 @@
               "id": "A-0.0.7.2",
               "dos": [
                 "Expose exactly these public harness commands and diagnostic options: --help, --version, --debug-timing, --lint, --format, --format-check, --audit, and --pack.",
+                "Allow --debug-timing at most once as a wrapper option; when combined with a tool mode, it must precede the mode and must not appear after the -- separator.",
                 "For --lint, accept only --threads=<positive-count>; for --format, --format-check, --audit, and --pack, validate additional arguments against each mode's allowlist before forwarding accepted arguments to Oxlint, Prettier, or npm.",
                 "Reject formatter arguments that override the wrapper-selected format/write mode, canonical Prettier configuration, or required maintained-file coverage.",
                 "Run the bundled convention-check execution path for a normal invocation and return its stable result and diagnostics through the public CLI contract."
@@ -290,6 +292,7 @@
               "id": "A-0.0.7.5",
               "dos": [
                 "Allow a recognized focused path with the selected test-related stage and keep discovery, diagnostics, and failures within that requested scope.",
+                "Recognize focused test paths only under the repository's test/ or tests/ directory; require repository-relative paths and reject POSIX, drive-qualified, and UNC absolute paths before path resolution.",
                 "Keep stage selection and path focus orthogonal: a focused path does not add stages, and a stage flag does not broaden the path.",
                 "Reject unsupported, missing, or ambiguous focused paths with the stable convention failure result before executing unrelated validation."
               ],

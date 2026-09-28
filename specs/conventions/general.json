@@ -197,7 +197,7 @@
           "dos": [
             "Repositories must use eliware-test as the shared deterministic validation entrypoint, running the stages applicable to their declared profiles.",
             "All repositories, including documentation, workspace, and infrastructure repositories, must run Oxlint and Prettier validation through eliware-test.",
-            "Repositories that maintain Jest tests must run them through eliware-test. ESM test files may import Jest APIs from @jest/globals; eliware-test supplies this API transitively."
+            "Repositories that maintain Jest tests must run them through eliware-test. ESM test files may import Jest APIs from @jest/globals; eliware-test supplies this API transitively. The CLI uses the consumer repository's resolvable Jest executable when available and otherwise uses the Jest dependency shipped with eliware-test, while keeping package.json, Jest settings, tests, and source files rooted in the consumer repository."
           ],
           "donts": [
             "Repositories must not replace eliware-test with separate project-specific Oxlint or Prettier validation without Eli's authorization.",
@@ -262,7 +262,7 @@
             {
               "id": "A-0.1.6.2",
               "dos": [
-                "Deterministic validation must inspect current repository files on disk for secret-like files and reject unauthorized matches, including files not yet staged. A root .env file is permitted as local configuration, and a root .env.example file is permitted as a template; the Git-index check must still reject either if tracked or staged against an ignore rule.",
+                "Deterministic validation must inspect current repository files on disk for secret-like files and reject unauthorized matches, including files not yet staged. Only the exact root paths .env and .env.example are permitted; variants such as .env.local and nested .env.example paths remain forbidden. The Git-index check must still reject either permitted root path if tracked or staged against an ignore rule.",
                 "A secret-file exception must identify the exact path, rule ID, approver, reason, and expiry or review condition in package.json.eliware.exempt."
               ],
               "donts": [
@@ -390,16 +390,19 @@
             {
               "id": "E-0.1.10.0",
               "dos": [
-                "Knit is secondary Linux validation and synchronization, not package or image publication, release execution, or production deployment."
+                "Knit is secondary Linux validation and synchronization, not package or image publication, release execution, or production deployment.",
+                "Validate safe operation and publication policy independently from E-0.1.10.1, which owns the exact required command sequence.",
+                "Static Windows executable paths in Knit validation are limited to standard Node.js and Git installation layouts, the current user's npm shim directory, and documented build-share layouts with Program Files paths at the share root or under tools; arbitrary paths that merely end in an allowlisted executable name are not allowed."
               ],
               "donts": [
-                "Knit commands must not reboot hosts, stop or start services, mutate production, apply or recover live Kubernetes state, or perform destructive filesystem or network changes."
+                "Knit commands must not reboot hosts, stop or start services, mutate production, apply or recover live Kubernetes state, or perform destructive filesystem or network changes.",
+                "When checking rm command options, recognize recursive flags before the -- option terminator; operands after -- are filenames and must not be interpreted as flags."
               ]
             },
             {
               "id": "E-0.1.10.1",
               "dos": [
-                "Every applicable Knit validation script must begin its commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
+                "Every applicable Knit validation script must contain exactly these subprocess commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
                 "These Knit commands are limited to repository synchronization and validation; they must not add package or image publication, release, deployment, or destructive operations."
               ],
               "donts": [
@@ -466,7 +469,8 @@
         {
           "id": "E-0.1.24",
           "dos": [
-            "Every @eliware/* repository must contain a GitHub Actions workflow that runs the repository's validation script on pull requests and pushes to main.",
+            "Every @eliware/* repository must contain a GitHub Actions workflow that explicitly targets the main branch for pushes and pull requests by including main in each event's branches filter. Evaluate ordered branch patterns starting excluded; only a pattern that matches main changes whether main is included, so an unmatched negated pattern never authorizes main.",
+            "Workflow event configuration values must use GitHub's mapping shape; arrays of activity types belong in an event's types field, while an array of event names is allowed only as the top-level on value.",
             "Every repository must contain exactly one workflow file at .github/workflows/ci.yml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yml.",
             "Ubuntu CI is always required.",
             "Windows CI is optional; when included, every Windows validation job must pass before publication.",
@@ -478,7 +482,8 @@
               "id": "A-0.1.24.0",
               "dos": [
                 "CI validation consists of npm ci followed by npm test; npm test is the repository's aggregate deterministic gate.",
-                "eliware-test owns lint and format validation invoked by npm test; CI workflows must not duplicate those checks."
+                "eliware-test owns lint and format validation invoked by npm test; CI workflows must not duplicate those checks.",
+                "Pre-install and post-test reporting commands must use literal echo or printf arguments without shell expansions, redirection, or backslash escape syntax. Reject dollar signs and backticks even inside single quotes so literal workflow-expression and secret-reference markers are not printed as workflow reporting."
               ],
               "donts": [
                 "Do not replace npm test with partial checks, run npm update or npm install in CI, or duplicate lint and format checks owned by eliware-test."
@@ -523,12 +528,13 @@
             {
               "id": "E-0.1.24.4",
               "dos": [
-                "Every active GitHub Actions validation workflow must contain only repository validation steps plus required setup and non-publishing reporting steps; its validation flow is npm ci followed by npm test.",
-                "Before npm ci, allow only safe echo reporting in run steps and approved setup actions; reject file creation, shell redirections, and other setup commands.",
+                "Every active GitHub Actions validation workflow must contain only repository validation steps plus required setup and non-publishing reporting steps; its validation flow is npm ci followed immediately by npm test in an unconditional Ubuntu validation job. Those required steps must not override their environment, shell, or working directory.",
+                "Before npm ci, allow only literal safe echo or printf reporting without shell or workflow-expression expansion in supported run steps and approved setup actions; reject dollar signs and backticks even inside single quotes, file creation, shell redirections, unsupported step fields, and invalid step execution forms.",
+                "Sibling setup or reporting jobs may contain only the separately permitted setup and non-publishing reporting commands; they must not run npm ci or npm test outside the validation job.",
                 "Publication workflows must be separate from the general validation workflow and governed by the applicable publication profile and Operations release policy."
               ],
               "donts": [
-                "Do not allow arbitrary printf commands or redirects to write repository files before npm ci.",
+                "Do not allow arbitrary printf commands or redirects to write repository files before npm ci; pre-install printf is limited to literal safe reporting arguments.",
                 "Do not publish npm packages or GHCR images from the general validation workflow, branch or pull-request validation, or validation-only credentials."
               ]
             }
@@ -593,7 +599,8 @@
               "id": "A-0.1.26.0",
               "dos": [
                 "Each release entry must summarize user-visible changes and include breaking changes, migration, or security information when applicable; update it before release validation.",
-                "README.md must link RELEASE_NOTES.md from Links when the file exists."
+                "README.md must link RELEASE_NOTES.md from Links when the file exists.",
+                "Require RELEASE_NOTES.md for application, library, npm-published, and ghcr-published repositories. For other profiles, validate release notes when present without requiring them or their README link when they are absent."
               ],
               "donts": [
                 "Do not use release notes as a second authority for requirements, procedures, or project behavior."
@@ -709,6 +716,7 @@
               "id": "E-0.1.20.17",
               "dos": [
                 "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applicable profile or declared capability requires them: pack for npm publication; typecheck and build when package.json.eliware.capabilities declares them; and lighthouse and puppeteer for web projects.",
+                "When required scripts are invalid, report all missing or incorrect required scripts and disallowed script entries together in one result.",
                 "An explicitly authorized self-hosting exception may let @eliware/test scripts invoke its local bin entrypoint instead of the canonical eliware-test command. This exception applies only to the script-command requirement; aggregate validation must still execute and validate every required stage.",
                 "Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation."
               ],
@@ -730,10 +738,11 @@
               "id": "E-0.1.20.19",
               "dos": [
                 "Every repository's aggregate test validation must execute its audit stage through the shared audit script.",
+                "Run npm audit with the fixed --audit-level=high threshold. Accept only auditReportVersion 2 reports whose vulnerabilities map and metadata.vulnerabilities severity counts agree, whose nonnegative integer severity counts sum to total, and whose high and critical counts are zero; lower severity counts may be nonzero.",
                 "An explicitly authorized self-hosting exception may change only the audit script command used by @eliware/test; aggregate validation must still run npm audit and validate its report."
               ],
               "donts": [
-                "Do not omit audit from the aggregate test validation or run a separate direct audit command.",
+                "Do not omit audit from the aggregate test validation, run a separate direct audit command, or fail reports solely for low or moderate counts below the configured high threshold.",
                 "Do not treat a self-hosting audit script exception as an exemption from running audit or checking its result."
               ]
             }
