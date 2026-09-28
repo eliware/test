@@ -29,6 +29,14 @@ test("reports missing parsers and only requires the maintained extension set", (
   expect([...requiredSyntaxExtensions]).toEqual([".mjs", ".json", ".yml", ".yaml", ".md"]);
 });
 
+test("parses every document in a YAML stream and rejects malformed documents", () => {
+  const parse = selectMaintainedFileSyntaxParser("manifest.yaml").parse;
+  expect(
+    parse("apiVersion: v1\nkind: ConfigMap\n---\napiVersion: v1\nkind: Secret\n"),
+  ).toHaveLength(2);
+  expect(() => parse("kind: ConfigMap\n---\ninvalid: [")).toThrow();
+});
+
 test("uses an injected parser map for focused validation", () => {
   const parser = () => true;
   expect(selectMaintainedFileSyntaxParser("file.custom", new Map([[".custom", parser]]))).toEqual({

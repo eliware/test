@@ -49,3 +49,14 @@ export function isForbiddenPath(path) {
   if (forbiddenExtension.test(normalized)) return true;
   return hasForbiddenDirectory || hasForbiddenFileName;
 }
+
+export function sensitivePathRole(path) {
+  const normalized = path.replaceAll("\\", "/");
+  if (/(?:^|\/)secrets\/README\.md$/i.test(normalized)) return "documentation";
+  if (/(?:^|\/)[^/]*secrets\/[^/]*generator\.ya?ml$/i.test(normalized)) return "generator";
+  if (/(?:^|\/)[^/]*secrets\/kustomization\.ya?ml$/i.test(normalized)) return "kustomization";
+  if (/(?:^|\/)clusters\/[^/]+\/argocd-apps\/[^/]+-secrets\.ya?ml$/i.test(normalized))
+    return "application";
+  if (/(?:^|\/)secrets\/[^/]+\.enc\.ya?ml$/i.test(normalized)) return "encrypted-secret";
+  return null;
+}

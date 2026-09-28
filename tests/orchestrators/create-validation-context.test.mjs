@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createValidationContext } from "../../src/orchestrators/create-validation-context.mjs";
 import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
-import { run as runKnitSecurity } from "../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.0.mjs";
 import { run as runKnitOrder } from "../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.1.mjs";
 import { run as runLicense } from "../../src/checks/general/E-0.1/E-0.1.23.mjs";
 import { runPureExportBarrelPolicy } from "../../src/checks/general/E-0.1/E-0.1.20/validate-pure-export-barrels.mjs";
@@ -113,7 +112,7 @@ test("preserves a shared AST parser and optional run scope data", () => {
   });
 });
 
-test("Knit checks share the script read and AST through the execution context", async () => {
+test("Knit command validation shares the script read and AST through the execution context", async () => {
   const root = await fixture("eliware-knit-cache-sharing-");
   const script = join(root, ".knit", "validate.mjs");
   await mkdir(join(root, ".knit"), { recursive: true });
@@ -131,7 +130,6 @@ test("Knit checks share the script read and AST through the execution context", 
   });
   const context = createValidationContext(root, {}, { repositoryInventory });
   try {
-    await expect(runKnitSecurity(context)).resolves.toMatchObject({ status: "pass" });
     await expect(runKnitOrder(context)).resolves.toMatchObject({ status: "pass" });
     expect(reads.get(script)).toBe(1);
   } finally {

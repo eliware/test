@@ -13,6 +13,24 @@ test("rejects prohibited backup and runtime-state artifacts", async () => {
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
 });
 
+test("does not classify a shell script as a backup artifact by filename alone", async () => {
+  const repositoryInventory = {
+    repositoryFiles: async () => ["scripts/vrrp-wg-backup.sh"],
+  };
+  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({
+    status: "pass",
+  });
+});
+
+test("still rejects named backup artifacts with prohibited extensions", async () => {
+  const repositoryInventory = {
+    repositoryFiles: async () => ["archives/router-backup.tar.gz"],
+  };
+  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({
+    status: "fail",
+  });
+});
+
 test("returns the repository discovery error", async () => {
   await expect(
     run({ root: "C:/repo" }, async () => {

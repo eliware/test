@@ -12,7 +12,7 @@ test("reads and parses the Knit script using the shared AST cache when supplied"
   });
 
   expect(result.source).toBe(source);
-  expect(result.parsed).toEqual({ calls: [], leadingExecutable: false, unsupported: [] });
+  expect(result.parsed).toEqual({ calls: [], leadingExecutable: false });
   expect(readText).toHaveBeenCalledWith(expect.stringMatching(/\.knit[\\/]validate\.mjs$/u));
   expect(parseAst).toHaveBeenCalledWith(
     "/repo",

@@ -226,7 +226,8 @@
             {
               "id": "E-0.1.4.0",
               "dos": [
-                "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for .mjs; validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure."
+                "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for .mjs; validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure.",
+                "YAML files may contain multiple documents separated by `---`; validate the syntax of every document in the stream without rejecting a valid stream solely because it contains multiple documents."
               ],
               "donts": ["Do not exclude a maintained file of these types from syntax validation."]
             }
@@ -253,7 +254,8 @@
             {
               "id": "E-0.1.6.1",
               "dos": [
-                "Bootstrap schemas and minimal non-sensitive seed records are allowed when required for a fresh install; platform DBA and Storage owners retain backup, restore, retention, and recovery ownership."
+                "Bootstrap schemas and minimal non-sensitive seed records are allowed when required for a fresh install; platform DBA and Storage owners retain backup, restore, retention, and recovery ownership.",
+                "Deterministic backup-artifact checks must not classify shell script files as backup files solely because their filename contains backup, dump, or restore."
               ],
               "donts": [
                 "Project repositories must not contain full backups or production dumps or assume responsibility for platform backup, restore, retention, or recovery operations."
@@ -263,10 +265,10 @@
               "id": "A-0.1.6.2",
               "dos": [
                 "Deterministic validation must inspect current repository files on disk for secret-like files and reject unauthorized matches, including files not yet staged. Only the exact root paths .env and .env.example are permitted; variants such as .env.local and nested .env.example paths remain forbidden. The Git-index check must still reject either permitted root path if tracked or staged against an ignore rule.",
-                "A secret-file exception must identify the exact path, rule ID, approver, reason, and expiry or review condition in package.json.eliware.exempt."
+                "SOPS-encrypted YAML secret files with verified encrypted payloads are permitted. KSOPS generator files, secret-directory kustomizations, Argo CD Applications targeting secret directories, and their README files are permitted only as secret-management metadata; they must not contain plaintext secret values. Other secret-like paths require an exact exception identifying the path, rule ID, approver, reason, and expiry or review condition in package.json.eliware.exempt."
               ],
               "donts": [
-                "Do not treat a broad filename pattern or an undocumented encrypted or generated path as an automatic exception."
+                "Do not treat a filename suffix alone as proof that a secret file is encrypted, or allow plaintext secret payloads in secret-management metadata."
               ]
             }
           ]
@@ -388,22 +390,10 @@
           ],
           "directives": [
             {
-              "id": "E-0.1.10.0",
-              "dos": [
-                "Knit is secondary Linux validation and synchronization, not package or image publication, release execution, or production deployment.",
-                "Validate safe operation and publication policy independently from E-0.1.10.1, which owns the exact required command sequence.",
-                "Static Windows executable paths in Knit validation are limited to standard Node.js and Git installation layouts, the current user's npm shim directory, and documented build-share layouts with Program Files paths at the share root or under tools; arbitrary paths that merely end in an allowlisted executable name are not allowed."
-              ],
-              "donts": [
-                "Knit commands must not reboot hosts, stop or start services, mutate production, apply or recover live Kubernetes state, or perform destructive filesystem or network changes.",
-                "When checking rm command options, recognize recursive flags before the -- option terminator; operands after -- are filenames and must not be interpreted as flags."
-              ]
-            },
-            {
               "id": "E-0.1.10.1",
               "dos": [
-                "Every applicable Knit validation script must contain exactly these subprocess commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
-                "These Knit commands are limited to repository synchronization and validation; they must not add package or image publication, release, deployment, or destructive operations."
+                "Every applicable Knit validation script must begin with these subprocess commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
+                "A Knit validation script may contain any additional repository-specific checks or operations after the required command sequence."
               ],
               "donts": [
                 "Do not omit, reorder, or replace the required initial git pull --ff-only origin main, npm ci, and npm test command sequence."

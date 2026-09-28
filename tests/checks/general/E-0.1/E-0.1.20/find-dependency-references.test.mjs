@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
+import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 import { findDependencyReferences } from "../../../../../src/checks/general/E-0.1/E-0.1.20/find-dependency-references.mjs";
 
 test("finds imports, re-exports, dynamic imports, requires, scripts, and config references", async () => {
@@ -85,4 +86,43 @@ test("counts the direct linter used by the self-hosted CLI package", async () =>
     }),
   ).resolves.toEqual(expect.arrayContaining(["oxlint"]));
   await rm(root, { recursive: true, force: true });
+});
+
+test("counts a declared dependency whose binary is spawned by Knit validation", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-dependency-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    await writeFile(
+      join(root, ".knit", "validate.mjs"),
+      `
+        import { spawn } from "node:child_process";
+        const localBin = new URL(
+          \`../node_modules/.bin/vyops\${process.platform === "win32" ? ".cmd" : ""}\`,
+          import.meta.url,
+        );
+        spawn(localBin, ["preflight", "config.boot"]);
+      `,
+    );
+    await writeFile(
+      join(root, "package-lock.json"),
+      JSON.stringify({
+        lockfileVersion: 3,
+        packages: {
+          "node_modules/@eliware/vyops": { bin: "bin/vyops" },
+          "node_modules/no-bin": {},
+        },
+      }),
+    );
+    const packageJson = {
+      devDependencies: { "@eliware/vyops": "^2.1.1", "no-bin": "1.0.0" },
+    };
+    const inventory = createRepositoryInventory(root);
+    const files = await inventory.repositoryFiles();
+
+    await expect(
+      findDependencyReferences(root, packageJson, files, inventory.parseAst, inventory),
+    ).resolves.toEqual(expect.arrayContaining(["@eliware/vyops"]));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

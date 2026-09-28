@@ -112,22 +112,18 @@ test("rejects reordered commands and accepts custom absolute Windows executable 
   await rm(root, { recursive: true, force: true });
 });
 
-test("rejects extra commands after the required validation sequence", async () => {
+test("allows additional commands and operations after the required sequence", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-extra-"));
   try {
     await mkdir(join(root, ".knit"));
     await writeFile(
       join(root, ".knit", "validate.mjs"),
-      'import { spawnSync } from "node:child_process"; ' +
+      'import { spawnSync } from "node:child_process"; import { rm } from "node:fs/promises"; ' +
         'spawnSync("git", ["pull", "--ff-only", "origin", "main"]); ' +
-        'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]); spawnSync("npm", ["run", "prepare"]);',
+        'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]); ' +
+        'spawnSync("npm", ["run", "prepare"]); await rm("/tmp/example", { recursive: true });',
     );
-    await expect(run({ root })).resolves.toEqual(
-      expect.objectContaining({
-        status: "fail",
-        message: expect.stringContaining("must contain only git pull, npm ci, and npm test"),
-      }),
-    );
+    await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -144,7 +140,7 @@ test("maps missing Knit scripts to a rule failure", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("rejects incomplete and dynamically tokenized command sequences", async () => {
+test("rejects incomplete and dynamically tokenized required command sequences", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-short-"));
   await mkdir(join(root, ".knit"));
   await writeFile(

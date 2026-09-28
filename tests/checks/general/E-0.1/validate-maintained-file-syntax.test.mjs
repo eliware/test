@@ -19,8 +19,8 @@ test.each([
   ["module.ts", "export const value: number = 1;"],
   ["module.tsx", "export const view = <div />;"],
   ["package.json", '{"name":"valid"}'],
-  ["workflow.yml", "name: ci\n"],
-  ["workflow.yaml", "name: ci\n"],
+  ["workflow.yml", "name: ci\n---\nname: release\n"],
+  ["workflow.yaml", "name: ci\n---\nname: release\n"],
   ["README.md", "# Valid\n"],
 ])("accepts valid %s syntax", async (file, content) => {
   root = await mkdtemp(join(tmpdir(), "eliware-syntax-"));

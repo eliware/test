@@ -11,7 +11,7 @@ export async function run(context) {
     const { parsed, error } = await readKnitScript(context);
     if (error) return fail(ruleId, error);
     if (parsed.error) return fail(ruleId, parsed.error);
-    const commands = parsed.calls.map((call) => {
+    const commands = parsed.calls.slice(0, 3).map((call) => {
       const tokens = commandTokens(call);
       if (!tokens) return null;
       const executable = normalizeKnitExecutable(tokens[0]);
@@ -27,12 +27,10 @@ export async function run(context) {
       failures.push(
         ".knit/validate.mjs must begin with the required synchronization and validation command sequence.",
       );
+    if (commands.length < required.length)
+      failures.push(".knit/validate.mjs must begin with git pull, npm ci, and npm test.");
     if (commands.some((command) => command === null))
-      failures.push(".knit/validate.mjs contains a command that cannot be inspected.");
-    if (commands.length !== required.length)
-      failures.push(
-        ".knit/validate.mjs must contain only git pull, npm ci, and npm test, in that order.",
-      );
+      failures.push(".knit/validate.mjs must use statically inspectable required commands.");
     for (const [index, expected] of required.entries()) {
       if (commands[index] && JSON.stringify(commands[index]) !== JSON.stringify(expected))
         failures.push(`.knit/validate.mjs command ${index + 1} must be ${expected.join(" ")}.`);

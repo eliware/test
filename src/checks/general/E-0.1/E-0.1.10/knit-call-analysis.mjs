@@ -9,7 +9,6 @@ export const subprocessFunctions = new Set([
   "spawnSync",
 ]);
 const callExpressionTypes = new Set(["CallExpression", "OptionalCallExpression"]);
-const memberExpressionTypes = new Set(["MemberExpression", "OptionalMemberExpression"]);
 
 export function rootIdentifier(node) {
   return identifierOrMemberRoot(node);
@@ -32,25 +31,5 @@ export function classifyCall(node, imports) {
     ((node.callee.type === "Identifier" && subprocessFunctions.has(direct)) ||
       (namespace && imports.namespaces.has(namespace) && subprocessFunctions.has(member))),
   );
-  const isSideEffect =
-    isCall &&
-    ((direct && direct.includes(":")) ||
-      (namespace && imports.sideEffectNamespaces.has(namespace)));
-  const isUnsupported =
-    isCall &&
-    ((node.callee.type === "Identifier" && !imports.names.has(node.callee.name)) ||
-      (memberExpressionTypes.has(node.callee.type) &&
-        !(
-          (imports.namespaces.has(namespace) && subprocessFunctions.has(member)) ||
-          imports.sideEffectNamespaces.has(rootIdentifier(node.callee.object)) ||
-          (rootIdentifier(node.callee.object) === "process" && member === "cwd")
-        )));
-  const isDynamic =
-    isCall &&
-    (node.callee.type === "Import" ||
-      (node.callee.type === "Identifier" && ["require", "eval"].includes(node.callee.name)) ||
-      (memberExpressionTypes.has(node.callee.type) &&
-        node.callee.object?.type === "MetaProperty" &&
-        node.callee.property?.name === "require"));
-  return { direct, namespace, member, isSubprocess, isSideEffect, isUnsupported, isDynamic };
+  return { direct, namespace, member, isSubprocess };
 }

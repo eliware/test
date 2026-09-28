@@ -1,6 +1,6 @@
 import { bindPattern, staticValue } from "./knit-static-values.mjs";
 
-export function traverseKnitBindingNode(node, bindings, visit, unsupported) {
+export function traverseKnitBindingNode(node, bindings, visit) {
   if (node.type === "BlockStatement") {
     const blockBindings = new Map(bindings);
     const blockDeclarations = new Set(
@@ -22,17 +22,7 @@ export function traverseKnitBindingNode(node, bindings, visit, unsupported) {
 
   if (node.type === "AssignmentExpression" || node.type === "UpdateExpression") {
     const target = node.type === "AssignmentExpression" ? node.left : node.argument;
-    const reportsSubprocessStatus =
-      node.type === "AssignmentExpression" &&
-      target?.type === "MemberExpression" &&
-      target.object?.type === "Identifier" &&
-      target.object.name === "process" &&
-      target.property?.type === "Identifier" &&
-      target.property.name === "exitCode";
-    if (!reportsSubprocessStatus) {
-      if (target?.type === "Identifier") bindings.delete(target.name);
-      unsupported.push(node.start);
-    }
+    if (target?.type === "Identifier") bindings.delete(target.name);
   }
 
   if (node.type === "ForOfStatement") {
@@ -45,8 +35,6 @@ export function traverseKnitBindingNode(node, bindings, visit, unsupported) {
         }
         visit(node.body, loopBindings);
       }
-    } else {
-      unsupported.push(node.start);
     }
     return true;
   }

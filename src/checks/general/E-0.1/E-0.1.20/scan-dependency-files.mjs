@@ -10,10 +10,21 @@ export async function scanDependencyFiles(
   repositoryFiles = null,
   parseAst = null,
   inventory = null,
+  dependencyBinaries = new Map(),
 ) {
   const files = repositoryFiles ?? (await findRepositoryFiles(root));
-  const sourceFiles = repositoryFiles ? files.filter((file) => file.startsWith("src/")) : files;
+  const sourceFiles = repositoryFiles
+    ? files.filter((file) => file.startsWith("src/") || file.startsWith(".knit/"))
+    : files;
 
-  await scanSourceDependencyFiles(root, sourceFiles, declared, referenced, uncertain, parseAst);
+  await scanSourceDependencyFiles(
+    root,
+    sourceFiles,
+    declared,
+    referenced,
+    uncertain,
+    parseAst,
+    dependencyBinaries,
+  );
   await scanStructuredDependencyFiles(root, files, declared, referenced, inventory);
 }

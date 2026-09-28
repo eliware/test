@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { isForbiddenPath } from "../../../../../src/checks/general/E-0.1/E-0.1.6/sensitive-path-classifier.mjs";
+import {
+  isForbiddenPath,
+  sensitivePathRole,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.6/sensitive-path-classifier.mjs";
 
 test("classifies sensitive paths with exact benign-file exceptions", () => {
   expect(isForbiddenPath("credentials.json")).toBe(true);
@@ -21,4 +24,13 @@ test("classifies sensitive paths with exact benign-file exceptions", () => {
   expect(isForbiddenPath("config/.env.example")).toBe(true);
   expect(isForbiddenPath("docs/readme.md")).toBe(false);
   expect(isForbiddenPath("nested\\credentials.pem")).toBe(true);
+});
+
+test("identifies exact encrypted secret and management metadata roles", () => {
+  expect(sensitivePathRole("secrets/api.enc.yaml")).toBe("encrypted-secret");
+  expect(sensitivePathRole("infrastructure/app/secrets/ksops-generator.yaml")).toBe("generator");
+  expect(sensitivePathRole("infrastructure/app-secrets/kustomization.yaml")).toBe("kustomization");
+  expect(sensitivePathRole("clusters/prod/argocd-apps/app-secrets.yaml")).toBe("application");
+  expect(sensitivePathRole("secrets/README.md")).toBe("documentation");
+  expect(sensitivePathRole("secrets/api.yaml")).toBe(null);
 });

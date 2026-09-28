@@ -24,6 +24,70 @@ test("parses source files and collects dependency references", async () => {
   }
 });
 
+test("counts declared package binaries spawned from validation scripts", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-source-binary-scan-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    await writeFile(
+      join(root, ".knit", "validate.mjs"),
+      `
+        import { spawn } from "node:child_process";
+        const executable = new URL(
+          \`../node_modules/.bin/vyops\${process.platform === "win32" ? ".cmd" : ""}\`,
+          import.meta.url,
+        );
+        spawn(executable, ["preflight", "config.boot"]);
+      `,
+    );
+    const referenced = new Set();
+
+    await scanSourceDependencyFiles(
+      root,
+      [".knit/validate.mjs"],
+      ["@eliware/vyops"],
+      referenced,
+      { value: false },
+      null,
+      new Map([["vyops", "@eliware/vyops"]]),
+    );
+
+    expect(referenced.has("@eliware/vyops")).toBe(true);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("does not count a subprocess call that invokes an unrelated executable", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-source-binary-scan-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    await writeFile(
+      join(root, ".knit", "validate.mjs"),
+      `
+        import * as childProcess from "node:child_process";
+        const executable = "other-tool";
+        childProcess.spawn(executable, []);
+        getRunner()();
+      `,
+    );
+    const referenced = new Set();
+
+    await scanSourceDependencyFiles(
+      root,
+      [".knit/validate.mjs"],
+      ["@eliware/vyops"],
+      referenced,
+      { value: false },
+      null,
+      new Map([["vyops", "@eliware/vyops"]]),
+    );
+
+    expect(referenced.has("@eliware/vyops")).toBe(false);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("uses an injected AST parser and skips non-source files", async () => {
   const parseAst = jest.fn(async () => ({ type: "File", program: { body: [] } }));
   await expect(
