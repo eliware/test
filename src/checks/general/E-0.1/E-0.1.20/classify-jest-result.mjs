@@ -29,7 +29,16 @@ export function classifyJestResult(ruleId, result, timeoutDiagnostic) {
       .filter(Boolean)
       .join("\n")
       .trim();
-    return fail(ruleId, detail ? `Jest failed: ${detail}` : "Jest failed without diagnostics.");
+    const exitDetails = [
+      result.code === null || result.code === undefined ? undefined : `code ${result.code}`,
+      result.signal ? `signal ${result.signal}` : undefined,
+    ]
+      .filter(Boolean)
+      .join(", ");
+    const fallback = exitDetails
+      ? `Jest failed without output (${exitDetails}).`
+      : "Jest failed without diagnostics.";
+    return fail(ruleId, detail ? `Jest failed: ${detail}` : fallback);
   }
   return pass(ruleId);
 }

@@ -10,11 +10,15 @@ test("classifies timeout, failure, and success results", () => {
     classifyJestResult("E-0.1.130.13", { code: 1, stdout: "out", stderr: "err" }).message,
   ).toBe("Jest failed: out\nerr");
   expect(classifyJestResult("E-0.1.130.13", { code: 1, stdout: "", stderr: "" }).message).toBe(
-    "Jest failed without diagnostics.",
+    "Jest failed without output (code 1).",
   );
   expect(classifyJestResult("E-0.1.130.13", { code: 1 }).message).toBe(
-    "Jest failed without diagnostics.",
+    "Jest failed without output (code 1).",
   );
+  expect(classifyJestResult("E-0.1.130.13", { code: null, signal: "SIGKILL" }).message).toBe(
+    "Jest failed without output (signal SIGKILL).",
+  );
+  expect(classifyJestResult("E-0.1.130.13", {}).message).toBe("Jest failed without diagnostics.");
   expect(classifyJestResult("E-0.1.130.13", { code: 0 }).status).toBe("pass");
 });
 
