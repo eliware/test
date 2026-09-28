@@ -24,13 +24,14 @@ export async function run(context) {
       publicationJobs,
       validationJobs,
     );
-    if (permissionError) return fail(ruleId, permissionError);
+    const failures = permissionError ? [permissionError] : [];
     for (const { job } of publicationJobs) {
       const setupError = validateNpmOidcPublishSetup(job);
-      if (setupError) return fail(ruleId, setupError);
+      if (setupError) failures.push(setupError);
       if (!hasNpmProvenancePublish(job))
-        return fail(ruleId, "The npm publication job must run npm publish --provenance.");
+        failures.push("The npm publication job must run npm publish --provenance.");
     }
+    if (failures.length) return fail(ruleId, failures.join("\n"));
   } catch (error) {
     return fail(ruleId, `npm Trusted Publishing workflows could not be read: ${error.message}`);
   }

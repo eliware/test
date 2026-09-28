@@ -10,19 +10,32 @@ export const repositoryInventoryOptions = Object.freeze({ includeTestResults: tr
 
 export async function run(context) {
   const { root } = context;
+  const failures = [];
+  let files;
   try {
-    const files = await jsonFiles(root, context.repositoryInventory);
-    await validateStructuredReferences(root, files, context.repositoryInventory);
-    const authorityError = await validateAuthorityDocuments(
-      root,
-      files,
-      context.repositoryInventory,
-    );
-    if (authorityError) return fail(ruleId, authorityError);
-    const linkError = await validateDocumentationLinks(root, context);
-    if (linkError) return fail(ruleId, linkError);
+    files = await jsonFiles(root, context.repositoryInventory);
   } catch (error) {
-    return fail(ruleId, `Documentation reference validation failed: ${error.message}`);
+    failures.push(`Documentation reference discovery failed: ${error.message}`);
   }
-  return pass(ruleId);
+  if (files) {
+    try {
+      const error = await validateStructuredReferences(root, files, context.repositoryInventory);
+      if (error) failures.push(error);
+    } catch (error) {
+      failures.push(`Structured reference validation failed: ${error.message}`);
+    }
+    try {
+      const error = await validateAuthorityDocuments(root, files, context.repositoryInventory);
+      if (error) failures.push(error);
+    } catch (error) {
+      failures.push(`Authority document validation failed: ${error.message}`);
+    }
+  }
+  try {
+    const error = await validateDocumentationLinks(root, context);
+    if (error) failures.push(error);
+  } catch (error) {
+    failures.push(`Documentation link validation failed: ${error.message}`);
+  }
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

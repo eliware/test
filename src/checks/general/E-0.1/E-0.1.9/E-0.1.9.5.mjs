@@ -9,7 +9,8 @@ export async function run({ packageJson }) {
   if (!Array.isArray(crosslinks) || crosslinks.length === 0) {
     return fail(ruleId, "package.json.eliware.crosslinks must be a nonempty array.");
   }
-  for (const link of crosslinks) {
+  const failures = [];
+  for (const [index, link] of crosslinks.entries()) {
     if (
       !link ||
       typeof link.path !== "string" ||
@@ -19,14 +20,14 @@ export async function run({ packageJson }) {
       typeof link.authoritativeFor !== "string" ||
       !link.authoritativeFor.trim()
     ) {
-      return fail(
-        ruleId,
-        "Every Eliware crosslink must identify a path, relationship, and authority.",
+      failures.push(
+        `eliware.crosslinks[${index}] must identify a path, relationship, and authority.`,
       );
+      continue;
     }
     if (isAbsolute(link.path) || /^[A-Za-z][A-Za-z\d+.-]*:/u.test(link.path)) {
-      return fail(ruleId, `Crosslink ${link.path} must be a repository-relative path.`);
+      failures.push(`Crosslink ${link.path} must be a repository-relative path.`);
     }
   }
-  return pass(ruleId);
+  return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

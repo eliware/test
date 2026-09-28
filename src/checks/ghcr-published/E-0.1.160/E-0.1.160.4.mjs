@@ -13,8 +13,9 @@ export async function run(context) {
     const publications = (await readWorkflows(root, context)).filter(isPublicationWorkflow);
     if (publications.length === 0)
       return fail(ruleId, "GHCR publication must grant only the required permissions.");
+    const failures = [];
     for (const publication of publications)
-      for (const { job } of publicationJobs(publication)) {
+      for (const { id, job } of publicationJobs(publication)) {
         const granted = permissions(publication, job);
         const required = new Map([
           ["contents", "read"],
@@ -27,11 +28,11 @@ export async function run(context) {
           Object.keys(granted).length === required.size &&
           [...required].every(([key, value]) => granted[key] === value);
         if (!exact)
-          return fail(
-            ruleId,
-            "GHCR publication must grant only the permissions required by its selected operations.",
+          failures.push(
+            `GHCR publication must grant only the permissions required by its selected operations: ${publication.name} job ${id}.`,
           );
       }
+    if (failures.length) return fail(ruleId, failures.join("\n"));
   } catch (error) {
     return fail(ruleId, `GHCR workflows could not be inspected: ${error.message}`);
   }

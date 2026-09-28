@@ -23,6 +23,19 @@ test("rejects an unapproved required action version from parsed uses values", as
   await rm(root, { recursive: true, force: true });
 });
 
+test("reports every unapproved action version in one workflow", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-actions-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(
+    join(root, ".github", "workflows", "ci.yml"),
+    "jobs:\n  test:\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v6\n",
+  );
+  const result = await run({ root });
+  expect(result.message).toContain("actions/checkout@v4");
+  expect(result.message).toContain("actions/setup-node@v6");
+  await rm(root, { recursive: true, force: true });
+});
+
 test("requires setup-node v7 in CI and npm publication workflows", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-versions-"));
   const directory = join(root, ".github", "workflows");

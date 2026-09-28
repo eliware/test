@@ -12,27 +12,30 @@ export const parentRuleId = "E-0.1.26";
 
 export async function run(context) {
   const { root, packageJson } = context;
+  const failures = [];
   let notes;
   let readme;
   try {
-    [notes, readme] = await Promise.all([
-      readFile(join(root, "RELEASE_NOTES.md"), "utf8"),
-      readRepositoryText(context, join(root, "README.md")),
-    ]);
+    notes = await readFile(join(root, "RELEASE_NOTES.md"), "utf8");
   } catch {
-    return fail(
-      ruleId,
-      "RELEASE_NOTES.md and README.md are required for release-bearing repositories.",
-    );
+    failures.push("RELEASE_NOTES.md is required for release-bearing repositories.");
   }
-
-  const parsed = parseReleaseNotes(notes);
-  if (parsed.error) return fail(ruleId, `RELEASE_NOTES.md ${parsed.error}`);
-  const contentError = validateReleaseNoteContent(parsed.entries, packageJson?.version);
-  if (contentError) return fail(ruleId, `RELEASE_NOTES.md ${contentError}`);
-  const orderError = validateReleaseNoteOrder(parsed.entries);
-  if (orderError) return fail(ruleId, `RELEASE_NOTES.md ${orderError}`);
-  const linkError = validateReadmeReleaseNotesLink(readme);
-  if (linkError) return fail(ruleId, linkError);
-  return pass(ruleId);
+  try {
+    readme = await readRepositoryText(context, join(root, "README.md"));
+  } catch {
+    failures.push("README.md is required for release-bearing repositories.");
+  }
+  if (notes !== undefined) {
+    const parsed = parseReleaseNotes(notes);
+    if (parsed.error) failures.push(`RELEASE_NOTES.md ${parsed.error}`);
+    const contentError = validateReleaseNoteContent(parsed.entries, packageJson?.version);
+    if (contentError) failures.push(`RELEASE_NOTES.md ${contentError}`);
+    const orderError = validateReleaseNoteOrder(parsed.entries);
+    if (orderError) failures.push(`RELEASE_NOTES.md ${orderError}`);
+  }
+  if (readme !== undefined) {
+    const linkError = validateReadmeReleaseNotesLink(readme);
+    if (linkError) failures.push(linkError);
+  }
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

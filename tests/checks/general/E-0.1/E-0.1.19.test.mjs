@@ -58,9 +58,18 @@ test.each([
   [validatePackageMetadata, "package metadata invalid"],
   [validatePackageRuntime, "runtime invalid"],
   [validatePublicationFiles, "publication files invalid"],
-])("maps the first failure from %p to the rule result", (failingValidator, message) => {
+])("reports a failure from %p without skipping later validators", (failingValidator, message) => {
   failingValidator.mockReturnValueOnce(message);
   expect(run({ packageJson: {} })).toEqual({ ruleId: "E-0.1.19", status: "fail", message });
-  const laterValidators = validators.slice(validators.indexOf(failingValidator) + 1);
-  expect(laterValidators.every((validator) => !validator.mock.calls.length)).toBe(true);
+  expect(validators.every((validator) => validator.mock.calls.length === 1)).toBe(true);
+});
+
+test("reports independent package validation failures together", () => {
+  validators.forEach((validator, index) => validator.mockReturnValueOnce(`failure ${index + 1}`));
+
+  expect(run({ packageJson: {} })).toMatchObject({
+    status: "fail",
+    message: "failure 1\nfailure 2\nfailure 3\nfailure 4\nfailure 5",
+  });
+  expect(validators.every((validator) => validator.mock.calls.length === 1)).toBe(true);
 });

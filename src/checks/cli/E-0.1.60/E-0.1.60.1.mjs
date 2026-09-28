@@ -9,13 +9,15 @@ export const parentRuleId = "E-0.1.60";
 export async function run(context) {
   const { root, packageJson, executeEntrypoint = execute } = context;
   const surface = await readCliEntrypointSurface(context);
-  if (surface.error) return fail(ruleId, surface.error);
-  const error = await executeCliInformationCommands({
-    root,
-    entrypoints: surface.entrypoints,
-    packageVersion: packageJson?.version,
-    executeEntrypoint,
-  });
-  if (error) return fail(ruleId, error);
-  return pass(ruleId);
+  const errors = [...surface.errors];
+  if (surface.entrypoints.length > 0) {
+    const commandError = await executeCliInformationCommands({
+      root,
+      entrypoints: surface.entrypoints,
+      packageVersion: packageJson?.version,
+      executeEntrypoint,
+    });
+    if (commandError) errors.push(commandError);
+  }
+  return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }

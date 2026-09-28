@@ -34,16 +34,13 @@ test("enforces the exact workflow file set in the required CI check", async () =
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
     join(root, ".github", "workflows", "ci.yml"),
-    "on:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+    "on:\n  workflow_dispatch:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
   );
   await writeFile(join(root, ".github", "workflows", "extra.yml"), "name: Extra\n");
-  await expect(
-    run({ root, packageJson: { eliware: { apply: ["general"] } } }),
-  ).resolves.toMatchObject({
-    ruleId: "E-0.1.24",
-    status: "fail",
-    message: expect.stringContaining("extra.yml"),
-  });
+  const result = await run({ root, packageJson: { eliware: { apply: ["general"] } } });
+  expect(result).toMatchObject({ ruleId: "E-0.1.24", status: "fail" });
+  expect(result.message).toContain("extra.yml");
+  expect(result.message).toContain("validate pull requests and pushes to main");
   await rm(root, { recursive: true, force: true });
 });
 

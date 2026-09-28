@@ -7,25 +7,30 @@ export async function inspectReadmeDocumentationIndexes(root) {
     await access(join(root, "examples"));
     examplesRequired = true;
   } catch {}
+  const missing = [];
   for (const path of ["docs/README.md", "specs/README.md"]) {
     try {
       await access(join(root, path));
     } catch {
-      return {
-        examplesRequired,
-        error: `README.md links to required documentation index ${path}, but it does not exist.`,
-      };
+      missing.push(path);
     }
   }
   if (examplesRequired) {
     try {
       await access(join(root, "examples", "README.md"));
     } catch {
-      return {
-        examplesRequired,
-        error: "README.md links to examples/README.md, but it does not exist.",
-      };
+      missing.push("examples/README.md");
     }
   }
-  return { examplesRequired, error: null };
+  return {
+    examplesRequired,
+    error: missing.length
+      ? missing
+          .map(
+            (path) =>
+              `README.md links to required documentation index ${path}, but it does not exist.`,
+          )
+          .join("\n")
+      : null,
+  };
 }

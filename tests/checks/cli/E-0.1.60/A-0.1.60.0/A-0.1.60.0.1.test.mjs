@@ -25,10 +25,9 @@ test("fails when CLI behavior guidance is missing", async () => {
 test("fails when a CLI behavior term is undocumented", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-behavior-incomplete-"));
   await writeFile(join(root, "AGENTS.md"), "CLI\n");
-  await expect(run({ root })).resolves.toEqual({
-    ruleId: "A-0.1.60.0.1",
-    status: "fail",
-    message: "AGENTS.md must document CLI entrypoint behavior.",
-  });
+  const result = await run({ root });
+  expect(result.status).toBe("fail");
+  for (const term of ["entrypoint", "--help", "--version", "commands"])
+    expect(result.message).toContain(`AGENTS.md must document CLI ${term} behavior.`);
   await rm(root, { recursive: true, force: true });
 });

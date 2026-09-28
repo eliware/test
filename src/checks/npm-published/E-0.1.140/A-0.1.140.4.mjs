@@ -21,10 +21,11 @@ export async function run(context) {
     const workflows = await readWorkflows(root, context);
     if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0))
       return fail(ruleId, "npm-published repositories must define a publication workflow.");
+    const failures = [];
     for (const workflow of workflows) {
       const publication = npmPublicationJobs(workflow);
       if (publication.length === 0 && /\bnpm\s+publish\b/i.test(workflow.content)) {
-        return fail(ruleId, `Publication workflow could not be parsed: ${workflow.name}.`);
+        failures.push(`Publication workflow could not be parsed: ${workflow.name}.`);
       }
       for (const { job } of publication) {
         const granted = permissions(workflow, job);
@@ -39,13 +40,13 @@ export async function run(context) {
           Object.keys(granted).some((key) => !allowed.has(key)) ||
           /NPM_TOKEN|NODE_AUTH_TOKEN/i.test(JSON.stringify(job))
         ) {
-          return fail(
-            ruleId,
+          failures.push(
             `Publication workflow must use least-privilege permissions: ${workflow.name}.`,
           );
         }
       }
     }
+    if (failures.length) return fail(ruleId, failures.join("\n"));
   } catch (error) {
     return fail(ruleId, `npm publication workflows could not be read: ${error.message}`);
   }

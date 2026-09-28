@@ -71,7 +71,7 @@ test("coordinates README validation phases using loaded inputs", async () => {
   expect(phaseOrder).toEqual([...phaseOrder].sort((left, right) => left - right));
 });
 
-test("fails for missing README or structural headings before delegated checks", async () => {
+test("fails when README or structural headings are missing and keeps checking usable content", async () => {
   loadReadmeValidationInputs.mockResolvedValueOnce(null);
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-0.1.1.0",
@@ -86,23 +86,26 @@ test("fails for missing README or structural headings before delegated checks", 
     status: "fail",
     message: "README.md is missing required sections: Features, Requirements.",
   });
-  expect(validateReadmeBranding).not.toHaveBeenCalled();
+  expect(validateReadmeBranding).toHaveBeenCalled();
+  expect(validateReadmeRequiredContent).toHaveBeenCalled();
+  expect(validateReadmeMetadata).toHaveBeenCalled();
+  expect(inspectReadmeDocumentationIndexes).toHaveBeenCalled();
 });
 
 test.each([
-  [validateReadmeBranding, "branding invalid"],
-  [validateReadmeRequiredContent, "required content invalid"],
-  [validateReadmeMetadata, "metadata invalid"],
-])("returns the first delegated validation failure", async (validator, message) => {
+  ["branding", validateReadmeBranding, "branding invalid"],
+  ["required content", validateReadmeRequiredContent, "required content invalid"],
+  ["metadata", validateReadmeMetadata, "metadata invalid"],
+])("collects delegated %s validation failure", async (_name, validator, message) => {
   validator.mockReturnValueOnce(message);
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-0.1.1.0",
     status: "fail",
     message,
   });
-  if (validator === validateReadmeBranding)
-    expect(inspectReadmeDocumentationIndexes).not.toHaveBeenCalled();
-  if (validator !== validateReadmeMetadata) expect(validateReadmeMetadata).not.toHaveBeenCalled();
+  expect(inspectReadmeDocumentationIndexes).toHaveBeenCalled();
+  expect(validateReadmeRequiredContent).toHaveBeenCalled();
+  expect(validateReadmeMetadata).toHaveBeenCalled();
 });
 
 test("reports index validation errors after validating README content", async () => {

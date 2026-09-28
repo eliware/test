@@ -68,9 +68,16 @@ test("maps missing input files to the check result", async () => {
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "A-0.1.26.0",
     status: "fail",
-    message: "RELEASE_NOTES.md and README.md are required for release-bearing repositories.",
+    message: "RELEASE_NOTES.md is required for release-bearing repositories.",
   });
   expect(parseReleaseNotes).not.toHaveBeenCalled();
+});
+
+test("reports a missing README while validating release notes", async () => {
+  readRepositoryText.mockRejectedValueOnce(new Error("missing README"));
+  const result = await run({ root: "/repo", packageJson: { version: "8.0.0" } });
+  expect(result.message).toContain("README.md is required");
+  expect(validateReleaseNoteContent).toHaveBeenCalled();
 });
 
 async function expectFirstFailure(validator, validationError, expectedMessage, laterValidators) {
@@ -80,16 +87,18 @@ async function expectFirstFailure(validator, validationError, expectedMessage, l
     status: "fail",
     message: expectedMessage,
   });
-  for (const laterValidator of laterValidators) expect(laterValidator).not.toHaveBeenCalled();
+  for (const laterValidator of laterValidators) expect(laterValidator).toHaveBeenCalled();
 }
 
-test("stops at the first parsed or delegated release-note error", async () => {
+test("collects parsed and delegated release-note errors", async () => {
   parseReleaseNotes.mockReturnValueOnce({ error: "is malformed" });
   await expect(run({ root: "/repo" })).resolves.toMatchObject({
     status: "fail",
     message: "RELEASE_NOTES.md is malformed",
   });
-  expect(validateReleaseNoteContent).not.toHaveBeenCalled();
+  expect(validateReleaseNoteContent).toHaveBeenCalled();
+  expect(validateReleaseNoteOrder).toHaveBeenCalled();
+  expect(validateReadmeReleaseNotesLink).toHaveBeenCalled();
 
   resetValidators();
   await expectFirstFailure(

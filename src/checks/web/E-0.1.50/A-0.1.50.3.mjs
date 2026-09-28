@@ -9,6 +9,7 @@ export async function run(context) {
   const { root } = context;
   try {
     const readme = (await readRepositoryText(context, join(root, "README.md"))).toLowerCase();
+    const missing = [];
     for (const term of [
       "purpose",
       "requirements",
@@ -24,8 +25,10 @@ export async function run(context) {
       "support",
       "license",
     ]) {
-      if (!readme.includes(term)) return fail(ruleId, `Web README.md must document ${term}.`);
+      if (!readme.includes(term)) missing.push(term);
     }
+    if (missing.length > 0)
+      return fail(ruleId, missing.map((term) => `Web README.md must document ${term}.`).join("\n"));
   } catch {
     return fail(ruleId, "Web README.md is required.");
   }

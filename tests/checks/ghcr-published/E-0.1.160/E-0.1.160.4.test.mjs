@@ -50,7 +50,9 @@ test("checks every publication job and rejects unnecessary permissions", async (
       "  extra:\n    permissions:\n      contents: read\n      packages: write\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n      actions: write\n    steps:\n      - run: docker push ghcr.io/eliware/example:v1.2.3\n  publish:\n",
     ),
   );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  const result = await run({ root });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("extra");
 });
 
 test("reports workflow inspection failures", async () => {

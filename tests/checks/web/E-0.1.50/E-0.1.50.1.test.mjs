@@ -15,11 +15,10 @@ test("maps clean and excluded asset trees to rule results", async () => {
     message: "",
   });
   await mkdir(join(root, "public", "dist"));
-  expect(await run({ root, packageJson: {} })).toMatchObject({
-    ruleId: "E-0.1.50.1",
-    status: "fail",
-    message: expect.stringContaining("dist"),
-  });
+  await mkdir(join(root, "public", "build"));
+  const excluded = await run({ root, packageJson: {} });
+  expect(excluded.message).toContain("output: build.");
+  expect(excluded.message).toContain("output: dist.");
   await expect(
     run({ root, packageJson: { eliware: { webAssetExcludes: "dist" } } }),
   ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("string array") });

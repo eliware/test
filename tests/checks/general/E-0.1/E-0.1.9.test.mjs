@@ -26,12 +26,20 @@ test("requires the Eliware metadata object and its core fields", () => {
   for (const field of ["apply", "authority", "crosslinks"]) {
     const eliware = { apply: [], authority: {}, crosslinks: [] };
     delete eliware[field];
-    expect(run({ packageJson: { eliware } })).toEqual({
+    expect(run({ packageJson: { eliware } })).toMatchObject({
       ruleId: "E-0.1.9",
       status: "fail",
-      message: `package.json.eliware.${field} is required.`,
+      message: expect.stringContaining(`package.json.eliware.${field} is required.`),
     });
   }
+});
+
+test("reports independent metadata failures together", () => {
+  const result = run({ packageJson: { eliware: { apply: [], authority: {}, crosslinks: [] } } });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("known nonempty convention profiles");
+  expect(result.message).toContain("authoritativeFor");
+  expect(result.message).toContain("crosslinks");
 });
 
 test("rejects empty authority and malformed crosslinks", () => {

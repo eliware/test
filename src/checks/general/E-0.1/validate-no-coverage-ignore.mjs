@@ -34,22 +34,29 @@ export async function runNoCoverageIgnore({
           })
         : [],
     );
+    const failures = [];
     for (const file of files) {
-      const source = repositoryInventory
-        ? await repositoryInventory.readText(file)
-        : await readFile(file, "utf8");
       const relativePath = file.slice(root.length + 1).replaceAll("\\", "/");
+      let source;
+      try {
+        source = repositoryInventory
+          ? await repositoryInventory.readText(file)
+          : await readFile(file, "utf8");
+      } catch (error) {
+        failures.push(`${relativePath} could not be inspected: ${error.message}`);
+        continue;
+      }
       if (
         hasIstanbulIgnoreDirective(source) &&
         !(barrels.has(relativePath) && allowedBarrels.has(relativePath))
       ) {
-        return fail(ruleId, `Coverage-ignore directives are not allowed: ${relativePath}.`);
+        failures.push(`Coverage-ignore directives are not allowed: ${relativePath}.`);
       }
       if (barrels.has(relativePath) && !isPureBarrel(source)) {
-        return fail(ruleId, `Pure-barrel classification changed while scanning: ${relativePath}.`);
+        failures.push(`Pure-barrel classification changed while scanning: ${relativePath}.`);
       }
     }
-    return pass(ruleId);
+    return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
   } catch (error) {
     return fail(ruleId, error.message);
   }

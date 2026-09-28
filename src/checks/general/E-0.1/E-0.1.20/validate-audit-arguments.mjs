@@ -28,6 +28,7 @@ export function validateAuditArguments(args = []) {
   if (suppliedArguments.some((argument) => typeof argument !== "string")) {
     return "Audit arguments must be an array of strings.";
   }
+  const failures = [];
   for (const argument of suppliedArguments) {
     if (
       argument === "--" ||
@@ -35,8 +36,10 @@ export function validateAuditArguments(args = []) {
       argument.startsWith("--omit") ||
       !allowedOptions.has(argument)
     ) {
-      return `Audit arguments cannot override the required JSON output or high audit severity: ${argument}.`;
+      failures.push(
+        `Audit arguments cannot override the required JSON output or high audit severity: ${argument}.`,
+      );
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

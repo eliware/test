@@ -7,14 +7,21 @@ import { validateLocalStructuredReference } from "./validate-local-structured-re
 import { validateRegisteredStructuredReference } from "./validate-registered-structured-reference.mjs";
 
 export async function validateStructuredReferences(root, files, inventory) {
+  const failures = [];
   let registeredRepositoryRoots;
   let registeredRepositoryError;
   let registryLoaded = false;
   for (const relativeFile of files) {
     const file = join(root, relativeFile);
-    const document = inventory
-      ? await inventory.readParsed(file, "json", JSON.parse)
-      : JSON.parse(await readFile(file, "utf8"));
+    let document;
+    try {
+      document = inventory
+        ? await inventory.readParsed(file, "json", JSON.parse)
+        : JSON.parse(await readFile(file, "utf8"));
+    } catch (error) {
+      failures.push(`${relativeFile}: ${error.message}`);
+      continue;
+    }
     const references = collectStructuredReferences(document);
     for (const reference of references) {
       const resolved = resolveStructuredReference(
@@ -31,16 +38,24 @@ export async function validateStructuredReferences(root, files, inventory) {
           registeredRepositoryError = registry.error;
           registryLoaded = true;
         }
-        await validateRegisteredStructuredReference({
-          reference: reference.path,
-          target: resolved.target,
-          registeredRepositoryRoots,
-          registryError: registeredRepositoryError,
-        });
+        try {
+          await validateRegisteredStructuredReference({
+            reference: reference.path,
+            target: resolved.target,
+            registeredRepositoryRoots,
+            registryError: registeredRepositoryError,
+          });
+        } catch (error) {
+          failures.push(`${relativeFile}: ${error.message}`);
+        }
         continue;
       }
-      await validateLocalStructuredReference(resolved.target);
+      try {
+        await validateLocalStructuredReference(resolved.target);
+      } catch (error) {
+        failures.push(`${relativeFile}: ${reference.path}: ${error.message}`);
+      }
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

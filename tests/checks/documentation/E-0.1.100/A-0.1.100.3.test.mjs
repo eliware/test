@@ -56,14 +56,16 @@ test("runs each documentation-reference phase in order", async () => {
   expect(order).toEqual(["discover", "structured", "authority", "links"]);
 });
 
-test("returns authority and link findings without running later phases", async () => {
+test("reports authority and link findings while continuing independent phases", async () => {
+  validateStructuredReferences.mockResolvedValueOnce("structured reference invalid");
   validateAuthoritySurfaces.mockResolvedValueOnce("authority record invalid");
+  validateDocumentationLinks.mockResolvedValueOnce("documentation link invalid");
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "A-0.1.100.3",
     status: "fail",
-    message: "authority record invalid",
+    message: "structured reference invalid\nauthority record invalid\ndocumentation link invalid",
   });
-  expect(validateDocumentationLinks).not.toHaveBeenCalled();
+  expect(validateDocumentationLinks).toHaveBeenCalled();
 
   validateAuthoritySurfaces.mockResolvedValueOnce(null);
   validateDocumentationLinks.mockResolvedValueOnce("documentation link invalid");
@@ -79,11 +81,18 @@ test("normalizes errors from any reference-validation phase", async () => {
   await expect(run({ root: "/repo" })).resolves.toMatchObject({
     ruleId: "A-0.1.100.3",
     status: "fail",
-    message: "Documentation reference validation failed: discovery failed",
+    message: "Documentation reference discovery failed: discovery failed",
   });
   validateStructuredReferences.mockRejectedValueOnce(new Error("invalid path"));
   await expect(run({ root: "/repo" })).resolves.toMatchObject({
     status: "fail",
-    message: "Documentation reference validation failed: invalid path",
+    message: "Structured reference validation failed: invalid path",
+  });
+  validateAuthoritySurfaces.mockRejectedValueOnce(new Error("invalid authority"));
+  validateDocumentationLinks.mockRejectedValueOnce(new Error("invalid link"));
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
+    status: "fail",
+    message:
+      "Authority document validation failed: invalid authority\nDocumentation link validation failed: invalid link",
   });
 });

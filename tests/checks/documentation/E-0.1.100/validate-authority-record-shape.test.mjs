@@ -35,7 +35,7 @@ test("requires repository identity and validates subject path record fields", ()
   expect(validateAuthorityRecordShape({ ...base, subjects: [null] })).toBe(
     "authority subject 0 must declare an id.",
   );
-  expect(validateAuthorityRecordShape({ ...base, subjects: [{ id: "subject" }] })).toBe(
+  expect(validateAuthorityRecordShape({ ...base, subjects: [{ id: "subject" }] })).toContain(
     "authority subject subject must declare an authority path.",
   );
   expect(
@@ -43,13 +43,23 @@ test("requires repository identity and validates subject path record fields", ()
       ...base,
       subjects: [{ id: "subject", authority: { path: "../authority.json" }, directives: null }],
     }),
-  ).toBe("authority subject subject.directives must be an array.");
+  ).toContain("authority subject subject.directives must be an array.");
   expect(
     validateAuthorityRecordShape({
       ...base,
       subjects: [{ id: "subject", authority: { path: "../authority.json" }, directives: [{}] }],
     }),
-  ).toBe("authority subject subject.directives[0] must contain a path.");
+  ).toContain("authority subject subject.directives[0] must contain a path.");
+});
+
+test("reports malformed subjects without skipping later subjects", () => {
+  const result = validateAuthorityRecordShape({
+    repositoryId: "x",
+    globalAuthorityMap: "../global-map.json",
+    subjects: [null, { ...baseSubject, id: "later", kind: "unknown" }],
+  });
+  expect(result).toContain("authority subject 0 must declare an id");
+  expect(result).toContain("authority subject later must declare a supported kind");
 });
 
 test("enforces authority subject schema, kinds, and uniqueness", () => {

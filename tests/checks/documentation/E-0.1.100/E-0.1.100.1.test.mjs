@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
@@ -24,7 +24,8 @@ test("fails when the documentation indexes are missing", async () => {
   await expect(run({ root })).resolves.toEqual({
     ruleId: "E-0.1.100.1",
     status: "fail",
-    message: "Documentation repositories require docs/README.md and a linked root index.",
+    message:
+      "Root README.md is required for documentation indexing.\ndocs/README.md is required for documentation indexing.",
   });
   await rm(root, { recursive: true, force: true });
 });
@@ -46,16 +47,39 @@ test("requires the root README to link the documentation index", async () => {
 test("reports documentation files missing from the docs index", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-index-unlisted-"));
   await mkdir(join(root, "docs"));
-  await writeFile(join(root, "README.md"), "docs/README.md");
+  await writeFile(join(root, "README.md"), "documentation");
   await writeFile(join(root, "docs", "README.md"), "guide.md");
   await writeFile(join(root, "docs", "guide.md"), "guide");
   await writeFile(join(root, "docs", "reference.md"), "reference");
   await expect(run({ root })).resolves.toEqual({
     ruleId: "E-0.1.100.1",
     status: "fail",
-    message: "docs/README.md must index: reference.md.",
+    message: "Root README.md must link docs/README.md.\ndocs/README.md must index: reference.md.",
   });
   await rm(root, { recursive: true, force: true });
+});
+
+test("reports inventory traversal failures without skipping other index checks", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-doc-index-inventory-error-"));
+  await mkdir(join(root, "docs"));
+  await writeFile(join(root, "README.md"), "no documentation index link");
+  await writeFile(join(root, "docs", "README.md"), "guide.md");
+  const repositoryInventory = {
+    readText: (file) => readFile(file, "utf8"),
+    documentationFiles: async () => {
+      throw new Error("directory scan failed");
+    },
+  };
+  try {
+    await expect(run({ root, repositoryInventory })).resolves.toEqual({
+      ruleId: "E-0.1.100.1",
+      status: "fail",
+      message:
+        "Root README.md must link docs/README.md.\nDocumentation files could not be inspected: directory scan failed",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("indexes files under generated documentation subdirectories through the shared inventory", async () => {

@@ -10,12 +10,13 @@ export function run({ packageJson }) {
   if (!metadata || typeof metadata !== "object") {
     return fail(ruleId, "package.json must contain an eliware metadata object.");
   }
-  for (const field of ["apply", "authority", "crosslinks"]) {
-    if (!(field in metadata)) return fail(ruleId, `package.json.eliware.${field} is required.`);
-  }
+  const failures = ["apply", "authority", "crosslinks"]
+    .filter((field) => !(field in metadata))
+    .map((field) => `package.json.eliware.${field} is required.`);
   const profileError = validatePackageProfileSelection(packageJson);
-  if (profileError) return fail(ruleId, profileError);
   const authorityError = validatePackageAuthorityMetadata(metadata);
-  if (authorityError) return fail(ruleId, authorityError);
+  if (profileError) failures.push(profileError);
+  if (authorityError) failures.push(authorityError);
+  if (failures.length) return fail(ruleId, failures.join("\n"));
   return pass(ruleId);
 }

@@ -6,6 +6,7 @@ export async function executeCliInformationCommands({
   packageVersion,
   executeEntrypoint,
 }) {
+  const failures = [];
   for (const entrypoint of entrypoints) {
     for (const argument of ["--help", "--version"]) {
       let result;
@@ -14,21 +15,32 @@ export async function executeCliInformationCommands({
           cwd: root,
         });
       } catch (error) {
-        return `CLI entrypoint ${entrypoint} could not execute ${argument}: ${error.message}`;
+        failures.push(
+          `CLI entrypoint ${entrypoint} could not execute ${argument}: ${error.message}`,
+        );
+        continue;
       }
       if (result.code !== 0) {
-        return `CLI entrypoint ${entrypoint} must exit 0 for ${argument}; received ${result.code}.`;
+        failures.push(
+          `CLI entrypoint ${entrypoint} must exit 0 for ${argument}; received ${result.code}.`,
+        );
+        continue;
       }
       const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
-      if (!output) return `CLI entrypoint ${entrypoint} must produce output for ${argument}.`;
+      if (!output) {
+        failures.push(`CLI entrypoint ${entrypoint} must produce output for ${argument}.`);
+        continue;
+      }
       if (
         argument === "--version" &&
         typeof packageVersion === "string" &&
         !output.split(/\s+/u).includes(packageVersion)
       ) {
-        return `CLI entrypoint ${entrypoint} --version must report package version ${packageVersion}.`;
+        failures.push(
+          `CLI entrypoint ${entrypoint} --version must report package version ${packageVersion}.`,
+        );
       }
     }
   }
-  return "";
+  return failures.join("\n");
 }

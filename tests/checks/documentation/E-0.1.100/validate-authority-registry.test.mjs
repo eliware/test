@@ -41,7 +41,7 @@ beforeEach(() => {
   validateAuthorityRegistryDirectiveNamespaces.mockReturnValue(null);
 });
 
-test("returns top-level and entry-shape failures before deeper validation", async () => {
+test("returns top-level failures and skips only malformed entries", async () => {
   validateAuthorityRegistryShape.mockReturnValueOnce("registry invalid");
   await expect(validateAuthorityRegistry({ entries: null })).resolves.toBe("registry invalid");
   expect(validateAuthorityRegistryEntryShape).not.toHaveBeenCalled();
@@ -49,33 +49,42 @@ test("returns top-level and entry-shape failures before deeper validation", asyn
   validateAuthorityRegistryEntryShape.mockReturnValueOnce("entry invalid");
   await expect(validateAuthorityRegistry({ entries: [{}] })).resolves.toBe("entry invalid");
   expect(validateAuthorityRegistryReferences).not.toHaveBeenCalled();
+
+  validateAuthorityRegistryShape.mockReturnValueOnce("top-level issue");
+  await expect(
+    validateAuthorityRegistry({ entries: [{ repository: "eliware/example" }] }),
+  ).resolves.toContain("top-level issue");
+  expect(validateAuthorityRegistryReferences).toHaveBeenCalled();
 });
 
 async function expectEntryFailure(validator, message) {
-  validator.mockResolvedValueOnce(message);
+  validator.mockReturnValueOnce(message);
   await expect(
     validateAuthorityRegistry({
       root: "/repo",
       file: "/repo/authority-map.json",
       entries: [{ repository: "eliware/example" }],
     }),
-  ).resolves.toBe(message);
+  ).resolves.toContain(message);
   expect(validator).toHaveBeenCalledTimes(1);
 }
 
 test("returns reference errors without running later checks", async () => {
   await expectEntryFailure(validateAuthorityRegistryReferences, "reference invalid");
-  expect(validateAuthorityRegistryGovernance).not.toHaveBeenCalled();
+  expect(validateAuthorityRegistryGovernance).toHaveBeenCalled();
+  expect(validateAuthorityRegistryDelegation).toHaveBeenCalled();
+  expect(validateAuthorityRegistryDirectiveNamespaces).toHaveBeenCalled();
 });
 
 test("returns governance errors without running later checks", async () => {
   await expectEntryFailure(validateAuthorityRegistryGovernance, "governance invalid");
-  expect(validateAuthorityRegistryDelegation).not.toHaveBeenCalled();
+  expect(validateAuthorityRegistryDelegation).toHaveBeenCalled();
+  expect(validateAuthorityRegistryDirectiveNamespaces).toHaveBeenCalled();
 });
 
 test("returns delegation errors without running namespace checks", async () => {
   await expectEntryFailure(validateAuthorityRegistryDelegation, "delegation invalid");
-  expect(validateAuthorityRegistryDirectiveNamespaces).not.toHaveBeenCalled();
+  expect(validateAuthorityRegistryDirectiveNamespaces).toHaveBeenCalled();
 });
 
 test("returns namespace errors", async () => {

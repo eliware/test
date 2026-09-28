@@ -8,6 +8,7 @@ export const parentRuleId = "E-0.1.24";
 export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run({ root, repositoryInventory }) {
+  const failures = [];
   for (const { name, document } of await readWorkflows(root, repositoryInventory)) {
     const hasValidationJob = workflowJobs(document).some(
       ({ id, job }) => isValidationJob(id, job) || isValidationWorkflowJob(job, workflowRunSteps),
@@ -27,8 +28,8 @@ export async function run({ root, repositoryInventory }) {
       !identifiesRef ||
       concurrency["cancel-in-progress"] !== true
     ) {
-      return fail(ruleId, `${name} must cancel obsolete runs for each repository and ref.`);
+      failures.push(`${name} must cancel obsolete runs for each repository and ref.`);
     }
   }
-  return pass(ruleId);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

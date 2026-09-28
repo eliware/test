@@ -6,11 +6,18 @@ import { validateAuthorityMap } from "./validate-authority-map.mjs";
 import { readRegisteredRepositoryRoots } from "./read-registered-repository-roots.mjs";
 
 export async function validateAuthorityDocuments(root, files, inventory) {
+  const failures = [];
   for (const relativeFile of files.filter((file) => file.endsWith(".json"))) {
     const file = join(root, relativeFile);
-    const document = inventory
-      ? await inventory.readParsed(file, "json", JSON.parse)
-      : JSON.parse(await readFile(file, "utf8"));
+    let document;
+    try {
+      document = inventory
+        ? await inventory.readParsed(file, "json", JSON.parse)
+        : JSON.parse(await readFile(file, "utf8"));
+    } catch (error) {
+      failures.push(`${relativeFile}: ${error.message}`);
+      continue;
+    }
     const kind = classifyAuthorityDocument(relativeFile, document);
     const result =
       kind === "map"
@@ -24,7 +31,7 @@ export async function validateAuthorityDocuments(root, files, inventory) {
                 (await readRegisteredRepositoryRoots(root, inventory)) ?? [],
             })
           : null;
-    if (result) return result;
+    if (result) failures.push(`${relativeFile}: ${result}`);
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

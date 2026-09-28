@@ -19,11 +19,12 @@ export function validateLockfileDependencies(lockfile, packageJson) {
   const rootPackage = lockfile.packages[""];
   if (!rootPackage || typeof rootPackage !== "object")
     return "package-lock.json must contain a root packages entry.";
+  const failures = [];
   for (const field of dependencyFields) {
     const expected = packageJson?.[field] ?? {};
     const actual = rootPackage[field] ?? {};
     if (sorted(expected) !== sorted(actual))
-      return `package-lock.json root ${field} must match package.json.`;
+      failures.push(`package-lock.json root ${field} must match package.json.`);
   }
   const directDependencies = new Set(
     dependencyFields.flatMap((field) => Object.keys(packageJson?.[field] ?? {})),
@@ -31,32 +32,37 @@ export function validateLockfileDependencies(lockfile, packageJson) {
   const missingEntries = [...directDependencies].filter(
     (name) => !Object.hasOwn(lockfile.packages, `node_modules/${name}`),
   );
-  if (missingEntries.length > 0) {
-    return `package-lock.json must contain an entry for every direct dependency: ${missingEntries.join(", ")}.`;
-  }
+  if (missingEntries.length > 0)
+    failures.push(
+      `package-lock.json must contain an entry for every direct dependency: ${missingEntries.join(", ")}.`,
+    );
   const packageError = validatePackageEntries(lockfile.packages);
-  if (packageError) return packageError;
-  return null;
+  if (packageError) failures.push(packageError);
+  return failures.length ? failures.join("\n") : null;
 }
 
 function validatePackageEntries(packages) {
+  const failures = [];
   for (const [path, entry] of Object.entries(packages)) {
     if (path === "") continue;
     if (
       !entry ||
       typeof entry !== "object" ||
+      Array.isArray(entry) ||
       (entry.name !== undefined && (typeof entry.name !== "string" || !entry.name)) ||
       typeof entry.version !== "string" ||
       !entry.version
     )
-      return `package-lock.json entry ${path} must contain a valid package version.`;
+      failures.push(`package-lock.json entry ${path} must contain a valid package version.`);
+    if (!entry || typeof entry !== "object" || Array.isArray(entry) || !entry.version) continue;
     if (entry.link === true) continue;
     if (typeof entry.resolved !== "string" && typeof entry.integrity !== "string")
-      return `package-lock.json entry ${path} must contain resolved or integrity data.`;
+      failures.push(`package-lock.json entry ${path} must contain resolved or integrity data.`);
     for (const field of dependencyFields) {
       if (!entry[field]) continue;
       if (typeof entry[field] !== "object" || Array.isArray(entry[field]))
-        return `package-lock.json entry ${path} has invalid ${field}.`;
+        failures.push(`package-lock.json entry ${path} has invalid ${field}.`);
+      if (typeof entry[field] !== "object" || Array.isArray(entry[field])) continue;
       for (const dependency of Object.keys(entry[field])) {
         if (
           field === "peerDependencies" &&
@@ -64,11 +70,13 @@ function validatePackageEntries(packages) {
         )
           continue;
         if (!hasPackageEntry(packages, path, dependency))
-          return `package-lock.json entry ${path} references missing dependency ${dependency}.`;
+          failures.push(
+            `package-lock.json entry ${path} references missing dependency ${dependency}.`,
+          );
       }
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }
 
 function hasPackageEntry(packages, parentPath, dependency) {

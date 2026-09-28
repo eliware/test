@@ -16,18 +16,18 @@ export async function run({ root, packageJson, repositoryInventory }) {
   }
   if (workflows.length === 0)
     return fail(ruleId, ".github/workflows must contain a GitHub Actions validation workflow.");
+  const failures = [];
   const fileSetError = validateWorkflowFileSet(
     workflows.map(({ name }) => name),
     packageJson,
   );
-  if (fileSetError) return fail(ruleId, fileSetError);
+  if (fileSetError) failures.push(fileSetError);
   const workflow = workflows.find(
     ({ name, document }) => name === "ci.yml" && workflowHasValidationEvents(document),
   );
   if (!workflow)
-    return fail(
-      ruleId,
+    failures.push(
       "A GitHub Actions workflow must validate pull requests and pushes to main on Ubuntu.",
     );
-  return pass(ruleId);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

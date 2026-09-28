@@ -41,6 +41,18 @@ test("maps a workflow without a compliant validation job to the rule result", as
   }
 });
 
+test("reports every workflow missing the validation sequence", async () => {
+  const root = await workflowRoot("jobs:\n  validate:\n    steps:\n      - run: npm test\n");
+  await writeFile(
+    join(root, ".github", "workflows", "deploy.yml"),
+    "jobs:\n  deploy:\n    steps:\n      - run: deploy app\n",
+  );
+  const result = await run({ root });
+  expect(result.message).toContain("ci.yml must run npm ci followed by npm test.");
+  expect(result.message).toContain("deploy.yml must run npm ci followed by npm test.");
+  await rm(root, { recursive: true, force: true });
+});
+
 test("leaves publication jobs to their publication profile validators", async () => {
   const root = await workflowRoot(
     "jobs:\n  publish:\n    steps:\n      - run: npm publish --provenance\n",

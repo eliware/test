@@ -83,17 +83,18 @@ test.each([
   ["record schema", () => validateRunbookRecords.mockReturnValueOnce({ error: "record invalid" })],
   ["reference resolution", () => validateReferences.mockResolvedValueOnce("reference invalid")],
   ["index coverage", () => validateRunbookIndexCoverage.mockReturnValueOnce("index incomplete")],
-])("maps %s findings and stops later phases", async (_phase, prepareFailure) => {
+])("maps %s findings and still runs independent later phases", async (_phase, prepareFailure) => {
   prepareFailure();
   const result = await run({ root: "/repo" });
   expect(result).toMatchObject({ ruleId: "A-0.1.110.2", status: "fail" });
   if (_phase === "record schema") {
     expect(result.message).toBe("record invalid");
-    expect(validateReferences).not.toHaveBeenCalled();
+    expect(validateReferences).toHaveBeenCalled();
+    expect(validateRunbookIndexCoverage).toHaveBeenCalled();
   }
   if (_phase === "reference resolution") {
     expect(result.message).toBe("reference invalid");
-    expect(validateRunbookIndexCoverage).not.toHaveBeenCalled();
+    expect(validateRunbookIndexCoverage).toHaveBeenCalled();
   }
   if (_phase === "index coverage") expect(result.message).toBe("index incomplete");
 });

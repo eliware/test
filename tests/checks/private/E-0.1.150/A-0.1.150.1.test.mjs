@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../src/checks/private/E-0.1.150/A-0.1.150.1.mjs";
@@ -47,4 +47,22 @@ test("fails when workflows cannot be inspected", async () => {
     status: "fail",
     message: "Private repositories must provide inspectable CI workflows.",
   });
+});
+
+test("reports prohibited operations across all private CI workflows", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-private-multiple-"));
+  const directory = join(root, ".github", "workflows");
+  await mkdir(directory, { recursive: true });
+  await writeFile(
+    join(directory, "publish.yml"),
+    "jobs:\n  publish:\n    steps:\n      - run: npm publish\n",
+  );
+  await writeFile(
+    join(directory, "deploy.yml"),
+    "jobs:\n  deploy:\n    steps:\n      - run: kubectl apply\n",
+  );
+  const result = await run({ root });
+  expect(result.message).toContain("publish.yml");
+  expect(result.message).toContain("deploy.yml");
+  await rm(root, { recursive: true, force: true });
 });

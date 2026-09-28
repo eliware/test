@@ -24,3 +24,15 @@ test("reads runbook JSON through the shared parsed-document cache", async () => 
   ]);
   await rm(root, { recursive: true, force: true });
 });
+
+test("continues reading records after an individual file fails", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-runbooks-partial-"));
+  const goodFile = join(root, "good.json");
+  await writeFile(goodFile, JSON.stringify({ id: "good" }));
+  const result = await readRunbookRecords([join(root, "missing.json"), goodFile]);
+  expect(result).toHaveLength(2);
+  expect(result[0].file).toBe(join(root, "missing.json"));
+  expect(result[0].error.message).toContain("ENOENT");
+  expect(result[1]).toEqual({ file: goodFile, record: { id: "good" } });
+  await rm(root, { recursive: true, force: true });
+});

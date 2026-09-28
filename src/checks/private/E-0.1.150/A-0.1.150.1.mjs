@@ -8,6 +8,7 @@ export const parentRuleId = "E-0.1.150";
 export async function run({ root }) {
   try {
     const workflows = await loadWorkflows(root);
+    const failures = [];
     for (const { name, document } of workflows) {
       const commands = workflowCommands(document);
       if (
@@ -15,13 +16,10 @@ export async function run({ root }) {
           /^(?:npm\s+publish|docker\s+push|kubectl\s+apply|deploy(?:\s|$))/iu.test(command),
         )
       )
-        return fail(
-          ruleId,
-          `Private validation workflow contains publication or deployment: ${name}.`,
-        );
+        failures.push(`Private validation workflow contains publication or deployment: ${name}.`);
     }
+    return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
   } catch {
     return fail(ruleId, "Private repositories must provide inspectable CI workflows.");
   }
-  return pass(ruleId);
 }

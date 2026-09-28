@@ -25,3 +25,15 @@ test("requires stage scripts to be backed by explicit capabilities", () => {
     run({ packageJson: { scripts: {}, eliware: { capabilities: ["deploy"] } } }),
   ).toMatchObject({ status: "fail" });
 });
+
+test("reports both independent capability and script mismatches", () => {
+  const result = run({
+    packageJson: {
+      scripts: { build: "rollup -c" },
+      eliware: { capabilities: ["typecheck"] },
+    },
+  });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("Declared typecheck capability");
+  expect(result.message).toContain("scripts.build");
+});

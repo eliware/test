@@ -17,9 +17,13 @@ export async function run({ root, packageJson, repositoryInventory }) {
   const allowAttestation =
     Array.isArray(packageJson?.eliware?.apply) &&
     packageJson.eliware.apply.includes("ghcr-published");
+  const failures = [];
   for (const { name, document } of workflows) {
     const selection = selectWorkflowValidationJobs(name, document);
-    if (selection.error) return fail(ruleId, selection.error);
+    if (selection.error) {
+      failures.push(selection.error);
+      continue;
+    }
     for (const { id, job, commands: jobCommands } of selection.jobs) {
       const sequenceError = validateWorkflowSequence(
         `${name} job ${id}`,
@@ -28,8 +32,8 @@ export async function run({ root, packageJson, repositoryInventory }) {
         job,
         { allowAttestation },
       );
-      if (sequenceError) return fail(ruleId, sequenceError);
+      if (sequenceError) failures.push(sequenceError);
     }
   }
-  return pass(ruleId);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

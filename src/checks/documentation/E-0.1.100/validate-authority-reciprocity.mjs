@@ -2,7 +2,9 @@ import { resolve } from "node:path";
 import { readAuthorityTarget } from "./read-authority-target.mjs";
 
 export async function validateAuthorityReciprocity({ root, file, entries, inventory }) {
+  const failures = [];
   for (const entry of entries) {
+    if (!entry || typeof entry !== "object") continue;
     const authority = await readAuthorityTarget({
       root,
       file,
@@ -10,9 +12,14 @@ export async function validateAuthorityReciprocity({ root, file, entries, invent
       label: `${entry.repository}.authorityFile`,
       inventory,
     });
-    if (authority.error) return authority.error;
+    if (authority.error) {
+      failures.push(authority.error);
+      continue;
+    }
     if (!authority.unavailable && authority.document?.repositoryId !== entry.repository) {
-      return `${entry.repository}.authorityFile repositoryId does not match registry entry.`;
+      failures.push(
+        `${entry.repository}.authorityFile repositoryId does not match registry entry.`,
+      );
     }
     if (
       !authority.unavailable &&
@@ -24,7 +31,9 @@ export async function validateAuthorityReciprocity({ root, file, entries, invent
       );
       const missing = entry.governs.filter((target) => !subjectIds.has(target));
       if (missing.length > 0)
-        return `${entry.repository}.governs target does not resolve to a local subject: ${missing.join(", ")}.`;
+        failures.push(
+          `${entry.repository}.governs target does not resolve to a local subject: ${missing.join(", ")}.`,
+        );
     }
     if (!authority.unavailable && typeof authority.document?.globalAuthorityMap === "string") {
       const reciprocal = await readAuthorityTarget({
@@ -34,11 +43,16 @@ export async function validateAuthorityReciprocity({ root, file, entries, invent
         label: `${entry.repository}.globalAuthorityMap`,
         inventory,
       });
-      if (reciprocal.error) return reciprocal.error;
+      if (reciprocal.error) {
+        failures.push(reciprocal.error);
+        continue;
+      }
       if (!reciprocal.unavailable && resolve(reciprocal.target) !== resolve(file)) {
-        return `${entry.repository}.globalAuthorityMap does not point back to authority-map.json.`;
+        failures.push(
+          `${entry.repository}.globalAuthorityMap does not point back to authority-map.json.`,
+        );
       }
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

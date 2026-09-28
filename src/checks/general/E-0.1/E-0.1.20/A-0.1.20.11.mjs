@@ -11,15 +11,13 @@ export function run({ packageJson }) {
   ) {
     return fail(ruleId, "package.json.eliware.capabilities must contain only typecheck and build.");
   }
+  const failures = [];
   for (const name of ["typecheck", "build"]) {
     const script = packageJson?.scripts?.[name];
     if (capabilities.includes(name) && (typeof script !== "string" || !script.trim()))
-      return fail(ruleId, `Declared ${name} capability requires a nonempty npm script.`);
+      failures.push(`Declared ${name} capability requires a nonempty npm script.`);
     if (script !== undefined && !capabilities.includes(name))
-      return fail(
-        ruleId,
-        `package.json.scripts.${name} requires a declared package.json.eliware.capabilities entry.`,
-      );
+      failures.push(`package.json.scripts.${name} requires a declared capability entry.`);
   }
-  return pass(ruleId);
+  return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

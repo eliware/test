@@ -12,7 +12,10 @@ test("requires web README topics", async () => {
   );
   expect((await run({ root })).status).toBe("pass");
   await writeFile(join(root, "README.md"), "purpose");
-  expect((await run({ root })).status).toBe("fail");
+  const result = await run({ root });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("Web README.md must document requirements.");
+  expect(result.message).toContain("Web README.md must document license.");
 });
 
 test("reports a missing web README", async () => {

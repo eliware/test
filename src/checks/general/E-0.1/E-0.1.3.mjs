@@ -8,20 +8,17 @@ export const ruleId = "E-0.1.3";
 export const parentRuleId = "E-0.1";
 
 export async function run({ packageJson, root, files, repositoryInventory }) {
+  const failures = [];
   const invalidScripts = findInvalidValidationScripts(packageJson?.scripts);
-  if (invalidScripts.length > 0) {
-    return fail(
-      ruleId,
+  if (invalidScripts.length > 0)
+    failures.push(
       `Validation scripts must use eliware-test rather than direct tools: ${invalidScripts.join(", ")}.`,
     );
-  }
   const directTools = findDirectValidationDependencies(packageJson);
-  if (directTools.length > 0) {
-    return fail(
-      ruleId,
+  if (directTools.length > 0)
+    failures.push(
       `Repositories must not directly declare shared validation tools: ${directTools.join(", ")}.`,
     );
-  }
   if (root) {
     try {
       const repositoryFiles =
@@ -35,16 +32,12 @@ export async function run({ packageJson, root, files, repositoryInventory }) {
           )
         : await findDirectToolUses(root, repositoryFiles);
       if (directUses.length > 0)
-        return fail(
-          ruleId,
+        failures.push(
           `Direct validation-tool use found in repository files: ${directUses.join(", ")}.`,
         );
     } catch (error) {
-      return fail(
-        ruleId,
-        `Repository validation surfaces could not be inspected: ${error.message}`,
-      );
+      failures.push(`Repository validation surfaces could not be inspected: ${error.message}`);
     }
   }
-  return pass(ruleId);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

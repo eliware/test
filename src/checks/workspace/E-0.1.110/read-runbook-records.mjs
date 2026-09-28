@@ -7,10 +7,14 @@ async function readRunbook(file) {
 export async function readRunbookRecords(files, inventory) {
   const records = [];
   for (const file of files) {
-    const record = inventory
-      ? await inventory.readParsed(file, "json", JSON.parse)
-      : await readRunbook(file);
-    records.push({ file, record });
+    try {
+      const record = inventory
+        ? await inventory.readParsed(file, "json", JSON.parse)
+        : await readRunbook(file);
+      records.push({ file, record });
+    } catch (error) {
+      records.push({ file, error });
+    }
   }
   return records;
 }

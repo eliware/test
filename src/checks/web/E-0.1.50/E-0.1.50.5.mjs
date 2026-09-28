@@ -5,16 +5,18 @@ export const parentRuleId = "E-0.1.50";
 
 export function run({ packageJson }) {
   const dependencies = packageJson?.dependencies ?? {};
+  const failures = [];
   for (const name of ["lighthouse", "puppeteer"]) {
-    if (!dependencies[name]) return fail(ruleId, `Web applications must directly declare ${name}.`);
+    if (!dependencies[name]) failures.push(`Web applications must directly declare ${name}.`);
     if (typeof packageJson?.scripts?.[name] !== "string" || !packageJson.scripts[name].trim())
-      return fail(ruleId, `Web applications must define a ${name} script.`);
+      failures.push(`Web applications must define a ${name} script.`);
+    if (typeof packageJson?.scripts?.[name] !== "string" || !packageJson.scripts[name].trim())
+      continue;
     const command = packageJson.scripts[name].trim().split(/\s+/u)[0].split(/[\\/]/u).pop();
     if (command !== name)
-      return fail(
-        ruleId,
+      failures.push(
         `Web applications' ${name} script must invoke the local ${name} command directly.`,
       );
   }
-  return pass(ruleId);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

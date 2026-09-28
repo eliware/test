@@ -29,3 +29,14 @@ test("fails closed when the specification directory is absent", async () => {
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
 });
+
+test("reports all missing specification files and index", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-specs-multiple-missing-"));
+  await mkdir(join(root, "specs"));
+  const result = await run({ root });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("specs/README.md");
+  expect(result.message).toContain("specs/authority.json");
+  expect(result.message).toContain("specs/directives.json");
+  await rm(root, { recursive: true, force: true });
+});

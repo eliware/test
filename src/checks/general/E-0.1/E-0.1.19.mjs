@@ -9,6 +9,7 @@ export const ruleId = "E-0.1.19";
 export const parentRuleId = "E-0.1";
 
 export function run({ root = process.cwd(), packageJson }) {
+  const failures = [];
   const validators = [
     validateEliwarePackageMetadata,
     validatePackageIdentity,
@@ -17,9 +18,9 @@ export function run({ root = process.cwd(), packageJson }) {
   ];
   for (const validate of validators) {
     const message = validate(packageJson);
-    if (message) return fail(ruleId, message);
+    if (message) failures.push(message);
   }
   const publicationMessage = validatePublicationFiles(packageJson, root);
-  if (publicationMessage) return fail(ruleId, publicationMessage);
-  return pass(ruleId);
+  if (publicationMessage) failures.push(publicationMessage);
+  return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

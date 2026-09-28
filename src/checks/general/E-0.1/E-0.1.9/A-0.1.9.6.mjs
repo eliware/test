@@ -15,18 +15,16 @@ export function run({ packageJson }) {
   const crosslinks = packageJson?.eliware?.crosslinks;
   if (!Array.isArray(crosslinks))
     return fail(ruleId, "package.json.eliware.crosslinks must be an array.");
-  for (const link of crosslinks) {
+  const failures = [];
+  for (const [index, link] of crosslinks.entries()) {
     if (
       !link ||
       typeof link.path !== "string" ||
       !link.path.trim() ||
       !allowedRelations.has(link.relation)
     ) {
-      return fail(
-        ruleId,
-        "Every Eliware crosslink must have a path and an approved relationship value.",
-      );
+      failures.push(`eliware.crosslinks[${index}] must have a path and approved relationship.`);
     }
   }
-  return pass(ruleId);
+  return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

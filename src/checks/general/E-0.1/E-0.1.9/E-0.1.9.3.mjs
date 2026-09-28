@@ -17,7 +17,8 @@ export function run({ packageJson }) {
   const exemptions = packageJson?.eliware?.exempt ?? [];
   if (!Array.isArray(exemptions))
     return fail(ruleId, "package.json.eliware.exempt must be an array.");
-  for (const exemption of exemptions) {
+  const failures = [];
+  for (const [index, exemption] of exemptions.entries()) {
     if (
       !exemption ||
       typeof exemption.ruleId !== "string" ||
@@ -32,11 +33,10 @@ export function run({ packageJson }) {
           !validDate(exemption.expiry) ||
           Date.parse(`${exemption.expiry}T23:59:59.999Z`) < Date.now()))
     ) {
-      return fail(
-        ruleId,
-        "Every exemption must identify a rule ID, reason, approver, approval timestamp, and valid expiry.",
+      failures.push(
+        `eliware.exempt[${index}] must identify a rule ID, reason, approver, approval timestamp, and valid expiry.`,
       );
     }
   }
-  return pass(ruleId);
+  return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

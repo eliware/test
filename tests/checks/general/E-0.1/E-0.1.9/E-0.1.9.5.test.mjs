@@ -45,6 +45,22 @@ test.each([
   );
 });
 
+test("reports every malformed crosslink", async () => {
+  const result = await run({
+    packageJson: {
+      eliware: {
+        crosslinks: [
+          { path: "", relation: "relatedAuthority", authoritativeFor: "docs" },
+          { path: "https://example.com", relation: "relatedAuthority", authoritativeFor: "docs" },
+        ],
+      },
+    },
+  });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("crosslinks[0]");
+  expect(result.message).toContain("repository-relative");
+});
+
 test("accepts a structurally valid cross-repository authority path", async () => {
   await expect(
     run({

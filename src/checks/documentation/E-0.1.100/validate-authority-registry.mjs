@@ -9,28 +9,32 @@ import { validateAuthorityRegistryDirectiveNamespaces } from "./validate-authori
 
 export async function validateAuthorityRegistry({ root, file, entries }) {
   const shapeError = validateAuthorityRegistryShape(entries);
-  if (shapeError) return shapeError;
+  if (!Array.isArray(entries)) return shapeError;
   const repositories = new Set(
     entries
       .filter((entry) => entry && typeof entry.repository === "string")
       .map((entry) => entry.repository),
   );
   const governedTargets = new Set();
+  const failures = shapeError ? [shapeError] : [];
   for (const [index, entry] of entries.entries()) {
     const entryShapeError = validateAuthorityRegistryEntryShape(entry, index);
-    if (entryShapeError) return entryShapeError;
+    if (entryShapeError) {
+      failures.push(entryShapeError);
+      continue;
+    }
     const referenceError = await validateAuthorityRegistryReferences({
       root,
       file,
       entry,
     });
-    if (referenceError) return referenceError;
+    if (referenceError) failures.push(referenceError);
     const governanceError = validateAuthorityRegistryGovernance(entry, governedTargets);
-    if (governanceError) return governanceError;
+    if (governanceError) failures.push(governanceError);
     const delegationError = validateAuthorityRegistryDelegation(entry, repositories);
-    if (delegationError) return delegationError;
+    if (delegationError) failures.push(delegationError);
     const namespaceError = validateAuthorityRegistryDirectiveNamespaces(entry);
-    if (namespaceError) return namespaceError;
+    if (namespaceError) failures.push(namespaceError);
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

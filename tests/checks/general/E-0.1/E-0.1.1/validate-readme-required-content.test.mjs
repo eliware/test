@@ -72,14 +72,17 @@ test("runs focused README validators in order and passes their shared inputs", (
   expect(validateReadmeLicense).toHaveBeenCalledWith(readme, options.sections);
 });
 
-test("returns the first validation finding and skips later validators", () => {
+test("collects findings from every independent README validator", () => {
   for (const [index, validator] of validators.entries()) {
     resetValidators();
     validator.mockReturnValueOnce("invalid README");
 
     expect(validateReadmeRequiredContent("README")).toBe("invalid README");
+    for (const earlierValidator of validators.slice(0, index)) {
+      expect(earlierValidator).toHaveBeenCalled();
+    }
     for (const laterValidator of validators.slice(index + 1)) {
-      expect(laterValidator).not.toHaveBeenCalled();
+      expect(laterValidator).toHaveBeenCalled();
     }
   }
 });

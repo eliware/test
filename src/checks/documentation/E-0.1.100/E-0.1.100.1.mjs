@@ -12,34 +12,41 @@ export const repositoryInventoryOptions = Object.freeze({
 
 export async function run(context) {
   const { root } = context;
+  const failures = [];
+  let rootReadme;
+  let docsReadme;
   try {
-    const [rootReadme, docsReadme] = await Promise.all([
-      readRepositoryText(context, join(root, "README.md")),
-      readRepositoryText(context, join(root, "docs", "README.md")),
-    ]);
-    if (!rootReadme.includes("docs/README.md"))
-      return fail(ruleId, "Root README.md must link docs/README.md.");
-    const files = context.repositoryInventory
-      ? await context.repositoryInventory.documentationFiles({
-          directory: join(root, "docs"),
-          maxDepth: Number.POSITIVE_INFINITY,
-          maxFiles: Number.POSITIVE_INFINITY,
-          includeGenerated: true,
-        })
-      : await collectDocsFiles(join(root, "docs"));
-    const missing = files
-      .map((file) => file.split(/[\\/]/u).at(-1))
-      .filter((name) => name !== "README.md")
-      .filter((name) => !docsReadme.includes(name));
-    if (missing.length > 0)
-      return fail(ruleId, `docs/README.md must index: ${missing.join(", ")}.`);
+    rootReadme = await readRepositoryText(context, join(root, "README.md"));
   } catch {
-    return fail(
-      ruleId,
-      "Documentation repositories require docs/README.md and a linked root index.",
-    );
+    failures.push("Root README.md is required for documentation indexing.");
   }
-  return pass(ruleId);
+  try {
+    docsReadme = await readRepositoryText(context, join(root, "docs", "README.md"));
+  } catch {
+    failures.push("docs/README.md is required for documentation indexing.");
+  }
+  if (rootReadme && !rootReadme.includes("docs/README.md"))
+    failures.push("Root README.md must link docs/README.md.");
+  if (docsReadme !== undefined) {
+    try {
+      const files = context.repositoryInventory
+        ? await context.repositoryInventory.documentationFiles({
+            directory: join(root, "docs"),
+            maxDepth: Number.POSITIVE_INFINITY,
+            maxFiles: Number.POSITIVE_INFINITY,
+            includeGenerated: true,
+          })
+        : await collectDocsFiles(join(root, "docs"));
+      const missing = files
+        .map((file) => file.split(/[\\/]/u).at(-1))
+        .filter((name) => name !== "README.md")
+        .filter((name) => !docsReadme.includes(name));
+      if (missing.length > 0) failures.push(`docs/README.md must index: ${missing.join(", ")}.`);
+    } catch (error) {
+      failures.push(`Documentation files could not be inspected: ${error.message}`);
+    }
+  }
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }
 
 async function collectDocsFiles(directory) {

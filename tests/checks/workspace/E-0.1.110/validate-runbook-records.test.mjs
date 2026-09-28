@@ -24,3 +24,12 @@ test("returns a path-indexed record collection", () => {
   expect(result.error).toBeNull();
   expect(result.filesByPath.get(record().file)).toEqual(record().record);
 });
+
+test("collects errors from records that could not be parsed", () => {
+  const result = validateRunbookRecords([
+    { file: "C:\\repo\\bad.json", error: new Error("invalid JSON") },
+    record(),
+  ]);
+  expect(result.error).toContain("invalid JSON");
+  expect(result.filesByPath.get(record().file)).toEqual(record().record);
+});

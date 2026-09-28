@@ -14,16 +14,17 @@ export async function run({
   findFiles = findRepositoryFiles,
   checkIgnored,
 }) {
+  const failures = [];
   const repositoryName = packageJson?.name?.replace(/^@[^/]+\//, "");
   if (!repositoryName) {
-    return fail(ruleId, "package.json.name is required to derive the mailbox owner.");
+    failures.push("package.json.name is required to derive the mailbox owner.");
+  } else {
+    const expected = `${repositoryName}@eliware.org`;
+    const owner = await inspectLocalMailboxOwner(root, expected, {
+      checkIgnored,
+    });
+    if (owner.error) failures.push(owner.error);
   }
-
-  const expected = `${repositoryName}@eliware.org`;
-  const owner = await inspectLocalMailboxOwner(root, expected, {
-    checkIgnored,
-  });
-  if (owner.error) return fail(ruleId, owner.error);
 
   let files;
   try {
@@ -31,7 +32,8 @@ export async function run({
       ? await repositoryInventory.repositoryFiles()
       : await findFiles(root);
   } catch (error) {
-    return fail(ruleId, `Environment files could not be inspected: ${error.message}`);
+    failures.push(`Environment files could not be inspected: ${error.message}`);
+    return fail(ruleId, failures.join("\n"));
   }
   const templateFiles = await resolveMailboxTemplateFiles(root, files, checkIgnored);
   const templateError = await validateMailboxTemplates(
@@ -39,6 +41,6 @@ export async function run({
     templateFiles,
     repositoryInventory ? { repositoryInventory } : null,
   );
-  if (templateError) return fail(ruleId, templateError);
-  return pass(ruleId);
+  if (templateError) failures.push(templateError);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

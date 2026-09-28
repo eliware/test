@@ -15,25 +15,31 @@ const valueOptions = new Set(["--loglevel"]);
 
 export function validatePackArguments(args = []) {
   let expectsValue = false;
+  const failures = [];
   for (const argument of args) {
     if (expectsValue) {
       if (argument.startsWith("-")) {
         const option = argument.split("=", 1)[0];
-        if (isProtectedOption(option)) return protectedArgumentError(argument);
-        return "Pack argument --loglevel requires a value.";
+        if (isProtectedOption(option)) failures.push(protectedArgumentError(argument));
+        else failures.push("Pack argument --loglevel requires a value.");
+      } else {
+        expectsValue = false;
+        continue;
       }
-      expectsValue = false;
-      continue;
     }
     const option = argument.split("=", 1)[0];
-    if (argument === "--" || isProtectedOption(option)) return protectedArgumentError(argument);
+    if (argument === "--" || isProtectedOption(option)) {
+      failures.push(protectedArgumentError(argument));
+      continue;
+    }
     if (!argument.startsWith("-")) {
-      return `Pack arguments cannot select a package to pack: ${argument}.`;
+      failures.push(`Pack arguments cannot select a package to pack: ${argument}.`);
+      continue;
     }
     expectsValue = valueOptions.has(option) && !argument.includes("=");
   }
-  if (expectsValue) return "Pack argument --loglevel requires a value.";
-  return null;
+  if (expectsValue) failures.push("Pack argument --loglevel requires a value.");
+  return failures.length ? failures.join("\n") : null;
 }
 
 function isProtectedOption(option) {

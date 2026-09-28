@@ -19,36 +19,41 @@ export async function run(context) {
     const workflows = await readWorkflows(root, context);
     if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0))
       return fail(ruleId, "npm-published repositories must define a publication workflow.");
+    const failures = [];
     for (const workflow of workflows) {
       const publication = npmPublicationJobs(workflow);
       if (publication.length === 0) {
         if (/\bnpm\s+publish\b/i.test(workflow.content)) {
-          return fail(ruleId, `Publication workflow could not be parsed: ${workflow.name}.`);
+          failures.push(`Publication workflow could not be parsed: ${workflow.name}.`);
         }
         continue;
       }
       const validation = findValidationJobs(workflow);
-      if (
-        validation.length === 0 ||
+      if (validation.length === 0) {
+        failures.push(`Publication workflow must define a validation job: ${workflow.name}.`);
+      } else if (
         !validation.some(
           ({ job }) =>
             hasUbuntuRunner(workflow, job) &&
             steps(job).some(({ run }) => /^npm\s+ci$/iu.test(String(run ?? "").trim())) &&
             steps(job).some(({ run }) => /^npm\s+test$/iu.test(String(run ?? "").trim())),
-        ) ||
-        publication.some(({ job }) => {
-          const needs = publicationNeeds(job);
-          return (
-            !needs.some((id) => validation.some((item) => item.id === id)) ||
-            /always\s*\(/iu.test(String(job.if ?? ""))
-          );
-        })
+        )
       )
-        return fail(
-          ruleId,
-          `Publication workflow must inherit the validation gate: ${workflow.name}.`,
+        failures.push(
+          `Publication workflow must validate on Ubuntu before publishing: ${workflow.name}.`,
         );
+      for (const { id, job } of publication) {
+        const needs = publicationNeeds(job);
+        if (
+          !needs.some((needsId) => validation.some((item) => item.id === needsId)) ||
+          /always\s*\(/iu.test(String(job.if ?? ""))
+        )
+          failures.push(
+            `Publication workflow must inherit the validation gate: ${workflow.name} job ${id}.`,
+          );
+      }
     }
+    if (failures.length) return fail(ruleId, failures.join("\n"));
   } catch (error) {
     return fail(ruleId, `npm publication workflows could not be read: ${error.message}`);
   }

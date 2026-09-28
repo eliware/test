@@ -1,4 +1,5 @@
 export function validatePackageAuthorityMetadata(eliware) {
+  const failures = [];
   if (
     !Array.isArray(eliware?.authority?.authoritativeFor) ||
     eliware.authority.authoritativeFor.length === 0 ||
@@ -11,7 +12,9 @@ export function validatePackageAuthorityMetadata(eliware) {
       (value) => typeof value !== "string" || !value.trim(),
     )
   )
-    return "package.json.eliware.authority must contain nonempty authoritativeFor and notAuthoritativeFor arrays.";
+    failures.push(
+      "package.json.eliware.authority must contain nonempty authoritativeFor and notAuthoritativeFor arrays.",
+    );
   if (
     !Array.isArray(eliware.crosslinks) ||
     eliware.crosslinks.length === 0 ||
@@ -27,6 +30,8 @@ export function validatePackageAuthorityMetadata(eliware) {
         !link.authoritativeFor.trim(),
     )
   )
-    return "package.json.eliware.crosslinks must contain path, relation, and authoritativeFor for every link.";
-  return null;
+    failures.push(
+      "package.json.eliware.crosslinks must contain path, relation, and authoritativeFor for every link.",
+    );
+  return failures.length ? failures.join("\n") : null;
 }

@@ -23,7 +23,7 @@ export async function run(context) {
     const validation = validateRunbookRecords(
       await readRunbookRecords(loaded.files, context.repositoryInventory),
     );
-    if (validation.error) return fail(ruleId, validation.error);
+    const failures = validation.error ? [validation.error] : [];
     const indexedPaths = new Set();
     const referenceError = await validateReferences(
       root,
@@ -31,9 +31,10 @@ export async function run(context) {
       indexedPaths,
       context,
     );
-    if (referenceError) return fail(ruleId, referenceError);
+    if (referenceError) failures.push(referenceError);
     const indexError = validateRunbookIndexCoverage(loaded.files, indexedPaths);
-    if (indexError) return fail(ruleId, indexError);
+    if (indexError) failures.push(indexError);
+    if (failures.length) return fail(ruleId, failures.join("\n"));
   } catch (error) {
     return fail(ruleId, `Runbook records must be valid JSON: ${error.message}`);
   }

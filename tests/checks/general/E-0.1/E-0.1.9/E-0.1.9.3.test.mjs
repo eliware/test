@@ -27,6 +27,13 @@ test("rejects incomplete or invalid exemption metadata", () => {
   );
 });
 
+test("reports every malformed exemption without skipping later entries", () => {
+  const result = run({ packageJson: { eliware: { exempt: [{ ...valid, reason: "" }, null] } } });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("eliware.exempt[0]");
+  expect(result.message).toContain("eliware.exempt[1]");
+});
+
 test("accepts repositories without exemptions and rejects malformed metadata shapes", () => {
   expect(run({ packageJson: {} })).toEqual({ ruleId: "E-0.1.9.3", status: "pass", message: "" });
   expect(run({ packageJson: { eliware: { exempt: "invalid" } } })).toEqual(

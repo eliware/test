@@ -58,17 +58,26 @@ const wrapperOwnedOptions = new Set([
 
 export function validatePrettierArguments(args) {
   if (!Array.isArray(args)) return "Prettier arguments must be an array of strings.";
+  const failures = [];
   for (const argument of args) {
-    if (typeof argument !== "string") return "Prettier arguments must be an array of strings.";
+    if (typeof argument !== "string") {
+      failures.push("Prettier arguments must be an array of strings.");
+      continue;
+    }
     if (!argument.startsWith("-") || argument === "--") {
-      return `Prettier path argument ${argument} conflicts with wrapper-owned file coverage.`;
+      failures.push(
+        `Prettier path argument ${argument} conflicts with wrapper-owned file coverage.`,
+      );
+      continue;
     }
     const option = argument.split("=", 1)[0];
     if (isWrapperOwnedOption(option) || option.startsWith("--experimental-")) {
-      return `Prettier argument ${argument} conflicts with wrapper-owned formatting mode, configuration, or file coverage.`;
+      failures.push(
+        `Prettier argument ${argument} conflicts with wrapper-owned formatting mode, configuration, or file coverage.`,
+      );
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }
 
 function isWrapperOwnedOption(option) {

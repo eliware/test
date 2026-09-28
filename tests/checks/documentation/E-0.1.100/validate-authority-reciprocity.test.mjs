@@ -18,6 +18,8 @@ test("validates repository identity and reciprocal map links", async () => {
       root,
       file,
       entries: [
+        null,
+        "invalid",
         {
           repository: "eliware/example",
           authorityFile: "./specs/authority.json",

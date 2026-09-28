@@ -5,20 +5,23 @@ import { validateAuthorityRegistry } from "./validate-authority-registry.mjs";
 export async function validateAuthorityMap({ root, file, document, inventory }) {
   if (!document || typeof document !== "object")
     return "authority-map.json must declare repositoryRegistry.";
+  const failures = [];
   const registryError = await validateAuthorityRegistry({
     root,
     file,
     entries: document.repositoryRegistry,
   });
-  if (registryError) return registryError;
-  const reciprocityError = await validateAuthorityReciprocity({
-    root,
-    file,
-    entries: document.repositoryRegistry,
-    inventory,
-  });
-  if (reciprocityError) return reciprocityError;
-  return validateAuthorityMapPaths({
+  if (registryError) failures.push(registryError);
+  if (Array.isArray(document.repositoryRegistry)) {
+    const reciprocityError = await validateAuthorityReciprocity({
+      root,
+      file,
+      entries: document.repositoryRegistry,
+      inventory,
+    });
+    if (reciprocityError) failures.push(reciprocityError);
+  }
+  const pathsError = await validateAuthorityMapPaths({
     root,
     file,
     repositoryRegistry: document.repositoryRegistry,
@@ -26,4 +29,6 @@ export async function validateAuthorityMap({ root, file, document, inventory }) 
     structuredDocuments: document.structuredDocuments,
     inventory,
   });
+  if (pathsError) failures.push(pathsError);
+  return failures.length ? failures.join("\n") : null;
 }

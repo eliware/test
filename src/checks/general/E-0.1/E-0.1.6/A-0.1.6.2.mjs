@@ -5,16 +5,18 @@ export const parentRuleId = "E-0.1.6";
 
 export function run({ packageJson }) {
   const exemptions = packageJson?.eliware?.exempt ?? [];
-  for (const exemption of exemptions) {
+  const failures = [];
+  for (const [index, exemption] of exemptions.entries()) {
+    if (!exemption || typeof exemption !== "object" || Array.isArray(exemption)) continue;
     if (
       ["E-0.1.6.0", ruleId].includes(exemption.ruleId) &&
       (typeof exemption.path !== "string" || !exemption.path.trim())
     ) {
-      return fail(ruleId, "Secret-file exemptions must identify one exact path.");
+      failures.push(`eliware.exempt[${index}] must identify one exact path.`);
     }
     if (typeof exemption.path === "string" && exemption.path.includes("*")) {
-      return fail(ruleId, "Secret-file exemptions must not use wildcard paths.");
+      failures.push(`eliware.exempt[${index}] must not use a wildcard path.`);
     }
   }
-  return pass(ruleId);
+  return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

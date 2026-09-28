@@ -4,13 +4,19 @@ import { validRecord } from "./validate-runbook-shape.mjs";
 export function validateRunbookRecords(records) {
   const ids = new Set();
   const filesByPath = new Map();
-  for (const { file, record } of records) {
-    if (!validRecord(record)) {
-      return { error: `Runbook ${basename(file)} must match the generic runbook record contract.` };
+  const failures = [];
+  for (const { file, record, error } of records) {
+    if (error) {
+      failures.push(`Runbook ${basename(file)} must be valid JSON: ${error.message}`);
+      continue;
     }
-    if (ids.has(record.id)) return { error: `Runbook IDs must be unique: ${record.id}.` };
+    if (!validRecord(record)) {
+      failures.push(`Runbook ${basename(file)} must match the generic runbook record contract.`);
+      continue;
+    }
+    if (ids.has(record.id)) failures.push(`Runbook IDs must be unique: ${record.id}.`);
     ids.add(record.id);
     filesByPath.set(file, record);
   }
-  return { error: null, filesByPath };
+  return { error: failures.length ? failures.join("\n") : null, filesByPath };
 }

@@ -140,3 +140,26 @@ test("uses the run-scoped source view and cached reads", async () => {
   });
   await rm(root, { recursive: true, force: true });
 });
+
+test("continues scanning source files after one read fails", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-ignore-read-failure-"));
+  const repositoryInventory = {
+    entriesUnder: async () => [
+      { path: "src/unreadable.mjs", type: "file" },
+      { path: "src/ignored.mjs", type: "file" },
+    ],
+    readText: async (file) => {
+      if (file.endsWith("unreadable.mjs")) throw new Error("read failed");
+      return "// istanbul ignore next\nexport const value = 1;\n";
+    },
+  };
+  const result = await run({
+    root,
+    packageJson: {},
+    repositoryInventory,
+    findBarrels: async () => [],
+  });
+  expect(result.message).toContain("unreadable.mjs could not be inspected");
+  expect(result.message).toContain("Coverage-ignore directives are not allowed: src/ignored.mjs");
+  await rm(root, { recursive: true, force: true });
+});

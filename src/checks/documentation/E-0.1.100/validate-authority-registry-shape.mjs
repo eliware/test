@@ -4,12 +4,13 @@ export function validateAuthorityRegistryShape(entries) {
     .filter((entry) => entry && typeof entry.repository === "string")
     .map((entry) => entry.repository);
   const uniqueRepositories = new Set(repositories);
-  if (uniqueRepositories.size !== repositories.length) {
-    const duplicate = repositories.find(
-      (repository, index) => repositories.indexOf(repository) !== index,
-    );
-    return `Duplicate authority repository: ${duplicate}.`;
-  }
+  const duplicates = [...uniqueRepositories].filter(
+    (repository) => repositories.indexOf(repository) !== repositories.lastIndexOf(repository),
+  );
+  if (duplicates.length)
+    return duplicates
+      .map((repository) => `Duplicate authority repository: ${repository}.`)
+      .join("\n");
   return null;
 }
 

@@ -62,13 +62,15 @@ test("uses the shared file list when inventory context is supplied", async () =>
   });
 });
 
-test("requires package identity and stops after a local-owner failure", async () => {
+test("requires package identity and continues independent environment checks", async () => {
   await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
     ruleId: "E-0.1.8",
     status: "fail",
     message: "package.json.name is required to derive the mailbox owner.",
   });
   expect(inspectLocalMailboxOwner).not.toHaveBeenCalled();
+  expect(findRepositoryFiles).toHaveBeenCalled();
+  expect(validateMailboxTemplates).toHaveBeenCalled();
 
   inspectLocalMailboxOwner.mockResolvedValueOnce({ error: "local owner invalid" });
   await expect(run({ root: "/repo", packageJson: { name: "fixture" } })).resolves.toEqual({
@@ -76,7 +78,8 @@ test("requires package identity and stops after a local-owner failure", async ()
     status: "fail",
     message: "local owner invalid",
   });
-  expect(findRepositoryFiles).not.toHaveBeenCalled();
+  expect(findRepositoryFiles).toHaveBeenCalled();
+  expect(validateMailboxTemplates).toHaveBeenCalled();
 });
 
 test("maps template discovery and validation errors to the rule result", async () => {

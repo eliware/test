@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { execute } from "../../execute-child-process.mjs";
 
 export async function executeLibraryExamples(root, examples, executeExample = execute) {
+  const failures = [];
   for (const example of examples) {
     let result;
     try {
@@ -9,12 +10,13 @@ export async function executeLibraryExamples(root, examples, executeExample = ex
         cwd: root,
       });
     } catch (error) {
-      return `Example ${example.name} could not run: ${error.message}`;
+      failures.push(`Example ${example.name} could not run: ${error.message}`);
+      continue;
     }
     if (result.code !== 0) {
       const detail = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
-      return `Example ${example.name} failed${detail ? `: ${detail}` : "."}`;
+      failures.push(`Example ${example.name} failed${detail ? `: ${detail}` : "."}`);
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

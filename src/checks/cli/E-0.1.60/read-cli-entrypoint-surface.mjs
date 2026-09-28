@@ -8,26 +8,38 @@ export async function readCliEntrypointSurface(context) {
     typeof packageJson?.bin === "string"
       ? [packageJson.bin]
       : Object.values(packageJson?.bin ?? {});
-  if (entrypoints.length === 0) return { error: "CLI repositories must declare a bin entrypoint." };
+  const errors = [];
+  if (entrypoints.length === 0) {
+    return { errors: ["CLI repositories must declare a bin entrypoint."], entrypoints: [] };
+  }
   let readme;
   try {
     readme = await readRepositoryText(context, join(root, "README.md"));
-    for (const entrypoint of entrypoints) await access(join(root, entrypoint));
   } catch {
-    return { error: "Every declared CLI bin entrypoint and README.md must exist." };
+    errors.push("README.md must exist for CLI documentation validation.");
   }
-  for (const term of ["--help", "--version", "exit code"]) {
-    if (!readme.toLowerCase().includes(term.toLowerCase()))
-      return { error: `CLI README.md must document ${term}.` };
+  const availableEntrypoints = [];
+  const entrypointTexts = [];
+  for (const entrypoint of entrypoints) {
+    try {
+      await access(join(root, entrypoint));
+      entrypointTexts.push(await readRepositoryText(context, join(root, entrypoint)));
+      availableEntrypoints.push(entrypoint);
+    } catch {
+      errors.push(`CLI bin entrypoint must exist and be readable: ${entrypoint}.`);
+    }
   }
-  const entrypointText = await Promise.all(
-    entrypoints.map((entrypoint) => readRepositoryText(context, join(root, entrypoint))),
-  ).then((texts) => texts.join("\n"));
-  if (
-    /\b(?:publish|deploy|delete|remove|destroy|push)\b/i.test(entrypointText) &&
-    !/(?:dry[- ]run|confirm|confirmation)/i.test(`${readme}\n${entrypointText}`)
-  ) {
-    return { error: "Destructive CLI actions must provide dry-run or confirmation controls." };
+  if (readme !== undefined) {
+    const missingTerms = ["--help", "--version", "exit code"].filter(
+      (term) => !readme.toLowerCase().includes(term.toLowerCase()),
+    );
+    errors.push(...missingTerms.map((term) => `CLI README.md must document ${term}.`));
   }
-  return { entrypoints, readme };
+  const entrypointText = entrypointTexts.join("\n");
+  if (entrypointText && /\b(?:publish|deploy|delete|remove|destroy|push)\b/i.test(entrypointText)) {
+    if (!/(?:dry[- ]run|confirm|confirmation)/i.test(`${readme ?? ""}\n${entrypointText}`)) {
+      errors.push("Destructive CLI actions must provide dry-run or confirmation controls.");
+    }
+  }
+  return { errors, entrypoints: availableEntrypoints, readme };
 }

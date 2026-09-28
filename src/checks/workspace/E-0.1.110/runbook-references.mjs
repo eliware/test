@@ -11,6 +11,7 @@ export function referencesIn(text) {
 
 export async function validateReferences(root, filesByPath, indexedPaths, context) {
   const surfaces = [join(root, "README.md"), join(root, "runbooks", "README.md")];
+  const failures = [];
   for (const surface of surfaces) {
     let content;
     try {
@@ -21,10 +22,14 @@ export async function validateReferences(root, filesByPath, indexedPaths, contex
     for (const reference of referencesIn(content)) {
       const target = resolve(dirname(surface), reference.path);
       const record = filesByPath.get(target);
-      if (!record || record.id !== reference.id)
-        return `Runbook reference does not resolve to the declared record: ${reference.path}#id=${reference.id}.`;
+      if (!record || record.id !== reference.id) {
+        failures.push(
+          `Runbook reference does not resolve to the declared record: ${reference.path}#id=${reference.id}.`,
+        );
+        continue;
+      }
       indexedPaths.add(target);
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

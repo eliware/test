@@ -55,3 +55,24 @@ test("reuses inventory reads for repeated non-Markdown link targets", async () =
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("reports all invalid links in one Markdown file", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-multiple-"));
+  try {
+    await writeFile(join(root, "README.md"), "[One](missing-one.md) [Two](missing-two.md)");
+    const result = await validateMarkdownLinks(root, ["README.md"]);
+    expect(result).toContain("missing-one.md");
+    expect(result).toContain("missing-two.md");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("reports an unreadable documentation file", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-unreadable-"));
+  try {
+    await expect(validateMarkdownLinks(root, ["missing.md"])).resolves.toContain("missing.md:");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

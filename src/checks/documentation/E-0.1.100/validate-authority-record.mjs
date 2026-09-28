@@ -3,6 +3,12 @@ import { validateAuthorityRecordShape } from "./validate-authority-record-shape.
 
 export async function validateAuthorityRecord({ root, file, document, registeredRepositoryRoots }) {
   const shapeError = validateAuthorityRecordShape(document);
-  if (shapeError) return shapeError;
-  return validateAuthorityRecordReferences({ root, file, document, registeredRepositoryRoots });
+  const referenceError = await validateAuthorityRecordReferences({
+    root,
+    file,
+    document,
+    registeredRepositoryRoots,
+  });
+  const failures = [shapeError, referenceError].filter(Boolean);
+  return failures.length ? failures.join("\n") : null;
 }

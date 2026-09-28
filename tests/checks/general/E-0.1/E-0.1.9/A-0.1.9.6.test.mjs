@@ -15,6 +15,22 @@ test("rejects unknown crosslink relationships", () => {
   ).toEqual(expect.objectContaining({ status: "fail" }));
 });
 
+test("reports all invalid crosslink relationships", () => {
+  const result = run({
+    packageJson: {
+      eliware: {
+        crosslinks: [
+          { path: "a", relation: "invalid-one" },
+          { path: "b", relation: "invalid-two" },
+        ],
+      },
+    },
+  });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("crosslinks[0]");
+  expect(result.message).toContain("crosslinks[1]");
+});
+
 test.each([
   undefined,
   null,

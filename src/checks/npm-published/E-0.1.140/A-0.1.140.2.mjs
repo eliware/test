@@ -18,20 +18,20 @@ export async function run(context) {
   }
   if (!workflows.some((workflow) => npmPublicationJobs(workflow).length > 0))
     return fail(ruleId, "npm-published repositories must define a publication workflow.");
+  const failures = [];
   for (const workflow of workflows) {
     const publication = npmPublicationJobs(workflow);
     if (publication.length === 0) {
       if (/\bnpm\s+publish\b/i.test(workflow.content)) {
-        return fail(ruleId, `Publication workflow could not be parsed: ${workflow.name}.`);
+        failures.push(`Publication workflow could not be parsed: ${workflow.name}.`);
       }
       continue;
     }
     if (!validateNpmPublicationWorkflow(workflow, packageJson?.version, env)) {
-      return fail(
-        ruleId,
+      failures.push(
         `Publication workflow must use exact version tags, verify package version, and validate on Ubuntu: ${workflow.name}.`,
       );
     }
   }
-  return pass(ruleId);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

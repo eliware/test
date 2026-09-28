@@ -25,10 +25,9 @@ test("fails when the CLI README is missing", async () => {
 test("fails when a required CLI README section is missing", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-cli-readme-incomplete-"));
   await writeFile(join(root, "README.md"), "Purpose\n");
-  await expect(run({ root })).resolves.toEqual({
-    ruleId: "A-0.1.60.2",
-    status: "fail",
-    message: "CLI README.md must document ## Commands.",
-  });
+  const result = await run({ root });
+  expect(result.status).toBe("fail");
+  for (const term of ["## Commands", "## Exit codes", "--help", "--version", "platform"])
+    expect(result.message).toContain(`CLI README.md must document ${term}.`);
   await rm(root, { recursive: true, force: true });
 });

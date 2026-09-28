@@ -16,11 +16,16 @@ export async function run({ root, packageJson, repositoryInventory }) {
       repositoryInventory,
       settings.exclusions,
     );
-    const excluded = paths.find((path) =>
+    const excluded = paths.filter((path) =>
       settings.exclusions.some((exclusion) => matchesWebAssetExclusion(path, exclusion)),
     );
-    if (excluded)
-      return fail(ruleId, `Web public assets must not include excluded output: ${excluded}.`);
+    if (excluded.length > 0)
+      return fail(
+        ruleId,
+        excluded
+          .map((path) => `Web public assets must not include excluded output: ${path}.`)
+          .join("\n"),
+      );
   } catch {
     return fail(ruleId, `${settings.assetRoot}/ is required as the web public asset root.`);
   }

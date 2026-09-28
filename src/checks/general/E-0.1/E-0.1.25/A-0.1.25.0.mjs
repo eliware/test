@@ -9,14 +9,20 @@ export const parentRuleId = "E-0.1.25";
 export async function run(context) {
   const { root } = context;
   const required = ["authority.json", "directives.json"];
+  const failures = [];
+  let index = "";
   try {
-    const index = await readRepositoryText(context, join(root, "specs", "README.md"));
-    for (const file of required) {
-      await access(join(root, "specs", file));
-      if (!index.includes(file)) return fail(ruleId, `specs/README.md must link ${file}.`);
-    }
+    index = await readRepositoryText(context, join(root, "specs", "README.md"));
   } catch {
-    return fail(ruleId, "specs/ must contain README.md, authority.json, and directives.json.");
+    failures.push("specs/README.md is required to index specification files.");
   }
-  return pass(ruleId);
+  for (const file of required) {
+    try {
+      await access(join(root, "specs", file));
+      if (index && !index.includes(file)) failures.push(`specs/README.md must link ${file}.`);
+    } catch {
+      failures.push(`specs/${file} is required.`);
+    }
+  }
+  return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

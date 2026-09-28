@@ -14,10 +14,11 @@ export async function run({ root, repositoryInventory }) {
   } catch (error) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
+  const failures = [];
   for (const { name, document } of workflows) {
     if (isPublicationWorkflow({ name, document }, /(?:npm\s+publish|docker|ghcr\.io)/iu)) continue;
     if (!containsCompliantValidationJob(name, document))
-      return fail(ruleId, `${name} must run npm ci followed by npm test.`);
+      failures.push(`${name} must run npm ci followed by npm test.`);
   }
-  return pass(ruleId);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

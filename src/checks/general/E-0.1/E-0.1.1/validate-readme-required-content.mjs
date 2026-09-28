@@ -16,9 +16,10 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, options 
     () => validateReadmeLinks(readme, packageJson, options.sections),
     () => validateReadmeLicense(readme, options.sections),
   ];
+  const failures = [];
   for (const validate of validations) {
     const error = validate();
-    if (error) return error;
+    if (error) failures.push(error);
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

@@ -37,16 +37,15 @@ export async function run(context) {
     const docs = join(root, "docs");
     const files = await collect(docs, context.repositoryInventory);
     const index = await readRepositoryText(context, join(docs, "README.md"));
-    for (const requirement of ["Purpose", "scope", "Setup", "usage", "validation", "support"]) {
-      if (!index.toLowerCase().includes(requirement.toLowerCase()))
-        return fail(ruleId, `docs/README.md must document ${requirement}.`);
-    }
+    const failures = ["Purpose", "scope", "Setup", "usage", "validation", "support"]
+      .filter((requirement) => !index.toLowerCase().includes(requirement.toLowerCase()))
+      .map((requirement) => `docs/README.md must document ${requirement}.`);
     const missing = files
       .filter((file) => file !== join(docs, "README.md"))
       .map((file) => relative(root, file).replaceAll("\\", "/"))
       .filter((file) => !index.includes(file) && !index.includes(file.split("/").pop()));
-    if (missing.length > 0)
-      return fail(ruleId, `docs/README.md must index: ${missing.join(", ")}.`);
+    if (missing.length > 0) failures.push(`docs/README.md must index: ${missing.join(", ")}.`);
+    if (failures.length) return fail(ruleId, failures.join("\n"));
   } catch {
     return fail(ruleId, "docs/README.md must index the complete end-user documentation tree.");
   }

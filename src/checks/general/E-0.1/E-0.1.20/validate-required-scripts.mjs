@@ -26,17 +26,18 @@ export function validateRequiredScripts(
         ]),
       )
     : canonicalScripts;
+  const failures = [];
   for (const [name, command] of Object.entries(applicableScripts)) {
     if (scripts?.[name] !== command)
-      return `package.json.scripts.${name} must be exactly ${command}.`;
+      failures.push(`package.json.scripts.${name} must be exactly ${command}.`);
   }
   const allowedNames = new Set([...Object.keys(applicableScripts), ...allowedAdditionalScripts]);
   for (const [name, command] of Object.entries(scripts)) {
     if (!allowedNames.has(name))
-      return `package.json.scripts.${name} is not allowed by an applicable profile.`;
+      failures.push(`package.json.scripts.${name} is not allowed by an applicable profile.`);
     if (typeof command !== "string" || !command.trim()) {
-      return `package.json.scripts.${name} must be a nonempty command.`;
+      failures.push(`package.json.scripts.${name} must be a nonempty command.`);
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

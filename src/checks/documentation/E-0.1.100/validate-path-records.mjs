@@ -8,9 +8,11 @@ export async function validatePathRecords({
   registeredRepositoryRoots = [],
 }) {
   if (!Array.isArray(records)) return `${label} must be an array.`;
+  const failures = [];
   for (const [index, record] of records.entries()) {
     if (!record || typeof record !== "object" || typeof record.path !== "string") {
-      return `${label}[${index}] must contain a path.`;
+      failures.push(`${label}[${index}] must contain a path.`);
+      continue;
     }
     const error = await validateAuthorityReference({
       root,
@@ -19,7 +21,7 @@ export async function validatePathRecords({
       label: `${label}[${index}]`,
       registeredRepositoryRoots,
     });
-    if (error) return error;
+    if (error) failures.push(error);
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

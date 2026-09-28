@@ -7,23 +7,37 @@ import { hasMarkdownFragment } from "./validate-markdown-fragment.mjs";
 import { validateExternalDocumentationLink } from "./validate-external-documentation-link.mjs";
 
 export async function validateMarkdownLinks(root, files, context) {
+  const failures = [];
   for (const relativeFile of files.filter((file) => file.endsWith(".md"))) {
-    const content = await readRepositoryText(context, join(root, relativeFile));
+    let content;
+    try {
+      content = await readRepositoryText(context, join(root, relativeFile));
+    } catch (error) {
+      failures.push(`${relativeFile}: ${error.message}`);
+      continue;
+    }
     for (const { reference, referenceLabel } of extractMarkdownLinks(content)) {
       if (!reference) {
-        return `Documentation link reference is undefined: ${referenceLabel} in ${relativeFile}.`;
+        failures.push(
+          `Documentation link reference is undefined: ${referenceLabel} in ${relativeFile}.`,
+        );
+        continue;
       }
       if (/^[a-z][a-z\d+.-]*:/iu.test(reference)) {
         const externalError = validateExternalDocumentationLink(reference);
-        if (externalError) return externalError;
+        if (externalError) failures.push(`${externalError} in ${relativeFile}.`);
         continue;
       }
       if (reference.startsWith("//")) {
-        return `Documentation link is invalid: ${reference}.`;
+        failures.push(`Documentation link is invalid: ${reference} in ${relativeFile}.`);
+        continue;
       }
       const target = resolveMarkdownLinkTarget(root, relativeFile, reference);
       if (!target) {
-        return `Documentation link escapes the repository: ${reference} in ${relativeFile}.`;
+        failures.push(
+          `Documentation link escapes the repository: ${reference} in ${relativeFile}.`,
+        );
+        continue;
       }
       const [, fragment] = reference.split("#", 2);
       try {
@@ -32,11 +46,13 @@ export async function validateMarkdownLinks(root, files, context) {
           await context.repositoryInventory.readBytes(target);
         else await readFile(target);
         if (!(await hasMarkdownFragment(target, fragment, context)))
-          return `Documentation link fragment does not resolve: ${reference} in ${relativeFile}.`;
+          failures.push(
+            `Documentation link fragment does not resolve: ${reference} in ${relativeFile}.`,
+          );
       } catch {
-        return `Documentation link does not resolve: ${reference} in ${relativeFile}.`;
+        failures.push(`Documentation link does not resolve: ${reference} in ${relativeFile}.`);
       }
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }

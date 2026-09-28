@@ -14,7 +14,7 @@ test("requires browser validation dependencies and scripts", () => {
         scripts: packageJson.scripts,
       },
     }).message,
-  ).toBe("Web applications must directly declare lighthouse.");
+  ).toContain("Web applications must directly declare lighthouse.");
   expect(
     run({
       packageJson: { ...packageJson, scripts: { lighthouse: "echo noop", puppeteer: "puppeteer" } },
@@ -40,7 +40,9 @@ test("requires browser validation dependencies and scripts", () => {
   expect(
     run({ packageJson: { dependencies: { lighthouse: "1" }, scripts: { lighthouse: "run" } } })
       .message,
-  ).toBe("Web applications' lighthouse script must invoke the local lighthouse command directly.");
+  ).toContain(
+    "Web applications' lighthouse script must invoke the local lighthouse command directly.",
+  );
   expect(
     run({
       packageJson: {
@@ -48,8 +50,8 @@ test("requires browser validation dependencies and scripts", () => {
         scripts: { lighthouse: "lighthouse run" },
       },
     }).message,
-  ).toBe("Web applications must define a puppeteer script.");
-  expect(run({ packageJson: {} }).message).toBe(
+  ).toContain("Web applications must define a puppeteer script.");
+  expect(run({ packageJson: {} }).message).toContain(
     "Web applications must directly declare lighthouse.",
   );
 });

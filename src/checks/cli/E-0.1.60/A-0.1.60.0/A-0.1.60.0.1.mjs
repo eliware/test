@@ -9,10 +9,14 @@ export async function run(context) {
   const { root } = context;
   try {
     const agents = await readRepositoryText(context, join(root, "AGENTS.md"));
-    for (const term of ["CLI", "entrypoint", "--help", "--version", "commands"]) {
-      if (!agents.toLowerCase().includes(term.toLowerCase()))
-        return fail(ruleId, `AGENTS.md must document CLI ${term} behavior.`);
-    }
+    const missing = ["CLI", "entrypoint", "--help", "--version", "commands"].filter(
+      (term) => !agents.toLowerCase().includes(term.toLowerCase()),
+    );
+    if (missing.length)
+      return fail(
+        ruleId,
+        missing.map((term) => `AGENTS.md must document CLI ${term} behavior.`).join("\n"),
+      );
   } catch {
     return fail(ruleId, "AGENTS.md must document CLI entrypoints and supported behavior.");
   }

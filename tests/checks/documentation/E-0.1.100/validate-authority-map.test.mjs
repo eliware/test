@@ -74,13 +74,34 @@ test("validates registry, reciprocity, and paths in order", async () => {
   expect(phaseOrder).toEqual([...phaseOrder].sort((left, right) => left - right));
 });
 
-test("stops at the first delegated validation failure", async () => {
+test("continues independent delegated validation after a phase failure", async () => {
   const context = { root: "/repo", file: "/repo/map.json", document: { repositoryRegistry: [] } };
   validateAuthorityRegistry.mockResolvedValueOnce("registry invalid");
   await expect(validateAuthorityMap(context)).resolves.toBe("registry invalid");
-  expect(validateAuthorityReciprocity).not.toHaveBeenCalled();
+  expect(validateAuthorityReciprocity).toHaveBeenCalled();
+  expect(validateAuthorityMapPaths).toHaveBeenCalled();
 
   validateAuthorityReciprocity.mockResolvedValueOnce("reciprocal authority invalid");
   await expect(validateAuthorityMap(context)).resolves.toBe("reciprocal authority invalid");
-  expect(validateAuthorityMapPaths).not.toHaveBeenCalled();
+  expect(validateAuthorityMapPaths).toHaveBeenCalled();
+});
+
+test("reports failures from all independent authority-map phases", async () => {
+  const context = { root: "/repo", file: "/repo/map.json", document: { repositoryRegistry: [] } };
+  validateAuthorityRegistry.mockResolvedValueOnce("registry invalid");
+  validateAuthorityReciprocity.mockResolvedValueOnce("reciprocal invalid");
+  validateAuthorityMapPaths.mockResolvedValueOnce("paths invalid");
+  await expect(validateAuthorityMap(context)).resolves.toBe(
+    "registry invalid\nreciprocal invalid\npaths invalid",
+  );
+});
+
+test("skips reciprocity when registry entries are unavailable but validates paths", async () => {
+  validateAuthorityRegistry.mockResolvedValueOnce("registry malformed");
+  validateAuthorityMapPaths.mockResolvedValueOnce("paths malformed");
+  await expect(
+    validateAuthorityMap({ root: "/repo", file: "/repo/map.json", document: {} }),
+  ).resolves.toBe("registry malformed\npaths malformed");
+  expect(validateAuthorityReciprocity).not.toHaveBeenCalled();
+  expect(validateAuthorityMapPaths).toHaveBeenCalled();
 });

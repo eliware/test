@@ -38,7 +38,7 @@ test("dispatches authority records and maps to their specialized validators", as
 
   validateAuthorityRecord.mockResolvedValueOnce("record invalid");
   await expect(validateAuthorityDocuments(root, ["specs/authority.json"])).resolves.toBe(
-    "record invalid",
+    "specs/authority.json: record invalid",
   );
   expect(validateAuthorityRecord).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -49,7 +49,7 @@ test("dispatches authority records and maps to their specialized validators", as
 
   validateAuthorityMap.mockResolvedValueOnce("map invalid");
   await expect(validateAuthorityDocuments(root, ["authority-map.json"])).resolves.toBe(
-    "map invalid",
+    "authority-map.json: map invalid",
   );
   expect(validateAuthorityMap).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -58,4 +58,38 @@ test("dispatches authority records and maps to their specialized validators", as
     }),
   );
   await rm(root, { recursive: true, force: true });
+});
+
+test("reports every invalid authority document", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-docs-multiple-"));
+  try {
+    await mkdir(join(root, "specs"));
+    await writeFile(join(root, "specs", "authority.json"), "{}\n");
+    await writeFile(join(root, "authority-map.json"), "{}\n");
+    validateAuthorityRecord.mockResolvedValueOnce("record invalid");
+    validateAuthorityMap.mockResolvedValueOnce("map invalid");
+    await expect(
+      validateAuthorityDocuments(root, ["specs/authority.json", "authority-map.json"]),
+    ).resolves.toBe("specs/authority.json: record invalid\nauthority-map.json: map invalid");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("reports malformed authority JSON while checking other documents", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-authority-docs-malformed-"));
+  try {
+    await mkdir(join(root, "specs"));
+    await writeFile(join(root, "specs", "authority.json"), "{");
+    await writeFile(join(root, "authority-map.json"), "{}\n");
+    validateAuthorityMap.mockResolvedValueOnce("map invalid");
+    const result = await validateAuthorityDocuments(root, [
+      "specs/authority.json",
+      "authority-map.json",
+    ]);
+    expect(result).toContain("specs/authority.json:");
+    expect(result).toContain("authority-map.json: map invalid");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

@@ -25,7 +25,15 @@ test("rejects unsafe commands and validation commands placed in sibling jobs", (
       validationIds,
       false,
     ),
-  ).toBe("ci.yml contains non-validation command(s): curl example.test.");
+  ).toContain("ci.yml contains non-validation command(s): curl example.test.");
+  expect(
+    validateWorkflowSiblingJobs(
+      "ci.yml",
+      [{ id: "deploy", commands: commands("curl example.test") }],
+      validationIds,
+      false,
+    ),
+  ).toContain("ci.yml job deploy may only use approved actions");
   expect(
     validateWorkflowSiblingJobs(
       "ci.yml",
@@ -33,7 +41,7 @@ test("rejects unsafe commands and validation commands placed in sibling jobs", (
       validationIds,
       false,
     ),
-  ).toBe("ci.yml job setup must keep npm ci and npm test in a validation job.");
+  ).toContain("ci.yml job setup must keep npm ci and npm test in a validation job.");
 });
 
 test("applies pre-install safety policy to sibling reporting and setup steps", () => {
@@ -82,7 +90,7 @@ test("checks non-publication sibling jobs in publication workflows", () => {
     { id: "publish", commands: commands("npm publish --provenance") },
     { id: "extra", commands: commands("curl example.test") },
   ];
-  expect(validateWorkflowSiblingJobs("publish.yml", jobs, validationIds, true)).toBe(
+  expect(validateWorkflowSiblingJobs("publish.yml", jobs, validationIds, true)).toContain(
     "publish.yml contains non-validation command(s): curl example.test.",
   );
   jobs[2].commands = commands("echo reporting");

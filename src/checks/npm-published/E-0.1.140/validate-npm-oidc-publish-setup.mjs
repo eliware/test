@@ -7,11 +7,12 @@ export function validateNpmOidcPublishSetup(job) {
   if (setupSteps.length !== 1)
     return "The npm publication job must use actions/setup-node@v7 exactly once.";
   const options = setupSteps[0].with ?? {};
+  const failures = [];
   if (String(options["node-version"] ?? "") !== "26")
-    return "The npm publication job must use Node.js 26.";
+    failures.push("The npm publication job must use Node.js 26.");
   if (options["registry-url"] !== "https://registry.npmjs.org")
-    return "The npm publication job must configure the public npm registry.";
+    failures.push("The npm publication job must configure the public npm registry.");
   if (options["package-manager-cache"] !== false)
-    return "The npm publication job must disable package-manager caching.";
-  return null;
+    failures.push("The npm publication job must disable package-manager caching.");
+  return failures.length ? failures.join("\n") : null;
 }

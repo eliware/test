@@ -7,15 +7,16 @@ export const ruleId = "A-0.1.40.5";
 export const parentRuleId = "E-0.1.40";
 
 async function requireFiles(root, paths, label) {
+  const failures = [];
   for (const path of paths) {
     if (path.startsWith("./") === false || path.includes("*") || path.includes("[")) continue;
     try {
       await access(resolve(root, path));
     } catch {
-      return `${label} target does not exist: ${path}`;
+      failures.push(`${label} target does not exist: ${path}`);
     }
   }
-  return null;
+  return failures.length ? failures.join("\n") : null;
 }
 
 export async function run({ root, packageJson }) {
@@ -30,7 +31,7 @@ export async function run({ root, packageJson }) {
       ? collectLibraryExportTargets(packageJson.exports)
       : [packageJson.main];
     const entryError = await requireFiles(root, entryTargets, "Library entrypoint");
-    if (entryError) return fail(ruleId, entryError);
+    const failures = entryError ? [entryError] : [];
     const declarationTargets = [packageJson.types, packageJson.typings].filter(Boolean);
     if (packageJson.exports)
       declarationTargets.push(
@@ -39,7 +40,8 @@ export async function run({ root, packageJson }) {
         ),
       );
     const declarationError = await requireFiles(root, declarationTargets, "Library declaration");
-    if (declarationError) return fail(ruleId, declarationError);
+    if (declarationError) failures.push(declarationError);
+    if (failures.length) return fail(ruleId, failures.join("\n"));
   }
   return pass(ruleId);
 }

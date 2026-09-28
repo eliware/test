@@ -37,6 +37,33 @@ test("rejects non-repository-relative authority references", async () => {
   expect(authorityResult).toContain("outside every registered repository path");
 });
 
+test("collects independent reference failures across usable subjects", async () => {
+  const result = await validateAuthorityRecordReferences({
+    root: "C:\\repo",
+    file: "C:\\repo\\authority.json",
+    document: {
+      globalAuthorityMap: "https://example.test/map.json",
+      subjects: [
+        null,
+        { authority: { path: "https://example.test/authority.json" }, directives: [null] },
+      ],
+    },
+  });
+  expect(result).toContain("globalAuthorityMap");
+  expect(result).toContain("authority subject 1");
+  expect(result).toContain("directives[0]");
+});
+
+test("skips unavailable reference collections", async () => {
+  await expect(
+    validateAuthorityRecordReferences({
+      root: "C:\\repo",
+      file: "C:\\repo\\authority.json",
+      document: {},
+    }),
+  ).resolves.toBeNull();
+});
+
 test("validates local subject authority and path records while ignoring unrelated fields", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-authority-record-references-valid-"));
   const file = join(root, "authority.json");

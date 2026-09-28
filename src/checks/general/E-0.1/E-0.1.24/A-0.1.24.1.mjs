@@ -8,13 +8,14 @@ export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run({ root, repositoryInventory }) {
   try {
+    const failures = [];
     for (const { name, document } of await readWorkflows(root, repositoryInventory)) {
       const values = collectValues(document, "run").concat(collectValues(document, "uses"));
       if (values.some((value) => typeof value === "string" && /codescope/iu.test(value)))
-        return fail(ruleId, `GitHub workflow must not invoke CodeScope: ${name}.`);
+        failures.push(`GitHub workflow must not invoke CodeScope: ${name}.`);
     }
+    return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
   } catch {
     return fail(ruleId, "GitHub workflow files could not be inspected for CodeScope usage.");
   }
-  return pass(ruleId);
 }

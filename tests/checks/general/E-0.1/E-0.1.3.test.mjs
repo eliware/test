@@ -64,27 +64,39 @@ test("reuses the run inventory for discovery and file reads", async () => {
 
 test.each([
   [
+    "script",
     findInvalidValidationScripts,
     ["test"],
     "Validation scripts must use eliware-test rather than direct tools: test.",
   ],
   [
+    "dependency",
     findDirectValidationDependencies,
     ["jest"],
     "Repositories must not directly declare shared validation tools: jest.",
   ],
 ])(
-  "short-circuits with the diagnostic from a failed validation phase",
-  async (validator, findings, message) => {
+  "collects a failed %s validation phase and continues repository inspection",
+  async (_label, validator, findings, message) => {
     validator.mockReturnValueOnce(findings);
     await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
       ruleId: "E-0.1.3",
       status: "fail",
       message,
     });
-    expect(findDirectToolUses).not.toHaveBeenCalled();
+    expect(findDirectToolUses).toHaveBeenCalled();
   },
 );
+
+test("reports script, dependency, and source findings together", async () => {
+  findInvalidValidationScripts.mockReturnValueOnce(["test"]);
+  findDirectValidationDependencies.mockReturnValueOnce(["jest"]);
+  findDirectToolUses.mockResolvedValueOnce(["src/check.mjs"]);
+  const result = await run({ root: "/repo", packageJson: {}, files: ["src/check.mjs"] });
+  expect(result.message).toContain("Validation scripts must use eliware-test");
+  expect(result.message).toContain("shared validation tools: jest");
+  expect(result.message).toContain("Direct validation-tool use found");
+});
 
 test("maps repository inspection findings and errors", async () => {
   findDirectToolUses.mockResolvedValueOnce(["validate.mjs"]);

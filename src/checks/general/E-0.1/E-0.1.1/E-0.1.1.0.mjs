@@ -14,21 +14,21 @@ export async function run(context) {
   if (!inputs) return fail(ruleId, "README.md is required.");
   const { readme, sections } = inputs;
   const { root, packageJson } = context;
+  const failures = [];
   const missing = findMissingReadmeSections(sections, packageJson);
-  if (missing.length > 0) {
-    return fail(ruleId, `README.md is missing required sections: ${missing.join(", ")}.`);
-  }
+  if (missing.length > 0)
+    failures.push(`README.md is missing required sections: ${missing.join(", ")}.`);
   const brandingError = validateReadmeBranding(readme);
-  if (brandingError) return fail(ruleId, brandingError);
+  if (brandingError) failures.push(brandingError);
   const indexes = await inspectReadmeDocumentationIndexes(root);
   const examplesRequired = indexes.examplesRequired;
   const requiredContentError = validateReadmeRequiredContent(readme, packageJson, {
     examplesRequired,
     sections,
   });
-  if (requiredContentError) return fail(ruleId, requiredContentError);
+  if (requiredContentError) failures.push(requiredContentError);
   const metadataError = validateReadmeMetadata(readme, packageJson);
-  if (metadataError) return fail(ruleId, metadataError);
-  if (indexes.error) return fail(ruleId, indexes.error);
-  return pass(ruleId);
+  if (metadataError) failures.push(metadataError);
+  if (indexes.error) failures.push(indexes.error);
+  return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }
