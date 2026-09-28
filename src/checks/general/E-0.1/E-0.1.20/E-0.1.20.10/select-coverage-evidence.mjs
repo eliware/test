@@ -1,6 +1,7 @@
 import { parseText } from "./parse-text-coverage.mjs";
 
 function isUnusableCandidate(error) {
+  if (error === null || (typeof error !== "object" && typeof error !== "function")) return false;
   const message = error instanceof Error ? error.message : "";
   return (
     error.code === "ENOENT" ||

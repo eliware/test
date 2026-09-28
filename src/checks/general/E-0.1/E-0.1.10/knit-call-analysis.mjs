@@ -1,3 +1,5 @@
+import { identifierOrMemberRoot } from "./knit-member-chain.mjs";
+
 export const subprocessFunctions = new Set([
   "exec",
   "execFile",
@@ -7,11 +9,10 @@ export const subprocessFunctions = new Set([
   "spawnSync",
 ]);
 const callExpressionTypes = new Set(["CallExpression", "OptionalCallExpression"]);
+const memberExpressionTypes = new Set(["MemberExpression", "OptionalMemberExpression"]);
 
 export function rootIdentifier(node) {
-  let current = node;
-  while (current?.type === "MemberExpression") current = current.object;
-  return current?.type === "Identifier" ? current.name : undefined;
+  return identifierOrMemberRoot(node);
 }
 
 export function classifyCall(node, imports) {
@@ -38,7 +39,7 @@ export function classifyCall(node, imports) {
   const isUnsupported =
     isCall &&
     ((node.callee.type === "Identifier" && !imports.names.has(node.callee.name)) ||
-      (node.callee.type === "MemberExpression" &&
+      (memberExpressionTypes.has(node.callee.type) &&
         !(
           (imports.namespaces.has(namespace) && subprocessFunctions.has(member)) ||
           imports.sideEffectNamespaces.has(rootIdentifier(node.callee.object)) ||
@@ -48,7 +49,7 @@ export function classifyCall(node, imports) {
     isCall &&
     (node.callee.type === "Import" ||
       (node.callee.type === "Identifier" && ["require", "eval"].includes(node.callee.name)) ||
-      (node.callee.type === "MemberExpression" &&
+      (memberExpressionTypes.has(node.callee.type) &&
         node.callee.object?.type === "MetaProperty" &&
         node.callee.property?.name === "require"));
   return { direct, namespace, member, isSubprocess, isSideEffect, isUnsupported, isDynamic };

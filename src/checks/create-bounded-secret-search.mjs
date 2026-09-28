@@ -1,3 +1,5 @@
+import { createMatchIntervalIndex } from "./create-match-interval-index.mjs";
+
 export function createBoundedSecretSearch(values, workLimit, findSecretEnds) {
   let consumedWork = 0;
   const createStream = findSecretEnds.createStream;
@@ -21,14 +23,14 @@ export function createBoundedSecretSearch(values, workLimit, findSecretEnds) {
 
 function createIncrementalSearch(values, workLimit, createStream) {
   const findNewMatches = createStream();
+  const matchIndex = createMatchIntervalIndex();
   const maximumSecretLength = Math.max(0, ...values.map((secret) => secret.length));
   let consumedWork = 0;
   let totalInputLength = 0;
   let previousPending = "";
   let previousBoundary = 0;
-  let matches = [];
 
-  return function findSafeBoundary(pending) {
+  return function findSafeBoundary(pending, includePendingMatches = false) {
     const retained = previousPending.slice(previousBoundary);
     if (!pending.startsWith(retained)) return { boundary: 0, matchEnds: [], suppressed: true };
     const appended = pending.slice(retained.length);
@@ -39,46 +41,18 @@ function createIncrementalSearch(values, workLimit, createStream) {
 
     totalInputLength += appended.length;
     const pendingStart = totalInputLength - pending.length;
-    const retainedMatches = matches.filter(({ end }) => end > pendingStart);
-    matches = mergeMatches(retainedMatches, found.matches);
-    const matchEnds = Array.from({ length: pending.length + 1 }, () => 0);
-    for (const { start, end } of matches) {
-      const localStart = start - pendingStart;
-      const localEnd = end - pendingStart;
-      if (localStart >= 0 && localEnd <= pending.length) {
-        matchEnds[localStart] = Math.max(matchEnds[localStart], localEnd);
-      }
-    }
+    matchIndex.add(found.matches);
 
     const candidateBoundary = Math.max(0, pending.length - maximumSecretLength);
     let boundary = candidateBoundary;
-    for (const { start, end } of matches) {
-      const localStart = start - pendingStart;
-      const localEnd = end - pendingStart;
-      if (localStart < candidateBoundary && localEnd > candidateBoundary) {
-        boundary = Math.max(0, Math.min(boundary, localStart));
-      }
-    }
+    const crossingStart = matchIndex.earliestCrossing(pendingStart + candidateBoundary);
+    if (crossingStart !== null)
+      boundary = Math.max(0, Math.min(boundary, crossingStart - pendingStart));
     previousPending = pending;
     previousBoundary = boundary;
+    const materializedLength = includePendingMatches ? pending.length : boundary;
+    const matchEnds = matchIndex.materialize(pendingStart, materializedLength);
+    matchIndex.discardThrough(pendingStart + boundary);
     return { boundary, matchEnds, suppressed: false };
   };
-}
-
-function mergeMatches(retained, discovered) {
-  if (discovered.length === 0) return retained;
-  const ordered = discovered.toSorted(compareMatchIntervals);
-  const merged = [];
-  let retainedIndex = 0;
-  let discoveredIndex = 0;
-  while (retainedIndex < retained.length && discoveredIndex < ordered.length) {
-    if (compareMatchIntervals(retained[retainedIndex], ordered[discoveredIndex]) <= 0)
-      merged.push(retained[retainedIndex++]);
-    else merged.push(ordered[discoveredIndex++]);
-  }
-  return [...merged, ...retained.slice(retainedIndex), ...ordered.slice(discoveredIndex)];
-}
-
-function compareMatchIntervals(left, right) {
-  return left.start - right.start || right.end - left.end;
 }

@@ -4,10 +4,10 @@ import { createSecretTextMatcher } from "./create-secret-text-matcher.mjs";
 import { createBoundedSecretSearch } from "./create-bounded-secret-search.mjs";
 import { createPartialSecretSuffixTrimmer } from "./create-partial-secret-suffix-trimmer.mjs";
 import { redactMatchedSecrets } from "./redact-secrets.mjs";
+import { truncateRedactedOutput } from "./truncate-redacted-output.mjs";
 
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
 const MAX_RETAINED_PENDING_LENGTH = 64_000;
-const MAX_INPUT_CHUNK_LENGTH = MAX_RETAINED_PENDING_LENGTH;
 
 export function createRedactedTextStream(
   secrets,
@@ -36,8 +36,8 @@ export function createRedactedTextStream(
 
   function append(text, matchEnds) {
     const remaining = Math.max(0, outputLimit - outputLength);
-    const output = redactProcessOutput(redactMatchedSecrets(text, matchEnds), []).slice(
-      0,
+    const output = truncateRedactedOutput(
+      redactProcessOutput(redactMatchedSecrets(text, matchEnds), []),
       remaining,
     );
     outputLength += output.length;
@@ -50,9 +50,9 @@ export function createRedactedTextStream(
     for (
       let start = 0;
       start < text.length && !suppressed && outputLength < outputLimit;
-      start += MAX_INPUT_CHUNK_LENGTH
+      start += MAX_RETAINED_PENDING_LENGTH
     ) {
-      pending += text.slice(start, start + MAX_INPUT_CHUNK_LENGTH);
+      pending += text.slice(start, start + MAX_RETAINED_PENDING_LENGTH);
       const { boundary, matchEnds, suppressed: searchSuppressed } = findSafeBoundary(pending);
       if (searchSuppressed) {
         suppressed = true;
@@ -85,7 +85,7 @@ export function createRedactedTextStream(
       finished = true;
       if (suppressed || outputLength >= outputLimit) return "";
       pending += decoder.end();
-      const { matchEnds, suppressed: searchSuppressed } = findSafeBoundary(pending);
+      const { matchEnds, suppressed: searchSuppressed } = findSafeBoundary(pending, true);
       if (searchSuppressed) {
         suppressed = true;
         pending = "";

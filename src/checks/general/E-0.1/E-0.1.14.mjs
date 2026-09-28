@@ -1,6 +1,7 @@
 import { fail, pass } from "../../check-result.mjs";
 import { formatOutdatedDependencies } from "./format-outdated-dependencies.mjs";
 import { readOutdatedDependencies } from "./read-outdated-dependencies.mjs";
+import { selectOutdatedDirectDependencies } from "./select-outdated-direct-dependencies.mjs";
 import {
   formatOutdatedDependencyError,
   getOutdatedDependencies,
@@ -12,13 +13,7 @@ export const enforcementMode = "deterministic";
 
 export async function run(context) {
   const { packageJson } = context;
-  if (
-    packageJson &&
-    !["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"].some(
-      (field) => Object.keys(packageJson[field] ?? {}).length,
-    )
-  )
-    return pass(ruleId);
+  if (packageJson && Object.keys(packageJson.dependencies ?? {}).length === 0) return pass(ruleId);
   let outdated;
   try {
     outdated = await getOutdatedDependencies(
@@ -31,7 +26,8 @@ export async function run(context) {
       `Dependency registry lookup failed: ${formatOutdatedDependencyError(error, context.env)}.`,
     );
   }
-  const findings = formatOutdatedDependencies(outdated);
+  const directOutdated = selectOutdatedDirectDependencies(packageJson, outdated);
+  const findings = formatOutdatedDependencies(directOutdated);
   return findings.length
     ? fail(ruleId, `Direct dependencies are outdated: ${findings.join(", ")}.`)
     : pass(ruleId);

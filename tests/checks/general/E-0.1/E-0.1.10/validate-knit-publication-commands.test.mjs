@@ -10,6 +10,10 @@ test("rejects publication, deployment, release, and destructive commands", () =>
     ["git", ["checkout", "--", "README.md"]],
     ["git", ["restore", "README.md"]],
     ["rm", ["-rf", "."]],
+    ["rm", ["-r", "."]],
+    ["rm", ["--recursive", "."]],
+    ["rm", ["--force", "--recursive", "."]],
+    ["rm", ["-fR", "."]],
   ]) {
     expect(validateKnitPublicationCommands([{ kind: "spawnSync", command, args }])).toContain(
       "must not publish, deploy, release, or mutate external state",
@@ -24,4 +28,7 @@ test("allows validation commands and incidental command text", () => {
       { kind: "echo", command: "echo", args: ["npm publish"] },
     ]),
   ).toBeNull();
+  expect(validateKnitPublicationCommands([{ command: "rm", args: ["--", "-r"] }])).toBeNull();
+  expect(validateKnitPublicationCommands([{ command: "rm", args: ["file.txt"] }])).toBeNull();
+  expect(validateKnitPublicationCommands([{ command: "npm" }])).toBeNull();
 });

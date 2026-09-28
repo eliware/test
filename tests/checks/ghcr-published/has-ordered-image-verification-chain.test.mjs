@@ -95,3 +95,9 @@ test("rejects absent pushes, unusable digests, incomplete evidence, and out-of-o
   findVersionTagDigestVerification.mockReturnValueOnce(firstVerification[0]);
   expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
 });
+
+test("requires the final verification handoff to be the last job step", () => {
+  steps.mockReturnValueOnce([...jobSteps, { run: "echo publication complete" }]);
+
+  expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
+});

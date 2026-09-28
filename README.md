@@ -39,7 +39,8 @@ npm install --save-dev @eliware/test
 ## Usage
 
 After installing the package in a consuming repository, run validation with
-`eliware-test`. The package-level scripts below are for this repository.
+`eliware-test`. Every `npm run` command in the following block is package-local;
+in particular, `npm run pack` is only available in this npm-published repository.
 
 `package.json` is the source of truth for the version in this checkout. The
 repository's current version is `8.0.0`. The npm badge links to the package's
@@ -81,8 +82,9 @@ selected mode, canonical formatting configuration, or required file coverage
 are rejected.
 
 The five public tool modes are `--lint`, `--format`, `--format-check`,
-`--audit`, and `--pack`. The npm script forms are supported package-level
-shortcuts; arbitrary npm script names are not CLI arguments.
+`--audit`, and `--pack`. Invoke package-level scripts with `npm run <script>`;
+`eliware-test` accepts its documented modes and focused test paths, not npm
+script names as positional arguments.
 
 Legacy `--ignore-*` flags are unsupported. Coverage and monolith enforcement
 remain enabled for all validation modes.
@@ -151,6 +153,14 @@ unless they replace the wrapper's write/check mode, canonical configuration, or
 required file coverage; Prettier rejects unsupported options. Wrapper-owned
 settings and options that weaken required checks are rejected. Wrapper
 arguments precede arguments after `--`.
+
+To run one focused test, pass one repository-relative path under `tests/`;
+`.test.*` and `.spec.*` filenames support `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`,
+`.cjs`, `.mts`, and `.cts` extensions:
+
+```sh
+eliware-test tests/checks/example.test.mjs
+```
 
 Examples and package-level shortcuts are shown under Usage. `--format` mutates
 files; `--format-check` is read-only. `--pack` is read-only package validation

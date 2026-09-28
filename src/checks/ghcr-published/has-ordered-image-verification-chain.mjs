@@ -12,7 +12,8 @@ export function hasOrderedImageVerificationChain(job) {
   const pushes = findImagePushes(job);
   if (pushes.length === 0) return false;
   const pushIndices = pushes.map((push) => jobSteps.indexOf(push));
-  return pushes.every((push, index) => {
+  let finalVerificationIndex = -1;
+  const complete = pushes.every((push, index) => {
     const pushIndex = pushIndices[index];
     const nextPushIndex = pushIndices.find((candidate) => candidate > pushIndex) ?? jobSteps.length;
     const segment = { ...job, steps: jobSteps.slice(pushIndex + 1, nextPushIndex) };
@@ -26,6 +27,8 @@ export function hasOrderedImageVerificationChain(job) {
       findDigestHandoff(segment, details),
     ];
     const verificationIndices = verificationSteps.map((step) => segment.steps.indexOf(step));
+    if (index === pushes.length - 1)
+      finalVerificationIndex = pushIndex + verificationIndices.at(-1) + 1;
     return (
       verificationSteps.every(Boolean) &&
       verificationIndices.every(
@@ -34,4 +37,5 @@ export function hasOrderedImageVerificationChain(job) {
       )
     );
   });
+  return complete && finalVerificationIndex === jobSteps.length - 1;
 }

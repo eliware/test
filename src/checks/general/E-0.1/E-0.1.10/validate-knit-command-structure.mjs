@@ -1,6 +1,5 @@
 import { commandTokens } from "./knit-command-tokens.mjs";
-
-const allowedCommands = new Set(["node", "npm", "npx", "git", "echo"]);
+import { normalizeKnitExecutable } from "./normalize-knit-executable.mjs";
 
 export function validateKnitCommandStructure(parsed) {
   if (parsed.leadingExecutable) {
@@ -12,14 +11,7 @@ export function validateKnitCommandStructure(parsed) {
   if (parsed.calls.some((call) => !commandTokens(call))) {
     return ".knit/validate.mjs must use statically inspectable child-process commands.";
   }
-  if (
-    parsed.calls.some((call) => {
-      const command = commandTokens(call)[0];
-      if (/[\\/]/u.test(command)) return true;
-      const executable = command.toLowerCase();
-      return !allowedCommands.has(executable.replace(/\.(?:cmd|exe|bat)$/u, ""));
-    })
-  ) {
+  if (parsed.calls.some((call) => !normalizeKnitExecutable(commandTokens(call)[0]))) {
     return ".knit/validate.mjs uses a command outside the read-only validation allowlist.";
   }
   return null;

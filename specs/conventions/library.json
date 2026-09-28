@@ -42,7 +42,7 @@
           "id": "A-0.1.40.1",
           "dos": [
             "Libraries must define explicit exports and declarations for typed public APIs, test the public API, use package allowlists, and provide .env.example when the library supports environment configuration.",
-            "Every library must contain examples/README.md and at least one runnable example under examples/.",
+            "Every library must contain examples/README.md and at least one runnable native-ESM .mjs or .js example under examples/; CommonJS .cjs files are not runnable examples.",
             "Every library must contain docs/ with complete end-user documentation and docs/README.md as its overview and index.",
             "Public Eliware packages must use the @eliware scope, repository metadata matching package.json, an approved license, the Eliware Discord, GitHub, and eliware@eliware.org support channels, and synchronized public branding."
           ],

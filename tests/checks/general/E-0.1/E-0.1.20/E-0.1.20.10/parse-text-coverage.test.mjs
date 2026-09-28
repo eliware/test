@@ -17,3 +17,16 @@ test("returns null for malformed text reports", () => {
   expect(parseText("All files | nope | 99 | 100 | 100 |\n", ["src/example.mjs"])).toBeNull();
   expect(parseText("All files | 100 | 99 |\n", ["src/example.mjs"])).toBeNull();
 });
+
+test("rejects omitted or duplicated source rows instead of trusting aggregate totals", () => {
+  const allFiles = "All files | 100 | 100 | 100 | 100 |";
+  expect(() =>
+    parseText(`src/a.mjs | 100 | 100 | 100 | 100 |\n${allFiles}`, ["src/a.mjs", "src/b.mjs"]),
+  ).toThrow("missing: src/b.mjs");
+  expect(() =>
+    parseText(
+      `src/a.mjs | 100 | 100 | 100 | 100 |\nsrc/a.mjs | 100 | 100 | 100 | 100 |\n${allFiles}`,
+      ["src/a.mjs"],
+    ),
+  ).toThrow("duplicate: src/a.mjs");
+});

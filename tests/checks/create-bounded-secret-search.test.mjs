@@ -59,10 +59,9 @@ test("keeps only overlapping matches inside the pending window", () => {
     work: 1,
   });
   const search = createBoundedSecretSearch(["abc"], 100, matcher);
-  expect(search("abcdef")).toMatchObject({
-    boundary: 1,
-    matchEnds: expect.arrayContaining([0, 5]),
-  });
+  const safePrefix = search("abcdef");
+  expect(safePrefix.boundary).toBe(1);
+  expect(safePrefix.matchEnds).toEqual([0, 5]);
 
   let filteredCall = 0;
   const filteredMatcher = () => [];
@@ -73,6 +72,23 @@ test("keeps only overlapping matches inside the pending window", () => {
   const filtered = createBoundedSecretSearch(["abc"], 100, filteredMatcher);
   expect(filtered("abcdef").boundary).toBe(3);
   expect(filtered("defg").boundary).toBe(1);
+});
+
+test("materializes match indexes only for each newly emitted range", () => {
+  const matcher = () => [];
+  matcher.createStream = () => () => ({ matches: [], work: 1 });
+  const search = createBoundedSecretSearch(["x".repeat(50_000)], 100, matcher);
+
+  expect(search("a".repeat(30_000)).matchEnds).toHaveLength(1);
+  expect(search("a".repeat(50_000)).matchEnds).toHaveLength(1);
+});
+
+test("materializes pending matches when finishing the stream", () => {
+  const matcher = () => [];
+  matcher.createStream = () => () => ({ matches: [{ start: 0, end: 6 }], work: 1 });
+  const search = createBoundedSecretSearch(["secret"], 100, matcher);
+
+  expect(search("secret", true).matchEnds).toEqual([6, 0, 0, 0, 0, 0, 0]);
 });
 
 test("keeps the boundary before a matched interval extending beyond the pending window", () => {

@@ -45,6 +45,24 @@ test("reports statement, branch, function, and line locations", () => {
   expect(gap.metrics.branches).toBe(25);
 });
 
+test("derives line coverage as covered when any statement on that line is covered", () => {
+  const gap = fileGap("shared-line.mjs", {
+    statementMap: {
+      1: { start: { line: 3 } },
+      2: { start: { line: 3 } },
+    },
+    s: { 1: 1, 2: 0 },
+    branchMap: {},
+    b: {},
+    fnMap: {},
+    f: {},
+    l: { 3: 1 },
+  });
+
+  expect(gap.metrics).toMatchObject({ statements: 50, lines: 100 });
+  expect(gap.statements).toEqual([{ location: "3" }]);
+});
+
 test("reports excess branch counters without mapped locations", () => {
   const gap = fileGap("branch-map-gap.mjs", {
     s: { 1: 1 },

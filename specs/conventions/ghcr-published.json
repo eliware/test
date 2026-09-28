@@ -129,7 +129,8 @@
         {
           "id": "E-0.1.160.8",
           "dos": [
-            "The publication workflow must expose the pushed image digest, verify that the exact version tag resolves to that digest, and verify that the image and signed attestation are readable according to the repository visibility before reporting publication success."
+            "The publication workflow must expose the pushed image digest, verify that the exact version tag resolves to that digest, and verify that the image and signed attestation are readable according to the repository visibility before reporting publication success.",
+            "The final image push's required digest and attestation verification chain must end at the last publication-job step so job success proves verification completed."
           ],
           "donts": [
             "Do not report GHCR publication success without digest and attestation verification."

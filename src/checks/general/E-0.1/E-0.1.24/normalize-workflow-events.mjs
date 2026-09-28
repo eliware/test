@@ -17,11 +17,11 @@ export function normalizeWorkflowEvents(document) {
     : typeof raw === "string"
       ? { [raw]: {} }
       : raw && typeof raw === "object" && !Array.isArray(raw)
-        ? Object.fromEntries(Object.entries(raw).map(([event, config]) => [event, config ?? {}]))
+        ? Object.fromEntries(Object.entries(raw))
         : {};
   const validEventConfigs = Object.entries(events).every(
     ([event, config]) =>
-      (typeof config === "object" && !Array.isArray(config)) ||
+      (config !== null && typeof config === "object" && !Array.isArray(config)) ||
       (["push", "pull_request"].includes(event) &&
         Array.isArray(config) &&
         (event !== "push" || config.length > 0) &&

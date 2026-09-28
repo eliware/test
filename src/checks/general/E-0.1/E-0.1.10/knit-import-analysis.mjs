@@ -1,20 +1,10 @@
 import { subprocessFunctions } from "./knit-call-analysis.mjs";
+import { sideEffectModules as sourceOperationModules } from "./knit-source-operation-policy.mjs";
 
 const sideEffectModules = new Set([
+  ...sourceOperationModules,
   "node:child_process",
   "child_process",
-  "node:fs",
-  "fs",
-  "node:fs/promises",
-  "fs/promises",
-  "node:http",
-  "http",
-  "node:https",
-  "https",
-  "node:net",
-  "net",
-  "node:dgram",
-  "dgram",
 ]);
 
 export function collectImports(program) {
@@ -26,7 +16,7 @@ export function collectImports(program) {
     if (statement.type !== "ImportDeclaration") continue;
     if (
       sideEffectModules.has(statement.source.value) &&
-      statement.source.value !== "node:child_process"
+      !["node:child_process", "child_process"].includes(statement.source.value)
     ) {
       for (const specifier of statement.specifiers) {
         if (

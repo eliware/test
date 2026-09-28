@@ -63,6 +63,22 @@ test("continues after a report omits source entries and selects a later valid re
   expect(readCandidate).toHaveBeenCalledTimes(2);
 });
 
+test("continues after source-derived branch shape mismatches", async () => {
+  const readCandidate = jest.fn(async (path) => {
+    if (path === "branch-mismatch.json") {
+      throw new Error(
+        "Coverage report does not account for every source branch path in src/example.mjs.",
+      );
+    }
+    return { totals: { lines: 100 }, gaps: [] };
+  });
+
+  await expect(
+    selectCoverageEvidence(["branch-mismatch.json", "valid.json"], readCandidate),
+  ).resolves.toMatchObject({ source: "valid.json" });
+  expect(readCandidate).toHaveBeenCalledTimes(2);
+});
+
 test("continues after detailed coverage validation rejects a candidate", async () => {
   const readCandidate = jest.fn(async (path) => {
     if (path === "incomplete.json") {
@@ -155,3 +171,17 @@ test("immediately propagates errors outside the unusable-report categories", asy
     }),
   ).rejects.toThrow("permission denied");
 });
+
+test.each([null, undefined])(
+  "propagates nullish candidate rejections without masking them",
+  async (error) => {
+    const readCandidate = jest.fn(async () => {
+      throw error;
+    });
+
+    await expect(
+      selectCoverageEvidence(["malformed.json", "valid.json"], readCandidate),
+    ).rejects.toBe(error);
+    expect(readCandidate).toHaveBeenCalledTimes(1);
+  },
+);

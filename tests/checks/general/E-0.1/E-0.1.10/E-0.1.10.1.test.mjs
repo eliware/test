@@ -26,6 +26,25 @@ test("uses a cached parsed Knit AST when supplied by the validation run", async 
   });
 });
 
+test("accepts standard Windows Git and npm shim paths in the required sequence", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-windows-"));
+  await mkdir(join(root, ".knit"));
+  await writeFile(
+    join(root, ".knit", "validate.mjs"),
+    'import { spawnSync } from "node:child_process"; ' +
+      'spawnSync("C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe", ["pull", "--ff-only", "origin", "main"]); ' +
+      'spawnSync("C:\\\\Program Files\\\\nodejs\\\\npm.cmd", ["ci"]); ' +
+      'spawnSync("C:\\\\Program Files\\\\nodejs\\\\npm.cmd", ["test"]);',
+  );
+
+  await expect(run({ root })).resolves.toEqual({
+    ruleId: "E-0.1.10.1",
+    status: "pass",
+    message: "",
+  });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("reports syntax errors from the shared AST cache", async () => {
   await expect(
     run({
@@ -74,6 +93,13 @@ test("rejects reordered structured subprocess commands", async () => {
     join(root, ".knit", "validate.mjs"),
     'import { spawnSync } from "node:child_process";\n' +
       'for (const [command, args] of [["npm", ["ci"]], ["git", ["pull", "--ff-only", "origin", "main"]], ["npm", ["test"]]]) spawnSync(command, args);\n',
+  );
+  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  await writeFile(
+    join(root, ".knit", "validate.mjs"),
+    'import { spawnSync } from "node:child_process";\n' +
+      'spawnSync("C:\\\\temp\\\\git.exe", ["pull", "--ff-only", "origin", "main"]); ' +
+      'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
   );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await rm(root, { recursive: true, force: true });

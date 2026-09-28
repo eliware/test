@@ -31,7 +31,7 @@ test("discovers current files from disk without tracked-file input", async () =>
   }
 });
 
-test("excludes current files ignored by the repository's .gitignore", async () => {
+test("scans current files even when they match the repository's .gitignore", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-internal-ignored-"));
   try {
     await writeFile(join(root, ".gitignore"), "config.json\n");
@@ -41,8 +41,8 @@ test("excludes current files ignored by the repository's .gitignore", async () =
     );
     await expect(run({ root })).resolves.toEqual({
       ruleId: "E-0.1.7",
-      status: "pass",
-      message: "",
+      status: "fail",
+      message: expect.stringContaining("config.json"),
     });
   } finally {
     await rm(root, { recursive: true, force: true });

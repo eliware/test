@@ -32,6 +32,21 @@ test("uses inherited environment by default and accepts binary chunks", () => {
   expect(capture.finish()).toEqual({ stdout: "okay", stderr: "" });
 });
 
+test("ignores later chunks without encoding after the capture budget is exhausted", () => {
+  let encoded = false;
+  const capture = createChildProcessOutputCapture({ env: {} }, [], 1);
+  capture.push("stdout", "x");
+  capture.push("stderr", {
+    toString() {
+      encoded = true;
+      return "oversized";
+    },
+  });
+
+  expect(encoded).toBe(false);
+  expect(capture.finish()).toEqual({ stdout: "x", stderr: "" });
+});
+
 test("uses the process environment when no child environment is provided", () => {
   expect(createChildProcessOutputCapture({ env: null }, [], 0).finish()).toEqual({
     stdout: "",

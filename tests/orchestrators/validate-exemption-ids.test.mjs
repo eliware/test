@@ -2,6 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateExemptionIds } from "../../src/orchestrators/validate-exemption-ids.mjs";
 
 test("accepts exemptions for discovered checks", () => {
+  expect(() => validateExemptionIds({}, [{ ruleId: "E-0.1" }])).not.toThrow();
   expect(() =>
     validateExemptionIds({ eliware: { exempt: [{ ruleId: "E-0.1" }] } }, [{ ruleId: "E-0.1" }]),
   ).not.toThrow();

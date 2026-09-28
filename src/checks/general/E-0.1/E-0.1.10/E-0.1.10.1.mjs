@@ -1,6 +1,7 @@
 import { fail, pass } from "../../../check-result.mjs";
 import { readKnitScript } from "./read-knit-script.mjs";
 import { commandTokens } from "./knit-command-tokens.mjs";
+import { normalizeKnitExecutable } from "./normalize-knit-executable.mjs";
 
 export const ruleId = "E-0.1.10.1";
 export const parentRuleId = "E-0.1.10";
@@ -16,7 +17,12 @@ export async function run(context) {
         ".knit/validate.mjs must begin with the required synchronization and validation command sequence.",
       );
     }
-    const commands = parsed.calls.map(commandTokens);
+    const commands = parsed.calls.map((call) => {
+      const tokens = commandTokens(call);
+      if (!tokens) return null;
+      const executable = normalizeKnitExecutable(tokens[0]);
+      return executable ? [executable, ...tokens.slice(1)] : null;
+    });
     const required = [
       ["git", "pull", "--ff-only", "origin", "main"],
       ["npm", "ci"],

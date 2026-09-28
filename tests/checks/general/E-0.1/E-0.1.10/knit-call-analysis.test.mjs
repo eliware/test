@@ -51,6 +51,31 @@ test("classifies directly imported and namespace subprocess functions", () => {
   expect(rootIdentifier(null)).toBeUndefined();
 });
 
+test("classifies optional member chains as namespace subprocess calls", () => {
+  const optional = classifyCall(
+    call(
+      {
+        type: "OptionalMemberExpression",
+        object: identifier("child"),
+        property: identifier("spawnSync"),
+        optional: true,
+      },
+      "OptionalCallExpression",
+    ),
+    imports({ namespaces: new Set(["child"]) }),
+  );
+  expect(optional.isSubprocess).toBe(true);
+  expect(optional.isUnsupported).toBe(false);
+  expect(
+    rootIdentifier({
+      type: "OptionalMemberExpression",
+      object: identifier("child"),
+      property: identifier("promises"),
+      optional: true,
+    }),
+  ).toBe("child");
+});
+
 test("classifies aliases by their canonical child-process export", () => {
   const alias = classifyCall(
     call(identifier("runCommand")),

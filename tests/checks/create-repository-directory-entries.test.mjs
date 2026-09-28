@@ -69,7 +69,8 @@ test("falls back to reading descendants of pruned directories", async () => {
   const records = [{ path: "dist", type: "directory", depth: 1 }];
   const readDirectory = jest.fn(async (directory) => {
     if (directory === "dist") return [directoryEntry("assets")];
-    if (directory === "dist/assets") return [fileEntry("app.js")];
+    if (directory === "dist/assets") return [directoryEntry("images")];
+    if (directory === "dist/assets/images") return [fileEntry("app.js")];
     throw Object.assign(new Error("missing"), { code: "ENOENT" });
   });
   const directoryEntries = createRepositoryDirectoryEntries({
@@ -84,10 +85,31 @@ test("falls back to reading descendants of pruned directories", async () => {
     { name: "assets", path: "dist/assets" },
   ]);
   const assets = await directoryEntries("/repo/dist/assets");
-  expect(assets).toMatchObject([{ name: "app.js", path: "dist/assets/app.js" }]);
-  expect(assets[0].isFile()).toBe(true);
-  expect(assets[0].isDirectory()).toBe(false);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
+  expect(assets).toMatchObject([{ name: "images", path: "dist/assets/images" }]);
+  const images = await directoryEntries("/repo/dist/assets/images");
+  expect(images).toMatchObject([{ name: "app.js", path: "dist/assets/images/app.js" }]);
+  expect(images[0].isFile()).toBe(true);
+  expect(images[0].isDirectory()).toBe(false);
+  expect(readDirectory).toHaveBeenCalledTimes(3);
+});
+
+test("discovers a deep generated descendant when requested directly", async () => {
+  const records = [{ path: "dist", type: "directory", depth: 1 }];
+  const readDirectory = jest.fn(async (directory) => {
+    if (directory === "dist/assets/images") return [fileEntry("app.js")];
+    throw Object.assign(new Error("missing"), { code: "ENOENT" });
+  });
+  const directoryEntries = createRepositoryDirectoryEntries({
+    root: "/repo",
+    entries: jest.fn(async () => records),
+    entriesUnder: jest.fn(),
+    readDirectory,
+    hasFullDiscovery: () => true,
+  });
+
+  const images = await directoryEntries("/repo/dist/assets/images");
+  expect(images).toMatchObject([{ name: "app.js", path: "dist/assets/images/app.js" }]);
+  expect(readDirectory).toHaveBeenCalledWith("dist/assets/images");
 });
 
 test("rejects unknown and external directory paths", async () => {

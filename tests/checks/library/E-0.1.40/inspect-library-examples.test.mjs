@@ -55,3 +55,15 @@ test("reports missing runnable examples and invalid index content", async () => 
     await rm(invalidIndex, { recursive: true, force: true });
   }
 });
+
+test("does not treat CommonJS examples as runnable under the native ESM contract", async () => {
+  const root = await createSurface(validIndex, false);
+  await writeFile(join(root, "examples", "basic.cjs"), "module.exports = {};");
+  try {
+    await expect(inspectLibraryExamples(root)).resolves.toEqual({
+      error: "Libraries must provide at least one runnable example.",
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

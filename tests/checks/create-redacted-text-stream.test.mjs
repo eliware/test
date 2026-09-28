@@ -105,6 +105,15 @@ test("bounds sanitized output and suppresses output for oversized secrets", () =
   expect(suppressed.redactComplete("x".repeat(5))).toBe("");
 });
 
+test("does not emit secret characters when the redaction marker crosses the output limit", () => {
+  const output = createRedactedTextStream(["secret"], 15);
+  const result = output.push("123456789012secret") + output.finish();
+
+  expect(result).toBe("123456789012");
+  expect(result).not.toContain("secret");
+  expect(result).not.toContain("[RE");
+});
+
 test("suppresses output for secrets longer than the retained matcher window", () => {
   const output = createRedactedTextStream(["x".repeat(64_001)], 100_000);
   expect(output.push("safe diagnostic")).toBe("");

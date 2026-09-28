@@ -12,7 +12,8 @@ export function runCoverageExemptionCheck({ packageJson }, { ruleId, coverageRul
     ) {
       throw new Error("Package exemptions must contain objects.");
     }
-    // The validation plan checks rule-ID scope; validate every record here as well.
+    // prepareValidationExemptions checks every rule ID against the full discovered check tree first.
+    // This check owns record shape and whether this specific coverage rule is exempt.
     validateExemptionRecords(exemptions);
     if (exemptions.some(({ ruleId: exemptedRuleId }) => exemptedRuleId === coverageRuleId))
       return pass(ruleId);

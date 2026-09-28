@@ -41,3 +41,17 @@ test("rejects traversal and symlinks that escape the repository", async () => {
     await rm(outsideFile, { force: true });
   }
 });
+
+test("rejects absolute and drive-qualified focused test paths", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-absolute-"));
+  try {
+    await expect(validateFocusedTestPath(root, ["C:/repo/tests/a.test.mjs"])).rejects.toThrow(
+      "must resolve inside the repository",
+    );
+    await expect(validateFocusedTestPath(root, ["C:\\repo\\tests\\a.test.mjs"])).rejects.toThrow(
+      "must resolve inside the repository",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

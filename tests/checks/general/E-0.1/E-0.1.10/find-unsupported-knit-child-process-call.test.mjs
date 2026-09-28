@@ -39,6 +39,16 @@ test("recognizes named-import aliases as child-process calls", () => {
   expect(hasUnsupportedKnitChildProcessCall(program)).toBe(true);
 });
 
+test("recognizes optional-chain namespace subprocess calls", () => {
+  const program = parsed(
+    'import * as child from "node:child_process"; child?.spawnSync("npm", ["test"]);',
+  );
+  const call = directCall(program);
+
+  expect(hasUnsupportedKnitChildProcessCall(program)).toBe(true);
+  expect(hasUnsupportedKnitChildProcessCall(program, [{ start: call.start }])).toBe(false);
+});
+
 test("safely ignores missing, primitive, and previously visited AST nodes", () => {
   const program = parsed("const value = 1;");
   program.extraChildren = [null, "not-an-AST-node"];

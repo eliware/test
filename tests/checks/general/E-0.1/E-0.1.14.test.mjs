@@ -3,7 +3,10 @@ import { ruleId, run } from "../../../../src/checks/general/E-0.1/E-0.1.14.mjs";
 
 test("fails when direct dependencies are outdated", async () => {
   await expect(
-    run({ outdatedDependencies: { jest: { current: "1", latest: "2" } } }),
+    run({
+      packageJson: { dependencies: { jest: "1" } },
+      outdatedDependencies: { jest: { current: "1", latest: "2" } },
+    }),
   ).resolves.toEqual({
     ruleId,
     status: "fail",
@@ -33,6 +36,40 @@ test("skips registry lookup when the package has no dependencies", async () => {
     ruleId,
     status: "pass",
     message: "",
+  });
+});
+
+test("does not treat development, optional, or peer packages as release dependencies", async () => {
+  await expect(
+    run({
+      packageJson: {
+        devDependencies: { tooling: "1" },
+        optionalDependencies: { optional: "1" },
+        peerDependencies: { peer: "1" },
+      },
+      readOutdated: async () => {
+        throw new Error("registry must not be queried");
+      },
+    }),
+  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+});
+
+test("reports only outdated dependencies declared in the runtime dependency section", async () => {
+  await expect(
+    run({
+      packageJson: {
+        dependencies: { runtime: "1" },
+        devDependencies: { tooling: "1" },
+      },
+      outdatedDependencies: {
+        runtime: { current: "1", latest: "2" },
+        tooling: { current: "1", latest: "2" },
+      },
+    }),
+  ).resolves.toEqual({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining("runtime (1 -> 2)"),
   });
 });
 

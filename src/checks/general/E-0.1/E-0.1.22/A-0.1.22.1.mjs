@@ -43,7 +43,7 @@ export async function run(context) {
   if (missing.length > 0)
     return fail(ruleId, `Required .gitignore paths are not ignored: ${missing.join(", ")}.`);
   const ignoredTrackedPaths = await readIgnoredPaths(root);
-  if (!Array.isArray(ignoredTrackedPaths))
+  if (ignoredTrackedPaths === null || !Array.isArray(ignoredTrackedPaths))
     return fail(
       ruleId,
       "Git index inspection was unavailable; cannot verify ignored tracked files.",

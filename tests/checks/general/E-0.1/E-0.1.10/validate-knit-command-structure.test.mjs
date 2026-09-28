@@ -8,6 +8,15 @@ test("accepts bare statically inspectable commands in the validation allowlist",
   expect(validateKnitCommandStructure({ calls: [call("npm.cmd", ["test"])] })).toBeNull();
 });
 
+test("accepts only standard Windows Git and npm installation paths", () => {
+  for (const command of [
+    "C:\\Program Files\\Git\\cmd\\git.exe",
+    "C:\\Program Files\\nodejs\\npm.cmd",
+  ]) {
+    expect(validateKnitCommandStructure({ calls: [call(command, ["test"])] })).toBeNull();
+  }
+});
+
 test("rejects executable or unsupported AST operations", () => {
   expect(validateKnitCommandStructure({ leadingExecutable: true, calls: [] })).toContain(
     "must not execute JavaScript",
@@ -24,7 +33,7 @@ test("requires static command tokens and an allowlisted executable", () => {
   expect(
     validateKnitCommandStructure({ calls: [call("curl", ["https://example.test"])] }),
   ).toContain("outside the read-only validation allowlist");
-  for (const command of ["C:\\Program Files\\nodejs\\npm.cmd", "../npm", "/usr/bin/npm"]) {
+  for (const command of ["C:\\temp\\npm.cmd", "../npm", "/usr/bin/npm"]) {
     expect(validateKnitCommandStructure({ calls: [call(command, ["test"])] })).toContain(
       "outside the read-only validation allowlist",
     );
