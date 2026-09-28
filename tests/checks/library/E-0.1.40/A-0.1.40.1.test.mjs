@@ -46,18 +46,34 @@ test("inspects, executes, and validates package contents in order", async () => 
   );
 });
 
-test.each([
-  [inspectLibraryExamples, { error: "documentation index missing" }, "documentation index missing"],
-  [executeLibraryExamples, null, "Example execution failed"],
-])("stops on an inspection or execution failure", async (phase, result, expectedMessage) => {
-  phase.mockResolvedValueOnce(result ?? expectedMessage);
-  await expect(run({ root: "/repo", packageJson: {} })).resolves.toMatchObject({
+test("skips only example execution when inspection cannot provide an example list", async () => {
+  inspectLibraryExamples.mockResolvedValueOnce({ error: "documentation index missing" });
+  validateLibraryPackageAllowlist.mockReturnValueOnce("package allowlist missing");
+
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
     ruleId: "A-0.1.40.1",
     status: "fail",
-    message: expectedMessage,
+    message: "documentation index missing\npackage allowlist missing",
   });
-  if (phase === inspectLibraryExamples) expect(executeLibraryExamples).not.toHaveBeenCalled();
-  expect(validateLibraryPackageAllowlist).not.toHaveBeenCalled();
+  expect(executeLibraryExamples).not.toHaveBeenCalled();
+  expect(validateLibraryPackageAllowlist).toHaveBeenCalled();
+});
+
+test("continues package validation after example execution fails", async () => {
+  executeLibraryExamples.mockResolvedValueOnce("Example execution failed");
+  validateLibraryPackageAllowlist.mockReturnValueOnce("package allowlist missing");
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
+    ruleId: "A-0.1.40.1",
+    status: "fail",
+    message: "Example execution failed\npackage allowlist missing",
+  });
+
+  executeLibraryExamples.mockRejectedValueOnce(new Error("spawn denied"));
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("Library examples could not be executed: spawn denied"),
+  });
+  expect(validateLibraryPackageAllowlist).toHaveBeenCalled();
 });
 
 test("maps package allowlist findings and unexpected inspection errors", async () => {
@@ -71,6 +87,7 @@ test("maps package allowlist findings and unexpected inspection errors", async (
   await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
     ruleId: "A-0.1.40.1",
     status: "fail",
-    message: "Libraries must provide complete docs/ and examples/ indexes.",
+    message: "Libraries must provide complete docs/ and examples/ indexes: read failed",
   });
+  expect(validateLibraryPackageAllowlist).toHaveBeenCalled();
 });

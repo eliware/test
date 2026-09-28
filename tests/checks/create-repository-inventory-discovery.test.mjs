@@ -81,8 +81,36 @@ test("discovers default-finder subtrees lazily and caches repeated scoped reads"
     await expect(discovery.entriesUnder(join(root, "src"))).resolves.toHaveLength(2);
     await expect(discovery.entriesUnder(root)).resolves.toEqual(await discovery.entries());
     await expect(discovery.entriesUnder()).resolves.toEqual(await discovery.entries());
+    await expect(discovery.entriesUnder(join(root, "..", "outside"))).rejects.toThrow(
+      "inside the repository",
+    );
     expect(reads.get(root)).toBe(1);
     expect(reads.get(join(root, "src"))).toBe(1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("applies test-results inclusion options to directory discovery", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-discovery-test-results-"));
+  await mkdir(join(root, "docs", "test-results"), { recursive: true });
+  await writeFile(join(root, "docs", "guide.md"), "guide\n");
+  await writeFile(join(root, "docs", "test-results", "report.json"), "{}\n");
+
+  try {
+    const excluded = createRepositoryDiscovery({ root, readDirectory: readdir });
+    await expect(excluded.entriesUnder(join(root, "docs"))).resolves.not.toContainEqual(
+      expect.objectContaining({ path: "docs/test-results", type: "directory" }),
+    );
+
+    const included = createRepositoryDiscovery({
+      root,
+      readDirectory: readdir,
+      includeTestResults: true,
+    });
+    await expect(included.entriesUnder(join(root, "docs"))).resolves.toContainEqual(
+      expect.objectContaining({ path: "docs/test-results/report.json", type: "file" }),
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

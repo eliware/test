@@ -71,20 +71,40 @@ test("maps missing and syntactically invalid Knit script findings", async () => 
   expect(validateKnitCommandStructure).not.toHaveBeenCalled();
 });
 
-test("stops at the first policy finding", async () => {
+test("reports each independent policy finding", async () => {
   validateKnitCommandStructure.mockReturnValueOnce("command structure invalid");
-  await expect(run({ root: "/repo" })).resolves.toMatchObject({
-    status: "fail",
-    message: "command structure invalid",
-  });
-  expect(validateKnitSourceOperations).not.toHaveBeenCalled();
-
   validateKnitSourceOperations.mockReturnValueOnce("source operation invalid");
+  validateKnitPublicationCommands.mockReturnValueOnce("publication command prohibited");
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "E-0.1.10.0",
+    status: "fail",
+    message: "command structure invalid\nsource operation invalid\npublication command prohibited",
+  });
+  expect(validateKnitCommandStructure).toHaveBeenCalledTimes(1);
+  expect(validateKnitSourceOperations).toHaveBeenCalledTimes(1);
+  expect(validateKnitPublicationCommands).toHaveBeenCalledTimes(1);
+});
+
+test("continues independent policies after a validator throws", async () => {
+  validateKnitCommandStructure.mockImplementationOnce(() => {
+    throw new Error("unexpected validator error");
+  });
+
+  await expect(run({ root: "/repo" })).resolves.toEqual({
+    ruleId: "E-0.1.10.0",
+    status: "fail",
+    message: "Knit policy validation failed: unexpected validator error",
+  });
+  expect(validateKnitSourceOperations).toHaveBeenCalled();
+  expect(validateKnitPublicationCommands).toHaveBeenCalled();
+
+  validateKnitCommandStructure.mockImplementationOnce(() => {
+    throw "unexpected value";
+  });
   await expect(run({ root: "/repo" })).resolves.toMatchObject({
     status: "fail",
-    message: "source operation invalid",
+    message: "Knit policy validation failed: unexpected value",
   });
-  expect(validateKnitPublicationCommands).not.toHaveBeenCalled();
 });
 
 test("maps publication policy findings to the rule result", async () => {

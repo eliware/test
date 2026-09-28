@@ -8,18 +8,27 @@ export const ruleId = "E-0.1.10.0";
 export const parentRuleId = "E-0.1.10";
 
 export async function run(context) {
+  let script;
   try {
-    const { source, parsed, error, ast } = await readKnitScript(context);
-    if (error) return fail(ruleId, error);
-    if (parsed.error) return fail(ruleId, parsed.error);
-    const commandError = validateKnitCommandStructure(parsed);
-    if (commandError) return fail(ruleId, commandError);
-    const sourceError = validateKnitSourceOperations(source, ast, parsed.calls);
-    if (sourceError) return fail(ruleId, sourceError);
-    const publicationError = validateKnitPublicationCommands(parsed.calls);
-    if (publicationError) return fail(ruleId, publicationError);
+    script = await readKnitScript(context);
   } catch {
     return fail(ruleId, ".knit/validate.mjs is required for Knit validation.");
   }
-  return pass(ruleId);
+  if (script.error) return fail(ruleId, script.error);
+  if (script.parsed.error) return fail(ruleId, script.parsed.error);
+
+  const findings = [];
+  for (const [validate, args] of [
+    [validateKnitCommandStructure, [script.parsed]],
+    [validateKnitSourceOperations, [script.source, script.ast, script.parsed.calls]],
+    [validateKnitPublicationCommands, [script.parsed.calls]],
+  ]) {
+    try {
+      const finding = validate(...args);
+      if (finding) findings.push(finding);
+    } catch (error) {
+      findings.push(`Knit policy validation failed: ${error?.message ?? String(error)}`);
+    }
+  }
+  return findings.length ? fail(ruleId, findings.join("\n")) : pass(ruleId);
 }

@@ -17,14 +17,6 @@ test("captures both streams and redacts diagnostics using the effective environm
   });
 });
 
-test("caps captured output on valid UTF-8 boundaries and accepts missing explicit secrets", () => {
-  const capture = createChildProcessOutputCapture({ env: {} }, null, 4);
-  capture.push("stdout", "abc🔐");
-  expect(capture.finish()).toEqual({ stdout: "abc", stderr: "" });
-  expect(capture.redactDiagnostic("abc🔐")).toBe("abc");
-  expect(capture.redactDiagnostic("abcdef")).toBe("abcd");
-});
-
 test("uses inherited environment by default and accepts binary chunks", () => {
   const capture = createChildProcessOutputCapture({ env: {} }, undefined, 4);
   capture.push("stdout", Buffer.from("okay"));

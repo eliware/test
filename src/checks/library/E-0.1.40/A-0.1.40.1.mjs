@@ -8,15 +8,24 @@ export const parentRuleId = "E-0.1.40";
 
 export async function run(context) {
   const { root, packageJson, executeExample } = context;
+  const findings = [];
+  let examples;
   try {
     const surface = await inspectLibraryExamples(root, context);
-    if (surface.error) return fail(ruleId, surface.error);
-    const executionError = await executeLibraryExamples(root, surface.examples, executeExample);
-    if (executionError) return fail(ruleId, executionError);
-    const allowlistError = validateLibraryPackageAllowlist(packageJson);
-    if (allowlistError) return fail(ruleId, allowlistError);
-  } catch {
-    return fail(ruleId, "Libraries must provide complete docs/ and examples/ indexes.");
+    if (surface.error) findings.push(surface.error);
+    else examples = surface.examples;
+  } catch (error) {
+    findings.push(`Libraries must provide complete docs/ and examples/ indexes: ${error.message}`);
   }
-  return pass(ruleId);
+  if (examples) {
+    try {
+      const executionError = await executeLibraryExamples(root, examples, executeExample);
+      if (executionError) findings.push(executionError);
+    } catch (error) {
+      findings.push(`Library examples could not be executed: ${error.message}`);
+    }
+  }
+  const allowlistError = validateLibraryPackageAllowlist(packageJson);
+  if (allowlistError) findings.push(allowlistError);
+  return findings.length ? fail(ruleId, findings.join("\n")) : pass(ruleId);
 }

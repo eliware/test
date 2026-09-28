@@ -47,14 +47,9 @@ test("coordinates package policies in order and passes exemptions to their valid
   expect(validatePackageExemptions).toHaveBeenCalledWith([]);
 });
 
-test("stops at the first package-policy failure", () => {
-  for (const [index, validator] of validators.entries()) {
-    resetValidators();
-    validator.mockReturnValueOnce("package policy invalid");
+test("combines independent package-policy failures", () => {
+  validators.forEach((validator, index) => validator.mockReturnValueOnce(`failure ${index + 1}`));
 
-    expect(validateEliwarePackageMetadata({})).toBe("package policy invalid");
-    for (const laterValidator of validators.slice(index + 1)) {
-      expect(laterValidator).not.toHaveBeenCalled();
-    }
-  }
+  expect(validateEliwarePackageMetadata({})).toBe("failure 1\nfailure 2\nfailure 3\nfailure 4");
+  expect(validators.every((validator) => validator.mock.calls.length === 1)).toBe(true);
 });

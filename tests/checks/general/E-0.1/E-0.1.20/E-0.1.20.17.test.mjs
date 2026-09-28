@@ -1,100 +1,87 @@
-import { expect, jest, test } from "@jest/globals";
-import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.17.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const scripts = {
-  test: "eliware-test",
-  lint: "eliware-test --lint",
-  audit: "eliware-test --audit",
-  format: "eliware-test --format",
-  "format:check": "eliware-test --format-check",
-};
+const validateRequiredScripts = jest.fn();
+const resolveFormatterScriptPolicy = jest.fn();
+const executeFormatterValidation = jest.fn();
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-required-scripts.mjs",
+  () => ({ validateRequiredScripts }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.20/resolve-formatter-script-policy.mjs",
+  () => ({ resolveFormatterScriptPolicy }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.20/execute-formatter-validation.mjs",
+  () => ({ executeFormatterValidation }),
+);
 
-test("rejects unsupported formatter modes", async () => {
-  await expect(run({ packageJson: { scripts }, mode: "unknown" })).resolves.toEqual({
+const { run } = await import("../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.17.mjs");
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  resolveFormatterScriptPolicy.mockReturnValue({ requiresPack: false });
+  validateRequiredScripts.mockReturnValue(null);
+  executeFormatterValidation.mockResolvedValue(null);
+});
+
+test("coordinates script policy and formatter validation", async () => {
+  const packageJson = { scripts: { test: "eliware-test" } };
+  const context = { packageJson, root: "/repo", mode: "format-check" };
+
+  await expect(run(context)).resolves.toEqual({
+    ruleId: "E-0.1.20.17",
+    status: "pass",
+    message: "",
+  });
+  expect(resolveFormatterScriptPolicy).toHaveBeenCalledWith(packageJson);
+  expect(validateRequiredScripts).toHaveBeenCalledWith(packageJson.scripts, {
+    requiresPack: false,
+  });
+  expect(executeFormatterValidation).toHaveBeenCalledWith(
+    expect.objectContaining({ root: "/repo", mode: "format-check" }),
+  );
+});
+
+test("passes the aggregate null mode when no formatter mode was requested", async () => {
+  await expect(run({ packageJson: {} })).resolves.toMatchObject({ status: "pass" });
+  expect(executeFormatterValidation).toHaveBeenCalledWith(
+    expect.objectContaining({ mode: null, executeFormat: false }),
+  );
+});
+
+test("reports script and formatter failures together", async () => {
+  validateRequiredScripts.mockReturnValueOnce("required script missing");
+  executeFormatterValidation.mockResolvedValueOnce("Prettier failed");
+
+  await expect(run({ packageJson: {}, mode: "format-check" })).resolves.toEqual({
     ruleId: "E-0.1.20.17",
     status: "fail",
-    message: "Unsupported formatter mode: unknown.",
+    message: "required script missing\nPrettier failed",
   });
+  expect(executeFormatterValidation).toHaveBeenCalled();
 });
 
-test("maps applied profiles and capabilities into required script policy", async () => {
-  const scriptsWithCapabilities = {
-    ...scripts,
-    typecheck: "tsc --noEmit",
-    build: "vite build",
-    lighthouse: "lighthouse",
-    puppeteer: "node browser-check.mjs",
-  };
-  await expect(
-    run({
-      packageJson: { scripts: scriptsWithCapabilities },
-    }),
-  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("typecheck") });
-  await expect(
-    run({
-      packageJson: {
-        scripts: { ...scriptsWithCapabilities, pack: "eliware-test --pack" },
-        eliware: { apply: ["npm-published", "web"], capabilities: ["typecheck", "build"] },
-      },
-    }),
-  ).resolves.toMatchObject({ status: "pass" });
-  await expect(
-    run({
-      packageJson: { scripts, eliware: { apply: ["npm-published"] } },
-    }),
-  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("pack") });
-});
-
-test("runs formatter only for requested stages and passes mode through", async () => {
-  const runFormatter = jest.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
-  await expect(
-    run({ packageJson: { scripts }, root: "/repo", executeFormat: false, runFormatter }),
-  ).resolves.toMatchObject({ status: "pass" });
-  await expect(
-    run({ packageJson: { scripts }, root: "/repo", executeFormat: true, runFormatter }),
-  ).resolves.toMatchObject({ status: "pass" });
-  await expect(
-    run({ packageJson: { scripts }, root: "/repo", mode: "format", runFormatter }),
-  ).resolves.toMatchObject({ status: "pass" });
-  expect(runFormatter.mock.calls.map(([, options]) => options.write)).toEqual([false, true]);
-});
-
-test("accepts local scripts for @eliware/test and still runs the formatter", async () => {
-  const selfHostedScripts = {
-    test: "node bin/eliware-test.mjs",
-    lint: "node bin/eliware-test.mjs --lint",
-    audit: "node bin/eliware-test.mjs --audit",
-    format: "node bin/eliware-test.mjs --format",
-    "format:check": "node bin/eliware-test.mjs --format-check",
-    pack: "node bin/eliware-test.mjs --pack",
-  };
-  const runFormatter = jest.fn(async () => ({ code: 0, stdout: "", stderr: "" }));
-  await expect(
-    run({
-      packageJson: {
-        name: "@eliware/test",
-        scripts: selfHostedScripts,
-        eliware: { apply: ["npm-published"] },
-      },
-      root: "/repo",
-      executeFormat: true,
-      runFormatter,
-    }),
-  ).resolves.toMatchObject({ status: "pass" });
-  expect(runFormatter).toHaveBeenCalledTimes(1);
-});
-
-test("maps formatter failure to the check result", async () => {
-  await expect(
-    run({
-      packageJson: { scripts },
-      root: "/repo",
-      mode: "format-check",
-      runFormatter: async () => ({ code: 1, stdout: "file formatting failed", stderr: "" }),
-    }),
-  ).resolves.toEqual({
+test("maps unexpected formatter errors and accepts write-format mode", async () => {
+  executeFormatterValidation.mockRejectedValueOnce(new Error("unexpected formatter failure"));
+  await expect(run({ packageJson: {}, mode: "format" })).resolves.toEqual({
     ruleId: "E-0.1.20.17",
     status: "fail",
-    message: "Prettier failed: file formatting failed",
+    message: "Prettier validation failed: unexpected formatter failure",
   });
+  expect(executeFormatterValidation).toHaveBeenCalledWith(
+    expect.objectContaining({ mode: "format" }),
+  );
+});
+
+test("reports unsupported mode and still validates required scripts", async () => {
+  validateRequiredScripts.mockReturnValueOnce("required script missing");
+
+  await expect(run({ packageJson: {}, mode: "unknown" })).resolves.toEqual({
+    ruleId: "E-0.1.20.17",
+    status: "fail",
+    message: "Unsupported formatter mode: unknown.\nrequired script missing",
+  });
+  expect(validateRequiredScripts).toHaveBeenCalled();
+  expect(executeFormatterValidation).not.toHaveBeenCalled();
 });

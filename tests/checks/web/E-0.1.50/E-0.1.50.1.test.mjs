@@ -1,46 +1,78 @@
-import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { run } from "../../../../src/checks/web/E-0.1.50/E-0.1.50.1.mjs";
-import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("maps clean and excluded asset trees to rule results", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-web-"));
-  await mkdir(join(root, "public"));
-  await writeFile(join(root, "public", "index.html"), "ok");
-  expect(await run({ root, packageJson: {} })).toEqual({
+const resolveWebAssetSettings = jest.fn();
+const collectWebAssetPaths = jest.fn();
+const findExcludedWebAssets = jest.fn();
+jest.unstable_mockModule(
+  "../../../../src/checks/web/E-0.1.50/resolve-web-asset-settings.mjs",
+  () => ({ resolveWebAssetSettings }),
+);
+jest.unstable_mockModule("../../../../src/checks/web/E-0.1.50/collect-web-asset-paths.mjs", () => ({
+  collectWebAssetPaths,
+}));
+jest.unstable_mockModule(
+  "../../../../src/checks/web/E-0.1.50/find-excluded-web-assets.mjs",
+  () => ({ findExcludedWebAssets }),
+);
+
+const { run } = await import("../../../../src/checks/web/E-0.1.50/E-0.1.50.1.mjs");
+const settings = {
+  assetRoot: "public",
+  resolvedAssets: "/repo/public",
+  exclusions: ["dist"],
+};
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  resolveWebAssetSettings.mockReturnValue(settings);
+  collectWebAssetPaths.mockResolvedValue(["index.html"]);
+  findExcludedWebAssets.mockReturnValue([]);
+});
+
+test("coordinates settings, asset collection, and exclusion validation", async () => {
+  const packageJson = {};
+  const repositoryInventory = { directoryEntries: jest.fn() };
+
+  await expect(run({ root: "/repo", packageJson, repositoryInventory })).resolves.toEqual({
     ruleId: "E-0.1.50.1",
     status: "pass",
     message: "",
   });
-  await mkdir(join(root, "public", "dist"));
-  await mkdir(join(root, "public", "build"));
-  const excluded = await run({ root, packageJson: {} });
-  expect(excluded.message).toContain("output: build.");
-  expect(excluded.message).toContain("output: dist.");
-  await expect(
-    run({ root, packageJson: { eliware: { webAssetExcludes: "dist" } } }),
-  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining("string array") });
-  await rm(root, { recursive: true, force: true });
+  expect(resolveWebAssetSettings).toHaveBeenCalledWith("/repo", packageJson);
+  expect(collectWebAssetPaths).toHaveBeenCalledWith(
+    settings.resolvedAssets,
+    undefined,
+    repositoryInventory,
+    settings.exclusions,
+  );
+  expect(findExcludedWebAssets).toHaveBeenCalledWith(["index.html"], settings.exclusions);
 });
 
-test("uses the shared inventory directory reader", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-web-inventory-"));
-  await mkdir(join(root, "public", "assets"), { recursive: true });
-  await writeFile(join(root, "public", "assets", "app.js"), "ok");
-  const repositoryInventory = createRepositoryInventory(root);
-  await expect(run({ root, packageJson: {}, repositoryInventory })).resolves.toMatchObject({
-    status: "pass",
+test("reports every excluded path returned by the exclusion validator", async () => {
+  findExcludedWebAssets.mockReturnValueOnce(["dist/app.js", "build/site.css"]);
+
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
+    ruleId: "E-0.1.50.1",
+    status: "fail",
+    message:
+      "Web public assets must not include excluded output: dist/app.js.\n" +
+      "Web public assets must not include excluded output: build/site.css.",
   });
-  await rm(root, { recursive: true, force: true });
 });
 
-test("maps missing asset directories to the required-root failure", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-web-missing-"));
-  await expect(run({ root, packageJson: {} })).resolves.toMatchObject({
+test("skips only traversal when settings are invalid and maps unreadable asset roots", async () => {
+  resolveWebAssetSettings.mockReturnValueOnce({ error: "invalid asset settings" });
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toMatchObject({
+    status: "fail",
+    message: "invalid asset settings",
+  });
+  expect(collectWebAssetPaths).not.toHaveBeenCalled();
+
+  collectWebAssetPaths.mockRejectedValueOnce(new Error("missing"));
+  await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
+    ruleId: "E-0.1.50.1",
     status: "fail",
     message: "public/ is required as the web public asset root.",
   });
-  await rm(root, { recursive: true, force: true });
+  expect(findExcludedWebAssets).not.toHaveBeenCalled();
 });

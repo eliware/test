@@ -4,12 +4,11 @@ import { validatePackageModuleType } from "./validate-package-module-type.mjs";
 import { validatePackageScripts } from "./validate-package-scripts.mjs";
 
 export function validateEliwarePackageMetadata(packageJson) {
-  const moduleTypeError = validatePackageModuleType(packageJson);
-  if (moduleTypeError) return moduleTypeError;
-  const scriptsError = validatePackageScripts(packageJson);
-  if (scriptsError) return scriptsError;
-  return (
-    validatePackagePublicationMetadata(packageJson) ??
-    validatePackageExemptions(packageJson?.eliware?.exempt)
-  );
+  const findings = [
+    validatePackageModuleType(packageJson),
+    validatePackageScripts(packageJson),
+    validatePackagePublicationMetadata(packageJson),
+    validatePackageExemptions(packageJson?.eliware?.exempt),
+  ].filter(Boolean);
+  return findings.length ? findings.join("\n") : null;
 }

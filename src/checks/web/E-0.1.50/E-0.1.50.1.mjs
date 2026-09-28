@@ -1,6 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
 import { collectWebAssetPaths } from "./collect-web-asset-paths.mjs";
-import { matchesWebAssetExclusion } from "./matches-web-asset-exclusion.mjs";
+import { findExcludedWebAssets } from "./find-excluded-web-assets.mjs";
 import { resolveWebAssetSettings } from "./resolve-web-asset-settings.mjs";
 
 export const ruleId = "E-0.1.50.1";
@@ -16,9 +16,7 @@ export async function run({ root, packageJson, repositoryInventory }) {
       repositoryInventory,
       settings.exclusions,
     );
-    const excluded = paths.filter((path) =>
-      settings.exclusions.some((exclusion) => matchesWebAssetExclusion(path, exclusion)),
-    );
+    const excluded = findExcludedWebAssets(paths, settings.exclusions);
     if (excluded.length > 0)
       return fail(
         ruleId,

@@ -33,3 +33,15 @@ test("serves explicit focused paths without discovery and falls back to reposito
   await expect(unscoped.focusedFiles()).resolves.toContain("README.md");
   expect(entries).toHaveBeenCalledTimes(1);
 });
+
+test("serves a scoped facade view without discovering unrelated repository files", async () => {
+  const entries = jest.fn(async () => records);
+  const focused = createRepositoryFileViews(entries, { paths: ["tests/one.test.mjs"] });
+
+  await expect(focused.focusedFiles()).resolves.toEqual(["tests/one.test.mjs"]);
+  expect(entries).not.toHaveBeenCalled();
+
+  const fallback = createRepositoryFileViews(entries, { paths: [] });
+  await expect(fallback.focusedFiles()).resolves.toContain("README.md");
+  expect(entries).toHaveBeenCalledTimes(1);
+});
