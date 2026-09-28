@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { resolve } from "node:path";
 import { npmCommand } from "../../src/checks/npm-command.mjs";
 
 test("selects the platform npm executable or npm exec path", () => {
@@ -6,6 +7,14 @@ test("selects the platform npm executable or npm exec path", () => {
   expect(npmCommand("linux", "C:\\npm\\npm-cli.js")).toEqual([
     process.execPath,
     ["C:\\npm\\npm-cli.js"],
+  ]);
+  expect(npmCommand("linux", "/tools/npm-cli.js")).toEqual([
+    process.execPath,
+    ["/tools/npm-cli.js"],
+  ]);
+  expect(npmCommand("linux", "npm-cli.js", process.execPath, undefined, "/repo")).toEqual([
+    process.execPath,
+    [resolve("/repo", "npm-cli.js")],
   ]);
   expect(npmCommand("win32", "", "C:\\node.exe", () => true)).toEqual([
     "C:\\node.exe",

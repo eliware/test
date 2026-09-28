@@ -24,7 +24,7 @@ test("builds the PATH-based non-Windows npm command", () => {
   });
 });
 
-test("resolves a relative Windows npm executable and copies its environment", async () => {
+test("resolves a relative npm executable and copies its environment", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-outdated-npm-path-"));
   const npmCli = join(root, "npm-cli.js");
   await writeFile(npmCli, "");
@@ -33,15 +33,15 @@ test("resolves a relative Windows npm executable and copies its environment", as
     expect(
       createOutdatedDependenciesCommand(root, {
         env,
-        platform: "win32",
-        execPath: "C:\\node\\node.exe",
+        platform: process.platform,
+        execPath: process.execPath,
       }),
     ).toEqual({
-      executable: "C:\\node\\node.exe",
+      executable: process.execPath,
       args: [npmCli, "outdated", "--json"],
       options: {
         cwd: root,
-        detached: false,
+        detached: process.platform !== "win32",
         shell: false,
         stdio: ["ignore", "pipe", "pipe"],
         env: { ...env, npm_config_loglevel: "error" },

@@ -1,17 +1,19 @@
 import { expect, jest, test } from "@jest/globals";
+import { join, resolve } from "node:path";
 import { hasApplicationEntrypoint } from "../../../../src/checks/application/E-0.1.130/has-application-entrypoint.mjs";
 
 test("accepts existing main and bin file targets", () => {
-  const inspectFile = jest.fn((path) => path === "C:\\repo\\bin\\app.mjs");
+  const root = resolve("repository-fixture");
+  const inspectFile = jest.fn((path) => path === join(root, "bin", "app.mjs"));
   expect(
     hasApplicationEntrypoint(
       { main: "missing.mjs", bin: { app: "bin/app.mjs" } },
-      "C:\\repo",
+      root,
       inspectFile,
     ),
   ).toBe(true);
-  expect(inspectFile).toHaveBeenCalledWith("C:\\repo\\missing.mjs");
-  expect(inspectFile).toHaveBeenCalledWith("C:\\repo\\bin\\app.mjs");
+  expect(inspectFile).toHaveBeenCalledWith(join(root, "missing.mjs"));
+  expect(inspectFile).toHaveBeenCalledWith(join(root, "bin", "app.mjs"));
 });
 
 test("checks real files and handles missing entrypoint targets", () => {

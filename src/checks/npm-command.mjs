@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { win32 } from "node:path";
+import { isAbsolute, resolve, win32 } from "node:path";
 
 export function npmCommand(
   platform = process.platform,
@@ -21,7 +21,13 @@ export function npmCommand(
       "Unable to resolve the npm CLI on Windows; npm_execpath is unset and npm is not installed beside Node.js.",
     );
   }
-  if (npmExecPath) return [execPath, [npmExecPath]];
+  if (npmExecPath) {
+    const resolvedNpmExecPath =
+      isAbsolute(npmExecPath) || isAbsoluteWindowsNpmPath(npmExecPath)
+        ? npmExecPath
+        : resolve(workingDirectory, npmExecPath);
+    return [execPath, [resolvedNpmExecPath]];
+  }
   return ["npm", []];
 }
 

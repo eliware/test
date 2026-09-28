@@ -59,7 +59,9 @@ test("reuses file content only while its on-disk version is unchanged", async ()
   await expect(cache.readText("README.md")).resolves.toBe("old!");
   await expect(cache.readText("README.md")).resolves.toBe("new!");
   expect(read).toHaveBeenCalledTimes(2);
-  expect(stat).toHaveBeenCalledWith(expect.stringMatching(/repo\\README\.md$/u), { bigint: true });
+  expect(stat).toHaveBeenCalledWith(expect.stringMatching(/[\\/]repo[\\/]README\.md$/u), {
+    bigint: true,
+  });
 });
 
 test("refreshes a cache hit when the file changes between version checks", async () => {
