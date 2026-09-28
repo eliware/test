@@ -15,12 +15,25 @@ function safeAllowlistEntry(entry) {
   return safeRelativePath(entry) && !/[*!?{}()[\]]/u.test(entry) && !entry.startsWith("!");
 }
 
+function normalizeRedactedPackMetadata(stdout) {
+  return stdout.replace(
+    /("(?:size|unpackedSize|entryCount|mode)"\s*:\s*)(?:\d|\[REDACTED\])+/gu,
+    (_match, property) => `${property}0`,
+  );
+}
+
 export function validatePackManifest(stdout, files, packageName) {
   let manifest;
   try {
     manifest = JSON.parse(stdout);
   } catch {
-    return "npm pack returned invalid JSON manifest.";
+    const normalized = normalizeRedactedPackMetadata(stdout);
+    if (normalized === stdout) return "npm pack returned invalid JSON manifest.";
+    try {
+      manifest = JSON.parse(normalized);
+    } catch {
+      return "npm pack returned invalid JSON manifest.";
+    }
   }
   if (manifest === null || typeof manifest !== "object")
     return "npm pack JSON manifest must contain a files array with paths.";

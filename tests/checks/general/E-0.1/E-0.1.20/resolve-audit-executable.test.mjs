@@ -20,11 +20,11 @@ test("selects npm executable variants", async () => {
     expect(
       resolveAuditExecutable({
         env: { npm_execpath: "npm-cli.js" },
-        platform: "win32",
-        execPath: "node.exe",
+        platform: process.platform,
+        execPath: process.execPath,
         root,
       }),
-    ).toEqual(["node.exe", [npmCli]]);
+    ).toEqual([process.execPath, [npmCli]]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

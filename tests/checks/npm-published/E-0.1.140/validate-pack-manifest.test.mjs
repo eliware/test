@@ -62,6 +62,20 @@ test("accepts npm 12 scoped object-shaped manifests", () => {
   ).toContain("requested package");
 });
 
+test("parses npm pack metadata after numeric redaction", () => {
+  const paths = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"];
+  const output = JSON.stringify({
+    "@eliware/test": {
+      name: "@eliware/test",
+      size: 12034,
+      files: paths.map((path) => ({ path, size: 123, mode: 420 })),
+      entryCount: paths.length,
+    },
+  }).replaceAll("123", "[REDACTED]3");
+
+  expect(validatePackManifest(output, [], "@eliware/test")).toBeNull();
+});
+
 test("selects the manifest for the package being packed and rejects ambiguity", () => {
   const files = ["package.json", "README.md", "LICENSE", "RELEASE_NOTES.md"].map((path) => ({
     path,
@@ -112,6 +126,7 @@ test("selects the manifest for the package being packed and rejects ambiguity", 
 
 test("rejects invalid, incomplete, and over-broad pack manifests", () => {
   expect(validatePackManifest("not json", ["src/"])).toContain("invalid JSON");
+  expect(validatePackManifest('{"size":[REDACTED]2,}', [])).toContain("invalid JSON");
   expect(validatePackManifest(manifest(["package.json"]), ["src/"])).toContain("omitted");
   expect(
     validatePackManifest(
