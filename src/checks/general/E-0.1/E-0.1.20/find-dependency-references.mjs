@@ -44,7 +44,8 @@ export async function findDependencyReferences(
   ];
   const referenced = new Set();
   const uncertain = { value: false };
-  collectScriptReferences(packageJson?.scripts, declared, referenced);
+  const dependencyBinaries = await readDependencyBinaries(root, declared);
+  collectScriptReferences(packageJson?.scripts, declared, referenced, dependencyBinaries);
   for (const tool of ["jest", "prettier", "oxlint"])
     if (packageJson?.[tool] && declared.includes(tool)) referenced.add(tool);
   if (
@@ -53,7 +54,6 @@ export async function findDependencyReferences(
     declared.includes("oxlint")
   )
     referenced.add("oxlint");
-  const dependencyBinaries = await readDependencyBinaries(root, declared);
   await scanDependencyFiles(
     root,
     declared,

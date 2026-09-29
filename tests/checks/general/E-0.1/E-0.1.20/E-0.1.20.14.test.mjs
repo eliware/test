@@ -25,6 +25,30 @@ test("accepts referenced direct dependencies", async () => {
   ).resolves.toEqual({ ruleId: "E-0.1.20.14", status: "pass", message: "" });
 });
 
+test("recognizes package dependencies invoked through their npm script binaries", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-dependency-binaries-"));
+  await writeFile(
+    join(root, "package-lock.json"),
+    JSON.stringify({
+      lockfileVersion: 3,
+      packages: {
+        "node_modules/@eliware/test": { bin: { "eliware-test": "bin/eliware-test.mjs" } },
+        "node_modules/typescript": { bin: { tsc: "bin/tsc" } },
+      },
+    }),
+  );
+  await expect(
+    run({
+      root,
+      packageJson: {
+        devDependencies: { "@eliware/test": "^8.0.0", typescript: "^7.0.0" },
+        scripts: { test: "eliware-test", typecheck: "tsc --noEmit" },
+      },
+    }),
+  ).resolves.toEqual({ ruleId: "E-0.1.20.14", status: "pass", message: "" });
+  await rm(root, { recursive: true, force: true });
+});
+
 test("passes when no direct dependency categories are declared", async () => {
   await expect(run({ packageJson: {} })).resolves.toEqual({
     ruleId: "E-0.1.20.14",

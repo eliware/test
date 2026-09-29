@@ -11,3 +11,17 @@ test("collects dependency names from scripts and ignores non-string scripts", ()
   );
   expect([...referenced].sort()).toEqual(["alpha", "beta"]);
 });
+
+test("maps declared package executables used as npm script commands", () => {
+  const referenced = new Set();
+  collectScriptReferences(
+    { test: "eliware-test", typecheck: "tsc --noEmit", unrelated: "echo tsc" },
+    ["@eliware/test", "typescript"],
+    referenced,
+    new Map([
+      ["eliware-test", "@eliware/test"],
+      ["tsc", "typescript"],
+    ]),
+  );
+  expect([...referenced].sort()).toEqual(["@eliware/test", "typescript"]);
+});

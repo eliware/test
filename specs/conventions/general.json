@@ -646,26 +646,6 @@
               ]
             },
             {
-              "id": "A-0.1.20.11",
-              "dos": [
-                "Declare typecheck and build capabilities in package.json.eliware.capabilities; each declared capability requires an explicit read-only script, and generated output must remain outside the repository."
-              ],
-              "donts": [
-                "Do not infer or silently skip declared typecheck or build validation, and do not add placeholder commands for absent capabilities."
-              ],
-              "directives": [
-                {
-                  "id": "A-0.1.20.11.0",
-                  "dos": [
-                    "CI must execute applicable typecheck and production-build validation before publication."
-                  ],
-                  "donts": [
-                    "Do not publish when applicable typecheck or production-build validation fails."
-                  ]
-                }
-              ]
-            },
-            {
               "id": "E-0.1.20.12",
               "dos": [
                 "Before release consideration, repositories with npm dependencies must run npm outdated and have no outdated direct dependencies."
@@ -695,7 +675,7 @@
             {
               "id": "E-0.1.20.17",
               "dos": [
-                "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applicable profile or declared capability requires them: pack for npm publication; typecheck and build when package.json.eliware.capabilities declares them; and lighthouse and puppeteer for web projects.",
+                "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applied profile requires them.",
                 "When required scripts are invalid, report all missing or incorrect required scripts and disallowed script entries together in one result.",
                 "An explicitly authorized self-hosting exception may let @eliware/test scripts invoke its local bin entrypoint instead of the canonical eliware-test command. This exception applies only to the script-command requirement; aggregate validation must still execute and validate every required stage.",
                 "Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation."

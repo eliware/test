@@ -89,10 +89,10 @@
         {
           "id": "E-0.1.40.6",
           "dos": [
-            "Libraries must define a non-empty typecheck script using the repository's direct typechecker and must pass `npm run typecheck` during aggregate validation and before release consideration."
+            "Libraries must define a non-empty typecheck script using the repository's direct typechecker. Aggregate `npm test` must run `npm run typecheck` automatically, and typecheck must pass before release consideration."
           ],
           "donts": [
-            "Do not omit typecheck, route it through eliware-test, or release a library without passing `npm run typecheck`."
+            "Do not omit typecheck from aggregate `npm test`, require a separate typecheck step in CI, or release a library without passing typecheck."
           ]
         },
         {
