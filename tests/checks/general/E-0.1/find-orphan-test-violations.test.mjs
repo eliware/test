@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { findOrphanTestViolations } from "../../../../src/checks/general/E-0.1/find-orphan-test-violations.mjs";
 
-test("reports only unexpected Jest tests without an allowed integration role", () => {
+test("reports every unexpected Jest test regardless of filename", () => {
   const files = [
     "orphan.test.mjs",
     "api.integration.test.mjs",
@@ -10,7 +10,13 @@ test("reports only unexpected Jest tests without an allowed integration role", (
     "cross-cutting.test.mjs",
     "unit.js",
   ];
-  expect(findOrphanTestViolations(files, new Set(["known.test.mjs"]))).toEqual(["orphan.test.mjs"]);
+  expect(findOrphanTestViolations(files, new Set(["known.test.mjs"]))).toEqual([
+    "orphan.test.mjs",
+    "api.integration.test.mjs",
+    "e2e-flow.test.mjs",
+    "smoke.test.mjs",
+    "cross-cutting.test.mjs",
+  ]);
 });
 
 test("accepts registered test files and an empty collection", () => {

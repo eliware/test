@@ -1,52 +1,12 @@
-import { expect, jest, test } from "@jest/globals";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.6/E-0.1.6.1.mjs";
+import { expect, test } from "@jest/globals";
+import * as check from "../../../../../src/checks/general/E-0.1/E-0.1.6/E-0.1.6.1.mjs";
 
-test("rejects prohibited backup and runtime-state artifacts", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-runtime-state-"));
-  await writeFile(join(root, "README.md"), "safe");
-  await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
-  await mkdir(join(root, "backups"));
-  await writeFile(join(root, "backups", "database.sql.gz"), "backup");
-  await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
-});
-
-test("does not classify a shell script as a backup artifact by filename alone", async () => {
-  const repositoryInventory = {
-    repositoryFiles: async () => ["scripts/vrrp-wg-backup.sh"],
-  };
-  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({
-    status: "pass",
-  });
-});
-
-test("still rejects named backup artifacts with prohibited extensions", async () => {
-  const repositoryInventory = {
-    repositoryFiles: async () => ["archives/router-backup.tar.gz"],
-  };
-  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({
-    status: "fail",
-  });
-});
-
-test("returns the repository discovery error", async () => {
-  await expect(
-    run({ root: "C:/repo" }, async () => {
-      throw new Error("discovery failed");
-    }),
-  ).resolves.toEqual({
+test("declares backup and runtime-state review as non-deterministic and advisory-only", () => {
+  expect(check).toMatchObject({
     ruleId: "E-0.1.6.1",
-    status: "fail",
-    message: "discovery failed",
+    parentRuleId: "E-0.1.6",
+    enforcementMode: "non-deterministic",
+    applicability: "advisory-only",
   });
-});
-
-test("uses the run-scoped repository inventory when available", async () => {
-  const repositoryInventory = { repositoryFiles: jest.fn(async () => ["README.md"]) };
-  await expect(run({ root: "C:/repo", repositoryInventory })).resolves.toMatchObject({
-    status: "pass",
-  });
-  expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
+  expect(check.run).toBeUndefined();
 });

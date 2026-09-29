@@ -32,7 +32,7 @@ export async function runSourceTestMirroring({
   findings.push(...findDuplicatePathViolations(sourceFiles, testFiles));
   findings.push(
     ...findOrphanTestViolations(testFiles, expectedTests).map(
-      (file) => `orphan test is not an approved cross-cutting suite: ${file}`,
+      (file) => `orphan test has no matching source module: ${file}`,
     ),
   );
   const testContents = await readSourceTestContents(root, testFiles, repositoryInventory);

@@ -236,16 +236,16 @@
         {
           "id": "E-0.1.6",
           "dos": [
-            "Repositories must keep secrets, credentials, keys, tokens, .env files, generated sessions, and machine state out of version control."
+            "Human or AI review must assess repository contents for secrets, credentials, private data, backups, and runtime state; deterministic validation must not claim that arbitrary content has been proven free of these materials."
           ],
           "donts": [
-            "Repositories must not commit secrets, credentials, keys, tokens, .env files, generated sessions, or machine state."
+            "Do not treat file or directory names, extensions, or a clean deterministic scan as proof that sensitive content is present or absent."
           ],
           "directives": [
             {
               "id": "E-0.1.6.0",
               "dos": [
-                "Repositories must also exclude decrypted data, private conversations, operational database backups, production dumps, database state, restore archives, and runtime state."
+                "Human or AI review must assess repository contents for decrypted data, private conversations, operational database backups, production dumps, database state, restore archives, and runtime state."
               ],
               "donts": [
                 "Do not commit decrypted data, private conversations, operational backups, production dumps, database state, restore archives, or runtime state."
@@ -254,21 +254,11 @@
             {
               "id": "E-0.1.6.1",
               "dos": [
-                "Bootstrap schemas and minimal non-sensitive seed records are allowed when required for a fresh install; platform DBA and Storage owners retain backup, restore, retention, and recovery ownership.",
-                "Deterministic backup-artifact checks must not classify shell script files as backup files solely because their filename contains backup, dump, or restore."
+                "Human or AI review must distinguish bootstrap schemas and minimal non-sensitive seed records needed for a fresh install from full backups, production dumps, and runtime state.",
+                "Platform DBA and Storage owners retain backup, restore, retention, and recovery ownership."
               ],
               "donts": [
                 "Project repositories must not contain full backups or production dumps or assume responsibility for platform backup, restore, retention, or recovery operations."
-              ]
-            },
-            {
-              "id": "A-0.1.6.2",
-              "dos": [
-                "Deterministic validation must inspect current repository files on disk for secret-like files and reject unauthorized matches, including files not yet staged. Only the exact root paths .env and .env.example are permitted; variants such as .env.local and nested .env.example paths remain forbidden. The Git-index check must still reject either permitted root path if tracked or staged against an ignore rule.",
-                "SOPS-encrypted YAML secret files with verified encrypted payloads are permitted. KSOPS generator files, secret-directory kustomizations, Argo CD Applications targeting secret directories, and their README files are permitted only as secret-management metadata; they must not contain plaintext secret values. Other secret-like paths require an exact exception identifying the path, rule ID, approver, reason, and expiry or review condition in package.json.eliware.exempt."
-              ],
-              "donts": [
-                "Do not treat a filename suffix alone as proof that a secret file is encrypted, or allow plaintext secret payloads in secret-management metadata."
               ]
             }
           ]
