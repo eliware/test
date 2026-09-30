@@ -4,12 +4,21 @@
 
 ## Table of Contents
 
-[Features](#features) · [Requirements](#requirements) · [Setup](#setup) ·
-[Usage](#usage) · [Development](#development) · [Testing](#testing) ·
-[Troubleshooting](#troubleshooting) · [Security](#security) ·
-[Configuration](#configuration) · [Operations](#operations) ·
-[Commands](#commands) · [Exit codes](#exit-codes) ·
-[Support](#support) · [License](#license) · [Links](#links)
+- [Features](#features)
+- [Requirements](#requirements)
+- [Setup](#setup)
+- [Usage](#usage)
+- [Development](#development)
+- [Testing](#testing)
+- [Troubleshooting](#troubleshooting)
+- [Security](#security)
+- [Configuration](#configuration)
+- [Operations](#operations)
+- [Commands](#commands)
+- [Exit codes](#exit-codes)
+- [Support](#support)
+- [License](#license)
+- [Links](#links)
 
 ## Features
 
