@@ -41,7 +41,7 @@ test("recognizes package dependencies invoked through their npm script binaries"
     run({
       root,
       packageJson: {
-        devDependencies: { "@eliware/test": "^8.0.0", typescript: "^7.0.0" },
+        devDependencies: { "@eliware/test": "^9.0.0", typescript: "^7.0.0" },
         scripts: { test: "eliware-test", typecheck: "tsc --noEmit" },
       },
     }),

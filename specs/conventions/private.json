@@ -1,5 +1,5 @@
 {
-  "version": "8.0",
+  "version": "9.0",
   "description": "Applies to repositories that are not publicly published as npm packages.",
   "directives": [
     {

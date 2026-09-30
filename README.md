@@ -67,7 +67,7 @@ node bin/eliware-test.mjs --pack
 ```
 
 `package.json` is the source of truth for the version in this checkout. The
-repository's current version is `8.0.0`. The npm badge reports the version
+repository's current version is `9.0.0`. The npm badge reports the version
 currently available in the public registry; it may differ from this checkout.
 
 When a repository-local Jest cannot be resolved, `eliware-test` uses the Jest
@@ -126,7 +126,7 @@ is profile-dependent in other repositories. One repository-relative `.test.*` or
 When validation fails, rerun the reported focused path to diagnose that test,
 then rerun `npm test` to verify the aggregate validation gate before handoff.
 
-The v8 orchestration and convention-check registry are implemented as focused
+The v9 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 
 Application and library architecture guidance is selected only when the

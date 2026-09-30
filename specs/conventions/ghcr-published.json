@@ -1,5 +1,5 @@
 {
-  "version": "8.0",
+  "version": "9.0",
   "description": "Applies to repositories that publish container images to GitHub Container Registry (GHCR). It extends general.json and the applicable public/private distribution profile without replacing their validation or publication boundaries.",
   "directives": [
     {

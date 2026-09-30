@@ -1,5 +1,5 @@
 {
-  "version": "8.0",
+  "version": "9.0",
   "description": "Specification for the deterministic Eliware validation harness.",
   "directives": [
     {

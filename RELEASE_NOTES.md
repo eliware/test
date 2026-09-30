@@ -1,5 +1,32 @@
 # Release Notes
 
+## 9.0.0 — 2026-09-30
+
+### Breaking changes
+
+- Removed the cross-repository authority map system and its package metadata,
+  convention profiles, and validation checks. Specification directives remain
+  ID-based, and validation now requires directive IDs to be unique.
+- Removed the `fork` convention profile and its validation; repositories must
+  apply supported convention profiles explicitly.
+
+### Changed
+
+- Changed sensitive-content requirements to non-deterministic human or AI
+  review. Deterministic checks no longer use filenames or scans to claim that
+  sensitive content is present or absent.
+- Refactored validation coordinators and check modules into smaller,
+  single-purpose modules with mirrored tests.
+- Improved dependency-reference analysis, profile validation, coverage
+  reporting, and cross-platform process handling.
+
+### Fixed
+
+- Improved diagnostics when Jest fails without useful output and handled
+  redacted numeric metadata in npm pack manifests.
+- Fixed validation edge cases across documentation, package dependencies,
+  workflow checks, and focused test execution.
+
 ## 8.0.0 — 2026-09-27
 
 ### Added

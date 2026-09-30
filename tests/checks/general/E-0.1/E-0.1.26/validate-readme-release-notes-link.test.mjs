@@ -4,7 +4,7 @@ import { validateReadmeReleaseNotesLink } from "../../../../../src/checks/genera
 test("accepts a release-notes link within the Links section", () => {
   for (const readme of [
     "## Links\n\n[Release notes](RELEASE_NOTES.md)",
-    "## Links\n\n[Release notes](./RELEASE_NOTES.md#8.0.0)",
+    "## Links\n\n[Release notes](./RELEASE_NOTES.md#9.0.0)",
     "## Links\n\n[Release notes](RELEASE_NOTES.md)\n\n## License\n",
   ]) {
     expect(validateReadmeReleaseNotesLink(readme)).toBeNull();

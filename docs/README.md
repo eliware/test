@@ -1,6 +1,6 @@
 # @eliware/test documentation
 
-This directory contains end-user documentation for the native v8 validator.
+This directory contains end-user documentation for the native v9 validator.
 
 ## Purpose and scope
 

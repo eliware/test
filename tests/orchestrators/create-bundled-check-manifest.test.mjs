@@ -12,7 +12,7 @@ test("records each implementation with its identity, path, and enforcement mode"
       },
     ]),
   ).toEqual({
-    version: "8.0",
+    version: "9.0",
     checks: [
       {
         ruleId: "E-0.1",

@@ -22,10 +22,10 @@ test("validates the surface and runs both informational commands", async () => {
     await expect(
       run({
         root,
-        packageJson: { version: "8.0.0", bin: { cli: "bin/cli.mjs" } },
+        packageJson: { version: "9.0.0", bin: { cli: "bin/cli.mjs" } },
         executeEntrypoint: async (_command, args) => {
           calls.push(args[1]);
-          return { code: 0, stdout: args[1] === "--version" ? "8.0.0\n" : "Usage\n" };
+          return { code: 0, stdout: args[1] === "--version" ? "9.0.0\n" : "Usage\n" };
         },
       }),
     ).resolves.toEqual({ ruleId: "E-0.1.60.1", status: "pass", message: "" });
@@ -44,8 +44,8 @@ test("converts an informational-command error into a failed rule", async () => {
     await expect(
       run({
         root,
-        packageJson: { version: "8.0.0", bin: "bin/cli.mjs" },
-        executeEntrypoint: async () => ({ code: 0, stdout: "8.0.1" }),
+        packageJson: { version: "9.0.0", bin: "bin/cli.mjs" },
+        executeEntrypoint: async () => ({ code: 0, stdout: "9.0.1" }),
       }),
     ).resolves.toMatchObject({
       status: "fail",
@@ -65,10 +65,10 @@ test("runs informational commands when README validation fails", async () => {
     await expect(
       run({
         root,
-        packageJson: { version: "8.0.0", bin: "bin/cli.mjs" },
+        packageJson: { version: "9.0.0", bin: "bin/cli.mjs" },
         executeEntrypoint: async (_command, args) => {
           calls.push(args[1]);
-          return { code: 0, stdout: args[1] === "--version" ? "8.0.0\n" : "Usage\n" };
+          return { code: 0, stdout: args[1] === "--version" ? "9.0.0\n" : "Usage\n" };
         },
       }),
     ).resolves.toMatchObject({

@@ -6,7 +6,7 @@ import { run } from "../../../../src/checks/npm-published/E-0.1.140/E-0.1.140.0.
 
 const packageJson = {
   name: "@eliware/fixture",
-  version: "8.0.0",
+  version: "9.0.0",
   files: ["bin/", "src/", "README.md"],
   scripts: { pack: "eliware-test --pack" },
 };

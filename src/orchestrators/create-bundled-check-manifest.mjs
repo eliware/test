@@ -35,5 +35,5 @@ export function createBundledCheckManifest(checks) {
     ids.add(record.ruleId);
     paths.add(record.modulePath);
   }
-  return Object.freeze({ version: "8.0", checks: records });
+  return Object.freeze({ version: "9.0", checks: records });
 }

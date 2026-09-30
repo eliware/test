@@ -7,13 +7,13 @@ const check = (ruleId, enforcementMode = "deterministic", profile = "general") =
   modulePath: `${profile}/${ruleId}.mjs`,
 });
 const catalog = {
-  version: "8.0",
+  version: "9.0",
   profiles: {
-    general: { profile: "general", document: "general.json", version: "8.0", extends: [] },
+    general: { profile: "general", document: "general.json", version: "9.0", extends: [] },
     application: {
       profile: "application",
       document: "application.json",
-      version: "8.0",
+      version: "9.0",
       extends: [],
     },
   },
@@ -35,7 +35,7 @@ test("accepts every registered bundled directive", async () => {
   ).toBe(true);
 });
 
-test("fails when the bundled catalog is not v8", async () => {
+test("fails when the bundled catalog is not v9", async () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["general"], { version: "7.0", profiles: {} }),
   ).toThrow("missing or invalid");
@@ -44,7 +44,7 @@ test("fails when the bundled catalog is not v8", async () => {
 test("handles an applied group without an catalog entry", () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["unlisted"], {
-      version: "8.0",
+      version: "9.0",
       profiles: {},
       directives: {},
       rules: {},
@@ -53,7 +53,7 @@ test("handles an applied group without an catalog entry", () => {
 });
 
 test("rejects a catalog without profiles", () => {
-  expect(() => validateBundledDirectiveCompleteness([], [], { version: "8.0" })).toThrow(
+  expect(() => validateBundledDirectiveCompleteness([], [], { version: "9.0" })).toThrow(
     "missing or invalid",
   );
 });

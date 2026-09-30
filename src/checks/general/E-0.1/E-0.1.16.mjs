@@ -6,7 +6,7 @@ export const parentRuleId = "E-0.1";
 
 export function run({ packageJson }) {
   const version = parse(packageJson?.version);
-  return version?.major === 8 && version.minor === 0
+  return version?.major === 9 && version.minor === 0
     ? pass(ruleId)
-    : fail(ruleId, "Release versions must align with the v8 convention baseline.");
+    : fail(ruleId, "Release versions must align with the v9 convention baseline.");
 }

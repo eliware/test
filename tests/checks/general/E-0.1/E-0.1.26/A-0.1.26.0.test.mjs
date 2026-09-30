@@ -45,7 +45,7 @@ function resetValidators() {
 beforeEach(resetValidators);
 
 test("coordinates release-note parsing, validation, and README indexing in order", async () => {
-  const context = { root: "/repo", packageJson: { version: "8.0.0" } };
+  const context = { root: "/repo", packageJson: { version: "9.0.0" } };
 
   await expect(run(context)).resolves.toEqual({
     ruleId: "A-0.1.26.0",
@@ -53,7 +53,7 @@ test("coordinates release-note parsing, validation, and README indexing in order
     message: "",
   });
   expect(readReleaseNoteDocuments).toHaveBeenCalledWith(context, false);
-  expect(validateReleaseNoteContent).toHaveBeenCalledWith([], "8.0.0");
+  expect(validateReleaseNoteContent).toHaveBeenCalledWith([], "9.0.0");
   const phases = [
     parseReleaseNotes.mock.invocationCallOrder[0],
     validateReleaseNoteContent.mock.invocationCallOrder[0],
@@ -82,7 +82,7 @@ test("reports a missing README while validating release notes", async () => {
     notes: "release notes",
     failures: ["README.md is required for release-bearing repositories."],
   });
-  const result = await run({ root: "/repo", packageJson: { version: "8.0.0" } });
+  const result = await run({ root: "/repo", packageJson: { version: "9.0.0" } });
   expect(result.message).toContain("README.md is required");
   expect(validateReleaseNoteContent).toHaveBeenCalled();
 });
@@ -99,7 +99,7 @@ test("does not require absent release notes for non-release-bearing profiles", a
 
 async function expectFirstFailure(validator, validationError, expectedMessage, laterValidators) {
   validator.mockReturnValueOnce(validationError);
-  await expect(run({ root: "/repo", packageJson: { version: "8.0.0" } })).resolves.toEqual({
+  await expect(run({ root: "/repo", packageJson: { version: "9.0.0" } })).resolves.toEqual({
     ruleId: "A-0.1.26.0",
     status: "fail",
     message: expectedMessage,
