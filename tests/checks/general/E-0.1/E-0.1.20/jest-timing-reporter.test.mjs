@@ -60,3 +60,16 @@ test("labels timed failed cases", () => {
     "[eliware-test]   FAILED broken — 0.010s\n",
   ]);
 });
+
+test("redacts secret names and suppresses paths outside the repository", () => {
+  const reporter = new JestTimingReporter({
+    env: { API_TOKEN: "private-token" },
+    write: (value) => writes.push(value),
+  });
+  reporter.onTestResult(
+    { path: "../outside.test.mjs" },
+    { assertionResults: [{ status: "passed", title: "private-token", duration: 10 }] },
+  );
+  expect(writes.join("")).toContain("[outside repository]");
+  expect(writes.join("")).not.toContain("private-token");
+});

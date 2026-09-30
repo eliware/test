@@ -2,7 +2,14 @@ import { writeStageDiagnostics } from "./write-stage-diagnostics.mjs";
 import { writeDebugTiming } from "./write-debug-timing.mjs";
 import { formatDebugTiming } from "./timing/format-debug-timing.mjs";
 
-export function writeValidationResults(result, write, debugTiming, timing, startedAt) {
+export function writeValidationResults(
+  result,
+  write,
+  debugTiming,
+  timing,
+  startedAt,
+  timingOptions = {},
+) {
   writeStageDiagnostics(result, write);
   if (!debugTiming) {
     if (result.code === 0 && !result.diagnostics?.length && !result.output) {
@@ -10,7 +17,9 @@ export function writeValidationResults(result, write, debugTiming, timing, start
     }
     return;
   }
-  for (const line of formatDebugTiming(timing.getLines(), timing.getJestOutput())) write(line);
+  for (const line of formatDebugTiming(timing.getLines(), timing.getJestOutput(), timingOptions)) {
+    write(line);
+  }
   writeDebugTiming(write, startedAt, true);
 }
 

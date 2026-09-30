@@ -77,8 +77,11 @@ paths are rejected when they do not exist, and coverage is narrowed to an
 unambiguous mirrored source module when possible. Focused validation also
 checks the selected Jest run's coverage and output, runs Oxlint and Prettier
 only on the selected source/test pair, and validates that pair's mirroring and
-test contract. Repository-wide checks such as audit, pack, dependency,
-documentation, workflow, and unrelated source/test checks remain skipped:
+test contract. It also runs convention checks explicitly marked safe for focused
+validation. Those checks may inspect repository-level configuration or
+metadata, so a focused run does not mean every repository-wide check is skipped.
+Convention checks not marked safe for focused validation, including the
+aggregate audit and pack stages, remain skipped:
 
 ```text
 eliware-test tests/example.test.mjs

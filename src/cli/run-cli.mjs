@@ -42,6 +42,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
       args.includes("--debug-timing"),
       timing,
       startedAt,
+      { root, ...(options.env ? { env: options.env } : {}) },
     );
     if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
     return result.code;

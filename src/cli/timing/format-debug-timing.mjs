@@ -1,15 +1,46 @@
+import { isAbsolute, relative, resolve } from "node:path";
+import { collectRedactionSecrets } from "../../checks/collect-redaction-secrets.mjs";
+import { redactProcessOutput } from "../../checks/redact-process-output.mjs";
 import { formatTestTimings } from "./format-test-timings.mjs";
 import { parseTimingReport } from "./parse-timing-report.mjs";
 
-export function formatDebugTiming(stageLines, jestOutput) {
+const MAX_TIMING_OUTPUT = 20_000;
+
+export function formatDebugTiming(stageLines, jestOutput, options = {}) {
   const output = [...stageLines];
   if (jestOutput) {
     try {
-      const formatted = formatTestTimings(parseTimingReport(jestOutput));
+      const report = parseTimingReport(jestOutput);
+      const root = resolve(options.root ?? process.cwd());
+      for (const result of report.testResults ?? []) {
+        const file = result.testFilePath ?? result.name;
+        if (typeof file !== "string") continue;
+        const path = relative(root, resolve(root, file));
+        result.testFilePath =
+          path === ".." || /^\.\.[\\/]/u.test(path) || isAbsolute(path)
+            ? "[outside repository]"
+            : path.replaceAll("\\", "/");
+        delete result.name;
+      }
+      const formatted = formatTestTimings(report);
       if (formatted) output.push(formatted);
     } catch (error) {
       output.push(`Timing report unavailable: ${error.message}`);
     }
   }
-  return output;
+  const secrets = collectRedactionSecrets(options.env ?? process.env);
+  const safeOutput = output.map((line) => redactProcessOutput(line, secrets));
+  let remaining = MAX_TIMING_OUTPUT;
+  const bounded = [];
+  for (const line of safeOutput) {
+    if (remaining <= 0) break;
+    if (line.length <= remaining) {
+      bounded.push(line);
+      remaining -= line.length + 1;
+      continue;
+    }
+    bounded.push(`${line.slice(0, Math.max(0, remaining - 1))}…`);
+    break;
+  }
+  return bounded;
 }

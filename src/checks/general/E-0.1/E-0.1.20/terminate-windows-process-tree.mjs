@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { win32 } from "node:path";
+import { isProcessRunning } from "./is-process-running.mjs";
+import { waitForProcessExit } from "./wait-for-process-exit.mjs";
 
 function resolveWindowsExecutable(env, ...parts) {
   const configuredSystemRoot = [env?.SystemRoot, env?.WINDIR].find(
@@ -33,41 +35,55 @@ export function resolveTaskkillExecutable(env = process.env) {
   return resolveWindowsExecutable(env, "System32", "taskkill.exe");
 }
 
-export function createWindowsProcessTreeKiller(executeProcess = execFileSync) {
+function terminateWithPowerShell(pid, env, execute, options) {
+  const powershell = resolveWindowsExecutable(
+    env,
+    "System32",
+    "WindowsPowerShell",
+    "v1.0",
+    "powershell.exe",
+  );
+  const script =
+    "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
+    "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
+    "$descendants=[Collections.Generic.List[int]]::new(); [void]$known.Add($root); do { $changed=$false; " +
+    "foreach($process in $all) { if($known.Contains([int]$process.ParentProcessId) -and " +
+    "$known.Add([int]$process.ProcessId)) { $descendants.Add([int]$process.ProcessId); $changed=$true } } " +
+    "} while($changed); for($index=$descendants.Count-1; $index -ge 0; $index--) { " +
+    "Stop-Process -Id $descendants[$index] -Force -ErrorAction SilentlyContinue }; " +
+    "Stop-Process -Id $root -Force -ErrorAction SilentlyContinue";
+  execute(powershell, ["-NoProfile", "-NonInteractive", "-Command", script], {
+    ...options,
+    env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) },
+  });
+}
+
+export function createWindowsProcessTreeKiller(
+  executeProcess = execFileSync,
+  processIsRunning = isProcessRunning,
+  waitForExit = (pid) => waitForProcessExit(pid, processIsRunning),
+) {
   return function killWindowsProcessTree(pid, env = process.env, execute = executeProcess) {
+    if (!processIsRunning(pid)) return;
     const options = { windowsHide: true, stdio: "ignore", timeout: 1_000, shell: false };
+    let taskkillError;
     try {
       execute(resolveTaskkillExecutable(env), ["/pid", String(pid), "/t", "/f"], options);
-    } catch (taskkillError) {
-      const powershell = resolveWindowsExecutable(
-        env,
-        "System32",
-        "WindowsPowerShell",
-        "v1.0",
-        "powershell.exe",
-      );
-      const script =
-        "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
-        "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
-        "$descendants=[Collections.Generic.List[int]]::new(); [void]$known.Add($root); do { $changed=$false; " +
-        "foreach($process in $all) { if($known.Contains([int]$process.ParentProcessId) -and " +
-        "$known.Add([int]$process.ProcessId)) { $descendants.Add([int]$process.ProcessId); $changed=$true } } " +
-        "} while($changed); for($index=$descendants.Count-1; $index -ge 0; $index--) { " +
-        "Stop-Process -Id $descendants[$index] -Force -ErrorAction SilentlyContinue }; " +
-        "Stop-Process -Id $root -Force -ErrorAction SilentlyContinue";
-      try {
-        execute(powershell, ["-NoProfile", "-NonInteractive", "-Command", script], {
-          ...options,
-          timeout: 1_000,
-          env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) },
-        });
-      } catch (powershellError) {
-        throw new AggregateError(
-          [taskkillError, powershellError],
-          "Windows process-tree termination failed.",
-        );
-      }
+    } catch (error) {
+      taskkillError = error;
     }
+    if (waitForExit(pid)) return;
+    let powershellError;
+    try {
+      terminateWithPowerShell(pid, env, execute, options);
+    } catch (error) {
+      powershellError = error;
+    }
+    if (waitForExit(pid)) return;
+    const failures = [taskkillError, powershellError].filter(Boolean);
+    if (failures.length)
+      throw new AggregateError(failures, "Windows process-tree termination failed.");
+    throw new Error("Windows process remains running after process-tree termination.");
   };
 }
 

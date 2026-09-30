@@ -1,9 +1,16 @@
 import { expect, jest, test } from "@jest/globals";
 import {
   createWindowsProcessTreeKiller,
-  killWindowsProcessTree,
   resolveTaskkillExecutable,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.20/terminate-windows-process-tree.mjs";
+
+function createKiller(execute, state = { running: true }) {
+  return createWindowsProcessTreeKiller(
+    execute,
+    () => state.running,
+    () => !state.running,
+  );
+}
 
 test("resolves taskkill from an absolute Windows system root", () => {
   expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(
@@ -31,11 +38,13 @@ test("resolves taskkill from an absolute Windows system root", () => {
 
 test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
   const calls = [];
+  const state = { running: true };
   const execute = (command, args, options) => {
     calls.push({ command, args, options });
     if (calls.length === 1) throw new Error("taskkill unavailable");
+    state.running = false;
   };
-  killWindowsProcessTree(42, { SystemRoot: "C:/Windows" }, execute);
+  createKiller(execute, state)(42, { SystemRoot: "C:/Windows" });
   expect(calls).toHaveLength(2);
   expect(calls[0].command).toMatch(/System32[\\/]taskkill\.exe$/iu);
   expect(calls[0].args).toEqual(["/pid", "42", "/t", "/f"]);
@@ -47,13 +56,39 @@ test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
 });
 
 test("reports both failures when neither Windows tree terminator succeeds", () => {
+  const state = { running: true };
   const execute = jest.fn(() => {
     throw new Error("process unavailable");
   });
-  expect(() => killWindowsProcessTree(42, { SystemRoot: "C:/Windows" }, execute)).toThrow(
+  expect(() => createKiller(execute, state)(42, { SystemRoot: "C:/Windows" })).toThrow(
     "Windows process-tree termination failed",
   );
   expect(execute).toHaveBeenCalledTimes(2);
+});
+
+test("does not report success until the process is observed closed", () => {
+  const calls = [];
+  const execute = (command) => calls.push(command);
+  expect(() => createKiller(execute)(42, { SystemRoot: "C:/Windows" })).toThrow("remains running");
+  expect(calls).toHaveLength(2);
+});
+
+test("skips termination when the process is already closed", () => {
+  const execute = jest.fn();
+  const killer = createWindowsProcessTreeKiller(execute, () => false);
+  killer(42, { SystemRoot: "C:/Windows" });
+  expect(execute).not.toHaveBeenCalled();
+});
+
+test("confirms taskkill termination through the default process-exit waiter", () => {
+  const state = { running: true };
+  const execute = jest.fn(() => {
+    state.running = false;
+  });
+  createWindowsProcessTreeKiller(execute, () => state.running)(42, {
+    SystemRoot: "C:/Windows",
+  });
+  expect(execute).toHaveBeenCalledTimes(1);
 });
 
 test("uses the process environment when resolving the system root by default", () => {
@@ -86,7 +121,11 @@ test("rejects a missing system root when neither supplied nor process environmen
 
 test("uses injected command execution when omitted from the killer call", () => {
   const execute = jest.fn();
-  const killTree = createWindowsProcessTreeKiller(execute);
+  const state = { running: true };
+  const killTree = createKiller((...args) => {
+    execute(...args);
+    state.running = false;
+  }, state);
   const previous = process.env.SystemRoot;
   process.env.SystemRoot = "C:/Windows";
   try {

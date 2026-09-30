@@ -92,6 +92,7 @@ test("coordinates diagnostic parsing, convention and validation stages, and resu
     false,
     timing,
     expect.any(Number),
+    { root: "/repo" },
   );
   expect(formatExitCode).not.toHaveBeenCalled();
 });
@@ -102,6 +103,12 @@ test("uses null mode when diagnostics contain no focused test arguments", async 
   await expect(runCli([], jest.fn(), "/repo")).resolves.toBe(0);
 
   expect(writeValidationResults.mock.calls[0][0].mode).toBeNull();
+});
+
+test("passes an explicitly supplied environment into timing output handling", async () => {
+  const env = { API_TOKEN: "secret" };
+  await expect(runCli([], jest.fn(), "/repo", { env })).resolves.toBe(0);
+  expect(writeValidationResults.mock.calls[0][5]).toEqual({ root: "/repo", env });
 });
 
 test("enables timing output and formats nonzero or debug exit codes", async () => {
@@ -116,6 +123,7 @@ test("enables timing output and formats nonzero or debug exit codes", async () =
     true,
     timing,
     expect.any(Number),
+    { root: "/repo" },
   );
   expect(formatExitCode).toHaveBeenCalledWith(0);
   expect(write).toHaveBeenCalledWith("formatted exit code");

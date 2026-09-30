@@ -45,6 +45,20 @@ test("counts each vulnerable package once when it has multiple advisory records"
   ).toBe(true);
 });
 
+test("rejects conflicting duplicate normalized package findings", () => {
+  expect(
+    hasConsistentNpmAuditSeverityCounts(
+      report(
+        { ...emptyCounts, low: 1, moderate: 1, total: 2 },
+        {
+          example: { name: "example", severity: "low", via: [{ source: 1 }] },
+          duplicate: { name: "example", severity: "moderate", via: [{ source: 2 }] },
+        },
+      ),
+    ),
+  ).toBe(false);
+});
+
 test("rejects missing, malformed, or unsafe severity counts", () => {
   for (const counts of [
     { ...emptyCounts, high: undefined },

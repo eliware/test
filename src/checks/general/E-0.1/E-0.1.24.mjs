@@ -1,7 +1,7 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "./E-0.1.24/read-workflow-files.mjs";
-import { workflowHasValidationEvents } from "./E-0.1.24/workflow-validation-events.mjs";
 import { validateWorkflowFileSet } from "./E-0.1.24/validate-workflow-file-set.mjs";
+import { validateCiWorkflow } from "./E-0.1.24/validate-ci-workflow.mjs";
 
 export const ruleId = "E-0.1.24";
 export const parentRuleId = "E-0.1";
@@ -22,12 +22,7 @@ export async function run({ root, packageJson, repositoryInventory }) {
     packageJson,
   );
   if (fileSetError) failures.push(fileSetError);
-  const workflow = workflows.find(
-    ({ name, document }) => name === "ci.yml" && workflowHasValidationEvents(document),
-  );
-  if (!workflow)
-    failures.push(
-      "A GitHub Actions workflow must validate pull requests and pushes to main on Ubuntu.",
-    );
+  const ciWorkflowError = validateCiWorkflow(workflows);
+  if (ciWorkflowError) failures.push(ciWorkflowError);
   return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

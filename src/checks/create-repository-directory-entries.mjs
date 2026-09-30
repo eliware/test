@@ -13,7 +13,6 @@ export function createRepositoryDirectoryEntries({
   let childIndex;
   let knownDirectories;
   let prunedDirectories;
-  const fallbackChildren = new Map();
   return async function directoryEntries(directory) {
     const base = inventoryDirectory(
       root,
@@ -69,18 +68,10 @@ export function createRepositoryDirectoryEntries({
       });
     let children = childIndex.get(base || ".") ?? [];
     if (base && children.length === 0 && prunedDirectory) {
-      if (!fallbackChildren.has(base)) {
-        fallbackChildren.set(
-          base,
-          Promise.resolve(readDirectory(base)).then((entries) =>
-            entries.map((entry) => ({
-              path: `${base}/${entry.name}`,
-              type: entry.isDirectory() ? "directory" : "file",
-            })),
-          ),
-        );
-      }
-      children = await fallbackChildren.get(base);
+      children = (await readDirectory(base)).map((entry) => ({
+        path: `${base}/${entry.name}`,
+        type: entry.isDirectory() ? "directory" : "file",
+      }));
     }
     return children.map((record) => ({
       name: basename(record.path),

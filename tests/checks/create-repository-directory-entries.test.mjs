@@ -136,7 +136,7 @@ test("builds nested paths while locating a generated descendant", async () => {
   expect(readDirectory).toHaveBeenCalledWith("src/coverage/reports");
 });
 
-test("reuses the same fallback listing for repeated generated-directory reads", async () => {
+test("refreshes cached fallback listings when a generated directory changes", async () => {
   const records = [{ path: "dist", type: "directory", depth: 1 }];
   let listing = [fileEntry("initial.js")];
   const readDirectory = jest.fn(async () => listing);
@@ -153,9 +153,9 @@ test("reuses the same fallback listing for repeated generated-directory reads", 
   ]);
   listing = [fileEntry("changed.js")];
   await expect(directoryEntries("/repo/dist/assets")).resolves.toMatchObject([
-    { name: "initial.js", path: "dist/assets/initial.js" },
+    { name: "changed.js", path: "dist/assets/changed.js" },
   ]);
-  expect(readDirectory).toHaveBeenCalledTimes(1);
+  expect(readDirectory).toHaveBeenCalledTimes(2);
 });
 
 test("rejects unknown and external directory paths", async () => {

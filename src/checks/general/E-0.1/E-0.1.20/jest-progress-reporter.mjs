@@ -1,26 +1,32 @@
+import {
+  createSafeReporterOutput,
+  repositoryRelativePath,
+} from "../../../create-safe-reporter-output.mjs";
+
 function durationSeconds(result) {
   const start = Number(result?.perfStats?.start ?? result?.startTime);
   const end = Number(result?.perfStats?.end ?? result?.endTime);
   return Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) / 1000 : 0;
 }
 
-function report(message) {
-  process.stderr.write(`[eliware-test-progress] ${message}\n`);
-}
-
 export default class JestProgressReporter {
+  constructor(options = {}) {
+    this.report = createSafeReporterOutput("eliware-test-progress", options);
+  }
+
   onTestStart(test) {
-    report(`start ${test.path}`);
+    this.report(`start ${repositoryRelativePath(test.path)}`);
   }
 
   onTestResult(test, result) {
-    report(`complete ${test.path} ${durationSeconds(result).toFixed(3)}s`);
+    const path = repositoryRelativePath(test.path);
+    this.report(`complete ${path} ${durationSeconds(result).toFixed(3)}s`);
     for (const assertion of result.assertionResults ?? []) {
       if (!Number.isFinite(assertion.duration)) continue;
       const duration = assertion.duration / 1000;
       const name = assertion.fullName ?? assertion.title;
-      report(`test ${test.path} :: ${name} ${duration.toFixed(3)}s`);
-      if (duration > 5) report(`slow ${test.path} :: ${name} :: ${duration.toFixed(3)}s`);
+      this.report(`test ${path} :: ${name} ${duration.toFixed(3)}s`);
+      if (duration > 5) this.report(`slow ${path} :: ${name} :: ${duration.toFixed(3)}s`);
     }
   }
 }

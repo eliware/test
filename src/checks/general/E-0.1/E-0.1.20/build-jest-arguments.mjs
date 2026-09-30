@@ -2,7 +2,7 @@ import { focusedPathFrom } from "../../../../cli/parse-focused-arguments.mjs";
 
 export { focusedPathFrom };
 
-const wrapperOwnedOptions = new Set([
+const wrapperOwnedOptions = [
   "collectCoverage",
   "coverage",
   "coverageDirectory",
@@ -19,21 +19,18 @@ const wrapperOwnedOptions = new Set([
   "findRelatedTests",
   "changedSince",
   "config",
-]);
-const shortOptionNames = new Map([["-c", "config"]]);
-
-function canonicalOption(argument) {
-  const option = argument.split("=", 1)[0];
-  if (shortOptionNames.has(option)) return shortOptionNames.get(option);
-  return option
-    .replace(/^--no-/u, "--")
-    .replace(/^--/u, "")
-    .replace(/-([a-z])/gu, (_, letter) => letter.toUpperCase());
-}
+];
+const wrapperOwnedOptionAliases = new Set(
+  wrapperOwnedOptions.flatMap((option) => {
+    const kebab = option.replace(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`);
+    return [option, `--${option}`, `--${kebab}`, `--no-${option}`, `--no-${kebab}`];
+  }),
+);
+wrapperOwnedOptionAliases.add("-c");
 
 export function buildJestArguments(args = []) {
   for (const argument of args) {
-    if (typeof argument === "string" && wrapperOwnedOptions.has(canonicalOption(argument)))
+    if (typeof argument === "string" && wrapperOwnedOptionAliases.has(argument.split("=", 1)[0]))
       throw new Error(`Jest option ${argument.split("=", 1)[0]} is controlled by eliware-test.`);
   }
   const focusedPath = focusedPathFrom(args);

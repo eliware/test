@@ -67,3 +67,30 @@ test("accepts a result without assertion results", () => {
   new JestProgressReporter().onTestResult({ path: "tests/empty.test.mjs" }, {});
   expect(writes).toEqual(["[eliware-test-progress] complete tests/empty.test.mjs 0.000s\n"]);
 });
+
+test("redacts secrets, hides external paths, and caps reporter output", () => {
+  const output = [];
+  const reporter = new JestProgressReporter({
+    env: { API_TOKEN: "private-token" },
+    write: (text) => output.push(text),
+  });
+  reporter.onTestStart({ path: `${process.cwd()}\\private-token.test.mjs` });
+  reporter.onTestResult(
+    { path: "../outside.test.mjs" },
+    { assertionResults: [{ title: "private-token", duration: 10 }] },
+  );
+  expect(output.join("")).not.toContain(process.cwd());
+  expect(output.join("")).not.toContain("private-token");
+  expect(output.join("")).toContain("[outside repository]");
+});
+
+test("caps total reporter output", () => {
+  const output = [];
+  const reporter = new JestProgressReporter({
+    write: (text) => output.push(text),
+    maxOutputLength: 20,
+  });
+  reporter.onTestStart({ path: "tests/a.test.mjs" });
+  reporter.onTestStart({ path: "tests/b.test.mjs" });
+  expect(output.join("").length).toBe(20);
+});
