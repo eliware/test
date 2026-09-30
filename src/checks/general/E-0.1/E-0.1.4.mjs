@@ -14,6 +14,8 @@ export async function run({
   runLint = runOxlint,
   toolArgs = [],
   focusedScope = null,
+  repositoryFiles,
+  repositoryInventory,
 }) {
   if (typeof packageJson?.scripts?.lint !== "string" || !packageJson.scripts.lint.trim()) {
     return fail(ruleId, "Repositories must define a lint validation command.");
@@ -21,6 +23,19 @@ export async function run({
   if (!(executeLint || mode === "lint") || (mode !== null && mode !== "lint")) return pass(ruleId);
   const argumentError = validateOxlintArguments(toolArgs);
   if (argumentError) return fail(ruleId, argumentError);
+  let files;
+  try {
+    files =
+      focusedScope?.paths ??
+      repositoryFiles ??
+      (repositoryInventory ? await repositoryInventory.files("repository") : null);
+  } catch (error) {
+    return fail(ruleId, `Repository file inventory could not be read: ${error.message}`);
+  }
+  if (!Array.isArray(files))
+    return fail(ruleId, "Repository file inventory is unavailable for lint validation.");
+  if (!files.some((file) => /\.(?:js|jsx|mjs|cjs|ts|tsx|mts|cts)$/iu.test(file)))
+    return pass(ruleId);
   try {
     const result = await runLint(root, undefined, undefined, toolArgs, focusedScope?.paths ?? []);
     if (result.code !== 0) {

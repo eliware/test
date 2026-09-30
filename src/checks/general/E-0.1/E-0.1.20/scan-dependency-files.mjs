@@ -1,4 +1,5 @@
 import { findRepositoryFiles } from "../find-repository-files.mjs";
+import { scanKnitDeployDependencyReferences } from "./scan-knit-deploy-dependency-references.mjs";
 import { scanSourceDependencyFiles } from "./scan-source-dependency-files.mjs";
 import { scanStructuredDependencyFiles } from "./scan-structured-dependency-files.mjs";
 
@@ -27,4 +28,12 @@ export async function scanDependencyFiles(
     dependencyBinaries,
   );
   await scanStructuredDependencyFiles(root, files, declared, referenced, inventory);
+  await scanKnitDeployDependencyReferences(
+    root,
+    files,
+    declared,
+    referenced,
+    dependencyBinaries,
+    inventory,
+  );
 }

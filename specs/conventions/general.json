@@ -212,7 +212,7 @@
             {
               "id": "E-0.1.4.0",
               "dos": [
-                "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for .mjs; validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure.",
+                "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for supported JavaScript and TypeScript files; when none exist, the lint stage passes without invoking Oxlint. Validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure.",
                 "YAML files may contain multiple documents separated by `---`; validate the syntax of every document in the stream without rejecting a valid stream solely because it contains multiple documents."
               ],
               "donts": ["Do not exclude a maintained file of these types from syntax validation."]
@@ -569,10 +569,10 @@
             {
               "id": "E-0.1.20.14",
               "dos": [
-                "Repositories must remove dependencies that are not used by their source, tests, tooling, or required runtime."
+                "Repositories must remove dependencies that are not used by their source, tests, tooling, required runtime, or commands in .knit/deploy.yaml."
               ],
               "donts": [
-                "Do not retain a declared dependency that source, tests, tooling, or required runtime does not use."
+                "Do not retain a declared dependency that source, tests, tooling, required runtime, or commands in .knit/deploy.yaml do not use."
               ]
             },
             {

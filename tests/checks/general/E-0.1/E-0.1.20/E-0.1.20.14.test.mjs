@@ -49,6 +49,35 @@ test("recognizes package dependencies invoked through their npm script binaries"
   await rm(root, { recursive: true, force: true });
 });
 
+test("recognizes package binaries invoked by Knit deployment commands", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-knit-binary-dependency-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    await writeFile(
+      join(root, "package-lock.json"),
+      JSON.stringify({
+        lockfileVersion: 3,
+        packages: {
+          "node_modules/@eliware/vyops": { bin: { vyops: "bin/vyops.mjs" } },
+        },
+      }),
+    );
+    await writeFile(
+      join(root, ".knit", "deploy.yaml"),
+      "on:\n  push:\n    deployments:\n      - commands:\n          - git pull --ff-only origin main\n          - npm ci\n          - npm test\n          - vyops preflight config.boot\n",
+    );
+    await expect(
+      run({
+        root,
+        packageJson: { devDependencies: { "@eliware/vyops": "1.0.0" } },
+        repositoryFiles: [".knit/deploy.yaml"],
+      }),
+    ).resolves.toEqual({ ruleId: "E-0.1.20.14", status: "pass", message: "" });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("passes when no direct dependency categories are declared", async () => {
   await expect(run({ packageJson: {} })).resolves.toEqual({
     ruleId: "E-0.1.20.14",

@@ -18,13 +18,20 @@ test("requires a nonempty lint script", async () => {
 test("executes and reports the bundled lint result when requested", async () => {
   const packageJson = { scripts: { lint: "eliware-test --lint" } };
   await expect(
-    run({ packageJson, root: "C:/repo", executeLint: true, runLint: async () => ({ code: 0 }) }),
+    run({
+      packageJson,
+      root: "C:/repo",
+      executeLint: true,
+      repositoryFiles: ["src/main.mjs"],
+      runLint: async () => ({ code: 0 }),
+    }),
   ).resolves.toMatchObject({ status: "pass" });
   await expect(
     run({
       packageJson,
       root: "C:/repo",
       executeLint: true,
+      repositoryFiles: ["src/main.mjs"],
       runLint: async () => ({ code: 1, stdout: "warning" }),
     }),
   ).resolves.toMatchObject({ status: "fail" });
@@ -38,6 +45,7 @@ test("rejects policy-changing lint arguments before invoking Oxlint", async () =
       root: "C:/repo",
       executeLint: true,
       mode: "lint",
+      repositoryFiles: ["src/main.mjs"],
       toolArgs: ["--quiet"],
       runLint,
     }),
@@ -67,6 +75,7 @@ test("reports lint failures, empty diagnostics, and launch errors", async () => 
       packageJson,
       executeLint: true,
       mode: "lint",
+      repositoryFiles: ["src/main.mjs"],
       runLint: async () => ({ code: 1, stdout: "", stderr: "" }),
     }),
   ).resolves.toEqual({
@@ -79,6 +88,7 @@ test("reports lint failures, empty diagnostics, and launch errors", async () => 
       packageJson,
       executeLint: true,
       mode: "lint",
+      repositoryFiles: ["src/main.mjs"],
       runLint: async () => ({ code: 1, stderr: "bad" }),
     }),
   ).resolves.toEqual(expect.objectContaining({ message: "Oxlint failed: bad" }));
@@ -87,6 +97,7 @@ test("reports lint failures, empty diagnostics, and launch errors", async () => 
       packageJson,
       executeLint: true,
       mode: "lint",
+      repositoryFiles: ["src/main.mjs"],
       runLint: async () => {
         throw new Error("spawn failed");
       },
@@ -95,5 +106,72 @@ test("reports lint failures, empty diagnostics, and launch errors", async () => 
     ruleId: "E-0.1.4",
     status: "fail",
     message: "Oxlint could not be started: spawn failed",
+  });
+});
+
+test("passes without invoking Oxlint when the repository has no Oxlintable files", async () => {
+  const runLint = jest.fn();
+  await expect(
+    run({
+      packageJson: { scripts: { lint: "eliware-test --lint" } },
+      root: "C:/repo",
+      executeLint: true,
+      mode: "lint",
+      repositoryFiles: ["README.md", ".knit/deploy.yaml", "package.json"],
+      runLint,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  expect(runLint).not.toHaveBeenCalled();
+});
+
+test("uses the shared repository inventory to decide whether Oxlint has files", async () => {
+  const runLint = jest.fn(async () => ({ code: 0 }));
+  const repositoryInventory = { files: jest.fn(async () => ["scripts/check.ts"]) };
+  await expect(
+    run({
+      packageJson: { scripts: { lint: "eliware-test --lint" } },
+      root: "C:/repo",
+      executeLint: true,
+      mode: "lint",
+      repositoryInventory,
+      runLint,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  expect(repositoryInventory.files).toHaveBeenCalledWith("repository");
+  expect(runLint).toHaveBeenCalledTimes(1);
+});
+
+test("fails when the lint file inventory is unavailable", async () => {
+  await expect(
+    run({
+      packageJson: { scripts: { lint: "eliware-test --lint" } },
+      root: "C:/repo",
+      executeLint: true,
+      mode: "lint",
+    }),
+  ).resolves.toEqual({
+    ruleId: "E-0.1.4",
+    status: "fail",
+    message: "Repository file inventory is unavailable for lint validation.",
+  });
+});
+
+test("reports repository inventory failures separately from Oxlint failures", async () => {
+  await expect(
+    run({
+      packageJson: { scripts: { lint: "eliware-test --lint" } },
+      root: "C:/repo",
+      executeLint: true,
+      mode: "lint",
+      repositoryInventory: {
+        files: async () => {
+          throw new Error("scan failed");
+        },
+      },
+    }),
+  ).resolves.toEqual({
+    ruleId: "E-0.1.4",
+    status: "fail",
+    message: "Repository file inventory could not be read: scan failed",
   });
 });

@@ -33,6 +33,7 @@ test("runs lint, audit, and formatting stages in the aggregate plan", async () =
     executeAudit: true,
     executeFormat: true,
     env: {},
+    repositoryFiles: ["src/check.mjs"],
     runLint,
     runFormatter,
     runChild,
