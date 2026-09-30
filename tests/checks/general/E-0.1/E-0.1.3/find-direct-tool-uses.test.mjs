@@ -7,9 +7,9 @@ import { findDirectToolUses } from "../../../../../src/checks/general/E-0.1/E-0.
 test("finds direct commands and imports on validation surfaces", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-direct-tools-"));
   await mkdir(join(root, "src"));
-  await writeFile(join(root, "validate.mjs"), "import 'jest';\n");
+  await writeFile(join(root, "custom-script.mjs"), "import 'jest';\n");
   await writeFile(join(root, "workflow.yml"), "run: npx oxlint .\n");
-  await expect(findDirectToolUses(root)).resolves.toEqual(["validate.mjs", "workflow.yml"]);
+  await expect(findDirectToolUses(root)).resolves.toEqual(["custom-script.mjs", "workflow.yml"]);
   await rm(root, { recursive: true, force: true });
 });
 

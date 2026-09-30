@@ -316,21 +316,21 @@
         {
           "id": "E-0.1.10",
           "dos": [
-            "Every repository must contain a Knit configuration and validation script.",
+            "Every repository must contain .knit/deploy.yaml.",
             "Each repository's Knit configuration defines its own synchronization and validation commands."
           ],
           "donts": [
-            "Repositories must not omit Knit validation or assume another repository's Knit configuration applies."
+            "Repositories must not omit Knit deployment configuration or assume another repository's Knit configuration applies."
           ],
           "directives": [
             {
               "id": "E-0.1.10.1",
               "dos": [
-                "Every repository's .knit/validate.mjs must begin with these commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
-                "A Knit validation script may contain any additional repository-specific checks or operations after the required command sequence."
+                "Every validation command list in .knit/deploy.yaml must begin with these commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
+                "Additional repository-specific checks may follow npm test. Put them directly in .knit/deploy.yaml when feasible; when a secondary script is needed, store it under .knit/ and invoke it from the command list."
               ],
               "donts": [
-                "Do not omit, reorder, or replace the required initial git pull --ff-only origin main, npm ci, and npm test command sequence."
+                "Do not omit, reorder, or replace the initial git pull --ff-only origin main, npm ci, and npm test commands in a Knit validation command list."
               ]
             }
           ]
@@ -388,7 +388,7 @@
             "Workflow event configuration values must use GitHub's mapping shape; arrays of activity types belong in an event's types field, while an array of event names is allowed only as the top-level on value.",
             "Every repository must contain exactly one workflow file at .github/workflows/ci.yml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yml.",
             "Ubuntu CI is always required.",
-            "The GitHub validation workflow may run the same validation command as .knit/validate.mjs."
+            "The GitHub validation workflow may run the same npm ci and npm test commands configured in .knit/deploy.yaml."
           ],
           "donts": ["Do not omit Ubuntu CI or duplicate eliware-test checks in CI."],
           "directives": [

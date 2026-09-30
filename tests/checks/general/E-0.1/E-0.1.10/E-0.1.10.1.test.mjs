@@ -1,11 +1,39 @@
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, test } from "@jest/globals";
-import { parse } from "@babel/parser";
+import { expect, jest, test } from "@jest/globals";
+import { stringify } from "yaml";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.10/E-0.1.10.1.mjs";
 
-test("requires the exact Knit command sequence", async () => {
+const requiredCommands = ["git pull --ff-only origin main", "npm ci", "npm test"];
+
+function configuration(commandLists) {
+  return stringify({
+    version: 1,
+    on: {
+      push: {
+        deployments: commandLists.map((commands) => ({
+          target: "dev",
+          cwd: "/repo",
+          commands,
+        })),
+      },
+    },
+  });
+}
+
+async function withConfiguration(contents, callback) {
+  const root = await mkdtemp(join(tmpdir(), "eliware-knit-deploy-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    if (contents !== undefined) await writeFile(join(root, ".knit", "deploy.yaml"), contents);
+    await callback(root);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+}
+
+test("validates the repository Knit deployment command list", async () => {
   await expect(run({ root: process.cwd() })).resolves.toEqual({
     ruleId: "E-0.1.10.1",
     status: "pass",
@@ -13,145 +41,78 @@ test("requires the exact Knit command sequence", async () => {
   });
 });
 
-test("uses a cached parsed Knit AST when supplied by the validation run", async () => {
-  const source =
-    'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);';
-  const parseAst = async () =>
-    parse(source, { sourceType: "module", plugins: ["importAttributes", "topLevelAwait"] });
+test("allows repository-specific commands after npm test", async () => {
+  const contents = configuration([[...requiredCommands, "node .knit/check-gitops-state.mjs"]]);
+  await withConfiguration(contents, async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
+  });
+});
 
-  await expect(run({ root: process.cwd(), parseAst })).resolves.toEqual({
-    ruleId: "E-0.1.10.1",
+test("requires the command sequence in every deployment list", async () => {
+  const contents = configuration([requiredCommands, ["npm ci", ...requiredCommands.slice(1)]]);
+  await withConfiguration(contents, async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("commands list 2 command 1"),
+    });
+  });
+});
+
+test.each([
+  ["reordered", ["npm ci", ...requiredCommands.slice(0, 1), ...requiredCommands.slice(2)]],
+  ["incomplete", requiredCommands.slice(0, 2)],
+  ["non-string", ["git pull --ff-only origin main", { command: "npm ci" }, "npm test"]],
+])("rejects %s required commands", async (_name, commands) => {
+  await withConfiguration(configuration([commands]), async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+  });
+});
+
+test("reports missing, malformed, and command-free deployment configuration", async () => {
+  await withConfiguration(undefined, async (root) => {
+    await expect(run({ root })).resolves.toEqual({
+      ruleId: "E-0.1.10.1",
+      status: "fail",
+      message: ".knit/deploy.yaml is required for Knit validation.",
+    });
+  });
+  await withConfiguration("on: [invalid\n", async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("could not be parsed"),
+    });
+  });
+  await withConfiguration("version: 1\n", async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("must define Knit validation commands"),
+    });
+  });
+});
+
+test("rejects a commands field that is not an array", async () => {
+  await withConfiguration("commands: npm test\n", async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("commands list 1 must be an array"),
+    });
+  });
+});
+
+test("reads the parsed deployment YAML from the shared inventory", async () => {
+  const parsedConfig = {
+    on: { push: { deployments: [{ commands: requiredCommands }] } },
+  };
+  const readParsed = jest.fn(async (_path, _key, parseYaml) => {
+    expect(parseYaml).toEqual(expect.any(Function));
+    return parsedConfig;
+  });
+  await expect(run({ root: "/repo", repositoryInventory: { readParsed } })).resolves.toMatchObject({
     status: "pass",
-    message: "",
   });
-});
-
-test("accepts standard Windows Git and npm shim paths in the required sequence", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-windows-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; ' +
-      'spawnSync("C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe", ["pull", "--ff-only", "origin", "main"]); ' +
-      'spawnSync("C:\\\\Program Files\\\\nodejs\\\\npm.cmd", ["ci"]); ' +
-      'spawnSync("C:\\\\Program Files\\\\nodejs\\\\npm.cmd", ["test"]);',
+  expect(readParsed).toHaveBeenCalledWith(
+    join("/repo", ".knit", "deploy.yaml"),
+    "yaml-document",
+    expect.any(Function),
   );
-
-  await expect(run({ root })).resolves.toEqual({
-    ruleId: "E-0.1.10.1",
-    status: "pass",
-    message: "",
-  });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("reports syntax errors from the shared AST cache", async () => {
-  await expect(
-    run({
-      root: process.cwd(),
-      parseAst: async () => {
-        throw new SyntaxError("invalid source");
-      },
-    }),
-  ).resolves.toEqual(
-    expect.objectContaining({
-      message: expect.stringContaining("not valid JavaScript: invalid source"),
-    }),
-  );
-});
-
-test("maps syntax errors parsed from the Knit source to a rule failure", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-malformed-"));
-  try {
-    await mkdir(join(root, ".knit"));
-    await writeFile(join(root, ".knit", "validate.mjs"), "export const = ;");
-    await expect(run({ root })).resolves.toEqual(
-      expect.objectContaining({ message: expect.stringContaining("not valid JavaScript") }),
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("rejects executable statements before the command sequence", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-leading-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'console.log("before"); import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({ message: expect.stringContaining("required synchronization") }),
-  );
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects reordered commands and accepts custom absolute Windows executable paths", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process";\n' +
-      'for (const [command, args] of [["npm", ["ci"]], ["git", ["pull", "--ff-only", "origin", "main"]], ["npm", ["test"]]]) spawnSync(command, args);\n',
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process";\n' +
-      'spawnSync("C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe", ["pull", "--ff-only", "origin", "main"]); ' +
-      'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process";\n' +
-      'spawnSync("C:\\\\temp\\\\curl.exe", ["pull", "--ff-only", "origin", "main"]); ' +
-      'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await rm(root, { recursive: true, force: true });
-});
-
-test("allows additional commands and operations after the required sequence", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-extra-"));
-  try {
-    await mkdir(join(root, ".knit"));
-    await writeFile(
-      join(root, ".knit", "validate.mjs"),
-      'import { spawnSync } from "node:child_process"; import { rm } from "node:fs/promises"; ' +
-        'spawnSync("git", ["pull", "--ff-only", "origin", "main"]); ' +
-        'spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]); ' +
-        'spawnSync("npm", ["run", "prepare"]); await rm("/tmp/example", { recursive: true });',
-    );
-    await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("maps missing Knit scripts to a rule failure", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-errors-"));
-  await mkdir(join(root, ".knit"));
-  await expect(run({ root })).resolves.toEqual({
-    ruleId: "E-0.1.10.1",
-    status: "fail",
-    message: ".knit/validate.mjs is required for Knit validation.",
-  });
-  await rm(root, { recursive: true, force: true });
-});
-
-test("rejects incomplete and dynamically tokenized required command sequences", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-order-short-"));
-  await mkdir(join(root, ".knit"));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await writeFile(
-    join(root, ".knit", "validate.mjs"),
-    'import { spawnSync } from "node:child_process"; spawnSync(123, []); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);',
-  );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
-  await rm(root, { recursive: true, force: true });
 });

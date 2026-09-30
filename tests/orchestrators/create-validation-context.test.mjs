@@ -112,13 +112,13 @@ test("preserves a shared AST parser and optional run scope data", () => {
   });
 });
 
-test("Knit command validation shares the script read and AST through the execution context", async () => {
+test("Knit command validation shares the deployment configuration read", async () => {
   const root = await fixture("eliware-knit-cache-sharing-");
-  const script = join(root, ".knit", "validate.mjs");
+  const deployment = join(root, ".knit", "deploy.yaml");
   await mkdir(join(root, ".knit"), { recursive: true });
   await writeFile(
-    script,
-    'import { spawnSync } from "node:child_process"; spawnSync("git", ["pull", "--ff-only", "origin", "main"]); spawnSync("npm", ["ci"]); spawnSync("npm", ["test"]);\n',
+    deployment,
+    "version: 1\non:\n  push:\n    deployments:\n      - commands:\n          - git pull --ff-only origin main\n          - npm ci\n          - npm test\n",
   );
   const reads = new Map();
   const repositoryInventory = createRepositoryInventory(root, {
@@ -131,7 +131,7 @@ test("Knit command validation shares the script read and AST through the executi
   const context = createValidationContext(root, {}, { repositoryInventory });
   try {
     await expect(runKnitOrder(context)).resolves.toMatchObject({ status: "pass" });
-    expect(reads.get(script)).toBe(1);
+    expect(reads.get(deployment)).toBe(1);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

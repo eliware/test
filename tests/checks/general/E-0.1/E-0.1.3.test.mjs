@@ -99,11 +99,13 @@ test("reports script, dependency, and source findings together", async () => {
 });
 
 test("maps repository inspection findings and errors", async () => {
-  findDirectToolUses.mockResolvedValueOnce(["validate.mjs"]);
-  await expect(run({ root: "/repo", packageJson: {}, files: ["validate.mjs"] })).resolves.toEqual({
+  findDirectToolUses.mockResolvedValueOnce(["custom-script.mjs"]);
+  await expect(
+    run({ root: "/repo", packageJson: {}, files: ["custom-script.mjs"] }),
+  ).resolves.toEqual({
     ruleId: "E-0.1.3",
     status: "fail",
-    message: "Direct validation-tool use found in repository files: validate.mjs.",
+    message: "Direct validation-tool use found in repository files: custom-script.mjs.",
   });
   findDirectToolUses.mockRejectedValueOnce(new Error("read failed"));
   await expect(run({ root: "/repo", packageJson: {}, files: [] })).resolves.toMatchObject({

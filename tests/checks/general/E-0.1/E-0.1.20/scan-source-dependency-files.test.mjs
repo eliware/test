@@ -29,7 +29,7 @@ test("counts declared package binaries spawned from validation scripts", async (
   try {
     await mkdir(join(root, ".knit"));
     await writeFile(
-      join(root, ".knit", "validate.mjs"),
+      join(root, ".knit", "custom-check.mjs"),
       `
         import { spawn } from "node:child_process";
         const executable = new URL(
@@ -43,7 +43,7 @@ test("counts declared package binaries spawned from validation scripts", async (
 
     await scanSourceDependencyFiles(
       root,
-      [".knit/validate.mjs"],
+      [".knit/custom-check.mjs"],
       ["@eliware/vyops"],
       referenced,
       { value: false },
@@ -62,7 +62,7 @@ test("does not count a subprocess call that invokes an unrelated executable", as
   try {
     await mkdir(join(root, ".knit"));
     await writeFile(
-      join(root, ".knit", "validate.mjs"),
+      join(root, ".knit", "custom-check.mjs"),
       `
         import * as childProcess from "node:child_process";
         const executable = "other-tool";
@@ -74,7 +74,7 @@ test("does not count a subprocess call that invokes an unrelated executable", as
 
     await scanSourceDependencyFiles(
       root,
-      [".knit/validate.mjs"],
+      [".knit/custom-check.mjs"],
       ["@eliware/vyops"],
       referenced,
       { value: false },

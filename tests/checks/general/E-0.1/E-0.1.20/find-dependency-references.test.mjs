@@ -93,7 +93,7 @@ test("counts a declared dependency whose binary is spawned by Knit validation", 
   try {
     await mkdir(join(root, ".knit"));
     await writeFile(
-      join(root, ".knit", "validate.mjs"),
+      join(root, ".knit", "custom-check.mjs"),
       `
         import { spawn } from "node:child_process";
         const localBin = new URL(

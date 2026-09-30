@@ -7,9 +7,9 @@ export const parentRuleId = "E-0.1";
 
 export async function run({ root }) {
   try {
-    await access(join(root, ".knit", "validate.mjs"));
+    await access(join(root, ".knit", "deploy.yaml"));
   } catch {
-    return fail(ruleId, ".knit/validate.mjs is required for Knit validation.");
+    return fail(ruleId, ".knit/deploy.yaml is required for Knit configuration.");
   }
   return pass(ruleId);
 }
