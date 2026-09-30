@@ -42,7 +42,11 @@ beforeEach(() => {
   validateReadmeBranding.mockReturnValue(null);
   validateReadmeMetadata.mockReturnValue(null);
   validateReadmeRequiredContent.mockReturnValue(null);
-  inspectReadmeDocumentationIndexes.mockResolvedValue({ examplesRequired: false, error: null });
+  inspectReadmeDocumentationIndexes.mockResolvedValue({
+    docsRequired: false,
+    examplesRequired: false,
+    error: null,
+  });
 });
 
 test("coordinates README validation phases using loaded inputs", async () => {
@@ -110,6 +114,7 @@ test.each([
 
 test("reports index validation errors after validating README content", async () => {
   inspectReadmeDocumentationIndexes.mockResolvedValueOnce({
+    docsRequired: false,
     examplesRequired: true,
     error: "examples index missing",
   });

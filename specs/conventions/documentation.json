@@ -30,7 +30,7 @@
         {
           "id": "E-0.1.100.1",
           "dos": [
-            "Documentation-only repositories must provide the required documentation indexes and link each documented surface from the applicable root index."
+            "Documentation-only repositories use root README.md as their documentation entry point and specs/README.md to index structured records. Root README.md must link specs/README.md; a separate docs/ subfolder or docs/README.md is not required."
           ],
           "donts": [
             "Documentation-only repositories must not leave required documentation surfaces undiscoverable or introduce implementation code as canonical policy."

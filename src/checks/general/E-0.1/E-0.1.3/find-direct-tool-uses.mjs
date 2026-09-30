@@ -5,7 +5,9 @@ import { findRepositoryFiles } from "../find-repository-files.mjs";
 const inspectable =
   /(?:^|\/)(?:\.github|\.knit|bin|scripts|src|test|tests)(?:\/|$)|\.(?:mjs|js|cjs|ts|tsx|sh|ps1|ya?ml)$/i;
 const directCommand =
-  /(?:^|[\s"'`=(:,/])(?:(?:npx|npm\s+(?:exec|run))\s+(?:[^\s;&|]+\s+)*)?(?:jest|oxlint|prettier)(?=$|[\s"'`=:;,)&|])/i;
+  /^\s*(?:(?:-\s*)?(?:run|command|script)\s*:\s*)?(?:[A-Z_][A-Z\d_]*=\S+\s+)*(?:(?:npx|npm\s+(?:exec|run))\s+(?:[^\s;&|]+\s+)*)?(?:jest|oxlint|prettier)(?=$|[\s"'`=:;,)&|])/im;
+const directProcessLaunch =
+  /\b(?:spawn|spawnSync|exec|execSync|execFile|execFileSync)\s*\(\s*["'`](?:(?:npx|npm\s+(?:exec|run))\s+(?:[^\s;&|]+\s+)*)?(?:jest|oxlint|prettier)(?=$|[\s"'`=:;,)&|])/i;
 const directImport =
   /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)["'](?:@jest\/|jest(?:\/|["'])|oxlint(?:["']|\/)|prettier(?:["']|\/))/i;
 const testApiImport = /^\s*import\s+(?:[\s\S]*?\s+from\s+)?["']@jest\/globals["'];?\s*$/gim;
@@ -23,7 +25,11 @@ export async function findDirectToolUses(root, files, readText) {
       ? await readText(join(root, file))
       : await readFile(join(root, file), "utf8");
     const inspectedContent = contentWithoutApprovedTestApi(file, content);
-    if (directCommand.test(inspectedContent) || directImport.test(inspectedContent)) {
+    if (
+      directCommand.test(inspectedContent) ||
+      directProcessLaunch.test(inspectedContent) ||
+      directImport.test(inspectedContent)
+    ) {
       findings.push(file);
     }
   }

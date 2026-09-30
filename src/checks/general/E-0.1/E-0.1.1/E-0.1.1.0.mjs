@@ -20,10 +20,9 @@ export async function run(context) {
     failures.push(`README.md is missing required sections: ${missing.join(", ")}.`);
   const brandingError = validateReadmeBranding(readme);
   if (brandingError) failures.push(brandingError);
-  const indexes = await inspectReadmeDocumentationIndexes(root);
-  const examplesRequired = indexes.examplesRequired;
+  const indexes = await inspectReadmeDocumentationIndexes(root, packageJson);
   const requiredContentError = validateReadmeRequiredContent(readme, packageJson, {
-    examplesRequired,
+    ...indexes,
     sections,
   });
   if (requiredContentError) failures.push(requiredContentError);

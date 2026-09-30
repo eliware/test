@@ -4,11 +4,11 @@ import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/documentation/E-0.1.100/A-0.1.100.2.mjs";
 
-test("requires documentation README topics and surface link", async () => {
+test("requires documentation README topics and structured index link", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-readme-"));
   await writeFile(
     join(root, "README.md"),
-    "scope navigation contribution validation security support license docs/",
+    "scope navigation contribution validation security support license [specifications](specs/README.md)",
   );
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.100.2",
@@ -40,7 +40,7 @@ test("reports missing documentation README topics", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("requires a documentation surface link", async () => {
+test("requires a structured documentation index link", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-readme-link-"));
   await writeFile(
     join(root, "README.md"),
@@ -49,7 +49,7 @@ test("requires a documentation surface link", async () => {
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.100.2",
     status: "fail",
-    message: "Documentation README.md must link the documentation surface.",
+    message: "Documentation README.md must link specs/README.md.",
   });
   await rm(root, { recursive: true, force: true });
 });

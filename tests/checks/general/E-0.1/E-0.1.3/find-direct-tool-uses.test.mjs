@@ -20,6 +20,16 @@ test("does not treat documentation prose as tool use", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("does not treat structured metadata values as commands", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-direct-tools-metadata-"));
+  await writeFile(
+    join(root, "repo-map.yaml"),
+    'keywords: "jest, oxlint, prettier"\ndescription: "testing with Jest"\n',
+  );
+  await expect(findDirectToolUses(root)).resolves.toEqual([]);
+  await rm(root, { recursive: true, force: true });
+});
+
 test("does not report clean inspectable files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-direct-tools-"));
   await mkdir(join(root, "src"));
@@ -41,6 +51,17 @@ test("detects direct imports when no direct command is present", async () => {
   await mkdir(join(root, "src"));
   await writeFile(join(root, "src", "tool.mjs"), "import oxlint from 'oxlint';\n");
   await expect(findDirectToolUses(root, ["src/tool.mjs"])).resolves.toEqual(["src/tool.mjs"]);
+  await rm(root, { recursive: true, force: true });
+});
+
+test("detects tools launched by child-process APIs", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-direct-tools-launch-"));
+  await mkdir(join(root, "scripts"));
+  await writeFile(
+    join(root, "scripts", "format.mjs"),
+    'import { execFileSync } from "node:child_process";\nexecFileSync("prettier", ["--write", "."]);\n',
+  );
+  await expect(findDirectToolUses(root)).resolves.toEqual(["scripts/format.mjs"]);
   await rm(root, { recursive: true, force: true });
 });
 

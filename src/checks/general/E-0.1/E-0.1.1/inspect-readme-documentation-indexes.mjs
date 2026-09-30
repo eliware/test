@@ -1,14 +1,18 @@
 import { access } from "node:fs/promises";
 import { join } from "node:path";
 
-export async function inspectReadmeDocumentationIndexes(root) {
+export async function inspectReadmeDocumentationIndexes(root, packageJson = {}) {
+  const profiles = new Set(packageJson?.eliware?.apply ?? []);
+  const docsRequired = profiles.has("application") || profiles.has("library");
   let examplesRequired = false;
   try {
     await access(join(root, "examples"));
     examplesRequired = true;
   } catch {}
   const missing = [];
-  for (const path of ["docs/README.md", "specs/README.md"]) {
+  const requiredIndexes = ["specs/README.md"];
+  if (docsRequired) requiredIndexes.unshift("docs/README.md");
+  for (const path of requiredIndexes) {
     try {
       await access(join(root, path));
     } catch {
@@ -23,6 +27,7 @@ export async function inspectReadmeDocumentationIndexes(root) {
     }
   }
   return {
+    docsRequired,
     examplesRequired,
     error: missing.length
       ? missing

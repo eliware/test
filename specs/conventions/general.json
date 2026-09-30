@@ -151,7 +151,7 @@
                 "The README must use the standard Eliware logo and Discord-branded support block and link the repository LICENSE from License.",
                 "Build the README section list from the general baseline and every profile explicitly listed in package.json.eliware.apply. Append profile-required sections after Security and before Support, using this canonical profile order regardless of package.json array order: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published. Omit profiles that do not apply; within each applied profile, preserve the order stated by that profile. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. Do not merge sections with different headings merely because their topics overlap.",
                 "The badge-bearing package or project title is the README title: place it immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in an canonical repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
-                "The README must identify the project truthfully, link applicable documentation/specifications/examples and RELEASE_NOTES.md when present, and document only profiles that apply. Do not add prose saying unrelated profiles do not apply.",
+                "The README must identify the project truthfully and link applicable documentation, specifications, examples, and RELEASE_NOTES.md when present. Every repository must link specs/README.md; require examples/README.md when an examples/ surface exists. Do not add prose saying unrelated profiles do not apply.",
                 "When package.json declares description, author, and license values, include each exact value verbatim in README.md. When package.json declares a repository URL, link that exact URL from Links.",
                 "Configuration content must distinguish runtime configuration (supported settings, environment variables, config files, and defaults) from repository/package metadata, CLI arguments, and deployment configuration. State explicitly when a category has no runtime settings; do not describe package.json.eliware.apply as runtime configuration.",
                 "When documenting validation or release state, distinguish checks and contracts present in the current repository from versions already published or released. Do not imply an unpublished version is available to users.",
@@ -164,7 +164,7 @@
                 },
                 {
                   "purpose": "Standard documentation navigation",
-                  "markdown": "Documentation: [docs](docs/README.md) · [specifications](specs/README.md) · [examples](examples/README.md)"
+                  "markdown": "Documentation: [specifications](specs/README.md)"
                 },
                 {
                   "purpose": "Required README order for a repository applying application and cli profiles",
@@ -182,7 +182,8 @@
           "dos": [
             "Repositories must use eliware-test as the shared deterministic validation entrypoint, running the stages applicable to their declared profiles.",
             "All repositories, including documentation, workspace, and infrastructure repositories, must run Oxlint and Prettier validation through eliware-test.",
-            "Repositories that maintain Jest tests must run them through eliware-test. ESM test files may import Jest APIs from @jest/globals; eliware-test supplies this API transitively. The CLI uses the consumer repository's resolvable Jest executable when available and otherwise uses the Jest dependency shipped with eliware-test, while keeping package.json, Jest settings, tests, and source files rooted in the consumer repository."
+            "Repositories that maintain Jest tests must run them through eliware-test. ESM test files may import Jest APIs from @jest/globals; eliware-test supplies this API transitively. The CLI uses the consumer repository's resolvable Jest executable when available and otherwise uses the Jest dependency shipped with eliware-test, while keeping package.json, Jest settings, tests, and source files rooted in the consumer repository.",
+            "A tool name appearing only in descriptive text or structured data does not establish direct tool use; report direct commands only in command contexts and direct imports only in import contexts."
           ],
           "donts": [
             "Repositories must not replace eliware-test with separate project-specific Oxlint or Prettier validation without Eli's authorization.",

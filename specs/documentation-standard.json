@@ -1,0 +1,27 @@
+{
+  "version": "9.0",
+  "description": "Company standard for structured documentation directives.",
+  "directiveSchema": {
+    "requiredDocumentFields": ["version", "description", "directives"],
+    "requiredDirectiveFields": ["id", "dos", "donts"],
+    "optionalDirectiveFields": ["directives"],
+    "idPrefixes": {
+      "E": "Explicitly specified by Eli; immutable without Eli's consent.",
+      "A": "AI-generated or AI-inferred guidance; revisable to align with E directives."
+    },
+    "idPattern": "^(E|A)-[0-9]+(\\.[0-9]+)*$",
+    "hierarchy": {
+      "root": "The first numeric segment identifies the document's root directive.",
+      "child": "A child extends its parent's complete numeric path by one segment.",
+      "uniqueness": "Numeric paths are globally unique regardless of E or A prefix.",
+      "topLevel": "Top-level directives must be E directives.",
+      "ancestors": "Every A directive must have an E ancestor. E directives may only have E ancestors. A directives may have E or A parents."
+    },
+    "arrays": {
+      "dos": "Non-empty array of concise required actions.",
+      "donts": "Non-empty array of concise prohibitions.",
+      "directives": "Optional non-empty array of child directives."
+    }
+  },
+  "directives": []
+}

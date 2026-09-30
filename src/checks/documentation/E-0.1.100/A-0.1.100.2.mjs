@@ -20,8 +20,8 @@ export async function run(context) {
     ].filter((term) => !readme.includes(term));
     if (missing.length > 0)
       return fail(ruleId, `Documentation README.md is missing: ${missing.join(", ")}.`);
-    if (!readme.includes("docs/"))
-      return fail(ruleId, "Documentation README.md must link the documentation surface.");
+    if (!/\[.+?\]\((?:\.\/)?specs\/readme\.md\)/u.test(readme))
+      return fail(ruleId, "Documentation README.md must link specs/README.md.");
   } catch {
     return fail(ruleId, "Documentation repositories require a root README.md file.");
   }
