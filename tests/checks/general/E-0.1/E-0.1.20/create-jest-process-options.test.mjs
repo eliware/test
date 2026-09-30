@@ -30,6 +30,16 @@ test("enables expanded output and forwards stderr callback in debug mode", () =>
   expect(options.onStderr).toBe(onStderr);
 });
 
+test("passes the run-scoped console report path to Jest's reporter", () => {
+  const options = createJestProcessOptions("C:/fixture", [], {
+    consoleReportFile: "C:/fixture/coverage/jest-console-output.json",
+  });
+
+  expect(options.env.ELIWARE_TEST_JEST_CONSOLE_REPORT).toBe(
+    "C:/fixture/coverage/jest-console-output.json",
+  );
+});
+
 test("supports omitted options and optional timeout callbacks", () => {
   const options = createJestProcessOptions("C:/fixture");
 

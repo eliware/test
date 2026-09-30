@@ -39,7 +39,9 @@ export async function runSourceTestMirroring({
   findings.push(...findTestContractViolations(sourceModules, testContents));
   const misplacedArtifacts = findMisplacedArtifacts(sourceFiles, testFiles);
   if (misplacedArtifacts.length > 0)
-    findings.push(`test artifacts must be under artifacts/: ${misplacedArtifacts.join(", ")}`);
+    findings.push(
+      `checked-in test fixtures and support belong in root test-fixtures/: ${misplacedArtifacts.join(", ")}`,
+    );
   const bundled = await findGeneratedSource(
     root,
     sourceModules,

@@ -6,7 +6,7 @@ import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.22/A-0.1.22.1
 import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 const ignoreRules =
-  "node_modules/\n.git/\ncoverage/\ndist/\nbuild/\n.cache/\n.env*\n.vscode/\n.idea/\n";
+  "node_modules/\n.git/\ncoverage/\ndist/\nbuild/\n.cache/\n.env*\n.vscode/\n.idea/\nartifacts/\n";
 const readNoIgnoredPaths = async () => [];
 
 test("checks the current repository Git index by default", async () => {
@@ -30,6 +30,19 @@ test("checks required ignored paths from the on-disk .gitignore rules", async ()
     await expect(run({ root, readIgnoredPaths: readNoIgnoredPaths })).resolves.toMatchObject({
       status: "fail",
       message: expect.stringContaining("vcs state"),
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("requires generated artifacts to remain untracked", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-artifacts-"));
+  try {
+    await writeFile(join(root, ".gitignore"), ignoreRules.replace("artifacts/\n", ""));
+    await expect(run({ root, readIgnoredPaths: readNoIgnoredPaths })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("generated artifacts"),
     });
   } finally {
     await rm(root, { recursive: true, force: true });

@@ -13,6 +13,7 @@ const requiredPaths = new Map([
   ["coverage", "coverage/index.html"],
   ["build output", "dist/index.js"],
   ["runtime state", ".cache/test-state"],
+  ["generated artifacts", "artifacts/screenshot.png"],
   ["secrets", ".env.local"],
   ["secrets", ".env"],
   ["machine-specific files", ".vscode/settings.json"],

@@ -1,19 +1,23 @@
 import { expect, test } from "@jest/globals";
 import { findMisplacedArtifacts } from "../../../../src/checks/general/E-0.1/validate-test-artifacts.mjs";
 
-test("finds fixture-like files outside artifacts", () => {
+test("finds fixture-like files that are not in the root test-fixtures directory", () => {
   expect(findMisplacedArtifacts(["fixture.mjs"], ["nested.test-utils.test.mjs"])).toEqual([
     "fixture.mjs",
     "nested.test-utils.test.mjs",
   ]);
-  expect(findMisplacedArtifacts(["artifacts/fixture.mjs"], [])).toEqual([]);
+  expect(findMisplacedArtifacts(["artifacts/fixture.mjs"], [])).toEqual(["artifacts/fixture.mjs"]);
 });
 
-test("finds snapshots, generated data, and test helpers by structure", () => {
+test("finds checked-in snapshots, generated data, and test helpers by structure", () => {
   expect(
     findMisplacedArtifacts(
       [],
       [
+        "artifacts/__snapshots__/module.test.mjs.snap",
+        "artifacts/generated/values.json",
+        "artifacts/support/loader.mjs",
+        "artifacts/arbitrary-helper.mjs",
         "__snapshots__/module.test.mjs.snap",
         "generated/values.json",
         "support/loader.mjs",
@@ -22,6 +26,10 @@ test("finds snapshots, generated data, and test helpers by structure", () => {
       ],
     ),
   ).toEqual([
+    "artifacts/__snapshots__/module.test.mjs.snap",
+    "artifacts/generated/values.json",
+    "artifacts/support/loader.mjs",
+    "artifacts/arbitrary-helper.mjs",
     "__snapshots__/module.test.mjs.snap",
     "generated/values.json",
     "support/loader.mjs",
@@ -30,7 +38,7 @@ test("finds snapshots, generated data, and test helpers by structure", () => {
   ]);
 });
 
-test("does not flag artifact content already under artifacts", () => {
+test("flags checked-in helpers and fixtures placed under artifacts", () => {
   expect(
     findMisplacedArtifacts(
       [],
@@ -41,7 +49,12 @@ test("does not flag artifact content already under artifacts", () => {
         "artifacts/arbitrary-helper.mjs",
       ],
     ),
-  ).toEqual([]);
+  ).toEqual([
+    "artifacts/__snapshots__/module.test.mjs.snap",
+    "artifacts/generated/values.json",
+    "artifacts/support/loader.mjs",
+    "artifacts/arbitrary-helper.mjs",
+  ]);
 });
 
 test("allows ordinary source, test, and data files outside artifact locations", () => {

@@ -1,7 +1,7 @@
 const artifactNames =
   /(?:^|[._-])(?:fixture|fixtures|snapshot|snapshots|generator|generators|test-support|test-utils)(?:[._-]|$)/iu;
 const artifactDirectories =
-  /(?:^|\/)(?:__snapshots__|fixtures?|fixture-data|snapshots?|generators?|generated|test-support|test-utils|support|helpers)(?:\/|$)/iu;
+  /(?:^|\/)(?:artifacts|__snapshots__|fixtures?|fixture-data|snapshots?|generators?|generated|test-support|test-utils|support|helpers)(?:\/|$)/iu;
 const artifactExtensions = /(?:\.snap|\.snapshot)$/iu;
 const dataExtensions = /(?:\.json|\.ya?ml|\.csv|\.txt)$/iu;
 
@@ -12,7 +12,6 @@ export function findMisplacedArtifacts(sourceFiles, testFiles) {
   ]
     .map(({ file, test }) => ({ file: file.replaceAll("\\", "/"), test }))
     .filter(({ file, test }) => {
-      if (file.startsWith("artifacts/")) return false;
       const name = file.split("/").at(-1);
       const isSourceLessTestHelper = test && name.endsWith(".mjs") && !name.endsWith(".test.mjs");
       const isArtifactPath = artifactDirectories.test(file);

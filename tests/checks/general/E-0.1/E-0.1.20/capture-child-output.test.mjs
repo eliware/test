@@ -35,6 +35,22 @@ test("enforces a shared output budget across stdout and stderr", () => {
   expect(result.stderr).toContain("…");
 });
 
+test("marks output as truncated when a later chunk crosses an exactly filled budget", () => {
+  const capture = createChildOutputCapture(10);
+  capture.stdout("1234567890");
+  capture.stderr("more output");
+
+  expect(capture.result()).toEqual({ stdout: "123456789…", stderr: "" });
+});
+
+test("handles output overflow when the configured budget is zero", () => {
+  const capture = createChildOutputCapture(0);
+  capture.stdout("output");
+  capture.flush();
+
+  expect(capture.result()).toEqual({ stdout: "", stderr: "" });
+});
+
 test("redacts credentials split between child output chunks", () => {
   const streamed = [];
   const capture = createChildOutputCapture(100, {

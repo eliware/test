@@ -1,13 +1,42 @@
-export function findJestConsoleOutput(report) {
+import { isAbsolute, relative, resolve } from "node:path";
+import { redactProcessOutput } from "../../../redact-process-output.mjs";
+
+export function findJestConsoleOutput(
+  report,
+  root = process.cwd(),
+  secrets = [],
+  consoleOutput = [],
+) {
   const findings = [];
-  for (const entry of report?.testResults ?? []) {
-    for (const output of entry.console ?? []) {
-      const source = entry.testFilePath ?? entry.name ?? "unknown test suite";
-      const origin = output.origin ? ` (${output.origin})` : "";
-      findings.push(
-        `console.${output.type ?? "log"} in ${source}${origin}: ${String(output.message ?? "").trim()}`,
-      );
-    }
+  const reportOutput = (report?.testResults ?? []).flatMap((entry) =>
+    (entry.console ?? []).map((output) => ({
+      ...output,
+      testFilePath: entry.testFilePath ?? entry.name,
+    })),
+  );
+  for (const output of [...reportOutput, ...consoleOutput]) {
+    const source = redactProcessOutput(reportPath(output.testFilePath, root), secrets);
+    const message = redactProcessOutput(String(output.message ?? "").trim(), secrets);
+    findings.push(`console.${output.type ?? "log"} in ${source}: ${message}`);
   }
   return findings;
+}
+
+export function isDefaultJestConsoleLine(record, outputs, root = process.cwd()) {
+  return outputs.some((output) => {
+    if (reportPath(output.testFilePath, root) !== record.suite) return false;
+    if (record.line === `console.${output.type ?? "log"}`) return true;
+    return String(output.message ?? "")
+      .split(/\r?\n/u)
+      .some((line) => line.trim() === record.line);
+  });
+}
+
+function reportPath(path, root) {
+  if (typeof path !== "string" || !path) return "unknown test suite";
+  const relativePath = relative(resolve(root), resolve(root, path));
+  if (relativePath === ".." || /^\.\.[\\/]/u.test(relativePath) || isAbsolute(relativePath)) {
+    return "[outside repository]";
+  }
+  return relativePath.replaceAll("\\", "/");
 }

@@ -14,16 +14,30 @@ export function createChildOutputCapture(options, { onStdout, onStderr, captureS
   const stdoutChunks = [];
   const stderrChunks = [];
   let capturedLength = 0;
+  let lastCapturedChunks;
   let streamed = 0;
 
   const capture = (chunks, text) => {
+    if (!text) return;
     const remaining = Math.max(0, outputLimit - capturedLength);
+    if (remaining === 0) {
+      markTruncatedOutput();
+      return;
+    }
     const bounded =
       text.length > remaining && remaining > 0
         ? `${text.slice(0, remaining - 1)}…`.slice(0, remaining)
         : text.slice(0, remaining);
-    if (bounded) chunks.push(bounded);
+    chunks.push(bounded);
+    lastCapturedChunks = chunks;
     capturedLength += bounded.length;
+  };
+
+  const markTruncatedOutput = () => {
+    const lastIndex = lastCapturedChunks?.length - 1;
+    const lastChunk = lastCapturedChunks?.[lastIndex];
+    if (lastChunk && !lastChunk.endsWith("…"))
+      lastCapturedChunks[lastIndex] = `${lastChunk.slice(0, -1)}…`;
   };
 
   const stream = (callback, text) => {

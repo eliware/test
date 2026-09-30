@@ -7,8 +7,8 @@ import {
 test("builds focused and default Jest argument lists", () => {
   expect(focusedPathFrom()).toBeUndefined();
   expect(focusedPathFrom(["--watch", "tests/sample.test.mjs"])).toBe("tests/sample.test.mjs");
-  expect(buildJestArguments([])).toEqual(["--coverage", "--runInBand"]);
-  expect(buildJestArguments(undefined)).toEqual(["--coverage", "--runInBand"]);
+  expect(buildJestArguments([])).toEqual(["--coverage", "--json", "--runInBand"]);
+  expect(buildJestArguments(undefined)).toEqual(["--coverage", "--json", "--runInBand"]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing"])).toEqual([
     "--coverage",
     "--json",

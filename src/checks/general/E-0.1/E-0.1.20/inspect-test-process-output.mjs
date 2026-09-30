@@ -7,6 +7,7 @@ export async function inspectTestProcessOutput(context, ruleId) {
   const findings = findUnexpectedJestOutput(
     context.jestResult,
     collectRedactionSecrets(context.env ?? process.env),
+    context.root,
   );
   if (findings.length === 0) return pass(ruleId);
   return fail(ruleId, `Unexpected test-process output detected: ${findings.join(" | ")}`);

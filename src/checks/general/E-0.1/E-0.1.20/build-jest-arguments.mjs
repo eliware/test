@@ -38,10 +38,9 @@ export function buildJestArguments(args = []) {
     (argument) => argument !== focusedPath && argument !== "--debug-timing",
   );
   const concurrency = ["--runInBand"];
-  const timing = args.includes("--debug-timing") ? ["--json"] : [];
   return [
     "--coverage",
-    ...timing,
+    "--json",
     ...(focusedPath ? ["--runTestsByPath", focusedPath] : []),
     ...concurrency,
     ...forwarded,

@@ -89,7 +89,7 @@ test("coordinates full-tree validators and aggregates their findings", async () 
     "duplicate path",
     "orphan test",
     "test contract invalid",
-    "test artifacts",
+    "checked-in test fixtures and support",
     "generated or bundled source",
   ])
     expect(result.message).toContain(finding);

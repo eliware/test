@@ -27,12 +27,14 @@ test("projects src and tests files and directories from the repository inventory
   expect(entriesUnder).toHaveBeenCalledTimes(2);
 });
 
-test("collects the source and test trees when no inventory is supplied", async () => {
+test("collects src/tests trees while excluding root test-fixtures", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-mirror-inventory-"));
   await mkdir(join(root, "src", "nested"), { recursive: true });
   await mkdir(join(root, "tests", "nested"), { recursive: true });
+  await mkdir(join(root, "test-fixtures"), { recursive: true });
   await writeFile(join(root, "src", "nested", "module.mjs"), "export {};\n");
   await writeFile(join(root, "tests", "nested", "module.test.mjs"), "test('ok', () => {});\n");
+  await writeFile(join(root, "test-fixtures", "helper.mjs"), "export {};\n");
   try {
     await expect(readSourceTestMirrorInventory(root)).resolves.toEqual({
       sourceFiles: ["nested/module.mjs"],

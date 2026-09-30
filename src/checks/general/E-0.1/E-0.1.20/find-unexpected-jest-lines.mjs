@@ -5,6 +5,7 @@ const JEST_LINES = [
   /^Snapshots:/,
   /^Time:/,
   /^Ran all test suites/,
+  /^Test results written to:/,
   /^Coverage summary/,
   /^File\s+\|/,
   /^[\s|%_.-]+$/,
@@ -23,15 +24,29 @@ const JEST_LINES = [
 const ANSI_ESCAPE = new RegExp(`${String.fromCodePoint(0x1b)}\\[[0-?]*[ -/]*[@-~]`, "gu");
 
 export function findUnexpectedJestLines(text) {
+  return findUnexpectedJestLineRecords(text).map(({ line }) => line);
+}
+
+export function findUnexpectedJestLineRecords(text) {
   const lines = text.split(/\r?\n/);
   const completeLines = text.endsWith("…") ? lines.slice(0, -1) : lines;
-  return completeLines
-    .map((line) => line.replace(ANSI_ESCAPE, "").trim())
-    .filter(
-      (line) =>
-        line &&
-        !/^\[?eliware-test-progress\]?\s/u.test(line) &&
-        !/^\[?eliware-test\]?\s/u.test(line) &&
-        !JEST_LINES.some((pattern) => pattern.test(line)),
-    );
+  let activeSuite = "unknown test suite";
+  return completeLines.flatMap((rawLine) => {
+    const line = rawLine.replace(ANSI_ESCAPE, "").trim();
+    const startsSuite = line.match(/^\[eliware-test-progress\] start (.+)$/u);
+    const completesSuite = line.match(/^\[eliware-test-progress\] complete (.+?) [\d.]+s$/u);
+    const record = isUnexpectedLine(line) ? [{ line, suite: activeSuite }] : [];
+    if (startsSuite) activeSuite = startsSuite[1];
+    if (completesSuite) activeSuite = "unknown test suite";
+    return record;
+  });
+}
+
+function isUnexpectedLine(line) {
+  return Boolean(
+    line &&
+    !/^\[?eliware-test-progress\]?\s/u.test(line) &&
+    !/^\[?eliware-test\]?\s/u.test(line) &&
+    !JEST_LINES.some((pattern) => pattern.test(line)),
+  );
 }

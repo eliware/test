@@ -628,7 +628,7 @@
             {
               "id": "A-0.1.22.1",
               "dos": [
-                "Every repository must use .gitignore rules that exclude dependencies, VCS state, coverage, build output, runtime state, secrets, and machine-specific files.",
+                "Every repository must use .gitignore rules that exclude dependencies, VCS state, coverage, build output, runtime state, generated artifacts/, secrets, and machine-specific files. The repository-root artifacts/ directory is reserved for generated, untracked output such as screenshots and traces.",
                 "Deterministic validation must inspect the Git index and reject tracked or staged files that match any ignore rule."
               ],
               "donts": [

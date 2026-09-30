@@ -28,18 +28,50 @@ test("detects unexpected lines and logged console output", () => {
     }),
   ).toEqual([
     "Unexpected output from unknown test suite: application log",
-    "console.log in tests/example.test.mjs (example test): logged value",
+    "console.log in tests/example.test.mjs: logged value",
     "Unexpected output from unknown test suite: debug trace",
   ]);
 });
 
-test("identifies the active suite for unexpected process output", () => {
+test("attributes output within each stream to its active suite", () => {
   expect(
     findUnexpectedJestOutput({
-      stdout: "unexpected application output\n",
-      stderr: "[eliware-test-progress] start tests/example.test.mjs\n",
+      stdout:
+        "[eliware-test-progress] start tests/first.test.mjs\nunexpected from first\n[eliware-test-progress] complete tests/first.test.mjs 0.010s\n[eliware-test-progress] start tests/second.test.mjs\nunexpected from second\n",
+      stderr:
+        "[eliware-test-progress] start tests/first.test.mjs\ntrace from first\n[eliware-test-progress] complete tests/first.test.mjs 0.010s\n",
     }),
-  ).toEqual(["Unexpected output from tests/example.test.mjs: unexpected application output"]);
+  ).toEqual([
+    "Unexpected output from tests/first.test.mjs: unexpected from first",
+    "Unexpected output from tests/second.test.mjs: unexpected from second",
+    "Unexpected output from tests/first.test.mjs: trace from first",
+  ]);
+});
+
+test("reports structured console output against its exact test file", () => {
+  expect(
+    findUnexpectedJestOutput(
+      {
+        stdout: "PASS tests/quiet.test.mjs\n",
+        report: {
+          testResults: [
+            {
+              name: `${process.cwd()}\\tests\\noisy.test.mjs`,
+              console: [{ type: "log", message: "actual output", origin: "sample.test.mjs:4" }],
+            },
+          ],
+        },
+      },
+      [],
+      process.cwd(),
+    ),
+  ).toEqual(["console.log in tests/noisy.test.mjs: actual output"]);
+});
+
+test("reports missing structured results instead of silently skipping output inspection", () => {
+  expect(
+    findUnexpectedJestOutput({ reportError: "Could not read Jest's structured result report." }),
+  ).toEqual(["Could not read Jest's structured result report."]);
 });
 
 test("deduplicates findings and handles malformed or empty output", () => {
@@ -67,12 +99,22 @@ test("redacts configured secrets from stdout, stderr, and parsed console output"
     {
       stdout: `unexpected ${secret}\n`,
       stderr: `trace ${secret}\n`,
+      report: {
+        testResults: [
+          {
+            name: "tests/example.test.mjs",
+            console: [{ type: "log", message: secret, origin: secret }],
+          },
+        ],
+      },
     },
     [secret],
+    process.cwd(),
   );
 
   expect(findings).toEqual([
     "Unexpected output from unknown test suite: unexpected [REDACTED]",
+    "console.log in tests/example.test.mjs: [REDACTED]",
     "Unexpected output from unknown test suite: trace [REDACTED]",
   ]);
   expect(findings.join(" ")).not.toContain(secret);
