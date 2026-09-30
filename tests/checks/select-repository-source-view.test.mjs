@@ -32,8 +32,8 @@ test("selects only maintained source files for coverage", () => {
   ]);
 });
 
-test("selects monolith candidates without fixtures, declarations, or generated snapshots", () => {
-  expect(selectRepositorySourceView("monolithSource", files)).toEqual([
+test("selects line-limit candidates without fixtures, declarations, or generated snapshots", () => {
+  expect(selectRepositorySourceView("lineLimitSource", files)).toEqual([
     "src/index.mjs",
     "docs/example.mjs",
   ]);

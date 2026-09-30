@@ -6,6 +6,14 @@
 export function createBundledCheckManifest(checks) {
   if (
     checks.some(
+      ({ enforcementMode, applicability }) =>
+        enforcementMode === "non-deterministic" && applicability !== "advisory-only",
+    )
+  ) {
+    throw new Error("Non-deterministic checks must be advisory-only.");
+  }
+  if (
+    checks.some(
       ({ enforcementMode }) =>
         enforcementMode !== undefined &&
         enforcementMode !== "deterministic" &&

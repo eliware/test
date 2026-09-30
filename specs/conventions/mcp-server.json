@@ -34,7 +34,7 @@
         {
           "id": "A-0.1.80.2",
           "dos": [
-            "MCP server README.md must add Tools, Resources, Prompts, Transport, Authentication, Schemas, and Operations, in that order, including Docker, Compose, or systemd examples when supported. Operations merges with the application Operations heading required by application.json. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+            "Under the Tools, Resources, Prompts, Transport, Authentication, Schemas, and Operations headings assigned to mcp-server by general.json, document the server contract and Docker, Compose, or systemd examples when supported. The shared Operations heading contains requirements from every applied profile that maps to it. Include headings in the Table of Contents as required by general.json."
           ],
           "donts": [
             "Do not expose bearer tokens, claim unsupported protocol behavior, or provide server-start instructions that unintentionally expose a live endpoint."

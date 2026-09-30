@@ -1,8 +1,8 @@
-import { runMonolithLimits } from "../../general/E-0.1/E-0.1.20/validate-monolith-limits.mjs";
+import { runLineLimits } from "../../general/E-0.1/E-0.1.20/validate-line-limits.mjs";
 
 export const ruleId = "E-0.1.40.12";
 export const parentRuleId = "E-0.1.40";
 
 export function run(options) {
-  return runMonolithLimits({ ...options, ruleId, requireTests: true });
+  return runLineLimits({ ...options, ruleId, requireTests: true });
 }

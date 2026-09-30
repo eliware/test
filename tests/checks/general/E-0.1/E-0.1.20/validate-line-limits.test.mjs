@@ -2,12 +2,11 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
-import { runMonolithLimits } from "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-monolith-limits.mjs";
-const run = (options) =>
-  runMonolithLimits({ ruleId: "E-0.1.130.10", requireTests: true, ...options });
+import { runLineLimits } from "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-line-limits.mjs";
+const run = (options) => runLineLimits({ ruleId: "E-0.1.130.10", requireTests: true, ...options });
 
 async function fixture(lines) {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-monolith-"));
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-line-limit-"));
   await mkdir(join(root, "src"));
   await mkdir(join(root, "tests"));
   await writeFile(join(root, "src", "module.mjs"), `${"x\n".repeat(lines)}export {};`);
@@ -91,11 +90,11 @@ test("handles empty files, non-module files, nested directories, and excluded fi
 });
 
 test("fails when the required source or test directory is missing", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-monolith-"));
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-line-limit-"));
   await expect(run({ root })).resolves.toEqual({
     ruleId: "E-0.1.130.10",
     status: "fail",
-    message: "src/ is required for monolith-limit validation.",
+    message: "src/ is required for line-count validation.",
   });
   await rm(root, { recursive: true, force: true });
 });
@@ -107,16 +106,16 @@ test("reports a missing required tests directory after scanning source", async (
   await expect(run({ root })).resolves.toEqual({
     ruleId: "E-0.1.130.10",
     status: "fail",
-    message: "tests/ is required for monolith-limit validation.",
+    message: "tests/ is required for line-count validation.",
   });
   await rm(root, { recursive: true, force: true });
 });
 
 test("allows a profile without tests to enforce source limits only", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-source-only-monolith-"));
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-source-only-line-limit-"));
   await mkdir(join(root, "src"));
   await writeFile(join(root, "src", "module.mjs"), "export {};\n");
-  await expect(runMonolithLimits({ root, ruleId: "E-0.1.130.10" })).resolves.toMatchObject({
+  await expect(runLineLimits({ root, ruleId: "E-0.1.130.10" })).resolves.toMatchObject({
     status: "pass",
   });
   await rm(root, { recursive: true, force: true });
@@ -136,7 +135,7 @@ test("preserves inventory permission errors instead of reporting a missing direc
   ).resolves.toEqual({
     ruleId: "E-0.1.130.10",
     status: "fail",
-    message: "Could not validate src/ monolith limits: permission denied",
+    message: "Could not validate src/ line-count limits: permission denied",
   });
 });
 
@@ -155,6 +154,6 @@ test("preserves inventory errors while checking required test files", async () =
   ).resolves.toEqual({
     ruleId: "E-0.1.130.10",
     status: "fail",
-    message: "Could not validate tests/ monolith limits: tests access denied",
+    message: "Could not validate tests/ line-count limits: tests access denied",
   });
 });

@@ -3,7 +3,7 @@ import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
 export function readDiagnosticOptions(args) {
   const normalizedArgs = [...args];
   const modeFlags = ["--lint", "--format", "--format-check", "--audit", "--pack"];
-  const removedFlags = ["--ignore-100x4", "--ignore-monolith-limits"];
+  const removedFlags = ["--ignore-100x4", "--ignore-line-limits"];
   const separatorIndex = normalizedArgs.indexOf("--");
   const wrapperArgs = separatorIndex < 0 ? normalizedArgs : normalizedArgs.slice(0, separatorIndex);
   const delegatedArgs = separatorIndex < 0 ? [] : normalizedArgs.slice(separatorIndex + 1);

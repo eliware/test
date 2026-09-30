@@ -36,7 +36,7 @@
           "dos": [
             "Public npm repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If GHCR publication is also applied, both publication profiles use this single publish.yml file.",
             "Publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form in the publish job and require that it matches package.json. The publication job must depend on successful Ubuntu validation using npm ci followed by npm test. The npm publish step must be unconditional and must not set continue-on-error.",
-            "Use the copyable GitHub Actions workflow example below as the canonical npm publication workflow; adapt only package-specific names or required project validation commands."
+            "Use the copyable GitHub Actions workflow example below as the canonical npm publication workflow; adapt only package-specific names or required project validation commands. Static validation verifies workflow declarations and cannot prove GitHub environment protection or reviewer settings; verify those settings in GitHub before each authorized release."
           ],
           "donts": [
             "Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches or pull requests, or publish a tag whose version differs from package.json."

@@ -48,7 +48,7 @@
               "dos": [
                 "Discover check modules deterministically from the published harness package.",
                 "Load each check's profile and complete directive directly from the local specs/conventions/ documents.",
-                "Print the complete matched directive, including every dos, donts, and examples when present, with each failed check."
+                "Print the complete, untruncated matched directive, including every dos, donts, and examples when present, with each failed check."
               ],
               "donts": [
                 "Do not maintain a generated directive snapshot that duplicates the local profile specifications.",
@@ -107,7 +107,7 @@
           "id": "E-0.0.6",
           "dos": [
             "Make checks return only pass or fail with stable identities and actionable diagnostics.",
-            "For every failed convention check, report the check identity, the observed failure, and the complete matching directive from the local profile specification, including all dos, donts, and examples when present.",
+            "For every failed convention check, report the check identity, the observed failure, and the complete, untruncated matching directive from the local profile specification, including all dos, donts, and examples when present.",
             "Preserve complete bounded child-process context, deterministic failure aggregation, current-run evidence ownership, and the invoking environment needed by the executed tests."
           ],
           "donts": [
@@ -358,7 +358,7 @@
               "dos": [
                 "Create check modules only for requirements with deterministic enforcement or explicit advisory handling; leave other canonical directives in their profile specifications without placeholder modules.",
                 "Validate every check ID and profile against the versioned specifications in specs/conventions/; check-directory names and filenames alone do not establish a requirement.",
-                "Mark non-deterministic check modules advisory-only so the runner does not report them as enforced success."
+                "A non-deterministic check module must declare applicability as advisory-only. The harness rejects a non-deterministic module with any other applicability, and the runner omits advisory-only checks from enforced results. Human or AI reviewers assess the corresponding convention separately."
               ],
               "donts": [
                 "Do not add a placeholder module solely to represent a directive that has no check implementation.",

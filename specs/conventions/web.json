@@ -72,7 +72,7 @@
         {
           "id": "A-0.1.50.3",
           "dos": [
-            "Web README.md must add Configuration, Routes, Assets, Development server, Build, and Deployment, in that order, documenting runtime settings, ports, public asset root, browser validation, build output, and deployment boundaries. Configuration merges with the application Configuration heading required by application.json. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+            "Under the Configuration, Routes, Assets, Development server, Build, and Deployment headings assigned to web by general.json, document runtime settings, ports, public asset root, browser validation, build output, and deployment boundaries. The shared Configuration heading contains requirements from every applied profile that maps to it. Include headings in the Table of Contents as required by general.json."
           ],
           "donts": [
             "Do not place generated output in the public asset root, expose deployment credentials, or describe browser/deployment validation that was not actually performed."

@@ -35,10 +35,10 @@
               "id": "A-0.1.90.0.2",
               "dos": [
                 "Keep committed desired state, declarative configuration, and deployment inputs in the infrastructure repository that owns them.",
-                "Keep operational procedures, rollout decisions, rollback records, and live runtime evidence in the applicable operations or owner workspace and link to them from the repository README."
+                "Keep canonical operational procedures, rollout decisions, rollback records, and live runtime evidence in the applicable Operations or owner workspace and link to them from the repository README. Concise local context, implementation instructions, and links may appear in this repository."
               ],
               "donts": [
-                "Do not duplicate the same canonical desired state or operational procedure across repositories.",
+                "Do not maintain competing copies of canonical desired state or normative operational procedure across repositories.",
                 "Do not treat a clean commit, render, or syntax check as proof that live infrastructure is healthy."
               ]
             },
@@ -77,7 +77,7 @@
         {
           "id": "A-0.1.90.1",
           "dos": [
-            "Infrastructure README.md must add Managed targets, Configuration, Desired state, Validation, and Change boundaries, in that order, documenting target/environment scope, runtime or deployment settings, committed desired state, deterministic checks, and change/rollback procedures. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
+            "Under the Managed targets, Configuration, Desired state, Validation, and Change boundaries headings assigned to infrastructure by general.json, document target/environment scope, runtime or deployment settings, committed desired state, deterministic checks, and change/rollback procedures. Include the headings in the Table of Contents as required by general.json.",
             "Infrastructure README.md must link operational procedures and live-state verification records without duplicating them."
           ],
           "donts": [

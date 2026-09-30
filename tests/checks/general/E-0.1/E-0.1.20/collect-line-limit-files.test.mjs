@@ -3,12 +3,12 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  collectMonolithFiles,
+  collectLineLimitFiles,
   excludedFile,
-} from "../../../../../src/checks/general/E-0.1/E-0.1.20/collect-monolith-files.mjs";
+} from "../../../../../src/checks/general/E-0.1/E-0.1.20/collect-line-limit-files.mjs";
 
 test("collects module files and excludes generated/artifact directories", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-monolith-files-"));
+  const root = await mkdtemp(join(tmpdir(), "eliware-line-limit-files-"));
   await mkdir(join(root, "nested"));
   await mkdir(join(root, "nested", "generated"));
   await mkdir(join(root, "nested", "test-fixtures"));
@@ -21,11 +21,11 @@ test("collects module files and excludes generated/artifact directories", async 
   await writeFile(join(root, "nested", "bundle.generated.mjs"), "export {};");
   await writeFile(join(root, "nested", "bundle.generated-build.mjs"), "export {};");
   expect(excludedFile("types.d.mts")).toBe(true);
-  expect(await collectMonolithFiles(root)).toEqual([join(root, "nested", "module.mjs")]);
+  expect(await collectLineLimitFiles(root)).toEqual([join(root, "nested", "module.mjs")]);
   await rm(root, { recursive: true, force: true });
 });
 
-test("uses scoped inventory discovery for one monolith subtree", async () => {
+test("uses scoped inventory discovery for one line-limit subtree", async () => {
   const root = "C:/fixture";
   const inventory = {
     root,
@@ -40,7 +40,7 @@ test("uses scoped inventory discovery for one monolith subtree", async () => {
     ]),
     files: jest.fn(),
   };
-  await expect(collectMonolithFiles(join(root, "src"), inventory)).resolves.toEqual([
+  await expect(collectLineLimitFiles(join(root, "src"), inventory)).resolves.toEqual([
     join(root, "src/module.mjs"),
     join(root, "src/nested/module.mjs"),
   ]);

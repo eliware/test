@@ -42,8 +42,8 @@
         {
           "id": "A-0.1.100.2",
           "dos": [
-            "Documentation-only README.md must add Scope, Navigation, Contribution, and Documentation validation, in that order, for repository scope, documentation sources, indexes, contribution/setup requirements, and link/document validation. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
-            "Human or AI review must identify the repository's documentation surfaces and confirm that the relevant indexes link to each one. The deterministic link check validates that declared links resolve; it does not claim that the indexes are complete."
+            "Under the Scope, Navigation, Contribution, and Documentation validation headings assigned to documentation by general.json, document repository scope, documentation sources, indexes, contribution/setup requirements, and documentation-specific link/index validation. The Documentation validation heading does not replace the shared npm test, lint, format, or audit requirements. Include the headings in the Table of Contents as required by general.json.",
+            "During change review, a human or AI reviewer must identify the repository's documentation surfaces, assess whether each is indexed, and record relevant findings with the change. Deterministic link checks verify only that supported declared links resolve; they do not establish index completeness."
           ],
           "donts": [
             "Documentation-only README.md must not present implementation code, operational procedures, or duplicated canonical content."

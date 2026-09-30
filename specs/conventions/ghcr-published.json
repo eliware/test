@@ -25,7 +25,7 @@
         {
           "id": "E-0.1.160.1",
           "dos": [
-            "Each repository must publish exactly one image named ghcr.io/eliware/<repository-name>. The image is built from the repository-root Dockerfile and repository-root build context.",
+            "Each repository must publish exactly one image name, ghcr.io/eliware/<repository-name>. Multiple tags, including a mutable latest alias, may refer to that same image name. The image is built from the repository-root Dockerfile and repository-root build context.",
             "The repository name in the GHCR image must match the unscoped package.json.name."
           ],
           "donts": [
@@ -36,7 +36,7 @@
           "id": "E-0.1.160.2",
           "dos": [
             "GHCR repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If npm publication is also applied, both publication profiles use this single publish.yml file.",
-            "GHCR publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form and verify it matches the approved package version before pushing. These publication requirements are checked statically on every validation run, including ordinary branch runs; the release tag guard is additionally compared to the current ref during tag-triggered runs. Require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary."
+            "GHCR publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form and verify it matches the approved package version before pushing. These publication requirements are checked statically on every validation run, including ordinary branch runs; the release tag guard is additionally compared to the current ref during tag-triggered runs. Static validation checks workflow declarations only and cannot prove GitHub environment protection or reviewer settings; verify those settings in GitHub before each authorized release. Require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary."
           ],
           "donts": [
             "Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches, pull requests, manual validation dispatches, unversioned tags, or an inferred release version."

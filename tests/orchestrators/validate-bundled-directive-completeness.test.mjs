@@ -65,7 +65,12 @@ test("uses the bundled catalog by default", () => {
 test("keeps catalog validation separate from deterministic enforcement status", () => {
   expect(
     validateBundledDirectiveCompleteness(
-      [check("E-0.1.130.7", "non-deterministic", "application")],
+      [
+        {
+          ...check("E-0.1.130.7", "non-deterministic", "application"),
+          applicability: "advisory-only",
+        },
+      ],
       ["general"],
       catalog,
     ),

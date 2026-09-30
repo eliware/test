@@ -19,26 +19,26 @@ export function excludedFile(file) {
   return name.endsWith(".d.mts") || name.endsWith(".snap.mjs") || name.includes(".generated");
 }
 
-export async function collectMonolithFiles(directory, inventory = null) {
+export async function collectLineLimitFiles(directory, inventory = null) {
   if (inventory) {
     const repositoryRoot = inventory.root;
-    const entries = await inventory.entriesUnder(directory, isMonolithFile);
+    const entries = await inventory.entriesUnder(directory, isLineLimitFile);
     return entries
-      .filter(({ path, type }) => type === "file" && isMonolithFile(path))
+      .filter(({ path, type }) => type === "file" && isLineLimitFile(path))
       .map(({ path }) => join(repositoryRoot, path));
   }
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) {
-      if (!excludedDirectories.has(entry.name)) files.push(...(await collectMonolithFiles(path)));
+      if (!excludedDirectories.has(entry.name)) files.push(...(await collectLineLimitFiles(path)));
     } else if (entry.isFile() && entry.name.endsWith(".mjs") && !excludedFile(path))
       files.push(path);
   }
   return files;
 }
 
-function isMonolithFile(path) {
+function isLineLimitFile(path) {
   const segments = path.split("/");
   return (
     path.endsWith(".mjs") &&

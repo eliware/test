@@ -37,7 +37,7 @@
                 "Do not maintain a root runbooks.json file.",
                 "Do not maintain workspace workflows as a second procedure format; company-wide workflows belong in Operations.",
                 "Do not make Markdown runbooks or indexes the canonical procedure representation.",
-                "Do not duplicate normative procedure text across README files, indexes, directives, and runbooks."
+                "Do not maintain competing copies of normative procedure text across README files, indexes, directives, and runbooks. Concise local context, task-specific instructions, and links to the canonical procedure are allowed."
               ]
             },
             {
@@ -54,7 +54,7 @@
         {
           "id": "A-0.1.110.1",
           "dos": [
-            "Workspace README.md must add Runbooks, Communication, and Recovery, in that order, identifying operational boundaries, runbook navigation, communication channels, and recovery ownership. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+            "Under the Runbooks, Communication, and Recovery headings assigned to workspace by general.json, identify operational boundaries, runbook navigation, communication channels, and recovery ownership. Include the headings in the Table of Contents as required by general.json."
           ],
           "donts": [
             "Workspace README.md must not duplicate JSON runbooks or leave ownership and recovery boundaries undefined."

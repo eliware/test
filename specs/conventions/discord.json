@@ -34,7 +34,7 @@
         {
           "id": "A-0.1.70.2",
           "dos": [
-            "Discord application README.md must add Commands, Events, Intents and permissions, and Operations, in that order, including safe startup/shutdown and deployment examples when supported. Operations merges with the application Operations heading required by application.json. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+            "Under the Commands, Events, Intents and permissions, and Operations headings assigned to discord by general.json, document Discord-specific behavior and safe startup/shutdown and deployment examples when supported. The shared Operations heading contains requirements from every applied profile that maps to it. Include headings in the Table of Contents as required by general.json."
           ],
           "donts": [
             "Do not publish bot credentials, imply permissions the bot does not have, or provide startup/deployment instructions that expose a live bot unintentionally."

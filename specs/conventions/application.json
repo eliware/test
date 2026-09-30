@@ -18,7 +18,7 @@
             {
               "id": "A-0.1.130.0.1",
               "dos": [
-                "Applications must validate configuration before opening connections, make shutdown repeatable, and test every externally observable workflow.",
+                "Applications must validate configuration before opening connections and make shutdown repeatable. Tests must cover the public inputs and externally observable results of every documented, supported user-facing workflow. Human review must identify supported workflows omitted from documentation or tests; passing tests alone do not prove workflow inventory completeness.",
                 "Applications must provide a root README.md, document runtime configuration and user-visible workflows, and provide .env.example when environment configuration is supported."
               ],
               "donts": [
@@ -28,8 +28,8 @@
                 {
                   "id": "A-0.1.130.0.1.0",
                   "dos": [
-                    "When environment configuration is supported, .env.example must exist and list every supported variable. Keep required variables active and comment out optional variables with their defaults and available options. Configure MAIL_OWNER_ADDRESS only through an untracked, gitignored .env file and omit it from templates.",
-                    "Human review must confirm completeness, required/optional classification, defaults, and available options. Deterministic validation may reject prohibited entries such as MAIL_OWNER_ADDRESS but cannot prove that the template is complete or semantically correct."
+                    "The repository owner determines whether the application supports environment configuration from its documented runtime behavior. If it does, .env.example must exist and list every supported variable. Keep required variables active and comment out optional variables with their defaults and available options. Configure MAIL_OWNER_ADDRESS only through an untracked, gitignored .env file and omit it from templates.",
+                    "Human or AI review during change review must confirm the supported-variable inventory, required/optional classification, defaults, and available options. Record the review findings with the change. Deterministic validation may reject prohibited entries such as MAIL_OWNER_ADDRESS but cannot prove that the template is complete or semantically correct."
                   ],
                   "donts": [
                     "Do not omit supported environment variables, leave optional variables active, or include MAIL_OWNER_ADDRESS in .env.example."
@@ -42,7 +42,7 @@
         {
           "id": "A-0.1.130.1",
           "dos": [
-            "Application README.md must add Configuration and Operations, in that order, documenting startup and shutdown, runtime settings and defaults (or explicitly stating that no runtime configuration exists), externally observable workflows, and operational boundaries. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
+            "Under the Configuration and Operations headings assigned to application by general.json, document startup and shutdown, runtime settings and defaults (or explicitly state that no runtime configuration exists), externally observable workflows, and operational boundaries. Include both headings in the Table of Contents as required by general.json.",
             "After the seven general AGENTS.md headings, add a ## Application section. Document the actual runtime entrypoint(s), lifecycle behavior, runtime configuration sources/defaults (or that none exist), and safe operational boundaries; distinguish these from package metadata and deployment configuration."
           ],
           "donts": [
@@ -61,7 +61,7 @@
             {
               "id": "A-0.1.130.2.0",
               "dos": [
-                "docs/ must contain the complete end-user documentation for the application; docs/README.md must provide its overview and index and index every end-user document.",
+                "docs/ must contain end-user documentation for the application; docs/README.md must provide its overview and link every discovered end-user document. During change review, a human or AI reviewer must assess whether the documentation set covers supported user-facing workflows and record relevant findings with the change.",
                 "Application repositories must link docs/README.md from the root README.md."
               ],
               "donts": [
@@ -73,9 +73,9 @@
         {
           "id": "A-0.1.130.3",
           "dos": [
-            "Application package.json must declare its runtime/start entrypoints, environment contract, and private/public distribution status when applicable.",
+            "Application package.json must declare its runtime/start entrypoints and environment contract. npm publication intent is declared by the applied npm-published profile; package.json.private controls npm publishability, while repository hosting visibility is separate and governed by the private profile.",
             "A declared main or bin file entrypoint must be a nonempty repository-relative path to an existing file; a start script must be a nonempty command.",
-            "Application repositories may include examples/ when it improves user documentation; when present, examples/README.md must index runnable examples and each example must document prerequisites, commands, and expected results."
+            "Application repositories are not required to contain examples/. When examples/ is present, examples/README.md must index runnable examples and each example must document prerequisites, commands, and expected results."
           ],
           "donts": [
             "Do not leave application startup, runtime configuration, or distribution intent undefined in package metadata, or include undocumented examples."
@@ -84,7 +84,7 @@
         {
           "id": "E-0.1.130.4",
           "dos": [
-            "Applications must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file, including source files excluded from coverage.",
+            "Applications must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file, including source files excluded from coverage. Every test file under tests/ must correspond to a source file under src/; additional unmirrored integration, end-to-end, smoke, or cross-cutting test files are not allowed.",
             "Place checked-in fixtures, snapshots, generators, and shared test support with no source counterpart in the repository-root test-fixtures/ directory. Reserve artifacts/ for generated, untracked test output such as Puppeteer screenshots and traces; ignore that directory and do not store checked-in helpers or fixtures there."
           ],
           "donts": [
@@ -104,11 +104,10 @@
         {
           "id": "E-0.1.130.6",
           "dos": [
-            "Every application production module must have a single responsibility: one cohesive purpose and one reason to change. A module may own business logic or coordination, and a coordinator may coordinate modules or other coordinators, provided it only performs its coordinating responsibility and does not absorb their responsibilities.",
-            "When a change introduces a distinct responsibility, create a focused submodule and its mirrored test, then wire it through the existing owner or coordinator; do not add that responsibility to an existing single-responsibility module. Split mixed responsibilities regardless of file length."
+            "Application production modules are subject to the single-responsibility rule in general.json E-0.1.27. When a change introduces a distinct application responsibility, create a focused submodule and its mirrored test, then wire it through the existing owner or coordinator."
           ],
           "donts": [
-            "Do not combine distinct responsibilities in a module, use coordination code to hide business logic, or use a short file or a line-count threshold as evidence that a module has a single responsibility."
+            "Do not treat application-profile compliance as a waiver from general.json E-0.1.27."
           ]
         },
         {
@@ -135,7 +134,7 @@
         {
           "id": "E-0.1.130.10",
           "dos": [
-            "Enforce a maximum of 100 physical lines for each in-scope application source file and 200 physical lines for each in-scope test file. Count blank and comment lines; count an unterminated final line as one line and an empty file as zero. Exclude files under any path segment named .git, build, coverage, dist, generated, node_modules, test-fixtures, fixtures, __fixtures__, or __snapshots__, and exclude filenames ending in .d.mts or .snap.mjs or containing .generated. These exclusions apply only to line counting; they do not exempt .mjs files under src/ or tests/ from source/test mirroring. Apply the same counting and exclusion contract to source and test files. Exceeding either maximum is a blocking convention failure and requires decomposition into focused modules with mirrored tests.",
+            "Enforce a maximum of 100 physical lines for each in-scope application source file and 200 physical lines for each in-scope test file. Count blank and comment lines; count an unterminated final line as one line and an empty file as zero. Exclude files under any path segment named .git, build, coverage, dist, generated, node_modules, test-fixtures, fixtures, __fixtures__, or __snapshots__, and exclude filenames ending in .d.mts or .snap.mjs or containing .generated. These exclusions apply only to physical line counting; they do not exempt .mjs files under src/ or tests/ from source/test mirroring and do not change syntax, lint, formatting, coverage, or other check inventories. Count handwritten data tables and static mappings as ordinary physical lines; the stated path/filename exclusions apply regardless of file contents. Apply the same counting and exclusion contract to source and test files. Exceeding either maximum is a blocking convention failure and requires decomposition into focused modules with mirrored tests.",
             "Apply the single-responsibility requirement independently at every file size: being within the line maximum does not prove cohesion or permit distinct responsibilities to share a module, and a mixed-responsibility module must be split even when it is below the maximum."
           ],
           "donts": [
@@ -145,17 +144,9 @@
         {
           "id": "E-0.1.130.11",
           "dos": [
-            "When production code owns substantial behavior for one of the concerns in the approved common-stack mapping below, use its named Eliware package. Merely declaring or importing a package, or exposing a thin adapter, does not meet this criterion. Applicability is a human-review decision; deterministic validation must not report this requirement as passed."
+            "Application repositories are subject to the shared package-reuse review in general.json E-0.1.27 and its example mapping. Human review must determine whether application production code owns a mapped concern; deterministic validation must not report that review as passed."
           ],
-          "donts": [
-            "Do not duplicate an approved common-stack module when the corresponding concern exists in production code."
-          ],
-          "examples": [
-            {
-              "purpose": "Approved common-stack package mapping",
-              "markdown": "| Concern in production code | Package |\n| --- | --- |\n| Redaction of sensitive values or serialization | @eliware/redact |\n| Application logging | @eliware/log |\n| Filesystem and import-meta path utilities | @eliware/path |\n| Process exception and rejection handling | @eliware/errors |\n| Operating-system signal handling and graceful shutdown | @eliware/signals |\n\nUse a mapped package only when production code implements that concern. Human review decides whether the concern exists."
-            }
-          ]
+          "donts": ["Do not report the shared package-reuse review as deterministically passed."]
         },
         {
           "id": "E-0.1.130.12",
@@ -167,7 +158,7 @@
         {
           "id": "E-0.1.130.13",
           "dos": [
-            "Run application Jest suites through eliware-test; test files may import APIs from @jest/globals supplied transitively."
+            "Jest is the required test runner for this profile. Run its suites through eliware-test; test files may import APIs from @jest/globals supplied transitively. Alternative test runners do not satisfy this profile."
           ],
           "donts": [
             "Do not invoke Jest directly, import Jest runner/CLI modules, or declare Jest packages directly."
@@ -176,7 +167,7 @@
         {
           "id": "E-0.1.130.14",
           "dos": [
-            "Application Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code; coverage scope is limited to native ESM .mjs production files under src/.",
+            "Application Jest coverage must use Istanbul and report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code; coverage scope is limited to native ESM .mjs production files under src/. Jest and Istanbul are the required profile tools; alternate test runners or coverage engines do not satisfy this profile.",
             "Exclude generated, bundled, compiled, dependency, coverage, build, declaration, fixture, and snapshot files from in-scope code."
           ],
           "donts": ["Do not hide untested production logic with coverage exclusions."]

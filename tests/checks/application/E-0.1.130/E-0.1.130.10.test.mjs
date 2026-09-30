@@ -1,10 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
 
-const runMonolithLimits = jest.fn();
+const runLineLimits = jest.fn();
 jest.unstable_mockModule(
-  "../../../../src/checks/general/E-0.1/E-0.1.20/validate-monolith-limits.mjs",
+  "../../../../src/checks/general/E-0.1/E-0.1.20/validate-line-limits.mjs",
   () => ({
-    runMonolithLimits,
+    runLineLimits,
   }),
 );
 const { parentRuleId, ruleId, run } =
@@ -13,10 +13,10 @@ const { parentRuleId, ruleId, run } =
 test("forwards application identity and requires mirrored tests", () => {
   const options = { root: "/repo", focusedScope: { paths: ["src/a.mjs"] } };
   const result = { status: "pass" };
-  runMonolithLimits.mockReturnValueOnce(result);
+  runLineLimits.mockReturnValueOnce(result);
 
   expect(ruleId).toBe("E-0.1.130.10");
   expect(parentRuleId).toBe("E-0.1.130");
   expect(run(options)).toBe(result);
-  expect(runMonolithLimits).toHaveBeenCalledWith({ ...options, ruleId, requireTests: true });
+  expect(runLineLimits).toHaveBeenCalledWith({ ...options, ruleId, requireTests: true });
 });

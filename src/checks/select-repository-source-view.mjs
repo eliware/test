@@ -11,7 +11,7 @@ export function selectRepositorySourceView(view, repositoryFiles) {
         coverageSourceFile.test(path) && !isRepositoryFixturePath(path) && !/\.snap\./u.test(path),
     );
   }
-  if (view === "monolithSource") {
+  if (view === "lineLimitSource") {
     return repositoryFiles.filter(
       (path) =>
         path.endsWith(".mjs") &&
