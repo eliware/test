@@ -53,10 +53,14 @@ test("still requires the npm pack owner when npm-published applies", () => {
   ).toThrow("executePack (E-0.1.140.1)");
 });
 
-test("allows an explicitly exempted stage owner", () => {
+test("an exempted stage owner does not waive unrelated required stage owners", () => {
   expect(() =>
-    validateRequiredStagePlan([], { executeAudit: true }, new Set(["E-0.1.20.19"])),
-  ).not.toThrow();
+    validateRequiredStagePlan(
+      [{ ruleId: "E-0.1.20.19" }],
+      { executeAudit: true, executeLint: true },
+      new Set(["E-0.1.20.19"]),
+    ),
+  ).toThrow("executeLint (E-0.1.4)");
 });
 
 test("does not require aggregate stage owners during a validated focused run", () => {

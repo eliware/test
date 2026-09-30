@@ -6,7 +6,7 @@ export function validateExemptionRecords(records) {
         !entry ||
         typeof entry !== "object" ||
         typeof entry.ruleId !== "string" ||
-        !entry.ruleId ||
+        !entry.ruleId.trim() ||
         typeof entry.reason !== "string" ||
         !entry.reason.trim() ||
         entry.approver !== "Eli" ||

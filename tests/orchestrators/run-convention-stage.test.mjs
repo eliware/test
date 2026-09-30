@@ -31,7 +31,8 @@ test("preserves stable failure codes for each validation stage", async () => {
     ["E-0.1.140.1", "pack failed", 17],
     ["E-0.1.40.15", "Jest could not be started", 14],
     ["E-0.1.130.13", "unsupported focused path", 18],
-    ["E-0.1.20.12", "publication metadata", 17],
+    ["E-0.1.14", "outdated packages", 18],
+    ["E-0.1.20.12", "retired outdated check", 18],
   ];
   for (const [ruleId, message, code] of cases) {
     const failure = { ruleId, status: "fail", message };

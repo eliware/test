@@ -1,13 +1,8 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const inspectLocalMailboxOwner = jest.fn();
 const findRepositoryFiles = jest.fn();
 const resolveMailboxTemplateFiles = jest.fn();
 const validateMailboxTemplates = jest.fn();
-jest.unstable_mockModule(
-  "../../../../src/checks/general/E-0.1/inspect-local-mailbox-owner.mjs",
-  () => ({ inspectLocalMailboxOwner }),
-);
 jest.unstable_mockModule("../../../../src/checks/general/E-0.1/find-repository-files.mjs", () => ({
   findRepositoryFiles,
 }));
@@ -24,23 +19,18 @@ const { run } = await import("../../../../src/checks/general/E-0.1/E-0.1.8.mjs")
 
 beforeEach(() => {
   jest.resetAllMocks();
-  inspectLocalMailboxOwner.mockResolvedValue({ error: null });
   findRepositoryFiles.mockResolvedValue([".env.example"]);
   resolveMailboxTemplateFiles.mockReturnValue([".env.example"]);
   validateMailboxTemplates.mockResolvedValue(null);
 });
 
-test("derives the owner and composes local and template validation", async () => {
+test("composes environment-template validation", async () => {
   await expect(
     run({
       root: "/repo",
-      packageJson: { name: "@eliware/fixture" },
       checkIgnored: jest.fn(),
     }),
   ).resolves.toEqual({ ruleId: "E-0.1.8", status: "pass", message: "" });
-  expect(inspectLocalMailboxOwner).toHaveBeenCalledWith("/repo", "fixture@eliware.org", {
-    checkIgnored: expect.any(Function),
-  });
   expect(findRepositoryFiles).toHaveBeenCalledWith("/repo");
   expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith(
     "/repo",
@@ -52,9 +42,9 @@ test("derives the owner and composes local and template validation", async () =>
 
 test("uses the shared file list when inventory context is supplied", async () => {
   const repositoryInventory = { repositoryFiles: jest.fn(async () => [".env.example"]) };
-  await expect(
-    run({ root: "/repo", packageJson: { name: "fixture" }, repositoryInventory }),
-  ).resolves.toMatchObject({ status: "pass" });
+  await expect(run({ root: "/repo", repositoryInventory })).resolves.toMatchObject({
+    status: "pass",
+  });
   expect(repositoryInventory.repositoryFiles).toHaveBeenCalledTimes(1);
   expect(resolveMailboxTemplateFiles).toHaveBeenCalledWith("/repo", [".env.example"], undefined);
   expect(validateMailboxTemplates).toHaveBeenCalledWith("/repo", [".env.example"], {
@@ -62,34 +52,14 @@ test("uses the shared file list when inventory context is supplied", async () =>
   });
 });
 
-test("requires package identity and continues independent environment checks", async () => {
-  await expect(run({ root: "/repo", packageJson: {} })).resolves.toEqual({
-    ruleId: "E-0.1.8",
-    status: "fail",
-    message: "package.json.name is required to derive the mailbox owner.",
-  });
-  expect(inspectLocalMailboxOwner).not.toHaveBeenCalled();
-  expect(findRepositoryFiles).toHaveBeenCalled();
-  expect(validateMailboxTemplates).toHaveBeenCalled();
-
-  inspectLocalMailboxOwner.mockResolvedValueOnce({ error: "local owner invalid" });
-  await expect(run({ root: "/repo", packageJson: { name: "fixture" } })).resolves.toEqual({
-    ruleId: "E-0.1.8",
-    status: "fail",
-    message: "local owner invalid",
-  });
-  expect(findRepositoryFiles).toHaveBeenCalled();
-  expect(validateMailboxTemplates).toHaveBeenCalled();
-});
-
 test("maps template discovery and validation errors to the rule result", async () => {
   findRepositoryFiles.mockRejectedValueOnce(new Error("scan failed"));
-  await expect(run({ root: "/repo", packageJson: { name: "fixture" } })).resolves.toMatchObject({
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
     status: "fail",
     message: "Environment files could not be inspected: scan failed",
   });
   validateMailboxTemplates.mockResolvedValueOnce("template invalid");
-  await expect(run({ root: "/repo", packageJson: { name: "fixture" } })).resolves.toMatchObject({
+  await expect(run({ root: "/repo" })).resolves.toMatchObject({
     status: "fail",
     message: "template invalid",
   });

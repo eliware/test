@@ -59,7 +59,7 @@ beforeEach(resetValidators);
 test("runs focused README validators in order and passes their shared inputs", () => {
   const readme = "README";
   const packageJson = { name: "@eliware/fixture" };
-  const options = { sections: new Map(), examplesRequired: true };
+  const options = { sections: new Map() };
 
   expect(validateReadmeRequiredContent(readme, packageJson, options)).toBeNull();
   expect(validators.map((validator) => validator.mock.invocationCallOrder[0])).toEqual(

@@ -1,9 +1,12 @@
 import { expect, test } from "@jest/globals";
 import { requiresReleaseNotes } from "../../../../../src/checks/general/E-0.1/E-0.1.26/requires-release-notes.mjs";
 
-test("requires release notes for release-bearing application and publication profiles", () => {
-  for (const profile of ["application", "library", "npm-published", "ghcr-published"]) {
+test("requires release notes only for application and library profiles", () => {
+  for (const profile of ["application", "library"]) {
     expect(requiresReleaseNotes({ eliware: { apply: ["general", profile] } })).toBe(true);
+  }
+  for (const profile of ["npm-published", "ghcr-published"]) {
+    expect(requiresReleaseNotes({ eliware: { apply: ["general", profile] } })).toBe(false);
   }
 });
 

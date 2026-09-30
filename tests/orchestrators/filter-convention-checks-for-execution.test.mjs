@@ -13,6 +13,14 @@ test("filters advisory checks and checks beneath an exempted ancestor", () => {
   expect(filterConventionChecksForExecution(checks, {}, new Set(["E-0.1"]))).toEqual([checks[2]]);
 });
 
+test("an exemption preserves unrelated checks", () => {
+  const exempted = check("E-0.1.4");
+  const unrelated = check("E-0.1.20.17");
+  expect(
+    filterConventionChecksForExecution([exempted, unrelated], {}, new Set([exempted.ruleId])),
+  ).toEqual([unrelated]);
+});
+
 test("keeps deterministic children executable beneath an advisory-only parent", () => {
   const parent = check("E-0.1.26", { applicability: "advisory-only" });
   const child = check("A-0.1.26.0", { parentRuleId: parent.ruleId });

@@ -8,7 +8,7 @@ function failureCode({ ruleId, message = "" }) {
       return 18;
     return /could not be started/i.test(message) ? 14 : 8;
   }
-  if (/^E-0.1\.140(?:\.|$)/.test(ruleId) || /^E-0.1\.20\.(?:12|13|14|19)$/.test(ruleId)) return 17;
+  if (/^E-0.1\.140(?:\.|$)/.test(ruleId) || /^E-0.1\.20\.(?:14|19)$/.test(ruleId)) return 17;
   return 18;
 }
 

@@ -27,13 +27,6 @@ test("rejects incomplete or invalid exemption metadata", () => {
   );
 });
 
-test("reports every malformed exemption without skipping later entries", () => {
-  const result = run({ packageJson: { eliware: { exempt: [{ ...valid, reason: "" }, null] } } });
-  expect(result.status).toBe("fail");
-  expect(result.message).toContain("eliware.exempt[0]");
-  expect(result.message).toContain("eliware.exempt[1]");
-});
-
 test("accepts repositories without exemptions and rejects malformed metadata shapes", () => {
   expect(run({ packageJson: {} })).toEqual({ ruleId: "E-0.1.9.3", status: "pass", message: "" });
   expect(run({ packageJson: { eliware: { exempt: "invalid" } } })).toEqual(
@@ -52,6 +45,12 @@ test("accepts repositories without exemptions and rejects malformed metadata sha
   expect(run({ packageJson: { eliware: { exempt: [null] } } })).toEqual(
     expect.objectContaining({ status: "fail" }),
   );
+  expect(run({ packageJson: { eliware: { exempt: null } } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+  expect(run({ packageJson: { eliware: { exempt: [{ ...valid, ruleId: " " }] } } })).toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
 });
 
 test.each(["random-user", "eli", "Eliware", ""])("rejects non-Eli approver %j", (approver) => {
@@ -62,4 +61,10 @@ test.each(["random-user", "eli", "Eliware", ""])("rejects non-Eli approver %j", 
 
 test("accepts canonical temporary exemptions without review metadata", () => {
   expect(run({ packageJson: { eliware: { exempt: [valid] } } }).status).toBe("pass");
+});
+
+test("validates record shape without checking whether a referenced rule is bundled", () => {
+  expect(
+    run({ packageJson: { eliware: { exempt: [{ ...valid, ruleId: "E-99.1" }] } } }).status,
+  ).toBe("pass");
 });

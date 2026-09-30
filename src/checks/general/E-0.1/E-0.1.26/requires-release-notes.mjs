@@ -1,4 +1,4 @@
-const requiredProfiles = new Set(["application", "library", "npm-published", "ghcr-published"]);
+const requiredProfiles = new Set(["application", "library"]);
 
 export function requiresReleaseNotes(packageJson) {
   const profiles = packageJson?.eliware?.apply;

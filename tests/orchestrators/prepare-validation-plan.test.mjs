@@ -41,7 +41,7 @@ test("keeps the complete selected plan when no focused path is supplied", async 
   const checks = [{ ruleId: "E-0.1.130.10", run() {} }];
   const dependencies = {
     loadValidationTarget: jest.fn(async () => ({
-      eliware: { apply: ["general", "documentation"] },
+      eliware: { apply: ["general", "documentation", "private"] },
     })),
     discoverAllChecks: jest.fn(async () => checks),
     selectConventionChecks: jest.fn(async () => checks),
@@ -59,7 +59,9 @@ test.each(["documentation", "workspace", "infrastructure"])(
   async (profile) => {
     const checks = [{ ruleId: "E-0.1.4" }, { ruleId: "E-0.1.20.17" }];
     const dependencies = {
-      loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general", profile] } })),
+      loadValidationTarget: jest.fn(async () => ({
+        eliware: { apply: ["general", profile, "private"] },
+      })),
       discoverAllChecks: jest.fn(async () => checks),
       selectConventionChecks: jest.fn(async () => checks),
       validateBundledDirectiveCompleteness: jest.fn(async () => true),

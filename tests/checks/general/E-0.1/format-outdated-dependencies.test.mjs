@@ -1,24 +1,20 @@
 import { expect, test } from "@jest/globals";
 import { formatOutdatedDependencies } from "../../../../src/checks/general/E-0.1/format-outdated-dependencies.mjs";
 
-test("formats current and latest versions", () => {
+test("formats package names as latest installation targets", () => {
   expect(formatOutdatedDependencies({ jest: { current: "1.0.0", latest: "2.0.0" } })).toEqual([
-    "jest (1.0.0 -> 2.0.0)",
+    "jest@latest",
   ]);
 });
 
-test("uses wanted versions and unknown fallbacks for missing data", () => {
+test("does not depend on reported version fields", () => {
   expect(
     formatOutdatedDependencies({
       alpha: {},
       beta: { wanted: "3.0.0" },
       gamma: { current: null, latest: null, wanted: null },
     }),
-  ).toEqual([
-    "alpha (unknown -> unknown)",
-    "beta (unknown -> 3.0.0)",
-    "gamma (unknown -> unknown)",
-  ]);
+  ).toEqual(["alpha@latest", "beta@latest", "gamma@latest"]);
   expect(formatOutdatedDependencies({})).toEqual([]);
   expect(formatOutdatedDependencies()).toEqual([]);
 });

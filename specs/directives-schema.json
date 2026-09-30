@@ -1,0 +1,55 @@
+{
+  "version": "9.0.0",
+  "description": "Schema for version 9.0.0 Eliware directive records.",
+  "record": {
+    "type": "object",
+    "required": ["id", "dos", "donts"],
+    "properties": {
+      "id": { "type": "string", "pattern": "^(E|A)-[0-9]+(?:\\.[0-9]+)*$" },
+      "dos": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+      "donts": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+      "directives": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/directive" }
+      },
+      "examples": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["purpose", "markdown"],
+          "properties": {
+            "purpose": { "type": "string", "minLength": 1 },
+            "markdown": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "additionalProperties": false
+  },
+  "$defs": {
+    "directive": {
+      "type": "object",
+      "required": ["id", "dos", "donts"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^(E|A)-[0-9]+(?:\\.[0-9]+)*$" },
+        "dos": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "donts": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "directives": { "type": "array", "items": { "$ref": "#/$defs/directive" } },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["purpose", "markdown"],
+            "properties": {
+              "purpose": { "type": "string", "minLength": 1 },
+              "markdown": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

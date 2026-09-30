@@ -44,7 +44,6 @@ beforeEach(() => {
   validateReadmeRequiredContent.mockReturnValue(null);
   inspectReadmeDocumentationIndexes.mockResolvedValue({
     docsRequired: false,
-    examplesRequired: false,
     error: null,
   });
 });
@@ -61,7 +60,7 @@ test("coordinates README validation phases using loaded inputs", async () => {
   expect(validateReadmeRequiredContent).toHaveBeenCalledWith(
     inputs.readme,
     packageJson,
-    expect.objectContaining({ examplesRequired: false, sections }),
+    expect.objectContaining({ docsRequired: false, sections }),
   );
   const phases = [
     loadReadmeValidationInputs,
@@ -112,20 +111,19 @@ test.each([
   expect(validateReadmeMetadata).toHaveBeenCalled();
 });
 
-test("reports index validation errors after validating README content", async () => {
+test("reports missing required documentation indexes after validating README content", async () => {
   inspectReadmeDocumentationIndexes.mockResolvedValueOnce({
-    docsRequired: false,
-    examplesRequired: true,
-    error: "examples index missing",
+    docsRequired: true,
+    error: "docs index missing",
   });
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "E-0.1.1.0",
     status: "fail",
-    message: "examples index missing",
+    message: "docs index missing",
   });
   expect(validateReadmeRequiredContent).toHaveBeenCalledWith(
     inputs.readme,
     undefined,
-    expect.objectContaining({ examplesRequired: true, sections }),
+    expect.objectContaining({ docsRequired: true, sections }),
   );
 });

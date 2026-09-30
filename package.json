@@ -95,7 +95,7 @@
     "exempt": [
       {
         "ruleId": "E-0.1.3",
-        "reason": "@eliware/test must self-host its test command and directly declare Jest, Oxlint, and Prettier because it cannot install itself as its own development dependency and owns the validation stack.",
+        "reason": "The validation CLI directly imports and executes the repository's Jest, Oxlint, and Prettier tooling.",
         "approver": "Eli",
         "approvalTimestamp": "2026-09-09T00:00:00Z",
         "expiry": null

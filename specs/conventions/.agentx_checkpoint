@@ -1,0 +1,43 @@
+{
+  "response_id": "resp_0f3b2b381dddeef7006abd13b7356087d2bcc599562463c946",
+  "usage": {
+    "inputTokens": 9817,
+    "cachedTokens": 7551,
+    "outputTokens": 68,
+    "turns": 2
+  },
+  "last_user_message": "ls",
+  "last_assistant_message": "`specs` contains `conventions/`, `directives-schema.json`, `directives.json`, `documentation-standard.json`, and `README.md`.",
+  "pending_cli_transcript": "",
+  "pending_tool_calls": [],
+  "history": [
+    {
+      "response_id": "resp_0f3b2b381dddeef7006abd13b7356087d2bcc599562463c946",
+      "timestamp": "2026-09-30T13:50:50.531Z",
+      "user_preview": "ls",
+      "assistant_preview": "`specs` contains `co",
+      "usage": {
+        "inputTokens": 9817,
+        "cachedTokens": 7551,
+        "outputTokens": 68,
+        "turns": 2
+      },
+      "last_user_message": "ls",
+      "last_assistant_message": "`specs` contains `conventions/`, `directives-schema.json`, `directives.json`, `documentation-standard.json`, and `README.md`."
+    },
+    {
+      "response_id": "resp_0f3b2b381dddeef7006abd13b7356087d2bcc599562463c946",
+      "timestamp": "2026-09-30T13:50:50.538Z",
+      "user_preview": "ls",
+      "assistant_preview": "`specs` contains `co",
+      "usage": {
+        "inputTokens": 9817,
+        "cachedTokens": 7551,
+        "outputTokens": 68,
+        "turns": 2
+      },
+      "last_user_message": "ls",
+      "last_assistant_message": "`specs` contains `conventions/`, `directives-schema.json`, `directives.json`, `documentation-standard.json`, and `README.md`."
+    }
+  ]
+}

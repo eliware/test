@@ -35,18 +35,18 @@ test("reports every missing release document", async () => {
       notes: undefined,
       readme: undefined,
       failures: [
-        "RELEASE_NOTES.md is required for release-bearing repositories.",
-        "README.md is required for release-bearing repositories.",
+        "RELEASE_NOTES.md is required for application and library repositories.",
+        "README.md is required for release-note validation.",
       ],
     });
   });
 });
 
-test("allows absent release notes for profiles that do not publish versioned changes", async () => {
+test("skips release-note and README checks for profiles that do not require notes", async () => {
   await withRepository({ "README.md": "readme" }, async (context) => {
     await expect(readReleaseNoteDocuments(context, false)).resolves.toEqual({
       notes: undefined,
-      readme: "readme",
+      readme: undefined,
       failures: [],
     });
   });

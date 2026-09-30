@@ -10,7 +10,7 @@
       ],
       "donts": [
         "Infrastructure repositories must not omit applicable infrastructure requirements.",
-        "Do not commit plaintext secrets, decrypted runtime state, credentials, or live-only state."
+        "Do not commit plaintext secrets, decrypted runtime state, credentials, or live-only state. Encrypted secret payloads may be committed. A private profile does not automatically exempt plaintext secret findings; retained plaintext secrets require a specific Eli-approved exemption record for the rule that reports them."
       ],
       "directives": [
         {

@@ -25,6 +25,24 @@ test.each([
   expect(run({ packageJson })).toMatchObject({ status: "fail" });
 });
 
+test.each(["8.0.0", "9.1.0", "9.0.1-alpha", "9.0.1+build.1"])(
+  "rejects package version %s outside the current convention release sequence",
+  (version) => {
+    expect(run({ packageJson: { version, eliware: { apply: ["general"] } } })).toMatchObject({
+      status: "fail",
+    });
+  },
+);
+
+test.each(["9.0.0", "9.0.1", "9.0.999"])(
+  "accepts patch release %s for the current convention baseline",
+  (version) => {
+    expect(run({ packageJson: { version, eliware: { apply: ["general"] } } })).toMatchObject({
+      status: "pass",
+    });
+  },
+);
+
 test("rejects profiles absent from the bundled catalog", () => {
   expect(run({ packageJson: { version: "9.0.0", eliware: { apply: ["missing"] } } })).toMatchObject(
     { status: "fail" },

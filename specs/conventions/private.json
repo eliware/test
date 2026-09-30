@@ -6,10 +6,12 @@
       "id": "E-0.1.150",
       "dos": [
         "Private repositories must apply private.json and set package.json private to true.",
+        "Documentation, workspace, and infrastructure repositories are expected to contain proprietary internal information, including private hostnames, usernames, filesystem paths, and access details; they must remain private.",
         "Private repositories may publish authorized GHCR images without becoming npm packages."
       ],
       "donts": [
-        "Private repositories must not publish npm packages or expose npm publication credentials."
+        "Private repositories must not publish npm packages or expose npm publication credentials.",
+        "Applying the private profile does not exempt a repository from plaintext-secret review. Encrypted secret payloads may be committed; plaintext secrets require a specific Eli-approved exemption record for the rule that reports them."
       ],
       "directives": [
         {

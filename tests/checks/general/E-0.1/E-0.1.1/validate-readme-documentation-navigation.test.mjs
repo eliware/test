@@ -23,14 +23,3 @@ test("requires docs navigation only for applications and libraries", () => {
     "Documentation navigation",
   );
 });
-
-test("requires the examples index only when examples exist", () => {
-  expect(
-    validateReadmeDocumentationNavigation(`${navigation} [examples](examples/README.md)`, {
-      examplesRequired: true,
-    }),
-  ).toBeNull();
-  expect(validateReadmeDocumentationNavigation(navigation, { examplesRequired: true })).toContain(
-    "Documentation navigation",
-  );
-});

@@ -24,12 +24,10 @@
           "dos": [
             "Public npm packages must declare engines.node compatible with Node.js 26, publishConfig.provenance true, and a non-empty files allowlist containing README.md, LICENSE, RELEASE_NOTES.md, docs/, and specs/.",
             "Public npm package README.md must include the npm badge, npm package link, installation guidance, package entrypoints, and release/version guidance. When npm-published is applied without a library profile, include this material in Usage or an applicable profile section rather than inventing a library API section.",
-            "Public npm packages must define exactly `pack=eliware-test --pack` and must pass the harness pack stage during aggregate validation and before publication; their shared audit script is defined by general.json.",
-            "An explicitly authorized self-hosting exception may let @eliware/test's pack script invoke its local bin entrypoint instead of the canonical eliware-test command. This exception applies only to the script-command requirement; aggregate validation and pre-publication validation must still execute the pack stage and validate its result."
+            "Public npm packages must define exactly `pack=eliware-test --pack` and must pass the harness pack stage during aggregate validation and before publication; their shared audit script is defined by general.json."
           ],
           "donts": [
-            "Do not omit pack, replace the shared pack stage with a direct package command, or publish a package without passing it.",
-            "Do not treat a self-hosting pack script exception as an exemption from pack validation."
+            "Do not omit pack, replace the shared pack stage with a direct package command, or publish a package without passing it."
           ]
         },
         {
@@ -64,7 +62,7 @@
           "dos": [
             "An npm publication job must grant only the contents: read and id-token: write permissions needed for checkout and npm provenance, and the Operations release handoff must verify that the exact package version is available from the public registry before reporting publication complete.",
             "GitHub Actions npm Trusted Publishing must run on a GitHub-hosted runner with Node.js 26 and npm 11.5.1 or later, use actions/setup-node@v7, and publish with npm publish --provenance.",
-            "Configure the npm Trusted Publisher with the exact GitHub owner, repository, and workflow filename publish.yml; its optional environment must match the workflow job environment, and direct npm publish must be allowed for workflows that use that command.",
+            "Configure the npm Trusted Publisher with the exact GitHub owner, repository, and workflow filename publish.yml, and allow direct npm publish for workflows that use that command.",
             "Grant id-token: write only to the publication job. Do not pass NPM_TOKEN or NODE_AUTH_TOKEN or configure token-based npm publishing credentials in the workflow."
           ],
           "donts": [

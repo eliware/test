@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../../src/checks/general/E-0.1/E-0.1.14.mjs";
 
-test("fails when direct dependencies are outdated", async () => {
+test("fails for every package reported by npm outdated with latest remediation", async () => {
   await expect(
     run({
       packageJson: { dependencies: { jest: "1" } },
@@ -10,7 +10,7 @@ test("fails when direct dependencies are outdated", async () => {
   ).resolves.toEqual({
     ruleId,
     status: "fail",
-    message: expect.stringContaining("jest (1 -> 2)"),
+    message: expect.stringContaining("npm install jest@latest"),
   });
   await expect(run({ outdatedDependencies: {} })).resolves.toEqual({
     ruleId,
@@ -24,22 +24,20 @@ test("fails when direct dependencies are outdated", async () => {
   });
 });
 
-test("skips registry lookup when the package has no dependencies", async () => {
+test("checks npm outdated even when package metadata declares no dependencies", async () => {
   await expect(
     run({
       packageJson: {},
-      readOutdated: async () => {
-        throw new Error("registry must not be queried");
-      },
+      outdatedDependencies: { tooling: { current: "1", latest: "2" } },
     }),
   ).resolves.toEqual({
     ruleId,
-    status: "pass",
-    message: "",
+    status: "fail",
+    message: expect.stringContaining("tooling@latest"),
   });
 });
 
-test("does not treat development, optional, or peer packages as release dependencies", async () => {
+test("includes reported development, optional, and peer packages", async () => {
   await expect(
     run({
       packageJson: {
@@ -47,14 +45,20 @@ test("does not treat development, optional, or peer packages as release dependen
         optionalDependencies: { optional: "1" },
         peerDependencies: { peer: "1" },
       },
-      readOutdated: async () => {
-        throw new Error("registry must not be queried");
+      outdatedDependencies: {
+        tooling: { current: "1", latest: "2" },
+        optional: { current: "1", latest: "2" },
+        peer: { current: "1", latest: "2" },
       },
     }),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  ).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining("tooling@latest, optional@latest, peer@latest"),
+  });
 });
 
-test("reports only outdated dependencies declared in the runtime dependency section", async () => {
+test("includes all names in the report and recommends @latest for each", async () => {
   await expect(
     run({
       packageJson: {
@@ -69,7 +73,7 @@ test("reports only outdated dependencies declared in the runtime dependency sect
   ).resolves.toEqual({
     ruleId,
     status: "fail",
-    message: expect.stringContaining("runtime (1 -> 2)"),
+    message: expect.stringContaining("npm install runtime@latest tooling@latest"),
   });
 });
 

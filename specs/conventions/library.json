@@ -35,6 +35,18 @@
           ],
           "donts": [
             "Libraries must not omit the examples index or runnable example, publish unintended files, or leave the public package contract untested."
+          ],
+          "directives": [
+            {
+              "id": "A-0.1.40.1.0",
+              "dos": [
+                "When environment configuration is supported, .env.example must list every supported variable. Keep required variables active and comment out optional variables with their defaults and available options. Configure MAIL_OWNER_ADDRESS only through an untracked, gitignored .env file and omit it from templates.",
+                "Human review must confirm the completeness, required/optional classification, defaults, and available options because source usage alone cannot determine those semantics in every library."
+              ],
+              "donts": [
+                "Do not omit supported environment variables, leave optional variables active, or include MAIL_OWNER_ADDRESS in .env.example."
+              ]
+            }
           ]
         },
         {
@@ -51,10 +63,10 @@
           "id": "A-0.1.40.5",
           "dos": [
             "Library package.json must declare the public entrypoint or exports, typed declaration metadata when applicable, and an intentional package file allowlist.",
-            "Libraries may contain examples only when useful outside the mandatory library example contract; non-library repositories may also use examples when useful and must index them when present."
+            "Libraries may contain additional examples when useful beyond the mandatory library example contract."
           ],
           "donts": [
-            "Do not publish a library with undefined exports, declarations, or package contents, and do not require examples from non-library repositories without a repository-specific need."
+            "Do not publish a library with undefined exports, declarations, or package contents."
           ]
         },
         {
@@ -85,11 +97,11 @@
         {
           "id": "E-0.1.40.7",
           "dos": [
-            "Libraries must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file.",
+            "Libraries must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file, including source files excluded from coverage.",
             "Place fixtures, snapshots, generators, and shared test support under artifacts/ when they have no source counterpart."
           ],
           "donts": [
-            "Do not omit src/ or tests/, use mismatched source/test paths, use non-.test.mjs test counterparts, or duplicate lower-level assertions in higher-level tests.",
+            "Do not omit src/ or tests/, use mismatched source/test paths, use non-.test.mjs test counterparts, treat coverage exclusions as waivers of the mirror requirement, or duplicate lower-level assertions in higher-level tests.",
             "Do not place generated, bundled, compiled, dependency, coverage, or build output in source/test architecture."
           ]
         },
@@ -99,7 +111,7 @@
             "Libraries must test applicable implementation code without Istanbul coverage-ignore directives; the exact pure export barrel declared as a public package entrypoint is the sole barrel exception."
           ],
           "donts": [
-            "Do not hide uncovered production behavior with Istanbul coverage-ignore directives unless an explicit convention exemption applies or the file is the pure export barrel declared as a public package entrypoint."
+            "Do not hide uncovered production behavior with Istanbul coverage-ignore directives unless the file is the pure export barrel declared as a public package entrypoint."
           ]
         },
         {
@@ -130,8 +142,7 @@
           "id": "E-0.1.40.12",
           "dos": [
             "Enforce a maximum of 100 lines for each non-generated, non-dependency library source file and 200 lines for each non-generated, non-dependency test file. Exceeding either maximum is a blocking convention failure and requires decomposition into focused modules with mirrored tests.",
-            "Apply the single-responsibility requirement independently at every file size: being within the line maximum does not prove cohesion or permit distinct responsibilities to share a module, and a mixed-responsibility module must be split even when it is below the maximum.",
-            "An Eli-approved emergency exemption from these file-size maxima must be recorded in package.json.eliware.exempt with this rule ID, reason, approver, approval timestamp, and either a concrete expiry date or expiry:null."
+            "Apply the single-responsibility requirement independently at every file size: being within the line maximum does not prove cohesion or permit distinct responsibilities to share a module, and a mixed-responsibility module must be split even when it is below the maximum."
           ],
           "donts": [
             "Do not treat compliance with a line maximum as permission to mix responsibilities, or reduce line count superficially without creating focused modules and mirrored tests."
@@ -168,18 +179,7 @@
             "Library Jest coverage must report 100% statements, branches, functions, and lines with zero uncovered lines for in-scope production code; coverage scope is limited to native ESM .mjs production files under src/.",
             "Exclude generated, bundled, compiled, dependency, coverage, build, declaration, fixture, and snapshot files from in-scope code; the primary public export barrel may be excluded."
           ],
-          "donts": ["Do not hide untested production logic with coverage exclusions."],
-          "directives": [
-            {
-              "id": "A-0.1.40.16.0",
-              "dos": [
-                "Record any Eli-approved emergency coverage exemption in package.json.eliware.exempt with this rule ID, reason, approver, timestamp, and temporary expiry or expiry:null."
-              ],
-              "donts": [
-                "Do not use a 100x4 exemption without Eli's explicit emergency authorization."
-              ]
-            }
-          ]
+          "donts": ["Do not hide untested production logic with coverage exclusions."]
         },
         {
           "id": "E-0.1.40.17",

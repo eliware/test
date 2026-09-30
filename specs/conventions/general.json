@@ -151,7 +151,7 @@
                 "The README must use the standard Eliware logo and Discord-branded support block and link the repository LICENSE from License.",
                 "Build the README section list from the general baseline and every profile explicitly listed in package.json.eliware.apply. Append profile-required sections after Security and before Support, using this canonical profile order regardless of package.json array order: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published. Omit profiles that do not apply; within each applied profile, preserve the order stated by that profile. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. Do not merge sections with different headings merely because their topics overlap.",
                 "The badge-bearing package or project title is the README title: place it immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in an canonical repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
-                "The README must identify the project truthfully and link applicable documentation, specifications, examples, and RELEASE_NOTES.md when present. Every repository must link specs/README.md; require examples/README.md when an examples/ surface exists. Do not add prose saying unrelated profiles do not apply.",
+                "The README must identify the project truthfully and link applicable documentation, specifications, and RELEASE_NOTES.md when present. Every repository must link specs/README.md. Do not add prose saying unrelated profiles do not apply.",
                 "When package.json declares description, author, and license values, include each exact value verbatim in README.md. When package.json declares a repository URL, link that exact URL from Links.",
                 "Configuration content must distinguish runtime configuration (supported settings, environment variables, config files, and defaults) from repository/package metadata, CLI arguments, and deployment configuration. State explicitly when a category has no runtime settings; do not describe package.json.eliware.apply as runtime configuration.",
                 "When documenting validation or release state, distinguish checks and contracts present in the current repository from versions already published or released. Do not imply an unpublished version is available to users.",
@@ -263,10 +263,10 @@
         {
           "id": "E-0.1.8",
           "dos": [
-            "If a repository has a local .env file, it must define MAIL_OWNER_ADDRESS as <repository-name>@eliware.org and the root .gitignore must ignore that file. The file is optional."
+            "MAIL_OWNER_ADDRESS is an internal mail-routing setting; configure its value only through an untracked, gitignored .env file, and omit it from environment templates."
           ],
           "donts": [
-            "Repositories must not place the mailbox owner address in .env.example or any environment template."
+            "Do not expose MAIL_OWNER_ADDRESS as a supported setting in .env.example or any other environment template."
           ]
         },
         {
@@ -280,19 +280,19 @@
               "id": "E-0.1.9.0",
               "dos": [
                 "package.json.eliware.apply must explicitly list applicable convention documents.",
-                "package.json.eliware.exempt may contain only Eli-approved emergency exemptions for explicitly exemptible rule IDs."
+                "Repositories applying documentation, workspace, or infrastructure profiles must also apply private; the private profile requires package.json.private=true."
               ],
-              "donts": [
-                "Repositories must not omit eliware.apply or use eliware.exempt without Eli's explicit authorization."
-              ]
+              "donts": ["Repositories must not omit eliware.apply."]
             },
             {
               "id": "A-0.1.9.1",
               "dos": [
-                "The repository package version and the selected convention documents identify the convention baseline."
+                "Every convention profile document declares a MAJOR.MINOR version. package.json.version must use the same MAJOR.MINOR and a numeric PATCH: the initial aligned release is MAJOR.MINOR.0, and repository releases increment only PATCH while that convention version remains active.",
+                "A convention-language revision without a schema-format change increments the convention MINOR and realigns repositories to MAJOR.MINOR.0; a convention schema-format change increments the convention MAJOR and realigns repositories to MAJOR.0."
               ],
               "donts": [
-                "Repositories must not identify an ambiguous or unsupported convention baseline."
+                "Do not release a package whose MAJOR.MINOR differs from any applied convention profile's version.",
+                "Do not use a prerelease or build suffix as a substitute for the numeric PATCH release sequence."
               ]
             },
             {
@@ -307,21 +307,9 @@
             {
               "id": "E-0.1.9.3",
               "dos": [
-                "Each eliware.exempt entry must reference a specific rule ID, contain a reason, Eli approver, approval timestamp, and declare either a concrete expiry date for a temporary exemption or expiry:null for a permanent exemption."
+                "When present, package.json.eliware.exempt must be an array of records with a non-empty ruleId, non-empty reason, approver set to Eli, a valid approvalTimestamp, and either a valid expiry date or expiry:null. Each ruleId must be unique."
               ],
-              "donts": [
-                "Repositories must not use broad, anonymous, unauthorized, or malformed convention exemptions; agents must not require periodic review, renewal, or re-justification for a permanent expiry:null exemption."
-              ]
-            },
-            {
-              "id": "A-0.1.9.8",
-              "dos": [
-                "Validation consumers must enforce the recorded eliware.exempt form: a concrete expiry date for temporary exemptions or expiry:null for permanent exemptions.",
-                "Validation consumers must validate exemption structure and rule applicability without re-reviewing, renewing, or second-guessing Eli's recorded exemption decision."
-              ],
-              "donts": [
-                "Do not turn exemption validation into a second approval process or require a review condition for a permanent expiry:null exemption."
-              ]
+              "donts": ["Do not duplicate a ruleId in the exemption array."]
             }
           ]
         },
@@ -338,7 +326,7 @@
             {
               "id": "E-0.1.10.1",
               "dos": [
-                "Every applicable Knit validation script must begin with these subprocess commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
+                "Every repository's .knit/validate.mjs must begin with these commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test.",
                 "A Knit validation script may contain any additional repository-specific checks or operations after the required command sequence."
               ],
               "donts": [
@@ -360,19 +348,10 @@
         {
           "id": "E-0.1.14",
           "dos": [
-            "For repositories with npm dependencies, npm outdated must return no outdated direct dependencies before release consideration."
+            "Any package reported by npm outdated fails validation, regardless of dependency section. Blank output or an empty report passes. Failure diagnostics must recommend installing every reported package with its @latest tag."
           ],
           "donts": [
-            "Do not treat known outdated dependencies as release-ready without Eli's specific approval."
-          ]
-        },
-        {
-          "id": "E-0.1.15",
-          "dos": [
-            "Use the latest stable published version of every direct dependency unless Eli approves a specific pin for that repository."
-          ],
-          "donts": [
-            "Do not pin a dependency below latest without Eli's specific approval for that project and pin."
+            "Do not compare or require a package version field beyond the result reported by npm outdated."
           ]
         },
         {
@@ -409,7 +388,6 @@
             "Workflow event configuration values must use GitHub's mapping shape; arrays of activity types belong in an event's types field, while an array of event names is allowed only as the top-level on value.",
             "Every repository must contain exactly one workflow file at .github/workflows/ci.yml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yml.",
             "Ubuntu CI is always required.",
-            "Windows CI is optional; when included, every Windows validation job must pass before publication.",
             "The GitHub validation workflow may run the same validation command as .knit/validate.mjs."
           ],
           "donts": ["Do not omit Ubuntu CI or duplicate eliware-test checks in CI."],
@@ -443,8 +421,7 @@
             {
               "id": "E-0.1.24.2",
               "dos": [
-                "CI validation and publication workflows must use actions/checkout@v6 and actions/setup-node@v7 when those actions are used.",
-                "An explicitly authorized future exception must be recorded in package.json.eliware.exempt with this rule ID, the exact action and version, reason, approver, and approvalTimestamp, and must be either temporary with a concrete expiry date or permanent with expiry:null."
+                "CI validation and publication workflows must use actions/checkout@v6 and actions/setup-node@v7 when those actions are used."
               ],
               "donts": [
                 "Do not use action versions other than those approved for the workflow type, and do not require periodic review, renewal, or re-justification for a permanent exception unless Eli explicitly revokes or replaces it."
@@ -500,8 +477,7 @@
                 {
                   "id": "A-0.1.25.1",
                   "dos": [
-                    "Every applicable structured specification record must be linked from specs/README.md.",
-                    "Directive records may include an optional examples array containing short, literal examples that clarify how to apply the directive."
+                    "Every applicable structured specification record must be linked from specs/README.md."
                   ],
                   "donts": [
                     "Do not create a separate contract-reference file to duplicate directive policy or make examples canonical."
@@ -514,7 +490,7 @@
         {
           "id": "E-0.1.26",
           "dos": [
-            "Every application and library repository must maintain a root RELEASE_NOTES.md; other repository types must maintain one when they publish versioned user-visible changes.",
+            "Every application and library repository must maintain a root RELEASE_NOTES.md.",
             "RELEASE_NOTES.md must begin with the exact heading # Release Notes. When pending work exists, place one ## Unreleased section before all versioned entries. Use version headings in the exact form ## x.y.z — YYYY-MM-DD, with valid calendar dates, and list versioned entries in reverse chronological order: versions must be strictly descending by SemVer and dates must be non-increasing. Each release entry must contain one or more non-empty user-visible change subsections using only Added, Changed, Fixed, Breaking changes, Migration, or Security as subsection headings."
           ],
           "donts": [
@@ -525,8 +501,7 @@
               "id": "A-0.1.26.0",
               "dos": [
                 "Each release entry must summarize user-visible changes and include breaking changes, migration, or security information when applicable; update it before release validation.",
-                "README.md must link RELEASE_NOTES.md from Links when the file exists.",
-                "Require RELEASE_NOTES.md for application, library, npm-published, and ghcr-published repositories. For other profiles, validate release notes when present without requiring them or their README link when they are absent."
+                "Require and validate RELEASE_NOTES.md for application and library repositories."
               ],
               "donts": [
                 "Do not use release notes as a second source for requirements, procedures, or project behavior."
@@ -592,24 +567,6 @@
               ]
             },
             {
-              "id": "E-0.1.20.12",
-              "dos": [
-                "Before release consideration, repositories with npm dependencies must run npm outdated and have no outdated direct dependencies."
-              ],
-              "donts": [
-                "Do not treat known outdated dependencies as release-ready without Eli's specific pin approval."
-              ]
-            },
-            {
-              "id": "E-0.1.20.13",
-              "dos": [
-                "Use the latest stable published version of every direct dependency unless Eli approves a specific pin for that repository."
-              ],
-              "donts": [
-                "Do not pin a dependency below latest without Eli's specific approval for that project and pin."
-              ]
-            },
-            {
               "id": "E-0.1.20.14",
               "dos": [
                 "Repositories must remove dependencies that are not used by their source, tests, tooling, or required runtime."
@@ -623,12 +580,10 @@
               "dos": [
                 "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applied profile requires them.",
                 "When required scripts are invalid, report all missing or incorrect required scripts and disallowed script entries together in one result.",
-                "An explicitly authorized self-hosting exception may let @eliware/test scripts invoke its local bin entrypoint instead of the canonical eliware-test command. This exception applies only to the script-command requirement; aggregate validation must still execute and validate every required stage.",
                 "Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation."
               ],
               "donts": [
-                "Do not omit, rename, or replace a shared validation script, add unrelated package script names, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command.",
-                "Do not let a self-hosting script-command exception skip execution or result validation for tests, lint, formatting, or audit."
+                "Do not omit, rename, or replace a shared validation script, add unrelated package script names, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command."
               ]
             },
             {
@@ -644,12 +599,10 @@
               "id": "E-0.1.20.19",
               "dos": [
                 "Every repository's aggregate test validation must execute its audit stage through the shared audit script.",
-                "Run npm audit with the fixed --audit-level=high threshold. Accept only auditReportVersion 2 reports whose vulnerabilities map and metadata.vulnerabilities severity counts agree, whose nonnegative integer severity counts sum to total, and whose high and critical counts are zero; lower severity counts may be nonzero.",
-                "An explicitly authorized self-hosting exception may change only the audit script command used by @eliware/test; aggregate validation must still run npm audit and validate its report."
+                "Run npm audit with the fixed --audit-level=high threshold. Accept only auditReportVersion 2 reports whose vulnerabilities map and metadata.vulnerabilities severity counts agree, whose nonnegative integer severity counts sum to total, and whose high and critical counts are zero; lower severity counts may be nonzero."
               ],
               "donts": [
-                "Do not omit audit from the aggregate test validation, run a separate direct audit command, or fail reports solely for low or moderate counts below the configured high threshold.",
-                "Do not treat a self-hosting audit script exception as an exemption from running audit or checking its result."
+                "Do not omit audit from the aggregate test validation, run a separate direct audit command, or fail reports solely for low or moderate counts below the configured high threshold."
               ]
             }
           ]

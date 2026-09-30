@@ -20,6 +20,7 @@ test("accepts valid temporary and permanent exemptions", () => {
 });
 
 test("rejects malformed records and invalid expiry dates", () => {
+  expect(() => validateExemptionRecords([record({ ruleId: " " })])).toThrow();
   expect(() => validateExemptionRecords([record({ reason: "" })])).toThrow();
   expect(() => validateExemptionRecords([record({ expiry: "not-a-date" })])).toThrow();
   expect(() => validateExemptionRecords([record({ approvalTimestamp: "" })])).toThrow();

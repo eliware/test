@@ -45,14 +45,17 @@ function resetValidators() {
 beforeEach(resetValidators);
 
 test("coordinates release-note parsing, validation, and README indexing in order", async () => {
-  const context = { root: "/repo", packageJson: { version: "9.0.0" } };
+  const context = {
+    root: "/repo",
+    packageJson: { version: "9.0.0", eliware: { apply: ["application"] } },
+  };
 
   await expect(run(context)).resolves.toEqual({
     ruleId: "A-0.1.26.0",
     status: "pass",
     message: "",
   });
-  expect(readReleaseNoteDocuments).toHaveBeenCalledWith(context, false);
+  expect(readReleaseNoteDocuments).toHaveBeenCalledWith(context, true);
   expect(validateReleaseNoteContent).toHaveBeenCalledWith([], "9.0.0");
   const phases = [
     parseReleaseNotes.mock.invocationCallOrder[0],
@@ -66,13 +69,13 @@ test("coordinates release-note parsing, validation, and README indexing in order
 test("maps missing input files to the check result", async () => {
   readReleaseNoteDocuments.mockResolvedValueOnce({
     readme: "README",
-    failures: ["RELEASE_NOTES.md is required for release-bearing repositories."],
+    failures: ["RELEASE_NOTES.md is required for application and library repositories."],
   });
 
   await expect(run({ root: "/repo" })).resolves.toEqual({
     ruleId: "A-0.1.26.0",
     status: "fail",
-    message: "RELEASE_NOTES.md is required for release-bearing repositories.",
+    message: "RELEASE_NOTES.md is required for application and library repositories.",
   });
   expect(parseReleaseNotes).not.toHaveBeenCalled();
 });
@@ -87,8 +90,12 @@ test("reports a missing README while validating release notes", async () => {
   expect(validateReleaseNoteContent).toHaveBeenCalled();
 });
 
-test("does not require absent release notes for non-release-bearing profiles", async () => {
-  readReleaseNoteDocuments.mockResolvedValueOnce({ readme: "README", failures: [] });
+test("does not inspect release notes or README for profiles that do not require notes", async () => {
+  readReleaseNoteDocuments.mockResolvedValueOnce({
+    notes: undefined,
+    readme: undefined,
+    failures: [],
+  });
 
   await expect(
     run({ root: "/repo", packageJson: { eliware: { apply: ["general", "documentation"] } } }),

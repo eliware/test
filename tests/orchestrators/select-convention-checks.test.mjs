@@ -11,7 +11,7 @@ test("selects checks only from the explicitly applied profile", async () => {
 test.each(["documentation", "workspace", "infrastructure"])(
   "keeps general lint and formatter checks selected for %s repositories",
   async (profile) => {
-    const checks = await selectConventionChecks({ apply: ["general", profile] });
+    const checks = await selectConventionChecks({ apply: ["general", profile, "private"] });
     const ruleIds = checks.map(({ ruleId }) => ruleId);
 
     expect(ruleIds).toContain("E-0.1.4");
