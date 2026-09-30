@@ -9,7 +9,7 @@ export async function run(context) {
   const { root } = context;
   try {
     const text = (await readRepositoryText(context, join(root, "AGENTS.md"))).toLowerCase();
-    const missing = ["documentation", "scope", "authority", "index", "link", "validation"].filter(
+    const missing = ["documentation", "scope", "index", "link", "validation"].filter(
       (term) => !text.includes(term),
     );
     if (missing.length > 0)

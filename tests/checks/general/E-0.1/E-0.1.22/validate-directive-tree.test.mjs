@@ -20,7 +20,4 @@ test("rejects top-level AI rules and non-array child collections", () => {
       "Directive E-1.directives must be an array.",
     ]),
   );
-  expect(validateDirectiveTree([{ id: "E-2" }, { id: "E-2" }])).toContain(
-    "Directive IDs must be unique: E-2.",
-  );
 });

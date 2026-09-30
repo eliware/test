@@ -10,7 +10,6 @@ profile applicability and to report complete directives when checks fail.
 - [cli.json](cli.json)
 - [discord.json](discord.json)
 - [documentation.json](documentation.json)
-- [fork.json](fork.json)
 - [general.json](general.json)
 - [ghcr-published.json](ghcr-published.json)
 - [infrastructure.json](infrastructure.json)
@@ -21,9 +20,7 @@ profile applicability and to report complete directives when checks fail.
 - [web.json](web.json)
 - [workspace.json](workspace.json)
 
-The local authority-record format is defined in
-[authority-map.json](authority-map.json). This index contains consumer-facing
-profile requirements; it does not contain repository-specific maintenance
-directives.
+This index contains consumer-facing profile requirements; it does not contain
+repository-specific maintenance directives.
 
 [Return to the Test specification index](../README.md).

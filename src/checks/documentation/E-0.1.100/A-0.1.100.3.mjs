@@ -1,6 +1,5 @@
 import { fail, pass } from "../../check-result.mjs";
 import { jsonFiles } from "./collect-documentation-files.mjs";
-import { validateAuthorityDocuments } from "./validate-authority-documents.mjs";
 import { validateDocumentationLinks } from "./validate-documentation-links.mjs";
 import { validateStructuredReferences } from "./validate-structured-references.mjs";
 
@@ -23,12 +22,6 @@ export async function run(context) {
       if (error) failures.push(error);
     } catch (error) {
       failures.push(`Structured reference validation failed: ${error.message}`);
-    }
-    try {
-      const error = await validateAuthorityDocuments(root, files, context.repositoryInventory);
-      if (error) failures.push(error);
-    } catch (error) {
-      failures.push(`Authority document validation failed: ${error.message}`);
     }
   }
   try {

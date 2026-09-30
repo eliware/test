@@ -1,19 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies to repositories containing application or service code.",
-  "authority": {
-    "authoritativeFor": ["Application and service repository requirements."],
-    "notAuthoritativeFor": [
-      "Non-application repositories, operations, deployment, or project behavior."
-    ]
-  },
-  "crosslinks": [
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    },
-    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
-  ],
   "directives": [
     {
       "id": "E-0.1.130",
@@ -65,7 +52,7 @@
                 "Application repositories must link docs/README.md from the root README.md."
               ],
               "donts": [
-                "Do not duplicate authoritative operational procedures or project requirements in end-user docs."
+                "Do not duplicate canonical operational procedures or project requirements in end-user docs."
               ]
             }
           ]

@@ -1,23 +1,23 @@
 import {
   bundledConventionVersion,
-  bundledDirectiveAuthority,
-} from "./read-bundled-profile-authority.mjs";
+  bundledProfileCatalog,
+} from "./read-bundled-profile-catalog.mjs";
 import { createBundledCheckManifest } from "./create-bundled-check-manifest.mjs";
 
 export function validateBundledDirectiveCompleteness(
   checks,
   groups,
-  authority = bundledDirectiveAuthority,
+  catalog = bundledProfileCatalog,
 ) {
   if (
-    authority.version !== bundledConventionVersion ||
-    !authority.profiles ||
-    !authority.directives ||
-    !authority.rules
+    catalog.version !== bundledConventionVersion ||
+    !catalog.profiles ||
+    !catalog.directives ||
+    !catalog.rules
   )
-    throw new Error("Bundled directive authority is missing or invalid.");
+    throw new Error("Bundled directive catalog is missing or invalid.");
   const manifest = createBundledCheckManifest(checks);
-  const unknownProfiles = groups.filter((group) => !authority.profiles[group]);
+  const unknownProfiles = groups.filter((group) => !catalog.profiles[group]);
   if (unknownProfiles.length)
     throw new Error(`Unknown bundled convention profiles: ${unknownProfiles.join(", ")}.`);
   const unregistered = manifest.checks.filter(({ ruleId, modulePath }) => {
@@ -27,15 +27,15 @@ export function validateBundledDirectiveCompleteness(
       .at(-1)
       ?.replace(/\.mjs$/u, "");
     return (
-      !authority.profiles[profile] ||
+      !catalog.profiles[profile] ||
       filename !== ruleId ||
-      authority.directives[ruleId] !== profile ||
-      !authority.rules[ruleId]
+      catalog.directives[ruleId] !== profile ||
+      !catalog.rules[ruleId]
     );
   });
   if (unregistered.length)
     throw new Error(
-      `Bundled checks have no matching authority entry: ${unregistered
+      `Bundled checks have no matching catalog entry: ${unregistered
         .map(({ ruleId, modulePath }) => `${modulePath} (${ruleId})`)
         .join(", ")}.`,
     );

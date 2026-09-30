@@ -1,21 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies to repositories that publish a public npm package.",
-  "authority": {
-    "authoritativeFor": ["Public npm package metadata and publication requirements."],
-    "notAuthoritativeFor": ["Private repositories, non-npm distribution, or runtime behavior."]
-  },
-  "crosslinks": [
-    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
-    {
-      "path": "../../../operations/specs/directives.json",
-      "authoritativeFor": "Release authorization, publication verification, and handoffs."
-    },
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    }
-  ],
   "directives": [
     {
       "id": "E-0.1.140",

@@ -1,46 +1,6 @@
 {
   "version": "8.0",
   "description": "Specification for the deterministic Eliware validation harness.",
-  "authority": {
-    "authoritativeFor": [
-      "Shared repository profiles under specs/conventions, harness configuration, bundled-check discovery, check execution, result reporting, and validation safety."
-    ],
-    "notAuthoritativeFor": [
-      "Consumer repository implementation details, human acceptance, publication policy, deployment, or operations."
-    ]
-  },
-  "crosslinks": [
-    {
-      "path": "../../docs/authority-map.json",
-      "relation": "relatedAuthority",
-      "authoritativeFor": "Cross-repository ownership and authority boundaries."
-    },
-    {
-      "path": "./conventions/general.json",
-      "relation": "relatedAuthority",
-      "authoritativeFor": "Universal repository conventions and profile authority."
-    },
-    {
-      "path": "./conventions/application.json",
-      "relation": "relatedAuthority",
-      "authoritativeFor": "Application repository requirements enforced by this package."
-    },
-    {
-      "path": "./conventions/cli.json",
-      "relation": "relatedAuthority",
-      "authoritativeFor": "CLI repository requirements, public help/version behavior, and exit-code documentation."
-    },
-    {
-      "path": "./conventions/npm-published.json",
-      "relation": "relatedAuthority",
-      "authoritativeFor": "npm-published package requirements and the aggregate pack-stage boundary."
-    },
-    {
-      "path": "../../operations/specs/directives.json",
-      "relation": "relatedAuthority",
-      "authoritativeFor": "Cross-cutting operational procedures and publication/deployment boundaries."
-    }
-  ],
   "directives": [
     {
       "id": "E-0.0",
@@ -81,7 +41,7 @@
         {
           "id": "E-0.0.3",
           "dos": ["Keep bundled checks self-contained and organized in profile directories."],
-          "donts": ["Do not require an external authority repository at runtime."],
+          "donts": ["Do not require an external repository at runtime."],
           "directives": [
             {
               "id": "A-0.0.3.0",
@@ -369,7 +329,7 @@
             "Treat specs/conventions/ as the canonical local source for applicable rule content and profile applicability."
           ],
           "donts": [
-            "Do not require an external authority repository at runtime.",
+            "Do not require an external repository at runtime.",
             "Do not maintain a generated copy or a second registry for rule content already present in specs/conventions/."
           ],
           "directives": [
@@ -380,7 +340,7 @@
                 "Use subdirectories to represent the directive parent/child hierarchy, with the same hierarchy available to exemption traversal."
               ],
               "donts": [
-                "Do not use a separate mapping.json as the authoritative check registry when profile directories and directive-named modules provide that mapping."
+                "Do not use a separate mapping.json as the canonical check registry when profile directories and directive-named modules provide that mapping."
               ]
             },
             {
@@ -397,7 +357,7 @@
               "id": "A-0.0.8.2",
               "dos": [
                 "Create check modules only for requirements with deterministic enforcement or explicit advisory handling; leave other canonical directives in their profile specifications without placeholder modules.",
-                "Validate every check ID and profile against the versioned specifications in specs/conventions/; check-directory names and filenames alone are not authority.",
+                "Validate every check ID and profile against the versioned specifications in specs/conventions/; check-directory names and filenames alone do not establish a requirement.",
                 "Mark non-deterministic check modules advisory-only so the runner does not report them as enforced success."
               ],
               "donts": [

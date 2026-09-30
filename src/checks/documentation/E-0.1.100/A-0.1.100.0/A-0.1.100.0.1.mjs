@@ -9,15 +9,9 @@ export async function run(context) {
   const { root } = context;
   try {
     const text = (await readRepositoryText(context, join(root, "AGENTS.md"))).toLowerCase();
-    const missing = [
-      "documentation",
-      "scope",
-      "authority",
-      "index",
-      "link",
-      "validation",
-      "repository",
-    ].filter((term) => !text.includes(term));
+    const missing = ["documentation", "scope", "index", "link", "validation", "repository"].filter(
+      (term) => !text.includes(term),
+    );
     if (missing.length > 0)
       return fail(ruleId, `AGENTS.md is missing documentation boundaries: ${missing.join(", ")}.`);
   } catch {

@@ -12,7 +12,6 @@ const profiles = new Set([
   "npm-published",
   "ghcr-published",
   "private",
-  "fork",
 ]);
 
 export function validatePackageProfileSelection(packageJson) {

@@ -7,7 +7,7 @@ const rule = {
   donts: ["Do not omit a required heading."],
   examples: [{ purpose: "README structure", markdown: "## Features\n## Requirements" }],
 };
-const authority = { rules: { [rule.id]: rule } };
+const catalog = { rules: { [rule.id]: rule } };
 
 test("prints the observed failure and the complete matching directive", () => {
   const message = "README.md has a missing required heading";
@@ -15,13 +15,13 @@ test("prints the observed failure and the complete matching directive", () => {
     .split("\n")
     .map((line) => `    ${line}`)
     .join("\n");
-  expect(formatConventionFailure({ ruleId: rule.id, message }, authority)).toBe(
+  expect(formatConventionFailure({ ruleId: rule.id, message }, catalog)).toBe(
     `${rule.id}: ${message}\n  Rule:\n${formattedRule}`,
   );
 });
 
 test("includes every do, don't, and example without selecting a subset", () => {
-  const output = formatConventionFailure({ ruleId: rule.id, message: "failed" }, authority);
+  const output = formatConventionFailure({ ruleId: rule.id, message: "failed" }, catalog);
   expect(output).toContain("Use the canonical README heading order.");
   expect(output).toContain("Include package metadata verbatim.");
   expect(output).toContain("Do not omit a required heading.");
@@ -38,7 +38,7 @@ test("uses the complete bundled rule by default and handles a missing diagnostic
 });
 
 test("reports an unknown rule identity without inventing a directive", () => {
-  expect(formatConventionFailure({ ruleId: "E-9", message: "failed" }, authority)).toBe(
+  expect(formatConventionFailure({ ruleId: "E-9", message: "failed" }, catalog)).toBe(
     "E-9: failed\n  Rule: No bundled convention rule was found for this check.",
   );
 });

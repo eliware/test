@@ -1,37 +1,22 @@
 {
   "version": "8.0",
-  "description": "Applies to every @eliware/* repository. External upstream forks are excluded by fork.json.",
-  "authority": {
-    "authoritativeFor": ["Universal repository requirements."],
-    "notAuthoritativeFor": [
-      "Type-specific requirements, operations, deployment, or project behavior."
-    ]
-  },
-  "crosslinks": [
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    }
-  ],
+  "description": "Applies to every @eliware/* repository.",
   "directives": [
     {
       "id": "E-0.1",
       "dos": ["These conventions apply to every @eliware/* repository."],
-      "donts": [
-        "External forks of non-Eliware projects must not be treated as @eliware/* repositories or governed by these conventions."
-      ],
+      "donts": ["Do not apply this profile to repositories outside the @eliware/* namespace."],
       "directives": [
         {
           "id": "E-0.1.0",
           "dos": [
-            "Every maintained non-fork repository must contain a root AGENTS.md with the title # AGENTS.md followed by the exact general headings, in order: ## Project, ## Scope and boundaries, ## Layout, ## Development, ## Validation, ## Security, and ## Changes.",
+            "Every maintained repository must contain a root AGENTS.md with the title # AGENTS.md followed by the exact general headings, in order: ## Project, ## Scope and boundaries, ## Layout, ## Development, ## Validation, ## Security, and ## Changes.",
             "AGENTS.md must identify the repository and purpose, define scope and boundaries, explain the important layout, state development and validation expectations, define security rules, and state change/release authorization.",
-            "AGENTS.md must point contributors to applicable authority in eliware/docs, eliware/test, and eliware/operations without copying their detailed policy.",
-            "Keep the seven general AGENTS.md sections in the required order. Append applicable profile sections after ## Changes in this canonical order, omitting profiles that do not apply: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published, private. The order of entries in package.json.eliware.apply determines applicability only and must not change document order. Append repository-specific authority, exception, subdirectory, or role sections after all profile sections only when their exact heading and purpose are explicitly declared in an authoritative repository-owned specification."
+            "Keep the seven general AGENTS.md sections in the required order. Append applicable profile sections after ## Changes in this canonical order, omitting profiles that do not apply: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published, private. The order of entries in package.json.eliware.apply determines applicability only and must not change document order. Append repository-specific exception, subdirectory, or role sections after all profile sections only when their exact heading and purpose are declared in a repository-owned specification."
           ],
           "donts": [
             "Do not turn AGENTS.md into a second README, policy registry, release history, or implementation specification.",
-            "Do not include credentials, private machine paths, stale commands, or unapproved instructions that broaden authority or change external state.",
+            "Do not include credentials, private machine paths, stale commands, or unapproved instructions that broaden scope or change external state.",
             "Do not replace the required general headings with differently named headings, place profile-specific material before the general baseline, reorder profile sections based on package.json.eliware.apply ordering, or add undeclared repository-specific sections."
           ],
           "examples": [
@@ -143,7 +128,7 @@
           "id": "E-0.1.2",
           "dos": [
             "Every repository must contain README.md at its root.",
-            "Every repository must contain specs/README.md as the index for its directive, authority, and repository-specific specification records."
+            "Every repository must contain specs/README.md as the index for its directives and repository-specific specification records."
           ],
           "donts": [
             "Do not mark a repository complete when its root README.md or required specs/README.md index is missing.",
@@ -162,10 +147,10 @@
             {
               "id": "E-0.1.1.0",
               "dos": [
-                "Every maintained non-fork repository README must use this exact base order: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; Features; Requirements; Setup; Usage; Development; Testing; Troubleshooting; Security; then any sections added by applicable profiles; then Support; License; and Links. Support, License, and Links are always the final three top-level sections, in that order. The CI badge must use and link to the canonical .github/workflows/ci.yml workflow.",
+                "Every maintained repository README must use this exact base order: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; Features; Requirements; Setup; Usage; Development; Testing; Troubleshooting; Security; then any sections added by applicable profiles; then Support; License; and Links. Support, License, and Links are always the final three top-level sections, in that order. The CI badge must use and link to the canonical .github/workflows/ci.yml workflow.",
                 "The README must use the standard Eliware logo and Discord-branded support block and link the repository LICENSE from License.",
                 "Build the README section list from the general baseline and every profile explicitly listed in package.json.eliware.apply. Append profile-required sections after Security and before Support, using this canonical profile order regardless of package.json array order: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published. Omit profiles that do not apply; within each applied profile, preserve the order stated by that profile. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. Do not merge sections with different headings merely because their topics overlap.",
-                "The badge-bearing package or project title is the README title: place it immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in an authoritative repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
+                "The badge-bearing package or project title is the README title: place it immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in an canonical repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
                 "The README must identify the project truthfully, link applicable documentation/specifications/examples and RELEASE_NOTES.md when present, and document only profiles that apply. Do not add prose saying unrelated profiles do not apply.",
                 "When package.json declares description, author, and license values, include each exact value verbatim in README.md. When package.json declares a repository URL, link that exact URL from Links.",
                 "Configuration content must distinguish runtime configuration (supported settings, environment variables, config files, and defaults) from repository/package metadata, CLI arguments, and deployment configuration. State explicitly when a category has no runtime settings; do not describe package.json.eliware.apply as runtime configuration.",
@@ -208,7 +193,7 @@
             {
               "id": "A-0.1.3.0",
               "dos": [
-                "Treat the applicable convention profiles and their directive IDs as the sole authority for repository requirements."
+                "Use applicable convention profiles and their directive IDs as the source for shared repository requirements."
               ],
               "donts": [
                 "Do not create repository requirements in a validator, workflow, or local script that are absent from the applicable convention profiles."
@@ -286,7 +271,7 @@
         {
           "id": "E-0.1.9",
           "dos": [
-            "Every Eliware repository package.json must contain an eliware object describing convention applicability, authority, and repository relationships."
+            "Every Eliware repository package.json must contain an eliware object describing convention applicability."
           ],
           "donts": ["Repositories must not omit the Eliware metadata contract from package.json."],
           "directives": [
@@ -328,43 +313,13 @@
               ]
             },
             {
-              "id": "E-0.1.9.4",
-              "dos": [
-                "eliware.authority must contain non-empty authoritativeFor and notAuthoritativeFor arrays."
-              ],
-              "donts": ["Repositories must not leave their authority boundary undefined."]
-            },
-            {
-              "id": "E-0.1.9.5",
-              "dos": [
-                "eliware.crosslinks must contain related repository paths, relationship types, and the authority represented by each link."
-              ],
-              "donts": ["Repositories must not omit authority context from crosslinks."]
-            },
-            {
-              "id": "A-0.1.9.6",
-              "dos": [
-                "Crosslink relationship values must be dependsOn, consumedBy, relatedAuthority, implements, or supersedes."
-              ],
-              "donts": ["Repositories must not invent unregistered crosslink relationship values."]
-            },
-            {
               "id": "A-0.1.9.8",
               "dos": [
                 "Validation consumers must enforce the recorded eliware.exempt form: a concrete expiry date for temporary exemptions or expiry:null for permanent exemptions.",
                 "Validation consumers must validate exemption structure and rule applicability without re-reviewing, renewing, or second-guessing Eli's recorded exemption decision."
               ],
               "donts": [
-                "Do not turn exemption validation into a second approval authority or require a review condition for a permanent expiry:null exemption."
-              ]
-            },
-            {
-              "id": "E-0.1.9.7",
-              "dos": [
-                "Forked upstream repositories may omit the Eliware metadata contract unless Eli explicitly authorizes Eliware convention adoption."
-              ],
-              "donts": [
-                "Forked upstream repositories must not be treated as Eliware-convention repositories without explicit authorization."
+                "Do not turn exemption validation into a second approval process or require a review condition for a permanent expiry:null exemption."
               ]
             }
           ]
@@ -523,34 +478,24 @@
         {
           "id": "E-0.1.25",
           "dos": [
-            "Every repository must use specs/ as the discoverable home for its directive, authority, and repository-specific specification records."
+            "Every repository must use specs/ as the discoverable home for its directives and repository-specific specification records."
           ],
           "donts": [
-            "Do not leave directive, authority, or repository-specific specification records unindexed or outside the repository's documented specs surface."
+            "Do not leave directive or repository-specific specification records unindexed or outside the repository's documented specs surface."
           ],
           "directives": [
             {
               "id": "A-0.1.25.0",
               "dos": [
-                "specs/ must contain specs/README.md as its overview and index, authority.json as the local authority registry, one or more directives.json files, and any applicable indexed structured specification records.",
-                "specs/README.md must link every authority.json, directives.json, and applicable structured specification file and identify the authority represented by each.",
-                "The normative contents of specs/ must be indexed JSON specification records; README.md, authority.json, directives.json, and applicable structured specifications are permitted."
+                "specs/ must contain specs/README.md as its overview and index, one or more directives.json files, and any applicable indexed structured specification records.",
+                "specs/README.md must link every directives.json file and applicable structured specification file.",
+                "The normative contents of specs/ must be indexed JSON specification records; README.md, directives.json, and applicable structured specifications are permitted."
               ],
               "donts": [
-                "Do not leave authority.json, directives.json, or an applicable structured specification unindexed, or make README.md, AGENTS.md, prose, or an unlinked JSON file the sole authority for a directive or repository boundary.",
+                "Do not leave directives.json or an applicable structured specification unindexed, or make README.md, AGENTS.md, prose, or an unlinked JSON file the sole source for a directive or repository boundary.",
                 "Do not store Markdown specifications or implementation notes in specs/; structured JSON records must be applicable and indexed."
               ],
               "directives": [
-                {
-                  "id": "A-0.1.25.0.0",
-                  "dos": [
-                    "Deterministic validation must validate every declared structured-document schema and every crosslink object in the repository's applied convention surfaces.",
-                    "Local file and JSON-embedded references must resolve to an existing target; cross-repository references must use a registered repository path and be validated when the target checkout is available."
-                  ],
-                  "donts": [
-                    "Do not use extensionless, malformed, or unregistered paths as machine-followable crosslinks."
-                  ]
-                },
                 {
                   "id": "A-0.1.25.1",
                   "dos": [
@@ -558,7 +503,7 @@
                     "Directive records may include an optional examples array containing short, literal examples that clarify how to apply the directive."
                   ],
                   "donts": [
-                    "Do not create a separate contract-reference file to duplicate directive policy or make examples authoritative."
+                    "Do not create a separate contract-reference file to duplicate directive policy or make examples canonical."
                   ]
                 }
               ]
@@ -583,7 +528,7 @@
                 "Require RELEASE_NOTES.md for application, library, npm-published, and ghcr-published repositories. For other profiles, validate release notes when present without requiring them or their README link when they are absent."
               ],
               "donts": [
-                "Do not use release notes as a second authority for requirements, procedures, or project behavior."
+                "Do not use release notes as a second source for requirements, procedures, or project behavior."
               ]
             }
           ]
@@ -720,11 +665,10 @@
             {
               "id": "A-0.1.22.0",
               "dos": [
-                "Deterministic validation must enforce unique directive IDs, valid parent-child ID prefixes, E-only ancestry for E-rules, and an E ancestor for every A-rule.",
-                "A repository's root directive namespace must match the namespace assigned to it by the authoritative repository registry when that registry entry exists, comparing namespace roots exactly at numeric segment boundaries without case sensitivity."
+                "Deterministic validation must enforce unique directive IDs across all JSON files in specs/, valid parent-child ID prefixes, E-only ancestry for E-rules, and an E ancestor for every A-rule."
               ],
               "donts": [
-                "Do not accept duplicate IDs, orphaned descendants, top-level A-rules, or a directive namespace owned by another repository."
+                "Do not accept duplicate IDs, orphaned descendants, top-level A-rules, or an E-rule nested under an A-rule."
               ]
             },
             {

@@ -108,13 +108,8 @@ commands; no public ignore flags bypass them.
 The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
 repository or supported Node.js/Windows executable locations. Workflow parsing
 normalizes YAML 1.1 `true` keys and equivalent runner/input spellings before
-domain checks consume them. The validator resolves `specs/authority.json`'s
-`globalAuthorityMap` setting, then uses that map's `repositoryRegistry` to
-identify external repository roots. References within registered roots may
-be unavailable. If the registered repository map cannot be loaded, external
-targets fail validation whether or not their checkout is available. Unavailable
-external targets are accepted only when their paths belong to registered roots;
-unregistered or local references must resolve.
+domain checks consume them. Structured references must resolve within the
+consumer repository; external repository paths are rejected.
 Git-sensitive checks use Git
 metadata when available and retain filesystem discovery only for non-Git test
 fixtures.

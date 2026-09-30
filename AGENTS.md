@@ -6,7 +6,7 @@ Purpose: provide the Eliware Test repository's Node.js 26 validation CLI, implem
 
 ## Scope and boundaries
 
-These repository-wide instructions govern the project. The project validates consumer repositories and does not publish, deploy, release, synchronize, or modify external systems. Important boundaries: these instructions include only this repository's validation CLI and exclude authority over consumer repositories or external systems; keep project-specific guidance within this scope.
+These repository-wide instructions govern the project. This repository owns the validation CLI only; its boundaries exclude consumer repository requirements and implementation. It does not publish, deploy, release, synchronize, or modify external systems. Keep project-specific guidance within the validation CLI scope.
 
 ## Layout
 
@@ -18,7 +18,7 @@ Read the relevant README.md, specifications, implementation, and tests before ch
 
 Every source and test module must have a single responsibility: one cohesive purpose and one reason to change. Business-logic modules and coordinators are both valid, including coordinators of coordinators, when each module does only its own responsibility. When a change introduces a distinct responsibility, create a focused submodule with a mirrored test and wire it through its owner; do not add the new responsibility to an existing module. During ordinary review, do not ignore mixed responsibilities you notice; refactor them as part of the change. The enforced maxima of 100 source lines and 200 test lines are separate blocking limits: passing them does not prove a module is cohesive or permit mixed responsibilities.
 
-Shared repository requirements are maintained in `specs/conventions/`, documentation authority remains with eliware/docs, and operational procedures are owned by eliware/operations.
+Shared repository requirements are maintained in `specs/conventions/`, and operational procedures are documented in eliware/operations.
 
 ## Validation
 

@@ -83,7 +83,6 @@ test("preserves pass results for discovered non-deterministic placeholders", asy
     "A-0.1.90.3",
     "A-0.1.110.0.2",
     "A-0.1.110.0.3",
-    "E-0.1.120.0",
   ];
   const checks = (await discoverAllChecks()).filter(({ ruleId }) =>
     placeholderRuleIds.includes(ruleId),

@@ -1,21 +1,19 @@
 import { expect, test } from "@jest/globals";
 import { validateAppliedProfiles } from "../../src/orchestrators/validate-applied-profiles.mjs";
 
-const authority = { profiles: { general: {}, application: {}, fork: {} } };
+const catalog = { profiles: { general: {}, application: {} } };
 
 test("accepts known profiles independently without inferred inheritance", () => {
-  expect(validateAppliedProfiles(["general", "application"], authority)).toBeNull();
-  expect(validateAppliedProfiles(["application"], authority)).toBeNull();
+  expect(validateAppliedProfiles(["general", "application"], catalog)).toBeNull();
+  expect(validateAppliedProfiles(["application"], catalog)).toBeNull();
 });
 
-test("rejects unknown profiles and combining the exclusive fork profile", () => {
-  expect(validateAppliedProfiles(["general", "unknown"], authority)).toBe(
+test("rejects unknown profiles", () => {
+  expect(validateAppliedProfiles(["general", "unknown"], catalog)).toBe(
     "Unknown convention group: unknown.",
   );
-  expect(validateAppliedProfiles(["general", "fork"], authority)).toContain("excludes");
-  expect(validateAppliedProfiles(["fork"], authority)).toBeNull();
 });
 
-test("uses bundled authority when no authority is supplied", () => {
+test("uses bundled catalog when no catalog is supplied", () => {
   expect(validateAppliedProfiles(["general"])).toBeNull();
 });

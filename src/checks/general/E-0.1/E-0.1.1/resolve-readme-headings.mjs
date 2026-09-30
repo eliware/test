@@ -34,8 +34,8 @@ const profileSections = {
     "Validation",
     "Change boundaries",
   ],
-  workspace: ["Authority", "Runbooks", "Communication", "Recovery"],
-  documentation: ["Scope", "Authority", "Navigation", "Contribution", "Documentation validation"],
+  workspace: ["Runbooks", "Communication", "Recovery"],
+  documentation: ["Scope", "Navigation", "Contribution", "Documentation validation"],
 };
 const profileOrder = [
   "application",

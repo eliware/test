@@ -13,11 +13,7 @@ async function fixture(directives) {
 }
 
 test("accepts a valid E-rooted directive tree", async () => {
-  const root = await fixture([{ id: "E-0.0", directives: [{ id: "A-0.0.1" }] }]);
-  await writeFile(
-    join(root, "specs", "authority.json"),
-    JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0.0"] }] }] }),
-  );
+  const root = await fixture([{ id: "E-87.4", directives: [{ id: "A-87.4.1" }] }]);
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.22.0",
     status: "pass",
@@ -25,11 +21,8 @@ test("accepts a valid E-rooted directive tree", async () => {
   });
   await rm(root, { recursive: true, force: true });
 });
-test("rejects invalid hierarchy and duplicate IDs", async () => {
-  const root = await fixture([
-    { id: "A-0.0" },
-    { id: "E-0.0", directives: [{ id: "E-0.0.1" }, { id: "E-0.0.1" }] },
-  ]);
+test("rejects invalid hierarchy", async () => {
+  const root = await fixture([{ id: "A-0.0" }, { id: "E-0.0", directives: [{ id: "E-0.0.1" }] }]);
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({
       status: "fail",
@@ -39,21 +32,17 @@ test("rejects invalid hierarchy and duplicate IDs", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("maps an unassigned local authority namespace to the directive rule result", async () => {
-  const root = await fixture([{ id: "E-0.0", directives: [{ id: "A-0.0.1" }] }]);
+test("rejects duplicate IDs anywhere in specs", async () => {
+  const root = await fixture([{ id: "E-0.0" }]);
+  await mkdir(join(root, "specs", "conventions"));
   await writeFile(
-    join(root, "specs", "authority.json"),
-    JSON.stringify({
-      subjects: [{ directives: [{ ids: ["E-19"] }] }],
-    }),
+    join(root, "specs", "conventions", "general.json"),
+    JSON.stringify({ directives: [{ id: "E-0.0" }] }),
   );
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({
-      ruleId: "A-0.1.22.0",
-      status: "fail",
-      message: expect.stringContaining("E-0"),
-    }),
-  );
+  await expect(run({ root })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("Duplicate specification directive ID: E-0.0."),
+  });
   await rm(root, { recursive: true, force: true });
 });
 
@@ -83,12 +72,8 @@ test("rejects missing, invalid, and empty directive documents", async () => {
   await rm(empty, { recursive: true, force: true });
 });
 
-test("reads directive and authority JSON through the shared parsed cache", async () => {
+test("reads directive JSON through the shared parsed cache", async () => {
   const root = await fixture([{ id: "E-0.0", directives: [{ id: "A-0.0.1" }] }]);
-  await writeFile(
-    join(root, "specs", "authority.json"),
-    JSON.stringify({ subjects: [{ directives: [{ ids: ["E-0.0"] }] }] }),
-  );
   const reads = new Map();
   const repositoryInventory = createRepositoryInventory(root, {
     read: async (path, encoding) => {
@@ -98,6 +83,5 @@ test("reads directive and authority JSON through the shared parsed cache", async
   });
   await expect(run({ root, repositoryInventory })).resolves.toMatchObject({ status: "pass" });
   expect(reads.get(join(root, "specs", "directives.json"))).toBe(1);
-  expect(reads.get(join(root, "specs", "authority.json"))).toBe(1);
   await rm(root, { recursive: true, force: true });
 });

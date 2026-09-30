@@ -1,17 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies to repositories that are not publicly published as npm packages.",
-  "authority": {
-    "authoritativeFor": ["Private repository metadata and publication restrictions."],
-    "notAuthoritativeFor": ["Public npm packages, runtime behavior, or deployment authorization."]
-  },
-  "crosslinks": [
-    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    }
-  ],
   "directives": [
     {
       "id": "E-0.1.150",

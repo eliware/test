@@ -1,19 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies to repositories containing library code.",
-  "authority": {
-    "authoritativeFor": ["Reusable library repository requirements."],
-    "notAuthoritativeFor": [
-      "Non-library repositories, operations, deployment, or project behavior."
-    ]
-  },
-  "crosslinks": [
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    },
-    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
-  ],
   "directives": [
     {
       "id": "E-0.1.40",

@@ -16,7 +16,6 @@ test("accepts each declared Eliware profile", () => {
     "npm-published",
     "ghcr-published",
     "private",
-    "fork",
   ]) {
     expect(validatePackageProfileSelection({ eliware: { apply: [profile] } })).toBeNull();
   }

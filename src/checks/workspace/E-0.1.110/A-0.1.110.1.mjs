@@ -13,7 +13,6 @@ export async function run(context) {
       "purpose",
       "role",
       "boundary",
-      "authority",
       "runbook",
       "communication",
       "validation",

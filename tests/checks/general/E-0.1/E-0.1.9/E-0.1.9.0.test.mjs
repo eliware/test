@@ -12,7 +12,7 @@ test("requires an explicit nonempty apply list", () => {
   );
 });
 
-test("rejects profiles absent from the bundled authority", () => {
+test("rejects profiles absent from the bundled catalog", () => {
   expect(run({ packageJson: { eliware: { apply: ["not-a-profile"] } } })).toMatchObject({
     status: "fail",
   });

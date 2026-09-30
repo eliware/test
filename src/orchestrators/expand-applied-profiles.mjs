@@ -1,6 +1,6 @@
-import { readBundledProfileAuthority } from "./read-bundled-profile-authority.mjs";
+import { readBundledProfileCatalog } from "./read-bundled-profile-catalog.mjs";
 
-export function expandAppliedProfiles(apply, authority = readBundledProfileAuthority()) {
+export function expandAppliedProfiles(apply, catalog = readBundledProfileCatalog()) {
   const seen = new Set();
-  return apply.filter((name) => authority.profiles[name] && !seen.has(name) && seen.add(name));
+  return apply.filter((name) => catalog.profiles[name] && !seen.has(name) && seen.add(name));
 }

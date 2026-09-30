@@ -1,19 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies to repositories containing infrastructure code.",
-  "authority": {
-    "authoritativeFor": ["Infrastructure repository requirements."],
-    "notAuthoritativeFor": [
-      "Application repositories, operations, deployment execution, or project behavior."
-    ]
-  },
-  "crosslinks": [
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    },
-    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
-  ],
   "directives": [
     {
       "id": "E-0.1.90",
@@ -50,7 +37,7 @@
                 "Keep operational procedures, rollout decisions, rollback records, and live runtime evidence in the applicable operations or owner workspace and link to them from the repository README."
               ],
               "donts": [
-                "Do not duplicate the same authoritative desired state or operational procedure across repositories.",
+                "Do not duplicate the same canonical desired state or operational procedure across repositories.",
                 "Do not treat a clean commit, render, or syntax check as proof that live infrastructure is healthy."
               ]
             },
@@ -68,11 +55,11 @@
             {
               "id": "A-0.1.90.0.4",
               "dos": [
-                "Keep repository-specific authority, directives, records, runbooks, and workflows in structured JSON when those records are required by the repository's authority boundary.",
+                "Keep repository-specific directives, records, runbooks, and workflows in structured JSON when structured records are required.",
                 "Use README.md and AGENTS.md as concise indexes and contributor instructions for those structured records."
               ],
               "donts": [
-                "Do not maintain competing normative procedure or authority records in free-form Markdown."
+                "Do not maintain competing normative procedure records in free-form Markdown."
               ]
             },
             {
@@ -89,7 +76,7 @@
         {
           "id": "A-0.1.90.1",
           "dos": [
-            "Infrastructure README.md must add Managed targets, Configuration, Desired state, Validation, and Change boundaries, in that order, documenting target/environment scope, runtime or deployment settings, committed desired state, deterministic checks, and change/rollback authority. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
+            "Infrastructure README.md must add Managed targets, Configuration, Desired state, Validation, and Change boundaries, in that order, documenting target/environment scope, runtime or deployment settings, committed desired state, deterministic checks, and change/rollback procedures. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents.",
             "Infrastructure README.md must link operational procedures and live-state verification records without duplicating them."
           ],
           "donts": [
@@ -99,7 +86,7 @@
         {
           "id": "A-0.1.90.2",
           "dos": [
-            "Infrastructure repositories must declare required paths and files in their repository-specific directives or structured authority records.",
+            "Infrastructure repositories must declare required paths and files in their repository-specific directive records.",
             "Deterministic validation must verify each declared infrastructure path exists and validate its declared JSON, YAML, manifest, reference, or render schema."
           ],
           "donts": [

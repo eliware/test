@@ -1,19 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies only to workspace repositories.",
-  "authority": {
-    "authoritativeFor": ["Leadership workspace repository requirements."],
-    "notAuthoritativeFor": [
-      "Project repositories, shared operations, deployment, or platform desired state."
-    ]
-  },
-  "crosslinks": [
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    },
-    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." }
-  ],
   "directives": [
     {
       "id": "E-0.1.110",
@@ -43,12 +30,12 @@
                 "Require runbooks/README.md as the navigation-only overview and index for every runbook file.",
                 "Require each runbook record to contain id, purpose, owner, boundaries, and steps.",
                 "Use runbooks/<name>.json#id=<stable-id> for machine-verifiable references.",
-                "Keep each procedure authoritative in one location and link to it from indexes."
+                "Keep each procedure canonical in one location and link to it from indexes."
               ],
               "donts": [
                 "Do not maintain a root runbooks.json file.",
                 "Do not maintain workspace workflows as a second procedure format; company-wide workflows belong in Operations.",
-                "Do not make Markdown runbooks or indexes the authoritative procedure representation.",
+                "Do not make Markdown runbooks or indexes the canonical procedure representation.",
                 "Do not duplicate normative procedure text across README files, indexes, directives, and runbooks."
               ]
             },
@@ -66,10 +53,10 @@
         {
           "id": "A-0.1.110.1",
           "dos": [
-            "Workspace README.md must add Authority, Runbooks, Communication, and Recovery, in that order, identifying ownership, operational boundaries, runbook navigation, communication channels, and recovery ownership. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
+            "Workspace README.md must add Runbooks, Communication, and Recovery, in that order, identifying operational boundaries, runbook navigation, communication channels, and recovery ownership. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
           ],
           "donts": [
-            "Workspace README.md must not duplicate authoritative JSON runbooks or leave ownership and recovery boundaries undefined."
+            "Workspace README.md must not duplicate JSON runbooks or leave ownership and recovery boundaries undefined."
           ]
         },
         {
@@ -85,7 +72,7 @@
         {
           "id": "A-0.1.110.3",
           "dos": [
-            "Workspace README indexes must link runbooks/README.md and every authoritative structured directive collection."
+            "Workspace README indexes must link runbooks/README.md and every structured directive collection."
           ],
           "donts": [
             "Do not infer a runbook schema from filename alone or maintain an undocumented second procedure format."

@@ -1,9 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-
-const nonProfileDocuments = new Set(["authority.json", "authority-map.json", "directives.json"]);
-
+const nonProfileDocuments = new Set(["directives.json"]);
 export function readProfileDocuments(directory) {
   const path = directory instanceof URL ? fileURLToPath(directory) : directory;
   return readdirSync(path, { withFileTypes: true })

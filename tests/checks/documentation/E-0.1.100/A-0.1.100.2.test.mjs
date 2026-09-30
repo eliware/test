@@ -8,7 +8,7 @@ test("requires documentation README topics and surface link", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-readme-"));
   await writeFile(
     join(root, "README.md"),
-    "scope authority navigation contribution validation security support license docs/",
+    "scope navigation contribution validation security support license docs/",
   );
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.100.2",
@@ -35,7 +35,7 @@ test("reports missing documentation README topics", async () => {
     ruleId: "A-0.1.100.2",
     status: "fail",
     message:
-      "Documentation README.md is missing: authority, navigation, contribution, validation, security, support, license.",
+      "Documentation README.md is missing: navigation, contribution, validation, security, support, license.",
   });
   await rm(root, { recursive: true, force: true });
 });
@@ -44,7 +44,7 @@ test("requires a documentation surface link", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-readme-link-"));
   await writeFile(
     join(root, "README.md"),
-    "scope authority navigation contribution validation security support license",
+    "scope navigation contribution validation security support license",
   );
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.100.2",

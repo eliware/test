@@ -6,7 +6,7 @@ const check = (ruleId, enforcementMode = "deterministic", profile = "general") =
   enforcementMode,
   modulePath: `${profile}/${ruleId}.mjs`,
 });
-const authority = {
+const catalog = {
   version: "8.0",
   profiles: {
     general: { profile: "general", document: "general.json", version: "8.0", extends: [] },
@@ -29,23 +29,19 @@ const authority = {
   },
 };
 
-test("accepts every authoritative bundled directive", async () => {
+test("accepts every registered bundled directive", async () => {
   expect(
-    validateBundledDirectiveCompleteness(
-      [check("E-0.1"), check("A-0.1.1")],
-      ["general"],
-      authority,
-    ),
+    validateBundledDirectiveCompleteness([check("E-0.1"), check("A-0.1.1")], ["general"], catalog),
   ).toBe(true);
 });
 
-test("fails when the bundled authority is not v8", async () => {
+test("fails when the bundled catalog is not v8", async () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["general"], { version: "7.0", profiles: {} }),
   ).toThrow("missing or invalid");
 });
 
-test("handles an applied group without an authority entry", () => {
+test("handles an applied group without an catalog entry", () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["unlisted"], {
       version: "8.0",
@@ -56,29 +52,29 @@ test("handles an applied group without an authority entry", () => {
   ).toThrow("Unknown bundled convention profiles");
 });
 
-test("rejects an authority without profiles", () => {
+test("rejects a catalog without profiles", () => {
   expect(() => validateBundledDirectiveCompleteness([], [], { version: "8.0" })).toThrow(
     "missing or invalid",
   );
 });
 
-test("uses the bundled authority by default", () => {
+test("uses the bundled catalog by default", () => {
   expect(validateBundledDirectiveCompleteness([], [])).toBe(true);
 });
 
-test("keeps authority validation separate from deterministic enforcement status", () => {
+test("keeps catalog validation separate from deterministic enforcement status", () => {
   expect(
     validateBundledDirectiveCompleteness(
       [check("E-0.1.130.7", "non-deterministic", "application")],
       ["general"],
-      authority,
+      catalog,
     ),
   ).toBe(true);
 });
 
 test("rejects an invalid enforcement mode instead of treating it as an implemented check", () => {
   expect(() =>
-    validateBundledDirectiveCompleteness([check("E-0.1", "unknown")], ["general"], authority),
+    validateBundledDirectiveCompleteness([check("E-0.1", "unknown")], ["general"], catalog),
   ).toThrow("valid enforcement mode");
 });
 
@@ -87,14 +83,14 @@ test("rejects a deterministic check whose identity disagrees with its module pat
     validateBundledDirectiveCompleteness(
       [{ ...check("E-9"), modulePath: "general/E-0.1.mjs" }],
       ["general"],
-      authority,
+      catalog,
     ),
-  ).toThrow("no matching authority entry");
+  ).toThrow("no matching catalog entry");
 });
 
 test("rejects a check ID that is absent from the local convention specifications", () => {
   expect(() =>
-    validateBundledDirectiveCompleteness([check("E-0.1.999")], ["general"], authority),
+    validateBundledDirectiveCompleteness([check("E-0.1.999")], ["general"], catalog),
   ).toThrow("general/E-0.1.999.mjs (E-0.1.999)");
 });
 
@@ -103,7 +99,7 @@ test("rejects a canonical check placed under the wrong profile", () => {
     validateBundledDirectiveCompleteness(
       [check("E-0.1.130.7", "deterministic", "general")],
       ["general"],
-      authority,
+      catalog,
     ),
   ).toThrow("general/E-0.1.130.7.mjs (E-0.1.130.7)");
 });
@@ -113,7 +109,7 @@ test("rejects unknown check profiles even when that profile is not selected", ()
     validateBundledDirectiveCompleteness(
       [{ ...check("E-0.1"), modulePath: "unknown/E-0.1.mjs" }],
       ["general"],
-      authority,
+      catalog,
     ),
   ).toThrow("unknown/E-0.1.mjs (E-0.1)");
 });

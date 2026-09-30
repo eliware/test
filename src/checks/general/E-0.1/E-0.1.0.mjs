@@ -7,8 +7,6 @@ import { findMissingAgentsSections } from "./validate-agents-required-sections.m
 export const ruleId = "E-0.1.0";
 export const parentRuleId = "E-0.1";
 
-const authorityReferences = ["eliware/docs", "eliware/test", "eliware/operations"];
-
 export async function run(context) {
   const { root, packageJson } = context;
   let content;
@@ -16,10 +14,6 @@ export async function run(context) {
     content = await readRepositoryText(context, join(root, "AGENTS.md"));
   } catch {
     return fail(ruleId, "AGENTS.md is required at the repository root.");
-  }
-  const missing = authorityReferences.filter((reference) => !content.includes(reference));
-  if (missing.length > 0) {
-    return fail(ruleId, `AGENTS.md must reference: ${missing.join(", ")}.`);
   }
   const missingSections = findMissingAgentsSections(content, packageJson);
   if (missingSections.length > 0) {

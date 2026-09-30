@@ -1,4 +1,4 @@
-import { bundledDirectiveAuthority } from "./read-bundled-profile-authority.mjs";
+import { bundledProfileCatalog } from "./read-bundled-profile-catalog.mjs";
 
 function indent(text, prefix) {
   return text
@@ -7,12 +7,9 @@ function indent(text, prefix) {
     .join("\n");
 }
 
-export function formatConventionFailure(
-  { ruleId, message = "" },
-  authority = bundledDirectiveAuthority,
-) {
+export function formatConventionFailure({ ruleId, message = "" }, catalog = bundledProfileCatalog) {
   const description = message || "The check failed without a diagnostic.";
-  const rule = authority.rules?.[ruleId];
+  const rule = catalog.rules?.[ruleId];
   if (!rule) {
     return `${ruleId}: ${description}\n  Rule: No bundled convention rule was found for this check.`;
   }

@@ -8,7 +8,7 @@ test("requires workspace README topics", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-workspace-readme-"));
   await writeFile(
     join(root, "README.md"),
-    "purpose role boundary authority runbook communication validation security support recovery",
+    "purpose role boundary runbook communication validation security support recovery",
   );
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.110.1",
@@ -25,7 +25,7 @@ test("reports incomplete README topics and missing files", async () => {
     ruleId: "A-0.1.110.1",
     status: "fail",
     message:
-      "Workspace README.md is missing: authority, runbook, communication, validation, security, support, recovery.",
+      "Workspace README.md is missing: runbook, communication, validation, security, support, recovery.",
   });
   await rm(root, { recursive: true, force: true });
   await expect(run({ root })).resolves.toEqual({

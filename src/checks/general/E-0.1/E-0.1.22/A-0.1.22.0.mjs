@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
 import { validateDirectiveTree } from "./validate-directive-tree.mjs";
-import { validateLocalAuthorityNamespace } from "./validate-local-authority-namespace.mjs";
+import { validateUniqueSpecificationDirectiveIds } from "./validate-unique-specification-directive-ids.mjs";
 
 export const ruleId = "A-0.1.22.0";
 export const parentRuleId = "E-0.1.22";
@@ -22,11 +22,7 @@ export async function run(context) {
     return fail(ruleId, "specs/directives.json must contain one or more directives.");
   }
   const errors = validateDirectiveTree(document.directives);
-  const namespaceError = await validateLocalAuthorityNamespace(
-    root,
-    document.directives,
-    repositoryInventory,
-  );
-  if (namespaceError) errors.push(namespaceError);
+  const uniquenessError = await validateUniqueSpecificationDirectiveIds(root, repositoryInventory);
+  if (uniquenessError) errors.push(uniquenessError);
   return errors.length > 0 ? fail(ruleId, errors.join(" ")) : pass(ruleId);
 }

@@ -1,41 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies to repositories that publish container images to GitHub Container Registry (GHCR). It extends general.json and the applicable public/private distribution profile without replacing their validation or publication boundaries.",
-  "authority": {
-    "authoritativeFor": [
-      "GHCR publication applicability, workflow shape, image identity, provenance, and repository-side publication requirements."
-    ],
-    "notAuthoritativeFor": [
-      "Release authorization, publication execution, artifact cleanup, deployment rollout, rollback, or live registry state."
-    ]
-  },
-  "crosslinks": [
-    { "path": "./general.json", "authoritativeFor": "Universal repository and CI requirements." },
-    {
-      "path": "./npm-published.json",
-      "authoritativeFor": "Public npm publication requirements when also applicable."
-    },
-    {
-      "path": "./private.json",
-      "authoritativeFor": "Private repository distribution restrictions when also applicable."
-    },
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    },
-    {
-      "path": "../../../operations/specs/directives.json",
-      "authoritativeFor": "Release authorization, publication execution, cleanup, and handoff."
-    },
-    {
-      "path": "../../../gitops/specs/directives.json",
-      "authoritativeFor": "Deployment rollout, digest-pinned desired state, and rollback execution."
-    },
-    {
-      "path": "../../../gitops-k8s/specs/directives.json",
-      "authoritativeFor": "Kubernetes image references and deployment configuration."
-    }
-  ],
   "directives": [
     {
       "id": "E-0.1.160",
@@ -61,7 +26,7 @@
           "dos": [
             "A single-image repository must publish ghcr.io/eliware/<repository-name>.",
             "A repository publishing multiple images must publish ghcr.io/eliware/<repository-name>-<image-name> for each image.",
-            "The project owner must propose the image mapping and Eli is the final approver with authority to override it."
+            "The project owner must propose the image mapping and Eli is the final approver, who may override it."
           ],
           "donts": [
             "Do not publish under an unapproved registry owner, repository name, or image mapping."

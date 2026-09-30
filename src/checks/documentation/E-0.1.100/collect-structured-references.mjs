@@ -1,17 +1,11 @@
 export function collectStructuredReferences(document) {
   const references = [];
-  const visit = (value, crossRepository = false) => {
+  const visit = (value) => {
     if (!value || typeof value !== "object") return;
     if (!Array.isArray(value) && typeof value.path === "string") {
-      references.push({ path: value.path, crossRepository });
+      references.push(value.path);
     }
-    for (const [key, child] of Object.entries(value)) {
-      visit(
-        child,
-        crossRepository ||
-          ["crosslinks", "repositoryRegistry", "structuredDocuments"].includes(key),
-      );
-    }
+    for (const child of Object.values(value)) visit(child);
   };
   visit(document);
   return references;

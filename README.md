@@ -221,8 +221,6 @@ diagnostics when requesting help.
 - [Usage](docs/usage.md) · [Troubleshooting](docs/troubleshooting.md) · [Support](docs/support.md)
 - [Documentation](docs/README.md)
 - [Specifications](specs/README.md)
-- [Authority distribution](specs/authority.json)
-- [Global authority map](https://github.com/eliware/docs/blob/main/authority-map.json)
 - [Canonical repository profile specifications](specs/conventions/README.md)
 - [Home Page](https://eliware.org)
 - [GitHub Repo](https://github.com/eliware/test) (`git+https://github.com/eliware/test.git`)

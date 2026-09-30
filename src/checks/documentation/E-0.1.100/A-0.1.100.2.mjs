@@ -11,7 +11,6 @@ export async function run(context) {
     const readme = (await readRepositoryText(context, join(root, "README.md"))).toLowerCase();
     const missing = [
       "scope",
-      "authority",
       "navigation",
       "contribution",
       "validation",

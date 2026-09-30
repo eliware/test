@@ -13,9 +13,6 @@ const agents = [
   "## Validation",
   "## Security",
   "## Changes",
-  "eliware/docs",
-  "eliware/test",
-  "eliware/operations",
 ].join("\n");
 
 async function fixture(content) {
@@ -24,7 +21,7 @@ async function fixture(content) {
   return root;
 }
 
-test("passes when AGENTS.md exists and names the authority repositories", async () => {
+test("passes when AGENTS.md exists and contains the required sections", async () => {
   const root = await fixture(agents);
   await expect(run({ root })).resolves.toEqual({ ruleId: "E-0.1.0", status: "pass", message: "" });
   await rm(root, { recursive: true, force: true });
@@ -40,18 +37,8 @@ test("fails when AGENTS.md is missing", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("fails when an authoritative repository is not referenced", async () => {
-  const root = await fixture("eliware/docs\neliware/operations\n");
-  await expect(run({ root })).resolves.toEqual({
-    ruleId: "E-0.1.0",
-    status: "fail",
-    message: "AGENTS.md must reference: eliware/test.",
-  });
-  await rm(root, { recursive: true, force: true });
-});
-
 test("fails when required AGENTS sections are missing", async () => {
-  const root = await fixture("eliware/docs\neliware/test\neliware/operations\n## Validation\n");
+  const root = await fixture("## Validation\n");
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({
       ruleId: "E-0.1.0",

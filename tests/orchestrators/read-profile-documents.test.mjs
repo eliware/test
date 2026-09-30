@@ -8,7 +8,7 @@ test("reads profile JSON in sorted order and excludes maintenance documents", as
   const directory = await mkdtemp(join(tmpdir(), "eliware-profile-documents-"));
   await writeFile(join(directory, "zeta.json"), '{"name":"zeta"}');
   await writeFile(join(directory, "alpha.json"), '{"name":"alpha"}');
-  await writeFile(join(directory, "authority.json"), "{}");
+  await writeFile(join(directory, "directives.json"), "{}");
   await writeFile(join(directory, "notes.md"), "ignored");
   await mkdir(join(directory, "nested"));
 

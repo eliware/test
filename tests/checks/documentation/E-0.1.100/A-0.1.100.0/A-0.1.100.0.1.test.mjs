@@ -6,10 +6,7 @@ import { run } from "../../../../../src/checks/documentation/E-0.1.100/A-0.1.100
 
 test("requires documentation boundaries in AGENTS.md", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-doc-boundary-"));
-  await writeFile(
-    join(root, "AGENTS.md"),
-    "documentation scope authority index link validation repository",
-  );
+  await writeFile(join(root, "AGENTS.md"), "documentation scope index link validation repository");
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.100.0.1",
     status: "pass",
@@ -34,8 +31,7 @@ test("reports missing documentation boundary terms", async () => {
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.100.0.1",
     status: "fail",
-    message:
-      "AGENTS.md is missing documentation boundaries: authority, index, link, validation, repository.",
+    message: "AGENTS.md is missing documentation boundaries: index, link, validation, repository.",
   });
   await rm(root, { recursive: true, force: true });
 });

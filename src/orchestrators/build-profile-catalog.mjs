@@ -1,6 +1,5 @@
 import { basename } from "node:path";
-
-function collectDirectives(directives, profile, source, authority) {
+function collectDirectives(directives, profile, source, catalog) {
   if (!Array.isArray(directives)) {
     throw new Error(`Bundled convention profile ${source} has no directive list.`);
   }
@@ -17,27 +16,26 @@ function collectDirectives(directives, profile, source, authority) {
     ) {
       throw new Error(`Bundled convention profile ${source} has a malformed directive.`);
     }
-    if (authority.directives[directive.id]) {
+    if (catalog.directives[directive.id]) {
       throw new Error(`Duplicate bundled convention directive ID: ${directive.id}.`);
     }
-    authority.directives[directive.id] = profile;
-    authority.rules[directive.id] = {
+    catalog.directives[directive.id] = profile;
+    catalog.rules[directive.id] = {
       id: directive.id,
       dos: directive.dos,
       donts: directive.donts,
       ...(directive.examples === undefined ? {} : { examples: directive.examples }),
     };
     if (directive.directives !== undefined) {
-      collectDirectives(directive.directives, profile, source, authority);
+      collectDirectives(directive.directives, profile, source, catalog);
     }
   }
 }
-
-export function buildProfileAuthority(documents, expectedVersion) {
+export function buildProfileCatalog(documents, expectedVersion) {
   if (!Array.isArray(documents) || documents.length === 0) {
-    throw new Error("Bundled convention profile authority cannot be empty.");
+    throw new Error("Bundled convention profile catalog cannot be empty.");
   }
-  const authority = { version: expectedVersion, profiles: {}, directives: {}, rules: {} };
+  const catalog = { version: expectedVersion, profiles: {}, directives: {}, rules: {} };
   for (const { source, document } of documents) {
     if (typeof source !== "string" || basename(source) !== source || !source.endsWith(".json")) {
       throw new Error(`Bundled convention profile ${source} has an invalid name.`);
@@ -51,11 +49,11 @@ export function buildProfileAuthority(documents, expectedVersion) {
         `Bundled convention profile ${source} must match Convention v${expectedVersion}.`,
       );
     }
-    if (authority.profiles[profile]) {
+    if (catalog.profiles[profile]) {
       throw new Error(`Duplicate bundled convention profile: ${profile}.`);
     }
-    authority.profiles[profile] = { profile };
-    collectDirectives(document.directives, profile, source, authority);
+    catalog.profiles[profile] = { profile };
+    collectDirectives(document.directives, profile, source, catalog);
   }
-  return authority;
+  return catalog;
 }

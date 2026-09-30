@@ -1,18 +1,6 @@
 {
   "version": "8.0",
   "description": "Applies to repositories containing MCP server code.",
-  "authority": {
-    "authoritativeFor": ["MCP server repository requirements."],
-    "notAuthoritativeFor": ["Non-MCP repositories, operations, deployment, or project behavior."]
-  },
-  "crosslinks": [
-    {
-      "path": "../../../docs/authority-map.json",
-      "authoritativeFor": "Cross-repository ownership."
-    },
-    { "path": "./general.json", "authoritativeFor": "Universal repository requirements." },
-    { "path": "./application.json", "authoritativeFor": "Shared application requirements." }
-  ],
   "directives": [
     {
       "id": "E-0.1.80",

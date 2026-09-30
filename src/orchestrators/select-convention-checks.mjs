@@ -1,13 +1,13 @@
 import { discoverChecks } from "./discover-checks.mjs";
-import { readBundledProfileAuthority } from "./read-bundled-profile-authority.mjs";
+import { readBundledProfileCatalog } from "./read-bundled-profile-catalog.mjs";
 import { expandAppliedProfiles } from "./expand-applied-profiles.mjs";
 import { validateAppliedProfiles } from "./validate-applied-profiles.mjs";
 
 export async function selectConventionChecks(conventions, availableChecks = null) {
-  const authority = readBundledProfileAuthority();
-  const failure = validateAppliedProfiles(conventions.apply, authority);
+  const catalog = readBundledProfileCatalog();
+  const failure = validateAppliedProfiles(conventions.apply, catalog);
   if (failure) throw new Error(failure);
-  const profiles = expandAppliedProfiles(conventions.apply, authority);
+  const profiles = expandAppliedProfiles(conventions.apply, catalog);
   if (availableChecks) {
     const allowedGroups = new Set(profiles);
     return availableChecks.filter(({ modulePath }) => allowedGroups.has(modulePath?.split("/")[0]));

@@ -4,12 +4,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.25/A-0.1.25.0.mjs";
 
-test("requires indexed authority and directive specifications", async () => {
+test("requires an indexed directive specification", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-specs-"));
   await mkdir(join(root, "specs"));
-  await writeFile(join(root, "specs", "authority.json"), "{}");
   await writeFile(join(root, "specs", "directives.json"), "{}");
-  await writeFile(join(root, "specs", "README.md"), "authority.json directives.json");
+  await writeFile(join(root, "specs", "README.md"), "directives.json");
   await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
   await rm(root, { recursive: true, force: true });
 });
@@ -17,9 +16,8 @@ test("requires indexed authority and directive specifications", async () => {
 test("rejects an unindexed specification", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-specs-"));
   await mkdir(join(root, "specs"));
-  await writeFile(join(root, "specs", "authority.json"), "{}");
   await writeFile(join(root, "specs", "directives.json"), "{}");
-  await writeFile(join(root, "specs", "README.md"), "authority.json");
+  await writeFile(join(root, "specs", "README.md"), "");
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
   await rm(root, { recursive: true, force: true });
 });
@@ -36,7 +34,6 @@ test("reports all missing specification files and index", async () => {
   const result = await run({ root });
   expect(result.status).toBe("fail");
   expect(result.message).toContain("specs/README.md");
-  expect(result.message).toContain("specs/authority.json");
   expect(result.message).toContain("specs/directives.json");
   await rm(root, { recursive: true, force: true });
 });
