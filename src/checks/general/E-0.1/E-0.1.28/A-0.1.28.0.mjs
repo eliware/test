@@ -1,12 +1,12 @@
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
-import { hasExplicitIgnoreRule } from "./git-ignore-policy.mjs";
+import { hasExplicitIgnoreRule } from "../E-0.1.22/git-ignore-policy.mjs";
 import { isIgnoredByRepositoryRules } from "../check-repository-ignore.mjs";
 import { readRepositoryText } from "../../../read-repository-text.mjs";
-import { readIgnoredTrackedPaths } from "./read-ignored-tracked-paths.mjs";
+import { readIgnoredTrackedPaths } from "../E-0.1.22/read-ignored-tracked-paths.mjs";
 
-export const ruleId = "A-0.1.22.1";
-export const parentRuleId = "E-0.1.22";
+export const ruleId = "A-0.1.28.0";
+export const parentRuleId = "E-0.1.28";
 const requiredPaths = new Map([
   ["dependencies", "node_modules/eliware-test"],
   ["vcs state", ".git/config"],

@@ -15,10 +15,6 @@ on:
     tags: ["${releaseTagFilter}"]
 permissions:
   contents: read
-  packages: write
-  id-token: write
-  attestations: write
-  artifact-metadata: write
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -27,6 +23,12 @@ jobs:
       - run: npm test
   publish:
     needs: validate
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     runs-on: ubuntu-latest
     environment: ghcr-publish
     if: startsWith(github.ref, 'refs/tags/v')

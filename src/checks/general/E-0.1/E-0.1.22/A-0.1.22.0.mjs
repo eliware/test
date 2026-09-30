@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../../../check-result.mjs";
-import { validateDirectiveTree } from "./validate-directive-tree.mjs";
 import { validateUniqueSpecificationDirectiveIds } from "./validate-unique-specification-directive-ids.mjs";
+import { validateSpecificationDirectiveDocuments } from "./validate-specification-directive-documents.mjs";
 
 export const ruleId = "A-0.1.22.0";
 export const parentRuleId = "E-0.1.22";
@@ -21,7 +21,7 @@ export async function run(context) {
   if (!Array.isArray(document.directives) || document.directives.length === 0) {
     return fail(ruleId, "specs/directives.json must contain one or more directives.");
   }
-  const errors = validateDirectiveTree(document.directives);
+  const errors = await validateSpecificationDirectiveDocuments(root, repositoryInventory);
   const uniquenessError = await validateUniqueSpecificationDirectiveIds(root, repositoryInventory);
   if (uniquenessError) errors.push(uniquenessError);
   return errors.length > 0 ? fail(ruleId, errors.join(" ")) : pass(ruleId);

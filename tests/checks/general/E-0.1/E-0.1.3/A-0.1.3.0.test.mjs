@@ -1,7 +1,16 @@
 import { expect, test } from "@jest/globals";
-import * as check from "../../../../../src/checks/general/E-0.1/E-0.1.3/A-0.1.3.0.mjs";
+import {
+  applicability,
+  enforcementMode,
+  parentRuleId,
+  ruleId,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.3/A-0.1.3.0.mjs";
 
-test("returns the reindexed convention rule identity", () => {
-  expect(check.enforcementMode).toBe("non-deterministic");
-  expect(check.run()).toEqual({ ruleId: "A-0.1.3.0", status: "pass", message: "" });
+test("marks human-review guidance as advisory instead of passing it", () => {
+  expect({ ruleId, parentRuleId, enforcementMode, applicability }).toEqual({
+    ruleId: "A-0.1.3.0",
+    parentRuleId: "E-0.1.3",
+    enforcementMode: "non-deterministic",
+    applicability: "advisory-only",
+  });
 });

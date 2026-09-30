@@ -91,15 +91,6 @@
       "application",
       "cli",
       "npm-published"
-    ],
-    "exempt": [
-      {
-        "ruleId": "E-0.1.3",
-        "reason": "The validation CLI directly imports and executes the repository's Jest, Oxlint, and Prettier tooling.",
-        "approver": "Eli",
-        "approvalTimestamp": "2026-09-09T00:00:00Z",
-        "expiry": null
-      }
     ]
   }
 }

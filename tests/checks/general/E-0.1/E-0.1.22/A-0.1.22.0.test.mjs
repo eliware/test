@@ -8,12 +8,22 @@ import { createRepositoryInventory } from "../../../../../src/checks/create-repo
 async function fixture(directives) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
   await mkdir(join(root, "specs"));
-  await writeFile(join(root, "specs", "directives.json"), JSON.stringify({ directives }));
+  await writeFile(
+    join(root, "specs", "directives.json"),
+    JSON.stringify({ version: "9.0", description: "Fixture directives", directives }),
+  );
   return root;
 }
 
 test("accepts a valid E-rooted directive tree", async () => {
-  const root = await fixture([{ id: "E-87.4", directives: [{ id: "A-87.4.1" }] }]);
+  const root = await fixture([
+    {
+      id: "E-87.4",
+      dos: ["Do the required work."],
+      donts: ["Do not omit the work."],
+      directives: [{ id: "A-87.4.1", dos: ["Act."], donts: ["Do not omit the action."] }],
+    },
+  ]);
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.22.0",
     status: "pass",
@@ -22,7 +32,15 @@ test("accepts a valid E-rooted directive tree", async () => {
   await rm(root, { recursive: true, force: true });
 });
 test("rejects invalid hierarchy", async () => {
-  const root = await fixture([{ id: "A-0.0" }, { id: "E-0.0", directives: [{ id: "E-0.0.1" }] }]);
+  const root = await fixture([
+    { id: "A-0.0", dos: ["Act."], donts: ["Do not omit action."] },
+    {
+      id: "E-0.0",
+      dos: ["Do the work."],
+      donts: ["Do not omit the work."],
+      directives: [{ id: "E-0.0.1", dos: ["Act."], donts: ["Do not omit action."] }],
+    },
+  ]);
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({
       status: "fail",
@@ -33,11 +51,15 @@ test("rejects invalid hierarchy", async () => {
 });
 
 test("rejects duplicate IDs anywhere in specs", async () => {
-  const root = await fixture([{ id: "E-0.0" }]);
+  const root = await fixture([{ id: "E-0.0", dos: ["Do."], donts: ["Do not."] }]);
   await mkdir(join(root, "specs", "conventions"));
   await writeFile(
     join(root, "specs", "conventions", "general.json"),
-    JSON.stringify({ directives: [{ id: "E-0.0" }] }),
+    JSON.stringify({
+      version: "9.0",
+      description: "Fixture convention",
+      directives: [{ id: "E-0.0", dos: ["Do."], donts: ["Do not."] }],
+    }),
   );
   await expect(run({ root })).resolves.toMatchObject({
     status: "fail",
@@ -73,7 +95,14 @@ test("rejects missing, invalid, and empty directive documents", async () => {
 });
 
 test("reads directive JSON through the shared parsed cache", async () => {
-  const root = await fixture([{ id: "E-0.0", directives: [{ id: "A-0.0.1" }] }]);
+  const root = await fixture([
+    {
+      id: "E-0.0",
+      dos: ["Do."],
+      donts: ["Do not."],
+      directives: [{ id: "A-0.0.1", dos: ["Act."], donts: ["Do not."] }],
+    },
+  ]);
   const reads = new Map();
   const repositoryInventory = createRepositoryInventory(root, {
     read: async (path, encoding) => {

@@ -4,7 +4,7 @@
   "directiveSchema": {
     "requiredDocumentFields": ["version", "description", "directives"],
     "requiredDirectiveFields": ["id", "dos", "donts"],
-    "optionalDirectiveFields": ["directives"],
+    "optionalDirectiveFields": ["directives", "examples"],
     "idPrefixes": {
       "E": "Explicitly specified by Eli; immutable without Eli's consent.",
       "A": "AI-generated or AI-inferred guidance; revisable to align with E directives."
@@ -18,10 +18,12 @@
       "ancestors": "Every A directive must have an E ancestor. E directives may only have E ancestors. A directives may have E or A parents."
     },
     "arrays": {
-      "dos": "Non-empty array of concise required actions.",
-      "donts": "Non-empty array of concise prohibitions.",
-      "directives": "Optional non-empty array of child directives."
-    }
-  },
-  "directives": []
+      "dos": "Non-empty array of non-blank concise required actions.",
+      "donts": "Non-empty array of non-blank concise prohibitions.",
+      "directives": "When present, a non-empty array of child directives.",
+      "examples": "When present, an array of example records with non-blank purpose and markdown strings."
+    },
+    "documentAdditionalFields": [],
+    "recordAdditionalFields": []
+  }
 }

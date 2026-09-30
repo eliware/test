@@ -28,6 +28,17 @@ test("keeps deterministic children executable beneath an advisory-only parent", 
   expect(filterConventionChecksForExecution([parent, child], {}, new Set())).toEqual([child]);
 });
 
+test("omits non-deterministic advisory checks instead of recording a pass", () => {
+  const advisory = check("A-0.1.3.0", {
+    enforcementMode: "non-deterministic",
+    applicability: "advisory-only",
+  });
+  const executable = check("E-0.1.14", { enforcementMode: "deterministic" });
+  expect(filterConventionChecksForExecution([advisory, executable], {}, new Set())).toEqual([
+    executable,
+  ]);
+});
+
 test("selects the requested rule and does not omit nondeterministic checks", () => {
   const selected = check("E-0.1.20.17", { enforcementMode: "non-deterministic" });
   const checks = [check("E-0.1.4"), selected, check("E-0.1.20.19")];

@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
-import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.22/A-0.1.22.1.mjs";
+import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.28/A-0.1.28.0.mjs";
 import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
 const ignoreRules =
@@ -11,7 +11,7 @@ const readNoIgnoredPaths = async () => [];
 
 test("checks the current repository Git index by default", async () => {
   await expect(run({ root: process.cwd() })).resolves.toEqual({
-    ruleId: "A-0.1.22.1",
+    ruleId: "A-0.1.28.0",
     status: "pass",
     message: "",
   });
@@ -22,7 +22,7 @@ test("checks required ignored paths from the on-disk .gitignore rules", async ()
   try {
     await writeFile(join(root, ".gitignore"), ignoreRules);
     await expect(run({ root, readIgnoredPaths: readNoIgnoredPaths })).resolves.toEqual({
-      ruleId: "A-0.1.22.1",
+      ruleId: "A-0.1.28.0",
       status: "pass",
       message: "",
     });
@@ -116,7 +116,7 @@ test("fails when .gitignore is absent", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-gitignore-"));
   try {
     await expect(run({ root, readIgnoredPaths: readNoIgnoredPaths })).resolves.toEqual({
-      ruleId: "A-0.1.22.1",
+      ruleId: "A-0.1.28.0",
       status: "fail",
       message: ".gitignore is required.",
     });
@@ -143,7 +143,7 @@ test("fails when the Git index cannot be inspected", async () => {
   try {
     await writeFile(join(root, ".gitignore"), ignoreRules);
     await expect(run({ root, readIgnoredPaths: async () => null })).resolves.toEqual({
-      ruleId: "A-0.1.22.1",
+      ruleId: "A-0.1.28.0",
       status: "fail",
       message: "Git index inspection was unavailable; cannot verify ignored tracked files.",
     });

@@ -6,7 +6,7 @@
       "id": "E-0.1.80",
       "dos": [
         "These conventions apply to repositories containing MCP server application code.",
-        "MCP server application repositories must also apply application.json."
+        "MCP server application repositories must explicitly list both application.json and this profile in package.json.eliware.apply."
       ],
       "donts": [
         "MCP server application repositories must not omit application.json or applicable MCP requirements."

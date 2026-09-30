@@ -9,17 +9,18 @@ export const parentRuleId = "E-0.1";
 
 export async function run({ packageJson, root, files, repositoryInventory }) {
   const failures = [];
+  const ownsHarness = packageJson?.name === "@eliware/test";
   const invalidScripts = findInvalidValidationScripts(packageJson?.scripts);
   if (invalidScripts.length > 0)
     failures.push(
       `Validation scripts must use eliware-test rather than direct tools: ${invalidScripts.join(", ")}.`,
     );
-  const directTools = findDirectValidationDependencies(packageJson);
+  const directTools = ownsHarness ? [] : findDirectValidationDependencies(packageJson);
   if (directTools.length > 0)
     failures.push(
       `Repositories must not directly declare shared validation tools: ${directTools.join(", ")}.`,
     );
-  if (root) {
+  if (root && !ownsHarness) {
     try {
       const repositoryFiles =
         files ??

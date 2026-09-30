@@ -55,7 +55,7 @@
         {
           "id": "E-0.1.160.4",
           "dos": [
-            "The GHCR publication job must use the repository-scoped GITHUB_TOKEN and grant exactly contents: read, packages: write, id-token: write, attestations: write, and artifact-metadata: write for image publication and its mandatory signed attestation."
+            "A GHCR-only publication job must grant exactly contents: read, packages: write, id-token: write, attestations: write, and artifact-metadata: write. When npm-published is also applied, the publication job must grant the exact union of the permissions required by both profiles. The workflow-level permission map must be exactly contents: read; publication permissions belong only on the publication job."
           ],
           "donts": [
             "Do not commit, print, persist, or expose registry credentials, and do not grant broader workflow permissions than the publication requires."

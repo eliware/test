@@ -54,3 +54,13 @@ test("creates a stable cache key from applied profile declarations", () => {
     'readme:sections:["cli","application"]',
   );
 });
+
+test("publication and private profiles add no README headings", () => {
+  expect(
+    expectedReadmeHeadings({ eliware: { apply: ["private", "ghcr-published", "npm-published"] } }),
+  ).toEqual([
+    "Table of Contents",
+    ...requiredReadmeSections.slice(0, 8),
+    ...requiredReadmeSections.slice(8),
+  ]);
+});

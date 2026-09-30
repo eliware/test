@@ -11,9 +11,11 @@ test("requires least-privilege publication permissions", async () => {
     join(root, ".github", "workflows", "publish.yml"),
     `permissions:
   contents: read
-  id-token: write
 jobs:
   publish:
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - run: npm publish
 `,
@@ -24,12 +26,50 @@ jobs:
   expect((await run({ root, packageJson: { name: "@eliware/example" } })).status).toBe("fail");
 });
 
+test("accepts the exact permission union when both publication profiles apply", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-combined-publish-"));
+  await mkdir(join(root, ".github", "workflows"), { recursive: true });
+  await writeFile(
+    join(root, ".github", "workflows", "publish.yml"),
+    `permissions:
+  contents: read
+jobs:
+  validate:
+    permissions:
+      contents: read
+    steps:
+      - run: npm ci
+      - run: npm test
+  publish:
+    needs: validate
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - run: npm publish
+      - run: docker push ghcr.io/eliware/example:v1.2.3
+`,
+  );
+  await expect(
+    run({
+      root,
+      packageJson: {
+        name: "@eliware/example",
+        eliware: { apply: ["npm-published", "ghcr-published"] },
+      },
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+});
+
 test("accepts publication options with values", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-options-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
     join(root, ".github", "workflows", "publish.yml"),
-    `permissions:\n  contents: read\n  id-token: write\njobs:\n  publish:\n    steps:\n      - run: npm publish --access public --provenance\n`,
+    `permissions:\n  contents: read\njobs:\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - run: npm publish --access public --provenance\n`,
   );
   await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(
     expect.objectContaining({ status: "pass" }),
@@ -46,7 +86,7 @@ test("rejects shell syntax appended to a valid npm publish command", async () =>
   ]) {
     await writeFile(
       join(root, ".github", "workflows", "publish.yml"),
-      `permissions:\n  contents: read\n  id-token: write\njobs:\n  publish:\n    steps:\n      - run: ${command}\n`,
+      `permissions:\n  contents: read\njobs:\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - run: ${command}\n`,
     );
     await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(
       expect.objectContaining({ status: "fail" }),
@@ -76,9 +116,11 @@ jobs:
     join(root, ".github", "workflows", "publish.yml"),
     `permissions:
   contents: read
-  id-token: write
 jobs:
   publish:
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - run: npm info other-package
       - run: npm publish
@@ -120,7 +162,7 @@ test("rejects an unparseable publication-looking companion workflow", async () =
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
     join(root, ".github", "workflows", "publish.yml"),
-    `permissions:\n  contents: read\n  id-token: write\njobs:\n  publish:\n    steps:\n      - run: npm publish\n`,
+    `permissions:\n  contents: read\njobs:\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - run: npm publish\n`,
   );
   await writeFile(join(root, ".github", "workflows", "legacy.yml"), "npm publish\n");
   await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toEqual(

@@ -5,6 +5,10 @@ const catalog = {
   profiles: {
     general: {},
     application: {},
+    cli: {},
+    discord: {},
+    "mcp-server": {},
+    web: {},
     documentation: {},
     workspace: {},
     infrastructure: {},
@@ -12,9 +16,9 @@ const catalog = {
   },
 };
 
-test("accepts known profiles independently without inferred inheritance", () => {
+test("accepts explicitly applied profiles and requires general", () => {
   expect(validateAppliedProfiles(["general", "application"], catalog)).toBeNull();
-  expect(validateAppliedProfiles(["application"], catalog)).toBeNull();
+  expect(validateAppliedProfiles(["application"], catalog)).toContain("explicitly apply general");
 });
 
 test("rejects unknown profiles", () => {
@@ -26,8 +30,16 @@ test("rejects unknown profiles", () => {
 test.each(["documentation", "workspace", "infrastructure"])(
   "%s requires the private profile",
   (profile) => {
-    expect(validateAppliedProfiles([profile], catalog)).toContain("require private");
-    expect(validateAppliedProfiles([profile, "private"], catalog)).toBeNull();
+    expect(validateAppliedProfiles(["general", profile], catalog)).toContain("private");
+    expect(validateAppliedProfiles(["general", profile, "private"], catalog)).toBeNull();
+  },
+);
+
+test.each(["cli", "discord", "mcp-server", "web"])(
+  "%s requires an explicitly applied application profile",
+  (profile) => {
+    expect(validateAppliedProfiles(["general", profile], catalog)).toContain("application");
+    expect(validateAppliedProfiles(["general", profile, "application"], catalog)).toBeNull();
   },
 );
 

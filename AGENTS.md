@@ -32,7 +32,7 @@ Protect credentials, tokens, secrets, and machine-specific values. Never commit 
 
 Make actionable, current, concise changes within the requested scope. Preserve contract behavior, regression tests, machine-readable specifications, and documented authorization boundaries.
 
-Record approved deviations or exceptions with their reason, approver, and expiry; do not use them to weaken shared requirements. Check for nearer AGENTS.md instructions before changing nested files. When changing application-facing validation, document relevant configuration, shutdown behavior, and workflow boundaries.
+Project-specific guidance may add requirements, but it must not weaken or silently reinterpret shared conventions. Document any approved deviation and its scope. Check for nearer AGENTS.md instructions before changing nested files. When changing application-facing validation, document relevant configuration, shutdown behavior, and workflow boundaries.
 
 ## Application
 

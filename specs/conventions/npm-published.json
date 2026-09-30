@@ -60,7 +60,7 @@
         {
           "id": "A-0.1.140.4",
           "dos": [
-            "An npm publication job must grant only the contents: read and id-token: write permissions needed for checkout and npm provenance, and the Operations release handoff must verify that the exact package version is available from the public registry before reporting publication complete.",
+            "An npm-only publication job must grant exactly contents: read and id-token: write. A combined npm/GHCR publication job must grant exactly the union of the permissions required by both profiles. The workflow-level permission map must be exactly contents: read; publication permissions belong only on the publication job.",
             "GitHub Actions npm Trusted Publishing must run on a GitHub-hosted runner with Node.js 26 and npm 11.5.1 or later, use actions/setup-node@v7, and publish with npm publish --provenance.",
             "Configure the npm Trusted Publisher with the exact GitHub owner, repository, and workflow filename publish.yml, and allow direct npm publish for workflows that use that command.",
             "Grant id-token: write only to the publication job. Do not pass NPM_TOKEN or NODE_AUTH_TOKEN or configure token-based npm publishing credentials in the workflow."
@@ -68,12 +68,18 @@
           "donts": [
             "Do not place npm publication tokens in validation-only jobs or report successful publication before exact-version registry verification.",
             "Do not grant OIDC permissions to validation jobs, use a workflow identity that differs from the npm Trusted Publisher configuration, or use npm CLI below 11.5.1 for a trusted publish."
+          ],
+          "examples": [
+            {
+              "purpose": "Exact permissions for a combined npm and GHCR publication job",
+              "markdown": "permissions:\n  contents: read\njobs:\n  validate:\n    permissions:\n      contents: read\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n      packages: write\n      attestations: write\n      artifact-metadata: write\n\nThe publication job may use the union only when both publication profiles apply. The validation job receives no publication permissions."
+            }
           ]
         },
         {
           "id": "A-0.1.140.5",
           "dos": [
-            "A GitHub npm publication workflow must use npm Trusted Publishing without static npm credentials, grant id-token: write only to its publication job, use the documented setup-node v7 runtime configuration, and publish with provenance."
+            "A GitHub npm publication workflow must use npm Trusted Publishing without static npm credentials, grant id-token: write only to its publication job, use the documented setup-node v7 runtime configuration, and publish with provenance. The workflow-level permission map must be exactly contents: read; grant OIDC only through the publication job's profile-required exact permission map."
           ],
           "donts": [
             "Do not inherit id-token: write from workflow-level permissions, grant it to a validation job, pass NPM_TOKEN or NODE_AUTH_TOKEN, or publish without the provenance option."

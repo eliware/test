@@ -1,10 +1,10 @@
 import { expect, test } from "@jest/globals";
 import { selectConventionChecks } from "../../src/orchestrators/select-convention-checks.mjs";
 
-test("selects checks only from the explicitly applied profile", async () => {
-  const checks = await selectConventionChecks({ apply: ["application"] });
+test("selects checks only from explicitly applied profiles", async () => {
+  const checks = await selectConventionChecks({ apply: ["general", "application"] });
   expect(checks.length).toBeGreaterThan(0);
-  expect(checks.some(({ ruleId }) => ruleId === "E-0.1")).toBe(false);
+  expect(checks.some(({ ruleId }) => ruleId === "E-0.1")).toBe(true);
   expect(checks.some(({ ruleId }) => ruleId.startsWith("E-0.1.130"))).toBe(true);
 });
 
@@ -27,12 +27,16 @@ test("rejects unknown convention profiles", async () => {
 
 test("filters supplied checks to the selected profile", async () => {
   const applicationCheck = { ruleId: "E-0.1.130", modulePath: "application/E-0.1.130.mjs" };
-  const checks = await selectConventionChecks({ apply: ["application"] }, [
+  const checks = await selectConventionChecks({ apply: ["general", "application"] }, [
     applicationCheck,
     { ruleId: "E-0.1", modulePath: "general/E-0.1.mjs" },
-    { ruleId: "E-0.1.1" },
+    { ruleId: "E-0.1.1", modulePath: "general/E-0.1.1.mjs" },
   ]);
-  expect(checks).toEqual([applicationCheck]);
+  expect(checks).toEqual([
+    applicationCheck,
+    { ruleId: "E-0.1", modulePath: "general/E-0.1.mjs" },
+    { ruleId: "E-0.1.1", modulePath: "general/E-0.1.1.mjs" },
+  ]);
 });
 
 test("private selection includes private rules and excludes npm publication rules", async () => {

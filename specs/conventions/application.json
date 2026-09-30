@@ -27,8 +27,8 @@
                 {
                   "id": "A-0.1.130.0.1.0",
                   "dos": [
-                    "When environment configuration is supported, .env.example must list every supported variable. Keep required variables active and comment out optional variables with their defaults and available options. Configure MAIL_OWNER_ADDRESS only through an untracked, gitignored .env file and omit it from templates.",
-                    "Human review must confirm the completeness, required/optional classification, defaults, and available options because source usage alone cannot determine those semantics in every application."
+                    "When environment configuration is supported, .env.example must exist and list every supported variable. Keep required variables active and comment out optional variables with their defaults and available options. Configure MAIL_OWNER_ADDRESS only through an untracked, gitignored .env file and omit it from templates.",
+                    "Human review must confirm completeness, required/optional classification, defaults, and available options. Deterministic validation may reject prohibited entries such as MAIL_OWNER_ADDRESS but cannot prove that the template is complete or semantically correct."
                   ],
                   "donts": [
                     "Do not omit supported environment variables, leave optional variables active, or include MAIL_OWNER_ADDRESS in .env.example."
@@ -134,7 +134,7 @@
         {
           "id": "E-0.1.130.10",
           "dos": [
-            "Enforce a maximum of 100 lines for each non-generated, non-dependency application source file and 200 lines for each non-generated, non-dependency test file. Exceeding either maximum is a blocking convention failure and requires decomposition into focused modules with mirrored tests.",
+            "Enforce a maximum of 100 physical lines for each in-scope application source file and 200 physical lines for each in-scope test file. Count blank and comment lines; count an unterminated final line as one line and an empty file as zero. Exclude files under .git/, build/, coverage/, dist/, generated/, node_modules/, test-fixtures/, fixtures/, __fixtures__, or __snapshots__, and exclude filenames ending in .d.mts or .snap.mjs or containing .generated. Apply this same counting and exclusion contract to source and test files. Exceeding either maximum is a blocking convention failure and requires decomposition into focused modules with mirrored tests.",
             "Apply the single-responsibility requirement independently at every file size: being within the line maximum does not prove cohesion or permit distinct responsibilities to share a module, and a mixed-responsibility module must be split even when it is below the maximum."
           ],
           "donts": [
@@ -144,9 +144,17 @@
         {
           "id": "E-0.1.130.11",
           "dos": [
-            "Applications must use Eliware common stack modules for redaction, logging, paths, errors, and signals where applicable."
+            "When production code implements one of the concerns in the approved common-stack mapping below, use its named Eliware package. Applicability is a human-review decision; deterministic validation must not report this requirement as passed."
           ],
-          "donts": ["Do not duplicate common stack modules without Eli's authorization."]
+          "donts": [
+            "Do not duplicate an approved common-stack module when the corresponding concern exists in production code."
+          ],
+          "examples": [
+            {
+              "purpose": "Approved common-stack package mapping",
+              "markdown": "| Concern in production code | Package |\n| --- | --- |\n| Redaction of sensitive values or serialization | @eliware/redact |\n| Application logging | @eliware/log |\n| Filesystem and import-meta path utilities | @eliware/path |\n| Process exception and rejection handling | @eliware/errors |\n| Operating-system signal handling and graceful shutdown | @eliware/signals |\n\nUse a mapped package only when production code implements that concern. Human review decides whether the concern exists."
+            }
+          ]
         },
         {
           "id": "E-0.1.130.12",

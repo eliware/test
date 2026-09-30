@@ -123,3 +123,13 @@ test("does not inspect repository files when no root is supplied", async () => {
   expect(findRepositoryFiles).not.toHaveBeenCalled();
   expect(findDirectToolUses).not.toHaveBeenCalled();
 });
+
+test("allows the shared harness to declare and import the tools it implements", async () => {
+  await expect(
+    run({ root: "/repo", packageJson: { name: "@eliware/test", scripts: {} } }),
+  ).resolves.toMatchObject({ status: "pass" });
+  expect(findInvalidValidationScripts).toHaveBeenCalledWith({});
+  expect(findDirectValidationDependencies).not.toHaveBeenCalled();
+  expect(findRepositoryFiles).not.toHaveBeenCalled();
+  expect(findDirectToolUses).not.toHaveBeenCalled();
+});

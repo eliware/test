@@ -6,7 +6,7 @@
       "id": "E-0.1.70",
       "dos": [
         "These conventions apply to repositories containing Discord application code.",
-        "Discord application repositories must also apply application.json."
+        "Discord application repositories must explicitly list both application.json and this profile in package.json.eliware.apply."
       ],
       "donts": [
         "Discord application repositories must not omit application.json or applicable Discord requirements."

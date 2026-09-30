@@ -23,7 +23,7 @@ export async function run({
     if (findings.length > 0) {
       return fail(
         ruleId,
-        `Infrastructure-internal identifiers found in public repository files: ${findings.join(", ")}.`,
+        `Enumerated infrastructure-identifier patterns found in public repository files: ${findings.join(", ")}. This scan does not establish that sensitive content is absent.`,
       );
     }
   } catch (error) {

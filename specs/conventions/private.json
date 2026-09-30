@@ -26,10 +26,10 @@
         {
           "id": "A-0.1.150.1",
           "dos": [
-            "Private-repository CI must contain validation only; any authorized GHCR publication must be isolated to exact v#.#.# tags and separately approved."
+            "The .github/workflows/ci.yml workflow in a private repository must contain validation only. When ghcr-published is also applied, its separately authorized publication workflow may publish only on exact v#.#.# tags."
           ],
           "donts": [
-            "Do not include npm publication jobs, npm publication tokens, or branch and pull-request publication jobs in private-repository CI."
+            "Do not include publication or deployment commands, npm publication jobs, or publication credentials in .github/workflows/ci.yml. Do not publish from branches or pull requests."
           ]
         }
       ]

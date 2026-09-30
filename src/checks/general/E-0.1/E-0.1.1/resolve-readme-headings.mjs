@@ -36,6 +36,9 @@ const profileSections = {
   ],
   workspace: ["Runbooks", "Communication", "Recovery"],
   documentation: ["Scope", "Navigation", "Contribution", "Documentation validation"],
+  "npm-published": [],
+  "ghcr-published": [],
+  private: [],
 };
 const profileOrder = [
   "application",
@@ -47,6 +50,9 @@ const profileOrder = [
   "infrastructure",
   "workspace",
   "documentation",
+  "npm-published",
+  "ghcr-published",
+  "private",
 ];
 
 export function expectedReadmeHeadings(packageJson = {}) {

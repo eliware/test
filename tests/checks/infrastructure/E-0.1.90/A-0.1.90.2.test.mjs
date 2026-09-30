@@ -1,16 +1,16 @@
 import { expect, test } from "@jest/globals";
 import {
+  applicability,
   enforcementMode,
   parentRuleId,
   ruleId,
-  run,
 } from "../../../../src/checks/infrastructure/E-0.1.90/A-0.1.90.2.mjs";
 
-test("exports the expected identity for its non-deterministic rule", () => {
-  expect({ ruleId, parentRuleId, enforcementMode }).toEqual({
+test("marks human-review guidance as advisory instead of passing it", () => {
+  expect({ ruleId, parentRuleId, enforcementMode, applicability }).toEqual({
     ruleId: "A-0.1.90.2",
     parentRuleId: "E-0.1.90",
     enforcementMode: "non-deterministic",
+    applicability: "advisory-only",
   });
-  expect(run().ruleId).toBe(ruleId);
 });

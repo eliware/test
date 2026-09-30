@@ -6,7 +6,7 @@ validation harness.
 ## Files
 
 - [directives.json](directives.json) — harness directives.
-- [directives-schema.json](directives-schema.json) — version 9.0.0 directive record schema.
+- [directives-schema.json](directives-schema.json) — version 9.0.0 directive document and record schema.
 - [documentation-standard.json](documentation-standard.json) — structured documentation directive schema.
 - [conventions/README.md](conventions/README.md) — canonical local repository-profile specifications.
 - [conventions/general.json](conventions/general.json) — universal repository requirements.

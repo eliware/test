@@ -4,6 +4,10 @@ import { permissions } from "../../ghcr-published/workflow-permissions.mjs";
 import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
 import { stepText, steps } from "../../ghcr-published/workflow-structure.mjs";
 import { isApprovedNpmPublishCommand } from "./is-approved-npm-publish-command.mjs";
+import {
+  hasExactPublicationPermissions,
+  hasReadOnlyWorkflowPermissions,
+} from "../../ghcr-published/expected-publication-permissions.mjs";
 
 export const ruleId = "A-0.1.140.4";
 export const parentRuleId = "E-0.1.140";
@@ -23,21 +27,27 @@ export async function run(context) {
       return fail(ruleId, "npm-published repositories must define a publication workflow.");
     const failures = [];
     for (const workflow of workflows) {
+      if (!hasReadOnlyWorkflowPermissions(workflow.document?.permissions)) {
+        failures.push(
+          `Publication workflow must limit workflow-level permissions to contents: read: ${workflow.name}.`,
+        );
+      }
       const publication = npmPublicationJobs(workflow);
       if (publication.length === 0 && /\bnpm\s+publish\b/i.test(workflow.content)) {
         failures.push(`Publication workflow could not be parsed: ${workflow.name}.`);
       }
       for (const { job } of publication) {
         const granted = permissions(workflow, job);
-        const allowed = new Set(["contents", "id-token"]);
+        const expectedProfiles = [
+          "npm-published",
+          ...(packageJson?.eliware?.apply ?? []).filter((profile) => profile === "ghcr-published"),
+        ];
         const packageName = typeof packageJson?.name === "string" ? packageJson.name : "";
         const publishAt = publicationIndex(job);
         if (
           !packageName ||
           publishAt < 0 ||
-          granted.contents !== "read" ||
-          granted["id-token"] !== "write" ||
-          Object.keys(granted).some((key) => !allowed.has(key)) ||
+          !hasExactPublicationPermissions(granted, expectedProfiles) ||
           /NPM_TOKEN|NODE_AUTH_TOKEN/i.test(JSON.stringify(job))
         ) {
           failures.push(

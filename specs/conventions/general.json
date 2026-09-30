@@ -74,10 +74,10 @@
             },
             {
               "id": "A-0.1.0.7",
-              "dos": ["AGENTS.md must document intentional deviations from shared conventions."],
-              "donts": [
-                "Do not conceal an approved deviation or present an exception as if it were standard compliance."
-              ]
+              "dos": [
+                "AGENTS.md may document project-specific instructions and implementation choices that comply with applicable conventions. It does not waive any convention ID or validation stage."
+              ],
+              "donts": ["Do not use AGENTS.md to waive a convention ID or validation stage."]
             },
             {
               "id": "A-0.1.0.8",
@@ -149,26 +149,20 @@
               "dos": [
                 "Every maintained repository README must use this exact base order: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; Features; Requirements; Setup; Usage; Development; Testing; Troubleshooting; Security; then any sections added by applicable profiles; then Support; License; and Links. Support, License, and Links are always the final three top-level sections, in that order. The CI badge must use and link to the canonical .github/workflows/ci.yml workflow.",
                 "The README must use the standard Eliware logo and Discord-branded support block and link the repository LICENSE from License.",
-                "Build the README section list from the general baseline and every profile explicitly listed in package.json.eliware.apply. Append profile-required sections after Security and before Support, using this canonical profile order regardless of package.json array order: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published. Omit profiles that do not apply; within each applied profile, preserve the order stated by that profile. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. Do not merge sections with different headings merely because their topics overlap.",
+                "Build the README section list from the general baseline and every profile explicitly listed in package.json.eliware.apply. Append profile-required sections after Security and before Support, using the profile-to-heading table in this rule's examples regardless of package.json array order. Omit profiles that do not apply; within each applied profile, preserve the order stated by that profile. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. Profiles mapped to no headings add no sections. Do not merge sections with different headings merely because their topics overlap.",
                 "The badge-bearing package or project title is the README title: place it immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in an canonical repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
+                "Deterministic README and AGENTS.md checks verify structure, links, and required literal markers; a passing result does not prove that prose is accurate or complete. Human review must confirm that descriptions satisfy their stated requirements.",
                 "The README must identify the project truthfully and link applicable documentation, specifications, and RELEASE_NOTES.md when present. Every repository must link specs/README.md. Do not add prose saying unrelated profiles do not apply.",
                 "When package.json declares description, author, and license values, include each exact value verbatim in README.md. When package.json declares a repository URL, link that exact URL from Links.",
                 "Configuration content must distinguish runtime configuration (supported settings, environment variables, config files, and defaults) from repository/package metadata, CLI arguments, and deployment configuration. State explicitly when a category has no runtime settings; do not describe package.json.eliware.apply as runtime configuration.",
+                "User-facing documentation describes product behavior and safe use. Application and library documentation may explain local startup and shutdown, but must not replace canonical production procedures. Canonical company-wide operating procedures, release authorization, live-state evidence, and company-wide runbooks belong in Operations or the named owner workspace. Link to the canonical record instead of duplicating its normative procedure text.",
                 "When documenting validation or release state, distinguish checks and contracts present in the current repository from versions already published or released. Do not imply an unpublished version is available to users.",
                 "The npm badge and npm package link are required only for public npm packages; private and non-published repositories must not present npm publication identity."
               ],
               "examples": [
                 {
-                  "purpose": "Standard README header and badges",
-                  "markdown": "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)\n\n## @eliware/<package> [![npm version](https://img.shields.io/npm/v/@eliware/<package>.svg)](https://www.npmjs.com/package/@eliware/<package>) [![license](https://img.shields.io/github/license/eliware/<repo>.svg)](LICENSE) [![CI](https://github.com/eliware/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/<repo>/actions/workflows/ci.yml)"
-                },
-                {
-                  "purpose": "Standard documentation navigation",
-                  "markdown": "Documentation: [specifications](specs/README.md)"
-                },
-                {
-                  "purpose": "Required README order for a repository applying application and cli profiles",
-                  "markdown": "## @eliware/<package> [badges]\n\n## Table of Contents\n\n<!-- The package title above is intentionally excluded from the TOC. -->\n\n## Features\n\n## Requirements\n\n## Setup\n\n## Usage\n\n## Development\n\n## Testing\n\n## Troubleshooting\n\n## Security\n\n<!-- Profile sections follow the canonical applied-profile order, not package.json array order. -->\n## Configuration\n\n## Operations\n\n## Commands\n\n## Exit codes\n\n## Support\n\n## License\n\n## Links"
+                  "purpose": "Canonical README profile-to-heading mapping",
+                  "markdown": "| Profile | Added level-two headings, in order |\n| --- | --- |\n| application | Configuration, Operations |\n| cli | Commands, Exit codes |\n| discord | Commands, Events, Intents and permissions, Operations |\n| mcp-server | Tools, Resources, Prompts, Transport, Authentication, Schemas, Operations |\n| web | Configuration, Routes, Assets, Development server, Build, Deployment |\n| library | API, Packaging, Examples |\n| infrastructure | Managed targets, Configuration, Desired state, Validation, Change boundaries |\n| workspace | Runbooks, Communication, Recovery |\n| documentation | Scope, Navigation, Contribution, Documentation validation |\n| npm-published | none |\n| ghcr-published | none |\n| private | none |\n\nThe table applies only to README headings. Every profile still contributes its other requirements."
                 }
               ],
               "donts": [
@@ -188,7 +182,7 @@
           "donts": [
             "Repositories must not replace eliware-test with separate project-specific Oxlint or Prettier validation without Eli's authorization.",
             "Repositories must not invoke Oxlint directly from package scripts, CI, Knit, or other repository validation workflows.",
-            "Repositories must not directly import Oxlint or Prettier modules, or directly declare Oxlint, Prettier, or their runner packages; Jest-specific restrictions are defined by the applicable code profiles."
+            "Consumer repositories must not directly import Oxlint or Prettier modules, directly declare those packages, or directly invoke them from validation scripts. The repository implementing eliware-test may import and declare tools it executes to implement eliware-test; it must still expose the shared validation scripts and use them in consumer-facing workflows. Jest-specific restrictions are defined by the applicable code profiles."
           ],
           "directives": [
             {
@@ -199,6 +193,12 @@
               "donts": [
                 "Do not create repository requirements in a validator, workflow, or local script that are absent from the applicable convention profiles."
               ]
+            }
+          ],
+          "examples": [
+            {
+              "purpose": "Aggregate validation stage ownership",
+              "markdown": "| Applied profile | Additional npm test stage |\n| --- | --- |\n| general | lint, format-check, audit |\n| application | Jest and coverage |\n| library | Jest, coverage, and typecheck |\n| web | build |\n| npm-published | package validation |\n\nCI runs npm ci followed by npm test. Each profile owns its additional stage; CI does not duplicate stages."
             }
           ]
         },
@@ -212,7 +212,8 @@
             {
               "id": "E-0.1.4.0",
               "dos": [
-                "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for supported JavaScript and TypeScript files; when none exist, the lint stage passes without invoking Oxlint. Validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure.",
+                "For shared syntax and formatting checks, a maintained file is any file discovered in the repository working tree except files under .git/, node_modules/, coverage/, dist/, build/, or test-results/. This includes tracked, untracked, and Git-ignored files under other paths. Check-specific scoped inventories do not change this shared file set.",
+                "Every maintained .mjs, .json, .yml, .yaml, and .md file must parse successfully and pass the applicable file-type and repository-contract checks. Use Oxlint for supported JavaScript and TypeScript files; when none exist, the lint stage passes without invoking Oxlint. Validate JSON and YAML syntax and applicable schemas/contracts; validate Markdown syntax, links, and required documentation structure. The lint success result refers specifically to Oxlint.",
                 "YAML files may contain multiple documents separated by `---`; validate the syntax of every document in the stream without rejecting a valid stream solely because it contains multiple documents."
               ],
               "donts": ["Do not exclude a maintained file of these types from syntax validation."]
@@ -253,11 +254,17 @@
           "id": "E-0.1.7",
           "dos": [
             "Apply this requirement only when package.json.private is not true; package.json.private: true repositories are private and outside its applicability.",
-            "Public repositories must keep Eliware infrastructure internals private."
+            "Public repositories must keep Eliware infrastructure internals private. This deterministic check rejects only the identifier patterns shown in this rule's example; a passing result does not establish that internal information or plaintext secrets are absent. The content review required by E-0.1.6 remains applicable."
           ],
           "donts": [
             "Do not apply this public-repository restriction to repositories whose package.json sets private to true.",
             "Public repositories must not expose internal Eliware hostnames, usernames, filesystem paths, or other infrastructure details."
+          ],
+          "examples": [
+            {
+              "purpose": "Exact content patterns checked by the public infrastructure-identifier scan",
+              "markdown": "Reject a file when its content contains any of these case-insensitive patterns:\n\n- `eliware[-]internal` as a delimited identifier.\n- A hostname ending in `(?:internal|private)[.]eliware[.]org`.\n- A drive-letter path beginning with `(?:Users|Home|srv|var[\\/]lib)`.\n- A Unix path beginning with `/(?:home|users|srv|var/lib)/`.\n- A path beginning with `(?:C|D):[\\\\/]+(?:eliware|Users[\\\\/]\\w+[\\\\/]src)`.\n- A `file://` URL whose first path component is `internal`, `private`, or a hostname ending in the pattern shown above.\n\nThese expressions describe the scanner's patterns without embedding matching identifiers in this public convention file. A passing check is not a secret scan or a general privacy clearance."
+            }
           ]
         },
         {
@@ -279,8 +286,8 @@
             {
               "id": "E-0.1.9.0",
               "dos": [
-                "package.json.eliware.apply must explicitly list applicable convention documents.",
-                "Repositories applying documentation, workspace, or infrastructure profiles must also apply private; the private profile requires package.json.private=true."
+                "Every repository must explicitly list general in package.json.eliware.apply. The array must also explicitly list every other applicable convention profile; listing a profile does not implicitly apply profiles that it requires.",
+                "Every repository must apply general.json. Profile requirements are cumulative, and each profile dependency must be listed explicitly: cli, discord, mcp-server, and web require application; documentation, workspace, and infrastructure require private. The private profile requires package.json.private=true."
               ],
               "donts": ["Repositories must not omit eliware.apply."]
             },
@@ -307,7 +314,7 @@
             {
               "id": "E-0.1.9.3",
               "dos": [
-                "When present, package.json.eliware.exempt must be an array of records with a non-empty ruleId, non-empty reason, approver set to Eli, a valid approvalTimestamp, and either a valid expiry date or expiry:null. Each ruleId must be unique."
+                "When present, package.json.eliware.exempt must be an array of records with a non-empty ruleId, non-empty reason, approver set to Eli, a valid approvalTimestamp, and either a valid expiry date or expiry:null. Each ruleId must be unique. AGENTS.md documents project instructions but does not waive checks; only package exemption metadata is interpreted as a convention-check exemption."
               ],
               "donts": ["Do not duplicate a ruleId in the exemption array."]
             }
@@ -348,7 +355,7 @@
         {
           "id": "E-0.1.14",
           "dos": [
-            "Any package reported by npm outdated fails validation, regardless of dependency section. Blank output or an empty report passes. Failure diagnostics must recommend installing every reported package with its @latest tag."
+            "Any package reported by npm outdated fails validation, regardless of dependency section. Blank output or an empty report passes. The check queries the configured npm registry; registry lookup failures are reported separately from outdated-package findings and also fail validation. Failure diagnostics must recommend installing every reported package with its @latest tag."
           ],
           "donts": [
             "Do not compare or require a package version field beyond the result reported by npm outdated."
@@ -475,7 +482,7 @@
               ],
               "directives": [
                 {
-                  "id": "A-0.1.25.1",
+                  "id": "A-0.1.25.0.1",
                   "dos": [
                     "Every applicable structured specification record must be linked from specs/README.md."
                   ],
@@ -523,7 +530,8 @@
         {
           "id": "E-0.1.20",
           "dos": [
-            "Every @eliware/* repository must use Node.js package tooling and eliware-test for deterministic repository validation."
+            "Every @eliware/* repository must use Node.js package tooling and eliware-test for deterministic repository validation.",
+            "Aggregate validation is the profile-selected set of deterministic stages invoked by npm test through eliware-test. General stages apply to every repository; each applied profile defines its additional stages. CI runs npm ci followed immediately by npm test and does not duplicate stages run by npm test."
           ],
           "donts": [
             "Do not treat Node.js tooling or eliware-test as optional for an @eliware/* repository."
@@ -624,9 +632,18 @@
               "donts": [
                 "Do not accept duplicate IDs, orphaned descendants, top-level A-rules, or an E-rule nested under an A-rule."
               ]
-            },
+            }
+          ]
+        },
+        {
+          "id": "E-0.1.28",
+          "dos": [
+            "Repositories must exclude generated, dependency, runtime-state, secret, and machine-specific files from version control."
+          ],
+          "donts": ["Do not track a file that matches a repository ignore rule."],
+          "directives": [
             {
-              "id": "A-0.1.22.1",
+              "id": "A-0.1.28.0",
               "dos": [
                 "Every repository must use .gitignore rules that exclude dependencies, VCS state, coverage, build output, runtime state, generated artifacts/, secrets, and machine-specific files. The repository-root artifacts/ directory is reserved for generated, untracked output such as screenshots and traces.",
                 "Deterministic validation must inspect the Git index and reject tracked or staged files that match any ignore rule."

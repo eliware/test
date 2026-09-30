@@ -64,7 +64,7 @@ test("executes selected non-deterministic checks", async () => {
   expect(results).toEqual([{ ruleId: "E-3", status: "pass", message: "" }]);
 });
 
-test("preserves pass results for discovered non-deterministic placeholders", async () => {
+test("does not execute advisory-only placeholders as deterministic checks", async () => {
   const placeholderRuleIds = [
     "E-0.1.130.6",
     "E-0.1.130.7",
@@ -88,9 +88,10 @@ test("preserves pass results for discovered non-deterministic placeholders", asy
     placeholderRuleIds.includes(ruleId),
   );
   expect(checks.map(({ ruleId }) => ruleId).sort()).toEqual([...placeholderRuleIds].sort());
+  expect(checks.every(({ applicability }) => applicability === "advisory-only")).toBe(true);
 
   const results = await executeConventionChecks(checks, {}, new Set());
-  expect(results).toEqual(checks.map(({ ruleId }) => ({ ruleId, status: "pass", message: "" })));
+  expect(results).toEqual([]);
 });
 
 test("executes required release-note validation beneath its advisory parent", async () => {

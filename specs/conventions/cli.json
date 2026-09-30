@@ -6,7 +6,7 @@
       "id": "E-0.1.60",
       "dos": [
         "These conventions apply to repositories containing CLI application code.",
-        "CLI application repositories must also apply application.json."
+        "CLI application repositories must explicitly list both application.json and this profile in package.json.eliware.apply."
       ],
       "donts": [
         "CLI application repositories must not omit application.json or applicable CLI requirements."

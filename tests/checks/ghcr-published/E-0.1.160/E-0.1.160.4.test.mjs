@@ -14,26 +14,39 @@ test("requires GHCR publication permissions", async () => {
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
+test("requires the exact union when npm publication also applies", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  await expect(
+    run({ root, packageJson: { eliware: { apply: ["ghcr-published", "npm-published"] } } }),
+  ).resolves.toMatchObject({ status: "pass" });
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(publicationPath, content.replace("      id-token: write\n", ""));
+  await expect(
+    run({ root, packageJson: { eliware: { apply: ["ghcr-published", "npm-published"] } } }),
+  ).resolves.toMatchObject({ status: "fail" });
+});
+
 test("requires attestation permissions even when the attestation step is missing", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
   const withoutAttestation = content
-    .replace(/  id-token: write\n  attestations: write\n  artifact-metadata: write\n/u, "")
+    .replace(/      attestations: write\n/u, "")
     .replace(/      - uses: actions\/attest@v4[\s\S]*?(?=      - run: test)/u, "");
   await writeFile(publicationPath, withoutAttestation);
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
 });
 
-test("uses the job permission override as the effective permission set", async () => {
+test("rejects workflow-level publishing permissions", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
   await writeFile(
     publicationPath,
     content.replace(
-      "  publish:\n    needs: validate\n    runs-on:",
-      "  publish:\n    needs: validate\n    permissions:\n      contents: read\n      packages: read\n      id-token: write\n      attestations: write\n      artifact-metadata: write\n    runs-on:",
+      "permissions:\n  contents: read\n",
+      "permissions:\n  contents: read\n  packages: write\n",
     ),
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });

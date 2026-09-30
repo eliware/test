@@ -1,9 +1,5 @@
-import { pass } from "../../check-result.mjs";
-
 export const ruleId = "E-0.1.12";
 export const parentRuleId = "E-0.1";
 export const enforcementMode = "non-deterministic";
 
-export function run() {
-  return pass(ruleId);
-}
+export const applicability = "advisory-only";

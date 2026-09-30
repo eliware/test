@@ -6,8 +6,11 @@ test("requires explicit convention documents", () => {
   expect(run({ packageJson: { eliware: { apply: [] } } }).status).toBe("fail");
 });
 
-test("accepts a profile whose inherited requirements are resolved by the harness", () => {
-  expect(run({ packageJson: { eliware: { apply: ["cli"] } } }).status).toBe("pass");
+test("requires general and every dependent profile explicitly", () => {
+  expect(
+    run({ packageJson: { eliware: { apply: ["general", "application", "cli"] } } }).status,
+  ).toBe("pass");
+  expect(run({ packageJson: { eliware: { apply: ["cli"] } } }).status).toBe("fail");
 });
 
 test("rejects an unknown profile", () => {

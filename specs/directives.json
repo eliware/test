@@ -312,12 +312,12 @@
             {
               "id": "A-0.0.7.9",
               "dos": [
-                "When validation succeeds without diagnostics, emit exactly one concise human-readable line: All tests passed | 100x4 coverage | 0 lint warnings.",
-                "Keep the clean-run line unchanged across normal successful invocations."
+                "When aggregate validation succeeds without diagnostics, emit exactly one concise human-readable line: Aggregate validation passed.",
+                "Mode-specific commands must report only the mode they executed and must not claim that unrelated stages passed."
               ],
               "donts": [
                 "Do not emit stage summaries, Jest banners, timing output, subprocess noise, or incidental logs during a normal clean run.",
-                "Do not emit the clean-run line when any validation failure or diagnostic is present."
+                "Do not emit the aggregate success line when any validation failure or diagnostic is present."
               ]
             }
           ]
