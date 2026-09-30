@@ -4,7 +4,6 @@ const validateReadmeDocumentationNavigation = jest.fn();
 const validateReadmeLicense = jest.fn();
 const validateReadmeLinks = jest.fn();
 const validateReadmePackageBadges = jest.fn();
-const validateReadmeProfileContent = jest.fn();
 const validateReadmeStructure = jest.fn();
 const validateReadmeSupport = jest.fn();
 
@@ -25,10 +24,6 @@ jest.unstable_mockModule(
   () => ({ validateReadmePackageBadges }),
 );
 jest.unstable_mockModule(
-  "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-profile-content.mjs",
-  () => ({ validateReadmeProfileContent }),
-);
-jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-structure.mjs",
   () => ({ validateReadmeStructure }),
 );
@@ -42,7 +37,6 @@ const { validateReadmeRequiredContent } =
 const validators = [
   validateReadmeStructure,
   validateReadmePackageBadges,
-  validateReadmeProfileContent,
   validateReadmeDocumentationNavigation,
   validateReadmeSupport,
   validateReadmeLinks,
@@ -65,7 +59,6 @@ test("runs focused README validators in order and passes their shared inputs", (
   expect(validators.map((validator) => validator.mock.invocationCallOrder[0])).toEqual(
     [...validators].map((validator) => validator.mock.invocationCallOrder[0]).sort((a, b) => a - b),
   );
-  expect(validateReadmeProfileContent).toHaveBeenCalledWith(readme, packageJson, options.sections);
   expect(validateReadmeDocumentationNavigation).toHaveBeenCalledWith(readme, options);
   expect(validateReadmeSupport).toHaveBeenCalledWith(readme, options.sections);
   expect(validateReadmeLinks).toHaveBeenCalledWith(readme, packageJson, options.sections);

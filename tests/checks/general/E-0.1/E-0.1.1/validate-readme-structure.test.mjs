@@ -14,8 +14,16 @@ function fixture() {
   return `${brand}\n\n## @eliware/fixture\n\n## Table of Contents\n${toc.join(" · ")}\n${sections.map((section) => `## ${section}\ncontent`).join("\n")}`;
 }
 
+const fixturePackage = { name: "@eliware/fixture" };
+
 test("accepts canonical headings and a complete ordered table of contents", () => {
+  expect(validateReadmeStructure(fixture(), fixturePackage)).toBeNull();
   expect(validateReadmeStructure(fixture())).toBeNull();
+});
+
+test("requires the title to begin with the exact package name", () => {
+  const wrongTitle = fixture().replace("## @eliware/fixture", "## @eliware/other");
+  expect(validateReadmeStructure(wrongTitle, fixturePackage)).toContain("exact package.json.name");
 });
 
 test("reports required README sections missing from the document", () => {

@@ -1,6 +1,7 @@
 {
   "version": "9.0",
   "description": "Applies to repositories that are not publicly published as npm packages.",
+  "requires": [],
   "directives": [
     {
       "id": "E-0.1.150",
@@ -11,7 +12,7 @@
       ],
       "donts": [
         "Private repositories must not publish npm packages or expose npm publication credentials.",
-        "Applying the private profile does not exempt a repository from plaintext-secret review. Encrypted secret payloads may be committed; plaintext secrets require a specific Eli-approved exemption record for the rule that reports them."
+        "Skipping public identifier-pattern checks under E-0.1.7 does not skip the human or AI secret, plaintext-data, private-data, backup, or runtime-state review required by E-0.1.6. Encrypted secret payloads may be committed; any retained plaintext secret must be covered by the package.json.eliware.exempt record for the finding rule ID, using the shared exemption schema in general.json."
       ],
       "directives": [
         {

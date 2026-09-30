@@ -26,7 +26,7 @@ export async function run(context) {
     sections,
   });
   if (requiredContentError) failures.push(requiredContentError);
-  const metadataError = validateReadmeMetadata(readme, packageJson);
+  const metadataError = validateReadmeMetadata(readme, packageJson, sections);
   if (metadataError) failures.push(metadataError);
   if (indexes.error) failures.push(indexes.error);
   return failures.length ? fail(ruleId, failures.join("\n")) : pass(ruleId);

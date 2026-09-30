@@ -1,6 +1,7 @@
 {
   "version": "9.0",
   "description": "Applies only to workspace repositories.",
+  "requires": ["private"],
   "directives": [
     {
       "id": "E-0.1.110",

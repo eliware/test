@@ -16,7 +16,7 @@ export const excludedDirectories = new Set([
 
 export function excludedFile(file) {
   const name = basename(file);
-  return name.endsWith(".d.mts") || name.endsWith(".snap.mjs") || name.includes(".generated.");
+  return name.endsWith(".d.mts") || name.endsWith(".snap.mjs") || name.includes(".generated");
 }
 
 export async function collectMonolithFiles(directory, inventory = null) {

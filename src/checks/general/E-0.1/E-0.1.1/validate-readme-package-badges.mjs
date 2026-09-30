@@ -2,7 +2,7 @@ export function validateReadmePackageBadges(readme, packageJson = {}) {
   const lines = readme.split(/\r?\n/u);
   const packageName = packageJson?.name;
   const heading = packageName
-    ? lines.find((line) => line.startsWith(`## ${packageName} `))
+    ? lines.find((line) => new RegExp(`^## ${escapeRegExp(packageName)}(?:\\s|$)`, "u").test(line))
     : lines.find((line) => /^## @eliware\/[^ ]+ /u.test(line));
   if (!heading) return "README.md must use the standard package heading.";
 

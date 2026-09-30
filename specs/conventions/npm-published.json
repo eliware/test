@@ -1,6 +1,7 @@
 {
   "version": "9.0",
   "description": "Applies to repositories that publish a public npm package.",
+  "requires": [],
   "directives": [
     {
       "id": "E-0.1.140",
@@ -24,10 +25,10 @@
           "dos": [
             "Public npm packages must declare engines.node compatible with Node.js 26, publishConfig.provenance true, and a non-empty files allowlist containing README.md, LICENSE, RELEASE_NOTES.md, docs/, and specs/.",
             "Public npm package README.md must include the npm badge, npm package link, installation guidance, package entrypoints, and release/version guidance. When npm-published is applied without a library profile, include this material in Usage or an applicable profile section rather than inventing a library API section.",
-            "Public npm packages must define exactly `pack=eliware-test --pack` and must pass the harness pack stage during aggregate validation and before publication; their shared audit script is defined by general.json."
+            "Public npm packages must define pack=eliware-test --pack. The @eliware/test package alone must define pack=node bin/eliware-test.mjs --pack. Every public npm package, including @eliware/test, must execute and pass the harness pack stage during aggregate validation and before publication; the pack script command does not replace either required stage. The shared audit script is defined by general.json."
           ],
           "donts": [
-            "Do not omit pack, replace the shared pack stage with a direct package command, or publish a package without passing it."
+            "Do not omit pack, skip the harness pack stage, or publish a package without passing it."
           ]
         },
         {

@@ -12,27 +12,32 @@ function isFile(path) {
 export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile) {
   const repositoryRoot = resolve(root);
   const bin = packageJson?.bin;
+  const hasMain = Object.hasOwn(packageJson ?? {}, "main");
+  const hasBin = Object.hasOwn(packageJson ?? {}, "bin");
   const binTargets =
     typeof bin === "string"
       ? [bin]
       : bin && typeof bin === "object" && !Array.isArray(bin)
         ? Object.values(bin)
         : [];
-  const validBinTargets =
-    bin === undefined ||
-    (binTargets.length > 0 && binTargets.every((target) => existingRepositoryFile(target)));
-  if (!validBinTargets) return false;
-  const fileTargets = [packageJson?.main, ...binTargets].filter(
-    (target) => typeof target === "string" && target.trim(),
-  );
-  const hasExistingRepositoryFile = fileTargets.some((target) => existingRepositoryFile(target));
-  if (hasExistingRepositoryFile) return true;
+  if (hasMain && !existingRepositoryFile(packageJson.main)) return false;
+  if (hasBin && (binTargets.length === 0 || !binTargets.every(existingRepositoryFile)))
+    return false;
+  if (hasMain || hasBin) return true;
   return (
     typeof packageJson?.scripts?.start === "string" && Boolean(packageJson.scripts.start.trim())
   );
 
   function existingRepositoryFile(target) {
-    if (typeof target !== "string" || !target.trim()) return false;
+    if (
+      typeof target !== "string" ||
+      !target.trim() ||
+      target.includes("\\") ||
+      target.startsWith("/") ||
+      /^[a-z]:/iu.test(target) ||
+      target.split("/").includes("..")
+    )
+      return false;
     const entrypoint = resolve(repositoryRoot, target);
     const pathFromRoot = relative(repositoryRoot, entrypoint);
     const outsideRepository =

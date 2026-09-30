@@ -1,6 +1,7 @@
 {
   "version": "9.0",
   "description": "Applies to every @eliware/* repository.",
+  "requires": [],
   "directives": [
     {
       "id": "E-0.1",
@@ -150,10 +151,10 @@
                 "Every maintained repository README must use this exact base order: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; Features; Requirements; Setup; Usage; Development; Testing; Troubleshooting; Security; then any sections added by applicable profiles; then Support; License; and Links. Support, License, and Links are always the final three top-level sections, in that order. The CI badge must use and link to the canonical .github/workflows/ci.yml workflow.",
                 "The README must use the standard Eliware logo and Discord-branded support block and link the repository LICENSE from License.",
                 "Build the README section list from the general baseline and every profile explicitly listed in package.json.eliware.apply. Append profile-required sections after Security and before Support, using the profile-to-heading table in this rule's examples regardless of package.json array order. Omit profiles that do not apply; within each applied profile, preserve the order stated by that profile. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. Profiles mapped to no headings add no sections. Do not merge sections with different headings merely because their topics overlap.",
-                "The badge-bearing package or project title is the README title: place it immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in an canonical repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
-                "Deterministic README and AGENTS.md checks verify structure, links, and required literal markers; a passing result does not prove that prose is accurate or complete. Human review must confirm that descriptions satisfy their stated requirements.",
+                "The badge-bearing package or project title is the README title. For repositories with package.json, the title must begin with the exact package.json.name; validate badges separately. Place the title immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings, plus an additional repository-specific level-two section only when its exact heading and purpose are explicitly declared in a canonical repository-owned specification. Put other repository-specific material under an applicable existing section; do not invent discretionary level-two sections. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order.",
+                "Deterministic README and AGENTS.md checks verify structure, resolving links, exact package metadata, and required literal markers. Human review must confirm that documentation is accurate, complete, and satisfies every substantive requirement; keyword presence or a passing structure check does not prove content quality.",
                 "The README must identify the project truthfully and link applicable documentation, specifications, and RELEASE_NOTES.md when present. Every repository must link specs/README.md. Do not add prose saying unrelated profiles do not apply.",
-                "When package.json declares description, author, and license values, include each exact value verbatim in README.md. When package.json declares a repository URL, link that exact URL from Links.",
+                "README.md must include the exact non-empty package.json description, author string or author.name, and license value. Its Links section must contain a Markdown link to the exact package.json.repository URL or repository.url. Invalid or missing values fail package metadata validation.",
                 "Configuration content must distinguish runtime configuration (supported settings, environment variables, config files, and defaults) from repository/package metadata, CLI arguments, and deployment configuration. State explicitly when a category has no runtime settings; do not describe package.json.eliware.apply as runtime configuration.",
                 "User-facing documentation describes product behavior and safe use. Application and library documentation may explain local startup and shutdown, but must not replace canonical production procedures. Canonical company-wide operating procedures, release authorization, live-state evidence, and company-wide runbooks belong in Operations or the named owner workspace. Link to the canonical record instead of duplicating its normative procedure text.",
                 "When documenting validation or release state, distinguish checks and contracts present in the current repository from versions already published or released. Do not imply an unpublished version is available to users.",
@@ -163,6 +164,10 @@
                 {
                   "purpose": "Canonical README profile-to-heading mapping",
                   "markdown": "| Profile | Added level-two headings, in order |\n| --- | --- |\n| application | Configuration, Operations |\n| cli | Commands, Exit codes |\n| discord | Commands, Events, Intents and permissions, Operations |\n| mcp-server | Tools, Resources, Prompts, Transport, Authentication, Schemas, Operations |\n| web | Configuration, Routes, Assets, Development server, Build, Deployment |\n| library | API, Packaging, Examples |\n| infrastructure | Managed targets, Configuration, Desired state, Validation, Change boundaries |\n| workspace | Runbooks, Communication, Recovery |\n| documentation | Scope, Navigation, Contribution, Documentation validation |\n| npm-published | none |\n| ghcr-published | none |\n| private | none |\n\nThe table applies only to README headings. Every profile still contributes its other requirements."
+                },
+                {
+                  "purpose": "Combined README headings for application profiles",
+                  "markdown": "For `application` plus `discord`, include these headings after `Security`: `Configuration`, `Operations`, `Commands`, `Events`, `Intents and permissions`. `Operations` appears once at its first canonical position and contains the required content for both profiles. For `application` plus `web`, include `Configuration` once at its first canonical position and combine both profiles' requirements in that section. In both combinations, list each heading once in canonical order in the Table of Contents."
                 }
               ],
               "donts": [
@@ -223,7 +228,7 @@
         {
           "id": "E-0.1.6",
           "dos": [
-            "Human or AI review must assess repository contents for secrets, credentials, private data, backups, and runtime state; deterministic validation must not claim that arbitrary content has been proven free of these materials."
+            "Human or AI review must assess repository contents and user-facing documentation for secrets, credentials, private data, backups, runtime state, accuracy, and completeness; deterministic validation must not claim that arbitrary content has been proven free of sensitive material or that prose is complete."
           ],
           "donts": [
             "Do not treat file or directory names, extensions, or a clean deterministic scan as proof that sensitive content is present or absent."
@@ -254,7 +259,7 @@
           "id": "E-0.1.7",
           "dos": [
             "Apply this requirement only when package.json.private is not true; package.json.private: true repositories are private and outside its applicability.",
-            "Public repositories must keep Eliware infrastructure internals private. This deterministic check rejects only the identifier patterns shown in this rule's example; a passing result does not establish that internal information or plaintext secrets are absent. The content review required by E-0.1.6 remains applicable."
+            "Public repositories must keep Eliware infrastructure internals private. This deterministic check rejects only the identifier patterns shown in this rule's example; a passing result does not establish that internal information or plaintext secrets are absent. Private repositories skip only these public identifier-pattern checks. The secret and plaintext-data review required by E-0.1.6 remains applicable to every repository."
           ],
           "donts": [
             "Do not apply this public-repository restriction to repositories whose package.json sets private to true.",
@@ -286,8 +291,8 @@
             {
               "id": "E-0.1.9.0",
               "dos": [
-                "Every repository must explicitly list general in package.json.eliware.apply. The array must also explicitly list every other applicable convention profile; listing a profile does not implicitly apply profiles that it requires.",
-                "Every repository must apply general.json. Profile requirements are cumulative, and each profile dependency must be listed explicitly: cli, discord, mcp-server, and web require application; documentation, workspace, and infrastructure require private. The private profile requires package.json.private=true."
+                "Every repository must explicitly list general in package.json.eliware.apply. The array must also explicitly list every other applicable convention profile and every profile listed by their requires arrays; applying a profile does not implicitly apply its requirements.",
+                "Every repository must apply general.json. Each profile document must declare a requires array containing every profile it depends on. The harness reads that array as the sole source of profile dependencies and fails on missing, duplicate, self-referential, or unknown requirements. The private profile requires package.json.private=true."
               ],
               "donts": ["Repositories must not omit eliware.apply."]
             },
@@ -355,17 +360,10 @@
         {
           "id": "E-0.1.14",
           "dos": [
-            "Any package reported by npm outdated fails validation, regardless of dependency section. Blank output or an empty report passes. The check queries the configured npm registry; registry lookup failures are reported separately from outdated-package findings and also fail validation. Failure diagnostics must recommend installing every reported package with its @latest tag."
+            "Any package reported by npm outdated fails validation, regardless of dependency section. Exit codes 0 and 1 are report-bearing outcomes and both require valid JSON output; an empty output or empty report passes. Other exit codes, invalid JSON, and registry or process failures are lookup failures and fail validation with a separate diagnostic. Failure diagnostics for outdated packages must list an npm install command using the @latest tag for every reported package. The check does not modify dependencies."
           ],
           "donts": [
             "Do not compare or require a package version field beyond the result reported by npm outdated."
-          ]
-        },
-        {
-          "id": "E-0.1.16",
-          "dos": ["Align repository release versions with the convention baseline they implement."],
-          "donts": [
-            "Do not release a repository with a version that misrepresents its convention baseline."
           ]
         },
         {
@@ -587,6 +585,7 @@
               "id": "E-0.1.20.17",
               "dos": [
                 "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Allow additional package scripts only when an applied profile requires them.",
+                "In @eliware/test only, those five scripts must call node bin/eliware-test.mjs with the matching mode; its required pack script must call node bin/eliware-test.mjs --pack. Every other npm-published repository must define pack=eliware-test --pack.",
                 "When required scripts are invalid, report all missing or incorrect required scripts and disallowed script entries together in one result.",
                 "Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation."
               ],

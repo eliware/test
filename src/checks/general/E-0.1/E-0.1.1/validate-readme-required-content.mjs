@@ -2,7 +2,6 @@ import { validateReadmeDocumentationNavigation } from "./validate-readme-documen
 import { validateReadmeLicense } from "./validate-readme-license.mjs";
 import { validateReadmeLinks } from "./validate-readme-links.mjs";
 import { validateReadmePackageBadges } from "./validate-readme-package-badges.mjs";
-import { validateReadmeProfileContent } from "./validate-readme-profile-content.mjs";
 import { validateReadmeStructure } from "./validate-readme-structure.mjs";
 import { validateReadmeSupport } from "./validate-readme-support.mjs";
 
@@ -10,7 +9,6 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, options 
   const validations = [
     () => validateReadmeStructure(readme, packageJson),
     () => validateReadmePackageBadges(readme, packageJson),
-    () => validateReadmeProfileContent(readme, packageJson, options.sections),
     () => validateReadmeDocumentationNavigation(readme, options),
     () => validateReadmeSupport(readme, options.sections),
     () => validateReadmeLinks(readme, packageJson, options.sections),

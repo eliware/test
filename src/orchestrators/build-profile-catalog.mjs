@@ -52,8 +52,27 @@ export function buildProfileCatalog(documents, expectedVersion) {
     if (catalog.profiles[profile]) {
       throw new Error(`Duplicate bundled convention profile: ${profile}.`);
     }
-    catalog.profiles[profile] = { profile };
     collectDirectives(document.directives, profile, source, catalog);
+    const requires = document.requires;
+    if (
+      !Array.isArray(requires) ||
+      requires.some(
+        (required) => typeof required !== "string" || !/^[a-z0-9-]+$/u.test(required),
+      ) ||
+      new Set(requires).size !== requires.length ||
+      requires.includes(profile)
+    ) {
+      throw new Error(`Bundled convention profile ${source} has an invalid requires list.`);
+    }
+    catalog.profiles[profile] = { profile, requires };
+  }
+  for (const [profile, metadata] of Object.entries(catalog.profiles)) {
+    const unknown = metadata.requires.filter((required) => !catalog.profiles[required]);
+    if (unknown.length) {
+      throw new Error(
+        `Bundled convention profile ${profile} requires unknown profiles: ${unknown.join(", ")}.`,
+      );
+    }
   }
   return catalog;
 }

@@ -1,6 +1,7 @@
 {
   "version": "9.0",
   "description": "Applies to repositories containing CLI code.",
+  "requires": ["application"],
   "directives": [
     {
       "id": "E-0.1.60",
@@ -33,10 +34,10 @@
         {
           "id": "E-0.1.60.1",
           "dos": [
-            "CLI applications must contain bin/ with the executable entrypoint, implement and document --help and --version, and document exit codes and redacted output. Commands that can change or delete state must provide dry-run, confirmation, or equivalent safeguards; CLIs with no destructive commands do not need such safeguards."
+            "CLI applications must contain bin/ with the executable entrypoint, implement and document --help and --version, and document exit codes and redacted output. Human review must identify each command that can change or delete state; each such command must provide dry-run, confirmation, or an equivalent safeguard. A CLI with no state-changing or destructive commands requires no destructive-action safeguard."
           ],
           "donts": [
-            "CLI applications must not omit bin/, --help, --version, or required safety controls, or expose secrets."
+            "CLI applications must not omit bin/, --help, --version, or safeguards for state-changing commands, or expose secrets. Deterministic checks must not infer destructive behavior from command names or keyword presence."
           ]
         },
         {
@@ -45,7 +46,7 @@
             "CLI README.md must add Commands and Exit codes, in that order, documenting installation, each user-facing command and important options, --help, --version, safe copyable examples, supported platform behavior, exit-code meanings, and destructive-action controls. Place these headings in the profile extension area defined by general.json and include them in the Table of Contents."
           ],
           "donts": [
-            "Do not show a destructive command without dry-run, confirmation, or equivalent safety behavior; do not require these controls when the CLI has no destructive commands, or claim platform support that is not validated."
+            "Do not show a destructive command without dry-run, confirmation, or equivalent safety behavior; do not require these controls when the CLI has no destructive commands. State supported platforms separately from CI-tested platforms; label platforms without validation evidence as unverified."
           ]
         }
       ]

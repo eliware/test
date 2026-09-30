@@ -1,6 +1,7 @@
 {
   "version": "9.0",
   "description": "Applies to repositories containing library code.",
+  "requires": [],
   "directives": [
     {
       "id": "E-0.1.40",
@@ -141,7 +142,7 @@
         {
           "id": "E-0.1.40.12",
           "dos": [
-            "Enforce a maximum of 100 physical lines for each in-scope library source file and 200 physical lines for each in-scope test file. Count blank and comment lines; count an unterminated final line as one line and an empty file as zero. Exclude files under .git/, build/, coverage/, dist/, generated/, node_modules/, test-fixtures/, fixtures/, __fixtures__, or __snapshots__, and exclude filenames ending in .d.mts or .snap.mjs or containing .generated. Apply this same counting and exclusion contract to source and test files. Exceeding either maximum is a blocking convention failure and requires decomposition into focused modules with mirrored tests.",
+            "Enforce a maximum of 100 physical lines for each in-scope library source file and 200 physical lines for each in-scope test file. Count blank and comment lines; count an unterminated final line as one line and an empty file as zero. Exclude files under any path segment named .git, build, coverage, dist, generated, node_modules, test-fixtures, fixtures, __fixtures__, or __snapshots__, and exclude filenames ending in .d.mts or .snap.mjs or containing .generated. These exclusions apply only to line counting; they do not exempt .mjs files under src/ or tests/ from source/test mirroring. Apply the same counting and exclusion contract to source and test files. Exceeding either maximum is a blocking convention failure and requires decomposition into focused modules with mirrored tests.",
             "Apply the single-responsibility requirement independently at every file size: being within the line maximum does not prove cohesion or permit distinct responsibilities to share a module, and a mixed-responsibility module must be split even when it is below the maximum."
           ],
           "donts": [
@@ -151,7 +152,7 @@
         {
           "id": "E-0.1.40.13",
           "dos": [
-            "When production code implements one of the concerns in the approved common-stack mapping below, use its named Eliware package. Applicability is a human-review decision; deterministic validation must not report this requirement as passed."
+            "When production code owns substantial behavior for one of the concerns in the approved common-stack mapping below, use its named Eliware package. Merely declaring or importing a package, or exposing a thin adapter, does not meet this criterion. Applicability is a human-review decision; deterministic validation must not report this requirement as passed."
           ],
           "donts": [
             "Do not duplicate an approved common-stack module when the corresponding concern exists in production code."

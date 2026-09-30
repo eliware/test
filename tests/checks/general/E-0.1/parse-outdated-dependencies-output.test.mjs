@@ -29,4 +29,7 @@ test("reports invalid JSON with redacted or generic diagnostics", () => {
   expect(() => parseOutdatedDependenciesOutput("not json", "", 0, {})).toThrow(
     "npm outdated returned invalid JSON.",
   );
+  expect(() => parseOutdatedDependenciesOutput("not json", "", 1, {})).toThrow(
+    "npm outdated returned invalid JSON.",
+  );
 });

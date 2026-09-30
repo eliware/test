@@ -38,6 +38,14 @@ export function validateReadmeStructure(readme, packageJson = {}) {
   ) {
     return "README.md must place its badge-bearing title immediately before the Table of Contents without intervening content.";
   }
+  const packageName = packageJson?.name;
+  const title = headings.find(({ index }) => index === titleIndex).line;
+  if (
+    typeof packageName === "string" &&
+    !new RegExp(`^##\\s+${escapeRegExp(packageName)}(?:\\s|$)`, "u").test(title)
+  ) {
+    return "README.md project title must begin with the exact package.json.name.";
+  }
 
   const missing = required.find((_, index) => indices[index] < 0);
   if (missing)

@@ -3,16 +3,16 @@ import { validateAppliedProfiles } from "../../src/orchestrators/validate-applie
 
 const catalog = {
   profiles: {
-    general: {},
-    application: {},
-    cli: {},
-    discord: {},
-    "mcp-server": {},
-    web: {},
-    documentation: {},
-    workspace: {},
-    infrastructure: {},
-    private: {},
+    general: { requires: [] },
+    application: { requires: [] },
+    cli: { requires: ["application"] },
+    discord: { requires: ["application"] },
+    "mcp-server": { requires: ["application"] },
+    web: { requires: ["application"] },
+    documentation: { requires: ["private"] },
+    workspace: { requires: ["private"] },
+    infrastructure: { requires: ["private"] },
+    private: { requires: [] },
   },
 };
 

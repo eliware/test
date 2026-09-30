@@ -64,11 +64,15 @@ test("fails when a test file exceeds 200 lines", async () => {
 test("ignores generated, fixture, and dependency artifacts", async () => {
   const root = await fixture(10);
   await mkdir(join(root, "src", "generated"));
+  await mkdir(join(root, "src", "nested", "generated"), { recursive: true });
   await mkdir(join(root, "src", "node_modules"));
   await mkdir(join(root, "tests", "test-fixtures"));
+  await mkdir(join(root, "tests", "nested", "__fixtures__"), { recursive: true });
   await writeLines(root, "src/generated", "generated.mjs", 101);
+  await writeLines(root, "src/nested/generated", "generated.mjs", 101);
   await writeLines(root, "src/node_modules", "dependency.mjs", 101);
   await writeLines(root, "tests/test-fixtures", "fixture.mjs", 201);
+  await writeLines(root, "tests/nested/__fixtures__", "fixture.mjs", 201);
   await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
   await rm(root, { recursive: true, force: true });
 });

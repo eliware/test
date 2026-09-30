@@ -1,6 +1,7 @@
 {
   "version": "9.0",
   "description": "Applies to repositories containing MCP server code.",
+  "requires": ["application"],
   "directives": [
     {
       "id": "E-0.1.80",

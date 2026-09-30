@@ -33,6 +33,13 @@ test("accepts schema-valid directive documents and ignores non-directive metadat
     join(root, "specs", "nested", "more-directives.json"),
     JSON.stringify(document([{ id: "E-3", dos: ["Do."], donts: ["Do not."] }])),
   );
+  await writeFile(
+    join(root, "specs", "nested", "profile.json"),
+    JSON.stringify({
+      ...document([{ id: "E-4", dos: ["Do."], donts: ["Do not."] }]),
+      requires: ["private"],
+    }),
+  );
   await expect(validateSpecificationDirectiveDocuments(root)).resolves.toEqual([]);
   await rm(root, { recursive: true, force: true });
 });
@@ -50,6 +57,21 @@ test("rejects invalid document fields, directive records, and hierarchy", async 
       expect.stringContaining("Top-level directive A-2 must be an E-rule"),
     ]),
   );
+  await rm(root, { recursive: true, force: true });
+});
+
+test("rejects malformed profile requirements", async () => {
+  const root = await fixture([]);
+  await writeFile(
+    join(root, "specs", "directives.json"),
+    JSON.stringify({
+      ...document([{ id: "E-1", dos: ["Do."], donts: ["Do not."] }]),
+      requires: "private",
+    }),
+  );
+  await expect(validateSpecificationDirectiveDocuments(root)).resolves.toEqual([
+    "directives.json.requires must be an array of profile names.",
+  ]);
   await rm(root, { recursive: true, force: true });
 });
 

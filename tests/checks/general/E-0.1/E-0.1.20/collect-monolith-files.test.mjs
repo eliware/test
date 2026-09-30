@@ -10,11 +10,16 @@ import {
 test("collects module files and excludes generated/artifact directories", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-monolith-files-"));
   await mkdir(join(root, "nested"));
+  await mkdir(join(root, "nested", "generated"));
+  await mkdir(join(root, "nested", "test-fixtures"));
   await mkdir(join(root, "generated"));
   await writeFile(join(root, "nested", "module.mjs"), "export {};");
+  await writeFile(join(root, "nested", "generated", "ignored.mjs"), "export {};");
+  await writeFile(join(root, "nested", "test-fixtures", "fixture.mjs"), "export {};");
   await writeFile(join(root, "generated", "ignored.mjs"), "export {};");
   await writeFile(join(root, "nested", "component.snap.mjs"), "export {};");
   await writeFile(join(root, "nested", "bundle.generated.mjs"), "export {};");
+  await writeFile(join(root, "nested", "bundle.generated-build.mjs"), "export {};");
   expect(excludedFile("types.d.mts")).toBe(true);
   expect(await collectMonolithFiles(root)).toEqual([join(root, "nested", "module.mjs")]);
   await rm(root, { recursive: true, force: true });
