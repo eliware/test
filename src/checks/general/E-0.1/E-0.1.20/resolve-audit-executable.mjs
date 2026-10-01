@@ -6,5 +6,12 @@ export function resolveAuditExecutable({
   execPath = process.execPath,
   root = process.cwd(),
 } = {}) {
-  return npmCommand(platform, env.npm_execpath ?? "", execPath, undefined, root);
+  return npmCommand(
+    platform,
+    env.npm_execpath ?? "",
+    execPath,
+    undefined,
+    root,
+    env.PATH ?? env.Path,
+  );
 }

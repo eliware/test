@@ -48,9 +48,9 @@ test("projects indexed root and directory records", async () => {
     { path: "src", type: "directory", depth: 1 },
     { path: "src/index.mjs", type: "file", depth: 1 },
   ];
-  const discovery = jest.fn(async () => records);
-  let discoveredRecords;
-  const entries = jest.fn(() => (discoveredRecords ??= discovery()));
+  let currentRecords = records;
+  const discovery = jest.fn(async () => currentRecords);
+  const entries = jest.fn(() => discovery());
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
     entries,
@@ -66,7 +66,12 @@ test("projects indexed root and directory records", async () => {
   await expect(directoryEntries("/repo/src")).resolves.toMatchObject([
     { name: "index.mjs", path: "src/index.mjs" },
   ]);
-  expect(discovery).toHaveBeenCalledTimes(1);
+  currentRecords = [...records, { path: "src/new.mjs", type: "file", depth: 1 }];
+  await expect(directoryEntries("/repo/src")).resolves.toMatchObject([
+    { name: "index.mjs", path: "src/index.mjs" },
+    { name: "new.mjs", path: "src/new.mjs" },
+  ]);
+  expect(discovery).toHaveBeenCalledTimes(3);
 });
 
 test("falls back to reading descendants of pruned directories", async () => {
@@ -95,6 +100,25 @@ test("falls back to reading descendants of pruned directories", async () => {
   expect(images[0].isFile()).toBe(true);
   expect(images[0].isDirectory()).toBe(false);
   expect(readDirectory).toHaveBeenCalledTimes(3);
+});
+
+test("does not expose symlinks as files in generated-directory fallback", async () => {
+  const records = [{ path: "dist", type: "directory", depth: 1 }];
+  const readDirectory = jest.fn(async () => [
+    fileEntry("bundle.js"),
+    { name: "external", isFile: () => false, isDirectory: () => false, isSymbolicLink: () => true },
+  ]);
+  const directoryEntries = createRepositoryDirectoryEntries({
+    root: "/repo",
+    entries: jest.fn(async () => records),
+    entriesUnder: jest.fn(),
+    readDirectory,
+    hasFullDiscovery: () => true,
+  });
+
+  await expect(directoryEntries("/repo/dist")).resolves.toMatchObject([
+    { name: "bundle.js", path: "dist/bundle.js" },
+  ]);
 });
 
 test("discovers a deep generated descendant when requested directly", async () => {

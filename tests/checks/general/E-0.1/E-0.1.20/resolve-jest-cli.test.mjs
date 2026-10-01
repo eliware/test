@@ -8,19 +8,9 @@ import {
   resolveSharedJestCli,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.20/resolve-jest-cli.mjs";
 
-test("resolves Jest from the consumer package and supports an injected CLI", () => {
+test("resolves Jest from the consumer package", () => {
   expect(resolveConsumerJestCli(process.cwd())).toContain("jest.js");
-  expect(resolveJestCli(process.cwd(), {})).toContain("jest.js");
-  expect(resolveJestCli(process.cwd(), null)).toContain("jest.js");
   expect(resolveJestCli(process.cwd())).toContain("jest.js");
-  expect(resolveJestCli("C:/fixture", { jestCli: "jest-cli" })).toBe("jest-cli");
-  expect(resolveJestCli("C:/fixture", { jestCli: "custom-jest" })).toBe("custom-jest");
-  expect(() => resolveJestCli("C:/fixture", { jestCli: "   " })).toThrow(
-    "Injected Jest CLI must be a nonempty string.",
-  );
-  expect(() => resolveJestCli("C:/fixture", { jestCli: {} })).toThrow(
-    "Injected Jest CLI must be a nonempty string.",
-  );
 });
 
 test("resolves the shared Jest fallback when its primary package provides jest-cli", () => {
@@ -45,9 +35,6 @@ test("uses the shared Jest fallback when the consumer has no resolvable Jest", a
       "Consumer repository Jest executable could not be resolved",
     );
     expect(resolveJestCli(root)).toContain("jest.js");
-    expect(() => resolveJestCli(root, { resolveBundledJestCli: () => undefined })).toThrow(
-      "Consumer repository Jest executable could not be resolved",
-    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

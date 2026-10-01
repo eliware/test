@@ -3,6 +3,8 @@ import { redactMatchedSecrets } from "./redact-secrets.mjs";
 import { truncateRedactedOutput } from "./truncate-redacted-output.mjs";
 
 export function createRedactedStreamOutput(outputLimit) {
+  // This intermediate buffer counts UTF-16 code units.
+  // The process-output caller applies the final UTF-8 byte budget.
   let outputLength = 0;
 
   function append(text, matchEnds) {

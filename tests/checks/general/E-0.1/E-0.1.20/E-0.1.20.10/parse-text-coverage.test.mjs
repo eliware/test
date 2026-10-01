@@ -15,6 +15,12 @@ test("returns null for malformed text reports", () => {
     parseText("src/example.mjs | 100 | 100 | 100 | 100 |\nAll files | 100 | 100 | 100 | 100 |"),
   ).toBeNull();
   expect(parseText("All files | nope | 99 | 100 | 100 |\n", ["src/example.mjs"])).toBeNull();
+  expect(
+    parseText(
+      "src/example.mjs | 100garbage | 99 | 100 | 100 |\nAll files | 100 | 99 | 100 | 100 |",
+      ["src/example.mjs"],
+    ),
+  ).toBeNull();
   expect(parseText("All files | 100 | 99 |\n", ["src/example.mjs"])).toBeNull();
 });
 

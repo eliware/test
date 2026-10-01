@@ -12,7 +12,7 @@ test("normalizes search and pending limits and builds matcher state", () => {
   });
   expect(policy).toMatchObject({
     workLimit: 1_000_000,
-    pendingLimit: 64_000,
+    pendingLimit: 20,
     values: ["secret"],
     suppressed: false,
   });
@@ -37,6 +37,17 @@ test("suppresses unsafe output when a secret is too long for the output limit", 
   expect(policy.trimSuffix).toBeNull();
   expect(policy.findSecretEnds).toBeNull();
   expect(policy.findSafeBoundary).toBeNull();
+});
+
+test("retains enough bounded text to redact secrets longer than the default window", () => {
+  const longSecret = "s".repeat(65_000);
+  const policy = createRedactedStreamPolicy([longSecret], 70_000, {
+    maxPendingLength: 16,
+    getSecretMatcher: () => () => [],
+  });
+
+  expect(policy.pendingLimit).toBe(longSecret.length);
+  expect(policy.suppressed).toBe(false);
 });
 
 test("suppresses output when suffix preprocessing would exceed its work budget", () => {

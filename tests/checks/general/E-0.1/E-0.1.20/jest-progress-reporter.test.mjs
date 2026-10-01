@@ -28,7 +28,7 @@ afterEach(() => {
   process.stdout.write = originalStdoutWrite;
 });
 
-test("reports suite progress without per-test output", () => {
+test("reports suite progress once without per-test output", () => {
   const reporter = new JestProgressReporter();
   reporter.onTestStart({ path: "tests/example.test.mjs" });
   reporter.onTestResult(
@@ -39,7 +39,7 @@ test("reports suite progress without per-test output", () => {
     "[eliware-test-progress] start tests/example.test.mjs\n",
     "[eliware-test-progress] complete tests/example.test.mjs 1.000s\n",
   ]);
-  expect(stdoutWrites).toEqual(writes);
+  expect(stdoutWrites).toEqual([]);
 });
 
 test("uses Jest's configured root for absolute suite paths", () => {
@@ -122,7 +122,6 @@ test("redacts secrets, hides external paths, and caps reporter output", () => {
   const reporter = new JestProgressReporter({
     env: { API_TOKEN: "private-token" },
     write: (text) => output.push(text),
-    writeStdout: (text) => stdoutOutput.push(text),
   });
   reporter.onTestStart({ path: `${process.cwd()}\\private-token.test.mjs` });
   reporter.onTestResult(
@@ -132,7 +131,7 @@ test("redacts secrets, hides external paths, and caps reporter output", () => {
   expect(output.join("")).not.toContain(process.cwd());
   expect(output.join("")).not.toContain("private-token");
   expect(output.join("")).toContain("[outside repository]");
-  expect(stdoutOutput.join("")).toBe(output.join(""));
+  expect(stdoutOutput).toEqual([]);
 });
 
 test("caps total reporter output", () => {
@@ -140,11 +139,10 @@ test("caps total reporter output", () => {
   const stdoutOutput = [];
   const reporter = new JestProgressReporter({
     write: (text) => output.push(text),
-    writeStdout: (text) => stdoutOutput.push(text),
     maxOutputLength: 20,
   });
   reporter.onTestStart({ path: "tests/a.test.mjs" });
   reporter.onTestStart({ path: "tests/b.test.mjs" });
   expect(output.join("").length).toBe(20);
-  expect(stdoutOutput.join("").length).toBe(20);
+  expect(stdoutOutput).toEqual([]);
 });

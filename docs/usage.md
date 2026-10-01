@@ -60,8 +60,11 @@ The `--pack` mode runs `npm pack` validation for repositories that select the
 
 Tool modes may not be combined with a focused Jest test path. Paths supplied
 to a tool mode are forwarded as tool arguments; focused paths are reserved for
-the unscoped Jest validation command. Wrapper tool arguments precede arguments
-after `--`, and each group preserves its original order.
+the unscoped Jest validation command. Wrapper tool arguments before `--` precede
+forwarded arguments after `--`, and each group preserves its original order. The
+separator itself is removed before forwarding. For example,
+`eliware-test --audit --no-fund -- --no-progress` forwards
+`--no-fund --no-progress` to npm.
 Prettier arguments that override the selected mode, canonical formatting
 configuration, or required maintained-file coverage are rejected.
 

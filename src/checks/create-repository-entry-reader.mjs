@@ -15,7 +15,7 @@ export function createRepositoryEntryReader({
 
   function discover() {
     subtreeEntries.clear();
-    entriesPromise = Promise.resolve(
+    const pending = Promise.resolve(
       findEntries(root, readDirectoryCached, {
         includeTestResults,
         includeTestResultsUnder,
@@ -25,7 +25,12 @@ export function createRepositoryEntryReader({
       snapshotRevision = readDirectoryCached.getRevision();
       return normalizeRepositoryInventoryRecords(root, records);
     });
-    return entriesPromise;
+    const discovery = pending.catch((error) => {
+      entriesPromise = undefined;
+      throw error;
+    });
+    entriesPromise = discovery;
+    return discovery;
   }
 
   async function refreshIfChanged(snapshot) {

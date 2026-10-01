@@ -59,7 +59,10 @@ beforeEach(() => {
   findImagePushes.mockReturnValue(pushes);
   imageDetails.mockImplementation((push) => ({ digestReference: `digest:${push.id}` }));
   expectedStages.forEach((stage, stageIndex) => {
-    stage.mockImplementation((segment) => segment.steps[stageIndex]);
+    const suffixes = ["attestation", "tag", "inspection", "verification", "handoff"];
+    stage.mockImplementation((segment) =>
+      segment.steps.find((step) => step.id.endsWith(suffixes[stageIndex])),
+    );
   });
 });
 
@@ -68,9 +71,9 @@ test("composes each push's evidence in stage order and confines it to that push 
 
   for (const stage of expectedStages) {
     expect(stage).toHaveBeenCalledTimes(2);
-    expect(stage.mock.calls[0][0].steps).toEqual(firstVerification);
-    expect(stage.mock.calls[1][0].steps).toEqual(secondVerification);
   }
+  expect(findAttestation.mock.calls[0][0].steps).toEqual(firstVerification);
+  expect(findAttestation.mock.calls[1][0].steps).toEqual(secondVerification);
   expect(imageDetails).toHaveBeenCalledWith(pushes[0]);
   expect(imageDetails).toHaveBeenCalledWith(pushes[1]);
   expect(
@@ -107,4 +110,17 @@ test("requires the final verification handoff to be the last job step", () => {
   steps.mockReturnValueOnce([...jobSteps, { run: "echo publication complete" }]);
 
   expect(hasOrderedImageVerificationChain({ steps: jobSteps })).toBe(false);
+});
+
+test("uses a later ordered chain when an earlier matching stage is out of order", () => {
+  const stepsWithEarlyLookalike = [
+    pushes[0],
+    firstVerification[1],
+    ...firstVerification,
+    pushes[1],
+    ...secondVerification,
+  ];
+  steps.mockReturnValue(stepsWithEarlyLookalike);
+
+  expect(hasOrderedImageVerificationChain({ steps: stepsWithEarlyLookalike })).toBe(true);
 });

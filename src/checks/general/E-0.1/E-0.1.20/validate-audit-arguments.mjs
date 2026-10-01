@@ -35,7 +35,7 @@ export function validateAuditArguments(args = []) {
     if (
       argument === "--" ||
       protectedOptions.has(argument) ||
-      argument.startsWith("--omit") ||
+      /^--omit(?:-|=|$)/u.test(argument) ||
       !allowedOptions.has(argument)
     ) {
       failures.push(

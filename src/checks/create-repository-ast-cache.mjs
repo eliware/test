@@ -24,7 +24,7 @@ export function createRepositoryAstCache({ read = readFile, parseSource = parse 
         : Promise.resolve(suppliedSource)
       ).then((source) => parseSource(source, options));
     const key = createRepositoryAstCacheKey(root, repositoryAstFile.repositoryFile, options);
-    if (key === null) return parseUncached();
+    if (key === null || suppliedSource !== undefined) return parseUncached();
     return parseCachedSource(key, () => readSource(key, absoluteFile, suppliedSource), options);
   };
 }

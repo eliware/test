@@ -38,6 +38,17 @@ test("selects the platform npm executable or npm exec path", () => {
       (path) => path === "C:\\node_modules\\npm\\bin\\npm-cli.js",
     ),
   ).toEqual(["C:\\node.exe", ["C:\\node_modules\\npm\\bin\\npm-cli.js"]]);
+  expect(
+    npmCommand(
+      "win32",
+      "C:\\stale\\npm-cli.js",
+      "C:\\missing\\node.exe",
+      (path) =>
+        path === "C:\\tools\\npm.cmd" || path === "C:\\tools\\node_modules\\npm\\bin\\npm-cli.js",
+      "C:\\repo",
+      "C:\\tools",
+    ),
+  ).toEqual(["C:\\missing\\node.exe", ["C:\\tools\\node_modules\\npm\\bin\\npm-cli.js"]]);
   expect(() => npmCommand("win32", "", "C:\\missing\\node.exe", () => false)).toThrow(
     "Unable to resolve the npm CLI on Windows",
   );

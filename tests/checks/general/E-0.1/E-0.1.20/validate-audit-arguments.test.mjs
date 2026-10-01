@@ -36,6 +36,7 @@ test("allows only harmless flags and rejects audit-scope overrides", () => {
   expect(validateAuditArguments()).toBeNull();
   for (const args of [
     ["--omit=dev"],
+    ["--omit-dev"],
     ["--omit", "optional"],
     ["--omit-optional"],
     ["--omit=peer"],
@@ -59,6 +60,7 @@ test("rejects non-string items before parsing audit options", () => {
   expect(validateAuditArguments("--no-fund")).toBe("Audit arguments must be an array of strings.");
   const sparseArguments = ["--no-fund"];
   sparseArguments.length = 2;
+  expect(Object.hasOwn(sparseArguments, 1)).toBe(false);
   expect(validateAuditArguments(sparseArguments)).toBe(
     "Audit arguments must be an array of strings.",
   );

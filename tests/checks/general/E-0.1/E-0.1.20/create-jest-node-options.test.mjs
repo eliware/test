@@ -6,6 +6,9 @@ test("adds the required Jest Node options while preserving supported warning set
   expect(createJestNodeOptions(" --experimental-vm-modules --trace-warnings ")).toBe(
     "--experimental-vm-modules --trace-warnings",
   );
+  expect(createJestNodeOptions("--trace-warnings")).toBe(
+    "--trace-warnings --experimental-vm-modules",
+  );
   expect(createJestNodeOptions("--trace-warnings=true")).toBe(
     "--trace-warnings=true --experimental-vm-modules",
   );

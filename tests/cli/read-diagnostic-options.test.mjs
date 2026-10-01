@@ -27,6 +27,10 @@ test("forwards non-wrapper Jest options unchanged", () => {
 
 test("preserves the delegation separator and its following arguments for policy validation", () => {
   expect(readDiagnosticOptions(["--audit", "--", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
+  expect(readDiagnosticOptions(["--audit", "--no-fund", "--", "--no-progress"]).toolArgs).toEqual([
+    "--no-fund",
+    "--no-progress",
+  ]);
 });
 
 test("rejects conflicting informational commands", () => {

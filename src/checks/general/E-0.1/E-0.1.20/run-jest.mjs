@@ -12,7 +12,7 @@ export async function runJest(root, args, execute, options, removeCoverage = rm)
   const prepared = await prepareJestRun(
     root,
     args,
-    (consumerRoot, prepareOptions) => resolveJestCli(consumerRoot, prepareOptions),
+    (consumerRoot) => resolveJestCli(consumerRoot),
     options,
   );
   let result;

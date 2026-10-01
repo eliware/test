@@ -1,12 +1,14 @@
 import { validateTextCoverageRows } from "./validate-text-coverage-rows.mjs";
 
 const metrics = ["statements", "branches", "functions", "lines"];
+const coverageValue = /^(?:\d+(?:\.\d*)?|\.\d+)%?$/u;
 
 function parseRow(line) {
   const columns = line.split("|").map((value) => value.trim());
   if (columns.length < 5 || !columns[0] || /^[-\s]+$/u.test(columns[0])) return null;
-  const values = columns.slice(1, 5).map((value) => Number.parseFloat(value));
-  if (values.some((value) => !Number.isFinite(value))) return null;
+  const rawValues = columns.slice(1, 5);
+  if (rawValues.some((value) => !coverageValue.test(value))) return null;
+  const values = rawValues.map((value) => Number.parseFloat(value));
   return { file: columns[0], values };
 }
 

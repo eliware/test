@@ -19,23 +19,24 @@ export function hasOrderedImageVerificationChain(job) {
     const segment = { ...job, steps: jobSteps.slice(pushIndex + 1, nextPushIndex) };
     const details = imageDetails(push);
     if (!details.digestReference) return false;
-    const verificationSteps = [
-      findAttestation(segment, details),
-      findVersionTagDigestVerification(segment, details),
-      findDigestInspection(segment, details),
-      findAttestationVerification(segment, details),
-      findDigestHandoff(segment, details),
+    const finders = [
+      findAttestation,
+      findVersionTagDigestVerification,
+      findDigestInspection,
+      findAttestationVerification,
+      findDigestHandoff,
     ];
-    const verificationIndices = verificationSteps.map((step) => segment.steps.indexOf(step));
-    if (index === pushes.length - 1)
-      finalVerificationIndex = pushIndex + verificationIndices.at(-1) + 1;
-    return (
-      verificationSteps.every(Boolean) &&
-      verificationIndices.every(
-        (stepIndex, position) =>
-          stepIndex >= 0 && (position === 0 || stepIndex > verificationIndices[position - 1]),
-      )
-    );
+    let searchStart = 0;
+    for (const [evidenceIndex, findEvidence] of finders.entries()) {
+      const remaining = { ...segment, steps: segment.steps.slice(searchStart) };
+      const evidence = findEvidence(remaining, details);
+      const foundIndex = remaining.steps.indexOf(evidence);
+      if (foundIndex < 0) return false;
+      if (index === pushes.length - 1 && evidenceIndex === finders.length - 1)
+        finalVerificationIndex = pushIndex + 1 + searchStart + foundIndex;
+      searchStart += foundIndex + 1;
+    }
+    return true;
   });
   return complete && finalVerificationIndex === jobSteps.length - 1;
 }

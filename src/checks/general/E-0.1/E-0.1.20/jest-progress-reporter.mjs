@@ -14,10 +14,6 @@ export default class JestProgressReporter {
   constructor(options = {}) {
     this.root = options.rootDir ?? process.cwd();
     this.report = createSafeReporterOutput("eliware-test-progress", options);
-    this.reportStdout = createSafeReporterOutput("eliware-test-progress", {
-      ...options,
-      write: options.writeStdout ?? ((text) => process.stdout.write(text)),
-    });
     this.consoleReportFile = process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
     this.consoleOutput = [];
   }
@@ -52,6 +48,5 @@ export default class JestProgressReporter {
 
   writeProgress(message) {
     this.report(message);
-    this.reportStdout(message);
   }
 }

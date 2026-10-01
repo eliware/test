@@ -3,13 +3,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, jest, test } from "@jest/globals";
 import { runJest } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-jest.mjs";
-import { resolveSharedJestCli } from "../../../../../src/checks/general/E-0.1/E-0.1.20/resolve-jest-cli.mjs";
 import { runChild } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-child.mjs";
 import { findUnexpectedJestOutput } from "../../../../../src/checks/general/E-0.1/E-0.1.20/inspect-jest-output.mjs";
 
 test("coordinates prepared command execution and returns the executor result", async () => {
   const execute = jest.fn(async () => ({ code: 0, stdout: "passed", stderr: "" }));
-  const result = await runJest(process.cwd(), [], execute, { jestCli: "jest-cli" });
+  const result = await runJest(process.cwd(), [], execute);
   expect(execute).toHaveBeenCalledTimes(1);
   expect(result).toMatchObject({ code: 0, stdout: "passed" });
   expect(result.reportError).toMatch("Could not read Jest's structured result report");
@@ -22,7 +21,7 @@ test("does not read structured reports after a failed Jest process", async () =>
     process.cwd(),
     [],
     async () => ({ code: 1, stdout: "failed", stderr: "" }),
-    { jestCli: "jest-cli", readReport },
+    { readReport },
   );
 
   expect(result.code).toBe(1);
@@ -37,7 +36,7 @@ test("reports structured report reader errors that are not Error objects", async
     process.cwd(),
     [],
     async () => ({ code: 0, stdout: "passed", stderr: "" }),
-    { jestCli: "jest-cli", readReport },
+    { readReport },
   );
 
   expect(result.reportError).toContain(
@@ -54,7 +53,7 @@ test("reports structured report reader errors with their message", async () => {
     process.cwd(),
     [],
     async () => ({ code: 0, stdout: "passed", stderr: "" }),
-    { jestCli: "jest-cli", readReport },
+    { readReport },
   );
 
   expect(result.reportError).toContain(
@@ -74,7 +73,6 @@ test("attaches the structured Jest report before retaining successful coverage a
     return { code: 0, stdout: "PASS tests/example.test.mjs\n", stderr: "" };
   };
   const result = await runJest(process.cwd(), [], execute, {
-    jestCli: "jest-cli",
     retainCoverageDirectory: true,
   });
   try {
@@ -94,7 +92,7 @@ test("cleans coverage artifacts when command execution throws", async () => {
       () => {
         throw new Error("Jest could not start");
       },
-      { jestCli: "jest-cli" },
+      {},
       removeCoverage,
     ),
   ).rejects.toThrow("Jest could not start");
@@ -122,10 +120,7 @@ test("runs bundled Jest from the consumer root and uses its configuration", asyn
     `test("uses consumer root", () => { console.log("actual consumer test output"); expect(process.cwd()).toBe(${JSON.stringify(root)}); });`,
   );
   try {
-    const result = await runJest(root, [], runChild, {
-      jestCli: resolveSharedJestCli(),
-      env: { ...process.env, CI: "true" },
-    });
+    const result = await runJest(root, [], runChild, { env: { ...process.env, CI: "true" } });
 
     expect(result.code).toBe(0);
     expect(findUnexpectedJestOutput(result, [], root)).toEqual([

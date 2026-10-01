@@ -18,6 +18,7 @@ export async function runNpmScript(
     execPath,
     undefined,
     root,
+    env?.PATH ?? env?.Path,
   );
   const executeScript = run ?? ((...args) => execute(...args, spawnProcess));
   return executeScript(command, [...prefix, ...buildNpmScriptArguments(scriptName)], {

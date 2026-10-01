@@ -121,6 +121,15 @@ test("applies depth and matching-file limits during lazy repository traversal", 
   );
 });
 
+test("enforces result limits when traversal does not report file callbacks", async () => {
+  const inventory = createRepositoryInventory("/repo", {
+    findEntries: jest.fn(async () => records),
+  });
+  await expect(
+    inventory.documentationFiles({ directory: "/repo/docs", maxFiles: 1 }),
+  ).rejects.toThrow("file limit");
+});
+
 test("keeps generated files out of scoped depth and result limits unless included", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-documentation-limits-"));
   await mkdir(join(root, "docs", "build", "nested"), { recursive: true });

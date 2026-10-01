@@ -74,10 +74,10 @@ test("uses the process environment when no child environment is provided", () =>
   });
 });
 
-test("bounds combined stream redactor retention by the shared output budget", () => {
+test("retains long secrets while respecting the shared output budget", () => {
   const secret = "s".repeat(51);
   const capture = createChildProcessOutputCapture({ env: {} }, [secret], 100);
   capture.push("stdout", "x".repeat(60));
   capture.push("stderr", "y".repeat(60));
-  expect(capture.finish()).toEqual({ stdout: "", stderr: "" });
+  expect(capture.finish()).toEqual({ stdout: "x".repeat(60), stderr: "y".repeat(40) });
 });

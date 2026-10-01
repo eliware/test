@@ -13,6 +13,7 @@ export function createRepositoryDirectoryEntries({
   let childIndex;
   let knownDirectories;
   let prunedDirectories;
+  let indexedRecords;
   return async function directoryEntries(directory) {
     const base = inventoryDirectory(
       root,
@@ -36,7 +37,8 @@ export function createRepositoryDirectoryEntries({
         }));
     }
     const records = await entries();
-    if (!childIndex) {
+    if (indexedRecords !== records) {
+      indexedRecords = records;
       childIndex = new Map();
       knownDirectories = new Set();
       prunedDirectories = new Set();
@@ -68,10 +70,11 @@ export function createRepositoryDirectoryEntries({
       });
     let children = childIndex.get(base || ".") ?? [];
     if (base && children.length === 0 && prunedDirectory) {
-      children = (await readDirectory(base)).map((entry) => ({
-        path: `${base}/${entry.name}`,
-        type: entry.isDirectory() ? "directory" : "file",
-      }));
+      children = (await readDirectory(base)).flatMap((entry) => {
+        const isDirectory = entry.isDirectory();
+        if (!isDirectory && !entry.isFile()) return [];
+        return [{ path: `${base}/${entry.name}`, type: isDirectory ? "directory" : "file" }];
+      });
     }
     return children.map((record) => ({
       name: basename(record.path),

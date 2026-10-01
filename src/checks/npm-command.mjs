@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { isAbsolute, resolve, win32 } from "node:path";
+import { resolveWindowsNpmCliFromPath } from "./resolve-windows-npm-cli-from-path.mjs";
 
 export function npmCommand(
   platform = process.platform,
@@ -7,6 +8,7 @@ export function npmCommand(
   execPath = process.execPath,
   fileExists = existsSync,
   workingDirectory = process.cwd(),
+  searchPath = process.env.PATH,
 ) {
   if (platform === "win32") {
     if (typeof npmExecPath === "string" && npmExecPath.trim()) {
@@ -17,8 +19,10 @@ export function npmCommand(
     }
     const npmCli = win32.join(win32.dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js");
     if (fileExists(npmCli)) return [execPath, [npmCli]];
+    const pathNpmCli = resolveWindowsNpmCliFromPath(searchPath, fileExists);
+    if (pathNpmCli) return [execPath, [pathNpmCli]];
     throw new Error(
-      "Unable to resolve the npm CLI on Windows; npm_execpath is unset and npm is not installed beside Node.js.",
+      "Unable to resolve the npm CLI on Windows from npm_execpath, beside Node.js, or on PATH.",
     );
   }
   if (npmExecPath) {

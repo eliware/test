@@ -56,10 +56,12 @@ test("suppresses stream output when suffix preprocessing exceeds its work budget
   expect(session.suppressed).toBe(true);
 });
 
-test("suppresses output for secrets longer than the retained matcher window", () => {
-  const session = createSession(["x".repeat(64_001)], 100_000);
-  expect(session.push("safe diagnostic")).toBe("");
-  expect(session.finish()).toBe("");
+test("expands the bounded matcher window for long secrets", () => {
+  const secret = "x".repeat(64_001);
+  const session = createSession([secret], 100_000);
+  const output = session.push(`safe diagnostic ${secret}`) + session.finish();
+  expect(output).toBe("safe diagnostic [REDACTED]");
+  expect(output).not.toContain(secret);
 });
 
 test("bounds per-chunk secret search work with many secrets", () => {
@@ -130,8 +132,9 @@ test("reuses matcher state when finishing a retained pending suffix", () => {
   expect(session.finish()).toBe("[REDACTED]");
 });
 
-test("suppresses secrets exceeding the configured pending-memory bound", () => {
+test("expands a configured pending window to fit the longest secret", () => {
   const session = createSession(["secret"], 100, { maxPendingLength: 3 });
-  expect(session.push("safe prefix")).toBe("");
-  expect(session.finish()).toBe("");
+  const output = session.push("safe prefix") + session.finish();
+  expect(output).toBe("safe prefix");
+  expect(session.suppressed).toBe(false);
 });

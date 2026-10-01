@@ -3,28 +3,27 @@ import { createBoundedSecretSearch } from "./create-bounded-secret-search.mjs";
 import { createPartialSecretSuffixTrimmer } from "./create-partial-secret-suffix-trimmer.mjs";
 
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
-const MAX_RETAINED_PENDING_LENGTH = 64_000;
-
+const DEFAULT_PENDING_LENGTH = 64_000;
 export function createRedactedStreamPolicy(
   secrets,
   outputLimit,
   {
     maxSearchWorkPerChunk = MAX_SECRET_SEARCH_WORK_PER_CHUNK,
-    maxPendingLength = MAX_RETAINED_PENDING_LENGTH,
+    maxPendingLength = DEFAULT_PENDING_LENGTH,
     getSecretMatcher,
   } = {},
 ) {
   const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, maxSearchWorkPerChunk));
-  const pendingLimit = Math.min(
-    MAX_RETAINED_PENDING_LENGTH,
-    Math.max(1, Math.floor(maxPendingLength)),
-  );
   const values = [...new Set(secrets.filter((secret) => typeof secret === "string" && secret))];
   const maximumSecretLength = values.reduce(
     (maximum, secret) => Math.max(maximum, secret.length),
     0,
   );
-  let suppressed = maximumSecretLength > outputLimit || maximumSecretLength > pendingLimit;
+  const pendingLimit = Math.min(
+    Math.max(1, Math.floor(outputLimit)),
+    Math.max(1, Math.floor(maxPendingLength), maximumSecretLength),
+  );
+  let suppressed = maximumSecretLength > outputLimit;
   const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
   if (!trimSuffix) suppressed = true;
   let findSecretEnds = null;

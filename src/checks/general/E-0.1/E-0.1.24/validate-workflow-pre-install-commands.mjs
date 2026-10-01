@@ -20,10 +20,7 @@ export function validateWorkflowPreInstallCommands(name, commands, installIndex,
     );
   const invalidSetup = commands.some(({ command, index }, position) => {
     if ((index ?? position) >= installIndex) return false;
-    const normalizedCommand = command.trim().replace(/\r?\n/gu, "\\n");
-    return (
-      /[\\<>]/u.test(normalizedCommand) || !safePreInstallReportingCommand.test(normalizedCommand)
-    );
+    return /[\\<>\r\n]/u.test(command) || !safePreInstallReportingCommand.test(command.trim());
   });
   return invalidSetup || invalidAction || invalidStepShape
     ? `${name} may only use approved actions; other steps must be safe reporting commands.`

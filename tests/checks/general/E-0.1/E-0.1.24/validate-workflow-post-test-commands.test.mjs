@@ -43,6 +43,15 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
   expect(validateWorkflowPostTestCommands("ci.yml", [], 0, "invalid steps")).toContain(
     "reporting commands after npm test",
   );
+  const testCommand = { run: "npm test" };
+  expect(
+    validateWorkflowPostTestCommands(
+      "ci.yml",
+      [{ command: "npm test", step: testCommand, index: 0 }],
+      0,
+      "malformed steps",
+    ),
+  ).toContain("reporting commands after npm test");
 });
 
 test("rejects shell expansion, redirection, and newline command injection", () => {

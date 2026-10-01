@@ -13,9 +13,7 @@ afterEach(async () => {
 });
 
 test("coordinates Jest preparation into one executable process request", async () => {
-  const prepared = await prepareJestRun(process.cwd(), [], (_root, options) => options.jestCli, {
-    jestCli: "consumer-jest",
-  });
+  const prepared = await prepareJestRun(process.cwd(), [], () => "consumer-jest");
   temporaryCoverageDirectories.push(prepared.coverageDirectory);
 
   expect(prepared.command).toBe(process.execPath);

@@ -58,3 +58,14 @@ test("rediscovers when a previously indexed directory disappears", async () => {
   await expect(reader.entries()).resolves.toEqual([]);
   expect(findEntries).toHaveBeenCalledTimes(2);
 });
+
+test("retries discovery after a transient refresh failure", async () => {
+  const { reader, findEntries, replaceRecords } = createReaderState();
+  await reader.entries();
+  replaceRecords([{ path: "recovered.mjs", type: "file" }]);
+  findEntries.mockRejectedValueOnce(new Error("temporary read failure"));
+
+  await expect(reader.entries()).rejects.toThrow("temporary read failure");
+  await expect(reader.entries()).resolves.toEqual([{ path: "recovered.mjs", type: "file" }]);
+  expect(findEntries).toHaveBeenCalledTimes(3);
+});
