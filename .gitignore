@@ -15,6 +15,7 @@ dist/
 .cache/
 .jest.result
 .nyc_output/
+.agentx*
 .DS_Store
 Thumbs.db
 .vscode/
