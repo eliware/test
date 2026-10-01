@@ -28,6 +28,7 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
     args: [
       jestCli,
       jestArguments[0],
+      "--no-color",
       "--coverageReporters=json",
       "--coverageReporters=json-summary",
       "--coverageReporters=text",

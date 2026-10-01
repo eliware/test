@@ -28,7 +28,7 @@ afterEach(() => {
   process.stdout.write = originalStdoutWrite;
 });
 
-test("reports suite and test progress without human timing output", () => {
+test("reports suite progress without per-test output", () => {
   const reporter = new JestProgressReporter();
   reporter.onTestStart({ path: "tests/example.test.mjs" });
   reporter.onTestResult(
@@ -38,7 +38,6 @@ test("reports suite and test progress without human timing output", () => {
   expect(writes).toEqual([
     "[eliware-test-progress] start tests/example.test.mjs\n",
     "[eliware-test-progress] complete tests/example.test.mjs 1.000s\n",
-    "[eliware-test-progress] test tests/example.test.mjs :: works 0.250s\n",
   ]);
   expect(stdoutWrites).toEqual(writes);
 });
@@ -66,20 +65,18 @@ test("reports a normal timed test without a slow marker", () => {
     { path: "tests/normal.test.mjs" },
     { assertionResults: [{ fullName: "normal", duration: 1_000 }] },
   );
-  expect(writes).toEqual([
-    "[eliware-test-progress] complete tests/normal.test.mjs 0.000s\n",
-    "[eliware-test-progress] test tests/normal.test.mjs :: normal 1.000s\n",
-  ]);
+  expect(writes).toEqual(["[eliware-test-progress] complete tests/normal.test.mjs 0.000s\n"]);
 });
 
-test("falls back to the assertion title when fullName is absent", () => {
+test("uses the assertion title for slow-test diagnostics when fullName is absent", () => {
   new JestProgressReporter().onTestResult(
     { path: "tests/title.test.mjs" },
-    { assertionResults: [{ title: "title fallback", duration: 1_000 }] },
+    { assertionResults: [{ title: "title fallback", duration: 6_000 }] },
   );
-  expect(writes).toContain(
-    "[eliware-test-progress] test tests/title.test.mjs :: title fallback 1.000s\n",
-  );
+  expect(writes).toEqual([
+    "[eliware-test-progress] complete tests/title.test.mjs 0.000s\n",
+    "[eliware-test-progress] slow tests/title.test.mjs :: title fallback :: 6.000s\n",
+  ]);
 });
 
 test("accepts a result without assertion results", () => {

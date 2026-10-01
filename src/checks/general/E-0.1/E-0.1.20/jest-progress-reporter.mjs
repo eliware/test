@@ -41,7 +41,6 @@ export default class JestProgressReporter {
       if (!Number.isFinite(assertion.duration)) continue;
       const duration = assertion.duration / 1000;
       const name = assertion.fullName ?? assertion.title;
-      this.writeProgress(`test ${path} :: ${name} ${duration.toFixed(3)}s`);
       if (duration > 5) this.writeProgress(`slow ${path} :: ${name} :: ${duration.toFixed(3)}s`);
     }
   }

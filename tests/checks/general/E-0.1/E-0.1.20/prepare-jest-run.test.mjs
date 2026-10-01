@@ -20,6 +20,7 @@ test("coordinates Jest preparation into one executable process request", async (
 
   expect(prepared.command).toBe(process.execPath);
   expect(prepared.args[0]).toBe("consumer-jest");
+  expect(prepared.args).toContain("--no-color");
   expect(prepared.args).toContain("--coverageReporters=json");
   expect(prepared.args).toContain("--json");
   expect(prepared.args).toContain("--outputFile");
