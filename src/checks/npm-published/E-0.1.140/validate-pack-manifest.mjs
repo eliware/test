@@ -1,3 +1,5 @@
+import { readPackManifest } from "./read-pack-manifest.mjs";
+
 function allowedByEntry(path, entry) {
   const normalized = entry.replace(/\/$/u, "");
   return path === normalized || path.startsWith(`${normalized}/`);
@@ -15,30 +17,10 @@ function safeAllowlistEntry(entry) {
   return safeRelativePath(entry) && !/[*!?{}()[\]]/u.test(entry) && !entry.startsWith("!");
 }
 
-function normalizeRedactedPackMetadata(stdout) {
-  return stdout.replace(
-    /("(?:size|unpackedSize|entryCount|mode)"\s*:\s*)(?:\d|\[REDACTED\])+/gu,
-    (_match, property) => `${property}0`,
-  );
-}
-
 export function validatePackManifest(stdout, files, packageName) {
-  let manifest;
-  try {
-    manifest = JSON.parse(stdout);
-  } catch {
-    const normalized = normalizeRedactedPackMetadata(stdout);
-    if (normalized === stdout) return "npm pack returned invalid JSON manifest.";
-    try {
-      manifest = JSON.parse(normalized);
-    } catch {
-      return "npm pack returned invalid JSON manifest.";
-    }
-  }
-  if (manifest === null || typeof manifest !== "object")
-    return "npm pack JSON manifest must contain a files array with paths.";
-  const entry = selectManifestEntry(manifest, packageName);
-  if (!entry) return "npm pack JSON manifest does not contain exactly the requested package.";
+  const parsed = readPackManifest(stdout, packageName);
+  if (parsed.error) return parsed.error;
+  const { entry } = parsed;
   const packed = entry.files;
   if (!Array.isArray(packed) || packed.some((entry) => typeof entry?.path !== "string")) {
     return "npm pack JSON manifest must contain a files array with paths.";
@@ -71,22 +53,4 @@ export function validatePackManifest(stdout, files, packageName) {
     return `package.json.files entries do not match packed files: ${unused.join(", ")}.`;
   }
   return null;
-}
-
-function selectManifestEntry(manifest, packageName) {
-  if (Array.isArray(manifest)) {
-    const candidates = packageName
-      ? manifest.filter((entry) => entry?.name === packageName)
-      : manifest;
-    return candidates.length === 1 ? candidates[0] : null;
-  }
-  if (Array.isArray(manifest?.files)) {
-    return !packageName || manifest.name === packageName ? manifest : null;
-  }
-  if (packageName) {
-    const entry = manifest?.[packageName];
-    return entry?.name === packageName ? entry : null;
-  }
-  const candidates = Object.values(manifest).filter((entry) => Array.isArray(entry?.files));
-  return candidates.length === 1 ? candidates[0] : null;
 }
