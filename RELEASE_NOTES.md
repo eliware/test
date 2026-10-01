@@ -1,6 +1,6 @@
 # Release Notes
 
-## 9.0.0 — 2026-09-30
+## 9.0.0 — 2026-10-01
 
 ### Breaking changes
 
