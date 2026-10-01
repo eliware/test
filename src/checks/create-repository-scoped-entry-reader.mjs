@@ -13,7 +13,7 @@ export function createRepositoryScopedEntryReader({
 }) {
   const { entries, subtreeEntries, hasFullDiscovery } = entryReader;
 
-  return async function entriesUnder(directory = root, fileFilter = null) {
+  return async function entriesUnder(directory = root, fileFilter = null, traversal = {}) {
     const base = inventoryDirectory(
       root,
       directory,
@@ -36,6 +36,7 @@ export function createRepositoryScopedEntryReader({
         expandedDirectories,
         scopeDirectory: base,
         fileFilter,
+        ...traversal,
       };
       const records = normalizeRepositoryInventoryRecords(
         root,
@@ -50,6 +51,7 @@ export function createRepositoryScopedEntryReader({
         includeTestResultsUnder,
         expandedDirectories,
         scopeDirectory: base,
+        ...traversal,
       };
       const records =
         findEntries === findRepositoryEntries

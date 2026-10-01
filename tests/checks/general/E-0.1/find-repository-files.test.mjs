@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -13,6 +13,21 @@ test("discovers repository files while excluding dependency and generated trees"
   await writeFile(join(root, "README.md"), "readme");
   await writeFile(join(root, "node_modules", "ignored.txt"), "ignored");
   await expect(findRepositoryFiles(root)).resolves.toEqual(["README.md"]);
+  await rm(root, { recursive: true, force: true });
+});
+
+test("filters discovered files and reports accepted paths to the traversal observer", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-filtered-entries-"));
+  await writeFile(join(root, "guide.md"), "guide");
+  await writeFile(join(root, "data.json"), "{}");
+  const observed = [];
+  await expect(
+    findRepositoryEntries(root, readdir, {
+      fileFilter: (path) => path.endsWith(".md"),
+      onFile: (path) => observed.push(path),
+    }),
+  ).resolves.toContainEqual({ path: "guide.md", type: "file", depth: 0 });
+  expect(observed).toEqual(["guide.md"]);
   await rm(root, { recursive: true, force: true });
 });
 
@@ -101,6 +116,24 @@ test("walks a requested subtree and rejects scopes outside the repository", asyn
   await expect(
     findRepositoryEntries(root, undefined, { scopeDirectory: "C:/outside" }),
   ).rejects.toThrow("inside the repository");
+  await rm(root, { recursive: true, force: true });
+});
+
+test("enforces scoped depth before reading deeper directories", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-bounded-inventory-"));
+  await mkdir(join(root, "docs", "nested", "deeper"), { recursive: true });
+  const reads = [];
+  await expect(
+    findRepositoryEntries(
+      root,
+      async (directory, options) => {
+        reads.push(directory);
+        return readdir(directory, options);
+      },
+      { scopeDirectory: "docs", maxDepth: 0 },
+    ),
+  ).rejects.toThrow("depth limit");
+  expect(reads).toEqual([join(root, "docs")]);
   await rm(root, { recursive: true, force: true });
 });
 

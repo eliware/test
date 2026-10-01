@@ -1,4 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
+import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
 
 const records = [
@@ -99,4 +102,49 @@ test("enforces traversal depth for files even when ancestor directory entries ar
   await expect(
     inventory.documentationFiles({ directory: "/repo/docs", maxDepth: 1 }),
   ).rejects.toThrow("depth limit");
+});
+
+test("applies depth and matching-file limits during lazy repository traversal", async () => {
+  const findEntries = jest.fn(async (_root, _readDirectory, options) => {
+    options.onFile("docs/index.md");
+    options.onFile("docs/other.md");
+    return records;
+  });
+  const inventory = createRepositoryInventory("/repo", { findEntries });
+  await expect(
+    inventory.documentationFiles({ directory: "/repo/docs", maxDepth: 3, maxFiles: 1 }),
+  ).rejects.toThrow("file limit");
+  expect(findEntries).toHaveBeenCalledWith(
+    "/repo",
+    expect.any(Function),
+    expect.objectContaining({ maxDepth: 3, scopeDirectory: "docs", onFile: expect.any(Function) }),
+  );
+});
+
+test("keeps generated files out of scoped depth and result limits unless included", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-documentation-limits-"));
+  await mkdir(join(root, "docs", "build", "nested"), { recursive: true });
+  await writeFile(join(root, "docs", "build", "nested", "index.md"), "generated");
+  try {
+    const included = createRepositoryInventory(root, {
+      readDirectory: readdir,
+      expandedDirectories: ["docs"],
+    });
+    await expect(
+      included.documentationFiles({ directory: join(root, "docs"), includeGenerated: true }),
+    ).resolves.toEqual(["build/nested/index.md"]);
+    const excluded = createRepositoryInventory(root, {
+      readDirectory: readdir,
+      expandedDirectories: ["docs"],
+    });
+    await expect(
+      excluded.documentationFiles({
+        directory: join(root, "docs"),
+        maxDepth: 0,
+        maxFiles: 0,
+      }),
+    ).resolves.toEqual([]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

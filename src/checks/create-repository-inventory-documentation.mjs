@@ -17,7 +17,20 @@ export function createDocumentationFileView(root, entriesUnder) {
       "Documentation inventory directory must be inside the repository.",
     );
     const prefix = base ? `${base}/` : "";
-    const records = await entriesUnder(directory);
+    const selectedPaths = new Set();
+    let traversalObserved = false;
+    const records = await entriesUnder(directory, null, {
+      maxDepth,
+      maxDepthFilter: (path) => includeGenerated || !generatedPath.test(path),
+      onFile(path) {
+        traversalObserved = true;
+        const file = path.slice(prefix.length);
+        if ((!includeGenerated && generatedPath.test(path)) || !predicate(basename(file))) return;
+        selectedPaths.add(path);
+        if (selectedPaths.size > maxFiles)
+          throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);
+      },
+    });
     const directories = records.filter(
       ({ path, type }) => type === "directory" && (includeGenerated || !generatedPath.test(path)),
     );
@@ -53,7 +66,8 @@ export function createDocumentationFileView(root, entriesUnder) {
       )
         continue;
       const file = record.path.slice(prefix.length);
-      if (!predicate(basename(file))) continue;
+      if (traversalObserved ? !selectedPaths.has(record.path) : !predicate(basename(file)))
+        continue;
       result.push(file);
       if (result.length > maxFiles)
         throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);

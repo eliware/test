@@ -36,13 +36,6 @@ export function resolveTaskkillExecutable(env = process.env) {
 }
 
 function terminateWithPowerShell(pid, env, execute, options) {
-  const powershell = resolveWindowsExecutable(
-    env,
-    "System32",
-    "WindowsPowerShell",
-    "v1.0",
-    "powershell.exe",
-  );
   const script =
     "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
     "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
@@ -52,10 +45,24 @@ function terminateWithPowerShell(pid, env, execute, options) {
     "} while($changed); for($index=$descendants.Count-1; $index -ge 0; $index--) { " +
     "Stop-Process -Id $descendants[$index] -Force -ErrorAction SilentlyContinue }; " +
     "Stop-Process -Id $root -Force -ErrorAction SilentlyContinue";
-  execute(powershell, ["-NoProfile", "-NonInteractive", "-Command", script], {
+  const args = ["-NoProfile", "-NonInteractive", "-Command", script];
+  const commandOptions = {
     ...options,
     env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) },
-  });
+  };
+  try {
+    execute(
+      resolveWindowsExecutable(env, "System32", "WindowsPowerShell", "v1.0", "powershell.exe"),
+      args,
+      commandOptions,
+    );
+  } catch (powershellError) {
+    try {
+      execute("pwsh.exe", args, commandOptions);
+    } catch (pwshError) {
+      throw new AggregateError([powershellError, pwshError], "PowerShell fallbacks failed.");
+    }
+  }
 }
 
 export function createWindowsProcessTreeKiller(

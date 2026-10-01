@@ -11,6 +11,9 @@ export async function findRepositoryEntries(
     includeTestResultsUnder = [],
     expandedDirectories = [],
     fileFilter,
+    maxDepth = Infinity,
+    maxDepthFilter = () => true,
+    onFile,
     scopeDirectory = "",
   } = {},
 ) {
@@ -40,6 +43,13 @@ export async function findRepositoryEntries(
       const relativePath = relative(root, join(directory, entry.name)).replaceAll("\\", "/");
       if (entry.isDirectory()) {
         if (entry.name !== "test-results" || includesTestResultsAt(relativePath)) {
+          if (
+            maxDepthFilter(relativePath) &&
+            depth + 1 - (scope ? scope.split("/").length : 0) > maxDepth
+          )
+            throw new Error(
+              `Repository inventory traversal exceeded the ${maxDepth}-level depth limit.`,
+            );
           entries.push({ path: relativePath, type: "directory", depth: depth + 1 });
           const childPath = relative(root, join(directory, entry.name)).replaceAll("\\", "/");
           const expandGeneratedDirectory = expandedDirectories.some(
@@ -49,6 +59,7 @@ export async function findRepositoryEntries(
             await visit(join(directory, entry.name), depth + 1);
         }
       } else if (entry.isFile() && (!fileFilter || fileFilter(relativePath))) {
+        onFile?.(relativePath);
         entries.push({ path: relativePath, type: "file", depth });
       }
     }

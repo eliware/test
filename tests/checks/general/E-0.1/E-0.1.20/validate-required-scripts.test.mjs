@@ -46,6 +46,12 @@ test("reports every incorrect required validation script", () => {
   expect(result).toContain("package.json.scripts.lint must be exactly eliware-test --lint.");
 });
 
+test.each([null, "", "  ", 42])("reports malformed required scripts once: %s", (testCommand) => {
+  expect(validateRequiredScripts({ ...scripts, test: testCommand })).toBe(
+    "package.json.scripts.test must be a nonempty command.",
+  );
+});
+
 test("requires the npm publication pack script when the profile applies", () => {
   expect(validateRequiredScripts(scripts, { requiresPack: true })).toBe(
     "package.json.scripts.pack must be exactly eliware-test --pack.",

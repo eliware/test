@@ -25,6 +25,13 @@ export function validateRequiredScripts(
   if (selfHostedResolution) failures.push(...selfHostedResolution.failures);
   const applicableScripts = selfHostedResolution?.scripts ?? canonicalScripts;
   for (const [name, command] of Object.entries(applicableScripts)) {
+    if (
+      scripts[name] !== undefined &&
+      (typeof scripts[name] !== "string" || !scripts[name].trim())
+    ) {
+      failures.push(`package.json.scripts.${name} must be a nonempty command.`);
+      continue;
+    }
     if (scripts?.[name] !== command)
       failures.push(`package.json.scripts.${name} must be exactly ${command}.`);
   }
@@ -34,6 +41,7 @@ export function validateRequiredScripts(
       failures.push(`package.json.scripts.${name} is not allowed by an applicable profile.`);
       continue;
     }
+    if (Object.hasOwn(applicableScripts, name)) continue;
     if (typeof command !== "string" || !command.trim()) {
       failures.push(`package.json.scripts.${name} must be a nonempty command.`);
     }

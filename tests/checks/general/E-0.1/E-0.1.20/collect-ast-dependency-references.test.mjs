@@ -1,6 +1,7 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { parse } from "@babel/parser";
 import { collectAstReferences } from "../../../../../src/checks/general/E-0.1/E-0.1.20/collect-ast-dependency-references.mjs";
+import { collectRequireBindingScopes } from "../../../../../src/checks/general/E-0.1/E-0.1.20/collect-require-binding-scopes.mjs";
 
 function collect(source, declared = ["alpha", "beta"]) {
   const referenced = new Set();
@@ -24,6 +25,16 @@ test("collects references recursively across static, dynamic, and resolver synta
       resolvePackage("alpha/package.json");
     `),
   ).toEqual({ referenced: ["alpha", "beta"], uncertain: false });
+});
+
+test("collects require-binding scopes once for the root AST", () => {
+  const ast = parse('function nested(require) { require("alpha"); }', {
+    sourceType: "module",
+  }).program;
+  const collectScopes = jest.fn(collectRequireBindingScopes);
+  collectAstReferences(ast, ["alpha"], new Set(), { value: false }, collectScopes);
+  expect(collectScopes).toHaveBeenCalledTimes(1);
+  expect(collectScopes).toHaveBeenCalledWith(ast);
 });
 
 test("marks dynamic import calls uncertain when their expression may name a dependency", () => {

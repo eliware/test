@@ -27,11 +27,14 @@ export function createRedactedStreamPolicy(
   let suppressed = maximumSecretLength > outputLimit || maximumSecretLength > pendingLimit;
   const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
   if (!trimSuffix) suppressed = true;
-  const findSecretEnds = suppressed
-    ? null
-    : getSecretMatcher
+  let findSecretEnds = null;
+  if (!suppressed) {
+    const matcher = getSecretMatcher
       ? getSecretMatcher(values, { maxScanWork: workLimit })
       : createSecretTextMatcher(values, values.length === 0 ? {} : { maxScanWork: workLimit });
+    if (typeof matcher === "function") findSecretEnds = matcher;
+    else suppressed = true;
+  }
   const findSafeBoundary = suppressed
     ? null
     : createBoundedSecretSearch(values, workLimit, findSecretEnds);

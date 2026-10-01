@@ -1,9 +1,15 @@
 import { collectRequireBindingScopes } from "./collect-require-binding-scopes.mjs";
 import { classifyAstDependencyReference } from "./classify-ast-dependency-reference.mjs";
 
-export function collectAstReferences(node, declared, referenced, uncertain = { value: false }) {
+export function collectAstReferences(
+  node,
+  declared,
+  referenced,
+  uncertain = { value: false },
+  collectScopes = collectRequireBindingScopes,
+) {
   if (!node || typeof node !== "object") return;
-  const requireBindingScopes = collectRequireBindingScopes(node);
+  const requireBindingScopes = collectScopes(node);
   collectAstNodeReferences(node, declared, referenced, uncertain, false, requireBindingScopes);
 }
 

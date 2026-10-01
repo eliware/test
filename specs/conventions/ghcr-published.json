@@ -65,7 +65,7 @@
           "id": "E-0.1.160.5",
           "dos": [
             "Every GHCR publication must generate a signed GitHub artifact attestation using actions/attest@v4 after the image push, with id-token: write, attestations: write, artifact-metadata: write, contents: read, and packages: write permissions as required by the attestation workflow.",
-            "The attestation must use the fully qualified image name without a tag and the pushed image digest as subject-digest, set push-to-registry: true, and record the attestation result with the release handoff."
+            "The attestation must use the fully qualified image name without a tag and the pushed image digest as subject-digest, set push-to-registry: true, and record the digest in GITHUB_STEP_SUMMARY using a single-line echo command that appends the exact digest reference with >> \"$GITHUB_STEP_SUMMARY\". The summary command must not contain shell control operators or command substitution."
           ],
           "donts": [
             "Do not treat provenance or signing as optional project hardening, use a tag instead of the immutable digest as the attestation subject, or publish an image without its signed attestation."

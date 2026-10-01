@@ -28,6 +28,7 @@ test("clamps minimum limits and uses the default matcher when no matcher is inje
   });
   expect(policy).toMatchObject({ workLimit: 1, pendingLimit: 1, values: [], suppressed: false });
   expect(policy.findSecretEnds("safe")).toEqual([0, 0, 0, 0, 0]);
+  expect(createRedactedStreamPolicy(["secret"], 20).suppressed).toBe(false);
 });
 
 test("suppresses unsafe output when a secret is too long for the output limit", () => {
@@ -43,4 +44,16 @@ test("suppresses output when suffix preprocessing would exceed its work budget",
   const policy = createRedactedStreamPolicy(secrets, 100_000);
   expect(policy.suppressed).toBe(true);
   expect(policy.trimSuffix).toBeNull();
+});
+
+test.each([null, {}])("suppresses output when matcher construction returns %p", (matcher) => {
+  const policy = createRedactedStreamPolicy(["secret"], 20, {
+    getSecretMatcher: () => matcher,
+  });
+
+  expect(policy).toMatchObject({
+    findSecretEnds: null,
+    findSafeBoundary: null,
+    suppressed: true,
+  });
 });

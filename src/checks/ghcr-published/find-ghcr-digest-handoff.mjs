@@ -1,4 +1,4 @@
-import { stepText, steps } from "./workflow-structure.mjs";
+import { steps } from "./workflow-structure.mjs";
 
 function requiredStep(step) {
   return (
@@ -17,10 +17,15 @@ export function findDigestHandoff(job, details) {
 
 export function hasRecordedDigestEvidence(job, details) {
   return steps(job).some((step) => {
-    const command = stepText(step).trim();
-    return (
-      /GITHUB_STEP_SUMMARY|release[- ]handoff/iu.test(command) &&
-      command.includes(details.digestReference)
-    );
+    const command = typeof step?.run === "string" ? step.run.trim() : "";
+    const match = /^echo\s+(.+?)\s+>>\s+"\$GITHUB_STEP_SUMMARY"$/u.exec(command);
+    if (!match) return false;
+    const value = match[1];
+    const digestIndex = value.indexOf(details.digestReference);
+    if (digestIndex < 0 || value.indexOf(details.digestReference, digestIndex + 1) >= 0)
+      return false;
+    const surroundingText =
+      value.slice(0, digestIndex) + value.slice(digestIndex + details.digestReference.length);
+    return !/[;<>|&`$]/u.test(surroundingText);
   });
 }

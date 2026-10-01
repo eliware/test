@@ -55,7 +55,21 @@ test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
   expect(calls[1].options.env.ELIWARE_TEST_PROCESS_ID).toBe("42");
 });
 
-test("reports both failures when neither Windows tree terminator succeeds", () => {
+test("falls back to PowerShell Core when Windows PowerShell is unavailable", () => {
+  const calls = [];
+  const state = { running: true };
+  const execute = (command, args) => {
+    calls.push(command);
+    if (calls.length < 3) throw new Error("command unavailable");
+    state.running = false;
+    expect(args).toContain("-NonInteractive");
+  };
+  createKiller(execute, state)(42, { SystemRoot: "C:/Windows" });
+  expect(calls).toHaveLength(3);
+  expect(calls[2]).toBe("pwsh.exe");
+});
+
+test("reports failures when no Windows tree terminator succeeds", () => {
   const state = { running: true };
   const execute = jest.fn(() => {
     throw new Error("process unavailable");
@@ -63,7 +77,7 @@ test("reports both failures when neither Windows tree terminator succeeds", () =
   expect(() => createKiller(execute, state)(42, { SystemRoot: "C:/Windows" })).toThrow(
     "Windows process-tree termination failed",
   );
-  expect(execute).toHaveBeenCalledTimes(2);
+  expect(execute).toHaveBeenCalledTimes(3);
 });
 
 test("does not report success until the process is observed closed", () => {

@@ -32,8 +32,9 @@ eliware-test --audit
 
 The following npm scripts are available only in this package's own repository:
 `npm test`, `npm run lint`, `npm run format`, `npm run format:check`,
-`npm run audit`, and `npm run pack`. Package validation with `--pack` applies
-only when the `npm-published` profile is selected.
+`npm run audit`, and `npm run pack`. The `--pack` mode selects package
+validation only when the `npm-published` profile is selected. Without that
+profile, the command has no applicable package check and does not run `npm pack`.
 
 The normal test command runs the configured validation stages. Each public
 tool mode has its own accepted arguments. Audit accepts only `--no-fund` and
@@ -54,8 +55,8 @@ lint options are rejected before Oxlint starts. Validation modes select the
 applicable check; repository inventory remains lazy and traverses the paths
 requested by that check when it asks for repository-wide entries.
 
-The `--pack` mode runs `npm pack` validation. The npm package contract it checks
-applies to repositories that select the `npm-published` profile.
+The `--pack` mode runs `npm pack` validation for repositories that select the
+`npm-published` profile. Other repositories have no applicable pack check.
 
 Tool modes may not be combined with a focused Jest test path. Paths supplied
 to a tool mode are forwarded as tool arguments; focused paths are reserved for
