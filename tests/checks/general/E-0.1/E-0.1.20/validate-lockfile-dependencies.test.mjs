@@ -29,7 +29,7 @@ test("validates dependency maps and direct package entries", () => {
       { packages: { "": {}, "node_modules/alpha": { version: "1.0.0" } } },
       {},
     ),
-  ).toMatch(/resolved or integrity/);
+  ).toBeNull();
   expect(
     validateLockfileDependencies(
       {

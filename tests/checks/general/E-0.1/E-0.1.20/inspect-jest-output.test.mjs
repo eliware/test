@@ -11,12 +11,42 @@ test("allows Jest summaries and harness timing lines", () => {
   ).toEqual([]);
 });
 
+test("does not classify coverage rows containing token in their paths as test output", () => {
+  expect(
+    findUnexpectedJestOutput(
+      {
+        stdout: [
+          "File                     | % Stmts | % Branch | % Funcs | % Lines |",
+          "src/app/routes/token     |   95.34 |       90 |    90.9 |   95.12 |",
+          "src/domain/token         |     100 |    93.22 |     100 |     100 |",
+          "",
+        ].join("\n"),
+      },
+      ["coverage-test-secret"],
+    ),
+  ).toEqual([]);
+});
+
+test("continues to detect and redact actual output containing credential labels", () => {
+  expect(findUnexpectedJestOutput({ stdout: "application log: token leaked-value\n" })).toEqual([
+    "Unexpected output from unknown test suite: application log: token [REDACTED]",
+  ]);
+});
+
 test("allows harness diagnostics echoed by the Jest stage", () => {
   expect(findUnexpectedJestOutput({ stderr: "E-0.1.20: Jest failed: diagnostic\n" })).toEqual([]);
 });
 
 test("allows truncated harness progress output", () => {
   expect(findUnexpectedJestOutput({ stderr: "[eliware-test-progr…\n" })).toEqual([]);
+});
+
+test("preserves slow-test diagnostics while redacting their output", () => {
+  expect(
+    findUnexpectedJestOutput({
+      stderr: "[eliware-test-progress] slow tests/slow.test.mjs :: slow case :: 6.1s\n",
+    }),
+  ).toEqual(["Slow test in tests/slow.test.mjs: slow case took 6.1s (limit: 5s)."]);
 });
 
 test("detects unexpected lines and logged console output", () => {

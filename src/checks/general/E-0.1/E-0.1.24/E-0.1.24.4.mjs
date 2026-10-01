@@ -18,7 +18,9 @@ export async function run({ root, packageJson, repositoryInventory }) {
   const allowAttestation = workflowAllowsAttestation(packageJson);
   const failures = [];
   for (const { name, document } of workflows) {
-    const selection = selectWorkflowValidationJobs(name, document);
+    const selection = selectWorkflowValidationJobs(name, document, {
+      allowGhcrPublication: allowAttestation,
+    });
     if (selection.error) {
       failures.push(selection.error);
       continue;

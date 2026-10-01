@@ -453,7 +453,7 @@
                 "Every active GitHub Actions validation workflow must contain only repository validation steps plus required setup and non-publishing reporting steps; its validation flow is npm ci followed immediately by npm test in an unconditional Ubuntu validation job. Those required steps must not override their environment, shell, or working directory.",
                 "Before npm ci, allow only literal safe echo or printf reporting without shell or workflow-expression expansion in supported run steps and approved setup actions; reject dollar signs and backticks even inside single quotes, file creation, shell redirections, unsupported step fields, and invalid step execution forms.",
                 "Sibling setup or reporting jobs may contain only the separately permitted setup and non-publishing reporting commands; they must not run npm ci or npm test outside the validation job.",
-                "Publication workflows must be separate from the general validation workflow and governed by the applicable publication profile and Operations release policy."
+                "Publication workflows must be separate from the general validation workflow and governed by the applicable publication profile and Operations release policy. When ghcr-published applies, its GHCR publisher job may contain publication and post-push verification commands only as required and validated by the GHCR profile."
               ],
               "donts": [
                 "Do not allow arbitrary printf commands or redirects to write repository files before npm ci; pre-install printf is limited to literal safe reporting arguments.",

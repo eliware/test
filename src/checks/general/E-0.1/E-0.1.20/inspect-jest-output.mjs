@@ -9,8 +9,6 @@ export function findUnexpectedJestOutput(
   secrets = [],
   root,
 ) {
-  stdout = redactProcessOutput(stdout, secrets);
-  stderr = redactProcessOutput(stderr, secrets);
   const parsed = report ? { text: stdout, report } : parseJsonOutput(stdout);
   const outputRecords = [...(consoleOutput ?? []), ...reportConsoleOutput(parsed.report)];
   const findings = findUnexpectedJestLineRecords(parsed.text)
@@ -20,9 +18,11 @@ export function findUnexpectedJestOutput(
         !/^\[?eliware(?:-test)?(?:-progress)?\b/u.test(record.line) &&
         !isDefaultJestConsoleLine(record, outputRecords, root),
     )
-    .map(({ line, suite }) => formatUnexpected(line, suite));
+    .map(({ line, suite }) => redactProcessOutput(formatUnexpected(line, suite), secrets));
   if (reportError) findings.push(redactProcessOutput(reportError, secrets));
-  findings.push(...findSlowTestFindings(stderr));
+  findings.push(
+    ...findSlowTestFindings(stderr).map((finding) => redactProcessOutput(finding, secrets)),
+  );
   findings.push(...findJestConsoleOutput(parsed.report, root, secrets, consoleOutput));
   findings.push(
     ...findUnexpectedJestLineRecords(stderr)
@@ -33,7 +33,7 @@ export function findUnexpectedJestOutput(
           !/^E-0.1\.20(?::|\.)/.test(line) &&
           !isDefaultJestConsoleLine({ line, suite }, outputRecords, root),
       )
-      .map(({ line, suite }) => formatUnexpected(line, suite)),
+      .map(({ line, suite }) => redactProcessOutput(formatUnexpected(line, suite), secrets)),
   );
   return [...new Set(findings)];
 }

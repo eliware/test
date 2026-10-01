@@ -1,6 +1,7 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 
 const findPublicationCommand = jest.fn();
+const isGhcrImagePublicationJob = jest.fn();
 const isValidationWorkflowJob = jest.fn();
 const validateWorkflowSiblingJobs = jest.fn();
 const validateWorkflowValidationJobs = jest.fn();
@@ -8,6 +9,10 @@ const validateWorkflowValidationJobs = jest.fn();
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.24/classify-workflow-commands.mjs",
   () => ({ findPublicationCommand, isValidationWorkflowJob }),
+);
+jest.unstable_mockModule(
+  "../../../../../src/checks/general/E-0.1/E-0.1.24/is-ghcr-image-publication-job.mjs",
+  () => ({ isGhcrImagePublicationJob }),
 );
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-sibling-jobs.mjs",
@@ -25,6 +30,7 @@ const validJob = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
 beforeEach(() => {
   jest.resetAllMocks();
   findPublicationCommand.mockReturnValue(undefined);
+  isGhcrImagePublicationJob.mockReturnValue(false);
   validateWorkflowValidationJobs.mockReturnValue(null);
   isValidationWorkflowJob.mockReturnValue(false);
   validateWorkflowSiblingJobs.mockReturnValue(null);
@@ -51,6 +57,30 @@ test("selects validation jobs and returns their normalized commands", () => {
     expect.arrayContaining([expect.objectContaining({ id: "validate" })]),
     new Set(["validate"]),
     false,
+    false,
+  );
+});
+
+test("accepts a profile-validated GHCR publisher as a separate publication job", () => {
+  const publisher = {
+    steps: [{ uses: "docker/build-push-action@v6", with: { push: true } }],
+  };
+  isGhcrImagePublicationJob.mockReturnValue(true);
+  const result = selectWorkflowValidationJobs(
+    "publish.yml",
+    {
+      jobs: { validate: validJob, publish: publisher },
+    },
+    { allowGhcrPublication: true },
+  );
+
+  expect(result.error).toBeNull();
+  expect(validateWorkflowSiblingJobs).toHaveBeenCalledWith(
+    "publish.yml",
+    expect.arrayContaining([expect.objectContaining({ id: "publish" })]),
+    new Set(["validate"]),
+    true,
+    true,
   );
 });
 

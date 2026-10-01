@@ -1,12 +1,15 @@
 import { expect, test } from "@jest/globals";
 import { validateExemptionRecords } from "../../src/orchestrators/validate-exemption-records.mjs";
 
+const futureExpiry = () =>
+  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
 const record = (overrides = {}) => ({
   ruleId: "E-0.1.130.14",
   reason: "Temporary migration exception.",
   approver: "Eli",
   approvalTimestamp: "2026-09-13T00:00:00Z",
-  expiry: "2026-09-30",
+  expiry: futureExpiry(),
   ...overrides,
 });
 

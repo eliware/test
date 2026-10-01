@@ -96,3 +96,20 @@ test("checks non-publication sibling jobs in publication workflows", () => {
   jobs[2].commands = commands("echo reporting");
   expect(validateWorkflowSiblingJobs("publish.yml", jobs, validationIds, true)).toBeNull();
 });
+
+test("ignores GHCR publisher commands only when the profile is enabled", () => {
+  const job = { steps: [{ uses: "docker/build-push-action@v6", with: { push: true } }] };
+  const publisher = [
+    {
+      id: "publish",
+      job,
+      commands: commands("gh attestation verify oci://ghcr.io/eliware/app@sha256:abc"),
+    },
+  ];
+  expect(validateWorkflowSiblingJobs("publish.yml", publisher, validationIds, true)).toContain(
+    "non-validation command",
+  );
+  expect(
+    validateWorkflowSiblingJobs("publish.yml", publisher, validationIds, true, true),
+  ).toBeNull();
+});

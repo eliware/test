@@ -36,6 +36,23 @@ test("maps an unexpected-output finding to the check result", async () => {
   });
 });
 
+test("does not treat Jest coverage rows as leaked test-process output", async () => {
+  await expect(
+    run({
+      executeJest: true,
+      jestResult: {
+        code: 0,
+        stdout: [
+          "File                     | % Stmts | % Branch | % Funcs | % Lines |",
+          "src/app/routes/token     |   95.34 |       90 |    90.9 |   95.12 |",
+          "src/domain/token         |     100 |    93.22 |     100 |     100 |",
+          "",
+        ].join("\n"),
+      },
+    }),
+  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+});
+
 test("redacts invocation environment secrets from unexpected test output", async () => {
   await expect(
     run({

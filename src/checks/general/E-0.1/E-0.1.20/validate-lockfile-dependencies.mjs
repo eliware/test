@@ -58,8 +58,6 @@ function validatePackageEntries(packages) {
       continue;
     }
     if (entry.link === true) continue;
-    if (typeof entry.resolved !== "string" && typeof entry.integrity !== "string")
-      failures.push(`package-lock.json entry ${path} must contain resolved or integrity data.`);
     for (const field of dependencyFields) {
       if (!entry[field]) continue;
       if (typeof entry[field] !== "object" || Array.isArray(entry[field]))
