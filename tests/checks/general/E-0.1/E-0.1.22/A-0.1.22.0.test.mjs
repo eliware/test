@@ -2,15 +2,18 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
+import packageMetadata from "../../../../../package.json" with { type: "json" };
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.22/A-0.1.22.0.mjs";
 import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
+
+const conventionVersion = packageMetadata.version.split(".").slice(0, 2).join(".");
 
 async function fixture(directives) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
   await mkdir(join(root, "specs"));
   await writeFile(
     join(root, "specs", "directives.json"),
-    JSON.stringify({ version: "9.0", description: "Fixture directives", directives }),
+    JSON.stringify({ version: conventionVersion, description: "Fixture directives", directives }),
   );
   return root;
 }
@@ -56,7 +59,7 @@ test("rejects duplicate IDs anywhere in specs", async () => {
   await writeFile(
     join(root, "specs", "conventions", "general.json"),
     JSON.stringify({
-      version: "9.0",
+      version: conventionVersion,
       description: "Fixture convention",
       directives: [{ id: "E-0.0", dos: ["Do."], donts: ["Do not."] }],
     }),

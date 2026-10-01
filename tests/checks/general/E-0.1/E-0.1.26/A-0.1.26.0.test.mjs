@@ -1,4 +1,5 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
+import packageMetadata from "../../../../../package.json" with { type: "json" };
 
 const readReleaseNoteDocuments = jest.fn();
 const parseReleaseNotes = jest.fn();
@@ -47,7 +48,7 @@ beforeEach(resetValidators);
 test("coordinates release-note parsing, validation, and README indexing in order", async () => {
   const context = {
     root: "/repo",
-    packageJson: { version: "9.0.0", eliware: { apply: ["application"] } },
+    packageJson: { version: packageMetadata.version, eliware: { apply: ["application"] } },
   };
 
   await expect(run(context)).resolves.toEqual({
@@ -56,7 +57,7 @@ test("coordinates release-note parsing, validation, and README indexing in order
     message: "",
   });
   expect(readReleaseNoteDocuments).toHaveBeenCalledWith(context, true);
-  expect(validateReleaseNoteContent).toHaveBeenCalledWith([], "9.0.0");
+  expect(validateReleaseNoteContent).toHaveBeenCalledWith([], packageMetadata.version);
   const phases = [
     parseReleaseNotes.mock.invocationCallOrder[0],
     validateReleaseNoteContent.mock.invocationCallOrder[0],
@@ -85,7 +86,7 @@ test("reports a missing README while validating release notes", async () => {
     notes: "release notes",
     failures: ["README.md is required for release-bearing repositories."],
   });
-  const result = await run({ root: "/repo", packageJson: { version: "9.0.0" } });
+  const result = await run({ root: "/repo", packageJson: { version: packageMetadata.version } });
   expect(result.message).toContain("README.md is required");
   expect(validateReleaseNoteContent).toHaveBeenCalled();
 });
@@ -106,7 +107,9 @@ test("does not inspect release notes or README for profiles that do not require 
 
 async function expectFirstFailure(validator, validationError, expectedMessage, laterValidators) {
   validator.mockReturnValueOnce(validationError);
-  await expect(run({ root: "/repo", packageJson: { version: "9.0.0" } })).resolves.toEqual({
+  await expect(
+    run({ root: "/repo", packageJson: { version: packageMetadata.version } }),
+  ).resolves.toEqual({
     ruleId: "A-0.1.26.0",
     status: "fail",
     message: expectedMessage,

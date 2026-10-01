@@ -2,9 +2,15 @@ import { expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import packageMetadata from "../../../../../package.json" with { type: "json" };
 import { validateSpecificationDirectiveDocuments } from "../../../../../src/checks/general/E-0.1/E-0.1.22/validate-specification-directive-documents.mjs";
 
-const document = (directives) => ({ version: "9.0", description: "Fixture", directives });
+const conventionVersion = packageMetadata.version.split(".").slice(0, 2).join(".");
+const document = (directives) => ({
+  version: conventionVersion,
+  description: "Fixture",
+  directives,
+});
 
 async function fixture(directives) {
   const root = await mkdtemp(join(tmpdir(), "eliware-directive-documents-"));
@@ -24,7 +30,7 @@ test("accepts schema-valid directive documents and ignores non-directive metadat
   ]);
   await writeFile(
     join(root, "specs", "metadata.json"),
-    JSON.stringify({ version: "9.0", schema: {} }),
+    JSON.stringify({ version: conventionVersion, schema: {} }),
   );
   await writeFile(join(root, "specs", "ignored.json"), "null");
   await writeFile(join(root, "specs", "notes.txt"), "not JSON");

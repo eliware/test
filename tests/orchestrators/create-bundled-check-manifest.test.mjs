@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
+import packageMetadata from "../../package.json" with { type: "json" };
 import { createBundledCheckManifest } from "../../src/orchestrators/create-bundled-check-manifest.mjs";
+
+const conventionVersion = packageMetadata.version.split(".").slice(0, 2).join(".");
 
 test("records each implementation with its identity, path, and enforcement mode", () => {
   expect(
@@ -12,7 +15,7 @@ test("records each implementation with its identity, path, and enforcement mode"
       },
     ]),
   ).toEqual({
-    version: "9.0",
+    version: conventionVersion,
     checks: [
       {
         ruleId: "E-0.1",

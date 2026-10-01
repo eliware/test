@@ -1,10 +1,11 @@
 import { expect, test } from "@jest/globals";
+import packageMetadata from "../../package.json" with { type: "json" };
 import { dispatchInformationalCommand } from "../../src/cli/dispatch-informational-command.mjs";
 
 test("dispatches version and help commands", () => {
   const output = [];
   expect(dispatchInformationalCommand(["--version"], (value) => output.push(value))).toBe(0);
-  expect(output).toEqual(["9.0.0"]);
+  expect(output).toEqual([packageMetadata.version]);
   output.length = 0;
   expect(dispatchInformationalCommand(["--help"], (value) => output.push(value))).toBe(0);
   expect(output[0]).toContain("Usage: eliware-test");

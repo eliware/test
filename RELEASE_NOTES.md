@@ -1,5 +1,12 @@
 # Release Notes
 
+## 9.0.1 — 2026-10-01
+
+### Changed
+
+- Ignore files and directories whose names begin with `.agentx` at the
+  repository root or in any subdirectory.
+
 ## 9.0.0 — 2026-10-01
 
 ### Breaking changes

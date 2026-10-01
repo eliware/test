@@ -2,11 +2,12 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "@jest/globals";
+import packageMetadata from "../../../../package.json" with { type: "json" };
 import { run } from "../../../../src/checks/npm-published/E-0.1.140/E-0.1.140.0.mjs";
 
 const packageJson = {
   name: "@eliware/fixture",
-  version: "9.0.0",
+  version: packageMetadata.version,
   files: ["bin/", "src/", "README.md"],
   scripts: { pack: "eliware-test --pack" },
 };

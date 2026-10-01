@@ -43,5 +43,7 @@ export function createBundledCheckManifest(checks) {
     ids.add(record.ruleId);
     paths.add(record.modulePath);
   }
-  return Object.freeze({ version: "9.0", checks: records });
+  const version = packageMetadata.version.split(".").slice(0, 2).join(".");
+  return Object.freeze({ version, checks: records });
 }
+import packageMetadata from "../../package.json" with { type: "json" };

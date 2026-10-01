@@ -1,10 +1,11 @@
 import { expect, test } from "@jest/globals";
+import packageMetadata from "../../../../../package.json" with { type: "json" };
 import { validateReadmeReleaseNotesLink } from "../../../../../src/checks/general/E-0.1/E-0.1.26/validate-readme-release-notes-link.mjs";
 
 test("accepts a release-notes link within the Links section", () => {
   for (const readme of [
     "## Links\n\n[Release notes](RELEASE_NOTES.md)",
-    "## Links\n\n[Release notes](./RELEASE_NOTES.md#9.0.0)",
+    `## Links\n\n[Release notes](./RELEASE_NOTES.md#${packageMetadata.version})`,
     "## Links\n\n[Release notes](RELEASE_NOTES.md)\n\n## License\n",
   ]) {
     expect(validateReadmeReleaseNotesLink(readme)).toBeNull();

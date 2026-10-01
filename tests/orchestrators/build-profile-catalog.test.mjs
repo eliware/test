@@ -1,5 +1,10 @@
 import { expect, test } from "@jest/globals";
+import packageMetadata from "../../package.json" with { type: "json" };
 import { buildProfileCatalog } from "../../src/orchestrators/build-profile-catalog.mjs";
+
+const conventionVersion = packageMetadata.version.split(".").slice(0, 2).join(".");
+const [conventionMajor, conventionMinor] = conventionVersion.split(".");
+const otherConventionVersion = `${conventionMajor}.${Number(conventionMinor) + 1}`;
 
 test("builds profile applicability and complete directive records", () => {
   const catalog = buildProfileCatalog(
@@ -7,7 +12,7 @@ test("builds profile applicability and complete directive records", () => {
       {
         source: "general.json",
         document: {
-          version: "9.0",
+          version: conventionVersion,
           requires: [],
           directives: [
             {
@@ -21,7 +26,7 @@ test("builds profile applicability and complete directive records", () => {
         },
       },
     ],
-    "9.0",
+    conventionVersion,
   );
   expect(catalog.profiles.general).toEqual({ profile: "general", requires: [] });
   expect(catalog.rules["E-0.1"]).toEqual({
@@ -36,7 +41,7 @@ test("builds profile applicability and complete directive records", () => {
       {
         source: "general.json",
         document: {
-          version: "9.0",
+          version: conventionVersion,
           requires: [],
           directives: [{ id: "E-1", dos: ["Do."], donts: ["Do not."] }],
         },
@@ -44,7 +49,7 @@ test("builds profile applicability and complete directive records", () => {
       {
         source: "application.json",
         document: {
-          version: "9.0",
+          version: conventionVersion,
           requires: [],
           directives: [{ id: "E-2", dos: ["Do."], donts: ["Do not."] }],
         },
@@ -52,20 +57,23 @@ test("builds profile applicability and complete directive records", () => {
       {
         source: "cli.json",
         document: {
-          version: "9.0",
+          version: conventionVersion,
           requires: ["application"],
           directives: [{ id: "E-3", dos: ["Do."], donts: ["Do not."] }],
         },
       },
     ],
-    "9.0",
+    conventionVersion,
   );
   expect(withDependency.profiles.cli.requires).toEqual(["application"]);
 });
 
 test("rejects profile documents without directives", () => {
   expect(() =>
-    buildProfileCatalog([{ source: "general.json", document: { version: "9.0" } }], "9.0"),
+    buildProfileCatalog(
+      [{ source: "general.json", document: { version: conventionVersion } }],
+      conventionVersion,
+    ),
   ).toThrow("no directive list");
 });
 
@@ -73,15 +81,20 @@ test("requires every profile document to declare a valid dependency list", () =>
   const directives = [{ id: "E-0.1", dos: ["Do."], donts: ["Do not."] }];
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.json", document: { version: "9.0", directives } }],
-      "9.0",
+      [{ source: "general.json", document: { version: conventionVersion, directives } }],
+      conventionVersion,
     ),
   ).toThrow("invalid requires list");
   for (const requires of [["general", "general"], ["general"], [3]]) {
     expect(() =>
       buildProfileCatalog(
-        [{ source: "general.json", document: { version: "9.0", requires, directives } }],
-        "9.0",
+        [
+          {
+            source: "general.json",
+            document: { version: conventionVersion, requires, directives },
+          },
+        ],
+        conventionVersion,
       ),
     ).toThrow("invalid requires list");
   }
@@ -89,27 +102,27 @@ test("requires every profile document to declare a valid dependency list", () =>
 
 test("rejects invalid names, versions, duplicate identifiers, and malformed directives", () => {
   const directive = { id: "E-0.1", dos: ["rule"], donts: ["bad"] };
-  const document = { version: "9.0", requires: [], directives: [directive] };
-  expect(() => buildProfileCatalog([], "9.0")).toThrow("cannot be empty");
-  expect(() => buildProfileCatalog([{ source: "../general.json", document }], "9.0")).toThrow(
-    "invalid name",
-  );
-  expect(() => buildProfileCatalog([{ source: "Invalid Name.json", document }], "9.0")).toThrow(
-    "invalid name",
-  );
+  const document = { version: conventionVersion, requires: [], directives: [directive] };
+  expect(() => buildProfileCatalog([], conventionVersion)).toThrow("cannot be empty");
+  expect(() =>
+    buildProfileCatalog([{ source: "../general.json", document }], conventionVersion),
+  ).toThrow("invalid name");
+  expect(() =>
+    buildProfileCatalog([{ source: "Invalid Name.json", document }], conventionVersion),
+  ).toThrow("invalid name");
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.json", document: { ...document, version: "7.0" } }],
-      "9.0",
+      [{ source: "general.json", document: { ...document, version: otherConventionVersion } }],
+      conventionVersion,
     ),
-  ).toThrow("must match Convention v9.0");
+  ).toThrow(`must match Convention v${conventionVersion}`);
   expect(() =>
     buildProfileCatalog(
       [
         { source: "general.json", document },
         { source: "general.json", document },
       ],
-      "9.0",
+      conventionVersion,
     ),
   ).toThrow("Duplicate bundled convention profile");
   expect(() =>
@@ -118,7 +131,7 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
         { source: "general.json", document },
         { source: "application.json", document },
       ],
-      "9.0",
+      conventionVersion,
     ),
   ).toThrow("Duplicate bundled convention directive ID");
   expect(() =>
@@ -126,22 +139,22 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
       [
         {
           source: "general.json",
-          document: { version: "9.0", directives: [{ ...directive, examples: {} }] },
+          document: { version: conventionVersion, directives: [{ ...directive, examples: {} }] },
         },
       ],
-      "9.0",
+      conventionVersion,
     ),
   ).toThrow("malformed directive");
   expect(() =>
     buildProfileCatalog(
       [{ source: "general.json", document: { ...document, requires: ["missing"] } }],
-      "9.0",
+      conventionVersion,
     ),
   ).toThrow("requires unknown profiles");
   expect(() =>
     buildProfileCatalog(
       [{ source: "general.json", document: { ...document, requires: ["general"] } }],
-      "9.0",
+      conventionVersion,
     ),
   ).toThrow("invalid requires list");
 });

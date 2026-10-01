@@ -2,6 +2,7 @@ import { expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import packageMetadata from "../../../../../package.json" with { type: "json" };
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.14.mjs";
 import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
@@ -41,7 +42,7 @@ test("recognizes package dependencies invoked through their npm script binaries"
     run({
       root,
       packageJson: {
-        devDependencies: { "@eliware/test": "^9.0.0", typescript: "^7.0.0" },
+        devDependencies: { "@eliware/test": `^${packageMetadata.version}`, typescript: "^7.0.0" },
         scripts: { test: "eliware-test", typecheck: "tsc --noEmit" },
       },
     }),

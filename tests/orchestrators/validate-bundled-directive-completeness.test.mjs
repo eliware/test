@@ -1,5 +1,10 @@
 import { expect, test } from "@jest/globals";
+import packageMetadata from "../../package.json" with { type: "json" };
 import { validateBundledDirectiveCompleteness } from "../../src/orchestrators/validate-bundled-directive-completeness.mjs";
+
+const conventionVersion = packageMetadata.version.split(".").slice(0, 2).join(".");
+const [conventionMajor, conventionMinor] = conventionVersion.split(".");
+const otherConventionVersion = `${conventionMajor}.${Number(conventionMinor) + 1}`;
 
 const check = (ruleId, enforcementMode = "deterministic", profile = "general") => ({
   ruleId,
@@ -7,13 +12,18 @@ const check = (ruleId, enforcementMode = "deterministic", profile = "general") =
   modulePath: `${profile}/${ruleId}.mjs`,
 });
 const catalog = {
-  version: "9.0",
+  version: conventionVersion,
   profiles: {
-    general: { profile: "general", document: "general.json", version: "9.0", extends: [] },
+    general: {
+      profile: "general",
+      document: "general.json",
+      version: conventionVersion,
+      extends: [],
+    },
     application: {
       profile: "application",
       document: "application.json",
-      version: "9.0",
+      version: conventionVersion,
       extends: [],
     },
   },
@@ -35,16 +45,19 @@ test("accepts every registered bundled directive", async () => {
   ).toBe(true);
 });
 
-test("fails when the bundled catalog is not v9", async () => {
+test("fails when the bundled catalog version does not match the package baseline", async () => {
   expect(() =>
-    validateBundledDirectiveCompleteness([], ["general"], { version: "7.0", profiles: {} }),
+    validateBundledDirectiveCompleteness([], ["general"], {
+      version: otherConventionVersion,
+      profiles: {},
+    }),
   ).toThrow("missing or invalid");
 });
 
 test("handles an applied group without an catalog entry", () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["unlisted"], {
-      version: "9.0",
+      version: conventionVersion,
       profiles: {},
       directives: {},
       rules: {},
@@ -53,9 +66,9 @@ test("handles an applied group without an catalog entry", () => {
 });
 
 test("rejects a catalog without profiles", () => {
-  expect(() => validateBundledDirectiveCompleteness([], [], { version: "9.0" })).toThrow(
-    "missing or invalid",
-  );
+  expect(() =>
+    validateBundledDirectiveCompleteness([], [], { version: conventionVersion }),
+  ).toThrow("missing or invalid");
 });
 
 test("uses the bundled catalog by default", () => {

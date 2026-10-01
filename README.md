@@ -76,9 +76,9 @@ npm run pack
 node bin/eliware-test.mjs --pack
 ```
 
-`package.json` is the source of truth for the version in this checkout. The
-repository's current version is `9.0.0`. The npm badge reports the version
-currently available in the public registry; it may differ from this checkout.
+`package.json` is the source of truth for the version in this checkout. The npm
+badge reports the version currently available in the public registry; it may
+differ from this checkout.
 
 When a repository-local Jest cannot be resolved, `eliware-test` uses the Jest
 dependency it ships while keeping the consumer repository as Jest's working
