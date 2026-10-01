@@ -33,10 +33,17 @@ test("counts declared package binaries spawned from validation scripts", async (
       `
         import { spawn } from "node:child_process";
         const executable = new URL(
-          \`../node_modules/.bin/vyops\${process.platform === "win32" ? ".cmd" : ""}\`,
+          \`../node_modules/.bin/vyops${process.platform === "win32" ? ".cmd" : ""}\`,
           import.meta.url,
         );
         spawn(executable, ["preflight", "config.boot"]);
+      `,
+    );
+    await writeFile(
+      join(root, ".knit", "direct-check.mjs"),
+      `
+        import { execFileSync } from "node:child_process";
+        execFileSync("node", ["node_modules/.bin/vyops", "preflight", "config.boot"]);
       `,
     );
     const referenced = new Set();

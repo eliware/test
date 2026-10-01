@@ -25,3 +25,19 @@ test("maps declared package executables used as npm script commands", () => {
   );
   expect([...referenced].sort()).toEqual(["@eliware/test", "typescript"]);
 });
+
+test("maps package binaries invoked through node_modules/.bin paths", () => {
+  const referenced = new Set();
+  collectScriptReferences(
+    {
+      posix: "node node_modules/.bin/vyops preflight config.boot",
+      relative: 'node "./node_modules/.bin/vyops" preflight config.boot',
+      windows: "node C:\\repo\\node_modules\\.bin\\vyops.cmd preflight config.boot",
+      unrelated: "node node_modules/.bin/vyops-extra preflight",
+    },
+    [],
+    referenced,
+    new Map([["vyops", "@eliware/vyops"]]),
+  );
+  expect([...referenced]).toEqual(["@eliware/vyops"]);
+});

@@ -97,10 +97,17 @@ test("counts a declared dependency whose binary is spawned by Knit validation", 
       `
         import { spawn } from "node:child_process";
         const localBin = new URL(
-          \`../node_modules/.bin/vyops\${process.platform === "win32" ? ".cmd" : ""}\`,
+          \`../node_modules/.bin/vyops${process.platform === "win32" ? ".cmd" : ""}\`,
           import.meta.url,
         );
         spawn(localBin, ["preflight", "config.boot"]);
+      `,
+    );
+    await writeFile(
+      join(root, ".knit", "direct-check.mjs"),
+      `
+        import { execFileSync } from "node:child_process";
+        execFileSync("node", ["node_modules/.bin/vyops", "preflight", "config.boot"]);
       `,
     );
     await writeFile(
@@ -122,6 +129,30 @@ test("counts a declared dependency whose binary is spawned by Knit validation", 
     await expect(
       findDependencyReferences(root, packageJson, files, inventory.parseAst, inventory),
     ).resolves.toEqual(expect.arrayContaining(["@eliware/vyops"]));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("does not count a dependency referenced only by a GitHub Actions workflow", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-only-dependency-"));
+  try {
+    await mkdir(join(root, ".github", "workflows"), { recursive: true });
+    await writeFile(
+      join(root, ".github", "workflows", "ci.yml"),
+      "jobs:\n  validate:\n    steps:\n      - run: node node_modules/.bin/vyops preflight config.boot\n",
+    );
+    await writeFile(
+      join(root, "package-lock.json"),
+      JSON.stringify({
+        lockfileVersion: 3,
+        packages: { "node_modules/@eliware/vyops": { bin: { vyops: "bin/vyops" } } },
+      }),
+    );
+    const references = await findDependencyReferences(root, {
+      devDependencies: { "@eliware/vyops": "2.1.1" },
+    });
+    expect(references).not.toContain("@eliware/vyops");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

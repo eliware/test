@@ -29,6 +29,28 @@ test("counts direct binaries invoked by Knit deployment commands", async () => {
   }
 });
 
+test("counts local package binary paths invoked by Knit deployment commands", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-knit-dependency-local-path-"));
+  try {
+    await mkdir(join(root, ".knit"));
+    await writeFile(
+      join(root, ".knit", "deploy.yaml"),
+      "on:\n  push:\n    deployments:\n      - commands:\n          - npm ci\n          - npm test\n          - node node_modules/.bin/vyops preflight config.boot\n",
+    );
+    const referenced = new Set();
+    await scanKnitDeployDependencyReferences(
+      root,
+      [".knit/deploy.yaml"],
+      declared,
+      referenced,
+      binaries,
+    );
+    expect([...referenced]).toEqual(["@eliware/vyops"]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("uses the shared parsed YAML cache", async () => {
   const deployment = { on: { push: { deployments: [{ commands: ["vyops preflight"] }] } } };
   const inventory = { readParsed: jest.fn(async () => deployment) };

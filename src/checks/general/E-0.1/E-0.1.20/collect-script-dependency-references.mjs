@@ -14,7 +14,11 @@ export function collectScriptReferences(
     for (const [binary, dependency] of dependencyBinaries) {
       const escaped = binary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const command = new RegExp(`(?:^|&&\\s*|\\|\\|\\s*|[;|]\\s*)${escaped}(?=$|\\s)`);
-      if (command.test(script)) referenced.add(dependency);
+      const localPath = new RegExp(
+        `(?:^|[\\s"'=])(?:[^\\s"'=]*[/\\\\])?node_modules[/\\\\]\\.bin[/\\\\]${escaped}(?:\\.cmd)?(?=$|[\\s"';&|])`,
+        "i",
+      );
+      if (command.test(script) || localPath.test(script)) referenced.add(dependency);
     }
   }
 }
