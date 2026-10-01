@@ -4,28 +4,59 @@
 
 ### Breaking changes
 
-- Removed the cross-repository authority map system and its package metadata,
-  convention profiles, and validation checks. Specification directives remain
-  ID-based, and validation now requires directive IDs to be unique.
-- Removed the `fork` convention profile and its validation; repositories must
-  apply supported convention profiles explicitly.
+- Replaced the v8 convention contract with the v9.0 specification format and
+  aligned the package release version to `9.0.0`.
+- Removed the cross-repository authority-map system, its package metadata and
+  convention profile, and all authority-map validation. Directives remain
+  ID-based, and validation now requires every specification directive ID to
+  be unique.
+- Removed the `fork` profile and its checks. Repositories must declare the
+  supported profiles that apply to them.
+- Simplified exemption requirements. Repository owners define exemption
+  records in `package.json`; the harness skips checks for exempted rule IDs
+  while continuing the other validation stages.
+- Moved Knit's required pull, install, and test commands into
+  `.knit/deploy.yaml`. Repository-specific checks follow `npm test` there;
+  they can be written in the deployment file or called from scripts in
+  `.knit/`.
+- Standardized CI on `npm ci` followed by `npm test`. Library typechecking and
+  web application builds run through aggregate `npm test` when those profiles
+  apply; they are not separate CI steps.
 
 ### Changed
 
-- Changed sensitive-content requirements to non-deterministic human or AI
-  review. Deterministic checks no longer use filenames or scans to claim that
-  sensitive content is present or absent.
+- Expanded the v9 directive schema and convention profiles, clarified profile
+  boundaries, and aligned specifications, checks, documentation, and tests.
+- Classified checks that cannot prove content safety or semantic completeness
+  as non-deterministic review. Deterministic sensitive-content checks no
+  longer infer secret status from filenames or incomplete scans.
+- Updated dependency-use analysis to include commands in `.knit/deploy.yaml`;
+  repositories with no applicable Oxlint files pass that stage, and lockfiles
+  are not rejected solely for omitting `resolved` or `integrity` fields.
+- Tightened the outdated-dependency check: any package reported by
+  `npm outdated` fails, with remediation guidance using `@latest`.
+- Refined README and specification indexing requirements, documentation
+  navigation, profile-specific README content, release-note checks, and the
+  repository's documentation standards.
 - Refactored validation coordinators and check modules into smaller,
   single-purpose modules with mirrored tests.
-- Improved dependency-reference analysis, profile validation, coverage
-  reporting, and cross-platform process handling.
+- Kept successful CLI messages specific to the requested mode, while
+  preserving the aggregate success summary for full validation.
 
 ### Fixed
 
-- Improved diagnostics when Jest fails without useful output and handled
-  redacted numeric metadata in npm pack manifests.
-- Fixed validation edge cases across documentation, package dependencies,
-  workflow checks, and focused test execution.
+- Improved Jest failure diagnostics, unexpected-output reporting, progress
+  capture, and coverage evidence parsing. Unexpected output findings identify
+  the test file and captured text without treating coverage summaries as
+  leaked test output.
+- Hardened secret redaction, bounded child-process output, process shutdown,
+  Windows npm executable discovery, and npm pack manifest parsing.
+- Corrected validation of GitHub Actions workflows, GHCR publication and
+  attestations, npm provenance, package dependencies, and package-lock
+  metadata.
+- Fixed repository inventory refresh, documentation/specification indexing,
+  focused test selection, and edge cases across profile validation and
+  cross-platform execution.
 
 ## 8.0.0 — 2026-09-27
 
