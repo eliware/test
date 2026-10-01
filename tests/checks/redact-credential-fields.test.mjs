@@ -19,3 +19,9 @@ test("does not treat a following line as a whitespace-delimited credential value
     "secret\n  ✓ handles overlapping entries",
   );
 });
+
+test("preserves coverage rows whose paths contain credential-like words", () => {
+  expect(redactCredentialFields("src/app/routes/token | 100 | 90")).toBe(
+    "src/app/routes/token | 100 | 90",
+  );
+});
