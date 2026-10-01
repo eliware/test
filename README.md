@@ -229,8 +229,6 @@ diagnostics when requesting help.
 
 - Documentation: [docs](docs/README.md) · [specifications](specs/README.md)
 - [Usage](docs/usage.md) · [Troubleshooting](docs/troubleshooting.md) · [Support](docs/support.md)
-- [Documentation](docs/README.md)
-- [Specifications](specs/README.md)
 - [Canonical repository profile specifications](specs/conventions/README.md)
 - [Home Page](https://eliware.org)
 - [GitHub Repo](https://github.com/eliware/test) (`git+https://github.com/eliware/test.git`)
