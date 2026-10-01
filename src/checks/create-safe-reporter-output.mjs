@@ -1,14 +1,9 @@
-import { isAbsolute, relative, resolve } from "node:path";
 import { collectRedactionSecrets } from "./collect-redaction-secrets.mjs";
+import { normalizeRepositoryRelativePath } from "./normalize-repository-relative-path.mjs";
 import { redactProcessOutput } from "./redact-process-output.mjs";
 
 export function repositoryRelativePath(path, root = process.cwd()) {
-  if (typeof path !== "string" || path.length === 0) return "unknown";
-  const relativePath = relative(resolve(root), resolve(root, path));
-  if (relativePath === ".." || /^\.\.[\\/]/u.test(relativePath) || isAbsolute(relativePath)) {
-    return "[outside repository]";
-  }
-  return relativePath.replaceAll("\\", "/");
+  return normalizeRepositoryRelativePath(path, root);
 }
 
 export function createSafeReporterOutput(prefix, options = {}) {

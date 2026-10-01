@@ -1,4 +1,4 @@
-import { isAbsolute, relative, resolve } from "node:path";
+import { normalizeRepositoryRelativePath } from "../../../normalize-repository-relative-path.mjs";
 import { redactProcessOutput } from "../../../redact-process-output.mjs";
 
 export function findJestConsoleOutput(
@@ -34,9 +34,5 @@ export function isDefaultJestConsoleLine(record, outputs, root = process.cwd()) 
 
 function reportPath(path, root) {
   if (typeof path !== "string" || !path) return "unknown test suite";
-  const relativePath = relative(resolve(root), resolve(root, path));
-  if (relativePath === ".." || /^\.\.[\\/]/u.test(relativePath) || isAbsolute(relativePath)) {
-    return "[outside repository]";
-  }
-  return relativePath.replaceAll("\\", "/");
+  return normalizeRepositoryRelativePath(path, root);
 }

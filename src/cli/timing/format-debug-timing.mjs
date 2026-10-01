@@ -1,5 +1,5 @@
-import { isAbsolute, relative, resolve } from "node:path";
 import { collectRedactionSecrets } from "../../checks/collect-redaction-secrets.mjs";
+import { normalizeRepositoryRelativePath } from "../../checks/normalize-repository-relative-path.mjs";
 import { redactProcessOutput } from "../../checks/redact-process-output.mjs";
 import { formatTestTimings } from "./format-test-timings.mjs";
 import { parseTimingReport } from "./parse-timing-report.mjs";
@@ -11,15 +11,11 @@ export function formatDebugTiming(stageLines, jestOutput, options = {}) {
   if (jestOutput) {
     try {
       const report = parseTimingReport(jestOutput);
-      const root = resolve(options.root ?? process.cwd());
+      const root = options.root ?? process.cwd();
       for (const result of report.testResults ?? []) {
         const file = result.testFilePath ?? result.name;
         if (typeof file !== "string") continue;
-        const path = relative(root, resolve(root, file));
-        result.testFilePath =
-          path === ".." || /^\.\.[\\/]/u.test(path) || isAbsolute(path)
-            ? "[outside repository]"
-            : path.replaceAll("\\", "/");
+        result.testFilePath = normalizeRepositoryRelativePath(file, root);
         delete result.name;
       }
       const formatted = formatTestTimings(report);
