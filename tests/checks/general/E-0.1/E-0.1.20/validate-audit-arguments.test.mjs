@@ -64,4 +64,8 @@ test("rejects non-string items before parsing audit options", () => {
   expect(validateAuditArguments(sparseArguments)).toBe(
     "Audit arguments must be an array of strings.",
   );
+  Object.setPrototypeOf(sparseArguments, { 1: "--no-progress" });
+  expect(validateAuditArguments(sparseArguments)).toBe(
+    "Audit arguments must be an array of strings.",
+  );
 });
