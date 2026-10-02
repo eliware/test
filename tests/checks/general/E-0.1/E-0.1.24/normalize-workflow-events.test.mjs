@@ -68,4 +68,11 @@ test("rejects malformed scalar trigger maps and event configurations", () => {
     events: { push: {} },
     valid: true,
   });
+  expect(normalizeWorkflowEvents({ on: { push: { branches: ["main"], paths: {} } } }).valid).toBe(
+    false,
+  );
+  expect(
+    normalizeWorkflowEvents({ on: { push: { branches: ["main"], unsupported: ["src/**"] } } })
+      .valid,
+  ).toBe(false);
 });

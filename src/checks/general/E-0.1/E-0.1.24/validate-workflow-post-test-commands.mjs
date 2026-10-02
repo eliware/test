@@ -2,8 +2,6 @@ import { isSupportedWorkflowStep } from "./is-supported-workflow-step.mjs";
 
 const safeReportingCommand =
   /^(?:echo|printf)(?:[ \t]+(?:"[^"`$;&|<>\r\n]*"|'[^'$`;|&<>\r\n]*'|[\w./:@=-]+))*$/u;
-const approvedReportingActions = new Set(["actions/upload-artifact@v6"]);
-
 export function validateWorkflowPostTestCommands(
   name,
   commands,
@@ -24,9 +22,7 @@ export function validateWorkflowPostTestCommands(
     );
   });
   const invalidAction = workflowSteps.some((step, index) => {
-    const approved =
-      approvedReportingActions.has(step?.uses) ||
-      (allowAttestation && step?.uses === "actions/attest@v4");
+    const approved = allowAttestation && step?.uses === "actions/attest@v4";
     return (
       index > testIndex &&
       typeof step?.uses === "string" &&

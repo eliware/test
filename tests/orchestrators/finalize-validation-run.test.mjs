@@ -38,6 +38,7 @@ test("appends cleanup failures to an existing coverage diagnostic", async () => 
   expect(finalized[0]).toBe(otherFailure);
   expect(finalized[1].message).toContain("Coverage is missing.");
   expect(finalized[1].message).toContain("cleanup denied");
+  expect(finalized[1].message).toContain("/run/coverage");
   expect(removeCoverage).toHaveBeenCalledWith("/run/coverage", { recursive: true, force: true });
 });
 
@@ -54,7 +55,9 @@ test("adds a coverage failure when cleanup fails without an existing coverage di
     expect.objectContaining({
       ruleId: "E-0.1.130.14",
       status: "fail",
-      message: expect.stringContaining("cleanup denied"),
+      message: expect.stringContaining(
+        "Could not remove run-scoped coverage artifacts at /run/coverage: cleanup denied",
+      ),
     }),
   ]);
 });
@@ -117,7 +120,7 @@ test("returns structured plan and cleanup failures", async () => {
     {
       ruleId: "E-0.1.20",
       status: "fail",
-      message: "plan failed\nCould not remove run-scoped coverage artifacts: null",
+      message: "plan failed\nCould not remove run-scoped coverage artifacts at /run/coverage: null",
     },
   ]);
 });

@@ -105,18 +105,15 @@ test("uses original workflow positions when setup steps have no run command", ()
 });
 
 test("checks actions after npm test against the reporting allowlist", () => {
-  expect(
-    validateWorkflowPostTestCommands("ci.yml", [], 0, [
-      { run: "npm test" },
-      { uses: "actions/upload-artifact@v6" },
-    ]),
-  ).toBeNull();
-  expect(
-    validateWorkflowPostTestCommands("ci.yml", [], 0, [
-      { run: "npm test" },
-      { uses: "actions/upload-artifact@v6", "continue-on-error": true },
-    ]),
-  ).toContain("approved reporting actions");
+  for (const actionStep of [
+    { uses: "actions/upload-artifact@v6" },
+    { uses: "actions/upload-artifact@v6", with: { path: "**/*" } },
+    { uses: "actions/upload-artifact@v6", env: { TOKEN: "secret" } },
+  ]) {
+    expect(
+      validateWorkflowPostTestCommands("ci.yml", [], 0, [{ run: "npm test" }, actionStep]),
+    ).toContain("approved reporting actions");
+  }
   expect(
     validateWorkflowPostTestCommands("ci.yml", [], 0, [
       { run: "npm test" },

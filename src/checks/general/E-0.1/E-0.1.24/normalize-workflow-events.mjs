@@ -1,4 +1,5 @@
 import { normalizeWorkflowDocument } from "../../../ghcr-published/normalize-workflow-document.mjs";
+import { validateWorkflowEventConfigs } from "./validate-workflow-event-config.mjs";
 
 export function normalizeWorkflowEvents(document) {
   const normalized = normalizeWorkflowDocument(document);
@@ -23,7 +24,7 @@ export function normalizeWorkflowEvents(document) {
               event,
               config === null
                 ? {}
-                : ["push", "pull_request"].includes(event) &&
+                : ["push", "pull_request", "pull_request_target"].includes(event) &&
                     Array.isArray(config) &&
                     config.length > 0 &&
                     config.every((branch) => typeof branch === "string")
@@ -32,9 +33,7 @@ export function normalizeWorkflowEvents(document) {
             ]),
           )
         : {};
-  const validEventConfigs = Object.values(events).every(
-    (config) => config !== null && typeof config === "object" && !Array.isArray(config),
-  );
+  const validEventConfigs = validateWorkflowEventConfigs(events);
   return {
     document: normalized,
     events,

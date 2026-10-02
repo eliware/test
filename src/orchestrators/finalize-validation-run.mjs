@@ -2,8 +2,9 @@ import { rm } from "node:fs/promises";
 
 export async function finalizeValidationRun({ result, planFailure, context, removeCoverage = rm }) {
   let cleanupFailure;
+  let coverageDirectory;
   if (context.jestCoverageDirectory) {
-    const coverageDirectory = context.jestCoverageDirectory;
+    coverageDirectory = context.jestCoverageDirectory;
     try {
       await removeCoverage(coverageDirectory, { recursive: true, force: true });
       context.jestCoverageDirectory = undefined;
@@ -15,7 +16,7 @@ export async function finalizeValidationRun({ result, planFailure, context, remo
   if (planFailure) {
     const message = errorMessage(planFailure.error);
     const cleanupDiagnostic = cleanupFailure
-      ? `\nCould not remove run-scoped coverage artifacts: ${errorMessage(cleanupFailure.error)}`
+      ? `\nCould not remove run-scoped coverage artifacts at ${coverageDirectory}: ${errorMessage(cleanupFailure.error)}`
       : "";
     return [
       {
@@ -27,7 +28,7 @@ export async function finalizeValidationRun({ result, planFailure, context, remo
   }
   if (!cleanupFailure) return result;
 
-  const diagnostic = `Could not remove run-scoped coverage artifacts: ${errorMessage(cleanupFailure.error)}`;
+  const diagnostic = `Could not remove run-scoped coverage artifacts at ${coverageDirectory}: ${errorMessage(cleanupFailure.error)}`;
   if (!Array.isArray(result)) throw new Error(diagnostic);
   const coverageRuleIds = ["E-0.1.130.14", "E-0.1.40.16"];
   const coverageFailure = result.find((entry) => coverageRuleIds.includes(entry.ruleId));

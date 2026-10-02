@@ -23,7 +23,8 @@ export async function run(context) {
     const valid =
       typeof packageJson?.version === "string" &&
       (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, packageJson.version)) &&
-      publications.some((workflow) => {
+      publications.length > 0 &&
+      publications.every((workflow) => {
         const publicationJobList = publicationJobs(workflow);
         return (
           hasExactTagTrigger(workflow) &&

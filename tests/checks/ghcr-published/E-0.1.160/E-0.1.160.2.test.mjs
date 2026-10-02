@@ -106,6 +106,20 @@ test("requires one image push with only the package version tag", async () => {
   });
 });
 
+test("rejects an invalid publisher workflow alongside a valid publisher workflow", async () => {
+  const { root } = await createGhcrFixture();
+  const { writeFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  await writeFile(
+    join(root, ".github", "workflows", "publish-unguarded.yml"),
+    "name: unguarded publish\non:\n  push:\n    branches: [main]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: docker push ghcr.io/eliware/example:latest\n",
+  );
+
+  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+    status: "fail",
+  });
+});
+
 test("reports workflow inspection failures", async () => {
   await expect(run({ root: "C:\\missing-ghcr-repository" })).resolves.toEqual(
     expect.objectContaining({
