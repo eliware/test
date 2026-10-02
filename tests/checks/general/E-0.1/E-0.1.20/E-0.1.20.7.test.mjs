@@ -1,37 +1,74 @@
 import { expect, test } from "@jest/globals";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.7.mjs";
+import { dirname, join } from "node:path";
+import { parse } from "yaml";
+import {
+  resolveCanonicalJestConfiguration,
+  run,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.7.mjs";
 import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 
-test("requires Jest configuration in package.json", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-valid-"));
-  expect(await run({ root, packageJson: { jest: {} } })).toEqual({
-    ruleId: "E-0.1.20.7",
-    status: "pass",
-    message: "",
+const conventionPath = join(process.cwd(), "specs", "conventions", "general.yaml");
+const canonical = resolveCanonicalJestConfiguration(parse(await readFile(conventionPath, "utf8")));
+
+async function createRoot() {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-"));
+  const target = join(root, "specs", "conventions", "general.yaml");
+  await mkdir(dirname(target), { recursive: true });
+  await copyFile(conventionPath, target);
+  return root;
+}
+
+test("resolves the canonical Jest object from general conventions", () => {
+  expect(canonical).toEqual({
+    testEnvironment: "node",
+    testMatch: ["**/tests/**/*.test.mjs"],
+    collectCoverageFrom: ["src/**/*.mjs"],
+    coverageReporters: ["text", "json-summary"],
+    coverageThreshold: {
+      global: { branches: 100, functions: 100, lines: 100, statements: 100 },
+    },
   });
-  expect(await run({ root, packageJson: {} })).toEqual(expect.objectContaining({ status: "fail" }));
-  expect(await run({ root, packageJson: { jest: [] } })).toEqual(
-    expect.objectContaining({ status: "fail" }),
+  expect(() => resolveCanonicalJestConfiguration({ directives: [] })).toThrow(
+    "general.yaml must define the canonical Jest JSON configuration.",
   );
-  expect(await run({ root, packageJson: { jest: null } })).toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
-  expect(await run({ root, packageJson: { jest: "jest" } })).toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
-  await rm(root, { recursive: true, force: true });
+});
+
+test("requires every repository to use exact canonical Jest settings", async () => {
+  const root = await createRoot();
+  try {
+    await expect(run({ root, packageJson: { jest: canonical } })).resolves.toEqual({
+      ruleId: "E-0.1.20.7",
+      status: "pass",
+      message: "",
+    });
+    for (const jest of [
+      undefined,
+      {},
+      { ...canonical, testEnvironment: "jsdom" },
+      { ...canonical, extraOption: true },
+      Object.fromEntries(Object.entries(canonical).filter(([key]) => key !== "coverageThreshold")),
+    ]) {
+      await expect(run({ root, packageJson: { jest } })).resolves.toEqual(
+        expect.objectContaining({ status: "fail" }),
+      );
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("rejects separate Jest configuration files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-config-"));
+  const target = join(root, "specs", "conventions", "general.yaml");
+  await mkdir(dirname(target), { recursive: true });
+  await copyFile(conventionPath, target);
   await writeFile(join(root, "jest.config.mjs"), "export default {};\n");
   await expect(
     run({
       root,
-      packageJson: { jest: {} },
+      packageJson: { jest: canonical },
       repositoryInventory: createRepositoryInventory(root, { includeTestResults: true }),
     }),
   ).resolves.toEqual(expect.objectContaining({ status: "fail" }));
@@ -39,7 +76,9 @@ test("rejects separate Jest configuration files", async () => {
 });
 
 test("reports configuration inspection failures", async () => {
-  await expect(run({ root: "C:\\missing-repository", packageJson: { jest: {} } })).resolves.toEqual(
+  await expect(
+    run({ root: "C:\\missing-repository", packageJson: { jest: canonical } }),
+  ).resolves.toEqual(
     expect.objectContaining({
       ruleId: "E-0.1.20.7",
       status: "fail",
@@ -51,7 +90,7 @@ test("reports configuration inspection failures", async () => {
 test("reports failures when the repository root cannot be enumerated", async () => {
   const root = join(await mkdtemp(join(tmpdir(), "eliware-test-jest-root-")), "not-a-directory");
   await writeFile(root, "not a directory");
-  await expect(run({ root, packageJson: { jest: {} } })).resolves.toEqual(
+  await expect(run({ root, packageJson: { jest: canonical } })).resolves.toEqual(
     expect.objectContaining({
       status: "fail",
       message: expect.stringContaining("could not be inspected"),

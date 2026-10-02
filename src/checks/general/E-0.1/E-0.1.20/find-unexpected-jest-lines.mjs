@@ -5,7 +5,6 @@ const JEST_LINES = [
   /^Snapshots:/,
   /^Time:/,
   /^Ran all test suites/,
-  /^Test results written to:/,
   /^Coverage summary/,
   /^File\s+\|/,
   /^[\s|%_.-]+$/,

@@ -19,8 +19,8 @@ test("executes Jest and records its start time", async () => {
   expect(result.timeoutDiagnostic).toBeUndefined();
 });
 
-test("preserves stderr timing JSON when stdout contains ordinary output", async () => {
-  const result = { code: 0, stdout: "ordinary Jest output", stderr: '{"numFailedTestSuites":0}' };
+test("preserves stderr diagnostics when stdout contains ordinary output", async () => {
+  const result = { code: 0, stdout: "ordinary Jest output", stderr: "Jest diagnostic" };
   runJest.mockResolvedValueOnce(result);
   await expect(
     executeJestCheck({ root: ".", jestArgs: ["--debug-timing"] }),
@@ -38,13 +38,12 @@ test("defaults omitted Jest arguments to an empty list", async () => {
     [],
     expect.any(Function),
     expect.objectContaining({
-      onStderr: undefined,
       onTimeout: expect.any(Function),
     }),
   );
 });
 
-test("forwards the selected output writer for streamed Jest stderr", async () => {
+test("forwards the selected output writer for Jest suite progress", async () => {
   const writeOutput = jest.fn();
   runJest.mockResolvedValueOnce({ code: 0, stdout: "captured output", stderr: "timing output" });
   await executeJestCheck({ root: ".", writeOutput });
@@ -53,7 +52,7 @@ test("forwards the selected output writer for streamed Jest stderr", async () =>
     [],
     expect.any(Function),
     expect.objectContaining({
-      onStderr: writeOutput,
+      writeOutput,
     }),
   );
 });

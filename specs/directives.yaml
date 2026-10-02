@@ -201,8 +201,7 @@ directives:
               - Make --debug-timing useful for diagnosing slow or hanging tests by streaming timing diagnostics while validation is still running.
               - Report when each test suite starts so the last reported Running line identifies the suite that may be hanging.
               - Report each suite's completion and elapsed time as soon as that suite finishes.
-              - Report completed individual test-case durations when the test runner provides them.
-              - Keep live timing output separate from buffered machine-readable results used for coverage and final failure diagnostics.
+              - Keep live suite timing output separate from captured child output used for coverage and final failure diagnostics.
               - Run the requested Jest validation as one normal execution with its established ordering, setup, lifecycle, and coverage semantics.
             donts:
               - Do not buffer all timing output until the complete validation run exits.
@@ -212,15 +211,15 @@ directives:
           - id: A-0.0.7.8
             dos:
               - Monitor test execution progress during every Jest run, whether or not --debug-timing is enabled.
-              - Terminate Jest early when no observable test progress has occurred for 15 seconds.
+              - Terminate an individual Jest test suite when its total runtime reaches 5 seconds, regardless of child output.
+              - Keep a separate 15-second no-progress watchdog for Jest startup and gaps between suites.
               - After requesting graceful termination, escalate to a forceful child-process termination after a bounded grace period and report termination as confirmed only after observing the child close.
-              - Report the currently running suite or test when the no-progress watchdog terminates execution, including that it timed out after 15 seconds.
-              - Flag every individual test case that takes longer than 5 seconds, including its suite, test name, and measured duration.
+              - Report the current suite and the applicable 5-second suite-runtime or 15-second no-progress limit when terminating Jest.
               - Treat watchdog termination as a test failure with actionable diagnostics while preserving the existing failure result and exit-code contract.
             donts:
               - Do not impose a global maximum duration on the complete Jest run.
-              - Do not require --debug-timing for progress monitoring, watchdog termination, or slow-test diagnostics.
-              - Do not terminate an active test merely because it exceeds 5 seconds when progress is still being observed; the 5-second threshold is a diagnostic flag, not the watchdog timeout.
+              - Do not reset a suite's 5-second total-runtime deadline when it writes output.
+              - Do not require --debug-timing for progress monitoring or watchdog termination.
               - Do not report a watchdog timeout without identifying the last known running suite or test when Jest provides that information.
               - Do not wait indefinitely for termination confirmation when the child process does not close after forceful termination.
               - Do not promise cleanup of every descendant process beyond the supported process-group or platform process-tree termination behavior.

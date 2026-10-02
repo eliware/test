@@ -15,13 +15,15 @@ export function createChildTerminationHandler({
   let terminationConfirmed = false;
   let cancelTermination;
   return {
-    onTimeout() {
+    onTimeout(notify = true) {
       if (isSettled()) return;
       timeout.stop();
       timedOut = true;
-      try {
-        options.onTimeout?.();
-      } catch {}
+      if (notify) {
+        try {
+          options.onTimeout?.();
+        } catch {}
+      }
       cancelTermination = scheduleChildTermination(
         child,
         {

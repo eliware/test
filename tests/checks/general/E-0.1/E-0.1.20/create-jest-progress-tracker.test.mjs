@@ -7,12 +7,23 @@ test("reports startup timeout until progress identifies a suite", () => {
     "Test suite Jest startup timed out after 15 seconds without progress.",
   );
 
-  progress.readProgress("[eliware-test-progress] start tests/hanging.test.mjs\n");
+  expect(
+    progress.readProgress(
+      '[eliware-test-progress] {"event":"start","path":"tests/hanging.test.mjs"}\n',
+    ),
+  ).toEqual([{ event: "start", path: "tests/hanging.test.mjs" }]);
   expect(progress.timeoutMessage()).toBe(
     "Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.",
   );
 
-  progress.readProgress("[eliware-test-progress] test tests/hanging.test.mjs :: test 4 0.100s\n");
+  expect(progress.readProgress("[eliware-test-progress] not-json\n")).toEqual([]);
+  expect(progress.readProgress('[eliware-test-progress] {"event":"start","path":3}\n')).toEqual([
+    { event: "start", path: 3 },
+  ]);
+  expect(progress.readProgress('[eliware-test-progress] {"event":"result"}\n')).toEqual([
+    { event: "result" },
+  ]);
+  expect(progress.readProgress('[eliware-test-progress] {"event":"other"}\n')).toEqual([]);
   progress.readProgress("unrecognized progress text\n");
   expect(progress.timeoutMessage()).toBe(
     "Test suite tests/hanging.test.mjs timed out after 15 seconds without progress.",

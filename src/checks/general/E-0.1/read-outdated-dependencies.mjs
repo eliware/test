@@ -11,8 +11,8 @@ const maxStderrLength = 4_000;
 
 export function readOutdatedDependencies(
   root,
-  spawnProcess = spawn,
   {
+    spawnProcess = spawn,
     terminationGracePeriodMs = 1_000,
     env = process.env,
     platform = process.platform,

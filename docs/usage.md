@@ -122,17 +122,16 @@ aggregate audit and pack stages, remain skipped:
 eliware-test tests/example.test.mjs
 ```
 
-`--debug-timing` streams completed stage timing while validation is running.
-The final timing summary, including per-test durations, is written after
-validation completes. The timing stream is written to the CLI writer supplied
-by the invocation; programmatic callers that omit a writer receive no live timing
-stream. Jest runs in-band by default. Jest option/value pairs are forwarded
-unchanged, and a value is not
-interpreted as a focused path. If Jest produces no observable progress for 15
-seconds, the watchdog terminates the run; this is a no-progress limit rather
-than a per-test or total-duration limit. Individual tests taking more than five
-seconds are reported as slow. These safeguards apply without
-`--debug-timing`. On timeout, the harness requests graceful child termination,
+`--debug-timing` streams completed stage timing and one start/completion line
+with elapsed time for each Jest suite while validation is running. It does not
+write a separate Jest timing report after validation completes. The timing
+stream is written to the CLI writer supplied by the invocation; programmatic
+callers that omit a writer receive no live timing stream. Jest runs in-band by
+default. Jest option/value pairs are forwarded
+unchanged, and a value is not interpreted as a focused path. Each test suite
+has a five-second maximum total runtime, even when it produces output. A separate
+15-second no-progress watchdog covers Jest startup and pauses between suites.
+These safeguards apply without `--debug-timing`. On timeout, the harness requests graceful child termination,
 escalates to forced termination after a one-second grace period, and reports
 whether the child's close was observed. It returns an unconfirmed timeout
 diagnostic if close is still not observed after the bounded confirmation

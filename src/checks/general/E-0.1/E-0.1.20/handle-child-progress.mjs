@@ -9,7 +9,7 @@ export function handleChildProgress(text, options) {
 
 export function createChildProgressHandler(options) {
   const decoder = new StringDecoder("utf8");
-  const maximumPendingLineLength = 4096;
+  const maximumPendingLineLength = options.maxProgressLineLength ?? 4096;
   let pending = "";
   let pendingOverflowed = false;
   const report = (text) => handleChildProgress(options.redactProgressText?.(text) ?? text, options);

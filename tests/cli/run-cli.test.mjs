@@ -38,7 +38,7 @@ jest.unstable_mockModule("../../src/cli/acquire-validation-lock.mjs", () => ({
 
 const { runCli } = await import("../../src/cli/run-cli.mjs");
 const diagnosticOptions = { jestArgs: ["tests/sample.test.mjs"] };
-const timing = { getLines: jest.fn(() => []), getJestOutput: jest.fn(() => "") };
+const timing = { getLines: jest.fn(() => []) };
 const validationResult = { code: 0, category: "validation", diagnostics: [] };
 
 function resetCli() {
@@ -98,12 +98,6 @@ test("releases the repository lock when validation completes", async () => {
   expect(release).toHaveBeenCalledTimes(1);
 });
 
-test("uses the default output writer for informational commands", async () => {
-  dispatchInformationalCommand.mockReturnValueOnce(0);
-
-  await expect(runCli(["--version"])).resolves.toBe(0);
-});
-
 test("coordinates diagnostic parsing, convention and validation stages, and result writing", async () => {
   const write = jest.fn();
   const options = { runOption: true };
@@ -115,14 +109,18 @@ test("coordinates diagnostic parsing, convention and validation stages, and resu
   expect(createStageTimer.mock.calls[0][1]()).toEqual(expect.any(Number));
   expect(runConventionStage).toHaveBeenCalledWith(expect.any(Function));
   expect(runValidation).toHaveBeenCalledWith("/repo", [], options);
-  expect(createValidationRunOptions).toHaveBeenCalledWith([], diagnosticOptions, {}, timing, write);
+  expect(createValidationRunOptions).toHaveBeenCalledWith(
+    [],
+    diagnosticOptions,
+    {},
+    timing,
+    undefined,
+  );
   expect(writeValidationResults).toHaveBeenCalledWith(
     { ...validationResult, mode: "focused" },
     write,
     false,
-    timing,
     expect.any(Number),
-    { root: "/repo" },
   );
   expect(formatExitCode).not.toHaveBeenCalled();
 });
@@ -135,28 +133,38 @@ test("uses null mode when diagnostics contain no focused test arguments", async 
   expect(writeValidationResults.mock.calls[0][0].mode).toBeNull();
 });
 
-test("passes an explicitly supplied environment into timing output handling", async () => {
+test("passes an explicitly supplied environment into validation", async () => {
   const env = { API_TOKEN: "secret" };
   await expect(runCli([], jest.fn(), "/repo", { env })).resolves.toBe(0);
-  expect(writeValidationResults.mock.calls[0][5]).toEqual({ root: "/repo", env });
+  expect(createValidationRunOptions).toHaveBeenCalledWith(
+    [],
+    diagnosticOptions,
+    { env },
+    timing,
+    undefined,
+  );
 });
 
 test("enables timing output and formats nonzero or debug exit codes", async () => {
   const write = jest.fn();
-
   await expect(runCli(["--debug-timing"], write, "/repo")).resolves.toBe(0);
-
-  expect(createStageTimer).toHaveBeenCalledWith(true, expect.any(Function), write);
+  expect(createStageTimer).toHaveBeenCalledWith(true, expect.any(Function), expect.any(Function));
   expect(writeValidationResults).toHaveBeenCalledWith(
     { ...validationResult, mode: "focused" },
     write,
     true,
-    timing,
     expect.any(Number),
-    { root: "/repo" },
   );
   expect(formatExitCode).toHaveBeenCalledWith(0);
   expect(write).toHaveBeenCalledWith("formatted exit code");
+  const defaultWrite = jest.spyOn(console, "log").mockImplementation(() => {});
+  await expect(runCli(["--debug-timing"])).resolves.toBe(0);
+  expect(createStageTimer).toHaveBeenLastCalledWith(
+    true,
+    expect.any(Function),
+    expect.any(Function),
+  );
+  defaultWrite.mockRestore();
 });
 
 test("formats a nonzero result even when timing output is disabled", async () => {

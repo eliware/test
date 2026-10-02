@@ -49,7 +49,9 @@ test("composes execution, context recording, and result classification", async (
   await expect(run(context)).resolves.toEqual({ ruleId, status: "pass", message: "" });
   expect(executeJestCheck).toHaveBeenCalledWith(context);
   expect(recordJestContext).toHaveBeenCalledWith(context, result);
-  expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail");
+  expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail", {
+    failuresReported: false,
+  });
 });
 
 test("maps execution errors without recording or classifying a result", async () => {

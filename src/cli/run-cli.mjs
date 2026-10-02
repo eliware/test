@@ -30,10 +30,15 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
     try {
       const diagnosticOptions = readDiagnosticOptions(args);
       const startedAt = Date.now();
+      const timingOutput = args.includes("--debug-timing")
+        ? write === console.log
+          ? process.stdout.write.bind(process.stdout)
+          : write
+        : undefined;
       const timing = createStageTimer(
         args.includes("--debug-timing"),
         () => Date.now(),
-        args.includes("--debug-timing") ? write : undefined,
+        timingOutput,
       );
       const executeConvention = options.runConventionStage ?? runConventionStage;
       const executeValidation = options.runValidation ?? runValidation;
@@ -41,7 +46,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
         executeValidation(
           root,
           [],
-          createValidationRunOptions(args, diagnosticOptions, options, timing, write),
+          createValidationRunOptions(args, diagnosticOptions, options, timing, timingOutput),
         ),
       );
       writeValidationResults(
@@ -55,9 +60,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
         },
         write,
         args.includes("--debug-timing"),
-        timing,
         startedAt,
-        { root, ...(options.env ? { env: options.env } : {}) },
       );
       if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
       resultCode = result.code;

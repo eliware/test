@@ -1,17 +1,14 @@
-import { parseJsonOutput } from "./parse-jest-output.mjs";
 import { findUnexpectedJestLineRecords } from "./find-unexpected-jest-lines.mjs";
-import { findSlowTestFindings } from "./find-slow-test-findings.mjs";
 import { findJestConsoleOutput, isDefaultJestConsoleLine } from "./find-jest-console-output.mjs";
 import { redactProcessOutput } from "../../../redact-process-output.mjs";
 
 export function findUnexpectedJestOutput(
-  { stdout = "", stderr = "", report, consoleOutput, reportError } = {},
+  { stdout = "", stderr = "", consoleOutput, consoleReportError } = {},
   secrets = [],
   root,
 ) {
-  const parsed = report ? { text: stdout, report } : parseJsonOutput(stdout);
-  const outputRecords = [...(consoleOutput ?? []), ...reportConsoleOutput(parsed.report)];
-  const findings = findUnexpectedJestLineRecords(parsed.text)
+  const outputRecords = consoleOutput ?? [];
+  const findings = findUnexpectedJestLineRecords(stdout)
     .filter(
       (record) =>
         record.line !== "…" &&
@@ -19,11 +16,8 @@ export function findUnexpectedJestOutput(
         !isDefaultJestConsoleLine(record, outputRecords, root),
     )
     .map(({ line, suite }) => redactProcessOutput(formatUnexpected(line, suite), secrets));
-  if (reportError) findings.push(redactProcessOutput(reportError, secrets));
-  findings.push(
-    ...findSlowTestFindings(stderr).map((finding) => redactProcessOutput(finding, secrets)),
-  );
-  findings.push(...findJestConsoleOutput(parsed.report, root, secrets, consoleOutput));
+  if (consoleReportError) findings.push(redactProcessOutput(consoleReportError, secrets));
+  findings.push(...findJestConsoleOutput(consoleOutput, root, secrets));
   findings.push(
     ...findUnexpectedJestLineRecords(stderr)
       .filter(
@@ -40,13 +34,4 @@ export function findUnexpectedJestOutput(
 
 function formatUnexpected(line, suite) {
   return `Unexpected output from ${suite}: ${line}`;
-}
-
-function reportConsoleOutput(report) {
-  return (report?.testResults ?? []).flatMap((entry) =>
-    (entry.console ?? []).map((output) => ({
-      ...output,
-      testFilePath: entry.testFilePath ?? entry.name,
-    })),
-  );
 }

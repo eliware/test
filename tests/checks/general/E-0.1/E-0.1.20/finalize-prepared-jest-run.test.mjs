@@ -7,7 +7,6 @@ import {
 const prepared = { coverageDirectory: "coverage-run" };
 
 test.each([
-  [{ code: 1 }, true],
   [{ code: 0, timedOut: true }, true],
   [{ code: 0 }, false],
 ])("removes artifacts when the run result does not retain them", async (result, retainCoverage) => {
@@ -25,6 +24,15 @@ test("retains artifacts for a successful run when requested", async () => {
   const remove = jest.fn();
   await expect(finalizePreparedJestRun(prepared, { code: 0 }, true, remove)).resolves.toEqual({
     code: 0,
+    coverageDirectory: "coverage-run",
+  });
+  expect(remove).not.toHaveBeenCalled();
+});
+
+test("retains failed Jest coverage when requested for coverage analysis", async () => {
+  const remove = jest.fn();
+  await expect(finalizePreparedJestRun(prepared, { code: 1 }, true, remove)).resolves.toEqual({
+    code: 1,
     coverageDirectory: "coverage-run",
   });
   expect(remove).not.toHaveBeenCalled();

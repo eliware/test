@@ -11,7 +11,7 @@ test("coordinates prepared command execution and returns the executor result", a
   const result = await runJest(process.cwd(), [], execute);
   expect(execute).toHaveBeenCalledTimes(1);
   expect(result).toMatchObject({ code: 0, stdout: "passed" });
-  expect(result.reportError).toMatch("Could not read Jest's structured result report");
+  expect(result.consoleReportError).toMatch("Could not read Jest's console output report");
   expect(result.coverageDirectory).toBeUndefined();
 });
 
@@ -31,36 +31,34 @@ test("starts the freshness clock after preparation and immediately before execut
   expect(result.code).toBe(1);
 });
 
-test("does not read structured reports after a failed Jest process", async () => {
-  const readReport = jest.fn();
+test("does not read console reports after a failed Jest process", async () => {
+  const readConsoleReport = jest.fn();
   const result = await runJest(
     process.cwd(),
     [],
     async () => ({ code: 1, stdout: "failed", stderr: "" }),
-    { readReport },
+    { readConsoleReport },
   );
 
   expect(result.code).toBe(1);
-  expect(readReport).not.toHaveBeenCalled();
+  expect(readConsoleReport).not.toHaveBeenCalled();
 });
 
-test("attaches the structured Jest report before retaining successful coverage artifacts", async () => {
+test("attaches console output before retaining successful coverage artifacts", async () => {
   const execute = async (_command, args) => {
-    const reportPath = args[args.indexOf("--outputFile") + 1];
-    await writeFile(
-      reportPath,
-      JSON.stringify({ testResults: [{ name: "tests/example.test.mjs" }] }),
-    );
     const coverageDirectory = args[args.indexOf("--coverageDirectory") + 1];
-    await writeFile(join(coverageDirectory, "jest-console-output.json"), "[]");
+    await writeFile(
+      join(coverageDirectory, "jest-console-output.json"),
+      JSON.stringify([{ testFilePath: "tests/example.test.mjs" }]),
+    );
     return { code: 0, stdout: "PASS tests/example.test.mjs\n", stderr: "" };
   };
   const result = await runJest(process.cwd(), [], execute, {
     retainCoverageDirectory: true,
   });
   try {
-    expect(result.report).toEqual({ testResults: [{ name: "tests/example.test.mjs" }] });
-    expect(result.reportError).toBeUndefined();
+    expect(result.consoleOutput).toEqual([{ testFilePath: "tests/example.test.mjs" }]);
+    expect(result.consoleReportError).toBeUndefined();
   } finally {
     await rm(result.coverageDirectory, { recursive: true, force: true });
   }

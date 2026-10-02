@@ -23,7 +23,7 @@ export function cleanupAfterPreparedJestFailure(prepared, error, remove) {
 }
 
 export async function finalizePreparedJestRun(prepared, result, retainCoverage, remove) {
-  if (result.code !== 0 || result.timedOut || !retainCoverage) {
+  if (typeof result.code !== "number" || result.timedOut || !retainCoverage) {
     return removeCoverage(prepared, remove, result);
   }
   return { ...result, coverageDirectory: prepared.coverageDirectory };

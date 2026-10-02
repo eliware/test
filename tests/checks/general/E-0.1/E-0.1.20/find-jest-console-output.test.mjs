@@ -6,57 +6,31 @@ import {
 
 test("formats console output with the emitting test source", () => {
   expect(
-    findJestConsoleOutput({
-      testResults: [
-        {
-          name: "tests/example.test.mjs",
-          console: [{ type: "log", message: "logged value", origin: "example test" }],
-        },
-      ],
-    }),
+    findJestConsoleOutput([
+      { testFilePath: "tests/example.test.mjs", type: "log", message: "logged value" },
+    ]),
   ).toEqual(["console.log in tests/example.test.mjs: logged value"]);
 });
 
 test("handles missing test and console metadata", () => {
   expect(findJestConsoleOutput()).toEqual([]);
-  expect(findJestConsoleOutput({ testResults: [{ console: [{}] }, {}] })).toEqual([
-    "console.log in unknown test suite: ",
-  ]);
+  expect(findJestConsoleOutput([{}])).toEqual(["console.log in unknown test suite: "]);
 });
 
-test("formats reporter console records and redacts message values", () => {
+test("redacts console messages", () => {
   expect(
     findJestConsoleOutput(
-      {
-        testResults: [
-          {
-            testFilePath: "tests/reporter.test.mjs",
-            name: "tests/unused-fallback.test.mjs",
-            console: [{ message: "reporter output" }],
-          },
-        ],
-      },
+      [{ testFilePath: "tests/extra.test.mjs", type: "warn", message: "private-value" }],
       process.cwd(),
       ["private-value"],
-      [
-        {
-          testFilePath: "tests/extra.test.mjs",
-          type: "warn",
-          message: " private-value ",
-        },
-      ],
     ),
-  ).toEqual([
-    "console.log in tests/reporter.test.mjs: reporter output",
-    "console.warn in tests/extra.test.mjs: [REDACTED]",
-  ]);
+  ).toEqual(["console.warn in tests/extra.test.mjs: [REDACTED]"]);
 });
 
 test("matches only console echoes emitted by the corresponding test suite", () => {
   const outputs = [
     { testFilePath: "tests/example.test.mjs", type: "warn", message: "first\nsecond" },
   ];
-
   expect(isDefaultJestConsoleLine({ suite: "tests/example.test.mjs", line: "first" }, [])).toBe(
     false,
   );
@@ -69,26 +43,20 @@ test("matches only console echoes emitted by the corresponding test suite", () =
   expect(
     isDefaultJestConsoleLine({ suite: "tests/example.test.mjs", line: "second" }, outputs),
   ).toBe(true);
+  expect(isDefaultJestConsoleLine({ suite: "unknown test suite", line: "second" }, outputs)).toBe(
+    true,
+  );
+  const missingMetadata = [{ testFilePath: "tests/example.test.mjs" }];
   expect(
-    isDefaultJestConsoleLine({ suite: "tests/example.test.mjs", line: "console.log" }, [
-      { testFilePath: "tests/example.test.mjs" },
-    ]),
+    isDefaultJestConsoleLine({ suite: "unknown test suite", line: "console.log" }, missingMetadata),
   ).toBe(true);
   expect(
-    isDefaultJestConsoleLine({ suite: "tests/example.test.mjs", line: "unrelated" }, [
-      { testFilePath: "tests/example.test.mjs" },
-    ]),
-  ).toBe(false);
-  expect(
-    isDefaultJestConsoleLine({ suite: "tests/example.test.mjs", line: "unrelated" }, outputs),
+    isDefaultJestConsoleLine({ suite: "unknown test suite", line: "unmatched" }, missingMetadata),
   ).toBe(false);
 });
 
 test("normalizes absolute reporter paths outside the repository", () => {
   expect(
-    findJestConsoleOutput(
-      { testResults: [{ name: "C:/other/tests/outside.test.mjs", console: [{}] }] },
-      process.cwd(),
-    ),
+    findJestConsoleOutput([{ testFilePath: "C:/other/tests/outside.test.mjs" }], process.cwd()),
   ).toEqual(["console.log in [outside repository]: "]);
 });

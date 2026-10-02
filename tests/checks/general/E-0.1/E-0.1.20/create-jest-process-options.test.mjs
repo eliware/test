@@ -13,12 +13,22 @@ test("assembles the Jest process configuration and forwards timeout diagnostics"
     progressPattern: /^\[eliware-test-progress\]/m,
     resetOnAnyOutput: true,
     progressTimeoutMs: 15_000,
+    suiteTimeoutMs: 5_000,
     env: { NODE_OPTIONS: "--no-warnings --experimental-vm-modules" },
   });
-  options.onProgress("[eliware-test-progress] start tests/example.test.mjs\n");
+  options.onProgress('[eliware-test-progress] {"event":"start","path":"tests/example.test.mjs"}\n');
   options.onTimeout();
   expect(onTimeout).toHaveBeenCalledWith(
     "Test suite tests/example.test.mjs timed out after 15 seconds without progress.",
+  );
+});
+
+test("reports a suite-specific maximum-runtime diagnostic", () => {
+  const onTimeout = jest.fn();
+  const options = createJestProcessOptions("C:/fixture", [], { onTimeout });
+  options.onSuiteTimeout("tests/slow.test.mjs");
+  expect(onTimeout).toHaveBeenCalledWith(
+    "Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.",
   );
 });
 
@@ -28,6 +38,23 @@ test("enables expanded output and forwards stderr callback in debug mode", () =>
 
   expect(options.maxOutputLength).toBe(1_000_000);
   expect(options.onStderr).toBe(onStderr);
+});
+
+test("streams concise suite progress and separates it from the enclosing check line", () => {
+  const output = [];
+  const beginNestedOutput = jest.fn();
+  const options = createJestProcessOptions("C:/fixture", [], {
+    writeOutput: (text) => output.push(text),
+    beginNestedOutput,
+  });
+  options.onProgress('[eliware-test-progress] {"event":"start","path":"tests/a.test.mjs"}\n');
+  options.onProgress(
+    '[eliware-test-progress] {"event":"result","path":"tests/a.test.mjs","duration":"0.212","failed":false}\n',
+  );
+
+  expect(beginNestedOutput).toHaveBeenCalledTimes(1);
+  expect(output.join("")).toBe("Running tests/a.test.mjs... PASS - 0.212s\n");
+  expect(options.maxProgressLineLength).toBe(Number.MAX_SAFE_INTEGER);
 });
 
 test("passes the run-scoped console report path to Jest's reporter", () => {

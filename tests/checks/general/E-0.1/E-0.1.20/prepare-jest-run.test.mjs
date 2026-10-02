@@ -20,9 +20,8 @@ test("coordinates Jest preparation into one executable process request", async (
   expect(prepared.args[0]).toBe("consumer-jest");
   expect(prepared.args).toContain("--no-color");
   expect(prepared.args).toContain("--coverageReporters=json");
-  expect(prepared.args).toContain("--json");
-  expect(prepared.args).toContain("--outputFile");
-  expect(prepared.args).toContain(prepared.reportFile);
+  expect(prepared.args).not.toContain("--json");
+  expect(prepared.args).not.toContain("--outputFile");
   const coverageDirectoryOption = prepared.args.indexOf("--coverageDirectory");
   expect(coverageDirectoryOption).toBeGreaterThan(-1);
   expect(prepared.args[coverageDirectoryOption + 1]).toBe(prepared.coverageDirectory);
@@ -39,7 +38,7 @@ test("uses an injected run-scoped coverage directory", async () => {
 
   expect(prepared.coverageDirectory).toBe("C:/run/coverage");
   expect(prepared.args).toContain("C:/run/coverage");
-  expect(prepared.reportFile).toBe(join("C:/run/coverage", "jest-results.json"));
+  expect(prepared.consoleReportFile).toBe(join("C:/run/coverage", "jest-console-output.json"));
 });
 
 test("falls back when the injected coverage-directory factory has no result", async () => {

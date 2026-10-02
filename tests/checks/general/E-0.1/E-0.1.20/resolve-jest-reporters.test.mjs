@@ -4,20 +4,19 @@ import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { resolveJestReporters } from "../../../../../src/checks/general/E-0.1/E-0.1.20/resolve-jest-reporters.mjs";
 
-test("combines configured reporters with unique harness reporters", async () => {
+test("combines configured reporters with quiet harness defaults", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-reporters-"));
   try {
     await writeFile(
       join(root, "package.json"),
       JSON.stringify({ jest: { reporters: ["summary", "default"] } }),
     );
-    const reporters = await resolveJestReporters(root, ["--debug-timing"]);
+    const reporters = await resolveJestReporters(root);
     expect(reporters).toContain("summary");
     expect(reporters.filter((reporter) => reporter === "default")).toHaveLength(1);
     expect(reporters.some((reporter) => reporter.endsWith("jest-progress-reporter.mjs"))).toBe(
       true,
     );
-    expect(reporters.some((reporter) => reporter.endsWith("jest-timing-reporter.mjs"))).toBe(true);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -36,7 +35,7 @@ test("rejects reporter options that cannot be forwarded by the CLI", async () =>
   }
 });
 
-test("uses harness defaults when package reporters are absent and timing is disabled", async () => {
+test("uses quiet harness defaults when package reporters are absent", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-default-reporters-"));
   try {
     await writeFile(join(root, "package.json"), "{}\n");
@@ -45,28 +44,17 @@ test("uses harness defaults when package reporters are absent and timing is disa
     expect(reporters.some((reporter) => reporter.endsWith("jest-progress-reporter.mjs"))).toBe(
       true,
     );
-    expect(reporters.some((reporter) => reporter.endsWith("jest-timing-reporter.mjs"))).toBe(false);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
 
-test("deduplicates the timing reporter when it is already configured", async () => {
+test("does not inject a separate Jest timing reporter", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-timing-reporters-"));
   try {
     await writeFile(join(root, "package.json"), "{}\n");
-    const configured = await resolveJestReporters(root, ["--debug-timing"]);
-    const timingReporter = configured.find((reporter) =>
-      reporter.endsWith("jest-timing-reporter.mjs"),
-    );
-    await writeFile(
-      join(root, "package.json"),
-      JSON.stringify({ jest: { reporters: [timingReporter] } }),
-    );
-
-    const reporters = await resolveJestReporters(root, ["--debug-timing"]);
-
-    expect(reporters.filter((reporter) => reporter === timingReporter)).toHaveLength(1);
+    const reporters = await resolveJestReporters(root);
+    expect(reporters).toHaveLength(2);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

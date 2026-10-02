@@ -11,10 +11,9 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   const focusedCoverage = await resolveFocusedCoverage(root, focusedPath);
   const jestArguments = buildJestArguments(args);
   const jestCli = resolveCli(root, options);
-  const reporters = await resolveJestReporters(root, args);
+  const reporters = await resolveJestReporters(root);
   const coverageDirectory =
     (await options?.createCoverageDirectory?.()) ?? (await createJestCoverageDirectory());
-  const reportFile = join(coverageDirectory, "jest-results.json");
   const consoleReportFile = join(coverageDirectory, "jest-console-output.json");
   const processOptions = createJestProcessOptions(root, args, {
     ...options,
@@ -22,7 +21,6 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   });
   return {
     coverageDirectory,
-    reportFile,
     consoleReportFile,
     command: process.execPath,
     args: [
@@ -35,8 +33,6 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
       "--coverageReporters=text",
       "--coverageDirectory",
       coverageDirectory,
-      "--outputFile",
-      reportFile,
       ...reporters.flatMap((reporter) => ["--reporters", reporter]),
       ...focusedCoverage,
       ...jestArguments.slice(1),

@@ -9,12 +9,6 @@ test("allows Jest summaries, assertion markers, and harness timing lines", () =>
   ).toEqual([]);
 });
 
-test("allows Jest's expected structured-report location notice", () => {
-  expect(findUnexpectedJestLines("Test results written to: coverage/jest-results.json\n")).toEqual(
-    [],
-  );
-});
-
 test("allows timed Jest reporter lines whose assertion marker was redacted", () => {
   expect(findUnexpectedJestLines("[REDACTED] handles the test (1 ms)\n")).toEqual([]);
   expect(findUnexpectedJestLines("[REDACTED] application output")).toEqual([

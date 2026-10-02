@@ -125,9 +125,10 @@ script names as positional arguments.
 Legacy `--ignore-*` flags are unsupported. Coverage and monolith enforcement
 remain enabled for all validation modes.
 
-`--debug-timing` writes timing diagnostics through the selected CLI output
-writer. Programmatic callers that omit a writer do not receive an implicit
-process-global timing stream.
+`--debug-timing` streams stage timing and per-suite start/completion durations
+through the selected CLI output writer. It does not print a separate Jest timing
+report at the end. Programmatic callers that omit a writer do not receive an
+implicit process-global timing stream.
 
 ## Development
 

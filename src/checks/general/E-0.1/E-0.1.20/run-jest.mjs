@@ -6,7 +6,7 @@ import {
   cleanupAfterPreparedJestFailure,
   finalizePreparedJestRun,
 } from "./finalize-prepared-jest-run.mjs";
-import { attachJestReport } from "./attach-jest-report.mjs";
+import { attachJestConsoleOutput } from "./attach-jest-console-output.mjs";
 
 export async function runJest(root, args, execute, options, removeCoverage = rm) {
   args ??= [];
@@ -24,7 +24,8 @@ export async function runJest(root, args, execute, options, removeCoverage = rm)
     // codescope ignore: cleanup failure is appended before rejection, and the coverage check retries cleanup for unavailable results
     return cleanupAfterPreparedJestFailure(prepared, error, removeCoverage);
   }
-  if (result.code === 0) result = await attachJestReport(prepared, result, options?.readReport);
+  if (result.code === 0)
+    result = await attachJestConsoleOutput(prepared, result, options?.readConsoleReport);
   return finalizePreparedJestRun(
     prepared,
     result,

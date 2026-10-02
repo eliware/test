@@ -66,6 +66,20 @@ test("ignores overlong output lines as progress markers", () => {
   expect(onProgress).not.toHaveBeenCalled();
 });
 
+test("accepts unbounded progress lines when the caller opts in", () => {
+  const onProgress = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^x+$/u,
+    maxProgressLineLength: Number.MAX_SAFE_INTEGER,
+    resetOnAnyOutput: false,
+    resetProgressTimer: jest.fn(),
+    onProgress,
+  });
+  const longLine = "x".repeat(5000);
+  progress.push(`${longLine}\n`);
+  expect(onProgress).toHaveBeenCalledWith(longLine);
+});
+
 test("keeps later complete lines after an overlong line and ignores its flush", () => {
   const onProgress = jest.fn();
   const progress = createChildProgressHandler({

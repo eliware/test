@@ -1,34 +1,39 @@
 export function createStageTimer(enabled, now = () => Date.now(), write = () => {}) {
   const startedAt = now();
-  let previousAt = startedAt;
-  const lines = [];
-  let jestOutput = () => "";
+  let currentStartedAt = startedAt;
+  let nestedOutput = false;
+  let nestedLineOpen = false;
 
   return {
     start(label) {
-      if (enabled) write(`[eliware-test] Running ${label}...`);
+      if (enabled) currentStartedAt = now();
+      nestedOutput = false;
+      nestedLineOpen = false;
+      if (enabled) write(`Running ${label}...`);
     },
     end(label) {
       if (!enabled) return;
       const current = now();
-      const total = ((current - startedAt) / 1000).toFixed(3);
-      const delta = ((current - previousAt) / 1000).toFixed(3);
-      previousAt = current;
-      write(` ${label} completed — ${delta}s\n`);
-      lines.push(`${label} completed — ${total}s`);
+      const duration = ((current - currentStartedAt) / 1000).toFixed(3);
+      if (nestedOutput) {
+        if (nestedLineOpen) write("\n");
+        write(`${label} completed - ${duration}s\n`);
+      } else write(` completed - ${duration}s\n`);
     },
-    step(completed, next) {
+    beginNestedOutput() {
+      if (!enabled || nestedOutput) return;
+      nestedOutput = true;
+      nestedLineOpen = false;
+      write("\n");
+    },
+    writeNestedOutput(text) {
       if (!enabled) return;
-      write(` ${completed} completed — starting ${next}\n`);
+      write(text);
+      nestedLineOpen = !text.endsWith("\n");
     },
-    getLines() {
-      return [...lines];
-    },
-    setJestOutputGetter(getter) {
-      jestOutput = typeof getter === "function" ? getter : () => "";
-    },
-    getJestOutput() {
-      return jestOutput();
+    step() {
+      if (!enabled) return;
+      currentStartedAt = now();
     },
   };
 }

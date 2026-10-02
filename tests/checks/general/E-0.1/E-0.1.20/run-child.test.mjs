@@ -19,15 +19,12 @@ test("uses process defaults when options are omitted", async () => {
   ).resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));
 });
 
-test("handles children without piped output streams", async () => {
+test("handles children without streams and ignores errors after close", async () => {
   const child = new EventEmitter();
   const result = runChild("ignored", [], { spawnProcess: () => child });
   child.emit("close", 0, null);
+  child.emit("error", new Error("late child error"));
   await expect(result).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
-});
-
-test("rejects failures raised during process creation", async () => {
-  await expect(runChild("C:\\missing-executable", [], {})).rejects.toBeTruthy();
 });
 
 test("normalizes and redacts synchronous spawn failures before process setup", async () => {
@@ -39,7 +36,6 @@ test("normalizes and redacts synchronous spawn failures before process setup", a
     },
     createProgressTimeout,
   });
-
   let error;
   try {
     await result;
@@ -135,6 +131,38 @@ test("wires progress, timeout, output, and timed-out child settlement", async ()
   expect(onTimeout).toHaveBeenCalledTimes(1);
   expect(onStdout).toHaveBeenCalledWith("output");
   expect(onStderr).toHaveBeenCalledWith("progress\n");
+});
+
+test("terminates Jest when one suite exceeds its total runtime deadline", async () => {
+  jest.useFakeTimers();
+  try {
+    const child = Object.assign(new EventEmitter(), {
+      stdout: new EventEmitter(),
+      stderr: new EventEmitter(),
+    });
+    const onSuiteTimeout = jest.fn();
+    const result = runChild("ignored", [], {
+      spawnProcess: () => child,
+      progressTimeoutMs: 15_000,
+      suiteTimeoutMs: 5_000,
+      progressPattern: /^progress$/u,
+      onProgress(text) {
+        if (text === "progress") this.onSuiteStart("tests/slow.test.mjs");
+      },
+      onSuiteTimeout,
+      terminateChild: () => true,
+      terminationGraceMs: 1,
+    });
+
+    child.stderr.emit("data", "progress\n");
+    child.stdout.emit("data", "test still producing output\n");
+    jest.advanceTimersByTime(6_001);
+
+    await expect(result).resolves.toMatchObject({ timedOut: true });
+    expect(onSuiteTimeout).toHaveBeenCalledWith("tests/slow.test.mjs");
+  } finally {
+    jest.useRealTimers();
+  }
 });
 
 test("settles when the process never confirms termination", async () => {

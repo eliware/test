@@ -31,3 +31,25 @@ test("removes routine passing and coverage output from failure diagnostics", () 
     }).message,
   ).toBe("Jest failed: FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2");
 });
+
+test("omits repeated Jest failure details when inline suite output is enabled", () => {
+  expect(
+    classifyJestResult(
+      "E-0.1.130.13",
+      { code: 1, stdout: "FAIL tests/bad.test.mjs\\nExpected: 1\\nReceived: 2", stderr: "" },
+      undefined,
+      { failuresReported: true },
+    ).message,
+  ).toBe("Jest failed; see the inline suite failures above.");
+});
+
+test("keeps one copy of Jest failures in final non-debug diagnostics", () => {
+  expect(
+    classifyJestResult("E-0.1.130.13", {
+      code: 1,
+      stdout:
+        "FAIL tests/bad.test.mjs\nFailure details\nSummary of all failing tests\nFAIL tests/bad.test.mjs\nFailure details",
+      stderr: "",
+    }).message,
+  ).toBe("Jest failed: FAIL tests/bad.test.mjs\nFailure details");
+});

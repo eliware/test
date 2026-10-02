@@ -1,20 +1,9 @@
 import { normalizeRepositoryRelativePath } from "../../../normalize-repository-relative-path.mjs";
 import { redactProcessOutput } from "../../../redact-process-output.mjs";
 
-export function findJestConsoleOutput(
-  report,
-  root = process.cwd(),
-  secrets = [],
-  consoleOutput = [],
-) {
+export function findJestConsoleOutput(consoleOutput = [], root = process.cwd(), secrets = []) {
   const findings = [];
-  const reportOutput = (report?.testResults ?? []).flatMap((entry) =>
-    (entry.console ?? []).map((output) => ({
-      ...output,
-      testFilePath: entry.testFilePath ?? entry.name,
-    })),
-  );
-  for (const output of [...reportOutput, ...consoleOutput]) {
+  for (const output of consoleOutput) {
     const source = redactProcessOutput(reportPath(output.testFilePath, root), secrets);
     const message = redactProcessOutput(String(output.message ?? "").trim(), secrets);
     findings.push(`console.${output.type ?? "log"} in ${source}: ${message}`);
@@ -24,7 +13,11 @@ export function findJestConsoleOutput(
 
 export function isDefaultJestConsoleLine(record, outputs, root = process.cwd()) {
   return outputs.some((output) => {
-    if (reportPath(output.testFilePath, root) !== record.suite) return false;
+    if (
+      record.suite !== "unknown test suite" &&
+      reportPath(output.testFilePath, root) !== record.suite
+    )
+      return false;
     if (record.line === `console.${output.type ?? "log"}`) return true;
     return String(output.message ?? "")
       .split(/\r?\n/u)

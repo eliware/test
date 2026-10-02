@@ -46,7 +46,6 @@ export function buildJestArguments(args = []) {
   const concurrency = ["--runInBand"];
   return [
     "--coverage",
-    "--json",
     ...(focusedPath ? ["--runTestsByPath", focusedPath] : []),
     ...concurrency,
     ...forwarded,

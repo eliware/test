@@ -8,10 +8,10 @@ import { createChildProcessErrorHandler } from "./handle-child-process-error.mjs
 import { terminateChildAfterSetupFailure } from "./terminate-child-after-setup-failure.mjs";
 import { createChildSpawnOptions } from "./create-child-spawn-options.mjs";
 import { createChildCloseHandler } from "./handle-child-close.mjs";
+import { createSuiteTimeoutTracker } from "./create-suite-timeout-tracker.mjs";
 
 export function runChild(command, args, options = {}) {
-  const maxOutputLength = options.maxOutputLength;
-  const outputLimit = maxOutputLength ?? 100_000;
+  const outputLimit = options.maxOutputLength ?? 100_000;
   const spawnProcess = options.spawnProcess ?? spawn;
   const createTimeout = options.createProgressTimeout ?? createProgressTimeout;
   const environment = options.env ?? process.env;
@@ -19,7 +19,15 @@ export function runChild(command, args, options = {}) {
     const output = createChildOutputCapture(outputLimit, { ...options, env: environment });
     let settled = false;
     let termination;
-    let timeout;
+    let progressTimeout;
+    let suiteTimeout;
+    const timeout = {
+      reset: () => progressTimeout?.reset(),
+      stop() {
+        progressTimeout?.stop();
+        suiteTimeout?.stop();
+      },
+    };
     const settleError = createChildProcessErrorHandler({
       isSettled: () => settled,
       markSettled: () => {
@@ -39,7 +47,8 @@ export function runChild(command, args, options = {}) {
       return;
     }
     try {
-      timeout = createTimeout({
+      suiteTimeout = createSuiteTimeoutTracker(options, createTimeout, () => termination);
+      progressTimeout = createTimeout({
         timeoutMs: options.progressTimeoutMs,
         onTimeout: () => termination.onTimeout(),
       });
@@ -60,6 +69,8 @@ export function runChild(command, args, options = {}) {
       };
       const progress = createChildProgressHandler({
         ...options,
+        onSuiteStart: (path) => suiteTimeout.start(path) || options.onSuiteStart?.(path),
+        onSuiteEnd: (path) => suiteTimeout.end(path) || options.onSuiteEnd?.(path),
         resetProgressTimer,
         redactProgressText: output.redactComplete,
       });

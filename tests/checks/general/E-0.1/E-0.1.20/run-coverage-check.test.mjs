@@ -59,7 +59,7 @@ test("skips disabled coverage and maps unavailable Jest results", async () => {
   });
   expect(readCoverageEvidenceFromCandidates).not.toHaveBeenCalled();
 
-  await expect(run({ executeJest: true, jestResult: { code: 1 } })).resolves.toEqual({
+  await expect(run({ executeJest: true, jestResult: { code: null } })).resolves.toEqual({
     ruleId,
     status: "fail",
     message: "Jest results are unavailable or indicate a failed test run.",
@@ -93,7 +93,7 @@ test("includes prior cleanup diagnostics and maps timed-out runs", async () => {
     status: "fail",
     message: "Jest results are unavailable or indicate a failed test run.",
   });
-  expect(readCoverageEvidenceFromCandidates).not.toHaveBeenCalled();
+  expect(readCoverageEvidenceFromCandidates).toHaveBeenCalledTimes(1);
 });
 
 test("preserves the Jest launch diagnostic when coverage cannot run", async () => {
@@ -160,10 +160,10 @@ test("selects focused evidence and attaches the run-specific directory", async (
   expect(assessCoverageEvidence).toHaveBeenCalledWith(evidence, { focusedPath: true });
 });
 
-test("formats aggregate and file-level gaps from coverage evidence", async () => {
+test("formats aggregate and file-level gaps from coverage evidence after failed Jest", async () => {
   assessCoverageEvidence.mockReturnValueOnce({ aggregateGaps: ["branches"], hasFileGaps: false });
   await expect(
-    run({ executeJest: true, root: "/repo", jestResult: { code: 0 } }),
+    run({ executeJest: true, root: "/repo", jestResult: { code: 1 } }),
   ).resolves.toMatchObject({
     status: "fail",
     message: "coverage gaps\nAggregate gaps: branches.",

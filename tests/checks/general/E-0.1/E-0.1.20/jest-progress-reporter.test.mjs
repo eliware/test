@@ -4,91 +4,118 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const writes = [];
-const stdoutWrites = [];
 const originalWrite = process.stderr.write.bind(process.stderr);
-const originalStdoutWrite = process.stdout.write.bind(process.stdout);
 const { default: JestProgressReporter } =
   await import("../../../../../src/checks/general/E-0.1/E-0.1.20/jest-progress-reporter.mjs");
 
+function events(output) {
+  return output.map((line) => JSON.parse(line.match(/^\[eliware-test-progress\] (.+)\n$/u)[1]));
+}
+
 beforeEach(() => {
   writes.length = 0;
-  stdoutWrites.length = 0;
   process.stderr.write = (value) => {
     writes.push(value);
-    return true;
-  };
-  process.stdout.write = (value) => {
-    stdoutWrites.push(value);
     return true;
   };
 });
 
 afterEach(() => {
   process.stderr.write = originalWrite;
-  process.stdout.write = originalStdoutWrite;
 });
 
-test("reports suite progress once without per-test output", () => {
+test("reports suite start and completion once without per-test output", () => {
   const reporter = new JestProgressReporter();
   reporter.onTestStart({ path: "tests/example.test.mjs" });
   reporter.onTestResult(
     { path: "tests/example.test.mjs" },
     { startTime: 100, endTime: 1_100, assertionResults: [{ fullName: "works", duration: 250 }] },
   );
-  expect(writes).toEqual([
-    "[eliware-test-progress] start tests/example.test.mjs\n",
-    "[eliware-test-progress] complete tests/example.test.mjs 1.000s\n",
+
+  expect(events(writes)).toEqual([
+    { event: "start", path: "tests/example.test.mjs" },
+    {
+      event: "result",
+      path: "tests/example.test.mjs",
+      duration: "1.000",
+      failed: false,
+      failures: [],
+      unexpectedOutput: [],
+    },
   ]);
-  expect(stdoutWrites).toEqual([]);
+});
+
+test("includes suite failures and unexpected console output in its result", () => {
+  const reporter = new JestProgressReporter();
+  reporter.onTestResult(
+    { path: "tests/failing.test.mjs" },
+    {
+      assertionResults: [
+        { status: "failed", fullName: "case fails", failureMessages: ["Assertion failed"] },
+      ],
+      console: [{ type: "warn", message: "unexpected warning" }],
+    },
+  );
+
+  expect(events(writes)[0]).toMatchObject({
+    event: "result",
+    failed: true,
+    failures: ["case fails\nAssertion failed"],
+    unexpectedOutput: ["console.warn: unexpected warning"],
+  });
+});
+
+test("uses Jest performance statistics and test execution error stacks", () => {
+  const reporter = new JestProgressReporter();
+  reporter.onTestResult(
+    { path: "tests/runtime-error.test.mjs" },
+    {
+      perfStats: { start: 100, end: 1_100 },
+      testExecError: { stack: "Suite could not load" },
+    },
+  );
+
+  expect(events(writes)[0]).toMatchObject({
+    duration: "1.000",
+    failed: true,
+    failures: ["Suite could not load"],
+  });
+});
+
+test("handles failure messages and incomplete suite metadata", () => {
+  const reporter = new JestProgressReporter({ write: (text) => writes.push(text) });
+  reporter.onTestResult(
+    { path: "tests/incomplete.test.mjs" },
+    {
+      startTime: 200,
+      endTime: 100,
+      failureMessage: "suite failed",
+      testExecError: { message: "suite could not load" },
+      console: [{}],
+    },
+  );
+  expect(events(writes).at(-1)).toMatchObject({
+    duration: "0.000",
+    failed: true,
+    failures: ["suite failed", "suite could not load"],
+    unexpectedOutput: ["console.log: "],
+  });
+});
+
+test("formats failed assertions with fallback titles and messages", () => {
+  const reporter = new JestProgressReporter({ write: (text) => writes.push(text) });
+  reporter.onTestResult(
+    { path: "tests/untitled.test.mjs" },
+    { assertionResults: [{ status: "failed" }, { status: "passed" }] },
+  );
+  expect(events(writes).at(-1)).toMatchObject({ failed: true, failures: ["Failed test"] });
 });
 
 test("uses Jest's configured root for absolute suite paths", () => {
   const reporter = new JestProgressReporter({ rootDir: process.cwd() });
   reporter.onTestStart({ path: `${process.cwd()}\\tests\\absolute.test.mjs` });
 
-  expect(writes).toContain("[eliware-test-progress] start tests/absolute.test.mjs\n");
-});
-
-test("reports slow tests only above five seconds", () => {
-  new JestProgressReporter().onTestResult(
-    { path: "tests/slow.test.mjs" },
-    { assertionResults: [{ title: "unknown duration" }, { title: "slow case", duration: 5_001 }] },
-  );
-  expect(writes).toContain(
-    "[eliware-test-progress] slow tests/slow.test.mjs :: slow case :: 5.001s\n",
-  );
-});
-
-test("reports a normal timed test without a slow marker", () => {
-  writes.length = 0;
-  new JestProgressReporter().onTestResult(
-    { path: "tests/normal.test.mjs" },
-    { assertionResults: [{ fullName: "normal", duration: 1_000 }] },
-  );
-  expect(writes).toEqual(["[eliware-test-progress] complete tests/normal.test.mjs 0.000s\n"]);
-});
-
-test("uses the assertion title for slow-test diagnostics when fullName is absent", () => {
-  new JestProgressReporter().onTestResult(
-    { path: "tests/title.test.mjs" },
-    { assertionResults: [{ title: "title fallback", duration: 6_000 }] },
-  );
-  expect(writes).toEqual([
-    "[eliware-test-progress] complete tests/title.test.mjs 0.000s\n",
-    "[eliware-test-progress] slow tests/title.test.mjs :: title fallback :: 6.000s\n",
-  ]);
-});
-
-test("accepts a result without assertion results", () => {
-  new JestProgressReporter().onTestResult({ path: "tests/empty.test.mjs" }, {});
-  expect(writes).toEqual(["[eliware-test-progress] complete tests/empty.test.mjs 0.000s\n"]);
-  const reportFile = process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
-  delete process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
-  try {
-    new JestProgressReporter().onRunComplete();
-  } finally {
-    if (reportFile !== undefined) process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = reportFile;
-  }
+  expect(events(writes)[0].path).toBe("tests/absolute.test.mjs");
 });
 
 test("writes captured Jest console output with its suite path", async () => {
@@ -100,9 +127,7 @@ test("writes captured Jest console output with its suite path", async () => {
     const reporter = new JestProgressReporter();
     reporter.onTestResult(
       { path: "tests/noisy.test.mjs" },
-      {
-        console: [{ type: "warn", message: "expected leak", origin: "line 4" }],
-      },
+      { console: [{ type: "warn", message: "expected leak", origin: "line 4" }] },
     );
     reporter.onRunComplete();
 
@@ -116,9 +141,18 @@ test("writes captured Jest console output with its suite path", async () => {
   }
 });
 
-test("redacts secrets, hides external paths, and caps reporter output", () => {
+test("does not write a console report when no report path is configured", () => {
+  const previous = process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
+  delete process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
+  try {
+    expect(() => new JestProgressReporter().onRunComplete()).not.toThrow();
+  } finally {
+    if (previous !== undefined) process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = previous;
+  }
+});
+
+test("redacts secrets and hides external paths in progress events", () => {
   const output = [];
-  const stdoutOutput = [];
   const reporter = new JestProgressReporter({
     env: { API_TOKEN: "private-token" },
     write: (text) => output.push(text),
@@ -126,25 +160,21 @@ test("redacts secrets, hides external paths, and caps reporter output", () => {
   reporter.onTestStart({ path: `${process.cwd()}\\private-token.test.mjs` });
   reporter.onTestResult(
     { path: "../outside.test.mjs" },
-    { assertionResults: [{ title: "private-token", duration: 10 }] },
+    { failureMessage: "private-token", numFailingTests: 1 },
   );
   expect(output.join("")).not.toContain(process.cwd());
   expect(output.join("")).not.toContain("private-token");
   expect(output.join("")).toContain("[outside repository]");
-  expect(stdoutOutput).toEqual([]);
 });
 
-test("caps total reporter output", () => {
+test("reports every suite and preserves long file paths", () => {
   const output = [];
-  const stdoutOutput = [];
-  const reporter = new JestProgressReporter({
-    write: (text) => output.push(text),
-    maxOutputLength: 60,
-  });
-  reporter.onTestStart({ path: "tests/a.test.mjs" });
-  reporter.onTestStart({ path: "tests/b.test.mjs" });
-  expect(output).toHaveLength(1);
-  expect(output[0]).toMatch(/\n$/u);
-  expect(output.join("").length).toBeLessThanOrEqual(60);
-  expect(stdoutOutput).toEqual([]);
+  const path = `tests/${"long-path-segment/".repeat(100)}suite.test.mjs`;
+  const reporter = new JestProgressReporter({ write: (text) => output.push(text) });
+  for (let index = 0; index < 100; index++)
+    reporter.onTestStart({ path: `tests/${index}.test.mjs` });
+  reporter.onTestStart({ path });
+
+  expect(output).toHaveLength(101);
+  expect(events(output).at(-1).path).toBe(path);
 });

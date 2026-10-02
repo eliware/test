@@ -67,13 +67,25 @@
     "endOfLine": "lf"
   },
   "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.mjs"
+    ],
     "collectCoverageFrom": [
       "src/**/*.mjs"
     ],
     "coverageReporters": [
       "text",
       "json-summary"
-    ]
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    }
   },
   "dependencies": {
     "@babel/parser": "^7.29.9",

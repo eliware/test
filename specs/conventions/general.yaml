@@ -508,9 +508,29 @@ directives:
               - Do not hand-edit package-lock.json; regenerate it with npm so dependency resolution remains reproducible.
           - id: E-0.1.20.7
             dos:
-              - Repositories using Jest must keep Jest configuration in package.json.
+              - Every repository must define package.json.jest as the exact canonical configuration shown in this example, including repositories that do not currently use Jest.
             donts:
+              - Do not add, remove, or change any canonical Jest setting.
               - Do not add a separate Jest configuration file that can diverge from the package.json configuration.
+            examples:
+              - purpose: Canonical package.json Jest configuration
+                markdown: |-
+                  ```json
+                  {
+                    "testEnvironment": "node",
+                    "testMatch": ["**/tests/**/*.test.mjs"],
+                    "collectCoverageFrom": ["src/**/*.mjs"],
+                    "coverageReporters": ["text", "json-summary"],
+                    "coverageThreshold": {
+                      "global": {
+                        "branches": 100,
+                        "functions": 100,
+                        "lines": 100,
+                        "statements": 100
+                      }
+                    }
+                  }
+                  ```
           - id: E-0.1.20.14
             dos:
               - Repositories must remove dependencies that are not used by their source, tests, tooling, required runtime, or commands in .knit/deploy.yaml.
@@ -526,9 +546,31 @@ directives:
               - Do not omit, rename, or replace a shared validation script, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command.
           - id: A-0.1.20.18
             dos:
-              - Use the shared canonical Prettier configuration for maintained Node.js repositories.
+              - Every repository must define package.json.prettier as the exact canonical configuration shown in the example.
+              - The canonical package.json.prettier object is the sole source of Prettier settings for the repository.
             donts:
-              - Do not diverge from the canonical Prettier configuration without explicit approval.
+              - Do not add, remove, or change any canonical Prettier setting.
+              - Do not define Prettier settings in standalone configuration files; this includes .prettierrc files and prettier.config files in any supported format or subdirectory.
+            examples:
+              - purpose: Canonical package.json Prettier configuration
+                markdown: |-
+                  ```json
+                  {
+                    "printWidth": 100,
+                    "tabWidth": 2,
+                    "useTabs": false,
+                    "semi": true,
+                    "singleQuote": false,
+                    "quoteProps": "as-needed",
+                    "jsxSingleQuote": false,
+                    "trailingComma": "all",
+                    "bracketSpacing": true,
+                    "bracketSameLine": false,
+                    "arrowParens": "always",
+                    "proseWrap": "preserve",
+                    "endOfLine": "lf"
+                  }
+                  ```
           - id: E-0.1.20.19
             dos:
               - Every repository applying general must execute its audit stage through the shared audit script.
