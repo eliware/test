@@ -1,20 +1,10 @@
-import { findPublicationCommand, findUnsupportedCommands } from "./classify-workflow-commands.mjs";
-import { isGhcrImagePublicationJob } from "./is-ghcr-image-publication-job.mjs";
+import { findUnsupportedCommands } from "./classify-workflow-commands.mjs";
 import { validateWorkflowPreInstallCommands } from "./validate-workflow-pre-install-commands.mjs";
 
-export function validateWorkflowSiblingJobs(
-  name,
-  jobs,
-  validationJobIds,
-  publicationWorkflow,
-  allowGhcrPublication = false,
-) {
+export function validateWorkflowSiblingJobs(name, jobs, validationJobIds, publicationJobIds) {
   const failures = [];
   for (const { id, job, commands } of jobs) {
-    const publicationJob =
-      (publicationWorkflow && findPublicationCommand(commands)) ||
-      (allowGhcrPublication && isGhcrImagePublicationJob(job));
-    if (validationJobIds.has(id) || publicationJob) continue;
+    if (validationJobIds.has(id) || publicationJobIds.has(id)) continue;
     const unsupported = findUnsupportedCommands(commands);
     if (unsupported.length > 0) {
       failures.push(`${name} contains non-validation command(s): ${unsupported.join(", ")}.`);

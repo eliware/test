@@ -1,4 +1,4 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, stat as statPath } from "node:fs/promises";
 import { findRepositoryEntries } from "./general/E-0.1/find-repository-files.mjs";
 import { createRepositoryDiscovery } from "./create-repository-inventory-discovery.mjs";
 import { createRepositoryFileViews } from "./create-repository-inventory-views.mjs";
@@ -15,7 +15,7 @@ export function createRepositoryInventory(root, options = {}) {
     includeTestResultsUnder = [],
     read = readFile,
     readDirectory = readdir,
-    statDirectory,
+    statDirectory = statPath,
     parseSource,
   } = options;
   const discovery = createRepositoryDiscovery({
@@ -35,6 +35,7 @@ export function createRepositoryInventory(root, options = {}) {
     entries: discovery.entries,
     entriesUnder: discovery.entriesUnder,
     readDirectory: discovery.readDirectoryCached,
+    statDirectory,
     hasFullDiscovery: discovery.hasFullDiscovery,
   });
 

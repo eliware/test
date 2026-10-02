@@ -1,18 +1,12 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const findPublicationCommand = jest.fn();
-const isGhcrImagePublicationJob = jest.fn();
 const isValidationWorkflowJob = jest.fn();
 const validateWorkflowSiblingJobs = jest.fn();
 const validateWorkflowValidationJobs = jest.fn();
 
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.24/classify-workflow-commands.mjs",
-  () => ({ findPublicationCommand, isValidationWorkflowJob }),
-);
-jest.unstable_mockModule(
-  "../../../../../src/checks/general/E-0.1/E-0.1.24/is-ghcr-image-publication-job.mjs",
-  () => ({ isGhcrImagePublicationJob }),
+  () => ({ isValidationWorkflowJob }),
 );
 jest.unstable_mockModule(
   "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-sibling-jobs.mjs",
@@ -29,8 +23,6 @@ const validJob = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
 
 beforeEach(() => {
   jest.resetAllMocks();
-  findPublicationCommand.mockReturnValue(undefined);
-  isGhcrImagePublicationJob.mockReturnValue(false);
   validateWorkflowValidationJobs.mockReturnValue(null);
   isValidationWorkflowJob.mockReturnValue(false);
   validateWorkflowSiblingJobs.mockReturnValue(null);
@@ -56,22 +48,18 @@ test("selects validation jobs and returns their normalized commands", () => {
     "ci.yml",
     expect.arrayContaining([expect.objectContaining({ id: "validate" })]),
     new Set(["validate"]),
-    false,
-    false,
+    new Set(),
   );
 });
 
 test("accepts a profile-validated GHCR publisher as a separate publication job", () => {
-  const publisher = {
-    steps: [{ uses: "docker/build-push-action@v6", with: { push: true } }],
-  };
-  isGhcrImagePublicationJob.mockReturnValue(true);
+  const publisher = { steps: [{ run: "docker push ghcr.io/eliware/example" }] };
   const result = selectWorkflowValidationJobs(
     "publish.yml",
     {
       jobs: { validate: validJob, publish: publisher },
     },
-    { allowGhcrPublication: true },
+    { publicationJobIds: new Set(["publish"]) },
   );
 
   expect(result.error).toBeNull();
@@ -79,19 +67,21 @@ test("accepts a profile-validated GHCR publisher as a separate publication job",
     "publish.yml",
     expect.arrayContaining([expect.objectContaining({ id: "publish" })]),
     new Set(["validate"]),
-    true,
-    true,
+    new Set(["publish"]),
   );
 });
 
 test("maps missing validation jobs according to whether the workflow publishes", () => {
-  findPublicationCommand.mockReturnValueOnce({ command: "npm publish" });
-  expect(selectWorkflowValidationJobs("publish.yml", { jobs: { publish: { steps: [] } } })).toEqual(
-    {
-      error: "publish.yml publication workflow must contain a separate validation job.",
-      jobs: [],
-    },
-  );
+  expect(
+    selectWorkflowValidationJobs(
+      "publish.yml",
+      { jobs: { publish: { steps: [] } } },
+      { publicationJobIds: new Set(["publish"]) },
+    ),
+  ).toEqual({
+    error: "publish.yml publication workflow must contain a separate validation job.",
+    jobs: [],
+  });
   expect(selectWorkflowValidationJobs("ci.yml", { jobs: {} })).toEqual({
     error: "ci.yml must validate with npm ci followed by npm test.",
     jobs: [],

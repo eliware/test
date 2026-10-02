@@ -3,6 +3,7 @@ import { readWorkflows } from "./read-workflow-files.mjs";
 import { validateWorkflowSequence } from "./validate-workflow-sequence.mjs";
 import { selectWorkflowValidationJobs } from "./select-workflow-validation-jobs.mjs";
 import { workflowAllowsAttestation } from "./workflow-allows-attestation.mjs";
+import { findProfilePublicationJobIds } from "./find-profile-publication-job-ids.mjs";
 
 export const ruleId = "E-0.1.24.4";
 export const parentRuleId = "E-0.1.24";
@@ -16,11 +17,11 @@ export async function run({ root, packageJson, repositoryInventory }) {
     return fail(ruleId, `Workflow YAML could not be parsed: ${error.message}`);
   }
   const allowAttestation = workflowAllowsAttestation(packageJson);
+  const profiles = packageJson?.eliware?.apply ?? [];
   const failures = [];
   for (const { name, document } of workflows) {
-    const selection = selectWorkflowValidationJobs(name, document, {
-      allowGhcrPublication: allowAttestation,
-    });
+    const publicationJobIds = findProfilePublicationJobIds({ document }, profiles);
+    const selection = selectWorkflowValidationJobs(name, document, { publicationJobIds });
     if (selection.error) {
       failures.push(selection.error);
       continue;

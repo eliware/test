@@ -39,7 +39,7 @@ test("composes workflow loading, validation-job selection, and sequence validati
   });
   expect(readWorkflows).toHaveBeenCalledWith("/repo", undefined);
   expect(selectWorkflowValidationJobs).toHaveBeenCalledWith("ci.yml", document, {
-    allowGhcrPublication: false,
+    publicationJobIds: new Set(),
   });
   expect(validateWorkflowSequence).toHaveBeenCalledWith(
     "ci.yml job validate",

@@ -22,8 +22,10 @@
 
 ## Features
 
-The CLI validates repository structure, documentation, conventions, tests,
-coverage, packaging, and repository checks. It does not perform live operational validation.
+The CLI supports validation of repository structure, documentation,
+conventions, tests, coverage, packaging, and repository checks. The aggregate
+stages depend on the repository's declared profiles. It does not perform live
+operational validation.
 
 Package description: Shared deterministic repository validation for Eliware projects. Author:
 Eliware <eliware@eliware.org>. Repository: https://github.com/eliware/test. License: MIT.
@@ -133,9 +135,11 @@ focused regression tests for behavior changes.
 
 ## Testing
 
-In this repository, `npm test` runs aggregate Jest, lint, format-check, audit,
-and pack validation under its declared npm-published profile. Pack validation
-is profile-dependent in other repositories. One repository-relative `.test.*` or `.spec.*` file under `tests/` can be supplied to
+For this npm-published package, `npm test` runs aggregate Jest, lint,
+format-check, audit, and pack validation. In consuming repositories, the stages
+depend on their declared profiles; pack validation runs only when the
+`npm-published` profile applies. One repository-relative `.test.*` or
+`.spec.*` file under `tests/` can be supplied to
 `eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 

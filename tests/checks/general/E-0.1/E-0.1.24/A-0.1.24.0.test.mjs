@@ -53,12 +53,15 @@ test("reports every workflow missing the validation sequence", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("leaves publication jobs to their publication profile validators", async () => {
+test("leaves npm publication jobs to validators only when the profile applies", async () => {
   const root = await workflowRoot(
     "jobs:\n  publish:\n    steps:\n      - run: npm publish --provenance\n",
   );
   try {
-    await expect(run({ root })).resolves.toEqual({
+    await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
+    await expect(
+      run({ root, packageJson: { eliware: { apply: ["npm-published"] } } }),
+    ).resolves.toEqual({
       ruleId: "A-0.1.24.0",
       status: "pass",
       message: "",
@@ -77,7 +80,9 @@ test("recognizes GHCR publication through structured tag inputs", async () => {
     "jobs:\n  publish:\n    steps:\n      - uses: eliware/container-publisher@v1\n        with:\n          tags: ghcr.io/eliware/app:latest\n",
   );
   try {
-    await expect(run({ root })).resolves.toMatchObject({ status: "pass", message: "" });
+    await expect(
+      run({ root, packageJson: { eliware: { apply: ["ghcr-published"] } } }),
+    ).resolves.toMatchObject({ status: "pass", message: "" });
   } finally {
     await rm(root, { recursive: true, force: true });
   }

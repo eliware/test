@@ -1,44 +1,46 @@
-import { hasFunctionScopedRequire } from "./has-function-scoped-require.mjs";
 import { patternHasRequire } from "./pattern-has-require-binding.mjs";
 import { isFunctionNode } from "./is-function-node.mjs";
 
-const isScope = (node) =>
-  node?.type === "Program" ||
-  node?.type === "BlockStatement" ||
-  node?.type === "CatchClause" ||
-  isFunctionNode(node);
-
 export function collectRequireBindingScopes(root) {
   const scopes = new WeakSet();
-  visit(root);
+  visit(root, null);
   return scopes;
 
-  function visit(node) {
+  function visit(node, parentVariableScope) {
     if (!node || typeof node !== "object") return;
-    if (isScope(node) && declaresRequireInScope(node)) scopes.add(node);
+    const ownsVariables = node.type === "Program" || isFunctionNode(node);
+    const variableScope = ownsVariables ? { node, hasRequire: false } : parentVariableScope;
+    if (
+      (node.type === "Program" || node.type === "BlockStatement") &&
+      node.body.some((statement) => declaresDirectRequire(statement, node.type === "Program"))
+    ) {
+      scopes.add(node);
+    }
+    if (node.type === "CatchClause" && patternHasRequire(node.param)) {
+      scopes.add(node);
+    }
+    if (
+      isFunctionNode(node) &&
+      (node.params.some(patternHasRequire) ||
+        (node.type === "FunctionExpression" && node.id?.name === "require"))
+    ) {
+      scopes.add(node);
+    }
+    if (
+      node.type === "VariableDeclaration" &&
+      node.kind === "var" &&
+      node.declarations.some(({ id }) => patternHasRequire(id)) &&
+      variableScope
+    ) {
+      variableScope.hasRequire = true;
+    }
     for (const [key, value] of Object.entries(node)) {
       if (["loc", "start", "end"].includes(key)) continue;
-      if (Array.isArray(value)) value.forEach(visit);
-      else if (value && typeof value === "object") visit(value);
+      if (Array.isArray(value)) value.forEach((child) => visit(child, variableScope));
+      else if (value && typeof value === "object") visit(value, variableScope);
     }
+    if (ownsVariables && variableScope.hasRequire) scopes.add(node);
   }
-}
-
-function declaresRequireInScope(scope) {
-  if (scope.type === "CatchClause") return patternHasRequire(scope.param);
-  if (isFunctionNode(scope)) {
-    if (
-      scope.params.some(patternHasRequire) ||
-      (scope.type === "FunctionExpression" && scope.id?.name === "require")
-    )
-      return true;
-    return hasFunctionScopedRequire(scope.body);
-  }
-  const statements = scope.body;
-  return (
-    statements.some((statement) => declaresDirectRequire(statement, scope.type === "Program")) ||
-    (scope.type === "Program" && hasFunctionScopedRequire(scope))
-  );
 }
 
 function declaresDirectRequire(statement, programScope) {

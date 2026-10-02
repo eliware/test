@@ -1,16 +1,23 @@
 import { expect, test } from "@jest/globals";
 import {
-  findPublicationCommand,
   findUnsupportedCommands,
   isValidationWorkflowJob,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.24/classify-workflow-commands.mjs";
 
 test("classifies publication and unsupported workflow commands", () => {
-  expect(findPublicationCommand([{ command: "npm publish" }])).toEqual({ command: "npm publish" });
-  expect(findPublicationCommand([{ command: "echo npm publish" }])).toBeUndefined();
   expect(findUnsupportedCommands([{ command: "curl https://example.test" }])).toEqual([
     "curl https://example.test",
   ]);
+  expect(
+    findUnsupportedCommands([
+      { command: "npm publish" },
+      { command: "docker push ghcr.io/eliware/example" },
+      { command: "kubectl apply -f deploy.yml" },
+      { command: "git push origin main" },
+      { command: "git tag v1.0.0" },
+    ]),
+  ).toHaveLength(5);
+  expect(findUnsupportedCommands([{ command: "echo npm publish" }])).toEqual([]);
   expect(
     findUnsupportedCommands([
       { command: "npm ci" },

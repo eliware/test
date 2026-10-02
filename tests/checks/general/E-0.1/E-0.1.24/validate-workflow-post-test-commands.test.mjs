@@ -52,6 +52,17 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
       "malformed steps",
     ),
   ).toContain("reporting commands after npm test");
+  for (const [command, step] of [
+    ["npm run typecheck", { run: "npm run typecheck", if: "always()" }],
+    ["npm run build", { run: "npm run build", "continue-on-error": true }],
+  ]) {
+    expect(
+      validateWorkflowPostTestCommands("ci.yml", [{ command, step, index: 1 }], 0, [
+        { run: "npm test" },
+        step,
+      ]),
+    ).toContain("reporting commands after npm test");
+  }
 });
 
 test("rejects shell expansion, redirection, and newline command injection", () => {

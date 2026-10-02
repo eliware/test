@@ -1,4 +1,5 @@
-import { basename, dirname } from "node:path";
+import { stat as statPath } from "node:fs/promises";
+import { basename, dirname, join } from "node:path";
 import { inventoryDirectory } from "./repository-inventory-paths.mjs";
 import { createRepositoryEntryIndex } from "./create-repository-entry-index.mjs";
 import { readGeneratedDirectoryRecords } from "./read-generated-directory-records.mjs";
@@ -8,6 +9,7 @@ export function createRepositoryDirectoryEntries({
   entries,
   entriesUnder,
   readDirectory,
+  statDirectory = statPath,
   hasFullDiscovery,
 }) {
   let index;
@@ -56,6 +58,12 @@ export function createRepositoryDirectoryEntries({
       });
     let children = index.childrenByDirectory.get(base || ".") ?? [];
     if (base && children.length === 0 && prunedDirectory) {
+      const metadata = await statDirectory(join(root, base), { bigint: true });
+      if (!metadata.isDirectory()) {
+        throw Object.assign(new Error(`ENOTDIR: not a directory, scandir '${directory}'`), {
+          code: "ENOTDIR",
+        });
+      }
       children = await readGeneratedDirectoryRecords(base, readDirectory);
     }
     return children.map((record) => ({

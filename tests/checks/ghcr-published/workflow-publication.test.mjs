@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import {
+  ghcrPublicationJobs,
   isPublicationWorkflow,
   publicationJobs,
 } from "../../../src/checks/ghcr-published/workflow-publication.mjs";
@@ -14,6 +15,7 @@ test("classifies publication and command semantics", () => {
   };
   expect(isPublicationWorkflow(workflow)).toBe(true);
   expect(publicationJobs(workflow)).toHaveLength(1);
+  expect(ghcrPublicationJobs(workflow)).toHaveLength(1);
 });
 
 test("handles alternate publication and command shapes", () => {
@@ -33,6 +35,7 @@ test("handles alternate publication and command shapes", () => {
   expect(isPublicationWorkflow(alternate, "docker")).toBe(true);
   expect(isPublicationWorkflow(alternate, /never/)).toBe(false);
   expect(publicationJobs(alternate)).toHaveLength(1);
+  expect(ghcrPublicationJobs(alternate)).toHaveLength(1);
 });
 
 test("classifies a publication from its structured GHCR tag input", () => {
@@ -53,4 +56,10 @@ test("classifies a publication from its structured GHCR tag input", () => {
 
   expect(isPublicationWorkflow(workflow)).toBe(true);
   expect(publicationJobs(workflow)).toHaveLength(1);
+});
+
+test("does not classify an npm-only workflow as a GHCR publication", () => {
+  const workflow = { document: { jobs: { publish: { steps: [{ run: "npm publish" }] } } } };
+  expect(isPublicationWorkflow(workflow)).toBe(false);
+  expect(ghcrPublicationJobs(workflow)).toEqual([]);
 });

@@ -11,9 +11,9 @@ export function isPublicationWorkflow(workflow, pattern) {
 export function publicationJobs(workflow) {
   return jobs(workflow).filter(({ job }) =>
     steps(job).some((step) =>
-      /docker\/build-push-action|docker\s+(?:build|push)|ghcr\.io|npm\s+publish/i.test(
-        stepText(step),
-      ),
+      /docker\/build-push-action|docker\s+(?:build|push)|ghcr\.io/i.test(stepText(step)),
     ),
   );
 }
+
+export const ghcrPublicationJobs = publicationJobs;
