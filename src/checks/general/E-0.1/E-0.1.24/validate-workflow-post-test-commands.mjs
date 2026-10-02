@@ -1,5 +1,6 @@
 import { isSupportedWorkflowStep } from "./is-supported-workflow-step.mjs";
 import { isProhibitedPublishCommand } from "./is-prohibited-publish-command.mjs";
+import { hasInvalidPostTestAction } from "./has-invalid-post-test-action.mjs";
 
 export function validateWorkflowPostTestCommands(
   name,
@@ -24,31 +25,8 @@ export function validateWorkflowPostTestCommands(
       step?.continueOnError === true
     );
   });
-  const invalidAction = workflowSteps.some((step, index) => {
-    const approved = allowAttestation && isApprovedAttestation(step);
-    return (
-      index > testIndex &&
-      typeof step?.uses === "string" &&
-      (!approved || step["continue-on-error"] === true || step.continueOnError === true)
-    );
-  });
+  const invalidAction = hasInvalidPostTestAction(workflowSteps, testIndex, allowAttestation);
   return invalidStepShape || invalidCommand || invalidAction
     ? `${name} may not run prohibited publishing commands after npm test or use unsupported step forms.`
     : null;
-}
-
-function isApprovedAttestation(step) {
-  // codescope ignore: this generic step-shape check permits GHCR attestations; GHCR chain validation matches subjectName and subjectDigest to the pushed image and output
-  if (step?.uses !== "actions/attest@v4" || !step.with || typeof step.with !== "object")
-    return false;
-  const subjectName = step.with.subjectName ?? step.with["subject-name"];
-  const subjectDigest = step.with.subjectDigest ?? step.with["subject-digest"];
-  const pushToRegistry = step.with.pushToRegistry ?? step.with["push-to-registry"];
-  return (
-    typeof subjectName === "string" &&
-    subjectName.length > 0 &&
-    typeof subjectDigest === "string" &&
-    subjectDigest.length > 0 &&
-    pushToRegistry === true
-  );
 }

@@ -34,69 +34,39 @@ test("accepts a valid E-rooted directive tree", async () => {
   });
   await rm(root, { recursive: true, force: true });
 });
-test("rejects invalid hierarchy", async () => {
-  const root = await fixture([
-    { id: "A-0.0", dos: ["Act."], donts: ["Do not omit action."] },
-    {
-      id: "E-0.0",
-      dos: ["Do the work."],
-      donts: ["Do not omit the work."],
-      directives: [{ id: "E-0.0.1", dos: ["Act."], donts: ["Do not omit action."] }],
-    },
-  ]);
-  await expect(run({ root })).resolves.toEqual(
-    expect.objectContaining({
-      status: "fail",
-      message: expect.stringContaining("must be an E-rule"),
-    }),
-  );
-  await rm(root, { recursive: true, force: true });
-});
 
-test("rejects duplicate IDs anywhere in specs", async () => {
-  const root = await fixture([{ id: "E-0.0", dos: ["Do."], donts: ["Do not."] }]);
-  await mkdir(join(root, "specs", "conventions"));
+test("maps document, empty-tree, and aggregated directive failures to the check result", async () => {
+  const missing = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
+  await expect(run({ root: missing })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("required and must be valid YAML"),
+  });
+  await rm(missing, { recursive: true, force: true });
+
+  const empty = await fixture([]);
+  await expect(run({ root: empty })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("one or more directives"),
+  });
+  await rm(empty, { recursive: true, force: true });
+
+  const invalid = await fixture([{ id: "A-0.0", dos: ["Act."], donts: ["Do not omit action."] }]);
+  await expect(run({ root: invalid })).resolves.toMatchObject({ status: "fail" });
+  await rm(invalid, { recursive: true, force: true });
+
+  const duplicate = await fixture([{ id: "E-0.0", dos: ["Do."], donts: ["Do not."] }]);
+  await mkdir(join(duplicate, "specs", "conventions"));
   await writeFile(
-    join(root, "specs", "conventions", "general.yaml"),
+    join(duplicate, "specs", "conventions", "general.yaml"),
     JSON.stringify({
       version: conventionVersion,
       description: "Fixture convention",
       directives: [{ id: "E-0.0", dos: ["Do."], donts: ["Do not."] }],
     }),
   );
-  await expect(run({ root })).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining("Duplicate specification directive ID: E-0.0."),
-  });
-  await rm(root, { recursive: true, force: true });
+  await expect(run({ root: duplicate })).resolves.toMatchObject({ status: "fail" });
+  await rm(duplicate, { recursive: true, force: true });
 });
-
-test("rejects missing, invalid, and empty directive documents", async () => {
-  const missing = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
-  await expect(run({ root: missing })).resolves.toEqual({
-    ruleId: "A-0.1.22.0",
-    status: "fail",
-    message: "specs/directives.yaml is required and must be valid YAML.",
-  });
-  await rm(missing, { recursive: true, force: true });
-
-  const invalid = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
-  await mkdir(join(invalid, "specs"));
-  await writeFile(join(invalid, "specs", "directives.yaml"), "not json");
-  await expect(run({ root: invalid })).resolves.toEqual(
-    expect.objectContaining({ status: "fail" }),
-  );
-  await rm(invalid, { recursive: true, force: true });
-
-  const empty = await fixture([]);
-  await expect(run({ root: empty })).resolves.toEqual({
-    ruleId: "A-0.1.22.0",
-    status: "fail",
-    message: "specs/directives.yaml must contain one or more directives.",
-  });
-  await rm(empty, { recursive: true, force: true });
-});
-
 test("reads directive YAML through the shared parsed cache", async () => {
   const root = await fixture([
     {

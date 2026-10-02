@@ -1,4 +1,4 @@
-import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
+import { resolveFocusedTestPaths } from "./resolve-focused-test-paths.mjs";
 
 export function readDiagnosticOptions(args) {
   const normalizedArgs = [...args];
@@ -44,33 +44,7 @@ export function readDiagnosticOptions(args) {
       throw new Error(`Tool mode arguments must follow ${modes[0]} or the -- separator.`);
     }
   }
-  const parsedFocusedArguments = parseFocusedArguments(normalizedArgs);
-  if (parsedFocusedArguments.forwardedTestPaths.length > 0) {
-    throw new Error(
-      modes.length > 0
-        ? "Focused test paths cannot be combined with tool modes."
-        : "Focused test paths must be supplied before the -- separator.",
-    );
-  }
-  const candidateFocused = parsedFocusedArguments.positional;
-  if (
-    modes.length > 0 &&
-    candidateFocused.some((argument) =>
-      /^tests[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
-    )
-  ) {
-    throw new Error("Focused test paths cannot be combined with tool modes.");
-  }
-  const focused = modes.length === 0 ? candidateFocused : [];
-  if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
-  if (
-    focused.some(
-      (argument) =>
-        !/^tests[\\/].+\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu.test(argument),
-    )
-  ) {
-    throw new Error("Focused paths must be under tests/.");
-  }
+  resolveFocusedTestPaths(normalizedArgs, modes.length > 0);
   return {
     mode: modes[0]?.slice(2) ?? null,
     toolArgs:

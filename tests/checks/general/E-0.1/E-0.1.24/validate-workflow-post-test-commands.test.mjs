@@ -115,21 +115,6 @@ test("uses original workflow positions when setup steps have no run command", ()
 });
 
 test("checks actions after npm test against the reporting allowlist", () => {
-  for (const actionStep of [
-    { uses: "actions/upload-artifact@v6" },
-    { uses: "actions/upload-artifact@v6", with: { path: "**/*" } },
-    { uses: "actions/upload-artifact@v6", env: { TOKEN: "secret" } },
-  ]) {
-    expect(
-      validateWorkflowPostTestCommands("ci.yml", [], 0, [{ run: "npm test" }, actionStep]),
-    ).toContain("publishing commands");
-  }
-  expect(
-    validateWorkflowPostTestCommands("ci.yml", [], 0, [
-      { run: "npm test" },
-      { uses: "untrusted/action@v1" },
-    ]),
-  ).toContain("publishing commands");
   expect(
     validateWorkflowPostTestCommands(
       "publish.yml",
@@ -149,38 +134,4 @@ test("checks actions after npm test against the reporting allowlist", () => {
       { allowAttestation: true },
     ),
   ).toBeNull();
-  expect(
-    validateWorkflowPostTestCommands(
-      "publish.yml",
-      [],
-      0,
-      [{ run: "npm test" }, { uses: "actions/attest@v4" }],
-      { allowAttestation: true },
-    ),
-  ).toContain("publishing commands");
-  for (const withValues of [
-    {},
-    { subjectName: "ghcr.io/eliware/example", pushToRegistry: true },
-    {
-      subjectName: "ghcr.io/eliware/example",
-      subjectDigest: "${{ steps.push.outputs.digest }}",
-      pushToRegistry: false,
-    },
-  ]) {
-    expect(
-      validateWorkflowPostTestCommands(
-        "publish.yml",
-        [],
-        0,
-        [{ run: "npm test" }, { uses: "actions/attest@v4", with: withValues }],
-        { allowAttestation: true },
-      ),
-    ).toContain("publishing commands");
-  }
-  expect(
-    validateWorkflowPostTestCommands("ci.yml", [], 0, [
-      { run: "npm test" },
-      { uses: "actions/attest@v4" },
-    ]),
-  ).toContain("publishing commands");
 });

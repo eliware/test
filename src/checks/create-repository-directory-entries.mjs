@@ -1,8 +1,9 @@
 import { stat as statPath } from "node:fs/promises";
-import { basename, dirname, join } from "node:path";
+import { dirname, join } from "node:path";
 import { inventoryDirectory } from "./repository-inventory-paths.mjs";
 import { createRepositoryEntryIndex } from "./create-repository-entry-index.mjs";
 import { readGeneratedDirectoryRecords } from "./read-generated-directory-records.mjs";
+import { projectRepositoryDirectoryRecords } from "./project-repository-directory-records.mjs";
 
 export function createRepositoryDirectoryEntries({
   root,
@@ -28,14 +29,9 @@ export function createRepositoryDirectoryEntries({
           code: "ENOENT",
         });
       }
-      return records
-        .filter((record) => dirname(record.path).replaceAll("\\", "/") === base)
-        .map((record) => ({
-          name: basename(record.path),
-          path: record.path,
-          isFile: () => record.type === "file",
-          isDirectory: () => record.type === "directory",
-        }));
+      return projectRepositoryDirectoryRecords(
+        records.filter((record) => dirname(record.path).replaceAll("\\", "/") === base),
+      );
     }
     const records = await entries();
     if (indexedRecords !== records) {
@@ -71,12 +67,7 @@ export function createRepositoryDirectoryEntries({
     const key = base || ".";
     const cached = projectedEntries.get(key);
     if (cached?.records === children) return cached.entries;
-    const projected = children.map((record) => ({
-      name: basename(record.path),
-      path: record.path,
-      isFile: () => record.type === "file",
-      isDirectory: () => record.type === "directory",
-    }));
+    const projected = projectRepositoryDirectoryRecords(children);
     projectedEntries.set(key, { records: children, entries: projected });
     return projected;
   };

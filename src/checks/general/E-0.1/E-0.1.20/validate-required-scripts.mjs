@@ -1,5 +1,5 @@
 import { resolveSelfHostedScriptCommands } from "./resolve-self-hosted-script-commands.mjs";
-import { isProhibitedPublishCommand } from "../E-0.1.24/is-prohibited-publish-command.mjs";
+import { validateCustomScripts } from "./validate-custom-scripts.mjs";
 
 const requiredScripts = {
   test: "eliware-test",
@@ -37,15 +37,6 @@ export function validateRequiredScripts(
     if (scripts?.[name] !== command)
       failures.push(`package.json.scripts.${name} must be exactly ${command}.`);
   }
-  for (const [name, command] of Object.entries(scripts)) {
-    if (Object.hasOwn(applicableScripts, name)) continue;
-    if (typeof command !== "string" || !command.trim()) {
-      failures.push(`package.json.scripts.${name} must be a nonempty command.`);
-      continue;
-    }
-    if (isProhibitedPublishCommand(command)) {
-      failures.push(`package.json.scripts.${name} must not publish npm packages or GHCR images.`);
-    }
-  }
+  failures.push(...validateCustomScripts(scripts, applicableScripts));
   return failures.length ? failures.join("\n") : null;
 }
