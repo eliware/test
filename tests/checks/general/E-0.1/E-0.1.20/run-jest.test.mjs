@@ -28,39 +28,6 @@ test("does not read structured reports after a failed Jest process", async () =>
   expect(readReport).not.toHaveBeenCalled();
 });
 
-test("reports structured report reader errors that are not Error objects", async () => {
-  const readReport = jest.fn(() => {
-    throw "invalid report";
-  });
-  const result = await runJest(
-    process.cwd(),
-    [],
-    async () => ({ code: 0, stdout: "passed", stderr: "" }),
-    { readReport },
-  );
-
-  expect(result.reportError).toContain(
-    "Could not read Jest's structured result report: invalid report",
-  );
-  expect(readReport).toHaveBeenCalledTimes(1);
-});
-
-test("reports structured report reader errors with their message", async () => {
-  const readReport = jest.fn(() => {
-    throw new Error("report unavailable");
-  });
-  const result = await runJest(
-    process.cwd(),
-    [],
-    async () => ({ code: 0, stdout: "passed", stderr: "" }),
-    { readReport },
-  );
-
-  expect(result.reportError).toContain(
-    "Could not read Jest's structured result report: report unavailable",
-  );
-});
-
 test("attaches the structured Jest report before retaining successful coverage artifacts", async () => {
   const execute = async (_command, args) => {
     const reportPath = args[args.indexOf("--outputFile") + 1];

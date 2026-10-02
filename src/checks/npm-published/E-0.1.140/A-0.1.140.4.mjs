@@ -4,6 +4,7 @@ import { permissions } from "../../ghcr-published/workflow-permissions.mjs";
 import { npmPublicationJobs } from "../npm-publication-jobs.mjs";
 import { stepText, steps } from "../../ghcr-published/workflow-structure.mjs";
 import { isApprovedNpmPublishCommand } from "./is-approved-npm-publish-command.mjs";
+import { hasNpmStaticCredentials } from "./has-npm-static-credentials.mjs";
 import {
   hasExactPublicationPermissions,
   hasReadOnlyWorkflowPermissions,
@@ -48,7 +49,7 @@ export async function run(context) {
           !packageName ||
           publishAt < 0 ||
           !hasExactPublicationPermissions(granted, expectedProfiles) ||
-          /NPM_TOKEN|NODE_AUTH_TOKEN/i.test(JSON.stringify(job))
+          hasNpmStaticCredentials(job)
         ) {
           failures.push(
             `Publication workflow must use least-privilege permissions: ${workflow.name}.`,

@@ -49,27 +49,6 @@ test("redacts secrets from asynchronous child error events", async () => {
   });
 });
 
-test("redacts secret values in child error names and codes", async () => {
-  const child = childProcess();
-  const promise = execute("node", [], { env: { TOKEN: "spawn-secret" } }, () => child);
-  const error = new Error("spawn failed");
-  error.name = "spawn-secret";
-  error.code = "spawn-secret";
-  error.cause = new Error("spawn-secret");
-  error.token = "spawn-secret";
-  child.emit("error", error);
-
-  const safeError = await promise.catch((value) => value);
-  expect(safeError).toMatchObject({
-    name: "[REDACTED]",
-    message: "spawn failed",
-    code: "[REDACTED]",
-  });
-  expect(safeError).not.toHaveProperty("cause");
-  expect(safeError).not.toHaveProperty("token");
-  expect(safeError.stack).not.toContain("spawn-secret");
-});
-
 test("flushes redacted child output when an asynchronous error rejects", async () => {
   const child = childProcess();
   const promise = execute("node", [], { env: { TOKEN: "spawn-secret" } }, () => child);

@@ -1,11 +1,12 @@
 import { prepareJestRun } from "./prepare-jest-run.mjs";
 import { resolveJestCli } from "./resolve-jest-cli.mjs";
-import { readFile, rm } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 import { executePreparedJestRun } from "./execute-prepared-jest-run.mjs";
 import {
   cleanupAfterPreparedJestFailure,
   finalizePreparedJestRun,
 } from "./finalize-prepared-jest-run.mjs";
+import { attachJestReport } from "./attach-jest-report.mjs";
 
 export async function runJest(root, args, execute, options, removeCoverage = rm) {
   args ??= [];
@@ -29,15 +30,4 @@ export async function runJest(root, args, execute, options, removeCoverage = rm)
     options?.retainCoverageDirectory,
     removeCoverage,
   );
-}
-
-async function attachJestReport(prepared, result, readReport = readFile) {
-  try {
-    const report = JSON.parse(await readReport(prepared.reportFile, "utf8"));
-    const consoleOutput = JSON.parse(await readReport(prepared.consoleReportFile, "utf8"));
-    return { ...result, report, consoleOutput };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return { ...result, reportError: `Could not read Jest's structured result report: ${message}` };
-  }
 }

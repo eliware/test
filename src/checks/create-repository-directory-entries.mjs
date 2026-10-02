@@ -1,7 +1,7 @@
 import { basename, dirname } from "node:path";
 import { inventoryDirectory } from "./repository-inventory-paths.mjs";
-
-const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
+import { createRepositoryEntryIndex } from "./create-repository-entry-index.mjs";
+import { readGeneratedDirectoryRecords } from "./read-generated-directory-records.mjs";
 
 export function createRepositoryDirectoryEntries({
   root,
@@ -10,9 +10,7 @@ export function createRepositoryDirectoryEntries({
   readDirectory,
   hasFullDiscovery,
 }) {
-  let childIndex;
-  let knownDirectories;
-  let prunedDirectories;
+  let index;
   let indexedRecords;
   return async function directoryEntries(directory) {
     const base = inventoryDirectory(
@@ -39,27 +37,15 @@ export function createRepositoryDirectoryEntries({
     const records = await entries();
     if (indexedRecords !== records) {
       indexedRecords = records;
-      childIndex = new Map();
-      knownDirectories = new Set();
-      prunedDirectories = new Set();
-      for (const record of records) {
-        const parent = dirname(record.path).replaceAll("\\", "/");
-        const siblings = childIndex.get(parent) ?? [];
-        siblings.push(record);
-        childIndex.set(parent, siblings);
-        if (record.type === "directory") {
-          knownDirectories.add(record.path);
-          if (generatedPath.test(record.path)) prunedDirectories.add(record.path);
-        }
-      }
+      index = createRepositoryEntryIndex(records);
     }
-    const knownDirectory = knownDirectories.has(base);
+    const knownDirectory = index.knownDirectories.has(base);
     const baseParts = base ? base.split("/") : [];
     let prunedDirectory;
     let candidate = "";
     for (const part of baseParts) {
       candidate = candidate ? `${candidate}/${part}` : part;
-      if (prunedDirectories.has(candidate)) {
+      if (index.prunedDirectories.has(candidate)) {
         prunedDirectory = candidate;
         break;
       }
@@ -68,13 +54,9 @@ export function createRepositoryDirectoryEntries({
       throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
         code: "ENOENT",
       });
-    let children = childIndex.get(base || ".") ?? [];
+    let children = index.childrenByDirectory.get(base || ".") ?? [];
     if (base && children.length === 0 && prunedDirectory) {
-      children = (await readDirectory(base)).flatMap((entry) => {
-        const isDirectory = entry.isDirectory();
-        if (!isDirectory && !entry.isFile()) return [];
-        return [{ path: `${base}/${entry.name}`, type: isDirectory ? "directory" : "file" }];
-      });
+      children = await readGeneratedDirectoryRecords(base, readDirectory);
     }
     return children.map((record) => ({
       name: basename(record.path),

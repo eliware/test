@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { createChildProcessOutputCapture } from "./create-child-process-output-capture.mjs";
+import { redactChildProcessError } from "./redact-child-process-error.mjs";
 
 const MAX_OUTPUT_LENGTH = 100_000;
 
@@ -16,7 +17,7 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
     const rejectOnce = (error) => {
       if (settled) return;
       settled = true;
-      reject(redactSpawnError(error, output, output.finish()));
+      reject(redactChildProcessError(error, output, output.finish()));
     };
     try {
       child = spawnProcess(command, args, {
@@ -58,14 +59,4 @@ function attachOutputStream(stream, name, output) {
     throw new TypeError(`Child process adapter returned an invalid ${name} stream.`);
   }
   stream.on("data", (chunk) => output.push(name, chunk));
-}
-
-function redactSpawnError(error, output, capturedOutput) {
-  const safeError = new Error(output.redactDiagnostic(error?.message ?? String(error)));
-  // Copy only these standard fields after redaction; custom properties and causes stay private.
-  safeError.name = output.redactDiagnostic(typeof error?.name === "string" ? error.name : "Error");
-  if (typeof error?.code === "string") safeError.code = output.redactDiagnostic(error.code);
-  safeError.stdout = capturedOutput.stdout;
-  safeError.stderr = capturedOutput.stderr;
-  return safeError;
 }

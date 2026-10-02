@@ -1,5 +1,9 @@
 import { basename } from "node:path";
 import { inventoryDirectory } from "./repository-inventory-paths.mjs";
+import {
+  assertDocumentationFileLimit,
+  validateDocumentationTraversalLimits,
+} from "./validate-documentation-traversal-limits.mjs";
 
 const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
 
@@ -27,8 +31,7 @@ export function createDocumentationFileView(root, entriesUnder) {
         const file = path.slice(prefix.length);
         if ((!includeGenerated && generatedPath.test(path)) || !predicate(basename(file))) return;
         selectedPaths.add(path);
-        if (selectedPaths.size > maxFiles)
-          throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);
+        assertDocumentationFileLimit(selectedPaths.size, maxFiles);
       },
     });
     const directories = records.filter(
@@ -39,24 +42,15 @@ export function createDocumentationFileView(root, entriesUnder) {
       throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
         code: "ENOENT",
       });
-    const exceedsDirectoryDepth = directories.some(({ path }) => {
-      if (base && path === base) return false;
-      const relativePath = base ? path.slice(prefix.length) : path;
-      return relativePath.split("/").length > maxDepth;
+    validateDocumentationTraversalLimits(records, {
+      base,
+      prefix,
+      maxDepth,
+      maxFiles,
+      fileCount: traversalObserved ? selectedPaths.size : 0,
+      includeGenerated,
+      generatedPath,
     });
-    const exceedsFileDepth = records.some(({ path, type }) => {
-      if (
-        type !== "file" ||
-        !path.startsWith(prefix) ||
-        (!includeGenerated && generatedPath.test(path))
-      )
-        return false;
-      const relativePath = path.slice(prefix.length);
-      return relativePath.split("/").length - 1 > maxDepth;
-    });
-    const exceedsDepth = exceedsDirectoryDepth || exceedsFileDepth;
-    if (exceedsDepth)
-      throw new Error(`Documentation traversal exceeded the ${maxDepth}-level depth limit.`);
     const result = [];
     for (const record of records) {
       if (
@@ -69,8 +63,7 @@ export function createDocumentationFileView(root, entriesUnder) {
       if (traversalObserved ? !selectedPaths.has(record.path) : !predicate(basename(file)))
         continue;
       result.push(file);
-      if (result.length > maxFiles)
-        throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);
+      assertDocumentationFileLimit(result.length, maxFiles);
     }
     return result;
   };

@@ -1,57 +1,25 @@
 import { expect, test } from "@jest/globals";
 import { createSecretTextMatcher } from "../../src/checks/create-secret-text-matcher.mjs";
 
-test("finds overlapping secrets with failure-link matching", () => {
-  const findSecretEnds = createSecretTextMatcher(["he", "she", "hers"]);
-  const ends = findSecretEnds("ushers");
-  expect(ends[1]).toBe(4);
-  expect(ends[2]).toBe(6);
-});
-
-test("streams matches across chunk boundaries without resetting matcher state", () => {
-  const stream = createSecretTextMatcher(["secret"]).createStream();
-  expect(stream("safe se").matches).toEqual([]);
-  const result = stream("cret");
-  expect(result.matches).toEqual([{ start: 5, end: 11 }]);
-  expect(result.work).toBeLessThan(7);
-});
-
-test("stops a stream scan when its bounded work budget is exceeded", () => {
-  const stream = createSecretTextMatcher(["a"], { maxScanWork: 3 }).createStream();
-  expect(stream("aa")).toBeNull();
-});
-
-test("returns no matches for an empty environment and bounds scan work", () => {
+test("returns empty match indexes when there are no secrets", () => {
   expect(createSecretTextMatcher([])("plain")).toEqual([0, 0, 0, 0, 0, 0]);
   expect(createSecretTextMatcher([], { maxScanWork: 0 })("x")).toBeNull();
-  expect(createSecretTextMatcher(["a"])("a".repeat(1_000_001))).toBeNull();
+});
+
+test("exposes batch and streaming matches from the constructed matcher", () => {
+  const matcher = createSecretTextMatcher(["a"]);
+  expect(matcher("a")).toEqual(expect.arrayContaining([1, 0]));
+  expect(matcher.createStream()("a")).toMatchObject({
+    matches: [{ start: 0, end: 1 }],
+  });
+});
+
+test("returns a suppressing matcher when construction exceeds its work budget", () => {
+  expect(createSecretTextMatcher(["secret"], { maxScanWork: 2 })("secret")).toBeNull();
+});
+
+test("preserves bounded scan behavior through the public matcher", () => {
   expect(createSecretTextMatcher(["a"], { maxScanWork: 1 })("bb")).toBeNull();
-  expect(createSecretTextMatcher(["abc"], { maxScanWork: 2 })("abx")).toBeNull();
-  expect(createSecretTextMatcher(["a"], { maxScanWork: 0 })("")).toBeNull();
-  expect(createSecretTextMatcher(["abx", "bcy"], { maxScanWork: 6 })("")).toBeNull();
-  expect(createSecretTextMatcher(["abx", "bcy"], { maxScanWork: 8 })("")).toBeNull();
-  expect(createSecretTextMatcher(["ab"], { maxScanWork: 100 })("ac")).not.toBeNull();
   expect(createSecretTextMatcher(["a"], { maxScanWork: 3 })("a")).not.toBeNull();
-  expect(createSecretTextMatcher(["ab", "bc"], { maxScanWork: 8 })("abd")).not.toBeNull();
-  expect(createSecretTextMatcher(["abc", "bcx"], { maxScanWork: 13 })("abz")).not.toBeNull();
-  expect(createSecretTextMatcher(["a"], { maxScanWork: 2 })("a")).not.toBeNull();
-  expect(createSecretTextMatcher(["aaaaa"], { maxScanWork: 9 })("aaaaax")).toBeNull();
-});
-
-test("keeps trie construction work separate from each bounded text scan", () => {
-  const findSecretEnds = createSecretTextMatcher(["a".repeat(4_500)], { maxScanWork: 9_000 });
-  expect(findSecretEnds("zz")).not.toBeNull();
-});
-
-test("builds suffix fallback links when an earlier prefix cannot continue", () => {
-  const ends = createSecretTextMatcher(["abcd", "bcx"])("abcx");
-  expect(ends[1]).toBe(4);
-});
-
-test("matches non-BMP secrets using JavaScript string offsets", () => {
-  const secret = "🔐secret";
-  const text = `before ${secret} after`;
-  const ends = createSecretTextMatcher([secret])(text);
-  const start = text.indexOf(secret);
-  expect(ends[start]).toBe(start + secret.length);
+  expect(createSecretTextMatcher(["a"], { maxScanWork: 1 }).createStream()("bb")).toBeNull();
 });

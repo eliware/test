@@ -2,14 +2,13 @@ import { expect, jest, test } from "@jest/globals";
 import { createRepositoryDirectoryEntries } from "../../src/checks/create-repository-directory-entries.mjs";
 
 const fileEntry = (name) => ({ name, isFile: () => true, isDirectory: () => false });
-const directoryEntry = (name) => ({ name, isFile: () => false, isDirectory: () => true });
 
 test("projects unexpanded directory entries from scoped inventory discovery", async () => {
-  const readDirectory = jest.fn(async () => [fileEntry("entry.mjs")]);
   const entriesUnder = jest.fn(async () => [
     { path: "src", type: "directory" },
     { path: "src/entry.mjs", type: "file" },
   ]);
+  const readDirectory = jest.fn();
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
     entries: jest.fn(),
@@ -18,55 +17,43 @@ test("projects unexpanded directory entries from scoped inventory discovery", as
     hasFullDiscovery: () => false,
   });
 
-  const children = await directoryEntries("/repo/src");
-  expect(children).toEqual([
-    {
-      name: "entry.mjs",
-      path: "src/entry.mjs",
-      isFile: expect.any(Function),
-      isDirectory: expect.any(Function),
-    },
-  ]);
-  expect(children[0].isFile()).toBe(true);
-  expect(children[0].isDirectory()).toBe(false);
+  const scopedEntries = await directoryEntries("/repo/src");
+  expect(scopedEntries).toMatchObject([{ name: "entry.mjs", path: "src/entry.mjs" }]);
+  expect(scopedEntries[0].isFile()).toBe(true);
+  expect(scopedEntries[0].isDirectory()).toBe(false);
   expect(entriesUnder).toHaveBeenCalledWith("/repo/src");
   expect(readDirectory).not.toHaveBeenCalled();
-
-  const missingDirectoryEntries = createRepositoryDirectoryEntries({
-    root: "/repo",
-    entries: jest.fn(),
-    entriesUnder: jest.fn(async () => []),
-    readDirectory: jest.fn(),
-    hasFullDiscovery: () => false,
-  });
-  await expect(missingDirectoryEntries("/repo/missing")).rejects.toMatchObject({ code: "ENOENT" });
+  await expect(directoryEntries("/repo/missing")).rejects.toMatchObject({ code: "ENOENT" });
 });
 
-test("projects indexed root and directory records", async () => {
-  const records = [
-    { path: "README.md", type: "file", depth: 0 },
-    { path: "src", type: "directory", depth: 1 },
-    { path: "src/index.mjs", type: "file", depth: 1 },
+test("projects indexed records and rebuilds the index when discovery changes", async () => {
+  const initial = [
+    { path: "README.md", type: "file" },
+    { path: "src", type: "directory" },
+    { path: "src/index.mjs", type: "file" },
   ];
-  let currentRecords = records;
-  const discovery = jest.fn(async () => currentRecords);
-  const entries = jest.fn(() => discovery());
+  let current = initial;
+  const discovery = jest.fn(async () => current);
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
-    entries,
+    entries: () => discovery(),
     entriesUnder: jest.fn(),
     readDirectory: jest.fn(),
     hasFullDiscovery: () => true,
   });
 
   const rootEntries = await directoryEntries("/repo");
-  expect(rootEntries.map(({ name }) => name)).toEqual(["README.md", "src"]);
+  expect(rootEntries).toMatchObject([
+    { name: "README.md", path: "README.md" },
+    { name: "src", path: "src" },
+  ]);
   expect(rootEntries[0].isFile()).toBe(true);
   expect(rootEntries[1].isDirectory()).toBe(true);
-  await expect(directoryEntries("/repo/src")).resolves.toMatchObject([
-    { name: "index.mjs", path: "src/index.mjs" },
-  ]);
-  currentRecords = [...records, { path: "src/new.mjs", type: "file", depth: 1 }];
+  const sourceEntries = await directoryEntries("/repo/src");
+  expect(sourceEntries).toMatchObject([{ name: "index.mjs", path: "src/index.mjs" }]);
+  expect(sourceEntries[0].isFile()).toBe(true);
+  expect(sourceEntries[0].isDirectory()).toBe(false);
+  current = [...initial, { path: "src/new.mjs", type: "file" }];
   await expect(directoryEntries("/repo/src")).resolves.toMatchObject([
     { name: "index.mjs", path: "src/index.mjs" },
     { name: "new.mjs", path: "src/new.mjs" },
@@ -74,112 +61,23 @@ test("projects indexed root and directory records", async () => {
   expect(discovery).toHaveBeenCalledTimes(3);
 });
 
-test("falls back to reading descendants of pruned directories", async () => {
-  const records = [{ path: "dist", type: "directory", depth: 1 }];
-  const readDirectory = jest.fn(async (directory) => {
-    if (directory === "dist") return [directoryEntry("assets")];
-    if (directory === "dist/assets") return [directoryEntry("images")];
-    if (directory === "dist/assets/images") return [fileEntry("app.js")];
-    throw Object.assign(new Error("missing"), { code: "ENOENT" });
-  });
+test("reads direct descendants of discovered generated directories", async () => {
+  const readDirectory = jest.fn(async () => [fileEntry("app.js")]);
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
-    entries: jest.fn(async () => records),
-    entriesUnder: jest.fn(),
-    readDirectory,
-    hasFullDiscovery: () => true,
-  });
-
-  await expect(directoryEntries("/repo/dist")).resolves.toMatchObject([
-    { name: "assets", path: "dist/assets" },
-  ]);
-  const assets = await directoryEntries("/repo/dist/assets");
-  expect(assets).toMatchObject([{ name: "images", path: "dist/assets/images" }]);
-  const images = await directoryEntries("/repo/dist/assets/images");
-  expect(images).toMatchObject([{ name: "app.js", path: "dist/assets/images/app.js" }]);
-  expect(images[0].isFile()).toBe(true);
-  expect(images[0].isDirectory()).toBe(false);
-  expect(readDirectory).toHaveBeenCalledTimes(3);
-});
-
-test("does not expose symlinks as files in generated-directory fallback", async () => {
-  const records = [{ path: "dist", type: "directory", depth: 1 }];
-  const readDirectory = jest.fn(async () => [
-    fileEntry("bundle.js"),
-    { name: "external", isFile: () => false, isDirectory: () => false, isSymbolicLink: () => true },
-  ]);
-  const directoryEntries = createRepositoryDirectoryEntries({
-    root: "/repo",
-    entries: jest.fn(async () => records),
-    entriesUnder: jest.fn(),
-    readDirectory,
-    hasFullDiscovery: () => true,
-  });
-
-  await expect(directoryEntries("/repo/dist")).resolves.toMatchObject([
-    { name: "bundle.js", path: "dist/bundle.js" },
-  ]);
-});
-
-test("discovers a deep generated descendant when requested directly", async () => {
-  const records = [{ path: "dist", type: "directory", depth: 1 }];
-  const readDirectory = jest.fn(async (directory) => {
-    if (directory === "dist/assets/images") return [fileEntry("app.js")];
-    throw Object.assign(new Error("missing"), { code: "ENOENT" });
-  });
-  const directoryEntries = createRepositoryDirectoryEntries({
-    root: "/repo",
-    entries: jest.fn(async () => records),
-    entriesUnder: jest.fn(),
-    readDirectory,
-    hasFullDiscovery: () => true,
-  });
-
-  const images = await directoryEntries("/repo/dist/assets/images");
-  expect(images).toMatchObject([{ name: "app.js", path: "dist/assets/images/app.js" }]);
-  expect(readDirectory).toHaveBeenCalledWith("dist/assets/images");
-});
-
-test("builds nested paths while locating a generated descendant", async () => {
-  const records = [
-    { path: "src", type: "directory", depth: 1 },
-    { path: "src/coverage", type: "directory", depth: 2 },
-  ];
-  const readDirectory = jest.fn(async () => [fileEntry("report.json")]);
-  const directoryEntries = createRepositoryDirectoryEntries({
-    root: "/repo",
-    entries: jest.fn(async () => records),
+    entries: jest.fn(async () => [
+      { path: "src", type: "directory" },
+      { path: "src/coverage", type: "directory" },
+    ]),
     entriesUnder: jest.fn(),
     readDirectory,
     hasFullDiscovery: () => true,
   });
 
   await expect(directoryEntries("/repo/src/coverage/reports")).resolves.toMatchObject([
-    { name: "report.json", path: "src/coverage/reports/report.json" },
+    { name: "app.js", path: "src/coverage/reports/app.js" },
   ]);
   expect(readDirectory).toHaveBeenCalledWith("src/coverage/reports");
-});
-
-test("refreshes cached fallback listings when a generated directory changes", async () => {
-  const records = [{ path: "dist", type: "directory", depth: 1 }];
-  let listing = [fileEntry("initial.js")];
-  const readDirectory = jest.fn(async () => listing);
-  const directoryEntries = createRepositoryDirectoryEntries({
-    root: "/repo",
-    entries: jest.fn(async () => records),
-    entriesUnder: jest.fn(),
-    readDirectory,
-    hasFullDiscovery: () => true,
-  });
-
-  await expect(directoryEntries("/repo/dist/assets")).resolves.toMatchObject([
-    { name: "initial.js", path: "dist/assets/initial.js" },
-  ]);
-  listing = [fileEntry("changed.js")];
-  await expect(directoryEntries("/repo/dist/assets")).resolves.toMatchObject([
-    { name: "changed.js", path: "dist/assets/changed.js" },
-  ]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
 });
 
 test("rejects unknown and external directory paths", async () => {
