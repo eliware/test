@@ -26,3 +26,20 @@ test("reports profile applicability failures", () => {
     });
   }
 });
+
+test("allows only apply and optional exempt metadata keys", () => {
+  expect(run({ packageJson: { eliware: { apply: ["general"], exempt: [] } } })).toMatchObject({
+    status: "pass",
+  });
+  expect(run({ packageJson: { eliware: { apply: ["general"], capabilities: [] } } })).toEqual({
+    ruleId: "E-0.1.9",
+    status: "fail",
+    message: "package.json.eliware contains unsupported keys: capabilities.",
+  });
+  expect(
+    run({ packageJson: { eliware: { apply: ["general"], zeta: true, authority: {} } } }),
+  ).toMatchObject({
+    status: "fail",
+    message: "package.json.eliware contains unsupported keys: authority, zeta.",
+  });
+});

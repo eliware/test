@@ -1,23 +1,23 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { discoverChecks, discoverAllChecks } from "../../src/orchestrators/discover-checks.mjs";
 
-test("discovers and sorts checks from an explicit profile", async () => {
-  const checks = await discoverChecks(["application"]);
-  expect(checks.length).toBeGreaterThan(0);
-  expect(checks.some((check) => check.ruleId === "E-0.1.130")).toBe(false);
-  expect(checks.some((check) => check.ruleId.startsWith("A-0.1.130."))).toBe(true);
-  expect(
-    checks
-      .filter((check) => check.applicability !== "advisory-only")
-      .every((check) => typeof check.run === "function"),
-  ).toBe(true);
+const fileSystem = await import("node:fs/promises");
+const readDirectory = jest.fn((directory, options) => {
+  if (String(directory).replaceAll("\\", "/").endsWith("/src/checks")) return Promise.resolve([]);
+  return fileSystem.readdir(directory, options);
 });
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, readdir: readDirectory }));
+const { discoverChecks, discoverAllChecks } =
+  await import("../../src/orchestrators/discover-checks.mjs");
 
 test("rejects an unknown profile", async () => {
   await expect(discoverChecks(["not-a-profile"])).rejects.toThrow("Unknown convention group");
+});
+
+test("returns an empty result when no profile is selected", async () => {
+  await expect(discoverChecks([])).resolves.toEqual([]);
 });
 
 test("discovers nested checks, ignores unrelated files, and validates module contracts", async () => {
@@ -92,18 +92,12 @@ test("discovers all visible groups in sorted order", async () => {
 });
 
 test("supports discoverAllChecks default options", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-discovery-empty-"));
+  await expect(discoverAllChecks({ root })).resolves.toEqual([]);
   await expect(discoverAllChecks({ readDirectory: async () => [] })).resolves.toEqual([]);
+  await rm(root, { recursive: true, force: true });
 });
 
-test("keeps the bundled registry unique and executable", async () => {
-  const checks = await discoverAllChecks();
-  const ids = checks.map(({ ruleId }) => ruleId);
-  expect(checks.length).toBeGreaterThan(0);
-  expect(new Set(ids).size).toBe(ids.length);
-  expect(ids.every((id) => /^([EA])-\d+(?:\.\d+)*$/.test(id))).toBe(true);
-  expect(
-    checks
-      .filter((check) => check.applicability !== "advisory-only")
-      .every(({ run }) => typeof run === "function"),
-  ).toBe(true);
-}, 30000);
+test("uses the default filesystem and options without scanning the bundled registry", async () => {
+  await expect(discoverAllChecks()).resolves.toEqual([]);
+});

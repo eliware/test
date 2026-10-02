@@ -12,6 +12,11 @@ export function run({ packageJson }) {
   const failures = ["apply"]
     .filter((field) => !(field in metadata))
     .map((field) => `package.json.eliware.${field} is required.`);
+  const unexpectedKeys = Object.keys(metadata).filter((key) => !["apply", "exempt"].includes(key));
+  if (unexpectedKeys.length)
+    failures.push(
+      `package.json.eliware contains unsupported keys: ${unexpectedKeys.sort().join(", ")}.`,
+    );
   const profileError = validatePackageProfileSelection(packageJson);
   if (profileError) failures.push(profileError);
   if (failures.length) return fail(ruleId, failures.join("\n"));
