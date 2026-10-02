@@ -28,6 +28,22 @@
   validation files as used. References in GitHub workflows alone do not count.
 - Harden bounded secret redaction at output boundaries and suppress complete
   diagnostics when secret matching fails or returns incomplete results.
+- Validate secret-match intervals and work counts before indexing; suppress
+  output on malformed matcher results, with interval indexing backed by a
+  separately tested numeric min-heap.
+- Reject focused paths containing parent-directory traversal, validate the
+  supported start-command entrypoint fallback, and document `.spec.*` focused
+  test paths.
+- Preserve all captured text around extracted Jest reports, detect auth secrets
+  nested in arrays, normalize captured-stream errors, and retain pending output
+  in chunks while incremental secret matching advances.
+- Resolve focused tests from singular `test/` roots, retain their coverage map,
+  and reject CLI informational commands terminated by a signal.
+- Treat empty `main`/`bin` metadata as absent for a valid start-script fallback
+  and require npm audit vulnerability names to match their map keys.
+- Settle npm outdated validation on stdout/stderr errors, verify redaction when
+  the decoder completes a secret at finish, and clarify the Jest config rule.
+- Clarify that aggregate `npm test` includes outdated-dependency validation.
 - Route validation-lock cleanup failures through CLI error handling while
   preserving validation failures, reject child processes that close without an
   exit code, and resolve relative `npm_execpath` values from the invoking

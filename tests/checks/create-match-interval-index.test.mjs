@@ -31,6 +31,19 @@ test("updates duplicate starts and discards completed intervals without stale ma
   expect(index.earliestCrossing(6)).toBeNull();
 });
 
+test("rejects malformed intervals before changing the index", () => {
+  const index = createMatchIntervalIndex();
+  expect(() =>
+    index.add([
+      { start: 1, end: 4 },
+      { start: -1, end: 3 },
+    ]),
+  ).toThrow("Match intervals must have safe non-negative start and end offsets");
+  expect(index.materialize(0, 4)).toEqual([0, 0, 0, 0, 0]);
+  expect(() => index.add([null])).toThrow(TypeError);
+  expect(() => index.add(Array(1))).toThrow(TypeError);
+});
+
 test("compacts completed intervals from large ordered batches", () => {
   const index = createMatchIntervalIndex();
   index.add(Array.from({ length: 2048 }, (_, start) => ({ start, end: start + 1 })));
@@ -69,9 +82,10 @@ test("selects the smaller right child while removing an expired start", () => {
   const index = createMatchIntervalIndex();
   index.add([
     { start: 0, end: 1 },
-    { start: 3, end: 2 },
+    { start: 3, end: 5 },
     { start: 1, end: 3 },
-    { start: 4, end: 4 },
+    { start: 4, end: 6 },
+    { start: 2, end: 4 },
   ]);
 
   expect(index.earliestCrossing(1)).toBeNull();
@@ -88,7 +102,7 @@ test("returns no crossing for empty or boundary-starting matches", () => {
 test("sifts the last heap value up when it is smaller than the chosen child", () => {
   const index = createMatchIntervalIndex();
   const starts = [0, 1, 2, 10, 11, 3, 4, 12, 13, 14, 15, 5, 6, 7, 8];
-  index.add(starts.map((start) => ({ start, end: start === 2 ? 10 : 2 })));
+  index.add(starts.map((start) => ({ start, end: start === 2 ? 10 : start + 2 })));
 
   expect(index.earliestCrossing(3)).toBe(2);
 });

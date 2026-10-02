@@ -34,7 +34,14 @@ test("rejects traversal and symlinks that escape the repository", async () => {
     await symlink(outside, join(tests, "external"), "junction");
     await expect(
       validateFocusedTestPath(root, [`tests/../../${basename(outsideFile)}`]),
-    ).rejects.toThrow("must resolve inside the repository");
+    ).rejects.toThrow("must not contain parent-directory traversal");
+    await writeFile(join(tests, "inside.test.mjs"), "test('inside', () => {});");
+    await expect(validateFocusedTestPath(root, ["tests/sub/../inside.test.mjs"])).rejects.toThrow(
+      "must not contain parent-directory traversal",
+    );
+    await expect(
+      validateFocusedTestPath(root, ["tests\\sub\\..\\inside.test.mjs"]),
+    ).rejects.toThrow("must not contain parent-directory traversal");
     await expect(validateFocusedTestPath(root, ["tests/external/linked.test.mjs"])).rejects.toThrow(
       "must resolve inside the repository",
     );

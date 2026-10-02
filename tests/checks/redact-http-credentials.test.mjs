@@ -27,3 +27,12 @@ test("redacts URL user-info containing additional at signs", () => {
   expect(output).toBe("https://[REDACTED]@example.test/path");
   expect(output).not.toContain("p@ss");
 });
+
+test("redacts URL user-info before query and fragment delimiters", () => {
+  const output = redactHttpCredentials(
+    "https://user:secret@example.test?token=query#section https://user:secret@example.test#section",
+  );
+  expect(output).not.toContain("user:secret");
+  expect(output).toContain("https://[REDACTED]@example.test?token=[REDACTED]#section");
+  expect(output).toContain("https://[REDACTED]@example.test#section");
+});

@@ -1,4 +1,5 @@
 import { redactMatchedSecrets } from "./redact-secrets.mjs";
+import { createPendingTextChunks } from "./create-pending-text-chunks.mjs";
 
 export function createRedactedStreamBuffer({
   pendingLimit,
@@ -11,30 +12,47 @@ export function createRedactedStreamBuffer({
   suppress,
 }) {
   let pending = "";
+  const pendingChunks =
+    typeof findSafeBoundary?.appendText === "function" ? createPendingTextChunks() : null;
   let finished = false;
+
+  function clearPendingChunks() {
+    if (pendingChunks) pendingChunks.clear();
+  }
 
   function addText(text) {
     if (!canContinue() || finished) return "";
     let output = "";
     for (let start = 0; start < text.length && canContinue();) {
-      const capacity = bufferLimit - pending.length;
+      const pendingLength = pendingChunks ? pendingChunks.length : pending.length;
+      const capacity = bufferLimit - pendingLength;
       if (capacity <= 0) {
         suppress();
         pending = "";
+        clearPendingChunks();
         return "";
       }
       const nextText = text.slice(start, start + Math.min(pendingLimit, capacity));
-      pending += nextText;
+      if (pendingChunks) pendingChunks.append(nextText);
+      else pending += nextText;
       start += nextText.length;
-      const { boundary, matchEnds, suppressed } = findSafeBoundary(pending);
+      const totalPendingLength = pendingChunks ? pendingChunks.length : pending.length;
+      const result = pendingChunks
+        ? findSafeBoundary.appendText(nextText, totalPendingLength)
+        : findSafeBoundary(pending);
+      const { boundary, matchEnds, suppressed } = result;
       if (suppressed) {
         suppress();
         pending = "";
+        clearPendingChunks();
         return "";
       }
       if (boundary === 0) continue;
-      output += append(pending.slice(0, boundary), matchEnds);
-      pending = pending.slice(boundary);
+      const safePrefix = pendingChunks
+        ? pendingChunks.takePrefix(boundary)
+        : pending.slice(0, boundary);
+      output += append(safePrefix, matchEnds);
+      if (!pendingChunks) pending = pending.slice(boundary);
     }
     return output;
   }
@@ -43,15 +61,23 @@ export function createRedactedStreamBuffer({
     if (finished) return "";
     finished = true;
     if (!canContinue()) return "";
-    pending += decoder.end();
-    const { matchEnds, suppressed } = findSafeBoundary(pending, true);
+    const finalText = decoder.end();
+    if (pendingChunks) pendingChunks.append(finalText);
+    else pending += finalText;
+    const completePending = pendingChunks ? pendingChunks.toString() : pending;
+    const result = pendingChunks
+      ? findSafeBoundary.appendText(finalText, pendingChunks.length, true)
+      : findSafeBoundary(pending, true);
+    const { matchEnds, suppressed } = result;
     if (suppressed) {
       suppress();
       pending = "";
+      clearPendingChunks();
       return "";
     }
-    const safeText = trimSuffix(redactMatchedSecrets(pending, matchEnds));
+    const safeText = trimSuffix(redactMatchedSecrets(completePending, matchEnds));
     pending = "";
+    clearPendingChunks();
     return append(safeText, []);
   }
 

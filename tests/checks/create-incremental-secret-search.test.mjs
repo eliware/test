@@ -26,6 +26,23 @@ test("tracks absolute positions after emitting more than one pending prefix", ()
   expect(result.matchEnds[6]).toBe(12);
 });
 
+test("accepts incremental text directly and rejects invalid incremental arguments", () => {
+  const search = createIncrementalSearch(
+    ["secret"],
+    100,
+    createSecretTextMatcher(["secret"]).createStream,
+  );
+  expect(search.appendText("safe ", 5).boundary).toBe(0);
+  expect(search.appendText("secret", 11)).toMatchObject({
+    boundary: 5,
+    matchEnds: [0, 0, 0, 0, 0, 11],
+    suppressed: false,
+  });
+  expect(search.appendText(null, 11).suppressed).toBe(true);
+  expect(search.appendText("x", Number.NaN).suppressed).toBe(true);
+  expect(search.appendText("xx", 1).suppressed).toBe(true);
+});
+
 test("suppresses malformed stream state and cumulative work overflow", () => {
   const nullStream = () => () => null;
   expect(createIncrementalSearch(["x"], 10, nullStream)("x")).toMatchObject({
@@ -44,16 +61,11 @@ test("suppresses malformed stream state and cumulative work overflow", () => {
 });
 
 test("keeps overlapping matches in the pending window", () => {
-  let call = 0;
   const search = createIncrementalSearch(["abc"], 100, () => () => ({
-    matches:
-      call++ === 0
-        ? [
-            { start: -1, end: 2 },
-            { start: 1, end: 5 },
-            { start: 3, end: 9 },
-          ]
-        : [],
+    matches: [
+      { start: 1, end: 5 },
+      { start: 3, end: 6 },
+    ],
     work: 1,
   }));
   const safePrefix = search("abcdef");
@@ -76,27 +88,29 @@ test("materializes only newly emitted ranges and pending matches on finish", () 
   expect(finishSearch("secret", true).matchEnds).toEqual([6, 0, 0, 0, 0, 0, 0]);
 });
 
-test("keeps the boundary before a matched interval extending beyond the window", () => {
+test.each([
+  [{ start: -1, end: 2 }],
+  [{ start: 1.5, end: 3 }],
+  [{ start: 2, end: 2 }],
+  [{ start: 2, end: 7 }],
+  [null],
+])("suppresses malformed or out-of-window match intervals: %s", (interval) => {
   const search = createIncrementalSearch(["abc"], 100, () => () => ({
-    matches: [{ start: 2, end: 9 }],
+    matches: [interval],
     work: 1,
   }));
-  const pending = "abcdef";
-  const matchStart = 2;
-  const { boundary } = search(pending);
-  expect(boundary).toBeLessThanOrEqual(matchStart);
-  expect(pending.slice(0, boundary)).not.toContain(pending.slice(matchStart));
+  expect(search("secret")).toMatchObject({ boundary: 0, matchEnds: [], suppressed: true });
+});
+
+test("suppresses malformed work counts", () => {
+  const search = createIncrementalSearch(["abc"], 100, () => () => ({
+    matches: [],
+    work: Number.NaN,
+  }));
+  expect(search("secret").suppressed).toBe(true);
 });
 
 test("merges newly discovered intervals into retained order", () => {
-  let call = 0;
-  const search = createIncrementalSearch(["abcd"], 100, () => () => ({
-    matches: call++ === 0 ? [{ start: 10, end: 12 }] : [{ start: 0, end: 1 }],
-    work: 1,
-  }));
-  search("abcdef");
-  expect(search("cdefg").suppressed).toBe(false);
-
   let orderedCall = 0;
   const orderedSearch = createIncrementalSearch(["abcd"], 100, () => () => ({
     matches:

@@ -20,9 +20,10 @@ export async function executeCliInformationCommands({
         );
         continue;
       }
-      if (result.code !== 0) {
+      if (result.code !== 0 || result.signal != null) {
+        const status = [result.code, result.signal].filter((value) => value != null).join(" ");
         failures.push(
-          `CLI entrypoint ${entrypoint} must exit 0 for ${argument}; received ${result.code}.`,
+          `CLI entrypoint ${entrypoint} must exit 0 for ${argument}; received ${status || result.code}.`,
         );
         continue;
       }

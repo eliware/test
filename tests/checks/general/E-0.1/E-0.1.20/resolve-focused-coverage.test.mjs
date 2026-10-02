@@ -21,6 +21,23 @@ test("maps an existing mirrored test to its source coverage", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("maps singular and case-variant test roots to source coverage", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-singular-root-"));
+  await mkdir(join(root, "src"));
+  await mkdir(join(root, "test"));
+  await writeFile(join(root, "src", "sample.mjs"), "export {};");
+  await writeFile(join(root, "test", "sample.test.mjs"), 'test("sample", () => {});');
+  await expect(resolveFocusedCoverage(root, "test/sample.test.mjs")).resolves.toEqual([
+    "--collectCoverageFrom",
+    "src/sample.mjs",
+  ]);
+  await expect(resolveFocusedCoverage(root, "Tests/sample.test.mjs")).resolves.toEqual([
+    "--collectCoverageFrom",
+    "src/sample.mjs",
+  ]);
+  await rm(root, { recursive: true, force: true });
+});
+
 test("maps .mts and .cts tests to the native ESM source module", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-typed-test-"));
   await mkdir(join(root, "src"));
@@ -41,7 +58,7 @@ test("ignores aggregate and non-test arguments", async () => {
   await expect(resolveFocusedCoverage(root, null)).resolves.toEqual([]);
   await expect(resolveFocusedCoverage(root, "README.md")).resolves.toEqual([]);
   await expect(resolveFocusedCoverage(root, "tests/sample.mjs")).resolves.toEqual([]);
-  await expect(resolveFocusedCoverage(root, "test/sample.test.mjs")).resolves.toEqual([]);
+  await expect(resolveFocusedCoverage(root, "tests/sample.mjs")).resolves.toEqual([]);
   await rm(root, { recursive: true, force: true });
 });
 

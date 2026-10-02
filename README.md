@@ -85,8 +85,8 @@ differ from this checkout.
 When a repository-local Jest cannot be resolved, `eliware-test` uses the Jest
 dependency it ships while keeping the consumer repository as Jest's working
 directory. It reads supported Jest settings from the consumer's `package.json`
-and discovers tests and source files from that root. Separate `jest.config.*`
-files are not supported; place Jest settings in `package.json`.
+and discovers tests and source files from that root. Repository validation
+rejects separate `jest.config.*` files; place Jest settings in `package.json`.
 
 Each validation invocation creates `eliware-test.lock` in the repository root
 before running, and removes it when the process exits normally. A concurrent
@@ -137,8 +137,8 @@ focused regression tests for behavior changes.
 ## Testing
 
 For this npm-published package, `npm test` runs aggregate Jest, lint,
-format-check, audit, and pack validation. In consuming repositories, the stages
-depend on their declared profiles; pack validation runs only when the
+format-check, audit, outdated-dependency, and pack validation. In consuming
+repositories, the stages depend on their declared profiles; pack validation runs only when the
 `npm-published` profile applies. One repository-relative `.test.*` or
 `.spec.*` file under `tests/` can be supplied to
 `eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,

@@ -72,6 +72,16 @@ test("settles only once after asynchronous child errors", async () => {
   await expect(promise).rejects.toThrow("spawn failed");
 });
 
+test("handles captured stream errors as controlled child failures", async () => {
+  const child = childProcess();
+  child.kill = jest.fn();
+  const promise = execute("node", [], {}, () => child);
+  child.stdout.emit("error", new Error("stdout failed"));
+  await expect(promise).rejects.toThrow("stdout failed");
+  expect(child.kill).toHaveBeenCalledTimes(1);
+  child.stderr.emit("error", new Error("late stderr failure"));
+});
+
 test("terminates a child after an asynchronous error even when it never closes", async () => {
   const child = childProcess();
   child.kill = jest.fn();

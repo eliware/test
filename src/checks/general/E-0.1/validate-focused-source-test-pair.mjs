@@ -7,9 +7,10 @@ export async function validateFocusedSourceTestPair(
   readText = readFile,
 ) {
   const source = sourcePath.replace(/^src\//u, "");
+  const testDirectory = /^test\//iu.test(testPath) ? "test" : "tests";
   const test = testPath.replace(/^(?:tests?|specs?)\//iu, "");
   const sourceFile = join(root, "src", source);
-  const testFile = join(root, "tests", test);
+  const testFile = join(root, testDirectory, test);
   let content;
   try {
     content = await readText(testFile, "utf8");

@@ -19,6 +19,30 @@ test("accepts a valid focused source/test pair", async () => {
       testPath: "tests/module.test.mjs",
     }),
   ).resolves.toEqual([]);
+  await expect(
+    validateFocusedSourceTestPair(root, {
+      sourcePath: "src/module.mjs",
+      testPath: "specs/module.test.mjs",
+    }),
+  ).resolves.toEqual([]);
+  await rm(root, { recursive: true, force: true });
+});
+
+test("resolves a singular test/ root to its actual focused test file", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-singular-pair-"));
+  await mkdir(join(root, "src"));
+  await mkdir(join(root, "test"));
+  await writeFile(join(root, "src", "module.mjs"), "export {};\n");
+  await writeFile(
+    join(root, "test", "module.test.mjs"),
+    'import "../src/module.mjs"; test("ok", () => {});\n',
+  );
+  await expect(
+    validateFocusedSourceTestPair(root, {
+      sourcePath: "src/module.mjs",
+      testPath: "test/module.test.mjs",
+    }),
+  ).resolves.toEqual([]);
   await rm(root, { recursive: true, force: true });
 });
 

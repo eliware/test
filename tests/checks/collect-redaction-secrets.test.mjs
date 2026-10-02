@@ -30,3 +30,13 @@ test("collects configured secret values regardless of environment size", () => {
   expect(secrets).toContain("secret-104");
   expect(secrets).toContain("x");
 });
+
+test("collects common cloud, GitHub, and npm credential variables", () => {
+  expect(
+    collectRedactionSecrets({
+      AWS_ACCESS_KEY_ID: "aws-key",
+      GITHUB_TOKEN: "github-token",
+      NPM_AUTH_TOKEN: "npm-auth",
+    }),
+  ).toEqual(["github-token", "npm-auth", "aws-key"]);
+});

@@ -13,9 +13,9 @@ test("accepts counts that exactly match allowed vulnerability findings", () => {
       report(
         { ...emptyCounts, info: 1, low: 1, moderate: 1, total: 3 },
         {
-          info: { severity: "info" },
-          low: { severity: "low" },
-          moderate: { severity: "moderate" },
+          info: { name: "info", severity: "info" },
+          low: { name: "low", severity: "low" },
+          moderate: { name: "moderate", severity: "moderate" },
         },
       ),
     ),
@@ -28,7 +28,7 @@ test("counts advisory records in a package finding and rejects package aliases",
     hasConsistentNpmAuditSeverityCounts(
       report(
         { ...emptyCounts, moderate: 1, total: 1 },
-        { example: { severity: "moderate", via: [{ source: 1 }, { source: 2 }] } },
+        { example: { name: "example", severity: "moderate", via: [{ source: 1 }, { source: 2 }] } },
       ),
     ),
   ).toBe(true);
@@ -96,6 +96,7 @@ test("rejects protected severities, missing finding severities, and count mismat
     { severity: "high" },
     { severity: "critical" },
     { severity: undefined },
+    { severity: "low" },
     null,
     [],
   ]) {
@@ -105,12 +106,18 @@ test("rejects protected severities, missing finding severities, and count mismat
   }
   expect(
     hasConsistentNpmAuditSeverityCounts(
-      report({ ...emptyCounts, moderate: 1, total: 1 }, { example: { severity: "moderate" } }),
+      report(
+        { ...emptyCounts, moderate: 1, total: 1 },
+        { example: { name: "example", severity: "moderate" } },
+      ),
     ),
   ).toBe(true);
   expect(
     hasConsistentNpmAuditSeverityCounts(
-      report({ ...emptyCounts, moderate: 1, total: 2 }, { example: { severity: "moderate" } }),
+      report(
+        { ...emptyCounts, moderate: 1, total: 2 },
+        { example: { name: "example", severity: "moderate" } },
+      ),
     ),
   ).toBe(false);
 });

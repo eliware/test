@@ -4,7 +4,14 @@ const protectedSeverities = new Set(["high", "critical"]);
 export function hasConsistentNpmAuditSeverityCounts(report) {
   const findings = [];
   for (const [name, finding] of Object.entries(report.vulnerabilities)) {
-    if (finding?.name !== undefined && finding.name !== name) return false;
+    if (
+      finding !== null &&
+      typeof finding === "object" &&
+      !Array.isArray(finding) &&
+      finding.name !== undefined &&
+      finding.name !== name
+    )
+      return false;
     findings.push(finding);
   }
   const reportedCounts = Object.fromEntries(severities.map((severity) => [severity, 0]));

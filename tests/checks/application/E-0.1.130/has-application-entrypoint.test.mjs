@@ -50,6 +50,12 @@ test("rejects a broken bin target even when another bin target exists", () => {
 test("accepts a nonempty start command without a file target", () => {
   expect(hasApplicationEntrypoint(undefined, "/repo")).toBe(false);
   expect(hasApplicationEntrypoint({ scripts: { start: "node server.mjs" } }, "/repo")).toBe(true);
+  expect(
+    hasApplicationEntrypoint({ main: "", bin: {}, scripts: { start: "node server.mjs" } }, "/repo"),
+  ).toBe(true);
+  expect(
+    hasApplicationEntrypoint({ main: "  ", scripts: { start: "node server.mjs" } }, "/repo"),
+  ).toBe(true);
   expect(hasApplicationEntrypoint({ scripts: { start: " " } }, "/repo")).toBe(false);
   expect(
     hasApplicationEntrypoint(

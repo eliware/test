@@ -25,3 +25,18 @@ test("fails when no existing file entrypoint or start command is declared", () =
       "Application package.json must declare an existing runtime file entrypoint or a nonempty start command.",
   });
 });
+
+test("accepts a nonempty start command when file entrypoints are absent", () => {
+  expect(
+    run({ packageJson: { private: true, scripts: { start: "node server.mjs" } } }),
+  ).toMatchObject({ status: "pass", message: "" });
+  expect(
+    run({
+      packageJson: { main: "", bin: {}, private: true, scripts: { start: "node server.mjs" } },
+    }),
+  ).toMatchObject({ status: "pass", message: "" });
+  expect(run({ packageJson: { private: true, scripts: { start: " " } } })).toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("entrypoint or a nonempty start command"),
+  });
+});

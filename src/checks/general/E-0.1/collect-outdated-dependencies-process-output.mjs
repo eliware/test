@@ -31,6 +31,11 @@ export function collectOutdatedDependenciesProcessOutput(
       overflowHandler?.cancel();
       resolve(value);
     };
+    const rejectStreamError = (error) => {
+      if (settled) return;
+      overflowHandler.start();
+      rejectOnce(error);
+    };
 
     overflowHandler = createOutdatedDependenciesOverflowHandler({
       child,
@@ -50,6 +55,8 @@ export function collectOutdatedDependenciesProcessOutput(
       overflowHandler.start();
     });
     child.stderr.on("data", (chunk) => output.appendStderr(chunk));
+    child.stdout.on("error", rejectStreamError);
+    child.stderr.on("error", rejectStreamError);
     child.on("error", rejectOnce);
     child.on("close", (code) => {
       if (oversized) return rejectOnce(overflowHandler.createError());

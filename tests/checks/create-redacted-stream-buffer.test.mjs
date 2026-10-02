@@ -60,6 +60,36 @@ test("retains an unsafe prefix until finishing supplies a complete boundary", ()
   expect(buffer.finish()).toBe("abcdefgh");
 });
 
+test("passes incremental text without joining retained chunks on each append", () => {
+  const findSafeBoundary = jest.fn((_text, length, final = false) => ({
+    boundary: final ? length : 0,
+    matchEnds: [],
+    suppressed: false,
+  }));
+  findSafeBoundary.appendText = jest.fn((_text, length, final = false) => ({
+    boundary: final ? length : 0,
+    matchEnds: [],
+    suppressed: false,
+  }));
+  const { buffer } = createBuffer({ findSafeBoundary });
+  for (const character of "abcdefgh") expect(buffer.addText(character)).toBe("");
+  expect(findSafeBoundary).not.toHaveBeenCalled();
+  expect(findSafeBoundary.appendText.mock.calls.map(([text]) => text)).toEqual([..."abcdefgh"]);
+  expect(buffer.finish()).toBe("abcdefgh");
+});
+
+test("consumes a safe prefix from the incremental chunk queue", () => {
+  const findSafeBoundary = () => ({ boundary: 0, matchEnds: [], suppressed: false });
+  findSafeBoundary.appendText = (_text, length, final = false) => ({
+    boundary: final ? length : Math.min(2, length),
+    matchEnds: [],
+    suppressed: false,
+  });
+  const { buffer } = createBuffer({ findSafeBoundary });
+  expect(buffer.addText("abcd")).toBe("ab");
+  expect(buffer.finish()).toBe("cd");
+});
+
 test("suppresses a full pending buffer when no safe boundary can advance", () => {
   let suppressed = false;
   const { buffer, append } = createBuffer({

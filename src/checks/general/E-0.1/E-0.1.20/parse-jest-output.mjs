@@ -5,7 +5,7 @@ export function parseJsonOutput(output) {
   if (!extracted) return { text: output, report: null };
   const trailingOutput = output.slice(extracted.end);
   return {
-    text: output.slice(0, extracted.start) + (trailingOutput.trim() ? trailingOutput : ""),
+    text: output.slice(0, extracted.start) + trailingOutput,
     report: extracted.report,
   };
 }

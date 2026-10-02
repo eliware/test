@@ -96,3 +96,22 @@ test("rejects child process errors and ignores later close events", async () => 
   child.emit("close", 0);
   await expect(result).rejects.toThrow("spawn failed");
 });
+
+test("terminates the child and rejects when either captured stream errors", async () => {
+  for (const streamName of ["stdout", "stderr"]) {
+    const child = childProcess();
+    const deps = options();
+    const result = collectOutdatedDependenciesProcessOutput(child, deps);
+    child[streamName].emit("error", new Error(`${streamName} failed`));
+    await expect(result).rejects.toThrow(`${streamName} failed`);
+    expect(deps.terminateProcess).toHaveBeenCalledWith(
+      child,
+      "linux",
+      deps.killProcess,
+      deps.killTree,
+      {},
+      "SIGTERM",
+    );
+    child[streamName === "stdout" ? "stderr" : "stdout"].emit("error", new Error("late"));
+  }
+});

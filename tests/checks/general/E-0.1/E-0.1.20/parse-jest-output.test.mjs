@@ -24,7 +24,7 @@ test("parses valid Jest JSON and preserves malformed or absent JSON as text", ()
 test("parses whitespace-prefixed pretty-printed Jest JSON", () => {
   const output = `progress\n  {\n    "numFailedTestSuites": 0,\n    "testResults": [{ "assertionResults": [] }]\n  }  `;
   expect(parseJsonOutput(output)).toEqual({
-    text: "progress\n  ",
+    text: "progress\n    ",
     report: { numFailedTestSuites: 0, testResults: [{ assertionResults: [] }] },
   });
 });
@@ -35,6 +35,15 @@ test("extracts complete nested report objects and retains surrounding diagnostic
   expect(parseJsonOutput(output)).toEqual({
     text: "before  after",
     report: { numFailedTestSuites: 0, testResults: [{ assertionResults: [{ title: "nested" }] }] },
+  });
+});
+
+test("preserves whitespace-only output after an extracted report", () => {
+  const suffix = " \n\t";
+  const output = `{"numFailedTestSuites":0}${suffix}`;
+  expect(parseJsonOutput(output)).toEqual({
+    text: suffix,
+    report: { numFailedTestSuites: 0 },
   });
 });
 

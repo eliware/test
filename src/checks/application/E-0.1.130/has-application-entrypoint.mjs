@@ -12,8 +12,11 @@ function isFile(path) {
 export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile) {
   const repositoryRoot = resolve(root);
   const bin = packageJson?.bin;
-  const hasMain = Object.hasOwn(packageJson ?? {}, "main");
-  const hasBin = Object.hasOwn(packageJson ?? {}, "bin");
+  const hasMain = Object.hasOwn(packageJson ?? {}, "main") && !isEmptyString(packageJson.main);
+  const hasBin =
+    Object.hasOwn(packageJson ?? {}, "bin") &&
+    !isEmptyString(bin) &&
+    !(bin && typeof bin === "object" && !Array.isArray(bin) && Object.keys(bin).length === 0);
   const binTargets =
     typeof bin === "string"
       ? [bin]
@@ -44,4 +47,8 @@ export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile
       pathFromRoot === ".." || pathFromRoot.startsWith(`..${sep}`) || isAbsolute(pathFromRoot);
     return !outsideRepository && inspectFile(entrypoint);
   }
+}
+
+function isEmptyString(value) {
+  return typeof value === "string" && !value.trim();
 }

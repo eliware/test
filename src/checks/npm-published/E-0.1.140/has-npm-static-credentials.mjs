@@ -7,14 +7,17 @@ export function hasNpmStaticCredentials(document) {
   return containsSecretAssignedToAuthSetting(document);
 }
 
-function containsSecretAssignedToAuthSetting(value, parentKey = "") {
+function containsSecretAssignedToAuthSetting(value, insideAuthSetting = false) {
   if (typeof value === "string") {
-    return /auth|token|npm_config_userconfig/iu.test(parentKey) && secretExpression.test(value);
+    return insideAuthSetting && secretExpression.test(value);
   }
   if (Array.isArray(value))
-    return value.some((entry) => containsSecretAssignedToAuthSetting(entry));
+    return value.some((entry) => containsSecretAssignedToAuthSetting(entry, insideAuthSetting));
   if (!value || typeof value !== "object") return false;
   return Object.entries(value).some(([key, entry]) =>
-    containsSecretAssignedToAuthSetting(entry, key),
+    containsSecretAssignedToAuthSetting(
+      entry,
+      insideAuthSetting || /auth|token|npm_config_userconfig/iu.test(key),
+    ),
   );
 }

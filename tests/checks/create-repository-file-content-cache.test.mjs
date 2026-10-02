@@ -119,6 +119,22 @@ test("drops failed reads so a later request can retry", async () => {
   expect(read).toHaveBeenCalledTimes(1);
 });
 
+test("shares concurrent failures until they settle, then allows a retry", async () => {
+  let rejectStat;
+  const stat = jest
+    .fn()
+    .mockImplementationOnce(() => new Promise((_resolve, reject) => (rejectStat = reject)))
+    .mockResolvedValue({ dev: 1n, ino: 2n, size: 4n, mtimeNs: 1n, ctimeNs: 1n });
+  const cache = createRepositoryFileContentCache("/repo", async () => "retry", stat);
+  const first = cache.readBytes("README.md");
+  const concurrent = cache.readBytes("/repo/README.md");
+  expect(concurrent).toBe(first);
+  await new Promise((resolve) => setImmediate(resolve));
+  rejectStat(new Error("stat denied"));
+  await expect(first).rejects.toThrow("stat denied");
+  await expect(cache.readText("README.md")).resolves.toBe("retry");
+});
+
 test("stores the stable version when a file changes during a cache fill", async () => {
   let currentVersion = 1n;
   const stat = jest.fn(async () => ({

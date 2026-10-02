@@ -17,6 +17,11 @@ export async function validateFocusedTestPath(root, args = []) {
   const focusedPath = focusedPathFrom(args);
   if (!focusedPath) return null;
   const normalized = focusedPath.replaceAll("\\", "/").replace(/^\.\//, "");
+  if (normalized.split("/").includes("..")) {
+    throw new Error(
+      `Focused test path must not contain parent-directory traversal: ${focusedPath}`,
+    );
+  }
   const rootPath = await realpath(root);
   let targetPath;
   try {

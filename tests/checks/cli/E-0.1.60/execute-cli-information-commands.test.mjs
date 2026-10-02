@@ -45,6 +45,39 @@ test("reports execution, exit, output, and version errors", async () => {
   ).resolves.toContain("must report package version 1.2.3");
 });
 
+test("rejects information commands that terminate by signal", async () => {
+  await expect(
+    executeCliInformationCommands({
+      ...context,
+      executeEntrypoint: async () => ({
+        code: null,
+        signal: null,
+        stdout: "usage output",
+      }),
+    }),
+  ).resolves.toContain("must exit 0 for --help; received null");
+  await expect(
+    executeCliInformationCommands({
+      ...context,
+      executeEntrypoint: async () => ({
+        code: null,
+        signal: "SIGTERM",
+        stdout: "usage output",
+      }),
+    }),
+  ).resolves.toContain("must exit 0 for --help; received SIGTERM");
+  await expect(
+    executeCliInformationCommands({
+      ...context,
+      executeEntrypoint: async () => ({
+        code: 0,
+        signal: "SIGTERM",
+        stdout: "usage output",
+      }),
+    }),
+  ).resolves.toContain("must exit 0 for --help; received 0 SIGTERM");
+});
+
 test("rejects informational output containing only whitespace", async () => {
   await expect(
     executeCliInformationCommands({

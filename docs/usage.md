@@ -25,10 +25,10 @@ selection is explicit and is not inferred. Installing the package does not add
 these scripts automatically. Use `eliware-test --help` for the supported CLI
 modes, including linting, formatting, timing diagnostics, and focused Jest
 execution.
-Run a focused suite with `eliware-test tests/example.test.mjs`; it runs that
-test with focused coverage, formatting, lint, and source-mirroring checks. Test
-files
-under `tests/` use `.test.*` or `.spec.*` names with `.js`, `.jsx`, `.ts`,
+Run a focused `.test.*` or `.spec.*` suite with
+`eliware-test tests/example.test.mjs`; it runs that test with focused coverage,
+formatting, lint, and source-mirroring checks. Test files under `tests/` use
+`.test.*` or `.spec.*` names with `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 
 ## Configuration

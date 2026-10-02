@@ -253,7 +253,7 @@
               "id": "A-0.0.7.5",
               "dos": [
                 "Allow a recognized focused path with the selected test-related stage and keep discovery, diagnostics, and failures within that requested scope.",
-                "Recognize focused test paths only under the repository's test/ or tests/ directory; require repository-relative paths and reject POSIX, drive-qualified, and UNC absolute paths before path resolution.",
+                "Recognize focused test paths only under the repository's test/ or tests/ directory; require repository-relative paths, reject POSIX, drive-qualified, and UNC absolute paths, and reject parent-directory traversal segments before path resolution.",
                 "Keep stage selection and path focus orthogonal: a focused path does not add stages, and a stage flag does not broaden the path.",
                 "Reject unsupported, missing, or ambiguous focused paths with the stable convention failure result before executing unrelated validation."
               ],

@@ -42,6 +42,13 @@ test("trims a partial secret when the stream finishes", () => {
   expect(session.finish()).toBe("safe ");
 });
 
+test("redacts a secret completed by the decoder's final replacement character", () => {
+  const session = createSession(["secret�"], 100);
+  expect(session.push(Buffer.from("secret"))).toBe("");
+  expect(session.push(Buffer.from([0xf0]))).toBe("");
+  expect(session.finish()).toBe("[REDACTED]");
+});
+
 test("advances past complete secrets before the retained boundary", () => {
   const session = createSession(["secret"], 100);
   expect(session.push(`secret ${"x".repeat(20)}`)).toBe(`[REDACTED] ${"x".repeat(14)}`);
@@ -117,6 +124,15 @@ test("suppresses stream output when matcher work exceeds its estimate", () => {
   const session = createSession(["ab"], 5_000, { maxSearchWorkPerChunk: 4_096 });
   expect(session.push("a".repeat(3_000))).toBe("");
   expect(session.finish()).toBe("");
+});
+
+test("suppresses secret-bearing output when matcher intervals exceed the stream window", () => {
+  const matcher = () => [];
+  matcher.createStream = () => () => ({ matches: [{ start: 6, end: 100 }], work: 1 });
+  const session = createSession(["secret"], 100, { getSecretMatcher: () => matcher });
+  expect(session.push("secret-tail")).toBe("");
+  expect(session.finish()).toBe("");
+  expect(session.suppressed).toBe(true);
 });
 
 test("emits no current chunk after budget exhaustion following a safe prefix", () => {

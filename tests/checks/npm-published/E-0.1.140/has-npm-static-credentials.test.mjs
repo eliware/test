@@ -40,3 +40,10 @@ test("walks array entries and returns false when no auth setting contains a secr
   expect(hasNpmStaticCredentials([null, 42])).toBe(false);
   expect(hasNpmStaticCredentials({ token: "literal-token" })).toBe(false);
 });
+
+test("retains auth context while recursively scanning arrays", () => {
+  expect(hasNpmStaticCredentials({ auth: [["${{ secrets.PUBLISH_TOKEN }}"]] })).toBe(true);
+  expect(hasNpmStaticCredentials({ authorization: [{ value: "${{ secrets.TOKEN }}" }] })).toBe(
+    true,
+  );
+});
