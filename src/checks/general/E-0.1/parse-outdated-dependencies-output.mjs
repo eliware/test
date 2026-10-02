@@ -6,8 +6,16 @@ export function parseOutdatedDependenciesOutput(stdout, stderr, code, environmen
     const diagnostic = redactProcessOutput(stderr, collectRedactionSecrets(environment)).trim();
     throw new Error(diagnostic || `npm outdated exited with ${code}.`);
   }
+  if (typeof stdout !== "string" || stdout.trim().length === 0) {
+    const diagnostic = redactProcessOutput(stderr, collectRedactionSecrets(environment)).trim();
+    throw new Error(
+      diagnostic
+        ? `npm outdated returned empty output: ${diagnostic}`
+        : "npm outdated returned empty output.",
+    );
+  }
   try {
-    return JSON.parse(stdout || "{}");
+    return JSON.parse(stdout);
   } catch {
     const diagnostic = redactProcessOutput(stderr, collectRedactionSecrets(environment)).trim();
     throw new Error(

@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -38,4 +38,22 @@ test("reads and parses workflows through the run inventory cache", async () => {
   expect(second[0].document).toBe(first[0].document);
   expect(reads.get(join(workflows, "ci.yml"))).toBe(1);
   await rm(root, { recursive: true, force: true });
+});
+
+test("retries workflow loading after a transient inventory read failure", async () => {
+  const repositoryInventory = {
+    directoryEntries: async () => [{ name: "ci.yml", isFile: () => true }],
+    readParsed: jest
+      .fn()
+      .mockRejectedValueOnce(new Error("temporary read failure"))
+      .mockResolvedValue({ jobs: {} }),
+  };
+
+  await expect(readWorkflows("/repo", repositoryInventory)).rejects.toThrow(
+    "temporary read failure",
+  );
+  await expect(readWorkflows("/repo", repositoryInventory)).resolves.toEqual([
+    { name: "ci.yml", document: { jobs: {} } },
+  ]);
+  expect(repositoryInventory.readParsed).toHaveBeenCalledTimes(2);
 });

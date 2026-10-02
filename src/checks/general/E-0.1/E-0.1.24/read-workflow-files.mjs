@@ -8,7 +8,10 @@ export function readWorkflows(root, repositoryInventory) {
   if (repositoryInventory) {
     const cached = workflowsByInventory.get(repositoryInventory);
     if (cached) return cached;
-    const pending = loadWorkflows(root, repositoryInventory);
+    const pending = loadWorkflows(root, repositoryInventory).catch((error) => {
+      workflowsByInventory.delete(repositoryInventory);
+      throw error;
+    });
     workflowsByInventory.set(repositoryInventory, pending);
     return pending;
   }

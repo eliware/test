@@ -84,8 +84,9 @@ differ from this checkout.
 
 When a repository-local Jest cannot be resolved, `eliware-test` uses the Jest
 dependency it ships while keeping the consumer repository as Jest's working
-directory. Jest discovers the consumer's `package.json`, configuration, tests,
-and source files from that root.
+directory. It reads supported Jest settings from the consumer's `package.json`
+and discovers tests and source files from that root. Separate `jest.config.*`
+files are not supported; place Jest settings in `package.json`.
 
 Each validation invocation creates `eliware-test.lock` in the repository root
 before running, and removes it when the process exits normally. A concurrent

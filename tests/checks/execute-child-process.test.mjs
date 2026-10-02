@@ -14,7 +14,7 @@ test("spawns without shell interpretation and returns captured process results",
   const promise = execute(
     "npm",
     ["run", "build"],
-    { cwd: "C:\\repo", shell: true },
+    { cwd: "C:\\repo", shell: true, stdio: "inherit" },
     (command, args, options) => {
       expect(command).toBe("npm");
       expect(args).toEqual(["run", "build"]);

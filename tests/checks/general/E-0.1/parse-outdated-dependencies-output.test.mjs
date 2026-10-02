@@ -6,7 +6,20 @@ test("parses successful output for npm outdated exit codes zero and one", () => 
     alpha: { latest: "2" },
   });
   expect(parseOutdatedDependenciesOutput("{}", "", 1, {})).toEqual({});
-  expect(parseOutdatedDependenciesOutput("", "", 0, {})).toEqual({});
+});
+
+test("rejects empty output for report-bearing npm outdated exit codes", () => {
+  for (const code of [0, 1]) {
+    expect(() => parseOutdatedDependenciesOutput("", "", code, {})).toThrow(
+      "npm outdated returned empty output.",
+    );
+  }
+  expect(() => parseOutdatedDependenciesOutput(undefined, "", 0, {})).toThrow(
+    "npm outdated returned empty output.",
+  );
+  expect(() => parseOutdatedDependenciesOutput("", "registry unavailable", 1, {})).toThrow(
+    "npm outdated returned empty output: registry unavailable",
+  );
 });
 
 test("reports redacted diagnostics for unexpected exits", () => {
