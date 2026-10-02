@@ -40,6 +40,13 @@ test("shares scoped documentation discovery and enforces traversal limits", asyn
     }),
   ).rejects.toThrow("file limit");
   await expect(
+    inventory.documentationFiles({
+      directory: "/repo/docs",
+      predicate: (name) => name.endsWith(".json"),
+      maxFiles: 2,
+    }),
+  ).resolves.toEqual(["record.json", "nested/record.json"]);
+  await expect(
     inventory.documentationFiles({ directory: "/repo/docs", maxDepth: 0 }),
   ).rejects.toThrow("depth limit");
   await expect(inventory.documentationFiles({ directory: "/repo/missing" })).rejects.toMatchObject({

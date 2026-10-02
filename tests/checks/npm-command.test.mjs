@@ -4,17 +4,14 @@ import { npmCommand } from "../../src/checks/npm-command.mjs";
 
 test("selects the platform npm executable or npm exec path", () => {
   expect(npmCommand("linux", "")).toEqual(["npm", []]);
-  expect(npmCommand("linux", "C:\\npm\\npm-cli.js")).toEqual([
-    process.execPath,
-    ["C:\\npm\\npm-cli.js"],
-  ]);
+  expect(npmCommand("linux", "C:\\npm\\npm-cli.js")).toEqual(["npm", []]);
   expect(npmCommand("linux", "/tools/npm-cli.js")).toEqual([
     process.execPath,
     ["/tools/npm-cli.js"],
   ]);
   expect(npmCommand("linux", "npm-cli.js", process.execPath, undefined, "/repo")).toEqual([
     process.execPath,
-    [resolve("npm-cli.js")],
+    [resolve("/repo", "npm-cli.js")],
   ]);
   expect(npmCommand("win32", "", "C:\\node.exe", () => true)).toEqual([
     "C:\\node.exe",

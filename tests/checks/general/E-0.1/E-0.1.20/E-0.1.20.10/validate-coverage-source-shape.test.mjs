@@ -76,3 +76,36 @@ test("rejects absent source entries and altered branch locations", () => {
     "every source branch path",
   );
 });
+
+test("rejects empty report maps when the source has instrumentable entries", () => {
+  const shape = expectedCoverageShape("export const value = 1;", "src/value.mjs");
+  const emptyEvidence = {
+    statementMap: {},
+    s: {},
+    branchMap: {},
+    b: {},
+    fnMap: {},
+    f: {},
+  };
+
+  expect(() => validateCoverageSourceShape("src/value.mjs", emptyEvidence, shape)).toThrow(
+    "every source statement entry",
+  );
+});
+
+test("rejects source branch shapes without paths", () => {
+  const branch = { type: "switch", line: 1, locations: [] };
+  const shape = { statementMap: {}, branchMap: { 1: branch }, fnMap: {} };
+  const evidence = {
+    statementMap: {},
+    s: {},
+    branchMap: { 1: branch },
+    b: { 1: [] },
+    fnMap: {},
+    f: {},
+  };
+
+  expect(() => validateCoverageSourceShape("src/empty-branch.mjs", evidence, shape)).toThrow(
+    "source branch must contain at least one path",
+  );
+});

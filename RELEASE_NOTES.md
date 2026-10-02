@@ -47,8 +47,11 @@
   digest, and registry-push inputs; normalize validated focused paths before
   passing them on to Jest.
 - Reject empty npm outdated reports, retry workflow reads after transient
-  failures, clarify the process runner's fixed capture and no-shell contract,
-  and document that Jest settings belong in `package.json`.
+  failures, propagate repository inventory refresh errors other than missing
+  directories, resolve relative `npm_execpath` values from the repository root,
+  fall back to platform npm for Windows-style `npm_execpath` values on POSIX,
+  clarify the process runner's fixed capture and no-shell contract, and document
+  that Jest settings belong in `package.json`.
 
 ## 9.0.0 — 2026-10-01
 

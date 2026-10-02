@@ -28,11 +28,11 @@ export function npmCommand(
       "Unable to resolve the npm CLI on Windows from npm_execpath, beside Node.js, or on PATH.",
     );
   }
+  if (isAbsoluteWindowsNpmPath(npmExecPath)) return ["npm", []];
   if (npmExecPath) {
-    const resolvedNpmExecPath =
-      isAbsolute(npmExecPath) || isAbsoluteWindowsNpmPath(npmExecPath)
-        ? npmExecPath
-        : resolve(npmExecPath);
+    const resolvedNpmExecPath = isAbsolute(npmExecPath)
+      ? npmExecPath
+      : resolve(workingDirectory, npmExecPath);
     return [execPath, [resolvedNpmExecPath]];
   }
   return ["npm", []];

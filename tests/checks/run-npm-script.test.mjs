@@ -14,7 +14,7 @@ test("runs a package script in the repository root", async () => {
   expect(calls[0][2]).toEqual({ cwd: "C:\\repo", env: expect.any(Object) });
 });
 
-test("uses the invocation environment for npm resolution and child execution", async () => {
+test("uses platform npm when the invocation environment contains a Windows npm path on POSIX", async () => {
   const calls = [];
   const env = { npm_execpath: "C:/custom/npm-cli.js", TOKEN: "invocation-token" };
   await runNpmScript(
@@ -29,8 +29,8 @@ test("uses the invocation environment for npm resolution and child execution", a
     "linux",
   );
 
-  expect(calls[0][0]).toBe(process.execPath);
-  expect(calls[0][1]).toContain("C:/custom/npm-cli.js");
+  expect(calls[0][0]).toBe("npm");
+  expect(calls[0][1]).not.toContain("C:/custom/npm-cli.js");
   expect(calls[0][2]).toEqual({ cwd: "C:/repo", env });
   expect(calls[0][2].env).not.toBe(env);
 });

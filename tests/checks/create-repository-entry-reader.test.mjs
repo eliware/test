@@ -52,11 +52,24 @@ test("rediscovers when directory versions change", async () => {
 test("rediscovers when a previously indexed directory disappears", async () => {
   const { reader, findEntries, readDirectoryCached } = createReaderState();
   await reader.entries();
-  readDirectoryCached.mockRejectedValueOnce(new Error("directory removed"));
+  readDirectoryCached.mockRejectedValueOnce(
+    Object.assign(new Error("directory removed"), { code: "ENOENT" }),
+  );
   findEntries.mockResolvedValueOnce([]);
 
   await expect(reader.entries()).resolves.toEqual([]);
   expect(findEntries).toHaveBeenCalledTimes(2);
+});
+
+test("propagates refresh failures other than a missing directory", async () => {
+  const { reader, findEntries, readDirectoryCached } = createReaderState();
+  await reader.entries();
+  readDirectoryCached.mockRejectedValueOnce(
+    Object.assign(new Error("permission denied"), { code: "EACCES" }),
+  );
+
+  await expect(reader.entries()).rejects.toThrow("permission denied");
+  expect(findEntries).toHaveBeenCalledTimes(1);
 });
 
 test("retries discovery after a transient refresh failure", async () => {

@@ -173,6 +173,7 @@
                 "Remove documented prior coverage candidates before test execution so accepted evidence belongs to the current run.",
                 "Read coverage candidates in fixed precedence order without merging or recency-based selection.",
                 "Validate statement, branch, and function maps against the source-derived Istanbul instrumentation shape so omitted source entries cannot shrink the coverage denominator.",
+                "When source-derived instrumentation contains entries, reject coverage reports with empty metric maps or counters; empty maps are complete only when the source-derived shape is also empty.",
                 "Calculate Istanbul coverage percentages by counting instrumented entries with positive execution counters as covered; execution frequency does not increase an entry's coverage weight.",
                 "Continue to the next fixed-precedence candidate when a report is stale or unusable, and fail when no usable candidate remains.",
                 "Continue required post-test diagnostics after a coverage failure while preserving every failure diagnostic."

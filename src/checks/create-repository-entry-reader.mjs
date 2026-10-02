@@ -42,7 +42,8 @@ export function createRepositoryEntryReader({
           .getTrackedDirectories()
           .map((directory) => readDirectoryCached(directory, true)),
       );
-    } catch {
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
       directoriesExist = false;
     }
     if (directoriesExist && readDirectoryCached.getRevision() === snapshotRevision) return records;
