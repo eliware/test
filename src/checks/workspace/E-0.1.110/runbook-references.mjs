@@ -1,5 +1,6 @@
 import { readRepositoryText } from "../../read-repository-text.mjs";
 import { dirname, join, resolve } from "node:path";
+import { isPathWithinRoot } from "../is-path-within-root.mjs";
 
 export function referencesIn(text) {
   return [
@@ -21,6 +22,12 @@ export async function validateReferences(root, filesByPath, indexedPaths, contex
     }
     for (const reference of referencesIn(content)) {
       const target = resolve(dirname(surface), reference.path);
+      if (!isPathWithinRoot(root, target)) {
+        failures.push(
+          `Runbook reference does not resolve to the declared record: ${reference.path}#id=${reference.id}.`,
+        );
+        continue;
+      }
       const record = filesByPath.get(target);
       if (!record || record.id !== reference.id) {
         failures.push(

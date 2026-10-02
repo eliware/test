@@ -47,9 +47,9 @@ directives:
       - id: A-0.1.110.2
         dos:
           - Deterministic validation must validate every runbooks/*.json record against the workspace runbook contract and require non-empty id, purpose, owner, boundaries, and steps fields.
-          - Deterministic validation must validate every machine-followable runbooks/<name>.json#id=<stable-id> reference against the referenced record.
+          - Deterministic validation must resolve every machine-followable runbooks/<name>.json#id=<stable-id> reference beneath the workspace root and validate it against the referenced record.
         donts:
-          - Do not accept a workspace runbook with missing required fields, duplicate stable IDs, or an unresolved structured-record reference.
+          - Do not accept a workspace runbook with missing required fields, duplicate stable IDs, an unresolved structured-record reference, or a reference that escapes the workspace root.
       - id: A-0.1.110.3
         dos:
           - Workspace README indexes must link runbooks/README.md and every structured directive collection.

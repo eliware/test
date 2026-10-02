@@ -63,6 +63,24 @@ test("ignores overlong output lines as progress markers", () => {
   });
   progress.push("x".repeat(5000));
   progress.push("\n");
+  progress.push(`${"x".repeat(5000)}\n`);
+  expect(onProgress).not.toHaveBeenCalled();
+});
+
+test("does not recognize an overlong line reconstructed across chunks", () => {
+  const onProgress = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^abcdetail$/u,
+    maxProgressLineLength: 4,
+    resetOnAnyOutput: false,
+    resetProgressTimer: jest.fn(),
+    onProgress,
+  });
+  progress.push("abcd");
+  progress.push("e");
+  progress.push("tail");
+  progress.push("\n");
+
   expect(onProgress).not.toHaveBeenCalled();
 });
 

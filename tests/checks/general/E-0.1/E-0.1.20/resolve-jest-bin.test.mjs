@@ -79,21 +79,21 @@ test("rejects an empty declared Jest bin path", async () => {
   }
 });
 
-test("falls back when the directly resolved Jest bin is not a file", async () => {
+test("falls back when the exported Jest bin path resolves to a directory", async () => {
   const fixture = await createConsumerPackage({ name: "jest", bin: "commands/runner.mjs" });
   try {
     await mkdir(join(fixture.packageRoot, "commands"));
     const runner = join(fixture.packageRoot, "commands", "runner.mjs");
     await writeFile(runner, "");
-    const requireFromConsumer = {
-      resolve: jest.fn((specifier) =>
-        specifier === "jest/bin/jest"
-          ? fixture.packageRoot
-          : join(fixture.packageRoot, "package.json"),
-      ),
-    };
+    const resolveFromConsumer = jest.fn((specifier) =>
+      specifier === "jest/bin/jest"
+        ? fixture.packageRoot
+        : join(fixture.packageRoot, "package.json"),
+    );
+    const requireFromConsumer = { resolve: resolveFromConsumer };
 
     expect(resolveJestBin(requireFromConsumer, "jest")).toBe(runner);
+    expect(resolveFromConsumer).toHaveBeenCalledWith("jest/bin/jest");
   } finally {
     await rm(fixture.root, { recursive: true, force: true });
   }

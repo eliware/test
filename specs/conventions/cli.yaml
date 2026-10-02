@@ -24,7 +24,8 @@ directives:
       - id: E-0.1.60.1
         dos:
           - CLI applications must contain bin/ with the executable entrypoint, implement and document --help and --version, and document exit codes and redacted output. Human review must identify each command that can change or delete state; each such command must provide dry-run, confirmation, or an equivalent safeguard. A CLI with no state-changing or destructive commands requires no destructive-action safeguard.
-          - When focused test execution is supported, document and test each supported focused-test extension and its mirrored source mapping; map .mts and .cts tests to .mjs sources and map other supported extensions to the same source extension.
+          - When focused test execution is supported, document and test each supported focused-invocation extension and its source mapping; map .mts and .cts invocations to .mjs sources and map other supported extensions to the same source extension. Focused invocation support does not change application or library source/test mirroring, which requires exactly one .test.mjs file for each .mjs source.
+          - "Document wrapper-owned options and the separator boundary explicitly: --debug-timing is accepted only before a focused path or tool mode (or alone for aggregate validation) and is rejected after --; arguments after -- are forwarded to the selected mode subject to that mode's allowlist or to Jest for focused tests."
         donts:
           - CLI applications must not omit bin/, --help, --version, or safeguards for state-changing commands, or expose secrets. Deterministic checks must not infer destructive behavior from command names or keyword presence.
       - id: A-0.1.60.2

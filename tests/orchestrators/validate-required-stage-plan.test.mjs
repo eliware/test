@@ -63,6 +63,29 @@ test("an exempted stage owner does not waive unrelated required stage owners", (
   ).toThrow("executeLint (E-0.1.4)");
 });
 
+test("requires an unexempted owner for each enabled validation stage", () => {
+  expect(() =>
+    validateRequiredStagePlan(
+      [{ ruleId: "E-0.1.130.13" }],
+      { executeJest: true },
+      new Set(["E-0.1.130.13"]),
+    ),
+  ).toThrow("executeJest (E-0.1.130.13, E-0.1.40.15)");
+});
+
+test("treats an exempted parent as an exempted validation-stage owner", () => {
+  expect(() =>
+    validateRequiredStagePlan(
+      [
+        { ruleId: "E-0.1.130", parentRuleId: "E-0.1" },
+        { ruleId: "E-0.1.130.13", parentRuleId: "E-0.1.130" },
+      ],
+      { executeJest: true },
+      new Set(["E-0.1.130"]),
+    ),
+  ).toThrow("executeJest (E-0.1.130.13, E-0.1.40.15)");
+});
+
 test("does not require aggregate stage owners during a validated focused run", () => {
   expect(() =>
     validateRequiredStagePlan([], {

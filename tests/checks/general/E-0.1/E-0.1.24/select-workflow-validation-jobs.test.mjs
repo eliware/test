@@ -104,3 +104,23 @@ test("maps validation-command and sibling-validation findings", () => {
     jobs: [],
   });
 });
+
+test("rejects a name-labeled validation job without adjacent npm ci and npm test steps", () => {
+  validateWorkflowValidationJobs.mockReturnValueOnce(
+    "publish.yml must run npm ci followed immediately by npm test.",
+  );
+  const namedJob = { steps: [{ run: "echo ready" }] };
+
+  expect(selectWorkflowValidationJobs("publish.yml", { jobs: { validate: namedJob } })).toEqual({
+    error: "publish.yml must run npm ci followed immediately by npm test.",
+    jobs: [],
+  });
+  expect(validateWorkflowValidationJobs).toHaveBeenCalledWith("publish.yml", [
+    {
+      id: "validate",
+      job: namedJob,
+      commands: [{ name: undefined, command: "echo ready", step: namedJob.steps[0], index: 0 }],
+    },
+  ]);
+  expect(validateWorkflowSiblingJobs).not.toHaveBeenCalled();
+});

@@ -30,9 +30,13 @@ Run a focused `.test.*` or `.spec.*` suite with
 separator. Arguments after `--` are forwarded to Jest and do not select focused
 validation. It runs that test with focused coverage,
 formatting, lint, source-mirroring, and selected safe convention checks. Focused
-coverage targets the mapped mirror: `.mts` and `.cts` tests map to `.mjs` source,
-and other supported extensions map to the same source extension. Application
-profile coverage enforcement remains limited to native `.mjs` production files.
+coverage maps `.mts` and `.cts` invocations to `.mjs` source files and maps other
+supported extensions to the same source extension. This focused-invocation mapping
+does not change the application and library convention: maintained source modules
+still require exactly one corresponding `.test.mjs` file. `.mts` and `.cts` are
+focused-invocation extensions only; they do not change the required mirrored test
+filename. Application profile coverage enforcement remains limited to native
+`.mjs` production files.
 Test files under `tests/` use
 `.test.*` or `.spec.*` names with `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
@@ -95,6 +99,8 @@ forwarded arguments after `--`, and each group preserves its original order. The
 separator itself is removed before forwarding. For example,
 `eliware-test --audit --no-fund -- --no-progress` forwards
 `--no-fund --no-progress` to npm.
+`--debug-timing` is wrapper-owned, may appear once before a focused path or tool mode (or alone for aggregate validation), and is
+rejected after `--`.
 Prettier arguments that override the selected mode, canonical formatting
 configuration, or required maintained-file coverage are rejected.
 

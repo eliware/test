@@ -8,13 +8,18 @@ function metric(value) {
   return Number.isFinite(value) ? `${value.toFixed(2)}%` : "unavailable";
 }
 
+function formatBranch({ id, path, type, location }) {
+  const identity = id === undefined ? "" : `branch ${id}${type ? ` (${type})` : ""} path ${path}`;
+  return `${identity ? `${identity} at ` : ""}${location} (uncovered)`;
+}
+
 export function formatCoverageGaps(evidence) {
   const lines = ["Coverage gaps:", "File | Statements | Branches | Functions | Lines"];
   for (const gap of evidence.gaps) {
     lines.push(
       `${gap.file} | ${metric(gap.metrics.statements)} | ${metric(gap.metrics.branches)} | ${metric(gap.metrics.functions)} | ${metric(gap.metrics.lines)} | uncovered lines: ${gap.lines.join(", ") || "-"}`,
       `  Uncovered statements: ${details(gap.statements, ({ location }) => location)}`,
-      `  Uncovered branches: ${details(gap.branches, ({ location }) => `${location} (uncovered)`)}`,
+      `  Uncovered branches: ${details(gap.branches, formatBranch)}`,
       `  Uncovered functions: ${details(gap.functions, ({ name, location }) => `${name} at ${location}`)}`,
     );
   }

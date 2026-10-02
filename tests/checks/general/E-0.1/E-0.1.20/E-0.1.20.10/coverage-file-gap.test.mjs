@@ -60,7 +60,11 @@ test("reports statement, branch, function, and line locations", () => {
     ],
   });
   expect(gap.branches).toEqual(
-    expect.arrayContaining([{ location: "6" }, { location: "unknown" }, { location: "7" }]),
+    expect.arrayContaining([
+      expect.objectContaining({ location: "6", id: "1", path: 1 }),
+      expect.objectContaining({ location: "unknown", id: "3", path: 1 }),
+      expect.objectContaining({ location: "7", id: "2", path: 1 }),
+    ]),
   );
   expect(gap.metrics.branches).toBeLessThan(100);
   expect(gap.metrics.branches).toBe(25);
@@ -94,7 +98,9 @@ test("reports excess branch counters without mapped locations", () => {
     fnMap: { 1: {} },
     l: { 1: 1 },
   });
-  expect(gap?.branches).toContainEqual({ location: "unknown" });
+  expect(gap?.branches).toContainEqual(
+    expect.objectContaining({ id: "1", path: 2, location: "unknown" }),
+  );
   expect(gap?.metrics.branches).toBe(50);
 });
 

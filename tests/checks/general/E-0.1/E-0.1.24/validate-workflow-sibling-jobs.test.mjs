@@ -99,6 +99,25 @@ test("checks non-publication sibling jobs in publication workflows", () => {
   ).toBeNull();
 });
 
+test("rejects conditional validation commands in sibling jobs regardless of their conditions", () => {
+  const testStep = { run: "npm test", if: "always()", "continue-on-error": true };
+  const job = { if: "always()", steps: [testStep] };
+  expect(
+    validateWorkflowSiblingJobs(
+      "ci.yml",
+      [
+        {
+          id: "supplemental",
+          job,
+          commands: [{ command: testStep.run, step: testStep, index: 0 }],
+        },
+      ],
+      validationIds,
+      new Set(),
+    ),
+  ).toContain("must keep npm ci and npm test in a validation job");
+});
+
 test("ignores GHCR publisher commands only when the profile is enabled", () => {
   const job = { steps: [{ uses: "docker/build-push-action@v6", with: { push: true } }] };
   const publisher = [

@@ -37,3 +37,21 @@ test("reports unresolved references and tolerates absent surfaces", async () => 
   await rm(root, { recursive: true, force: true });
   await expect(validateReferences(root, new Map(), new Set())).resolves.toBeNull();
 });
+
+test("rejects references that resolve outside the workspace even when indexed", async () => {
+  const parent = await mkdtemp(join(tmpdir(), "eliware-runbook-reference-escape-"));
+  const root = join(parent, "workspace");
+  const outsideRunbooks = join(parent, "runbooks");
+  await mkdir(root);
+  await mkdir(outsideRunbooks);
+  await writeFile(join(root, "README.md"), "../runbooks/deploy.json#id=deploy");
+  await writeFile(join(outsideRunbooks, "deploy.json"), JSON.stringify({ id: "deploy" }));
+  const externalFile = resolve(outsideRunbooks, "deploy.json");
+  const indexed = new Set();
+
+  await expect(
+    validateReferences(root, new Map([[externalFile, { id: "deploy" }]]), indexed),
+  ).resolves.toContain("../runbooks/deploy.json#id=deploy");
+  expect(indexed).toEqual(new Set());
+  await rm(parent, { recursive: true, force: true });
+});

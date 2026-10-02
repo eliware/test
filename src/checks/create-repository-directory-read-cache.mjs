@@ -3,14 +3,18 @@ import { inventoryPath } from "./repository-inventory-paths.mjs";
 
 function version(metadata) {
   // codescope ignore: The five-field snapshot string is constant-size and avoids retaining or comparing mutable stat objects.
-  return [
-    metadata.dev,
-    metadata.ino,
-    metadata.size,
-    // codescope ignore: Node versions/filesystems without nanosecond fields use the millisecond stat fields.
-    metadata.mtimeNs ?? metadata.mtimeMs,
-    metadata.ctimeNs ?? metadata.ctimeMs,
-  ].join(":");
+  const nanosecondTimestamps =
+    typeof metadata.mtimeNs === "bigint" && typeof metadata.ctimeNs === "bigint";
+  return {
+    cacheable: nanosecondTimestamps,
+    key: [
+      metadata.dev,
+      metadata.ino,
+      metadata.size,
+      nanosecondTimestamps ? metadata.mtimeNs : metadata.mtimeMs,
+      nanosecondTimestamps ? metadata.ctimeNs : metadata.ctimeMs,
+    ].join(":"),
+  };
 }
 
 export function createRepositoryDirectoryReadCache(root, readDirectory, stat = statPath) {
@@ -28,7 +32,12 @@ export function createRepositoryDirectoryReadCache(root, readDirectory, stat = s
     current.promise = Promise.resolve()
       .then(async () => {
         let currentVersion = version(await stat(key, { bigint: true }));
-        if (!forceRefresh && previous?.version === currentVersion) {
+        if (
+          !forceRefresh &&
+          currentVersion.cacheable &&
+          previous?.version?.cacheable &&
+          previous.version.key === currentVersion.key
+        ) {
           current.version = currentVersion;
           current.entries = previous.entries;
           current.pending = false;
@@ -36,7 +45,7 @@ export function createRepositoryDirectoryReadCache(root, readDirectory, stat = s
         }
         current.entries = await readDirectory(key, { withFileTypes: true });
         const afterReadVersion = version(await stat(key, { bigint: true }));
-        if (afterReadVersion !== currentVersion) {
+        if (afterReadVersion.key !== currentVersion.key) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);
         }
         if (previous) revision += 1;

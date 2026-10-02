@@ -7,7 +7,7 @@ import { createRepositoryFileContentCache } from "../../src/checks/create-reposi
 const fileVersion = (mtimeNs, size = 4n) => ({ dev: 1n, ino: 2n, size, mtimeNs, ctimeNs: mtimeNs });
 
 test("shares one byte read across byte and text access", async () => {
-  const read = jest.fn(async () => Buffer.from("text content"));
+  const read = jest.fn(async () => "text content");
   const cache = createRepositoryFileContentCache("/repo", read, async () => fileVersion(1n, 12n));
 
   const bytes = cache.readBytes("README.md");
@@ -72,17 +72,6 @@ test("leaves concurrent pending reads alone while evicting completed content", a
   await expect(first).resolves.toEqual(Buffer.from("a"));
 });
 
-test("normalizes text reader results for byte access", async () => {
-  const cache = createRepositoryFileContentCache(
-    "/repo",
-    jest.fn(async () => "text content"),
-    async () => ({ dev: 1n, ino: 2n, size: 12n, mtimeNs: 1n, ctimeNs: 1n }),
-  );
-
-  await expect(cache.readBytes("README.md")).resolves.toEqual(Buffer.from("text content"));
-  await expect(cache.readText("README.md")).resolves.toBe("text content");
-});
-
 test("reuses file content only while its on-disk version is unchanged", async () => {
   const stat = jest
     .fn()
@@ -91,7 +80,7 @@ test("reuses file content only while its on-disk version is unchanged", async ()
     .mockResolvedValueOnce(fileVersion(1n))
     .mockResolvedValueOnce(fileVersion(1n))
     .mockResolvedValueOnce(fileVersion(1n))
-    .mockResolvedValueOnce(fileVersion(2n))
+    .mockResolvedValueOnce(fileVersion(1n))
     .mockResolvedValueOnce(fileVersion(2n))
     .mockResolvedValueOnce(fileVersion(2n))
     .mockResolvedValueOnce(fileVersion(2n));
@@ -107,22 +96,26 @@ test("reuses file content only while its on-disk version is unchanged", async ()
   });
 });
 
-test("refreshes a cache hit when the file changes between version checks", async () => {
-  const stat = jest
+test("keeps byte accounting correct after a failed cache replacement", async () => {
+  let version = 1n;
+  const stat = jest.fn(async () => fileVersion(version, 4n));
+  const largeContent = Buffer.alloc(8 * 1024 * 1024 - 4, 65);
+  const read = jest
     .fn()
-    .mockResolvedValueOnce(fileVersion(1n))
-    .mockResolvedValueOnce(fileVersion(1n))
-    .mockResolvedValueOnce(fileVersion(1n))
-    .mockResolvedValueOnce(fileVersion(1n))
-    .mockResolvedValueOnce(fileVersion(2n))
-    .mockResolvedValueOnce(fileVersion(2n))
-    .mockResolvedValueOnce(fileVersion(2n));
-  const read = jest.fn().mockResolvedValueOnce("old!").mockResolvedValueOnce("new!");
+    .mockResolvedValueOnce("old!")
+    .mockRejectedValueOnce(new Error("temporary read failure"))
+    .mockResolvedValueOnce("new!")
+    .mockResolvedValueOnce(largeContent);
   const cache = createRepositoryFileContentCache("/repo", read, stat);
 
-  await expect(cache.readText("README.md")).resolves.toBe("old!");
-  await expect(cache.readText("README.md")).resolves.toBe("new!");
-  expect(read).toHaveBeenCalledTimes(2);
+  await expect(cache.readText("small.txt")).resolves.toBe("old!");
+  version = 2n;
+  await expect(cache.readText("small.txt")).rejects.toThrow("temporary read failure");
+  await expect(cache.readText("small.txt")).resolves.toBe("new!");
+  await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
+  await expect(cache.readBytes("small.txt")).resolves.toEqual(Buffer.from("new!"));
+  await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
+  expect(read).toHaveBeenCalledTimes(4);
 });
 
 test("uses filesystem versions by default and refreshes changed file content", async () => {

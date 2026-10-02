@@ -34,14 +34,14 @@ test("rejects missing, interrupted, and reversed required commands", () => {
       { command: "npm test" },
       { command: "npm test" },
     ]),
-  ).toMatchObject({ install: { command: "npm ci" }, test: { command: "npm test" } });
+  ).toHaveProperty("error");
   expect(
     findValidationCommandPair("ci.yml", [
       { command: "npm ci" },
       { command: "npm test" },
       { command: "npm ci" },
     ]),
-  ).toMatchObject({ install: { command: "npm ci" }, test: { command: "npm test" } });
+  ).toHaveProperty("error");
   expect(
     findValidationCommandPair("ci.yml", [{ command: "npm test" }, { command: "npm ci" }]),
   ).toHaveProperty("error");

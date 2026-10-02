@@ -50,17 +50,22 @@ function validatePackageEntries(packages) {
       continue;
     }
     if (
+      entry.link === true &&
+      (typeof entry.resolved !== "string" || entry.resolved.length === 0)
+    ) {
+      failures.push(`package-lock.json link entry ${path} must contain a valid resolved target.`);
+      continue;
+    }
+    if (
       (entry.name !== undefined && (typeof entry.name !== "string" || !entry.name)) ||
-      typeof entry.version !== "string" ||
-      !entry.version
+      (entry.link !== true && (typeof entry.version !== "string" || !entry.version))
     ) {
       failures.push(`package-lock.json entry ${path} must contain a valid package version.`);
       continue;
     }
-    if (entry.link === true) continue;
     for (const field of dependencyFields) {
-      if (!entry[field]) continue;
-      if (typeof entry[field] !== "object" || Array.isArray(entry[field]))
+      if (entry[field] === undefined) continue;
+      if (!entry[field] || typeof entry[field] !== "object" || Array.isArray(entry[field]))
         failures.push(`package-lock.json entry ${path} has invalid ${field}.`);
       if (typeof entry[field] !== "object" || Array.isArray(entry[field])) continue;
       for (const dependency of Object.keys(entry[field])) {

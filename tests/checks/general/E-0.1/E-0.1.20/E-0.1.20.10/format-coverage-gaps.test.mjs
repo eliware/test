@@ -9,16 +9,33 @@ test("formats detailed coverage gaps with remediation guidance", () => {
         metrics: { statements: 0, branches: 50, functions: 0, lines: 0 },
         lines: [4],
         statements: [{ location: "4" }],
-        branches: [{ location: "6" }],
+        branches: [{ id: "2", path: 1, type: "if", location: "6" }],
         functions: [{ name: "example", location: "8" }],
       },
     ],
   });
   expect(output).toContain("src/example.mjs | 0.00% | 50.00% | 0.00% | 0.00%");
   expect(output).toContain("Uncovered statements: 4");
-  expect(output).toContain("Uncovered branches: 6 (uncovered)");
+  expect(output).toContain("Uncovered branches: branch 2 (if) path 1 at 6 (uncovered)");
   expect(output).toContain("Uncovered functions: example at 8");
   expect(output).toContain("Remediation: Add or extend tests");
+});
+
+test("identifies uncovered branches when Istanbul provides no source location", () => {
+  const output = formatCoverageGaps({
+    gaps: [
+      {
+        file: "src/example.mjs",
+        metrics: { statements: 100, branches: 50, functions: 100, lines: 100 },
+        lines: [],
+        statements: [],
+        branches: [{ id: "3", path: 2, location: "unknown" }],
+        functions: [],
+      },
+    ],
+  });
+
+  expect(output).toContain("branch 3 path 2 at unknown (uncovered)");
 });
 
 test("formats empty gaps and truncates long diagnostic lists", () => {

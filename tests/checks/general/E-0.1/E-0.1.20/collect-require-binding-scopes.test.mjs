@@ -12,6 +12,11 @@ test("tracks bindings only in the lexical scope that declares require", () => {
   expect(scopes.has(program.body[1])).toBe(true);
 });
 
+test("recognizes a top-level var require binding in the program scope", () => {
+  const ast = parse('var require = mock; require("ignored");', { sourceType: "module" });
+  expect(collectRequireBindingScopes(ast).has(ast.program)).toBe(true);
+});
+
 test("resolves block and catch bindings without leaking into sibling scopes", () => {
   const ast = parse(
     '{ const require = mock; require("ignored"); } try {} catch (require) { require("ignored"); }',

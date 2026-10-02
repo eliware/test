@@ -6,10 +6,11 @@ export function findValidationCommandPair(name, commands) {
     Number.isInteger(entry?.index) ? entry.index : commands.indexOf(entry);
   const test = tests.find((entry) => commandIndex(entry) > commandIndex(install));
   if (
+    installs.length !== 1 ||
+    tests.length !== 1 ||
     !install ||
     !test ||
     tests.some((entry) => commandIndex(entry) < commandIndex(install)) ||
-    installs.some((entry) => entry !== install && commandIndex(entry) < commandIndex(test)) ||
     commandIndex(install) >= commandIndex(test)
   ) {
     return {

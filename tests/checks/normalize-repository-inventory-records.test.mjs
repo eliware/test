@@ -38,6 +38,14 @@ test("normalizes Windows device-namespace repository roots with Windows path rul
   ).toEqual([{ path: "src/file.mjs", type: "file" }]);
 });
 
+test("normalizes Windows DOS device-namespace repository roots with Windows path rules", () => {
+  const root = String.raw`\\.\C:\repo`;
+  const file = String.raw`\\.\C:\repo\src\file.mjs`;
+  expect(normalizeRepositoryInventoryRecords(root, [{ path: file, type: "file" }])).toEqual([
+    { path: "src/file.mjs", type: "file" },
+  ]);
+});
+
 test("drops null and malformed inventory records", () => {
   expect(normalizeRepositoryInventoryRecords("/repo", [null, undefined, {}, { path: 7 }])).toEqual(
     [],

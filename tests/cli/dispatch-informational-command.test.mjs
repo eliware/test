@@ -14,6 +14,9 @@ test("dispatches version and help commands", () => {
   expect(output[0]).toContain("tests/path.test.mjs or tests/path.spec.ts [-- Jest arguments]");
   expect(output[0]).toContain(".js, .jsx, .ts, .tsx, .mjs, .cjs, .mts, and .cts");
   expect(output[0]).toContain("forwarded to Jest");
+  expect(output[0]).toContain("mode arguments follow the mode or --");
+  expect(output[0]).toContain("--debug-timing is wrapper-only");
+  expect(output[0]).toContain("cannot follow --");
 });
 
 test("returns no result for validation commands", () => {

@@ -9,13 +9,24 @@ const stageRules = Object.freeze({
 export function validateRequiredStagePlan(checks, context, exemptions = new Set()) {
   if (context.focusedScope) return;
   const ids = new Set(checks.map(({ ruleId }) => ruleId));
+  const checksById = new Map(checks.map((check) => [check.ruleId, check]));
   const missing = [];
   for (const [flag, rules] of Object.entries(stageRules)) {
-    if (!context[flag] || rules.some((ruleId) => exemptions.has(ruleId))) continue;
+    if (!context[flag]) continue;
     if (flag === "executePack" && !context.packageJson?.eliware?.apply?.includes("npm-published"))
       continue;
-    if (!rules.some((ruleId) => ids.has(ruleId))) missing.push(`${flag} (${rules.join(", ")})`);
+    const owners = rules.filter((ruleId) => ids.has(ruleId) && !isExempt(ruleId));
+    if (owners.length === 0) missing.push(`${flag} (${rules.join(", ")})`);
   }
   if (missing.length > 0)
     throw new Error(`Aggregate validation stage checks are missing: ${missing.join("; ")}.`);
+
+  function isExempt(ruleId) {
+    let current = checksById.get(ruleId);
+    while (current) {
+      if (exemptions.has(current.ruleId) || exemptions.has(current.parentRuleId)) return true;
+      current = checksById.get(current.parentRuleId);
+    }
+    return exemptions.has(ruleId);
+  }
 }

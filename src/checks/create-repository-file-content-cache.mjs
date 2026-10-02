@@ -34,15 +34,15 @@ export function createRepositoryFileContentCache(root, read, stat = statPath) {
         current.content = stable.content;
         current.version = stable.version;
         current.pending = false;
-        cachedBytes += stable.content.byteLength;
+        cachedBytes += stable.content.byteLength - (previous?.content?.byteLength ?? 0);
         evictOldContent();
         return current.content;
       })
       .catch((error) => {
+        if (previous?.content) cachedBytes -= previous.content.byteLength;
         fileReads.delete(key);
         throw error;
       });
-    if (previous?.content) cachedBytes -= previous.content.byteLength;
     fileReads.set(key, current);
     return current.promise;
   }

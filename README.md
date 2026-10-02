@@ -79,6 +79,9 @@ npm run pack
 node bin/eliware-test.mjs --pack
 ```
 
+Package-content validation with `npm run pack` or `--pack` applies only when the
+repository selects the `npm-published` profile.
+
 `package.json` is the source of truth for the version in this checkout. The npm
 badge reports the latest version published in the public registry; it does not
 identify or verify the version in this checkout.

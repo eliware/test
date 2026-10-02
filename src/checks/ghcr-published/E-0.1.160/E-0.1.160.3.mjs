@@ -1,6 +1,6 @@
 import { fail, pass } from "../../check-result.mjs";
 import { readWorkflows } from "../read-workflows.mjs";
-import { hasUbuntuRunner } from "../has-ubuntu-runner.mjs";
+import { hasUbuntuRunner } from "../../has-ubuntu-runner.mjs";
 import { findValidationJobs } from "../find-validation-jobs.mjs";
 import { isPublicationWorkflow } from "../workflow-publication.mjs";
 
@@ -15,7 +15,7 @@ export async function run(context) {
     const validation = workflows.filter(
       (workflow) =>
         !isPublicationWorkflow(workflow) &&
-        findValidationJobs(workflow).some(({ job }) => hasUbuntuRunner(workflow, job)),
+        findValidationJobs(workflow).some(({ job }) => hasUbuntuRunner(job)),
     );
     const publication = workflows.filter(isPublicationWorkflow);
     if (validation.length === 0 || publication.length === 0)

@@ -40,25 +40,9 @@ test("refreshes a directory listing when its on-disk version changes", async () 
   await expect(read("src")).resolves.toEqual(["old"]);
   expect(read.getRevision()).toBe(0);
   await expect(read("src")).resolves.toEqual(["new"]);
+  expect(stat).toHaveBeenCalledTimes(4);
   expect(read.getRevision()).toBe(1);
   expect(read.getTrackedDirectories()).toEqual([join(root, "src")]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
-});
-
-test("refreshes a cached listing after one metadata read detects a version change", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
-  const stat = jest
-    .fn()
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(2n));
-  const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["new"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
-
-  await expect(read("src")).resolves.toEqual(["old"]);
-  await expect(read("src")).resolves.toEqual(["new"]);
-  expect(stat).toHaveBeenCalledTimes(4);
   expect(readDirectory).toHaveBeenCalledTimes(2);
 });
 
@@ -139,7 +123,7 @@ test("forced refresh retries after the pending read fails", async () => {
   await expect(refresh).resolves.toEqual(["retried"]);
 });
 
-test("uses millisecond timestamps when nanosecond metadata is unavailable", async () => {
+test("does not reuse cached listings when only coarse millisecond timestamps are available", async () => {
   const root = join(process.cwd(), "inventory-fixture");
   const metadataWithoutNanoseconds = (mtimeMs) => ({
     dev: 1n,
@@ -148,12 +132,24 @@ test("uses millisecond timestamps when nanosecond metadata is unavailable", asyn
     mtimeMs,
     ctimeMs: mtimeMs,
   });
+  const stat = jest.fn().mockResolvedValue(metadataWithoutNanoseconds(1));
+  const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["fresh"]);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
+
+  await expect(read("src")).resolves.toEqual(["old"]);
+  await expect(read("src")).resolves.toEqual(["fresh"]);
+  expect(readDirectory).toHaveBeenCalledTimes(2);
+});
+
+test("detects nanosecond changes within the same millisecond", async () => {
+  const root = join(process.cwd(), "inventory-fixture");
+  const sameMillisecond = (mtimeNs) => ({ ...metadata(mtimeNs), mtimeMs: 1, ctimeMs: 1 });
   const stat = jest
     .fn()
-    .mockResolvedValueOnce(metadataWithoutNanoseconds(1))
-    .mockResolvedValueOnce(metadataWithoutNanoseconds(1))
-    .mockResolvedValueOnce(metadataWithoutNanoseconds(2))
-    .mockResolvedValueOnce(metadataWithoutNanoseconds(2));
+    .mockResolvedValueOnce(sameMillisecond(1n))
+    .mockResolvedValueOnce(sameMillisecond(1n))
+    .mockResolvedValueOnce(sameMillisecond(2n))
+    .mockResolvedValueOnce(sameMillisecond(2n));
   const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["new"]);
   const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
 

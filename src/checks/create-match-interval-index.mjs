@@ -40,9 +40,10 @@ export function createMatchIntervalIndex() {
   function materialize(start, length) {
     const matches = [];
     matches.length = length + 1;
+    const orderedStarts = orderedMatchStarts.values;
     let index = orderedMatchStarts.lowerBound(start);
-    for (; index < orderedMatchStarts.values.length; index += 1) {
-      const matchStart = orderedMatchStarts.values[index];
+    for (; index < orderedStarts.length; index += 1) {
+      const matchStart = orderedStarts[index];
       const offset = matchStart - start;
       if (offset > length) break;
       const end = matchEndsByStart.get(matchStart);

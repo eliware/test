@@ -27,3 +27,10 @@ test("allows safe options while requiring their values", () => {
   expect(validatePackArguments(["--loglevel"])).toContain("requires a value");
   expect(validatePackArguments(["--loglevel", "--unknown"])).toContain("requires a value");
 });
+
+test("returns a stable diagnostic for malformed argument inputs", () => {
+  for (const args of [null, "--dry-run", {}, ["--dry-run", 1]])
+    expect(validatePackArguments(args)).toBe(
+      "Pack arguments must be provided as an array of strings.",
+    );
+});

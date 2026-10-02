@@ -1,5 +1,5 @@
 import { findValidationJobs } from "./find-validation-jobs.mjs";
-import { hasUbuntuRunner } from "./has-ubuntu-runner.mjs";
+import { hasUbuntuRunner } from "../has-ubuntu-runner.mjs";
 
 export function dependsOnUbuntuValidation(
   workflow,
@@ -11,5 +11,5 @@ export function dependsOnUbuntuValidation(
     : publicationJob.needs
       ? [publicationJob.needs]
       : [];
-  return validationJobs.some(({ id, job }) => hasUbuntuRunner(workflow, job) && needs.includes(id));
+  return validationJobs.some(({ id, job }) => hasUbuntuRunner(job) && needs.includes(id));
 }

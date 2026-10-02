@@ -9,9 +9,9 @@ function percentage(covered, total) {
 }
 
 function location(entry) {
-  return entry?.start?.line
-    ? `${entry.start.line}${entry.start.column ? `:${entry.start.column}` : ""}`
-    : "unknown";
+  const line = entry?.start?.line ?? entry?.line;
+  const column = entry?.start?.column;
+  return line ? `${line}${column ? `:${column}` : ""}` : "unknown";
 }
 
 export function fileGap(file, data, expectedShape = null) {
@@ -23,7 +23,15 @@ export function fileGap(file, data, expectedShape = null) {
     counts
       .map((count, index) =>
         count === 0
-          ? { location: location(data.branchMap?.[id]?.locations?.[index] ?? data.branchMap?.[id]) }
+          ? {
+              id,
+              path: index + 1,
+              type: data.branchMap?.[id]?.type,
+              location:
+                location(data.branchMap?.[id]?.locations?.[index]) !== "unknown"
+                  ? location(data.branchMap?.[id]?.locations?.[index])
+                  : location(data.branchMap?.[id]),
+            }
           : null,
       )
       .filter(Boolean),

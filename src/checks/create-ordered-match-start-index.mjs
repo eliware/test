@@ -1,34 +1,22 @@
+import { createBalancedNumericTree } from "./create-balanced-numeric-tree.mjs";
+
 export function createOrderedMatchStartIndex(isActive) {
-  const starts = [];
-  let head = 0;
+  const starts = createBalancedNumericTree();
 
   function insert(start) {
-    if (starts.length === head || start > starts.at(-1)) {
-      starts.push(start);
-      return;
-    }
-    const index = lowerBound(start);
-    starts.splice(index, 0, start);
-  }
-
-  function lowerBound(start) {
-    let low = head;
-    let high = starts.length;
-    while (low < high) {
-      const middle = Math.floor((low + high) / 2);
-      if (starts[middle] < start) low = middle + 1;
-      else high = middle;
-    }
-    return low;
+    starts.insert(start);
   }
 
   function discardInactive() {
-    while (head < starts.length && !isActive(starts[head])) head += 1;
-    if (head > 1024 && head * 2 >= starts.length) {
-      starts.splice(0, head);
-      head = 0;
-    }
+    while (starts.minimum() !== undefined && !isActive(starts.minimum())) starts.removeMinimum();
   }
 
-  return Object.freeze({ insert, lowerBound, discardInactive, values: starts });
+  return Object.freeze({
+    insert,
+    lowerBound: starts.lowerBound,
+    discardInactive,
+    get values() {
+      return starts.values();
+    },
+  });
 }

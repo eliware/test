@@ -57,6 +57,9 @@ test("requires the standard brand line, table of contents, and title placement",
       fixture().replace("## Table of Contents", "Intro text\n## Table of Contents"),
     ),
   ).toContain("without intervening content");
+  expect(
+    validateReadmeStructure(fixture().replace(`${brand}\n\n##`, `${brand}\nIntro text\n\n##`)),
+  ).toContain("without intervening content");
 });
 
 test("rejects missing, additional, or reordered sections", () => {

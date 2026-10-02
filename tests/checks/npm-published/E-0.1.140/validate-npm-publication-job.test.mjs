@@ -46,3 +46,20 @@ test("rejects publish steps before the release guard or with conditional toleran
     expect(validateNpmPublicationJob(conditional, conditional.document.jobs.publish)).toBe(false);
   }
 });
+
+test("rejects multiline scripts that append commands to npm publish", () => {
+  for (const run of [
+    "npm publish --provenance\necho unexpected command",
+    `npm publish --provenance && echo unexpected command`,
+  ]) {
+    const fixture = workflow();
+    fixture.document.jobs.publish.steps[1].run = run;
+    expect(validateNpmPublicationJob(fixture, fixture.document.jobs.publish)).toBe(false);
+  }
+});
+
+test("requires the release tag guard to occupy its entire run step", () => {
+  const fixture = workflow();
+  fixture.document.jobs.publish.steps[0].run = `${releaseTagGuard}\necho bypass`;
+  expect(validateNpmPublicationJob(fixture, fixture.document.jobs.publish)).toBe(false);
+});

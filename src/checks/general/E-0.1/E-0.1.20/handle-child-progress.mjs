@@ -17,16 +17,18 @@ export function createChildProgressHandler(options) {
     push(chunk) {
       const text = decoder.write(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
       if (options.resetOnAnyOutput && text.length > 0) options.resetProgressTimer();
-      // codescope ignore: marker-based progress is matched after partial chunks are joined to a complete line; split-marker behavior is covered by tests
-      const lines = `${pending}${text}`.split(/\r?\n/u);
-      const previousLineOverflowed = pendingOverflowed;
-      const nextPending = lines.pop();
-      for (const [index, line] of lines.entries()) {
-        if (!(index === 0 && previousLineOverflowed) && line.length <= maximumPendingLineLength)
-          report(line);
+      const lines = text.split(/\r?\n/u);
+      if (pendingOverflowed) {
+        if (lines.length === 1) return;
+        lines.shift();
+        pendingOverflowed = false;
+      } else {
+        lines[0] = pending + lines[0];
       }
+      const nextPending = lines.pop();
+      for (const line of lines) if (line.length <= maximumPendingLineLength) report(line);
       pendingOverflowed = nextPending.length > maximumPendingLineLength;
-      pending = nextPending.slice(0, maximumPendingLineLength);
+      pending = pendingOverflowed ? "" : nextPending;
     },
     flush() {
       const finalLine = pending + decoder.end();
