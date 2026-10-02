@@ -85,6 +85,14 @@ dependency it ships while keeping the consumer repository as Jest's working
 directory. Jest discovers the consumer's `package.json`, configuration, tests,
 and source files from that root.
 
+Each validation invocation creates `eliware-test.lock` in the repository root
+before running, and removes it when the process exits normally. A concurrent
+validation invocation exits immediately if that file already exists.
+Informational `--help` and `--version` commands do not run validation rules and
+do not acquire the lock. If a process is forcibly stopped and leaves the file
+behind, confirm no validation run is active, then remove the stale
+`eliware-test.lock` file before retrying. The file is ignored by Git.
+
 `npm run format` and `--format` mutate files; `npm run format:check` and
 `--format-check` only validate formatting. `--pack` validates the package
 contents without publishing it.

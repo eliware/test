@@ -8,12 +8,23 @@ import { writeValidationResults } from "./write-validation-results.mjs";
 import { normalizeCliError } from "./normalize-cli-error.mjs";
 import { formatExitCode } from "./format-exit-code.mjs";
 import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
+import { acquireValidationLock } from "./acquire-validation-lock.mjs";
+import { join } from "node:path";
 
 export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
+  let releaseLock;
   try {
-    const diagnosticOptions = readDiagnosticOptions(args);
     const informationalResult = dispatchInformationalCommand(args, write);
     if (informationalResult !== null) return informationalResult;
+    const lockPath = join(root, "eliware-test.lock");
+    releaseLock = await (options.acquireValidationLock ?? acquireValidationLock)(root);
+    if (!releaseLock) {
+      write(
+        `Cannot run eliware-test because the lock file exists: ${lockPath}. If no validation run is active, remove the stale lock file and retry.`,
+      );
+      return 18;
+    }
+    const diagnosticOptions = readDiagnosticOptions(args);
     const startedAt = Date.now();
     const timing = createStageTimer(
       args.includes("--debug-timing"),
@@ -50,5 +61,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
     const exitCode = normalizeCliError(error, write);
     write(formatExitCode(exitCode));
     return exitCode;
+  } finally {
+    await releaseLock?.();
   }
 }

@@ -9,6 +9,7 @@ const createValidationRunOptions = jest.fn();
 const writeValidationResults = jest.fn();
 const normalizeCliError = jest.fn();
 const formatExitCode = jest.fn();
+const acquireValidationLock = jest.fn();
 
 jest.unstable_mockModule("../../src/cli/read-diagnostic-options.mjs", () => ({
   readDiagnosticOptions,
@@ -31,6 +32,9 @@ jest.unstable_mockModule("../../src/cli/write-validation-results.mjs", () => ({
 }));
 jest.unstable_mockModule("../../src/cli/normalize-cli-error.mjs", () => ({ normalizeCliError }));
 jest.unstable_mockModule("../../src/cli/format-exit-code.mjs", () => ({ formatExitCode }));
+jest.unstable_mockModule("../../src/cli/acquire-validation-lock.mjs", () => ({
+  acquireValidationLock,
+}));
 
 const { runCli } = await import("../../src/cli/run-cli.mjs");
 const diagnosticOptions = { jestArgs: ["tests/sample.test.mjs"] };
@@ -52,6 +56,7 @@ function resetCli() {
   writeValidationResults.mockImplementation(() => {});
   normalizeCliError.mockReturnValue(18);
   formatExitCode.mockReturnValue("formatted exit code");
+  acquireValidationLock.mockResolvedValue(jest.fn());
 }
 
 beforeEach(resetCli);
@@ -63,9 +68,34 @@ test("returns informational command results before starting validation", async (
   await expect(runCli(["--version"], write, "/repo")).resolves.toBe(0);
 
   expect(dispatchInformationalCommand).toHaveBeenCalledWith(["--version"], write);
-  expect(readDiagnosticOptions).toHaveBeenCalledWith(["--version"]);
+  expect(acquireValidationLock).not.toHaveBeenCalled();
+  expect(readDiagnosticOptions).not.toHaveBeenCalled();
   expect(createStageTimer).not.toHaveBeenCalled();
   expect(runConventionStage).not.toHaveBeenCalled();
+});
+
+test("refuses to run when another validation process holds the repository lock", async () => {
+  acquireValidationLock.mockResolvedValueOnce(null);
+  const write = jest.fn();
+
+  await expect(runCli([], write, "/repo")).resolves.toBe(18);
+
+  expect(write).toHaveBeenCalledWith(
+    expect.stringMatching(
+      /^Cannot run eliware-test because the lock file exists: .*eliware-test\.lock\. If no validation run is active, remove the stale lock file and retry\.$/,
+    ),
+  );
+  expect(readDiagnosticOptions).not.toHaveBeenCalled();
+  expect(runConventionStage).not.toHaveBeenCalled();
+});
+
+test("releases the repository lock when validation completes", async () => {
+  const release = jest.fn();
+  acquireValidationLock.mockResolvedValueOnce(release);
+
+  await expect(runCli([], jest.fn(), "/repo")).resolves.toBe(0);
+
+  expect(release).toHaveBeenCalledTimes(1);
 });
 
 test("uses the default output writer for informational commands", async () => {
