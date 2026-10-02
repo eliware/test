@@ -22,7 +22,7 @@ test("redacts environment secrets from reporter messages", () => {
   expect(output).toEqual(["[test] name [REDACTED]\n"]);
 });
 
-test("limits reporter line and total output lengths", () => {
+test("limits reporter line and output length without writing partial lines", () => {
   const output = [];
   const report = createSafeReporterOutput("test", {
     write: (text) => output.push(text),
@@ -32,8 +32,9 @@ test("limits reporter line and total output lengths", () => {
   report("1234567890");
   report("abcdefghij");
   report("ignored");
-  expect(output).toEqual(["[test] 12345678\n", "[tes"]);
+  expect(output).toEqual(["[test] 12345678\n"]);
   expect(output.join("").length).toBeLessThanOrEqual(20);
+  expect(output.every((line) => line.endsWith("\n"))).toBe(true);
 });
 
 test("uses stderr when no reporter writer is injected", () => {

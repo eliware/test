@@ -139,10 +139,12 @@ test("caps total reporter output", () => {
   const stdoutOutput = [];
   const reporter = new JestProgressReporter({
     write: (text) => output.push(text),
-    maxOutputLength: 20,
+    maxOutputLength: 60,
   });
   reporter.onTestStart({ path: "tests/a.test.mjs" });
   reporter.onTestStart({ path: "tests/b.test.mjs" });
-  expect(output.join("").length).toBe(20);
+  expect(output).toHaveLength(1);
+  expect(output[0]).toMatch(/\n$/u);
+  expect(output.join("").length).toBeLessThanOrEqual(60);
   expect(stdoutOutput).toEqual([]);
 });

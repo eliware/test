@@ -19,7 +19,11 @@ export function createSafeReporterOutput(prefix, options = {}) {
     const safeMessage = redactProcessOutput(message, secrets)
       .replace(/[\r\n]+/gu, " ")
       .slice(0, maxLineLength);
-    const line = `[${prefix}] ${safeMessage}\n`.slice(0, remaining);
+    const line = `[${prefix}] ${safeMessage}\n`;
+    if (line.length > remaining) {
+      outputLength = maxOutputLength;
+      return;
+    }
     write(line);
     outputLength += line.length;
   };
