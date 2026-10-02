@@ -8,7 +8,10 @@ const { executeJestCheck } =
   await import("../../../../../src/checks/general/E-0.1/E-0.1.20/execute-jest-check.mjs");
 
 test("executes Jest and records its start time", async () => {
-  runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
+  runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
+    options.onStart();
+    return { code: 0, stdout: "ok", stderr: "" };
+  });
   const result = await executeJestCheck({ root: ".", jestArgs: [] });
   expect(result.result).toEqual(
     expect.objectContaining({ code: 0, startedAt: expect.any(Number) }),
@@ -25,7 +28,10 @@ test("preserves stderr timing JSON when stdout contains ordinary output", async 
 });
 
 test("defaults omitted Jest arguments to an empty list", async () => {
-  runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
+  runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
+    options.onStart();
+    return { code: 0, stdout: "ok", stderr: "" };
+  });
   await executeJestCheck({ root: "." });
   expect(runJest).toHaveBeenCalledWith(
     ".",

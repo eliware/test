@@ -16,6 +16,7 @@ export async function runJest(root, args, execute, options, removeCoverage = rm)
     (consumerRoot) => resolveJestCli(consumerRoot),
     options,
   );
+  options?.onStart?.();
   let result;
   try {
     result = await executePreparedJestRun(prepared, execute);

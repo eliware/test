@@ -6,6 +6,12 @@ export function inventoryPath(root, filePath) {
 
 export function inventoryDirectory(root, directory, errorMessage) {
   const base = relative(resolve(root), resolve(directory)).split(sep).join("/");
-  if (base === ".." || base.startsWith("../") || base.includes(":")) throw new Error(errorMessage);
+  if (
+    base === ".." ||
+    base.startsWith("../") ||
+    base.startsWith("//") ||
+    /^[A-Za-z]:\//u.test(base)
+  )
+    throw new Error(errorMessage);
   return base;
 }

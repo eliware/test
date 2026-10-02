@@ -14,4 +14,7 @@ test("accepts only matching pass or fail results", () => {
   expect(() =>
     assertCheckResult({ ruleId: "E-0.1.0", status: "skip", message: "" }, "E-0.1.0"),
   ).toThrow();
+  expect(() =>
+    assertCheckResult({ ruleId: "E-0.1.0", status: "fail", message: { detail: "bad" } }, "E-0.1.0"),
+  ).toThrow("Check E-0.1.0 returned an invalid result.");
 });

@@ -3,17 +3,16 @@ import { runChild } from "./run-child.mjs";
 import { createJestCheckOptions } from "./create-jest-check-options.mjs";
 
 export async function executeJestCheck(context) {
-  const startedAt = Date.now();
+  let startedAt;
   let timeoutDiagnostic;
   try {
-    const result = await runJest(
-      context.root,
-      context.jestArgs ?? [],
-      runChild,
-      createJestCheckOptions(context, (message) => {
-        timeoutDiagnostic = message;
-      }),
-    );
+    const options = createJestCheckOptions(context, (message) => {
+      timeoutDiagnostic = message;
+    });
+    options.onStart = () => {
+      startedAt = Date.now();
+    };
+    const result = await runJest(context.root, context.jestArgs ?? [], runChild, options);
     return { result: { ...result, startedAt }, timeoutDiagnostic };
   } catch (error) {
     return { error };

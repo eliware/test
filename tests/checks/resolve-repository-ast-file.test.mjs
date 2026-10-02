@@ -12,6 +12,9 @@ test("resolves repository-relative and absolute in-repository source paths", () 
     repositoryFile: "src/module.mjs",
     absoluteFile: join(root, "src/module.mjs"),
   });
+  expect(resolveRepositoryAstFile(root, "src/name:part.mjs")).toMatchObject({
+    repositoryFile: "src/name:part.mjs",
+  });
 });
 
 test("rejects relative and absolute source paths outside the repository", () => {

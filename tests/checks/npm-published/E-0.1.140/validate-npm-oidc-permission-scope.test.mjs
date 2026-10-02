@@ -37,6 +37,9 @@ test("rejects workflow-level write-all permissions", () => {
       [validator],
     ),
   ).toContain("scoped to the npm publication job");
+  expect(
+    validateNpmOidcPermissionScope({ document: { permissions: {} } }, [publisher], [validator]),
+  ).toContain("workflow-level permissions must be exactly contents: read");
 });
 
 test("requires explicit publishing permission and rejects token-based auth", () => {

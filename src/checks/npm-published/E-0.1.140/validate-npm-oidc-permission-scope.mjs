@@ -1,10 +1,13 @@
 import { hasNpmStaticCredentials } from "./has-npm-static-credentials.mjs";
+import { hasReadOnlyWorkflowPermissions } from "../../ghcr-published/expected-publication-permissions.mjs";
 
 export function validateNpmOidcPermissionScope(workflow, publicationJobs, validationJobs) {
   const failures = [];
   const workflowPermissions = workflow.document?.permissions ?? {};
-  if (workflowPermissions === "write-all" || workflowPermissions["id-token"] === "write")
-    failures.push("id-token: write must be scoped to the npm publication job.");
+  if (!hasReadOnlyWorkflowPermissions(workflowPermissions))
+    failures.push(
+      "id-token: write must be scoped to the npm publication job, and workflow-level permissions must be exactly contents: read.",
+    );
   const validationTokenJobs = validationJobs
     .filter(({ job }) => job.permissions?.["id-token"] === "write")
     .map(({ id }) => id);

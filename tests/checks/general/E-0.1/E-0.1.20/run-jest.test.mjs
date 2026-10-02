@@ -15,6 +15,22 @@ test("coordinates prepared command execution and returns the executor result", a
   expect(result.coverageDirectory).toBeUndefined();
 });
 
+test("starts the freshness clock after preparation and immediately before execution", async () => {
+  const events = [];
+  const result = await runJest(
+    process.cwd(),
+    [],
+    async () => {
+      events.push("execute");
+      return { code: 1, stdout: "failed", stderr: "" };
+    },
+    { onStart: () => events.push("start") },
+  );
+
+  expect(events).toEqual(["start", "execute"]);
+  expect(result.code).toBe(1);
+});
+
 test("does not read structured reports after a failed Jest process", async () => {
   const readReport = jest.fn();
   const result = await runJest(

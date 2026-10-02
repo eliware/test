@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { readRepositoryText } from "../../read-repository-text.mjs";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { resolveMarkdownLinkTarget } from "./resolve-markdown-link-target.mjs";
+import { parseMarkdownLinkReference } from "./parse-markdown-link-reference.mjs";
 import { hasMarkdownFragment } from "./validate-markdown-fragment.mjs";
 import { validateExternalDocumentationLink } from "./validate-external-documentation-link.mjs";
 
@@ -32,14 +33,14 @@ export async function validateMarkdownLinks(root, files, context) {
         failures.push(`Documentation link is invalid: ${reference} in ${relativeFile}.`);
         continue;
       }
-      const target = resolveMarkdownLinkTarget(root, relativeFile, reference);
+      const { path: pathReference, fragment } = parseMarkdownLinkReference(reference);
+      const target = resolveMarkdownLinkTarget(root, relativeFile, pathReference);
       if (!target) {
         failures.push(
           `Documentation link escapes the repository: ${reference} in ${relativeFile}.`,
         );
         continue;
       }
-      const [, fragment] = reference.split("#", 2);
       try {
         if (target.toLowerCase().endsWith(".md")) await readRepositoryText(context, target);
         else if (context?.repositoryInventory?.readBytes)

@@ -115,8 +115,10 @@ commands; no public ignore flags bypass them.
 The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
 repository or supported Node.js/Windows executable locations. Workflow parsing
 normalizes YAML 1.1 `true` keys and equivalent runner/input spellings before
-domain checks consume them. Structured references must resolve within the
-consumer repository; external repository paths are rejected.
+domain checks consume them. Structured references to local files must resolve
+within the consumer repository. Local paths that escape the repository are
+rejected; external URI references are handled by their URI scheme and are not
+resolved as repository files.
 Git-sensitive checks use Git
 metadata when available and retain filesystem discovery only for non-Git test
 fixtures.

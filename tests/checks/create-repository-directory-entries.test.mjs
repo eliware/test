@@ -54,12 +54,13 @@ test("projects indexed records and rebuilds the index when discovery changes", a
   expect(sourceEntries).toMatchObject([{ name: "index.mjs", path: "src/index.mjs" }]);
   expect(sourceEntries[0].isFile()).toBe(true);
   expect(sourceEntries[0].isDirectory()).toBe(false);
+  await expect(directoryEntries("/repo/src")).resolves.toBe(sourceEntries);
   current = [...initial, { path: "src/new.mjs", type: "file" }];
   await expect(directoryEntries("/repo/src")).resolves.toMatchObject([
     { name: "index.mjs", path: "src/index.mjs" },
     { name: "new.mjs", path: "src/new.mjs" },
   ]);
-  expect(discovery).toHaveBeenCalledTimes(3);
+  expect(discovery).toHaveBeenCalledTimes(4);
 });
 
 test("reads direct descendants of discovered generated directories", async () => {

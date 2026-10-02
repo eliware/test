@@ -14,6 +14,7 @@ export function createRepositoryDirectoryEntries({
 }) {
   let index;
   let indexedRecords;
+  let projectedEntries = new Map();
   return async function directoryEntries(directory) {
     const base = inventoryDirectory(
       root,
@@ -40,6 +41,7 @@ export function createRepositoryDirectoryEntries({
     if (indexedRecords !== records) {
       indexedRecords = records;
       index = createRepositoryEntryIndex(records);
+      projectedEntries = new Map();
     }
     const knownDirectory = index.knownDirectories.has(base);
     const baseParts = base ? base.split("/") : [];
@@ -66,11 +68,16 @@ export function createRepositoryDirectoryEntries({
       }
       children = await readGeneratedDirectoryRecords(base, readDirectory);
     }
-    return children.map((record) => ({
+    const key = base || ".";
+    const cached = projectedEntries.get(key);
+    if (cached?.records === children) return cached.entries;
+    const projected = children.map((record) => ({
       name: basename(record.path),
       path: record.path,
       isFile: () => record.type === "file",
       isDirectory: () => record.type === "directory",
     }));
+    projectedEntries.set(key, { records: children, entries: projected });
+    return projected;
   };
 }

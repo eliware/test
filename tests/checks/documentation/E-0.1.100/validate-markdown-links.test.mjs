@@ -21,6 +21,22 @@ test("coordinates local, fragment, non-Markdown, and external link validation", 
   }
 });
 
+test("resolves links with query strings and fragments as separate URL components", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-query-links-"));
+  try {
+    await mkdir(join(root, "docs"));
+    await writeFile(join(root, "docs", "guide.md"), "# Section");
+    await writeFile(
+      join(root, "README.md"),
+      "[Query and fragment](docs/guide.md?raw#section) [Query only](?raw)",
+    );
+
+    await expect(validateMarkdownLinks(root, ["README.md", "docs/guide.md"])).resolves.toBeNull();
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test.each([
   ["missing target", "[Missing][guide]\n[guide]: docs/nope.md", "does not resolve"],
   ["undefined reference", "[Undefined][missing]", "reference is undefined"],
