@@ -2,10 +2,26 @@
 
 ## 9.0.1 — 2026-10-01
 
+### Added
+
+- Serialize validation runs per repository with an atomic root-level
+  `eliware-test.lock`; concurrent validation attempts fail immediately. The
+  lock is removed when a run exits normally, ignored by Git, and documented
+  with recovery guidance for forced termination.
+
 ### Changed
 
-- Ignore files and directories whose names begin with `.agentx` at the
-  repository root or in any subdirectory.
+- Ignore and remove files or directories whose names begin with `.agentx` at
+  the repository root or in any subdirectory.
+- Derive the bundled check manifest's major/minor version from `package.json`
+  and use package metadata in version-related regression tests instead of
+  hard-coded release numbers.
+
+### Fixed
+
+- Count declared dependency binaries invoked from npm scripts, Knit deployment
+  commands (including local `node_modules/.bin` paths), and `.knit/*.mjs`
+  validation files as used. References in GitHub workflows alone do not count.
 
 ## 9.0.0 — 2026-10-01
 
