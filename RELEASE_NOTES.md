@@ -11,6 +11,10 @@
 
 ### Changed
 
+- Refactored validation modules around focused responsibilities for repository
+  inventory, bounded secret matching, documentation traversal, child-process
+  handling, Windows process-tree termination, and Jest report attachment, with
+  mirrored tests for the extracted helpers.
 - Ignore and remove files or directories whose names begin with `.agentx` at
   the repository root or in any subdirectory.
 - Derive the bundled check manifest's major/minor version from `package.json`
