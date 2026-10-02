@@ -17,12 +17,17 @@ test("selects the platform npm executable or npm exec path", () => {
     "C:\\node.exe",
     ["C:\\node_modules\\npm\\bin\\npm-cli.js"],
   ]);
-  expect(npmCommand("win32", "C:\\npm\\npm-cli.js", "C:\\node.exe", () => true)).toEqual([
-    "C:\\node.exe",
-    ["C:\\npm\\npm-cli.js"],
-  ]);
   expect(
-    npmCommand("win32", "\\\\build-share\\tools\\npm-cli.js", "C:\\node.exe", () => true),
+    npmCommand("win32", "C:\\npm\\npm-cli.js", "C:\\node.exe", () => true, "C:\\repo"),
+  ).toEqual(["C:\\node.exe", ["C:\\npm\\npm-cli.js"]]);
+  expect(
+    npmCommand(
+      "win32",
+      "\\\\build-share\\tools\\npm-cli.js",
+      "C:\\node.exe",
+      () => true,
+      "C:\\repo",
+    ),
   ).toEqual(["C:\\node.exe", ["\\\\build-share\\tools\\npm-cli.js"]]);
   expect(
     npmCommand("win32", "C:relative\\npm-cli.js", "C:\\node.exe", () => true, "C:\\repo"),
@@ -33,6 +38,7 @@ test("selects the platform npm executable or npm exec path", () => {
       "/usr/local/npm-cli.js",
       "C:\\node.exe",
       (path) => path === "C:\\node_modules\\npm\\bin\\npm-cli.js",
+      "C:\\repo",
     ),
   ).toEqual(["C:\\node.exe", ["C:\\node_modules\\npm\\bin\\npm-cli.js"]]);
   expect(

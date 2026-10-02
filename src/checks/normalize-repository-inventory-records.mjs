@@ -9,7 +9,7 @@ export function normalizeRepositoryInventoryRecords(root, records) {
     // codescope ignore: A POSIX-rooted input cannot be contained by a Windows root; Windows UNC paths use backslashes.
     if (windowsRoot && record.path.startsWith("/")) return [];
     if (windowsRoot && /^[A-Za-z]:(?![\\/])/u.test(record.path)) return [];
-    if (!windowsRoot && win32.isAbsolute(record.path)) return [];
+    if (!windowsRoot && /^(?:[A-Za-z]:[\\/]|\\\\)/u.test(record.path)) return [];
     const path = pathApi
       .relative(repositoryRoot, pathApi.resolve(repositoryRoot, record.path))
       .split(pathApi.sep)

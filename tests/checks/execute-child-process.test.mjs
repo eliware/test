@@ -59,7 +59,7 @@ test("redacts asynchronous child errors and captured output", async () => {
 
 test("keeps child error diagnostics visible after captured output reaches its byte limit", async () => {
   const child = childProcess();
-  const promise = execute("node", [], {}, () => child);
+  const promise = execute("node", [], { env: {} }, () => child);
   child.stdout.emit("data", "x".repeat(100_000));
   child.emit("error", new Error("actionable failure"));
   await expect(promise).rejects.toMatchObject({
