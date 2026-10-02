@@ -1,14 +1,15 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { parse } from "yaml";
 import { validateDirectiveTree } from "./validate-directive-tree.mjs";
 import { validateDirectiveRecords } from "./validate-directive-records.mjs";
 
-async function collectJsonFiles(directory, root = directory) {
+async function collectYamlFiles(directory, root = directory) {
   const files = [];
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
-    if (entry.isDirectory()) files.push(...(await collectJsonFiles(path, root)));
-    else if (entry.isFile() && entry.name.endsWith(".json"))
+    if (entry.isDirectory()) files.push(...(await collectYamlFiles(path, root)));
+    else if (entry.isFile() && entry.name.endsWith(".yaml"))
       files.push(path.slice(root.length + 1));
   }
   return files;
@@ -45,18 +46,18 @@ function validateDocument(document, name) {
 export async function validateSpecificationDirectiveDocuments(root, inventory = null) {
   const directory = join(root, "specs");
   const files = inventory
-    ? await inventory.documentationFiles({ directory, predicate: (name) => name.endsWith(".json") })
-    : await collectJsonFiles(directory);
+    ? await inventory.documentationFiles({ directory, predicate: (name) => name.endsWith(".yaml") })
+    : await collectYamlFiles(directory);
   const errors = [];
   for (const relativeFile of files) {
     try {
       const path = join(directory, relativeFile);
       const document = inventory
-        ? await inventory.readParsed(path, "json", JSON.parse)
-        : JSON.parse(await readFile(path, "utf8"));
+        ? await inventory.readParsed(path, "yaml-document", parse)
+        : parse(await readFile(path, "utf8"));
       errors.push(...validateDocument(document, relativeFile));
     } catch (error) {
-      errors.push(`${relativeFile} could not be read as JSON: ${error.message}`);
+      errors.push(`${relativeFile} could not be read as YAML: ${error.message}`);
     }
   }
   return errors;

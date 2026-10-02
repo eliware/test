@@ -1,7 +1,6 @@
 import { isSupportedWorkflowStep } from "./is-supported-workflow-step.mjs";
+import { isProhibitedPublishCommand } from "./is-prohibited-publish-command.mjs";
 
-const safeReportingCommand =
-  /^(?:echo|printf)(?:[ \t]+(?:"[^"`$;&|<>\r\n]*"|'[^'$`;|&<>\r\n]*'|[\w./:@=-]+))*$/u;
 export function validateWorkflowPostTestCommands(
   name,
   commands,
@@ -14,11 +13,14 @@ export function validateWorkflowPostTestCommands(
     steps !== null &&
     (!Array.isArray(steps) ||
       steps.some((step, index) => index > testIndex && !isSupportedWorkflowStep(step)));
-  const invalidReporting = commands.some(({ command, index, step }, position) => {
+  const invalidCommand = commands.some(({ command, index, step }, position) => {
     const originalIndex = step ? workflowSteps.indexOf(step) : (index ?? position);
+    if (originalIndex <= testIndex) return false;
     return (
-      originalIndex > testIndex &&
-      (/[\\<>]/u.test(command) || /[\r\n]/u.test(command) || !safeReportingCommand.test(command))
+      isProhibitedPublishCommand(command) ||
+      step?.if !== undefined ||
+      step?.["continue-on-error"] === true ||
+      step?.continueOnError === true
     );
   });
   const invalidAction = workflowSteps.some((step, index) => {
@@ -29,8 +31,8 @@ export function validateWorkflowPostTestCommands(
       (!approved || step["continue-on-error"] === true || step.continueOnError === true)
     );
   });
-  return invalidStepShape || invalidReporting || invalidAction
-    ? `${name} may only run reporting commands after npm test or approved reporting actions.`
+  return invalidStepShape || invalidCommand || invalidAction
+    ? `${name} may not run prohibited publishing commands after npm test or use unsupported step forms.`
     : null;
 }
 

@@ -16,13 +16,13 @@ const catalog = {
   profiles: {
     general: {
       profile: "general",
-      document: "general.json",
+      document: "general.yaml",
       version: conventionVersion,
       extends: [],
     },
     application: {
       profile: "application",
-      document: "application.json",
+      document: "application.yaml",
       version: conventionVersion,
       extends: [],
     },

@@ -56,14 +56,14 @@ test("reports missing workspace links and optional structured-record links", asy
   );
   await writeFile(join(root, "runbooks", "README.md"), "deploy.json#id=deploy");
   await mkdir(join(root, "specs"));
-  await writeFile(join(root, "specs", "directives.json"), "{}");
+  await writeFile(join(root, "specs", "directives.yaml"), "{}");
   await expect(run({ root })).resolves.toEqual(
     expect.objectContaining({
       status: "fail",
-      message: "Workspace README.md must link specs/directives.json.",
+      message: "Workspace README.md must link specs/directives.yaml.",
     }),
   );
-  await writeFile(join(root, "README.md"), "runbooks/README.md specs/directives.json");
+  await writeFile(join(root, "README.md"), "runbooks/README.md specs/directives.yaml");
   await expect(run({ root })).resolves.toEqual({
     ruleId: "A-0.1.110.3",
     status: "pass",

@@ -10,7 +10,7 @@ test("builds profile applicability and complete directive records", () => {
   const catalog = buildProfileCatalog(
     [
       {
-        source: "general.json",
+        source: "general.yaml",
         document: {
           version: conventionVersion,
           requires: [],
@@ -39,7 +39,7 @@ test("builds profile applicability and complete directive records", () => {
   const withDependency = buildProfileCatalog(
     [
       {
-        source: "general.json",
+        source: "general.yaml",
         document: {
           version: conventionVersion,
           requires: [],
@@ -47,7 +47,7 @@ test("builds profile applicability and complete directive records", () => {
         },
       },
       {
-        source: "application.json",
+        source: "application.yaml",
         document: {
           version: conventionVersion,
           requires: [],
@@ -55,7 +55,7 @@ test("builds profile applicability and complete directive records", () => {
         },
       },
       {
-        source: "cli.json",
+        source: "cli.yaml",
         document: {
           version: conventionVersion,
           requires: ["application"],
@@ -71,7 +71,7 @@ test("builds profile applicability and complete directive records", () => {
 test("rejects profile documents without directives", () => {
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.json", document: { version: conventionVersion } }],
+      [{ source: "general.yaml", document: { version: conventionVersion } }],
       conventionVersion,
     ),
   ).toThrow("no directive list");
@@ -81,7 +81,7 @@ test("requires every profile document to declare a valid dependency list", () =>
   const directives = [{ id: "E-0.1", dos: ["Do."], donts: ["Do not."] }];
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.json", document: { version: conventionVersion, directives } }],
+      [{ source: "general.yaml", document: { version: conventionVersion, directives } }],
       conventionVersion,
     ),
   ).toThrow("invalid requires list");
@@ -90,7 +90,7 @@ test("requires every profile document to declare a valid dependency list", () =>
       buildProfileCatalog(
         [
           {
-            source: "general.json",
+            source: "general.yaml",
             document: { version: conventionVersion, requires, directives },
           },
         ],
@@ -105,22 +105,22 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
   const document = { version: conventionVersion, requires: [], directives: [directive] };
   expect(() => buildProfileCatalog([], conventionVersion)).toThrow("cannot be empty");
   expect(() =>
-    buildProfileCatalog([{ source: "../general.json", document }], conventionVersion),
+    buildProfileCatalog([{ source: "../general.yaml", document }], conventionVersion),
   ).toThrow("invalid name");
   expect(() =>
-    buildProfileCatalog([{ source: "Invalid Name.json", document }], conventionVersion),
+    buildProfileCatalog([{ source: "Invalid Name.yaml", document }], conventionVersion),
   ).toThrow("invalid name");
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.json", document: { ...document, version: otherConventionVersion } }],
+      [{ source: "general.yaml", document: { ...document, version: otherConventionVersion } }],
       conventionVersion,
     ),
   ).toThrow(`must match Convention v${conventionVersion}`);
   expect(() =>
     buildProfileCatalog(
       [
-        { source: "general.json", document },
-        { source: "general.json", document },
+        { source: "general.yaml", document },
+        { source: "general.yaml", document },
       ],
       conventionVersion,
     ),
@@ -128,8 +128,8 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
   expect(() =>
     buildProfileCatalog(
       [
-        { source: "general.json", document },
-        { source: "application.json", document },
+        { source: "general.yaml", document },
+        { source: "application.yaml", document },
       ],
       conventionVersion,
     ),
@@ -138,7 +138,7 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
     buildProfileCatalog(
       [
         {
-          source: "general.json",
+          source: "general.yaml",
           document: { version: conventionVersion, directives: [{ ...directive, examples: {} }] },
         },
       ],
@@ -147,13 +147,13 @@ test("rejects invalid names, versions, duplicate identifiers, and malformed dire
   ).toThrow("malformed directive");
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.json", document: { ...document, requires: ["missing"] } }],
+      [{ source: "general.yaml", document: { ...document, requires: ["missing"] } }],
       conventionVersion,
     ),
   ).toThrow("requires unknown profiles");
   expect(() =>
     buildProfileCatalog(
-      [{ source: "general.json", document: { ...document, requires: ["general"] } }],
+      [{ source: "general.yaml", document: { ...document, requires: ["general"] } }],
       conventionVersion,
     ),
   ).toThrow("invalid requires list");

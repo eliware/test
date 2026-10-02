@@ -1,6 +1,15 @@
 # Release Notes
 
-## 9.0.1 — 2026-10-01
+## 10.0.0 — 2026-10-02
+
+### Breaking changes
+
+- Advance the package and convention set to v10. Replace JSON specification
+  documents with side-by-side YAML documents and make the YAML convention
+  files the maintained source for profile requirements.
+- Derive required README headings from the structured heading table in
+  `specs/conventions/general.yaml`. Enforce the exact package title, canonical
+  badges, homepage and `.git` repository links, and Discord support block.
 
 ### Added
 
@@ -11,6 +20,13 @@
 
 ### Changed
 
+- Require GitHub CI command order `npm ci`, then `npm test`, and Knit command
+  order `git pull --ff-only origin main`, `npm ci`, then `npm test`. Permit
+  repository-specific commands after those sequences and apply a best-effort
+  denylist for npm publication and GHCR image publishing; command purpose and
+  repository scope remain review responsibilities.
+- Read convention profiles and directive specifications from YAML, including
+  the updated specs index and YAML-specific directive checks.
 - Refactored validation modules around focused responsibilities for repository
   inventory, bounded secret matching, documentation traversal, child-process
   handling, Windows process-tree termination, and Jest report attachment, with

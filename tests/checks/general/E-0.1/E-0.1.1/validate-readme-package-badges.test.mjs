@@ -2,63 +2,58 @@ import { expect, test } from "@jest/globals";
 import { validateReadmePackageBadges } from "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-package-badges.mjs";
 
 const heading =
-  "## @eliware/fixture [![npm version](https://img.shields.io/npm/v/@eliware/fixture.svg)](https://www.npmjs.com/package/@eliware/fixture) [![license](https://img.shields.io/github/license/eliware/fixture.svg)](LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yml)";
-const metadata = { name: "@eliware/fixture", eliware: { apply: ["npm-published"] } };
+  "## @eliware/fixture [![npm](https://img.shields.io/npm/v/@eliware/fixture)](https://www.npmjs.com/package/@eliware/fixture) [![License](https://img.shields.io/github/license/eliware/fixture)](https://github.com/eliware/fixture/blob/main/LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yml)";
+const metadata = {
+  name: "@eliware/fixture",
+  repository: "git+https://github.com/eliware/fixture.git",
+  eliware: { apply: ["npm-published"] },
+};
 
-test("accepts required package identity and badges", () => {
+test("accepts the exact package title and canonical applicable badges", () => {
   expect(validateReadmePackageBadges(heading, metadata)).toBeNull();
+  const nonPublishedHeading = heading.replace(
+    /^## @eliware\/fixture \[!\[npm\][^ ]+ /u,
+    "## @eliware/fixture ",
+  );
   expect(
-    validateReadmePackageBadges(
-      heading.replace(/ \[!\[npm version\][^\n]+?\)(?= \[!\[license\])/u, ""),
-    ),
+    validateReadmePackageBadges(nonPublishedHeading, {
+      ...metadata,
+      eliware: { apply: ["private"] },
+    }),
   ).toBeNull();
 });
 
-test("requires the package heading and public npm badge to match package metadata", () => {
-  expect(validateReadmePackageBadges("## Fixture", metadata)).toContain("package heading");
-  expect(
-    validateReadmePackageBadges(
-      heading.replace("/package/@eliware/fixture", "/package/wrong"),
-      metadata,
-    ),
-  ).toContain("npm version badge");
-});
-
-test("rejects npm badges unless the npm-published profile is applied", () => {
-  expect(
-    validateReadmePackageBadges(heading, {
-      name: "@eliware/fixture",
-      private: true,
-      eliware: { apply: ["private"] },
-    }),
-  ).toContain("do not apply the npm-published profile");
-  expect(
-    validateReadmePackageBadges(heading, {
-      name: "@eliware/fixture",
-      publishConfig: { access: "restricted" },
-    }),
-  ).toContain("do not apply the npm-published profile");
-  expect(
-    validateReadmePackageBadges(heading, {
-      name: "@eliware/fixture",
-      publishConfig: { access: "public" },
-    }),
-  ).toContain("do not apply the npm-published profile");
-});
-
-test("requires the license and CI badges", () => {
-  expect(
-    validateReadmePackageBadges(heading.replace(/ \[!\[license\][^\n]+/u, ""), metadata),
-  ).toContain("license badge");
-  expect(validateReadmePackageBadges(heading.replace(/ \[!\[CI\][^\n]+/u, ""), metadata)).toContain(
-    "ci.yml workflow",
+test("requires package identity and a first level-two title", () => {
+  expect(validateReadmePackageBadges(heading)).toContain("package.json.name");
+  expect(validateReadmePackageBadges(heading, {})).toContain("package.json.name");
+  expect(validateReadmePackageBadges(heading, { name: 42 })).toContain("package.json.name");
+  expect(validateReadmePackageBadges(heading, { name: "" })).toContain("package.json.name");
+  expect(validateReadmePackageBadges("README without a title", metadata)).toContain(
+    "standard package heading",
   );
 });
 
-test.each([
-  ["legacy workflow badge", "nodejs.yml"],
-  ["other workflow badge", "publication.yml"],
-])("rejects a CI badge that does not use ci.yml (%s)", (_description, workflow) => {
-  const nonCanonicalHeading = heading.replaceAll("ci.yml", workflow);
-  expect(validateReadmePackageBadges(nonCanonicalHeading, metadata)).toContain("ci.yml workflow");
+test("rejects noncanonical title and badge text, order, images, or targets", () => {
+  for (const changed of [
+    heading.replace("## @eliware/fixture", "## @eliware/fixture extra"),
+    heading.replace("img.shields.io/github/license/eliware/fixture", "img.shields.io/wrong"),
+    heading.replace("blob/main/LICENSE", "LICENSE"),
+    heading.replace("actions/workflows/ci.yml/badge.svg", "workflows/other.yml/badge.svg"),
+    heading.replace("npm/v/@eliware/fixture", "npm/v/other"),
+    heading.replace("[![License]", "[![license]"),
+  ]) {
+    expect(validateReadmePackageBadges(changed, metadata)).toContain("exactly match");
+  }
+});
+
+test("rejects invalid repository metadata for canonical badge targets", () => {
+  expect(
+    validateReadmePackageBadges(heading, { ...metadata, repository: "ssh://invalid/repo" }),
+  ).toContain("valid GitHub repository URL");
+  expect(
+    validateReadmePackageBadges(heading, {
+      ...metadata,
+      repository: { url: "https://github.com/eliware/fixture" },
+    }),
+  ).toBeNull();
 });

@@ -1,0 +1,28 @@
+version: "10.0"
+description: Applies to repositories containing Discord application code.
+requires:
+  - application
+directives:
+  - id: E-0.1.70
+    dos:
+      - These conventions apply to repositories containing Discord application code.
+      - Discord application repositories must explicitly list the application and discord profile names in package.json.eliware.apply; their rules are defined in application.yaml and discord.yaml.
+    donts:
+      - Discord application repositories must not omit the application profile or applicable Discord requirements.
+    directives:
+      - id: A-0.1.70.0
+        dos:
+          - Every Discord application repository must extend the application AGENTS.md requirements with applicable Discord guidance.
+        donts:
+          - A Discord application repository must not omit AGENTS.md.
+        directives:
+          - id: A-0.1.70.0.1
+            dos:
+              - "After the seven general AGENTS.md headings, add a ## Discord section. Document Discord intents, commands, events, required permissions, runtime configuration, credential handling, lifecycle, and applicable validation commands."
+            donts:
+              - AGENTS.md must not leave required Discord permissions or operational validation undefined.
+      - id: A-0.1.70.2
+        dos:
+          - Under the Commands, Events, Intents and permissions, and Operations headings assigned to discord by general.yaml, document Discord-specific behavior and safe startup/shutdown and deployment examples when supported. The shared Operations heading contains requirements from every applied profile that maps to it. Include headings in the Table of Contents as required by general.yaml.
+        donts:
+          - Do not publish bot credentials, imply permissions the bot does not have, or provide startup/deployment instructions that expose a live bot unintentionally.

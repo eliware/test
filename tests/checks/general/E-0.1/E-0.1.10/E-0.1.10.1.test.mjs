@@ -42,11 +42,29 @@ test("validates the repository Knit deployment command list", async () => {
 });
 
 test("allows repository-specific commands after npm test", async () => {
-  const contents = configuration([[...requiredCommands, "node .knit/check-gitops-state.mjs"]]);
+  const contents = configuration([
+    [
+      ...requiredCommands,
+      "node .knit/check-gitops-state.mjs",
+      "custom command --with-shell | syntax",
+    ],
+  ]);
   await withConfiguration(contents, async (root) => {
     await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
   });
 });
+
+test.each(["npm publish", "docker push ghcr.io/eliware/example:latest"])(
+  "rejects a prohibited publishing command after npm test: %s",
+  async (command) => {
+    await withConfiguration(configuration([[...requiredCommands, command]]), async (root) => {
+      await expect(run({ root })).resolves.toMatchObject({
+        status: "fail",
+        message: expect.stringContaining("publishing command"),
+      });
+    });
+  },
+);
 
 test("requires the command sequence in every deployment list", async () => {
   const contents = configuration([requiredCommands, ["npm ci", ...requiredCommands.slice(1)]]);

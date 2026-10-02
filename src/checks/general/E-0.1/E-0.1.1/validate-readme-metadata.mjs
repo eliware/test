@@ -18,7 +18,6 @@ export function validateReadmeMetadata(readme, packageJson = {}, sections) {
   const metadata = [
     [packageJson.description, "project description"],
     [author, "author"],
-    [repository, "repository URL"],
     [packageJson.license, "license"],
   ];
   const missingMetadata = metadata
@@ -35,7 +34,9 @@ export function validateReadmeMetadata(readme, packageJson = {}, sections) {
   const canonicalRepositoryUrl = normalizeRepositoryUrl(repository);
   if (
     !canonicalRepositoryUrl ||
-    !readSection(readme, "Links", sections).includes(`](${canonicalRepositoryUrl})`.toLowerCase())
+    !readSection(readme, "Links", sections).includes(
+      `](${canonicalRepositoryUrl}.git)`.toLowerCase(),
+    )
   )
     return "README.md Links section must link the package.json repository URL in canonical HTTPS form.";
   return null;

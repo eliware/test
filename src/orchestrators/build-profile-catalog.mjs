@@ -37,10 +37,10 @@ export function buildProfileCatalog(documents, expectedVersion) {
   }
   const catalog = { version: expectedVersion, profiles: {}, directives: {}, rules: {} };
   for (const { source, document } of documents) {
-    if (typeof source !== "string" || basename(source) !== source || !source.endsWith(".json")) {
+    if (typeof source !== "string" || basename(source) !== source || !source.endsWith(".yaml")) {
       throw new Error(`Bundled convention profile ${source} has an invalid name.`);
     }
-    const profile = basename(source, ".json");
+    const profile = basename(source, ".yaml");
     if (!/^[a-z0-9-]+$/u.test(profile)) {
       throw new Error(`Bundled convention profile ${source} has an invalid name.`);
     }

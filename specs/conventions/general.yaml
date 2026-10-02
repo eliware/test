@@ -1,0 +1,559 @@
+version: "10.0"
+description: Applies to every @eliware/* repository.
+requires: []
+directives:
+  - id: E-0.1
+    dos:
+      - These conventions apply to every @eliware/* repository. Within this profile, 'every repository' and 'repository' refer to a repository applying general unless a rule explicitly narrows or broadens that scope.
+      - In convention rules, must states a requirement, must not states a prohibition, and may grants permission; may does not make a requirement optional. Conditional terms such as when applicable or when supported require the repository owner to determine applicability from documented behavior or metadata, with human review recording a rationale when the decision is not mechanically verifiable.
+    donts:
+      - Do not apply this profile to repositories outside the @eliware/* namespace.
+    directives:
+      - id: E-0.1.0
+        dos:
+          - "Every maintained repository must contain a root AGENTS.md with the title # AGENTS.md followed by the exact general headings, in order: ## Project, ## Scope and boundaries, ## Layout, ## Development, ## Validation, ## Security, and ## Changes."
+          - AGENTS.md must identify the repository and purpose, define scope and boundaries, explain the important layout, state development and validation expectations, define security rules, and state change/release authorization.
+          - "Keep the seven general AGENTS.md sections in the required order. Append applicable profile sections after ## Changes in this canonical order, omitting profiles that do not apply: application, cli, discord, mcp-server, web, library, infrastructure, workspace, documentation, npm-published, ghcr-published, private. The order of entries in package.json.eliware.apply determines applicability only and must not change document order. Append repository-specific exception, subdirectory, or role sections after all profile sections only when their exact heading and purpose are declared in a repository-owned specification."
+        donts:
+          - Do not turn AGENTS.md into a second README, policy registry, release history, or implementation specification.
+          - Do not include credentials, private machine paths, stale commands, or unapproved instructions that broaden scope or change external state.
+          - Do not replace the required general headings with differently named headings, place profile-specific material before the general baseline, reorder profile sections based on package.json.eliware.apply ordering, or add undeclared repository-specific sections.
+        examples:
+          - purpose: Required general AGENTS.md shape
+            markdown: |-
+              # AGENTS.md
+
+              ## Project
+
+              ## Scope and boundaries
+
+              ## Layout
+
+              ## Development
+
+              ## Validation
+
+              ## Security
+
+              ## Changes
+        directives:
+          - id: A-0.1.0.0
+            dos:
+              - AGENTS.md must identify the repository and its purpose.
+            donts:
+              - Do not use a generic or copied identity that leaves the repository name or purpose unclear.
+          - id: A-0.1.0.1
+            dos:
+              - AGENTS.md must state the repository scope and important boundaries.
+            donts:
+              - Do not leave ownership, included work, or excluded work ambiguous in AGENTS.md.
+          - id: A-0.1.0.2
+            dos:
+              - AGENTS.md must identify which instructions apply repository-wide and which apply to subdirectories.
+            donts:
+              - Do not place subdirectory-only instructions in repository-wide scope or leave inherited instruction scope undefined.
+          - id: A-0.1.0.3
+            dos:
+              - AGENTS.md must tell contributors to read README.md, AGENTS.md, and applicable documentation before changing files.
+            donts:
+              - Do not edit files before reading the repository instructions and the documentation that governs the requested change.
+          - id: A-0.1.0.4
+            dos:
+              - AGENTS.md must list the repository's applicable validation commands.
+            donts:
+              - Do not claim a repository is validated when AGENTS.md omits a command required for its repository type.
+          - id: A-0.1.0.6
+            dos:
+              - AGENTS.md must state applicable security and secret-handling rules.
+            donts:
+              - Do not leave contributors without explicit handling rules for secrets, credentials, private data, or runtime state.
+          - id: A-0.1.0.7
+            dos:
+              - AGENTS.md may document project-specific instructions and implementation choices that comply with applicable conventions. It does not waive any convention ID or validation stage.
+            donts:
+              - Do not use AGENTS.md to waive a convention ID or validation stage.
+          - id: A-0.1.0.8
+            dos:
+              - AGENTS.md instructions must be actionable, current, and concise.
+            donts:
+              - Do not leave stale or vague instructions that can cause an agent to choose an unsafe or unauthorized action.
+          - id: A-0.1.0.9
+            dos:
+              - AGENTS.md must keep credentials, secrets, and private machine-specific paths out of its contents.
+            donts:
+              - Do not place credentials, secrets, or private machine-specific paths in AGENTS.md; reference an authorized secure source instead.
+          - id: A-0.1.0.10
+            dos:
+              - Project-specific rules may add requirements without weakening shared rules unless authorized.
+            donts:
+              - Do not use project-specific instructions to weaken, bypass, or silently reinterpret shared rules without authorization.
+          - id: A-0.1.0.11
+            dos:
+              - AGENTS.md must state required files and structure when those requirements apply to the repository type.
+            donts:
+              - Do not impose library, application, documentation, infrastructure, or workspace files on a repository type to which they do not apply.
+          - id: A-0.1.0.12
+            dos:
+              - AGENTS.md Development guidance must define single responsibility as one cohesive purpose and one reason to change; state that business-logic modules and coordinators are valid, including coordinators of coordinators, when each module does only its own responsibility; direct every distinct new responsibility into a focused submodule wired through its owner instead of adding it to an existing module; require contributors to refactor mixed responsibilities they notice during ordinary review; and state that line counts do not establish single responsibility or permit mixing responsibilities below any applicable blocking maxima.
+            donts:
+              - Do not let compliance with line counts or applicable maxima excuse mixed responsibilities, add new responsibilities to existing modules for convenience, or defer an evident responsibility split found during review.
+      - id: E-0.1.2
+        dos:
+          - Every repository must contain README.md at its root.
+          - Every repository must contain specs/README.md as the index for its directives and repository-specific specification records.
+        donts:
+          - Do not mark a repository complete when its root README.md or required specs/README.md index is missing.
+          - Do not create README.md files inside configuration directories such as .knit/.
+      - id: E-0.1.1
+        dos:
+          - Every repository must contain a README.md file describing its purpose under Features and its intended use under Usage; a dedicated Purpose heading is not required.
+        donts:
+          - Do not mark a repository complete or hand it off while the root README.md is missing or does not identify its purpose and use.
+        directives:
+          - id: E-0.1.1.0
+            dos:
+              - "Unless a rule states otherwise, 'repository' means a repository that explicitly applies the general profile. Every such repository README must use this exact structure: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; the general headings from the canonical README heading table with applicable profile headings inserted after Security; then Support, License, and Links as the final three top-level headings in that order. The CI badge must use and link to the canonical .github/workflows/ci.yml workflow. Use the canonical license badge and target and, only for public npm packages, the canonical npm badge and package target shown in examples."
+              - The README must use the exact Eliware logo header and Discord support block shown in this directive's examples, and link the repository LICENSE from License.
+              - Build the README section list from the canonical README heading table and every profile explicitly listed in package.json.eliware.apply. The table in this rule's examples is the sole source of required README headings and their order; profile rules define the content required under those headings. Append mapped profile headings after Security and before Support, regardless of package.json array order. Omit profiles that do not apply. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. For example, application and MCP-server profiles both require Operations; place their distinct required content in one Operations section at the first profile position. Profiles mapped to no headings add no sections. Do not merge sections with different headings merely because their topics overlap.
+              - For repositories with package.json, the README title text must exactly equal package.json.name. Put applicable badges adjacent to the title as separate Markdown links; badge text is not part of the title. Place the title immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order, using the fragment formed by lowercasing the heading and replacing each space with a hyphen. The allowed heading inventory contains only unique ASCII letters and spaces, so punctuation and duplicate-heading slug rules do not apply.
+              - Deterministic README and AGENTS.md checks verify structure, supported local links, exact package metadata, and required literal markers. These checks do not establish semantic accuracy, completeness, or substantive compliance. Human or AI review during review of a change to the relevant documentation must confirm those qualities and record relevant findings in that review; release review must cover those requirements when no earlier change review did.
+              - Features must state the repository's purpose, the package description, and its ownership boundaries. Requirements, Setup, Usage, Development, Testing, Troubleshooting, and Security must reflect their authoritative sources. The README must identify the project truthfully and link applicable documentation, specifications, and RELEASE_NOTES.md when present. Every repository must link specs/README.md. The Links section must include https://eliware.org, the canonical HTTPS GitHub repository URL, https://github.com/eliware, the Discord invite, the documentation destination identified by the Docs authority map, and RELEASE_NOTES.md when present. Do not add prose saying unrelated profiles do not apply.
+              - README.md must include the exact non-empty package.json description, author string, and license value. Its final Links section must include a homepage link whose destination exactly matches package.json.homepage and a repository link whose destination is the canonical HTTPS repository URL ending in .git. The README repository URL omits the git+ scheme used in package.json. Do not display the raw git+https package metadata URL in the README.
+              - package.json.keywords is the source of truth for each repository's keywords. It must be a non-empty array of distinct strings that accurately describe the repository. During presentation review, inspect the repository and update inaccurate or stale keywords as needed. When GitHub repository topics are synchronized, they must exactly match the package.json keywords; do not maintain a separate keyword list as the authority.
+              - Configuration content must distinguish runtime configuration (supported settings, environment variables, config files, and defaults) from repository/package metadata, CLI arguments, and deployment configuration. State explicitly when a category has no runtime settings; do not describe package.json.eliware.apply as runtime configuration.
+              - User-facing documentation describes product behavior and safe use. Application and library documentation may explain local startup and shutdown, but must not replace canonical production procedures. Canonical company-wide operating procedures, release authorization, live-state evidence, and company-wide runbooks belong in Operations or the named owner workspace. Repositories may include concise context, local instructions, and links; keep normative procedure text and live evidence in the single canonical owner location.
+              - When documenting validation or release state, distinguish checks and contracts present in the current repository from versions already published or released. Do not imply an unpublished version is available to users.
+              - The npm badge and npm package link are required only for public npm packages; private and non-published repositories must not present npm publication identity.
+              - The general profile validates the private field's presence and type. The private profile owns the requirement private=true; the npm-published profile owns the requirement private=false. package.json.private controls npm publishability, not source-hosting visibility. Application metadata describes intended package distribution and does not override either profile's value requirement or determine repository visibility.
+              - Determine applicable profiles from package.json.eliware.apply; treat requires as prerequisites, not profile declarations. Resolve inconsistent declarations before deciding alignment. A repo-map status is prior reporting and does not constitute evidence. Record pass or fail with file evidence for every applicable presentation check, and report aligned only when every check passes and no required fact remains unresolved.
+            examples:
+              - purpose: Exact README branding markers
+                markdown: |-
+                  # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
+
+                  [![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)
+
+                  **[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**
+              - purpose: Required README homepage and repository links
+                markdown: |-
+                  - [Home Page](https://github.com/eliware/example#readme)
+                  - [GitHub repository](https://github.com/eliware/example.git)
+                  - [Eliware](https://eliware.org)
+                  - [GitHub organization](https://github.com/eliware)
+                  - [Discord](https://discord.gg/M6aTR9eTwN)
+              - purpose: Canonical applicable badge targets
+                markdown: |-
+                  [![License](https://img.shields.io/github/license/eliware/example)](https://github.com/eliware/example/blob/main/LICENSE)
+                  [![CI](https://github.com/eliware/example/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/example/actions/workflows/ci.yml)
+                  [![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/package/@eliware/example)
+
+                  Include the npm badge and target only for a public npm package.
+              - purpose: Canonical README heading table
+                generalHeadings:
+                  - Features
+                  - Requirements
+                  - Setup
+                  - Usage
+                  - Development
+                  - Testing
+                  - Troubleshooting
+                  - Security
+                  - Support
+                  - License
+                  - Links
+                profileHeadings:
+                  application: [Configuration, Operations]
+                  cli: [Commands, Exit codes]
+                  discord: [Commands, Events, Intents and permissions, Operations]
+                  mcp-server:
+                    [Tools, Resources, Prompts, Transport, Authentication, Schemas, Operations]
+                  web: [Configuration, Routes, Assets, Development server, Build, Deployment]
+                  library: [API, Packaging, Examples]
+                  infrastructure:
+                    [Managed targets, Configuration, Desired state, Validation, Change boundaries]
+                  workspace: [Runbooks, Communication, Recovery]
+                  documentation: [Scope, Navigation, Contribution, Documentation validation]
+                  npm-published: []
+                  ghcr-published: []
+                  private: []
+                markdown: Each profile owns the required content under its mapped headings and its other profile requirements. This table is the sole source for README heading names and order.
+              - purpose: Combined README headings for application profiles
+                markdown: "For `application` plus `discord`, include these headings after `Security`: `Configuration`, `Operations`, `Commands`, `Events`, `Intents and permissions`. `Operations` appears once at its first canonical position and contains the required content for both profiles. For `application` plus `web`, include `Configuration` once at its first canonical position and combine both profiles' requirements in that section. In both combinations, list each heading once in canonical order in the Table of Contents."
+            donts:
+              - Do not place profile sections after Links, include the package/project title in the Table of Contents, omit or reorder content-section headings in the Table of Contents, repeat a heading required by multiple profiles, add discretionary level-two sections, derive profile section order from package.json.eliware.apply ordering, replace the golden-image structure with a custom marketing layout, bury required information in an unindexed document, duplicate the footer, or claim unsupported package, deployment, or support capabilities.
+              - Do not vary the exact Eliware logo or Discord support markers, append badge text to the package title text, omit the package homepage link, omit the canonical HTTPS .git repository link, or show a git+ URL in README.md.
+      - id: E-0.1.3
+        dos:
+          - Repositories must use eliware-test as the shared deterministic validation entrypoint, running the stages applicable to their declared profiles.
+          - All repositories, including documentation, workspace, and infrastructure repositories, must run Oxlint and Prettier validation through eliware-test.
+          - Repositories that maintain Jest tests must run them through eliware-test. This conditional requirement applies only to repositories that maintain Jest suites; it does not require documentation-only repositories to add tests or Jest. Application and library profiles define their mandatory Jest suites and coverage requirements. ESM test files may import Jest APIs from @jest/globals; eliware-test supplies this API transitively. The CLI uses the consumer repository's resolvable Jest executable when available and otherwise uses the Jest dependency shipped with eliware-test, while keeping package.json, Jest settings, tests, and source files rooted in the consumer repository.
+          - A tool name appearing only in descriptive text, comments, or structured data does not establish direct tool use. Detect commands only in executable workflow command fields or shell command lines. In JavaScript and TypeScript, detect tool-package imports, re-exports, and dynamic imports from parsed syntax; detect child-process launches only when a named or namespace import from node:child_process or child_process calls a recognized tool with a literal command. This rule does not claim to prove computed commands or indirect wrappers; human review covers those cases.
+        donts:
+          - Repositories must not replace eliware-test with separate project-specific Oxlint or Prettier validation without Eli's authorization.
+          - Repositories must not invoke Oxlint directly from package scripts, CI, Knit, or other repository validation workflows.
+          - Consumer repositories must not directly import Oxlint or Prettier modules, directly declare those packages, or directly invoke them from validation scripts. The repository implementing eliware-test may import and declare tools it executes to implement eliware-test; it must still expose the shared validation scripts and use them in consumer-facing workflows. Jest-specific restrictions are defined by the applicable code profiles.
+        directives:
+          - id: A-0.1.3.0
+            dos:
+              - Use applicable convention profiles and their directive IDs as the source for shared repository requirements.
+            donts:
+              - Do not create repository requirements in a validator, workflow, or local script that are absent from the applicable convention profiles.
+        examples:
+          - purpose: Aggregate validation stage ownership
+            markdown: |-
+              | Profile explicitly listed in package.json.eliware.apply | Additional npm test stage |
+              | --- | --- |
+              | general | lint, format-check, audit |
+              | application | Jest and coverage |
+              | library | Jest, coverage, and typecheck |
+              | web | build |
+              | npm-published | package validation |
+
+              Only explicitly listed profiles contribute stages. A `requires` entry declares a prerequisite that must also be listed; it does not select a profile implicitly. CI runs npm ci followed by npm test. Each profile owns its additional stage; CI does not duplicate stages.
+      - id: E-0.1.4
+        dos:
+          - Repositories must pass lint with zero errors and zero warnings.
+        donts:
+          - Do not accept, publish, or hand off a repository with any lint error or warning.
+        directives:
+          - id: E-0.1.4.0
+            dos:
+              - "Shared repository discovery includes files in the working tree, including untracked and Git-ignored files, except files under .git/, node_modules/, coverage/, dist/, build/, or test-results/. This is a discovery baseline, not a universal file inventory: each check defines its own supported file types and paths, and must inspect every discovered file within that scope."
+              - Syntax validation parses maintained .mjs, .json, .yml, .yaml, and .md files. Oxlint covers supported JavaScript and TypeScript files; when none exist, the lint stage passes without invoking Oxlint. Prettier format-check verifies canonical formatting and parser acceptance for its supported files. JSON/YAML schemas, Markdown links, and documentation structure are checked only by their named applicable checks. A passing syntax or formatting check does not establish link resolution, semantic accuracy, or documentation completeness. The lint success result refers specifically to Oxlint.
+              - Generic YAML syntax validation parses every document in a stream separated by `---` and does not reject a valid stream solely because it contains multiple documents. A domain-specific check may separately require one document or a particular mapping shape when its rule defines that input contract.
+            donts:
+              - Do not exclude a maintained file of these types from syntax validation.
+      - id: E-0.1.6
+        dos:
+          - Human or AI review must assess repository contents and user-facing documentation for secrets, credentials, private data, backups, runtime state, accuracy, and completeness; deterministic validation must not claim that arbitrary content has been proven free of sensitive material or that prose is complete.
+        donts:
+          - Do not treat file or directory names, extensions, or a clean deterministic scan as proof that sensitive content is present or absent.
+        directives:
+          - id: E-0.1.6.0
+            dos:
+              - Human or AI review must assess repository contents for decrypted data, private conversations, operational database backups, production dumps, database state, restore archives, and runtime state.
+            donts:
+              - Do not commit decrypted data, private conversations, operational backups, production dumps, database state, restore archives, or runtime state.
+          - id: E-0.1.6.1
+            dos:
+              - Human or AI review must distinguish bootstrap schemas and minimal non-sensitive seed records needed for a fresh install from full backups, production dumps, and runtime state.
+              - Platform DBA and Storage owners retain backup, restore, retention, and recovery ownership.
+            donts:
+              - Project repositories must not contain full backups or production dumps or assume responsibility for platform backup, restore, retention, or recovery operations.
+      - id: E-0.1.7
+        dos:
+          - "Apply this requirement only when package.json.private is not true; package.json.private: true repositories are private and outside its applicability."
+          - Public repositories must keep Eliware infrastructure internals private. This deterministic check rejects only the identifier patterns shown in this rule's example; a passing result does not establish that internal information or plaintext secrets are absent. Private repositories skip only these public identifier-pattern checks. The secret and plaintext-data review required by E-0.1.6 remains applicable to every repository.
+        donts:
+          - Do not apply this public-repository restriction to repositories whose package.json sets private to true.
+          - Public repositories must not expose internal Eliware hostnames, usernames, filesystem paths, or other infrastructure details.
+        examples:
+          - purpose: Exact content patterns checked by the public infrastructure-identifier scan
+            markdown: |-
+              Reject a file when its content contains any of these case-insensitive patterns:
+
+              - `eliware[-]internal` as a delimited identifier.
+              - A hostname ending in `(?:internal|private)[.]eliware[.]org`.
+              - A drive-letter path beginning with `(?:Users|Home|srv|var[\/]lib)`.
+              - A Unix path beginning with `/(?:home|users|srv|var/lib)/`.
+              - A path beginning with `(?:C|D):[\\/]+(?:eliware|Users[\\/]\w+[\\/]src)`.
+              - A `file://` URL whose first path component is `internal`, `private`, or a hostname ending in the pattern shown above.
+
+              These expressions describe the scanner's patterns without embedding matching identifiers in this public convention file. A passing check is not a secret scan or a general privacy clearance.
+      - id: E-0.1.8
+        dos:
+          - MAIL_OWNER_ADDRESS is an internal mail-routing setting; configure its value only through an untracked, gitignored .env file, and omit it from environment templates.
+        donts:
+          - Do not expose MAIL_OWNER_ADDRESS as a supported setting in .env.example or any other environment template.
+      - id: E-0.1.9
+        dos:
+          - Every Eliware repository package.json must contain an eliware object describing convention applicability.
+        donts:
+          - Repositories must not omit the Eliware metadata contract from package.json.
+        directives:
+          - id: E-0.1.9.0
+            dos:
+              - Every repository applying the general profile must explicitly list general in package.json.eliware.apply. The array must also explicitly list every other applicable profile and every prerequisite named in those profiles' requires arrays. A requires entry is a prerequisite declaration, not implicit profile selection.
+              - Every repository applying the general profile must list the profile name general in package.json.eliware.apply; the profile rules are defined in general.yaml. General is mandatory and is not listed in other profiles' requires arrays. Each profile document must declare a requires array containing every additional profile prerequisite by profile name. The harness reads that array as the sole source of profile prerequisites and fails on missing, duplicate, self-referential, or unknown requirements. The private profile requires package.json.private=true.
+            donts:
+              - Repositories must not omit eliware.apply.
+          - id: A-0.1.9.1
+            dos:
+              - "Every convention profile document declares a MAJOR.MINOR version. package.json.version must use the same MAJOR.MINOR and a numeric PATCH: the initial aligned release is MAJOR.MINOR.0, and repository releases increment only PATCH while that convention version remains active."
+              - A convention-language revision without a schema-format change increments the convention MINOR and realigns repositories to MAJOR.MINOR.0; a convention schema-format change increments the convention MAJOR and realigns repositories to MAJOR.0. Only an Eli-approved convention release changes the canonical profile version; profile documents in one release set must use the same version.
+            donts:
+              - Do not release a package whose MAJOR.MINOR differs from any applied convention profile's version.
+              - Do not use a prerelease or build suffix as a substitute for the numeric PATCH release sequence.
+          - id: E-0.1.9.2
+            dos:
+              - package.json.eliware.apply must explicitly list the names of all applicable convention profiles.
+            donts:
+              - Validation must not infer convention applicability from repository contents.
+          - id: E-0.1.9.3
+            dos:
+              - When present, package.json.eliware.exempt must be an array of records with a non-empty ruleId, non-empty reason, approver set to Eli, a valid approvalTimestamp, and either a valid expiry date or expiry:null. Each ruleId must be unique. AGENTS.md documents project instructions but does not waive checks; only package exemption metadata is interpreted as a convention-check exemption.
+            donts:
+              - Do not duplicate a ruleId in the exemption array.
+      - id: E-0.1.10
+        dos:
+          - Every repository must contain .knit/deploy.yaml.
+          - Each repository's Knit configuration defines its own synchronization and validation commands.
+        donts:
+          - Repositories must not omit Knit deployment configuration or assume another repository's Knit configuration applies.
+        directives:
+          - id: E-0.1.10.1
+            dos:
+              - "Every validation command list in .knit/deploy.yaml must begin with these commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test."
+              - Additional repository-specific commands may follow npm test. Human or AI review must assess their purpose and scope; deterministic validation only rejects npm publish and commands that publish images to GHCR. Put commands directly in .knit/deploy.yaml when feasible; when a secondary script is needed, store it under .knit/ and invoke it from the command list.
+            donts:
+              - Do not omit, reorder, or replace the initial git pull --ff-only origin main, npm ci, and npm test commands in a Knit validation command list.
+              - Do not run npm publish or publish container images to GHCR from a Knit validation command list.
+      - id: E-0.1.12
+        dos:
+          - Keep conventions focused on repository structure, files, contents, and deterministic repository validation.
+          - Executable src/ and tests/ mirroring is required only by the application and library profiles; it is not a general requirement and does not apply to documentation, workspace, or infrastructure profiles unless application or library is also explicitly applied.
+        donts:
+          - Do not encode operational procedures, deployment execution, or live platform runbooks as repository conventions.
+      - id: E-0.1.14
+        dos:
+          - Any package reported by npm outdated fails validation, regardless of dependency section. The check requires a successful registry lookup; offline operation or registry/process failure is a validation failure, not a pass. Exit codes 0 and 1 are report-bearing outcomes and both require valid JSON output; an empty output or empty report passes. Other exit codes and invalid JSON also fail validation with a separate diagnostic. Failure diagnostics for outdated packages must list an npm install command using the @latest tag for every reported package. The check does not modify dependencies.
+        donts:
+          - Do not compare or require a package version field beyond the result reported by npm outdated.
+      - id: E-0.1.19
+        dos:
+          - 'Every repository, including documentation-only repositories, must contain package.json with a scoped @eliware/* name, version, description, keywords, author, repository, and license: "MIT". Every repository uses Node.js and npm for shared validation tooling; a documentation-only profile means the repository has no application or library runtime implementation, not that it is exempt from Node.js/npm validation. Repositories that use Jest must keep Jest configuration in package.json.'
+          - 'Every repository must set package.json.author to exactly "Eliware <eliware@eliware.org>", package.json.repository to {"type":"git","url":"git+https://github.com/eliware/<slug>.git"}, package.json.homepage to "https://github.com/eliware/<slug>#readme", and package.json.engines.node to the exact string "26". The <slug> must match the canonical GitHub repository identity.'
+          - Every repository package.json must declare engines.node as exactly "26", including documentation-only repositories because they run shared Node.js/npm validation tooling. This shared tooling requirement does not by itself define consumer-facing runtime support for an application or library; those profiles document runtime support separately.
+          - Package metadata must identify publication and file contents explicitly when the repository publishes a package.
+        donts:
+          - Do not omit required package metadata, use a license other than "MIT", use an unscoped Eliware package name, use a repository URL other than the canonical git+https format, set another homepage or author value, use an engines.node range in place of "26", or publish files that are not intentionally allowlisted.
+        examples:
+          - purpose: Canonical package identity metadata
+            markdown: |-
+              {
+                "author": "Eliware <eliware@eliware.org>",
+                "repository": {
+                  "type": "git",
+                  "url": "git+https://github.com/eliware/example.git"
+                },
+                "homepage": "https://github.com/eliware/example#readme",
+                "engines": { "node": "26" }
+              }
+      - id: E-0.1.23
+        dos:
+          - Every @eliware/* repository must contain a LICENSE file using the MIT license with the attribution Copyright (c) 2026 Eliware.
+        donts:
+          - Do not omit LICENSE, use a different license without Eli's authorization, or change the required Eliware attribution.
+      - id: E-0.1.24
+        dos:
+          - Every @eliware/* repository must contain a GitHub Actions workflow that explicitly targets the main branch for pushes and pull requests by including main in each event's branches filter. Evaluate ordered branch patterns starting excluded; only a pattern that matches main changes whether main is included, so an unmatched negated pattern never authorizes main.
+          - Workflow event configuration values must use GitHub's mapping shape; arrays of activity types belong in an event's types field, while an array of event names is allowed only as the top-level on value.
+          - Every repository must contain exactly one workflow file at .github/workflows/ci.yml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yml.
+          - Ubuntu CI is always required.
+          - The GitHub validation workflow may run the same npm ci and npm test commands configured in .knit/deploy.yaml.
+        donts:
+          - Do not omit Ubuntu CI or duplicate eliware-test checks in CI.
+        directives:
+          - id: A-0.1.24.0
+            dos:
+              - CI validation runs npm ci followed immediately by npm test; npm test is the repository's aggregate deterministic gate, and repositories may follow it with arbitrary repository-specific commands. Human or AI review must assess their purpose and scope; deterministic validation only rejects npm publish and commands that publish images to GHCR.
+              - eliware-test owns lint and format validation invoked by npm test; CI workflows must not duplicate those checks.
+              - Pre-install commands and post-test reporting commands must use literal echo or printf arguments without shell expansions, redirection, or backslash escape syntax. Reject dollar signs and backticks even inside single quotes so literal workflow-expression and secret-reference markers are not printed as workflow reporting.
+            donts:
+              - Do not replace npm test with partial checks, run npm update or npm install in CI, or duplicate lint and format checks owned by eliware-test.
+            examples:
+              - purpose: Copyable Ubuntu validation workflow for .github/workflows/ci.yml
+                markdown: |-
+                  ```yaml
+                  name: Validation
+
+                  on:
+                    push:
+                      branches:
+                        - main
+                    pull_request:
+                      branches:
+                        - main
+
+                  concurrency:
+                    group: ${{ github.repository }}-${{ github.ref }}
+                    cancel-in-progress: true
+
+                  permissions:
+                    contents: read
+
+                  jobs:
+                    test:
+                      runs-on: ubuntu-latest
+                      permissions:
+                        contents: read
+                      steps:
+                        - uses: actions/checkout@v6
+                        - uses: actions/setup-node@v7
+                          with:
+                            node-version: 26
+                            cache: npm
+                        - run: npm ci
+                        - run: npm test
+                  ```
+          - id: A-0.1.24.1
+            dos:
+              - Keep CodeScope out of GitHub CI, Knit validation, TagIt preflight, and other automatic validation workflows.
+            donts:
+              - Do not invoke CodeScope autonomously from CI, preflight, publication, or workspace checkpoints.
+          - id: E-0.1.24.2
+            dos:
+              - CI validation and publication workflows must use actions/checkout@v6 and actions/setup-node@v7 when those actions are used.
+            donts:
+              - Do not use action versions other than those approved for the workflow type, and do not require periodic review, renewal, or re-justification for a permanent exception unless Eli explicitly revokes or replaces it.
+          - id: E-0.1.24.3
+            dos:
+              - "Every active GitHub Actions CI validation workflow must declare top-level concurrency with a group key that includes github.repository and github.ref, or an equivalent key that uniquely identifies the repository and ref, and must set cancel-in-progress: true."
+              - The concurrency control must cancel obsolete duplicate runs for the same repository and ref when a newer run supersedes them.
+            donts:
+              - Do not omit concurrency control from an active validation workflow or use a group key that can combine unrelated repositories or refs.
+              - Publication-example workflows and an explicitly justified workflow-specific variation may use a documented scope-specific concurrency policy when the variation does not permit obsolete duplicate validation runs for the same repository and ref.
+          - id: E-0.1.24.4
+            dos:
+              - Every active GitHub Actions validation workflow must contain an unconditional Ubuntu validation job whose validation flow is npm ci followed immediately by npm test; it may then run arbitrary repository-specific commands. Human or AI review must assess command purpose and scope. Deterministic validation rejects only npm publish and commands that publish images to GHCR. The required npm ci and npm test steps must not override their environment, shell, or working directory.
+              - Before npm ci, allow only literal safe echo or printf reporting without shell or workflow-expression expansion in supported run steps and approved setup actions; reject dollar signs and backticks even inside single quotes, file creation, shell redirections, unsupported step fields, and invalid step execution forms.
+              - Sibling setup or reporting jobs may contain only the separately permitted setup and non-publishing reporting commands; they must not run npm ci or npm test outside the validation job.
+              - Publication workflows must be separate from the general validation workflow and governed by the applicable publication profile and Operations release policy. When ghcr-published applies, its GHCR publisher job may contain publication and post-push verification commands only as required and validated by the GHCR profile.
+            donts:
+              - Do not allow arbitrary printf commands or redirects to write repository files before npm ci; pre-install printf is limited to literal safe reporting arguments.
+              - Do not run npm publish or publish container images to GHCR from the general validation workflow.
+              - Do not publish npm packages or GHCR images from the general validation workflow, branch or pull-request validation, or validation-only credentials.
+      - id: E-0.1.25
+        dos:
+          - Every repository must use specs/ as the discoverable home for its directives and repository-specific specification records.
+        donts:
+          - Do not leave directive or repository-specific specification records unindexed or outside the repository's documented specs surface.
+        directives:
+          - id: A-0.1.25.0
+            dos:
+              - The specs/ directory must contain exactly one README.md index and one or more YAML files. At least one YAML file in each specs directory must be a valid directives document. Additional YAML files may define schemas or other applicable structured specifications.
+              - Subdirectories under specs/ are optional. Every specs subdirectory must itself contain exactly one README.md index, one or more YAML files, and at least one valid directives document.
+              - Each specs README.md must be a navigation-only index linking every YAML file directly in that directory and every immediate subdirectory's README.md. Nested files are indexed by their containing subdirectory's README.md.
+              - The only allowed files in the specs tree are its per-directory README.md indexes and indexed YAML documents; subdirectories are allowed only when they meet this same structure.
+            donts:
+              - Do not omit a directory index or directives YAML document, leave any YAML document unindexed, or make prose, AGENTS.md, or an unlinked YAML file the sole source for a directive or repository boundary.
+              - Do not store non-YAML documents or implementation notes in specs/; additional YAML files must be applicable structured specifications such as schemas and must be indexed.
+            directives:
+              - id: A-0.1.25.0.1
+                dos:
+                  - Every YAML document must be linked from the README.md index in its containing directory, and every subdirectory index must be linked from its parent index.
+                donts:
+                  - Do not create a separate contract-reference file to duplicate directive policy or make examples canonical. Do not duplicate the nested YAML inventory in parent indexes.
+      - id: E-0.1.26
+        dos:
+          - Every application and library repository must maintain a root RELEASE_NOTES.md.
+          - "For repositories required to maintain RELEASE_NOTES.md by an applied profile, it must begin with the exact heading # Release Notes. When pending work exists, place one ## Unreleased section before all versioned entries. Use version headings in the exact form ## x.y.z — YYYY-MM-DD, with valid calendar dates, and list versioned entries in reverse chronological order: versions must be strictly descending by SemVer and dates must be non-increasing. Each release entry must contain one or more non-empty user-visible change subsections using only Added, Changed, Fixed, Breaking changes, Migration, or Security as subsection headings. Deterministic validation checks this structure; human or AI release review confirms that each entry accurately describes user-visible changes and includes applicable migration, breaking-change, and security information, recording findings in the release review."
+        donts:
+          - Do not use README.md, AGENTS.md, commit history, or an unstructured changelog as a substitute for release notes. Do not duplicate versions, put Unreleased after a versioned entry, use malformed or out-of-order version headings, or include empty or unsupported category headings.
+        directives:
+          - id: A-0.1.26.0
+            dos:
+              - Each release entry must summarize user-visible changes and include breaking changes, migration, or security information when applicable; update it before release validation.
+              - Require and validate RELEASE_NOTES.md for application and library repositories.
+            donts:
+              - Do not use release notes as a second source for requirements, procedures, or project behavior.
+      - id: E-0.1.27
+        dos:
+          - "Where a repository maintains software source or test modules, each module must have one responsibility: one cohesive purpose and one reason to change. This rule does not require a repository to contain source or tests; application and library profiles define source/test structure and mirroring."
+          - When a change introduces a distinct responsibility, add it in a focused submodule with a matching test and wire it through the existing owner or coordinator; do not add the distinct responsibility to an existing module. During ordinary review, if the reviewer identifies mixed responsibilities in a maintained source or test module, refactor that module as part of the review instead of deferring it. This review-time requirement is intentionally broader than the lines changed in the task.
+          - The shared package-reuse mapping for application and library production code is defined once in this rule's examples. Human review determines whether a mapped concern exists; deterministic validation must not report that review as passed. Apply single responsibility independently of file length. Any source or test line-count maxima specified by an applicable profile are separate blocking requirements; passing them does not prove cohesion or excuse mixed responsibilities.
+        donts:
+          - Do not combine distinct responsibilities in a module because it is small, because a coordinator is convenient, or because an existing module already handles related work. Do not defer a responsibility split discovered during review.
+        examples:
+          - purpose: Shared package mapping for application and library production code
+            markdown: |-
+              When an application or library's production code owns substantial behavior for one of these concerns, use the named package. Human review determines whether the concern exists; deterministic validation does not report this review as passed.
+
+              | Concern in production code | Package |
+              | --- | --- |
+              | Redaction of sensitive values or serialization | @eliware/redact |
+              | Application logging | @eliware/log |
+              | Filesystem and import-meta path utilities | @eliware/path |
+              | Process exception and rejection handling | @eliware/errors |
+              | Operating-system signal handling and graceful shutdown | @eliware/signals |
+      - id: E-0.1.20
+        dos:
+          - Every @eliware/* repository must use Node.js package tooling and eliware-test for deterministic repository validation.
+          - Aggregate validation is the profile-selected set of deterministic stages invoked by npm test through eliware-test. General stages apply to every repository; each applied profile defines its additional stages. CI runs npm ci followed immediately by npm test and does not duplicate stages run by npm test.
+        donts:
+          - Do not treat Node.js tooling or eliware-test as optional for an @eliware/* repository.
+        directives:
+          - id: A-0.1.20.0
+            dos:
+              - AGENTS.md must document the Node.js version, runtime commands, runtime environment configuration (or state that none exists), module system, and Node-specific validation. Distinguish runtime environment settings from package metadata and CLI arguments.
+            donts:
+              - Do not leave Node.js runtime or environment requirements undefined in AGENTS.md.
+          - id: E-0.1.20.1
+            dos:
+              - Every maintained repository must use Node.js 26 for shared validation tooling, including documentation-only repositories.
+            donts:
+              - Do not target a different Node.js version or publish with an unverified runtime baseline unless Eli explicitly authorizes it.
+          - id: E-0.1.20.2
+            dos:
+              - Node.js projects must use native ESM exclusively.
+            donts:
+              - Do not add CommonJS modules, require-based entrypoints, or mixed module semantics to a native-ESM project.
+          - id: E-0.1.20.6
+            dos:
+              - Use npm to regenerate package-lock.json whenever it is stale.
+            donts:
+              - Do not hand-edit package-lock.json; regenerate it with npm so dependency resolution remains reproducible.
+          - id: E-0.1.20.7
+            dos:
+              - Repositories using Jest must keep Jest configuration in package.json.
+            donts:
+              - Do not add a separate Jest configuration file that can diverge from the package.json configuration.
+          - id: E-0.1.20.14
+            dos:
+              - Repositories must remove dependencies that are not used by their source, tests, tooling, required runtime, or commands in .knit/deploy.yaml.
+            donts:
+              - Do not retain a declared dependency that source, tests, tooling, required runtime, or commands in .knit/deploy.yaml do not use.
+          - id: E-0.1.20.17
+            dos:
+              - "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. An additional script is permitted only when an explicitly applied profile requires that script by name; the library profile owns typecheck and the web profile owns build. Profile-owned scripts run within aggregate npm test and do not create separate CI steps."
+              - In @eliware/test only, those five scripts must call node bin/eliware-test.mjs with the matching mode; its required pack script must call node bin/eliware-test.mjs --pack. Every other npm-published repository must define pack=eliware-test --pack.
+              - When required scripts are invalid, report all missing or incorrect required scripts and disallowed script entries together in one result.
+              - Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation.
+            donts:
+              - Do not omit, rename, or replace a shared validation script, add unrelated package script names, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command.
+          - id: A-0.1.20.18
+            dos:
+              - Use the shared canonical Prettier configuration for maintained Node.js repositories.
+            donts:
+              - Do not diverge from the canonical Prettier configuration without explicit approval.
+          - id: E-0.1.20.19
+            dos:
+              - Every repository applying general must execute its audit stage through the shared audit script.
+              - Run npm audit with the fixed --audit-level=high threshold. Accept only auditReportVersion 2 reports whose vulnerabilities map and metadata.vulnerabilities severity counts agree, whose nonnegative integer severity counts sum to total, and whose high and critical counts are zero; lower severity counts may be nonzero.
+            donts:
+              - Do not omit audit from the aggregate test validation, run a separate direct audit command, or fail reports solely for low or moderate counts below the configured high threshold.
+      - id: E-0.1.22
+        dos:
+          - Use only E-rules at the top level of directive documents.
+          - Nest every A-rule under an E- or A-rule with an E ancestor.
+          - Nest E-rules only under E-rules.
+        donts:
+          - Do not create top-level A-rules or place an E-rule under an A-rule.
+        directives:
+          - id: A-0.1.22.0
+            dos:
+              - Deterministic validation must enforce unique directive IDs across every YAML document in specs/, valid parent-child ID paths, E-only ancestry for E-rules, and an E ancestor for every A-rule. Every directive ID must use the assigned repository E-number namespace recorded in the authoritative repository map; for an assigned E-38 namespace, valid child paths include E-38.1 and A-38.1.0. IDs outside the assigned namespace fail.
+            donts:
+              - Do not accept duplicate IDs, IDs outside the assigned repository E-number namespace, orphaned descendants, top-level A-rules, or an E-rule nested under an A-rule.
+      - id: E-0.1.28
+        dos:
+          - Repositories must exclude generated, dependency, runtime-state, secret, and machine-specific files from version control.
+        donts:
+          - Do not track a file that matches a repository ignore rule.
+        directives:
+          - id: A-0.1.28.0
+            dos:
+              - Every repository must use .gitignore rules that exclude dependencies, VCS state, coverage, build output, runtime state, generated artifacts/, secrets, and machine-specific files. The repository-root artifacts/ directory is reserved for generated, untracked output such as screenshots and traces.
+              - Deterministic validation must inspect the Git index and reject tracked or staged files that match any ignore rule.
+            donts:
+              - Do not include node_modules, .git state, coverage, build output, runtime state, secrets, or machine-specific files in repository contents.

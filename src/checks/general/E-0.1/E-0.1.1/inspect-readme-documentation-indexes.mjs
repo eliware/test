@@ -14,8 +14,14 @@ export async function inspectReadmeDocumentationIndexes(root, packageJson = {}) 
       missing.push(path);
     }
   }
+  let releaseNotesPresent = false;
+  try {
+    await access(join(root, "RELEASE_NOTES.md"));
+    releaseNotesPresent = true;
+  } catch {}
   return {
     docsRequired,
+    releaseNotesPresent,
     error: missing.length
       ? missing
           .map(

@@ -3,7 +3,24 @@ import {
   expectedReadmeHeadings,
   readmeSectionsCacheKey,
   requiredReadmeSections,
+  resolveReadmeHeadingTable,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.1/resolve-readme-headings.mjs";
+
+test("requires a canonical heading table in the general convention", () => {
+  expect(() => resolveReadmeHeadingTable({ directives: [] })).toThrow(
+    "general.yaml must define the canonical README heading table",
+  );
+  expect(() =>
+    resolveReadmeHeadingTable({
+      directives: [
+        {
+          id: "E-0.1.1.0",
+          examples: [{ purpose: "Canonical README heading table" }],
+        },
+      ],
+    }),
+  ).toThrow("general.yaml must define the canonical README heading table");
+});
 
 test("builds profile headings in canonical order and merges repeated headings", () => {
   expect(expectedReadmeHeadings()).toContain("Features");

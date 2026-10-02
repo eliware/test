@@ -4,17 +4,17 @@ import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { readProfileDocuments } from "../../src/orchestrators/read-profile-documents.mjs";
 
-test("reads profile JSON in sorted order and excludes maintenance documents", async () => {
+test("reads profile YAML in sorted order and excludes maintenance documents", async () => {
   const directory = await mkdtemp(join(tmpdir(), "eliware-profile-documents-"));
-  await writeFile(join(directory, "zeta.json"), '{"name":"zeta"}');
-  await writeFile(join(directory, "alpha.json"), '{"name":"alpha"}');
-  await writeFile(join(directory, "directives.json"), "{}");
+  await writeFile(join(directory, "zeta.yaml"), '{"name":"zeta"}');
+  await writeFile(join(directory, "alpha.yaml"), '{"name":"alpha"}');
+  await writeFile(join(directory, "directives.yaml"), "{}");
   await writeFile(join(directory, "notes.md"), "ignored");
   await mkdir(join(directory, "nested"));
 
   expect(readProfileDocuments(directory)).toEqual([
-    { source: "alpha.json", document: { name: "alpha" } },
-    { source: "zeta.json", document: { name: "zeta" } },
+    { source: "alpha.yaml", document: { name: "alpha" } },
+    { source: "zeta.yaml", document: { name: "zeta" } },
   ]);
   await rm(directory, { recursive: true, force: true });
 });

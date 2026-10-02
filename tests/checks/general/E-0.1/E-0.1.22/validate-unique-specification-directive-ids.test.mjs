@@ -12,9 +12,9 @@ async function fixture() {
 
 test("accepts unique directive IDs across specification files", async () => {
   const root = await fixture();
-  await writeFile(join(root, "specs", "directives.json"), '{"directives":[{"id":"E-8"}]}');
+  await writeFile(join(root, "specs", "directives.yaml"), '{"directives":[{"id":"E-8"}]}');
   await writeFile(
-    join(root, "specs", "conventions", "general.json"),
+    join(root, "specs", "conventions", "general.yaml"),
     '{"directives":[{"id":"E-9"}]}',
   );
   await writeFile(join(root, "specs", "README.md"), "Specification index");
@@ -27,9 +27,9 @@ test("reads JSON files selected by the documentation inventory", async () => {
   let rejectedNonJsonFile = false;
   const inventory = {
     async documentationFiles({ predicate }) {
-      selectedJsonFile = predicate("directives.json");
+      selectedJsonFile = predicate("directives.yaml");
       rejectedNonJsonFile = !predicate("README.md");
-      return ["directives.json"];
+      return ["directives.yaml"];
     },
     async readParsed(_path, _kind, parse) {
       return parse('{"directives":[{"id":"E-8"}]}');
@@ -42,9 +42,9 @@ test("reads JSON files selected by the documentation inventory", async () => {
 
 test("rejects duplicate directive IDs across specification files", async () => {
   const root = await fixture();
-  await writeFile(join(root, "specs", "directives.json"), '{"directives":[{"id":"E-8"}]}');
+  await writeFile(join(root, "specs", "directives.yaml"), '{"directives":[{"id":"E-8"}]}');
   await writeFile(
-    join(root, "specs", "conventions", "general.json"),
+    join(root, "specs", "conventions", "general.yaml"),
     '{"directives":[{"id":"E-8"}]}',
   );
   await expect(validateUniqueSpecificationDirectiveIds(root)).resolves.toContain(
@@ -56,19 +56,19 @@ test("rejects duplicate directive IDs across specification files", async () => {
 test("skips non-object entries and checks nested directive IDs", async () => {
   const root = await fixture();
   await writeFile(
-    join(root, "specs", "directives.json"),
+    join(root, "specs", "directives.yaml"),
     '{"directives":[null,"not a directive",{"id":7,"directives":[{"id":"E-10"}]}]}',
   );
   await expect(validateUniqueSpecificationDirectiveIds(root)).resolves.toBeNull();
   await rm(root, { recursive: true, force: true });
 });
 
-test("reports invalid JSON and continues through other specification files", async () => {
+test("reports invalid YAML and continues through other specification files", async () => {
   const root = await fixture();
-  await writeFile(join(root, "specs", "directives.json"), "{");
-  await writeFile(join(root, "specs", "conventions", "general.json"), '{"directives":[]}');
+  await writeFile(join(root, "specs", "directives.yaml"), "{");
+  await writeFile(join(root, "specs", "conventions", "general.yaml"), '{"directives":[]}');
   await expect(validateUniqueSpecificationDirectiveIds(root)).resolves.toContain(
-    "directives.json could not be read as JSON",
+    "directives.yaml could not be read as YAML",
   );
   await rm(root, { recursive: true, force: true });
 });

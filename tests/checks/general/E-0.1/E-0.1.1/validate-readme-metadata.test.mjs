@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateReadmeMetadata } from "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-metadata.mjs";
 
 const readme =
-  "description author https://github.com/example/project MIT fixture https://npmjs.com/package/example\n## Links\n[repository](https://github.com/example/project)";
+  "description author https://github.com/example/project MIT fixture https://npmjs.com/package/example\n## Links\n[repository](https://github.com/example/project.git)";
 const metadata = {
   description: "description",
   author: "author",
@@ -64,9 +64,9 @@ test("reports missing package metadata", () => {
   ).toContain("author");
 });
 
-test("requires the repository URL in the Links section", () => {
+test("requires the canonical HTTPS .git repository URL in the Links section", () => {
   const withoutExactLink = readme.replace(
-    "[repository](https://github.com/example/project)",
+    "[repository](https://github.com/example/project.git)",
     "repository",
   );
   expect(

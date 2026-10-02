@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "yaml";
 import { fail, pass } from "../../../check-result.mjs";
+import { isProhibitedPublishCommand } from "../E-0.1.24/is-prohibited-publish-command.mjs";
 
 export const ruleId = "E-0.1.10.1";
 export const parentRuleId = "E-0.1.10";
@@ -25,11 +26,18 @@ function validateCommandList(commands, index) {
   if (!Array.isArray(commands)) return [`${label} must be an array.`];
   if (commands.length < requiredCommands.length)
     return [`${label} must begin with git pull, npm ci, and npm test.`];
-  return requiredCommands.flatMap((expected, commandIndex) =>
+  const prefixFailures = requiredCommands.flatMap((expected, commandIndex) =>
     commands[commandIndex] === expected
       ? []
       : [`${label} command ${commandIndex + 1} must be ${expected}.`],
   );
+  const publishingCommands = commands
+    .slice(requiredCommands.length)
+    .filter(isProhibitedPublishCommand);
+  return [
+    ...prefixFailures,
+    ...publishingCommands.map((command) => `${label} must not run publishing command: ${command}.`),
+  ];
 }
 
 export async function run(context) {

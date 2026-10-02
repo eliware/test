@@ -5,22 +5,22 @@ validation harness.
 
 ## Files
 
-- [directives.json](directives.json) — harness directives.
-- [directives-schema.json](directives-schema.json) — version 9.0.0 directive document and record schema.
-- [documentation-standard.json](documentation-standard.json) — structured documentation directive schema.
+- [directives.yaml](directives.yaml) — harness directives.
+- [directives-schema.yaml](directives-schema.yaml) — directive document and record schema.
+- [documentation-standard.yaml](documentation-standard.yaml) — structured documentation directive schema.
 - [conventions/README.md](conventions/README.md) — canonical local repository-profile specifications.
-- [conventions/general.json](conventions/general.json) — universal repository requirements.
-- [conventions/application.json](conventions/application.json) — application requirements.
-- [conventions/cli.json](conventions/cli.json) — CLI requirements.
-- [conventions/discord.json](conventions/discord.json) — Discord application requirements.
-- [conventions/documentation.json](conventions/documentation.json) — documentation repository requirements.
-- [conventions/ghcr-published.json](conventions/ghcr-published.json) — GHCR publication requirements.
-- [conventions/infrastructure.json](conventions/infrastructure.json) — infrastructure requirements.
-- [conventions/library.json](conventions/library.json) — library requirements.
-- [conventions/mcp-server.json](conventions/mcp-server.json) — MCP server requirements.
-- [conventions/npm-published.json](conventions/npm-published.json) — npm publication requirements.
-- [conventions/private.json](conventions/private.json) — private repository requirements.
-- [conventions/web.json](conventions/web.json) — web application requirements.
-- [conventions/workspace.json](conventions/workspace.json) — workspace requirements.
+- [conventions/general.yaml](conventions/general.yaml) — universal repository requirements.
+- [conventions/application.yaml](conventions/application.yaml) — application requirements.
+- [conventions/cli.yaml](conventions/cli.yaml) — CLI requirements.
+- [conventions/discord.yaml](conventions/discord.yaml) — Discord application requirements.
+- [conventions/documentation.yaml](conventions/documentation.yaml) — documentation repository requirements.
+- [conventions/ghcr-published.yaml](conventions/ghcr-published.yaml) — GHCR publication requirements.
+- [conventions/infrastructure.yaml](conventions/infrastructure.yaml) — infrastructure requirements.
+- [conventions/library.yaml](conventions/library.yaml) — library requirements.
+- [conventions/mcp-server.yaml](conventions/mcp-server.yaml) — MCP server requirements.
+- [conventions/npm-published.yaml](conventions/npm-published.yaml) — npm publication requirements.
+- [conventions/private.yaml](conventions/private.yaml) — private repository requirements.
+- [conventions/web.yaml](conventions/web.yaml) — web application requirements.
+- [conventions/workspace.yaml](conventions/workspace.yaml) — workspace requirements.
 
 [Return to the root README](../README.md).

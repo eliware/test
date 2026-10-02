@@ -6,19 +6,19 @@ profile applicability and to report complete directives when checks fail.
 
 ## Profiles
 
-- [application.json](application.json)
-- [cli.json](cli.json)
-- [discord.json](discord.json)
-- [documentation.json](documentation.json)
-- [general.json](general.json)
-- [ghcr-published.json](ghcr-published.json)
-- [infrastructure.json](infrastructure.json)
-- [library.json](library.json)
-- [mcp-server.json](mcp-server.json)
-- [npm-published.json](npm-published.json)
-- [private.json](private.json)
-- [web.json](web.json)
-- [workspace.json](workspace.json)
+- [application.yaml](application.yaml)
+- [cli.yaml](cli.yaml)
+- [discord.yaml](discord.yaml)
+- [documentation.yaml](documentation.yaml)
+- [general.yaml](general.yaml)
+- [ghcr-published.yaml](ghcr-published.yaml)
+- [infrastructure.yaml](infrastructure.yaml)
+- [library.yaml](library.yaml)
+- [mcp-server.yaml](mcp-server.yaml)
+- [npm-published.yaml](npm-published.yaml)
+- [private.yaml](private.yaml)
+- [web.yaml](web.yaml)
+- [workspace.yaml](workspace.yaml)
 
 This index contains consumer-facing profile requirements; it does not contain
 repository-specific maintenance directives.

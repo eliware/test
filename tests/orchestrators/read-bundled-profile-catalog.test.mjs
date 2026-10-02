@@ -6,7 +6,7 @@ import {
 
 const documents = [
   {
-    source: "general.json",
+    source: "general.yaml",
     document: {
       version: bundledConventionVersion,
       requires: [],

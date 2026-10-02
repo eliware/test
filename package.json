@@ -1,6 +1,6 @@
 {
   "name": "@eliware/test",
-  "version": "9.0.1",
+  "version": "10.0.0",
   "description": "Shared deterministic repository validation for Eliware projects",
   "keywords": [
     "eliware",
@@ -15,7 +15,7 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=26 <27"
+    "node": "26"
   },
   "bin": {
     "eliware-test": "bin/eliware-test.mjs"

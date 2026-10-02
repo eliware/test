@@ -23,7 +23,21 @@ test("accepts canonical headings and a complete ordered table of contents", () =
 
 test("requires the title to begin with the exact package name", () => {
   const wrongTitle = fixture().replace("## @eliware/fixture", "## @eliware/other");
-  expect(validateReadmeStructure(wrongTitle, fixturePackage)).toContain("exact package.json.name");
+  expect(validateReadmeStructure(wrongTitle, fixturePackage)).toContain(
+    "exactly match package.json.name",
+  );
+});
+
+test("rejects extra title text and incorrect table-of-contents labels", () => {
+  expect(
+    validateReadmeStructure(
+      fixture().replace("## @eliware/fixture", "## @eliware/fixture extra"),
+      fixturePackage,
+    ),
+  ).toContain("exactly match");
+  expect(
+    validateReadmeStructure(fixture().replace("[Testing](#testing)", "[Test](#testing)")),
+  ).toContain("Table of Contents");
 });
 
 test("reports required README sections missing from the document", () => {

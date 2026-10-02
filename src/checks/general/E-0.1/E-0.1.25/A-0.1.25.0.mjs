@@ -22,13 +22,13 @@ export async function run(context) {
       ? await context.repositoryInventory.entriesUnder(join(root, "specs"))
       : await findRepositoryEntries(root, readdir, { scopeDirectory: "specs" });
     specifications = entries
-      .filter(({ path, type }) => type === "file" && path.endsWith(".json"))
+      .filter(({ path, type }) => type === "file" && path.endsWith(".yaml"))
       .map(({ path }) => path);
   } catch {
-    failures.push("specs/ is required to contain indexed JSON specifications.");
+    failures.push("specs/ is required to contain indexed YAML specifications.");
   }
-  if (!specifications || !specifications.includes("specs/directives.json"))
-    failures.push("specs/directives.json is required.");
+  if (!specifications || !specifications.includes("specs/directives.yaml"))
+    failures.push("specs/directives.yaml is required.");
   for (const file of specifications ?? []) {
     const relativePath = file.slice("specs/".length);
     if (index !== null && !index.includes(relativePath))

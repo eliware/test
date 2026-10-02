@@ -20,7 +20,7 @@ const { run } = await import("../../../../src/checks/documentation/E-0.1.100/A-0
 
 beforeEach(() => {
   jest.resetAllMocks();
-  jsonFiles.mockResolvedValue(["specs/directives.json"]);
+  jsonFiles.mockResolvedValue(["specs/directives.yaml"]);
   validateStructuredReferences.mockResolvedValue(null);
   validateDocumentationLinks.mockResolvedValue(null);
 });

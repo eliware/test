@@ -16,11 +16,51 @@ function validateExample(example, label, errors) {
     errors.push(`${label} must be an object.`);
     return;
   }
-  if (Object.keys(example).some((key) => !["purpose", "markdown"].includes(key)))
+  if (
+    Object.keys(example).some(
+      (key) => !["purpose", "markdown", "generalHeadings", "profileHeadings"].includes(key),
+    )
+  )
     errors.push(`${label} contains an unsupported field.`);
   for (const field of ["purpose", "markdown"])
     if (typeof example[field] !== "string" || example[field].trim().length === 0)
       errors.push(`${label}.${field} must be a non-empty string.`);
+  if (example.generalHeadings !== undefined)
+    validateStringList(example.generalHeadings, `${label}.generalHeadings`, errors);
+  if (example.profileHeadings !== undefined) {
+    if (!example.profileHeadings || typeof example.profileHeadings !== "object") {
+      errors.push(`${label}.profileHeadings must be an object.`);
+    } else {
+      const allowedProfiles = new Set([
+        "application",
+        "cli",
+        "discord",
+        "mcp-server",
+        "web",
+        "library",
+        "infrastructure",
+        "workspace",
+        "documentation",
+        "npm-published",
+        "ghcr-published",
+        "private",
+      ]);
+      for (const [profile, headings] of Object.entries(example.profileHeadings)) {
+        if (!allowedProfiles.has(profile)) {
+          errors.push(`${label}.profileHeadings contains unsupported profile ${profile}.`);
+        } else if (!Array.isArray(headings)) {
+          errors.push(`${label}.profileHeadings.${profile} must be an array.`);
+        } else {
+          headings.forEach((heading, index) => {
+            if (typeof heading !== "string" || heading.trim().length === 0)
+              errors.push(
+                `${label}.profileHeadings.${profile}[${index}] must be a non-empty string.`,
+              );
+          });
+        }
+      }
+    }
+  }
 }
 
 function validateRecord(record, label, errors) {

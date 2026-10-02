@@ -11,7 +11,7 @@ export function validateReadmeRequiredContent(readme, packageJson = {}, options 
     () => validateReadmePackageBadges(readme, packageJson),
     () => validateReadmeDocumentationNavigation(readme, options),
     () => validateReadmeSupport(readme, options.sections),
-    () => validateReadmeLinks(readme, packageJson, options.sections),
+    () => validateReadmeLinks(readme, packageJson, options.sections, options),
     () => validateReadmeLicense(readme, options.sections),
   ];
   const failures = [];

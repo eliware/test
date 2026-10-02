@@ -12,14 +12,17 @@ test.each(["application", "library"])(
     await mkdir(join(root, "specs"));
     await writeFile(join(root, "docs", "README.md"), "docs");
     await writeFile(join(root, "specs", "README.md"), "specs");
+    await writeFile(join(root, "RELEASE_NOTES.md"), "notes");
     const packageJson = { eliware: { apply: [profile] } };
     await expect(inspectReadmeDocumentationIndexes(root, packageJson)).resolves.toEqual({
       docsRequired: true,
+      releaseNotesPresent: true,
       error: null,
     });
     await mkdir(join(root, "examples"));
     await expect(inspectReadmeDocumentationIndexes(root)).resolves.toEqual({
       docsRequired: false,
+      releaseNotesPresent: true,
       error: null,
     });
     await rm(root, { recursive: true, force: true });
@@ -30,6 +33,7 @@ test("reports every missing required index", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-readme-indexes-"));
   await expect(inspectReadmeDocumentationIndexes(root)).resolves.toEqual({
     docsRequired: false,
+    releaseNotesPresent: false,
     error:
       "README.md links to required documentation index specs/README.md, but it does not exist.",
   });

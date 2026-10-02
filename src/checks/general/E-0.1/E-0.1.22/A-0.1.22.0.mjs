@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { parse } from "yaml";
 import { fail, pass } from "../../../check-result.mjs";
 import { validateUniqueSpecificationDirectiveIds } from "./validate-unique-specification-directive-ids.mjs";
 import { validateSpecificationDirectiveDocuments } from "./validate-specification-directive-documents.mjs";
@@ -11,15 +12,15 @@ export async function run(context) {
   const { root, repositoryInventory } = context;
   let document;
   try {
-    const file = join(root, "specs", "directives.json");
+    const file = join(root, "specs", "directives.yaml");
     document = repositoryInventory
-      ? await repositoryInventory.readParsed(file, "json", JSON.parse)
-      : JSON.parse(await readFile(file, "utf8"));
+      ? await repositoryInventory.readParsed(file, "yaml-document", parse)
+      : parse(await readFile(file, "utf8"));
   } catch {
-    return fail(ruleId, "specs/directives.json is required and must be valid JSON.");
+    return fail(ruleId, "specs/directives.yaml is required and must be valid YAML.");
   }
   if (!Array.isArray(document.directives) || document.directives.length === 0) {
-    return fail(ruleId, "specs/directives.json must contain one or more directives.");
+    return fail(ruleId, "specs/directives.yaml must contain one or more directives.");
   }
   const errors = await validateSpecificationDirectiveDocuments(root, repositoryInventory);
   const uniquenessError = await validateUniqueSpecificationDirectiveIds(root, repositoryInventory);

@@ -23,7 +23,7 @@ export async function run(context) {
       if (!new RegExp(`${record.name.replace(".", "\\.")}#id=[A-Za-z0-9._-]+`).test(runbookReadme))
         failures.push(`runbooks/README.md must index ${record.name} with its stable ID.`);
     }
-    for (const file of ["specs/directives.json"]) {
+    for (const file of ["specs/directives.yaml"]) {
       try {
         await access(join(root, file));
         if (!readme.includes(file)) failures.push(`Workspace README.md must link ${file}.`);

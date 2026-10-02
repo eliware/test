@@ -1,6 +1,6 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-## @eliware/test [![npm version](https://img.shields.io/npm/v/@eliware/test.svg)](https://www.npmjs.com/package/@eliware/test) [![license](https://img.shields.io/github/license/eliware/test.svg)](LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yml)
+## @eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yml)
 
 ## Table of Contents
 
@@ -243,9 +243,10 @@ diagnostics when requesting help.
 - Documentation: [docs](docs/README.md) · [specifications](specs/README.md)
 - [Usage](docs/usage.md) · [Troubleshooting](docs/troubleshooting.md) · [Support](docs/support.md)
 - [Canonical repository profile specifications](specs/conventions/README.md)
-- [Home Page](https://eliware.org)
-- [GitHub Repo](https://github.com/eliware/test) (`git+https://github.com/eliware/test.git`)
-- [GitHub Org](https://github.com/eliware)
+- [Home Page](https://github.com/eliware/test#readme)
+- [GitHub repository](https://github.com/eliware/test.git)
+- [Eliware](https://eliware.org)
+- [GitHub organization](https://github.com/eliware)
 - [npm Package](https://www.npmjs.com/package/@eliware/test)
 - [Release Notes](RELEASE_NOTES.md)
 - [Discord](https://discord.gg/M6aTR9eTwN)

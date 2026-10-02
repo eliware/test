@@ -12,7 +12,7 @@ async function fixture(directives) {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
   await mkdir(join(root, "specs"));
   await writeFile(
-    join(root, "specs", "directives.json"),
+    join(root, "specs", "directives.yaml"),
     JSON.stringify({ version: conventionVersion, description: "Fixture directives", directives }),
   );
   return root;
@@ -57,7 +57,7 @@ test("rejects duplicate IDs anywhere in specs", async () => {
   const root = await fixture([{ id: "E-0.0", dos: ["Do."], donts: ["Do not."] }]);
   await mkdir(join(root, "specs", "conventions"));
   await writeFile(
-    join(root, "specs", "conventions", "general.json"),
+    join(root, "specs", "conventions", "general.yaml"),
     JSON.stringify({
       version: conventionVersion,
       description: "Fixture convention",
@@ -76,13 +76,13 @@ test("rejects missing, invalid, and empty directive documents", async () => {
   await expect(run({ root: missing })).resolves.toEqual({
     ruleId: "A-0.1.22.0",
     status: "fail",
-    message: "specs/directives.json is required and must be valid JSON.",
+    message: "specs/directives.yaml is required and must be valid YAML.",
   });
   await rm(missing, { recursive: true, force: true });
 
   const invalid = await mkdtemp(join(tmpdir(), "eliware-test-directives-"));
   await mkdir(join(invalid, "specs"));
-  await writeFile(join(invalid, "specs", "directives.json"), "not json");
+  await writeFile(join(invalid, "specs", "directives.yaml"), "not json");
   await expect(run({ root: invalid })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
@@ -92,12 +92,12 @@ test("rejects missing, invalid, and empty directive documents", async () => {
   await expect(run({ root: empty })).resolves.toEqual({
     ruleId: "A-0.1.22.0",
     status: "fail",
-    message: "specs/directives.json must contain one or more directives.",
+    message: "specs/directives.yaml must contain one or more directives.",
   });
   await rm(empty, { recursive: true, force: true });
 });
 
-test("reads directive JSON through the shared parsed cache", async () => {
+test("reads directive YAML through the shared parsed cache", async () => {
   const root = await fixture([
     {
       id: "E-0.0",
@@ -114,6 +114,6 @@ test("reads directive JSON through the shared parsed cache", async () => {
     },
   });
   await expect(run({ root, repositoryInventory })).resolves.toMatchObject({ status: "pass" });
-  expect(reads.get(join(root, "specs", "directives.json"))).toBe(1);
+  expect(reads.get(join(root, "specs", "directives.yaml"))).toBe(1);
   await rm(root, { recursive: true, force: true });
 });

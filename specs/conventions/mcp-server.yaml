@@ -1,0 +1,28 @@
+version: "10.0"
+description: Applies to repositories containing MCP server code.
+requires:
+  - application
+directives:
+  - id: E-0.1.80
+    dos:
+      - These conventions apply to repositories containing MCP server application code.
+      - MCP server application repositories must explicitly list the application and mcp-server profile names in package.json.eliware.apply; their rules are defined in application.yaml and mcp-server.yaml.
+    donts:
+      - MCP server application repositories must not omit the application profile or applicable MCP requirements.
+    directives:
+      - id: A-0.1.80.0
+        dos:
+          - Every MCP server repository must extend the application AGENTS.md requirements with applicable MCP guidance.
+        donts:
+          - An MCP server repository must not omit AGENTS.md.
+        directives:
+          - id: A-0.1.80.0.1
+            dos:
+              - "After the seven general AGENTS.md headings, add a ## MCP server section. Document tools, resources, prompts, transport, authentication, schemas, protocol validation commands, and network/exposure boundaries."
+            donts:
+              - AGENTS.md must not leave MCP protocol behavior or authentication validation undefined.
+      - id: A-0.1.80.2
+        dos:
+          - Under the Tools, Resources, Prompts, Transport, Authentication, Schemas, and Operations headings assigned to mcp-server by general.yaml, document the server contract and Docker, Compose, or systemd examples when supported. The shared Operations heading contains requirements from every applied profile that maps to it. Include headings in the Table of Contents as required by general.yaml.
+        donts:
+          - Do not expose bearer tokens, claim unsupported protocol behavior, or provide server-start instructions that unintentionally expose a live endpoint.

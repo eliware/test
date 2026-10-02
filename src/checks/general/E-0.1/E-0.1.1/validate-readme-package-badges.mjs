@@ -1,37 +1,32 @@
+import { normalizeRepositoryUrl } from "./validate-readme-links.mjs";
+
 export function validateReadmePackageBadges(readme, packageJson = {}) {
-  const lines = readme.split(/\r?\n/u);
   const packageName = packageJson?.name;
-  const heading = packageName
-    ? lines.find((line) => new RegExp(`^## ${escapeRegExp(packageName)}(?:\\s|$)`, "u").test(line))
-    : lines.find((line) => /^## @eliware\/[^ ]+ /u.test(line));
+  if (typeof packageName !== "string" || !packageName) {
+    return "README.md requires package.json.name to define its package title and badges.";
+  }
+  const heading = readme.split(/\r?\n/u).find((line) => line.startsWith("## "));
   if (!heading) return "README.md must use the standard package heading.";
+  const repository =
+    typeof packageJson?.repository === "string"
+      ? packageJson.repository
+      : packageJson?.repository?.url;
+  const repositoryUrl = normalizeRepositoryUrl(repository);
+  if (!repositoryUrl)
+    return "README.md badges require a valid GitHub repository URL in package.json.";
 
-  const headingPackageName = packageName ?? heading.match(/^## ([^ ]+)/u)?.[1];
-  const hasNpmBadge = /!\[npm\s+version\][^\n]*npmjs\.com\/package\//iu.test(heading);
-  const npmPublished = packageJson?.eliware?.apply?.includes("npm-published") === true;
-  if (
-    npmPublished &&
-    !new RegExp(`npmjs\\.com\\/package\\/${escapeRegExp(headingPackageName)}\\b`, "u").test(heading)
-  ) {
-    return "README.md must include the npm version badge for the package named in package.json.";
-  }
-
-  if (!npmPublished && hasNpmBadge) {
-    return "Repositories that do not apply the npm-published profile must not include an npm version badge.";
-  }
-  if (!/\[!\[license\][\s\S]*?\]\(LICENSE\)/iu.test(heading)) {
-    return "README.md must include the license badge.";
-  }
-  if (
-    !/\[!\[CI\]\([^\s)]*\/actions\/workflows\/ci\.yml\/badge\.svg\)\]\([^\s)]*\/actions\/workflows\/ci\.yml\)/u.test(
-      heading,
-    )
-  ) {
-    return "README.md CI badge must use and link to the canonical .github/workflows/ci.yml workflow.";
-  }
-  return null;
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  const repositoryPath = repositoryUrl.replace("https://github.com/", "");
+  const badges = [
+    ...(packageJson?.eliware?.apply?.includes("npm-published")
+      ? [
+          `[![npm](https://img.shields.io/npm/v/${packageName})](https://www.npmjs.com/package/${packageName})`,
+        ]
+      : []),
+    `[![License](https://img.shields.io/github/license/${repositoryPath})](https://github.com/${repositoryPath}/blob/main/LICENSE)`,
+    `[![CI](https://github.com/${repositoryPath}/actions/workflows/ci.yml/badge.svg)](https://github.com/${repositoryPath}/actions/workflows/ci.yml)`,
+  ];
+  const expectedHeading = `## ${packageName} ${badges.join(" ")}`;
+  return heading === expectedHeading
+    ? null
+    : "README.md title and separate npm, license, and CI badges must exactly match the canonical package and repository targets.";
 }

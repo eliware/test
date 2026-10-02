@@ -40,12 +40,11 @@ export function validateReadmeStructure(readme, packageJson = {}) {
   }
   const packageName = packageJson?.name;
   const title = headings.find(({ index }) => index === titleIndex).line;
-  if (
-    typeof packageName === "string" &&
-    !new RegExp(`^##\\s+${escapeRegExp(packageName)}(?:\\s|$)`, "u").test(title)
-  ) {
-    return "README.md project title must begin with the exact package.json.name.";
-  }
+  const titleText = title
+    .replace(/^##\s+/u, "")
+    .replace(/(?:\s+\[!\[[^\]]+\]\([^)]+\)\]\([^)]+\))+$/u, "");
+  if (typeof packageName === "string" && titleText !== packageName)
+    return "README.md project title must exactly match package.json.name before its badges.";
 
   const missing = required.find((_, index) => indices[index] < 0);
   if (missing)
@@ -69,8 +68,14 @@ export function validateReadmeStructure(readme, packageJson = {}) {
 
   const tocEndIndex = headings.find(({ index }) => index > tocIndex).index;
   const tocContent = lines.slice(tocIndex, tocEndIndex).join("\n");
-  const actualLinks = [...tocContent.matchAll(/\[[^\]]*\]\(#([^)]+)\)/gu)].map((match) => match[1]);
-  const expectedLinks = required.map((heading) => heading.toLowerCase().replaceAll(" ", "-"));
+  const actualLinks = [...tocContent.matchAll(/\[([^\]]*)\]\(#([^)]+)\)/gu)].map((match) => [
+    match[1],
+    match[2],
+  ]);
+  const expectedLinks = required.map((heading) => [
+    heading,
+    heading.toLowerCase().replaceAll(" ", "-"),
+  ]);
   if (JSON.stringify(actualLinks) !== JSON.stringify(expectedLinks)) {
     return "README.md Table of Contents must link every required heading exactly once, in document order.";
   }

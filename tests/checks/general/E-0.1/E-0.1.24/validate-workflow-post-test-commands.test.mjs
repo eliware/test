@@ -2,16 +2,22 @@ import { expect, test } from "@jest/globals";
 import { parse } from "yaml";
 import { validateWorkflowPostTestCommands } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-post-test-commands.mjs";
 
-test("allows reporting commands after npm test", () => {
-  for (const command of ["echo done", "printf done"]) {
+test("allows arbitrary commands after npm test except publishing commands", () => {
+  for (const command of [
+    "echo done",
+    "npm run typecheck",
+    "rm -rf build",
+    "node scripts/deploy.mjs",
+    "echo ready && npm run check",
+    "npm test\ntouch .tmp",
+  ]) {
     expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toBeNull();
   }
-});
-
-test("rejects other commands after npm test", () => {
-  expect(validateWorkflowPostTestCommands("ci.yml", [{ command: "rm -rf ." }], -1)).toContain(
-    "reporting commands after npm test",
-  );
+  for (const command of ["npm publish", "docker push ghcr.io/eliware/example:latest"]) {
+    expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toContain(
+      "publishing commands",
+    );
+  }
 });
 
 test("rejects malformed post-test steps and unsupported action forms", () => {
@@ -30,7 +36,7 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
         0,
         [testStep, reportingStep],
       ),
-    ).toContain("reporting commands after npm test");
+    ).toContain("publishing commands");
   }
   expect(
     validateWorkflowPostTestCommands(
@@ -39,9 +45,9 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
       0,
       [testStep, { uses: "untrusted/reporting@v1", with: { value: "safe" } }],
     ),
-  ).toContain("reporting commands after npm test");
+  ).toContain("publishing commands");
   expect(validateWorkflowPostTestCommands("ci.yml", [], 0, "invalid steps")).toContain(
-    "reporting commands after npm test",
+    "publishing commands",
   );
   const testCommand = { run: "npm test" };
   expect(
@@ -51,7 +57,7 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
       0,
       "malformed steps",
     ),
-  ).toContain("reporting commands after npm test");
+  ).toContain("publishing commands");
   for (const [command, step] of [
     ["npm run typecheck", { run: "npm run typecheck", if: "always()" }],
     ["npm run build", { run: "npm run build", "continue-on-error": true }],
@@ -61,39 +67,18 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
         { run: "npm test" },
         step,
       ]),
-    ).toContain("reporting commands after npm test");
+    ).toContain("publishing commands");
   }
 });
 
-test("rejects shell expansion, redirection, and newline command injection", () => {
-  for (const command of [
-    'echo "$(touch .env)"',
-    'echo "`touch .env`"',
-    "echo safe > .env",
-    "echo 'x' > .env",
-    'echo "x" > .env',
-    'echo "safe\\\"; touch .env"',
-    'echo "safe\\\\value"',
-    "printf '$GITHUB_TOKEN'",
-    "echo safe\ntouch .env",
-    "printf safe\r\ntouch .env",
-  ]) {
-    expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toContain(
-      "reporting commands after npm test",
-    );
-  }
-});
-
-test("rejects a multiline reporting block scalar after YAML parsing", () => {
+test("allows multiline shell commands after npm test once parsed from YAML", () => {
   const workflow = parse("steps:\n  - run: |\n      echo done\n      touch .env\n");
   const command = workflow.steps[0].run.trim();
-  expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toContain(
-    "reporting commands after npm test",
-  );
+  expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toBeNull();
 });
 
 test("uses original workflow positions when setup steps have no run command", () => {
-  const commandStep = { run: "rm -rf ." };
+  const commandStep = { run: "npm publish" };
   expect(
     validateWorkflowPostTestCommands(
       "ci.yml",
@@ -101,7 +86,7 @@ test("uses original workflow positions when setup steps have no run command", ()
       1,
       [{ uses: "actions/checkout@v4" }, { run: "npm test" }, commandStep],
     ),
-  ).toContain("reporting commands after npm test");
+  ).toContain("publishing commands");
 });
 
 test("checks actions after npm test against the reporting allowlist", () => {
@@ -112,14 +97,14 @@ test("checks actions after npm test against the reporting allowlist", () => {
   ]) {
     expect(
       validateWorkflowPostTestCommands("ci.yml", [], 0, [{ run: "npm test" }, actionStep]),
-    ).toContain("approved reporting actions");
+    ).toContain("publishing commands");
   }
   expect(
     validateWorkflowPostTestCommands("ci.yml", [], 0, [
       { run: "npm test" },
       { uses: "untrusted/action@v1" },
     ]),
-  ).toContain("approved reporting actions");
+  ).toContain("publishing commands");
   expect(
     validateWorkflowPostTestCommands(
       "publish.yml",
@@ -147,7 +132,7 @@ test("checks actions after npm test against the reporting allowlist", () => {
       [{ run: "npm test" }, { uses: "actions/attest@v4" }],
       { allowAttestation: true },
     ),
-  ).toContain("approved reporting actions");
+  ).toContain("publishing commands");
   for (const withValues of [
     {},
     { subjectName: "ghcr.io/eliware/example", pushToRegistry: true },
@@ -165,12 +150,12 @@ test("checks actions after npm test against the reporting allowlist", () => {
         [{ run: "npm test" }, { uses: "actions/attest@v4", with: withValues }],
         { allowAttestation: true },
       ),
-    ).toContain("approved reporting actions");
+    ).toContain("publishing commands");
   }
   expect(
     validateWorkflowPostTestCommands("ci.yml", [], 0, [
       { run: "npm test" },
       { uses: "actions/attest@v4" },
     ]),
-  ).toContain("approved reporting actions");
+  ).toContain("publishing commands");
 });

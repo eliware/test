@@ -11,6 +11,21 @@ const valid = {
 
 test("accepts records matching the directive schema", () => {
   expect(validateDirectiveRecords([valid])).toEqual([]);
+  expect(
+    validateDirectiveRecords([
+      {
+        ...valid,
+        examples: [
+          {
+            purpose: "Canonical README heading table",
+            markdown: "Sole source of truth.",
+            generalHeadings: ["Features", "Support"],
+            profileHeadings: { application: ["Configuration"], private: [] },
+          },
+        ],
+      },
+    ]),
+  ).toEqual([]);
 });
 
 test("requires a non-empty directive list", () => {
@@ -54,6 +69,36 @@ test("rejects malformed example records and malformed nested children", () => {
       expect.stringContaining("examples[1].purpose must be a non-empty string"),
       expect.stringContaining("examples[1].markdown must be a non-empty string"),
       expect.stringContaining("directives[0] must be an object"),
+    ]),
+  );
+});
+
+test("validates structured README heading tables in examples", () => {
+  const errors = validateDirectiveRecords([
+    {
+      ...valid,
+      examples: [
+        {
+          purpose: "Headings",
+          markdown: "table",
+          generalHeadings: [],
+          profileHeadings: {
+            unknown: [],
+            application: "Configuration",
+            cli: [" "],
+          },
+        },
+        { purpose: "Headings", markdown: "table", profileHeadings: null },
+      ],
+    },
+  ]);
+  expect(errors).toEqual(
+    expect.arrayContaining([
+      expect.stringContaining("generalHeadings must be a non-empty array"),
+      expect.stringContaining("contains unsupported profile unknown"),
+      expect.stringContaining("profileHeadings.application must be an array"),
+      expect.stringContaining("profileHeadings.cli[0] must be a non-empty string"),
+      expect.stringContaining("profileHeadings must be an object"),
     ]),
   );
 });

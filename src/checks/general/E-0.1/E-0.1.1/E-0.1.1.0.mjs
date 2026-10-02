@@ -24,6 +24,7 @@ export async function run(context) {
   const requiredContentError = validateReadmeRequiredContent(readme, packageJson, {
     ...indexes,
     sections,
+    releaseNotesPresent: indexes.releaseNotesPresent,
   });
   if (requiredContentError) failures.push(requiredContentError);
   const metadataError = validateReadmeMetadata(readme, packageJson, sections);

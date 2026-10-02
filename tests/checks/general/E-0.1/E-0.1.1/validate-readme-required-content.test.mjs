@@ -61,7 +61,7 @@ test("runs focused README validators in order and passes their shared inputs", (
   );
   expect(validateReadmeDocumentationNavigation).toHaveBeenCalledWith(readme, options);
   expect(validateReadmeSupport).toHaveBeenCalledWith(readme, options.sections);
-  expect(validateReadmeLinks).toHaveBeenCalledWith(readme, packageJson, options.sections);
+  expect(validateReadmeLinks).toHaveBeenCalledWith(readme, packageJson, options.sections, options);
   expect(validateReadmeLicense).toHaveBeenCalledWith(readme, options.sections);
 });
 
