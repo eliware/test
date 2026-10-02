@@ -5,10 +5,10 @@ export function hasConsistentNpmAuditSeverityCounts(report) {
   const findings = [];
   for (const [name, finding] of Object.entries(report.vulnerabilities)) {
     if (
-      finding !== null &&
-      typeof finding === "object" &&
-      !Array.isArray(finding) &&
-      finding.name !== undefined &&
+      finding === null ||
+      typeof finding !== "object" ||
+      Array.isArray(finding) ||
+      typeof finding.name !== "string" ||
       finding.name !== name
     )
       return false;

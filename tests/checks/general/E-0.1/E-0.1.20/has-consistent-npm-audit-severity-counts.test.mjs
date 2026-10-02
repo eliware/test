@@ -68,6 +68,25 @@ test("rejects conflicting duplicate normalized package findings", () => {
       ),
     ),
   ).toBe(false);
+  expect(
+    hasConsistentNpmAuditSeverityCounts(
+      report(
+        { ...emptyCounts, moderate: 2, total: 2 },
+        {
+          example: { severity: "moderate" },
+          duplicate: { severity: "moderate" },
+        },
+      ),
+    ),
+  ).toBe(false);
+});
+
+test("rejects unnamed findings even when metadata matches their entry count", () => {
+  expect(
+    hasConsistentNpmAuditSeverityCounts(
+      report({ ...emptyCounts, moderate: 1, total: 1 }, { example: { severity: "moderate" } }),
+    ),
+  ).toBe(false);
 });
 
 test("rejects missing, malformed, or unsafe severity counts", () => {
@@ -93,10 +112,10 @@ test("rejects severity counts whose sum is outside the safe integer range", () =
 
 test("rejects protected severities, missing finding severities, and count mismatches", () => {
   for (const finding of [
-    { severity: "high" },
-    { severity: "critical" },
-    { severity: undefined },
-    { severity: "low" },
+    { name: "example", severity: "high" },
+    { name: "example", severity: "critical" },
+    { name: "example", severity: undefined },
+    { name: "example", severity: "low" },
     null,
     [],
   ]) {

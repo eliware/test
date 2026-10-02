@@ -61,15 +61,26 @@ test("requires the npm publication pack script when the profile applies", () => 
   ).toBeNull();
 });
 
-test("rejects unrelated scripts and malformed capability scripts", () => {
+test("accepts canonical consumer commands including pack for a published package", () => {
+  expect(
+    validateRequiredScripts(
+      { ...scripts, pack: "eliware-test --pack" },
+      { requiresPack: true, selfHosted: false },
+    ),
+  ).toBeNull();
+});
+
+test("allows arbitrary custom scripts while requiring nonempty commands", () => {
   expect(validateRequiredScripts(null)).toBe("package.json.scripts must be an object.");
   expect(validateRequiredScripts([])).toBe("package.json.scripts must be an object.");
   expect(validateRequiredScripts("test lint")).toBe("package.json.scripts must be an object.");
-  expect(validateRequiredScripts({ ...scripts, start: "node server.mjs" })).toBe(
-    "package.json.scripts.start is not allowed by an applicable profile.",
-  );
+  expect(validateRequiredScripts({ ...scripts, start: "node server.mjs" })).toBeNull();
+  expect(validateRequiredScripts({ ...scripts, lighthouse: "lighthouse --quiet" })).toBeNull();
+  expect(
+    validateRequiredScripts({ ...scripts, puppeteer: "node scripts/browser-check.mjs" }),
+  ).toBeNull();
   expect(validateRequiredScripts({ ...scripts, unexpected: "" })).toBe(
-    "package.json.scripts.unexpected is not allowed by an applicable profile.",
+    "package.json.scripts.unexpected must be a nonempty command.",
   );
   expect(
     validateRequiredScripts(
@@ -81,7 +92,7 @@ test("rejects unrelated scripts and malformed capability scripts", () => {
   ).toBe("package.json.scripts.typecheck must be a nonempty command.");
 });
 
-test("accepts only explicitly permitted capability and web profile scripts", () => {
+test("allows profile scripts and arbitrary commands without attempting to validate their tools", () => {
   expect(
     validateRequiredScripts(
       { ...scripts, start: "node server.mjs" },
@@ -91,31 +102,22 @@ test("accepts only explicitly permitted capability and web profile scripts", () 
     ),
   ).toBeNull();
   expect(
-    validateRequiredScripts(
-      { ...scripts, typecheck: "tsc --noEmit", build: "vite build" },
-      {
-        allowedAdditionalScripts: ["typecheck", "build"],
-      },
-    ),
+    validateRequiredScripts({ ...scripts, typecheck: "echo skipped", build: "jest" }),
   ).toBeNull();
   expect(
-    validateRequiredScripts(
-      { ...scripts, typecheck: "tsc --noEmit", build: "vite build" },
-      {
-        allowedAdditionalScripts: ["typecheck", "build"],
-      },
-    ),
+    validateRequiredScripts({ ...scripts, lighthouse: "lighthouse", puppeteer: "puppeteer" }),
   ).toBeNull();
-  expect(
-    validateRequiredScripts(
-      { ...scripts, typecheck: "echo skipped", build: "jest" },
-      { allowedAdditionalScripts: ["typecheck", "build"] },
-    ),
-  ).toContain("must invoke a direct typechecker");
-  expect(
-    validateRequiredScripts(
-      { ...scripts, lighthouse: "lighthouse" },
-      { allowedAdditionalScripts: ["build"] },
-    ),
-  ).toContain("not allowed");
+});
+
+test.each(["npm publish", "docker push ghcr.io/example/app:latest", "docker push $GHCR_IMAGE"])(
+  "rejects prohibited custom publish script %s",
+  (command) => {
+    expect(validateRequiredScripts({ ...scripts, release: command })).toContain(
+      "package.json.scripts.release must not publish npm packages or GHCR images.",
+    );
+  },
+);
+
+test("does not impose a direct-tool policy on arbitrary custom script commands", () => {
+  expect(validateRequiredScripts({ ...scripts, build: "vite build && echo done" })).toBeNull();
 });

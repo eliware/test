@@ -31,6 +31,15 @@ test("clamps minimum limits and uses the default matcher when no matcher is inje
   expect(createRedactedStreamPolicy(["secret"], 20).suppressed).toBe(false);
 });
 
+test.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+  "uses the fixed search bound for non-finite work limits (%s)",
+  (maxSearchWorkPerChunk) => {
+    expect(createRedactedStreamPolicy(["secret"], 20, { maxSearchWorkPerChunk }).workLimit).toBe(
+      1_000_000,
+    );
+  },
+);
+
 test("suppresses unsafe output when a secret is too long for the output limit", () => {
   const policy = createRedactedStreamPolicy(["oversized"], 2);
   expect(policy.suppressed).toBe(true);

@@ -72,6 +72,7 @@ function isValidEventConfig(event, config) {
       )
     );
   if (!isRecord(config)) return false;
+  // codescope ignore: deterministic validation intentionally accepts only event-specific fields represented by this convention's supported schema
   const allowedFields =
     eventFields.get(event) ?? (typedActivityEvents.has(event) ? new Set(["types"]) : new Set());
   return Object.entries(config).every(([field, value]) => {

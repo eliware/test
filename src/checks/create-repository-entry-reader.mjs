@@ -37,11 +37,9 @@ export function createRepositoryEntryReader({
     const records = await snapshot;
     let directoriesExist = true;
     try {
-      await Promise.all(
-        readDirectoryCached
-          .getTrackedDirectories()
-          .map((directory) => readDirectoryCached(directory, true)),
-      );
+      for (const directory of readDirectoryCached.getTrackedDirectories()) {
+        await readDirectoryCached(directory, true);
+      }
     } catch (error) {
       if (error?.code !== "ENOENT") throw error;
       directoriesExist = false;

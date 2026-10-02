@@ -23,7 +23,7 @@ directives:
         dos:
           - Libraries must define explicit exports and declarations for typed public APIs, test the public API, use package allowlists, and provide .env.example when the library supports environment configuration.
           - Every library must contain examples/README.md and at least one runnable native-ESM .mjs or .js example under examples/; CommonJS .cjs files are not runnable examples.
-          - Every library must contain docs/ with end-user documentation and docs/README.md as its overview and index. The index must link every discovered end-user document. During change review, a human or AI reviewer must assess whether the documentation set covers supported user-facing workflows and record relevant findings with the change.
+          - Every library must contain docs/ with end-user documentation and docs/README.md as its overview and index. The index must link every discovered end-user document other than docs/README.md itself, which is the index. During change review, a human or AI reviewer must assess whether the documentation set covers supported user-facing workflows and record relevant findings with the change.
           - Public Eliware packages must use the @eliware scope, repository metadata matching package.json, an approved license, the Eliware Discord, GitHub, and eliware@eliware.org support channels, and synchronized public branding.
         donts:
           - Libraries must not omit the examples index or runnable example, publish unintended files, or leave the public package contract untested.
@@ -58,7 +58,7 @@ directives:
           - Do not publish a library without validating its packed contents.
       - id: E-0.1.40.6
         dos:
-          - Libraries must define a non-empty typecheck script using the repository's direct typechecker. Aggregate `npm test` must run `npm run typecheck` automatically, and typecheck must pass before release consideration.
+          - Libraries must define a non-empty typecheck script using the repository's direct typechecker as one command, without shell chaining or redirection. Aggregate `npm test` must run `npm run typecheck` automatically, and typecheck must pass before release consideration.
         donts:
           - Do not omit typecheck from aggregate `npm test`, require a separate typecheck step in CI, or release a library without passing typecheck.
       - id: E-0.1.40.7

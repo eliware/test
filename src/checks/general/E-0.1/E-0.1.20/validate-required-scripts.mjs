@@ -1,5 +1,5 @@
 import { resolveSelfHostedScriptCommands } from "./resolve-self-hosted-script-commands.mjs";
-import { validateProfileScriptCommand } from "./validate-profile-script-command.mjs";
+import { isProhibitedPublishCommand } from "../E-0.1.24/is-prohibited-publish-command.mjs";
 
 const requiredScripts = {
   test: "eliware-test",
@@ -11,7 +11,7 @@ const requiredScripts = {
 
 export function validateRequiredScripts(
   scripts,
-  { requiresPack = false, allowedAdditionalScripts = [], selfHosted = false } = {},
+  { requiresPack = false, selfHosted = false } = {},
 ) {
   if (scripts === null || typeof scripts !== "object" || Array.isArray(scripts)) {
     return "package.json.scripts must be an object.";
@@ -20,6 +20,7 @@ export function validateRequiredScripts(
     ? { ...requiredScripts, pack: "eliware-test --pack" }
     : requiredScripts;
   const failures = [];
+  // Only the validator package itself may replace consumer-facing commands with its local entrypoint.
   const selfHostedResolution = selfHosted
     ? resolveSelfHostedScriptCommands(Object.keys(canonicalScripts))
     : null;
@@ -36,19 +37,15 @@ export function validateRequiredScripts(
     if (scripts?.[name] !== command)
       failures.push(`package.json.scripts.${name} must be exactly ${command}.`);
   }
-  const allowedNames = new Set([...Object.keys(applicableScripts), ...allowedAdditionalScripts]);
   for (const [name, command] of Object.entries(scripts)) {
-    if (!allowedNames.has(name)) {
-      failures.push(`package.json.scripts.${name} is not allowed by an applicable profile.`);
-      continue;
-    }
     if (Object.hasOwn(applicableScripts, name)) continue;
     if (typeof command !== "string" || !command.trim()) {
       failures.push(`package.json.scripts.${name} must be a nonempty command.`);
       continue;
     }
-    const commandError = validateProfileScriptCommand(name, command);
-    if (commandError) failures.push(commandError);
+    if (isProhibitedPublishCommand(command)) {
+      failures.push(`package.json.scripts.${name} must not publish npm packages or GHCR images.`);
+    }
   }
   return failures.length ? failures.join("\n") : null;
 }

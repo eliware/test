@@ -8,6 +8,7 @@ export function assertFreshCoverage(
   if (
     startedAt &&
     (!after ||
+      // codescope ignore: Existing reports at or before run start fail even if rewritten within the same millisecond; isolated runs use unique directories.
       (!isolatedRunDirectory &&
         ((before && before.mtimeMs <= startedAt) || after.mtimeMs <= startedAt)))
   ) {

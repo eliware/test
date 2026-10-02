@@ -19,5 +19,15 @@ test("accepts only the canonical version-tag push trigger", () => {
     hasExactTagTrigger({ document: { on: { push: { tags: ["v[0-9]+.[0-9]+.[0-9]+"] } } } }),
   ).toBe(false);
   expect(hasExactTagTrigger({ document: { on: { push: { tags: ["v*.*.*"] } } } })).toBe(false);
+  expect(
+    hasExactTagTrigger({
+      document: { on: { push: { tags: [releaseTagFilter], branches: ["main"] } } },
+    }),
+  ).toBe(false);
+  expect(
+    hasExactTagTrigger({
+      document: { on: { push: { tags: [releaseTagFilter], "tags-ignore": ["v9.*"] } } },
+    }),
+  ).toBe(false);
   expect(hasExactTagTrigger({ document: {} })).toBe(false);
 });

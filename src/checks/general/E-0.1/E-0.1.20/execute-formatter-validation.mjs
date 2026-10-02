@@ -16,6 +16,7 @@ export async function executeFormatterValidation({
     (mode !== null && mode !== "format" && mode !== "format-check")
   )
     return null;
+  // codescope ignore: formatter arguments are validated only after this guard confirms a formatter mode is selected.
   const argumentError = validatePrettierArguments(toolArgs);
   if (argumentError) return argumentError;
   try {

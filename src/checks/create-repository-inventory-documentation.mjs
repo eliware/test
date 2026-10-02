@@ -1,4 +1,5 @@
 import { basename } from "node:path";
+import { matchesDocumentationFilename } from "./match-documentation-filename.mjs";
 import { inventoryDirectory } from "./repository-inventory-paths.mjs";
 import {
   assertDocumentationFileLimit,
@@ -23,17 +24,18 @@ export function createDocumentationFileView(root, entriesUnder) {
     const prefix = base ? `${base}/` : "";
     const selectedPaths = new Set();
     let traversalObserved = false;
+    let visitedFiles = 0;
     const records = await entriesUnder(directory, null, {
       maxDepth,
+      maxFiles,
       maxDepthFilter: (path) => includeGenerated || !generatedPath.test(path),
       onFile(path) {
         traversalObserved = true;
         const file = path.slice(prefix.length);
-        if (
-          (!includeGenerated && generatedPath.test(path)) ||
-          !matchesDocumentationFile(predicate, basename(file))
-        )
-          return;
+        if (!includeGenerated && generatedPath.test(path)) return;
+        visitedFiles += 1;
+        assertDocumentationFileLimit(visitedFiles, maxFiles);
+        if (!matchesDocumentationFilename(predicate, basename(file))) return;
         selectedPaths.add(path);
         assertDocumentationFileLimit(selectedPaths.size, maxFiles);
       },
@@ -67,7 +69,7 @@ export function createDocumentationFileView(root, entriesUnder) {
       if (
         traversalObserved
           ? !selectedPaths.has(record.path)
-          : !matchesDocumentationFile(predicate, basename(file))
+          : !matchesDocumentationFilename(predicate, basename(file))
       )
         continue;
       result.push(file);
@@ -75,15 +77,4 @@ export function createDocumentationFileView(root, entriesUnder) {
     }
     return result;
   };
-}
-
-function matchesDocumentationFile(predicate, name) {
-  try {
-    return predicate(name);
-  } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
-    throw new Error(`Documentation filename predicate failed for "${name}": ${reason}`, {
-      cause: error,
-    });
-  }
 }

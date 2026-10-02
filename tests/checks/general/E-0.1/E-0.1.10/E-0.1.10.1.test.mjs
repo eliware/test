@@ -76,6 +76,23 @@ test("requires the command sequence in every deployment list", async () => {
   });
 });
 
+test("discovers and validates command arrays nested in multiple deployment levels", async () => {
+  const commands = {
+    version: 1,
+    on: {
+      push: {
+        deployments: [
+          { commands: requiredCommands },
+          { nested: { deployments: [{ commands: requiredCommands }] } },
+        ],
+      },
+    },
+  };
+  await withConfiguration(stringify(commands), async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
+  });
+});
+
 test.each([
   ["reordered", ["npm ci", ...requiredCommands.slice(0, 1), ...requiredCommands.slice(2)]],
   ["incomplete", requiredCommands.slice(0, 2)],
@@ -110,6 +127,16 @@ test("reports missing, malformed, and command-free deployment configuration", as
 
 test("rejects a commands field that is not an array", async () => {
   await withConfiguration("commands: npm test\n", async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("commands list 1 must be an array"),
+    });
+  });
+});
+
+test("rejects a nested commands value instead of skipping its malformed parent", async () => {
+  const nestedCommands = { nested: requiredCommands };
+  await withConfiguration(stringify({ commands: nestedCommands }), async (root) => {
     await expect(run({ root })).resolves.toMatchObject({
       status: "fail",
       message: expect.stringContaining("commands list 1 must be an array"),

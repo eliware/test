@@ -46,12 +46,15 @@ record:
             minLength: 1
             pattern: \S
           generalHeadings:
+            description: When supplied, general README headings must be non-empty.
             type: array
+            minItems: 1
             items:
               type: string
               minLength: 1
               pattern: \S
           profileHeadings:
+            description: Empty arrays explicitly declare that a profile has no additional README headings.
             type: object
             properties:
               application: { type: array, items: { type: string } }
@@ -116,12 +119,15 @@ $defs:
             minLength: 1
             pattern: \S
           generalHeadings:
+            description: When supplied, general README headings must be non-empty.
             type: array
+            minItems: 1
             items:
               type: string
               minLength: 1
               pattern: \S
           profileHeadings:
+            description: Empty arrays explicitly declare that a profile has no additional README headings.
             type: object
             properties:
               application: { type: array, items: { type: string } }

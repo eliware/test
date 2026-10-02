@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -25,7 +25,7 @@ test("loads workflows without caching when no context or inventory is supplied",
   }
 });
 
-test("shares one parsed workflow result within a validation context", async () => {
+test("reloads changed workflow content within a validation context", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-workflow-cache-"));
   const workflowsDirectory = join(root, ".github", "workflows");
   await mkdir(workflowsDirectory, { recursive: true });
@@ -35,9 +35,6 @@ test("shares one parsed workflow result within a validation context", async () =
   try {
     const context = {};
     const first = readWorkflows(root, context);
-    const concurrent = readWorkflows(root, context);
-
-    expect(concurrent).toBe(first);
     await expect(first).resolves.toEqual([
       expect.objectContaining({
         name: "ci.yml",
@@ -46,7 +43,12 @@ test("shares one parsed workflow result within a validation context", async () =
     ]);
 
     await writeFile(workflowPath, "name: changed\n");
-    expect(readWorkflows(root, context)).toBe(first);
+    await expect(readWorkflows(root, context)).resolves.toEqual([
+      expect.objectContaining({
+        name: "ci.yml",
+        document: expect.objectContaining({ name: "changed" }),
+      }),
+    ]);
     await expect(readWorkflows(root, {})).resolves.toEqual([
       expect.objectContaining({
         name: "ci.yml",
@@ -77,7 +79,7 @@ test("shares a workflow load across contexts using the same repository inventory
   try {
     const normalized = readWorkflows(root, context);
     const repeated = readWorkflows(root, { repositoryInventory });
-    expect(repeated).toBe(normalized);
+    expect(repeated).not.toBe(normalized);
     await expect(normalized).resolves.toEqual([
       expect.objectContaining({
         name: "ci.yml",
@@ -86,6 +88,41 @@ test("shares a workflow load across contexts using the same repository inventory
       }),
     ]);
     expect(reads.get(workflowPath)).toBe(1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("retries an inventory-backed workflow load after a transient failure", async () => {
+  const entries = [{ name: "ci.yml", isFile: () => true }];
+  const inventory = {
+    directoryEntries: jest
+      .fn()
+      .mockRejectedValueOnce(new Error("transient read failure"))
+      .mockResolvedValue(entries),
+    readText: jest.fn().mockResolvedValue("name: ci\\njobs: {}\\n"),
+    readParsed: jest.fn().mockResolvedValue({ name: "ci", jobs: {} }),
+  };
+  const context = { repositoryInventory: inventory };
+
+  await expect(readWorkflows("/repo", context)).rejects.toThrow("transient read failure");
+  await expect(readWorkflows("/repo", context)).resolves.toEqual([
+    expect.objectContaining({ name: "ci.yml" }),
+  ]);
+  expect(inventory.directoryEntries).toHaveBeenCalledTimes(2);
+});
+
+test("retries a context-backed workflow load after its workflow directory is created", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-workflow-context-retry-"));
+  const context = {};
+  try {
+    await expect(readWorkflows(root, context)).rejects.toThrow();
+    const workflowsDirectory = join(root, ".github", "workflows");
+    await mkdir(workflowsDirectory, { recursive: true });
+    await writeFile(join(workflowsDirectory, "ci.yml"), "name: ci\n");
+    await expect(readWorkflows(root, context)).resolves.toEqual([
+      expect.objectContaining({ name: "ci.yml" }),
+    ]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

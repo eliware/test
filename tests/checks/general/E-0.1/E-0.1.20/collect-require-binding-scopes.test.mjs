@@ -110,3 +110,24 @@ test("handles imports, all binding pattern forms, and a nested var declaration",
   });
   expect(collectRequireBindingScopes(nestedVar).has(nestedVar.program.body[0])).toBe(true);
 });
+
+test("tracks lexical require bindings declared in for-loop headers", () => {
+  for (const source of [
+    'for (const require = local; ready; next()) require("ignored");',
+    'for (let require in loaders) require("ignored");',
+    'for (let require of loaders) require("ignored");',
+    'for (const { require } of loaders) require("ignored");',
+  ]) {
+    const loop = parse(source, { sourceType: "module" }).program.body[0];
+    expect(collectRequireBindingScopes(loop).has(loop)).toBe(true);
+  }
+  for (const source of [
+    "for (;;) {}",
+    "for (const value in loaders) {}",
+    "for (const value of loaders) {}",
+    'for (var require = local; ready; next()) require("ignored");',
+  ]) {
+    const loop = parse(source, { sourceType: "module" }).program.body[0];
+    expect(collectRequireBindingScopes(loop).has(loop)).toBe(false);
+  }
+});

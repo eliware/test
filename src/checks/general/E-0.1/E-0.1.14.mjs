@@ -27,7 +27,7 @@ export async function run(context) {
   return findings.length
     ? fail(
         ruleId,
-        `Outdated packages: ${findings.join(", ")}. Install them with: npm install ${findings.join(" ")}.`,
+        `Outdated packages: ${findings.join(", ")}. Update them with: npm install ${findings.join(" ")}. Review package.json and package-lock.json together, then rerun npm ci and npm test.`,
       )
     : pass(ruleId);
 }

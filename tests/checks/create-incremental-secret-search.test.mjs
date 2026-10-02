@@ -33,11 +33,13 @@ test("accepts incremental text directly and rejects invalid incremental argument
     createSecretTextMatcher(["secret"]).createStream,
   );
   expect(search.appendText("safe ", 5).boundary).toBe(0);
-  expect(search.appendText("secret", 11)).toMatchObject({
+  const result = search.appendText("secret", 11);
+  expect(result).toMatchObject({
     boundary: 5,
-    matchEnds: [0, 0, 0, 0, 0, 11],
+    matchEnds: expect.any(Array),
     suppressed: false,
   });
+  expect(Array.from(result.matchEnds, (value) => value ?? 0)).toEqual([0, 0, 0, 0, 0, 11]);
   expect(search.appendText(null, 11).suppressed).toBe(true);
   expect(search.appendText("x", Number.NaN).suppressed).toBe(true);
   expect(search.appendText("xx", 1).suppressed).toBe(true);
@@ -70,7 +72,7 @@ test("keeps overlapping matches in the pending window", () => {
   }));
   const safePrefix = search("abcdef");
   expect(safePrefix.boundary).toBe(1);
-  expect(safePrefix.matchEnds).toEqual([0, 5]);
+  expect(Array.from(safePrefix.matchEnds, (value) => value ?? 0)).toEqual([0, 5]);
 });
 
 test("materializes only newly emitted ranges and pending matches on finish", () => {
@@ -85,7 +87,9 @@ test("materializes only newly emitted ranges and pending matches on finish", () 
     matches: [{ start: 0, end: 6 }],
     work: 1,
   }));
-  expect(finishSearch("secret", true).matchEnds).toEqual([6, 0, 0, 0, 0, 0, 0]);
+  expect(Array.from(finishSearch("secret", true).matchEnds, (value) => value ?? 0)).toEqual([
+    6, 0, 0, 0, 0, 0, 0,
+  ]);
 });
 
 test.each([

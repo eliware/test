@@ -13,7 +13,10 @@ export function createRedactedStreamPolicy(
     getSecretMatcher,
   } = {},
 ) {
-  const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, maxSearchWorkPerChunk));
+  const finiteWorkLimit = Number.isFinite(maxSearchWorkPerChunk)
+    ? maxSearchWorkPerChunk
+    : MAX_SECRET_SEARCH_WORK_PER_CHUNK;
+  const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, finiteWorkLimit));
   const values = [...new Set(secrets.filter((secret) => typeof secret === "string" && secret))];
   const maximumSecretLength = values.reduce(
     (maximum, secret) => Math.max(maximum, secret.length),

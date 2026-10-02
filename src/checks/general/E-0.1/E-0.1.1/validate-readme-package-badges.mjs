@@ -5,8 +5,16 @@ export function validateReadmePackageBadges(readme, packageJson = {}) {
   if (typeof packageName !== "string" || !packageName) {
     return "README.md requires package.json.name to define its package title and badges.";
   }
-  const heading = readme.split(/\r?\n/u).find((line) => line.startsWith("## "));
-  if (!heading) return "README.md must use the standard package heading.";
+  const lines = readme.split(/\r?\n/u);
+  const firstHeadingIndex = lines.findIndex((line) => line.startsWith("## "));
+  const headingIndex = lines.findIndex((line) => line.startsWith(`## ${packageName} `));
+  const heading = lines[headingIndex];
+  if (headingIndex < 0) return "README.md must use the standard package heading.";
+  const contentsIndex = lines.findIndex((line) => line === "## Table of Contents");
+  if (contentsIndex >= 0 && headingIndex > contentsIndex)
+    return "README.md package title must precede the Table of Contents.";
+  if (headingIndex !== firstHeadingIndex)
+    return "README.md package title must be the first level-two heading.";
   const repository =
     typeof packageJson?.repository === "string"
       ? packageJson.repository

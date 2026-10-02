@@ -89,6 +89,7 @@ test("validates structured README heading tables in examples", () => {
           },
         },
         { purpose: "Headings", markdown: "table", profileHeadings: null },
+        { purpose: "Headings", markdown: "table", profileHeadings: [] },
       ],
     },
   ]);

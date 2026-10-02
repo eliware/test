@@ -36,6 +36,11 @@ test("allows arbitrary commands after npm test except prohibited publishing comm
     ),
   ).toEqual([]);
   expect(
+    findUnsupportedCommands([...prefix, { command: "node scripts/use-ci-credential.mjs" }], {
+      allowPostTestValidation: true,
+    }),
+  ).toEqual([]);
+  expect(
     findUnsupportedCommands(
       [...prefix, { command: "npm publish" }, { command: "docker push ghcr.io/eliware/app" }],
       { allowPostTestValidation: true },

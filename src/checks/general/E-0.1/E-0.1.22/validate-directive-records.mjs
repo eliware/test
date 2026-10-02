@@ -1,4 +1,5 @@
 const allowedFields = new Set(["id", "dos", "donts", "directives", "examples"]);
+import { validateExampleProfileHeadings } from "./validate-example-profile-headings.mjs";
 
 function validateStringList(values, label, errors) {
   if (!Array.isArray(values) || values.length === 0) {
@@ -28,38 +29,7 @@ function validateExample(example, label, errors) {
   if (example.generalHeadings !== undefined)
     validateStringList(example.generalHeadings, `${label}.generalHeadings`, errors);
   if (example.profileHeadings !== undefined) {
-    if (!example.profileHeadings || typeof example.profileHeadings !== "object") {
-      errors.push(`${label}.profileHeadings must be an object.`);
-    } else {
-      const allowedProfiles = new Set([
-        "application",
-        "cli",
-        "discord",
-        "mcp-server",
-        "web",
-        "library",
-        "infrastructure",
-        "workspace",
-        "documentation",
-        "npm-published",
-        "ghcr-published",
-        "private",
-      ]);
-      for (const [profile, headings] of Object.entries(example.profileHeadings)) {
-        if (!allowedProfiles.has(profile)) {
-          errors.push(`${label}.profileHeadings contains unsupported profile ${profile}.`);
-        } else if (!Array.isArray(headings)) {
-          errors.push(`${label}.profileHeadings.${profile} must be an array.`);
-        } else {
-          headings.forEach((heading, index) => {
-            if (typeof heading !== "string" || heading.trim().length === 0)
-              errors.push(
-                `${label}.profileHeadings.${profile}[${index}] must be a non-empty string.`,
-              );
-          });
-        }
-      }
-    }
+    validateExampleProfileHeadings(example.profileHeadings, `${label}.profileHeadings`, errors);
   }
 }
 

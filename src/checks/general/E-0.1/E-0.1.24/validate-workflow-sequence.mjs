@@ -19,6 +19,7 @@ export function validateWorkflowSequence(
     const stepIndex = entry?.step ? steps.indexOf(entry.step) : -1;
     return stepIndex >= 0 ? stepIndex : commandIndex(entry);
   };
+  // codescope ignore: adjacency validation rejects every step between npm ci and npm test before pre-install or post-test checks run
   if (!hasAdjacentValidationSteps(install, test, steps, commands))
     return `${name} must run npm ci immediately followed by npm test with no intervening steps.`;
   const conditionError = validateValidationJobConditions(install, test, job);

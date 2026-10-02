@@ -16,6 +16,7 @@ export function publicEntrypoints(packageJson) {
     values.push(...collect(exportRoot));
   }
   return new Set(
+    // codescope ignore: Library conventions explicitly allow the conventional src/index.mjs barrel; applications do not use this set.
     [packageJson?.main, packageJson?.module, ...values, "src/index.mjs"]
       .map(normalizePath)
       .filter(Boolean),

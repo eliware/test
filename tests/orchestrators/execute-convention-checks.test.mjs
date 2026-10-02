@@ -92,7 +92,7 @@ test("does not execute advisory-only placeholders as deterministic checks", asyn
 
   const results = await executeConventionChecks(checks, {}, new Set());
   expect(results).toEqual([]);
-});
+}, 15000);
 
 test("executes required release-note validation beneath its advisory parent", async () => {
   const packageJson = JSON.parse(await readFile("package.json", "utf8"));

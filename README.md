@@ -66,7 +66,8 @@ eliware-test --audit
 eliware-test tests/example.test.mjs
 ```
 
-Package-maintainer commands are available in this repository checkout:
+The following package-maintainer commands require this repository checkout;
+they are not commands for consumers of the installed package:
 
 ```text
 npm test
@@ -79,8 +80,8 @@ node bin/eliware-test.mjs --pack
 ```
 
 `package.json` is the source of truth for the version in this checkout. The npm
-badge reports the version currently available in the public registry; it may
-differ from this checkout.
+badge reports the latest version published in the public registry; it does not
+identify or verify the version in this checkout.
 
 When a repository-local Jest cannot be resolved, `eliware-test` uses the Jest
 dependency it ships while keeping the consumer repository as Jest's working
@@ -107,10 +108,9 @@ own allowlist. For `--format` and `--format-check`, only non-path Prettier
 options are accepted; positional file paths are rejected. Formatting scope comes
 from the wrapper's maintained-file set, not positional path arguments. The wrapper rejects options that replace its
 selected write/check mode, canonical configuration, or required file coverage.
-Only allowlisted non-path options are forwarded to Prettier; for example,
-`--log-level=debug` is accepted. The wrapper rejects
-options outside that allowlist, including arguments that override wrapper-owned
-settings, file coverage, or required checks.
+Non-path Prettier options are forwarded unless they conflict with wrapper-owned
+mode, configuration, or required coverage settings. Prettier handles the
+individual option semantics and reports unsupported options itself.
 Arguments after `--` are treated as tool arguments and must still pass the
 selected mode's argument policy; the separator does not bypass its allowlist.
 Accepted arguments are forwarded after wrapper-owned arguments. Prettier
@@ -131,6 +131,10 @@ process-global timing stream.
 
 ## Development
 
+Run `npm test` for aggregate validation. For targeted stages, use
+`npm run lint`, `npm run format:check`, `npm run audit`, or `npm run pack` as
+applicable; `npm run format` writes formatted files.
+
 Use native ESM `.mjs` modules, keep `src/` and `tests/` mirrored, and add
 focused regression tests for behavior changes.
 
@@ -138,18 +142,23 @@ focused regression tests for behavior changes.
 
 For this npm-published package, `npm test` runs aggregate Jest, lint,
 format-check, audit, outdated-dependency, and pack validation. In consuming
-repositories, the stages depend on their declared profiles; pack validation runs only when the
-`npm-published` profile applies. One repository-relative `.test.*` or
+repositories, `npm test` is the aggregate validation entrypoint and selects
+stages from the profiles declared in `package.json`; see the
+[conventions](specs/conventions/) for the canonical profile stage requirements.
+Pack validation runs only when the `npm-published` profile applies. One
+repository-relative `.test.*` or
 `.spec.*` file under `tests/` can be supplied to
 `eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
+Jest reporter names in `package.json` must be strings; per-reporter option
+tuples are unsupported because the harness supplies its own reporters.
 
 ## Troubleshooting
 
 When validation fails, rerun the reported focused path to diagnose that test,
 then rerun `npm test` to verify the aggregate validation gate before handoff.
 
-The v9 orchestration and convention-check registry are implemented as focused
+The v10 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 
 Application and library architecture guidance is selected only when the
@@ -192,9 +201,14 @@ positional file paths. The wrapper forwards supported options unless they
 replace the write/check mode, canonical configuration, or required file
 coverage; Prettier rejects unsupported options. Wrapper-owned
 settings and options that weaken required checks are rejected. Wrapper
-arguments precede arguments after `--`.
+arguments precede arguments after `--`. Mode arguments must follow the selected
+mode or the `--` separator; arguments before a mode are rejected. Arguments
+after `--` remain subject to that mode's allowlist and do not bypass wrapper
+validation.
 
 To run one focused test, pass one existing repository-relative `.test.*` or `.spec.*` file under `tests/`;
+the path must appear before an optional `--` separator. Arguments after `--` are
+forwarded to Jest and do not select focused validation; in aggregate mode, forwarded Jest arguments can change which tests Jest runs.
 test filenames support `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`,
 `.cjs`, `.mts`, and `.cts` extensions:
 

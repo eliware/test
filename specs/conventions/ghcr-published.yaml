@@ -17,6 +17,8 @@ directives:
       - id: E-0.1.160.1
         dos:
           - Each repository must publish exactly one image name, ghcr.io/eliware/<repository-name>. Multiple tags, including a mutable latest alias, may refer to that same image name. The image is built from the repository-root Dockerfile and repository-root build context.
+          - All GHCR evidence checks use the package-derived image identity; helpers that parse image tags do not independently establish package identity.
+          - Attestation subject names and digest expressions must exactly match the package-derived image and the corresponding push step's digest output.
           - The repository name in the GHCR image must match the unscoped package.json.name.
         donts:
           - Do not publish under an unapproved registry owner, repository name, or image mapping.

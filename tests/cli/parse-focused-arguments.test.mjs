@@ -10,8 +10,24 @@ test("separates option values from focused positional paths", () => {
 
 test("preserves separator semantics for delegated option-looking arguments", () => {
   expect(parseFocusedArguments(["--", "--runInBand", "tests/example.test.mjs"]).positional).toEqual(
-    ["tests/example.test.mjs"],
+    [],
   );
+});
+
+test("tracks absolute POSIX, drive-qualified, and UNC paths forwarded after the separator", () => {
+  expect(
+    parseFocusedArguments([
+      "--",
+      "not-a-test",
+      "/repo/tests/example.test.mjs",
+      "C:\\repo\\tests\\example.test.mjs",
+      "\\\\server\\share\\tests\\example.test.mjs",
+    ]).forwardedTestPaths,
+  ).toEqual([
+    "/repo/tests/example.test.mjs",
+    "C:\\repo\\tests\\example.test.mjs",
+    "\\\\server\\share\\tests\\example.test.mjs",
+  ]);
 });
 
 test("treats equals-form option values as delegated values", () => {
@@ -22,15 +38,21 @@ test("treats equals-form option values as delegated values", () => {
 });
 
 test("handles empty and non-string argument values", () => {
-  expect(parseFocusedArguments()).toEqual({ positional: [], optionValues: new Set() });
+  expect(parseFocusedArguments()).toEqual({
+    positional: [],
+    optionValues: new Set(),
+    forwardedTestPaths: [],
+  });
   expect(focusedPathFrom()).toBeUndefined();
   expect(parseFocusedArguments([null, "--watch"]).positional).toEqual([]);
   expect(parseFocusedArguments(["--watch", "tests/example.test.mjs"]).positional).toEqual([
     "tests/example.test.mjs",
   ]);
-  expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).positional).toEqual([
+  expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).positional).toEqual([]);
+  expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).forwardedTestPaths).toEqual([
     "tests/example.test.mjs",
   ]);
+  expect(focusedPathFrom(["--", "tests/example.test.mjs"])).toBeUndefined();
   expect(
     parseFocusedArguments(["--testNamePattern", "tests/example.test.mjs", "tests/example.test.mjs"])
       .positional,

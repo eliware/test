@@ -33,6 +33,18 @@ test("requires package identity and a first level-two title", () => {
   );
 });
 
+test("rejects a package title that appears after the Table of Contents", () => {
+  expect(validateReadmePackageBadges(`## Table of Contents\n\n${heading}`, metadata)).toContain(
+    "must precede the Table of Contents",
+  );
+});
+
+test("requires the package title to be the first level-two heading", () => {
+  expect(validateReadmePackageBadges(`## Features\n\n${heading}`, metadata)).toContain(
+    "must be the first level-two heading",
+  );
+});
+
 test("rejects noncanonical title and badge text, order, images, or targets", () => {
   for (const changed of [
     heading.replace("## @eliware/fixture", "## @eliware/fixture extra"),

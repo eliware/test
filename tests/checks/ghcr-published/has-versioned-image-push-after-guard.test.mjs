@@ -23,6 +23,23 @@ test("requires one package-version push after the release tag guard", () => {
   ).toBe(false);
 });
 
+test("matches the expected package-derived image when supplied", () => {
+  expect(
+    hasVersionedImagePushAfterGuard(
+      { steps: [guard, push("ghcr.io/eliware/example:v1.2.3")] },
+      "1.2.3",
+      "ghcr.io/eliware/example",
+    ),
+  ).toBe(true);
+  expect(
+    hasVersionedImagePushAfterGuard(
+      { steps: [guard, push("ghcr.io/eliware/other:v1.2.3")] },
+      "1.2.3",
+      "ghcr.io/eliware/example",
+    ),
+  ).toBe(false);
+});
+
 test("rejects absent guards, multiple pushes, aliases, and mismatched versions", () => {
   const versionPush = push("ghcr.io/example/app:v1.2.3");
   expect(hasVersionedImagePushAfterGuard({ steps: [versionPush] }, "1.2.3")).toBe(false);

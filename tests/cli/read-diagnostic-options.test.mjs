@@ -49,6 +49,15 @@ test("rejects multiple focused paths", () => {
   );
 });
 
+test("rejects test paths after the Jest delegation separator", () => {
+  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "--", "tests/b.test.mjs"])).toThrow(
+    "must be supplied before the -- separator",
+  );
+  expect(() => readDiagnosticOptions(["--", "C:\\outside.test.mjs"])).toThrow(
+    "must be supplied before the -- separator",
+  );
+});
+
 test("rejects an unrecognized positional argument alongside a focused test path", () => {
   expect(() => readDiagnosticOptions(["tests/a.test.mjs", "unexpected-selector"])).toThrow(
     "Only one focused test path",
@@ -102,6 +111,9 @@ test("rejects informational commands combined with validation", () => {
 
 test("rejects focused Jest paths combined with tool modes", () => {
   expect(() => readDiagnosticOptions(["--audit", "tests/example.test.mjs"])).toThrow(
+    "cannot be combined",
+  );
+  expect(() => readDiagnosticOptions(["--audit", "--", "tests/example.test.mjs"])).toThrow(
     "cannot be combined",
   );
 });

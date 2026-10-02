@@ -49,6 +49,13 @@ test("ignores require calls shadowed in their lexical scope", () => {
   });
 });
 
+test("ignores calls to a locally declared function named require", () => {
+  expect(collect('function require() {} require("alpha");')).toEqual({
+    referenced: [],
+    uncertain: false,
+  });
+});
+
 test("ignores require.resolve calls shadowed in their lexical scope", () => {
   expect(collect('function nested(require) { require.resolve("beta/package.json"); }')).toEqual({
     referenced: [],

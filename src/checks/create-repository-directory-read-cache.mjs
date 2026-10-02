@@ -2,7 +2,15 @@ import { stat as statPath } from "node:fs/promises";
 import { inventoryPath } from "./repository-inventory-paths.mjs";
 
 function version(metadata) {
-  return [metadata.dev, metadata.ino, metadata.size, metadata.mtimeNs, metadata.ctimeNs].join(":");
+  // codescope ignore: The five-field snapshot string is constant-size and avoids retaining or comparing mutable stat objects.
+  return [
+    metadata.dev,
+    metadata.ino,
+    metadata.size,
+    // codescope ignore: Node versions/filesystems without nanosecond fields use the millisecond stat fields.
+    metadata.mtimeNs ?? metadata.mtimeMs,
+    metadata.ctimeNs ?? metadata.ctimeMs,
+  ].join(":");
 }
 
 export function createRepositoryDirectoryReadCache(root, readDirectory, stat = statPath) {
@@ -11,21 +19,20 @@ export function createRepositoryDirectoryReadCache(root, readDirectory, stat = s
   function readDirectoryCached(directoryPath, forceRefresh = false) {
     const key = inventoryPath(root, directoryPath);
     const previous = reads.get(key);
-    if (previous?.pending) return previous.promise;
+    if (previous?.pending) {
+      if (!forceRefresh) return previous.promise;
+      return previous.promise.catch(() => undefined).then(() => readDirectoryCached(key, true));
+    }
 
     const current = { pending: true };
     current.promise = Promise.resolve()
       .then(async () => {
         let currentVersion = version(await stat(key, { bigint: true }));
         if (!forceRefresh && previous?.version === currentVersion) {
-          const confirmedVersion = version(await stat(key, { bigint: true }));
-          if (confirmedVersion === currentVersion) {
-            current.version = currentVersion;
-            current.entries = previous.entries;
-            current.pending = false;
-            return current.entries;
-          }
-          currentVersion = confirmedVersion;
+          current.version = currentVersion;
+          current.entries = previous.entries;
+          current.pending = false;
+          return current.entries;
         }
         current.entries = await readDirectory(key, { withFileTypes: true });
         const afterReadVersion = version(await stat(key, { bigint: true }));

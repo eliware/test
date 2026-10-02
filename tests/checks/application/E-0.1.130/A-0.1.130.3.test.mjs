@@ -34,7 +34,10 @@ test("accepts a nonempty start command when file entrypoints are absent", () => 
     run({
       packageJson: { main: "", bin: {}, private: true, scripts: { start: "node server.mjs" } },
     }),
-  ).toMatchObject({ status: "pass", message: "" });
+  ).toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("entrypoint or a nonempty start command"),
+  });
   expect(run({ packageJson: { private: true, scripts: { start: " " } } })).toMatchObject({
     status: "fail",
     message: expect.stringContaining("entrypoint or a nonempty start command"),

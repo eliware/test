@@ -34,7 +34,7 @@ directives:
           - Web projects must not treat undocumented browser or live-system acceptance as complete.
       - id: E-0.1.50.4
         dos:
-          - Web applications must define a non-empty build script using the repository's direct build tool. Aggregate `npm test` must run `npm run build` automatically, and build must pass before release consideration.
+          - Web applications must define a non-empty build script using the repository's direct build tool as one command, without shell chaining or redirection. Aggregate `npm test` must run `npm run build` automatically, and build must pass before release consideration.
         donts:
           - Do not omit build from aggregate `npm test`, require a separate build step in CI, or release a web application without passing build.
       - id: E-0.1.50.5

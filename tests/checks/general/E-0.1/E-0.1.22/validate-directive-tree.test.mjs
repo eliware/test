@@ -21,3 +21,11 @@ test("rejects top-level AI rules and non-array child collections", () => {
     ]),
   );
 });
+
+test("requires complete numeric parent segments in nested directive IDs", () => {
+  for (const [parentId, childId] of [["E-1.2", "A-1.20.3"]]) {
+    expect(validateDirectiveTree([{ id: parentId, directives: [{ id: childId }] }])).toContain(
+      `Directive ${childId} must be nested under ${parentId}.`,
+    );
+  }
+});

@@ -5,7 +5,7 @@ test("accepts reports with zero high and critical vulnerabilities", () => {
   const reportedVulnerabilities = Object.fromEntries(
     ["info", "info", "info", "low", "low", "moderate"].map((severity, index) => [
       `package-${index}`,
-      { severity },
+      { name: `package-${index}`, severity },
     ]),
   );
   expect(

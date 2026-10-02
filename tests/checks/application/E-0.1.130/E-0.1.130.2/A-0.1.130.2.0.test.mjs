@@ -32,7 +32,7 @@ test("fails when a required documentation section is absent", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("passes when the documentation tree is completely indexed", async () => {
+test("passes when every end-user document except the index itself is indexed", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-app-docs-indexed-"));
   await mkdir(join(root, "docs", "guides"), { recursive: true });
   await writeFile(

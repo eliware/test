@@ -35,6 +35,7 @@ test("recognizes a progress marker divided across chunks once", () => {
   const onProgress = jest.fn();
   const progress = createChildProgressHandler({
     progressPattern: /^\[eliware-test-progress\]/m,
+    resetOnAnyOutput: false,
     resetProgressTimer,
     onProgress,
   });
@@ -50,6 +51,37 @@ test("recognizes a progress marker divided across chunks once", () => {
   progress.push("\n");
   expect(resetProgressTimer).toHaveBeenCalledTimes(2);
   expect(onProgress).toHaveBeenCalledTimes(2);
+});
+
+test("ignores overlong output lines as progress markers", () => {
+  const onProgress = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^x+$/u,
+    resetOnAnyOutput: false,
+    resetProgressTimer: jest.fn(),
+    onProgress,
+  });
+  progress.push("x".repeat(5000));
+  progress.push("\n");
+  expect(onProgress).not.toHaveBeenCalled();
+});
+
+test("keeps later complete lines after an overlong line and ignores its flush", () => {
+  const onProgress = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^valid$/u,
+    resetOnAnyOutput: false,
+    resetProgressTimer: jest.fn(),
+    onProgress,
+  });
+  progress.push("x".repeat(5000));
+  progress.push("\nvalid\n");
+  expect(onProgress).toHaveBeenCalledTimes(1);
+  expect(onProgress).toHaveBeenCalledWith("valid");
+
+  progress.push("x".repeat(5000));
+  progress.flush();
+  expect(onProgress).toHaveBeenCalledTimes(1);
 });
 
 test("resets the watchdog for any observable output when enabled", () => {

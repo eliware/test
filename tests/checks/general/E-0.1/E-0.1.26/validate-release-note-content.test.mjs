@@ -33,7 +33,7 @@ test("rejects entries without categories and categories without user-visible cha
   expect(validateReleaseNoteContent([release("1.0.0", [change("Fixed")])], "1.0.0")).toContain(
     "must give the Fixed category user-visible change text",
   );
-  for (const content of ["   ", "**", "---", "### Details"]) {
+  for (const content of ["   ", "**", "---", "### Details", "TBD", "TODO", "N/A", "No changes"]) {
     expect(
       validateReleaseNoteContent([release("1.0.0", [change("Fixed", content)])], "1.0.0"),
     ).toContain("user-visible change text");

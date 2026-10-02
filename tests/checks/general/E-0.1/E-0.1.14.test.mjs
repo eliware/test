@@ -59,22 +59,20 @@ test("includes reported development, optional, and peer packages", async () => {
 });
 
 test("includes all names in the report and recommends @latest for each", async () => {
-  await expect(
-    run({
-      packageJson: {
-        dependencies: { runtime: "1" },
-        devDependencies: { tooling: "1" },
-      },
-      outdatedDependencies: {
-        runtime: { current: "1", latest: "2" },
-        tooling: { current: "1", latest: "2" },
-      },
-    }),
-  ).resolves.toEqual({
-    ruleId,
-    status: "fail",
-    message: expect.stringContaining("npm install runtime@latest tooling@latest"),
+  const result = await run({
+    packageJson: {
+      dependencies: { runtime: "1" },
+      devDependencies: { tooling: "1" },
+    },
+    outdatedDependencies: {
+      runtime: { current: "1", latest: "2" },
+      tooling: { current: "1", latest: "2" },
+    },
   });
+  expect(result).toMatchObject({ ruleId, status: "fail" });
+  expect(result.message).toContain("npm install runtime@latest tooling@latest");
+  expect(result.message).toContain("Review package.json and package-lock.json together");
+  expect(result.message).toContain("rerun npm ci and npm test");
 });
 
 test("reads the registry when dependencies exist and no injected result is supplied", async () => {

@@ -27,6 +27,33 @@ test("recursively collects directory entries", async () => {
   ).resolves.toEqual(["nested/child.mjs", "root.mjs"]);
 });
 
+test("prunes generated, dependency, and VCS directories", async () => {
+  const visited = [];
+  await expect(
+    collectRepositoryFiles("C:/root", "C:/root", async (directory) => {
+      visited.push(directory);
+      return [
+        { name: "node_modules", isDirectory: () => true, isFile: () => false },
+        { name: "build", isDirectory: () => true, isFile: () => false },
+        { name: "source.mjs", isDirectory: () => false, isFile: () => true },
+      ];
+    }),
+  ).resolves.toEqual(["source.mjs"]);
+  expect(visited).toEqual(["C:/root"]);
+});
+
+test("keeps nested directories whose names are pruned only at the repository root", async () => {
+  await expect(
+    collectRepositoryFiles("C:/root", "C:/root", async (directory) => {
+      if (directory.endsWith("src"))
+        return [{ name: "build", isDirectory: () => true, isFile: () => false }];
+      if (directory.endsWith("build"))
+        return [{ name: "module.mjs", isDirectory: () => false, isFile: () => true }];
+      return [{ name: "src", isDirectory: () => true, isFile: () => false }];
+    }),
+  ).resolves.toEqual(["src/build/module.mjs"]);
+});
+
 test("uses the directory as the default root and reads real directory entries", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-files-"));
   await mkdir(join(root, "nested"));

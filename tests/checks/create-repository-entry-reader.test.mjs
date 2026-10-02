@@ -72,6 +72,32 @@ test("propagates refresh failures other than a missing directory", async () => {
   expect(findEntries).toHaveBeenCalledTimes(1);
 });
 
+test("refreshes tracked directories with bounded concurrency", async () => {
+  let revision = 0;
+  let active = 0;
+  let maximumActive = 0;
+  const readDirectoryCached = jest.fn(async () => {
+    active += 1;
+    maximumActive = Math.max(maximumActive, active);
+    await new Promise((resolve) => setImmediate(resolve));
+    active -= 1;
+    return [];
+  });
+  readDirectoryCached.getRevision = () => revision;
+  readDirectoryCached.getTrackedDirectories = () => ["/repo/a", "/repo/b", "/repo/c"];
+  const reader = createRepositoryEntryReader({
+    root: "/repo",
+    findEntries: async () => [],
+    readDirectoryCached,
+    expandedDirectories: [],
+    includeTestResults: false,
+    includeTestResultsUnder: [],
+  });
+  await reader.entries();
+  await reader.entries();
+  expect(maximumActive).toBe(1);
+});
+
 test("retries discovery after a transient refresh failure", async () => {
   const { reader, findEntries, replaceRecords } = createReaderState();
   await reader.entries();

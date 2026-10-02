@@ -12,6 +12,8 @@ const buildCommands = new Map([
 const buildToolsWithoutSubcommand = new Set(["esbuild", "rollup", "webpack"]);
 
 export function validateProfileScriptCommand(name, command) {
+  if ((name === "typecheck" || name === "build") && /[;&|<>`\r\n]/u.test(command))
+    return `package.json.scripts.${name} must invoke one direct validation tool command.`;
   const [executable, subcommand] = command.trim().split(/\s+/u);
   const tool = executable
     .split(/[\\/]/u)

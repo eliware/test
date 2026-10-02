@@ -47,7 +47,20 @@ export async function acquireValidationLock(root, operations = {}) {
     }
     throw error;
   }
-  await file.close();
+  try {
+    await file.close();
+  } catch (error) {
+    try {
+      await removeFile(lockPath);
+    } catch (cleanupError) {
+      throw new AggregateError(
+        [error, cleanupError],
+        `Could not close the validation lock; a stale lock may remain at ${lockPath}.`,
+        { cause: error },
+      );
+    }
+    throw error;
+  }
   return async () => {
     try {
       const lock = JSON.parse(await readText(lockPath, "utf8"));

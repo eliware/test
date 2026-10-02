@@ -16,6 +16,7 @@ export async function run({
   try {
     const files =
       suppliedFiles ??
+      // codescope ignore: repositoryFiles includes untracked and Git-ignored files under the shared discovery exclusions
       (repositoryInventory ? await repositoryInventory.repositoryFiles() : await findFiles(root));
     const findings = await findInfrastructureInternalIdentifiers(root, files, {
       readBytes: repositoryInventory ? (path) => repositoryInventory.readBytes(path) : undefined,

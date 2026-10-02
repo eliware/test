@@ -17,6 +17,15 @@ test("derives expected statement, branch, and function maps from source", () => 
   expect(Object.keys(shape.fnMap).length).toBeGreaterThan(0);
 });
 
+test("reuses the instrumenter without mutating previously derived coverage shapes", () => {
+  const first = expectedCoverageShape("export const first = 1;", "src/first.mjs");
+  const firstStatementIds = Object.keys(first.statementMap);
+  expectedCoverageShape("export const second = 2;", "src/second.mjs");
+
+  expect(Object.keys(first.statementMap)).toEqual(firstStatementIds);
+  expect(first.fnMap).toBeDefined();
+});
+
 test.each([
   ["TypeScript", "export const value: number = 1;"],
   ["JSX", "export const view = <main />;"],

@@ -10,7 +10,9 @@ test("indexes match starts, selects the earliest crossing interval, and material
   ]);
 
   expect(index.earliestCrossing(8)).toBe(2);
-  expect(index.materialize(0, 8)).toEqual([0, 0, 10, 0, 12, 0, 0, 9, 0]);
+  expect(Array.from(index.materialize(0, 8), (value) => value ?? 0)).toEqual([
+    0, 0, 10, 0, 12, 0, 0, 9, 0,
+  ]);
 });
 
 test("updates duplicate starts and discards completed intervals without stale matches", () => {
@@ -25,9 +27,9 @@ test("updates duplicate starts and discards completed intervals without stale ma
 
   expect(index.earliestCrossing(4)).toBe(1);
   index.discardThrough(5);
-  expect(index.materialize(0, 5)).toEqual([0, 6, 0, 0, 0, 6]);
+  expect(Array.from(index.materialize(0, 5), (value) => value ?? 0)).toEqual([0, 6, 0, 0, 0, 6]);
   index.discardThrough(6);
-  expect(index.materialize(0, 5)).toEqual([0, 0, 0, 0, 0, 0]);
+  expect(Array.from(index.materialize(0, 5), (value) => value ?? 0)).toEqual([0, 0, 0, 0, 0, 0]);
   expect(index.earliestCrossing(6)).toBeNull();
 });
 
@@ -39,7 +41,7 @@ test("rejects malformed intervals before changing the index", () => {
       { start: -1, end: 3 },
     ]),
   ).toThrow("Match intervals must have safe non-negative start and end offsets");
-  expect(index.materialize(0, 4)).toEqual([0, 0, 0, 0, 0]);
+  expect(Array.from(index.materialize(0, 4), (value) => value ?? 0)).toEqual([0, 0, 0, 0, 0]);
   expect(() => index.add([null])).toThrow(TypeError);
   expect(() => index.add(Array(1))).toThrow(TypeError);
 });
@@ -52,7 +54,7 @@ test("compacts completed intervals from large ordered batches", () => {
   index.add([{ start: 2048, end: 2050 }]);
   index.discardThrough(2049);
 
-  expect(index.materialize(2048, 1)).toEqual([2, 0]);
+  expect(Array.from(index.materialize(2048, 1), (value) => value ?? 0)).toEqual([2, 0]);
 });
 
 test("bounds stale interval entries when repeatedly extending one match", () => {
@@ -62,7 +64,7 @@ test("bounds stale interval entries when repeatedly extending one match", () => 
   index.discardThrough(1);
   expect(index.earliestCrossing(2)).toBe(1);
   index.discardThrough(4999);
-  expect(index.materialize(1, 0)).toEqual([0]);
+  expect(Array.from(index.materialize(1, 0), (value) => value ?? 0)).toEqual([0]);
 });
 
 test("repairs a heap when completed intervals are removed", () => {
@@ -75,7 +77,7 @@ test("repairs a heap when completed intervals are removed", () => {
   ]);
 
   index.discardThrough(3);
-  expect(index.materialize(0, 3)).toEqual([0, 0, 0, 10]);
+  expect(Array.from(index.materialize(0, 3), (value) => value ?? 0)).toEqual([0, 0, 0, 10]);
 });
 
 test("selects the smaller right child while removing an expired start", () => {
@@ -97,6 +99,26 @@ test("returns no crossing for empty or boundary-starting matches", () => {
   index.add([{ start: 3, end: 8 }]);
   expect(index.earliestCrossing(3)).toBeNull();
   expect(index.earliestCrossing(4)).toBe(3);
+});
+
+test("materializes a sparse interval map when the pending range has no matches", () => {
+  const index = createMatchIntervalIndex();
+  const materialized = index.materialize(0, 10_000);
+
+  expect(materialized).toHaveLength(10_001);
+  expect(materialized.every((value) => value === undefined)).toBe(true);
+  expect(Object.keys(materialized)).toEqual([]);
+  expect(Object.hasOwn(materialized, 10_000)).toBe(false);
+});
+
+test("materializes only intervals inside the requested sparse range", () => {
+  const index = createMatchIntervalIndex();
+  index.add([
+    { start: 2, end: 4 },
+    { start: 5, end: 8 },
+    { start: 10, end: 12 },
+  ]);
+  expect(Array.from(index.materialize(5, 1), (value) => value ?? 0)).toEqual([3, 0]);
 });
 
 test("sifts the last heap value up when it is smaller than the chosen child", () => {

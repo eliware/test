@@ -37,30 +37,35 @@ test("spawns without shell interpretation and returns captured process results",
   });
 });
 
-test("redacts secrets from asynchronous child error events", async () => {
+test("redacts asynchronous child errors and captured output", async () => {
   const child = childProcess();
   const promise = execute("node", [], { env: { SERVICE_TOKEN: "spawn-secret" } }, () => child);
+  child.stdout.emit("data", "failure detail: spawn-secret");
+  child.stderr.emit("data", "stderr detail");
   const error = new Error("spawn failed with spawn-secret");
   error.code = "ENOENT";
   child.emit("error", error);
-  await expect(promise).rejects.toMatchObject({
-    message: "spawn failed with [REDACTED]",
-    code: "ENOENT",
-  });
-});
-
-test("flushes redacted child output when an asynchronous error rejects", async () => {
-  const child = childProcess();
-  const promise = execute("node", [], { env: { TOKEN: "spawn-secret" } }, () => child);
-  child.stdout.emit("data", "failure detail: spawn-secret");
-  child.stderr.emit("data", "stderr detail");
-  child.emit("error", new Error("spawn failed"));
-
   const safeError = await promise.catch((value) => value);
-  expect(safeError.message).toBe("spawn failed");
+  expect(safeError.message).toBe("spawn failed with [REDACTED]");
+  expect(safeError.code).toBe("ENOENT");
   expect(safeError.stdout).toBe("failure detail: [REDACTED]");
   expect(safeError.stderr).toBe("stderr detail");
   expect(`${safeError.stdout}${safeError.stderr}`).not.toContain("spawn-secret");
+  child.stdout.emit("data", "late stdout");
+  child.stderr.emit("data", "late stderr");
+  expect(safeError.stdout).toBe("failure detail: [REDACTED]");
+  expect(safeError.stderr).toBe("stderr detail");
+});
+
+test("keeps child error diagnostics visible after captured output reaches its byte limit", async () => {
+  const child = childProcess();
+  const promise = execute("node", [], {}, () => child);
+  child.stdout.emit("data", "x".repeat(100_000));
+  child.emit("error", new Error("actionable failure"));
+  await expect(promise).rejects.toMatchObject({
+    message: "actionable failure",
+    stdout: "x".repeat(100_000),
+  });
 });
 
 test("settles only once after asynchronous child errors", async () => {

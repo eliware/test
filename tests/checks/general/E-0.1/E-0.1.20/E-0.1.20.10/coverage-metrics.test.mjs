@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { coverageMetricValues } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-metrics.mjs";
+import { fileGap } from "../../../../../../src/checks/general/E-0.1/E-0.1.20/E-0.1.20.10/coverage-file-gap.mjs";
 
 test("centralizes coverage counters and completeness detection", () => {
   expect(
@@ -38,6 +39,27 @@ test("rejects missing or mismatched per-metric map and counter pairs", () => {
   ]) {
     expect(coverageMetricValues(incomplete, []).hasMaps).toBe(false);
   }
+});
+
+test("rejects empty report maps when source-derived coverage contains entries", () => {
+  const emptyReport = {
+    statementMap: {},
+    s: {},
+    branchMap: {},
+    b: {},
+    fnMap: {},
+    f: {},
+    l: {},
+  };
+  const expectedShape = {
+    statementMap: { 0: { start: { line: 1, column: 0 } } },
+    branchMap: {},
+    fnMap: {},
+    lineMap: { 1: {} },
+  };
+  expect(() => fileGap("src/required.mjs", emptyReport, expectedShape)).toThrow(
+    "does not account for every source statement entry",
+  );
 });
 
 test("rejects fractional execution counters before calculating coverage totals", () => {

@@ -34,6 +34,7 @@ export function runChild(command, args, options = {}) {
     try {
       child = spawnProcess(command, args, createChildSpawnOptions(options, environment));
     } catch (error) {
+      // codescope ignore: output capture is initialized before spawn, so synchronous launch errors are redacted by the same complete-output adapter as async errors
       settleError(error);
       return;
     }

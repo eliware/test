@@ -4,18 +4,24 @@ import { run } from "../../../../src/checks/ghcr-published/E-0.1.160/E-0.1.160.7
 
 test("requires an exact version tag and digest as release identity", async () => {
   const { root, publicationPath } = await createGhcrFixture();
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  const packageJson = { name: "@eliware/example" };
+  await expect(run({ root, packageJson })).resolves.toEqual(
+    expect.objectContaining({ status: "pass" }),
+  );
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
   await writeFile(
     publicationPath,
     content.replace("ghcr.io/eliware/example:v1.2.3", "ghcr.io/eliware/example:latest"),
   );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  await expect(run({ root, packageJson })).resolves.toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
 });
 
 test("allows a documented latest convenience alias beside the immutable version tag", async () => {
   const { root, publicationPath } = await createGhcrFixture();
+  const packageJson = { name: "@eliware/example" };
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
   await writeFile(
@@ -29,9 +35,27 @@ test("allows a documented latest convenience alias beside the immutable version 
     `${root}/README.md`,
     "The latest tag is a mutable convenience alias and is never the release or deployment identity.\n",
   );
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "pass" }));
+  await expect(run({ root, packageJson })).resolves.toEqual(
+    expect.objectContaining({ status: "pass" }),
+  );
   await writeFile(`${root}/README.md`, "The latest tag is a mutable convenience alias.\n");
-  await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
+  await expect(run({ root, packageJson })).resolves.toEqual(
+    expect.objectContaining({ status: "fail" }),
+  );
+});
+
+test("rejects publication evidence for an image with the wrong package-derived identity", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  await writeFile(
+    publicationPath,
+    content.replace("ghcr.io/eliware/example:v1.2.3", "ghcr.io/eliware/other:v1.2.3"),
+  );
+
+  await expect(run({ root, packageJson: { name: "@eliware/example" } })).resolves.toMatchObject({
+    status: "fail",
+  });
 });
 
 test("reports workflow inspection failures", async () => {

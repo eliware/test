@@ -47,3 +47,8 @@ test("supports omitted options and optional timeout callbacks", () => {
   expect(options.maxOutputLength).toBeUndefined();
   expect(() => options.onTimeout()).not.toThrow();
 });
+
+test("uses the supplied consumer repository root as Jest's working directory", () => {
+  const root = "C:/consumer repository";
+  expect(createJestProcessOptions(root).cwd).toBe(root);
+});

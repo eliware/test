@@ -10,11 +10,26 @@ export function collectRequireBindingScopes(root) {
     if (!node || typeof node !== "object") return;
     const ownsVariables = node.type === "Program" || isFunctionNode(node);
     const variableScope = ownsVariables ? { node, hasRequire: false } : parentVariableScope;
+    // codescope ignore: each Program or BlockStatement scans only its direct body once; recursive traversal visits descendants separately without rescanning nested statements
     if (
       (node.type === "Program" || node.type === "BlockStatement") &&
       node.body.some((statement) => declaresDirectRequire(statement, node.type === "Program"))
     ) {
       scopes.add(node);
+    }
+    if (
+      node.type === "ForStatement" ||
+      node.type === "ForInStatement" ||
+      node.type === "ForOfStatement"
+    ) {
+      const declaration = node.init ?? node.left;
+      if (
+        declaration?.type === "VariableDeclaration" &&
+        declaration.kind !== "var" &&
+        declaration.declarations.some(({ id }) => patternHasRequire(id))
+      ) {
+        scopes.add(node);
+      }
     }
     if (node.type === "CatchClause" && patternHasRequire(node.param)) {
       scopes.add(node);

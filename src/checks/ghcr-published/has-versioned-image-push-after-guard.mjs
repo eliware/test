@@ -1,8 +1,8 @@
-import { findImagePushes, imageTags } from "./find-ghcr-image-push.mjs";
+import { findImagePushes, imageDetails, imageTags } from "./find-ghcr-image-push.mjs";
 import { hasReleaseTagGuard } from "./release-version-tag.mjs";
 import { steps } from "./workflow-structure.mjs";
 
-export function hasVersionedImagePushAfterGuard(job, packageVersion) {
+export function hasVersionedImagePushAfterGuard(job, packageVersion, expectedImage) {
   const jobSteps = steps(job);
   const versionCheckIndex = jobSteps.findIndex(
     (step) =>
@@ -21,7 +21,11 @@ export function hasVersionedImagePushAfterGuard(job, packageVersion) {
 
   const tags = imageTags(pushes[0].with?.tags);
   const pushIndex = jobSteps.indexOf(pushes[0]);
+  const actualImage = imageDetails(pushes[0]).image;
   return (
-    tags.length === 1 && tags[0].endsWith(`:v${packageVersion}`) && pushIndex > versionCheckIndex
+    tags.length === 1 &&
+    tags[0].endsWith(`:v${packageVersion}`) &&
+    (!expectedImage || actualImage?.toLowerCase() === expectedImage.toLowerCase()) &&
+    pushIndex > versionCheckIndex
   );
 }

@@ -18,6 +18,8 @@ test("rejects common commands that publish images to GHCR", () => {
     "podman push ghcr.io/eliware/example:latest",
     "buildah push image ghcr.io/eliware/example:latest",
     "docker buildx build --push -t ghcr.io/eliware/example:latest .",
+    'docker push "$GHCR_IMAGE"',
+    "docker buildx build --push -t ${GHCR_TAG} .",
     "oras push ghcr.io/eliware/example:latest file:artifact",
     "crane push image.tar ghcr.io/eliware/example:latest",
     "skopeo copy image docker://ghcr.io/eliware/example:latest",

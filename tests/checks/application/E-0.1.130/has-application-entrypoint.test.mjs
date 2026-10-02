@@ -52,16 +52,34 @@ test("accepts a nonempty start command without a file target", () => {
   expect(hasApplicationEntrypoint({ scripts: { start: "node server.mjs" } }, "/repo")).toBe(true);
   expect(
     hasApplicationEntrypoint({ main: "", bin: {}, scripts: { start: "node server.mjs" } }, "/repo"),
-  ).toBe(true);
+  ).toBe(false);
   expect(
     hasApplicationEntrypoint({ main: "  ", scripts: { start: "node server.mjs" } }, "/repo"),
-  ).toBe(true);
+  ).toBe(false);
   expect(hasApplicationEntrypoint({ scripts: { start: " " } }, "/repo")).toBe(false);
   expect(
     hasApplicationEntrypoint(
       { main: "missing.mjs", scripts: { start: "node server.mjs" } },
       "/repo",
       () => false,
+    ),
+  ).toBe(false);
+});
+
+test("validates each declared entrypoint independently", () => {
+  const inspectFile = (path) => path === "/repo/bin/valid.mjs";
+  expect(
+    hasApplicationEntrypoint(
+      { main: "", bin: { app: "bin/valid.mjs" }, scripts: { start: "node server.mjs" } },
+      "/repo",
+      inspectFile,
+    ),
+  ).toBe(false);
+  expect(
+    hasApplicationEntrypoint(
+      { main: "bin/valid.mjs", bin: "", scripts: { start: "node server.mjs" } },
+      "/repo",
+      inspectFile,
     ),
   ).toBe(false);
 });

@@ -58,4 +58,9 @@ test("recognizes version identity when a documented latest alias shares the tag 
     image: "ghcr.io/eliware/example",
     tag: "ghcr.io/eliware/example:v1.2.3",
   });
+  const legacyNewlinePush = {
+    ...push,
+    with: { ...push.with, tags: "ghcr.io/eliware/example:v1.2.3\rghcr.io/eliware/example:latest" },
+  };
+  expect(findImagePush({ steps: [legacyNewlinePush] })).toBe(legacyNewlinePush);
 });

@@ -1,4 +1,7 @@
-import { focusedPathFrom } from "../../../../cli/parse-focused-arguments.mjs";
+import {
+  focusedPathFrom,
+  parseFocusedArguments,
+} from "../../../../cli/parse-focused-arguments.mjs";
 
 export { focusedPathFrom };
 
@@ -33,7 +36,10 @@ export function buildJestArguments(args = []) {
     if (typeof argument === "string" && wrapperOwnedOptionAliases.has(argument.split("=", 1)[0]))
       throw new Error(`Jest option ${argument.split("=", 1)[0]} is controlled by eliware-test.`);
   }
+  const { forwardedTestPaths } = parseFocusedArguments(args);
   const focusedPath = focusedPathFrom(args);
+  if (focusedPath && forwardedTestPaths.length > 0)
+    throw new Error("Only one focused test path may be supplied.");
   const forwarded = args.filter(
     (argument) => argument !== focusedPath && argument !== "--debug-timing",
   );

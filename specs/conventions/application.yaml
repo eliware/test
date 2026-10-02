@@ -41,7 +41,7 @@ directives:
         directives:
           - id: A-0.1.130.2.0
             dos:
-              - docs/ must contain end-user documentation for the application; docs/README.md must provide its overview and link every discovered end-user document. During change review, a human or AI reviewer must assess whether the documentation set covers supported user-facing workflows and record relevant findings with the change.
+              - docs/ must contain end-user documentation for the application; docs/README.md must provide its overview and link every discovered end-user document other than docs/README.md itself, which is the index. During change review, a human or AI reviewer must assess whether the documentation set covers supported user-facing workflows and record relevant findings with the change.
               - Application repositories must link docs/README.md from the root README.md.
             donts:
               - Do not duplicate canonical operational procedures or project requirements in end-user docs.

@@ -1,33 +1,68 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readFile, realpath } from "node:fs/promises";
+import { isAbsolute, join, relative, sep } from "node:path";
 
 export async function validateFocusedSourceTestPair(
   root,
   { sourcePath, testPath },
   readText = readFile,
 ) {
-  const source = sourcePath.replace(/^src\//u, "");
-  const testDirectory = /^test\//iu.test(testPath) ? "test" : "tests";
-  const test = testPath.replace(/^(?:tests?|specs?)\//iu, "");
-  const sourceFile = join(root, "src", source);
-  const testFile = join(root, testDirectory, test);
+  const source = sourcePath?.replaceAll("\\", "/");
+  const test = testPath?.replaceAll("\\", "/");
+  if (
+    typeof source !== "string" ||
+    typeof test !== "string" ||
+    !/^src\/.+\.mjs$/u.test(source) ||
+    source.split("/").includes("..") ||
+    !/^(?:tests|test)\/.+\.test\.mjs$/u.test(test) ||
+    test.split("/").includes("..")
+  ) {
+    return ["Focused source/test paths must be repository-relative mirrored module paths."];
+  }
+  const sourceRelative = source.slice("src/".length);
+  const testDirectory = test.startsWith("test/") ? "test" : "tests";
+  const testRelative = test.slice(testDirectory.length + 1);
+  if (sourceRelative.replace(/\.mjs$/u, ".test.mjs") !== testRelative)
+    return [`focused source/test paths do not mirror: ${sourceRelative} and ${testRelative}`];
+  const sourceFile = join(root, source);
+  const testFile = join(root, test);
+  let rootRealPath;
+  let sourceRealPath;
+  let testRealPath;
+  try {
+    rootRealPath = await realpath(root);
+  } catch {
+    return [`Focused test file is missing: ${testRelative}`];
+  }
+  try {
+    testRealPath = await realpath(testFile);
+  } catch {
+    return [`Focused test file is missing: ${testRelative}`];
+  }
+  try {
+    sourceRealPath = await realpath(sourceFile);
+  } catch {
+    sourceRealPath = null;
+  }
+  const outside = (path) => {
+    const pathRelative = relative(rootRealPath, path);
+    return pathRelative === ".." || pathRelative.startsWith(`..${sep}`) || isAbsolute(pathRelative);
+  };
+  if ((sourceRealPath && outside(sourceRealPath)) || outside(testRealPath))
+    return ["Focused source/test paths must resolve inside the repository."];
   let content;
   try {
-    content = await readText(testFile, "utf8");
+    content = await readText(testRealPath, "utf8");
   } catch {
-    return [`Focused test file is missing: ${test}`];
+    return [`Focused test file is missing: ${testRelative}`];
   }
   const findings = [];
-  try {
-    await readText(sourceFile, "utf8");
-  } catch {
-    findings.push(`missing mirrored source: ${source}`);
+  if (!sourceRealPath) {
+    // codescope ignore: This adds a finding that runFocused converts to a failing check result.
+    findings.push(`missing mirrored source: ${sourceRelative}`);
   }
-  if (source.replace(/\.mjs$/u, ".test.mjs") !== test)
-    findings.push(`focused source/test paths do not mirror: ${source} and ${test}`);
   if (!/\b(?:test|it|describe)\s*\(/u.test(content))
-    findings.push(`${test} is not a Jest test file`);
+    findings.push(`${testRelative} is not a Jest test file`);
   if (!/(?:from|import|require\s*\()[\s\S]*src[\\/]\S+\.mjs/u.test(content))
-    findings.push(`${test} does not reference an implementation module`);
+    findings.push(`${testRelative} does not reference an implementation module`);
   return findings;
 }

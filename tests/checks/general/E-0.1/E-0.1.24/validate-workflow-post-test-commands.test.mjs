@@ -18,6 +18,31 @@ test("allows arbitrary commands after npm test except publishing commands", () =
       "publishing commands",
     );
   }
+  const testStep = { run: "npm test" };
+  const repositoryCheck = { run: "node scripts/use-ci-credential.mjs" };
+  expect(
+    validateWorkflowPostTestCommands(
+      "ci.yml",
+      [
+        { command: "npm test", step: testStep, index: 1 },
+        { command: repositoryCheck.run, step: repositoryCheck, index: 2 },
+      ],
+      1,
+      [{ run: "npm ci" }, testStep, repositoryCheck],
+    ),
+  ).toBeNull();
+  const publishStep = { run: "npm publish" };
+  expect(
+    validateWorkflowPostTestCommands(
+      "ci.yml",
+      [
+        { command: "npm test", step: testStep, index: 1 },
+        { command: publishStep.run, step: publishStep, index: 2 },
+      ],
+      1,
+      [{ run: "npm ci" }, testStep, publishStep],
+    ),
+  ).toContain("publishing commands");
 });
 
 test("rejects malformed post-test steps and unsupported action forms", () => {

@@ -18,4 +18,7 @@ test("rejects no-op and unrelated typecheck or build commands", () => {
   for (const command of ["echo skipped", "jest", "node build.mjs", "vite preview"]) {
     expect(validateProfileScriptCommand("build", command)).toContain("direct build tool");
   }
+  for (const command of ["tsc --noEmit || true", "webpack && rm -rf dist", "vite build; true"]) {
+    expect(validateProfileScriptCommand("typecheck", command)).toContain("one direct");
+  }
 });

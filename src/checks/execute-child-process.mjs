@@ -34,8 +34,8 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
         terminateChild(child);
         rejectOnce(error);
       });
-      attachOutputStream(child, child.stdout, "stdout", output, rejectOnce);
-      attachOutputStream(child, child.stderr, "stderr", output, rejectOnce);
+      attachOutputStream(child, child.stdout, "stdout", output, rejectOnce, () => settled);
+      attachOutputStream(child, child.stderr, "stderr", output, rejectOnce, () => settled);
       child.on("close", (code, signal) => {
         if (settled) return;
         if (code === null && signal == null) {
@@ -61,12 +61,14 @@ function terminateChild(child) {
   }
 }
 
-function attachOutputStream(child, stream, name, output, rejectOnce) {
+function attachOutputStream(child, stream, name, output, rejectOnce, isSettled) {
   if (stream == null) return;
   if (typeof stream.on !== "function") {
     throw new TypeError(`Child process adapter returned an invalid ${name} stream.`);
   }
-  stream.on("data", (chunk) => output.push(name, chunk));
+  stream.on("data", (chunk) => {
+    if (!isSettled()) output.push(name, chunk);
+  });
   stream.on("error", (error) => {
     terminateChild(child);
     rejectOnce(error);

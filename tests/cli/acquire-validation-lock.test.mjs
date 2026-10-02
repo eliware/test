@@ -78,6 +78,42 @@ test("removes a partially written lock when writing its metadata fails", async (
   expect(unlink).toHaveBeenCalledWith(join("/repo", "eliware-test.lock"));
 });
 
+test("removes a newly written lock when closing its handle fails", async () => {
+  const closeError = new Error("close failed");
+  const unlink = jest.fn();
+  await expect(
+    acquireValidationLock("/repo", {
+      open: async () => ({
+        writeFile: async () => {},
+        close: async () => {
+          throw closeError;
+        },
+      }),
+      unlink,
+    }),
+  ).rejects.toBe(closeError);
+  expect(unlink).toHaveBeenCalledWith(join("/repo", "eliware-test.lock"));
+});
+
+test("reports a lock that may remain when handle close and lock cleanup fail", async () => {
+  const closeError = new Error("close failed");
+  const unlinkError = new Error("unlink failed");
+  const error = await acquireValidationLock("/repo", {
+    open: async () => ({
+      writeFile: async () => {},
+      close: async () => {
+        throw closeError;
+      },
+    }),
+    unlink: async () => {
+      throw unlinkError;
+    },
+  }).catch((value) => value);
+  expect(error).toBeInstanceOf(AggregateError);
+  expect(error.errors).toEqual([closeError, unlinkError]);
+  expect(error.message).toContain("stale lock may remain");
+});
+
 test("reports both lock-write and partial-lock cleanup failures", async () => {
   const writeError = new Error("disk full");
   const closeError = new Error("close failed");

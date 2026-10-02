@@ -26,6 +26,12 @@ test("builds focused and default Jest argument lists", () => {
   ]);
 });
 
+test("rejects extra focused test paths forwarded after the separator", () => {
+  expect(() => buildJestArguments(["tests/sample.test.mjs", "--", "tests/other.test.mjs"])).toThrow(
+    "Only one focused test path",
+  );
+});
+
 test.each([
   ["--coverage=false"],
   ["--no-coverage"],

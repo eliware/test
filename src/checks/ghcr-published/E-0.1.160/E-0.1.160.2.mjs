@@ -14,6 +14,8 @@ export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 export async function run(context) {
   const { root, packageJson } = context;
   const env = context.env ?? process.env;
+  const packageName = String(packageJson?.name ?? "").replace(/^@[^/]+\//u, "");
+  const expectedImage = packageName ? `ghcr.io/eliware/${packageName}` : "";
   try {
     const workflows = await readWorkflows(root, context);
     const publications = workflows.filter(isPublicationWorkflow);
@@ -22,6 +24,7 @@ export async function run(context) {
     );
     const valid =
       typeof packageJson?.version === "string" &&
+      Boolean(expectedImage) &&
       (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, packageJson.version)) &&
       publications.length > 0 &&
       publications.every((workflow) => {
@@ -33,7 +36,7 @@ export async function run(context) {
             ({ job }) =>
               job.environment === "ghcr-publish" &&
               dependsOnUbuntuValidation(workflow, job, validationJobsByWorkflow.get(workflow)) &&
-              hasVersionedImagePushAfterGuard(job, packageJson.version),
+              hasVersionedImagePushAfterGuard(job, packageJson.version, expectedImage),
           )
         );
       });

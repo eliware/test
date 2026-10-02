@@ -103,10 +103,20 @@ test("skips disabled or unrelated formatter stages and scopes focused paths", as
   const runFormatter = jest.fn(async () => ({ code: 0 }));
   try {
     await expect(
-      executeFormatterValidation({ executeFormat: false, mode: null, runFormatter }),
+      executeFormatterValidation({
+        executeFormat: false,
+        mode: null,
+        runFormatter,
+        toolArgs: ["--write"],
+      }),
     ).resolves.toBeNull();
     await expect(
-      executeFormatterValidation({ executeFormat: true, mode: "lint", runFormatter }),
+      executeFormatterValidation({
+        executeFormat: true,
+        mode: "lint",
+        runFormatter,
+        toolArgs: ["--write"],
+      }),
     ).resolves.toBeNull();
     await executeFormatterValidation({
       root,

@@ -1,7 +1,9 @@
 import { createNumericMinHeap } from "./create-numeric-min-heap.mjs";
+import { createOrderedMatchStartIndex } from "./create-ordered-match-start-index.mjs";
 
 export function createMatchIntervalIndex() {
   const matchEndsByStart = new Map();
+  const orderedMatchStarts = createOrderedMatchStartIndex((start) => matchEndsByStart.has(start));
   const activeEndsByStart = new Map();
   const activeStarts = createNumericMinHeap();
   const endEntries = [];
@@ -14,6 +16,7 @@ export function createMatchIntervalIndex() {
     for (const { start, end } of matches) {
       const previousEnd = matchEndsByStart.get(start) ?? 0;
       if (end <= previousEnd) continue;
+      if (previousEnd === 0) orderedMatchStarts.insert(start);
       if (previousEnd > 0) staleEndEntryCount += 1;
       matchEndsByStart.set(start, end);
       // The matcher emits intervals in increasing end order, so this index is a queue.
@@ -35,10 +38,18 @@ export function createMatchIntervalIndex() {
   }
 
   function materialize(start, length) {
-    return Array.from({ length: length + 1 }, (_, offset) => {
-      const end = matchEndsByStart.get(start + offset);
-      return end === undefined ? 0 : end - start;
-    });
+    const matches = [];
+    matches.length = length + 1;
+    let index = orderedMatchStarts.lowerBound(start);
+    for (; index < orderedMatchStarts.values.length; index += 1) {
+      const matchStart = orderedMatchStarts.values[index];
+      const offset = matchStart - start;
+      if (offset > length) break;
+      const end = matchEndsByStart.get(matchStart);
+      if (end === undefined) continue;
+      matches[offset] = end - start;
+    }
+    return matches;
   }
 
   function discardThrough(boundary) {
@@ -47,6 +58,7 @@ export function createMatchIntervalIndex() {
       if (matchEndsByStart.get(start) === end) matchEndsByStart.delete(start);
       else staleEndEntryCount -= 1;
     }
+    orderedMatchStarts.discardInactive();
     if (staleEndEntryCount > 1024) compactStaleEntries();
     if (endEntryHead > 1024 && endEntryHead * 2 >= endEntries.length) {
       endEntries.splice(0, endEntryHead);

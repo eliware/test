@@ -186,7 +186,7 @@ directives:
         dos:
           - Repositories must use eliware-test as the shared deterministic validation entrypoint, running the stages applicable to their declared profiles.
           - All repositories, including documentation, workspace, and infrastructure repositories, must run Oxlint and Prettier validation through eliware-test.
-          - Repositories that maintain Jest tests must run them through eliware-test. This conditional requirement applies only to repositories that maintain Jest suites; it does not require documentation-only repositories to add tests or Jest. Application and library profiles define their mandatory Jest suites and coverage requirements. ESM test files may import Jest APIs from @jest/globals; eliware-test supplies this API transitively. The CLI uses the consumer repository's resolvable Jest executable when available and otherwise uses the Jest dependency shipped with eliware-test, while keeping package.json, Jest settings, tests, and source files rooted in the consumer repository.
+          - Repositories that maintain Jest tests must run them through eliware-test. This conditional requirement applies only to repositories that maintain Jest suites; it does not require documentation-only repositories to add tests or Jest. Application and library profiles define their mandatory Jest suites and coverage requirements. ESM test files may import Jest APIs from @jest/globals; eliware-test supplies this API transitively. The CLI uses the consumer repository's resolvable Jest executable when available and otherwise uses the Jest dependency shipped with eliware-test, while keeping package.json, Jest settings, tests, and source files rooted in the consumer repository. Jest reporter names in package.json must be strings; per-reporter option tuples are unsupported because eliware-test supplies its own reporters through the CLI.
           - A tool name appearing only in descriptive text, comments, or structured data does not establish direct tool use. Detect commands only in executable workflow command fields or shell command lines. In JavaScript and TypeScript, detect tool-package imports, re-exports, and dynamic imports from parsed syntax; detect child-process launches only when a named or namespace import from node:child_process or child_process calls a recognized tool with a literal command. This rule does not claim to prove computed commands or indirect wrappers; human review covers those cases.
         donts:
           - Repositories must not replace eliware-test with separate project-specific Oxlint or Prettier validation without Eli's authorization.
@@ -304,7 +304,8 @@ directives:
           - id: E-0.1.10.1
             dos:
               - "Every validation command list in .knit/deploy.yaml must begin with these commands in this exact order: git pull --ff-only origin main, then npm ci, then npm test."
-              - Additional repository-specific commands may follow npm test. Human or AI review must assess their purpose and scope; deterministic validation only rejects npm publish and commands that publish images to GHCR. Put commands directly in .knit/deploy.yaml when feasible; when a secondary script is needed, store it under .knit/ and invoke it from the command list.
+              - Every commands field must contain an array of command strings; nested or malformed commands values fail validation and do not replace the required command-list shape.
+              - Additional repository-specific commands may follow npm test. Human or AI review must assess their purpose and scope; deterministic validation rejects npm publish and image-publication commands with explicit ghcr.io destinations or GHCR_ variable names. Registry destinations hidden behind generic variables remain subject to semantic review. Put commands directly in .knit/deploy.yaml when feasible; when a secondary script is needed, store it under .knit/ and invoke it from the command list.
             donts:
               - Do not omit, reorder, or replace the initial git pull --ff-only origin main, npm ci, and npm test commands in a Knit validation command list.
               - Do not run npm publish or publish container images to GHCR from a Knit validation command list.
@@ -316,7 +317,7 @@ directives:
           - Do not encode operational procedures, deployment execution, or live platform runbooks as repository conventions.
       - id: E-0.1.14
         dos:
-          - Any package reported by npm outdated fails validation, regardless of dependency section. The check requires a successful registry lookup; offline operation or registry/process failure is a validation failure, not a pass. Exit codes 0 and 1 are report-bearing outcomes and both require valid JSON output; an empty output or empty report passes. Other exit codes and invalid JSON also fail validation with a separate diagnostic. Failure diagnostics for outdated packages must list an npm install command using the @latest tag for every reported package. The check does not modify dependencies.
+          - Any package reported by npm outdated fails validation, regardless of dependency section. The check requires a successful registry lookup; offline operation or registry/process failure is a validation failure, not a pass. Exit codes 0 and 1 are report-bearing outcomes and both require valid JSON output; an empty output or empty report passes. Other exit codes and invalid JSON also fail validation with a separate diagnostic. Failure diagnostics must list an npm install command using the @latest tag for every reported package, tell contributors to review package.json and package-lock.json together, and require rerunning npm ci and npm test. The check does not modify dependencies.
         donts:
           - Do not compare or require a package version field beyond the result reported by npm outdated.
       - id: E-0.1.19
@@ -348,6 +349,7 @@ directives:
         dos:
           - Every @eliware/* repository must contain a GitHub Actions workflow that explicitly targets the main branch for pushes and pull requests by including main in each event's branches filter. Evaluate ordered branch patterns starting excluded; only a pattern that matches main changes whether main is included, so an unmatched negated pattern never authorizes main.
           - Workflow event configuration values must use GitHub's mapping shape; arrays of activity types belong in an event's types field, while an array of event names is allowed only as the top-level on value.
+          - Deterministic event-field validation supports the event-specific mapping shapes implemented by this convention; add and test schema support before relying on an event field outside that supported set.
           - Every repository must contain exactly one workflow file at .github/workflows/ci.yml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yml.
           - Ubuntu CI is always required.
           - The GitHub validation workflow may run the same npm ci and npm test commands configured in .knit/deploy.yaml.
@@ -356,7 +358,7 @@ directives:
         directives:
           - id: A-0.1.24.0
             dos:
-              - CI validation runs npm ci followed immediately by npm test; npm test is the repository's aggregate deterministic gate, and repositories may follow it with arbitrary repository-specific commands. Human or AI review must assess their purpose and scope; deterministic validation only rejects npm publish and commands that publish images to GHCR.
+              - CI validation runs npm ci followed immediately by npm test; npm test is the repository's aggregate deterministic gate, and repositories may follow it with arbitrary repository-specific commands, including commands that alter repository-specific state or use credentials. This allowance defines what deterministic validation accepts; it does not attest to command safety. Human or AI review must assess their purpose, scope, credential handling, and effects. Deterministic validation only rejects npm publish and commands that publish images to GHCR.
               - eliware-test owns lint and format validation invoked by npm test; CI workflows must not duplicate those checks.
               - Pre-install commands and post-test reporting commands must use literal echo or printf arguments without shell expansions, redirection, or backslash escape syntax. Reject dollar signs and backticks even inside single quotes so literal workflow-expression and secret-reference markers are not printed as workflow reporting.
             donts:
@@ -415,10 +417,11 @@ directives:
               - Publication-example workflows and an explicitly justified workflow-specific variation may use a documented scope-specific concurrency policy when the variation does not permit obsolete duplicate validation runs for the same repository and ref.
           - id: E-0.1.24.4
             dos:
-              - Every active GitHub Actions validation workflow must contain an unconditional Ubuntu validation job whose validation flow is npm ci followed immediately by npm test; it may then run arbitrary repository-specific commands. Human or AI review must assess command purpose and scope. Deterministic validation rejects only npm publish and commands that publish images to GHCR. The required npm ci and npm test steps must not override their environment, shell, or working directory.
+              - Every active GitHub Actions validation workflow must contain an unconditional Ubuntu validation job whose validation flow is npm ci followed immediately by npm test; it may then run arbitrary repository-specific commands. Human or AI review must assess command purpose and scope. Deterministic validation rejects npm publish and image-publication commands with explicit ghcr.io destinations or GHCR_ variable names; registry destinations hidden behind generic variables remain subject to semantic review. The required npm ci and npm test steps must not override their environment, shell, or working directory.
               - Before npm ci, allow only literal safe echo or printf reporting without shell or workflow-expression expansion in supported run steps and approved setup actions; reject dollar signs and backticks even inside single quotes, file creation, shell redirections, unsupported step fields, and invalid step execution forms.
               - Sibling setup or reporting jobs may contain only the separately permitted setup and non-publishing reporting commands; they must not run npm ci or npm test outside the validation job.
               - Publication workflows must be separate from the general validation workflow and governed by the applicable publication profile and Operations release policy. When ghcr-published applies, its GHCR publisher job may contain publication and post-push verification commands only as required and validated by the GHCR profile.
+              - GHCR-specific publication checks bind allowed attestation subjects and digests to the image push; the general post-test step-shape check does not establish publication evidence identity.
             donts:
               - Do not allow arbitrary printf commands or redirects to write repository files before npm ci; pre-install printf is limited to literal safe reporting arguments.
               - Do not run npm publish or publish container images to GHCR from the general validation workflow.
@@ -431,12 +434,12 @@ directives:
         directives:
           - id: A-0.1.25.0
             dos:
-              - The specs/ directory must contain exactly one README.md index and one or more YAML files. At least one YAML file in each specs directory must be a valid directives document. Additional YAML files may define schemas or other applicable structured specifications.
-              - Subdirectories under specs/ are optional. Every specs subdirectory must itself contain exactly one README.md index, one or more YAML files, and at least one valid directives document.
-              - Each specs README.md must be a navigation-only index linking every YAML file directly in that directory and every immediate subdirectory's README.md. Nested files are indexed by their containing subdirectory's README.md.
-              - The only allowed files in the specs tree are its per-directory README.md indexes and indexed YAML documents; subdirectories are allowed only when they meet this same structure.
+              - The specs/ directory must contain exactly one README.md index, the valid root directives document directives.yaml, and one or more YAML files. Additional root YAML files may define schemas or other applicable structured specifications.
+              - Subdirectories under specs/ are optional. Every specs subdirectory must contain exactly one README.md index and one or more applicable YAML specifications, including when that subdirectory is used for a profile group such as specs/conventions/.
+              - Each specs README.md must be a navigation-only index linking every YAML file directly in that directory and every immediate subdirectory's README.md. Nested files are indexed by the README.md in their containing directory.
+              - The only allowed files in the specs tree are per-directory README.md indexes and YAML documents; subdirectories are allowed only when they meet this same structure.
             donts:
-              - Do not omit a directory index or directives YAML document, leave any YAML document unindexed, or make prose, AGENTS.md, or an unlinked YAML file the sole source for a directive or repository boundary.
+              - Do not omit a directory index or the root directives YAML document, leave any YAML document unindexed, or make prose, AGENTS.md, or an unlinked YAML file the sole source for a directive or repository boundary.
               - Do not store non-YAML documents or implementation notes in specs/; additional YAML files must be applicable structured specifications such as schemas and must be indexed.
             directives:
               - id: A-0.1.25.0.1
@@ -515,12 +518,12 @@ directives:
               - Do not retain a declared dependency that source, tests, tooling, required runtime, or commands in .knit/deploy.yaml do not use.
           - id: E-0.1.20.17
             dos:
-              - "Every repository must define exactly these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. An additional script is permitted only when an explicitly applied profile requires that script by name; the library profile owns typecheck and the web profile owns build. Profile-owned scripts run within aggregate npm test and do not create separate CI steps."
+              - "Every repository must define these shared validation scripts: test=eliware-test, lint=eliware-test --lint, audit=eliware-test --audit, format=eliware-test --format, and format:check=eliware-test --format-check. Repositories may define any additional nonempty npm scripts they need, including profile-specific scripts; deterministic validation does not constrain their names or commands except to reject npm publish and GHCR image-publication commands. Profile requirements for scripts such as build, typecheck, lighthouse, and puppeteer remain in force and are reviewed under their owning profiles."
               - In @eliware/test only, those five scripts must call node bin/eliware-test.mjs with the matching mode; its required pack script must call node bin/eliware-test.mjs --pack. Every other npm-published repository must define pack=eliware-test --pack.
-              - When required scripts are invalid, report all missing or incorrect required scripts and disallowed script entries together in one result.
+              - When required scripts are invalid, report all missing or incorrect required scripts and prohibited custom publication commands together in one result.
               - Prettier format-check must parse and verify canonical formatting for every maintained .mjs, .json, .yml, .yaml, and .md file; none of these extensions may be excluded from formatting validation.
             donts:
-              - Do not omit, rename, or replace a shared validation script, add unrelated package script names, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command.
+              - Do not omit, rename, or replace a shared validation script, or point a shared script at a direct Jest, Oxlint, Prettier, npm audit, npm install, or npm update command.
           - id: A-0.1.20.18
             dos:
               - Use the shared canonical Prettier configuration for maintained Node.js repositories.

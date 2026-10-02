@@ -12,14 +12,20 @@ export const parentRuleId = "E-0.1.160";
 export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 
 export async function run(context) {
-  const { root } = context;
+  const { root, packageJson } = context;
   try {
+    const packageName = String(packageJson?.name ?? "").replace(/^@[^/]+\//u, "");
+    const expectedImage = packageName ? `ghcr.io/eliware/${packageName}` : "";
     const publications = (await readWorkflows(root, context)).filter(isPublicationWorkflow);
     const published = publications.some((publication) =>
       publicationJobs(publication).some(({ job }) => {
         const push = findImagePush(job);
         const details = imageDetails(push);
-        return Boolean(push && details.image && details.digestReference);
+        return Boolean(
+          push &&
+          details.image?.toLowerCase() === expectedImage.toLowerCase() &&
+          details.digestReference,
+        );
       }),
     );
     const usesLatest = publications.some((publication) =>

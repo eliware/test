@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { findValidationCommandPair } from "../../../../../src/checks/general/E-0.1/E-0.1.24/find-validation-command-pair.mjs";
 
-test("finds exactly one ordered install and test command", () => {
+test("finds the required install and test commands", () => {
   const commands = [{ command: "npm ci" }, { command: "npm test" }];
   expect(findValidationCommandPair("ci.yml", commands)).toMatchObject({
     install: commands[0],
@@ -17,7 +17,7 @@ test("finds exactly one ordered install and test command", () => {
   });
 });
 
-test("rejects missing, duplicate, and reversed required commands", () => {
+test("rejects missing, interrupted, and reversed required commands", () => {
   expect(findValidationCommandPair("ci.yml", [])).toHaveProperty("error");
   expect(findValidationCommandPair("ci.yml", [{ command: "npm test" }])).toHaveProperty("error");
   expect(findValidationCommandPair("ci.yml", [{ command: "npm ci" }])).toHaveProperty("error");
@@ -34,7 +34,14 @@ test("rejects missing, duplicate, and reversed required commands", () => {
       { command: "npm test" },
       { command: "npm test" },
     ]),
-  ).toHaveProperty("error");
+  ).toMatchObject({ install: { command: "npm ci" }, test: { command: "npm test" } });
+  expect(
+    findValidationCommandPair("ci.yml", [
+      { command: "npm ci" },
+      { command: "npm test" },
+      { command: "npm ci" },
+    ]),
+  ).toMatchObject({ install: { command: "npm ci" }, test: { command: "npm test" } });
   expect(
     findValidationCommandPair("ci.yml", [{ command: "npm test" }, { command: "npm ci" }]),
   ).toHaveProperty("error");

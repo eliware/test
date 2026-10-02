@@ -44,7 +44,15 @@ export function readDiagnosticOptions(args) {
       throw new Error(`Tool mode arguments must follow ${modes[0]} or the -- separator.`);
     }
   }
-  const candidateFocused = parseFocusedArguments(wrapperArgs).positional;
+  const parsedFocusedArguments = parseFocusedArguments(normalizedArgs);
+  if (parsedFocusedArguments.forwardedTestPaths.length > 0) {
+    throw new Error(
+      modes.length > 0
+        ? "Focused test paths cannot be combined with tool modes."
+        : "Focused test paths must be supplied before the -- separator.",
+    );
+  }
+  const candidateFocused = parsedFocusedArguments.positional;
   if (
     modes.length > 0 &&
     candidateFocused.some((argument) =>

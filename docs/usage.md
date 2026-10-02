@@ -26,10 +26,18 @@ these scripts automatically. Use `eliware-test --help` for the supported CLI
 modes, including linting, formatting, timing diagnostics, and focused Jest
 execution.
 Run a focused `.test.*` or `.spec.*` suite with
-`eliware-test tests/example.test.mjs`; it runs that test with focused coverage,
-formatting, lint, and source-mirroring checks. Test files under `tests/` use
+`eliware-test tests/example.test.mjs`; put the test path before an optional `--`
+separator. Arguments after `--` are forwarded to Jest and do not select focused
+validation. It runs that test with focused coverage,
+formatting, lint, source-mirroring, and selected safe convention checks. Focused
+coverage targets the mapped mirror: `.mts` and `.cts` tests map to `.mjs` source,
+and other supported extensions map to the same source extension. Application
+profile coverage enforcement remains limited to native `.mjs` production files.
+Test files under `tests/` use
 `.test.*` or `.spec.*` names with `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
+Focused validation also runs selected safe convention checks; those checks can
+inspect repository metadata beyond the selected test file.
 
 ## Configuration
 

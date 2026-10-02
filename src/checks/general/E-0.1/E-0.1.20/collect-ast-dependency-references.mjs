@@ -10,6 +10,7 @@ export function collectAstReferences(
 ) {
   if (!node || typeof node !== "object") return;
   const requireBindingScopes = collectScopes(node);
+  // codescope ignore: requireShadowed is propagated into classifyStaticAstDependencyReference, which skips require.resolve calls in a shadowed lexical scope
   collectAstNodeReferences(node, declared, referenced, uncertain, false, requireBindingScopes);
 }
 

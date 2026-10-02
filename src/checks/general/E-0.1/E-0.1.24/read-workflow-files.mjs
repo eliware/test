@@ -2,20 +2,8 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { parse } from "yaml";
 
-const workflowsByInventory = new WeakMap();
-
 export function readWorkflows(root, repositoryInventory) {
-  if (repositoryInventory) {
-    const cached = workflowsByInventory.get(repositoryInventory);
-    if (cached) return cached;
-    const pending = loadWorkflows(root, repositoryInventory).catch((error) => {
-      workflowsByInventory.delete(repositoryInventory);
-      throw error;
-    });
-    workflowsByInventory.set(repositoryInventory, pending);
-    return pending;
-  }
-  return loadWorkflows(root);
+  return loadWorkflows(root, repositoryInventory);
 }
 
 async function loadWorkflows(root, repositoryInventory) {

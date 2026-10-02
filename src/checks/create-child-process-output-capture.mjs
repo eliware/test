@@ -44,7 +44,7 @@ export function createChildProcessOutputCapture(
   return {
     redactDiagnostic(text) {
       const redacted = getRedactors().stdout.redactComplete(String(text));
-      return budget.truncate(redacted);
+      return createOutputByteBudget(outputLimit).truncate(redacted);
     },
     push(stream, chunk) {
       if ((stream !== "stdout" && stream !== "stderr") || budget.isFull()) return;

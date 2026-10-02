@@ -6,7 +6,7 @@ const run = (context) => checkGhcrPublicationWorkflow({ env: {}, ...context });
 
 test("validates the tag gate on ordinary runs and enforces tag-release identity", async () => {
   const { root, publicationPath } = await createGhcrFixture();
-  const packageJson = { version: "1.2.3" };
+  const packageJson = { name: "@eliware/example", version: "1.2.3" };
   await expect(run({ root, packageJson })).resolves.toEqual(
     expect.objectContaining({ status: "pass" }),
   );
@@ -37,7 +37,10 @@ test("uses the process environment when invocation context omits one", async () 
   process.env.GITHUB_REF_NAME = "main";
   try {
     await expect(
-      checkGhcrPublicationWorkflow({ root, packageJson: { version: "1.2.3" } }),
+      checkGhcrPublicationWorkflow({
+        root,
+        packageJson: { name: "@eliware/example", version: "1.2.3" },
+      }),
     ).resolves.toMatchObject({ status: "pass" });
   } finally {
     if (previousRefType === undefined) delete process.env.GITHUB_REF_TYPE;
@@ -51,18 +54,24 @@ test("requires the publisher job to depend on successful Ubuntu validation", asy
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
-  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
     status: "pass",
   });
   await writeFile(
     publicationPath,
     content.replace("    needs: validate\n", "    needs: [validate]\n"),
   );
-  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
     status: "pass",
   });
   await writeFile(publicationPath, content.replace("    needs: validate\n", ""));
-  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
     status: "fail",
   });
 });
@@ -80,7 +89,9 @@ test("rejects text-only version references without package verification or the p
         "      - run: echo semver github.ref_name\n",
       ),
   );
-  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
     status: "fail",
   });
   await expect(run({ root, packageJson: {} })).resolves.toMatchObject({ status: "fail" });
@@ -91,7 +102,9 @@ test("requires one image push with only the package version tag", async () => {
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
   await writeFile(publicationPath, content.replace("example:v1.2.3", "example:v1.2.4"));
-  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
     status: "fail",
   });
   await writeFile(
@@ -101,9 +114,37 @@ test("requires one image push with only the package version tag", async () => {
       "      - uses: docker/build-push-action@v6\n        with:\n          push: true\n          tags: ghcr.io/eliware/other:v1.2.3\n      - uses: actions/attest@v4",
     ),
   );
-  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
     status: "fail",
   });
+  await writeFile(
+    publicationPath,
+    content.replace("ghcr.io/eliware/example:v1.2.3", "ghcr.io/eliware/other:v1.2.3"),
+  );
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
+    status: "fail",
+  });
+});
+
+test("rejects an image push that occurs before the package-version tag guard", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { readFile, writeFile } = await import("node:fs/promises");
+  const content = await readFile(publicationPath, "utf8");
+  const guardStep = content.match(
+    /      - id: release-version-check\n        run: '[^\n]+'\n/u,
+  )?.[0];
+  expect(guardStep).toBeDefined();
+  const reversed = content
+    .replace(guardStep, "")
+    .replace("      - uses: actions/attest@v4", `${guardStep}      - uses: actions/attest@v4`);
+  await writeFile(publicationPath, reversed);
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({ status: "fail" });
 });
 
 test("rejects an invalid publisher workflow alongside a valid publisher workflow", async () => {
@@ -115,7 +156,9 @@ test("rejects an invalid publisher workflow alongside a valid publisher workflow
     "name: unguarded publish\non:\n  push:\n    branches: [main]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: docker push ghcr.io/eliware/example:latest\n",
   );
 
-  await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({
     status: "fail",
   });
 });

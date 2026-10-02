@@ -3,12 +3,13 @@ import { resolve, sep } from "node:path";
 import { createInstrumenter } from "istanbul-lib-instrument";
 import { isInScopeSource, normalizeSourcePath } from "./coverage-source-path.mjs";
 
+const instrumenter = createInstrumenter({
+  esModules: true,
+  parserPlugins: ["typescript", "jsx", "topLevelAwait"],
+  produceSourceMap: false,
+});
+
 export function expectedCoverageShape(source, filename) {
-  const instrumenter = createInstrumenter({
-    esModules: true,
-    parserPlugins: ["typescript", "jsx", "topLevelAwait"],
-    produceSourceMap: false,
-  });
   instrumenter.instrumentSync(source, filename);
   const coverage = instrumenter.lastFileCoverage();
   const lineMap = Object.fromEntries(

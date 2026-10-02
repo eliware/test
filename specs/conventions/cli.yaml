@@ -24,6 +24,7 @@ directives:
       - id: E-0.1.60.1
         dos:
           - CLI applications must contain bin/ with the executable entrypoint, implement and document --help and --version, and document exit codes and redacted output. Human review must identify each command that can change or delete state; each such command must provide dry-run, confirmation, or an equivalent safeguard. A CLI with no state-changing or destructive commands requires no destructive-action safeguard.
+          - When focused test execution is supported, document and test each supported focused-test extension and its mirrored source mapping; map .mts and .cts tests to .mjs sources and map other supported extensions to the same source extension.
         donts:
           - CLI applications must not omit bin/, --help, --version, or safeguards for state-changing commands, or expose secrets. Deterministic checks must not infer destructive behavior from command names or keyword presence.
       - id: A-0.1.60.2

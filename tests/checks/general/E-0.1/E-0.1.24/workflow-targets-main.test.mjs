@@ -10,6 +10,7 @@ test("evaluates push branch shapes and main inclusion", () => {
   expect(pushTargetsMain(["*", "!main*"])).toBe(false);
   expect(pushTargetsMain(["*", "!main*", "main"])).toBe(true);
   expect(pushTargetsMain(["dev"])).toBe(false);
+  expect(pushTargetsMain(["!main"])).toBe(false);
   for (const push of [undefined, null, false]) expect(pushTargetsMain(push)).toBe(false);
   expect(pushTargetsMain(true)).toBe(false);
   expect(pushTargetsMain({})).toBe(false);

@@ -3,8 +3,16 @@ function walk(node, parent, ancestry, errors) {
     errors.push("Every directive must have a valid E- or A-prefixed ID.");
     return;
   }
-  if (parent && !node.id.slice(2).startsWith(`${parent.id.slice(2)}.`))
-    errors.push(`Directive ${node.id} must be nested under ${parent.id}.`);
+  if (parent) {
+    const parentPath = parent.id.slice(2).split(".");
+    const childPath = node.id.slice(2).split(".");
+    if (
+      childPath.length !== parentPath.length + 1 ||
+      parentPath.some((segment, index) => childPath[index] !== segment)
+    ) {
+      errors.push(`Directive ${node.id} must be nested under ${parent.id}.`);
+    }
+  }
   if (!parent && !node.id.startsWith("E-"))
     errors.push(`Top-level directive ${node.id} must be an E-rule.`);
   if (node.id.startsWith("E-") && ancestry.some((id) => id.startsWith("A-")))

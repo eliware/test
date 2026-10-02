@@ -4,15 +4,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRepositoryFileContentCache } from "../../src/checks/create-repository-file-content-cache.mjs";
 
+const fileVersion = (mtimeNs, size = 4n) => ({ dev: 1n, ino: 2n, size, mtimeNs, ctimeNs: mtimeNs });
+
 test("shares one byte read across byte and text access", async () => {
   const read = jest.fn(async () => Buffer.from("text content"));
-  const cache = createRepositoryFileContentCache("/repo", read, async () => ({
-    dev: 1n,
-    ino: 2n,
-    size: 12n,
-    mtimeNs: 1n,
-    ctimeNs: 1n,
-  }));
+  const cache = createRepositoryFileContentCache("/repo", read, async () => fileVersion(1n, 12n));
 
   const bytes = cache.readBytes("README.md");
   const text = cache.readText("/repo/README.md");
@@ -20,6 +16,60 @@ test("shares one byte read across byte and text access", async () => {
   await expect(text).resolves.toBe("text content");
   await expect(cache.readText("README.md")).resolves.toBe("text content");
   expect(read).toHaveBeenCalledTimes(1);
+});
+
+test("evicts cached file bytes after the bounded content budget is exceeded", async () => {
+  const largeContent = Buffer.alloc(8 * 1024 * 1024 + 1, 65);
+  const read = jest.fn(async () => largeContent);
+  const cache = createRepositoryFileContentCache("/repo", read, async () => ({
+    dev: 1n,
+    ino: 2n,
+    size: BigInt(largeContent.byteLength),
+    mtimeNs: 1n,
+    ctimeNs: 1n,
+  }));
+
+  await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
+  await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
+  expect(read).toHaveBeenCalledTimes(2);
+});
+
+test("leaves concurrent pending reads alone while evicting completed content", async () => {
+  let releaseFirstStat;
+  let blockFirstStat = true;
+  const largeContent = Buffer.alloc(8 * 1024 * 1024 + 1, 65);
+  const stat = jest.fn((path) => {
+    if (path.endsWith("first.bin") && blockFirstStat) {
+      blockFirstStat = false;
+      return new Promise((resolve) => {
+        releaseFirstStat = () =>
+          resolve({
+            dev: 1n,
+            ino: 1n,
+            size: 1n,
+            mtimeNs: 1n,
+            ctimeNs: 1n,
+          });
+      });
+    }
+    return Promise.resolve({
+      dev: 1n,
+      ino: 2n,
+      size: BigInt(largeContent.byteLength),
+      mtimeNs: 1n,
+      ctimeNs: 1n,
+    });
+  });
+  const cache = createRepositoryFileContentCache(
+    "/repo",
+    async (path) => (path.endsWith("first.bin") ? Buffer.from("a") : largeContent),
+    stat,
+  );
+  const first = cache.readBytes("first.bin");
+  const large = cache.readBytes("large.bin");
+  await expect(large).resolves.toBe(largeContent);
+  releaseFirstStat();
+  await expect(first).resolves.toEqual(Buffer.from("a"));
 });
 
 test("normalizes text reader results for byte access", async () => {
@@ -34,24 +84,17 @@ test("normalizes text reader results for byte access", async () => {
 });
 
 test("reuses file content only while its on-disk version is unchanged", async () => {
-  const metadata = (mtimeNs) => ({
-    dev: 1n,
-    ino: 2n,
-    size: 4n,
-    mtimeNs,
-    ctimeNs: mtimeNs,
-  });
   const stat = jest
     .fn()
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(2n));
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(2n))
+    .mockResolvedValueOnce(fileVersion(2n))
+    .mockResolvedValueOnce(fileVersion(2n))
+    .mockResolvedValueOnce(fileVersion(2n));
   const read = jest.fn().mockResolvedValueOnce("old!").mockResolvedValueOnce("new!");
   const cache = createRepositoryFileContentCache("/repo", read, stat);
 
@@ -65,22 +108,15 @@ test("reuses file content only while its on-disk version is unchanged", async ()
 });
 
 test("refreshes a cache hit when the file changes between version checks", async () => {
-  const metadata = (mtimeNs) => ({
-    dev: 1n,
-    ino: 2n,
-    size: 4n,
-    mtimeNs,
-    ctimeNs: mtimeNs,
-  });
   const stat = jest
     .fn()
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(2n));
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(1n))
+    .mockResolvedValueOnce(fileVersion(2n))
+    .mockResolvedValueOnce(fileVersion(2n))
+    .mockResolvedValueOnce(fileVersion(2n));
   const read = jest.fn().mockResolvedValueOnce("old!").mockResolvedValueOnce("new!");
   const cache = createRepositoryFileContentCache("/repo", read, stat);
 

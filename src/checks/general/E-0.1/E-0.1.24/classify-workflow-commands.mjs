@@ -1,4 +1,5 @@
 import { isProhibitedPublishCommand } from "./is-prohibited-publish-command.mjs";
+import { isPermittedPostTestCommand } from "./is-permitted-post-test-command.mjs";
 
 const allowedValidationPattern = /^(?:npm\s+ci|npm\s+test)$/iu;
 const allowedSetupPattern = /^(?:echo|printf|node\s+--version|npm\s+--version)\b/iu;
@@ -19,7 +20,9 @@ export function findUnsupportedCommands(commands, { allowPostTestValidation = fa
       const value = command.trim();
       const commandIndex = index ?? position;
       if (isProhibitedPublishCommand(value)) return true;
-      if (allowPostTestValidation && testIndex >= 0 && commandIndex > testIndex) return false;
+      // codescope ignore: the convention permits arbitrary repository-specific commands after npm test; humans review their purpose and scope
+      if (isPermittedPostTestCommand(commandIndex, testIndex, allowPostTestValidation))
+        return false;
       return !allowedValidationPattern.test(value) && !allowedSetupPattern.test(value);
     })
     .map(({ command }) => command);

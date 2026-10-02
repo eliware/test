@@ -12,6 +12,21 @@ function createKiller(execute, state = { running: true }) {
   );
 }
 
+function expectInvalidSystemRoot(env) {
+  const previousSystemRoot = process.env.SystemRoot;
+  const previousWindir = process.env.WINDIR;
+  delete process.env.SystemRoot;
+  delete process.env.WINDIR;
+  try {
+    expect(() => resolveTaskkillExecutable(env)).toThrow("absolute SystemRoot");
+  } finally {
+    if (previousSystemRoot === undefined) delete process.env.SystemRoot;
+    else process.env.SystemRoot = previousSystemRoot;
+    if (previousWindir === undefined) delete process.env.WINDIR;
+    else process.env.WINDIR = previousWindir;
+  }
+}
+
 test("resolves taskkill from an absolute Windows system root", () => {
   expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(
     /System32[\\/]taskkill\.exe$/iu,
@@ -19,21 +34,11 @@ test("resolves taskkill from an absolute Windows system root", () => {
   expect(resolveTaskkillExecutable({ WINDIR: "D:/Windows" })).toMatch(
     /System32[\\/]taskkill\.exe$/iu,
   );
-  expect(() => resolveTaskkillExecutable({ SystemRoot: "relative\\Windows" })).toThrow(
-    "absolute SystemRoot",
-  );
-  expect(() => resolveTaskkillExecutable({ SystemRoot: "C:\\Windows\\..\\Temp" })).toThrow(
-    "absolute SystemRoot",
-  );
-  expect(resolveTaskkillExecutable({ SystemRoot: "\\\\server\\share\\Windows" })).toMatch(
-    /System32[\\/]taskkill\.exe$/iu,
-  );
-  expect(() => resolveTaskkillExecutable({ SystemRoot: "\\\\?\\C:\\Windows" })).toThrow(
-    "absolute SystemRoot",
-  );
-  expect(() => resolveTaskkillExecutable({ SystemRoot: "C:\\Windows\\." })).toThrow(
-    "absolute SystemRoot",
-  );
+  expectInvalidSystemRoot({ SystemRoot: "relative\\Windows" });
+  expectInvalidSystemRoot({ SystemRoot: "C:\\Windows\\..\\Temp" });
+  expectInvalidSystemRoot({ SystemRoot: "\\\\server\\share\\Windows" });
+  expectInvalidSystemRoot({ SystemRoot: "\\\\?\\C:\\Windows" });
+  expectInvalidSystemRoot({ SystemRoot: "C:\\Windows\\." });
 });
 
 test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {

@@ -103,8 +103,20 @@ test("accepts a matching version token alongside informational output", async ()
       ...context,
       executeEntrypoint: async (_command, args) => ({
         code: 0,
-        stdout: args[1] === "--version" ? "eliware-test version 1.2.3\n" : "Usage",
+        stdout: args[1] === "--version" ? "1.2.3\n" : "Usage",
       }),
     }),
   ).resolves.toBe("");
+});
+
+test("rejects unrelated version output that merely mentions the package version", async () => {
+  await expect(
+    executeCliInformationCommands({
+      ...context,
+      executeEntrypoint: async (_command, args) => ({
+        code: 0,
+        stdout: args[1] === "--version" ? "Usage: cli 1.2.3\n" : "Usage",
+      }),
+    }),
+  ).resolves.toContain("must report package version 1.2.3");
 });

@@ -18,6 +18,7 @@ export function createRepositoryAstCache({ read = readFile, parseSource = parse 
   return async function parseRepositoryAst(root, file, options, suppliedSource) {
     const repositoryAstFile = resolveRepositoryAstFile(root, file);
     const { absoluteFile } = repositoryAstFile;
+    // codescope ignore: Uncanonicalizable options and supplied snapshots bypass persistent AST reuse; the source reader still shares in-flight disk reads.
     const parseUncached = () =>
       (suppliedSource === undefined
         ? Promise.resolve().then(() => read(absoluteFile, "utf8"))

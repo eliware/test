@@ -1,7 +1,14 @@
 const npmPublishPattern = /(?:^|(?:&&|\|\||[;&|])\s*)npm\s+(?:--[^\s]+\s+)*publish\b/iu;
+const ghcrVariable = String.raw`(?:\$\{?GHCR_[A-Z0-9_]+\}?)`;
 const ghcrPublishPatterns = [
-  /\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*\bghcr\.io\//iu,
-  /\b(?:docker|podman|buildah)\s+buildx\s+build\b[^;\r\n]*--push[^;\r\n]*\bghcr\.io\//iu,
+  new RegExp(
+    String.raw`\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*(?:\bghcr\.io\/|${ghcrVariable})`,
+    "iu",
+  ),
+  new RegExp(
+    String.raw`\b(?:docker|podman|buildah)\s+buildx\s+build\b[^;\r\n]*--push[^;\r\n]*(?:\bghcr\.io\/|${ghcrVariable})`,
+    "iu",
+  ),
   /\b(?:oras|crane)\s+push\b[^;\r\n]*\bghcr\.io\//iu,
   /\bskopeo\s+copy\b[^;\r\n]*docker:\/\/ghcr\.io\//iu,
 ];

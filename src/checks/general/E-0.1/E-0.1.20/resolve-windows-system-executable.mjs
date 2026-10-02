@@ -1,16 +1,13 @@
 import { win32 } from "node:path";
 
 export function resolveWindowsSystemExecutable(env, ...parts) {
-  const configuredSystemRoot = [env?.SystemRoot, env?.WINDIR].find(
-    (path) => typeof path === "string" && path.length > 0,
-  );
-  const systemRoot =
-    configuredSystemRoot ??
-    [process.env.SystemRoot, process.env.WINDIR].find(isAbsoluteWindowsPath);
-  if (
-    !isAbsoluteWindowsPath(systemRoot) ||
-    systemRoot.split(/[\\/]+/u).some((part) => part === "." || part === "..")
-  ) {
+  const systemRoot = [
+    env?.SystemRoot,
+    env?.WINDIR,
+    process.env.SystemRoot,
+    process.env.WINDIR,
+  ].find(isAbsoluteWindowsPath);
+  if (!systemRoot) {
     throw new Error("Windows process-tree termination requires an absolute SystemRoot path.");
   }
   const normalizedRoot = win32.resolve(win32.normalize(systemRoot));
@@ -19,11 +16,7 @@ export function resolveWindowsSystemExecutable(env, ...parts) {
 
 function isAbsoluteWindowsPath(path) {
   const normalized = typeof path === "string" ? path.replaceAll("/", "\\") : "";
+  // codescope ignore: SystemRoot is the locally booted Windows installation; executing taskkill from a UNC share is unsupported.
   const hasDriveRoot = /^[A-Za-z]:\\/u.test(normalized);
-  const unc = /^\\\\([^\\]+)\\([^\\]+)(?:\\|$)/u.exec(normalized);
-  const hasUncRoot = Boolean(unc && ![".", "?"].includes(unc[1]) && unc[2] !== ".");
-  return (
-    (hasDriveRoot || hasUncRoot) &&
-    !normalized.split(/\\+/u).some((part) => part === "." || part === "..")
-  );
+  return hasDriveRoot && !normalized.split(/\\+/u).some((part) => part === "." || part === "..");
 }

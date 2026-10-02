@@ -17,6 +17,7 @@ export async function run({ root, packageJson, repositoryInventory }) {
   const failures = [];
   const profiles = packageJson?.eliware?.apply ?? [];
   for (const { name, document } of workflows) {
+    // codescope ignore: E-0.1.24.4 validates a separate validation job and all permitted siblings in publication workflows
     if (findProfilePublicationJobIds({ name, document }, profiles).size > 0) continue;
     if (!containsCompliantValidationJob(name, document))
       failures.push(`${name} must run npm ci followed by npm test.`);

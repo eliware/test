@@ -40,6 +40,7 @@ export async function run(context) {
     const failures = ["Purpose", "scope", "Setup", "usage", "validation", "support"]
       .filter((requirement) => !index.toLowerCase().includes(requirement.toLowerCase()))
       .map((requirement) => `docs/README.md must document ${requirement}.`);
+    // docs/README.md is the index itself; it links every other discovered document.
     const missing = files
       .filter((file) => file !== join(docs, "README.md"))
       .map((file) => relative(root, file).replaceAll("\\", "/"))

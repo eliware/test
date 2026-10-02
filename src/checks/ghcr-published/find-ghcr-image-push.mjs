@@ -14,6 +14,7 @@ export function findImagePush(job) {
 }
 
 export function findImagePushes(job) {
+  // codescope ignore: this helper parses GHCR tag syntax; E-0.1.160.1 binds all publication image names to the package-derived image
   return steps(job).filter(
     (step) =>
       requiredStep(step) &&
@@ -41,7 +42,7 @@ export function imageDetails(push) {
 export function imageTags(value) {
   return typeof value === "string"
     ? value
-        .split(/\r?\n/u)
+        .split(/\r\n|\r|\n/u)
         .map((tag) => tag.trim())
         .filter(Boolean)
     : [];

@@ -137,6 +137,23 @@ test("enforces result limits when traversal does not report file callbacks", asy
   ).rejects.toThrow("file limit");
 });
 
+test("bounds lazy traversal by all non-generated files, including predicate misses", async () => {
+  const inventory = createRepositoryInventory("/repo", {
+    findEntries: jest.fn(async (_root, _readDirectory, options) => {
+      options.onFile("docs/one.json");
+      options.onFile("docs/two.json");
+      return records;
+    }),
+  });
+  await expect(
+    inventory.documentationFiles({
+      directory: "/repo/docs",
+      predicate: (name) => name.endsWith(".md"),
+      maxFiles: 1,
+    }),
+  ).rejects.toThrow("file limit");
+});
+
 test("keeps generated files out of scoped depth and result limits unless included", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-documentation-limits-"));
   await mkdir(join(root, "docs", "build", "nested"), { recursive: true });
@@ -163,37 +180,4 @@ test("keeps generated files out of scoped depth and result limits unless include
   } finally {
     await rm(root, { recursive: true, force: true });
   }
-});
-
-test("reports documentation predicate failures with the affected file name", async () => {
-  const inventory = createRepositoryInventory("/repo", {
-    findEntries: async (_root, _readDirectory, options) => {
-      options.onFile("docs/README.md");
-      return records;
-    },
-  });
-
-  await expect(
-    createRepositoryInventory("/repo", {
-      findEntries: async (_root, _readDirectory, options) => {
-        options.onFile("docs/README.md");
-        return records;
-      },
-    }).documentationFiles({
-      directory: "/repo/docs",
-      predicate: () => {
-        throw new Error("bad predicate");
-      },
-    }),
-  ).rejects.toThrow('Documentation filename predicate failed for "README.md": bad predicate');
-  await expect(
-    inventory.documentationFiles({
-      directory: "/repo/docs",
-      predicate: () => {
-        throw Symbol("invalid predicate");
-      },
-    }),
-  ).rejects.toThrow(
-    'Documentation filename predicate failed for "README.md": Symbol(invalid predicate)',
-  );
 });

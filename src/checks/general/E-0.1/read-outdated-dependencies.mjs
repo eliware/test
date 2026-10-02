@@ -24,6 +24,7 @@ export function readOutdatedDependencies(
 ) {
   let child;
   try {
+    // codescope ignore: npm outdated needs independent stdout overflow termination and a bounded stderr tail; tests cover this specialized lifecycle
     const command = createOutdatedDependenciesCommand(root, { env, platform, execPath });
     child = spawnProcess(command.executable, command.args, command.options);
   } catch (error) {
