@@ -55,7 +55,9 @@
   README section headings, detect multi-suffix Jest config files, clarify the
   process runner's fixed capture and no-shell contract, and document that Jest
   settings belong in `package.json`; explain consumer profile and validation
-  script setup.
+  script setup; suppress unsafe output when secret matching cannot advance at
+  the pending-buffer limit, join captured output chunks once, and report
+  recoverable guidance when partial-lock cleanup fails.
 
 ## 9.0.0 — 2026-10-01
 

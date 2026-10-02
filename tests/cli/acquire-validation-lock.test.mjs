@@ -78,6 +78,45 @@ test("removes a partially written lock when writing its metadata fails", async (
   expect(unlink).toHaveBeenCalledWith(join("/repo", "eliware-test.lock"));
 });
 
+test("reports both lock-write and partial-lock cleanup failures", async () => {
+  const writeError = new Error("disk full");
+  const closeError = new Error("close failed");
+  const cleanupError = new Error("access denied");
+  const open = jest.fn(async () => ({
+    writeFile: jest.fn().mockRejectedValue(writeError),
+    close: jest.fn().mockRejectedValue(closeError),
+  }));
+  const unlink = jest.fn().mockRejectedValue(cleanupError);
+
+  const error = await acquireValidationLock("/repo", { open, unlink }).catch((value) => value);
+  expect(error).toBeInstanceOf(AggregateError);
+  expect(error.message).toContain(
+    "partial lock may remain at " + join("/repo", "eliware-test.lock"),
+  );
+  expect(error.errors).toEqual([writeError, closeError, cleanupError]);
+  expect(error.cause).toBe(writeError);
+});
+
+test("reports close failure when partial lock removal succeeds", async () => {
+  const writeError = new Error("disk full");
+  const closeError = new Error("close failed");
+  const error = await acquireValidationLock("/repo", {
+    open: async () => ({
+      writeFile: async () => {
+        throw writeError;
+      },
+      close: async () => {
+        throw closeError;
+      },
+    }),
+    unlink: jest.fn(),
+  }).catch((value) => value);
+
+  expect(error).toBeInstanceOf(AggregateError);
+  expect(error.message).toBe("Could not write lock metadata and cleanup failed.");
+  expect(error.errors).toEqual([writeError, closeError]);
+});
+
 test("treats a lock removed before release as already released", async () => {
   const readFile = jest
     .fn()

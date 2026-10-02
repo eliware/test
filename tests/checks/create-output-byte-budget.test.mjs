@@ -10,6 +10,14 @@ test("accounts for a shared byte limit across output streams", () => {
   expect(budget.isFull()).toBe(true);
 });
 
+test("joins bounded stream chunks without changing their order", () => {
+  const budget = createOutputByteBudget(1000);
+  for (let index = 0; index < 100; index += 1) budget.append("stdout", "x");
+
+  expect(budget.output.stdout).toBe("x".repeat(100));
+  expect(budget.isFull()).toBe(false);
+});
+
 test("truncates output and diagnostics at valid UTF-8 boundaries", () => {
   const budget = createOutputByteBudget(4);
   budget.append("stdout", "abc🔐");

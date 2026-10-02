@@ -14,17 +14,22 @@ function truncateTextToBytes(text, byteLimit) {
 
 export function createOutputByteBudget(limit) {
   let capturedBytes = 0;
-  const output = { stdout: "", stderr: "" };
+  const chunks = { stdout: [], stderr: [] };
 
   return {
     append(stream, text) {
       const remaining = Math.max(0, limit - capturedBytes);
       const bounded = truncateTextToBytes(text, remaining);
       capturedBytes += Buffer.byteLength(bounded);
-      output[stream] += bounded;
+      if (bounded) chunks[stream].push(bounded);
     },
     truncate: (text) => truncateTextToBytes(text, limit),
-    output,
+    get output() {
+      return {
+        stdout: chunks.stdout.join(""),
+        stderr: chunks.stderr.join(""),
+      };
+    },
     isFull: () => capturedBytes >= limit,
   };
 }

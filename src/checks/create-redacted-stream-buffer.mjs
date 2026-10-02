@@ -2,6 +2,7 @@ import { redactMatchedSecrets } from "./redact-secrets.mjs";
 
 export function createRedactedStreamBuffer({
   pendingLimit,
+  bufferLimit = pendingLimit,
   decoder,
   findSafeBoundary,
   trimSuffix,
@@ -16,7 +17,13 @@ export function createRedactedStreamBuffer({
     if (!canContinue() || finished) return "";
     let output = "";
     for (let start = 0; start < text.length && canContinue();) {
-      const nextText = text.slice(start, start + Math.max(1, pendingLimit - pending.length));
+      const capacity = bufferLimit - pending.length;
+      if (capacity <= 0) {
+        suppress();
+        pending = "";
+        return "";
+      }
+      const nextText = text.slice(start, start + Math.min(pendingLimit, capacity));
       pending += nextText;
       start += nextText.length;
       const { boundary, matchEnds, suppressed } = findSafeBoundary(pending);

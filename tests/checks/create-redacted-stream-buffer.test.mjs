@@ -60,6 +60,22 @@ test("retains an unsafe prefix until finishing supplies a complete boundary", ()
   expect(buffer.finish()).toBe("abcdefgh");
 });
 
+test("suppresses a full pending buffer when no safe boundary can advance", () => {
+  let suppressed = false;
+  const { buffer, append } = createBuffer({
+    findSafeBoundary: () => ({ boundary: 0, matchEnds: [], suppressed: false }),
+    canContinue: () => !suppressed,
+    suppress: () => {
+      suppressed = true;
+    },
+  });
+
+  expect(buffer.addText("12345678x")).toBe("");
+  expect(suppressed).toBe(true);
+  expect(buffer.finish()).toBe("");
+  expect(append).not.toHaveBeenCalled();
+});
+
 test("suppresses buffered text when the final boundary scan exceeds its budget", () => {
   let suppressed = false;
   const { buffer, append } = createBuffer({

@@ -8,6 +8,7 @@ export function createRedactedTextStreamSession(policy, outputLimit) {
   const output = createRedactedStreamOutput(outputLimit);
   const streamBuffer = createRedactedStreamBuffer({
     pendingLimit: policy.pendingLimit,
+    bufferLimit: outputLimit,
     decoder,
     findSafeBoundary: policy.findSafeBoundary,
     trimSuffix: policy.trimSuffix,

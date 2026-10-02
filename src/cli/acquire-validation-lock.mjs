@@ -20,8 +20,31 @@ export async function acquireValidationLock(root, operations = {}) {
       JSON.stringify({ lockId, pid: process.pid, startedAt: new Date().toISOString() }),
     );
   } catch (error) {
-    await file.close();
-    await removeFile(lockPath);
+    const cleanupErrors = [];
+    try {
+      await file.close();
+    } catch (cleanupError) {
+      cleanupErrors.push(cleanupError);
+    }
+    let lockMayRemain = false;
+    try {
+      await removeFile(lockPath);
+    } catch (cleanupError) {
+      cleanupErrors.push(cleanupError);
+      lockMayRemain = true;
+    }
+    if (cleanupErrors.length > 0) {
+      const recovery = lockMayRemain
+        ? " The partial lock may remain at " +
+          lockPath +
+          "; remove it after confirming no validation run is active."
+        : "";
+      throw new AggregateError(
+        [error, ...cleanupErrors],
+        "Could not write lock metadata and cleanup failed." + recovery,
+        { cause: error },
+      );
+    }
     throw error;
   }
   await file.close();
