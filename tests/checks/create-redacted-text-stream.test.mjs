@@ -40,7 +40,9 @@ test("redacts complete progress text and trailing partial secrets", () => {
 });
 
 test("uses an injected secret matcher when supplied", () => {
-  const getSecretMatcher = jest.fn(() => () => []);
+  const getSecretMatcher = jest.fn(
+    () => (text) => Array.from({ length: text.length + 1 }, () => 0),
+  );
   const output = createRedactedTextStream(["secret"], 100, { getSecretMatcher });
 
   expect(output.redactComplete("safe output")).toBe("safe output");
@@ -67,4 +69,11 @@ test("suppresses complete output after the stream session exceeds its suffix wor
   output.push("safe output");
 
   expect(output.redactComplete("safe output")).toBe("");
+});
+
+test("suppresses complete diagnostics after a runtime matcher failure", () => {
+  const output = createRedactedTextStream(["secret"], 100, { getSecretMatcher: () => () => null });
+
+  expect(output.push("safe prefix")).toBe("");
+  expect(output.redactComplete("diagnostic secret")).toBe("");
 });

@@ -180,3 +180,13 @@ test("normalizes and formats failures raised by the CLI pipeline", async () => {
   expect(formatExitCode).toHaveBeenCalledWith(18);
   expect(write).toHaveBeenCalledWith("formatted exit code");
 });
+
+test("normalizes failures while acquiring the validation lock", async () => {
+  const error = new Error("lock acquisition failed");
+  const write = jest.fn();
+  acquireValidationLock.mockRejectedValueOnce(error);
+
+  await expect(runCli([], write, "/repo")).resolves.toBe(18);
+
+  expect(normalizeCliError).toHaveBeenCalledWith(error, write);
+});

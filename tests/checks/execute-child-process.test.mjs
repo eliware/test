@@ -109,6 +109,14 @@ test("handles synchronous spawn failures and children without output streams", a
   });
 });
 
+test("rejects a close event without an exit code or terminating signal", async () => {
+  const child = childProcess();
+  const result = execute("tool", [], {}, () => child);
+  child.emit("close", null, null);
+
+  await expect(result).rejects.toThrow("Child process exited without an exit code.");
+});
+
 test("normalizes malformed child adapters and stream-wiring failures", async () => {
   await expect(execute("tool", [], {}, () => ({}))).rejects.toMatchObject({
     name: "TypeError",

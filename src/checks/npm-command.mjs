@@ -29,7 +29,7 @@ export function npmCommand(
     const resolvedNpmExecPath =
       isAbsolute(npmExecPath) || isAbsoluteWindowsNpmPath(npmExecPath)
         ? npmExecPath
-        : resolve(workingDirectory, npmExecPath);
+        : resolve(npmExecPath);
     return [execPath, [resolvedNpmExecPath]];
   }
   return ["npm", []];

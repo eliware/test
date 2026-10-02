@@ -27,4 +27,22 @@ test("suppresses diagnostics when policy, search budget, or matcher rejects them
   expect(
     redactCompleteOutput("safe", { ...options, workLimit: 10, findSecretEnds: () => null }),
   ).toBe("");
+  expect(
+    redactCompleteOutput("visible secret", {
+      ...options,
+      workLimit: 100,
+      findSecretEnds: (text) => Array.from({ length: text.length + 1 }, () => 0),
+    }),
+  ).toBe("");
+  expect(
+    redactCompleteOutput("x", {
+      ...options,
+      workLimit: 10,
+      findSecretEnds: () => {
+        const matchEnds = [0, 0];
+        delete matchEnds[0];
+        return matchEnds;
+      },
+    }),
+  ).toBe("");
 });

@@ -26,6 +26,14 @@
 - Count declared dependency binaries invoked from npm scripts, Knit deployment
   commands (including local `node_modules/.bin` paths), and `.knit/*.mjs`
   validation files as used. References in GitHub workflows alone do not count.
+- Harden bounded secret redaction at output boundaries and suppress complete
+  diagnostics when secret matching fails or returns incomplete results.
+- Route validation-lock cleanup failures through CLI error handling while
+  preserving validation failures, reject child processes that close without an
+  exit code, and resolve relative `npm_execpath` values from the invoking
+  process directory.
+- Reuse generated-directory record projections while cached directory entries
+  remain unchanged.
 
 ## 9.0.0 — 2026-10-01
 

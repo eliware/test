@@ -15,15 +15,18 @@ test("converts generated directory children and excludes unsupported entries", a
   expect(readDirectory).toHaveBeenCalledWith("dist");
 });
 
-test("reads generated-directory records afresh for each request", async () => {
+test("reuses records for cached entries and rebuilds them when entries change", async () => {
+  const before = [{ name: "before.js", isDirectory: () => false, isFile: () => true }];
+  const after = [{ name: "after.js", isDirectory: () => false, isFile: () => true }];
   const readDirectory = jest
     .fn()
-    .mockResolvedValueOnce([{ name: "before.js", isDirectory: () => false, isFile: () => true }])
-    .mockResolvedValueOnce([{ name: "after.js", isDirectory: () => false, isFile: () => true }]);
+    .mockResolvedValueOnce(before)
+    .mockResolvedValueOnce(before)
+    .mockResolvedValueOnce(after);
 
-  await expect(readGeneratedDirectoryRecords("dist", readDirectory)).resolves.toEqual([
-    { path: "dist/before.js", type: "file" },
-  ]);
+  const initial = await readGeneratedDirectoryRecords("dist", readDirectory);
+  expect(initial).toEqual([{ path: "dist/before.js", type: "file" }]);
+  await expect(readGeneratedDirectoryRecords("dist", readDirectory)).resolves.toBe(initial);
   await expect(readGeneratedDirectoryRecords("dist", readDirectory)).resolves.toEqual([
     { path: "dist/after.js", type: "file" },
   ]);

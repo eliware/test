@@ -14,7 +14,7 @@ test("selects the platform npm executable or npm exec path", () => {
   ]);
   expect(npmCommand("linux", "npm-cli.js", process.execPath, undefined, "/repo")).toEqual([
     process.execPath,
-    [resolve("/repo", "npm-cli.js")],
+    [resolve("npm-cli.js")],
   ]);
   expect(npmCommand("win32", "", "C:\\node.exe", () => true)).toEqual([
     "C:\\node.exe",

@@ -9,6 +9,7 @@ import { normalizeCliError } from "./normalize-cli-error.mjs";
 import { formatExitCode } from "./format-exit-code.mjs";
 import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
 import { acquireValidationLock } from "./acquire-validation-lock.mjs";
+import { completeCliValidation } from "./complete-cli-validation.mjs";
 import { join } from "node:path";
 
 export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
@@ -24,44 +25,60 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
       );
       return 18;
     }
-    const diagnosticOptions = readDiagnosticOptions(args);
-    const startedAt = Date.now();
-    const timing = createStageTimer(
-      args.includes("--debug-timing"),
-      () => Date.now(),
-      args.includes("--debug-timing") ? write : undefined,
-    );
-    const executeConvention = options.runConventionStage ?? runConventionStage;
-    const executeValidation = options.runValidation ?? runValidation;
-    const result = await executeConvention(() =>
-      executeValidation(
-        root,
-        [],
-        createValidationRunOptions(args, diagnosticOptions, options, timing, write),
-      ),
-    );
-    writeValidationResults(
-      {
-        ...result,
-        mode:
-          diagnosticOptions.mode ??
-          (parseFocusedArguments(diagnosticOptions.jestArgs ?? []).positional.length > 0
-            ? "focused"
-            : null),
-      },
-      write,
-      args.includes("--debug-timing"),
-      timing,
-      startedAt,
-      { root, ...(options.env ? { env: options.env } : {}) },
-    );
-    if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
-    return result.code;
+    let resultCode;
+    let validationError;
+    try {
+      const diagnosticOptions = readDiagnosticOptions(args);
+      const startedAt = Date.now();
+      const timing = createStageTimer(
+        args.includes("--debug-timing"),
+        () => Date.now(),
+        args.includes("--debug-timing") ? write : undefined,
+      );
+      const executeConvention = options.runConventionStage ?? runConventionStage;
+      const executeValidation = options.runValidation ?? runValidation;
+      const result = await executeConvention(() =>
+        executeValidation(
+          root,
+          [],
+          createValidationRunOptions(args, diagnosticOptions, options, timing, write),
+        ),
+      );
+      writeValidationResults(
+        {
+          ...result,
+          mode:
+            diagnosticOptions.mode ??
+            (parseFocusedArguments(diagnosticOptions.jestArgs ?? []).positional.length > 0
+              ? "focused"
+              : null),
+        },
+        write,
+        args.includes("--debug-timing"),
+        timing,
+        startedAt,
+        { root, ...(options.env ? { env: options.env } : {}) },
+      );
+      if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
+      resultCode = result.code;
+    } catch (error) {
+      validationError = error;
+    }
+    const releaseLockForRun = releaseLock;
+    releaseLock = undefined;
+    return completeCliValidation({
+      resultCode,
+      validationError,
+      releaseLock: releaseLockForRun,
+      reportError: (error) => reportCliError(error, write),
+    });
   } catch (error) {
-    const exitCode = normalizeCliError(error, write);
-    write(formatExitCode(exitCode));
-    return exitCode;
-  } finally {
-    await releaseLock?.();
+    return reportCliError(error, write);
   }
+}
+
+function reportCliError(error, write) {
+  const exitCode = normalizeCliError(error, write);
+  write(formatExitCode(exitCode));
+  return exitCode;
 }
