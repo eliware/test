@@ -81,4 +81,7 @@ test("resolves a relative Windows npm executable from the repository root", () =
       "C:\\repo",
     ),
   ).toEqual(["C:\\node.exe", ["C:\\repo\\node_modules\\npm\\bin\\npm-cli.js"]]);
+  expect(() =>
+    npmCommand("win32", "node_modules/npm/bin/npm-cli.js", "C:\\node.exe", () => true, "/repo"),
+  ).toThrow("POSIX-style directory on Windows");
 });

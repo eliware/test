@@ -1,3 +1,5 @@
+import { isValidEventDetails } from "./validate-workflow-event-details.mjs";
+
 const branchFilters = new Set([
   "branches",
   "branches-ignore",
@@ -75,7 +77,7 @@ function isValidEventConfig(event, config) {
   return Object.entries(config).every(([field, value]) => {
     if (!allowedFields.has(field)) return false;
     if (stringArrayFields.has(field)) return isStringList(value);
-    return ["inputs", "outputs", "secrets"].includes(field) && isRecord(value);
+    return isValidEventDetails(event, field, value);
   });
 }
 

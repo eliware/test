@@ -34,6 +34,12 @@
   process directory.
 - Reuse generated-directory record projections while cached directory entries
   remain unchanged.
+- Preserve secret interval ordering during heap removal, validate nested
+  `workflow_dispatch` and `workflow_call` metadata, and deduplicate configured
+  Jest timing reporters.
+- Reject ambiguous POSIX-style repository roots during Windows npm CLI
+  resolution, and clarify that consumer `--pack` validation requires the
+  `npm-published` profile.
 
 ## 9.0.0 — 2026-10-01
 

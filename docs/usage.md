@@ -71,9 +71,10 @@ configuration, or required maintained-file coverage are rejected.
 The normal test command runs the configured validation stages. In the
 `@eliware/test` repository checkout only, use `npm run audit` and
 `npm run pack` for the isolated audit and package validation stages. Consumer
-repositories use `eliware-test --audit` and `eliware-test --pack` (or
-`node bin/eliware-test.mjs --audit` and `node bin/eliware-test.mjs --pack`);
-npm script names are not accepted as direct CLI arguments.
+repositories use `eliware-test --audit` and, when they select the
+`npm-published` profile, `eliware-test --pack` (or the corresponding
+`node bin/eliware-test.mjs` commands); npm script names are not accepted as
+direct CLI arguments.
 
 To validate one focused Jest path, pass its repository-relative path to
 `eliware-test`. Focused

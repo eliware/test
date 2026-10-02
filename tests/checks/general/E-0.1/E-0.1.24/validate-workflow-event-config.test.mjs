@@ -26,6 +26,19 @@ test("rejects malformed fields even when sibling branch filters are valid", () =
   );
   expect(validateWorkflowEventConfigs({ schedule: [{ cron: "" }] })).toBe(false);
   expect(validateWorkflowEventConfigs({ workflow_dispatch: { inputs: [] } })).toBe(false);
+  expect(
+    validateWorkflowEventConfigs({
+      workflow_dispatch: { inputs: { deploy: { required: "true" } } },
+    }),
+  ).toBe(false);
+  expect(
+    validateWorkflowEventConfigs({
+      workflow_call: { outputs: { result: { description: "missing" } } },
+    }),
+  ).toBe(false);
+  expect(
+    validateWorkflowEventConfigs({ workflow_call: { secrets: { token: { required: "true" } } } }),
+  ).toBe(false);
 });
 
 test("accepts empty event maps and null shorthand but rejects invalid event shapes", () => {

@@ -84,6 +84,7 @@ function removeRoot(heap, compare) {
     while (index * 2 + 1 < heap.length) {
       let child = index * 2 + 1;
       if (child + 1 < heap.length && compare(heap[child + 1], heap[child]) < 0) child += 1;
+      if (compare(last, heap[child]) <= 0) break;
       heap[index] = heap[child];
       index = child;
     }

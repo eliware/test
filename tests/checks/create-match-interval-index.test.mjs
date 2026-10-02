@@ -84,3 +84,11 @@ test("returns no crossing for empty or boundary-starting matches", () => {
   expect(index.earliestCrossing(3)).toBeNull();
   expect(index.earliestCrossing(4)).toBe(3);
 });
+
+test("sifts the last heap value up when it is smaller than the chosen child", () => {
+  const index = createMatchIntervalIndex();
+  const starts = [0, 1, 2, 10, 11, 3, 4, 12, 13, 14, 15, 5, 6, 7, 8];
+  index.add(starts.map((start) => ({ start, end: start === 2 ? 10 : 2 })));
+
+  expect(index.earliestCrossing(3)).toBe(2);
+});

@@ -13,5 +13,5 @@ export async function resolveJestReporters(root, args = [], read = readFile) {
   }
   const reporters = [...new Set([...configured, "default", PROGRESS_REPORTER])];
   if (args.includes("--debug-timing")) reporters.push(TIMING_REPORTER);
-  return reporters;
+  return [...new Set(reporters)];
 }

@@ -51,6 +51,27 @@ test("uses harness defaults when package reporters are absent and timing is disa
   }
 });
 
+test("deduplicates the timing reporter when it is already configured", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-timing-reporters-"));
+  try {
+    await writeFile(join(root, "package.json"), "{}\n");
+    const configured = await resolveJestReporters(root, ["--debug-timing"]);
+    const timingReporter = configured.find((reporter) =>
+      reporter.endsWith("jest-timing-reporter.mjs"),
+    );
+    await writeFile(
+      join(root, "package.json"),
+      JSON.stringify({ jest: { reporters: [timingReporter] } }),
+    );
+
+    const reporters = await resolveJestReporters(root, ["--debug-timing"]);
+
+    expect(reporters.filter((reporter) => reporter === timingReporter)).toHaveLength(1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("rejects reporters that are not a string array", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-invalid-reporters-"));
   try {

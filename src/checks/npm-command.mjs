@@ -12,6 +12,9 @@ export function npmCommand(
 ) {
   if (platform === "win32") {
     if (typeof npmExecPath === "string" && npmExecPath.trim()) {
+      if (isPosixAbsolutePath(workingDirectory)) {
+        throw new Error("Cannot resolve npm_execpath from a POSIX-style directory on Windows.");
+      }
       const resolvedNpmExecPath = isAbsoluteWindowsNpmPath(npmExecPath)
         ? npmExecPath
         : win32.resolve(workingDirectory, npmExecPath);
@@ -41,4 +44,8 @@ function isAbsoluteWindowsNpmPath(path) {
   return (
     /^[A-Za-z]:\//u.test(normalized) || /^\/\/(?![.?]\/)[^/]+\/[^/]+(?:\/|$)/u.test(normalized)
   );
+}
+
+function isPosixAbsolutePath(path) {
+  return typeof path === "string" && path.startsWith("/") && !path.startsWith("//");
 }
