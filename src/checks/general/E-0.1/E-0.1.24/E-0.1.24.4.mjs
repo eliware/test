@@ -4,6 +4,7 @@ import { validateWorkflowSequence } from "./validate-workflow-sequence.mjs";
 import { selectWorkflowValidationJobs } from "./select-workflow-validation-jobs.mjs";
 import { workflowAllowsAttestation } from "./workflow-allows-attestation.mjs";
 import { findProfilePublicationJobIds } from "./find-profile-publication-job-ids.mjs";
+import { ghcrPublicationJobs } from "../../../ghcr-published/workflow-publication.mjs";
 
 export const ruleId = "E-0.1.24.4";
 export const parentRuleId = "E-0.1.24";
@@ -21,6 +22,9 @@ export async function run({ root, packageJson, repositoryInventory }) {
   const failures = [];
   for (const { name, document } of workflows) {
     const publicationJobIds = findProfilePublicationJobIds({ document }, profiles);
+    const ghcrPublicationJobIds = new Set(
+      allowAttestation ? ghcrPublicationJobs({ document }).map(({ id }) => id) : [],
+    );
     const selection = selectWorkflowValidationJobs(name, document, { publicationJobIds });
     if (selection.error) {
       failures.push(selection.error);
@@ -32,7 +36,7 @@ export async function run({ root, packageJson, repositoryInventory }) {
         jobCommands,
         job.steps,
         job,
-        { allowAttestation },
+        { allowAttestation: ghcrPublicationJobIds.has(id) },
       );
       if (sequenceError) failures.push(sequenceError);
     }

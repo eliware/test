@@ -18,8 +18,11 @@ jest.unstable_mockModule(
 
 const { run } = await import("../../../../../src/checks/general/E-0.1/E-0.1.24/E-0.1.24.4.mjs");
 const job = { steps: [{ run: "npm ci" }, { run: "npm test" }] };
+const publicationJob = {
+  steps: [{ uses: "docker/build-push-action@v6", with: { push: true } }],
+};
 const commands = [{ command: "npm ci" }, { command: "npm test" }];
-const document = {};
+const document = { jobs: { publish: publicationJob, validate: job } };
 
 beforeEach(() => {
   jest.resetAllMocks();
@@ -50,7 +53,7 @@ test("composes workflow loading, validation-job selection, and sequence validati
   );
 });
 
-test("allows post-test attestations only for repositories with the GHCR profile", async () => {
+test("allows attestations only in GHCR publication jobs", async () => {
   readWorkflows.mockResolvedValueOnce([
     { name: "ci.yml", document },
     { name: "publish.yml", document },
@@ -62,6 +65,21 @@ test("allows post-test attestations only for repositories with the GHCR profile"
     commands,
     job.steps,
     job,
+    { allowAttestation: false },
+  );
+
+  selectWorkflowValidationJobs.mockReturnValue({
+    error: null,
+    jobs: [{ id: "publish", job: publicationJob, commands }],
+  });
+  validateWorkflowSequence.mockClear();
+  await run({ root: "/repo", packageJson: { eliware: { apply: ["ghcr-published"] } } });
+
+  expect(validateWorkflowSequence).toHaveBeenCalledWith(
+    "ci.yml job publish",
+    commands,
+    publicationJob.steps,
+    publicationJob,
     { allowAttestation: true },
   );
 });

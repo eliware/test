@@ -125,10 +125,48 @@ test("checks actions after npm test against the reporting allowlist", () => {
       "publish.yml",
       [],
       0,
-      [{ run: "npm test" }, { uses: "actions/attest@v4" }],
+      [
+        { run: "npm test" },
+        {
+          uses: "actions/attest@v4",
+          with: {
+            subjectName: "ghcr.io/eliware/example",
+            subjectDigest: "${{ steps.push.outputs.digest }}",
+            pushToRegistry: true,
+          },
+        },
+      ],
       { allowAttestation: true },
     ),
   ).toBeNull();
+  expect(
+    validateWorkflowPostTestCommands(
+      "publish.yml",
+      [],
+      0,
+      [{ run: "npm test" }, { uses: "actions/attest@v4" }],
+      { allowAttestation: true },
+    ),
+  ).toContain("approved reporting actions");
+  for (const withValues of [
+    {},
+    { subjectName: "ghcr.io/eliware/example", pushToRegistry: true },
+    {
+      subjectName: "ghcr.io/eliware/example",
+      subjectDigest: "${{ steps.push.outputs.digest }}",
+      pushToRegistry: false,
+    },
+  ]) {
+    expect(
+      validateWorkflowPostTestCommands(
+        "publish.yml",
+        [],
+        0,
+        [{ run: "npm test" }, { uses: "actions/attest@v4", with: withValues }],
+        { allowAttestation: true },
+      ),
+    ).toContain("approved reporting actions");
+  }
   expect(
     validateWorkflowPostTestCommands("ci.yml", [], 0, [
       { run: "npm test" },

@@ -23,7 +23,7 @@ test("accepts counts that exactly match allowed vulnerability findings", () => {
   expect(hasConsistentNpmAuditSeverityCounts(report(emptyCounts))).toBe(true);
 });
 
-test("counts each vulnerable package once when it has multiple advisory records", () => {
+test("counts advisory records in a package finding and rejects package aliases", () => {
   expect(
     hasConsistentNpmAuditSeverityCounts(
       report(
@@ -42,7 +42,7 @@ test("counts each vulnerable package once when it has multiple advisory records"
         },
       ),
     ),
-  ).toBe(true);
+  ).toBe(false);
 });
 
 test("rejects conflicting duplicate normalized package findings", () => {
@@ -53,6 +53,17 @@ test("rejects conflicting duplicate normalized package findings", () => {
         {
           example: { name: "example", severity: "low", via: [{ source: 1 }] },
           duplicate: { name: "example", severity: "moderate", via: [{ source: 2 }] },
+        },
+      ),
+    ),
+  ).toBe(false);
+  expect(
+    hasConsistentNpmAuditSeverityCounts(
+      report(
+        { ...emptyCounts, moderate: 1, total: 1 },
+        {
+          example: { severity: "moderate" },
+          duplicate: { severity: "moderate" },
         },
       ),
     ),

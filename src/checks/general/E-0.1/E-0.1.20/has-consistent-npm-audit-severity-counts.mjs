@@ -1,19 +1,12 @@
-import { isDeepStrictEqual } from "node:util";
-
 const severities = ["info", "low", "moderate", "high", "critical"];
 const protectedSeverities = new Set(["high", "critical"]);
 
 export function hasConsistentNpmAuditSeverityCounts(report) {
-  const findingsByPackage = new Map();
+  const findings = [];
   for (const [name, finding] of Object.entries(report.vulnerabilities)) {
-    const packageName = finding?.name ?? name;
-    if (findingsByPackage.has(packageName)) {
-      if (!isDeepStrictEqual(findingsByPackage.get(packageName), finding)) return false;
-      continue;
-    }
-    findingsByPackage.set(packageName, finding);
+    if (finding?.name !== undefined && finding.name !== name) return false;
+    findings.push(finding);
   }
-  const findings = [...findingsByPackage.values()];
   const reportedCounts = Object.fromEntries(severities.map((severity) => [severity, 0]));
   if (
     findings.some(

@@ -12,7 +12,7 @@ test("derives additional scripts from applicable profiles", () => {
   ).toEqual({
     requiresPack: true,
     selfHosted: true,
-    allowedAdditionalScripts: ["typecheck", "build", "lighthouse", "puppeteer"],
+    allowedAdditionalScripts: ["typecheck", "build"],
   });
 });
 
@@ -24,7 +24,7 @@ test("does not use generic capability metadata to allow profile scripts", () => 
   ).toEqual({
     requiresPack: false,
     selfHosted: false,
-    allowedAdditionalScripts: ["build", "lighthouse", "puppeteer"],
+    allowedAdditionalScripts: ["build"],
   });
 });
 

@@ -13,7 +13,7 @@ test("validates focused test paths before execution", async () => {
     "tests/sample.test.mjs",
   );
   await expect(validateFocusedTestPath(root, ["tests\\sample.test.mjs"])).resolves.toBe(
-    "tests\\sample.test.mjs",
+    "tests/sample.test.mjs",
   );
   await expect(validateFocusedTestPath(root, ["tests/missing.test.mjs"])).rejects.toThrow(
     "does not exist",

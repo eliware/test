@@ -6,8 +6,11 @@ and use its `eliware-test` command for validation. Package scripts such as `npm 
 each consumer repository defines its own scripts to invoke `eliware-test`.
 Use `eliware-test --help` for the supported CLI modes,
 including linting, formatting, timing diagnostics, and focused Jest execution.
-Focused `.test.*` and `.spec.*` test files under `tests/`
-with `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
+Run a focused suite with `eliware-test tests/example.test.mjs`; it runs that
+test with focused coverage, formatting, lint, and source-mirroring checks. Test
+files
+under `tests/` use `.test.*` or `.spec.*` names with `.js`, `.jsx`, `.ts`,
+`.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
 
 ## Configuration
 

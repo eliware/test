@@ -1,4 +1,5 @@
 import { resolveSelfHostedScriptCommands } from "./resolve-self-hosted-script-commands.mjs";
+import { validateProfileScriptCommand } from "./validate-profile-script-command.mjs";
 
 const requiredScripts = {
   test: "eliware-test",
@@ -44,7 +45,10 @@ export function validateRequiredScripts(
     if (Object.hasOwn(applicableScripts, name)) continue;
     if (typeof command !== "string" || !command.trim()) {
       failures.push(`package.json.scripts.${name} must be a nonempty command.`);
+      continue;
     }
+    const commandError = validateProfileScriptCommand(name, command);
+    if (commandError) failures.push(commandError);
   }
   return failures.length ? failures.join("\n") : null;
 }

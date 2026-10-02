@@ -29,7 +29,11 @@ export function createDocumentationFileView(root, entriesUnder) {
       onFile(path) {
         traversalObserved = true;
         const file = path.slice(prefix.length);
-        if ((!includeGenerated && generatedPath.test(path)) || !predicate(basename(file))) return;
+        if (
+          (!includeGenerated && generatedPath.test(path)) ||
+          !matchesDocumentationFile(predicate, basename(file))
+        )
+          return;
         selectedPaths.add(path);
         assertDocumentationFileLimit(selectedPaths.size, maxFiles);
       },
@@ -60,11 +64,26 @@ export function createDocumentationFileView(root, entriesUnder) {
       )
         continue;
       const file = record.path.slice(prefix.length);
-      if (traversalObserved ? !selectedPaths.has(record.path) : !predicate(basename(file)))
+      if (
+        traversalObserved
+          ? !selectedPaths.has(record.path)
+          : !matchesDocumentationFile(predicate, basename(file))
+      )
         continue;
       result.push(file);
       assertDocumentationFileLimit(result.length, maxFiles);
     }
     return result;
   };
+}
+
+function matchesDocumentationFile(predicate, name) {
+  try {
+    return predicate(name);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`Documentation filename predicate failed for "${name}": ${reason}`, {
+      cause: error,
+    });
+  }
 }

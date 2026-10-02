@@ -157,3 +157,36 @@ test("keeps generated files out of scoped depth and result limits unless include
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("reports documentation predicate failures with the affected file name", async () => {
+  const inventory = createRepositoryInventory("/repo", {
+    findEntries: async (_root, _readDirectory, options) => {
+      options.onFile("docs/README.md");
+      return records;
+    },
+  });
+
+  await expect(
+    createRepositoryInventory("/repo", {
+      findEntries: async (_root, _readDirectory, options) => {
+        options.onFile("docs/README.md");
+        return records;
+      },
+    }).documentationFiles({
+      directory: "/repo/docs",
+      predicate: () => {
+        throw new Error("bad predicate");
+      },
+    }),
+  ).rejects.toThrow('Documentation filename predicate failed for "README.md": bad predicate');
+  await expect(
+    inventory.documentationFiles({
+      directory: "/repo/docs",
+      predicate: () => {
+        throw Symbol("invalid predicate");
+      },
+    }),
+  ).rejects.toThrow(
+    'Documentation filename predicate failed for "README.md": Symbol(invalid predicate)',
+  );
+});

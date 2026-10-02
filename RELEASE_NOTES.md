@@ -40,6 +40,12 @@
 - Reject ambiguous POSIX-style repository roots during Windows npm CLI
   resolution, and clarify that consumer `--pack` validation requires the
   `npm-published` profile.
+- Reject duplicate or mis-keyed npm audit vulnerability records, report
+  documentation predicate failures with the affected file, and require
+  profile-owned `typecheck` and `build` scripts to invoke direct tools.
+- Restrict post-test image attestations to GHCR publication jobs with subject,
+  digest, and registry-push inputs; normalize validated focused paths before
+  passing them on to Jest.
 
 ## 9.0.0 — 2026-10-01
 

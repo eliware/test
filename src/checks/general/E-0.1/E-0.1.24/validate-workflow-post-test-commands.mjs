@@ -22,7 +22,7 @@ export function validateWorkflowPostTestCommands(
     );
   });
   const invalidAction = workflowSteps.some((step, index) => {
-    const approved = allowAttestation && step?.uses === "actions/attest@v4";
+    const approved = allowAttestation && isApprovedAttestation(step);
     return (
       index > testIndex &&
       typeof step?.uses === "string" &&
@@ -32,4 +32,19 @@ export function validateWorkflowPostTestCommands(
   return invalidStepShape || invalidReporting || invalidAction
     ? `${name} may only run reporting commands after npm test or approved reporting actions.`
     : null;
+}
+
+function isApprovedAttestation(step) {
+  if (step?.uses !== "actions/attest@v4" || !step.with || typeof step.with !== "object")
+    return false;
+  const subjectName = step.with.subjectName ?? step.with["subject-name"];
+  const subjectDigest = step.with.subjectDigest ?? step.with["subject-digest"];
+  const pushToRegistry = step.with.pushToRegistry ?? step.with["push-to-registry"];
+  return (
+    typeof subjectName === "string" &&
+    subjectName.length > 0 &&
+    typeof subjectDigest === "string" &&
+    subjectDigest.length > 0 &&
+    pushToRegistry === true
+  );
 }

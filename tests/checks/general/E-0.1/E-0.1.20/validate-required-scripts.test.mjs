@@ -100,13 +100,22 @@ test("accepts only explicitly permitted capability and web profile scripts", () 
   ).toBeNull();
   expect(
     validateRequiredScripts(
-      { ...scripts, lighthouse: "lighthouse", puppeteer: "node browser.mjs" },
+      { ...scripts, typecheck: "tsc --noEmit", build: "vite build" },
       {
-        allowedAdditionalScripts: ["lighthouse", "puppeteer"],
+        allowedAdditionalScripts: ["typecheck", "build"],
       },
     ),
   ).toBeNull();
-  expect(validateRequiredScripts({ ...scripts, lighthouse: "lighthouse" })).toContain(
-    "not allowed",
-  );
+  expect(
+    validateRequiredScripts(
+      { ...scripts, typecheck: "echo skipped", build: "jest" },
+      { allowedAdditionalScripts: ["typecheck", "build"] },
+    ),
+  ).toContain("must invoke a direct typechecker");
+  expect(
+    validateRequiredScripts(
+      { ...scripts, lighthouse: "lighthouse" },
+      { allowedAdditionalScripts: ["build"] },
+    ),
+  ).toContain("not allowed");
 });

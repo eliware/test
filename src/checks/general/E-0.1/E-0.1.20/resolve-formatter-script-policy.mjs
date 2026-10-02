@@ -8,7 +8,6 @@ export function resolveFormatterScriptPolicy(packageJson = {}) {
     allowedAdditionalScripts: [
       ...(profiles.has("library") ? ["typecheck"] : []),
       ...(profiles.has("web") ? ["build"] : []),
-      ...(profiles.has("web") ? ["lighthouse", "puppeteer"] : []),
     ],
   };
 }
