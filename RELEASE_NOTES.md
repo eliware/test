@@ -50,8 +50,11 @@
   failures, propagate repository inventory refresh errors other than missing
   directories, resolve relative `npm_execpath` values from the repository root,
   fall back to platform npm for Windows-style `npm_execpath` values on POSIX,
-  clarify the process runner's fixed capture and no-shell contract, and document
-  that Jest settings belong in `package.json`.
+  terminate child processes after asynchronous spawn errors, accept case-variant
+  focused formatter paths, recognize glob-based ignore rules, require exact
+  README section headings, detect multi-suffix Jest config files, clarify the
+  process runner's fixed capture and no-shell contract, and document that Jest
+  settings belong in `package.json`.
 
 ## 9.0.0 — 2026-10-01
 

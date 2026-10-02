@@ -30,7 +30,10 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
       if (!child || typeof child.on !== "function") {
         throw new TypeError("Child process adapter returned an invalid child process.");
       }
-      child.on("error", rejectOnce);
+      child.on("error", (error) => {
+        terminateChild(child);
+        rejectOnce(error);
+      });
       attachOutputStream(child.stdout, "stdout", output);
       attachOutputStream(child.stderr, "stderr", output);
       child.on("close", (code, signal) => {

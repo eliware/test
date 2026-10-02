@@ -17,7 +17,7 @@ export async function resolveFocusedFormatterPaths(root, focusedScope) {
 function isSupportedFocusedPath(path) {
   return (
     typeof path === "string" &&
-    /^(?:tests|src)\//u.test(path) &&
+    /^(?:tests|src)\//iu.test(path) &&
     path.split("/").every((segment) => segment && segment !== "." && segment !== "..")
   );
 }

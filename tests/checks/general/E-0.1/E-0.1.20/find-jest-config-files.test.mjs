@@ -10,9 +10,13 @@ test("finds separate Jest configurations and skips excluded directories", async 
   await mkdir(join(root, "nested"));
   await mkdir(join(root, "node_modules"));
   await writeFile(join(root, "jest.config.mjs"), "export default {};\n");
+  await writeFile(join(root, "jest.config.test.mjs"), "export default {};\n");
   await writeFile(join(root, "nested", "notes.txt"), "not a config\n");
   await writeFile(join(root, "node_modules", "jest.config.js"), "module.exports = {};\n");
-  await expect(findJestConfigFiles(root)).resolves.toEqual([join(root, "jest.config.mjs")]);
+  await expect(findJestConfigFiles(root)).resolves.toEqual([
+    join(root, "jest.config.mjs"),
+    join(root, "jest.config.test.mjs"),
+  ]);
   await rm(root, { recursive: true, force: true });
 });
 

@@ -12,3 +12,10 @@ test("extracts requested README sections and normalizes their content", () => {
   expect(sections.get("Usage")).toBe("run it");
   expect(sections.get("License")).toBe("");
 });
+
+test("requires an exact section heading", () => {
+  const sections = readReadmeSections("## Features!\nwrong section\n## Usage\nright section", [
+    "Features",
+  ]);
+  expect(sections.get("Features")).toBe("");
+});

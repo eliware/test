@@ -56,3 +56,20 @@ test("rejects directories and symlinks that resolve outside the repository", asy
     await rm(outside, { recursive: true, force: true });
   }
 });
+
+test("accepts existing focused paths with case-variant source directory names", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-paths-case-"));
+  await mkdir(join(root, "Tests"), { recursive: true });
+  await mkdir(join(root, "Src"), { recursive: true });
+  await writeFile(join(root, "Tests", "example.test.mjs"), "test('works', () => {});\n");
+  await writeFile(join(root, "Src", "example.mjs"), "export {};\n");
+  try {
+    await expect(
+      resolveFocusedFormatterPaths(root, {
+        paths: ["Tests/example.test.mjs", "Src/example.mjs"],
+      }),
+    ).resolves.toEqual(["Tests/example.test.mjs", "Src/example.mjs"]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

@@ -25,7 +25,7 @@ export async function findJestConfigFiles(directory, repositoryInventory) {
       .filter(
         (file) =>
           file.startsWith(prefix) &&
-          /^jest\.config(?:\.[^.]+)?$/iu.test(file.slice(prefix.length).split("/").at(-1)),
+          /^jest\.config(?:\..+)?$/iu.test(file.slice(prefix.length).split("/").at(-1)),
       )
       .map((file) => join(repositoryInventory.root, file));
   }
@@ -34,7 +34,7 @@ export async function findJestConfigFiles(directory, repositoryInventory) {
     if (entry.isDirectory()) {
       if (!ignoredDirectories.has(entry.name))
         findings.push(...(await findJestConfigFiles(join(directory, entry.name))));
-    } else if (/^jest\.config(?:\.[^.]+)?$/i.test(entry.name)) {
+    } else if (/^jest\.config(?:\..+)?$/i.test(entry.name)) {
       findings.push(join(directory, entry.name));
     }
   }

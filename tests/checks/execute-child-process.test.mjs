@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { execute } from "../../src/checks/execute-child-process.mjs";
 
 function childProcess() {
@@ -70,6 +70,16 @@ test("settles only once after asynchronous child errors", async () => {
   child.emit("error", new Error("late error"));
   child.emit("close", 1, null);
   await expect(promise).rejects.toThrow("spawn failed");
+});
+
+test("terminates a child after an asynchronous error even when it never closes", async () => {
+  const child = childProcess();
+  child.kill = jest.fn();
+  const promise = execute("node", [], {}, () => child);
+  child.emit("error", new Error("spawn failed"));
+
+  await expect(promise).rejects.toThrow("spawn failed");
+  expect(child.kill).toHaveBeenCalledTimes(1);
 });
 
 test("redacts output using configured secrets before returning it", async () => {

@@ -13,3 +13,8 @@ test("recognizes root ignore rules written with Windows path separators", () => 
   expect(hasExplicitIgnoreRule("dist\\\n", "dist/index.js")).toBe(true);
   expect(hasExplicitIgnoreRule("node_modules\\\n", ".git/config")).toBe(false);
 });
+
+test("recognizes equivalent glob rules that ignore required repository paths", () => {
+  expect(hasExplicitIgnoreRule("**/node_modules/\n", "node_modules/eliware-test")).toBe(true);
+  expect(hasExplicitIgnoreRule("coverage/**\n", "coverage/index.html")).toBe(true);
+});
