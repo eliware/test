@@ -27,6 +27,14 @@ test("preserves stderr diagnostics when stdout contains ordinary output", async 
   ).resolves.toMatchObject({ result: { stdout: result.stdout, stderr: result.stderr } });
 });
 
+test("binds coverage freshness when the Jest executor omits its start callback", async () => {
+  runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
+
+  await expect(executeJestCheck({ root: "." })).resolves.toMatchObject({
+    result: { code: 0, startedAt: expect.any(Number) },
+  });
+});
+
 test("defaults omitted Jest arguments to an empty list", async () => {
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();

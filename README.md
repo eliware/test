@@ -154,6 +154,8 @@ repository-relative `.test.*` or
 `.spec.*` file under `tests/` can be supplied to
 `eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.
+Focused extension support does not change the source/test mirroring requirement:
+each maintained `.mjs` source module must have its mirrored `.test.mjs` test.
 Jest reporter names in `package.json` must be strings; per-reporter option
 tuples are unsupported because the harness supplies its own reporters.
 

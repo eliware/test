@@ -1,5 +1,4 @@
 const severities = ["info", "low", "moderate", "high", "critical"];
-const protectedSeverities = new Set(["high", "critical"]);
 
 export function hasConsistentNpmAuditSeverityCounts(report) {
   const findings = [];
@@ -21,8 +20,7 @@ export function hasConsistentNpmAuditSeverityCounts(report) {
         finding === null ||
         typeof finding !== "object" ||
         Array.isArray(finding) ||
-        !severities.includes(finding.severity) ||
-        protectedSeverities.has(finding.severity),
+        !severities.includes(finding.severity),
     )
   ) {
     return false;
@@ -47,8 +45,6 @@ export function hasConsistentNpmAuditSeverityCounts(report) {
   return (
     Number.isSafeInteger(reportedTotal) &&
     vulnerabilities.total === reportedTotal &&
-    severities.every((severity) => vulnerabilities[severity] === reportedCounts[severity]) &&
-    vulnerabilities.high === 0 &&
-    vulnerabilities.critical === 0
+    severities.every((severity) => vulnerabilities[severity] === reportedCounts[severity])
   );
 }

@@ -579,6 +579,7 @@ directives:
             dos:
               - Every repository applying general must execute its audit stage through the shared audit script.
               - Run npm audit with the fixed --audit-level=high threshold. Accept only auditReportVersion 2 reports whose vulnerabilities map and metadata.vulnerabilities severity counts agree, whose nonnegative integer severity counts sum to total, and whose high and critical counts are zero; lower severity counts may be nonzero.
+              - Treat a structurally valid report with high or critical findings as an audit failure and retain its vulnerability diagnostics; do not label it malformed JSON.
             donts:
               - Do not omit audit from the aggregate test validation, run a separate direct audit command, or fail reports solely for low or moderate counts below the configured high threshold.
       - id: E-0.1.22

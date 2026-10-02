@@ -36,6 +36,10 @@
 - Derive the bundled check manifest's major/minor version from `package.json`
   and use package metadata in version-related regression tests instead of
   hard-coded release numbers.
+- Standardize `package.json.jest` on one exact golden object, including 100×4
+  coverage thresholds; enforce one canonical `package.json.prettier` object,
+  reject standalone Prettier configuration files, and allow only `apply` and
+  `exempt` keys in `package.json.eliware`.
 
 ### Fixed
 
@@ -90,6 +94,22 @@
   script setup; suppress unsafe output when secret matching cannot advance at
   the pending-buffer limit, join captured output chunks once, and report
   recoverable guidance when partial-lock cleanup fails.
+- Stream one concise progress line per Jest suite in `--debug-timing`, report
+  failures once in the selected output mode, enforce a five-second total suite
+  timeout, and remove redundant Jest timing-report generation while preserving
+  coverage-gap diagnostics.
+- Keep Jest coverage freshness bound to a start timestamp even when an executor
+  omits its callback; share in-flight source reads for uncacheable AST options
+  and use directory metadata to avoid rereading unchanged inventory listings.
+- Validate npm audit report structure separately from its high/critical
+  threshold: valid findings fail with their diagnostics instead of being
+  mislabeled as malformed JSON. Validate lockfile link dependencies and
+  nearest-ancestor resolution, and normalize quoted Windows npm PATH entries
+  with trailing separators.
+- Require unconditional Ubuntu GitHub validation jobs with the adjacent
+  `npm ci`/`npm test` pair, validate their conditions and sibling jobs, and
+  verify README focused-test extensions do not replace mirrored `.test.mjs`
+  source tests.
 
 ## 9.0.0 — 2026-10-01
 

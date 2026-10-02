@@ -26,7 +26,7 @@ test("accepts only the canonical version-tag push trigger", () => {
   ).toBe(false);
   expect(
     hasExactTagTrigger({
-      document: { on: { push: { tags: [releaseTagFilter], "tags-ignore": ["v9.*"] } } },
+      document: { on: { push: { tags: [releaseTagFilter], "tags-ignore": ["legacy.*"] } } },
     }),
   ).toBe(false);
   expect(hasExactTagTrigger({ document: {} })).toBe(false);

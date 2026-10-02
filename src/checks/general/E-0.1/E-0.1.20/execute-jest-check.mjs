@@ -12,6 +12,7 @@ export async function executeJestCheck(context) {
     options.onStart = () => {
       startedAt = Date.now();
     };
+    startedAt = Date.now();
     const result = await runJest(context.root, context.jestArgs ?? [], runChild, options);
     return { result: { ...result, startedAt }, timeoutDiagnostic };
   } catch (error) {

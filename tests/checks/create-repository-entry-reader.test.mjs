@@ -37,7 +37,7 @@ test("reuses full entries while directory versions stay unchanged", async () => 
   expect(reader.entries()).toBe(refresh);
   await expect(refresh).resolves.toBe(initial);
   expect(findEntries).toHaveBeenCalledTimes(1);
-  expect(readDirectoryCached).toHaveBeenCalledWith("/repo", true);
+  expect(readDirectoryCached).toHaveBeenCalledWith("/repo");
 });
 
 test("rediscovers when directory versions change", async () => {

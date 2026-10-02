@@ -76,15 +76,17 @@ test("accepts npm audit exit zero when vulnerabilities stay below the high thres
   ).resolves.toMatchObject({ status: "pass" });
 });
 
-test("rejects zero-exit reports containing high or critical package findings", async () => {
+test("reports high or critical findings as audit failures with the valid report diagnostic", async () => {
   for (const severity of ["high", "critical"]) {
     const report = JSON.parse(cleanReport);
     report.vulnerabilities.example = { name: "example", severity };
+    report.metadata.vulnerabilities[severity] = 1;
+    report.metadata.vulnerabilities.total = 1;
     await expect(
       runAudit({ runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }) }),
     ).resolves.toMatchObject({
       status: "fail",
-      message: "npm audit returned an invalid JSON report.",
+      message: expect.stringContaining(`npm audit failed: ${JSON.stringify(report)}`),
     });
   }
 });

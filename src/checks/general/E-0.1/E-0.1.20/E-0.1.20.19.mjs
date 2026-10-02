@@ -6,7 +6,7 @@ import {
   formatNpmAuditFailure,
   formatNpmAuditStartupFailure,
 } from "./format-npm-audit-diagnostic.mjs";
-import { isSuccessfulNpmAuditReport } from "./is-successful-npm-audit-report.mjs";
+import { getValidNpmAuditReport } from "./is-successful-npm-audit-report.mjs";
 import { validateAuditArguments } from "./validate-audit-arguments.mjs";
 import { resolveSelfHostedScriptCommands } from "./resolve-self-hosted-script-commands.mjs";
 import { getAuditDependencyRequirements } from "./get-audit-dependency-requirements.mjs";
@@ -42,9 +42,15 @@ export async function run({
     if (result.code !== 0) {
       return fail(ruleId, formatNpmAuditFailure(result, env));
     }
-    if (!isSuccessfulNpmAuditReport(result.stdout, getAuditDependencyRequirements(packageJson))) {
+    const report = getValidNpmAuditReport(
+      result.stdout,
+      getAuditDependencyRequirements(packageJson),
+    );
+    if (!report) {
       return fail(ruleId, "npm audit returned an invalid JSON report.");
     }
+    if (report.metadata.vulnerabilities.high > 0 || report.metadata.vulnerabilities.critical > 0)
+      return fail(ruleId, formatNpmAuditFailure({ ...result, code: 1 }, env));
   } catch (error) {
     return fail(ruleId, formatNpmAuditStartupFailure(error, env));
   }

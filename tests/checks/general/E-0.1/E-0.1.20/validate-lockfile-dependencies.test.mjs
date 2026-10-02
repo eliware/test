@@ -111,3 +111,35 @@ test("validates lockfile dependency maps and package entries", () => {
     expect(validateLockfileDependencies({ packages: { "": {}, ...packages } }, {})).toBeNull();
   }
 });
+
+test("resolves nested dependencies from the nearest ancestor then the repository root", () => {
+  const alphaPath = "node_modules/team/node_modules/alpha";
+  const alpha = { ...packageEntry(), dependencies: { beta: "1.0.0" } };
+  const dependency = { version: "1.0.0", resolved: "https://registry" };
+  const nestedPath = "node_modules/team/node_modules/beta";
+
+  expect(
+    validateLockfileDependencies(
+      { packages: { "": {}, [alphaPath]: alpha, [nestedPath]: dependency } },
+      {},
+    ),
+  ).toBeNull();
+  expect(
+    validateLockfileDependencies(
+      { packages: { "": {}, [alphaPath]: alpha, "node_modules/beta": dependency } },
+      {},
+    ),
+  ).toBeNull();
+  expect(
+    validateLockfileDependencies(
+      {
+        packages: {
+          "": {},
+          [alphaPath]: alpha,
+          "node_modules/other/node_modules/beta": dependency,
+        },
+      },
+      {},
+    ),
+  ).toMatch(/references missing dependency beta/u);
+});

@@ -38,7 +38,7 @@ export function createRepositoryEntryReader({
     let directoriesExist = true;
     try {
       for (const directory of readDirectoryCached.getTrackedDirectories()) {
-        await readDirectoryCached(directory, true);
+        await readDirectoryCached(directory);
       }
     } catch (error) {
       if (error?.code !== "ENOENT") throw error;

@@ -50,6 +50,30 @@ test("bypasses caching for parser options it cannot canonicalize", async () => {
   expect(parseSource.mock.calls[2][0]).toBe("supplied source");
 });
 
+test("shares an in-flight source snapshot across uncacheable parser options", async () => {
+  let resolveRead;
+  const read = jest.fn(() => new Promise((resolve) => (resolveRead = resolve)));
+  const parseSource = jest.fn((source, options) => ({ source, options }));
+  const parseAst = createRepositoryAstCache({ read, parseSource });
+  const firstOptions = { plugins: new Map([["typescript", true]]) };
+  const secondOptions = { plugins: new Set(["typescript"]) };
+  const first = parseAst("/repo", "src/example.ts", firstOptions);
+  const second = parseAst("/repo", "src/example.ts", secondOptions);
+
+  await new Promise((resolve) => setImmediate(resolve));
+  resolveRead("one stable source snapshot");
+
+  await expect(first).resolves.toEqual({
+    source: "one stable source snapshot",
+    options: firstOptions,
+  });
+  await expect(second).resolves.toEqual({
+    source: "one stable source snapshot",
+    options: secondOptions,
+  });
+  expect(read).toHaveBeenCalledTimes(1);
+});
+
 test("parses supplied snapshots without reusing the cached disk AST", async () => {
   const read = jest.fn().mockResolvedValue("export const value = 'disk';");
   const parseSource = jest.fn((source) => ({ source }));

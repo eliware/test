@@ -110,10 +110,23 @@ test("rejects severity counts whose sum is outside the safe integer range", () =
   ).toBe(false);
 });
 
-test("rejects protected severities, missing finding severities, and count mismatches", () => {
+test("accepts valid high and critical counts as structurally consistent", () => {
+  for (const severity of ["high", "critical"]) {
+    expect(
+      hasConsistentNpmAuditSeverityCounts(
+        report(
+          { ...emptyCounts, [severity]: 1, total: 1 },
+          {
+            example: { name: "example", severity },
+          },
+        ),
+      ),
+    ).toBe(true);
+  }
+});
+
+test("rejects missing finding severities and count mismatches", () => {
   for (const finding of [
-    { name: "example", severity: "high" },
-    { name: "example", severity: "critical" },
     { name: "example", severity: undefined },
     { name: "example", severity: "low" },
     null,
