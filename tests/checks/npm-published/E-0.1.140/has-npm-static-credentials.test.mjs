@@ -30,3 +30,13 @@ test("detects direct npm token references", () => {
     true,
   );
 });
+
+test("detects secrets assigned to generic token settings recursively", () => {
+  expect(hasNpmStaticCredentials({ token: "${{ secrets.PUBLISH_TOKEN }}" })).toBe(true);
+});
+
+test("walks array entries and returns false when no auth setting contains a secret", () => {
+  expect(hasNpmStaticCredentials([null, { token: "${{ secrets.PUBLISH_TOKEN }}" }])).toBe(true);
+  expect(hasNpmStaticCredentials([null, 42])).toBe(false);
+  expect(hasNpmStaticCredentials({ token: "literal-token" })).toBe(false);
+});
