@@ -54,7 +54,8 @@
   focused formatter paths, recognize glob-based ignore rules, require exact
   README section headings, detect multi-suffix Jest config files, clarify the
   process runner's fixed capture and no-shell contract, and document that Jest
-  settings belong in `package.json`.
+  settings belong in `package.json`; explain consumer profile and validation
+  script setup.
 
 ## 9.0.0 — 2026-10-01
 

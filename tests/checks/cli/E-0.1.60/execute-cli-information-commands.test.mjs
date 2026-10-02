@@ -45,6 +45,15 @@ test("reports execution, exit, output, and version errors", async () => {
   ).resolves.toContain("must report package version 1.2.3");
 });
 
+test("rejects informational output containing only whitespace", async () => {
+  await expect(
+    executeCliInformationCommands({
+      ...context,
+      executeEntrypoint: async () => ({ code: 0, stdout: "  \n", stderr: "\t" }),
+    }),
+  ).resolves.toContain("must produce output for --help");
+});
+
 test("does not compare a version when package metadata omits it", async () => {
   await expect(
     executeCliInformationCommands({

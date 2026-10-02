@@ -1,11 +1,30 @@
 # Usage
 
-Use Node.js 26 (`>=26 <27`). Install `@eliware/test` in the consumer repository
-and use its `eliware-test` command for validation. Package scripts such as `npm test` and
-`npm run format:check` are not added automatically by installing the package;
-each consumer repository defines its own scripts to invoke `eliware-test`.
-Use `eliware-test --help` for the supported CLI modes,
-including linting, formatting, timing diagnostics, and focused Jest execution.
+Use Node.js 26 (`>=26 <27`). Install `@eliware/test` as a development
+dependency with `npm install --save-dev @eliware/test`. Configure the consumer
+repository to select its applicable profiles and expose the shared validation
+commands through `package.json`:
+
+```json
+{
+  "scripts": {
+    "test": "eliware-test",
+    "lint": "eliware-test --lint",
+    "audit": "eliware-test --audit",
+    "format": "eliware-test --format",
+    "format:check": "eliware-test --format-check"
+  },
+  "eliware": {
+    "apply": ["general"]
+  }
+}
+```
+
+Add every profile that applies to the repository to `eliware.apply`; profile
+selection is explicit and is not inferred. Installing the package does not add
+these scripts automatically. Use `eliware-test --help` for the supported CLI
+modes, including linting, formatting, timing diagnostics, and focused Jest
+execution.
 Run a focused suite with `eliware-test tests/example.test.mjs`; it runs that
 test with focused coverage, formatting, lint, and source-mirroring checks. Test
 files
