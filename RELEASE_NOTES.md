@@ -50,6 +50,8 @@
 - Standardize npm package contents with an exact profile-derived allowlist,
   reject standalone `.npmignore` files and packaging lifecycle hooks, and
   validate actual packed files and public entrypoints.
+- Keep the general profile from imposing `specs/` on npm package allowlists;
+  the npm-published profile alone defines published package contents.
 - Keep package validation lightweight in `npm test` and add an opt-in targeted
   tarball smoke command that installs the candidate in an existing consumer,
   runs its `npm test`, then restores the prior local package, manifest, lockfile,

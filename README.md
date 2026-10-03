@@ -100,6 +100,11 @@ The temporary manifest and lockfile are kept consistent, and only the local
 symlinks or junctions. Use a disposable target
 because consumer tests may create their own output files.
 
+For npm-published repositories, the npm-published profile defines the exact
+package-content allowlist. The general profile does not add files to that
+allowlist; `specs/` is included only when required by the package runtime, as
+with `@eliware/test`.
+
 `package.json` is the source of truth for the version in this checkout. The npm
 badge reports the latest version published in the public registry; it does not
 identify or verify the version in this checkout.

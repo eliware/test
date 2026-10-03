@@ -2,7 +2,6 @@ import { fail, pass } from "../../check-result.mjs";
 import { validatePackageIdentity } from "./validate-package-identity.mjs";
 import { validatePackageMetadata } from "./validate-package-metadata.mjs";
 import { validatePackageRuntime } from "./validate-package-runtime.mjs";
-import { validatePublicationFiles } from "./validate-publication-files.mjs";
 import { validateEliwarePackageMetadata } from "./validate-eliware-package-metadata.mjs";
 import { loadRepoMapRecord } from "./load-repo-map-record.mjs";
 import { validateRepoMapMetadata } from "./validate-repo-map-metadata.mjs";
@@ -28,7 +27,5 @@ export function run({ root = process.cwd(), packageJson }) {
     const message = validate(packageJson);
     if (message) failures.push(message);
   }
-  const publicationMessage = validatePublicationFiles(packageJson, root);
-  if (publicationMessage) failures.push(publicationMessage);
   return failures.length > 0 ? fail(ruleId, failures.join("\n")) : pass(ruleId);
 }

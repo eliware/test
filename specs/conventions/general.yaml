@@ -343,9 +343,9 @@ directives:
           - 'Every repository must set package.json.author to exactly "Eliware <eliware@eliware.org>", package.json.repository to exactly {"type":"git","url":"git+https://github.com/eliware/<slug>.git"}, package.json.homepage to exactly "https://github.com/eliware/<slug>#readme", and package.json.engines.node to the exact string "26". The <slug> must match the canonical repository identity.'
           - package.json.keywords must be a non-empty array of distinct non-empty strings. When the repo map is available, the array must exactly match its authoritative keywords; without the map, keyword accuracy remains subject to semantic review.
           - Every repository package.json must declare engines.node as exactly "26", including documentation-only repositories because they run shared Node.js/npm validation tooling. This shared tooling requirement does not by itself define consumer-facing runtime support for an application or library; those profiles document runtime support separately.
-          - Package metadata must identify publication and file contents explicitly when the repository publishes a package.
+          - When package publishing applies, the applicable publication profile is authoritative for publication metadata and package-content allowlists. The general profile does not impose or broaden a package-content allowlist.
         donts:
-          - Do not omit required package metadata, use a license other than "MIT", use an unscoped Eliware package name, use a repository URL other than the canonical git+https format, set another homepage or author value, use an engines.node range in place of "26", or publish files that are not intentionally allowlisted.
+          - Do not omit required package metadata, use a license other than "MIT", use an unscoped Eliware package name, use a repository URL other than the canonical git+https format, set another homepage or author value, use an engines.node range in place of "26", or make the general profile establish a package-content allowlist.
         examples:
           - purpose: Canonical package identity metadata
             markdown: |-

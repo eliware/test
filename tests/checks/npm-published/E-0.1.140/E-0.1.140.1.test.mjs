@@ -30,6 +30,7 @@ test("uses default pack options for ordinary validation", async () => {
 });
 
 test("delegates selected pack validation and returns its result", async () => {
+  expect(validPackage.files).not.toContain("specs/");
   const manifest = JSON.stringify([
     {
       files: [
