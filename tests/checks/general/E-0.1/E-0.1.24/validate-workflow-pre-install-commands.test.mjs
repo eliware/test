@@ -1,5 +1,16 @@
 import { expect, test } from "@jest/globals";
 import { validateWorkflowPreInstallCommands } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-pre-install-commands.mjs";
+import {
+  npm12WorkflowSteps,
+  workflowCommands,
+} from "../../../../../test-fixtures/npm-workflow-steps.mjs";
+
+function compliantSetup(extraSteps = []) {
+  const steps = npm12WorkflowSteps([]);
+  steps.splice(0, 1, { uses: "actions/checkout@v6" }, steps[0]);
+  steps.push(...extraSteps, { run: "npm ci" });
+  return { steps, commands: workflowCommands(steps), installIndex: steps.length - 1 };
+}
 
 test("allows safe reporting before install", () => {
   expect(
@@ -8,11 +19,13 @@ test("allows safe reporting before install", () => {
   expect(
     validateWorkflowPreInstallCommands("ci.yaml", [{ command: "printf 'starting validation'" }], 1),
   ).toBeNull();
+  const fixture = compliantSetup([{ run: "echo starting" }]);
   expect(
     validateWorkflowPreInstallCommands(
       "ci.yaml",
-      [{ command: "echo starting" }, { command: "npm ci" }],
-      1,
+      fixture.commands,
+      fixture.installIndex,
+      fixture.steps,
     ),
   ).toBeNull();
 });
@@ -61,61 +74,54 @@ test("rejects unsupported script fields before install", () => {
 });
 
 test("allows the approved setup actions and rejects unreviewed actions before install", () => {
-  const install = { run: "npm ci" };
-  const commands = [{ command: install.run, index: 1, step: install }];
+  const valid = compliantSetup();
   expect(
-    validateWorkflowPreInstallCommands("ci.yaml", commands, 1, [
-      { uses: "actions/checkout@v6" },
-      install,
-    ]),
+    validateWorkflowPreInstallCommands("ci.yaml", valid.commands, valid.installIndex, valid.steps),
   ).toBeNull();
-  expect(
-    validateWorkflowPreInstallCommands("ci.yaml", commands, 1, [
-      { uses: "someone/unreviewed-action@v1" },
-      install,
-    ]),
-  ).toContain("safe reporting");
-  expect(
-    validateWorkflowPreInstallCommands("ci.yaml", [{ command: "npm ci", index: 2 }], 2, [
-      { uses: "actions/checkout@v6" },
-      { uses: "someone/unreviewed-action@v1" },
-      { run: "npm ci" },
-    ]),
-  ).toContain("safe reporting");
-});
-
-test("allows setup-node v7 in CI and publication workflows", () => {
-  const setup = { uses: "actions/setup-node@v7" };
+  const invalid = compliantSetup();
+  invalid.steps.splice(0, 1, { uses: "someone/unreviewed-action@v1" });
+  invalid.commands = workflowCommands(invalid.steps);
   expect(
     validateWorkflowPreInstallCommands(
-      "publish.yaml job validate",
-      [{ command: "npm ci", index: 1 }],
-      1,
-      [setup, { run: "npm ci" }],
+      "ci.yaml",
+      invalid.commands,
+      invalid.installIndex,
+      invalid.steps,
     ),
-  ).toBeNull();
+  ).toContain("safe reporting");
+  const unsupportedSetup = compliantSetup();
+  unsupportedSetup.steps[1] = { uses: "actions/setup-node@v6" };
+  unsupportedSetup.commands = workflowCommands(unsupportedSetup.steps);
   expect(
-    validateWorkflowPreInstallCommands("ci.yaml job test", [{ command: "npm ci", index: 1 }], 1, [
-      setup,
-      { run: "npm ci" },
-    ]),
-  ).toBeNull();
-  expect(
-    validateWorkflowPreInstallCommands("ci.yaml job test", [{ command: "npm ci", index: 1 }], 1, [
-      { uses: "actions/setup-node@v6" },
-      { run: "npm ci" },
-    ]),
+    validateWorkflowPreInstallCommands(
+      "ci.yaml",
+      unsupportedSetup.commands,
+      unsupportedSetup.installIndex,
+      unsupportedSetup.steps,
+    ),
   ).toContain("approved actions");
 });
 
+test("allows setup-node v7 in CI and publication workflows", () => {
+  const validation = compliantSetup();
+  expect(
+    validateWorkflowPreInstallCommands(
+      "publish.yaml job validate",
+      validation.commands,
+      validation.installIndex,
+      validation.steps,
+    ),
+  ).toBeNull();
+  const ci = compliantSetup();
+  expect(
+    validateWorkflowPreInstallCommands("ci.yaml job test", ci.commands, ci.installIndex, ci.steps),
+  ).toBeNull();
+});
+
 test("ignores unapproved actions after install", () => {
-  const install = { run: "npm ci" };
-  const testStep = { run: "npm test" };
+  const steps = npm12WorkflowSteps(["npm ci", "npm test"]);
   const reporting = { uses: "someone/reporting-action@v1" };
-  const steps = [install, testStep, reporting];
-  const commands = [
-    { command: "npm ci", index: 0, step: install },
-    { command: "npm test", index: 1, step: testStep },
-  ];
-  expect(validateWorkflowPreInstallCommands("ci.yaml", commands, 0, steps)).toBeNull();
+  steps.push(reporting);
+  const commands = workflowCommands(steps);
+  expect(validateWorkflowPreInstallCommands("ci.yaml", commands, 3, steps)).toBeNull();
 });

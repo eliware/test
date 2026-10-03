@@ -30,7 +30,7 @@ directives:
           - Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches, pull requests, manual validation dispatches, unversioned tags, or an inferred release version.
       - id: E-0.1.160.3
         dos:
-          - The GHCR publication workflow must remain separate from the general validation workflow and its publication job must depend on a successful Ubuntu validation job using npm ci followed by npm test.
+          - The GHCR publication workflow must remain separate from the general validation workflow and its publication job must depend on a successful Ubuntu validation job using the npm 12 setup required by general.yaml followed by npm ci and npm test. GHCR-only publisher jobs need no npm setup unless they invoke npm; a combined npm/GHCR publisher follows the npm-published setup requirement.
           - A repository that also publishes npm must keep npm publication separate while reusing the inherited validation result and exact release identity.
         donts:
           - Do not place GHCR credentials or GHCR publication steps in validation-only CI, Knit, or npm publication validation.

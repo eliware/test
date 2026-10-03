@@ -5,10 +5,30 @@ import {
   releaseTagFilter,
   releaseTagGuard,
 } from "../src/checks/ghcr-published/release-version-tag.mjs";
+import {
+  npm12InstallCommand,
+  npm12VersionCheckCommand,
+} from "../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
 
 const agents = "GHCR image visibility publication workflow provenance deployment managed image.";
-const validation =
-  "name: validation\non:\n  push:\n  pull_request:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n";
+const validationSteps = `      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - run: ${npm12InstallCommand}
+      - run: >-
+          ${npm12VersionCheckCommand}
+      - run: npm ci
+      - run: npm test`;
+const validation = `name: validation
+on:
+  push:
+  pull_request:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+${validationSteps}
+`;
 const publication = `name: publish
 on:
   push:
@@ -19,8 +39,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - run: npm ci
-      - run: npm test
+${validationSteps}
   publish:
     needs: validate
     permissions:

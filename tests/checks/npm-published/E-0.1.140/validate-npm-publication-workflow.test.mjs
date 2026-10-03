@@ -4,6 +4,7 @@ import {
   releaseTagGuard,
 } from "../../../../src/checks/ghcr-published/release-version-tag.mjs";
 import { validateNpmPublicationWorkflow } from "../../../../src/checks/npm-published/E-0.1.140/validate-npm-publication-workflow.mjs";
+import { npm12WorkflowSteps } from "../../../../test-fixtures/npm-workflow-steps.mjs";
 
 function workflow(tag = releaseTagFilter) {
   return {
@@ -12,12 +13,16 @@ function workflow(tag = releaseTagFilter) {
       jobs: {
         validate: {
           "runs-on": "ubuntu-latest",
-          steps: [{ run: "npm ci" }, { run: "npm test" }],
+          steps: npm12WorkflowSteps(["npm ci", "npm test"]),
         },
         publish: {
           "runs-on": "ubuntu-latest",
           needs: "validate",
-          steps: [{ run: releaseTagGuard }, { run: "npm publish" }],
+          steps: [
+            ...npm12WorkflowSteps(["npm ci"]),
+            { run: releaseTagGuard },
+            { run: "npm publish" },
+          ],
         },
       },
     },

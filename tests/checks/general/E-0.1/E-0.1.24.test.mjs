@@ -4,13 +4,26 @@ import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/general/E-0.1/E-0.1.24.mjs";
 import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
+import {
+  npm12InstallCommand,
+  npm12VersionCheckCommand,
+} from "../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+
+const compliantSteps = `      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - run: ${npm12InstallCommand}
+      - run: >-
+          ${npm12VersionCheckCommand}
+      - run: npm ci
+      - run: npm test`;
 
 test("requires a workflow that handles push or pull request validation", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ci-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
     join(root, ".github", "workflows", "ci.yaml"),
-    "on:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+    `on:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n${compliantSteps}\n`,
   );
   await expect(
     run({ root, repositoryInventory: createRepositoryInventory(root) }),
@@ -43,11 +56,11 @@ test("does not combine CI events from one workflow with validation in another", 
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
     join(root, ".github", "workflows", "ci.yaml"),
-    "on:\n  push:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+    `on:\n  push:\n    branches: [main]\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n${compliantSteps}\n`,
   );
   await writeFile(
     join(root, ".github", "workflows", "publish.yaml"),
-    "on:\n  push:\n    branches: [main]\n  pull_request:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+    `on:\n  push:\n    branches: [main]\n  pull_request:\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n${compliantSteps}\n`,
   );
   await expect(
     run({ root, repositoryInventory: createRepositoryInventory(root) }),

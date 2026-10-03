@@ -6,6 +6,7 @@ import { isTagRelease, tagMatchesPackageVersion } from "../release-version-tag.m
 import { findValidationJobs } from "../find-validation-jobs.mjs";
 import { dependsOnUbuntuValidation } from "../depends-on-ubuntu-validation.mjs";
 import { hasVersionedImagePushAfterGuard } from "../has-versioned-image-push-after-guard.mjs";
+import { validateNpmToolchainForPublication } from "../validate-npm-toolchain-for-publication.mjs";
 
 export const ruleId = "E-0.1.160.2";
 export const parentRuleId = "E-0.1.160";
@@ -33,8 +34,9 @@ export async function run(context) {
           hasExactTagTrigger(workflow) &&
           publicationJobList.length > 0 &&
           publicationJobList.every(
-            ({ job }) =>
+            ({ id, job }) =>
               job.environment === "ghcr-publish" &&
+              !validateNpmToolchainForPublication(`${workflow.name} job ${id}`, job) &&
               dependsOnUbuntuValidation(workflow, job, validationJobsByWorkflow.get(workflow)) &&
               hasVersionedImagePushAfterGuard(job, packageJson.version, expectedImage),
           )

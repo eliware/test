@@ -27,7 +27,7 @@ directives:
       - id: A-0.1.140.2
         dos:
           - Public npm repositories must contain exactly one publication workflow at .github/workflows/publish.yaml in addition to .github/workflows/ci.yaml; no other GitHub Actions workflow files are allowed. If GHCR publication is also applied, both publication profiles use this single publish.yaml file.
-          - Publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form in the publish job and require that it matches package.json. The publication job must depend on successful Ubuntu validation using npm ci followed by npm test. The npm publish step must be one approved npm publish command in its own run value; do not chain or append shell commands. The step must be unconditional and must not set continue-on-error.
+          - Publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form in the publish job and require that it matches package.json. The publication job must depend on successful Ubuntu validation using the npm 12 setup required by general.yaml followed by npm ci and npm test. The npm publish step must be one approved npm publish command in its own run value; do not chain or append shell commands. The step must be unconditional and must not set continue-on-error.
           - Use the copyable GitHub Actions workflow example below as the canonical npm publication workflow; adapt only package-specific names or required project validation commands. Static validation verifies workflow declarations and cannot prove GitHub environment protection or reviewer settings; verify those settings in GitHub before each authorized release.
         donts:
           - Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches or pull requests, or publish a tag whose version differs from package.json.
@@ -60,6 +60,9 @@ directives:
                       with:
                         node-version: 26
                         cache: npm
+                    - run: npm install --global npm@12
+                    - run: >-
+                        node -e 'const {execFileSync}=require("node:child_process");const v=execFileSync("npm",["--version"],{encoding:"utf8"}).trim();if(!/^\d+\.\d+\.\d+$/.test(v)||Number(v.split(".")[0])<12)process.exit(1)'
                     - run: npm ci
                     - run: npm test
 
@@ -76,6 +79,9 @@ directives:
                         node-version: 26
                         registry-url: https://registry.npmjs.org
                         package-manager-cache: false
+                    - run: npm install --global npm@12
+                    - run: >-
+                        node -e 'const {execFileSync}=require("node:child_process");const v=execFileSync("npm",["--version"],{encoding:"utf8"}).trim();if(!/^\d+\.\d+\.\d+$/.test(v)||Number(v.split(".")[0])<12)process.exit(1)'
                     - run: npm ci
                     - shell: bash
                       run: |
@@ -84,19 +90,19 @@ directives:
               ```
       - id: A-0.1.140.3
         dos:
-          - An npm publication workflow must be separate from the general validation workflow, inherit general.yaml validation requirements, and make its publication job depend on successful Ubuntu validation using npm ci followed by npm test, as well as exact tag/package-version checks.
+          - An npm publication workflow must be separate from the general validation workflow, inherit general.yaml validation requirements, and make its publication job depend on successful Ubuntu validation using the required npm 12 setup followed by npm ci and npm test, as well as exact tag/package-version checks. The publisher job must independently install and verify npm 12 before npm ci and must not rerun npm test.
           - "The validation job must not receive id-token: write; scope that permission to the publication job only."
         donts:
           - Do not treat npm publication steps as part of general CI validation or add npm publication credentials to validation-only jobs.
       - id: A-0.1.140.4
         dos:
           - "An npm-only publication job must grant exactly contents: read and id-token: write. A combined npm/GHCR publication job must grant exactly the union of the permissions required by both profiles. The workflow-level permission map must be exactly contents: read; publication permissions belong only on the publication job."
-          - GitHub Actions npm Trusted Publishing must run on a GitHub-hosted runner with Node.js 26 and npm 11.5.1 or later, use actions/setup-node@v7, and publish with npm publish --provenance.
+          - GitHub Actions npm Trusted Publishing must run on a GitHub-hosted runner with Node.js 26 and npm 12 or later, install and verify npm 12 before npm ci, use actions/setup-node@v7, and publish with npm publish --provenance.
           - Configure the npm Trusted Publisher with the exact GitHub owner, repository, and workflow filename publish.yaml, and allow direct npm publish for workflows that use that command.
           - "Grant id-token: write only to the publication job. Do not pass NPM_TOKEN or NODE_AUTH_TOKEN or configure token-based npm publishing credentials in the workflow."
         donts:
           - Do not place npm publication tokens in validation-only jobs or report successful publication before exact-version registry verification.
-          - Do not grant OIDC permissions to validation jobs, use a workflow identity that differs from the npm Trusted Publisher configuration, or use npm CLI below 11.5.1 for a trusted publish.
+          - Do not grant OIDC permissions to validation jobs, use a workflow identity that differs from the npm Trusted Publisher configuration, or use npm CLI below 12 for a trusted publish.
         examples:
           - purpose: Exact permissions for a combined npm and GHCR publication job
             markdown: |-

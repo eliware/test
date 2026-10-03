@@ -1,9 +1,10 @@
 import { expect, test } from "@jest/globals";
 import { containsCompliantValidationJob } from "../../../../../src/checks/general/E-0.1/E-0.1.24/contains-compliant-validation-job.mjs";
+import { npm12WorkflowSteps } from "../../../../../test-fixtures/npm-workflow-steps.mjs";
 
 const compliantJob = {
   "runs-on": "ubuntu-latest",
-  steps: [{ run: "npm ci" }, { run: "npm test" }],
+  steps: npm12WorkflowSteps(["npm ci", "npm test"]),
 };
 
 test("finds a validation job with the supported runner and required sequence", () => {

@@ -26,5 +26,8 @@ jobs:
         with:
           node-version: 26
           cache: npm
+      - run: npm install --global npm@12
+      - run: >-
+          node -e 'const {execFileSync}=require("node:child_process");const v=execFileSync("npm",["--version"],{encoding:"utf8"}).trim();if(!/^\d+\.\d+\.\d+$/.test(v)||Number(v.split(".")[0])<12)process.exit(1)'
       - run: npm ci
       - run: npm test

@@ -17,6 +17,9 @@
   from validation evidence.
 - Clarify npm publication guidance with exact-version visibility at the public
   registry and the Eli, project developer, and DevOps release responsibilities.
+- Provision npm 12 in GitHub validation and npm publisher jobs, verify the active
+  CLI version before dependency installation, and enforce the required setup in
+  workflow checks without changing Knit deployment commands.
 
 - Run all Jest-independent checks before Jest and stop before Jest when any
   prerequisite check fails. Skip Jest-result and coverage checks in that case,

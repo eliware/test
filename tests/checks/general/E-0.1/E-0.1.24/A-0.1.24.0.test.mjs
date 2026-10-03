@@ -3,6 +3,19 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.24/A-0.1.24.0.mjs";
+import {
+  npm12InstallCommand,
+  npm12VersionCheckCommand,
+} from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+
+const compliantSteps = `      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+      - run: ${npm12InstallCommand}
+      - run: >-
+          ${npm12VersionCheckCommand}
+      - run: npm ci
+      - run: npm test`;
 
 async function workflowRoot(contents) {
   const root = await mkdtemp(join(tmpdir(), "eliware-workflow-rule-"));
@@ -13,7 +26,7 @@ async function workflowRoot(contents) {
 
 test("passes when a temporary validation workflow complies with the aggregate policy", async () => {
   const root = await workflowRoot(
-    "jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+    `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n${compliantSteps}\n`,
   );
   try {
     await expect(run({ root })).resolves.toEqual({
@@ -73,7 +86,7 @@ test("leaves npm publication jobs to validators only when the profile applies", 
 
 test("recognizes GHCR publication through structured tag inputs", async () => {
   const root = await workflowRoot(
-    "jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
+    `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n${compliantSteps}\n`,
   );
   await writeFile(
     join(root, ".github", "workflows", "publish.yaml"),

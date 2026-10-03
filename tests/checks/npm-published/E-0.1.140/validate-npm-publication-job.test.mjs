@@ -1,16 +1,21 @@
 import { expect, test } from "@jest/globals";
 import { releaseTagGuard } from "../../../../src/checks/ghcr-published/release-version-tag.mjs";
 import { validateNpmPublicationJob } from "../../../../src/checks/npm-published/E-0.1.140/validate-npm-publication-job.mjs";
+import { npm12WorkflowSteps } from "../../../../test-fixtures/npm-workflow-steps.mjs";
 
 function workflow({ runner = "ubuntu-latest", needs = "validate", publish = {} } = {}) {
   return {
     document: {
       jobs: {
-        validate: { "runs-on": "ubuntu-latest", steps: [{ run: "npm ci" }, { run: "npm test" }] },
+        validate: { "runs-on": "ubuntu-latest", steps: npm12WorkflowSteps(["npm ci", "npm test"]) },
         publish: {
           "runs-on": runner,
           needs,
-          steps: [{ run: releaseTagGuard }, { run: "npm publish", ...publish }],
+          steps: [
+            ...npm12WorkflowSteps(["npm ci"]),
+            { run: releaseTagGuard },
+            { run: "npm publish", ...publish },
+          ],
         },
       },
     },
@@ -47,19 +52,38 @@ test("rejects publish steps before the release guard or with conditional toleran
   }
 });
 
+test("requires the publisher job to provision npm 12 without rerunning npm test", () => {
+  const missingInstall = workflow();
+  missingInstall.document.jobs.publish.steps = missingInstall.document.jobs.publish.steps.filter(
+    ({ run }) => run !== "npm ci",
+  );
+  expect(validateNpmPublicationJob(missingInstall, missingInstall.document.jobs.publish)).toBe(
+    false,
+  );
+  const rerunsTests = workflow();
+  rerunsTests.document.jobs.publish.steps.splice(4, 0, { run: "npm test" });
+  expect(validateNpmPublicationJob(rerunsTests, rerunsTests.document.jobs.publish)).toBe(false);
+  const reversedSetup = workflow();
+  const publisherSteps = reversedSetup.document.jobs.publish.steps;
+  [publisherSteps[1], publisherSteps[2]] = [publisherSteps[2], publisherSteps[1]];
+  expect(validateNpmPublicationJob(reversedSetup, reversedSetup.document.jobs.publish)).toBe(false);
+});
+
 test("rejects multiline scripts that append commands to npm publish", () => {
   for (const run of [
     "npm publish --provenance\necho unexpected command",
     `npm publish --provenance && echo unexpected command`,
   ]) {
     const fixture = workflow();
-    fixture.document.jobs.publish.steps[1].run = run;
+    fixture.document.jobs.publish.steps.find(({ run: command }) => command === "npm publish").run =
+      run;
     expect(validateNpmPublicationJob(fixture, fixture.document.jobs.publish)).toBe(false);
   }
 });
 
 test("requires the release tag guard to occupy its entire run step", () => {
   const fixture = workflow();
-  fixture.document.jobs.publish.steps[0].run = `${releaseTagGuard}\necho bypass`;
+  fixture.document.jobs.publish.steps.find(({ run }) => run === releaseTagGuard).run =
+    `${releaseTagGuard}\necho bypass`;
   expect(validateNpmPublicationJob(fixture, fixture.document.jobs.publish)).toBe(false);
 });

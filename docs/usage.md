@@ -8,6 +8,14 @@ dependency with `npm install --save-dev @eliware/test`. Configure the consumer
 repository to select its applicable profiles and expose the shared validation
 commands through `package.json`:
 
+GitHub validation and npm publication workflows provision npm 12 after
+`actions/setup-node@v7`, verify that the active npm version is 12 or later, and
+then install dependencies with `npm ci`. Validation runs `npm test` immediately
+after `npm ci`; the separate publisher relies on the successful validation job
+and does not rerun `npm test`. Knit deployment commands retain their existing
+`git pull`, `npm ci`, `npm test` prefix because the development host already has
+npm 12.
+
 ```json
 {
   "scripts": {
