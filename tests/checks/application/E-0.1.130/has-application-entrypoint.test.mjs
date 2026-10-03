@@ -64,6 +64,15 @@ test("rejects a broken bin target even when another bin target exists", () => {
   ).toBe(false);
 });
 
+test("rejects bin mappings with invalid command names", () => {
+  const inspectFile = () => true;
+  for (const command of ["", " spaced", "nested/command", "nested\\command"]) {
+    expect(
+      hasApplicationEntrypoint({ bin: { [command]: "bin/app.mjs" } }, "/repo", inspectFile),
+    ).toBe(false);
+  }
+});
+
 test("requires a declared bin entrypoint even when a start command exists", () => {
   expect(hasApplicationEntrypoint(undefined, "/repo")).toBe(false);
   expect(hasApplicationEntrypoint({ scripts: { start: "node bin/server.mjs" } }, "/repo")).toBe(
@@ -102,6 +111,23 @@ test("requires a start script to invoke its declared bin entrypoint", () => {
       inspectFile,
     ),
   ).toBe(true);
+  expect(
+    hasApplicationEntrypoint(
+      { main: "bin/app.mjs", scripts: { start: 'node "./bin/app.mjs"' } },
+      root,
+      inspectFile,
+    ),
+  ).toBe(true);
+  expect(
+    hasApplicationEntrypoint(
+      { main: "bin/app.mjs", scripts: { start: "node bin/app.mjs-backup" } },
+      root,
+      inspectFile,
+    ),
+  ).toBe(false);
+  expect(
+    hasApplicationEntrypoint({ main: "bin/app.mjs", scripts: { start: ";;" } }, root, inspectFile),
+  ).toBe(false);
   expect(
     hasApplicationEntrypoint(
       { bin: { app: "bin/app.mjs" }, scripts: { start: "node src/app.mjs" } },

@@ -44,3 +44,14 @@ test("checks for a secret match beginning exactly at the candidate boundary", ()
 
   expect(search("1234secret")).toMatchObject({ boundary: 4, suppressed: false });
 });
+
+test("moves the candidate boundary before a secret that crosses it", () => {
+  const search = createBoundedFallbackSearch(["12345678", "secret"], 100, (text) => {
+    const ends = Array.from({ length: text.length + 1 }, () => 0);
+    const start = text.indexOf("secret");
+    if (start >= 0) ends[start] = start + "secret".length;
+    return ends;
+  });
+
+  expect(search("XsecretZZZ")).toMatchObject({ boundary: 1, suppressed: false });
+});

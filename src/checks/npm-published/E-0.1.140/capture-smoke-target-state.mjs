@@ -50,7 +50,14 @@ export async function captureSmokeTargetState(root, packageName, binNames = [], 
     for (const path of new Set(paths)) entries.push(await capturePath(path, storage, fs));
     return { entries, storage };
   } catch (error) {
-    await fs.rm(storage, { recursive: true, force: true });
+    try {
+      await fs.rm(storage, { recursive: true, force: true });
+    } catch (cleanupError) {
+      throw new Error(
+        `Failed to capture smoke target state (${error.message}); temporary backup may remain at ${storage}: ${cleanupError.message}`,
+        { cause: error },
+      );
+    }
     throw error;
   }
 }

@@ -50,6 +50,20 @@ test("rejects conditional setup and a Node.js version other than 26", () => {
   );
 });
 
+test("rejects setup-node steps that can be skipped or tolerated", () => {
+  for (const field of ["if", "continue-on-error", "continueOnError"]) {
+    const unsafe = steps.map((step) => ({ ...step }));
+    unsafe[0][field] = field === "if" ? "always()" : true;
+    const unsafeCommands = commands.map((entry) => ({
+      ...entry,
+      step: unsafe[steps.indexOf(entry.step)],
+    }));
+    expect(validateNpm12WorkflowSetup("ci.yaml", unsafeCommands, 3, unsafe)).toContain(
+      "must install npm@12 globally",
+    );
+  }
+});
+
 test("resolves step references when normalized commands do not carry indexes", () => {
   const unindexed = commands.map(({ command, step }) => ({ command, step }));
   expect(validateNpm12WorkflowSetup("ci.yaml", unindexed, 3, steps)).toBeNull();

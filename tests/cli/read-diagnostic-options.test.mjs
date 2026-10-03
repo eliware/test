@@ -10,6 +10,7 @@ test("maps modes and preserves tool arguments for downstream policy validation",
   );
   expect(readDiagnosticOptions(["--lint"]).mode).toBe("lint");
   expect(readDiagnosticOptions(["--audit", "--omit=dev"]).toolArgs).toEqual(["--omit=dev"]);
+  expect(readDiagnosticOptions(["--audit", "--no-fund"]).toolArgs).toEqual(["--no-fund"]);
   expect(() => readDiagnosticOptions(["--lint", "--audit"])).toThrow(/mutually exclusive/);
 });
 

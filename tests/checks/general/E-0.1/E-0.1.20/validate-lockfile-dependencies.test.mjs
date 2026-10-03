@@ -112,6 +112,15 @@ test("validates lockfile dependency maps and package entries", () => {
   }
 });
 
+test.each([null, []])("rejects malformed root dependency maps: %p", (dependencies) => {
+  expect(
+    validateLockfileDependencies(
+      { packages: { "": { dependencies }, "node_modules/alpha": packageEntry() } },
+      {},
+    ),
+  ).toContain("package-lock.json root dependencies must be an object.");
+});
+
 test("resolves nested dependencies from the nearest ancestor then the repository root", () => {
   const alphaPath = "node_modules/team/node_modules/alpha";
   const alpha = { ...packageEntry(), dependencies: { beta: "1.0.0" } };

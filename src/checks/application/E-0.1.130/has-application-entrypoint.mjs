@@ -26,6 +26,10 @@ export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile
       : bin && typeof bin === "object" && !Array.isArray(bin)
         ? Object.values(bin)
         : [];
+  if (hasBin && typeof bin === "object" && !Array.isArray(bin)) {
+    const binNames = Object.keys(bin);
+    if (binNames.some((name) => !/^[\w.-]+$/u.test(name))) return false;
+  }
   if (hasMain && !isBinEntrypoint(packageJson.main)) return false;
   if (hasMain && !existingRepositoryFile(packageJson.main)) return false;
   if (
@@ -45,8 +49,10 @@ export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile
   function startReferencesEntrypoint() {
     if (!hasStart) return true;
     const targets = [...(hasMain ? [packageJson.main] : []), ...binTargets];
+    const commandTokens =
+      packageJson.scripts.start.match(/"[^"\r\n]*"|'[^'\r\n]*'|[^\s;&|]+/gu) ?? [];
     return targets.some((target) =>
-      packageJson.scripts.start.includes(target.replace(/^\.\//u, "")),
+      commandTokens.some((token) => normalizeCommandPath(token) === normalizeCommandPath(target)),
     );
   }
 
@@ -62,4 +68,8 @@ export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile
       return false;
     return inspectFile(resolve(repositoryRoot, target));
   }
+}
+
+function normalizeCommandPath(token) {
+  return token.replace(/^(?:"([^"]*)"|'([^']*)')$/u, "$1$2").replace(/^\.\//u, "");
 }

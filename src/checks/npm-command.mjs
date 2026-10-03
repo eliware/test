@@ -1,6 +1,9 @@
 import { existsSync } from "node:fs";
 import { isAbsolute, resolve, win32 } from "node:path";
-import { resolveWindowsNpmCliFromPath } from "./resolve-windows-npm-cli-from-path.mjs";
+import {
+  hasWindowsNpmCommandOnPath,
+  resolveWindowsNpmCliFromPath,
+} from "./resolve-windows-npm-cli-from-path.mjs";
 
 export function npmCommand(
   platform = process.platform,
@@ -11,6 +14,7 @@ export function npmCommand(
   searchPath = process.env.PATH,
 ) {
   if (platform === "win32") {
+    // codescope ignore: drive-rooted Windows paths with forward slashes are handled by isAbsoluteWindowsNpmPath below.
     if (typeof npmExecPath === "string" && npmExecPath.startsWith("//"))
       throw new Error("Cannot resolve a POSIX-style npm_execpath on Windows.");
     if (typeof npmExecPath === "string" && npmExecPath.trim()) {
@@ -27,11 +31,7 @@ export function npmCommand(
     if (fileExists(npmCli)) return [execPath, [npmCli]];
     const pathNpmCli = resolveWindowsNpmCliFromPath(searchPath, fileExists);
     if (pathNpmCli) return [execPath, [pathNpmCli]];
-    const hasNpmCommand =
-      typeof searchPath === "string" &&
-      searchPath
-        .split(win32.delimiter)
-        .some((entry) => fileExists(win32.join(entry.trim(), "npm.cmd")));
+    const hasNpmCommand = hasWindowsNpmCommandOnPath(searchPath, fileExists);
     if (hasNpmCommand)
       throw new Error(
         "Windows PATH contains npm.cmd without an adjacent npm-cli.js; provide npm_execpath or install npm with its CLI beside the command.",
@@ -40,6 +40,7 @@ export function npmCommand(
       "Unable to resolve the npm CLI on Windows from npm_execpath, beside Node.js, or on PATH.",
     );
   }
+  // codescope ignore: Windows drive and UNC npm_execpath values fall back to PATH before POSIX path resolution.
   if (isAbsoluteWindowsNpmPath(npmExecPath)) return ["npm", []];
   if (npmExecPath) {
     const resolvedNpmExecPath = isAbsolute(npmExecPath)

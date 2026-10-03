@@ -12,11 +12,21 @@ export async function runNpmAudit({
   if (typeof resolveCommand !== "function") {
     throw new TypeError("resolveCommand must be an executable resolver.");
   }
-  const [command, prefix] = resolveCommand({
+  const resolved = resolveCommand({
     env,
     platform: process.platform,
     execPath: process.execPath,
     root,
   });
+  if (
+    !Array.isArray(resolved) ||
+    resolved.length !== 2 ||
+    typeof resolved[0] !== "string" ||
+    !resolved[0] ||
+    !Array.isArray(resolved[1]) ||
+    resolved[1].some((argument) => typeof argument !== "string")
+  )
+    throw new TypeError("resolveCommand must return an executable and string argument prefix.");
+  const [command, prefix] = resolved;
   return run(command, [...prefix, ...auditArguments], { cwd: root, env: { ...env } });
 }

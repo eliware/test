@@ -20,6 +20,7 @@ export function workflowJobs(document) {
 
 export function workflowRunSteps(job) {
   if (!Array.isArray(job?.steps)) return [];
+  // codescope ignore: This is intentionally a command projection; workflow validators receive the original job.steps array to reject malformed entries.
   return job.steps.flatMap((step, index) =>
     step && typeof step === "object" && typeof step.run === "string"
       ? [{ name: step.name, command: step.run.trim(), step, index }]

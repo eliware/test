@@ -51,6 +51,53 @@ test("handles output overflow when the configured budget is zero", () => {
   expect(capture.result()).toEqual({ stdout: "", stderr: "" });
 });
 
+test("does not split a Unicode surrogate pair at the output boundary", () => {
+  const streamed = [];
+  const createTextStream = () => ({ push: () => "😀tail", finish: () => "" });
+  const capture = createChildOutputCapture(2, {
+    onStdout: (text) => streamed.push(text),
+    createTextStream,
+  });
+  capture.stdout("input");
+  capture.flush();
+
+  expect(capture.result().stdout).toBe("…");
+  expect(streamed.join("")).toBe("😀");
+  expect(streamed.join("")).not.toMatch(/[\uD800-\uDBFF]$/u);
+});
+
+test("does not emit an empty streamed prefix after removing a split pair", () => {
+  const streamed = [];
+  const createTextStream = () => ({ push: () => "😀tail", finish: () => "" });
+  const capture = createChildOutputCapture(1, {
+    onStdout: (text) => streamed.push(text),
+    createTextStream,
+  });
+  capture.stdout("input");
+  capture.flush();
+
+  expect(capture.result().stdout).toBe("…");
+  expect(streamed).toEqual([]);
+});
+
+test("keeps non-surrogate Unicode characters intact at the boundary", () => {
+  const capture = createChildOutputCapture(1);
+  capture.stdout("\uE000tail");
+  capture.flush();
+  expect(capture.result().stdout).toBe("…");
+});
+
+test("does not split a surrogate pair in transformed stderr capture", () => {
+  const createTextStream = () => ({ push: () => "output", finish: () => "" });
+  const capture = createChildOutputCapture(2, {
+    captureStderr: () => "😀tail",
+    createTextStream,
+  });
+  capture.stderr("input");
+
+  expect(capture.result().stderr).toBe("…");
+});
+
 test("redacts credentials split between child output chunks", () => {
   const streamed = [];
   const capture = createChildOutputCapture(100, {

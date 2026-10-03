@@ -11,6 +11,14 @@ test("collects direct and aliased member references", () => {
   expect(variables).toEqual(new Set(["TOKEN", "HOST"]));
 });
 
+test("collects static computed references through an environment alias", () => {
+  const ast = parse('const env = process.env; env["PORT"];', { sourceType: "module" });
+  const variables = new Set();
+  const alias = ast.program.body[0].declarations[0].id.name;
+  collectEnvironmentMember(ast.program.body[1].expression, new Set([alias]), variables);
+  expect(variables).toEqual(new Set(["PORT"]));
+});
+
 test("ignores unrelated AST nodes", () => {
   const ast = parse(
     "const value = 1; foo.bar; other.foo; env[dynamic]; process.env[dynamic]; process.env.lower;",

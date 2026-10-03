@@ -8,7 +8,7 @@ import { createChildProcessErrorHandler } from "./handle-child-process-error.mjs
 import { terminateChildAfterSetupFailure } from "./terminate-child-after-setup-failure.mjs";
 import { createChildSpawnOptions } from "./create-child-spawn-options.mjs";
 import { createChildCloseHandler } from "./handle-child-close.mjs";
-import { createSuiteTimeoutTracker } from "./create-suite-timeout-tracker.mjs";
+import { createChildTimeoutController } from "./create-child-timeout-controller.mjs";
 
 export function runChild(command, args, options = {}) {
   const outputLimit = options.maxOutputLength ?? 100_000;
@@ -19,15 +19,12 @@ export function runChild(command, args, options = {}) {
     const output = createChildOutputCapture(outputLimit, { ...options, env: environment });
     let settled = false;
     let termination;
-    let progressTimeout;
-    let suiteTimeout;
-    const timeout = {
-      reset: () => progressTimeout?.reset(),
-      stop() {
-        progressTimeout?.stop();
-        suiteTimeout?.stop();
-      },
-    };
+    const timeoutController = createChildTimeoutController(
+      options,
+      createTimeout,
+      () => termination,
+    );
+    const timeout = timeoutController.timeout;
     const settleError = createChildProcessErrorHandler({
       isSettled: () => settled,
       markSettled: () => {
@@ -47,11 +44,7 @@ export function runChild(command, args, options = {}) {
       return;
     }
     try {
-      suiteTimeout = createSuiteTimeoutTracker(options, createTimeout, () => termination);
-      progressTimeout = createTimeout({
-        timeoutMs: options.progressTimeoutMs,
-        onTimeout: () => termination.onTimeout(),
-      });
+      timeoutController.start();
       termination = createChildTerminationHandler({
         child,
         options,
@@ -69,8 +62,10 @@ export function runChild(command, args, options = {}) {
       };
       const progress = createChildProgressHandler({
         ...options,
-        onSuiteStart: (path) => suiteTimeout.start(path) || options.onSuiteStart?.(path),
-        onSuiteEnd: (path) => suiteTimeout.end(path) || options.onSuiteEnd?.(path),
+        onSuiteStart: (path) =>
+          timeoutController.suiteTimeout().start(path) || options.onSuiteStart?.(path),
+        onSuiteEnd: (path) =>
+          timeoutController.suiteTimeout().end(path) || options.onSuiteEnd?.(path),
         resetProgressTimer,
         redactProgressText: output.redactComplete,
       });
@@ -88,12 +83,14 @@ export function runChild(command, args, options = {}) {
         settleError,
         resolve,
       });
+      // codescope ignore: an error rejects before timeout settlement or is ignored only after the promise already settled.
       child.on("error", (error) => {
         settleError(error);
       });
       child.on("close", handleClose);
     } catch (error) {
       terminateChildAfterSetupFailure(child, options, environment);
+      // Error settlement stops initialized progress and suite timers before rejecting.
       settleError(error);
     }
   });

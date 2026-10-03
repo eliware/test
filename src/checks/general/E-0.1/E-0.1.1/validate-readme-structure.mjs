@@ -63,6 +63,7 @@ export function validateReadmeStructure(readme, packageJson = {}) {
     return "README.md must contain the required top-level headings in order with a Table of Contents.";
   }
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+    // Comparing the complete ordered heading list makes duplicates fail even when another section is missing.
     return "README.md top-level headings must exactly match the general and applied-profile order; do not add unapproved headings.";
   }
 

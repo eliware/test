@@ -16,14 +16,14 @@ export function createRepositoryDirectoryEntries({
   let index;
   let indexedRecords;
   let projectedEntries = new Map();
-  return async function directoryEntries(directory) {
+  return async function directoryEntries(directory, traversal = {}) {
     const base = inventoryDirectory(
       root,
       directory,
       "Repository inventory directory must be inside the repository.",
     );
     if (base && !hasFullDiscovery()) {
-      const records = await entriesUnder(directory);
+      const records = await entriesUnder(directory, null, traversal);
       if (!records.some((record) => record.path === base)) {
         throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
           code: "ENOENT",
@@ -56,6 +56,7 @@ export function createRepositoryDirectoryEntries({
       });
     let children = index.childrenByDirectory.get(base || ".") ?? [];
     if (base && children.length === 0 && prunedDirectory) {
+      // codescope ignore: stat is required to distinguish a nested directory from a file or missing path under pruned inventory.
       const metadata = await statDirectory(join(root, base), { bigint: true });
       if (!metadata.isDirectory()) {
         throw Object.assign(new Error(`ENOTDIR: not a directory, scandir '${directory}'`), {

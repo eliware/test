@@ -5,10 +5,24 @@ test("joins appended chunks and consumes prefixes across chunk boundaries", () =
   const pending = createPendingTextChunks();
   pending.append("abc");
   pending.append("defg");
-  expect(pending.length).toBe(7);
+  pending.append("hi");
+  expect(pending.length).toBe(9);
   expect(pending.takePrefix(5)).toBe("abcde");
-  expect(pending.length).toBe(2);
-  expect(pending.toString()).toBe("fg");
+  expect(pending.length).toBe(4);
+  expect(pending.toString()).toBe("fghi");
+});
+
+test("reads code units from bounded positions without joining the queue", () => {
+  const pending = createPendingTextChunks();
+  pending.append("left");
+  pending.append("😀tail");
+  expect(pending.codeUnitAt(4)).toBe(0xd83d);
+  expect(pending.codeUnitAt(5)).toBe(0xde00);
+  expect(pending.codeUnitAt(-1)).toBeNaN();
+  expect(pending.codeUnitAt(pending.length)).toBeNaN();
+  expect(pending.takePrefix(6)).toBe("left😀");
+  expect(pending.codeUnitAt(0)).toBe("t".charCodeAt(0));
+  expect(pending.toString()).toBe("tail");
 });
 
 test("clears chunks and safely handles empty prefix operations", () => {

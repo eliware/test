@@ -73,6 +73,21 @@ test("rejects malformed example records and malformed nested children", () => {
   );
 });
 
+test.each(["scalar child", 42, true, [], [valid]])(
+  "returns an object-shape diagnostic for malformed nested child %p",
+  (child) => {
+    const nested = {
+      id: "A-4.2.1",
+      dos: ["Act."],
+      donts: ["Do not omit it."],
+      directives: [child],
+    };
+    expect(validateDirectiveRecords([{ ...valid, directives: [nested] }])).toContain(
+      "directives[0].directives[0].directives[0] must be an object.",
+    );
+  },
+);
+
 test("validates structured README heading tables in examples", () => {
   const errors = validateDirectiveRecords([
     {

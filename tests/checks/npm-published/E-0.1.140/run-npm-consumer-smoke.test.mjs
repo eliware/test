@@ -1,14 +1,15 @@
 import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
-import { readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { cleanupSmokeTempRoot as cleanupTempRoot } from "../../../../src/checks/npm-published/E-0.1.140/cleanup-smoke-temp-root.mjs";
 import {
   createSmokeTarget,
+  createFakeSmokeTarget,
   fakeNpm,
   packageJson,
   removeRoots,
+  smokeFailureCases,
 } from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
-
 const cleanupSmokeTempRoot = jest.fn();
 jest.unstable_mockModule(
   "../../../../src/checks/npm-published/E-0.1.140/cleanup-smoke-temp-root.mjs",
@@ -16,16 +17,12 @@ jest.unstable_mockModule(
 );
 const { runNpmConsumerSmoke } =
   await import("../../../../src/checks/npm-published/E-0.1.140/run-npm-consumer-smoke.mjs");
-
 let roots = [];
-
 beforeEach(() => cleanupSmokeTempRoot.mockImplementation((...args) => cleanupTempRoot(...args)));
-
 afterEach(async () => {
   await removeRoots(roots);
   roots = [];
 });
-
 function runSmoke(fixture, options = {}) {
   return runNpmConsumerSmoke({
     root: fixture.source,
@@ -37,15 +34,8 @@ function runSmoke(fixture, options = {}) {
   });
 }
 
-const packReport = (entry = {}) => ({
-  packStdout: JSON.stringify([
-    { name: "@eliware/test", version: "11.0.0", filename: "x.tgz", files: [], ...entry },
-  ]),
-});
-
 test("packs, installs, tests, and restores the existing consumer package", async () => {
-  const fixture = await createSmokeTarget(roots);
-  const { calls, run, testedManifest } = fakeNpm(fixture.target);
+  const { fixture, calls, run, testedManifest } = await createFakeSmokeTarget(roots);
   const result = await runSmoke(fixture, { run });
   expect(result).toContain("@eliware/test@11.0.0");
   expect(result).toContain("SHA-256");
@@ -68,8 +58,7 @@ test("packs, installs, tests, and restores the existing consumer package", async
 });
 
 test("supports packages that have no bin entrypoint", async () => {
-  const fixture = await createSmokeTarget(roots);
-  const { run } = fakeNpm(fixture.target);
+  const { fixture, run } = await createFakeSmokeTarget(roots);
   await expect(
     runSmoke(fixture, { packageJson: { ...packageJson, bin: undefined }, run }),
   ).resolves.toContain("Smoke passed");
@@ -89,8 +78,7 @@ test("uses default npm environment and executable resolution", async () => {
 });
 
 test("restores the prior installation when the consumer test fails", async () => {
-  const fixture = await createSmokeTarget(roots);
-  const { run } = fakeNpm(fixture.target, { testCode: 1 });
+  const { fixture, run } = await createFakeSmokeTarget(roots, { testCode: 1 });
   await expect(runSmoke(fixture, { run })).resolves.toContain("Consumer npm test failed");
   await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
     '"version":"10.0.0"',
@@ -106,7 +94,35 @@ test("validates the smoke request before capturing consumer state", async () => 
       captureState,
     }),
   ).resolves.toContain("provenance");
+  const alias = join(dirname(fixture.target), "source-alias");
+  await symlink(fixture.source, alias, process.platform === "win32" ? "junction" : "dir");
+  await expect(runSmoke(fixture, { target: alias, captureState })).resolves.toContain(
+    "resolve outside the source checkout",
+  );
   expect(captureState).not.toHaveBeenCalled();
+});
+
+test("stops if the canonical target directory is replaced after validation", async () => {
+  const { fixture, calls, run } = await createFakeSmokeTarget(roots);
+  const { lstat } = await import("node:fs/promises");
+  const initial = await lstat(fixture.target);
+  let inspections = 0;
+  const inspectTargetRoot = jest.fn(async () => {
+    inspections += 1;
+    return inspections === 1
+      ? initial
+      : {
+          dev: initial.dev,
+          ino: initial.ino,
+          birthtimeMs: initial.birthtimeMs + 1,
+          isDirectory: () => true,
+        };
+  });
+  await expect(runSmoke(fixture, { run, inspectTargetRoot })).resolves.toContain(
+    "refusing unsafe access",
+  );
+  expect(inspectTargetRoot).toHaveBeenCalledTimes(2);
+  expect(calls).toEqual([]);
 });
 
 test("leaves an unverified temporary path untouched", async () => {
@@ -123,8 +139,7 @@ test("leaves an unverified temporary path untouched", async () => {
 });
 
 test("reports temporary cleanup diagnostics after a successful restore", async () => {
-  const fixture = await createSmokeTarget(roots);
-  const { run } = fakeNpm(fixture.target);
+  const { fixture, run } = await createFakeSmokeTarget(roots);
   cleanupSmokeTempRoot.mockResolvedValueOnce(
     "Temporary smoke directory identity changed; left untouched.",
   );
@@ -147,23 +162,10 @@ test("requires the target test script and an eliware-test dependency", async () 
   );
   await expect(runSmoke(fixture)).resolves.toContain("must declare @eliware/test");
 });
-
-test.each([
-  [{ packCode: 1, packStderr: "pack output" }, "pack output"],
-  [{ packCode: 1, noPackStdout: true }, "npm pack failed."],
-  [{ noPackStdout: true }, "safe tarball filename"],
-  [{ packStdout: "not-json" }, "safe tarball filename"],
-  [packReport({ name: undefined, version: "10.0.0" }), "safe tarball filename"],
-  [packReport({ version: "10.0.0" }), "version does not match"],
-  [packReport({ filename: "../x.tgz" }), "safe tarball filename"],
-  [packReport(), "omitted"],
-  [{ installCode: 1, installStdout: "install output" }, "Tarball installation failed"],
-  [{ installVersion: "10.0.0" }, "Installed package version 10.0.0 does not match 11.0.0"],
-])(
+test.each(smokeFailureCases)(
   "reports candidate and installation failures and restores prior package %#",
   async (config, text) => {
-    const fixture = await createSmokeTarget(roots);
-    const { run } = fakeNpm(fixture.target, config);
+    const { fixture, run } = await createFakeSmokeTarget(roots, config);
     await expect(runSmoke(fixture, { run })).resolves.toContain(text);
     await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
       '"version":"10.0.0"',
@@ -172,18 +174,18 @@ test.each([
 );
 
 test("reports snapshot and restoration failures", async () => {
-  const fixture = await createSmokeTarget(roots);
+  const { fixture, run } = await createFakeSmokeTarget(roots);
   await expect(
     runSmoke(fixture, { captureState: async () => Promise.reject(new Error("snapshot denied")) }),
   ).resolves.toContain("snapshot denied");
-  const { run } = fakeNpm(fixture.target);
-  await expect(
-    runSmoke(fixture, {
-      run,
-      captureState: async () => ({ entries: [], storage: "backup-location" }),
-      restoreState: async () => Promise.reject(new Error("restore denied")),
-    }),
-  ).resolves.toContain("Target restoration failed: restore denied");
+  const result = await runSmoke(fixture, {
+    run,
+    captureState: async () => ({ entries: [], storage: "backup-location" }),
+    restoreState: async () =>
+      Promise.reject(new Error("restore denied; backups at backup-location")),
+  });
+  expect(result).toContain("Target restoration failed: restore denied");
+  expect(result).toContain("backups at backup-location");
   expect(cleanupSmokeTempRoot).toHaveBeenLastCalledWith(
     expect.any(String),
     expect.objectContaining({ isDirectory: expect.any(Function) }),

@@ -5,6 +5,7 @@ import { mapFocusedSourceExtension } from "./map-focused-source-extension.mjs";
 export async function resolveFocusedCoverage(root, focusedPath) {
   if (!focusedPath) return [];
   const normalized = focusedPath.replaceAll("\\", "/").replace(/^\.\//, "");
+  // Root matching is case-insensitive because focused-path validation accepts those paths on Windows.
   const marker = normalized.match(/^tests?\/(.*)$/i);
   if (!marker || !/\.(?:test|spec)\.[^.]+$/i.test(marker[1])) return [];
   const sourceBase = marker[1].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, "");

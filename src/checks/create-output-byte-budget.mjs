@@ -1,15 +1,12 @@
-function truncateTextToBytes(text, byteLimit) {
+export function truncateOutputTextToBytes(text, byteLimit) {
   const encoded = Buffer.from(text);
-  if (encoded.length <= byteLimit) return text;
-  const firstEnd = Math.min(byteLimit, encoded.length);
-  const lastEnd = Math.max(0, firstEnd - 3);
-  for (let end = firstEnd; end >= lastEnd; end -= 1) {
-    const candidateBytes = encoded.subarray(0, end);
-    const candidate = candidateBytes.toString("utf8");
-    if (Buffer.byteLength(candidate) <= byteLimit && Buffer.from(candidate).equals(candidateBytes))
-      return candidate;
+  if (encoded.length <= byteLimit) return { text, byteLength: encoded.length };
+  let end = Math.max(0, Math.min(byteLimit, encoded.length));
+  if (end < encoded.length && (encoded[end] & 0xc0) === 0x80) {
+    while (end > 0 && (encoded[end] & 0xc0) === 0x80) end -= 1;
   }
-  return "";
+  const bounded = encoded.subarray(0, end);
+  return { text: bounded.toString("utf8"), byteLength: end };
 }
 
 export function createOutputByteBudget(limit) {
@@ -19,11 +16,11 @@ export function createOutputByteBudget(limit) {
   return {
     append(stream, text) {
       const remaining = Math.max(0, limit - capturedBytes);
-      const bounded = truncateTextToBytes(text, remaining);
-      capturedBytes += Buffer.byteLength(bounded);
-      if (bounded) chunks[stream].push(bounded);
+      const bounded = truncateOutputTextToBytes(text, remaining);
+      capturedBytes += bounded.byteLength;
+      if (bounded.text) chunks[stream].push(bounded.text);
     },
-    truncate: (text) => truncateTextToBytes(text, limit),
+    truncate: (text) => truncateOutputTextToBytes(text, limit).text,
     get output() {
       return {
         stdout: chunks.stdout.join(""),

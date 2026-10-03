@@ -23,6 +23,17 @@ test("routes supported file-view requests through the focused selectors", async 
   await expect(views.files("unknown")).rejects.toThrow("Unknown repository inventory view");
 });
 
+test("retries a repository view after discovery rejects", async () => {
+  const entries = jest
+    .fn()
+    .mockRejectedValueOnce(new Error("temporary inventory failure"))
+    .mockResolvedValue(records);
+  const views = createRepositoryFileViews(entries, null);
+  await expect(views.repositoryFiles()).rejects.toThrow("temporary inventory failure");
+  await expect(views.repositoryFiles()).resolves.toContain("README.md");
+  expect(entries).toHaveBeenCalledTimes(2);
+});
+
 test("serves explicit focused paths without discovery and falls back to repository files", async () => {
   const entries = jest.fn(async () => records);
   const focused = createRepositoryFileViews(entries, { paths: ["src/index.mjs"] });

@@ -1,4 +1,4 @@
-import { lstat, mkdtemp, mkdir } from "node:fs/promises";
+import { mkdtemp, mkdir, lstat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execute } from "../../execute-child-process.mjs";
@@ -10,7 +10,8 @@ import { installSmokeCandidate } from "./install-smoke-candidate.mjs";
 import { prepareSmokeTarget } from "./prepare-smoke-target.mjs";
 import { loadSmokeTarget } from "./load-smoke-target.mjs";
 import { validateNpmConsumerSmokeRequest } from "./validate-npm-consumer-smoke-request.mjs";
-import { cleanupSmokeTempRoot } from "./cleanup-smoke-temp-root.mjs";
+import { resolveSmokeTarget } from "./resolve-smoke-target.mjs";
+import { finishSmokeRun } from "./finish-smoke-run.mjs";
 
 export async function runNpmConsumerSmoke({
   root,
@@ -21,12 +22,15 @@ export async function runNpmConsumerSmoke({
   env = process.env,
   captureState = captureSmokeTargetState,
   restoreState = restoreSmokeTargetState,
+  inspectTargetRoot = lstat,
   inspectTempRoot = lstat,
   write = () => {},
 }) {
   const request = validateNpmConsumerSmokeRequest({ root, target, packageJson });
   if (request.error) return request.error;
-  const { targetRoot } = request;
+  const targetResolution = await resolveSmokeTarget(root, request.targetRoot, inspectTargetRoot);
+  if (targetResolution.error) return targetResolution.error;
+  const { targetRoot, assertIdentity: assertTargetIdentity } = targetResolution;
   const loadedTarget = await loadSmokeTarget(targetRoot, packageJson?.name);
   if (loadedTarget.error) return loadedTarget.error;
   const binNames = Object.keys(packageJson?.bin ?? {});
@@ -42,6 +46,7 @@ export async function runNpmConsumerSmoke({
   let state;
   let outcome;
   try {
+    await assertTargetIdentity();
     state = await captureState(targetRoot, packageJson.name, binNames);
     write(`Target recovery snapshot: ${state.storage}`);
     await mkdir(packDirectory);
@@ -55,10 +60,12 @@ export async function runNpmConsumerSmoke({
       packDirectory,
       env: childEnv,
     });
+    await assertTargetIdentity();
     await prepareSmokeTarget({
       targetRoot,
       packageName: packageJson.name,
     });
+    await assertTargetIdentity();
     await installSmokeCandidate({
       targetRoot,
       packageJson,
@@ -72,23 +79,15 @@ export async function runNpmConsumerSmoke({
   } catch (error) {
     outcome = `Tarball consumer smoke failed: ${error.message}`;
   } finally {
-    let restoreError;
-    if (state && !state.error) {
-      try {
-        await restoreState(state);
-      } catch (error) {
-        restoreError = error.message;
-      }
-    }
-    const cleanupMessage = await cleanupSmokeTempRoot(tempRoot, tempIdentity, {
-      preserve: Boolean(restoreError),
+    outcome = await finishSmokeRun({
+      outcome,
+      state,
+      targetRoot,
+      assertTargetIdentity,
+      restoreState,
+      tempRoot,
+      tempIdentity,
     });
-    if (restoreError)
-      outcome = `${outcome} Target restoration failed: ${restoreError}. ${cleanupMessage}`;
-    else {
-      if (state && !state.error) outcome = `${outcome} Previous target package state restored.`;
-      if (cleanupMessage) outcome = `${outcome} ${cleanupMessage}`;
-    }
   }
   return outcome;
 }

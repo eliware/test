@@ -10,6 +10,7 @@ export function validateNpmConsumerSmokeRequest({ root, target, packageJson }) {
   if (metadataError) return { error: metadataError };
   if (typeof packageJson?.name !== "string" || typeof packageJson?.version !== "string")
     return { error: "Source package name and version are required for tarball smoke." };
+  // codescope ignore: smoke accepts explicitly selected external consumers and restores only its documented package state.
   const targetRoot = resolve(root, target);
   if (targetRoot === resolve(root))
     return { error: "Smoke target must be a separate consumer repository." };

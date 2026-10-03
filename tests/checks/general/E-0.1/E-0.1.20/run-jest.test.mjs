@@ -6,13 +6,26 @@ import { runJest } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-je
 import { runChild } from "../../../../../src/checks/general/E-0.1/E-0.1.20/run-child.mjs";
 import { findUnexpectedJestOutput } from "../../../../../src/checks/general/E-0.1/E-0.1.20/inspect-jest-output.mjs";
 
-test("coordinates prepared command execution and returns the executor result", async () => {
+test("fails successful Jest execution when the console report is unavailable", async () => {
   const execute = jest.fn(async () => ({ code: 0, stdout: "passed", stderr: "" }));
   const result = await runJest(process.cwd(), [], execute);
   expect(execute).toHaveBeenCalledTimes(1);
-  expect(result).toMatchObject({ code: 0, stdout: "passed" });
+  expect(result).toMatchObject({ code: 1, stdout: "passed" });
   expect(result.consoleReportError).toMatch("Could not read Jest's console output report");
+  expect(result.stderr).toContain("Could not read Jest's console output report");
   expect(result.coverageDirectory).toBeUndefined();
+});
+
+test("fails successful Jest execution when its console report is malformed", async () => {
+  const result = await runJest(
+    process.cwd(),
+    [],
+    async () => ({ code: 0, stdout: "passed", stderr: "" }),
+    { readConsoleReport: async () => "{ malformed" },
+  );
+
+  expect(result.code).toBe(1);
+  expect(result.consoleReportError).toMatch("Could not read Jest's console output report");
 });
 
 test("starts the freshness clock after preparation and immediately before execution", async () => {
@@ -104,6 +117,7 @@ test("runs bundled Jest from the consumer root and uses its configuration", asyn
     const result = await runJest(root, [], runChild, { env: { ...process.env, CI: "true" } });
 
     expect(result.code).toBe(0);
+    // Consumer-root execution is verified through cwd, loaded config, and captured console output.
     expect(findUnexpectedJestOutput(result, [], root)).toEqual([
       expect.stringContaining(
         "console.log in consumer-suites/configured.consumer.test.cjs: actual consumer test output",

@@ -1,4 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
+import { resolve } from "node:path";
 import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
 
 test("composes a frozen inventory facade over shared repository discovery", async () => {
@@ -29,4 +30,25 @@ test("provides the default discovery configuration when options are omitted", ()
 
   expect(inventory).toMatchObject({ root: "/repo", focusedScope: null });
   expect(inventory.repositoryFiles).toEqual(expect.any(Function));
+});
+
+test("normalizes a relative repository root", () => {
+  expect(createRepositoryInventory("relative-repository").root).toBe(
+    resolve("relative-repository"),
+  );
+});
+
+test.each([
+  String.raw`C:\workspace\repo`,
+  String.raw`\\server\share\repo`,
+  String.raw`\\?\C:\workspace\repo`,
+  String.raw`\\.\C:\workspace\repo`,
+])("preserves Windows absolute repository root %s independently of host paths", (root) => {
+  expect(createRepositoryInventory(root).root).toBe(root);
+});
+
+test.each([undefined, null, "", "  ", 7])("rejects invalid inventory root %p", (root) => {
+  expect(() => createRepositoryInventory(root)).toThrow(
+    "Repository inventory root must be a non-empty path string.",
+  );
 });

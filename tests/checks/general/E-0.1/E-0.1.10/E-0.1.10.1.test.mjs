@@ -153,6 +153,19 @@ test("rejects a nested commands value instead of skipping its malformed parent",
   });
 });
 
+test("validates command lists nested inside another commands value", async () => {
+  const hiddenList = [...requiredCommands, "npm publish"];
+  const contents = stringify({
+    commands: [...requiredCommands, { nested: { commands: hiddenList } }],
+  });
+  await withConfiguration(contents, async (root) => {
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("commands list 2 must not run publishing command"),
+    });
+  });
+});
+
 test("reads the parsed deployment YAML from the shared inventory", async () => {
   const parsedConfig = {
     on: { push: { deployments: [{ commands: requiredCommands }] } },

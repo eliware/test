@@ -6,6 +6,7 @@ import {
   workflowRunSteps,
   isValidationJob,
 } from "../../../../../src/checks/general/E-0.1/E-0.1.24/read-workflows.mjs";
+import { validateWorkflowPostTestCommands } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-post-test-commands.mjs";
 
 test("identifies validation jobs by their declared job identity", () => {
   expect(isValidationJob("validate", {})).toBe(true);
@@ -54,4 +55,14 @@ test("extracts runnable steps and commands while ignoring malformed steps", () =
     { job: "test", name: "install", command: "npm ci", step: job.steps[0], index: 0 },
     { job: "test", name: undefined, command: "npm test", step: job.steps[1], index: 1 },
   ]);
+});
+
+test("passes the raw step list to validation so malformed entries are not lost", () => {
+  const steps = [{ run: "npm test" }, { name: "malformed action" }];
+  const commands = workflowRunSteps({ steps });
+
+  expect(commands).toHaveLength(1);
+  expect(validateWorkflowPostTestCommands("ci.yaml", commands, 0, steps)).toContain(
+    "unsupported step forms",
+  );
 });

@@ -34,12 +34,34 @@ export const packedFiles = [
   "specs/conventions/general.yaml",
 ];
 
+export const smokeFailureCases = [
+  [{ packCode: 1, packStderr: "pack output" }, "pack output"],
+  [{ packCode: 1, noPackStdout: true }, "npm pack failed."],
+  [{ noPackStdout: true }, "safe tarball filename"],
+  [{ packStdout: "not-json" }, "safe tarball filename"],
+  [packReport({ name: undefined, version: "10.0.0" }), "safe tarball filename"],
+  [packReport({ version: "10.0.0" }), "version does not match"],
+  [packReport({ filename: "../x.tgz" }), "safe tarball filename"],
+  [packReport(), "omitted"],
+  [{ installCode: 1, installStdout: "install output" }, "Tarball installation failed"],
+  [{ installVersion: "10.0.0" }, "Installed package version 10.0.0 does not match 11.0.0"],
+];
+
+function packReport(entry = {}) {
+  return {
+    packStdout: JSON.stringify([
+      { name: "@eliware/test", version: "11.0.0", filename: "x.tgz", files: [], ...entry },
+    ]),
+  };
+}
+
 export async function createSmokeTarget(roots) {
   const root = await mkdtemp(join(tmpdir(), "eliware-consumer-test-"));
   roots.push(root);
   const source = join(root, "source");
   const target = join(root, "consumer");
   const installed = join(target, "node_modules", "@eliware", "test");
+  await mkdir(source);
   await mkdir(installed, { recursive: true });
   await mkdir(join(target, "node_modules", ".bin"), { recursive: true });
   await writeFile(
@@ -106,6 +128,11 @@ export function fakeNpm(target, config = {}) {
     return { code: testCode, stdout: testCode ? "consumer failure" : "consumer passed" };
   };
   return { calls, run, testedManifest };
+}
+
+export async function createFakeSmokeTarget(roots, config = {}) {
+  const fixture = await createSmokeTarget(roots);
+  return { fixture, ...fakeNpm(fixture.target, config) };
 }
 
 export async function removeRoots(roots) {

@@ -69,3 +69,20 @@ test("rejects non-string items before parsing audit options", () => {
     "Audit arguments must be an array of strings.",
   );
 });
+
+test("returns a diagnostic when a proxy-backed argument array throws", () => {
+  const descriptorFailure = new Proxy(["--no-fund"], {
+    getOwnPropertyDescriptor() {
+      throw new Error("descriptor access denied");
+    },
+  });
+  const valueFailure = new Proxy(["--no-fund"], {
+    get(target, property, receiver) {
+      if (property === "0") throw new Error("value access denied");
+      return Reflect.get(target, property, receiver);
+    },
+  });
+
+  for (const args of [descriptorFailure, valueFailure])
+    expect(validateAuditArguments(args)).toBe("Audit arguments must be an array of strings.");
+});

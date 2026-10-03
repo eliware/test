@@ -19,8 +19,10 @@ function walk(node, parent, ancestry, errors) {
     errors.push(`E-rule ${node.id} cannot be nested under an A-rule.`);
   if (node.id.startsWith("A-") && !ancestry.some((id) => id.startsWith("E-")))
     errors.push(`A-rule ${node.id} must have an E-rule ancestor.`);
-  if (node.directives !== undefined && !Array.isArray(node.directives))
+  if (node.directives !== undefined && !Array.isArray(node.directives)) {
     errors.push(`Directive ${node.id}.directives must be an array.`);
+    return;
+  }
   for (const child of node.directives ?? []) walk(child, node, [...ancestry, node.id], errors);
 }
 

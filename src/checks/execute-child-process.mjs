@@ -38,7 +38,11 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
       attachOutputStream(child, child.stderr, "stderr", output, rejectOnce, () => settled);
       child.on("close", (code, signal) => {
         if (settled) return;
-        if (code === null && signal == null) {
+        if (signal != null) {
+          rejectOnce(new Error(`Child process terminated by signal ${signal}.`));
+          return;
+        }
+        if (code === null) {
           rejectOnce(new Error("Child process exited without an exit code."));
           return;
         }

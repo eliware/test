@@ -103,3 +103,35 @@ test("removes backup storage and refuses unsupported state or filesystem errors"
     "denied",
   );
 });
+
+test("reports backup location when failed snapshot cleanup also fails", async () => {
+  const failed = {
+    ...missingFs(),
+    lstat: async () => ({
+      isSymbolicLink: () => false,
+      isDirectory: () => true,
+      isFile: () => false,
+    }),
+    cp: async () => {
+      throw new Error("copy denied");
+    },
+    rm: async () => {
+      throw new Error("cleanup denied");
+    },
+  };
+
+  let failure;
+  try {
+    await captureSmokeTargetState("C:/consumer", "@eliware/test", [], failed);
+  } catch (error) {
+    failure = error;
+  }
+  expect(failure.message).toMatch(
+    /copy denied.*temporary backup may remain at (.+): cleanup denied/u,
+  );
+  const retained = failure.message.match(
+    /temporary backup may remain at (.+): cleanup denied/u,
+  )?.[1];
+  expect(retained).toBeTruthy();
+  await rm(retained, { recursive: true, force: true });
+});

@@ -3,13 +3,10 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRepositoryFileContentCache } from "../../src/checks/create-repository-file-content-cache.mjs";
-
 const fileVersion = (mtimeNs, size = 4n) => ({ dev: 1n, ino: 2n, size, mtimeNs, ctimeNs: mtimeNs });
-
 test("shares one byte read across byte and text access", async () => {
   const read = jest.fn(async () => "text content");
   const cache = createRepositoryFileContentCache("/repo", read, async () => fileVersion(1n, 12n));
-
   const bytes = cache.readBytes("README.md");
   const text = cache.readText("/repo/README.md");
   await expect(bytes).resolves.toEqual(Buffer.from("text content"));
@@ -17,27 +14,23 @@ test("shares one byte read across byte and text access", async () => {
   await expect(cache.readText("README.md")).resolves.toBe("text content");
   expect(read).toHaveBeenCalledTimes(1);
 });
-
 test("evicts cached file bytes after the bounded content budget is exceeded", async () => {
-  const largeContent = Buffer.alloc(8 * 1024 * 1024 + 1, 65);
+  const largeContent = Buffer.allocUnsafe(9);
   const read = jest.fn(async () => largeContent);
-  const cache = createRepositoryFileContentCache("/repo", read, async () => ({
-    dev: 1n,
-    ino: 2n,
-    size: BigInt(largeContent.byteLength),
-    mtimeNs: 1n,
-    ctimeNs: 1n,
-  }));
-
+  const cache = createRepositoryFileContentCache(
+    "/repo",
+    read,
+    async () => fileVersion(1n, BigInt(largeContent.byteLength)),
+    8,
+  );
   await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
   await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
   expect(read).toHaveBeenCalledTimes(2);
 });
-
 test("leaves concurrent pending reads alone while evicting completed content", async () => {
   let releaseFirstStat;
   let blockFirstStat = true;
-  const largeContent = Buffer.alloc(8 * 1024 * 1024 + 1, 65);
+  const largeContent = Buffer.allocUnsafe(9);
   const stat = jest.fn((path) => {
     if (path.endsWith("first.bin") && blockFirstStat) {
       blockFirstStat = false;
@@ -64,6 +57,7 @@ test("leaves concurrent pending reads alone while evicting completed content", a
     "/repo",
     async (path) => (path.endsWith("first.bin") ? Buffer.from("a") : largeContent),
     stat,
+    8,
   );
   const first = cache.readBytes("first.bin");
   const large = cache.readBytes("large.bin");
@@ -71,7 +65,6 @@ test("leaves concurrent pending reads alone while evicting completed content", a
   releaseFirstStat();
   await expect(first).resolves.toEqual(Buffer.from("a"));
 });
-
 test("reuses file content only while its on-disk version is unchanged", async () => {
   const stat = jest
     .fn()
@@ -86,7 +79,6 @@ test("reuses file content only while its on-disk version is unchanged", async ()
     .mockResolvedValueOnce(fileVersion(2n));
   const read = jest.fn().mockResolvedValueOnce("old!").mockResolvedValueOnce("new!");
   const cache = createRepositoryFileContentCache("/repo", read, stat);
-
   await expect(cache.readText("README.md")).resolves.toBe("old!");
   await expect(cache.readText("README.md")).resolves.toBe("old!");
   await expect(cache.readText("README.md")).resolves.toBe("new!");
@@ -95,36 +87,59 @@ test("reuses file content only while its on-disk version is unchanged", async ()
     bigint: true,
   });
 });
-
 test("keeps byte accounting correct after a failed cache replacement", async () => {
   let version = 1n;
-  const stat = jest.fn(async () => fileVersion(version, 4n));
-  const largeContent = Buffer.alloc(8 * 1024 * 1024 - 4, 65);
+  const stat = jest.fn(async (path) => fileVersion(version, path.endsWith("large.bin") ? 5n : 4n));
+  const largeContent = Buffer.from("12345");
   const read = jest
     .fn()
     .mockResolvedValueOnce("old!")
     .mockRejectedValueOnce(new Error("temporary read failure"))
     .mockResolvedValueOnce("new!")
-    .mockResolvedValueOnce(largeContent);
-  const cache = createRepositoryFileContentCache("/repo", read, stat);
-
+    .mockResolvedValueOnce(largeContent)
+    .mockResolvedValueOnce("new!");
+  const cache = createRepositoryFileContentCache("/repo", read, stat, 8);
   await expect(cache.readText("small.txt")).resolves.toBe("old!");
   version = 2n;
   await expect(cache.readText("small.txt")).rejects.toThrow("temporary read failure");
   await expect(cache.readText("small.txt")).resolves.toBe("new!");
   await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
   await expect(cache.readBytes("small.txt")).resolves.toEqual(Buffer.from("new!"));
-  await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
-  expect(read).toHaveBeenCalledTimes(4);
+  expect(read).toHaveBeenCalledTimes(5);
 });
-
+test("keeps an in-flight previous entry accounted while another read evicts content", async () => {
+  let currentVersion = 1n;
+  let rejectRefresh;
+  const largeContent = Buffer.allocUnsafe(9);
+  const stat = jest.fn(async (path) =>
+    fileVersion(currentVersion, path.endsWith("large.bin") ? 9n : 4n),
+  );
+  const read = jest.fn((path) => {
+    if (path.endsWith("small.txt") && read.mock.calls.length === 1) return Promise.resolve("old!");
+    if (path.endsWith("small.txt"))
+      return new Promise((_resolve, reject) => {
+        rejectRefresh = reject;
+      });
+    return Promise.resolve(largeContent);
+  });
+  const cache = createRepositoryFileContentCache("/repo", read, stat, 8);
+  await expect(cache.readText("small.txt")).resolves.toBe("old!");
+  currentVersion = 2n;
+  const refresh = cache.readText("small.txt");
+  await new Promise((resolve) => setImmediate(resolve));
+  await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
+  rejectRefresh(new Error("refresh failed"));
+  await expect(refresh).rejects.toThrow("refresh failed");
+  currentVersion = 1n;
+  await expect(cache.readText("small.txt")).resolves.toBe("old!");
+  expect(read).toHaveBeenCalledTimes(3);
+});
 test("uses filesystem versions by default and refreshes changed file content", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-file-cache-"));
   const path = join(root, "README.md");
   await writeFile(path, "old");
   const read = jest.fn((filePath) => readFile(filePath));
   const cache = createRepositoryFileContentCache(root, read);
-
   try {
     await expect(cache.readText(path)).resolves.toBe("old");
     await writeFile(path, "new content");
@@ -134,7 +149,6 @@ test("uses filesystem versions by default and refreshes changed file content", a
     await rm(root, { recursive: true, force: true });
   }
 });
-
 test("drops failed reads so a later request can retry", async () => {
   const stat = jest
     .fn()
@@ -142,12 +156,10 @@ test("drops failed reads so a later request can retry", async () => {
     .mockResolvedValue({ dev: 1n, ino: 2n, size: 4n, mtimeNs: 1n, ctimeNs: 1n });
   const read = jest.fn().mockResolvedValue("text");
   const cache = createRepositoryFileContentCache("/repo", read, stat);
-
   await expect(cache.readText("README.md")).rejects.toThrow("stat denied");
   await expect(cache.readText("README.md")).resolves.toBe("text");
   expect(read).toHaveBeenCalledTimes(1);
 });
-
 test("shares concurrent failures until they settle, then allows a retry", async () => {
   let rejectStat;
   const stat = jest
@@ -163,7 +175,6 @@ test("shares concurrent failures until they settle, then allows a retry", async 
   await expect(first).rejects.toThrow("stat denied");
   await expect(cache.readText("README.md")).resolves.toBe("retry");
 });
-
 test("stores the stable version when a file changes during a cache fill", async () => {
   let currentVersion = 1n;
   const stat = jest.fn(async () => ({
@@ -181,7 +192,6 @@ test("stores the stable version when a file changes during a cache fill", async 
     return "fresh";
   });
   const cache = createRepositoryFileContentCache("/repo", read, stat);
-
   await expect(cache.readText("README.md")).resolves.toBe("fresh");
   await expect(cache.readText("README.md")).resolves.toBe("fresh");
   expect(read).toHaveBeenCalledTimes(2);

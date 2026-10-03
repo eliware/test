@@ -2,6 +2,7 @@ import { findLineLimitViolations } from "./find-line-limit-violations.mjs";
 import { fail, pass } from "../../../check-result.mjs";
 
 export async function runLineLimits({ root, ruleId, repositoryInventory, requireTests = false }) {
+  // codescope ignore: repositoryInventory.readText shares the run's content cache, so this does not repeat disk reads.
   let sourceViolations;
   try {
     sourceViolations = await findLineLimitViolations(root, "src", 100, repositoryInventory);

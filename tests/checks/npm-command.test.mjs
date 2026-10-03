@@ -5,6 +5,8 @@ import { npmCommand } from "../../src/checks/npm-command.mjs";
 test("selects the platform npm executable or npm exec path", () => {
   expect(npmCommand("linux", "")).toEqual(["npm", []]);
   expect(npmCommand("linux", "C:\\npm\\npm-cli.js")).toEqual(["npm", []]);
+  expect(npmCommand("linux", "C:/npm/npm-cli.js")).toEqual(["npm", []]);
+  expect(npmCommand("linux", "\\\\build-share\\tools\\npm-cli.js")).toEqual(["npm", []]);
   expect(npmCommand("linux", "/tools/npm-cli.js")).toEqual([
     process.execPath,
     ["/tools/npm-cli.js"],
@@ -20,6 +22,9 @@ test("selects the platform npm executable or npm exec path", () => {
   expect(
     npmCommand("win32", "C:\\npm\\npm-cli.js", "C:\\node.exe", () => true, "C:\\repo"),
   ).toEqual(["C:\\node.exe", ["C:\\npm\\npm-cli.js"]]);
+  expect(
+    npmCommand("win32", "C:/tools/npm-cli.js", "C:\\node.exe", () => true, "C:\\repo"),
+  ).toEqual(["C:\\node.exe", ["C:/tools/npm-cli.js"]]);
   expect(
     npmCommand(
       "win32",
@@ -74,6 +79,16 @@ test("selects the platform npm executable or npm exec path", () => {
       (path) => path === "C:\\tools\\npm.cmd",
       "C:\\repo",
       "C:\\tools",
+    ),
+  ).toThrow("npm.cmd without an adjacent npm-cli.js");
+  expect(() =>
+    npmCommand(
+      "win32",
+      "",
+      "C:\\missing\\node.exe",
+      (path) => path === "C:\\tools with spaces\\npm.cmd",
+      "C:\\repo",
+      '"C:\\tools with spaces"',
     ),
   ).toThrow("npm.cmd without an adjacent npm-cli.js");
   expect(() => npmCommand("win32", "//usr/local/npm-cli.js", "C:\\node.exe", () => false)).toThrow(

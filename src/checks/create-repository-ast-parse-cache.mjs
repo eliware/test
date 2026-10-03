@@ -10,6 +10,7 @@ export function createRepositoryAstParseCache(parseSource) {
       if (existing?.source === source) return existing.promise;
 
       const entry = { source, promise: Promise.resolve().then(() => parseSource(source, options)) };
+      // Each caller may finish its own snapshot, but stale completions cannot replace a newer cached parse.
       if (requests.get(key) === request || !asts.has(key)) asts.set(key, entry);
       entry.promise.catch(() => {
         if (asts.get(key) === entry) asts.delete(key);

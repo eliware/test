@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { runLineLimits } from "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-line-limits.mjs";
 const run = (options) => runLineLimits({ ruleId: "E-0.1.130.10", requireTests: true, ...options });
 
@@ -27,6 +27,22 @@ test("passes when source and test files remain within their limits", async () =>
     message: "",
   });
   await rm(root, { recursive: true, force: true });
+});
+
+test("uses the shared repository inventory content reader for discovered files", async () => {
+  const readText = jest.fn(async () => "export {};\n");
+  const repositoryInventory = {
+    root: "/repo",
+    entriesUnder: async (directory) => {
+      const source = directory.endsWith("src");
+      return [{ path: source ? "src/module.mjs" : "tests/module.test.mjs", type: "file" }];
+    },
+    readText,
+  };
+  await expect(run({ root: "/repo", repositoryInventory })).resolves.toMatchObject({
+    status: "pass",
+  });
+  expect(readText).toHaveBeenCalledTimes(2);
 });
 
 test("fails when a source file exceeds 100 lines", async () => {
@@ -85,6 +101,16 @@ test("handles empty files, non-module files, nested directories, and excluded fi
   await writeLines(root, "src", "types.d.mts", 101);
   await writeLines(root, "src", "snapshot.snap.mjs", 101);
   await writeLines(root, "src", "bundle.generated.mjs", 101);
+  await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
+  await rm(root, { recursive: true, force: true });
+});
+
+test("uses iterative traversal for deep source trees without repository inventory", async () => {
+  const root = await fixture(10);
+  const deepSource = join(root, "src", ...Array(60).fill("d"));
+  await mkdir(deepSource, { recursive: true });
+  await writeFile(join(deepSource, "deep.mjs"), "export {};\n");
+
   await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
   await rm(root, { recursive: true, force: true });
 });

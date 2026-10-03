@@ -22,6 +22,18 @@ test("rejects top-level AI rules and non-array child collections", () => {
   );
 });
 
+test("stops traversal at malformed directive collections", () => {
+  expect(
+    validateDirectiveTree([
+      { id: "E-1", directives: "characters are not child directives" },
+      { id: "E-2", directives: [{ id: "E-2.1", directives: ["not a record"] }] },
+    ]),
+  ).toEqual([
+    "Directive E-1.directives must be an array.",
+    "Every directive must have a valid E- or A-prefixed ID.",
+  ]);
+});
+
 test("requires complete numeric parent segments in nested directive IDs", () => {
   for (const [parentId, childId] of [["E-1.2", "A-1.20.3"]]) {
     expect(validateDirectiveTree([{ id: parentId, directives: [{ id: childId }] }])).toContain(

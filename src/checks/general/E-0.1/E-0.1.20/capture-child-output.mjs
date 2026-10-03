@@ -1,14 +1,18 @@
 import { collectRedactionSecrets } from "../../../collect-redaction-secrets.mjs";
 import { createRedactedTextStream } from "../../../create-redacted-text-stream.mjs";
+import { truncateChildOutputText } from "./truncate-child-output-text.mjs";
 
-export function createChildOutputCapture(options, { onStdout, onStderr, captureStderr, env } = {}) {
+export function createChildOutputCapture(
+  options,
+  { onStdout, onStderr, captureStderr, env, createTextStream = createRedactedTextStream } = {},
+) {
   const outputLimit = options;
   const redactionSecrets = collectRedactionSecrets(env);
   const maxPendingLength = Math.max(1, Math.floor(outputLimit / 2));
-  const stdoutRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1, {
+  const stdoutRedactor = createTextStream(redactionSecrets, outputLimit + 1, {
     maxPendingLength,
   });
-  const stderrRedactor = createRedactedTextStream(redactionSecrets, outputLimit + 1, {
+  const stderrRedactor = createTextStream(redactionSecrets, outputLimit + 1, {
     maxPendingLength,
   });
   const stdoutChunks = [];
@@ -25,9 +29,9 @@ export function createChildOutputCapture(options, { onStdout, onStderr, captureS
       return;
     }
     const bounded =
-      text.length > remaining && remaining > 0
-        ? `${text.slice(0, remaining - 1)}…`.slice(0, remaining)
-        : text.slice(0, remaining);
+      text.length > remaining
+        ? `${truncateChildOutputText(text, remaining - 1)}…`
+        : truncateChildOutputText(text, remaining);
     chunks.push(bounded);
     lastCapturedChunks = chunks;
     capturedLength += bounded.length;
@@ -37,15 +41,16 @@ export function createChildOutputCapture(options, { onStdout, onStderr, captureS
     const lastIndex = lastCapturedChunks?.length - 1;
     const lastChunk = lastCapturedChunks?.[lastIndex];
     if (lastChunk && !lastChunk.endsWith("…"))
-      lastCapturedChunks[lastIndex] = `${lastChunk.slice(0, -1)}…`;
+      lastCapturedChunks[lastIndex] =
+        `${truncateChildOutputText(lastChunk, lastChunk.length - 1)}…`;
   };
 
   const stream = (callback, text) => {
     if (!callback || streamed >= outputLimit || text.length === 0) return;
     const remaining = outputLimit - streamed;
-    const bounded = text.slice(0, remaining);
-    streamed += bounded.length;
-    callback(bounded);
+    const bounded = truncateChildOutputText(text, remaining);
+    streamed += bounded.length || outputLimit;
+    if (bounded) callback(bounded);
   };
 
   const appendStdout = (text) => {

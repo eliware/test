@@ -4,7 +4,12 @@ import { inventoryPath } from "./repository-inventory-paths.mjs";
 
 const MAX_CACHED_FILE_BYTES = 8 * 1024 * 1024;
 
-export function createRepositoryFileContentCache(root, read, stat = statPath) {
+export function createRepositoryFileContentCache(
+  root,
+  read,
+  stat = statPath,
+  maxCachedFileBytes = MAX_CACHED_FILE_BYTES,
+) {
   const fileReads = new Map();
   let cachedBytes = 0;
 
@@ -39,8 +44,8 @@ export function createRepositoryFileContentCache(root, read, stat = statPath) {
         return current.content;
       })
       .catch((error) => {
-        if (previous?.content) cachedBytes -= previous.content.byteLength;
-        fileReads.delete(key);
+        if (previous) fileReads.set(key, previous);
+        else fileReads.delete(key);
         throw error;
       });
     fileReads.set(key, current);
@@ -53,7 +58,8 @@ export function createRepositoryFileContentCache(root, read, stat = statPath) {
 
   function evictOldContent() {
     for (const [path, entry] of fileReads) {
-      if (cachedBytes <= MAX_CACHED_FILE_BYTES) break;
+      if (cachedBytes <= maxCachedFileBytes) break;
+      // codescope ignore: pending replacements are never evicted, preserving their previous content and byte accounting until settle.
       if (entry.pending) continue;
       fileReads.delete(path);
       cachedBytes -= entry.content.byteLength;

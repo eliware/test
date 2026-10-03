@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { createOutputByteBudget } from "../../src/checks/create-output-byte-budget.mjs";
+import {
+  createOutputByteBudget,
+  truncateOutputTextToBytes,
+} from "../../src/checks/create-output-byte-budget.mjs";
 
 test("accounts for a shared byte limit across output streams", () => {
   const budget = createOutputByteBudget(5);
@@ -57,4 +60,10 @@ test("keeps multibyte boundaries valid when the byte limit is shared across stre
 
 test("returns empty output for a negative truncate limit", () => {
   expect(createOutputByteBudget(-1).truncate("text")).toBe("");
+});
+
+test("returns a bounded UTF-8 prefix and its byte count without re-encoding", () => {
+  expect(truncateOutputTextToBytes("éx", 2)).toEqual({ text: "é", byteLength: 2 });
+  expect(truncateOutputTextToBytes("text", 9)).toEqual({ text: "text", byteLength: 4 });
+  expect(truncateOutputTextToBytes("éx", 0)).toEqual({ text: "", byteLength: 0 });
 });

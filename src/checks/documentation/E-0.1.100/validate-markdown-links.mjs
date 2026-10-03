@@ -7,8 +7,11 @@ import { parseMarkdownLinkReference } from "./parse-markdown-link-reference.mjs"
 import { hasMarkdownFragment } from "./validate-markdown-fragment.mjs";
 import { validateExternalDocumentationLink } from "./validate-external-documentation-link.mjs";
 
-export async function validateMarkdownLinks(root, files, context) {
+export async function validateMarkdownLinks(root, files, context, inspectTarget = stat) {
   const failures = [];
+  const targetInfoCache = new Map();
+  const markdownContentCache = new Map();
+  const fragmentCache = new Map();
   for (const relativeFile of files.filter((file) => file.endsWith(".md"))) {
     let content;
     try {
@@ -42,13 +45,20 @@ export async function validateMarkdownLinks(root, files, context) {
         continue;
       }
       try {
-        const targetInfo = await stat(target);
+        const targetInfo = await cachedValue(targetInfoCache, target, () => inspectTarget(target));
         if (targetInfo.isDirectory()) continue;
-        if (target.toLowerCase().endsWith(".md")) await readRepositoryText(context, target);
+        let markdownContent;
+        if (target.toLowerCase().endsWith(".md"))
+          markdownContent = await cachedValue(markdownContentCache, target, () =>
+            readRepositoryText(context, target),
+          );
         else if (context?.repositoryInventory?.readBytes)
           await context.repositoryInventory.readBytes(target);
         else await readFile(target);
-        if (!(await hasMarkdownFragment(target, fragment, context)))
+        const fragmentExists = await cachedValue(fragmentCache, `${target}\0${fragment}`, () =>
+          hasMarkdownFragment(target, fragment, context, markdownContent),
+        );
+        if (!fragmentExists)
           failures.push(
             `Documentation link fragment does not resolve: ${reference} in ${relativeFile}.`,
           );
@@ -58,4 +68,9 @@ export async function validateMarkdownLinks(root, files, context) {
     }
   }
   return failures.length ? failures.join("\n") : null;
+}
+
+function cachedValue(cache, key, load) {
+  if (!cache.has(key)) cache.set(key, Promise.resolve().then(load));
+  return cache.get(key);
 }

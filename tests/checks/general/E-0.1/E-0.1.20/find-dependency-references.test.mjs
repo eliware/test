@@ -88,7 +88,7 @@ test("counts the direct linter used by the self-hosted CLI package", async () =>
   await rm(root, { recursive: true, force: true });
 });
 
-test("counts a declared dependency whose binary is spawned by Knit validation", async () => {
+test("derives a scoped string bin name used by Knit validation", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-knit-dependency-"));
   try {
     await mkdir(join(root, ".knit"));

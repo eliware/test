@@ -24,3 +24,15 @@ test("uses shared file discovery and reads for line-limit checks", async () => {
   ]);
   await rm(root, { recursive: true, force: true });
 });
+
+test("discovers nested source files without recursive directory traversal", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-line-limit-nested-"));
+  const nested = join(root, "src", ...Array.from({ length: 12 }, () => "nested"));
+  await mkdir(nested, { recursive: true });
+  await writeFile(join(nested, "deep.mjs"), "x\nx\nx");
+
+  await expect(findLineLimitViolations(root, "src", 2)).resolves.toEqual([
+    `src/${Array.from({ length: 12 }, () => "nested").join("/")}/deep.mjs (3 > 2)`,
+  ]);
+  await rm(root, { recursive: true, force: true });
+});

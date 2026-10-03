@@ -27,8 +27,8 @@ export function validateNpm12WorkflowSetup(
   const unsafeSetup = setupSteps.some(
     (step) =>
       !step ||
-      ["if", "continue-on-error", "env", "shell", "working-directory"].some((field) =>
-        Object.hasOwn(step, field),
+      ["if", "continue-on-error", "continueOnError", "env", "shell", "working-directory"].some(
+        (field) => Object.hasOwn(step, field),
       ),
   );
   if (

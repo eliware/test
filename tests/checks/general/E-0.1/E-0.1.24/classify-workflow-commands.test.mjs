@@ -63,4 +63,9 @@ test("identifies reusable validation jobs from their command sequence", () => {
       steps,
     ),
   ).toBe(false);
+  for (const install of ["npm ci && echo ready", "npm ci\necho ready", "npm ci\\"]) {
+    expect(
+      isValidationWorkflowJob({ steps: [{ command: install }, { command: "npm test" }] }, steps),
+    ).toBe(false);
+  }
 });

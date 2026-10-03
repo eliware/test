@@ -88,6 +88,23 @@ test("rejects scope-changing audit arguments at the runner boundary", async () =
   }
 });
 
+test("rejects malformed executable resolver tuples before invoking the runner", async () => {
+  for (const resolved of [
+    null,
+    [],
+    ["", []],
+    ["npm", null],
+    ["npm", [null]],
+    ["npm", [], "extra"],
+  ]) {
+    const run = jest.fn();
+    await expect(
+      runNpmAudit({ root: "C:\\repo", run, resolveCommand: () => resolved }),
+    ).rejects.toThrow("resolveCommand must return an executable and string argument prefix.");
+    expect(run).not.toHaveBeenCalled();
+  }
+});
+
 test("rejects incomplete runner options", async () => {
   await expect(runNpmAudit()).rejects.toThrow("child-process runner");
   await expect(runNpmAudit({ root: "C:\\repo" })).rejects.toThrow("child-process runner");

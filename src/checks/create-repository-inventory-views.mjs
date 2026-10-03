@@ -13,9 +13,9 @@ export function createRepositoryFileViews(entries, focusedScope) {
       return files("repository");
     }
     if (!views.has(view)) {
-      views.set(
-        view,
-        entries().then((records) => {
+      let request;
+      request = entries()
+        .then((records) => {
           const allFiles = records.filter(({ type }) => type === "file").map(({ path }) => path);
           if (view === "all") return allFiles;
           const repository = allFiles.filter(
@@ -27,8 +27,12 @@ export function createRepositoryFileViews(entries, focusedScope) {
           const documentationView = selectRepositoryDocumentationView(view, allFiles);
           if (documentationView !== undefined) return documentationView;
           throw new Error(`Unknown repository inventory view: ${view}.`);
-        }),
-      );
+        })
+        .catch((error) => {
+          views.delete(view);
+          throw error;
+        });
+      views.set(view, request);
     }
     return views.get(view);
   }

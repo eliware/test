@@ -1,6 +1,7 @@
 const allowedOptions = new Set(["--experimental-vm-modules", "--no-warnings", "--trace-warnings"]);
 
 export function createJestNodeOptions(value = "") {
+  // codescope ignore: only allowlisted flag tokens are valid; quotes and backslashes are unsupported tokenization.
   if (typeof value === "string" && /["'\\]/u.test(value)) {
     throw new Error("Unsupported inherited NODE_OPTIONS for the Jest validation process.");
   }

@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateMarkdownLinks } from "../../../../src/checks/documentation/E-0.1.100/validate-markdown-links.mjs";
@@ -82,6 +82,24 @@ test("reuses inventory reads for repeated non-Markdown link targets", async () =
     await expect(
       validateMarkdownLinks(root, ["README.md"], { repositoryInventory }),
     ).resolves.toBeNull();
+    expect(read).toHaveBeenCalledTimes(2);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("caches repeated Markdown target stats, content, and fragment checks", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-links-repeat-md-"));
+  try {
+    await writeFile(join(root, "README.md"), "[First](target.md#guide) [Again](target.md#guide)");
+    await writeFile(join(root, "target.md"), "# Guide");
+    const read = jest.fn((...args) => readFile(...args));
+    const inspectTarget = jest.fn((...args) => stat(...args));
+    const repositoryInventory = createRepositoryInventory(root, { read });
+    await expect(
+      validateMarkdownLinks(root, ["README.md"], { repositoryInventory }, inspectTarget),
+    ).resolves.toBeNull();
+    expect(inspectTarget).toHaveBeenCalledTimes(1);
     expect(read).toHaveBeenCalledTimes(2);
   } finally {
     await rm(root, { recursive: true, force: true });

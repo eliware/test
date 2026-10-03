@@ -7,13 +7,16 @@ function version(metadata, platform) {
     typeof metadata.mtimeNs === "bigint" && typeof metadata.ctimeNs === "bigint";
   return {
     cacheable: platform !== "win32" && nanosecondTimestamps,
+    // String conversion is safe for BigIntStats; Windows disables reuse but still compares snapshots around readdir.
     key: [
       metadata.dev,
       metadata.ino,
       metadata.size,
       nanosecondTimestamps ? metadata.mtimeNs : metadata.mtimeMs,
       nanosecondTimestamps ? metadata.ctimeNs : metadata.ctimeMs,
-    ].join(":"),
+    ]
+      .map(String)
+      .join(":"),
   };
 }
 
@@ -59,7 +62,8 @@ export function createRepositoryDirectoryReadCache(
         return current.entries;
       })
       .catch((error) => {
-        reads.delete(key);
+        if (previous) reads.set(key, previous);
+        else reads.delete(key);
         throw error;
       });
     reads.set(key, current);

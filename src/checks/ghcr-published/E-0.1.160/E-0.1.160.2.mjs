@@ -19,6 +19,9 @@ export async function run(context) {
   const expectedImage = packageName ? `ghcr.io/eliware/${packageName}` : "";
   try {
     const workflows = await readWorkflows(root, context);
+    // The workflow inventory check independently limits the repository to the
+    // canonical publish.yaml; this check classifies every workflow with a GHCR
+    // publication marker and validates every classified workflow and job.
     const publications = workflows.filter(isPublicationWorkflow);
     const validationJobsByWorkflow = new Map(
       publications.map((workflow) => [workflow, findValidationJobs(workflow)]),
@@ -27,7 +30,7 @@ export async function run(context) {
       typeof packageJson?.version === "string" &&
       Boolean(expectedImage) &&
       (!isTagRelease(env) || tagMatchesPackageVersion(env.GITHUB_REF_NAME, packageJson.version)) &&
-      publications.length > 0 &&
+      publications.length === 1 &&
       publications.every((workflow) => {
         const publicationJobList = publicationJobs(workflow);
         return (

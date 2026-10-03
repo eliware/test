@@ -4,7 +4,7 @@ const credentialKey =
 export function redactCredentialFields(text) {
   return String(text)
     .replace(
-      /-----BEGIN(?: RSA| OPENSSH| EC)? PRIVATE KEY-----[\s\S]*?-----END(?: RSA| OPENSSH| EC)? PRIVATE KEY-----/gu,
+      /-----BEGIN(?: [A-Z0-9]+)* PRIVATE KEY-----[\s\S]*?-----END(?: [A-Z0-9]+)* PRIVATE KEY-----/gu,
       "[REDACTED PRIVATE KEY]",
     )
     .replace(

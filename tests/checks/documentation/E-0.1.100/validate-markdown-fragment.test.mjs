@@ -19,3 +19,11 @@ test("matches heading and id fragments", async () => {
   await expect(hasMarkdownFragment(target, "")).resolves.toBe(true);
   await rm(root, { recursive: true, force: true });
 });
+
+test("matches every HTML id on a line", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-fragment-multiple-"));
+  const target = join(root, "index.md");
+  await writeFile(target, '<span id="first"></span><span id="second"></span>\n');
+  await expect(hasMarkdownFragment(target, "second")).resolves.toBe(true);
+  await rm(root, { recursive: true, force: true });
+});

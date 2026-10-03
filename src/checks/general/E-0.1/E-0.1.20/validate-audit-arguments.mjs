@@ -21,16 +21,18 @@ const protectedOptions = new Set([
 const allowedOptions = new Set(["--no-fund", "--no-progress"]);
 
 export function validateAuditArguments(args = []) {
-  if (!Array.isArray(args)) {
+  let suppliedArguments;
+  try {
+    if (!Array.isArray(args)) return "Audit arguments must be an array of strings.";
+    suppliedArguments = [];
+    for (let index = 0; index < args.length; index += 1) {
+      if (!Object.hasOwn(args, index)) return "Audit arguments must be an array of strings.";
+      const argument = args[index];
+      if (typeof argument !== "string") return "Audit arguments must be an array of strings.";
+      suppliedArguments.push(argument);
+    }
+  } catch {
     return "Audit arguments must be an array of strings.";
-  }
-  const suppliedArguments = [];
-  for (let index = 0; index < args.length; index += 1) {
-    // codescope ignore: The indexed own-property check rejects sparse and inherited argument slots; dedicated regressions cover both forms.
-    if (!Object.hasOwn(args, index)) return "Audit arguments must be an array of strings.";
-    const argument = args[index];
-    if (typeof argument !== "string") return "Audit arguments must be an array of strings.";
-    suppliedArguments.push(argument);
   }
   const failures = [];
   for (const argument of suppliedArguments) {

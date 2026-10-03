@@ -48,6 +48,7 @@ test("rejects file creation and other setup commands before install", () => {
     "echo `touch /tmp/pwned`",
     "echo $GITHUB_TOKEN",
     "echo '$GITHUB_TOKEN'",
+    "echo safe\nnpm publish",
     String.raw`echo safe\value`,
     "echo '${{ secrets.TOKEN }}'",
     'echo "${{ secrets.TOKEN }}"',
@@ -58,11 +59,22 @@ test("rejects file creation and other setup commands before install", () => {
     'echo "x" > .env',
     'echo "safe\\\"; touch .env"',
     'echo "safe\\\\value"',
+    'echo "safe\\\n npm publish"',
+    "echo 'safe\\\n npm publish'",
+    'echo "safe\n npm publish"',
+    "echo 'safe\n npm publish'",
   ]) {
     expect(validateWorkflowPreInstallCommands("ci.yaml", [{ command }], 1)).toContain(
       "safe reporting",
     );
   }
+});
+
+test("rejects unquoted shell and workflow expansions in reporting commands", () => {
+  for (const command of ["echo $TOKEN", "echo ${TOKEN}", "echo $(id)", "echo ${{ secrets.TOKEN }}"])
+    expect(validateWorkflowPreInstallCommands("ci.yaml", [{ command }], 1)).toContain(
+      "safe reporting",
+    );
 });
 
 test("rejects unsupported script fields before install", () => {

@@ -163,6 +163,17 @@ test("rejects an invalid publisher workflow alongside a valid publisher workflow
   });
 });
 
+test("rejects multiple GHCR publication workflows", async () => {
+  const { root, publicationPath } = await createGhcrFixture();
+  const { copyFile } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  await copyFile(publicationPath, join(root, ".github", "workflows", "publish-copy.yaml"));
+
+  await expect(
+    run({ root, packageJson: { name: "@eliware/example", version: "1.2.3" } }),
+  ).resolves.toMatchObject({ status: "fail" });
+});
+
 test("reports workflow inspection failures", async () => {
   await expect(run({ root: "C:\\missing-ghcr-repository" })).resolves.toEqual(
     expect.objectContaining({

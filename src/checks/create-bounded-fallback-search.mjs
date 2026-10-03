@@ -26,6 +26,7 @@ export function createBoundedFallbackSearch(values, workLimit, findSecretEnds) {
       return { boundary: 0, matchEnds: [], suppressed: true };
     consumedWork += work;
     if (consumedWork > workLimit) return { boundary: 0, matchEnds: [], suppressed: true };
+    // Scan earlier starts too: a secret may cross the candidate boundary.
     for (let start = boundary; start >= 0; start -= 1) {
       if (matchEnds[start] > boundary) boundary = start;
     }

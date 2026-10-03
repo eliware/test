@@ -13,8 +13,14 @@ const request = (overrides = {}) =>
     ...overrides,
   });
 
-test("resolves a valid consumer path after validating package metadata", () => {
+test("accepts an absolute caller-selected consumer outside the source checkout", () => {
   expect(request()).toEqual({ targetRoot: target });
+});
+
+test("accepts a caller-selected parent-relative consumer path", () => {
+  expect(request({ target: "../smoke-consumer" })).toEqual({
+    targetRoot: resolve(root, "..", "smoke-consumer"),
+  });
 });
 
 test("rejects missing targets and source checkout targets", () => {

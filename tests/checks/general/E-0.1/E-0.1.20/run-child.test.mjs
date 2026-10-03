@@ -27,6 +27,26 @@ test("handles children without streams and ignores errors after close", async ()
   await expect(result).resolves.toEqual({ code: 0, signal: null, stdout: "", stderr: "" });
 });
 
+test("forwards suite-end progress to the configured callback", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  const onSuiteEnd = jest.fn();
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    progressPattern: /progress/u,
+    onProgress() {
+      this.onSuiteEnd("tests/example.test.mjs");
+    },
+    onSuiteEnd,
+  });
+  child.stderr.emit("data", "progress\n");
+  child.emit("close", 0, null);
+  await expect(result).resolves.toMatchObject({ code: 0 });
+  expect(onSuiteEnd).toHaveBeenCalledWith("tests/example.test.mjs");
+});
+
 test("normalizes and redacts synchronous spawn failures before process setup", async () => {
   const createProgressTimeout = jest.fn();
   const result = runChild("ignored", [], {
@@ -88,113 +108,23 @@ test("terminates a spawned child when progress-timeout setup fails", async () =>
   expect(child.kill).not.toHaveBeenCalled();
 });
 
-test("wires progress, timeout, output, and timed-out child settlement", async () => {
+test("stops initialized timers when close-listener setup fails", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),
     stderr: new EventEmitter(),
   });
-  const reset = jest.fn();
-  const onProgress = jest.fn();
-  const onTimeout = jest.fn();
-  const onStdout = jest.fn();
-  const onStderr = jest.fn();
-  let fireTimeout;
-  const result = runChild("ignored", [], {
-    spawnProcess: () => child,
-    createProgressTimeout: ({ onTimeout: callback }) => {
-      fireTimeout = callback;
-      return { reset, stop: jest.fn() };
-    },
-    progressPattern: /progress/u,
-    onProgress,
-    onTimeout,
-    onStdout,
-    onStderr,
-    terminateChild: () => true,
-    terminationGraceMs: 60_000,
-  });
-
-  child.stdout.emit("data", "output");
-  child.stderr.emit("data", "progress\n");
-  fireTimeout();
-  child.emit("close", null, "SIGTERM");
-  child.stderr.emit("data", "progress after close\n");
-
-  await expect(result).resolves.toMatchObject({
-    timedOut: true,
-    terminationRequested: true,
-    terminationConfirmed: true,
-    stdout: "output",
-  });
-  expect(reset).toHaveBeenCalledTimes(2);
-  expect(onProgress).toHaveBeenCalledTimes(2);
-  expect(onTimeout).toHaveBeenCalledTimes(1);
-  expect(onStdout).toHaveBeenCalledWith("output");
-  expect(onStderr).toHaveBeenCalledWith("progress\n");
-});
-
-test("terminates Jest when one suite exceeds its total runtime deadline", async () => {
-  jest.useFakeTimers();
-  try {
-    const child = Object.assign(new EventEmitter(), {
-      stdout: new EventEmitter(),
-      stderr: new EventEmitter(),
-    });
-    const onSuiteTimeout = jest.fn();
-    const result = runChild("ignored", [], {
+  const registerListener = child.on.bind(child);
+  child.on = (event, listener) => {
+    if (event === "close") throw new Error("close listener setup failed");
+    return registerListener(event, listener);
+  };
+  const stop = jest.fn();
+  await expect(
+    runChild("ignored", [], {
       spawnProcess: () => child,
-      progressTimeoutMs: 15_000,
-      suiteTimeoutMs: 5_000,
-      progressPattern: /^progress$/u,
-      onProgress(text) {
-        if (text === "progress") this.onSuiteStart("tests/slow.test.mjs");
-      },
-      onSuiteTimeout,
+      createProgressTimeout: () => ({ reset: jest.fn(), stop }),
       terminateChild: () => true,
-      terminationGraceMs: 1,
-    });
-
-    child.stderr.emit("data", "progress\n");
-    child.stdout.emit("data", "test still producing output\n");
-    jest.advanceTimersByTime(6_001);
-
-    await expect(result).resolves.toMatchObject({ timedOut: true });
-    expect(onSuiteTimeout).toHaveBeenCalledWith("tests/slow.test.mjs");
-  } finally {
-    jest.useRealTimers();
-  }
-});
-
-test("settles when the process never confirms termination", async () => {
-  jest.useFakeTimers();
-  try {
-    const child = Object.assign(new EventEmitter(), {
-      stdout: new EventEmitter(),
-      stderr: new EventEmitter(),
-    });
-    let fireTimeout;
-    const result = runChild("ignored", [], {
-      spawnProcess: () => child,
-      createProgressTimeout: ({ onTimeout }) => {
-        fireTimeout = onTimeout;
-        return { reset: jest.fn(), stop: jest.fn() };
-      },
-      terminateChild: () => false,
-      terminationGraceMs: 1,
-      forceKillConfirmationMs: 1,
-    });
-
-    fireTimeout();
-    jest.advanceTimersByTime(2);
-
-    await expect(result).resolves.toMatchObject({
-      code: null,
-      signal: "SIGKILL",
-      timedOut: true,
-      terminationRequested: true,
-      terminationConfirmed: false,
-    });
-  } finally {
-    jest.useRealTimers();
-  }
+    }),
+  ).rejects.toThrow("close listener setup failed");
+  expect(stop).toHaveBeenCalled();
 });

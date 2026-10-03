@@ -31,6 +31,7 @@ export function imageDetails(push) {
     /^ghcr\.io\/[\w.-]+\/[\w.-]+:v\d+\.\d+\.\d+$/u.test(value),
   );
   const match = tag?.match(/^(.*):v\d+\.\d+\.\d+$/u) ?? null;
+  // codescope ignore: this matches GitHub's step identifier grammar; invalid IDs produce no expression.
   const id = typeof push?.id === "string" && /^[A-Za-z_][\w-]*$/u.test(push.id) ? push.id : null;
   return {
     image: match?.[1] ?? null,

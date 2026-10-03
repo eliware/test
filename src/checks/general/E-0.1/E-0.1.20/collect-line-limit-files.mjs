@@ -28,12 +28,18 @@ export async function collectLineLimitFiles(directory, inventory = null) {
       .map(({ path }) => join(repositoryRoot, path));
   }
   const files = [];
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) {
-      if (!excludedDirectories.has(entry.name)) files.push(...(await collectLineLimitFiles(path)));
-    } else if (entry.isFile() && entry.name.endsWith(".mjs") && !excludedFile(path))
-      files.push(path);
+  // Use an explicit stack so deeply nested trees do not recurse through the JavaScript call stack.
+  const pendingDirectories = [directory];
+  while (pendingDirectories.length > 0) {
+    const currentDirectory = pendingDirectories.pop();
+    for (const entry of await readdir(currentDirectory, { withFileTypes: true })) {
+      const path = join(currentDirectory, entry.name);
+      if (entry.isDirectory()) {
+        if (!excludedDirectories.has(entry.name)) pendingDirectories.push(path);
+      } else if (entry.isFile() && entry.name.endsWith(".mjs") && !excludedFile(path)) {
+        files.push(path);
+      }
+    }
   }
   return files;
 }

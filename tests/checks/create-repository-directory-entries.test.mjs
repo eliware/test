@@ -18,11 +18,12 @@ test("projects unexpanded directory entries from scoped inventory discovery", as
     hasFullDiscovery: () => false,
   });
 
-  const scopedEntries = await directoryEntries("/repo/src");
+  const traversal = { maxDepth: 7, includeGenerated: true };
+  const scopedEntries = await directoryEntries("/repo/src", traversal);
   expect(scopedEntries).toMatchObject([{ name: "entry.mjs", path: "src/entry.mjs" }]);
   expect(scopedEntries[0].isFile()).toBe(true);
   expect(scopedEntries[0].isDirectory()).toBe(false);
-  expect(entriesUnder).toHaveBeenCalledWith("/repo/src");
+  expect(entriesUnder).toHaveBeenCalledWith("/repo/src", null, traversal);
   expect(readDirectory).not.toHaveBeenCalled();
   await expect(directoryEntries("/repo/missing")).rejects.toMatchObject({ code: "ENOENT" });
 });
@@ -87,7 +88,24 @@ test("reads direct descendants of discovered generated directories", async () =>
   });
 });
 
-test("rejects missing descendants beneath a generated directory before reading them", async () => {
+test("reads nested real directories beneath a pruned generated ancestor", async () => {
+  const readDirectory = jest.fn(async () => [fileEntry("report.json")]);
+  const directoryEntries = createRepositoryDirectoryEntries({
+    root: "/repo",
+    entries: jest.fn(async () => [{ path: "dist", type: "directory" }]),
+    entriesUnder: jest.fn(),
+    readDirectory,
+    statDirectory: jest.fn(async () => ({ isDirectory: () => true })),
+    hasFullDiscovery: () => true,
+  });
+
+  await expect(directoryEntries("/repo/dist/reports/current")).resolves.toMatchObject([
+    { name: "report.json", path: "dist/reports/current/report.json" },
+  ]);
+  expect(readDirectory).toHaveBeenCalledWith("dist/reports/current");
+});
+
+test("stats missing generated descendants and rejects them before readdir", async () => {
   const missingError = Object.assign(new Error("missing generated descendant"), { code: "ENOENT" });
   const readDirectory = jest.fn();
   const directoryEntries = createRepositoryDirectoryEntries({
@@ -105,7 +123,7 @@ test("rejects missing descendants beneath a generated directory before reading t
   expect(readDirectory).not.toHaveBeenCalled();
 });
 
-test("rejects non-directory paths beneath a generated directory", async () => {
+test("stats file paths beneath a generated directory and rejects before readdir", async () => {
   const readDirectory = jest.fn();
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",

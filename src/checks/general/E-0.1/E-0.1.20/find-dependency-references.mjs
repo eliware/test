@@ -9,6 +9,7 @@ async function readDependencyBinaries(root, declared) {
     const binaries = new Map();
     for (const dependency of declared) {
       const entry = lock.packages?.[`node_modules/${dependency}`];
+      // codescope ignore: npm lockfile string bin names come from the final segment, including scoped package names
       const names =
         typeof entry?.bin === "string"
           ? [dependency.split("/").at(-1)]

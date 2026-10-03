@@ -34,8 +34,17 @@ test("normalizes Windows device-namespace repository roots with Windows path rul
   expect(
     normalizeRepositoryInventoryRecords("\\\\?\\C:\\repo", [
       { path: "\\\\?\\C:\\repo\\src\\file.mjs", type: "file" },
+      { path: "C:\\repo\\src\\ordinary.mjs", type: "file" },
     ]),
-  ).toEqual([{ path: "src/file.mjs", type: "file" }]);
+  ).toEqual([
+    { path: "src/file.mjs", type: "file" },
+    { path: "src/ordinary.mjs", type: "file" },
+  ]);
+  expect(
+    normalizeRepositoryInventoryRecords("C:\\repo", [
+      { path: "\\\\?\\C:\\repo\\src\\device.mjs", type: "file" },
+    ]),
+  ).toEqual([{ path: "src/device.mjs", type: "file" }]);
 });
 
 test("normalizes Windows DOS device-namespace repository roots with Windows path rules", () => {
@@ -44,6 +53,34 @@ test("normalizes Windows DOS device-namespace repository roots with Windows path
   expect(normalizeRepositoryInventoryRecords(root, [{ path: file, type: "file" }])).toEqual([
     { path: "src/file.mjs", type: "file" },
   ]);
+});
+
+test("normalizes device and ordinary UNC records against the same repository root", () => {
+  const deviceRoot = String.raw`\\?\UNC\server\share\repo`;
+  const ordinaryRoot = String.raw`\\server\share\repo`;
+  const ordinaryRecord = String.raw`\\server\share\repo\src\ordinary.mjs`;
+  const deviceRecord = String.raw`\\?\UNC\server\share\repo\src\device.mjs`;
+
+  expect(
+    normalizeRepositoryInventoryRecords(deviceRoot, [{ path: ordinaryRecord, type: "file" }]),
+  ).toEqual([{ path: "src/ordinary.mjs", type: "file" }]);
+  expect(
+    normalizeRepositoryInventoryRecords(ordinaryRoot, [{ path: deviceRecord, type: "file" }]),
+  ).toEqual([{ path: "src/device.mjs", type: "file" }]);
+});
+
+test("normalizes DOS UNC and preserves extended volume namespace records", () => {
+  const dosRoot = String.raw`\\.\UNC\server\share\repo`;
+  const dosRecord = String.raw`\\.\UNC\server\share\repo\src\file.mjs`;
+  const volumeRoot = String.raw`\\?\Volume{12345678-1234-1234-1234-123456789abc}\repo`;
+  const volumeRecord = String.raw`\\?\Volume{12345678-1234-1234-1234-123456789abc}\repo\src\volume.mjs`;
+
+  expect(normalizeRepositoryInventoryRecords(dosRoot, [{ path: dosRecord, type: "file" }])).toEqual(
+    [{ path: "src/file.mjs", type: "file" }],
+  );
+  expect(
+    normalizeRepositoryInventoryRecords(volumeRoot, [{ path: volumeRecord, type: "file" }]),
+  ).toEqual([{ path: "src/volume.mjs", type: "file" }]);
 });
 
 test("drops null and malformed inventory records", () => {

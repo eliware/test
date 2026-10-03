@@ -1,4 +1,5 @@
 import { readFile, readdir, stat as statPath } from "node:fs/promises";
+import { isAbsolute, resolve, win32 } from "node:path";
 import { findRepositoryEntries } from "./general/E-0.1/find-repository-files.mjs";
 import { createRepositoryDiscovery } from "./create-repository-inventory-discovery.mjs";
 import { createRepositoryFileViews } from "./create-repository-inventory-views.mjs";
@@ -7,6 +8,13 @@ import { createDocumentationFileView } from "./create-repository-inventory-docum
 import { createRepositoryDirectoryEntries } from "./create-repository-directory-entries.mjs";
 
 export function createRepositoryInventory(root, options = {}) {
+  if (typeof root !== "string" || !root.trim())
+    throw new TypeError("Repository inventory root must be a non-empty path string.");
+  // The two-leading-backslash branch includes UNC and Windows device namespaces.
+  const windowsRoot = /^(?:[A-Za-z]:[\\/]|\\\\)/u.test(root);
+  const pathApi = windowsRoot ? win32 : { isAbsolute, resolve };
+  if (windowsRoot) root = pathApi.resolve(root);
+  else if (!pathApi.isAbsolute(root)) root = pathApi.resolve(root);
   const {
     focusedScope = null,
     findEntries = findRepositoryEntries,

@@ -23,6 +23,10 @@ test("normalizes Windows paths on any host", () => {
   ).toBe("test.mjs");
 });
 
+test("normalizes Windows separators with a relative repository root", () => {
+  expect(normalizeRepositoryRelativePath("src\\test.mjs", "repo")).toBe("src/test.mjs");
+});
+
 test("marks paths outside the root or from another path style", () => {
   expect(normalizeRepositoryRelativePath("/other/test.mjs", "/repo")).toBe("[outside repository]");
   expect(normalizeRepositoryRelativePath("C:/other/test.mjs", "C:/repo")).toBe(

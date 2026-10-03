@@ -1,6 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
 import { StringDecoder } from "node:string_decoder";
 import { createRedactedStreamBuffer } from "../../src/checks/create-redacted-stream-buffer.mjs";
+import { createPendingTextChunks } from "../../src/checks/create-pending-text-chunks.mjs";
 
 function createBuffer(overrides = {}) {
   let suppressed = false;
@@ -122,4 +123,41 @@ test("suppresses buffered text when the final boundary scan exceeds its budget",
   expect(buffer.addText("pending")).toBe("");
   expect(buffer.finish()).toBe("");
   expect(append).not.toHaveBeenCalled();
+});
+
+test("does not join retained secret-search chunks for each emitted prefix", () => {
+  const pendingText = [];
+  const createPendingTextChunksFactory = () => {
+    const chunks = createPendingTextChunks();
+    const toString = jest.fn(() => chunks.toString());
+    pendingText.push(toString);
+    return {
+      ...chunks,
+      get length() {
+        return chunks.length;
+      },
+      toString,
+    };
+  };
+  const findSafeBoundary = (_text, final = false) => ({
+    boundary: final ? 10 : 0,
+    matchEnds: [],
+    suppressed: false,
+  });
+  findSafeBoundary.appendText = (_text, length, final = false) => ({
+    boundary: final ? length : Math.max(0, length - 10),
+    matchEnds: [],
+    suppressed: false,
+  });
+  const { buffer } = createBuffer({
+    pendingLimit: 4,
+    bufferLimit: 32,
+    findSafeBoundary,
+    createPendingTextChunks: createPendingTextChunksFactory,
+  });
+
+  buffer.addText("a".repeat(200));
+  expect(pendingText[0]).not.toHaveBeenCalled();
+  expect(buffer.finish()).toBe("a".repeat(10));
+  expect(pendingText[0]).toHaveBeenCalledTimes(1);
 });

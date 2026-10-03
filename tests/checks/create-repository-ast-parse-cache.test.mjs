@@ -41,7 +41,7 @@ test("an older rejected parse cannot evict a newer source snapshot", async () =>
   expect(parseSource).toHaveBeenCalledTimes(2);
 });
 
-test("a slow read cannot replace a parse from a newer supplied snapshot", async () => {
+test("an older read finishing last cannot replace the newer cached snapshot", async () => {
   let resolveOlderRead;
   const olderSource = new Promise((resolve) => {
     resolveOlderRead = resolve;
@@ -54,6 +54,7 @@ test("a slow read cannot replace a parse from a newer supplied snapshot", async 
 
   await expect(newer).resolves.toEqual({ source: "new" });
   resolveOlderRead("old");
+  // The older caller receives its own snapshot; later callers still reuse the newer cached parse.
   await expect(older).resolves.toEqual({ source: "old" });
   await expect(parseCachedSource("key", async () => "new", {})).resolves.toEqual({ source: "new" });
   expect(parseSource).toHaveBeenCalledTimes(2);

@@ -9,9 +9,9 @@ export function markdownSlug(value) {
     .replace(/\s+/g, "-");
 }
 
-export async function hasMarkdownFragment(target, fragment, context) {
+export async function hasMarkdownFragment(target, fragment, context, sourceText) {
   if (!fragment || !target.toLowerCase().endsWith(".md")) return true;
-  const content = await readRepositoryText(context, target);
+  const content = sourceText ?? (await readRepositoryText(context, target));
   let wanted;
   try {
     wanted = decodeURIComponent(fragment).toLowerCase();
@@ -20,9 +20,9 @@ export async function hasMarkdownFragment(target, fragment, context) {
   }
   return content.split(/\r?\n/u).some((line) => {
     const heading = /^(?:#{1,6})\s+(.+?)\s*#*$/u.exec(line);
-    const id = /\bid=["']([^"']+)["']/iu.exec(line);
-    return (
-      (heading && markdownSlug(heading[1]) === wanted) || (id && id[1].toLowerCase() === wanted)
+    if (heading && markdownSlug(heading[1]) === wanted) return true;
+    return [...line.matchAll(/\bid=["']([^"']+)["']/giu)].some(
+      ([, id]) => id.toLowerCase() === wanted,
     );
   });
 }

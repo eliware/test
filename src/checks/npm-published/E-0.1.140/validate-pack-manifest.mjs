@@ -27,7 +27,10 @@ export function validatePackManifest(stdout, files, packageName, packageJson = {
   if (!Array.isArray(packed) || packed.some((entry) => typeof entry?.path !== "string")) {
     return "npm pack JSON manifest must contain a files array with paths.";
   }
-  const allowlist = Array.isArray(files) ? [...new Set(files)] : [];
+  if (!Array.isArray(files)) return "package.json.files must be an array.";
+  if (new Set(files).size !== files.length)
+    return "package.json.files must not contain duplicates.";
+  const allowlist = files;
   const unsafeAllowlistIndex = allowlist.findIndex((entry) => !safeAllowlistEntry(entry));
   if (unsafeAllowlistIndex !== -1) {
     return `package.json.files contains an unsafe path entry: ${allowlist[unsafeAllowlistIndex]}.`;

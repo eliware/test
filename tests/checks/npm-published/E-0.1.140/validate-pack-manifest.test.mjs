@@ -47,13 +47,22 @@ test("rejects invalid, incomplete, and unallowlisted packed paths", () => {
   expect(validatePackManifest(manifest(basePaths), ["src/", "docs/", "examples/"])).toContain(
     "do not match",
   );
-  expect(validatePackManifest(manifest(basePaths), undefined)).toContain("outside");
+  expect(validatePackManifest(manifest(basePaths), undefined)).toContain("must be an array");
 });
 
 test("rejects wildcard, traversal, absolute, and empty allowlist paths", () => {
   for (const unsafePath of ["src/**", "../secret", "./", "/etc", "C:/private", ""]) {
     expect(validatePackManifest(manifest(basePaths), [unsafePath])).toContain("unsafe path entry");
   }
+});
+
+test("rejects duplicate and non-string package allowlist entries", () => {
+  expect(validatePackManifest(manifest(basePaths), [...baseAllowlist, "src/"])).toContain(
+    "must not contain duplicates",
+  );
+  expect(validatePackManifest(manifest(basePaths), [...baseAllowlist, null])).toContain(
+    "unsafe path entry",
+  );
 });
 
 test("rejects packed paths that escape the package root", () => {

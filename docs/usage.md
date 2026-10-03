@@ -8,6 +8,9 @@ dependency with `npm install --save-dev @eliware/test`. Configure the consumer
 repository to select its applicable profiles and expose the shared validation
 commands through `package.json`:
 
+A successful aggregate run reports `Aggregate validation passed`; individual
+tool modes report their own result.
+
 GitHub validation and npm publication workflows provision npm 12 after
 `actions/setup-node@v7`, verify that the active npm version is 12 or later, and
 then install dependencies with `npm ci`. Validation runs `npm test` immediately
@@ -15,6 +18,10 @@ after `npm ci`; the separate publisher relies on the successful validation job
 and does not rerun `npm test`. Knit deployment commands retain their existing
 `git pull`, `npm ci`, `npm test` prefix because the development host already has
 npm 12.
+
+Before `npm ci`, workflow checks permit the required npm setup, approved setup
+actions, and literal `echo` or `printf` status messages. Reporting commands
+cannot contain shell expansions, backslashes, or line breaks.
 
 ```json
 {
@@ -47,8 +54,8 @@ the `src/` entry covers library runtime code and declarations.
 
 Run a focused `.test.*` or `.spec.*` suite with
 `eliware-test tests/example.test.mjs`; put the test path before an optional `--`
-separator. Arguments after `--` are forwarded to Jest and do not select focused
-validation. It runs that test with focused coverage,
+separator. Only supported non-path Jest options may follow `--`; test paths
+after the separator are rejected. It runs that test with focused coverage,
 formatting, lint, source-mirroring, and selected safe convention checks. Focused
 coverage maps `.mts` and `.cts` invocations to `.mjs` source files and maps other
 supported extensions to the same source extension. This focused-invocation mapping
@@ -225,6 +232,14 @@ parent modules retain the validation-plan, smoke-run, and whole-job workflows.
 Other reviewed modules such as the repository-inventory view and source/test
 mirroring runner remain coordinators for one named validation contract and
 delegate their individual operations to focused helpers.
+
+Repository-input caches retain the last successful file contents when a refresh
+fails, keeping the cached-byte budget consistent with retained entries. A caller
+may receive the AST parsed from its own source snapshot, but a late older read
+does not replace a parse cached for a newer request. Regression tests cover
+failed refreshes during eviction, forced directory refresh recovery, rejected
+inventory view retries, and out-of-order reads. Line counting uses the shared
+repository inventory reader so it reuses cached source contents.
 
 ## Compatibility boundaries
 

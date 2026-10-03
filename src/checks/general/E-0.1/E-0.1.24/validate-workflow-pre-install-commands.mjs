@@ -26,7 +26,7 @@ export function validateWorkflowPreInstallCommands(name, commands, installIndex,
   const invalidSetup = commands.some(({ command, index }, position) => {
     if ((index ?? position) >= installIndex) return false;
     if (command === npm12InstallCommand || command === npm12VersionCheckCommand) return false;
-    return /[\\<>\r\n]/u.test(command) || !safePreInstallReportingCommand.test(command.trim());
+    return /[\\<>\r\n$`]/u.test(command) || !safePreInstallReportingCommand.test(command.trim());
   });
   const versionSetupError = validateNpm12WorkflowSetup(name, commands, installIndex, steps ?? []);
   return invalidSetup || invalidAction || invalidStepShape || versionSetupError

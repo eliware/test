@@ -44,6 +44,14 @@ test("rejects invalid tags and step identities", () => {
   });
 });
 
+test("uses only expression-safe GitHub step identifiers for digest references", () => {
+  expect(imageDetails({ id: "_publish-1", with: { tags: "ghcr.io/x/y:v1.0.0" } })).toMatchObject({
+    digestReference: "${{ steps._publish-1.outputs.digest }}",
+  });
+  for (const id of ["1publish", "publish.step", "publish/step", "publish step"])
+    expect(imageDetails({ id, with: { tags: "ghcr.io/x/y:v1.0.0" } }).digestReference).toBeNull();
+});
+
 test("recognizes version identity when a documented latest alias shares the tag list", () => {
   const push = {
     id: "push",

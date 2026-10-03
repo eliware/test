@@ -116,6 +116,12 @@ test("handles imports, all binding pattern forms, and a nested var declaration",
   expect(collectRequireBindingScopes(nestedVar).has(nestedVar.program.body[0])).toBe(true);
 });
 
+test("does not recurse indefinitely through cyclic AST-like objects", () => {
+  const ast = { type: "Program", body: [] };
+  ast.self = ast;
+  expect(collectRequireBindingScopes(ast).has(ast)).toBe(false);
+});
+
 test("tracks lexical require bindings declared in for-loop headers", () => {
   for (const source of [
     'for (const require = local; ready; next()) require("ignored");',

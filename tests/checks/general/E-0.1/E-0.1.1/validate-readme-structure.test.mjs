@@ -86,6 +86,13 @@ test("rejects missing, additional, or reordered sections", () => {
   ).toContain("exactly match");
 });
 
+test("does not let a duplicate required heading replace a missing section", () => {
+  const readme = fixture()
+    .replace("## Features\ncontent", "")
+    .replace("## Requirements\ncontent", "## Requirements\ncontent\n## Requirements\nextra");
+  expect(validateReadmeStructure(readme)).toContain("Features section");
+});
+
 test("requires each table-of-contents link exactly once in document order", () => {
   const readme = fixture();
   expect(validateReadmeStructure(readme.replace("[Testing](#testing)", ""))).toContain(

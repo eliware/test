@@ -15,9 +15,8 @@ function findCommandLists(value, lists = []) {
     for (const item of value) findCommandLists(item, lists);
   } else if (value && typeof value === "object") {
     for (const [key, item] of Object.entries(value)) {
-      // codescope ignore: malformed commands values are collected and rejected as non-arrays by validateCommandList; valid nested deployment lists are discovered from parent objects
       if (key === "commands") lists.push(item);
-      else findCommandLists(item, lists);
+      findCommandLists(item, lists);
     }
   }
   return lists;

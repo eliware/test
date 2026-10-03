@@ -33,6 +33,42 @@
   per-image GHCR evidence ordering into focused modules with mirrored tests.
 - Clarify focused coordinator boundaries and place helper behavior assertions at
   their lowest applicable test level.
+- Preserve file-cache byte accounting after failed refreshes and cover the
+  resulting eviction behavior. Clarify that out-of-order AST reads return each
+  caller's snapshot without replacing a newer cached parse.
+- Cover aliased computed environment references, reject shell expansion and
+  multiline continuations in pre-install reporting, and document the `--pack` CLI mode.
+- Clarify that the opt-in tarball smoke command accepts an explicitly selected
+  external consumer copy and restores only its documented package state.
+- Validate npm audit executable resolver tuples before process execution and
+  expand regression coverage for scoped binaries, child timeout errors, and
+  Windows npm paths using forward slashes.
+- Validate nested Knit command lists and retry inventory views after a
+  transient discovery failure.
+- Preserve successful directory listings when forced refreshes fail and keep
+  pending file-cache replacements protected from eviction.
+- Emit the canonical `Aggregate validation passed` summary on successful aggregate runs.
+- Bound redacted child-process output without splitting Unicode surrogate pairs, and retain a clear backup path if smoke-state cleanup fails.
+- Reject smoke targets resolved inside the source checkout, validate application start commands against complete entrypoint tokens, and reuse Markdown link-target inspection within each validation.
+- Validate package versions as canonical SemVer, normalize Windows device-namespace paths, and traverse deep line-limit directories iteratively.
+- Cover fallback secret matches that cross the candidate output boundary so no matched secret suffix is emitted.
+- Reject npm setup steps that tolerate errors, redact encrypted PEM keys, and fail Jest validation when its console report is missing or malformed.
+- Bound redacted child output by UTF-8 bytes and preserve Unicode boundaries in
+  captured Jest output; report retained snapshot paths when cleanup fails.
+- Reject smoke targets inside the source checkout, validate app start targets as
+  complete tokens, and cache repeated Markdown links within a validation pass.
+- Validate package versions with SemVer, normalize mixed Windows device paths,
+  and make line-limit discovery iterative for deep trees.
+- Bound redacted child-process output by UTF-8 bytes and validate application bin
+  command names before accepting their entrypoint mappings.
+- Reject smoke targets inside the source checkout and clarify cleanup boundaries;
+  handle malformed directive arrays, deep file trees, and quoted Windows npm paths.
+- Pin the canonical consumer smoke target to its inspected directory identity
+  and refuse reads, installs, or restoration if that directory is replaced,
+  disappears, or is no longer a directory during validation.
+- Recognize Windows UNC and device-namespace roots in repository inventory,
+  and explicitly document and test the iterative fallback used for deep
+  line-limit directory trees.
 - Advance the package version to 11.0.0 and all maintained specification
   documents to version 11.0.
 - Add the repository E-0 identifier to package metadata.

@@ -3,11 +3,13 @@ import { isFunctionNode } from "./is-function-node.mjs";
 
 export function collectRequireBindingScopes(root) {
   const scopes = new WeakSet();
+  const visited = new WeakSet();
   visit(root, null);
   return scopes;
 
   function visit(node, parentVariableScope) {
-    if (!node || typeof node !== "object") return;
+    if (!node || typeof node !== "object" || visited.has(node)) return;
+    visited.add(node);
     const ownsVariables = node.type === "Program" || isFunctionNode(node);
     const variableScope = ownsVariables ? { node, hasRequire: false } : parentVariableScope;
     const isBodyScope = node.type === "Program" || node.type === "BlockStatement";

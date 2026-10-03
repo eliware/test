@@ -65,6 +65,7 @@ eliware-test --lint
 eliware-test --format
 eliware-test --format-check
 eliware-test --audit
+eliware-test --pack
 eliware-test tests/example.test.mjs
 ```
 
@@ -78,7 +79,7 @@ npm run format
 npm run format:check
 npm run audit
 npm run pack
-npm run smoke -- --target C:\path\to\consumer
+npm run smoke -- --target ../consumer-copy
 node bin/eliware-test.mjs --pack
 ```
 
@@ -88,16 +89,19 @@ repository selects the `npm-published` profile.
 `npm run pack` is the lightweight package-content check included in aggregate
 validation. The opt-in `npm run smoke -- --target <path>` command builds and
 installs a tarball from this checkout in one existing consumer repository and
-runs that repository's `npm test`. It temporarily points the target manifest
-to the candidate tarball and regenerates the lockfile, then restores the prior
-manifest, lockfiles, `@eliware/test` installation, and local executable shims.
-The smoke command records recovery data before changing the target and retains
-that data if restoration fails. The outdated check omits only the exact
-unpublished candidate during this smoke run; all other dependencies still use
-the normal registry check. Prepare the target and install its dependencies
-first; the command does not clone repositories or create worktrees. It does
-not touch system-wide symlinks or junctions. Use a disposable target because
-consumer tests may create their own output files.
+runs that repository's `npm test`. It installs the candidate into the target's
+local `node_modules` with `--no-save --package-lock=false`; it does not add a
+dependency declaration or regenerate lockfiles. Cleanup restores only the
+manifest, lockfiles, installed package, and local executable shims; other files
+created by the consumer's tests remain in the target, so use a disposable
+consumer copy or worktree. The smoke command accepts an explicitly selected
+consumer outside this checkout but rejects targets that resolve inside it,
+including source-checkout symlinks and junctions. It retains recovery data if
+restoration fails and reports the retained backup path for manual recovery. The
+outdated check omits only the exact unpublished candidate during this smoke run;
+all other dependencies still use the normal registry check. Prepare the target
+and install its dependencies first; the command does not clone repositories or
+create worktrees. It does not touch system-wide symlinks or junctions.
 
 For npm-published repositories, the npm-published profile defines the exact
 package-content allowlist. The general profile does not add files to that
@@ -131,21 +135,8 @@ behind, confirm no validation run is active, then remove the stale
 `--format-check` only validate formatting. `--pack` validates the package
 contents without publishing it.
 
-Each of `--lint`, `--format`, `--format-check`, `--audit`, and `--pack` uses a
-mode-specific argument policy. Audit accepts only `--no-fund` and
-`--no-progress`; lint accepts only `--threads=<positive-count>`; pack has its
-own allowlist. For `--format` and `--format-check`, only non-path Prettier
-options are accepted; positional file paths are rejected. Formatting scope comes
-from the wrapper's maintained-file set, not positional path arguments. The wrapper rejects options that replace its
-selected write/check mode, canonical configuration, or required file coverage.
-Non-path Prettier options are forwarded unless they conflict with wrapper-owned
-mode, configuration, or required coverage settings. Prettier handles the
-individual option semantics and reports unsupported options itself.
-Arguments after `--` are treated as tool arguments and must still pass the
-selected mode's argument policy; the separator does not bypass its allowlist.
-Accepted arguments are forwarded after wrapper-owned arguments. Prettier
-arguments that override the selected mode, canonical formatting configuration,
-or required file coverage are rejected.
+See [Commands](#commands) for the canonical focused-path, separator, and
+mode-argument rules.
 
 The five public tool modes are `--lint`, `--format`, `--format-check`,
 `--audit`, and `--pack`. Invoke package-level scripts with `npm run <script>`;
@@ -220,6 +211,9 @@ specifications.
 ## Security
 
 Never commit secrets, credentials, private runtime state, or generated output.
+Child-process diagnostics redact configured credentials and recognized patterns
+on a best-effort basis; this does not guarantee removal of arbitrary secrets.
+Do not emit secrets in child-process output.
 
 ## Configuration
 
@@ -256,9 +250,13 @@ mode or the `--` separator; arguments before a mode are rejected. Arguments
 after `--` remain subject to that mode's allowlist and do not bypass wrapper
 validation.
 
+For example, `eliware-test --audit --no-fund` forwards the allowed flag to npm.
+
 To run one focused test, pass one existing repository-relative `.test.*` or `.spec.*` file under `tests/`;
-the path must appear before an optional `--` separator. Arguments after `--` are
-forwarded to Jest and do not select focused validation; in aggregate mode, forwarded Jest arguments can change which tests Jest runs.
+the path must appear before an optional `--` separator. Only supported
+non-path Jest options may follow `--`; test paths after the separator are
+rejected. In aggregate mode, forwarded Jest arguments can change which tests
+Jest runs.
 test filenames support `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`,
 `.cjs`, `.mts`, and `.cts` extensions:
 
@@ -285,8 +283,7 @@ forwarded tool arguments return exit code `18`.
 Every failed convention check includes the check ID, the observed failure, and
 the complete matching directive, including all `dos`, `donts`, and examples
 when present. The canonical profile specifications live in `specs/conventions/`
-and are read directly by the harness. Output also redacts recognized secret
-patterns. The CLI performs no deploy, publish, release, or destructive
+and are read directly by the harness. The CLI performs no deploy, publish, release, or destructive
 repository operation.
 
 ## Support

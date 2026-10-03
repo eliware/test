@@ -1,14 +1,12 @@
 import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
 import { execute } from "../../src/checks/execute-child-process.mjs";
-
 function childProcess() {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
   child.stderr = new EventEmitter();
   return child;
 }
-
 test("spawns without shell interpretation and returns captured process results", async () => {
   const child = childProcess();
   const promise = execute(
@@ -28,15 +26,20 @@ test("spawns without shell interpretation and returns captured process results",
   );
   child.stdout.emit("data", "standard output");
   child.stderr.emit("data", "diagnostic output");
-  child.emit("close", 3, "SIGTERM");
+  child.emit("close", 3, null);
   await expect(promise).resolves.toEqual({
     code: 3,
-    signal: "SIGTERM",
+    signal: null,
     stdout: "standard output",
     stderr: "diagnostic output",
   });
 });
-
+test("rejects a close event with a signal even if its adapter reports code zero", async () => {
+  const child = childProcess();
+  const promise = execute("tool", [], {}, () => child);
+  child.emit("close", 0, "SIGTERM");
+  await expect(promise).rejects.toThrow("Child process terminated by signal SIGTERM.");
+});
 test("redacts asynchronous child errors and captured output", async () => {
   const child = childProcess();
   const promise = execute("node", [], { env: { SERVICE_TOKEN: "spawn-secret" } }, () => child);
@@ -56,7 +59,6 @@ test("redacts asynchronous child errors and captured output", async () => {
   expect(safeError.stdout).toBe("failure detail: [REDACTED]");
   expect(safeError.stderr).toBe("stderr detail");
 });
-
 test("keeps child error diagnostics visible after captured output reaches its byte limit", async () => {
   const child = childProcess();
   const promise = execute("node", [], { env: {} }, () => child);
@@ -67,7 +69,6 @@ test("keeps child error diagnostics visible after captured output reaches its by
     stdout: "x".repeat(100_000),
   });
 });
-
 test("settles only once after asynchronous child errors", async () => {
   const child = childProcess();
   const promise = execute("node", [], {}, () => child);
@@ -76,7 +77,6 @@ test("settles only once after asynchronous child errors", async () => {
   child.emit("close", 1, null);
   await expect(promise).rejects.toThrow("spawn failed");
 });
-
 test("handles captured stream errors as controlled child failures", async () => {
   const child = childProcess();
   child.kill = jest.fn();
@@ -86,17 +86,14 @@ test("handles captured stream errors as controlled child failures", async () => 
   expect(child.kill).toHaveBeenCalledTimes(1);
   child.stderr.emit("error", new Error("late stderr failure"));
 });
-
 test("terminates a child after an asynchronous error even when it never closes", async () => {
   const child = childProcess();
   child.kill = jest.fn();
   const promise = execute("node", [], {}, () => child);
   child.emit("error", new Error("spawn failed"));
-
   await expect(promise).rejects.toThrow("spawn failed");
   expect(child.kill).toHaveBeenCalledTimes(1);
 });
-
 test("redacts output using configured secrets before returning it", async () => {
   const child = childProcess();
   const promise = execute(
@@ -115,14 +112,12 @@ test("redacts output using configured secrets before returning it", async () => 
   child.emit("close", 0, null);
   await expect(promise).resolves.toMatchObject({ stdout: "output [REDACTED]" });
 });
-
 test("handles synchronous spawn failures and children without output streams", async () => {
   await expect(
     execute("tool", [], null, () => {
       throw new Error("adapter failed");
     }),
   ).rejects.toThrow("adapter failed");
-
   const child = new EventEmitter();
   const result = execute("tool", [], {}, () => child);
   child.emit("close", 0, null);
@@ -133,21 +128,17 @@ test("handles synchronous spawn failures and children without output streams", a
     stderr: "",
   });
 });
-
 test("rejects a close event without an exit code or terminating signal", async () => {
   const child = childProcess();
   const result = execute("tool", [], {}, () => child);
   child.emit("close", null, null);
-
   await expect(result).rejects.toThrow("Child process exited without an exit code.");
 });
-
 test("normalizes malformed child adapters and stream-wiring failures", async () => {
   await expect(execute("tool", [], {}, () => ({}))).rejects.toMatchObject({
     name: "TypeError",
     message: "Child process adapter returned an invalid child process.",
   });
-
   const child = new EventEmitter();
   let killed = false;
   child.kill = () => {
@@ -164,14 +155,12 @@ test("normalizes malformed child adapters and stream-wiring failures", async () 
     message: "stream setup failed with [REDACTED]",
   });
   expect(killed).toBe(true);
-
   const invalidStreamChild = new EventEmitter();
   invalidStreamChild.stdout = {};
   await expect(execute("tool", [], {}, () => invalidStreamChild)).rejects.toMatchObject({
     message: "Child process adapter returned an invalid stdout stream.",
   });
 });
-
 test("uses default execution options and preserves diagnostics without redaction secrets", async () => {
   await expect(execute(process.execPath, ["-e", ""])).resolves.toMatchObject({ code: 0 });
   const child = childProcess();
@@ -179,7 +168,6 @@ test("uses default execution options and preserves diagnostics without redaction
   child.emit("error", "adapter failure");
   await expect(promise).rejects.toMatchObject({ name: "Error", message: "adapter failure" });
 });
-
 test("passes a defensive copy of the invoking environment to child processes", async () => {
   const key = "ELIWARE_TEST_CHILD_ENV_COPY";
   const previous = process.env[key];
