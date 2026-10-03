@@ -9,6 +9,7 @@ function createKiller(execute, state = { running: true }) {
     execute,
     () => state.running,
     () => !state.running,
+    () => "C:/Program Files/PowerShell/7/pwsh.exe",
   );
 }
 

@@ -1,5 +1,5 @@
 import { readFile, readdir, stat as statPath } from "node:fs/promises";
-import { isAbsolute, resolve } from "node:path";
+import { posix, win32 } from "node:path";
 import { findRepositoryEntries } from "./general/E-0.1/find-repository-files.mjs";
 import { createRepositoryDiscovery } from "./create-repository-inventory-discovery.mjs";
 import { createRepositoryFileViews } from "./create-repository-inventory-views.mjs";
@@ -14,7 +14,8 @@ export function createRepositoryInventory(root, options = {}, currentPlatform = 
   const windowsRoot = /^(?:[A-Za-z]:[\\/]|\\\\)/u.test(root);
   if (windowsRoot && currentPlatform !== "win32")
     throw new Error("Windows repository inventory roots require a Windows host.");
-  if (!isAbsolute(root)) root = resolve(root);
+  const paths = currentPlatform === "win32" ? win32 : posix;
+  if (!paths.isAbsolute(root)) root = paths.resolve(root);
   const {
     focusedScope = null,
     findEntries = findRepositoryEntries,

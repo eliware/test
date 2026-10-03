@@ -1,6 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
 import { platform } from "node:os";
-import { resolve } from "node:path";
+import { posix, resolve } from "node:path";
 import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
 
 test("composes a frozen inventory facade over shared repository discovery", async () => {
@@ -36,6 +36,12 @@ test("provides the default discovery configuration when options are omitted", ()
 test("normalizes a relative repository root", () => {
   expect(createRepositoryInventory("relative-repository").root).toBe(
     resolve("relative-repository"),
+  );
+});
+
+test("uses POSIX path rules for a simulated non-Windows host", () => {
+  expect(createRepositoryInventory("relative-repository", {}, "linux").root).toBe(
+    posix.resolve("relative-repository"),
   );
 });
 

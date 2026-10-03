@@ -55,10 +55,11 @@
   entrypoint tokens, npm audit executable resolution, and malformed directive
   records.
 - Improve cross-platform path handling for drive, UNC, and Windows device
-  namespace roots; use iterative traversal for deep line-limit directories and
-  disable directory-list caching on Windows. Preserve cached listings and
-  accounting after failed refreshes, prevent pending cache entries from eviction,
-  and keep newer AST parses from being replaced by out-of-order completions.
+  namespace roots using the selected platform's path rules; use iterative
+  traversal for deep line-limit directories and disable directory-list caching
+  on Windows. Preserve cached listings and accounting after failed refreshes,
+  prevent pending cache entries from eviction, and keep newer AST parses from
+  being replaced by out-of-order completions.
 - Bound and redact captured child-process output by UTF-8 bytes without splitting
   Unicode characters or partial secret matches. Redact encrypted PEM keys,
   reject malformed Jest console reports, and preserve actionable diagnostics

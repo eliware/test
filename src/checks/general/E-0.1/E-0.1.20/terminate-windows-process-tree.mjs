@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { isProcessRunning } from "./is-process-running.mjs";
 import { waitForProcessExit } from "./wait-for-process-exit.mjs";
 import { resolveWindowsSystemExecutable } from "./resolve-windows-system-executable.mjs";
+import { resolveWindowsPowerShellCoreExecutable } from "./resolve-windows-powershell-core-executable.mjs";
 import { runWindowsProcessTreeFallback } from "./run-windows-process-tree-fallback.mjs";
 
 export function resolveTaskkillExecutable(env = process.env) {
@@ -12,6 +13,7 @@ export function createWindowsProcessTreeKiller(
   executeProcess = execFileSync,
   processIsRunning = isProcessRunning,
   waitForExit = (pid) => waitForProcessExit(pid, processIsRunning),
+  resolvePowerShellCore = resolveWindowsPowerShellCoreExecutable,
 ) {
   return function killWindowsProcessTree(pid, env = process.env, execute = executeProcess) {
     if (!processIsRunning(pid)) return;
@@ -25,7 +27,7 @@ export function createWindowsProcessTreeKiller(
     if (waitForExit(pid)) return;
     let powershellError;
     try {
-      runWindowsProcessTreeFallback(pid, env, execute, options);
+      runWindowsProcessTreeFallback(pid, env, execute, options, resolvePowerShellCore);
     } catch (error) {
       powershellError = error;
     }
