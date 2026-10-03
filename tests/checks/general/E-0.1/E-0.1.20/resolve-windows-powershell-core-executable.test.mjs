@@ -13,6 +13,16 @@ test("resolves PowerShell Core from PATH before its standard installation direct
   ).toBe("C:\\Tools\\pwsh.exe");
 });
 
+test("overrides the existing PATH key without changing its casing", () => {
+  const pathKey = Object.keys(process.env).find((key) => key.toLowerCase() === "path") ?? "PATH";
+  expect(
+    resolveWindowsPowerShellCoreExecutable(
+      { [pathKey]: "C:\\Tools" },
+      (candidate) => candidate === "C:\\Tools\\pwsh.exe",
+    ),
+  ).toBe("C:\\Tools\\pwsh.exe");
+});
+
 test("resolves PowerShell Core from Program Files when it is absent from PATH", () => {
   expect(
     resolveWindowsPowerShellCoreExecutable(
