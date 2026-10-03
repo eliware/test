@@ -105,6 +105,11 @@ package-content allowlist. The general profile does not add files to that
 allowlist; `specs/` is included only when required by the package runtime, as
 with `@eliware/test`.
 
+The application profile places runtime launchers in `bin/` and implementation
+modules in `src/`; npm-published applications include `bin/` in their exact
+allowlist. Libraries place public runtime entrypoints and any TypeScript
+declarations under `src/`.
+
 `package.json` is the source of truth for the version in this checkout. The npm
 badge reports the latest version published in the public registry; it does not
 identify or verify the version in this checkout.

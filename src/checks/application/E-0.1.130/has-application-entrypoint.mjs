@@ -1,5 +1,5 @@
 import { statSync } from "node:fs";
-import { isAbsolute, relative, resolve, sep } from "node:path";
+import { resolve } from "node:path";
 
 function isFile(path) {
   try {
@@ -14,19 +14,41 @@ export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile
   const bin = packageJson?.bin;
   const hasMain = Object.hasOwn(packageJson ?? {}, "main");
   const hasBin = Object.hasOwn(packageJson ?? {}, "bin");
+  const hasStart = Object.hasOwn(packageJson?.scripts ?? {}, "start");
+  if (
+    hasStart &&
+    (typeof packageJson.scripts.start !== "string" || !packageJson.scripts.start.trim())
+  )
+    return false;
   const binTargets =
     typeof bin === "string"
       ? [bin]
       : bin && typeof bin === "object" && !Array.isArray(bin)
         ? Object.values(bin)
         : [];
+  if (hasMain && !isBinEntrypoint(packageJson.main)) return false;
   if (hasMain && !existingRepositoryFile(packageJson.main)) return false;
-  if (hasBin && (binTargets.length === 0 || !binTargets.every(existingRepositoryFile)))
+  if (
+    hasBin &&
+    (binTargets.length === 0 ||
+      !binTargets.every(isBinEntrypoint) ||
+      !binTargets.every(existingRepositoryFile))
+  )
     return false;
-  if (hasMain || hasBin) return true;
-  return (
-    typeof packageJson?.scripts?.start === "string" && Boolean(packageJson.scripts.start.trim())
-  );
+  if (hasMain || hasBin) return startReferencesEntrypoint();
+  return false;
+
+  function isBinEntrypoint(target) {
+    return typeof target === "string" && /^(?:\.\/)?bin\//u.test(target);
+  }
+
+  function startReferencesEntrypoint() {
+    if (!hasStart) return true;
+    const targets = [...(hasMain ? [packageJson.main] : []), ...binTargets];
+    return targets.some((target) =>
+      packageJson.scripts.start.includes(target.replace(/^\.\//u, "")),
+    );
+  }
 
   function existingRepositoryFile(target) {
     if (
@@ -38,10 +60,6 @@ export function hasApplicationEntrypoint(packageJson, root, inspectFile = isFile
       target.split("/").includes("..")
     )
       return false;
-    const entrypoint = resolve(repositoryRoot, target);
-    const pathFromRoot = relative(repositoryRoot, entrypoint);
-    const outsideRepository =
-      pathFromRoot === ".." || pathFromRoot.startsWith(`..${sep}`) || isAbsolute(pathFromRoot);
-    return !outsideRepository && inspectFile(entrypoint);
+    return inspectFile(resolve(repositoryRoot, target));
   }
 }

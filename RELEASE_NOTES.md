@@ -52,6 +52,12 @@
   validate actual packed files and public entrypoints.
 - Keep the general profile from imposing `specs/` on npm package allowlists;
   the npm-published profile alone defines published package contents.
+- Put application entrypoints in `bin/` for all application profiles and include
+  `bin/` in npm allowlists for applications. Keep library runtime entrypoints and
+  optional TypeScript declarations under the existing `src/` allowlist.
+- Reject root-level application and library entrypoints through package checks;
+  require library `main`, `exports`, and type declaration metadata to target
+  files under `src/`.
 - Keep package validation lightweight in `npm test` and add an opt-in targeted
   tarball smoke command that installs the candidate in an existing consumer,
   runs its `npm test`, then restores the prior local package, manifest, lockfile,

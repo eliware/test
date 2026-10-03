@@ -8,7 +8,7 @@ export function run({ packageJson, root = process.cwd() }) {
   if (!hasApplicationEntrypoint(packageJson, root))
     return fail(
       ruleId,
-      "Application package.json must declare an existing runtime file entrypoint or a nonempty start command.",
+      "Application package.json must declare an existing runtime file entrypoint under bin/.",
     );
   if (typeof packageJson?.private !== "boolean")
     return fail(

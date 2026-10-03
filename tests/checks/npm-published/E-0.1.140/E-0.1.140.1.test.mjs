@@ -7,7 +7,7 @@ import { run } from "../../../../src/checks/npm-published/E-0.1.140/E-0.1.140.1.
 const validPackage = {
   engines: { node: ">=26 <27" },
   publishConfig: { provenance: true },
-  files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md"],
+  files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "bin/"],
   scripts: { pack: "eliware-test --pack" },
   eliware: { apply: ["application", "npm-published"] },
 };
@@ -40,6 +40,7 @@ test("delegates selected pack validation and returns its result", async () => {
         "LICENSE",
         "RELEASE_NOTES.md",
         "src/index.mjs",
+        "bin/application.mjs",
         "docs/README.md",
       ].map((path) => ({ path })),
     },
@@ -71,8 +72,8 @@ test("allows the self-hosted package pack command", async () => {
   const packageJson = {
     ...validPackage,
     name: "@eliware/test",
-    files: [...validPackage.files, "bin/", "specs/"],
-    eliware: { apply: ["cli", "npm-published"] },
+    files: [...validPackage.files, "specs/"],
+    eliware: { apply: ["application", "cli", "npm-published"] },
     bin: "./bin/eliware-test.mjs",
     scripts: { pack: "node bin/eliware-test.mjs --pack" },
   };

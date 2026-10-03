@@ -4,22 +4,28 @@ import { validatePublicationMetadata } from "../../../../src/checks/npm-publishe
 const validPackage = {
   engines: { node: ">=26 <27" },
   publishConfig: { provenance: true },
-  files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md"],
+  files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "bin/"],
   scripts: { pack: "eliware-test --pack" },
   eliware: { apply: ["application", "npm-published"] },
 };
 
 test("accepts the public package publication contract", () => {
   expect(validatePublicationMetadata(validPackage)).toBeNull();
-  expect(validatePublicationMetadata({ ...validPackage, eliware: undefined })).toBeNull();
+  expect(
+    validatePublicationMetadata({
+      ...validPackage,
+      files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md"],
+      eliware: undefined,
+    }),
+  ).toBeNull();
 });
 
 test("allows the self-hosted pack script only when requested", () => {
   const selfHostedPackage = {
     ...validPackage,
     name: "@eliware/test",
-    files: [...validPackage.files, "bin/", "specs/"],
-    eliware: { apply: ["cli", "npm-published"] },
+    files: [...validPackage.files, "specs/"],
+    eliware: { apply: ["application", "cli", "npm-published"] },
     scripts: { pack: "node bin/eliware-test.mjs --pack" },
   };
   expect(validatePublicationMetadata(selfHostedPackage, { selfHosted: true })).toBeNull();
@@ -44,7 +50,6 @@ test.each([
 test("requires exact profile-derived allowlists", () => {
   const cliPackage = {
     ...validPackage,
-    files: [...validPackage.files, "bin/"],
     eliware: { apply: ["application", "cli", "npm-published"] },
   };
   expect(validatePublicationMetadata(cliPackage)).toBeNull();
@@ -62,7 +67,15 @@ test("limits environment examples to runtime environment profiles", () => {
   ).toBeNull();
   const packageWithEnvironmentTemplate = {
     ...validPackage,
-    files: [...validPackage.files, ".env.example"],
+    files: [
+      "src/",
+      "docs/",
+      "README.md",
+      "AGENTS.md",
+      "LICENSE",
+      "RELEASE_NOTES.md",
+      ".env.example",
+    ],
     eliware: { apply: ["general", "npm-published"] },
   };
   expect(validatePublicationMetadata(packageWithEnvironmentTemplate)).toContain(

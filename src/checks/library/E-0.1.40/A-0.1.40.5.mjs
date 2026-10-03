@@ -19,6 +19,10 @@ async function requireFiles(root, paths, label) {
   return failures.length ? failures.join("\n") : null;
 }
 
+function isSrcTarget(target) {
+  return typeof target === "string" && target.startsWith("./src/");
+}
+
 export async function run({ root, packageJson }) {
   if (!packageJson?.exports && !packageJson?.main) {
     return fail(ruleId, "Libraries must declare package exports or a public main entrypoint.");
@@ -26,19 +30,23 @@ export async function run({ root, packageJson }) {
   if (!Array.isArray(packageJson.files) || packageJson.files.length === 0) {
     return fail(ruleId, "Libraries must declare an intentional package file allowlist.");
   }
+  const entryTargets = packageJson.exports
+    ? collectLibraryExportTargets(packageJson.exports)
+    : [packageJson.main];
+  const declarationTargets = [packageJson.types, packageJson.typings].filter(Boolean);
+  if (packageJson.exports)
+    declarationTargets.push(...entryTargets.filter((target) => target.endsWith(".d.ts")));
+  const outsideSrc = [...entryTargets, ...declarationTargets].filter(
+    (target) => !isSrcTarget(target),
+  );
+  if (outsideSrc.length)
+    return fail(
+      ruleId,
+      `Library runtime entrypoints and declarations must target files under src/: ${outsideSrc.join(", ")}`,
+    );
   if (root) {
-    const entryTargets = packageJson.exports
-      ? collectLibraryExportTargets(packageJson.exports)
-      : [packageJson.main];
     const entryError = await requireFiles(root, entryTargets, "Library entrypoint");
     const failures = entryError ? [entryError] : [];
-    const declarationTargets = [packageJson.types, packageJson.typings].filter(Boolean);
-    if (packageJson.exports)
-      declarationTargets.push(
-        ...collectLibraryExportTargets(packageJson.exports).filter((target) =>
-          target.endsWith(".d.ts"),
-        ),
-      );
     const declarationError = await requireFiles(root, declarationTargets, "Library declaration");
     if (declarationError) failures.push(declarationError);
     if (failures.length) return fail(ruleId, failures.join("\n"));

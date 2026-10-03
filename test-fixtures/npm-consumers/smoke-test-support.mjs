@@ -19,7 +19,7 @@ export const packageJson = {
   ],
   bin: { "eliware-test": "bin/eliware-test.mjs" },
   scripts: { pack: "node bin/eliware-test.mjs --pack" },
-  eliware: { apply: ["cli"] },
+  eliware: { apply: ["application", "cli"] },
 };
 
 export const packedFiles = [

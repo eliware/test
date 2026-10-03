@@ -47,14 +47,14 @@ directives:
               - Do not duplicate canonical operational procedures or project requirements in end-user docs.
       - id: A-0.1.130.3
         dos:
-          - Application package.json must declare its runtime/start entrypoints and environment contract. npm publication intent is declared by the applied npm-published profile; package.json.private controls npm publishability, while repository hosting visibility is separate and governed by the private profile.
-          - A declared main or bin file entrypoint must be a nonempty repository-relative path to an existing file; a start script must be a nonempty command.
+          - Application package.json must declare its runtime entrypoint under bin/ and its environment contract. Every main and bin file target must be a nonempty repository-relative path to an existing file under bin/. A start script, when present, must be a nonempty command that invokes one of those declared bin/ entrypoints.
+          - npm publication intent is declared by the applied npm-published profile; package.json.private controls npm publishability, while repository hosting visibility is separate and governed by the private profile.
           - Application repositories are not required to contain examples/. When examples/ is present, examples/README.md must index runnable examples and each example must document prerequisites, commands, and expected results.
         donts:
-          - Do not leave application startup, runtime configuration, or distribution intent undefined in package metadata, or include undocumented examples.
+          - Do not place application entrypoints outside bin/, leave startup, runtime configuration, or distribution intent undefined in package metadata, or include undocumented examples.
       - id: E-0.1.130.4
         dos:
-          - Applications must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file, including source files excluded from coverage. Every test file under tests/ must correspond to a source file under src/; additional unmirrored integration, end-to-end, smoke, or cross-cutting test files are not allowed.
+          - Applications must keep executable implementation source under src/ and launchers/entrypoints under bin/. Keep launchers thin and mirror implementation structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file, including source files excluded from coverage. Every test file under tests/ must correspond to a source file under src/; additional unmirrored integration, end-to-end, smoke, or cross-cutting test files are not allowed.
           - Each mirrored test must parse as JavaScript, contain an executable Jest test or it declaration with a callback, and reference its exact matching source module. Static imports and re-exports, literal dynamic imports, require calls, and supported Jest mock calls count as source references; comments, strings, unrelated imports, describe-only declarations, skipped tests, and todo declarations do not satisfy this requirement.
           - Place checked-in fixtures, snapshots, generators, and shared test support with no source counterpart in the repository-root test-fixtures/ directory. Reserve artifacts/ for generated, untracked test output such as Puppeteer screenshots and traces; ignore that directory and do not store checked-in helpers or fixtures there.
         donts:

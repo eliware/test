@@ -29,6 +29,14 @@ selection is explicit and is not inferred. Installing the package does not add
 these scripts automatically. Use `eliware-test --help` for the supported CLI
 modes, including linting, formatting, timing diagnostics, and focused Jest
 execution.
+
+The application profile requires runtime launchers and package entrypoints
+under `bin/`, with application implementation under `src/`. CLI repositories
+inherit this layout through the application profile. Libraries keep public
+runtime entrypoints and optional TypeScript declaration files under `src/`.
+For npm-published applications, the exact package allowlist includes `bin/`;
+the `src/` entry covers library runtime code and declarations.
+
 Run a focused `.test.*` or `.spec.*` suite with
 `eliware-test tests/example.test.mjs`; put the test path before an optional `--`
 separator. Arguments after `--` are forwarded to Jest and do not select focused

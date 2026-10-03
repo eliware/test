@@ -2,23 +2,31 @@ import { expect, jest, test } from "@jest/globals";
 import { join, resolve } from "node:path";
 import { hasApplicationEntrypoint } from "../../../../src/checks/application/E-0.1.130/has-application-entrypoint.mjs";
 
-test("requires every declared main and bin target to exist", () => {
+test("requires every declared main and bin target to exist under bin/", () => {
   const root = resolve("repository-fixture");
   const inspectFile = jest.fn((path) => path === join(root, "bin", "app.mjs"));
   expect(
     hasApplicationEntrypoint(
-      { main: "missing.mjs", bin: { app: "bin/app.mjs" } },
+      { main: "bin/missing.mjs", bin: { app: "bin/app.mjs" } },
       root,
       inspectFile,
     ),
   ).toBe(false);
-  expect(inspectFile).toHaveBeenCalledWith(join(root, "missing.mjs"));
+  expect(inspectFile).toHaveBeenCalledWith(join(root, "bin", "missing.mjs"));
   expect(inspectFile).not.toHaveBeenCalledWith(join(root, "bin", "app.mjs"));
 });
 
 test("checks real files and handles missing entrypoint targets", () => {
   expect(hasApplicationEntrypoint({ main: "bin/eliware-test.mjs" }, process.cwd())).toBe(true);
+  expect(hasApplicationEntrypoint({ main: "./bin/eliware-test.mjs" }, process.cwd())).toBe(true);
+  expect(hasApplicationEntrypoint({ main: "bin/missing.mjs" }, process.cwd())).toBe(false);
   expect(hasApplicationEntrypoint({ main: "missing.mjs" }, process.cwd())).toBe(false);
+  expect(
+    hasApplicationEntrypoint(
+      { main: "src/checks/application/E-0.1.130/has-application-entrypoint.mjs" },
+      process.cwd(),
+    ),
+  ).toBe(false);
   expect(hasApplicationEntrypoint({ bin: "bin/eliware-test.mjs" }, process.cwd())).toBe(true);
 });
 
@@ -28,6 +36,15 @@ test("rejects empty, invalid, or nonexistent file targets", () => {
   expect(hasApplicationEntrypoint({ bin: { app: "" } }, "C:\\repo", inspectFile)).toBe(false);
   expect(hasApplicationEntrypoint({ bin: { app: 7 } }, "C:\\repo", inspectFile)).toBe(false);
   expect(hasApplicationEntrypoint({ main: "missing.mjs" }, "C:\\repo", inspectFile)).toBe(false);
+  expect(hasApplicationEntrypoint({ main: "application.mjs" }, "C:\\repo", inspectFile)).toBe(
+    false,
+  );
+  expect(hasApplicationEntrypoint({ bin: { app: "src/app.mjs" } }, "C:\\repo", inspectFile)).toBe(
+    false,
+  );
+  expect(hasApplicationEntrypoint({ main: "bin/../src/app.mjs" }, "C:\\repo", inspectFile)).toBe(
+    false,
+  );
   expect(hasApplicationEntrypoint({ main: "../outside.mjs" }, "C:\\repo", inspectFile)).toBe(false);
   expect(hasApplicationEntrypoint({ main: "/repo/app.mjs" }, "C:\\repo", inspectFile)).toBe(false);
   expect(hasApplicationEntrypoint({ main: "C:/repo/app.mjs" }, "C:\\repo", inspectFile)).toBe(
@@ -47,9 +64,11 @@ test("rejects a broken bin target even when another bin target exists", () => {
   ).toBe(false);
 });
 
-test("accepts a nonempty start command without a file target", () => {
+test("requires a declared bin entrypoint even when a start command exists", () => {
   expect(hasApplicationEntrypoint(undefined, "/repo")).toBe(false);
-  expect(hasApplicationEntrypoint({ scripts: { start: "node server.mjs" } }, "/repo")).toBe(true);
+  expect(hasApplicationEntrypoint({ scripts: { start: "node bin/server.mjs" } }, "/repo")).toBe(
+    false,
+  );
   expect(
     hasApplicationEntrypoint({ main: "", bin: {}, scripts: { start: "node server.mjs" } }, "/repo"),
   ).toBe(false);
@@ -62,6 +81,32 @@ test("accepts a nonempty start command without a file target", () => {
       { main: "missing.mjs", scripts: { start: "node server.mjs" } },
       "/repo",
       () => false,
+    ),
+  ).toBe(false);
+});
+
+test("requires a start script to invoke its declared bin entrypoint", () => {
+  const root = resolve("repository-fixture");
+  const inspectFile = (path) => path === join(root, "bin", "app.mjs");
+  expect(
+    hasApplicationEntrypoint(
+      { bin: { app: "bin/app.mjs" }, scripts: { start: "node bin/app.mjs" } },
+      root,
+      inspectFile,
+    ),
+  ).toBe(true);
+  expect(
+    hasApplicationEntrypoint(
+      { main: "./bin/app.mjs", scripts: { start: "node bin/app.mjs" } },
+      root,
+      inspectFile,
+    ),
+  ).toBe(true);
+  expect(
+    hasApplicationEntrypoint(
+      { bin: { app: "bin/app.mjs" }, scripts: { start: "node src/app.mjs" } },
+      root,
+      inspectFile,
     ),
   ).toBe(false);
 });

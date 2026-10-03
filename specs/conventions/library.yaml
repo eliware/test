@@ -42,10 +42,10 @@ directives:
           - Do not document private implementation details as public API, publish undocumented examples, or imply compatibility that the package does not test.
       - id: A-0.1.40.5
         dos:
-          - Library package.json must declare the public entrypoint or exports, typed declaration metadata when applicable, and an intentional package file allowlist.
+          - Library package.json must declare public runtime entrypoints under src/ (for example, ./src/index.mjs), type declaration targets under src/ when TypeScript declarations are provided (for example, ./src/index.d.ts), and an intentional package file allowlist. Point main, exports, types, and typings metadata at those paths; declarations are optional when the library does not support TypeScript.
           - A library is permitted to provide examples beyond its mandatory example contract.
         donts:
-          - Do not publish a library with undefined exports, declarations, or package contents.
+          - Do not put library runtime entrypoints or TypeScript declarations at the package root or outside src/, or publish a library with undefined exports or package contents.
       - id: E-0.1.40.2
         dos:
           - Published libraries must validate the package contents and allowlist before publication.

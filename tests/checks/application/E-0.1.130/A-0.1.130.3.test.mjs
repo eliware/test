@@ -17,17 +17,17 @@ test("maps application entrypoint validation and distribution status", () => {
   ).toMatchObject({ status: "fail", message: expect.stringContaining("distribution status") });
 });
 
-test("fails when no existing file entrypoint or start command is declared", () => {
+test("fails when no existing bin entrypoint is declared", () => {
   expect(run({ packageJson: { private: true } })).toEqual({
     ruleId: "A-0.1.130.3",
     status: "fail",
     message:
-      "Application package.json must declare an existing runtime file entrypoint or a nonempty start command.",
+      "Application package.json must declare an existing runtime file entrypoint under bin/.",
   });
 });
 
-test("accepts a nonempty start command when file entrypoints are absent", () => {
+test("does not accept a start command without a declared bin entrypoint", () => {
   expect(
     run({ packageJson: { private: true, scripts: { start: "node server.mjs" } } }),
-  ).toMatchObject({ status: "pass", message: "" });
+  ).toMatchObject({ status: "fail", message: expect.stringContaining("under bin/") });
 });

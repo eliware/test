@@ -5,8 +5,11 @@ const base = ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOT
 
 test("derives common package contents and profile additions", () => {
   expect(derivePackageFilesAllowlist()).toEqual(base);
-  expect(derivePackageFilesAllowlist({ eliware: { apply: ["application"] } })).toEqual(base);
-  expect(derivePackageFilesAllowlist({ eliware: { apply: ["cli"] } })).toEqual([...base, "bin/"]);
+  expect(derivePackageFilesAllowlist({ eliware: { apply: ["application"] } })).toEqual([
+    ...base,
+    "bin/",
+  ]);
+  expect(derivePackageFilesAllowlist({ eliware: { apply: ["cli"] } })).toEqual(base);
   expect(derivePackageFilesAllowlist({ eliware: { apply: ["library"] } })).toEqual([
     ...base,
     "examples/",
@@ -14,7 +17,7 @@ test("derives common package contents and profile additions", () => {
   expect(
     derivePackageFilesAllowlist({
       name: "@eliware/test",
-      eliware: { apply: ["cli"] },
+      eliware: { apply: ["application", "cli"] },
     }),
   ).toEqual([...base, "bin/", "specs/"]);
 });
@@ -23,7 +26,7 @@ test("retains the explicitly selected environment example as an optional entry",
   expect(
     derivePackageFilesAllowlist({
       eliware: { apply: ["application"] },
-      files: [...base, ".env.example"],
+      files: [...base, "bin/", ".env.example"],
     }),
-  ).toEqual([...base, ".env.example"]);
+  ).toEqual([...base, "bin/", ".env.example"]);
 });
