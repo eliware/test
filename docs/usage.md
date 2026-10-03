@@ -1,6 +1,9 @@
 # Usage
 
-Use Node.js 26 (`>=26 <27`). Install `@eliware/test` as a development
+Use Node.js 26 (`>=26 <27`) and npm 12 or later. The `eliware-test` CLI checks
+the active npm version before validation and stops with a diagnostic when it
+cannot determine the version or finds an older npm. `--help` and `--version`
+remain available independently. Install `@eliware/test` as a development
 dependency with `npm install --save-dev @eliware/test`. Configure the consumer
 repository to select its applicable profiles and expose the shared validation
 commands through `package.json`:

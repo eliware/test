@@ -22,7 +22,7 @@ Shared repository requirements are maintained in `specs/conventions/`, and opera
 
 ## Validation
 
-Use Node.js 26. Run `npm test` for aggregate validation; it includes Jest, lint, format-check, audit, and package checks. Use `npm run lint`, `npm run format`, `npm run format:check`, `npm run audit`, or `npm run pack` for targeted stages (`pack` is available in this npm-published repository). `npm run format` writes formatted files; use `npm run format:check` for read-only formatting validation. As optional supplemental whitespace hygiene, you may run `git diff --check`; it is not an eliware-test validation stage. The CLI entrypoint is `bin/eliware-test.mjs`; public commands include `--help`, `--version`, `--debug-timing`, `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`.
+Use Node.js 26 and npm 12 or later. `eliware-test` checks the active npm version before validation; `--help` and `--version` remain available independently. Run `npm test` for aggregate validation; it includes Jest, lint, format-check, audit, and package checks. Use `npm run lint`, `npm run format`, `npm run format:check`, `npm run audit`, or `npm run pack` for targeted stages (`pack` is available in this npm-published repository). `npm run format` writes formatted files; use `npm run format:check` for read-only formatting validation. As optional supplemental whitespace hygiene, you may run `git diff --check`; it is not an eliware-test validation stage. The CLI entrypoint is `bin/eliware-test.mjs`; public commands include `--help`, `--version`, `--debug-timing`, `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`.
 
 ## Security
 

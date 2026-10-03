@@ -4,6 +4,11 @@
 
 ### Changed
 
+- Require npm 12 or later before validation and stop early with a clear diagnostic
+  when the npm version is unsupported or cannot be determined. Keep `--help` and
+  `--version` available independently.
+- Disable directory-list caching on Windows, where deleting files may not update
+  parent-directory timestamps and cached repository discovery can become stale.
 - Advance the package version to 11.0.0 and all maintained specification
   documents to version 11.0.
 - Add the repository E-0 identifier to package metadata.

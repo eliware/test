@@ -2,20 +2,14 @@ import { expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 import { createRepositoryDirectoryReadCache } from "../../src/checks/create-repository-directory-read-cache.mjs";
 
-const metadata = (mtimeNs) => ({
-  dev: 1n,
-  ino: 2n,
-  size: 0n,
-  mtimeNs,
-  ctimeNs: mtimeNs,
-});
+const metadata = (mtimeNs) => ({ dev: 1n, ino: 2n, size: 0n, mtimeNs, ctimeNs: mtimeNs });
 
 test("deduplicates concurrent directory reads and reuses unchanged listings", async () => {
   const root = join(process.cwd(), "inventory-fixture");
   const stat = jest.fn(async () => metadata(1n));
   const entries = [];
   const readDirectory = jest.fn(async () => entries);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
 
   const first = read("src");
   const concurrent = read(join(root, "src"));
@@ -35,7 +29,7 @@ test("refreshes a directory listing when its on-disk version changes", async () 
     .mockResolvedValueOnce(metadata(2n))
     .mockResolvedValueOnce(metadata(2n));
   const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["new"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
 
   await expect(read("src")).resolves.toEqual(["old"]);
   expect(read.getRevision()).toBe(0);
@@ -50,7 +44,7 @@ test("uses one stat call to validate an unchanged cached listing", async () => {
   const root = join(process.cwd(), "inventory-fixture");
   const stat = jest.fn(async () => metadata(1n));
   const readDirectory = jest.fn().mockResolvedValue([]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
 
   await read("src");
   stat.mockClear();
@@ -83,7 +77,7 @@ test("forced refresh waits for a pending read and starts a fresh listing", async
         }),
     )
     .mockResolvedValueOnce(["fresh"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
 
   const initial = read("src");
   await readStarted;
@@ -115,7 +109,12 @@ test("forced refresh retries after the pending read fails", async () => {
         rejectStat();
       }),
   );
-  const retryingRead = createRepositoryDirectoryReadCache(root, readDirectory, delayedStat);
+  const retryingRead = createRepositoryDirectoryReadCache(
+    root,
+    readDirectory,
+    delayedStat,
+    "linux",
+  );
   const initial = retryingRead("src");
   await initialStatStarted;
   const refresh = retryingRead("src", true);
@@ -123,7 +122,7 @@ test("forced refresh retries after the pending read fails", async () => {
   await expect(refresh).resolves.toEqual(["retried"]);
 });
 
-test("does not reuse cached listings when only coarse millisecond timestamps are available", async () => {
+test("does not reuse listings with coarse timestamps or on Windows", async () => {
   const root = join(process.cwd(), "inventory-fixture");
   const metadataWithoutNanoseconds = (mtimeMs) => ({
     dev: 1n,
@@ -134,11 +133,20 @@ test("does not reuse cached listings when only coarse millisecond timestamps are
   });
   const stat = jest.fn().mockResolvedValue(metadataWithoutNanoseconds(1));
   const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["fresh"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
 
   await expect(read("src")).resolves.toEqual(["old"]);
   await expect(read("src")).resolves.toEqual(["fresh"]);
   expect(readDirectory).toHaveBeenCalledTimes(2);
+
+  const windowsReadDirectory = jest
+    .fn()
+    .mockResolvedValueOnce(["old"])
+    .mockResolvedValueOnce(["fresh"]);
+  const windowsRead = createRepositoryDirectoryReadCache(root, windowsReadDirectory, stat, "win32");
+  await expect(windowsRead("src")).resolves.toEqual(["old"]);
+  await expect(windowsRead("src")).resolves.toEqual(["fresh"]);
+  expect(windowsReadDirectory).toHaveBeenCalledTimes(2);
 });
 
 test("detects nanosecond changes within the same millisecond", async () => {
@@ -151,7 +159,7 @@ test("detects nanosecond changes within the same millisecond", async () => {
     .mockResolvedValueOnce(sameMillisecond(2n))
     .mockResolvedValueOnce(sameMillisecond(2n));
   const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["new"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
 
   await expect(read("src")).resolves.toEqual(["old"]);
   await expect(read("src")).resolves.toEqual(["new"]);

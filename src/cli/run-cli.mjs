@@ -10,6 +10,7 @@ import { formatExitCode } from "./format-exit-code.mjs";
 import { parseFocusedArguments } from "./parse-focused-arguments.mjs";
 import { acquireValidationLock } from "./acquire-validation-lock.mjs";
 import { completeCliValidation } from "./complete-cli-validation.mjs";
+import { runNpmPrerequisite } from "./run-npm-prerequisite.mjs";
 import { join } from "node:path";
 
 export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
@@ -17,6 +18,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
   try {
     const informationalResult = dispatchInformationalCommand(args, write);
     if (informationalResult !== null) return informationalResult;
+    if (!(await (options.runNpmPrerequisite ?? runNpmPrerequisite)(write))) return 18;
     const lockPath = join(root, "eliware-test.lock");
     releaseLock = await (options.acquireValidationLock ?? acquireValidationLock)(root);
     if (!releaseLock) {

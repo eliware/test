@@ -32,7 +32,9 @@ Eliware <eliware@eliware.org>. Repository: https://github.com/eliware/test. Lice
 
 ## Requirements
 
-Node.js 26 is required.
+Node.js 26 and npm 12 or later are required. Before validation, `eliware-test`
+checks the active npm version and stops if it is older than 12 or cannot be
+determined. `--help` and `--version` remain available without this check.
 
 ## Setup
 
@@ -42,7 +44,7 @@ For development in this repository, install the locked dependencies:
 npm ci
 ```
 
-In a consuming repository, use Node.js 26 (`>=26 <27`) and install the public
+In a consuming repository, use Node.js 26 (`>=26 <27`) and npm 12 or later, and install the public
 CLI as a development dependency:
 
 ```text

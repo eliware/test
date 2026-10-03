@@ -10,6 +10,7 @@ const writeValidationResults = jest.fn();
 const normalizeCliError = jest.fn();
 const formatExitCode = jest.fn();
 const acquireValidationLock = jest.fn();
+const runNpmPrerequisite = jest.fn(async () => true);
 
 jest.unstable_mockModule("../../src/cli/read-diagnostic-options.mjs", () => ({
   readDiagnosticOptions,
@@ -35,6 +36,7 @@ jest.unstable_mockModule("../../src/cli/format-exit-code.mjs", () => ({ formatEx
 jest.unstable_mockModule("../../src/cli/acquire-validation-lock.mjs", () => ({
   acquireValidationLock,
 }));
+jest.unstable_mockModule("../../src/cli/run-npm-prerequisite.mjs", () => ({ runNpmPrerequisite }));
 
 const { runCli } = await import("../../src/cli/run-cli.mjs");
 const diagnosticOptions = { jestArgs: ["tests/sample.test.mjs"] };
@@ -57,6 +59,7 @@ function resetCli() {
   normalizeCliError.mockReturnValue(18);
   formatExitCode.mockReturnValue("formatted exit code");
   acquireValidationLock.mockResolvedValue(jest.fn());
+  runNpmPrerequisite.mockClear().mockResolvedValue(true);
 }
 
 beforeEach(resetCli);
@@ -64,10 +67,9 @@ beforeEach(resetCli);
 test("returns informational command results before starting validation", async () => {
   dispatchInformationalCommand.mockReturnValueOnce(0);
   const write = jest.fn();
-
   await expect(runCli(["--version"], write, "/repo")).resolves.toBe(0);
-
   expect(dispatchInformationalCommand).toHaveBeenCalledWith(["--version"], write);
+  expect(runNpmPrerequisite).not.toHaveBeenCalled();
   expect(acquireValidationLock).not.toHaveBeenCalled();
   expect(readDiagnosticOptions).not.toHaveBeenCalled();
   expect(createStageTimer).not.toHaveBeenCalled();
@@ -77,9 +79,7 @@ test("returns informational command results before starting validation", async (
 test("refuses to run when another validation process holds the repository lock", async () => {
   acquireValidationLock.mockResolvedValueOnce(null);
   const write = jest.fn();
-
   await expect(runCli([], write, "/repo")).resolves.toBe(18);
-
   expect(write).toHaveBeenCalledWith(
     expect.stringMatching(
       /^Cannot run eliware-test because the lock file exists: .*eliware-test\.lock\. If no validation run is active, remove the stale lock file and retry\.$/,
@@ -89,21 +89,25 @@ test("refuses to run when another validation process holds the repository lock",
   expect(runConventionStage).not.toHaveBeenCalled();
 });
 
+test("stops before validation when npm is unsupported", async () => {
+  const checkPrerequisite = jest.fn(async () => false);
+  await expect(
+    runCli([], jest.fn(), "/repo", { runNpmPrerequisite: checkPrerequisite }),
+  ).resolves.toBe(18);
+  expect(acquireValidationLock).not.toHaveBeenCalled();
+});
+
 test("releases the repository lock when validation completes", async () => {
   const release = jest.fn();
   acquireValidationLock.mockResolvedValueOnce(release);
-
   await expect(runCli([], jest.fn(), "/repo")).resolves.toBe(0);
-
   expect(release).toHaveBeenCalledTimes(1);
 });
 
 test("coordinates diagnostic parsing, convention and validation stages, and result writing", async () => {
   const write = jest.fn();
   const options = { runOption: true };
-
   await expect(runCli([], write, "/repo")).resolves.toBe(0);
-
   expect(readDiagnosticOptions).toHaveBeenCalledWith([]);
   expect(createStageTimer).toHaveBeenCalledWith(false, expect.any(Function), undefined);
   expect(createStageTimer.mock.calls[0][1]()).toEqual(expect.any(Number));
@@ -127,9 +131,7 @@ test("coordinates diagnostic parsing, convention and validation stages, and resu
 
 test("uses null mode when diagnostics contain no focused test arguments", async () => {
   readDiagnosticOptions.mockReturnValueOnce({ mode: null, jestArgs: undefined });
-
   await expect(runCli([], jest.fn(), "/repo")).resolves.toBe(0);
-
   expect(writeValidationResults.mock.calls[0][0].mode).toBeNull();
 });
 
@@ -183,7 +185,6 @@ test("normalizes and formats failures raised by the CLI pipeline", async () => {
   const write = jest.fn();
 
   await expect(runCli([], write)).resolves.toBe(18);
-
   expect(normalizeCliError).toHaveBeenCalledWith(error, write);
   expect(formatExitCode).toHaveBeenCalledWith(18);
   expect(write).toHaveBeenCalledWith("formatted exit code");
@@ -195,6 +196,5 @@ test("normalizes failures while acquiring the validation lock", async () => {
   acquireValidationLock.mockRejectedValueOnce(error);
 
   await expect(runCli([], write, "/repo")).resolves.toBe(18);
-
   expect(normalizeCliError).toHaveBeenCalledWith(error, write);
 });

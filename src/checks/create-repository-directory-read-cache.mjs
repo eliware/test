@@ -1,12 +1,12 @@
 import { stat as statPath } from "node:fs/promises";
 import { inventoryPath } from "./repository-inventory-paths.mjs";
 
-function version(metadata) {
+function version(metadata, platform) {
   // codescope ignore: The five-field snapshot string is constant-size and avoids retaining or comparing mutable stat objects.
   const nanosecondTimestamps =
     typeof metadata.mtimeNs === "bigint" && typeof metadata.ctimeNs === "bigint";
   return {
-    cacheable: nanosecondTimestamps,
+    cacheable: platform !== "win32" && nanosecondTimestamps,
     key: [
       metadata.dev,
       metadata.ino,
@@ -17,7 +17,12 @@ function version(metadata) {
   };
 }
 
-export function createRepositoryDirectoryReadCache(root, readDirectory, stat = statPath) {
+export function createRepositoryDirectoryReadCache(
+  root,
+  readDirectory,
+  stat = statPath,
+  platform = process.platform,
+) {
   const reads = new Map();
   let revision = 0;
   function readDirectoryCached(directoryPath, forceRefresh = false) {
@@ -31,7 +36,7 @@ export function createRepositoryDirectoryReadCache(root, readDirectory, stat = s
     const current = { pending: true };
     current.promise = Promise.resolve()
       .then(async () => {
-        let currentVersion = version(await stat(key, { bigint: true }));
+        let currentVersion = version(await stat(key, { bigint: true }), platform);
         if (
           !forceRefresh &&
           currentVersion.cacheable &&
@@ -44,7 +49,7 @@ export function createRepositoryDirectoryReadCache(root, readDirectory, stat = s
           return current.entries;
         }
         current.entries = await readDirectory(key, { withFileTypes: true });
-        const afterReadVersion = version(await stat(key, { bigint: true }));
+        const afterReadVersion = version(await stat(key, { bigint: true }), platform);
         if (afterReadVersion.key !== currentVersion.key) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);
         }

@@ -500,8 +500,11 @@ directives:
           - id: E-0.1.20.1
             dos:
               - Every maintained repository must use Node.js 26 for shared validation tooling, including documentation-only repositories.
+              - Before any validation command runs, the eliware-test CLI must check the active npm version and require npm 12 or later. Informational --help and --version commands remain available without this check.
+              - If npm is older than 12 or its version cannot be determined, stop before validation stages and report a clear nonzero runtime diagnostic.
             donts:
               - Do not target a different Node.js version or publish with an unverified runtime baseline unless Eli explicitly authorizes it.
+              - Do not run validation stages when the active npm version is below 12 or cannot be determined.
           - id: E-0.1.20.2
             dos:
               - Node.js projects must use native ESM exclusively.
