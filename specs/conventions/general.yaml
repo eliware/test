@@ -334,6 +334,7 @@ directives:
       - id: E-0.1.14
         dos:
           - Any package reported by npm outdated fails validation, regardless of dependency section. The check requires a successful registry lookup; offline operation or registry/process failure is a validation failure, not a pass. Exit codes 0 and 1 are report-bearing outcomes and both require valid JSON output; an empty output or empty report passes. Other exit codes and invalid JSON also fail validation with a separate diagnostic. Failure diagnostics must list an npm install command using the @latest tag for every reported package, tell contributors to review package.json and package-lock.json together, and require rerunning npm ci and npm test. The check does not modify dependencies.
+          - During the packed-tarball smoke run only, the exact unpublished candidate package named by the smoke runner's ELIWARE_TEST_SMOKE_CANDIDATE environment value may be omitted from outdated findings; every other package remains subject to the normal registry lookup and outdated failure behavior.
         donts:
           - Do not compare or require a package version field beyond the result reported by npm outdated.
       - id: E-0.1.19

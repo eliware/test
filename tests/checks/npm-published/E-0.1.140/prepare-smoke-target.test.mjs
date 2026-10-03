@@ -24,47 +24,20 @@ test.each(["dependencies", "devDependencies", "optionalDependencies"])(
   },
 );
 
-test("sets the candidate tarball, updates the lockfile, and removes local install", async () => {
+test("removes the installed package without changing consumer manifests or lockfiles", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-prepare-smoke-test-"));
   roots.push(root);
   const installed = join(root, "node_modules", "@eliware", "test");
   await mkdir(installed, { recursive: true });
   await writeFile(join(installed, "package.json"), "old package");
-  const calls = [];
-  const targetPackage = { devDependencies: { "@eliware/test": "10.0.0" } };
-  await prepareSmokeTarget({
-    targetRoot: root,
-    targetPackage,
-    packageName: "@eliware/test",
-    tarball: join(root, "candidate.tgz"),
-    run: async (_command, args, options) => {
-      calls.push({ args, options });
-      return { code: 0 };
-    },
-    command: "npm",
-    prefix: [],
-    env: {},
-  });
-  expect(targetPackage.devDependencies["@eliware/test"]).toMatch(/^file:/);
-  await expect(readFile(join(root, "package.json"), "utf8")).resolves.toContain("file:");
-  await expect(readFile(join(installed, "package.json"), "utf8")).rejects.toThrow();
-  expect(calls[0].args).toContain("--package-lock-only");
-  expect(calls[0].options.cwd).toBe(root);
-});
+  const manifest = '{"devDependencies":{"@eliware/test":"10.0.0"}}\n';
+  const lockfile = '{"lockfileVersion":3}\n';
+  await writeFile(join(root, "package.json"), manifest);
+  await writeFile(join(root, "package-lock.json"), lockfile);
 
-test("reports failure to regenerate the temporary lockfile", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-prepare-smoke-test-"));
-  roots.push(root);
-  await expect(
-    prepareSmokeTarget({
-      targetRoot: root,
-      targetPackage: { devDependencies: { "@eliware/test": "10.0.0" } },
-      packageName: "@eliware/test",
-      tarball: join(root, "candidate.tgz"),
-      run: async () => ({ code: 1 }),
-      command: "npm",
-      prefix: [],
-      env: {},
-    }),
-  ).rejects.toThrow("Temporary lockfile update failed");
+  await prepareSmokeTarget({ targetRoot: root, packageName: "@eliware/test" });
+
+  await expect(readFile(join(root, "package.json"), "utf8")).resolves.toBe(manifest);
+  await expect(readFile(join(root, "package-lock.json"), "utf8")).resolves.toBe(lockfile);
+  await expect(readFile(join(installed, "package.json"), "utf8")).rejects.toThrow();
 });

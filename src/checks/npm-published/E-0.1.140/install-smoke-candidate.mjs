@@ -15,12 +15,6 @@ export async function installSmokeCandidate({
   prefix,
   env,
 }) {
-  const lock = await run(
-    command,
-    [...prefix, "install", "--package-lock-only", "--ignore-scripts", "--no-audit", "--no-fund"],
-    { cwd: targetRoot, env },
-  );
-  if (lock.code !== 0) throw new Error(commandFailure(lock, "Temporary lockfile update failed"));
   await rm(join(targetRoot, "node_modules", ...packageJson.name.split("/")), {
     recursive: true,
     force: true,
@@ -51,6 +45,9 @@ export async function installSmokeCandidate({
     throw new Error(
       `Installed package version ${installed.version} does not match ${packageJson.version}.`,
     );
-  const tested = await run(command, [...prefix, "test"], { cwd: targetRoot, env });
+  const tested = await run(command, [...prefix, "test"], {
+    cwd: targetRoot,
+    env: { ...env, ELIWARE_TEST_SMOKE_CANDIDATE: packageJson.name },
+  });
   if (tested.code !== 0) throw new Error(commandFailure(tested, "Consumer npm test failed"));
 }

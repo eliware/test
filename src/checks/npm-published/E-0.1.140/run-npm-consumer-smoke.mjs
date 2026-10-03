@@ -34,7 +34,6 @@ export async function runNpmConsumerSmoke({
   if (targetRoot === resolve(root)) return "Smoke target must be a separate consumer repository.";
   const loadedTarget = await loadSmokeTarget(targetRoot, packageJson?.name);
   if (loadedTarget.error) return loadedTarget.error;
-  const { targetPackage } = loadedTarget;
   const binNames = Object.keys(packageJson?.bin ?? {});
   const childEnv = { ...env };
   const tempRoot = await mkdtemp(join(tmpdir(), "eliware-tarball-smoke-"));
@@ -57,13 +56,7 @@ export async function runNpmConsumerSmoke({
     });
     await prepareSmokeTarget({
       targetRoot,
-      targetPackage,
       packageName: packageJson.name,
-      tarball,
-      run,
-      command,
-      prefix,
-      env: childEnv,
     });
     await installSmokeCandidate({
       targetRoot,

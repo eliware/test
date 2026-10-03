@@ -18,3 +18,9 @@ test("does not depend on reported version fields", () => {
   expect(formatOutdatedDependencies({})).toEqual([]);
   expect(formatOutdatedDependencies()).toEqual([]);
 });
+
+test("omits only the explicitly named packed smoke candidate", () => {
+  expect(
+    formatOutdatedDependencies({ "@eliware/test": {}, jest: {}, prettier: {} }, "@eliware/test"),
+  ).toEqual(["jest@latest", "prettier@latest"]);
+});

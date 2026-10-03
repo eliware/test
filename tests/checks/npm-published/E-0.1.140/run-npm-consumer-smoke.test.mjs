@@ -36,9 +36,13 @@ test("packs, installs, tests, and restores the existing consumer package", async
   expect(result).toContain("Previous target package state restored");
   expect(
     calls.map(({ args }) => args.find((arg) => ["pack", "install", "test"].includes(arg))),
-  ).toEqual(["pack", "install", "install", "install", "test"]);
+  ).toEqual(["pack", "install", "test"]);
   expect(calls[0].args).toContain("--ignore-scripts");
-  expect(testedManifest.dependency).toMatch(/^file:/);
+  expect(calls[1].args).toContain("--no-save");
+  expect(calls[1].args).toContain("--package-lock=false");
+  expect(testedManifest.dependency).toBe("10.0.0");
+  expect(testedManifest.lock).toBe("old-lock\n");
+  expect(testedManifest.candidate).toBe(packageJson.name);
   await expect(readFile(join(fixture.target, "package.json"), "utf8")).resolves.toContain(
     '"@eliware/test":"10.0.0"',
   );

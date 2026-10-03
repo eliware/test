@@ -61,7 +61,7 @@ export async function createSmokeTarget(roots) {
 
 export function fakeNpm(target, config = {}) {
   const calls = [];
-  const testedManifest = { dependency: null };
+  const testedManifest = { dependency: null, lock: null, candidate: null };
   const {
     testCode = 0,
     packCode = 0,
@@ -90,7 +90,6 @@ export function fakeNpm(target, config = {}) {
       };
     }
     if (args.includes("install")) {
-      if (args.includes("--package-lock-only")) return { code: 0, stdout: "lock updated" };
       const installed = join(target, "node_modules", "@eliware", "test");
       await rm(installed, { recursive: true, force: true });
       await mkdir(installed, { recursive: true });
@@ -102,6 +101,8 @@ export function fakeNpm(target, config = {}) {
     }
     const targetPackage = JSON.parse(await readFile(join(target, "package.json"), "utf8"));
     testedManifest.dependency = targetPackage.devDependencies?.[packageJson.name];
+    testedManifest.lock = await readFile(join(target, "package-lock.json"), "utf8");
+    testedManifest.candidate = options.env?.ELIWARE_TEST_SMOKE_CANDIDATE;
     return { code: testCode, stdout: testCode ? "consumer failure" : "consumer passed" };
   };
   return { calls, run, testedManifest };

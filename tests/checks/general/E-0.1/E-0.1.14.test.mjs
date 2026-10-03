@@ -75,6 +75,22 @@ test("includes all names in the report and recommends @latest for each", async (
   expect(result.message).toContain("rerun npm ci and npm test");
 });
 
+test("only omits the exact packed smoke candidate from outdated findings", async () => {
+  await expect(
+    run({
+      env: { ELIWARE_TEST_SMOKE_CANDIDATE: "@eliware/test" },
+      outdatedDependencies: {
+        "@eliware/test": { current: "11.0.0", latest: "10.0.0" },
+        jest: { current: "1", latest: "2" },
+      },
+    }),
+  ).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining("jest@latest"),
+  });
+});
+
 test("reads the registry when dependencies exist and no injected result is supplied", async () => {
   await expect(
     run({ packageJson: { dependencies: { alpha: "1" } }, readOutdated: async () => ({}) }),

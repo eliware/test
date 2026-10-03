@@ -63,8 +63,10 @@
   them through the required typecheck script.
 - Keep package validation lightweight in `npm test` and add an opt-in targeted
   tarball smoke command that installs the candidate in an existing consumer,
-  runs its `npm test`, then restores the prior local package, manifest, lockfile,
-  and executable shims without touching system-wide symlinks or junctions.
+  runs its `npm test`, then restores the prior local package and executable
+  shims without changing manifests or lockfiles or touching system-wide
+  symlinks or junctions. During that smoke run, only the exact unpublished
+  candidate is omitted from npm outdated; all other dependencies are checked.
 
 ### Fixed
 

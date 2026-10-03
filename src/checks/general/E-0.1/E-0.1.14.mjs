@@ -23,7 +23,10 @@ export async function run(context) {
       `Dependency registry lookup failed: ${formatOutdatedDependencyError(error, context.env)}.`,
     );
   }
-  const findings = formatOutdatedDependencies(outdated);
+  const findings = formatOutdatedDependencies(
+    outdated,
+    (context.env ?? process.env).ELIWARE_TEST_SMOKE_CANDIDATE,
+  );
   return findings.length
     ? fail(
         ruleId,
