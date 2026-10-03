@@ -4,6 +4,9 @@
 
 ### Changed
 
+- Apply one README link contract across repository profiles, define supported
+  Markdown syntax and fragment boundaries, and stop resolving JSON/YAML path
+  fields as documentation links.
 - Align contributor guidance with the general convention by requiring review of
   the root README, applicable AGENTS instructions, and relevant documentation
   before changing files.

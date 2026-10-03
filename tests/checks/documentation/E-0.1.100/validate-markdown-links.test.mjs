@@ -13,7 +13,7 @@ test("coordinates local, fragment, non-Markdown, and external link validation", 
     await writeFile(join(root, "terms.txt"), "Terms");
     await writeFile(
       join(root, "README.md"),
-      "[Docs](docs/index.md#heading) [Terms](terms.txt) [Web](https://example.test)",
+      "[Docs](docs/index.md#heading) [Folder](docs/) [Terms](terms.txt) [Web](https://example.test) [Other repository](https://github.com/other/project/blob/main/README.md#section)",
     );
     await expect(validateMarkdownLinks(root, ["README.md", "docs/index.md"])).resolves.toBeNull();
   } finally {
@@ -32,6 +32,22 @@ test("resolves links with query strings and fragments as separate URL components
     );
 
     await expect(validateMarkdownLinks(root, ["README.md", "docs/guide.md"])).resolves.toBeNull();
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("checks local Markdown fragments and does not fetch remote fragments", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-markdown-fragment-boundary-"));
+  try {
+    await writeFile(join(root, "target.md"), "# Local heading");
+    await writeFile(
+      join(root, "README.md"),
+      "[Local](target.md#local-heading) [Remote](https://github.com/owner/project#not-fetched)",
+    );
+    await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toBeNull();
+    await writeFile(join(root, "README.md"), "[Local](target.md#missing)");
+    await expect(validateMarkdownLinks(root, ["README.md"])).resolves.toContain("fragment");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

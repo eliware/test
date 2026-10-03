@@ -6,7 +6,10 @@ export function validateExternalDocumentationLink(reference) {
   }
   try {
     const url = new URL(reference);
+    const crossRepository =
+      url.hostname.toLowerCase() === "github.com" && /^\/[^/]+\/[^/]+(?:\/|$)/u.test(url.pathname);
     return ["http:", "https:"].includes(url.protocol) &&
+      (!crossRepository || url.protocol === "https:") &&
       url.hostname &&
       !url.username &&
       !url.password

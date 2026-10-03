@@ -28,11 +28,6 @@ directives:
       - id: A-0.1.100.2
         dos:
           - Under the Scope, Navigation, Contribution, and Documentation validation headings assigned to documentation by general.yaml, document repository scope, documentation sources, indexes, contribution/setup requirements, and documentation-specific link/index validation. The Documentation validation heading does not replace the shared npm test, lint, format, or audit requirements. Include the headings in the Table of Contents as required by general.yaml.
-          - During change review, a human or AI reviewer must identify the repository's documentation surfaces, assess whether each is indexed, and record relevant findings with the change. Deterministic link checks verify only that supported declared links resolve; they do not establish index completeness.
+          - During change review, a human or AI reviewer must identify the repository's documentation surfaces, assess whether each is indexed, and record relevant findings with the change. The general profile validates supported README links; deterministic link checks do not establish index completeness.
         donts:
           - Documentation-only README.md must not present implementation code, operational procedures, or duplicated canonical content.
-      - id: A-0.1.100.3
-        dos:
-          - Deterministic validation must verify that every repository-relative Markdown link and structured-document path resolves to an existing target, and that every Markdown fragment resolves. External links are checked for valid URL form only; human or AI review confirms their availability and intended target.
-        donts:
-          - Do not leave a documented path or embedded reference pointing to a missing target.

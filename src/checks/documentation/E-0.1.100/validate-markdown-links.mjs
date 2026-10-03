@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { readRepositoryText } from "../../read-repository-text.mjs";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
@@ -42,6 +42,8 @@ export async function validateMarkdownLinks(root, files, context) {
         continue;
       }
       try {
+        const targetInfo = await stat(target);
+        if (targetInfo.isDirectory()) continue;
         if (target.toLowerCase().endsWith(".md")) await readRepositoryText(context, target);
         else if (context?.repositoryInventory?.readBytes)
           await context.repositoryInventory.readBytes(target);

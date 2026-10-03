@@ -26,18 +26,3 @@ export async function collectDocumentationFiles(
   await visit(directory, 0);
   return files;
 }
-
-export function jsonFiles(root, inventory) {
-  return inventory
-    ? inventory.documentationFiles({ directory: root, predicate: (name) => name.endsWith(".json") })
-    : collectDocumentationFiles(root, root, (name) => name.endsWith(".json"));
-}
-
-export function repositoryFiles(root, inventory) {
-  return inventory
-    ? inventory.documentationFiles({
-        directory: root,
-        predicate: (name) => /\.(?:json|md)$/iu.test(name),
-      })
-    : collectDocumentationFiles(root, root, (name) => /\.(?:json|md)$/iu.test(name));
-}

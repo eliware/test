@@ -182,6 +182,15 @@ directives:
             donts:
               - Do not place profile sections after Links, include the package/project title in the Table of Contents, omit or reorder content-section headings in the Table of Contents, repeat a heading required by multiple profiles, add discretionary level-two sections, derive profile section order from package.json.eliware.apply ordering, replace the golden-image structure with a custom marketing layout, bury required information in an unindexed document, duplicate the footer, or claim unsupported package, deployment, or support capabilities.
               - Do not vary the exact Eliware logo or Discord support markers, append badge text to the package title text, omit the package homepage link, omit the canonical HTTPS .git repository link, or show a git+ URL in README.md.
+          - id: A-0.1.1.1
+            dos:
+              - Deterministic validation must check supported links in every README.md file in the checkout for every repository profile. Supported syntax is inline Markdown links and images with destinations that contain no whitespace or closing parenthesis; full reference links using [label][reference] with a matching link-reference definition; quoted HTML href and src attributes; and angle-bracket HTTP, HTTPS, and mailto autolinks. Ignore code spans and fenced code blocks. Shortcut and collapsed reference links, raw HTML links outside href and src, and other Markdown extensions are unsupported.
+              - Local relative links must resolve to an existing file or directory inside the checkout. Local fragments are checked against headings and explicit HTML id attributes in a Markdown target in the checkout. Fragments on external URLs, including cross-repository GitHub URLs, are not fetched or checked; local non-Markdown fragments are not checked.
+              - HTTP and HTTPS links must contain a hostname and must not contain credentials; mailto links must contain an email address. Links to another repository must use a full HTTPS GitHub URL with owner and repository path. Reject relative links that escape the checkout, including ../other-repo paths.
+              - JSON and YAML path-valued fields are data, not links, and must not be resolved as documentation references.
+            donts:
+              - Do not validate links in non-README Markdown files or interpret paths in JSON or YAML as links.
+              - Do not fetch external or cross-repository targets to validate availability or fragments.
       - id: E-0.1.3
         dos:
           - Repositories must use eliware-test as the shared deterministic validation entrypoint, running the stages applicable to their declared profiles.

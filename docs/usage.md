@@ -193,12 +193,34 @@ The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
 repository or supported Node.js/Windows executable locations. Workflow parsing
 normalizes YAML 1.1 `true` keys and equivalent runner/input spellings before
 domain checks consume them. Structured references to local files must resolve
-within the consumer repository. Local paths that escape the repository are
-rejected; external URI references are handled by their URI scheme and are not
-resolved as repository files.
+within the consumer repository when a profile-owned check declares those fields.
+General README link validation does not interpret arbitrary JSON or YAML `path`
+values. Local paths that escape the repository are rejected; external URI
+references are handled by their URI scheme and are not resolved as repository
+files.
 Git-sensitive checks use Git
 metadata when available and retain filesystem discovery only for non-Git test
 fixtures. The tracked-symlink check reads Git index mode `120000` and rejects
 all tracked symlink entries, including links to files or directories. It does
 not inspect untracked paths or resolve targets; validation fails if it cannot
 read the Git index.
+
+## README link validation
+
+Every `README.md` in a repository is checked under the general profile,
+regardless of its other profiles. Validation supports inline Markdown links and
+images, full reference links with matching definitions, quoted HTML `href` and
+`src` attributes, and angle-bracket HTTP, HTTPS, and `mailto` autolinks. Inline
+destinations cannot contain whitespace or a closing parenthesis. Links inside
+code spans and fenced code blocks are ignored; shortcut and collapsed reference
+links, raw HTML links outside `href` and `src`, and other Markdown extensions
+are outside the supported syntax.
+
+Local relative links must resolve to files or directories inside the checkout.
+Fragments are checked against headings and explicit HTML `id` attributes in
+local Markdown targets. Fragments on local non-Markdown targets are not checked.
+HTTP and HTTPS URLs must contain a hostname and must not contain credentials;
+`mailto` links must contain an email address. Links to another GitHub repository
+must use a full HTTPS URL with owner and repository path. External and
+cross-repository fragments are not checked because doing so would require
+fetching their targets.

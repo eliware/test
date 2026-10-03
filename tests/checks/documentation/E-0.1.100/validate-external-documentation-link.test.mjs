@@ -6,8 +6,17 @@ test("accepts valid web and email references", () => {
     "http://example.test",
     "https://example.test/path",
     "mailto:support@example.test",
+    "https://github.com/other-repo/project/blob/main/README.md",
   ]) {
     expect(validateExternalDocumentationLink(reference)).toBeNull();
+  }
+});
+
+test("requires a full HTTPS GitHub URL for links to another repository", () => {
+  for (const reference of ["http://github.com/other-repo/project"]) {
+    expect(validateExternalDocumentationLink(reference)).toBe(
+      `Documentation link is invalid: ${reference}.`,
+    );
   }
 });
 

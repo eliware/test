@@ -21,6 +21,7 @@ See [Troubleshooting](../docs/troubleshooting.md) for validation diagnostics and
 - [Usage](../docs/usage.md) — setup and supported commands.
 - [Configuration](../docs/usage.md#configuration) — package convention metadata and exemptions.
 - [Compatibility boundaries](../docs/usage.md#compatibility-boundaries) — dependency and external-reference resolution limits.
+- [README link validation](../docs/usage.md#readme-link-validation) — supported README link syntax and local/external fragment behavior.
 - [Troubleshooting](../docs/troubleshooting.md) — common validation failures.
 - [Support](../docs/support.md) — support channels and diagnostic information.
 
