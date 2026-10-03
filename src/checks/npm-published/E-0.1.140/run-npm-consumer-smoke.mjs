@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, rm } from "node:fs/promises";
+import { lstat, mkdtemp, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execute } from "../../execute-child-process.mjs";
@@ -10,6 +10,7 @@ import { installSmokeCandidate } from "./install-smoke-candidate.mjs";
 import { prepareSmokeTarget } from "./prepare-smoke-target.mjs";
 import { loadSmokeTarget } from "./load-smoke-target.mjs";
 import { validateNpmConsumerSmokeRequest } from "./validate-npm-consumer-smoke-request.mjs";
+import { cleanupSmokeTempRoot } from "./cleanup-smoke-temp-root.mjs";
 
 export async function runNpmConsumerSmoke({
   root,
@@ -20,6 +21,7 @@ export async function runNpmConsumerSmoke({
   env = process.env,
   captureState = captureSmokeTargetState,
   restoreState = restoreSmokeTargetState,
+  inspectTempRoot = lstat,
   write = () => {},
 }) {
   const request = validateNpmConsumerSmokeRequest({ root, target, packageJson });
@@ -30,6 +32,12 @@ export async function runNpmConsumerSmoke({
   const binNames = Object.keys(packageJson?.bin ?? {});
   const childEnv = { ...env };
   const tempRoot = await mkdtemp(join(tmpdir(), "eliware-tarball-smoke-"));
+  let tempIdentity;
+  try {
+    tempIdentity = await inspectTempRoot(tempRoot);
+  } catch (error) {
+    return `Cannot verify temporary smoke directory; left untouched at ${tempRoot}: ${error.message}`;
+  }
   const packDirectory = join(tempRoot, "pack");
   let state;
   let outcome;
@@ -72,9 +80,15 @@ export async function runNpmConsumerSmoke({
         restoreError = error.message;
       }
     }
-    await rm(tempRoot, { recursive: true, force: true });
-    if (restoreError) outcome = `${outcome} Target restoration failed: ${restoreError}`;
-    else if (state && !state.error) outcome = `${outcome} Previous target package state restored.`;
+    const cleanupMessage = await cleanupSmokeTempRoot(tempRoot, tempIdentity, {
+      preserve: Boolean(restoreError),
+    });
+    if (restoreError)
+      outcome = `${outcome} Target restoration failed: ${restoreError}. ${cleanupMessage}`;
+    else {
+      if (state && !state.error) outcome = `${outcome} Previous target package state restored.`;
+      if (cleanupMessage) outcome = `${outcome} ${cleanupMessage}`;
+    }
   }
   return outcome;
 }

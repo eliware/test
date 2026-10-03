@@ -1,15 +1,35 @@
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import semver from "semver";
+import { npmCommand } from "../checks/npm-command.mjs";
 
-export async function checkNpmVersion(executeProcess = execFile, platform = process.platform) {
+export async function checkNpmVersion({
+  executeProcess = execFile,
+  platform = process.platform,
+  env = process.env,
+  workingDirectory = process.cwd(),
+  execPath = process.execPath,
+  fileExists = existsSync,
+} = {}) {
   let output;
   try {
+    const activeNpmPath = env?.npm_execpath;
+    const [command, prefix] =
+      platform === "win32" && !(typeof activeNpmPath === "string" && activeNpmPath.trim())
+        ? ["cmd.exe", ["/d", "/s", "/c", "npm"]]
+        : npmCommand(
+            platform,
+            activeNpmPath,
+            execPath,
+            fileExists,
+            workingDirectory,
+            env?.PATH ?? env?.Path,
+          );
     output = await new Promise((resolve, reject) => {
-      const windows = platform === "win32";
       executeProcess(
-        windows ? "cmd.exe" : "npm",
-        windows ? ["/d", "/s", "/c", "npm --version"] : ["--version"],
-        { encoding: "utf8", windowsHide: true },
+        command,
+        [...prefix, "--version"],
+        { encoding: "utf8", windowsHide: true, cwd: workingDirectory, env: { ...env } },
         (error, stdout) => (error ? reject(error) : resolve(stdout)),
       );
     });

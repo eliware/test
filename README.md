@@ -88,17 +88,16 @@ repository selects the `npm-published` profile.
 `npm run pack` is the lightweight package-content check included in aggregate
 validation. The opt-in `npm run smoke -- --target <path>` command builds and
 installs a tarball from this checkout in one existing consumer repository and
-runs that repository's `npm test`. It installs with `--no-save` and
-`--package-lock=false`, leaving consumer manifests and lockfiles unchanged. The
-outdated check omits only the exact unpublished candidate during this smoke
-run; all other dependencies still use the normal registry check. Prepare the
-target and install its dependencies first; the command does not clone
-repositories or create worktrees. It saves and restores the previous
-`@eliware/test` installation and local executable shims after the run.
-The temporary manifest and lockfile are kept consistent, and only the local
-`node_modules/@eliware/test` package is replaced. It does not touch system-wide
-symlinks or junctions. Use a disposable target
-because consumer tests may create their own output files.
+runs that repository's `npm test`. It temporarily points the target manifest
+to the candidate tarball and regenerates the lockfile, then restores the prior
+manifest, lockfiles, `@eliware/test` installation, and local executable shims.
+The smoke command records recovery data before changing the target and retains
+that data if restoration fails. The outdated check omits only the exact
+unpublished candidate during this smoke run; all other dependencies still use
+the normal registry check. Prepare the target and install its dependencies
+first; the command does not clone repositories or create worktrees. It does
+not touch system-wide symlinks or junctions. Use a disposable target because
+consumer tests may create their own output files.
 
 For npm-published repositories, the npm-published profile defines the exact
 package-content allowlist. The general profile does not add files to that

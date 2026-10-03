@@ -1,7 +1,7 @@
-import { afterEach, expect, jest, test } from "@jest/globals";
-import { readFile, writeFile } from "node:fs/promises";
+import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { runNpmConsumerSmoke } from "../../../../src/checks/npm-published/E-0.1.140/run-npm-consumer-smoke.mjs";
+import { cleanupSmokeTempRoot as cleanupTempRoot } from "../../../../src/checks/npm-published/E-0.1.140/cleanup-smoke-temp-root.mjs";
 import {
   createSmokeTarget,
   fakeNpm,
@@ -9,7 +9,17 @@ import {
   removeRoots,
 } from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
 
+const cleanupSmokeTempRoot = jest.fn();
+jest.unstable_mockModule(
+  "../../../../src/checks/npm-published/E-0.1.140/cleanup-smoke-temp-root.mjs",
+  () => ({ cleanupSmokeTempRoot }),
+);
+const { runNpmConsumerSmoke } =
+  await import("../../../../src/checks/npm-published/E-0.1.140/run-npm-consumer-smoke.mjs");
+
 let roots = [];
+
+beforeEach(() => cleanupSmokeTempRoot.mockImplementation((...args) => cleanupTempRoot(...args)));
 
 afterEach(async () => {
   await removeRoots(roots);
@@ -26,6 +36,12 @@ function runSmoke(fixture, options = {}) {
     ...options,
   });
 }
+
+const packReport = (entry = {}) => ({
+  packStdout: JSON.stringify([
+    { name: "@eliware/test", version: "11.0.0", filename: "x.tgz", files: [], ...entry },
+  ]),
+});
 
 test("packs, installs, tests, and restores the existing consumer package", async () => {
   const fixture = await createSmokeTarget(roots);
@@ -93,6 +109,31 @@ test("validates the smoke request before capturing consumer state", async () => 
   expect(captureState).not.toHaveBeenCalled();
 });
 
+test("leaves an unverified temporary path untouched", async () => {
+  const fixture = await createSmokeTarget(roots);
+  const result = await runSmoke(fixture, {
+    inspectTempRoot: async () => {
+      throw new Error("identity unavailable");
+    },
+  });
+  expect(result).toContain("Cannot verify temporary smoke directory; left untouched");
+  const path = result.match(/left untouched at (.+): identity unavailable/u)?.[1];
+  expect(path).toBeTruthy();
+  await rm(path, { recursive: true, force: true });
+});
+
+test("reports temporary cleanup diagnostics after a successful restore", async () => {
+  const fixture = await createSmokeTarget(roots);
+  const { run } = fakeNpm(fixture.target);
+  cleanupSmokeTempRoot.mockResolvedValueOnce(
+    "Temporary smoke directory identity changed; left untouched.",
+  );
+  const result = await runSmoke(fixture, { run });
+  expect(result).toContain("Previous target package state restored");
+  expect(result).toContain("Temporary smoke directory identity changed");
+  await rm(cleanupSmokeTempRoot.mock.calls.at(-1)[0], { recursive: true, force: true });
+});
+
 test("requires the target test script and an eliware-test dependency", async () => {
   const fixture = await createSmokeTarget(roots);
   await writeFile(
@@ -112,34 +153,10 @@ test.each([
   [{ packCode: 1, noPackStdout: true }, "npm pack failed."],
   [{ noPackStdout: true }, "safe tarball filename"],
   [{ packStdout: "not-json" }, "safe tarball filename"],
-  [
-    { packStdout: JSON.stringify([{ version: "10.0.0", filename: "x.tgz", files: [] }]) },
-    "safe tarball filename",
-  ],
-  [
-    {
-      packStdout: JSON.stringify([
-        { name: "@eliware/test", version: "10.0.0", filename: "x.tgz", files: [] },
-      ]),
-    },
-    "version does not match",
-  ],
-  [
-    {
-      packStdout: JSON.stringify([
-        { name: "@eliware/test", version: "11.0.0", filename: "../x.tgz", files: [] },
-      ]),
-    },
-    "safe tarball filename",
-  ],
-  [
-    {
-      packStdout: JSON.stringify([
-        { name: "@eliware/test", version: "11.0.0", filename: "x.tgz", files: [] },
-      ]),
-    },
-    "omitted",
-  ],
+  [packReport({ name: undefined, version: "10.0.0" }), "safe tarball filename"],
+  [packReport({ version: "10.0.0" }), "version does not match"],
+  [packReport({ filename: "../x.tgz" }), "safe tarball filename"],
+  [packReport(), "omitted"],
   [{ installCode: 1, installStdout: "install output" }, "Tarball installation failed"],
   [{ installVersion: "10.0.0" }, "Installed package version 10.0.0 does not match 11.0.0"],
 ])(
@@ -167,4 +184,10 @@ test("reports snapshot and restoration failures", async () => {
       restoreState: async () => Promise.reject(new Error("restore denied")),
     }),
   ).resolves.toContain("Target restoration failed: restore denied");
+  expect(cleanupSmokeTempRoot).toHaveBeenLastCalledWith(
+    expect.any(String),
+    expect.objectContaining({ isDirectory: expect.any(Function) }),
+    { preserve: true },
+  );
+  await rm(cleanupSmokeTempRoot.mock.calls.at(-1)[0], { recursive: true, force: true });
 });
