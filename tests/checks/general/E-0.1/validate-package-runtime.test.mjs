@@ -5,9 +5,11 @@ import {
 } from "../../../../src/checks/general/E-0.1/validate-package-runtime.mjs";
 
 test("validates Node.js and Jest runtime metadata", () => {
-  expect(validatePackageRuntime({ engines: { node: ">=26 <27" }, jest: {} })).toBeNull();
+  expect(validatePackageRuntime({ engines: { node: "26" }, jest: {} })).toBeNull();
   expect(validatePackageRuntime({ engines: { node: ">=20" }, jest: {} })).toContain("Node.js 26");
-  expect(validatePackageRuntime({ engines: { node: ">=26 <27" }, jest: [] })).toContain("Jest");
+  expect(validatePackageRuntime({ engines: { node: "26" }, jest: [] })).toContain("Jest");
+  expect(validatePackageRuntime({ engines: { node: "^26" }, jest: {} })).toContain("exactly");
+  expect(validatePackageRuntime({ engines: {}, jest: {} })).toContain("exactly");
 });
 
 test("accepts semantically equivalent Node 26 engine ranges", () => {

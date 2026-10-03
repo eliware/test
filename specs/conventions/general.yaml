@@ -269,6 +269,7 @@ directives:
         dos:
           - Every Eliware repository package.json must contain an eliware object describing convention applicability.
           - package.json.eliware must contain a non-empty id followed by apply; exempt may follow as the third optional key. No other keys are allowed.
+          - When ../docs/repo-map.yaml is available, package.json.eliware.id must match its repository entry; without the map, the package ID is authoritative.
         donts:
           - Repositories must not omit the Eliware metadata contract from package.json.
           - Do not add repository-specific properties to package.json.eliware; store other metadata in its appropriate documented location.
@@ -325,7 +326,9 @@ directives:
       - id: E-0.1.19
         dos:
           - 'Every repository, including documentation-only repositories, must contain package.json with a scoped @eliware/* name, version, description, keywords, author, repository, and license: "MIT". Every repository uses Node.js and npm for shared validation tooling; a documentation-only profile means the repository has no application or library runtime implementation, not that it is exempt from Node.js/npm validation. Repositories that use Jest must keep Jest configuration in package.json.'
-          - 'Every repository must set package.json.author to exactly "Eliware <eliware@eliware.org>", package.json.repository to {"type":"git","url":"git+https://github.com/eliware/<slug>.git"}, package.json.homepage to "https://github.com/eliware/<slug>#readme", and package.json.engines.node to the exact string "26". The <slug> must match the canonical GitHub repository identity.'
+          - When ../docs/repo-map.yaml exists, it is authoritative for package E-number, description, keywords, and eliware.apply profiles; package.json must match all four values. Without the map, package.json is authoritative and the existing README check compares its description to README.md.
+          - 'Every repository must set package.json.author to exactly "Eliware <eliware@eliware.org>", package.json.repository to exactly {"type":"git","url":"git+https://github.com/eliware/<slug>.git"}, package.json.homepage to exactly "https://github.com/eliware/<slug>#readme", and package.json.engines.node to the exact string "26". The <slug> must match the canonical repository identity.'
+          - package.json.keywords must be a non-empty array of distinct non-empty strings. When the repo map is available, the array must exactly match its authoritative keywords; without the map, keyword accuracy remains subject to semantic review.
           - Every repository package.json must declare engines.node as exactly "26", including documentation-only repositories because they run shared Node.js/npm validation tooling. This shared tooling requirement does not by itself define consumer-facing runtime support for an application or library; those profiles document runtime support separately.
           - Package metadata must identify publication and file contents explicitly when the repository publishes a package.
         donts:
@@ -592,7 +595,7 @@ directives:
         directives:
           - id: A-0.1.22.0
             dos:
-              - Deterministic validation must enforce unique directive IDs across every YAML document in specs/, valid parent-child ID paths, E-only ancestry for E-rules, and an E ancestor for every A-rule. Every directive ID must use the assigned repository E-number namespace recorded in the authoritative repository map; for an assigned E-38 namespace, valid child paths include E-38.1 and A-38.1.0. IDs outside the assigned namespace fail.
+              - Deterministic validation must enforce unique directive IDs across every YAML document in specs/, valid parent-child ID paths, E-only ancestry for E-rules, and an E ancestor for every A-rule. Every directive ID in every YAML file under specs/, including subfolders, must use the assigned repository E-number namespace. Use ../docs/repo-map.yaml when available; otherwise use package.json.eliware.id. For E-38, valid child paths include E-38.1 and A-38.1.0. IDs outside the assigned namespace fail.
             donts:
               - Do not accept duplicate IDs, IDs outside the assigned repository E-number namespace, orphaned descendants, top-level A-rules, or an E-rule nested under an A-rule.
       - id: E-0.1.28

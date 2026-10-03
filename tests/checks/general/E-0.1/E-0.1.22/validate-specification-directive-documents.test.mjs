@@ -123,3 +123,21 @@ test("reports inventory read failures", async () => {
   ]);
   await rm(root, { recursive: true, force: true });
 });
+
+test("validates E-number namespaces recursively through nested YAML specs", async () => {
+  const root = await fixture([{ id: "E-2", dos: ["Do."], donts: ["Do not."] }]);
+  await mkdir(join(root, "specs", "nested"));
+  await writeFile(
+    join(root, "specs", "nested", "rules.yaml"),
+    JSON.stringify(document([{ id: "E-9.1", dos: ["Do."], donts: ["Do not."] }])),
+  );
+  await expect(validateSpecificationDirectiveDocuments(root, null, "E-2")).resolves.toEqual(
+    expect.arrayContaining([
+      expect.stringContaining("rules.yaml rule E-9.1 must use the assigned E-2 namespace"),
+    ]),
+  );
+  await expect(validateSpecificationDirectiveDocuments(root, null, "bad-id")).resolves.toEqual(
+    expect.arrayContaining([expect.stringContaining("must use the E-<number> form")]),
+  );
+  await rm(root, { recursive: true, force: true });
+});

@@ -15,6 +15,7 @@ commands through `package.json`:
     "format:check": "eliware-test --format-check"
   },
   "eliware": {
+    "id": "E-0",
     "apply": ["general"]
   }
 }
@@ -52,6 +53,17 @@ timestamp, and expiry.
 
 The validator uses the repository's declared configuration and does not infer
 applicability from its files, dependencies, or project shape.
+
+`package.json.eliware` contains exactly `id`, `apply`, and optional `exempt`, in
+that order. On each run, the validator checks for `../docs/repo-map.yaml`. When
+present, that map is authoritative for the package ID, description, keywords,
+and applied profiles; the README description is checked through the existing
+README-to-package description validation. When the map is absent, package
+metadata supplies the README description and specification ID namespace.
+Specification rule IDs in every YAML file under `specs/`, including
+subfolders, must use the repository's assigned E-number. Canonical author,
+repository URL/object, homepage, Node.js engine, and distinct keyword
+requirements apply whether or not the map is available.
 
 ## Common commands
 

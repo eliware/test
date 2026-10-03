@@ -7,6 +7,15 @@
 - Advance the package version to 11.0.0 and all maintained specification
   documents to version 11.0.
 - Add the repository E-0 identifier to package metadata.
+- Validate package ID, description, keywords, and applied profiles against the
+  adjacent repo map when available, with package metadata as the fallback in
+  isolated consumer checkouts.
+- Enforce the canonical author, repository object and URL, homepage, exact
+  Node.js engine, and unique keyword requirements for every repository.
+- Enforce the assigned E-number namespace across directive IDs in every YAML
+  specification file, including nested specification folders.
+- Require the package.json.eliware fields in canonical order: id, apply, and
+  optional exempt.
 
 ### Fixed
 
