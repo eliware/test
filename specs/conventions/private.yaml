@@ -18,6 +18,6 @@ directives:
           - Private repositories must not present public npm identity, public registry claims, or unrestricted deployment instructions.
       - id: A-0.1.150.1
         dos:
-          - The .github/workflows/ci.yml workflow in a private repository must contain validation only. When ghcr-published is also applied, its separately authorized publication workflow may publish only on exact v#.#.# tags.
+          - The .github/workflows/ci.yaml workflow in a private repository must contain validation only. When ghcr-published is also applied, its separately authorized publication workflow may publish only on exact v#.#.# tags.
         donts:
-          - Do not include publication or deployment commands, npm publication jobs, or publication credentials in .github/workflows/ci.yml. Do not publish from branches or pull requests.
+          - Do not include publication or deployment commands, npm publication jobs, or publication credentials in .github/workflows/ci.yaml. Do not publish from branches or pull requests.

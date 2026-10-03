@@ -11,10 +11,10 @@ test("allows arbitrary commands after npm test except publishing commands", () =
     "echo ready && npm run check",
     "npm test\ntouch .tmp",
   ]) {
-    expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toBeNull();
+    expect(validateWorkflowPostTestCommands("ci.yaml", [{ command }], -1)).toBeNull();
   }
   for (const command of ["npm publish", "docker push ghcr.io/eliware/example:latest"]) {
-    expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toContain(
+    expect(validateWorkflowPostTestCommands("ci.yaml", [{ command }], -1)).toContain(
       "publishing commands",
     );
   }
@@ -22,7 +22,7 @@ test("allows arbitrary commands after npm test except publishing commands", () =
   const repositoryCheck = { run: "node scripts/use-ci-credential.mjs" };
   expect(
     validateWorkflowPostTestCommands(
-      "ci.yml",
+      "ci.yaml",
       [
         { command: "npm test", step: testStep, index: 1 },
         { command: repositoryCheck.run, step: repositoryCheck, index: 2 },
@@ -34,7 +34,7 @@ test("allows arbitrary commands after npm test except publishing commands", () =
   const publishStep = { run: "npm publish" };
   expect(
     validateWorkflowPostTestCommands(
-      "ci.yml",
+      "ci.yaml",
       [
         { command: "npm test", step: testStep, index: 1 },
         { command: publishStep.run, step: publishStep, index: 2 },
@@ -56,7 +56,7 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
   for (const reportingStep of malformedSteps) {
     expect(
       validateWorkflowPostTestCommands(
-        "ci.yml",
+        "ci.yaml",
         [{ command: "npm test", step: testStep, index: 0 }],
         0,
         [testStep, reportingStep],
@@ -65,19 +65,19 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
   }
   expect(
     validateWorkflowPostTestCommands(
-      "ci.yml",
+      "ci.yaml",
       [{ command: "npm test", step: testStep, index: 0 }],
       0,
       [testStep, { uses: "untrusted/reporting@v1", with: { value: "safe" } }],
     ),
   ).toContain("publishing commands");
-  expect(validateWorkflowPostTestCommands("ci.yml", [], 0, "invalid steps")).toContain(
+  expect(validateWorkflowPostTestCommands("ci.yaml", [], 0, "invalid steps")).toContain(
     "publishing commands",
   );
   const testCommand = { run: "npm test" };
   expect(
     validateWorkflowPostTestCommands(
-      "ci.yml",
+      "ci.yaml",
       [{ command: "npm test", step: testCommand, index: 0 }],
       0,
       "malformed steps",
@@ -88,7 +88,7 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
     ["npm run build", { run: "npm run build", "continue-on-error": true }],
   ]) {
     expect(
-      validateWorkflowPostTestCommands("ci.yml", [{ command, step, index: 1 }], 0, [
+      validateWorkflowPostTestCommands("ci.yaml", [{ command, step, index: 1 }], 0, [
         { run: "npm test" },
         step,
       ]),
@@ -99,14 +99,14 @@ test("rejects malformed post-test steps and unsupported action forms", () => {
 test("allows multiline shell commands after npm test once parsed from YAML", () => {
   const workflow = parse("steps:\n  - run: |\n      echo done\n      touch .env\n");
   const command = workflow.steps[0].run.trim();
-  expect(validateWorkflowPostTestCommands("ci.yml", [{ command }], -1)).toBeNull();
+  expect(validateWorkflowPostTestCommands("ci.yaml", [{ command }], -1)).toBeNull();
 });
 
 test("uses original workflow positions when setup steps have no run command", () => {
   const commandStep = { run: "npm publish" };
   expect(
     validateWorkflowPostTestCommands(
-      "ci.yml",
+      "ci.yaml",
       [{ command: commandStep.run, step: commandStep }],
       1,
       [{ uses: "actions/checkout@v4" }, { run: "npm test" }, commandStep],
@@ -117,7 +117,7 @@ test("uses original workflow positions when setup steps have no run command", ()
 test("checks actions after npm test against the reporting allowlist", () => {
   expect(
     validateWorkflowPostTestCommands(
-      "publish.yml",
+      "publish.yaml",
       [],
       0,
       [

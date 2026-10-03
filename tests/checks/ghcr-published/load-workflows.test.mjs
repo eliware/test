@@ -9,14 +9,14 @@ test("loads YAML workflow files and normalizes documents", async () => {
   const directory = join(root, ".github", "workflows");
   await mkdir(directory, { recursive: true });
   await writeFile(
-    join(directory, "ci.yml"),
+    join(directory, "ci.yaml"),
     "name: ci\njobs:\n  test:\n    runs-on: ubuntu-latest\n",
   );
   await writeFile(join(directory, "notes.txt"), "ignored");
   try {
     await expect(loadWorkflows(root)).resolves.toEqual([
       {
-        name: "ci.yml",
+        name: "ci.yaml",
         content: "name: ci\njobs:\n  test:\n    runs-on: ubuntu-latest\n",
         document: { name: "ci", jobs: { test: { "runs-on": "ubuntu-latest" } } },
       },

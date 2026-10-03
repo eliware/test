@@ -7,7 +7,7 @@ import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.24/A-0.1.24.0
 async function workflowRoot(contents) {
   const root = await mkdtemp(join(tmpdir(), "eliware-workflow-rule-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "ci.yml"), contents);
+  await writeFile(join(root, ".github", "workflows", "ci.yaml"), contents);
   return root;
 }
 
@@ -34,7 +34,7 @@ test("maps a workflow without a compliant validation job to the rule result", as
     await expect(run({ root })).resolves.toEqual({
       ruleId: "A-0.1.24.0",
       status: "fail",
-      message: "ci.yml must run npm ci followed by npm test.",
+      message: "ci.yaml must run npm ci followed by npm test.",
     });
   } finally {
     await rm(root, { recursive: true, force: true });
@@ -48,7 +48,7 @@ test("reports every workflow missing the validation sequence", async () => {
     "jobs:\n  deploy:\n    steps:\n      - run: deploy app\n",
   );
   const result = await run({ root });
-  expect(result.message).toContain("ci.yml must run npm ci followed by npm test.");
+  expect(result.message).toContain("ci.yaml must run npm ci followed by npm test.");
   expect(result.message).toContain("deploy.yml must run npm ci followed by npm test.");
   await rm(root, { recursive: true, force: true });
 });
@@ -76,7 +76,7 @@ test("recognizes GHCR publication through structured tag inputs", async () => {
     "jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n",
   );
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     "jobs:\n  publish:\n    steps:\n      - uses: eliware/container-publisher@v1\n        with:\n          tags: ghcr.io/eliware/app:latest\n",
   );
   try {

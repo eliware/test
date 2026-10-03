@@ -28,12 +28,12 @@ async function createWorkflowRoot(name = "publish") {
 test("accepts a valid publication workflow discovered from disk", async () => {
   const root = await createWorkflowRoot();
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     withValidationDependency(
       `on:\n  push:\n    tags: ["${releaseTagFilter}"]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: '${releaseTagGuard}'\n      - run: npm publish\n`,
     ),
   );
-  await writeFile(join(root, ".github", "workflows", "ci.yml"), "name: ci\n");
+  await writeFile(join(root, ".github", "workflows", "ci.yaml"), "name: ci\n");
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
     status: "pass",
   });
@@ -42,7 +42,7 @@ test("accepts a valid publication workflow discovered from disk", async () => {
 test("rejects a publication-like workflow that cannot be parsed as jobs", async () => {
   const root = await createWorkflowRoot("malformed-publisher");
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     withValidationDependency(
       `on:\n  push:\n    tags: ["${releaseTagFilter}"]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: '${releaseTagGuard}'\n      - run: npm publish\n`,
     ),
@@ -56,7 +56,7 @@ test("rejects a publication-like workflow that cannot be parsed as jobs", async 
 test("maps parsed publication workflows that violate release policy to failure", async () => {
   const root = await createWorkflowRoot("invalid-publisher");
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     "on:\n  push:\n    tags: [main]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm publish\n",
   );
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
@@ -67,7 +67,7 @@ test("maps parsed publication workflows that violate release policy to failure",
 test("uses process environment when invocation context omits it", async () => {
   const root = await createWorkflowRoot("process-env");
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     withValidationDependency(
       `on:\n  push:\n    tags: ["${releaseTagFilter}"]\njobs:\n  publish:\n    runs-on: ubuntu-latest\n    steps:\n      - run: '${releaseTagGuard}'\n      - run: npm publish\n`,
     ),
@@ -103,7 +103,7 @@ test("requires a publication workflow and rejects unparseable publish content", 
 
 test("reports workflow-reading errors as failed check results", async () => {
   const root = await createWorkflowRoot("invalid-yaml");
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), "jobs: [unterminated\n");
+  await writeFile(join(root, ".github", "workflows", "publish.yaml"), "jobs: [unterminated\n");
   await expect(run({ root, packageJson: { version: "1.2.3" } })).resolves.toMatchObject({
     status: "fail",
   });

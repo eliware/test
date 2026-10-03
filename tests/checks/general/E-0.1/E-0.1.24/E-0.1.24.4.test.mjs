@@ -26,7 +26,7 @@ const document = { jobs: { publish: publicationJob, validate: job } };
 
 beforeEach(() => {
   jest.resetAllMocks();
-  readWorkflows.mockResolvedValue([{ name: "ci.yml", document }]);
+  readWorkflows.mockResolvedValue([{ name: "ci.yaml", document }]);
   selectWorkflowValidationJobs.mockReturnValue({
     error: null,
     jobs: [{ id: "validate", job, commands }],
@@ -41,11 +41,11 @@ test("composes workflow loading, validation-job selection, and sequence validati
     message: "",
   });
   expect(readWorkflows).toHaveBeenCalledWith("/repo", undefined);
-  expect(selectWorkflowValidationJobs).toHaveBeenCalledWith("ci.yml", document, {
+  expect(selectWorkflowValidationJobs).toHaveBeenCalledWith("ci.yaml", document, {
     publicationJobIds: new Set(),
   });
   expect(validateWorkflowSequence).toHaveBeenCalledWith(
-    "ci.yml job validate",
+    "ci.yaml job validate",
     commands,
     job.steps,
     job,
@@ -55,13 +55,13 @@ test("composes workflow loading, validation-job selection, and sequence validati
 
 test("allows attestations only in GHCR publication jobs", async () => {
   readWorkflows.mockResolvedValueOnce([
-    { name: "ci.yml", document },
-    { name: "publish.yml", document },
+    { name: "ci.yaml", document },
+    { name: "publish.yaml", document },
   ]);
   await run({ root: "/repo", packageJson: { eliware: { apply: ["ghcr-published"] } } });
 
   expect(validateWorkflowSequence).toHaveBeenCalledWith(
-    "ci.yml job validate",
+    "ci.yaml job validate",
     commands,
     job.steps,
     job,
@@ -76,7 +76,7 @@ test("allows attestations only in GHCR publication jobs", async () => {
   await run({ root: "/repo", packageJson: { eliware: { apply: ["ghcr-published"] } } });
 
   expect(validateWorkflowSequence).toHaveBeenCalledWith(
-    "ci.yml job publish",
+    "ci.yaml job publish",
     commands,
     publicationJob.steps,
     publicationJob,

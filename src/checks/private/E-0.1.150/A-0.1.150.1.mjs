@@ -12,12 +12,12 @@ export async function run(context) {
       /^(?:npm\s+publish|docker\s+push|kubectl\s+apply|deploy(?:\s|$))/iu.test(command),
     );
     return prohibited
-      ? fail(ruleId, "Private .github/workflows/ci.yml must contain validation only.")
+      ? fail(ruleId, "Private .github/workflows/ci.yaml must contain validation only.")
       : pass(ruleId);
   } catch {
     return fail(
       ruleId,
-      "Private repositories must provide an inspectable .github/workflows/ci.yml.",
+      "Private repositories must provide an inspectable .github/workflows/ci.yaml.",
     );
   }
 }

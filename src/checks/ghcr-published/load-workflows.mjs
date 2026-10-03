@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
+import { parseSingleYamlDocument } from "../general/E-0.1/parse-single-yaml-document.mjs";
 import { normalizeWorkflowDocument } from "./normalize-workflow-document.mjs";
 
 export async function loadWorkflows(root, repositoryInventory) {
@@ -21,7 +21,7 @@ async function readWorkflow(directory, entry, repositoryInventory) {
     ? await repositoryInventory.readText(file)
     : await readFile(file, "utf8");
   const document = repositoryInventory
-    ? await repositoryInventory.readParsed(file, "yaml-document", parse)
-    : parse(content);
+    ? await repositoryInventory.readParsed(file, "yaml-document", parseSingleYamlDocument)
+    : parseSingleYamlDocument(content);
   return { name: entry.name, content, document: normalizeWorkflowDocument(document) };
 }

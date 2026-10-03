@@ -11,7 +11,7 @@ function validationJob(commands, jobProperties = {}) {
 
 test("accepts the required Ubuntu validation sequence and arbitrary post-test commands", () => {
   expect(
-    validateWorkflowValidationJobs("ci.yml", [
+    validateWorkflowValidationJobs("ci.yaml", [
       validationJob(["npm ci", "npm test", "node scripts/repository-check.mjs"]),
     ]),
   ).toBeNull();
@@ -19,14 +19,14 @@ test("accepts the required Ubuntu validation sequence and arbitrary post-test co
 
 test("rejects setup commands before npm ci", () => {
   expect(
-    validateWorkflowValidationJobs("ci.yml", [
+    validateWorkflowValidationJobs("ci.yaml", [
       validationJob(["curl example.test", "npm ci", "npm test"]),
     ]),
-  ).toBe("ci.yml may only use approved actions; other steps must be safe reporting commands.");
+  ).toBe("ci.yaml may only use approved actions; other steps must be safe reporting commands.");
 });
 
 test("rejects missing and non-adjacent npm ci and npm test commands", () => {
-  expect(validateWorkflowValidationJobs("publish.yml", [validationJob([])])).toContain(
+  expect(validateWorkflowValidationJobs("publish.yaml", [validationJob([])])).toContain(
     "must run npm ci followed immediately by npm test",
   );
   const job = {
@@ -39,17 +39,17 @@ test("rejects missing and non-adjacent npm ci and npm test commands", () => {
       { command: "npm test", index: 2 },
     ],
   };
-  expect(validateWorkflowValidationJobs("publish.yml", [job])).toContain(
+  expect(validateWorkflowValidationJobs("publish.yaml", [job])).toContain(
     "must run npm ci immediately followed by npm test with no intervening steps",
   );
 });
 
 test("rejects validation jobs missing workflow metadata", () => {
   expect(
-    validateWorkflowValidationJobs("ci.yml", [
+    validateWorkflowValidationJobs("ci.yaml", [
       { commands: [{ command: "npm ci" }, { command: "npm test" }] },
     ]),
-  ).toBe("ci.yml validation jobs must run on an Ubuntu runner.");
+  ).toBe("ci.yaml validation jobs must run on an Ubuntu runner.");
 });
 
 test("rejects every duplicate npm ci or npm test occurrence", () => {
@@ -57,7 +57,7 @@ test("rejects every duplicate npm ci or npm test occurrence", () => {
     ["npm ci", "npm test", "npm ci"],
     ["npm ci", "npm test", "npm test"],
   ]) {
-    expect(validateWorkflowValidationJobs("ci.yml", [validationJob(commands)])).toContain(
+    expect(validateWorkflowValidationJobs("ci.yaml", [validationJob(commands)])).toContain(
       "must run npm ci followed immediately by npm test",
     );
   }
@@ -65,13 +65,13 @@ test("rejects every duplicate npm ci or npm test occurrence", () => {
 
 test("requires validation jobs and required steps to be unconditional", () => {
   expect(
-    validateWorkflowValidationJobs("ci.yml", [
+    validateWorkflowValidationJobs("ci.yaml", [
       validationJob(["npm ci", "npm test"], { if: "always()" }),
     ]),
   ).toContain("must not conditionally skip or ignore failure of its validation job");
   const job = validationJob(["npm ci", "npm test"]);
   job.job.steps[1].if = "always()";
-  expect(validateWorkflowValidationJobs("ci.yml", [job])).toContain(
+  expect(validateWorkflowValidationJobs("ci.yaml", [job])).toContain(
     "must not conditionally skip or ignore failure of npm ci or npm test",
   );
 });
@@ -79,14 +79,14 @@ test("requires validation jobs and required steps to be unconditional", () => {
 test("requires every selected validation job to use Ubuntu", () => {
   const job = validationJob(["npm ci", "npm test"]);
   job.job["runs-on"] = "windows-latest";
-  expect(validateWorkflowValidationJobs("ci.yml", [job])).toBe(
-    "ci.yml validation jobs must run on an Ubuntu runner.",
+  expect(validateWorkflowValidationJobs("ci.yaml", [job])).toBe(
+    "ci.yaml validation jobs must run on an Ubuntu runner.",
   );
 });
 
 test("rejects prohibited publication commands and unsupported post-test actions", () => {
   expect(
-    validateWorkflowValidationJobs("ci.yml", [
+    validateWorkflowValidationJobs("ci.yaml", [
       validationJob(["npm ci", "npm test", "npm publish"]),
     ]),
   ).toContain("may not run prohibited publishing commands after npm test");
@@ -94,7 +94,7 @@ test("rejects prohibited publication commands and unsupported post-test actions"
   const testStep = { run: "npm test" };
   const action = { uses: "third-party/action@v1" };
   expect(
-    validateWorkflowValidationJobs("ci.yml", [
+    validateWorkflowValidationJobs("ci.yaml", [
       {
         job: { "runs-on": "ubuntu-latest", steps: [install, testStep, action] },
         commands: [

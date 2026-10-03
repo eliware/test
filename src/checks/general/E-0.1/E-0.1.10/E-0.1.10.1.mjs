@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
+import { parseSingleYamlDocument } from "../parse-single-yaml-document.mjs";
 import { fail, pass } from "../../../check-result.mjs";
 import { isProhibitedPublishCommand } from "../E-0.1.24/is-prohibited-publish-command.mjs";
 
@@ -47,8 +47,12 @@ export async function run(context) {
   const configPath = join(context.root, ".knit", "deploy.yaml");
   try {
     document = context.repositoryInventory
-      ? await context.repositoryInventory.readParsed(configPath, "yaml-document", parse)
-      : parse(await readFile(configPath, "utf8"));
+      ? await context.repositoryInventory.readParsed(
+          configPath,
+          "yaml-document",
+          parseSingleYamlDocument,
+        )
+      : parseSingleYamlDocument(await readFile(configPath, "utf8"));
   } catch (error) {
     const message =
       error.code === "ENOENT"

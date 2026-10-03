@@ -20,7 +20,7 @@ async function writeWorkflow(
   const directory = join(root, ".github", "workflows");
   await mkdir(directory, { recursive: true });
   await writeFile(
-    join(directory, "publish.yml"),
+    join(directory, "publish.yaml"),
     `permissions:\n  contents: read\njobs:\n  validate:\n    steps:\n      - run: npm ci\n      - run: npm test\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - uses: ${publishSetup}\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n      - run: ${publishStep}\n`,
   );
 }
@@ -36,7 +36,7 @@ test("accepts the documented Trusted Publisher job structure", async () => {
 
 test("aggregates independent permission, setup, and provenance findings", async () => {
   await writeWorkflow("npm publish", "actions/setup-node@v6");
-  const file = join(root, ".github", "workflows", "publish.yml");
+  const file = join(root, ".github", "workflows", "publish.yaml");
   const workflow = await readFile(file, "utf8");
   await writeFile(
     file,
@@ -52,20 +52,20 @@ test("aggregates independent permission, setup, and provenance findings", async 
   expect(result.message).toContain("npm publish --provenance");
 });
 
-test("requires publish.yml and an npm publication job", async () => {
+test("requires publish.yaml and an npm publication job", async () => {
   root = await mkdtemp(join(tmpdir(), "eliware-test-npm-oidc-missing-"));
   const directory = join(root, ".github", "workflows");
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, "ci.yml"), "jobs: {}\n");
+  await writeFile(join(directory, "ci.yaml"), "jobs: {}\n");
   await expect(run({ root })).resolves.toMatchObject({
     status: "fail",
-    message: "npm Trusted Publishing requires publish.yml.",
+    message: "npm Trusted Publishing requires publish.yaml.",
   });
 
-  await writeFile(join(directory, "publish.yml"), "jobs:\n  publish:\n    steps: []\n");
+  await writeFile(join(directory, "publish.yaml"), "jobs:\n  publish:\n    steps: []\n");
   await expect(run({ root })).resolves.toMatchObject({
     status: "fail",
-    message: "publish.yml must contain an npm publication job.",
+    message: "publish.yaml must contain an npm publication job.",
   });
 });
 

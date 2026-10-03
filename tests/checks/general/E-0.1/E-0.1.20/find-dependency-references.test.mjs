@@ -139,7 +139,7 @@ test("does not count a dependency referenced only by a GitHub Actions workflow",
   try {
     await mkdir(join(root, ".github", "workflows"), { recursive: true });
     await writeFile(
-      join(root, ".github", "workflows", "ci.yml"),
+      join(root, ".github", "workflows", "ci.yaml"),
       "jobs:\n  validate:\n    steps:\n      - run: node node_modules/.bin/vyops preflight config.boot\n",
     );
     await writeFile(

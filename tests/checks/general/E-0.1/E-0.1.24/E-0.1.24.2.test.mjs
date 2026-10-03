@@ -16,7 +16,7 @@ test("rejects an unapproved required action version from parsed uses values", as
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
+    join(root, ".github", "workflows", "ci.yaml"),
     "jobs:\n  test:\n    steps:\n      - uses: actions/checkout@v4\n",
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
@@ -27,7 +27,7 @@ test("reports every unapproved action version in one workflow", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-actions-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
+    join(root, ".github", "workflows", "ci.yaml"),
     "jobs:\n  test:\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v6\n",
   );
   const result = await run({ root });
@@ -41,27 +41,27 @@ test("requires setup-node v7 in CI and npm publication workflows", async () => {
   const directory = join(root, ".github", "workflows");
   await mkdir(directory, { recursive: true });
   await writeFile(
-    join(directory, "ci.yml"),
+    join(directory, "ci.yaml"),
     "jobs:\n  test:\n    steps:\n      - uses: actions/setup-node@v7\n      - uses: actions/cache@v4\n",
   );
   await writeFile(
-    join(directory, "publish.yml"),
+    join(directory, "publish.yaml"),
     "jobs:\n  publish:\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n",
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
 
   await writeFile(
-    join(directory, "ci.yml"),
+    join(directory, "ci.yaml"),
     "jobs:\n  test:\n    steps:\n      - uses: actions/setup-node@v6\n",
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
 
   await writeFile(
-    join(directory, "ci.yml"),
+    join(directory, "ci.yaml"),
     "jobs:\n  test:\n    steps:\n      - uses: actions/setup-node@v7\n",
   );
   await writeFile(
-    join(directory, "publish.yml"),
+    join(directory, "publish.yaml"),
     "jobs:\n  publish:\n    steps:\n      - uses: actions/setup-node@v6\n",
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
@@ -80,7 +80,7 @@ test("returns a failed check result when workflow discovery or parsing fails", a
   const malformedRoot = await mkdtemp(join(tmpdir(), "eliware-test-malformed-workflow-"));
   const workflowDirectory = join(malformedRoot, ".github", "workflows");
   await mkdir(workflowDirectory, { recursive: true });
-  await writeFile(join(workflowDirectory, "ci.yml"), "jobs: [\n");
+  await writeFile(join(workflowDirectory, "ci.yaml"), "jobs: [\n");
   await expect(run({ root: malformedRoot })).resolves.toMatchObject({
     ruleId: "E-0.1.24.2",
     status: "fail",

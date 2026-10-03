@@ -31,3 +31,47 @@ test("fails when the Knit deployment configuration is missing", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("rejects alternate and extra Knit workflow YAML files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-knit-config-extra-"));
+  const directory = join(root, ".knit");
+  try {
+    await mkdir(join(directory, "nested"), { recursive: true });
+    await writeFile(join(directory, "deploy.yaml"), "version: 1\n");
+    await writeFile(join(directory, "nested", "other.yml"), "version: 1\n");
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("nested/other.yml"),
+    });
+    await rm(join(directory, "nested", "other.yml"));
+    await writeFile(join(directory, "deploy.yml"), "version: 1\n");
+    await expect(run({ root })).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining("deploy.yml"),
+    });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("uses repository inventory and fails when it cannot be read", async () => {
+  await expect(
+    run({
+      root: "/repo",
+      repositoryInventory: { repositoryFiles: async () => [".knit/deploy.yaml"] },
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+  await expect(
+    run({
+      root: "/repo",
+      repositoryInventory: {
+        repositoryFiles: async () => {
+          throw new Error("inventory failure");
+        },
+      },
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("inventory failure"),
+  });
+});

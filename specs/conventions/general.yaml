@@ -112,7 +112,7 @@ directives:
         directives:
           - id: E-0.1.1.0
             dos:
-              - "Unless a rule states otherwise, 'repository' means a repository that explicitly applies the general profile. Every such repository README must use this exact structure: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; the general headings from the canonical README heading table with applicable profile headings inserted after Security; then Support, License, and Links as the final three top-level headings in that order. The CI badge must use and link to the canonical .github/workflows/ci.yml workflow. Use the canonical license badge and target and, only for public npm packages, the canonical npm badge and package target shown in examples."
+              - "Unless a rule states otherwise, 'repository' means a repository that explicitly applies the general profile. Every such repository README must use this exact structure: Eliware logo header; package or project title with applicable npm, license, and CI badges; Table of Contents; the general headings from the canonical README heading table with applicable profile headings inserted after Security; then Support, License, and Links as the final three top-level headings in that order. The CI badge must use and link to the canonical .github/workflows/ci.yaml workflow. Use the canonical license badge and target and, only for public npm packages, the canonical npm badge and package target shown in examples."
               - The README must use the exact Eliware logo header and Discord support block shown in this directive's examples, and link the repository LICENSE from License.
               - Build the README section list from the canonical README heading table and every profile explicitly listed in package.json.eliware.apply. The table in this rule's examples is the sole source of required README headings and their order; profile rules define the content required under those headings. Append mapped profile headings after Security and before Support, regardless of package.json array order. Omit profiles that do not apply. If multiple profiles require a section with the same exact heading, use one section at the position of its first occurrence and combine the applicable required content there. For example, application and MCP-server profiles both require Operations; place their distinct required content in one Operations section at the first profile position. Profiles mapped to no headings add no sections. Do not merge sections with different headings merely because their topics overlap.
               - For repositories with package.json, the README title text must exactly equal package.json.name. Put applicable badges adjacent to the title as separate Markdown links; badge text is not part of the title. Place the title immediately after the Eliware logo header and do not treat it as a content section or include it in the Table of Contents. Only blank lines may occur between the logo header, title, and Table of Contents; no prose, links, badges, or other content may precede the Table of Contents. The README may use only the general and applicable profile level-two section headings. Lower-level headings may organize material beneath an allowed level-two section. The Table of Contents must link every level-two section after the title exactly once, in document order, using the fragment formed by lowercasing the heading and replacing each space with a hyphen. The allowed heading inventory contains only unique ASCII letters and spaces, so punctuation and duplicate-heading slug rules do not apply.
@@ -144,7 +144,7 @@ directives:
               - purpose: Canonical applicable badge targets
                 markdown: |-
                   [![License](https://img.shields.io/github/license/eliware/example)](https://github.com/eliware/example/blob/main/LICENSE)
-                  [![CI](https://github.com/eliware/example/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/example/actions/workflows/ci.yml)
+                  [![CI](https://github.com/eliware/example/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/example/actions/workflows/ci.yaml)
                   [![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/package/@eliware/example)
 
                   Include the npm badge and target only for a public npm package.
@@ -300,9 +300,12 @@ directives:
       - id: E-0.1.10
         dos:
           - Every repository must contain .knit/deploy.yaml.
+          - .knit/deploy.yaml is the only Knit workflow file. No other .yaml or .yml file may appear anywhere under .knit/.
+          - The Knit workflow must be exactly one YAML document and must follow the applicable .knit/deploy.yaml command conventions.
+          - Keep Knit workflow inventory confined to .knit/; GitHub Actions workflow files do not satisfy the Knit requirement.
           - Each repository's Knit configuration defines its own synchronization and validation commands.
         donts:
-          - Repositories must not omit Knit deployment configuration or assume another repository's Knit configuration applies.
+          - Repositories must not omit or duplicate Knit workflow files or assume another repository's Knit configuration applies.
         directives:
           - id: E-0.1.10.1
             dos:
@@ -355,7 +358,9 @@ directives:
           - Every @eliware/* repository must contain a GitHub Actions workflow that explicitly targets the main branch for pushes and pull requests by including main in each event's branches filter. Evaluate ordered branch patterns starting excluded; only a pattern that matches main changes whether main is included, so an unmatched negated pattern never authorizes main.
           - Workflow event configuration values must use GitHub's mapping shape; arrays of activity types belong in an event's types field, while an array of event names is allowed only as the top-level on value.
           - Deterministic event-field validation supports the event-specific mapping shapes implemented by this convention; add and test schema support before relying on an event field outside that supported set.
-          - Every repository must contain exactly one workflow file at .github/workflows/ci.yml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yml.
+          - Every repository must contain exactly one workflow file at .github/workflows/ci.yaml. Repositories must not contain any other GitHub Actions workflow files unless an applied publication profile explicitly requires .github/workflows/publish.yaml.
+          - Every allowed GitHub Actions workflow file must contain exactly one YAML document.
+          - Keep GitHub Actions workflow inventory confined to .github/workflows/; Knit workflow files do not satisfy the GitHub Actions requirement.
           - Ubuntu CI is always required.
           - The GitHub validation workflow may run the same npm ci and npm test commands configured in .knit/deploy.yaml.
         donts:
@@ -370,7 +375,7 @@ directives:
             donts:
               - Do not replace npm test with partial checks, run npm update or npm install in CI, or duplicate lint and format checks owned by eliware-test.
             examples:
-              - purpose: Copyable Ubuntu validation workflow for .github/workflows/ci.yml
+              - purpose: Copyable Ubuntu validation workflow for .github/workflows/ci.yaml
                 markdown: |-
                   ```yaml
                   name: Validation

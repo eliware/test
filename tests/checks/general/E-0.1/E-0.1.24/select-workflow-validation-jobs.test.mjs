@@ -29,7 +29,7 @@ beforeEach(() => {
 });
 
 test("selects validation jobs and returns their normalized commands", () => {
-  const result = selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } });
+  const result = selectWorkflowValidationJobs("ci.yaml", { jobs: { validate: validJob } });
 
   expect(result).toEqual({
     error: null,
@@ -45,7 +45,7 @@ test("selects validation jobs and returns their normalized commands", () => {
     ],
   });
   expect(validateWorkflowSiblingJobs).toHaveBeenCalledWith(
-    "ci.yml",
+    "ci.yaml",
     expect.arrayContaining([expect.objectContaining({ id: "validate" })]),
     new Set(["validate"]),
     new Set(),
@@ -55,7 +55,7 @@ test("selects validation jobs and returns their normalized commands", () => {
 test("accepts a profile-validated GHCR publisher as a separate publication job", () => {
   const publisher = { steps: [{ run: "docker push ghcr.io/eliware/example" }] };
   const result = selectWorkflowValidationJobs(
-    "publish.yml",
+    "publish.yaml",
     {
       jobs: { validate: validJob, publish: publisher },
     },
@@ -64,7 +64,7 @@ test("accepts a profile-validated GHCR publisher as a separate publication job",
 
   expect(result.error).toBeNull();
   expect(validateWorkflowSiblingJobs).toHaveBeenCalledWith(
-    "publish.yml",
+    "publish.yaml",
     expect.arrayContaining([expect.objectContaining({ id: "publish" })]),
     new Set(["validate"]),
     new Set(["publish"]),
@@ -74,32 +74,32 @@ test("accepts a profile-validated GHCR publisher as a separate publication job",
 test("maps missing validation jobs according to whether the workflow publishes", () => {
   expect(
     selectWorkflowValidationJobs(
-      "publish.yml",
+      "publish.yaml",
       { jobs: { publish: { steps: [] } } },
       { publicationJobIds: new Set(["publish"]) },
     ),
   ).toEqual({
-    error: "publish.yml publication workflow must contain a separate validation job.",
+    error: "publish.yaml publication workflow must contain a separate validation job.",
     jobs: [],
   });
-  expect(selectWorkflowValidationJobs("ci.yml", { jobs: {} })).toEqual({
-    error: "ci.yml must validate with npm ci followed by npm test.",
+  expect(selectWorkflowValidationJobs("ci.yaml", { jobs: {} })).toEqual({
+    error: "ci.yaml must validate with npm ci followed by npm test.",
     jobs: [],
   });
 });
 
 test("maps validation-command and sibling-validation findings", () => {
   validateWorkflowValidationJobs.mockReturnValueOnce(
-    "ci.yml contains non-validation command(s): curl example.test.",
+    "ci.yaml contains non-validation command(s): curl example.test.",
   );
-  expect(selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } })).toEqual({
-    error: "ci.yml contains non-validation command(s): curl example.test.",
+  expect(selectWorkflowValidationJobs("ci.yaml", { jobs: { validate: validJob } })).toEqual({
+    error: "ci.yaml contains non-validation command(s): curl example.test.",
     jobs: [],
   });
   expect(validateWorkflowSiblingJobs).not.toHaveBeenCalled();
 
   validateWorkflowSiblingJobs.mockReturnValueOnce("sibling job invalid");
-  expect(selectWorkflowValidationJobs("ci.yml", { jobs: { validate: validJob } })).toEqual({
+  expect(selectWorkflowValidationJobs("ci.yaml", { jobs: { validate: validJob } })).toEqual({
     error: "sibling job invalid",
     jobs: [],
   });
@@ -107,15 +107,15 @@ test("maps validation-command and sibling-validation findings", () => {
 
 test("rejects a name-labeled validation job without adjacent npm ci and npm test steps", () => {
   validateWorkflowValidationJobs.mockReturnValueOnce(
-    "publish.yml must run npm ci followed immediately by npm test.",
+    "publish.yaml must run npm ci followed immediately by npm test.",
   );
   const namedJob = { steps: [{ run: "echo ready" }] };
 
-  expect(selectWorkflowValidationJobs("publish.yml", { jobs: { validate: namedJob } })).toEqual({
-    error: "publish.yml must run npm ci followed immediately by npm test.",
+  expect(selectWorkflowValidationJobs("publish.yaml", { jobs: { validate: namedJob } })).toEqual({
+    error: "publish.yaml must run npm ci followed immediately by npm test.",
     jobs: [],
   });
-  expect(validateWorkflowValidationJobs).toHaveBeenCalledWith("publish.yml", [
+  expect(validateWorkflowValidationJobs).toHaveBeenCalledWith("publish.yaml", [
     {
       id: "validate",
       job: namedJob,

@@ -3,7 +3,7 @@ import { findValidationCommandPair } from "../../../../../src/checks/general/E-0
 
 test("finds the required install and test commands", () => {
   const commands = [{ command: "npm ci" }, { command: "npm test" }];
-  expect(findValidationCommandPair("ci.yml", commands)).toMatchObject({
+  expect(findValidationCommandPair("ci.yaml", commands)).toMatchObject({
     install: commands[0],
     test: commands[1],
   });
@@ -11,38 +11,38 @@ test("finds the required install and test commands", () => {
     { command: "npm ci", index: 4 },
     { command: "npm test", index: 5 },
   ];
-  expect(findValidationCommandPair("ci.yml", indexedCommands)).toMatchObject({
+  expect(findValidationCommandPair("ci.yaml", indexedCommands)).toMatchObject({
     install: indexedCommands[0],
     test: indexedCommands[1],
   });
 });
 
 test("rejects missing, interrupted, and reversed required commands", () => {
-  expect(findValidationCommandPair("ci.yml", [])).toHaveProperty("error");
-  expect(findValidationCommandPair("ci.yml", [{ command: "npm test" }])).toHaveProperty("error");
-  expect(findValidationCommandPair("ci.yml", [{ command: "npm ci" }])).toHaveProperty("error");
+  expect(findValidationCommandPair("ci.yaml", [])).toHaveProperty("error");
+  expect(findValidationCommandPair("ci.yaml", [{ command: "npm test" }])).toHaveProperty("error");
+  expect(findValidationCommandPair("ci.yaml", [{ command: "npm ci" }])).toHaveProperty("error");
   expect(
-    findValidationCommandPair("ci.yml", [
+    findValidationCommandPair("ci.yaml", [
       { command: "npm ci" },
       { command: "npm ci" },
       { command: "npm test" },
     ]),
   ).toHaveProperty("error");
   expect(
-    findValidationCommandPair("ci.yml", [
+    findValidationCommandPair("ci.yaml", [
       { command: "npm ci" },
       { command: "npm test" },
       { command: "npm test" },
     ]),
   ).toHaveProperty("error");
   expect(
-    findValidationCommandPair("ci.yml", [
+    findValidationCommandPair("ci.yaml", [
       { command: "npm ci" },
       { command: "npm test" },
       { command: "npm ci" },
     ]),
   ).toHaveProperty("error");
   expect(
-    findValidationCommandPair("ci.yml", [{ command: "npm test" }, { command: "npm ci" }]),
+    findValidationCommandPair("ci.yaml", [{ command: "npm test" }, { command: "npm ci" }]),
   ).toHaveProperty("error");
 });

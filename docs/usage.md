@@ -70,6 +70,13 @@ requirements apply whether or not the map is available.
 
 ## Common commands
 
+Shared validation requires exactly `.github/workflows/ci.yaml` and
+`.knit/deploy.yaml`. The npm and GHCR publication profiles add one shared
+`.github/workflows/publish.yaml`; no other GitHub Actions or Knit workflow YAML
+files are allowed. Each allowed workflow must contain one YAML document and
+must satisfy its profile-specific checks. GitHub Actions and Knit inventories
+are validated separately.
+
 Repositories that select `ghcr-published` document their image in the existing
 README `Usage` section using the canonical `Image`, `Pull command`, `Supported
 tags`, and `Deployment boundary` markers defined in

@@ -1,6 +1,6 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-## @eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yml)
+## @eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yaml)
 
 ## Table of Contents
 
@@ -165,6 +165,12 @@ Focused extension support does not change the source/test mirroring requirement:
 each maintained `.mjs` source module must have its mirrored `.test.mjs` test.
 Jest reporter names in `package.json` must be strings; per-reporter option
 tuples are unsupported because the harness supplies its own reporters.
+
+The canonical workflow inventory is `.github/workflows/ci.yaml` and
+`.knit/deploy.yaml`, plus `.github/workflows/publish.yaml` when npm or GHCR
+publication applies. No other GitHub Actions or Knit workflow YAML files are
+allowed. Each allowed workflow must be a single YAML document and meet its
+applicable profile conventions.
 
 ## Troubleshooting
 

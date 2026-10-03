@@ -11,7 +11,7 @@ test("requires validation before publication", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:
   validate:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ test("requires validation before publication", async () => {
   );
   expect((await run({ root })).status).toBe("pass");
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:
   validate:
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ test("fails when the required publication workflow is unavailable", async () => 
   );
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-ci-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "ci.yml"), "name: ci\n");
+  await writeFile(join(root, ".github", "workflows", "ci.yaml"), "name: ci\n");
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 });
 
@@ -57,7 +57,7 @@ test("rejects publication without a validation job or matching needs", async () 
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-invalid-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:
   validate:
     steps:
@@ -71,7 +71,7 @@ test("rejects publication without a validation job or matching needs", async () 
   );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:
   validate:
     steps:
@@ -89,10 +89,10 @@ test("rejects publication without a validation job or matching needs", async () 
 test("reports unparseable publication workflows and missing needs", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-parse-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), "npm publish\n");
+  await writeFile(join(root, ".github", "workflows", "publish.yaml"), "npm publish\n");
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:
   validate:
     steps:
@@ -110,7 +110,7 @@ test("rejects a publication workflow without a usable validation job", async () 
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-no-validation-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:\n  publish:\n    needs: validate\n    steps:\n      - run: npm publish\n`,
   );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
@@ -120,7 +120,7 @@ test("rejects an unparseable publication-looking companion workflow", async () =
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-mixed-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n  publish:\n    needs: validate\n    steps:\n      - run: npm publish\n`,
   );
   await writeFile(join(root, ".github", "workflows", "legacy.yml"), "npm publish\n");
@@ -132,7 +132,7 @@ test("rejects an unparseable publication-looking companion workflow", async () =
 test("rejects an unsafe always gate and accepts scalar needs only when it names validation", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-always-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  const file = join(root, ".github", "workflows", "publish.yml");
+  const file = join(root, ".github", "workflows", "publish.yaml");
   await writeFile(
     file,
     `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci\n      - run: npm test\n  publish:\n    needs: validate\n    if: always()\n    steps:\n      - run: npm publish\n`,
@@ -148,7 +148,7 @@ test("rejects an unsafe always gate and accepts scalar needs only when it names 
 test("rejects validation commands that are not exact aggregate invocations", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-command-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  const file = join(root, ".github", "workflows", "publish.yml");
+  const file = join(root, ".github", "workflows", "publish.yaml");
   await writeFile(
     file,
     `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - run: npm ci --ignore-scripts\n      - run: npm test\n  publish:\n    needs: validate\n    steps:\n      - run: npm publish\n`,
@@ -165,7 +165,7 @@ test("handles validation steps without run commands", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-publish-gate-uses-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "publish.yml"),
+    join(root, ".github", "workflows", "publish.yaml"),
     `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm test\n  publish:\n    needs: validate\n    steps:\n      - run: npm publish\n`,
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "pass" });

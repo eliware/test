@@ -95,7 +95,7 @@ test("fails when no GHCR publication job exists", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-ghcr-empty-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
+    join(root, ".github", "workflows", "ci.yaml"),
     "jobs:\n  test:\n    steps:\n      - run: npm test\n",
   );
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));

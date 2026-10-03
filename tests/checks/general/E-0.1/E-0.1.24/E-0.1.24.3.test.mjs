@@ -16,12 +16,12 @@ test("rejects missing or incorrectly typed concurrency fields", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
+    join(root, ".github", "workflows", "ci.yaml"),
     "concurrency:\n  cancel-in-progress: false\njobs:\n  validate:\n    steps:\n      - run: npm ci\n      - run: npm test\n",
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "fail" });
   await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
+    join(root, ".github", "workflows", "ci.yaml"),
     "jobs:\n  publish:\n    steps:\n      - run: npm publish\n",
   );
   await expect(run({ root })).resolves.toMatchObject({ status: "pass" });
@@ -89,7 +89,7 @@ test("returns actionable failures when workflow discovery or parsing fails", asy
     });
     const workflows = join(root, ".github", "workflows");
     await mkdir(workflows, { recursive: true });
-    await writeFile(join(workflows, "ci.yml"), "jobs: [\n");
+    await writeFile(join(workflows, "ci.yaml"), "jobs: [\n");
     await expect(run({ root })).resolves.toMatchObject({
       ruleId: "E-0.1.24.3",
       status: "fail",

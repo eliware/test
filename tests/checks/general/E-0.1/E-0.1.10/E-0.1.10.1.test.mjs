@@ -117,6 +117,15 @@ test("reports missing, malformed, and command-free deployment configuration", as
       message: expect.stringContaining("could not be parsed"),
     });
   });
+  await withConfiguration(
+    "commands: [git pull --ff-only origin main, npm ci, npm test]\n---\nversion: 2\n",
+    async (root) => {
+      await expect(run({ root })).resolves.toMatchObject({
+        status: "fail",
+        message: expect.stringContaining("exactly one YAML document"),
+      });
+    },
+  );
   await withConfiguration("version: 1\n", async (root) => {
     await expect(run({ root })).resolves.toMatchObject({
       status: "fail",

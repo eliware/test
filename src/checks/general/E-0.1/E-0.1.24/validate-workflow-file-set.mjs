@@ -1,10 +1,10 @@
 const publicationProfiles = new Set(["npm-published", "ghcr-published"]);
 
 export function validateWorkflowFileSet(workflowNames, packageJson = {}) {
-  const expected = ["ci.yml"];
+  const expected = ["ci.yaml"];
   const applied = packageJson?.eliware?.apply;
   if (Array.isArray(applied) && applied.some((profile) => publicationProfiles.has(profile))) {
-    expected.push("publish.yml");
+    expected.push("publish.yaml");
   }
 
   const actual = [...workflowNames].sort();

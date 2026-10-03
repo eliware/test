@@ -2,7 +2,7 @@ import { workflowHasValidationEvents } from "./workflow-validation-events.mjs";
 
 export function validateCiWorkflow(workflows) {
   const workflow = workflows.find(
-    ({ name, document }) => name === "ci.yml" && workflowHasValidationEvents(document),
+    ({ name, document }) => name === "ci.yaml" && workflowHasValidationEvents(document),
   );
   return workflow
     ? null

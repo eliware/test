@@ -61,7 +61,7 @@ export async function createGhcrFixture() {
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(join(root, "AGENTS.md"), agents);
   await writeFile(join(root, "Dockerfile"), "FROM node:26\n");
-  await writeFile(join(root, ".github", "workflows", "validation.yml"), validation);
-  await writeFile(join(root, ".github", "workflows", "publish.yml"), publication);
-  return { root, publicationPath: join(root, ".github", "workflows", "publish.yml") };
+  await writeFile(join(root, ".github", "workflows", "ci.yaml"), validation);
+  await writeFile(join(root, ".github", "workflows", "publish.yaml"), publication);
+  return { root, publicationPath: join(root, ".github", "workflows", "publish.yaml") };
 }

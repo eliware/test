@@ -13,11 +13,11 @@ export const repositoryInventoryOptions = { expandedDirectories: [".github"] };
 export async function run(context) {
   try {
     const workflows = await readWorkflows(context.root, context);
-    const workflow = workflows.find(({ name }) => name === "publish.yml");
-    if (!workflow) return fail(ruleId, "npm Trusted Publishing requires publish.yml.");
+    const workflow = workflows.find(({ name }) => name === "publish.yaml");
+    if (!workflow) return fail(ruleId, "npm Trusted Publishing requires publish.yaml.");
     const publicationJobs = npmPublicationJobs(workflow);
     if (publicationJobs.length === 0)
-      return fail(ruleId, "publish.yml must contain an npm publication job.");
+      return fail(ruleId, "publish.yaml must contain an npm publication job.");
     const validationJobs = findValidationJobs(workflow);
     const permissionError = validateNpmOidcPermissionScope(
       workflow,

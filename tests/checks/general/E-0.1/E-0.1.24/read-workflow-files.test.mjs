@@ -22,7 +22,7 @@ test("reads and parses workflows through the run inventory cache", async () => {
   const root = await mkdtemp(join(tmpdir(), "test-workflows-inventory-"));
   const workflows = join(root, ".github", "workflows");
   await mkdir(workflows, { recursive: true });
-  await writeFile(join(workflows, "ci.yml"), "name: ci\njobs: {}\n");
+  await writeFile(join(workflows, "ci.yaml"), "name: ci\njobs: {}\n");
   const reads = new Map();
   const repositoryInventory = createRepositoryInventory(root, {
     expandedDirectories: [".github"],
@@ -34,15 +34,24 @@ test("reads and parses workflows through the run inventory cache", async () => {
   const first = await readWorkflows(root, repositoryInventory);
   const second = await readWorkflows(root, repositoryInventory);
   expect(second).not.toBe(first);
-  expect(first).toEqual([{ name: "ci.yml", document: { name: "ci", jobs: {} } }]);
+  expect(first).toEqual([{ name: "ci.yaml", document: { name: "ci", jobs: {} } }]);
   expect(second[0].document).toBe(first[0].document);
-  expect(reads.get(join(workflows, "ci.yml"))).toBe(1);
+  expect(reads.get(join(workflows, "ci.yaml"))).toBe(1);
+  await rm(root, { recursive: true, force: true });
+});
+
+test("rejects a multi-document GitHub workflow", async () => {
+  const root = await mkdtemp(join(tmpdir(), "test-workflows-multidoc-"));
+  const workflows = join(root, ".github", "workflows");
+  await mkdir(workflows, { recursive: true });
+  await writeFile(join(workflows, "ci.yaml"), "name: ci\n---\nname: second\n");
+  await expect(readWorkflows(root)).rejects.toThrow("exactly one YAML document");
   await rm(root, { recursive: true, force: true });
 });
 
 test("retries workflow loading after a transient inventory read failure", async () => {
   const repositoryInventory = {
-    directoryEntries: async () => [{ name: "ci.yml", isFile: () => true }],
+    directoryEntries: async () => [{ name: "ci.yaml", isFile: () => true }],
     readParsed: jest
       .fn()
       .mockRejectedValueOnce(new Error("temporary read failure"))
@@ -53,7 +62,7 @@ test("retries workflow loading after a transient inventory read failure", async 
     "temporary read failure",
   );
   await expect(readWorkflows("/repo", repositoryInventory)).resolves.toEqual([
-    { name: "ci.yml", document: { jobs: {} } },
+    { name: "ci.yaml", document: { jobs: {} } },
   ]);
   expect(repositoryInventory.readParsed).toHaveBeenCalledTimes(2);
 });

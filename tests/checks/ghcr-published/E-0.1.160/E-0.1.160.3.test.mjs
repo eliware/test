@@ -16,11 +16,11 @@ test("requires separate validation and publication workflows", async () => {
 test("fails when either validation or publication workflows are absent", async () => {
   const { root } = await createGhcrFixture();
   const { rm } = await import("node:fs/promises");
-  await rm(`${root}/.github/workflows/validation.yml`);
+  await rm(`${root}/.github/workflows/ci.yaml`);
   await expect(run({ root })).resolves.toEqual(expect.objectContaining({ status: "fail" }));
 
   const second = await createGhcrFixture();
-  await rm(`${second.root}/.github/workflows/publish.yml`);
+  await rm(`${second.root}/.github/workflows/publish.yaml`);
   await expect(run({ root: second.root })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );

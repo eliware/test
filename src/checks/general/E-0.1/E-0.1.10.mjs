@@ -1,15 +1,19 @@
-import { access } from "node:fs/promises";
-import { join } from "node:path";
 import { fail, pass } from "../../check-result.mjs";
+import { readKnitWorkflowFiles } from "./E-0.1.10/read-knit-workflow-files.mjs";
+import { validateKnitWorkflowFileSet } from "./E-0.1.10/validate-knit-workflow-file-set.mjs";
 
 export const ruleId = "E-0.1.10";
 export const parentRuleId = "E-0.1";
 
-export async function run({ root }) {
+export async function run({ root, repositoryInventory }) {
+  let workflowPaths;
   try {
-    await access(join(root, ".knit", "deploy.yaml"));
-  } catch {
+    workflowPaths = await readKnitWorkflowFiles(root, repositoryInventory);
+  } catch (error) {
+    if (error.code !== "ENOENT")
+      return fail(ruleId, `Knit workflow inventory could not be read: ${error.message}`);
     return fail(ruleId, ".knit/deploy.yaml is required for Knit configuration.");
   }
-  return pass(ruleId);
+  const error = validateKnitWorkflowFileSet(workflowPaths);
+  return error ? fail(ruleId, error) : pass(ruleId);
 }

@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateReadmePackageBadges } from "../../../../../src/checks/general/E-0.1/E-0.1.1/validate-readme-package-badges.mjs";
 
 const heading =
-  "## @eliware/fixture [![npm](https://img.shields.io/npm/v/@eliware/fixture)](https://www.npmjs.com/package/@eliware/fixture) [![License](https://img.shields.io/github/license/eliware/fixture)](https://github.com/eliware/fixture/blob/main/LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yml)";
+  "## @eliware/fixture [![npm](https://img.shields.io/npm/v/@eliware/fixture)](https://www.npmjs.com/package/@eliware/fixture) [![License](https://img.shields.io/github/license/eliware/fixture)](https://github.com/eliware/fixture/blob/main/LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yaml)";
 const metadata = {
   name: "@eliware/fixture",
   repository: "git+https://github.com/eliware/fixture.git",
@@ -50,7 +50,7 @@ test("rejects noncanonical title and badge text, order, images, or targets", () 
     heading.replace("## @eliware/fixture", "## @eliware/fixture extra"),
     heading.replace("img.shields.io/github/license/eliware/fixture", "img.shields.io/wrong"),
     heading.replace("blob/main/LICENSE", "LICENSE"),
-    heading.replace("actions/workflows/ci.yml/badge.svg", "workflows/other.yml/badge.svg"),
+    heading.replace("actions/workflows/ci.yaml/badge.svg", "workflows/other.yml/badge.svg"),
     heading.replace("npm/v/@eliware/fixture", "npm/v/other"),
     heading.replace("[![License]", "[![license]"),
   ]) {

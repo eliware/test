@@ -3,14 +3,14 @@ import { validateWorkflowPreInstallCommands } from "../../../../../src/checks/ge
 
 test("allows safe reporting before install", () => {
   expect(
-    validateWorkflowPreInstallCommands("ci.yml", [{ command: "echo starting" }], 1),
+    validateWorkflowPreInstallCommands("ci.yaml", [{ command: "echo starting" }], 1),
   ).toBeNull();
   expect(
-    validateWorkflowPreInstallCommands("ci.yml", [{ command: "printf 'starting validation'" }], 1),
+    validateWorkflowPreInstallCommands("ci.yaml", [{ command: "printf 'starting validation'" }], 1),
   ).toBeNull();
   expect(
     validateWorkflowPreInstallCommands(
-      "ci.yml",
+      "ci.yaml",
       [{ command: "echo starting" }, { command: "npm ci" }],
       1,
     ),
@@ -46,7 +46,7 @@ test("rejects file creation and other setup commands before install", () => {
     'echo "safe\\\"; touch .env"',
     'echo "safe\\\\value"',
   ]) {
-    expect(validateWorkflowPreInstallCommands("ci.yml", [{ command }], 1)).toContain(
+    expect(validateWorkflowPreInstallCommands("ci.yaml", [{ command }], 1)).toContain(
       "safe reporting",
     );
   }
@@ -54,7 +54,7 @@ test("rejects file creation and other setup commands before install", () => {
 
 test("rejects unsupported script fields before install", () => {
   expect(
-    validateWorkflowPreInstallCommands("ci.yml", [], 1, [
+    validateWorkflowPreInstallCommands("ci.yaml", [], 1, [
       { script: "npm install attacker-package" },
     ]),
   ).toContain("safe reporting");
@@ -64,19 +64,19 @@ test("allows the approved setup actions and rejects unreviewed actions before in
   const install = { run: "npm ci" };
   const commands = [{ command: install.run, index: 1, step: install }];
   expect(
-    validateWorkflowPreInstallCommands("ci.yml", commands, 1, [
+    validateWorkflowPreInstallCommands("ci.yaml", commands, 1, [
       { uses: "actions/checkout@v6" },
       install,
     ]),
   ).toBeNull();
   expect(
-    validateWorkflowPreInstallCommands("ci.yml", commands, 1, [
+    validateWorkflowPreInstallCommands("ci.yaml", commands, 1, [
       { uses: "someone/unreviewed-action@v1" },
       install,
     ]),
   ).toContain("safe reporting");
   expect(
-    validateWorkflowPreInstallCommands("ci.yml", [{ command: "npm ci", index: 2 }], 2, [
+    validateWorkflowPreInstallCommands("ci.yaml", [{ command: "npm ci", index: 2 }], 2, [
       { uses: "actions/checkout@v6" },
       { uses: "someone/unreviewed-action@v1" },
       { run: "npm ci" },
@@ -88,20 +88,20 @@ test("allows setup-node v7 in CI and publication workflows", () => {
   const setup = { uses: "actions/setup-node@v7" };
   expect(
     validateWorkflowPreInstallCommands(
-      "publish.yml job validate",
+      "publish.yaml job validate",
       [{ command: "npm ci", index: 1 }],
       1,
       [setup, { run: "npm ci" }],
     ),
   ).toBeNull();
   expect(
-    validateWorkflowPreInstallCommands("ci.yml job test", [{ command: "npm ci", index: 1 }], 1, [
+    validateWorkflowPreInstallCommands("ci.yaml job test", [{ command: "npm ci", index: 1 }], 1, [
       setup,
       { run: "npm ci" },
     ]),
   ).toBeNull();
   expect(
-    validateWorkflowPreInstallCommands("ci.yml job test", [{ command: "npm ci", index: 1 }], 1, [
+    validateWorkflowPreInstallCommands("ci.yaml job test", [{ command: "npm ci", index: 1 }], 1, [
       { uses: "actions/setup-node@v6" },
       { run: "npm ci" },
     ]),
@@ -117,5 +117,5 @@ test("ignores unapproved actions after install", () => {
     { command: "npm ci", index: 0, step: install },
     { command: "npm test", index: 1, step: testStep },
   ];
-  expect(validateWorkflowPreInstallCommands("ci.yml", commands, 0, steps)).toBeNull();
+  expect(validateWorkflowPreInstallCommands("ci.yaml", commands, 0, steps)).toBeNull();
 });

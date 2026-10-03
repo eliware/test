@@ -31,7 +31,7 @@ export function validateReadmePackageBadges(readme, packageJson = {}) {
         ]
       : []),
     `[![License](https://img.shields.io/github/license/${repositoryPath})](https://github.com/${repositoryPath}/blob/main/LICENSE)`,
-    `[![CI](https://github.com/${repositoryPath}/actions/workflows/ci.yml/badge.svg)](https://github.com/${repositoryPath}/actions/workflows/ci.yml)`,
+    `[![CI](https://github.com/${repositoryPath}/actions/workflows/ci.yaml/badge.svg)](https://github.com/${repositoryPath}/actions/workflows/ci.yaml)`,
   ];
   const expectedHeading = `## ${packageName} ${badges.join(" ")}`;
   return heading === expectedHeading

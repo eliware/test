@@ -7,9 +7,9 @@ import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.24/A-0.1.24.1
 test("rejects CodeScope in workflow files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
-  await writeFile(join(root, ".github", "workflows", "ci.yml"), "run: codescope");
+  await writeFile(join(root, ".github", "workflows", "ci.yaml"), "run: codescope");
   expect((await run({ root })).status).toBe("fail");
-  await writeFile(join(root, ".github", "workflows", "ci.yml"), "run: npm test\nenv: null");
+  await writeFile(join(root, ".github", "workflows", "ci.yaml"), "run: npm test\nenv: null");
   expect((await run({ root })).status).toBe("pass");
 });
 
@@ -17,7 +17,7 @@ test("rejects CodeScope supplied through a workflow environment value", async ()
   const root = await mkdtemp(join(tmpdir(), "eliware-test-workflow-env-"));
   await mkdir(join(root, ".github", "workflows"), { recursive: true });
   await writeFile(
-    join(root, ".github", "workflows", "ci.yml"),
+    join(root, ".github", "workflows", "ci.yaml"),
     'steps:\n  - run: "$TOOL"\n    env:\n      TOOL: codescope all\n',
   );
   expect((await run({ root })).status).toBe("fail");

@@ -70,13 +70,13 @@ test("coordinates sequence validators in order with their owning inputs", () => 
   const steps = [{ name: "install" }, { name: "test" }];
   const job = { name: "validate" };
 
-  expect(validateWorkflowSequence("ci.yml", commands, steps, job)).toBeNull();
+  expect(validateWorkflowSequence("ci.yaml", commands, steps, job)).toBeNull();
   expect(order).toEqual(["pair", "adjacency", "conditions", "setup", "reporting"]);
-  expect(findValidationCommandPair).toHaveBeenCalledWith("ci.yml", commands);
+  expect(findValidationCommandPair).toHaveBeenCalledWith("ci.yaml", commands);
   expect(hasAdjacentValidationSteps).toHaveBeenCalledWith(install, testCommand, steps, commands);
   expect(validateValidationJobConditions).toHaveBeenCalledWith(install, testCommand, job);
-  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yml", commands, 1, steps);
-  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith("ci.yml", commands, 2, steps, {
+  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yaml", commands, 1, steps);
+  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith("ci.yaml", commands, 2, steps, {
     allowAttestation: false,
   });
 });
@@ -100,15 +100,15 @@ test("uses original workflow positions when command records omit their indexes",
     commandIndex: (entry) => commands.indexOf(entry),
   });
 
-  expect(validateWorkflowSequence("ci.yml", commands, workflowSteps)).toBeNull();
+  expect(validateWorkflowSequence("ci.yaml", commands, workflowSteps)).toBeNull();
   expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith(
-    "ci.yml",
+    "ci.yaml",
     commands,
     2,
     workflowSteps,
   );
   expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
-    "ci.yml",
+    "ci.yaml",
     commands,
     3,
     workflowSteps,
@@ -125,13 +125,13 @@ test("falls back to command positions when workflow command records have no step
   });
 
   expect(
-    validateWorkflowSequence("ci.yml", commands, [{ uses: "actions/checkout@v6" }]),
+    validateWorkflowSequence("ci.yaml", commands, [{ uses: "actions/checkout@v6" }]),
   ).toBeNull();
-  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yml", commands, 0, [
+  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yaml", commands, 0, [
     { uses: "actions/checkout@v6" },
   ]);
   expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
-    "ci.yml",
+    "ci.yaml",
     commands,
     1,
     [{ uses: "actions/checkout@v6" }],
@@ -148,15 +148,15 @@ test("preserves indexes already attached to workflow commands", () => {
     commandIndex: () => -1,
   });
 
-  expect(validateWorkflowSequence("ci.yml", [indexedInstall, indexedTest])).toBeNull();
+  expect(validateWorkflowSequence("ci.yaml", [indexedInstall, indexedTest])).toBeNull();
   expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith(
-    "ci.yml",
+    "ci.yaml",
     [indexedInstall, indexedTest],
     4,
     [indexedInstall, indexedTest],
   );
   expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
-    "ci.yml",
+    "ci.yaml",
     [indexedInstall, indexedTest],
     5,
     [indexedInstall, indexedTest],
@@ -166,23 +166,23 @@ test("preserves indexes already attached to workflow commands", () => {
 
 test("returns the first finding and skips later validation phases", () => {
   findValidationCommandPair.mockReturnValueOnce({ error: "command pair invalid" });
-  expect(validateWorkflowSequence("ci.yml", [])).toBe("command pair invalid");
+  expect(validateWorkflowSequence("ci.yaml", [])).toBe("command pair invalid");
   expect(hasAdjacentValidationSteps).not.toHaveBeenCalled();
 
   hasAdjacentValidationSteps.mockReturnValueOnce(false);
-  expect(validateWorkflowSequence("ci.yml", [])).toBe(
-    "ci.yml must run npm ci immediately followed by npm test with no intervening steps.",
+  expect(validateWorkflowSequence("ci.yaml", [])).toBe(
+    "ci.yaml must run npm ci immediately followed by npm test with no intervening steps.",
   );
   expect(validateValidationJobConditions).not.toHaveBeenCalled();
 
   validateValidationJobConditions.mockReturnValueOnce("job conditions invalid");
-  expect(validateWorkflowSequence("ci.yml", [])).toBe("ci.yml job conditions invalid");
+  expect(validateWorkflowSequence("ci.yaml", [])).toBe("ci.yaml job conditions invalid");
   expect(validateWorkflowPreInstallCommands).not.toHaveBeenCalled();
 
   validateWorkflowPreInstallCommands.mockReturnValueOnce("setup invalid");
-  expect(validateWorkflowSequence("ci.yml", [])).toBe("setup invalid");
+  expect(validateWorkflowSequence("ci.yaml", [])).toBe("setup invalid");
   expect(validateWorkflowPostTestCommands).not.toHaveBeenCalled();
 
   validateWorkflowPostTestCommands.mockReturnValueOnce("reporting invalid");
-  expect(validateWorkflowSequence("ci.yml", [])).toBe("reporting invalid");
+  expect(validateWorkflowSequence("ci.yaml", [])).toBe("reporting invalid");
 });

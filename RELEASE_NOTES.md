@@ -23,6 +23,9 @@
   optional exempt.
 - Reject every Git-index-tracked symlink by mode `120000`, covering file and
   directory links without resolving targets or depending on platform behavior.
+- Require the canonical GitHub `ci.yaml`, Knit `deploy.yaml`, and conditional
+  publication `publish.yaml` workflow inventory; reject extra workflow files
+  and multi-document workflow YAML.
 - Enforce canonical GHCR image, pull command, supported tags, and deployment
   boundary markers in the existing README Usage section.
 
