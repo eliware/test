@@ -8,3 +8,12 @@ test("sorts directive IDs numerically by each segment", () => {
     "E-0.1.10",
   ]);
 });
+
+test("sorts a shorter directive ID before a longer matching prefix", () => {
+  expect(compareRuleIds("E-0.1.1", "E-0.1")).toBeGreaterThan(0);
+  expect(compareRuleIds("E-0.1", "E-0.1.1")).toBeLessThan(0);
+});
+
+test("uses the full ID as a tie-breaker when numeric segments match", () => {
+  expect(compareRuleIds("A-0.1", "E-0.1")).toBeLessThan(0);
+});

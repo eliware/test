@@ -1,11 +1,19 @@
-import { expect, test } from "@jest/globals";
-import { selectConventionChecks } from "../../src/orchestrators/select-convention-checks.mjs";
+import { expect, jest, test } from "@jest/globals";
+
+const discoverChecks = jest.fn();
+jest.unstable_mockModule("../../src/orchestrators/discover-checks.mjs", () => ({
+  discoverChecks,
+}));
+
+const { selectConventionChecks } =
+  await import("../../src/orchestrators/select-convention-checks.mjs");
 
 test("selects checks only from explicitly applied profiles", async () => {
-  const checks = await selectConventionChecks({ apply: ["general", "application"] });
-  expect(checks.length).toBeGreaterThan(0);
-  expect(checks.some(({ ruleId }) => ruleId === "E-0.1")).toBe(true);
-  expect(checks.some(({ ruleId }) => ruleId.startsWith("E-0.1.130"))).toBe(true);
+  const checks = [{ ruleId: "E-0.1" }, { ruleId: "E-0.1.130" }];
+  discoverChecks.mockResolvedValueOnce(checks);
+
+  await expect(selectConventionChecks({ apply: ["general", "application"] })).resolves.toBe(checks);
+  expect(discoverChecks).toHaveBeenCalledWith(["general", "application"]);
 });
 
 test.each(["documentation", "workspace", "infrastructure"])(
