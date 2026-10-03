@@ -24,7 +24,15 @@ export async function runSourceTestMirroring({
     return fail(ruleId, "src/ is required for source/test mirroring.");
   }
   const { sourceFiles, testFiles, sourceDirectories, testDirectories } = mirrorInventory;
-  const findings = findMirrorViolations(sourceFiles, testFiles, sourceDirectories, testDirectories);
+  const findings = findMirrorViolations(
+    sourceFiles,
+    testFiles,
+    sourceDirectories,
+    testDirectories,
+    {
+      allowTypeDeclarations: ruleId === "E-0.1.40.7",
+    },
+  );
   const sourceModules = sourceFiles.filter((file) => file.endsWith(".mjs"));
   const expectedTests = new Set(
     sourceModules.map((source) => source.replace(/\.mjs$/u, ".test.mjs")),

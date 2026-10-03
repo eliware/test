@@ -3,10 +3,22 @@ export function findMirrorViolations(
   testFiles,
   sourceDirectories = [],
   testDirectories = [],
+  { allowTypeDeclarations = false } = {},
 ) {
-  const invalidSource = sourceFiles.filter(
-    (file) => /\.(?:js|cjs|mjs|ts|tsx|jsx)$/iu.test(file) && !file.endsWith(".mjs"),
+  const declarationFiles = allowTypeDeclarations
+    ? sourceFiles.filter((file) => file.endsWith(".d.ts"))
+    : [];
+  const sourceFileSet = new Set(sourceFiles);
+  const sourceComparisonUnits = new Set(
+    sourceFiles.map((file) => file.replace(/\.d\.ts$/u, ".mjs")),
   );
+  const unpairedDeclarations = declarationFiles.filter(
+    (file) => !sourceFileSet.has(file.replace(/\.d\.ts$/u, ".mjs")),
+  );
+  const invalidSource = sourceFiles.filter((file) => {
+    if (declarationFiles.includes(file)) return false;
+    return /\.(?:js|cjs|mjs|ts|tsx|jsx)$/iu.test(file) && !file.endsWith(".mjs");
+  });
   const sources = sourceFiles.filter((file) => file.endsWith(".mjs"));
   const expectedTests = new Set(sources.map((source) => source.replace(/\.mjs$/u, ".test.mjs")));
   const actualTests = new Set(testFiles.filter((file) => file.endsWith(".test.mjs")));
@@ -20,13 +32,17 @@ export function findMirrorViolations(
     (directory) => !sourceDirectories.includes(directory),
   );
   const countMismatch =
-    sourceFiles.length !== testFiles.length || sourceDirectories.length !== testDirectories.length;
+    sourceComparisonUnits.size !== testFiles.length ||
+    sourceDirectories.length !== testDirectories.length;
   return [
     countMismatch
-      ? `src/tests file or directory counts differ (src files: ${sourceFiles.length}, tests files: ${testFiles.length}, src directories: ${sourceDirectories.length}, tests directories: ${testDirectories.length})`
+      ? `src/tests file or directory counts differ (src comparison units: ${sourceComparisonUnits.size}, tests files: ${testFiles.length}, src directories: ${sourceDirectories.length}, tests directories: ${testDirectories.length})`
       : "",
     missing.length > 0 ? `missing mirrored tests: ${missing.join(", ")}` : "",
     orphan.length > 0 ? `orphan tests: ${orphan.join(", ")}` : "",
+    unpairedDeclarations.length > 0
+      ? `unpaired TypeScript declarations (expected an adjacent matching .mjs): ${unpairedDeclarations.join(", ")}`
+      : "",
     missingDirectories.length > 0
       ? `missing mirrored directories: ${missingDirectories.join(", ")}`
       : "",

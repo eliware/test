@@ -49,6 +49,10 @@ still require exactly one corresponding `.test.mjs` file. `.mts` and `.cts` are
 focused-invocation extensions only; they do not change the required mirrored test
 filename. Application profile coverage enforcement remains limited to native
 `.mjs` production files.
+The source/test mirror inventory includes all files. In library repositories,
+a `.d.ts` declaration is valid only beside a same-basename `.mjs` implementation
+in `src/`; it is grouped with that module's `.test.mjs` mirror and checked by
+the required typecheck script.
 Each mirrored `.test.mjs` must contain an executable Jest `test` or `it`
 declaration and reference its exact source module; syntax-aware validation
 ignores comments and strings and rejects unrelated imports.

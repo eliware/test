@@ -104,9 +104,21 @@ test("coordinates full-tree validators and aggregates their findings", async () 
     inventory.testFiles,
     [],
     [],
+    { allowTypeDeclarations: false },
   );
   expect(findTestContractViolations).toHaveBeenCalledWith(inventory.sourceFiles, contents);
   expect(findGeneratedSource).toHaveBeenCalledWith("/repo", ["module.mjs"], expect.any(Function));
+});
+
+test("enables declaration companions only for the library mirror rule", async () => {
+  await runSourceTestMirroring({ root: "/repo", ruleId: "E-0.1.40.7" });
+  expect(findMirrorViolations).toHaveBeenCalledWith(
+    inventory.sourceFiles,
+    inventory.testFiles,
+    [],
+    [],
+    { allowTypeDeclarations: true },
+  );
 });
 
 test("passes when full-tree validators find no issues and reuses inventory reads", async () => {

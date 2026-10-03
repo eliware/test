@@ -58,6 +58,9 @@
 - Reject root-level application and library entrypoints through package checks;
   require library `main`, `exports`, and type declaration metadata to target
   files under `src/`.
+- Permit library `.d.ts` declarations only as same-basename companions to
+  `.mjs` modules in `src/`; count them with their module mirror and validate
+  them through the required typecheck script.
 - Keep package validation lightweight in `npm test` and add an opt-in targeted
   tarball smoke command that installs the candidate in an existing consumer,
   runs its `npm test`, then restores the prior local package, manifest, lockfile,
