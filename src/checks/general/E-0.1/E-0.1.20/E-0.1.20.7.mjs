@@ -1,5 +1,4 @@
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { parse } from "yaml";
 import { isDeepStrictEqual } from "node:util";
 import { fail, pass } from "../../../check-result.mjs";
@@ -9,13 +8,11 @@ export const ruleId = "E-0.1.20.7";
 export const parentRuleId = "E-0.1.20";
 export const focusedSafe = true;
 export const repositoryInventoryOptions = { includeTestResults: true };
+const conventionUrl = new URL("../../../../../specs/conventions/general.yaml", import.meta.url);
 
 export async function run({ root, packageJson, repositoryInventory }) {
   try {
-    const conventionPath = join(root, "specs", "conventions", "general.yaml");
-    const document = repositoryInventory
-      ? await repositoryInventory.readParsed(conventionPath, "yaml-document", parse)
-      : parse(await readFile(conventionPath, "utf8"));
+    const document = parse(await readFile(conventionUrl, "utf8"));
     const required = resolveCanonicalJestConfiguration(document);
     if (!isDeepStrictEqual(packageJson?.jest, required))
       return fail(ruleId, "package.json must contain the canonical Eliware Jest configuration.");

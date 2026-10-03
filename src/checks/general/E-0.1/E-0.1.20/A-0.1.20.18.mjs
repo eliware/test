@@ -1,5 +1,4 @@
 import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { parse } from "yaml";
 import { isDeepStrictEqual } from "node:util";
 import { fail, pass } from "../../../check-result.mjs";
@@ -7,13 +6,11 @@ import { findRepositoryFiles } from "../find-repository-files.mjs";
 
 export const ruleId = "A-0.1.20.18";
 export const parentRuleId = "E-0.1.20";
+const conventionUrl = new URL("../../../../../specs/conventions/general.yaml", import.meta.url);
 
 export async function run({ root, packageJson, repositoryInventory }) {
   try {
-    const conventionPath = join(root, "specs", "conventions", "general.yaml");
-    const document = repositoryInventory
-      ? await repositoryInventory.readParsed(conventionPath, "yaml-document", parse)
-      : parse(await readFile(conventionPath, "utf8"));
+    const document = parse(await readFile(conventionUrl, "utf8"));
     const required = resolveCanonicalPrettierConfiguration(document);
     const prettier = packageJson?.prettier;
     if (!prettier || typeof prettier !== "object" || Array.isArray(prettier))

@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { parse } from "yaml";
 import {
   resolveCanonicalJestConfiguration,
@@ -13,11 +13,7 @@ const conventionPath = join(process.cwd(), "specs", "conventions", "general.yaml
 const canonical = resolveCanonicalJestConfiguration(parse(await readFile(conventionPath, "utf8")));
 
 async function createRoot() {
-  const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-"));
-  const target = join(root, "specs", "conventions", "general.yaml");
-  await mkdir(dirname(target), { recursive: true });
-  await copyFile(conventionPath, target);
-  return root;
+  return mkdtemp(join(tmpdir(), "eliware-test-jest-"));
 }
 
 test("resolves the canonical Jest object from general conventions", () => {
@@ -35,10 +31,16 @@ test("resolves the canonical Jest object from general conventions", () => {
   );
 });
 
-test("requires every repository to use exact canonical Jest settings", async () => {
+test("requires exact canonical Jest settings without a consumer convention copy", async () => {
   const root = await createRoot();
   try {
-    await expect(run({ root, packageJson: { jest: canonical } })).resolves.toEqual({
+    await expect(
+      run({
+        root,
+        packageJson: { jest: canonical },
+        repositoryInventory: createRepositoryInventory(root, { includeTestResults: true }),
+      }),
+    ).resolves.toEqual({
       ruleId: "E-0.1.20.7",
       status: "pass",
       message: "",
@@ -61,9 +63,6 @@ test("requires every repository to use exact canonical Jest settings", async () 
 
 test("rejects separate Jest configuration files", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-jest-config-"));
-  const target = join(root, "specs", "conventions", "general.yaml");
-  await mkdir(dirname(target), { recursive: true });
-  await copyFile(conventionPath, target);
   await writeFile(join(root, "jest.config.mjs"), "export default {};\n");
   await expect(
     run({

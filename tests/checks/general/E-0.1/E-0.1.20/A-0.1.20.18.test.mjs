@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { parse } from "yaml";
@@ -14,10 +14,7 @@ const canonical = resolveCanonicalPrettierConfiguration(
 );
 
 async function createRoot() {
-  const root = await mkdtemp(join(tmpdir(), "eliware-prettier-config-"));
-  await mkdir(join(root, "specs", "conventions"), { recursive: true });
-  await copyFile(conventionPath, join(root, "specs", "conventions", "general.yaml"));
-  return root;
+  return mkdtemp(join(tmpdir(), "eliware-prettier-config-"));
 }
 
 test("reads canonical Prettier settings from the general convention", () => {
@@ -66,11 +63,9 @@ test("requires exact package.json Prettier settings", async () => {
   }
 });
 
-test("uses repository inventory for convention and standalone config files", async () => {
+test("loads the bundled convention without a consumer copy", async () => {
   const root = await createRoot();
-  const document = parse(await readFile(conventionPath, "utf8"));
   const repositoryInventory = {
-    readParsed: async () => document,
     files: async () => [],
   };
   try {
@@ -84,7 +79,7 @@ test("uses repository inventory for convention and standalone config files", asy
   }
 });
 
-test("reports convention inventory errors", async () => {
+test("reports repository inventory errors", async () => {
   const root = await createRoot();
   try {
     await expect(
@@ -92,7 +87,7 @@ test("reports convention inventory errors", async () => {
         root,
         packageJson: { prettier: canonical },
         repositoryInventory: {
-          readParsed: async () => {
+          files: async () => {
             throw new Error("inventory unavailable");
           },
         },
