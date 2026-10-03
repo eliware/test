@@ -1,4 +1,4 @@
-version: "10.0"
+version: "11.0"
 description: Applies to every @eliware/* repository.
 requires: []
 directives:
@@ -268,7 +268,7 @@ directives:
       - id: E-0.1.9
         dos:
           - Every Eliware repository package.json must contain an eliware object describing convention applicability.
-          - package.json.eliware must contain apply and may contain exempt; no other keys are allowed.
+          - package.json.eliware must contain a non-empty id followed by apply; exempt may follow as the third optional key. No other keys are allowed.
         donts:
           - Repositories must not omit the Eliware metadata contract from package.json.
           - Do not add repository-specific properties to package.json.eliware; store other metadata in its appropriate documented location.

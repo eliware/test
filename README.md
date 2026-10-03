@@ -164,7 +164,7 @@ tuples are unsupported because the harness supplies its own reporters.
 When validation fails, rerun the reported focused path to diagnose that test,
 then rerun `npm test` to verify the aggregate validation gate before handoff.
 
-The v10 orchestration and convention-check registry are implemented as focused
+The v11 orchestration and convention-check registry are implemented as focused
 native ESM modules under `src/`.
 
 Application and library architecture guidance is selected only when the

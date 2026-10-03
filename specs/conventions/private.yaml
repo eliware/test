@@ -1,4 +1,4 @@
-version: "10.0"
+version: "11.0"
 description: Applies to repositories that are not publicly published as npm packages.
 requires: []
 directives:

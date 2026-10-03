@@ -9,14 +9,21 @@ export function run({ packageJson }) {
   if (!metadata || typeof metadata !== "object") {
     return fail(ruleId, "package.json must contain an eliware metadata object.");
   }
-  const failures = ["apply"]
+  const failures = ["id", "apply"]
     .filter((field) => !(field in metadata))
     .map((field) => `package.json.eliware.${field} is required.`);
-  const unexpectedKeys = Object.keys(metadata).filter((key) => !["apply", "exempt"].includes(key));
+  if ("id" in metadata && (typeof metadata.id !== "string" || !metadata.id.trim()))
+    failures.push("package.json.eliware.id must be a non-empty string.");
+  const allowedKeys = ["id", "apply", "exempt"];
+  const keys = Object.keys(metadata);
+  const unexpectedKeys = keys.filter((key) => !allowedKeys.includes(key));
   if (unexpectedKeys.length)
     failures.push(
       `package.json.eliware contains unsupported keys: ${unexpectedKeys.sort().join(", ")}.`,
     );
+  const expectedKeys = ["id", "apply", ...(Object.hasOwn(metadata, "exempt") ? ["exempt"] : [])];
+  if (!unexpectedKeys.length && keys.join(",") !== expectedKeys.join(","))
+    failures.push("package.json.eliware keys must be ordered id, apply, then optional exempt.");
   const profileError = validatePackageProfileSelection(packageJson);
   if (profileError) failures.push(profileError);
   if (failures.length) return fail(ruleId, failures.join("\n"));

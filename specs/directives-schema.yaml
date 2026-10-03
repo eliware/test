@@ -1,5 +1,5 @@
-version: "10.0"
-description: Schema for version 10.0 Eliware directive documents and records.
+version: "11.0"
+description: Schema for version 11.0 Eliware directive documents and records.
 record:
   type: object
   required:

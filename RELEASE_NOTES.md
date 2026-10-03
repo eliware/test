@@ -1,5 +1,20 @@
 # Release Notes
 
+## 11.0.0 — 2026-10-03
+
+### Changed
+
+- Advance the package version to 11.0.0 and all maintained specification
+  documents to version 11.0.
+- Add the repository E-0 identifier to package metadata.
+
+### Fixed
+
+- Load the canonical Jest and Prettier configurations from the conventions
+  bundled with the installed package, so consumer repositories do not need a
+  local copy of specs/conventions/general.yaml. Add regression coverage for
+  validating without that consumer-side copy.
+
 ## 10.0.0 — 2026-10-02
 
 ### Breaking changes
