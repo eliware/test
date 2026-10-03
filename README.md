@@ -144,6 +144,11 @@ applicable; `npm run format` writes formatted files.
 Use native ESM `.mjs` modules, keep `src/` and `tests/` mirrored, and add
 focused regression tests for behavior changes.
 
+Aggregate validation rejects all tracked symlinks by reading mode `120000` from
+the Git index. It covers links to files and directories without resolving their
+targets, so detection does not depend on Windows symlink privileges or checkout
+behavior. The check fails when Git index inspection is unavailable.
+
 ## Testing
 
 For this npm-published package, `npm test` runs aggregate Jest, lint,

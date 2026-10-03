@@ -21,6 +21,8 @@
   specification file, including nested specification folders.
 - Require the package.json.eliware fields in canonical order: id, apply, and
   optional exempt.
+- Reject every Git-index-tracked symlink by mode `120000`, covering file and
+  directory links without resolving targets or depending on platform behavior.
 - Enforce canonical GHCR image, pull command, supported tags, and deployment
   boundary markers in the existing README Usage section.
 

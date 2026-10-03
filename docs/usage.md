@@ -182,4 +182,7 @@ rejected; external URI references are handled by their URI scheme and are not
 resolved as repository files.
 Git-sensitive checks use Git
 metadata when available and retain filesystem discovery only for non-Git test
-fixtures.
+fixtures. The tracked-symlink check reads Git index mode `120000` and rejects
+all tracked symlink entries, including links to files or directories. It does
+not inspect untracked paths or resolve targets; validation fails if it cannot
+read the Git index.

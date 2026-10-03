@@ -613,3 +613,18 @@ directives:
               - Deterministic validation must inspect the Git index and reject tracked or staged files that match any ignore rule.
             donts:
               - Do not include node_modules, .git state, coverage, build output, runtime state, secrets, or machine-specific files in repository contents.
+      - id: E-0.1.29
+        dos:
+          - Repositories must not track symlinks. This applies to symlinks to files and directories across all paths, including package entrypoints.
+          - Deterministic validation must inspect the Git index and reject every entry with symlink mode 120000. This check does not resolve targets or depend on the checkout platform.
+          - If Git index inspection is unavailable, validation must fail because tracked symlink status cannot be established.
+        donts:
+          - Do not inspect untracked filesystem paths or resolve symlink targets as part of this convention; untracked entries are outside its scope.
+          - Do not allow tracked symlinks because a target currently exists, is not broken, or points within the repository.
+        directives:
+          - id: A-0.1.29.0
+            dos:
+              - Use `git ls-files --cached --stage -z` and reject every index entry whose mode is 120000. Report the tracked repository paths. Git represents symlinks to files and directories with this same mode.
+              - The Git-index check applies to package entrypoints as well as all other tracked paths; do not add a duplicate entrypoint-specific symlink check.
+            donts:
+              - Do not rely on Node.js filesystem symlink traversal, target existence, Windows symlink privileges, or platform-specific directory-link behavior.
