@@ -20,6 +20,9 @@ export function createStageTimer(enabled, now = () => Date.now(), write = () => 
         write(`${label} completed - ${duration}s\n`);
       } else write(` completed - ${duration}s\n`);
     },
+    skip(label) {
+      if (enabled) write(`Skipping ${label} because a prerequisite check failed\n`);
+    },
     beginNestedOutput() {
       if (!enabled || nestedOutput) return;
       nestedOutput = true;

@@ -4,6 +4,9 @@
 
 ### Changed
 
+- Run all Jest-independent checks before Jest and stop before Jest when any
+  prerequisite check fails. Skip Jest-result and coverage checks in that case,
+  with explicit skipped-stage timing output in `--debug-timing` mode.
 - Require npm 12 or later before validation and stop early with a clear diagnostic
   when the npm version is unsupported or cannot be determined. Keep `--help` and
   `--version` available independently.

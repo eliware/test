@@ -5,7 +5,7 @@ jest.unstable_mockModule(
   "../../../../src/checks/general/E-0.1/E-0.1.20/inspect-test-process-output.mjs",
   () => ({ inspectTestProcessOutput }),
 );
-const { focusedSafe, parentRuleId, ruleId, run } =
+const { executionPhase, focusedSafe, parentRuleId, ruleId, run } =
   await import("../../../../src/checks/library/E-0.1.40/E-0.1.40.17.mjs");
 
 test("forwards library identity and context to shared output inspection", () => {
@@ -14,6 +14,7 @@ test("forwards library identity and context to shared output inspection", () => 
   inspectTestProcessOutput.mockReturnValueOnce(result);
   expect(parentRuleId).toBe("E-0.1.40");
   expect(focusedSafe).toBe(true);
+  expect(executionPhase).toBe("jest-dependent");
   expect(run(context)).toBe(result);
   expect(inspectTestProcessOutput).toHaveBeenCalledWith(context, ruleId);
 });

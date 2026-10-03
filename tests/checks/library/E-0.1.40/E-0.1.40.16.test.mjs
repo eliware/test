@@ -5,7 +5,7 @@ jest.unstable_mockModule(
   "../../../../src/checks/general/E-0.1/E-0.1.20/run-coverage-check.mjs",
   () => ({ runCoverageCheck }),
 );
-const { focusedSafe, parentRuleId, ruleId, run } =
+const { executionPhase, focusedSafe, parentRuleId, ruleId, run } =
   await import("../../../../src/checks/library/E-0.1.40/E-0.1.40.16.mjs");
 
 test("forwards library identity and context to the shared coverage check", () => {
@@ -14,6 +14,7 @@ test("forwards library identity and context to the shared coverage check", () =>
   runCoverageCheck.mockReturnValueOnce(result);
   expect(parentRuleId).toBe("E-0.1.40");
   expect(focusedSafe).toBe(true);
+  expect(executionPhase).toBe("jest-dependent");
   expect(run(context)).toBe(result);
   expect(runCoverageCheck).toHaveBeenCalledWith(context, ruleId);
 });

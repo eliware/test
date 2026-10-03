@@ -93,3 +93,25 @@ test("does not emit check timing when disabled", () => {
   timer.end("E-0.1");
   expect(output).toEqual([]);
 });
+
+test("reports checks skipped after a prerequisite failure", () => {
+  const output = [];
+  const timer = createStageTimer(
+    true,
+    () => 1000,
+    (chunk) => output.push(chunk),
+  );
+  timer.skip("E-0.1.130.13");
+  expect(output.join("")).toBe("Skipping E-0.1.130.13 because a prerequisite check failed\n");
+});
+
+test("does not report skipped checks when timing is disabled", () => {
+  const output = [];
+  const timer = createStageTimer(
+    false,
+    () => 1000,
+    (chunk) => output.push(chunk),
+  );
+  timer.skip("E-0.1.130.13");
+  expect(output).toEqual([]);
+});

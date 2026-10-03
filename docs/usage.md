@@ -112,6 +112,12 @@ as `--omit` that narrow the dependency scope are rejected. Pack also has its
 own allowlist. Wrapper-owned settings and arguments
 that weaken required checks are rejected:
 
+During aggregate or focused validation, checks that do not depend on Jest
+results or coverage run first. A failure in those checks prevents Jest and its
+result or coverage checks from starting. When they pass, Jest runs before its
+dependent checks. With `--debug-timing`, skipped checks are identified when a
+prerequisite failure prevents them from running.
+
 ```text
 eliware-test --lint --fix
 eliware-test --format --log-level=warn

@@ -42,6 +42,70 @@ test("records a check failure and continues executing later checks", async () =>
   expect(results[1]).toEqual({ ruleId: "E-2", status: "pass", message: "" });
 });
 
+test("runs all independent checks before Jest regardless of rule order", async () => {
+  const calls = [];
+  const makeCheck = (ruleId, executionPhase) => ({
+    ruleId,
+    executionPhase,
+    run: async () => {
+      calls.push(ruleId);
+      return { ruleId, status: "pass", message: "" };
+    },
+  });
+  const checks = [
+    makeCheck("E-0.1.130.14", "jest-dependent"),
+    makeCheck("E-0.1.130.13", "jest"),
+    makeCheck("E-0.1.20.19"),
+    makeCheck("E-0.1.4"),
+  ];
+
+  const results = await executeConventionChecks(checks, {}, new Set());
+
+  expect(calls).toEqual(["E-0.1.20.19", "E-0.1.4", "E-0.1.130.13", "E-0.1.130.14"]);
+  expect(results.map(({ status }) => status)).toEqual(["pass", "pass", "pass", "pass"]);
+});
+
+test("a failed independent check skips Jest and Jest-dependent checks", async () => {
+  const calls = [];
+  const timing = { skip: jest.fn() };
+  const makeCheck = (ruleId, executionPhase, status = "pass") => ({
+    ruleId,
+    executionPhase,
+    run: async () => {
+      calls.push(ruleId);
+      return { ruleId, status, message: status === "fail" ? "lint failed" : "" };
+    },
+  });
+  const results = await executeConventionChecks(
+    [
+      makeCheck("E-0.1.130.13", "jest"),
+      makeCheck("E-0.1.130.14", "jest-dependent"),
+      makeCheck("E-0.1.4", undefined, "fail"),
+      makeCheck("E-0.1.20.19"),
+    ],
+    { timing },
+    new Set(),
+  );
+
+  expect(calls).toEqual(["E-0.1.4", "E-0.1.20.19"]);
+  expect(results.filter(({ status }) => status === "fail")).toEqual([
+    { ruleId: "E-0.1.4", status: "fail", message: "lint failed" },
+  ]);
+  expect(results.filter(({ status }) => status === "skip")).toEqual([
+    {
+      ruleId: "E-0.1.130.13",
+      status: "skip",
+      message: "Skipped because a Jest-independent check failed.",
+    },
+    {
+      ruleId: "E-0.1.130.14",
+      status: "skip",
+      message: "Skipped because a Jest-independent check failed.",
+    },
+  ]);
+  expect(timing.skip.mock.calls).toEqual([["E-0.1.130.13"], ["E-0.1.130.14"]]);
+});
+
 test("executes selected non-deterministic checks", async () => {
   let calls = 0;
   const results = await executeConventionChecks(
