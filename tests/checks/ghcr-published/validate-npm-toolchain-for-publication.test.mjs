@@ -1,9 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { createGhcrFixture } from "../../../test-fixtures/ghcr-workflow.mjs";
-import {
-  npm12InstallCommand,
-  npm12VersionCheckCommand,
-} from "../../../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+import { npmLatestInstallCommand } from "../../../src/checks/general/E-0.1/E-0.1.24/validate-npm-install-workflow-setup.mjs";
 import { run as checkGhcrPublicationWorkflow } from "../../../src/checks/ghcr-published/E-0.1.160/E-0.1.160.2.mjs";
 import { validateNpmToolchainForPublication } from "../../../src/checks/ghcr-published/validate-npm-toolchain-for-publication.mjs";
 
@@ -14,32 +11,31 @@ test("leaves GHCR publishers without npm commands unchanged", () => {
   expect(validateNpmToolchainForPublication("publish", {})).toBeNull();
 });
 
-test("requires the npm 12 toolchain only when a GHCR publisher invokes npm", () => {
+test("requires npm latest setup only when a GHCR publisher invokes npm", () => {
   const job = { steps: [{ run: "npm run build" }] };
   expect(validateNpmToolchainForPublication("publish", job)).toContain(
-    "before its first npm command",
+    "before its first npm operation",
   );
   job.steps = [
     { uses: "actions/setup-node@v7", with: { "node-version": 26 } },
-    { run: npm12InstallCommand },
-    { run: npm12VersionCheckCommand },
+    { run: npmLatestInstallCommand },
     { run: "npm run build" },
   ];
   expect(validateNpmToolchainForPublication("publish", job)).toBeNull();
 });
 
-test("requires setup verification when npm installation is the only npm command", () => {
+test("allows npm installation when it is the only npm command", () => {
   expect(
     validateNpmToolchainForPublication("publish", {
       steps: [
         { uses: "actions/setup-node@v7", with: { "node-version": 26 } },
-        { run: npm12InstallCommand },
+        { run: npmLatestInstallCommand },
       ],
     }),
-  ).toContain("before its first npm command");
+  ).toBeNull();
 });
 
-test("integrates npm 12 requirements into GHCR workflow validation", async () => {
+test("integrates npm latest setup into GHCR workflow validation", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const { readFile, writeFile } = await import("node:fs/promises");
   const content = await readFile(publicationPath, "utf8");
@@ -54,7 +50,7 @@ test("integrates npm 12 requirements into GHCR workflow validation", async () =>
     content.replace("      - id: push\n", `${npmCommand}      - id: push\n`),
   );
   await expect(run()).resolves.toMatchObject({ status: "fail" });
-  const setup = `      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npm12InstallCommand}\n      - run: >-\n          ${npm12VersionCheckCommand}\n`;
+  const setup = `      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npmLatestInstallCommand}\n`;
   await writeFile(
     publicationPath,
     content.replace("      - id: push\n", `${setup}${npmCommand}      - id: push\n`),

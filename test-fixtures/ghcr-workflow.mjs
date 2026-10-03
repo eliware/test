@@ -5,18 +5,13 @@ import {
   releaseTagFilter,
   releaseTagGuard,
 } from "../src/checks/ghcr-published/release-version-tag.mjs";
-import {
-  npm12InstallCommand,
-  npm12VersionCheckCommand,
-} from "../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+import { npmLatestInstallCommand } from "../src/checks/general/E-0.1/E-0.1.24/validate-npm-install-workflow-setup.mjs";
 
 const agents = "GHCR image visibility publication workflow provenance deployment managed image.";
 const validationSteps = `      - uses: actions/setup-node@v7
         with:
           node-version: 26
-      - run: ${npm12InstallCommand}
-      - run: >-
-          ${npm12VersionCheckCommand}
+      - run: ${npmLatestInstallCommand}
       - run: npm ci
       - run: npm test`;
 const validation = `name: validation

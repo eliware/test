@@ -3,10 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../src/checks/npm-published/E-0.1.140/A-0.1.140.5.mjs";
-import {
-  npm12InstallCommand,
-  npm12VersionCheckCommand,
-} from "../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+import { npmLatestInstallCommand } from "../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm-install-workflow-setup.mjs";
 
 let root;
 
@@ -25,7 +22,7 @@ async function writeWorkflow(
   await mkdir(directory, { recursive: true });
   await writeFile(
     join(directory, "publish.yaml"),
-    `permissions:\n  contents: read\njobs:\n  validate:\n    steps:\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npm12InstallCommand}\n      - run: >-\n          ${npm12VersionCheckCommand}\n      - run: npm ci\n      - run: npm test\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - uses: ${publishSetup}\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n      - run: ${npm12InstallCommand}\n      - run: >-\n          ${npm12VersionCheckCommand}\n      - run: npm ci\n      - run: ${publishStep}\n`,
+    `permissions:\n  contents: read\njobs:\n  validate:\n    steps:\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npmLatestInstallCommand}\n      - run: npm ci\n      - run: npm test\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - uses: ${publishSetup}\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n      - run: ${npmLatestInstallCommand}\n      - run: npm ci\n      - run: ${publishStep}\n`,
   );
 }
 

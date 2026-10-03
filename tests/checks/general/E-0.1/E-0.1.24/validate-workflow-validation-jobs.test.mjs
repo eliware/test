@@ -1,12 +1,12 @@
 import { expect, test } from "@jest/globals";
 import { validateWorkflowValidationJobs } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-validation-jobs.mjs";
 import {
-  npm12WorkflowSteps,
+  npmWorkflowSteps,
   workflowCommands,
 } from "../../../../../test-fixtures/npm-workflow-steps.mjs";
 
 function validationJob(commands, jobProperties = {}) {
-  const steps = npm12WorkflowSteps(commands);
+  const steps = npmWorkflowSteps(commands);
   return {
     job: { "runs-on": "ubuntu-latest", ...jobProperties, steps },
     commands: workflowCommands(steps),
@@ -33,7 +33,7 @@ test("rejects missing and non-adjacent npm ci and npm test commands", () => {
   expect(validateWorkflowValidationJobs("publish.yaml", [validationJob([])])).toContain(
     "must run npm ci followed immediately by npm test",
   );
-  const steps = npm12WorkflowSteps(["npm ci"]);
+  const steps = npmWorkflowSteps(["npm ci"]);
   steps.splice(4, 0, { uses: "actions/setup-node@v7" });
   steps.push({ run: "npm test" });
   const job = { job: { "runs-on": "ubuntu-latest", steps }, commands: workflowCommands(steps) };
@@ -43,7 +43,7 @@ test("rejects missing and non-adjacent npm ci and npm test commands", () => {
 });
 
 test("rejects validation jobs missing workflow metadata", () => {
-  const steps = npm12WorkflowSteps(["npm ci", "npm test"]);
+  const steps = npmWorkflowSteps(["npm ci", "npm test"]);
   expect(
     validateWorkflowValidationJobs("ci.yaml", [
       { job: { steps }, commands: workflowCommands(steps) },
@@ -94,7 +94,7 @@ test("rejects prohibited publication commands and unapproved post-test actions",
       validationJob(["npm ci", "npm test", "npm publish"]),
     ]),
   ).toContain("may not run prohibited publishing commands after npm test");
-  const steps = npm12WorkflowSteps(["npm ci", "npm test"]);
+  const steps = npmWorkflowSteps(["npm ci", "npm test"]);
   const action = { uses: "third-party/action@v1" };
   steps.push(action);
   expect(

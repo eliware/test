@@ -19,9 +19,10 @@
 - Add package-content validation for exact profile-derived allowlists, required
   packed entrypoints, prohibited `.npmignore` files and lifecycle hooks, and
   actual `npm pack` contents.
-- Add npm 12+ checks to the CLI and GitHub CI and publisher jobs. Stop validation
-  before other stages when npm is unsupported, while keeping `--help` and
-  `--version` independently available.
+- Require npm 12 or later in the CLI and install `npm@latest` in GitHub
+  validation and publisher jobs. Stop CLI validation before other stages when
+  npm is unsupported, while keeping `--help` and `--version` independently
+  available.
 
 ### Changed
 
@@ -31,9 +32,9 @@
   assigned E-number namespace across nested YAML specifications.
 - Standardize workflow filenames to `.yaml`; require only the canonical GitHub
   CI and Knit deployment workflows, plus the applicable publication workflow.
-  Reject additional workflow files and multi-document workflow YAML. Require
-  npm 12 setup in CI and publisher jobs, before `npm ci` and `npm test`, while
-  leaving Knit deployment commands unchanged.
+  Reject additional workflow files and multi-document workflow YAML. Install
+  `npm@latest` in GitHub validation and publisher jobs before `npm ci`, then run
+  `npm test` immediately after `npm ci`; leave Knit deployment commands unchanged.
 - Align README checks across profiles for supported Markdown links and
   fragments, required headings and link targets, and canonical GHCR image,
   pull-command, tag, and deployment-boundary content. JSON and YAML data fields

@@ -19,7 +19,7 @@ export function validateNpmPublicationJob(workflow, job) {
   const install = installCommands[0];
   const setupError = install
     ? validateWorkflowPreInstallCommands("publish job", commands, install.index, jobSteps)
-    : "publish job must run npm ci after provisioning npm 12.";
+    : "publish job must run npm ci after installing npm@latest.";
   const publisherRunsTest = commands.some(({ command }) => /^npm\s+test$/iu.test(command));
   const verifyIndex = jobSteps.findIndex(({ run }) => hasReleaseTagGuard(run));
   const publishIndex = jobSteps.findIndex(({ run }) => isApprovedNpmPublishCommand(run));

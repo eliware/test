@@ -3,17 +3,12 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run } from "../../../../../src/checks/general/E-0.1/E-0.1.24/A-0.1.24.0.mjs";
-import {
-  npm12InstallCommand,
-  npm12VersionCheckCommand,
-} from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+import { npmLatestInstallCommand } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm-install-workflow-setup.mjs";
 
 const compliantSteps = `      - uses: actions/setup-node@v7
         with:
           node-version: 26
-      - run: ${npm12InstallCommand}
-      - run: >-
-          ${npm12VersionCheckCommand}
+      - run: ${npmLatestInstallCommand}
       - run: npm ci
       - run: npm test`;
 

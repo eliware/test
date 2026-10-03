@@ -1,10 +1,10 @@
 import { expect, test } from "@jest/globals";
-import { npm12WorkflowSteps } from "../../../../../test-fixtures/npm-workflow-steps.mjs";
+import { npmWorkflowSteps } from "../../../../../test-fixtures/npm-workflow-steps.mjs";
 import { workflowHasValidationEvents } from "../../../../../src/checks/general/E-0.1/E-0.1.24/workflow-validation-events.mjs";
 
 const validationJob = {
   "runs-on": "ubuntu-latest",
-  steps: npm12WorkflowSteps(["npm ci", "npm test"]),
+  steps: npmWorkflowSteps(["npm ci", "npm test"]),
 };
 
 function workflow(events, jobs = { validate: validationJob }) {

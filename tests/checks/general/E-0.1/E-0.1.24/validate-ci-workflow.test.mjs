@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { npm12WorkflowSteps } from "../../../../../test-fixtures/npm-workflow-steps.mjs";
+import { npmWorkflowSteps } from "../../../../../test-fixtures/npm-workflow-steps.mjs";
 import { validateCiWorkflow } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-ci-workflow.mjs";
 
 test("requires ci.yaml itself to target main pushes and pull requests", () => {
@@ -17,7 +17,7 @@ test("requires ci.yaml itself to target main pushes and pull requests", () => {
           jobs: {
             validate: {
               "runs-on": "ubuntu-latest",
-              steps: npm12WorkflowSteps(["npm ci", "npm test"]),
+              steps: npmWorkflowSteps(["npm ci", "npm test"]),
             },
           },
         },
@@ -39,7 +39,7 @@ test("passes when ci.yaml has the required events and validation job", () => {
           jobs: {
             validate: {
               "runs-on": "ubuntu-latest",
-              steps: npm12WorkflowSteps(["npm ci", "npm test"]),
+              steps: npmWorkflowSteps(["npm ci", "npm test"]),
             },
           },
         },

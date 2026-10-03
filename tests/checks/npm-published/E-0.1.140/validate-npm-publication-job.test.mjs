@@ -1,18 +1,18 @@
 import { expect, test } from "@jest/globals";
 import { releaseTagGuard } from "../../../../src/checks/ghcr-published/release-version-tag.mjs";
 import { validateNpmPublicationJob } from "../../../../src/checks/npm-published/E-0.1.140/validate-npm-publication-job.mjs";
-import { npm12WorkflowSteps } from "../../../../test-fixtures/npm-workflow-steps.mjs";
+import { npmWorkflowSteps } from "../../../../test-fixtures/npm-workflow-steps.mjs";
 
 function workflow({ runner = "ubuntu-latest", needs = "validate", publish = {} } = {}) {
   return {
     document: {
       jobs: {
-        validate: { "runs-on": "ubuntu-latest", steps: npm12WorkflowSteps(["npm ci", "npm test"]) },
+        validate: { "runs-on": "ubuntu-latest", steps: npmWorkflowSteps(["npm ci", "npm test"]) },
         publish: {
           "runs-on": runner,
           needs,
           steps: [
-            ...npm12WorkflowSteps(["npm ci"]),
+            ...npmWorkflowSteps(["npm ci"]),
             { run: releaseTagGuard },
             { run: "npm publish", ...publish },
           ],
@@ -52,7 +52,7 @@ test("rejects publish steps before the release guard or with conditional toleran
   }
 });
 
-test("requires the publisher job to provision npm 12 without rerunning npm test", () => {
+test("requires the publisher job to install npm latest without rerunning npm test", () => {
   const missingInstall = workflow();
   missingInstall.document.jobs.publish.steps = missingInstall.document.jobs.publish.steps.filter(
     ({ run }) => run !== "npm ci",

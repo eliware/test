@@ -380,12 +380,12 @@ directives:
           - id: A-0.1.24.0
             dos:
               - CI validation runs npm ci followed immediately by npm test; npm test is the repository's aggregate deterministic gate, and repositories may follow it with arbitrary repository-specific commands, including commands that alter repository-specific state or use credentials. This allowance defines what deterministic validation accepts; it does not attest to command safety. Human or AI review must assess their purpose, scope, credential handling, and effects. Deterministic validation only rejects npm publish and commands that publish images to GHCR.
-              - Every GitHub validation job must use an unconditional actions/setup-node@v7 step (or a version within major v7) with Node.js 26 and no `continue-on-error` or `continueOnError`, then install npm 12 globally with `npm install --global npm@12`, then run the exact version check `node -e 'const {execFileSync}=require("node:child_process");const v=execFileSync("npm",["--version"],{encoding:"utf8"}).trim();if(!/^\d+\.\d+\.\d+$/.test(v)||Number(v.split(".")[0])<12)process.exit(1)'`, then run standalone npm ci immediately followed by standalone npm test steps. The version check must exit nonzero unless the active npm version is valid semver with major version 12 or later.
+              - Every GitHub validation job must use an unconditional actions/setup-node@v7 step (or a version within major v7) with Node.js 26 and no `continue-on-error` or `continueOnError`, then run `npm -g install npm@latest`, then run standalone npm ci immediately followed by standalone npm test steps.
               - Arbitrary post-test shell commands are permitted, but every step in a validation job must retain a supported GitHub Actions step shape. Only actions/setup-node major v7 and actions/checkout major v6 references are allowed actions in the job; post-test action steps, conditional execution, and continue-on-error are rejected. Repository-specific shell commands remain subject to the publish deny-list and semantic review.
               - eliware-test owns lint and format validation invoked by npm test; CI workflows must not duplicate those checks.
-              - Before npm ci, permit the exact npm 12 installation and version-check commands above, approved setup actions, and literal safe echo or printf reporting without shell or workflow-expression expansion. Reject dollar signs, backticks, backslashes (including backslash-newline continuations), and CR/LF in reporting commands in every quoting form, as well as other pre-install commands and file creation. Validate step shape and action allowlisting across the entire job; limit command-order checks to commands before npm ci.
+              - Before npm ci, permit the exact npm latest installation command above, approved setup actions, and literal safe echo or printf reporting without shell or workflow-expression expansion. Reject dollar signs, backticks, backslashes (including backslash-newline continuations), and CR/LF in reporting commands in every quoting form, as well as other pre-install commands and file creation. Validate step shape and action allowlisting across the entire job; limit command-order checks to commands before npm ci.
             donts:
-              - Do not replace npm test with partial checks, run npm update or any npm install command other than the exact global npm@12 installation above, or duplicate lint and format checks owned by eliware-test.
+              - Do not replace npm test with partial checks, run npm update or any npm install command other than `npm -g install npm@latest`, or duplicate lint and format checks owned by eliware-test.
             examples:
               - purpose: Copyable Ubuntu validation workflow for .github/workflows/ci.yaml
                 markdown: |-
@@ -418,9 +418,7 @@ directives:
                           with:
                             node-version: 26
                             cache: npm
-                        - run: npm install --global npm@12
-                        - run: >-
-                            node -e 'const {execFileSync}=require("node:child_process");const v=execFileSync("npm",["--version"],{encoding:"utf8"}).trim();if(!/^\d+\.\d+\.\d+$/.test(v)||Number(v.split(".")[0])<12)process.exit(1)'
+                        - run: npm -g install npm@latest
                         - run: npm ci
                         - run: npm test
                   ```
@@ -443,9 +441,9 @@ directives:
               - Publication-example workflows and an explicitly justified workflow-specific variation may use a documented scope-specific concurrency policy when the variation does not permit obsolete duplicate validation runs for the same repository and ref.
           - id: E-0.1.24.4
             dos:
-              - Every job selected as a GitHub Actions validation job must run unconditionally on Ubuntu and contain the npm 12 setup required by A-0.1.24.0, followed by exactly one standalone npm ci command immediately followed by exactly one standalone npm test command; multiline, chained, or continued shell equivalents do not satisfy the required pair. That validation flow may then run arbitrary repository-specific commands. Human or AI review must assess command purpose and scope. Deterministic validation rejects npm publish and image-publication commands with explicit ghcr.io destinations or GHCR_ variable names; registry destinations hidden behind generic variables remain subject to semantic review. The required npm ci and npm test steps must not override their environment, shell, or working directory.
+              - Every job selected as a GitHub Actions validation job must run unconditionally on Ubuntu and contain the required npm -g install npm@latest setup followed by exactly one standalone npm ci command immediately followed by exactly one standalone npm test command; multiline, chained, or continued shell equivalents do not satisfy the required pair. That validation flow may then run arbitrary repository-specific commands. Human or AI review must assess command purpose and scope. Deterministic validation rejects npm publish and image-publication commands with explicit ghcr.io destinations or GHCR_ variable names; registry destinations hidden behind generic variables remain subject to semantic review. The required npm ci and npm test steps must not override their environment, shell, or working directory.
               - >-
-                Before npm ci, allow only the exact npm 12 installation and version-check commands
+                Before npm ci, allow only the exact npm latest installation command
                 required by A-0.1.24.0, approved setup actions with only their convention-defined
                 inputs, and literal safe echo or printf reporting without shell or workflow-expression
                 expansion; reject dollar signs, backticks, backslashes (including backslash-newline

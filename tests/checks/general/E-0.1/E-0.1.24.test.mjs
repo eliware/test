@@ -4,17 +4,12 @@ import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { run } from "../../../../src/checks/general/E-0.1/E-0.1.24.mjs";
 import { createRepositoryInventory } from "../../../../src/checks/create-repository-inventory.mjs";
-import {
-  npm12InstallCommand,
-  npm12VersionCheckCommand,
-} from "../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+import { npmLatestInstallCommand } from "../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm-install-workflow-setup.mjs";
 
 const compliantSteps = `      - uses: actions/setup-node@v7
         with:
           node-version: 26
-      - run: ${npm12InstallCommand}
-      - run: >-
-          ${npm12VersionCheckCommand}
+      - run: ${npmLatestInstallCommand}
       - run: npm ci
       - run: npm test`;
 

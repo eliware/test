@@ -6,10 +6,7 @@ import {
   releaseTagFilter,
   releaseTagGuard,
 } from "../../../../src/checks/ghcr-published/release-version-tag.mjs";
-import {
-  npm12InstallCommand,
-  npm12VersionCheckCommand,
-} from "../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+import { npmLatestInstallCommand } from "../../../../src/checks/general/E-0.1/E-0.1.24/validate-npm-install-workflow-setup.mjs";
 import { run as checkPublicationWorkflow } from "../../../../src/checks/npm-published/E-0.1.140/A-0.1.140.2.mjs";
 
 const run = (context) => checkPublicationWorkflow({ env: {}, ...context });
@@ -18,12 +15,12 @@ function withValidationDependency(workflow) {
   return workflow
     .replace(
       "jobs:\n",
-      `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npm12InstallCommand}\n      - run: >-\n          ${npm12VersionCheckCommand}\n      - run: npm ci\n      - run: npm test\n`,
+      `jobs:\n  validate:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npmLatestInstallCommand}\n      - run: npm ci\n      - run: npm test\n`,
     )
     .replace("  publish:\n", "  publish:\n    needs: validate\n")
     .replace(
       `      - run: '${releaseTagGuard}'`,
-      `      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npm12InstallCommand}\n      - run: >-\n          ${npm12VersionCheckCommand}\n      - run: npm ci\n      - run: '${releaseTagGuard}'`,
+      `      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n      - run: ${npmLatestInstallCommand}\n      - run: npm ci\n      - run: '${releaseTagGuard}'`,
     );
 }
 

@@ -1,12 +1,12 @@
 import { expect, test } from "@jest/globals";
 import { validateWorkflowPreInstallCommands } from "../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-pre-install-commands.mjs";
 import {
-  npm12WorkflowSteps,
+  npmWorkflowSteps,
   workflowCommands,
 } from "../../../../../test-fixtures/npm-workflow-steps.mjs";
 
 function compliantSetup(extraSteps = []) {
-  const steps = npm12WorkflowSteps([]);
+  const steps = npmWorkflowSteps([]);
   steps.splice(0, 1, { uses: "actions/checkout@v6" }, steps[0]);
   steps.push(...extraSteps, { run: "npm ci" });
   return { steps, commands: workflowCommands(steps), installIndex: steps.length - 1 };
@@ -186,7 +186,7 @@ test("rejects action inputs that change the checkout or Node provisioning contra
 });
 
 test("rejects malformed steps and unapproved actions after install", () => {
-  const steps = npm12WorkflowSteps(["npm ci", "npm test"]);
+  const steps = npmWorkflowSteps(["npm ci", "npm test"]);
   steps.push({ uses: "someone/reporting-action@v1" });
   expect(
     validateWorkflowPreInstallCommands("ci.yaml", workflowCommands(steps), 3, steps),

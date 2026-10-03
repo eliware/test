@@ -1,7 +1,7 @@
 import {
-  npm12InstallCommand,
-  validateNpm12WorkflowSetup,
-} from "../general/E-0.1/E-0.1.24/validate-npm12-workflow-setup.mjs";
+  npmLatestInstallCommand,
+  validateNpmInstallWorkflowSetup,
+} from "../general/E-0.1/E-0.1.24/validate-npm-install-workflow-setup.mjs";
 
 export function validateNpmToolchainForPublication(name, job) {
   const steps = Array.isArray(job?.steps) ? job.steps : [];
@@ -10,10 +10,10 @@ export function validateNpmToolchainForPublication(name, job) {
   );
   const invokesNpm = commands.filter(({ command }) => /^npm(?:\s|$)/iu.test(command));
   if (invokesNpm.length === 0) return null;
-  const npmOperation = invokesNpm.find(({ command }) => command !== npm12InstallCommand);
+  const npmOperation = invokesNpm.find(({ command }) => command !== npmLatestInstallCommand);
   const beforeIndex = npmOperation?.index ?? steps.length;
-  return validateNpm12WorkflowSetup(name, commands, beforeIndex, steps, {
+  return validateNpmInstallWorkflowSetup(name, commands, beforeIndex, steps, {
     requireSetup: true,
-    beforeCommand: "its first npm command",
+    beforeCommand: "its first npm operation",
   });
 }
