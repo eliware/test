@@ -60,8 +60,8 @@ test("reports missing, mismatched, and malformed focused pairs", async () => {
   ).resolves.toEqual(
     expect.arrayContaining([
       "missing mirrored source: other.mjs",
-      "other.test.mjs is not a Jest test file",
-      "other.test.mjs does not reference an implementation module",
+      "tests/other.test.mjs does not declare an executable Jest test",
+      "tests/other.test.mjs does not import its matching source module (src/other.mjs)",
     ]),
   );
   await expect(

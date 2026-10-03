@@ -55,6 +55,7 @@ directives:
       - id: E-0.1.130.4
         dos:
           - Applications must keep executable implementation source under src/ and mirror that structure under tests/ with exactly one corresponding .test.mjs file for every .mjs source file, including source files excluded from coverage. Every test file under tests/ must correspond to a source file under src/; additional unmirrored integration, end-to-end, smoke, or cross-cutting test files are not allowed.
+          - Each mirrored test must parse as JavaScript, contain an executable Jest test or it declaration with a callback, and reference its exact matching source module. Static imports and re-exports, literal dynamic imports, require calls, and supported Jest mock calls count as source references; comments, strings, unrelated imports, describe-only declarations, skipped tests, and todo declarations do not satisfy this requirement.
           - Place checked-in fixtures, snapshots, generators, and shared test support with no source counterpart in the repository-root test-fixtures/ directory. Reserve artifacts/ for generated, untracked test output such as Puppeteer screenshots and traces; ignore that directory and do not store checked-in helpers or fixtures there.
         donts:
           - Do not omit src/ or tests/, use mismatched source/test paths, use non-.test.mjs test counterparts, treat coverage exclusions as waivers of the mirror requirement, or duplicate lower-level assertions in higher-level tests.

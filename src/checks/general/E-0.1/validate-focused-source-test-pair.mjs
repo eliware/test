@@ -1,5 +1,6 @@
 import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, join, relative, sep } from "node:path";
+import { validateTestContract } from "./find-test-contract-violations.mjs";
 
 export async function validateFocusedSourceTestPair(
   root,
@@ -55,14 +56,10 @@ export async function validateFocusedSourceTestPair(
   } catch {
     return [`Focused test file is missing: ${testRelative}`];
   }
-  const findings = [];
+  const findings = validateTestContract(sourceRelative, test, content);
   if (!sourceRealPath) {
     // codescope ignore: This adds a finding that runFocused converts to a failing check result.
     findings.push(`missing mirrored source: ${sourceRelative}`);
   }
-  if (!/\b(?:test|it|describe)\s*\(/u.test(content))
-    findings.push(`${testRelative} is not a Jest test file`);
-  if (!/(?:from|import|require\s*\()[\s\S]*src[\\/]\S+\.mjs/u.test(content))
-    findings.push(`${testRelative} does not reference an implementation module`);
   return findings;
 }

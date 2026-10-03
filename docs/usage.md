@@ -41,6 +41,9 @@ still require exactly one corresponding `.test.mjs` file. `.mts` and `.cts` are
 focused-invocation extensions only; they do not change the required mirrored test
 filename. Application profile coverage enforcement remains limited to native
 `.mjs` production files.
+Each mirrored `.test.mjs` must contain an executable Jest `test` or `it`
+declaration and reference its exact source module; syntax-aware validation
+ignores comments and strings and rejects unrelated imports.
 Test files under `tests/` use
 `.test.*` or `.spec.*` names with `.js`, `.jsx`, `.ts`,
 `.tsx`, `.mjs`, `.cjs`, `.mts`, or `.cts` extensions.

@@ -1,9 +1,27 @@
 import { expect, jest, test } from "@jest/globals";
 import { createRepositoryDiscovery } from "../../src/checks/create-repository-inventory-discovery.mjs";
+import { createRepositoryScopedEntryReader } from "../../src/checks/create-repository-scoped-entry-reader.mjs";
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-
+test("filters directly discovered records within the requested subtree", async () => {
+  const records = [
+    { path: "src", type: "directory", depth: 1 },
+    { path: "src/module.mjs", type: "file", depth: 1 },
+    { path: "docs/readme.md", type: "file", depth: 1 },
+  ];
+  const entriesUnder = createRepositoryScopedEntryReader({
+    root: "/repo",
+    entryReader: {
+      entries: async () => records,
+      subtreeEntries: new Map(),
+      hasFullDiscovery: () => true,
+    },
+  });
+  await expect(entriesUnder("/repo/src", (path) => path.endsWith(".mjs"))).resolves.toEqual(
+    records.slice(0, 2),
+  );
+});
 test("forwards traversal limits and observers to a lazy scoped scan", async () => {
   const findEntries = jest.fn(async () => [{ path: "docs/guide.md", type: "file", depth: 1 }]);
   const discovery = createRepositoryDiscovery({

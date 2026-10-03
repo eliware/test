@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
+import { createDocumentationFileView } from "../../src/checks/create-repository-inventory-documentation.mjs";
 
 const records = [
   { path: "README.md", type: "file", depth: 0 },
@@ -15,6 +16,14 @@ const records = [
   { path: "docs/build", type: "directory", depth: 2 },
   { path: "docs/build/index.md", type: "file", depth: 2 },
 ];
+
+test("builds a documentation view directly from scoped entries", async () => {
+  const documentationFiles = createDocumentationFileView("/repo", async () => [
+    { path: "docs", type: "directory", depth: 1 },
+    { path: "docs/guide.md", type: "file", depth: 1 },
+  ]);
+  await expect(documentationFiles({ directory: "/repo/docs" })).resolves.toEqual(["guide.md"]);
+});
 
 test("shares scoped documentation discovery and enforces traversal limits", async () => {
   const findEntries = jest.fn(async () => records);

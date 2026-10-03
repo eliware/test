@@ -142,7 +142,9 @@ Run `npm test` for aggregate validation. For targeted stages, use
 applicable; `npm run format` writes formatted files.
 
 Use native ESM `.mjs` modules, keep `src/` and `tests/` mirrored, and add
-focused regression tests for behavior changes.
+focused regression tests for behavior changes. Each mirrored test must contain
+an executable Jest `test` or `it` declaration and import its exact matching
+source module; comments, strings, and unrelated imports do not count.
 
 Aggregate validation rejects all tracked symlinks by reading mode `120000` from
 the Git index. It covers links to files and directories without resolving their

@@ -26,6 +26,8 @@
 - Require the canonical GitHub `ci.yaml`, Knit `deploy.yaml`, and conditional
   publication `publish.yaml` workflow inventory; reject extra workflow files
   and multi-document workflow YAML.
+- Validate mirrored Jest tests from their parsed syntax: each must declare an
+  executable test and reference its exact source module.
 - Enforce canonical GHCR image, pull command, supported tags, and deployment
   boundary markers in the existing README Usage section.
 
