@@ -3,13 +3,12 @@ import { createValidationContext } from "./create-validation-context.mjs";
 import { resolveFocusedScope } from "../cli/resolve-focused-scope.mjs";
 import { selectExecutionChecks } from "./select-execution-checks.mjs";
 import { collectValidationInventoryOptions } from "./collect-validation-inventory-options.mjs";
+import { shouldExecuteJest } from "./should-execute-jest.mjs";
 
 export async function prepareValidationPlan(root, ignoredRuleIds, options, dependencies) {
   const packageJson = await dependencies.loadValidationTarget(root);
   const conventions = readConventionConfig(packageJson);
-  const executeJest =
-    options.executeJest !== false &&
-    conventions.apply.some((profile) => profile === "application" || profile === "library");
+  const executeJest = shouldExecuteJest(options.executeJest, conventions.apply);
   options = { ...options, executeJest };
   const allChecks = await dependencies.discoverAllChecks();
   const checks = await dependencies.selectConventionChecks(conventions, allChecks);

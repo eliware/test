@@ -75,8 +75,11 @@ directives:
           - id: A-0.0.5.1
             dos:
               - Keep the harness implementation native ESM, modular, injectable, and covered by its native test suite.
+              - Treat a coordinator that selects, sequences, and aggregates work for one cohesive validation workflow as a focused module. Put independently changing policy and operations in submodules with mirrored tests.
+              - Keep tests for coordinator wiring and workflow outcomes at the coordinator; test helper behavior in the helper's mirrored test.
             donts:
               - Do not require consumers to import internal harness modules.
+              - Do not split a coordinator solely because its workflow has multiple phases when those phases implement one cohesive contract.
       - id: E-0.0.6
         dos:
           - Make checks return only pass or fail with stable identities and actionable diagnostics.

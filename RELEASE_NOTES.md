@@ -26,6 +26,10 @@
   `--version` available independently.
 - Disable directory-list caching on Windows, where deleting files may not update
   parent-directory timestamps and cached repository discovery can become stale.
+- Extract profile-based Jest selection, npm smoke request validation, and
+  per-image GHCR evidence ordering into focused modules with mirrored tests.
+- Clarify focused coordinator boundaries and place helper behavior assertions at
+  their lowest applicable test level.
 - Advance the package version to 11.0.0 and all maintained specification
   documents to version 11.0.
 - Add the repository E-0 identifier to package metadata.

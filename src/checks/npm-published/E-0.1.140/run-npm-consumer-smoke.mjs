@@ -1,15 +1,15 @@
 import { mkdtemp, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { execute } from "../../execute-child-process.mjs";
 import { resolvePackExecutable } from "./resolve-pack-executable.mjs";
-import { validatePublicationMetadata } from "./validate-publication-metadata.mjs";
 import { captureSmokeTargetState } from "./capture-smoke-target-state.mjs";
 import { restoreSmokeTargetState } from "./restore-smoke-target-state.mjs";
 import { packSmokeCandidate } from "./pack-smoke-candidate.mjs";
 import { installSmokeCandidate } from "./install-smoke-candidate.mjs";
 import { prepareSmokeTarget } from "./prepare-smoke-target.mjs";
 import { loadSmokeTarget } from "./load-smoke-target.mjs";
+import { validateNpmConsumerSmokeRequest } from "./validate-npm-consumer-smoke-request.mjs";
 
 export async function runNpmConsumerSmoke({
   root,
@@ -22,16 +22,9 @@ export async function runNpmConsumerSmoke({
   restoreState = restoreSmokeTargetState,
   write = () => {},
 }) {
-  if (typeof target !== "string" || !target.trim())
-    return "Supply one existing consumer with --target <path>.";
-  const metadataError = validatePublicationMetadata(packageJson, {
-    selfHosted: packageJson?.name === "@eliware/test",
-  });
-  if (metadataError) return metadataError;
-  if (typeof packageJson?.name !== "string" || typeof packageJson?.version !== "string")
-    return "Source package name and version are required for tarball smoke.";
-  const targetRoot = resolve(root, target);
-  if (targetRoot === resolve(root)) return "Smoke target must be a separate consumer repository.";
+  const request = validateNpmConsumerSmokeRequest({ root, target, packageJson });
+  if (request.error) return request.error;
+  const { targetRoot } = request;
   const loadedTarget = await loadSmokeTarget(targetRoot, packageJson?.name);
   if (loadedTarget.error) return loadedTarget.error;
   const binNames = Object.keys(packageJson?.bin ?? {});

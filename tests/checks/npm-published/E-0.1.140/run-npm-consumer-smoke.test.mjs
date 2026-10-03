@@ -81,29 +81,16 @@ test("restores the prior installation when the consumer test fails", async () =>
   );
 });
 
-test("refuses missing, invalid, and source-checkout targets without changing them", async () => {
+test("validates the smoke request before capturing consumer state", async () => {
   const fixture = await createSmokeTarget(roots);
-  const run = jest.fn();
-  await expect(runSmoke(fixture, { target: "", run })).resolves.toContain(
-    "Supply one existing consumer",
-  );
-  await expect(runSmoke(fixture, { target: "missing", run })).resolves.toContain(
-    "existing npm repository",
-  );
-  await expect(runSmoke(fixture, { target: fixture.source, run })).resolves.toContain(
-    "separate consumer",
-  );
-  expect(run).not.toHaveBeenCalled();
-});
-
-test.each([
-  [{ publishConfig: {} }, "provenance"],
-  [{ version: undefined }, "name and version"],
-])("rejects invalid source metadata before target mutation %#", async (override, message) => {
-  const fixture = await createSmokeTarget(roots);
+  const captureState = jest.fn();
   await expect(
-    runSmoke(fixture, { packageJson: { ...packageJson, ...override } }),
-  ).resolves.toContain(message);
+    runSmoke(fixture, {
+      packageJson: { ...packageJson, publishConfig: {} },
+      captureState,
+    }),
+  ).resolves.toContain("provenance");
+  expect(captureState).not.toHaveBeenCalled();
 });
 
 test("requires the target test script and an eliware-test dependency", async () => {

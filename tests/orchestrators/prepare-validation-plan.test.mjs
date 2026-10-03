@@ -53,32 +53,3 @@ test("keeps the complete selected plan when no focused path is supplied", async 
   expect(plan.checks).toBe(checks);
   expect(plan.context.executeJest).toBe(false);
 });
-
-test.each(["documentation", "workspace", "infrastructure"])(
-  "retains general lint and format stages for %s-only repositories",
-  async (profile) => {
-    const checks = [{ ruleId: "E-0.1.4" }, { ruleId: "E-0.1.20.17" }];
-    const dependencies = {
-      loadValidationTarget: jest.fn(async () => ({
-        eliware: { apply: ["general", profile, "private"] },
-      })),
-      discoverAllChecks: jest.fn(async () => checks),
-      selectConventionChecks: jest.fn(async () => checks),
-      validateBundledDirectiveCompleteness: jest.fn(async () => true),
-      prepareValidationExemptions: jest.fn(() => new Set()),
-      findRepositoryEntries: jest.fn(async () => []),
-    };
-
-    const plan = await prepareValidationPlan(
-      "/repo",
-      [],
-      { executeJest: true, executeLint: true, executeFormat: true },
-      dependencies,
-    );
-
-    expect(plan.checks).toEqual(checks);
-    expect(plan.context).toEqual(
-      expect.objectContaining({ executeJest: false, executeLint: true, executeFormat: true }),
-    );
-  },
-);

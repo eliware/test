@@ -199,6 +199,25 @@ period; cleanup of every descendant process cannot be guaranteed.
 Coverage and monolith checks are always enforced by the public validation
 commands; no public ignore flags bypass them.
 
+## Development boundaries
+
+Treat modules as focused when each owns one contract or workflow. A coordinator
+may select and sequence helpers and aggregate results for that workflow; those
+phases alone do not make it multi-purpose. Split a policy or operation when it
+has its own reason to change, and give the new source module a mirrored test.
+Keep coordinator tests on wiring and end-to-end outcomes, and move helper
+behavior assertions to the helper's test.
+
+This repository uses that split for profile-based Jest selection
+(`src/orchestrators/should-execute-jest.mjs`), npm smoke request validation
+(`src/checks/npm-published/E-0.1.140/validate-npm-consumer-smoke-request.mjs`),
+and per-image GHCR evidence ordering
+(`src/checks/ghcr-published/find-image-verification-chain-end.mjs`). Their
+parent modules retain the validation-plan, smoke-run, and whole-job workflows.
+Other reviewed modules such as the repository-inventory view and source/test
+mirroring runner remain coordinators for one named validation contract and
+delegate their individual operations to focused helpers.
+
 ## Compatibility boundaries
 
 The validator resolves Jest, Oxlint, Prettier, and npm from the consumer
