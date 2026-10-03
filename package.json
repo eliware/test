@@ -98,6 +98,7 @@
     "yaml": "^2.8.1"
   },
   "eliware": {
+    "id": "E-0",
     "apply": [
       "general",
       "application",
