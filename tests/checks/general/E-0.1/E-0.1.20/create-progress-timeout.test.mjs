@@ -1,14 +1,17 @@
 import { expect, jest, test } from "@jest/globals";
 import { createProgressTimeout } from "../../../../../src/checks/general/E-0.1/E-0.1.20/create-progress-timeout.mjs";
 
-test("does not schedule a timer when progress timeout is disabled", () => {
-  const onTimeout = jest.fn();
-  const timeout = createProgressTimeout({ timeoutMs: 0, onTimeout });
-  timeout.reset();
-  expect(timeout.wasTriggered()).toBe(false);
-  expect(onTimeout).not.toHaveBeenCalled();
-  timeout.stop();
-});
+test.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+  "does not schedule a timer for disabled or invalid timeout %s",
+  (timeoutMs) => {
+    const onTimeout = jest.fn();
+    const timeout = createProgressTimeout({ timeoutMs, onTimeout });
+    timeout.reset();
+    expect(timeout.wasTriggered()).toBe(false);
+    expect(onTimeout).not.toHaveBeenCalled();
+    timeout.stop();
+  },
+);
 
 test("reports a timed-out process", () => {
   jest.useFakeTimers();

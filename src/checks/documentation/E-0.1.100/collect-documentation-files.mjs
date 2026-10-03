@@ -8,21 +8,30 @@ export async function collectDocumentationFiles(
   { maxDepth = 32, maxFiles = 10_000 } = {},
 ) {
   const files = [];
-  async function visit(current, depth) {
+  const directories = [{ path: directory, depth: 0, entries: null, index: 0 }];
+  while (directories.length > 0) {
+    const currentDirectory = directories.at(-1);
+    const { path: current, depth } = currentDirectory;
     if (depth > maxDepth)
       throw new Error(`Documentation traversal exceeded the ${maxDepth}-level depth limit.`);
-    const entries = await readdir(current, { withFileTypes: true });
-    for (const entry of entries.toSorted((left, right) => left.name.localeCompare(right.name))) {
-      if ([".git", "node_modules", "coverage", "build", "dist"].includes(entry.name)) continue;
-      const file = join(current, entry.name);
-      if (entry.isDirectory()) await visit(file, depth + 1);
-      else if (entry.isFile() && predicate(entry.name)) {
-        files.push(file.slice(root.length + 1).replaceAll("\\", "/"));
-        if (files.length > maxFiles)
-          throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);
-      }
+    currentDirectory.entries ??= (await readdir(current, { withFileTypes: true })).toSorted(
+      (left, right) => left.name.localeCompare(right.name),
+    );
+    if (currentDirectory.index >= currentDirectory.entries.length) {
+      directories.pop();
+      continue;
+    }
+    const entry = currentDirectory.entries[currentDirectory.index];
+    currentDirectory.index += 1;
+    if ([".git", "node_modules", "coverage", "build", "dist"].includes(entry.name)) continue;
+    const file = join(current, entry.name);
+    if (entry.isDirectory())
+      directories.push({ path: file, depth: depth + 1, entries: null, index: 0 });
+    else if (entry.isFile() && predicate(entry.name)) {
+      files.push(file.slice(root.length + 1).replaceAll("\\", "/"));
+      if (files.length > maxFiles)
+        throw new Error(`Documentation traversal exceeded the ${maxFiles}-file limit.`);
     }
   }
-  await visit(directory, 0);
   return files;
 }

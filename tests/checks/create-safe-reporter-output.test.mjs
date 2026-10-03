@@ -37,6 +37,17 @@ test("limits reporter line and output length without writing partial lines", () 
   expect(output.every((line) => line.endsWith("\n"))).toBe(true);
 });
 
+test("reports a safe fallback when a diagnostic cannot be converted to text", () => {
+  const output = [];
+  const report = createSafeReporterOutput("test", { write: (text) => output.push(text) });
+  report({
+    toString() {
+      throw new Error("secret-bearing conversion error");
+    },
+  });
+  expect(output).toEqual(["[test] [unprintable diagnostic]\n"]);
+});
+
 test("uses stderr when no reporter writer is injected", () => {
   const previous = process.stderr.write;
   const output = [];

@@ -20,7 +20,7 @@ test("selects npm executable variants", async () => {
     expect(
       resolveAuditExecutable({
         env: { npm_execpath: "npm-cli.js" },
-        platform: process.platform,
+        platform: "linux",
         execPath: process.execPath,
         root,
       }),

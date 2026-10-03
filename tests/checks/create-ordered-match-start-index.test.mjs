@@ -9,6 +9,7 @@ test("inserts starts in sorted order and locates the first start at a boundary",
   expect(index.values).toEqual([2, 5, 8]);
   expect(index.lowerBound(4)).toBe(1);
   expect(index.lowerBound(9)).toBe(3);
+  expect(index.range(3, 8)).toEqual([5, 8]);
 });
 
 test("handles large unordered batches, duplicate starts, and prefix removal", () => {

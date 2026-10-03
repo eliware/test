@@ -15,6 +15,7 @@ export function validateWorkflowPostTestCommands(
     steps !== null &&
     (!Array.isArray(steps) ||
       steps.some((step, index) => index > testIndex && !isSupportedWorkflowStep(step)));
+  // codescope ignore: validateWorkflowSequence supplies the npm test index from the original steps array.
   const invalidCommand = commands.some(({ command, index, step }, position) => {
     const originalIndex = step ? workflowSteps.indexOf(step) : (index ?? position);
     if (originalIndex <= testIndex) return false;

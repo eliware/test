@@ -19,16 +19,23 @@ test("falls back to PowerShell Core and aggregates both failures", () => {
   const execute = jest.fn().mockImplementationOnce(() => {
     throw new Error("Windows PowerShell unavailable");
   });
-  runWindowsProcessTreeFallback(42, { SystemRoot: "C:/Windows" }, execute, options);
-  expect(execute.mock.calls[1][0]).toBe("pwsh.exe");
+  runWindowsProcessTreeFallback(
+    42,
+    { SystemRoot: "C:/Windows", ProgramFiles: "C:/Program Files" },
+    execute,
+    options,
+    () => "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+  );
+  expect(execute.mock.calls[1][0]).toBe("C:\\Program Files\\PowerShell\\7\\pwsh.exe");
   const fail = () =>
     runWindowsProcessTreeFallback(
       42,
-      { SystemRoot: "C:/Windows" },
+      { SystemRoot: "C:/Windows", ProgramFiles: "C:/Program Files" },
       () => {
         throw new Error("unavailable");
       },
       options,
+      () => "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
     );
   expect(fail).toThrow(AggregateError);
 });

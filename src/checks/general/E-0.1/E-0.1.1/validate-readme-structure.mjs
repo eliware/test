@@ -30,19 +30,12 @@ export function validateReadmeStructure(readme, packageJson = {}) {
     .slice(1, tocIndex)
     .map((line, index) => ({ line, index: index + 1 }))
     .filter(({ line }) => line.trim() !== "");
-  const titleIndex = headings.find(({ index }) => index < tocIndex)?.index;
-  if (
-    headings.filter(({ index }) => index < tocIndex).length !== 1 ||
-    titleIndex === undefined ||
-    contentBeforeToc.some(({ index }) => index !== titleIndex)
-  ) {
+  const titleLine = contentBeforeToc.length === 1 ? contentBeforeToc[0].line : "";
+  if (contentBeforeToc.length !== 1 || /^##\s/u.test(titleLine)) {
     return "README.md must place its badge-bearing title immediately before the Table of Contents without intervening content.";
   }
   const packageName = packageJson?.name;
-  const title = headings.find(({ index }) => index === titleIndex).line;
-  const titleText = title
-    .replace(/^##\s+/u, "")
-    .replace(/(?:\s+\[!\[[^\]]+\]\([^)]+\)\]\([^)]+\))+$/u, "");
+  const titleText = titleLine.replace(/(?:\s+\[!\[[^\]]+\]\([^)]+\)\]\([^)]+\))+$/u, "");
   if (typeof packageName === "string" && titleText !== packageName)
     return "README.md project title must exactly match package.json.name before its badges.";
 

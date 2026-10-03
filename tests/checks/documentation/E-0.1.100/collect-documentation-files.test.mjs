@@ -27,6 +27,11 @@ test("bounds traversal depth and file count", async () => {
   await expect(collectDocumentationFiles(root, root, () => true, { maxDepth: 32 })).rejects.toThrow(
     "depth limit",
   );
+  await expect(
+    collectDocumentationFiles(root, root, () => true, { maxDepth: 40 }),
+  ).resolves.toEqual([
+    `${Array.from({ length: 34 }, (_value, index) => `d${index}`).join("/")}/deep.md`,
+  ]);
   await rm(root, { recursive: true, force: true });
   const shallow = await mkdtemp(join(tmpdir(), "eliware-doc-file-limit-"));
   await writeFile(join(shallow, "one.md"), "# one");

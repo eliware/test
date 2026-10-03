@@ -27,43 +27,25 @@ test("evicts cached file bytes after the bounded content budget is exceeded", as
   await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
   expect(read).toHaveBeenCalledTimes(2);
 });
-test("leaves concurrent pending reads alone while evicting completed content", async () => {
-  let releaseFirstStat;
-  let blockFirstStat = true;
-  const largeContent = Buffer.allocUnsafe(9);
-  const stat = jest.fn((path) => {
-    if (path.endsWith("first.bin") && blockFirstStat) {
-      blockFirstStat = false;
-      return new Promise((resolve) => {
-        releaseFirstStat = () =>
-          resolve({
-            dev: 1n,
-            ino: 1n,
-            size: 1n,
-            mtimeNs: 1n,
-            ctimeNs: 1n,
-          });
-      });
-    }
-    return Promise.resolve({
-      dev: 1n,
-      ino: 2n,
-      size: BigInt(largeContent.byteLength),
-      mtimeNs: 1n,
-      ctimeNs: 1n,
-    });
+test("skips an in-flight read while evicting older completed entries", async () => {
+  let releasePending;
+  const pendingRead = new Promise((resolve) => {
+    releasePending = resolve;
   });
-  const cache = createRepositoryFileContentCache(
-    "/repo",
-    async (path) => (path.endsWith("first.bin") ? Buffer.from("a") : largeContent),
-    stat,
-    8,
+  const read = jest.fn((path) => {
+    if (path.endsWith("pending.bin")) return pendingRead;
+    if (path.endsWith("older.bin")) return Promise.resolve(Buffer.alloc(7));
+    return Promise.resolve(Buffer.alloc(3));
+  });
+  const stat = jest.fn(async (path) =>
+    fileVersion(1n, path.endsWith("older.bin") ? 7n : path.endsWith("current.bin") ? 3n : 4n),
   );
-  const first = cache.readBytes("first.bin");
-  const large = cache.readBytes("large.bin");
-  await expect(large).resolves.toBe(largeContent);
-  releaseFirstStat();
-  await expect(first).resolves.toEqual(Buffer.from("a"));
+  const cache = createRepositoryFileContentCache("/repo", read, stat, 8);
+  const pending = cache.readBytes("pending.bin");
+  await expect(cache.readBytes("older.bin")).resolves.toHaveLength(7);
+  await expect(cache.readBytes("current.bin")).resolves.toHaveLength(3);
+  releasePending(Buffer.from("hold"));
+  await expect(pending).resolves.toHaveLength(4);
 });
 test("reuses file content only while its on-disk version is unchanged", async () => {
   const stat = jest

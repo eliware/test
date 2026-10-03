@@ -1,10 +1,10 @@
 import { cp, lstat, mkdtemp, readFile, readlink, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 
 const defaultFs = { cp, lstat, readFile, readlink, rm, stat };
 
-async function capturePath(path, storage, fs) {
+async function capturePath(path, storage, fs, platform) {
   try {
     const info = await fs.lstat(path);
     if (info.isSymbolicLink()) {
@@ -14,6 +14,8 @@ async function capturePath(path, storage, fs) {
       } catch {
         // Preserve broken links as file symlinks where the platform allows them.
       }
+      if (platform === "win32" && linkType === "file")
+        throw new Error(`Cannot safely preserve a Windows file symlink at ${path}.`);
       return { path, type: "symlink", target: await fs.readlink(path), linkType };
     }
     if (info.isDirectory()) {
@@ -30,7 +32,13 @@ async function capturePath(path, storage, fs) {
   }
 }
 
-export async function captureSmokeTargetState(root, packageName, binNames = [], fs = defaultFs) {
+export async function captureSmokeTargetState(
+  root,
+  packageName,
+  binNames = [],
+  fs = defaultFs,
+  platform = process.platform,
+) {
   const storage = await mkdtemp(join(tmpdir(), "eliware-smoke-backup-"));
   const packagePath = join(root, "node_modules", ...packageName.split("/"));
   const paths = [
@@ -39,15 +47,13 @@ export async function captureSmokeTargetState(root, packageName, binNames = [], 
     join(root, "npm-shrinkwrap.json"),
     join(root, "node_modules", ".package-lock.json"),
     packagePath,
-    dirname(packagePath),
-    join(root, "node_modules", ".bin"),
     ...binNames.flatMap((name) =>
       ["", ".cmd", ".ps1"].map((suffix) => join(root, "node_modules", ".bin", `${name}${suffix}`)),
     ),
   ];
   try {
     const entries = [];
-    for (const path of new Set(paths)) entries.push(await capturePath(path, storage, fs));
+    for (const path of new Set(paths)) entries.push(await capturePath(path, storage, fs, platform));
     return { entries, storage };
   } catch (error) {
     try {

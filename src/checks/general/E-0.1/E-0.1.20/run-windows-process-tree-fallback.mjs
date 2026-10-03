@@ -1,6 +1,13 @@
 import { resolveWindowsSystemExecutable } from "./resolve-windows-system-executable.mjs";
+import { resolveWindowsPowerShellCoreExecutable } from "./resolve-windows-powershell-core-executable.mjs";
 
-export function runWindowsProcessTreeFallback(pid, env, execute, options) {
+export function runWindowsProcessTreeFallback(
+  pid,
+  env,
+  execute,
+  options,
+  resolvePowerShellCore = resolveWindowsPowerShellCoreExecutable,
+) {
   const script =
     "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
     "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
@@ -26,7 +33,7 @@ export function runWindowsProcessTreeFallback(pid, env, execute, options) {
     );
   } catch (powershellError) {
     try {
-      execute("pwsh.exe", args, commandOptions);
+      execute(resolvePowerShellCore(env), args, commandOptions);
     } catch (pwshError) {
       throw new AggregateError([powershellError, pwshError], "PowerShell fallbacks failed.");
     }

@@ -2,6 +2,15 @@ import { expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 import { createRepositoryDirectoryReadCache } from "../../src/checks/create-repository-directory-read-cache.mjs";
 const metadata = (mtimeNs) => ({ dev: 1n, ino: 2n, size: 0n, mtimeNs, ctimeNs: mtimeNs });
+async function expectDirectoryReads(snapshot, platform, expectedCalls) {
+  const root = join(process.cwd(), "inventory-fixture");
+  const stat = jest.fn().mockResolvedValue(snapshot);
+  const readDirectory = jest.fn().mockResolvedValue(["stable"]);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, platform);
+  await read("src");
+  await read("src");
+  expect(readDirectory).toHaveBeenCalledTimes(expectedCalls);
+}
 test("deduplicates concurrent directory reads and reuses unchanged listings", async () => {
   const root = join(process.cwd(), "inventory-fixture");
   const stat = jest.fn(async () => metadata(1n));
@@ -128,29 +137,18 @@ test("forced refresh retries after the pending read fails", async () => {
   await expect(initial).rejects.toThrow("temporary stat failure");
   await expect(refresh).resolves.toEqual(["retried"]);
 });
-test("does not reuse listings with coarse timestamps or on Windows", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
-  const metadataWithoutNanoseconds = (mtimeMs) => ({
-    dev: 1n,
-    ino: 2n,
-    size: 0n,
-    mtimeMs: BigInt(mtimeMs),
-    ctimeMs: BigInt(mtimeMs),
-  });
-  const stat = jest.fn().mockResolvedValue(metadataWithoutNanoseconds(1));
-  const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["fresh"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
-  await expect(read("src")).resolves.toEqual(["old"]);
-  await expect(read("src")).resolves.toEqual(["fresh"]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
-  const windowsReadDirectory = jest
-    .fn()
-    .mockResolvedValueOnce(["old"])
-    .mockResolvedValueOnce(["fresh"]);
-  const windowsRead = createRepositoryDirectoryReadCache(root, windowsReadDirectory, stat, "win32");
-  await expect(windowsRead("src")).resolves.toEqual(["old"]);
-  await expect(windowsRead("src")).resolves.toEqual(["fresh"]);
-  expect(windowsReadDirectory).toHaveBeenCalledTimes(2);
+test.each([
+  [
+    "coarse millisecond fields",
+    { dev: 1n, ino: 2n, size: 0n, mtimeMs: 1n, ctimeMs: 1n },
+    "linux",
+    2,
+  ],
+  ["Windows metadata", metadata(1n), "win32", 2],
+  ["millisecond-aligned nanoseconds", metadata(1_000_000n), "linux", 2],
+  ["one precise nanosecond field", { ...metadata(1_000_000n), ctimeNs: 1n }, "linux", 1],
+])("uses safe directory cache policy for %s", async (_name, snapshot, platform, expectedCalls) => {
+  await expectDirectoryReads(snapshot, platform, expectedCalls);
 });
 test("detects nanosecond changes within the same millisecond", async () => {
   const root = join(process.cwd(), "inventory-fixture");

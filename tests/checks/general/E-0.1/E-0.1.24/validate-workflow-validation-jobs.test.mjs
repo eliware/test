@@ -88,7 +88,7 @@ test("requires every selected validation job to use Ubuntu", () => {
   );
 });
 
-test("rejects prohibited publication commands and unsupported post-test actions", () => {
+test("rejects prohibited publication commands and unapproved post-test actions", () => {
   expect(
     validateWorkflowValidationJobs("ci.yaml", [
       validationJob(["npm ci", "npm test", "npm publish"]),
@@ -104,5 +104,5 @@ test("rejects prohibited publication commands and unsupported post-test actions"
         commands: workflowCommands(steps),
       },
     ]),
-  ).toContain("unsupported step forms");
+  ).toContain("approved actions");
 });

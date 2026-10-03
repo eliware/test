@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { pathToFileURL } from "node:url";
-import { join } from "node:path";
+import { resolve, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { runNpmConsumerSmoke } from "./run-npm-consumer-smoke.mjs";
 
 export async function runSmokeCli({
@@ -25,7 +25,7 @@ export async function runSmokeCli({
 }
 
 export async function runSmokeCliEntrypoint({ moduleUrl, argvPath, args, run = runSmokeCli }) {
-  if (new URL(moduleUrl).pathname !== pathToFileURL(argvPath ?? "").pathname) return;
+  if (resolve(fileURLToPath(moduleUrl)) !== resolve(argvPath ?? "")) return;
   process.exitCode = await run({ args });
 }
 

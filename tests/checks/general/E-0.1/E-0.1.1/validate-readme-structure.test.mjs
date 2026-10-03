@@ -11,7 +11,7 @@ function fixture() {
   const toc = sections.map(
     (section) => `[${section}](#${section.toLowerCase().replaceAll(" ", "-")})`,
   );
-  return `${brand}\n\n## @eliware/fixture\n\n## Table of Contents\n${toc.join(" · ")}\n${sections.map((section) => `## ${section}\ncontent`).join("\n")}`;
+  return `${brand}\n\n@eliware/fixture\n\n## Table of Contents\n${toc.join(" · ")}\n${sections.map((section) => `## ${section}\ncontent`).join("\n")}`;
 }
 
 const fixturePackage = { name: "@eliware/fixture" };
@@ -22,7 +22,7 @@ test("accepts canonical headings and a complete ordered table of contents", () =
 });
 
 test("requires the title to begin with the exact package name", () => {
-  const wrongTitle = fixture().replace("## @eliware/fixture", "## @eliware/other");
+  const wrongTitle = fixture().replace("@eliware/fixture", "@eliware/other");
   expect(validateReadmeStructure(wrongTitle, fixturePackage)).toContain(
     "exactly match package.json.name",
   );
@@ -31,7 +31,7 @@ test("requires the title to begin with the exact package name", () => {
 test("rejects extra title text and incorrect table-of-contents labels", () => {
   expect(
     validateReadmeStructure(
-      fixture().replace("## @eliware/fixture", "## @eliware/fixture extra"),
+      fixture().replace("@eliware/fixture", "@eliware/fixture extra"),
       fixturePackage,
     ),
   ).toContain("exactly match");
@@ -58,7 +58,14 @@ test("requires the standard brand line, table of contents, and title placement",
     ),
   ).toContain("without intervening content");
   expect(
-    validateReadmeStructure(fixture().replace(`${brand}\n\n##`, `${brand}\nIntro text\n\n##`)),
+    validateReadmeStructure(
+      fixture().replace(`${brand}\n\n@eliware`, `${brand}\nIntro text\n\n@eliware`),
+    ),
+  ).toContain("without intervening content");
+  expect(
+    validateReadmeStructure(
+      fixture().replace("@eliware/fixture\n\n## Table", "## Intro\n\n## Table"),
+    ),
   ).toContain("without intervening content");
 });
 

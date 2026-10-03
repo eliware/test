@@ -1,6 +1,6 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-## @eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yaml)
+@eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yaml)
 
 ## Table of Contents
 
@@ -22,10 +22,11 @@
 
 ## Features
 
-The CLI supports validation of repository structure, documentation,
-conventions, tests, coverage, packaging, and repository checks. The aggregate
-stages depend on the repository's declared profiles. It does not perform live
-operational validation.
+The CLI supports deterministic repository validation across structure,
+documentation, conventions, and repository-specific requirements. Aggregate
+stages depend on the repository's declared profiles; Jest and coverage run only
+when selected by an applied profile, and package checks run for npm-published
+repositories. It does not perform live operational validation.
 
 Package description: Shared deterministic repository validation for Eliware projects. Author:
 Eliware <eliware@eliware.org>. Repository: https://github.com/eliware/test. License: MIT.
@@ -56,6 +57,8 @@ npm install --save-dev @eliware/test
 After installing the package in a consuming repository, run validation with
 `eliware-test`:
 
+<!-- codescope ignore: --debug-timing alone intentionally runs aggregate validation and reports its timing. -->
+
 ```text
 eliware-test
 eliware-test --help
@@ -79,29 +82,45 @@ npm run format
 npm run format:check
 npm run audit
 npm run pack
-npm run smoke -- --target ../consumer-copy
 node bin/eliware-test.mjs --pack
 ```
 
-Package-content validation with `npm run pack` or `--pack` applies only when the
-repository selects the `npm-published` profile.
+The `--pack` CLI mode is available in every repository, but package validation
+applies only when the repository selects the `npm-published` profile. The
+`npm run pack` script is required only for `@eliware/test` and npm-published
+repositories.
 
-`npm run pack` is the lightweight package-content check included in aggregate
-validation. The opt-in `npm run smoke -- --target <path>` command builds and
-installs a tarball from this checkout in one existing consumer repository and
-runs that repository's `npm test`. It installs the candidate into the target's
+For applicable profiles, `npm run pack` is the lightweight package-content
+check included in aggregate validation. The opt-in smoke command is available
+from either this checkout or
+an installed `@eliware/test` package directory:
+
+```text
+npm run smoke -- --target ../consumer-copy
+```
+
+`--target` is required and must point to an existing disposable consumer repository. The smoke command does not create or provision the target; it restores the captured package files and installed package state when it finishes.
+
+It builds and installs a tarball from the package directory in one existing
+consumer repository and runs that repository's `npm test`. It installs the candidate into the target's
 local `node_modules` with `--no-save --package-lock=false`; it does not add a
-dependency declaration or regenerate lockfiles. Cleanup restores only the
-manifest, lockfiles, installed package, and local executable shims; other files
-created by the consumer's tests remain in the target, so use a disposable
-consumer copy or worktree. The smoke command accepts an explicitly selected
+dependency declaration or regenerate lockfiles. Cleanup replaces the exact
+installed package directory from its pre-smoke snapshot and restores the
+manifest, lockfiles, and local executable shims it changed. New paths outside
+those captured locations remain in the target; files created inside the
+replaced package directory are discarded with the candidate installation. Use
+a disposable consumer copy or worktree. The smoke command accepts an explicitly selected
 consumer outside this checkout but rejects targets that resolve inside it,
 including source-checkout symlinks and junctions. It retains recovery data if
 restoration fails and reports the retained backup path for manual recovery. The
 outdated check omits only the exact unpublished candidate during this smoke run;
 all other dependencies still use the normal registry check. Prepare the target
 and install its dependencies first; the command does not clone repositories or
-create worktrees. It does not touch system-wide symlinks or junctions.
+create worktrees. It snapshots only package paths it replaces, not ancestor
+directories. Directory symlinks are restored as junctions on Windows; the
+command refuses a captured file symlink there before making changes because
+Windows may require privileges to recreate one. It does not touch system-wide
+symlinks or junctions.
 
 For npm-published repositories, the npm-published profile defines the exact
 package-content allowlist. The general profile does not add files to that
@@ -132,8 +151,8 @@ behind, confirm no validation run is active, then remove the stale
 `eliware-test.lock` file before retrying. The file is ignored by Git.
 
 `npm run format` and `--format` mutate files; `npm run format:check` and
-`--format-check` only validate formatting. `--pack` validates the package
-contents without publishing it.
+`--format-check` only validate formatting. `--pack` is available everywhere
+but validates package contents only for npm-published repositories.
 
 See [Commands](#commands) for the canonical focused-path, separator, and
 mode-argument rules.
@@ -143,8 +162,10 @@ The five public tool modes are `--lint`, `--format`, `--format-check`,
 `eliware-test` accepts its documented modes and focused test paths, not npm
 script names as positional arguments.
 
-Legacy `--ignore-*` flags are unsupported. Coverage and monolith enforcement
-remain enabled for all validation modes.
+Legacy `--ignore-*` flags are unsupported. Aggregate validation enforces
+repository-wide coverage and monolith requirements. A focused test run narrows
+coverage to its mirrored source module and runs only checks applicable to that
+focus; it does not report unrelated-module coverage failures.
 
 `--debug-timing` streams stage timing and per-suite start/completion durations
 through the selected CLI output writer. It does not print a separate Jest timing

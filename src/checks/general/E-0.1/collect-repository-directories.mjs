@@ -7,11 +7,24 @@ export async function collectRepositoryDirectories(
   readDirectory = readdir,
 ) {
   const directories = [];
-  for (const entry of await readDirectory(directory, { withFileTypes: true })) {
+  const pending = [
+    { directory, entries: await readDirectory(directory, { withFileTypes: true }), index: 0 },
+  ];
+  while (pending.length > 0) {
+    const current = pending.at(-1);
+    if (current.index >= current.entries.length) {
+      pending.pop();
+      continue;
+    }
+    const entry = current.entries[current.index++];
     if (!entry.isDirectory()) continue;
-    const path = join(directory, entry.name);
+    const path = join(current.directory, entry.name);
     directories.push(relative(root, path).replaceAll("\\", "/"));
-    directories.push(...(await collectRepositoryDirectories(path, root, readDirectory)));
+    pending.push({
+      directory: path,
+      entries: await readDirectory(path, { withFileTypes: true }),
+      index: 0,
+    });
   }
   return directories;
 }

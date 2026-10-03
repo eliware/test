@@ -33,7 +33,7 @@ test("resolves a relative npm executable and copies its environment", async () =
     expect(
       createOutdatedDependenciesCommand(root, {
         env,
-        platform: process.platform,
+        platform: "linux",
         execPath: process.execPath,
       }),
     ).toEqual({
@@ -41,7 +41,7 @@ test("resolves a relative npm executable and copies its environment", async () =
       args: [npmCli, "outdated", "--json"],
       options: {
         cwd: root,
-        detached: process.platform !== "win32",
+        detached: true,
         shell: false,
         stdio: ["ignore", "pipe", "pipe"],
         env: { ...env, npm_config_loglevel: "error" },

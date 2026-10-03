@@ -11,12 +11,7 @@ test("resolves a relative npm_execpath from the package root", async () => {
   await writeFile(npmCli, "");
   try {
     expect(
-      resolvePackExecutable(
-        { npm_execpath: "npm-cli.js" },
-        process.platform,
-        process.execPath,
-        root,
-      ),
+      resolvePackExecutable({ npm_execpath: "npm-cli.js" }, "linux", process.execPath, root),
     ).toEqual([process.execPath, [npmCli]]);
   } finally {
     await rm(root, { recursive: true, force: true });

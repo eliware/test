@@ -19,6 +19,23 @@ test("uses process defaults when options are omitted", async () => {
   ).resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));
 });
 
+test("uses the default output bound for an invalid output limit", async () => {
+  const child = new EventEmitter();
+  const result = runChild("ignored", [], { maxOutputLength: 0, spawnProcess: () => child });
+  child.emit("close", 0, null);
+  await expect(result).resolves.toMatchObject({ code: 0, stdout: "", stderr: "" });
+});
+
+test("caps captured child output even when a larger limit is requested", async () => {
+  const result = await runChild(
+    process.execPath,
+    ["-e", "process.stdout.write('x'.repeat(1_100_000))"],
+    { maxOutputLength: 2_000_000 },
+  );
+  expect(result.stdout.length).toBeGreaterThan(0);
+  expect(result.stdout.length).toBeLessThanOrEqual(1_000_000);
+});
+
 test("handles children without streams and ignores errors after close", async () => {
   const child = new EventEmitter();
   const result = runChild("ignored", [], { spawnProcess: () => child });

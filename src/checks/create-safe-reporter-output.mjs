@@ -16,7 +16,13 @@ export function createSafeReporterOutput(prefix, options = {}) {
   return (message) => {
     const remaining = maxOutputLength - outputLength;
     if (remaining <= 0) return;
-    const safeMessage = redactProcessOutput(message, secrets)
+    let printableMessage;
+    try {
+      printableMessage = String(message);
+    } catch {
+      printableMessage = "[unprintable diagnostic]";
+    }
+    const safeMessage = redactProcessOutput(printableMessage, secrets)
       .replace(/[\r\n]+/gu, " ")
       .slice(0, maxLineLength);
     const line = `[${prefix}] ${safeMessage}\n`;

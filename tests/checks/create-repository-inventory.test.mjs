@@ -1,4 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
+import { platform } from "node:os";
 import { resolve } from "node:path";
 import { createRepositoryInventory } from "../../src/checks/create-repository-inventory.mjs";
 
@@ -43,8 +44,23 @@ test.each([
   String.raw`\\server\share\repo`,
   String.raw`\\?\C:\workspace\repo`,
   String.raw`\\.\C:\workspace\repo`,
-])("preserves Windows absolute repository root %s independently of host paths", (root) => {
+])("handles Windows absolute repository root %s only on Windows hosts", (root) => {
+  if (platform() !== "win32") {
+    expect(() => createRepositoryInventory(root)).toThrow(
+      "Windows repository inventory roots require a Windows host.",
+    );
+    return;
+  }
   expect(createRepositoryInventory(root).root).toBe(root);
+});
+
+test("rejects Windows roots for a simulated non-Windows host", () => {
+  expect(() => createRepositoryInventory(String.raw`C:\workspace\repo`, {}, "linux")).toThrow(
+    "Windows repository inventory roots require a Windows host.",
+  );
+  expect(createRepositoryInventory(String.raw`C:\workspace\repo`, {}, "win32").root).toBe(
+    String.raw`C:\workspace\repo`,
+  );
 });
 
 test.each([undefined, null, "", "  ", 7])("rejects invalid inventory root %p", (root) => {

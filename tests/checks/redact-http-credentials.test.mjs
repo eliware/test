@@ -8,6 +8,12 @@ test("redacts authorization, proxy, and bare bearer or basic values", () => {
   expect(output).not.toMatch(/abcdef|token-value/u);
 });
 
+test("redacts short bearer and basic credentials", () => {
+  const output = redactHttpCredentials("Authorization: Bearer x\nBasic ab");
+  expect(output).toBe("Authorization: Bearer [REDACTED]\nBasic [REDACTED]");
+  expect(output).not.toMatch(/Bearer x|Basic ab/u);
+});
+
 test("redacts URL user-info, credential query values, sensitive headers, and cookies", () => {
   const output = redactHttpCredentials(
     "https://user:pass@example.test/?token=secret&apiKey=private\nx-auth-token: header\nCookie: session=x",

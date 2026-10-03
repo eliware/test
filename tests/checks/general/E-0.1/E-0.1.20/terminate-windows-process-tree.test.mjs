@@ -71,7 +71,7 @@ test("falls back to PowerShell Core when Windows PowerShell is unavailable", () 
   };
   createKiller(execute, state)(42, { SystemRoot: "C:/Windows" });
   expect(calls).toHaveLength(3);
-  expect(calls[2]).toBe("pwsh.exe");
+  expect(calls[2]).toMatch(/(?:^|[\\/])pwsh\.exe$/iu);
 });
 
 test("reports failures when no Windows tree terminator succeeds", () => {

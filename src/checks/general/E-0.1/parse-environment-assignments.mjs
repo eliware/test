@@ -1,5 +1,6 @@
 const assignment = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/;
 
+// The assignment matcher deliberately permits optional whitespace on both sides of '='.
 export function parseEnvironmentAssignments(content) {
   return content
     .split(/\r?\n/)

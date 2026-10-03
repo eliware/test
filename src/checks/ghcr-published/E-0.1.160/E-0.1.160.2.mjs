@@ -38,6 +38,7 @@ export async function run(context) {
           publicationJobList.length > 0 &&
           publicationJobList.every(
             ({ id, job }) =>
+              // codescope ignore: static workflow checks verify the environment name only; reviewer settings are external per ghcr-published.yaml.
               job.environment === "ghcr-publish" &&
               !validateNpmToolchainForPublication(`${workflow.name} job ${id}`, job) &&
               dependsOnUbuntuValidation(workflow, job, validationJobsByWorkflow.get(workflow)) &&

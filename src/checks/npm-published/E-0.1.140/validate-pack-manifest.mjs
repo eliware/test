@@ -52,7 +52,7 @@ export function validatePackManifest(stdout, files, packageName, packageJson = {
     .map((entry) => entry.path)
     .filter(
       (path) =>
-        !required.has(path) &&
+        path !== "package.json" &&
         !allowlist.some((entry) => typeof entry === "string" && allowedByEntry(path, entry)),
     );
   if (unexpected.length > 0)

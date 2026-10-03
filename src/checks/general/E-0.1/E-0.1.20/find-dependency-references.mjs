@@ -1,34 +1,7 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { collectScriptReferences } from "./collect-script-dependency-references.mjs";
 import { scanDependencyFiles } from "./scan-dependency-files.mjs";
-
-async function readDependencyBinaries(root, declared) {
-  try {
-    const lock = JSON.parse(await readFile(join(root, "package-lock.json"), "utf8"));
-    const binaries = new Map();
-    for (const dependency of declared) {
-      const entry = lock.packages?.[`node_modules/${dependency}`];
-      // codescope ignore: npm lockfile string bin names come from the final segment, including scoped package names
-      const names =
-        typeof entry?.bin === "string"
-          ? [dependency.split("/").at(-1)]
-          : Object.keys(entry?.bin ?? {});
-      for (const name of names) {
-        const owners = binaries.get(name) ?? [];
-        owners.push(dependency);
-        binaries.set(name, owners);
-      }
-    }
-    return new Map(
-      [...binaries]
-        .filter(([, owners]) => owners.length === 1)
-        .map(([name, owners]) => [name, owners[0]]),
-    );
-  } catch {
-    return new Map();
-  }
-}
+import { readDependencyBinaries } from "./read-dependency-binaries.mjs";
+import { resolveSelfHostedScriptCommands } from "./resolve-self-hosted-script-commands.mjs";
 
 export async function findDependencyReferences(
   root,
@@ -38,10 +11,12 @@ export async function findDependencyReferences(
   inventory,
 ) {
   const declared = [
-    ...Object.keys(packageJson?.dependencies ?? {}),
-    ...Object.keys(packageJson?.devDependencies ?? {}),
-    ...Object.keys(packageJson?.optionalDependencies ?? {}),
-    ...Object.keys(packageJson?.peerDependencies ?? {}),
+    ...new Set([
+      ...Object.keys(packageJson?.dependencies ?? {}),
+      ...Object.keys(packageJson?.devDependencies ?? {}),
+      ...Object.keys(packageJson?.optionalDependencies ?? {}),
+      ...Object.keys(packageJson?.peerDependencies ?? {}),
+    ]),
   ];
   const referenced = new Set();
   const uncertain = { value: false };
@@ -49,9 +24,10 @@ export async function findDependencyReferences(
   collectScriptReferences(packageJson?.scripts, declared, referenced, dependencyBinaries);
   for (const tool of ["jest", "prettier", "oxlint"])
     if (packageJson?.[tool] && declared.includes(tool)) referenced.add(tool);
+  const selfHostedLint = resolveSelfHostedScriptCommands(["lint"]).scripts.lint;
   if (
     packageJson?.name === "@eliware/test" &&
-    packageJson?.scripts?.lint?.includes("--lint") &&
+    packageJson?.scripts?.lint === selfHostedLint &&
     declared.includes("oxlint")
   )
     referenced.add("oxlint");
@@ -65,7 +41,7 @@ export async function findDependencyReferences(
     inventory,
     dependencyBinaries,
   );
-  const result = declared.filter((name) => referenced.has(name));
+  const result = [...declared].filter((name) => referenced.has(name));
   result.uncertain = uncertain.value;
   return result;
 }

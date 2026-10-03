@@ -14,6 +14,7 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
   }
   const files = packageJson?.files;
   const expectedFiles = derivePackageFilesAllowlist(packageJson);
+  // Exact equality to the derived canonical entries also enforces uniqueness and safe known paths.
   if (!Array.isArray(files) || JSON.stringify(files) !== JSON.stringify(expectedFiles))
     return `Public npm packages must use the profile-derived package.json.files allowlist: ${expectedFiles.join(", ")}.`;
   const profiles = packageJson?.eliware?.apply ?? [];

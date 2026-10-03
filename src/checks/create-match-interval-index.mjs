@@ -40,12 +40,9 @@ export function createMatchIntervalIndex() {
   function materialize(start, length) {
     const matches = [];
     matches.length = length + 1;
-    const orderedStarts = orderedMatchStarts.values;
-    let index = orderedMatchStarts.lowerBound(start);
-    for (; index < orderedStarts.length; index += 1) {
-      const matchStart = orderedStarts[index];
+    // discardThrough removes inactive starts below the earliest live crossing interval.
+    for (const matchStart of orderedMatchStarts.range(start, start + length)) {
       const offset = matchStart - start;
-      if (offset > length) break;
       const end = matchEndsByStart.get(matchStart);
       if (end === undefined) continue;
       matches[offset] = end - start;

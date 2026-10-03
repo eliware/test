@@ -38,3 +38,20 @@ test("reports missing Knit directory during fallback discovery", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("discovers deeply nested workflows without recursive calls", async () => {
+  const depth = 2_000;
+  let reads = 0;
+  const directoryEntry = { name: "nested", isDirectory: () => true, isFile: () => false };
+  const workflowEntry = { name: "deploy.yaml", isDirectory: () => false, isFile: () => true };
+  const readDirectory = async () => {
+    reads += 1;
+    return reads <= depth ? [directoryEntry] : [workflowEntry];
+  };
+
+  const files = await readKnitWorkflowFiles("/repo", undefined, readDirectory);
+  expect(reads).toBe(depth + 1);
+  expect(files).toHaveLength(1);
+  expect(files[0].match(/nested/gu)).toHaveLength(depth);
+  expect(files[0]).toMatch(/\/deploy\.yaml$/u);
+});

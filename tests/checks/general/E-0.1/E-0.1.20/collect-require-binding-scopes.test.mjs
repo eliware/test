@@ -122,6 +122,16 @@ test("does not recurse indefinitely through cyclic AST-like objects", () => {
   expect(collectRequireBindingScopes(ast).has(ast)).toBe(false);
 });
 
+test("traverses deeply nested AST nodes without exhausting the call stack", () => {
+  const ast = { type: "Program", body: [] };
+  let current = ast;
+  for (let index = 0; index < 20_000; index += 1) {
+    current.child = { type: "Expression" };
+    current = current.child;
+  }
+  expect(collectRequireBindingScopes(ast).has(ast)).toBe(false);
+});
+
 test("tracks lexical require bindings declared in for-loop headers", () => {
   for (const source of [
     'for (const require = local; ready; next()) require("ignored");',

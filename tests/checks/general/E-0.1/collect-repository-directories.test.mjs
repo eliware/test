@@ -28,3 +28,15 @@ test("uses the filesystem defaults when no adapter is supplied", async () => {
   await expect(collectRepositoryDirectories(root)).resolves.toEqual(["nested"]);
   await rm(root, { recursive: true, force: true });
 });
+
+test("collects deeply nested directories iteratively", async () => {
+  const root = "C:/deep";
+  const directories = await collectRepositoryDirectories(root, root, async (directory) => {
+    const nestedPath = directory.slice(root.length).replace(/^[\\/]/u, "");
+    const depth = nestedPath ? nestedPath.split(/[\\/]/u).length : 0;
+    return depth < 4_000
+      ? [{ name: `d${depth}`, isDirectory: () => true, isFile: () => false }]
+      : [];
+  });
+  expect(directories).toHaveLength(4_000);
+});

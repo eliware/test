@@ -3,63 +3,76 @@ import { isFunctionNode } from "./is-function-node.mjs";
 
 export function collectRequireBindingScopes(root) {
   const scopes = new WeakSet();
-  const visited = new WeakSet();
-  visit(root, null);
-  return scopes;
-
-  function visit(node, parentVariableScope) {
-    if (!node || typeof node !== "object" || visited.has(node)) return;
-    visited.add(node);
+  const activePath = new WeakSet();
+  const pending = [{ node: root, parentVariableScope: null, finish: false }];
+  while (pending.length > 0) {
+    const frame = pending.pop();
+    const { node, parentVariableScope } = frame;
+    if (frame.finish) {
+      activePath.delete(node);
+      if (frame.ownsVariables && frame.variableScope.hasRequire) scopes.add(node);
+      continue;
+    }
+    if (!node || typeof node !== "object" || activePath.has(node)) continue;
+    activePath.add(node);
     const ownsVariables = node.type === "Program" || isFunctionNode(node);
     const variableScope = ownsVariables ? { node, hasRequire: false } : parentVariableScope;
     const isBodyScope = node.type === "Program" || node.type === "BlockStatement";
-    if (
-      node.type === "ForStatement" ||
-      node.type === "ForInStatement" ||
-      node.type === "ForOfStatement"
-    ) {
-      const declaration = node.init ?? node.left;
-      if (
-        declaration?.type === "VariableDeclaration" &&
-        declaration.kind !== "var" &&
-        declaration.declarations.some(({ id }) => patternHasRequire(id))
-      ) {
-        scopes.add(node);
-      }
-    }
-    if (node.type === "CatchClause" && patternHasRequire(node.param)) {
-      scopes.add(node);
-    }
-    if (
-      isFunctionNode(node) &&
-      (node.params.some(patternHasRequire) ||
-        (node.type === "FunctionExpression" && node.id?.name === "require"))
-    ) {
-      scopes.add(node);
-    }
-    if (
-      node.type === "VariableDeclaration" &&
-      node.kind === "var" &&
-      node.declarations.some(({ id }) => patternHasRequire(id)) &&
-      variableScope
-    ) {
-      variableScope.hasRequire = true;
-    }
+    inspectNodeBindings(node, variableScope, scopes);
+    pending.push({ node, variableScope, finish: true, ownsVariables });
+    const children = [];
     for (const [key, value] of Object.entries(node)) {
       if (["loc", "start", "end"].includes(key)) continue;
-      if (Array.isArray(value))
-        value.forEach((child) => {
+      if (Array.isArray(value)) {
+        for (const child of value) {
           if (
             key === "body" &&
             isBodyScope &&
             declaresDirectRequire(child, node.type === "Program")
           )
             scopes.add(node);
-          visit(child, variableScope);
-        });
-      else if (value && typeof value === "object") visit(value, variableScope);
+          if (child && typeof child === "object") children.push(child);
+        }
+      } else if (value && typeof value === "object") children.push(value);
     }
-    if (ownsVariables && variableScope.hasRequire) scopes.add(node);
+    for (let index = children.length - 1; index >= 0; index -= 1)
+      pending.push({ node: children[index], parentVariableScope: variableScope, finish: false });
+  }
+  return scopes;
+}
+
+function inspectNodeBindings(node, variableScope, scopes) {
+  if (
+    node.type === "ForStatement" ||
+    node.type === "ForInStatement" ||
+    node.type === "ForOfStatement"
+  ) {
+    const declaration = node.init ?? node.left;
+    if (
+      declaration?.type === "VariableDeclaration" &&
+      declaration.kind !== "var" &&
+      declaration.declarations.some(({ id }) => patternHasRequire(id))
+    ) {
+      scopes.add(node);
+    }
+  }
+  if (node.type === "CatchClause" && patternHasRequire(node.param)) {
+    scopes.add(node);
+  }
+  if (
+    isFunctionNode(node) &&
+    (node.params.some(patternHasRequire) ||
+      (node.type === "FunctionExpression" && node.id?.name === "require"))
+  ) {
+    scopes.add(node);
+  }
+  if (
+    node.type === "VariableDeclaration" &&
+    node.kind === "var" &&
+    node.declarations.some(({ id }) => patternHasRequire(id)) &&
+    variableScope
+  ) {
+    variableScope.hasRequire = true;
   }
 }
 

@@ -44,3 +44,11 @@ test("returns false for missing or non-binding nodes", () => {
   expect(patternHasRequire({ type: "PrivateName" })).toBe(false);
   expect(patternHasRequire({ type: "Identifier", name: "local" })).toBe(false);
 });
+
+test("handles deeply nested binding patterns without recursion", () => {
+  let pattern = { type: "Identifier", name: "require" };
+  for (let index = 0; index < 20_000; index += 1) {
+    pattern = { type: "RestElement", argument: pattern };
+  }
+  expect(patternHasRequire(pattern)).toBe(true);
+});

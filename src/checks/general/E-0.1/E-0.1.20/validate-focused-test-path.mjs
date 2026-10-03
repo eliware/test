@@ -36,5 +36,5 @@ export async function validateFocusedTestPath(root, args = []) {
   if (!(await stat(targetPath)).isFile()) {
     throw new Error(`Focused test path must be a regular file: ${focusedPath}`);
   }
-  return normalized;
+  return relativePath.split(sep).join("/");
 }

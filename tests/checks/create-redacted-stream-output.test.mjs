@@ -23,3 +23,17 @@ test("bounds intermediate text by UTF-8 bytes", () => {
   expect(output.outputLength).toBe(2);
   expect(Buffer.byteLength(text)).toBe(output.outputLength);
 });
+
+test("keeps the byte count accurate when UTF-8 text precedes a truncated redaction marker", () => {
+  const output = createRedactedStreamOutput(10);
+  const matchEnds = Array.from({ length: 8 }, (_, index) => (index === 2 ? 8 : 0));
+
+  const first = output.append("éxsecret", matchEnds);
+  expect(first).toBe("éx");
+  expect(output.outputLength).toBe(Buffer.byteLength(first));
+
+  const second = output.append("later", []);
+  expect(second).toBe("later");
+  expect(output.outputLength).toBe(8);
+  expect(output.outputLength).toBeLessThanOrEqual(10);
+});

@@ -17,11 +17,11 @@ export function validateNpm12WorkflowSetup(
     if (entry?.step) return steps.indexOf(entry.step);
     return -1;
   };
-  const setupNodeSteps = steps.filter((step) => step?.uses === "actions/setup-node@v7");
+  const setupNodeSteps = steps.filter((step) => /^actions\/setup-node@/iu.test(step?.uses ?? ""));
   const setupNodeIndex = steps.indexOf(setupNodeSteps[0]);
   const install = installs[0];
   const check = checks[0];
-  const setupSteps = [install?.step, check?.step, setupNodeSteps[0]];
+  const setupSteps = [install?.step, check?.step, ...setupNodeSteps];
   const installPosition = install ? commandIndex(install) : -1;
   const checkPosition = check ? commandIndex(check) : -1;
   const unsafeSetup = setupSteps.some(
@@ -37,6 +37,7 @@ export function validateNpm12WorkflowSetup(
     !install ||
     !check ||
     setupNodeSteps.length !== 1 ||
+    !/^actions\/setup-node@v7(?:\.|$)/iu.test(setupNodeSteps[0].uses) ||
     ![26, "26"].includes(setupNodeSteps[0]?.with?.["node-version"]) ||
     unsafeSetup ||
     setupNodeIndex < 0 ||

@@ -42,6 +42,15 @@ test("trims a partial secret when the stream finishes", () => {
   expect(session.finish()).toBe("safe ");
 });
 
+test("makes finish idempotent and ignores later pushes", () => {
+  const session = createSession([], 100);
+  session.push("complete output");
+  expect(session.finish()).toEqual(expect.any(String));
+  expect(session.finish()).toBe("");
+  expect(() => session.push("late input")).not.toThrow();
+  expect(session.push("late input")).toBe("");
+});
+
 test("redacts a secret completed by the decoder's final replacement character", () => {
   const session = createSession(["secret�"], 100);
   expect(session.push(Buffer.from("secret"))).toBe("");

@@ -28,13 +28,13 @@ export function validateRequiredScripts(
   const applicableScripts = selfHostedResolution?.scripts ?? canonicalScripts;
   for (const [name, command] of Object.entries(applicableScripts)) {
     if (
-      scripts[name] !== undefined &&
+      Object.hasOwn(scripts, name) &&
       (typeof scripts[name] !== "string" || !scripts[name].trim())
     ) {
       failures.push(`package.json.scripts.${name} must be a nonempty command.`);
       continue;
     }
-    if (scripts?.[name] !== command)
+    if (!Object.hasOwn(scripts, name) || scripts[name] !== command)
       failures.push(`package.json.scripts.${name} must be exactly ${command}.`);
   }
   failures.push(...validateCustomScripts(scripts, applicableScripts));

@@ -39,6 +39,11 @@ export function createRepositoryFileContentCache(
         current.content = stable.content;
         current.version = stable.version;
         current.pending = false;
+        if (stable.content.byteLength > maxCachedFileBytes) {
+          cachedBytes -= previous?.content?.byteLength ?? 0;
+          fileReads.delete(key);
+          return current.content;
+        }
         cachedBytes += stable.content.byteLength - (previous?.content?.byteLength ?? 0);
         evictOldContent();
         return current.content;

@@ -8,7 +8,7 @@ export function resolveConsumerJestCli(root) {
   const executable =
     resolveJestBin(requireFromConsumer, "jest") ?? resolveJestBin(requireFromConsumer, "jest-cli");
   if (executable) return executable;
-  throw new Error("Consumer repository Jest executable could not be resolved.");
+  return undefined;
 }
 
 export function resolveJestCli(root) {

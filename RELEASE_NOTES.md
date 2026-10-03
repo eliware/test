@@ -2,121 +2,80 @@
 
 ## 11.0.0 — 2026-10-03
 
+### Added
+
+- Add an opt-in `npm run smoke -- --target <path>` release-candidate check. It
+  packs this checkout, installs that tarball into an existing consumer copy,
+  verifies the installed version, runs the consumer's `npm test`, and restores
+  the package and executable state it changed. It leaves manifests, lockfiles,
+  and system-wide symlinks or junctions untouched; only the selected unpublished
+  candidate is omitted from `npm outdated` during the smoke run.
+- Add repo-map-aware package identity checks for repository ID, description,
+  keywords, and applied profiles, with package metadata as the fallback in
+  isolated consumer checkouts. Standardize author, repository, homepage,
+  license, Node.js engine, and keyword metadata.
+- Add tracked-symlink detection using Git index mode `120000`, which covers file
+  and directory symlinks consistently without resolving their targets.
+- Add package-content validation for exact profile-derived allowlists, required
+  packed entrypoints, prohibited `.npmignore` files and lifecycle hooks, and
+  actual `npm pack` contents.
+- Add npm 12+ checks to the CLI and GitHub CI and publisher jobs. Stop validation
+  before other stages when npm is unsupported, while keeping `--help` and
+  `--version` independently available.
+
 ### Changed
 
-- Apply one README link contract across repository profiles, define supported
-  Markdown syntax and fragment boundaries, and stop resolving JSON/YAML path
-  fields as documentation links.
-- Align contributor guidance with the general convention by requiring review of
-  the root README, applicable AGENTS instructions, and relevant documentation
-  before changing files.
-- Distinguish supported platforms from direct validation evidence: Windows is
-  exercised during development, Ubuntu is validated in CI, and macOS
-  compatibility is inferred from Ubuntu's POSIX filesystem behavior.
-- Require CLI README and AGENTS guidance to distinguish supported platforms
-  from validation evidence.
-- Clarify npm publication guidance with exact-version visibility at the public
-  registry and the Eli, project developer, and DevOps release responsibilities.
-- Provision npm 12 in GitHub validation and npm publisher jobs, verify the active
-  CLI version before dependency installation, and enforce the required setup in
-  workflow checks without changing Knit deployment commands.
-
-- Run all Jest-independent checks before Jest and stop before Jest when any
-  prerequisite check fails. Skip Jest-result and coverage checks in that case,
-  with explicit skipped-stage timing output in `--debug-timing` mode.
-- Require npm 12 or later before validation and stop early with a clear diagnostic
-  when the npm version is unsupported or cannot be determined. Keep `--help` and
-  `--version` available independently.
-- Disable directory-list caching on Windows, where deleting files may not update
-  parent-directory timestamps and cached repository discovery can become stale.
-- Extract profile-based Jest selection, npm smoke request validation, and
-  per-image GHCR evidence ordering into focused modules with mirrored tests.
-- Clarify focused coordinator boundaries and place helper behavior assertions at
-  their lowest applicable test level.
-- Preserve file-cache byte accounting after failed refreshes and cover the
-  resulting eviction behavior. Clarify that out-of-order AST reads return each
-  caller's snapshot without replacing a newer cached parse.
-- Cover aliased computed environment references, reject shell expansion and
-  multiline continuations in pre-install reporting, and document the `--pack` CLI mode.
-- Clarify that the opt-in tarball smoke command accepts an explicitly selected
-  external consumer copy and restores only its documented package state.
-- Validate npm audit executable resolver tuples before process execution and
-  expand regression coverage for scoped binaries, child timeout errors, and
-  Windows npm paths using forward slashes.
-- Validate nested Knit command lists and retry inventory views after a
-  transient discovery failure.
-- Preserve successful directory listings when forced refreshes fail and keep
-  pending file-cache replacements protected from eviction.
-- Emit the canonical `Aggregate validation passed` summary on successful aggregate runs.
-- Bound redacted child-process output without splitting Unicode surrogate pairs, and retain a clear backup path if smoke-state cleanup fails.
-- Reject smoke targets resolved inside the source checkout, validate application start commands against complete entrypoint tokens, and reuse Markdown link-target inspection within each validation.
-- Validate package versions as canonical SemVer, normalize Windows device-namespace paths, and traverse deep line-limit directories iteratively.
-- Cover fallback secret matches that cross the candidate output boundary so no matched secret suffix is emitted.
-- Reject npm setup steps that tolerate errors, redact encrypted PEM keys, and fail Jest validation when its console report is missing or malformed.
-- Bound redacted child output by UTF-8 bytes and preserve Unicode boundaries in
-  captured Jest output; report retained snapshot paths when cleanup fails.
-- Reject smoke targets inside the source checkout, validate app start targets as
-  complete tokens, and cache repeated Markdown links within a validation pass.
-- Validate package versions with SemVer, normalize mixed Windows device paths,
-  and make line-limit discovery iterative for deep trees.
-- Bound redacted child-process output by UTF-8 bytes and validate application bin
-  command names before accepting their entrypoint mappings.
-- Reject smoke targets inside the source checkout and clarify cleanup boundaries;
-  handle malformed directive arrays, deep file trees, and quoted Windows npm paths.
-- Pin the canonical consumer smoke target to its inspected directory identity
-  and refuse reads, installs, or restoration if that directory is replaced,
-  disappears, or is no longer a directory during validation.
-- Recognize Windows UNC and device-namespace roots in repository inventory,
-  and explicitly document and test the iterative fallback used for deep
-  line-limit directory trees.
-- Advance the package version to 11.0.0 and all maintained specification
-  documents to version 11.0.
-- Add the repository E-0 identifier to package metadata.
-- Validate package ID, description, keywords, and applied profiles against the
-  adjacent repo map when available, with package metadata as the fallback in
-  isolated consumer checkouts.
-- Enforce the canonical author, repository object and URL, homepage, exact
-  Node.js engine, and unique keyword requirements for every repository.
-- Enforce the assigned E-number namespace across directive IDs in every YAML
-  specification file, including nested specification folders.
-- Require the package.json.eliware fields in canonical order: id, apply, and
-  optional exempt.
-- Reject every Git-index-tracked symlink by mode `120000`, covering file and
-  directory links without resolving targets or depending on platform behavior.
-- Require the canonical GitHub `ci.yaml`, Knit `deploy.yaml`, and conditional
-  publication `publish.yaml` workflow inventory; reject extra workflow files
-  and multi-document workflow YAML.
-- Validate mirrored Jest tests from their parsed syntax: each must declare an
-  executable test and reference its exact source module.
-- Enforce canonical GHCR image, pull command, supported tags, and deployment
-  boundary markers in the existing README Usage section.
-- Standardize npm package contents with an exact profile-derived allowlist,
-  reject standalone `.npmignore` files and packaging lifecycle hooks, and
-  validate actual packed files and public entrypoints.
-- Keep the general profile from imposing `specs/` on npm package allowlists;
-  the npm-published profile alone defines published package contents.
-- Put application entrypoints in `bin/` for all application profiles and include
-  `bin/` in npm allowlists for applications. Keep library runtime entrypoints and
-  optional TypeScript declarations under the existing `src/` allowlist.
-- Reject root-level application and library entrypoints through package checks;
-  require library `main`, `exports`, and type declaration metadata to target
-  files under `src/`.
-- Permit library `.d.ts` declarations only as same-basename companions to
-  `.mjs` modules in `src/`; count them with their module mirror and validate
-  them through the required typecheck script.
-- Keep package validation lightweight in `npm test` and add an opt-in targeted
-  tarball smoke command that installs the candidate in an existing consumer,
-  runs its `npm test`, then restores the prior local package and executable
-  shims without changing manifests or lockfiles or touching system-wide
-  symlinks or junctions. During that smoke run, only the exact unpublished
-  candidate is omitted from npm outdated; all other dependencies are checked.
+- Advance the package to 11.0.0 and maintained specifications to version 11.0.
+  Add the repository E-0 ID to package metadata, require `eliware` keys in the
+  order `id`, `apply`, optional `exempt`, and enforce each spec directive's
+  assigned E-number namespace across nested YAML specifications.
+- Standardize workflow filenames to `.yaml`; require only the canonical GitHub
+  CI and Knit deployment workflows, plus the applicable publication workflow.
+  Reject additional workflow files and multi-document workflow YAML. Require
+  npm 12 setup in CI and publisher jobs, before `npm ci` and `npm test`, while
+  leaving Knit deployment commands unchanged.
+- Align README checks across profiles for supported Markdown links and
+  fragments, required headings and link targets, and canonical GHCR image,
+  pull-command, tag, and deployment-boundary content. JSON and YAML data fields
+  are no longer treated as README links.
+- Put application entrypoints under `bin/` and library runtime entrypoints and
+  optional declarations under `src/`. Require library declarations to be
+  same-basename `.d.ts` companions to `.mjs` modules, include them in source
+  mirroring, and validate them through the typecheck script. Check mirrored Jest
+  tests from parsed syntax for an executable test and a reference to the exact
+  source module.
+- Run Jest-independent validation stages before Jest and stop before Jest when
+  a prerequisite fails. Do not run Jest-result or coverage checks after that
+  failure; `--debug-timing` reports skipped stages explicitly. Keep clean
+  aggregate output to one concise success line and mode-specific output scoped
+  to the command that ran.
+- Tighten workflow command parsing for npm setup, shell expansion, multiline
+  continuations, nested Knit command lists, and commands that tolerate npm
+  setup failures. Validate package versions as canonical SemVer, application
+  entrypoint tokens, npm audit executable resolution, and malformed directive
+  records.
+- Improve cross-platform path handling for drive, UNC, and Windows device
+  namespace roots; use iterative traversal for deep line-limit directories and
+  disable directory-list caching on Windows. Preserve cached listings and
+  accounting after failed refreshes, prevent pending cache entries from eviction,
+  and keep newer AST parses from being replaced by out-of-order completions.
+- Bound and redact captured child-process output by UTF-8 bytes without splitting
+  Unicode characters or partial secret matches. Redact encrypted PEM keys,
+  reject malformed Jest console reports, and preserve actionable diagnostics
+  when timeouts or smoke cleanup fail.
+- Refactor validation coordinators and checks into focused modules with mirrored
+  tests, placing helper assertions at the lowest applicable test level. Update
+  contributor and release guidance for file review, supported-platform evidence,
+  publication ownership, and packed-candidate validation.
 
 ### Fixed
 
 - Load the canonical Jest and Prettier configurations from the conventions
-  bundled with the installed package, so consumer repositories do not need a
-  local copy of specs/conventions/general.yaml. Add regression coverage for
-  validating without that consumer-side copy.
+  bundled with the installed package, so consumer repositories no longer need
+  a local copy of `specs/conventions/general.yaml` for configuration checks.
+- Keep README links from being falsely reported when they use supported link
+  syntax, and make repository discovery and smoke-target state checks safe
+  against transient filesystem changes or target-directory replacement.
 
 ## 10.0.0 — 2026-10-02
 
@@ -184,7 +143,7 @@
 - Clarify that aggregate `npm test` includes outdated-dependency validation.
 - Route validation-lock cleanup failures through CLI error handling while
   preserving validation failures, reject child processes that close without an
-  exit code, and resolve relative `npm_execpath` values from the invoking
+  exit code, and resolve relative POSIX `npm_execpath` values from the invoking
   process directory.
 - Reuse generated-directory record projections while cached directory entries
   remain unchanged.
@@ -202,7 +161,7 @@
   passing them on to Jest.
 - Reject empty npm outdated reports, retry workflow reads after transient
   failures, propagate repository inventory refresh errors other than missing
-  directories, resolve relative `npm_execpath` values from the repository root,
+  directories, resolve relative POSIX `npm_execpath` values from the repository root,
   fall back to platform npm for Windows-style `npm_execpath` values on POSIX,
   terminate child processes after asynchronous spawn errors, accept case-variant
   focused formatter paths, recognize glob-based ignore rules, require exact
@@ -224,6 +183,24 @@
   mislabeled as malformed JSON. Validate lockfile link dependencies and
   nearest-ancestor resolution, and normalize quoted Windows npm PATH entries
   with trailing separators.
+
+- Extract npm dependency-bin discovery, Windows PowerShell executable selection,
+  and supported GitHub Actions recognition into focused modules with mirrored
+  tests.
+- Harden stream redaction by ordering overlapping secrets longest-first,
+  redacting short Basic/Bearer credentials, and safely formatting non-string
+  reporter diagnostics.
+- Materialize interval matches from a balanced-tree range query rather than
+  rebuilding and scanning the complete ordered-start list for each window.
+- Avoid retaining oversized file-cache entries, reuse directory listings when
+  either nanosecond timestamp provides submillisecond precision, and reject
+  relative Windows `npm_execpath` values in favor of the verified npm CLI.
+- Restore smoke targets with `lstat`-aware symlink removal, continue restoring
+  independent captured paths after failures, and clarify that `--pack` requires
+  the `npm-published` profile.
+- Accept peer-dependency metadata emitted by npm even when the package omits a
+  matching peer dependency, while continuing to validate each metadata record's
+  shape.
 - Require unconditional Ubuntu GitHub validation jobs with the adjacent
   `npm ci`/`npm test` pair, validate their conditions and sibling jobs, and
   verify README focused-test extensions do not replace mirrored `.test.mjs`

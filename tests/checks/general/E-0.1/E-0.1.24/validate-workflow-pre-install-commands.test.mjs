@@ -130,10 +130,69 @@ test("allows setup-node v7 in CI and publication workflows", () => {
   ).toBeNull();
 });
 
-test("ignores unapproved actions after install", () => {
+test("allows only the additional npm publisher setup-node inputs", () => {
+  const fixture = compliantSetup();
+  fixture.steps[1] = {
+    ...fixture.steps[1],
+    with: {
+      "node-version": 26,
+      "registry-url": "https://registry.npmjs.org",
+      "package-manager-cache": false,
+    },
+  };
+  fixture.commands = workflowCommands(fixture.steps);
+  expect(
+    validateWorkflowPreInstallCommands(
+      "publish.yaml job publish",
+      fixture.commands,
+      fixture.installIndex,
+      fixture.steps,
+    ),
+  ).toBeNull();
+});
+
+test("allows approved v7 and v6 patch references for setup actions", () => {
+  const fixture = compliantSetup();
+  fixture.steps[0] = { ...fixture.steps[0], uses: "actions/checkout@v6.1.0" };
+  fixture.steps[1] = { ...fixture.steps[1], uses: "actions/setup-node@v7.1.2" };
+  fixture.commands = workflowCommands(fixture.steps);
+  expect(
+    validateWorkflowPreInstallCommands(
+      "ci.yaml",
+      fixture.commands,
+      fixture.installIndex,
+      fixture.steps,
+    ),
+  ).toBeNull();
+});
+
+test("rejects action inputs that change the checkout or Node provisioning contract", () => {
+  for (const [index, withInputs] of [
+    [0, { repository: "attacker/other" }],
+    [1, { "node-version": 26, "node-version-file": ".nvmrc" }],
+  ]) {
+    const fixture = compliantSetup();
+    fixture.steps[index] = { ...fixture.steps[index], with: withInputs };
+    fixture.commands = workflowCommands(fixture.steps);
+    expect(
+      validateWorkflowPreInstallCommands(
+        "ci.yaml",
+        fixture.commands,
+        fixture.installIndex,
+        fixture.steps,
+      ),
+    ).toContain("approved actions");
+  }
+});
+
+test("rejects malformed steps and unapproved actions after install", () => {
   const steps = npm12WorkflowSteps(["npm ci", "npm test"]);
-  const reporting = { uses: "someone/reporting-action@v1" };
-  steps.push(reporting);
-  const commands = workflowCommands(steps);
-  expect(validateWorkflowPreInstallCommands("ci.yaml", commands, 3, steps)).toBeNull();
+  steps.push({ uses: "someone/reporting-action@v1" });
+  expect(
+    validateWorkflowPreInstallCommands("ci.yaml", workflowCommands(steps), 3, steps),
+  ).toContain("approved actions");
+  steps[4] = { script: "malformed after install" };
+  expect(
+    validateWorkflowPreInstallCommands("ci.yaml", workflowCommands(steps), 3, steps),
+  ).toContain("safe reporting");
 });

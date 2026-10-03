@@ -30,8 +30,8 @@ jest.unstable_mockModule(
 const { validateWorkflowSequence } =
   await import("../../../../../src/checks/general/E-0.1/E-0.1.24/validate-workflow-sequence.mjs");
 
-const install = { command: "npm ci" };
-const testCommand = { command: "npm test" };
+const install = { command: "npm ci", step: { run: "npm ci" } };
+const testCommand = { command: "npm test", step: { run: "npm test" } };
 const commandIndex = (command) => (command === install ? 1 : 2);
 const pair = { install, test: testCommand, commandIndex };
 
@@ -67,7 +67,7 @@ test("coordinates sequence validators in order with their owning inputs", () => 
     return null;
   });
   const commands = [install, testCommand];
-  const steps = [{ name: "install" }, { name: "test" }];
+  const steps = [install.step, testCommand.step];
   const job = { name: "validate" };
 
   expect(validateWorkflowSequence("ci.yaml", commands, steps, job)).toBeNull();
@@ -75,8 +75,8 @@ test("coordinates sequence validators in order with their owning inputs", () => 
   expect(findValidationCommandPair).toHaveBeenCalledWith("ci.yaml", commands);
   expect(hasAdjacentValidationSteps).toHaveBeenCalledWith(install, testCommand, steps, commands);
   expect(validateValidationJobConditions).toHaveBeenCalledWith(install, testCommand, job);
-  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yaml", commands, 1, steps);
-  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith("ci.yaml", commands, 2, steps, {
+  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yaml", commands, 0, steps);
+  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith("ci.yaml", commands, 1, steps, {
     allowAttestation: false,
   });
 });
@@ -116,7 +116,7 @@ test("uses original workflow positions when command records omit their indexes",
   );
 });
 
-test("falls back to command positions when workflow command records have no step", () => {
+test("rejects commands that cannot be mapped to original workflow steps", () => {
   const commands = [{ command: "npm ci" }, { command: "npm test" }];
   findValidationCommandPair.mockReturnValueOnce({
     install: commands[0],
@@ -124,42 +124,36 @@ test("falls back to command positions when workflow command records have no step
     commandIndex: (entry) => commands.indexOf(entry),
   });
 
-  expect(
-    validateWorkflowSequence("ci.yaml", commands, [{ uses: "actions/checkout@v6" }]),
-  ).toBeNull();
-  expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith("ci.yaml", commands, 0, [
-    { uses: "actions/checkout@v6" },
-  ]);
-  expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
-    "ci.yaml",
-    commands,
-    1,
-    [{ uses: "actions/checkout@v6" }],
-    { allowAttestation: false },
+  expect(validateWorkflowSequence("ci.yaml", commands, [{ uses: "actions/checkout@v6" }])).toBe(
+    "ci.yaml must map npm ci and npm test to original workflow steps.",
   );
+  expect(hasAdjacentValidationSteps).not.toHaveBeenCalled();
 });
 
-test("preserves indexes already attached to workflow commands", () => {
-  const indexedInstall = { command: "npm ci", index: 4 };
-  const indexedTest = { command: "npm test", index: 5 };
+test("maps indexed commands through their original step references", () => {
+  const installStep = { run: "npm ci" };
+  const testStep = { run: "npm test" };
+  const steps = [{ uses: "actions/checkout@v6" }, { run: "echo ready" }, installStep, testStep];
+  const indexedInstall = { command: "npm ci", index: 2, step: installStep };
+  const indexedTest = { command: "npm test", index: 3, step: testStep };
   findValidationCommandPair.mockReturnValueOnce({
     install: indexedInstall,
     test: indexedTest,
     commandIndex: () => -1,
   });
 
-  expect(validateWorkflowSequence("ci.yaml", [indexedInstall, indexedTest])).toBeNull();
+  expect(validateWorkflowSequence("ci.yaml", [indexedInstall, indexedTest], steps)).toBeNull();
   expect(validateWorkflowPreInstallCommands).toHaveBeenCalledWith(
     "ci.yaml",
     [indexedInstall, indexedTest],
-    4,
-    [indexedInstall, indexedTest],
+    2,
+    steps,
   );
   expect(validateWorkflowPostTestCommands).toHaveBeenCalledWith(
     "ci.yaml",
     [indexedInstall, indexedTest],
-    5,
-    [indexedInstall, indexedTest],
+    3,
+    steps,
     { allowAttestation: false },
   );
 });
@@ -170,19 +164,25 @@ test("returns the first finding and skips later validation phases", () => {
   expect(hasAdjacentValidationSteps).not.toHaveBeenCalled();
 
   hasAdjacentValidationSteps.mockReturnValueOnce(false);
-  expect(validateWorkflowSequence("ci.yaml", [])).toBe(
+  expect(validateWorkflowSequence("ci.yaml", [], [install.step, testCommand.step])).toBe(
     "ci.yaml must run npm ci immediately followed by npm test with no intervening steps.",
   );
   expect(validateValidationJobConditions).not.toHaveBeenCalled();
 
   validateValidationJobConditions.mockReturnValueOnce("job conditions invalid");
-  expect(validateWorkflowSequence("ci.yaml", [])).toBe("ci.yaml job conditions invalid");
+  expect(validateWorkflowSequence("ci.yaml", [], [install.step, testCommand.step])).toBe(
+    "ci.yaml job conditions invalid",
+  );
   expect(validateWorkflowPreInstallCommands).not.toHaveBeenCalled();
 
   validateWorkflowPreInstallCommands.mockReturnValueOnce("setup invalid");
-  expect(validateWorkflowSequence("ci.yaml", [])).toBe("setup invalid");
+  expect(validateWorkflowSequence("ci.yaml", [], [install.step, testCommand.step])).toBe(
+    "setup invalid",
+  );
   expect(validateWorkflowPostTestCommands).not.toHaveBeenCalled();
 
   validateWorkflowPostTestCommands.mockReturnValueOnce("reporting invalid");
-  expect(validateWorkflowSequence("ci.yaml", [])).toBe("reporting invalid");
+  expect(validateWorkflowSequence("ci.yaml", [], [install.step, testCommand.step])).toBe(
+    "reporting invalid",
+  );
 });

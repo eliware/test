@@ -70,7 +70,7 @@ test("reports statement, branch, function, and line locations", () => {
   expect(gap.metrics.branches).toBe(25);
 });
 
-test("derives line coverage as covered when any statement on that line is covered", () => {
+test("keeps Istanbul line coverage separate from uncovered same-line statements", () => {
   const gap = fileGap("shared-line.mjs", {
     statementMap: {
       1: { start: { line: 3 } },
@@ -85,6 +85,7 @@ test("derives line coverage as covered when any statement on that line is covere
   });
 
   expect(gap.metrics).toMatchObject({ statements: 50, lines: 100 });
+  expect(gap.lines).toEqual([]);
   expect(gap.statements).toEqual([{ location: "3" }]);
 });
 

@@ -10,6 +10,12 @@ test("parses exported and quoted environment assignments", () => {
   ]);
 });
 
+test("parses exported assignments with whitespace around the equals sign", () => {
+  expect(parseEnvironmentAssignments("export MAIL_OWNER_ADDRESS = fixture@eliware.org")).toEqual([
+    ["MAIL_OWNER_ADDRESS", "fixture@eliware.org"],
+  ]);
+});
+
 test("preserves valid lower-case environment assignment names", () => {
   expect(parseEnvironmentAssignments("export local_setting=value")).toEqual([
     ["local_setting", "value"],

@@ -91,6 +91,17 @@ test("reports high or critical findings as audit failures with the valid report 
   }
 });
 
+test("rejects vulnerability records that disagree with clean metadata counts", async () => {
+  const report = JSON.parse(cleanReport);
+  report.vulnerabilities.example = { name: "example", severity: "high" };
+  await expect(
+    runAudit({ runAudit: async () => ({ code: 0, stdout: JSON.stringify(report), stderr: "" }) }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: "npm audit returned an invalid JSON report.",
+  });
+});
+
 test("rejects clean reports whose audit tree omits declared direct dependencies", async () => {
   const report = JSON.parse(cleanReport);
   report.metadata.dependencies = {

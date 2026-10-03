@@ -4,9 +4,9 @@ import { executeAuditProcess } from "../../../../../src/checks/general/E-0.1/E-0
 test("passes the invocation environment into the executed audit child", async () => {
   const env = { npm_execpath: "selected-npm.js", npm_config_registry: "https://registry.invalid/" };
   const runChild = jest.fn(async () => ({ code: 0 }));
-  const runAudit = jest.fn(async ({ root, run, resolveCommand, extraArgs, env: receivedEnv }) => {
+  const resolveCommand = jest.fn(() => [process.execPath, ["selected-npm.js"]]);
+  const runAudit = jest.fn(async ({ root, run, extraArgs, env: receivedEnv }) => {
     await run(process.execPath, ["npm-cli.js", "audit"], { cwd: root });
-    expect(resolveCommand).toBeUndefined();
     return { code: 0, receivedEnv, args: extraArgs };
   });
   await expect(
@@ -14,6 +14,7 @@ test("passes the invocation environment into the executed audit child", async ()
       root: "/repo",
       runAudit,
       runChild,
+      resolveCommand,
       toolArgs: ["--no-fund"],
       env,
     }),
@@ -22,6 +23,9 @@ test("passes the invocation environment into the executed audit child", async ()
     cwd: "/repo",
     env,
   });
+  expect(runAudit).toHaveBeenCalledWith(
+    expect.objectContaining({ resolveCommand, root: "/repo", extraArgs: ["--no-fund"] }),
+  );
 });
 
 test("lets the npm audit adapter resolve its own child arguments", async () => {
@@ -46,6 +50,7 @@ test("passes the invocation environment through to the audit adapter", async () 
   expect(runAudit).toHaveBeenCalledWith({
     root: "/repo",
     run: expect.any(Function),
+    resolveCommand: undefined,
     extraArgs: [],
     env,
   });

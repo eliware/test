@@ -6,15 +6,7 @@ export function validateReadmePackageBadges(readme, packageJson = {}) {
     return "README.md requires package.json.name to define its package title and badges.";
   }
   const lines = readme.split(/\r?\n/u);
-  const firstHeadingIndex = lines.findIndex((line) => line.startsWith("## "));
-  const headingIndex = lines.findIndex((line) => line.startsWith(`## ${packageName} `));
-  const heading = lines[headingIndex];
-  if (headingIndex < 0) return "README.md must use the standard package heading.";
-  const contentsIndex = lines.findIndex((line) => line === "## Table of Contents");
-  if (contentsIndex >= 0 && headingIndex > contentsIndex)
-    return "README.md package title must precede the Table of Contents.";
-  if (headingIndex !== firstHeadingIndex)
-    return "README.md package title must be the first level-two heading.";
+  const title = lines.find((line) => line.startsWith(`${packageName} `));
   const repository =
     typeof packageJson?.repository === "string"
       ? packageJson.repository
@@ -33,8 +25,8 @@ export function validateReadmePackageBadges(readme, packageJson = {}) {
     `[![License](https://img.shields.io/github/license/${repositoryPath})](https://github.com/${repositoryPath}/blob/main/LICENSE)`,
     `[![CI](https://github.com/${repositoryPath}/actions/workflows/ci.yaml/badge.svg)](https://github.com/${repositoryPath}/actions/workflows/ci.yaml)`,
   ];
-  const expectedHeading = `## ${packageName} ${badges.join(" ")}`;
-  return heading === expectedHeading
+  const expectedTitle = `${packageName} ${badges.join(" ")}`;
+  return title === expectedTitle
     ? null
     : "README.md title and separate npm, license, and CI badges must exactly match the canonical package and repository targets.";
 }

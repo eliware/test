@@ -112,6 +112,20 @@ test("validates lockfile dependency maps and package entries", () => {
   }
 });
 
+test("fails when a dependency reference resolves to a malformed package entry", () => {
+  expect(
+    validateLockfileDependencies(
+      {
+        packages: {
+          "": { dependencies: { broken: "1.0.0" } },
+          "node_modules/broken": {},
+        },
+      },
+      { dependencies: { broken: "1.0.0" } },
+    ),
+  ).toContain("node_modules/broken must contain a valid package version");
+});
+
 test.each([null, []])("rejects malformed root dependency maps: %p", (dependencies) => {
   expect(
     validateLockfileDependencies(

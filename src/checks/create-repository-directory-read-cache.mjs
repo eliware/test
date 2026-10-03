@@ -5,18 +5,17 @@ function version(metadata, platform) {
   // codescope ignore: The five-field snapshot string is constant-size and avoids retaining or comparing mutable stat objects.
   const nanosecondTimestamps =
     typeof metadata.mtimeNs === "bigint" && typeof metadata.ctimeNs === "bigint";
+  // Keep every timestamp that demonstrates submillisecond precision for this filesystem.
+  const preciseTimestamps = nanosecondTimestamps
+    ? [
+        metadata.mtimeNs % 1_000_000n !== 0n ? `mtime:${metadata.mtimeNs}` : null,
+        metadata.ctimeNs % 1_000_000n !== 0n ? `ctime:${metadata.ctimeNs}` : null,
+      ].filter(Boolean)
+    : [];
   return {
-    cacheable: platform !== "win32" && nanosecondTimestamps,
+    cacheable: platform !== "win32" && preciseTimestamps.length > 0,
     // String conversion is safe for BigIntStats; Windows disables reuse but still compares snapshots around readdir.
-    key: [
-      metadata.dev,
-      metadata.ino,
-      metadata.size,
-      nanosecondTimestamps ? metadata.mtimeNs : metadata.mtimeMs,
-      nanosecondTimestamps ? metadata.ctimeNs : metadata.ctimeMs,
-    ]
-      .map(String)
-      .join(":"),
+    key: [metadata.dev, metadata.ino, metadata.size, ...preciseTimestamps].map(String).join(":"),
   };
 }
 

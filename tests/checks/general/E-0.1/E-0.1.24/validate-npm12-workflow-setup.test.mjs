@@ -29,6 +29,17 @@ test("accepts npm 12 provisioning and verification before dependency installatio
   ).toBeNull();
 });
 
+test.each(["v7", "v7.0.0", "v7.1.2"])("accepts approved setup-node version %s", (version) => {
+  const versionedSteps = steps.map((step, index) =>
+    index === 0 ? { ...step, uses: `actions/setup-node@${version}` } : step,
+  );
+  const versionedCommands = commands.map((entry) => ({
+    ...entry,
+    step: versionedSteps[steps.indexOf(entry.step)],
+  }));
+  expect(validateNpm12WorkflowSetup("ci.yaml", versionedCommands, 3, versionedSteps)).toBeNull();
+});
+
 test("rejects conditional setup and a Node.js version other than 26", () => {
   const conditional = steps.map((step) => ({ ...step }));
   conditional[1].if = "always()";
@@ -62,6 +73,13 @@ test("rejects setup-node steps that can be skipped or tolerated", () => {
       "must install npm@12 globally",
     );
   }
+  const duplicate = [
+    ...steps,
+    { uses: "actions/setup-node@v7", if: "always()", with: { "node-version": 26 } },
+  ];
+  expect(validateNpm12WorkflowSetup("ci.yaml", commands, 3, duplicate)).toContain(
+    "must install npm@12 globally",
+  );
 });
 
 test("resolves step references when normalized commands do not carry indexes", () => {

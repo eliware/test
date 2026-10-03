@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, jest, test } from "@jest/globals";
 import { runNpmPack } from "../../../../src/checks/npm-published/E-0.1.140/run-npm-pack.mjs";
+import { resolvePackExecutable } from "../../../../src/checks/npm-published/E-0.1.140/resolve-pack-executable.mjs";
 
 test("runs npm pack in the repository root", async () => {
   const calls = [];
@@ -50,7 +51,8 @@ test("uses npm's executable when npm invokes the harness", async () => {
         calls.push(args);
         return { code: 0, signal: null, stdout: "", stderr: "" };
       },
-      undefined,
+      (env, _platform, execPath, directory) =>
+        resolvePackExecutable(env, "linux", execPath, directory),
       [],
       { npm_execpath: "npm-cli.js" },
     );

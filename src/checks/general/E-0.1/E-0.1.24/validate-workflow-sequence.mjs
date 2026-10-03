@@ -7,37 +7,29 @@ import { validateWorkflowPostTestCommands } from "./validate-workflow-post-test-
 export function validateWorkflowSequence(
   name,
   commands,
-  steps = commands,
+  steps = null,
   job = {},
   { allowAttestation = false } = {},
 ) {
   const pair = findValidationCommandPair(name, commands);
   if (pair.error) return pair.error;
-  const { install, test, commandIndex } = pair;
-  const originalStepIndex = (entry) => {
-    if (Number.isInteger(entry?.index)) return entry.index;
-    const stepIndex = entry?.step ? steps.indexOf(entry.step) : -1;
-    return stepIndex >= 0 ? stepIndex : commandIndex(entry);
-  };
+  const { install, test } = pair;
+  const originalStepIndex = (entry) =>
+    Array.isArray(steps) && entry?.step ? steps.indexOf(entry.step) : -1;
+  const installIndex = originalStepIndex(install);
+  const testIndex = originalStepIndex(test);
+  if (installIndex < 0 || testIndex < 0)
+    return `${name} must map npm ci and npm test to original workflow steps.`;
   // codescope ignore: adjacency validation rejects every step between npm ci and npm test before pre-install or post-test checks run
   if (!hasAdjacentValidationSteps(install, test, steps, commands))
     return `${name} must run npm ci immediately followed by npm test with no intervening steps.`;
   const conditionError = validateValidationJobConditions(install, test, job);
   if (conditionError) return `${name} ${conditionError}`;
-  const setupError = validateWorkflowPreInstallCommands(
-    name,
-    commands,
-    originalStepIndex(install),
-    steps,
-  );
+  const setupError = validateWorkflowPreInstallCommands(name, commands, installIndex, steps);
   if (setupError) return setupError;
-  const reportingError = validateWorkflowPostTestCommands(
-    name,
-    commands,
-    originalStepIndex(test),
-    steps,
-    { allowAttestation },
-  );
+  const reportingError = validateWorkflowPostTestCommands(name, commands, testIndex, steps, {
+    allowAttestation,
+  });
   if (reportingError) return reportingError;
   return null;
 }

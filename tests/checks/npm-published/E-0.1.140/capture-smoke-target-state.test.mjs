@@ -30,17 +30,18 @@ test("captures file, directory, and missing target state", async () => {
           isFile: () => true,
           mode: 420,
         };
-      if (count === 2)
+      if (count === 5)
         return { isSymbolicLink: () => false, isDirectory: () => true, isFile: () => false };
       throw Object.assign(new Error("missing"), { code: "ENOENT" });
     },
     cp: async () => {},
     readFile: async () => Buffer.from("preserved"),
   };
-  const state = await captureSmokeTargetState("C:/consumer", "@eliware/test", [], fs);
+  const state = await captureSmokeTargetState("C:/consumer", "@eliware/test", ["eliware-test"], fs);
   expect(state.entries[0]).toMatchObject({ type: "file", data: Buffer.from("preserved") });
-  expect(state.entries[1].type).toBe("directory");
-  expect(state.entries[2].type).toBe("missing");
+  expect(state.entries[1].type).toBe("missing");
+  expect(state.entries[4].type).toBe("directory");
+  expect(state.entries).toHaveLength(8);
   await rm(state.storage, { recursive: true, force: true });
   const defaults = await captureSmokeTargetState("C:/missing-consumer", "@eliware/test");
   await rm(defaults.storage, { recursive: true, force: true });
@@ -68,6 +69,7 @@ test("captures symlink targets and directory junction type", async () => {
   await rm(state.storage, { recursive: true, force: true });
   const fileLinkFs = {
     ...missingFs(),
+    rm,
     lstat: async () => ({
       isSymbolicLink: () => true,
       isDirectory: () => false,
@@ -75,9 +77,18 @@ test("captures symlink targets and directory junction type", async () => {
     }),
     readlink: async () => "C:/checkout/file",
   };
-  const fileLink = await captureSmokeTargetState("C:/consumer", "@eliware/test", [], fileLinkFs);
+  const fileLink = await captureSmokeTargetState(
+    "C:/consumer",
+    "@eliware/test",
+    [],
+    fileLinkFs,
+    "linux",
+  );
   expect(fileLink.entries[0]).toMatchObject({ type: "symlink", linkType: "file" });
   await rm(fileLink.storage, { recursive: true, force: true });
+  await expect(
+    captureSmokeTargetState("C:/consumer", "@eliware/test", [], fileLinkFs, "win32"),
+  ).rejects.toThrow("Cannot safely preserve a Windows file symlink");
 });
 
 test("removes backup storage and refuses unsupported state or filesystem errors", async () => {

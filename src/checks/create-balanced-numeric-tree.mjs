@@ -1,21 +1,24 @@
+import {
+  collectBalancedNumericTreeRange,
+  collectBalancedNumericTreeValues,
+} from "./collect-balanced-numeric-tree-values.mjs";
+
 export function createBalancedNumericTree() {
   let root = null;
-
   function insert(value) {
+    assertFiniteNumber(value, "insert");
     root = insertNode(root, value);
   }
-
   function removeMinimum() {
     if (root) root = removeMinimumNode(root);
   }
-
   function minimum() {
     let node = root;
     while (node?.left) node = node.left;
     return node?.value;
   }
-
   function lowerBound(value) {
+    assertFiniteNumber(value, "lowerBound");
     let node = root;
     let result = size(root);
     let offset = 0;
@@ -30,16 +33,20 @@ export function createBalancedNumericTree() {
     }
     return result;
   }
-
   function values() {
-    const result = [];
-    appendValues(root, result);
-    return result;
+    return collectBalancedNumericTreeValues(root);
   }
-
-  return Object.freeze({ insert, removeMinimum, minimum, lowerBound, values });
+  function range(minimum, maximum) {
+    assertFiniteNumber(minimum, "range");
+    assertFiniteNumber(maximum, "range");
+    return collectBalancedNumericTreeRange(root, minimum, maximum);
+  }
+  return Object.freeze({ insert, removeMinimum, minimum, lowerBound, values, range });
 }
-
+function assertFiniteNumber(value, operation) {
+  if (!Number.isFinite(value))
+    throw new TypeError(`Balanced numeric tree ${operation} values must be finite numbers.`);
+}
 function insertNode(node, value) {
   if (!node) return { value, height: 1, size: 1, left: null, right: null };
   if (value < node.value) node.left = insertNode(node.left, value);
@@ -83,12 +90,6 @@ function update(node) {
   node.height = Math.max(height(node.left), height(node.right)) + 1;
   node.size = size(node.left) + size(node.right) + 1;
   return node;
-}
-function appendValues(node, output) {
-  if (!node) return;
-  appendValues(node.left, output);
-  output.push(node.value);
-  appendValues(node.right, output);
 }
 function height(node) {
   return node?.height ?? 0;

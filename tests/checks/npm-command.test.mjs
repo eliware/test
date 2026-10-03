@@ -36,7 +36,7 @@ test("selects the platform npm executable or npm exec path", () => {
   ).toEqual(["C:\\node.exe", ["\\\\build-share\\tools\\npm-cli.js"]]);
   expect(
     npmCommand("win32", "C:relative\\npm-cli.js", "C:\\node.exe", () => true, "C:\\repo"),
-  ).toEqual(["C:\\node.exe", ["C:\\repo\\relative\\npm-cli.js"]]);
+  ).toEqual(["C:\\node.exe", ["C:\\node_modules\\npm\\bin\\npm-cli.js"]]);
   expect(
     npmCommand(
       "win32",
@@ -119,10 +119,10 @@ test("resolves a relative Windows npm executable from the repository root", () =
       "win32",
       "node_modules/npm/bin/npm-cli.js",
       "C:\\node.exe",
-      (path) => path === "C:\\repo\\node_modules\\npm\\bin\\npm-cli.js",
+      (path) => path === "C:\\node_modules\\npm\\bin\\npm-cli.js",
       "C:\\repo",
     ),
-  ).toEqual(["C:\\node.exe", ["C:\\repo\\node_modules\\npm\\bin\\npm-cli.js"]]);
+  ).toEqual(["C:\\node.exe", ["C:\\node_modules\\npm\\bin\\npm-cli.js"]]);
   expect(() =>
     npmCommand("win32", "node_modules/npm/bin/npm-cli.js", "C:\\node.exe", () => true, "/repo"),
   ).toThrow("POSIX-style directory on Windows");

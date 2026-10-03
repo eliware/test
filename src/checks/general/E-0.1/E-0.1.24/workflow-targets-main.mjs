@@ -29,7 +29,11 @@ export function pushTargetsMain(push) {
 function patternMatchesMain(pattern) {
   // codescope ignore: strip ! only for individual pattern matching; branchPatternsAllowMain applies ordered negation to the final inclusion result
   const positive = pattern.startsWith("!") ? pattern.slice(1) : pattern;
-  return minimatch("main", positive, { dot: true, nonegate: true, nocomment: true });
+  try {
+    return minimatch("main", positive, { dot: true, nonegate: true, nocomment: true });
+  } catch {
+    return false;
+  }
 }
 
 function branchPatternsAllowMain(patterns, defaultValue) {

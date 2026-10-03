@@ -1,3 +1,6 @@
+import { validateLockfilePeerDependenciesMeta } from "./validate-lockfile-peer-dependencies-meta.mjs";
+import { posix } from "node:path";
+
 const dependencyFields = [
   "dependencies",
   "devDependencies",
@@ -13,7 +16,13 @@ export function validateLockfilePackageEntries(packages) {
       failures.push(`package-lock.json entry ${path} must contain a valid package version.`);
       continue;
     }
-    if (entry.link === true && (typeof entry.resolved !== "string" || !entry.resolved)) {
+    if (
+      entry.link === true &&
+      (typeof entry.resolved !== "string" ||
+        !entry.resolved ||
+        normalizeLinkTarget(entry.resolved) === null ||
+        !Object.hasOwn(packages, normalizeLinkTarget(entry.resolved)))
+    ) {
       failures.push(`package-lock.json link entry ${path} must contain a valid resolved target.`);
       continue;
     }
@@ -24,12 +33,14 @@ export function validateLockfilePackageEntries(packages) {
       failures.push(`package-lock.json entry ${path} must contain a valid package version.`);
       continue;
     }
+    failures.push(...validateLockfilePeerDependenciesMeta(path, entry));
     validateEntryDependencies(path, entry, packages, failures);
   }
   return failures.length ? failures.join("\n") : null;
 }
 
 function validateEntryDependencies(path, entry, packages, failures) {
+  const parentPath = entry.link === true ? normalizeLinkTarget(entry.resolved) : path;
   for (const field of dependencyFields) {
     if (entry[field] === undefined) continue;
     if (!entry[field] || typeof entry[field] !== "object" || Array.isArray(entry[field])) {
@@ -37,9 +48,8 @@ function validateEntryDependencies(path, entry, packages, failures) {
       continue;
     }
     for (const dependency of Object.keys(entry[field])) {
-      const optionalPeer =
-        field === "peerDependencies" && entry.peerDependenciesMeta?.[dependency]?.optional === true;
-      if (!optionalPeer && !hasPackageEntry(packages, path, dependency))
+      const optionalPeer = field === "peerDependencies" && isOptionalPeer(entry, dependency);
+      if (!optionalPeer && !hasPackageEntry(packages, parentPath, dependency))
         failures.push(
           `package-lock.json entry ${path} references missing dependency ${dependency}.`,
         );
@@ -47,7 +57,31 @@ function validateEntryDependencies(path, entry, packages, failures) {
   }
 }
 
+function isOptionalPeer(entry, dependency) {
+  const metadata = entry.peerDependenciesMeta;
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) return false;
+  const configuration = metadata[dependency];
+  return (
+    Object.hasOwn(metadata, dependency) &&
+    configuration !== null &&
+    typeof configuration === "object" &&
+    !Array.isArray(configuration) &&
+    configuration.optional === true
+  );
+}
+
+function normalizeLinkTarget(target) {
+  const normalized = posix.normalize(target.replaceAll("\\", "/")).replace(/^\.\//u, "");
+  return normalized === "." ||
+    normalized === ".." ||
+    normalized.startsWith("../") ||
+    normalized.startsWith("/")
+    ? null
+    : normalized;
+}
+
 function hasPackageEntry(packages, parentPath, dependency) {
+  // validateLockfilePackageEntries checks every referenced record's shape before the whole lockfile passes.
   let current = parentPath;
   while (true) {
     const candidate = `${current}/node_modules/${dependency}`.replace(/^\//u, "");

@@ -75,3 +75,21 @@ test("executes only when the entrypoint path matches", async () => {
     process.exitCode = prior;
   }
 });
+
+test("decodes URL-escaped characters when matching an entrypoint path", async () => {
+  const path = join(process.cwd(), "checkout with spaces", "smoke-cli.mjs");
+  const run = jest.fn(async () => 18);
+  const prior = process.exitCode;
+  try {
+    await runSmokeCliEntrypoint({
+      moduleUrl: pathToFileURL(path).href,
+      argvPath: path,
+      args: [],
+      run,
+    });
+    expect(process.exitCode).toBe(18);
+    expect(run).toHaveBeenCalledWith({ args: [] });
+  } finally {
+    process.exitCode = prior;
+  }
+});

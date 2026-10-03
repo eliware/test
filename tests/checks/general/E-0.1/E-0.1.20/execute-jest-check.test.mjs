@@ -21,17 +21,20 @@ test("executes Jest and records its start time", async () => {
 
 test("preserves stderr diagnostics when stdout contains ordinary output", async () => {
   const result = { code: 0, stdout: "ordinary Jest output", stderr: "Jest diagnostic" };
-  runJest.mockResolvedValueOnce(result);
+  runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
+    options.onStart();
+    return result;
+  });
   await expect(
     executeJestCheck({ root: ".", jestArgs: ["--debug-timing"] }),
   ).resolves.toMatchObject({ result: { stdout: result.stdout, stderr: result.stderr } });
 });
 
-test("binds coverage freshness when the Jest executor omits its start callback", async () => {
+test("rejects Jest results if execution never reached its start callback", async () => {
   runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
 
   await expect(executeJestCheck({ root: "." })).resolves.toMatchObject({
-    result: { code: 0, startedAt: expect.any(Number) },
+    error: { message: "Jest did not start before the results were returned." },
   });
 });
 
@@ -53,7 +56,10 @@ test("defaults omitted Jest arguments to an empty list", async () => {
 
 test("forwards the selected output writer for Jest suite progress", async () => {
   const writeOutput = jest.fn();
-  runJest.mockResolvedValueOnce({ code: 0, stdout: "captured output", stderr: "timing output" });
+  runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
+    options.onStart();
+    return { code: 0, stdout: "captured output", stderr: "timing output" };
+  });
   await executeJestCheck({ root: ".", writeOutput });
   expect(runJest).toHaveBeenCalledWith(
     ".",
@@ -67,7 +73,10 @@ test("forwards the selected output writer for Jest suite progress", async () => 
 
 test("forwards the invocation environment to the Jest process builder", async () => {
   const env = { PATH: "consumer-path", TOKEN: "consumer-token" };
-  runJest.mockResolvedValueOnce({ code: 0, stdout: "ok", stderr: "" });
+  runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
+    options.onStart();
+    return { code: 0, stdout: "ok", stderr: "" };
+  });
   await executeJestCheck({ root: ".", env });
   expect(runJest).toHaveBeenCalledWith(
     ".",
@@ -79,6 +88,7 @@ test("forwards the invocation environment to the Jest process builder", async ()
 
 test("captures timeout diagnostics and launch errors", async () => {
   runJest.mockImplementationOnce(async (root, args, execute, options) => {
+    options.onStart();
     options.onTimeout("timeout diagnostic");
     return { code: null, timedOut: true, stdout: "", stderr: "" };
   });

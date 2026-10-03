@@ -56,6 +56,12 @@ test("requires exact profile-derived allowlists", () => {
   expect(
     validatePublicationMetadata({ ...cliPackage, files: [...cliPackage.files, "tests/"] }),
   ).toContain("profile-derived");
+  expect(
+    validatePublicationMetadata({ ...cliPackage, files: [...cliPackage.files, "bin/"] }),
+  ).toContain("profile-derived");
+  expect(
+    validatePublicationMetadata({ ...cliPackage, files: ["../outside", ...cliPackage.files] }),
+  ).toContain("profile-derived");
 });
 
 test("limits environment examples to runtime environment profiles", () => {

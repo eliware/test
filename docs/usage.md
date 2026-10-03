@@ -126,11 +126,19 @@ eliware-test --format-check
 eliware-test --audit
 ```
 
-The following npm scripts are available only in this package's own repository:
-`npm test`, `npm run lint`, `npm run format`, `npm run format:check`,
-`npm run audit`, and `npm run pack`. The `--pack` mode selects package
-validation only when the `npm-published` profile is selected. Without that
-profile, the command has no applicable package check and does not run `npm pack`.
+The full validation npm scripts require this source checkout: `npm test`,
+`npm run lint`, `npm run format`, `npm run format:check`, and `npm run audit`.
+The `npm run pack` script also works from an installed package directory. The
+`--pack` CLI mode is available only when the repository selects the
+`npm-published` profile.
+The `npm run pack` script is required only in `@eliware/test` and npm-published
+repositories.
+The smoke script is available from either the source checkout or an installed
+`@eliware/test` package directory. Run `npm run smoke -- --target <path>` with
+the required `--target` pointing to an existing, separately prepared consumer
+repository; the script does not provision or create one. It packs the package
+directory, installs that tarball into the target, runs its `npm test`, and
+restores the captured package files and installed package state afterward.
 
 The normal test command runs the configured validation stages. Each public
 tool mode has its own accepted arguments. Audit accepts only `--no-fund` and
@@ -146,19 +154,22 @@ dependent checks. With `--debug-timing`, skipped checks are identified when a
 prerequisite failure prevents them from running.
 
 ```text
-eliware-test --lint --fix
-eliware-test --format --log-level=warn
-eliware-test --format-check --log-level=debug
+eliware-test --lint --threads=2
+eliware-test --format
+eliware-test --format-check
 eliware-test --audit --no-fund
 ```
 
 Lint argument forwarding is limited to a positive Oxlint thread count. Other
 lint options are rejected before Oxlint starts. Validation modes select the
 applicable check; repository inventory remains lazy and traverses the paths
-requested by that check when it asks for repository-wide entries.
+requested by that check when it asks for repository-wide entries. Inventory
+roots use the host operating system's path syntax; Windows-rooted inventories
+are rejected on non-Windows hosts rather than being interpreted with mixed
+path semantics.
 
-The `--pack` mode runs `npm pack` validation for repositories that select the
-`npm-published` profile. Other repositories have no applicable pack check.
+The `--pack` mode requires the `npm-published` profile. In other repositories,
+package-content validation is not selected and `--pack` is unavailable.
 
 Tool modes may not be combined with a focused Jest test path. Paths supplied
 to a tool mode are forwarded as tool arguments; focused paths are reserved for
@@ -209,10 +220,14 @@ These safeguards apply without `--debug-timing`. On timeout, the harness request
 escalates to forced termination after a one-second grace period, and reports
 whether the child's close was observed. It returns an unconfirmed timeout
 diagnostic if close is still not observed after the bounded confirmation
-period; cleanup of every descendant process cannot be guaranteed.
+period; cleanup of every descendant process cannot be guaranteed. Captured
+child output is bounded to one million characters even if an internal caller
+requests a larger limit.
 
-Coverage and monolith checks are always enforced by the public validation
-commands; no public ignore flags bypass them.
+Aggregate validation enforces repository-wide coverage and monolith checks. A
+focused test run applies coverage to its mirrored source module and runs only
+checks applicable to that focus. No public ignore flags bypass checks within
+the selected scope.
 
 ## Development boundaries
 

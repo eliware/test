@@ -10,6 +10,7 @@ export function coverageLineEntries(data, sourceStatementMap = data.statementMap
       const count = Number(counters[id]);
       const key = String(line);
       const previous = lines.get(key);
+      // Istanbul line coverage marks a line hit when any statement on that line executes.
       if (previous === undefined || count > previous) lines.set(key, count);
     }
   }

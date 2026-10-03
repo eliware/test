@@ -45,9 +45,18 @@ test("rejects invalid, incomplete, and unallowlisted packed paths", () => {
     "outside",
   );
   expect(validatePackManifest(manifest(basePaths), ["src/", "docs/", "examples/"])).toContain(
+    "outside package.json.files",
+  );
+  expect(validatePackManifest(manifest(basePaths), [...baseAllowlist, "examples/"])).toContain(
     "do not match",
   );
   expect(validatePackManifest(manifest(basePaths), undefined)).toContain("must be an array");
+});
+
+test("requires common payload files to be explicitly covered by the allowlist", () => {
+  expect(validatePackManifest(manifest(basePaths), ["src/", "docs/"])).toContain(
+    "outside package.json.files",
+  );
 });
 
 test("rejects wildcard, traversal, absolute, and empty allowlist paths", () => {

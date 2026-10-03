@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { expect, test } from "@jest/globals";
 import { createRepositoryInventory } from "../../../../../src/checks/create-repository-inventory.mjs";
 import { findDependencyReferences } from "../../../../../src/checks/general/E-0.1/E-0.1.20/find-dependency-references.mjs";
+import { resolveSelfHostedScriptCommands } from "../../../../../src/checks/general/E-0.1/E-0.1.20/resolve-self-hosted-script-commands.mjs";
 
 test("finds imports, re-exports, dynamic imports, requires, scripts, and config references", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-dependencies-"));
@@ -74,6 +75,20 @@ test("accepts repositories with no dependency declarations", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test("deduplicates dependencies declared in multiple manifest sections", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-test-duplicate-dependency-"));
+  await mkdir(join(root, "src"));
+  await writeFile(join(root, "src", "module.mjs"), 'import "alpha";\n');
+  await expect(
+    findDependencyReferences(root, {
+      dependencies: { alpha: "1.0.0" },
+      devDependencies: { alpha: "1.0.0" },
+      peerDependencies: { alpha: "1.0.0" },
+    }),
+  ).resolves.toHaveLength(1);
+  await rm(root, { recursive: true, force: true });
+});
+
 test("counts the direct linter used by the self-hosted CLI package", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-test-self-hosted-dependencies-"));
   await mkdir(join(root, "src"));
@@ -82,7 +97,7 @@ test("counts the direct linter used by the self-hosted CLI package", async () =>
     findDependencyReferences(root, {
       name: "@eliware/test",
       dependencies: { oxlint: "1.0.0" },
-      scripts: { lint: "node bin/eliware-test.mjs --lint" },
+      scripts: resolveSelfHostedScriptCommands(["lint"]).scripts,
     }),
   ).resolves.toEqual(expect.arrayContaining(["oxlint"]));
   await rm(root, { recursive: true, force: true });

@@ -2,6 +2,7 @@ import { expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
+import { platform } from "node:os";
 import { validateFocusedTestPath } from "../../../../../src/checks/general/E-0.1/E-0.1.20/validate-focused-test-path.mjs";
 
 test("validates focused test paths before execution", async () => {
@@ -20,6 +21,21 @@ test("validates focused test paths before execution", async () => {
   );
   await expect(validateFocusedTestPath(root, ["tests"])).rejects.toThrow("regular file");
   await rm(root, { recursive: true, force: true });
+});
+
+const casePathTest = platform() === "win32" ? test : test.skip;
+casePathTest("returns the canonical casing accepted by Windows", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-case-"));
+  const tests = join(root, "tests");
+  await mkdir(tests);
+  await writeFile(join(tests, "Sample.test.mjs"), "test('sample', () => {});\n");
+  try {
+    await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toBe(
+      "tests/Sample.test.mjs",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test("rejects traversal and symlinks that escape the repository", async () => {

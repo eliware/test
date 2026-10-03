@@ -17,7 +17,9 @@ export function createRedactedStreamPolicy(
     ? maxSearchWorkPerChunk
     : MAX_SECRET_SEARCH_WORK_PER_CHUNK;
   const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, finiteWorkLimit));
-  const values = [...new Set(secrets.filter((secret) => typeof secret === "string" && secret))];
+  const values = [
+    ...new Set(secrets.filter((secret) => typeof secret === "string" && secret)),
+  ].sort((left, right) => right.length - left.length);
   const maximumSecretLength = values.reduce(
     (maximum, secret) => Math.max(maximum, secret.length),
     0,

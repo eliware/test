@@ -21,10 +21,8 @@ export function npmCommand(
       if (isPosixAbsolutePath(workingDirectory)) {
         throw new Error("Cannot resolve npm_execpath from a POSIX-style directory on Windows.");
       }
-      const resolvedNpmExecPath = isAbsoluteWindowsNpmPath(npmExecPath)
-        ? npmExecPath
-        : win32.resolve(workingDirectory, npmExecPath);
-      if (fileExists(resolvedNpmExecPath)) return [execPath, [resolvedNpmExecPath]];
+      if (isAbsoluteWindowsNpmPath(npmExecPath) && fileExists(npmExecPath))
+        return [execPath, [npmExecPath]];
     }
     const npmCli = win32.join(win32.dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js");
     // codescope ignore: probe the adjacent CLI before selecting it, then fall back to PATH when it is absent

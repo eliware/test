@@ -46,6 +46,13 @@ test("reports every incorrect required validation script", () => {
   expect(result).toContain("package.json.scripts.lint must be exactly eliware-test --lint.");
 });
 
+test("requires every canonical script to be an own package manifest property", () => {
+  const inheritedScripts = Object.create(scripts);
+  expect(validateRequiredScripts(inheritedScripts)).toContain(
+    "package.json.scripts.test must be exactly eliware-test.",
+  );
+});
+
 test.each([null, "", "  ", 42])("reports malformed required scripts once: %s", (testCommand) => {
   expect(validateRequiredScripts({ ...scripts, test: testCommand })).toBe(
     "package.json.scripts.test must be a nonempty command.",

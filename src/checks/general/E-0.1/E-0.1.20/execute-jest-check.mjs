@@ -12,8 +12,9 @@ export async function executeJestCheck(context) {
     options.onStart = () => {
       startedAt = Date.now();
     };
-    startedAt = Date.now();
     const result = await runJest(context.root, context.jestArgs ?? [], runChild, options);
+    if (startedAt === undefined)
+      throw new Error("Jest did not start before the results were returned.");
     return { result: { ...result, startedAt }, timeoutDiagnostic };
   } catch (error) {
     return { error };

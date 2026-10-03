@@ -30,9 +30,14 @@ export function createPendingTextChunks() {
     return prefix.join("");
   }
 
-  function codeUnitAt(index) {
-    if (!Number.isInteger(index) || index < 0 || index >= written - consumed) return Number.NaN;
-    const position = consumed + index;
+  function codeUnitsAtBoundary(index) {
+    const length = written - consumed;
+    if (!Number.isInteger(index) || index < 0 || index > length)
+      return { previous: Number.NaN, next: Number.NaN };
+    if (length === 0) return { previous: Number.NaN, next: Number.NaN };
+    const previousPosition = index > 0 ? consumed + index - 1 : -1;
+    const nextPosition = index < length ? consumed + index : -1;
+    const position = nextPosition === -1 ? previousPosition : nextPosition;
     let low = head;
     let high = chunks.length;
     while (low < high) {
@@ -41,17 +46,26 @@ export function createPendingTextChunks() {
       if (chunk.start + chunk.text.length <= position) low = middle + 1;
       else high = middle;
     }
-    const chunk = chunks[low];
-    return chunk.text.charCodeAt(position - chunk.start);
+    const chunkIndex = low;
+    const chunk = chunks[chunkIndex];
+    const previous =
+      previousPosition === -1
+        ? Number.NaN
+        : previousPosition >= chunk.start
+          ? chunk.text.charCodeAt(previousPosition - chunk.start)
+          : chunks[chunkIndex - 1].text.at(-1).charCodeAt(0);
+    const next =
+      nextPosition === -1 ? Number.NaN : chunk.text.charCodeAt(nextPosition - chunk.start);
+    return { previous, next };
   }
 
   function toString() {
     if (head >= chunks.length) return "";
-    const first = chunks[head];
-    return [
-      first.text.slice(consumed - first.start),
-      ...chunks.slice(head + 1).map(({ text }) => text),
-    ].join("");
+    // Chunks are references, not copied text; join creates the single bounded string the matcher needs.
+    const textChunks = [chunks[head].text.slice(consumed - chunks[head].start)];
+    for (let index = head + 1; index < chunks.length; index += 1)
+      textChunks.push(chunks[index].text);
+    return textChunks.join("");
   }
 
   function clear() {
@@ -63,7 +77,7 @@ export function createPendingTextChunks() {
   return Object.freeze({
     append,
     takePrefix,
-    codeUnitAt,
+    codeUnitsAtBoundary,
     toString,
     clear,
     get length() {

@@ -9,9 +9,12 @@ import { terminateChildAfterSetupFailure } from "./terminate-child-after-setup-f
 import { createChildSpawnOptions } from "./create-child-spawn-options.mjs";
 import { createChildCloseHandler } from "./handle-child-close.mjs";
 import { createChildTimeoutController } from "./create-child-timeout-controller.mjs";
-
 export function runChild(command, args, options = {}) {
-  const outputLimit = options.maxOutputLength ?? 100_000;
+  const requestedOutputLimit = options.maxOutputLength ?? 100_000;
+  const outputLimit =
+    Number.isFinite(requestedOutputLimit) && requestedOutputLimit > 0
+      ? Math.min(Math.floor(requestedOutputLimit), 1_000_000)
+      : 100_000;
   const spawnProcess = options.spawnProcess ?? spawn;
   const createTimeout = options.createProgressTimeout ?? createProgressTimeout;
   const environment = options.env ?? process.env;

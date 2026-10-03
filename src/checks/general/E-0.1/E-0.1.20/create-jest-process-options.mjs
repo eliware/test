@@ -13,7 +13,6 @@ export function createJestProcessOptions(root, args = [], options = {}) {
     cwd: root,
     env,
     progressPattern: /^\[eliware-test-progress\]/m,
-    resetOnAnyOutput: true,
     progressTimeoutMs: 15_000,
     suiteTimeoutMs: 5_000,
     onProgress(text) {

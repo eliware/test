@@ -1,8 +1,13 @@
-import { expect, test } from "@jest/globals";
-import {
-  pullRequestTargetsMain,
-  pushTargetsMain,
-} from "../../../../../src/checks/general/E-0.1/E-0.1.24/workflow-targets-main.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+const { minimatch: actualMinimatch } = await import("minimatch");
+const minimatch = jest.fn((...args) => actualMinimatch(...args));
+jest.unstable_mockModule("minimatch", () => ({ minimatch }));
+const { pullRequestTargetsMain, pushTargetsMain } =
+  await import("../../../../../src/checks/general/E-0.1/E-0.1.24/workflow-targets-main.mjs");
+
+beforeEach(() => {
+  minimatch.mockImplementation((...args) => actualMinimatch(...args));
+});
 
 test("evaluates push branch shapes and main inclusion", () => {
   expect(pushTargetsMain(["main"])).toBe(true);
@@ -43,4 +48,11 @@ test("matches GitHub branch patterns with ordered inclusion and exclusion", () =
   expect(pushTargetsMain({ branches: ["main", "release/*"] })).toBe(true);
   expect(pushTargetsMain({ branches: ["!release/*"] })).toBe(false);
   expect(pushTargetsMain({ branches: ["*", "!release/*"] })).toBe(true);
+});
+
+test("treats matcher failures as a branch that does not include main", () => {
+  minimatch.mockImplementationOnce(() => {
+    throw new Error("invalid pattern");
+  });
+  expect(pushTargetsMain({ branches: ["malformed-pattern"] })).toBe(false);
 });

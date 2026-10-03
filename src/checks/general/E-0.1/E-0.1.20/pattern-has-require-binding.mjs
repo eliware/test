@@ -1,13 +1,21 @@
 export function patternHasRequire(pattern) {
-  if (!pattern || typeof pattern !== "object") return false;
-  if (pattern.type === "Identifier") return pattern.name === "require";
-  if (pattern.type === "RestElement" || pattern.type === "AssignmentPattern")
-    return patternHasRequire(pattern.argument ?? pattern.left);
-  if (pattern.type === "ArrayPattern") return pattern.elements.some(patternHasRequire);
-  if (pattern.type === "ObjectPattern") {
-    return pattern.properties.some((property) =>
-      patternHasRequire(property.type === "RestElement" ? property.argument : property.value),
-    );
+  const pending = [pattern];
+  const visited = new WeakSet();
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (!current || typeof current !== "object" || visited.has(current)) continue;
+    visited.add(current);
+    if (current.type === "Identifier" && current.name === "require") return true;
+    if (current.type === "RestElement") pending.push(current.argument);
+    if (current.type === "AssignmentPattern") pending.push(current.left);
+    if (current.type === "ArrayPattern") {
+      for (const element of current.elements) pending.push(element);
+    }
+    if (current.type === "ObjectPattern") {
+      for (const property of current.properties) {
+        pending.push(property.type === "RestElement" ? property.argument : property.value);
+      }
+    }
   }
   return false;
 }

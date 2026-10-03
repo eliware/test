@@ -14,6 +14,7 @@ export function createOrderedMatchStartIndex(isActive) {
   return Object.freeze({
     insert,
     lowerBound: starts.lowerBound,
+    range: starts.range,
     discardInactive,
     get values() {
       return starts.values();

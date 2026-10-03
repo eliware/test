@@ -60,10 +60,9 @@ function splitsSurrogate(text, followingCodeUnit) {
 
 function moveBoundaryBeforeSurrogate(boundary, pendingChunks, pending) {
   const length = pendingChunks ? pendingChunks.length : pending.length;
-  const previous = pendingChunks
-    ? pendingChunks.codeUnitAt(boundary - 1)
-    : pending.charCodeAt(boundary - 1);
-  const next = pendingChunks ? pendingChunks.codeUnitAt(boundary) : pending.charCodeAt(boundary);
+  const { previous, next } = pendingChunks
+    ? pendingChunks.codeUnitsAtBoundary(boundary)
+    : { previous: pending.charCodeAt(boundary - 1), next: pending.charCodeAt(boundary) };
   if (
     boundary > 0 &&
     boundary < length &&

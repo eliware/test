@@ -21,6 +21,15 @@ test("normalizes search and pending limits and builds matcher state", () => {
   expect(getSecretMatcher).toHaveBeenCalledWith(["secret"], { maxScanWork: 1_000_000 });
 });
 
+test("orders overlapping secrets longest-first before constructing redaction state", () => {
+  const matcher = jest.fn(() => () => []);
+  const policy = createRedactedStreamPolicy(["token", "token-suffix"], 32, {
+    getSecretMatcher: matcher,
+  });
+  expect(policy.values).toEqual(["token-suffix", "token"]);
+  expect(matcher).toHaveBeenCalledWith(["token-suffix", "token"], { maxScanWork: 1_000_000 });
+});
+
 test("clamps minimum limits and uses the default matcher when no matcher is injected", () => {
   const policy = createRedactedStreamPolicy([], 10, {
     maxSearchWorkPerChunk: 0,

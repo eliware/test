@@ -22,6 +22,7 @@ export async function run({
   toolArgs = [],
   runAudit = runNpmAudit,
   runChild = defaultRunChild,
+  resolveCommand,
   env = process.env,
 }) {
   const auditScript =
@@ -38,7 +39,14 @@ export async function run({
   const argumentError = validateAuditArguments(toolArgs);
   if (argumentError) return fail(ruleId, argumentError);
   try {
-    const result = await executeAuditProcess({ root, runAudit, runChild, toolArgs, env });
+    const result = await executeAuditProcess({
+      root,
+      runAudit,
+      runChild,
+      resolveCommand,
+      toolArgs,
+      env,
+    });
     if (result.code !== 0) {
       return fail(ruleId, formatNpmAuditFailure(result, env));
     }
@@ -49,7 +57,14 @@ export async function run({
     if (!report) {
       return fail(ruleId, "npm audit returned an invalid JSON report.");
     }
-    if (report.metadata.vulnerabilities.high > 0 || report.metadata.vulnerabilities.critical > 0)
+    const hasHighSeverityFinding = Object.values(report.vulnerabilities).some(
+      ({ severity }) => severity === "high" || severity === "critical",
+    );
+    if (
+      hasHighSeverityFinding ||
+      report.metadata.vulnerabilities.high > 0 ||
+      report.metadata.vulnerabilities.critical > 0
+    )
       return fail(ruleId, formatNpmAuditFailure({ ...result, code: 1 }, env));
   } catch (error) {
     return fail(ruleId, formatNpmAuditStartupFailure(error, env));

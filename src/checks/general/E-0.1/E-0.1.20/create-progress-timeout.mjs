@@ -2,7 +2,7 @@ export function createProgressTimeout({ timeoutMs, onTimeout }) {
   let timer;
   let timedOut = false;
   const reset = () => {
-    if (!timeoutMs || timedOut) return;
+    if (!Number.isFinite(timeoutMs) || timeoutMs <= 0 || timedOut) return;
     clearTimeout(timer);
     timer = setTimeout(() => {
       if (timedOut) return;
