@@ -54,7 +54,7 @@ directives:
               - Do not place subdirectory-only instructions in repository-wide scope or leave inherited instruction scope undefined.
           - id: A-0.1.0.3
             dos:
-              - AGENTS.md must tell contributors to read README.md, AGENTS.md, and applicable documentation before changing files.
+              - AGENTS.md must tell contributors to read the root README.md, applicable AGENTS.md instructions, and documentation relevant to the change before changing files.
             donts:
               - Do not edit files before reading the repository instructions and the documentation that governs the requested change.
           - id: A-0.1.0.4

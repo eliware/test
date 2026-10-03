@@ -11,7 +11,7 @@ directives:
     directives:
       - id: E-0.1.140.0
         dos:
-          - "After the seven general AGENTS.md headings, add a ## npm publication section. Document package identity and version source, exact files allowlist, pack validation command and required result, provenance mechanism, exact-version registry verification, and the release authorization/handoff boundary. Document release gates and who is authorized to approve or execute them, but do not treat this documentation or the profile as permission for an agent to publish. Publication still requires explicit authorization through the applicable Operations release handoff."
+          - "After the seven general AGENTS.md headings, add a ## npm publication section. Document package identity and version source, exact files allowlist, pack validation command and required result, provenance mechanism, and verification that the exact package.json version is visible at the public npm registry for that package. Document release gates and ownership: Eli and the project developer run TagIt preflight together; Eli decides whether the release is ready and instructs DevOps; DevOps executes the authorized release. Do not treat this documentation or the profile as permission for an agent to publish. Publication still requires explicit authorization through the applicable Operations release handoff."
         donts:
           - Do not omit npm publication requirements from AGENTS.md.
       - id: E-0.1.140.1

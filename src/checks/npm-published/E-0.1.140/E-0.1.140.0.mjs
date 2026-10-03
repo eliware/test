@@ -31,7 +31,20 @@ export async function run(context) {
       },
       { label: "pack validation result", terms: ["pass", "succeed"], mode: "any" },
       { label: "npm provenance mechanism", terms: ["provenance", "npm"] },
-      { label: "exact-version registry verification", terms: ["exact", "version", "registry"] },
+      {
+        label: "exact-version public npm registry verification",
+        terms: [
+          "exact",
+          "version",
+          "package.json",
+          packageJson?.name ?? "package",
+          "registry.npmjs.org",
+        ],
+      },
+      {
+        label: "release approval and execution ownership",
+        terms: ["tagit preflight", "project developer", "eli decides", "devops executes"],
+      },
       { label: "release authorization and handoff", terms: ["authorization", "handoff"] },
     ];
     const missing = requirements

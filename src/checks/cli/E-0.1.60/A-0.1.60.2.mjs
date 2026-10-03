@@ -9,9 +9,14 @@ export async function run(context) {
   const { root } = context;
   try {
     const readme = await readRepositoryText(context, join(root, "README.md"));
-    const missing = ["## Commands", "## Exit codes", "--help", "--version", "platform"].filter(
-      (term) => !readme.toLowerCase().includes(term.toLowerCase()),
-    );
+    const missing = [
+      "## Commands",
+      "## Exit codes",
+      "--help",
+      "--version",
+      "supported platforms",
+      "validation evidence",
+    ].filter((term) => !readme.toLowerCase().includes(term.toLowerCase()));
     if (missing.length)
       return fail(ruleId, missing.map((term) => `CLI README.md must document ${term}.`).join("\n"));
   } catch {

@@ -27,7 +27,14 @@ test("fails when a CLI behavior term is undocumented", async () => {
   await writeFile(join(root, "AGENTS.md"), "CLI\n");
   const result = await run({ root });
   expect(result.status).toBe("fail");
-  for (const term of ["entrypoint", "--help", "--version", "commands"])
+  for (const term of [
+    "entrypoint",
+    "--help",
+    "--version",
+    "commands",
+    "supported platforms",
+    "validation evidence",
+  ])
     expect(result.message).toContain(`AGENTS.md must document CLI ${term} behavior.`);
   await rm(root, { recursive: true, force: true });
 });

@@ -9,9 +9,15 @@ export async function run(context) {
   const { root } = context;
   try {
     const agents = await readRepositoryText(context, join(root, "AGENTS.md"));
-    const missing = ["CLI", "entrypoint", "--help", "--version", "commands"].filter(
-      (term) => !agents.toLowerCase().includes(term.toLowerCase()),
-    );
+    const missing = [
+      "CLI",
+      "entrypoint",
+      "--help",
+      "--version",
+      "commands",
+      "supported platforms",
+      "validation evidence",
+    ].filter((term) => !agents.toLowerCase().includes(term.toLowerCase()));
     if (missing.length)
       return fail(
         ruleId,

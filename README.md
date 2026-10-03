@@ -240,9 +240,11 @@ eliware-test tests/checks/example.test.mjs
 Examples and package-level shortcuts are shown under Usage. `--format` mutates
 files; `--format-check` is read-only. `--pack` is read-only package validation
 and does not publish. The commands do not authorize release, deployment, or
-other destructive external actions. Legacy `--ignore-*` flags are unsupported. Platform support is
-intended for Windows, macOS, and Linux with Node.js 26 and npm available; CI
-currently validates on Ubuntu.
+other destructive external actions. Legacy `--ignore-*` flags are unsupported.
+Supported platforms are Windows, macOS, and Linux with Node.js 26 and npm
+available. Validation evidence: Windows is exercised during development and CI
+validates Ubuntu. macOS compatibility is inferred from Ubuntu's POSIX filesystem
+behavior; the project does not claim direct macOS validation.
 
 ## Exit codes
 

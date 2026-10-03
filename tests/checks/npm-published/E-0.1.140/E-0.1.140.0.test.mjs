@@ -12,7 +12,7 @@ const packageJson = {
   scripts: { pack: "eliware-test --pack" },
 };
 const validGuidance = `## npm publication
-Public package @eliware/fixture uses package.json as version source; its files allowlist contains bin/, src/, README.md. Run eliware-test --pack and require it to pass. npm provenance is enabled. Verify the exact version in the public registry. Publication requires explicit authorization through the Operations handoff.
+Public package @eliware/fixture uses package.json as version source; its files allowlist contains bin/, src/, README.md. Run eliware-test --pack and require it to pass. npm provenance is enabled. Verify the exact @eliware/fixture version from package.json in the public registry at registry.npmjs.org. Eli and the project developer run TagIt preflight together; Eli decides whether the release is ready and instructs DevOps; DevOps executes the authorized release. Publication requires explicit authorization through the Operations handoff.
 `;
 
 test("requires publication guidance in AGENTS.md", async () => {
@@ -46,5 +46,16 @@ test("rejects missing or irrelevant publication guidance", async () => {
   await expect(run({ root, packageJson })).resolves.toEqual(
     expect.objectContaining({ status: "fail" }),
   );
+  await writeFile(
+    join(root, "AGENTS.md"),
+    validGuidance.replace("registry.npmjs.org", "registry.example.org"),
+  );
+  const registry = await run({ root, packageJson });
+  expect(registry.status).toBe("fail");
+  expect(registry.message).toContain("exact-version public npm registry verification");
+  await writeFile(join(root, "AGENTS.md"), validGuidance.replaceAll("DevOps", "maintainer"));
+  const ownership = await run({ root, packageJson });
+  expect(ownership.status).toBe("fail");
+  expect(ownership.message).toContain("release approval and execution ownership");
   await rm(root, { recursive: true, force: true });
 });

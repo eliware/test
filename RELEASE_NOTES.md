@@ -4,6 +4,17 @@
 
 ### Changed
 
+- Align contributor guidance with the general convention by requiring review of
+  the root README, applicable AGENTS instructions, and relevant documentation
+  before changing files.
+- Distinguish supported platforms from direct validation evidence: Windows is
+  exercised during development, Ubuntu is validated in CI, and macOS
+  compatibility is inferred from Ubuntu's POSIX filesystem behavior.
+- Require CLI README and AGENTS guidance to distinguish supported platforms
+  from validation evidence.
+- Clarify npm publication guidance with exact-version visibility at the public
+  registry and the Eli, project developer, and DevOps release responsibilities.
+
 - Run all Jest-independent checks before Jest and stop before Jest when any
   prerequisite check fails. Skip Jest-result and coverage checks in that case,
   with explicit skipped-stage timing output in `--debug-timing` mode.
