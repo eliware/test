@@ -19,7 +19,7 @@ export async function checkNpmVersion({
         ? ["cmd.exe", ["/d", "/s", "/c", "npm"]]
         : npmCommand(
             platform,
-            activeNpmPath,
+            activeNpmPath ?? "",
             execPath,
             fileExists,
             workingDirectory,
