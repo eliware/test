@@ -21,6 +21,8 @@
   specification file, including nested specification folders.
 - Require the package.json.eliware fields in canonical order: id, apply, and
   optional exempt.
+- Enforce canonical GHCR image, pull command, supported tags, and deployment
+  boundary markers in the existing README Usage section.
 
 ### Fixed
 

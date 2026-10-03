@@ -19,7 +19,7 @@ test("requires an exact version tag and digest as release identity", async () =>
   );
 });
 
-test("allows a documented latest convenience alias beside the immutable version tag", async () => {
+test("keeps the version-and-digest release identity check independent of README documentation", async () => {
   const { root, publicationPath } = await createGhcrFixture();
   const packageJson = { name: "@eliware/example" };
   const { readFile, writeFile } = await import("node:fs/promises");
@@ -31,16 +31,8 @@ test("allows a documented latest convenience alias beside the immutable version 
       "tags: |\n            ghcr.io/eliware/example:v1.2.3\n            ghcr.io/eliware/example:latest",
     ),
   );
-  await writeFile(
-    `${root}/README.md`,
-    "The latest tag is a mutable convenience alias and is never the release or deployment identity.\n",
-  );
   await expect(run({ root, packageJson })).resolves.toEqual(
     expect.objectContaining({ status: "pass" }),
-  );
-  await writeFile(`${root}/README.md`, "The latest tag is a mutable convenience alias.\n");
-  await expect(run({ root, packageJson })).resolves.toEqual(
-    expect.objectContaining({ status: "fail" }),
   );
 });
 

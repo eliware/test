@@ -25,7 +25,7 @@ directives:
       - id: E-0.1.160.2
         dos:
           - GHCR repositories must contain exactly one publication workflow at .github/workflows/publish.yml in addition to .github/workflows/ci.yml; no other GitHub Actions workflow files are allowed. If npm publication is also applied, both publication profiles use this single publish.yml file.
-          - GHCR publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form and verify it matches the approved package version before pushing. These publication requirements are checked statically on every validation run, including ordinary branch runs; the release tag guard is additionally compared to the current ref during tag-triggered runs. Static validation checks workflow declarations only and cannot prove GitHub environment protection or reviewer settings; verify those settings in GitHub before each authorized release. Require Eli's explicit authorization routed through the Operations release handoff. The README must document the image name, pull command, supported tags, and deployment boundary.
+          - GHCR publication workflows must use the GitHub Actions glob `v[0-9]*.[0-9]*.[0-9]*` as a candidate filter, then enforce the exact `vMAJOR.MINOR.PATCH` numeric form and verify it matches the approved package version before pushing. These publication requirements are checked statically on every validation run, including ordinary branch runs; the release tag guard is additionally compared to the current ref during tag-triggered runs. Static validation checks workflow declarations only and cannot prove GitHub environment protection or reviewer settings; verify those settings in GitHub before each authorized release. Require Eli's explicit authorization routed through the Operations release handoff.
         donts:
           - Do not use broad tag filters that start publication workflows for prerelease or non-version tags, publish from branches, pull requests, manual validation dispatches, unversioned tags, or an inferred release version.
       - id: E-0.1.160.3
@@ -74,3 +74,24 @@ directives:
           - Before pushing a GHCR image, the publication job must verify that npm package.json's exact version matches the version without the v prefix in GITHUB_REF_NAME, then target the protected ghcr-publish GitHub environment configured with Eli as a required reviewer through the Operations release handoff.
         donts:
           - Do not treat tag-shaped text, a semver comment, or an unprotected environment as release-version verification or Eli's publication authorization.
+      - id: E-0.1.160.11
+        dos:
+          - >-
+            In the existing README.md Usage section, include these markers with concrete values:
+            `Image: ghcr.io/eliware/<repository-name>`; `Pull command: docker pull
+            ghcr.io/eliware/<repository-name>:v<package.json version>`; `Supported tags:
+            vMAJOR.MINOR.PATCH`; and `Deployment boundary: publication does not deploy; deploy
+            by immutable version tag and recorded sha256 digest.`
+          - >-
+            Replace `<repository-name>` with the unscoped package.json name and `<package.json
+            version>` with the exact package.json version. Append `, latest` to the supported-tags
+            marker only when the publication workflow publishes a latest tag.
+          - >-
+            When the publication workflow publishes `latest`, include the statement `latest is a
+            mutable convenience alias and is never the release or deployment identity.` in the
+            Usage section.
+          - Deterministic README validation checks these markers and reuses the existing README section parser. The general README structure and link checks remain the sole owners of README section structure and links.
+          - The project owner retains semantic review responsibility for supported architectures and the accuracy of the documented image purpose and deployment instructions.
+        donts:
+          - Do not add a separate GHCR README section, duplicate general README structure or link findings, imply publication deploys the image, or identify a deployment by a mutable tag.
+          - Do not infer or deterministically validate supported architectures from README prose.

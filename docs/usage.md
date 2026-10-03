@@ -70,6 +70,16 @@ requirements apply whether or not the map is available.
 
 ## Common commands
 
+Repositories that select `ghcr-published` document their image in the existing
+README `Usage` section using the canonical `Image`, `Pull command`, `Supported
+tags`, and `Deployment boundary` markers defined in
+`specs/conventions/ghcr-published.yaml`. The pull command uses the exact package
+version tag. If the publication workflow also pushes `latest`, document it as a
+mutable convenience alias that is never the release or deployment identity.
+The automated check validates these markers; project owners remain responsible
+for the semantic accuracy of image purpose, architecture support, and deployment
+instructions.
+
 ```text
 eliware-test --help
 eliware-test --version
