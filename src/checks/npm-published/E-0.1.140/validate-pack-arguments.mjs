@@ -4,6 +4,7 @@ const protectedOptions = new Set([
   "--json",
   "--no-json",
   "--pack-destination",
+  "--consumer-smoke",
   "--prefix",
   "--workspace",
   "--workspaces",

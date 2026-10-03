@@ -78,11 +78,27 @@ npm run format
 npm run format:check
 npm run audit
 npm run pack
+npm run smoke -- --target C:\path\to\consumer
 node bin/eliware-test.mjs --pack
 ```
 
 Package-content validation with `npm run pack` or `--pack` applies only when the
 repository selects the `npm-published` profile.
+
+`npm run pack` is the lightweight package-content check included in aggregate
+validation. The opt-in `npm run smoke -- --target <path>` command builds and
+installs a tarball from this checkout in one existing consumer repository and
+runs that repository's `npm test`. The smoke command temporarily points the
+consumer manifest at the candidate tarball so `npm outdated` does not compare
+an unpublished candidate against the registry; the ordinary audit and outdated
+checks still run for the other dependencies. Prepare the target and install its
+dependencies first; the command does not clone repositories or create
+worktrees. It saves and restores the target's package manifests, lockfiles, and
+previous `@eliware/test` installation and local executable shims after the run.
+The temporary manifest and lockfile are kept consistent, and only the local
+`node_modules/@eliware/test` package is replaced. It does not touch system-wide
+symlinks or junctions. Use a disposable target
+because consumer tests may create their own output files.
 
 `package.json` is the source of truth for the version in this checkout. The npm
 badge reports the latest version published in the public registry; it does not

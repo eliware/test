@@ -12,7 +12,7 @@ test("runs npm pack in the repository root", async () => {
   });
   expect(result.code).toBe(0);
   expect(calls).toHaveLength(1);
-  expect(calls[0][1].slice(-3)).toEqual(["pack", "--dry-run", "--json"]);
+  expect(calls[0][1].slice(-4)).toEqual(["pack", "--ignore-scripts", "--dry-run", "--json"]);
   expect(calls[0][2]).toMatchObject({ cwd: "C:\\repo", env: process.env });
   expect(calls[0][2].env).not.toBe(process.env);
 });

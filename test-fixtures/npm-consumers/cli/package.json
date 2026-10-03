@@ -1,0 +1,19 @@
+{
+  "name": "@eliware/smoke-cli",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node verify-installed.mjs"
+  },
+  "devDependencies": {
+    "@eliware/test": "10.0.0"
+  },
+  "eliware": {
+    "id": "E-0.1",
+    "apply": [
+      "general",
+      "cli"
+    ]
+  }
+}

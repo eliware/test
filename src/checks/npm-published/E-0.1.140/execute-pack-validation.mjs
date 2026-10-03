@@ -20,6 +20,7 @@ export async function executePackValidation({
       result.stdout ?? "",
       packageJson?.files,
       packageJson?.name,
+      packageJson,
     );
     if (manifestError) return manifestError;
   } catch (error) {

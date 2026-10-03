@@ -10,7 +10,10 @@ function workflow(tag = releaseTagFilter) {
     document: {
       on: { push: { tags: [tag] } },
       jobs: {
-        validate: { "runs-on": "ubuntu-latest", steps: [{ run: "npm ci" }, { run: "npm test" }] },
+        validate: {
+          "runs-on": "ubuntu-latest",
+          steps: [{ run: "npm ci" }, { run: "npm test" }],
+        },
         publish: {
           "runs-on": "ubuntu-latest",
           needs: "validate",
@@ -42,4 +45,8 @@ test("rejects an inexact trigger, mismatched release tag, or missing package ver
     }),
   ).toBe(false);
   expect(validateNpmPublicationWorkflow(workflow(), undefined, {})).toBe(false);
+});
+
+test("does not require consumer smoke in the routine publication validation job", () => {
+  expect(validateNpmPublicationWorkflow(workflow(), "1.2.3", {})).toBe(true);
 });

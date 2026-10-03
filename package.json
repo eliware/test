@@ -21,14 +21,14 @@
     "eliware-test": "bin/eliware-test.mjs"
   },
   "files": [
-    "bin",
-    "src",
-    "specs",
-    "docs",
+    "src/",
+    "docs/",
     "README.md",
     "AGENTS.md",
     "LICENSE",
-    "RELEASE_NOTES.md"
+    "RELEASE_NOTES.md",
+    "bin/",
+    "specs/"
   ],
   "repository": {
     "type": "git",
@@ -49,7 +49,8 @@
     "format": "node bin/eliware-test.mjs --format",
     "format:check": "node bin/eliware-test.mjs --format-check",
     "audit": "node bin/eliware-test.mjs --audit",
-    "pack": "node bin/eliware-test.mjs --pack"
+    "pack": "node bin/eliware-test.mjs --pack",
+    "smoke": "node src/checks/npm-published/E-0.1.140/smoke-cli.mjs"
   },
   "prettier": {
     "printWidth": 100,

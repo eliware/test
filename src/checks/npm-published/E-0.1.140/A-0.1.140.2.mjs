@@ -29,7 +29,7 @@ export async function run(context) {
     }
     if (!validateNpmPublicationWorkflow(workflow, packageJson?.version, env)) {
       failures.push(
-        `Publication workflow must use exact version tags, verify package version, and validate on Ubuntu: ${workflow.name}.`,
+        `Publication workflow must use exact version tags and depend on successful Ubuntu validation: ${workflow.name}.`,
       );
     }
   }

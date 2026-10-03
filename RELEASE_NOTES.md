@@ -44,6 +44,13 @@
   executable test and reference its exact source module.
 - Enforce canonical GHCR image, pull command, supported tags, and deployment
   boundary markers in the existing README Usage section.
+- Standardize npm package contents with an exact profile-derived allowlist,
+  reject standalone `.npmignore` files and packaging lifecycle hooks, and
+  validate actual packed files and public entrypoints.
+- Keep package validation lightweight in `npm test` and add an opt-in targeted
+  tarball smoke command that installs the candidate in an existing consumer,
+  runs its `npm test`, then restores the prior local package, manifest, lockfile,
+  and executable shims without touching system-wide symlinks or junctions.
 
 ### Fixed
 

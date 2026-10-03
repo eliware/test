@@ -3,5 +3,6 @@ import { validatePackArguments } from "./validate-pack-arguments.mjs";
 export function buildPackArguments(extraArgs = []) {
   const error = validatePackArguments(extraArgs);
   if (error) throw new Error(error);
-  return ["pack", ...extraArgs, "--dry-run", "--json"];
+  const safeArgs = extraArgs.filter((argument) => argument !== "--ignore-scripts");
+  return ["pack", "--ignore-scripts", ...safeArgs, "--dry-run", "--json"];
 }

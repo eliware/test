@@ -41,6 +41,7 @@ test("runs the pack stage when explicitly selected and validates its manifest", 
     "manifest",
     packageJson.files,
     packageJson.name,
+    packageJson,
   );
 });
 
@@ -53,7 +54,7 @@ test("passes empty manifest output and optional package metadata to validation",
       runPack: async () => ({ code: 0 }),
     }),
   ).resolves.toBeNull();
-  expect(validatePackManifest).toHaveBeenCalledWith("", undefined, undefined);
+  expect(validatePackManifest).toHaveBeenCalledWith("", undefined, undefined, undefined);
 });
 
 test("formats failed child-process diagnostics", async () => {
