@@ -1,0 +1,15 @@
+version: "12.0"
+description: Defines deterministic requirements for Eliware infrastructure repositories.
+requires:
+  - private
+directives:
+  - id: E-0.1.9.1.0
+    dos:
+      - Add Infrastructure to AGENTS.md at the canonical profile position.
+      - Add Managed targets, Configuration, Desired state, Validation, and Change boundaries to README.md and its Table of Contents.
+      - Deduplicate headings shared with other profiles.
+    donts:
+      - Do not omit infrastructure-specific headings.
+    examples:
+      - "## Infrastructure"
+      - "## Managed targets\n\n## Configuration\n\n## Desired state\n\n## Validation\n\n## Change boundaries"

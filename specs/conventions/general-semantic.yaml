@@ -1,0 +1,47 @@
+version: "12.0"
+description: Defines semantic requirements shared by Eliware repositories.
+requires: []
+directives:
+  - id: E-0.1.0.0.0
+    dos:
+      - Describe repository purpose, intended use, ownership, scope, and boundaries accurately.
+      - Keep authoritative descriptions and keywords relevant to repository contents.
+      - Keep documentation current, sufficient for supported use, and contributor instructions actionable.
+      - Distinguish runtime settings, package metadata, command arguments, and deployment configuration.
+      - Distinguish implemented behavior from versions already released.
+    donts:
+      - Do not use misleading identities, stale instructions, or unsupported capability claims.
+      - Do not confuse npm publishability with source-hosting visibility.
+      - Do not present unpublished versions as available to users.
+
+  - id: E-0.1.0.0.1
+    dos:
+      - Keep requirements and canonical procedures authoritative in one location.
+      - Use documentation for concise context and links to authoritative records.
+      - Keep repository specifications focused on committed contents and repository validation.
+      - Define security and change-authorization boundaries clearly.
+    donts:
+      - Do not maintain competing normative copies or use local instructions to weaken shared requirements.
+      - Do not turn AGENTS.md into a second README, implementation specification, or release history.
+      - Do not present validation success as authorization to release or deploy.
+
+  - id: E-0.1.0.0.2
+    dos:
+      - Keep contents free of unauthorized secrets, credentials, private data, decrypted sensitive payloads, operational backups, production dumps, and runtime state.
+      - Distinguish minimal non-sensitive bootstrap data from backups and live database contents.
+      - Limit internal infrastructure information to authorized repository audiences.
+    donts:
+      - Do not expose private access information or machine details through public documentation.
+      - Do not use repository contents as an operational backup store.
+
+  - id: E-0.1.0.0.3
+    dos:
+      - Give each source and test module one cohesive purpose and one reason to change.
+      - Introduce distinct responsibilities through focused submodules wired through their owner.
+      - Keep coordinators responsible for their own orchestration.
+      - Refactor evident mixed responsibilities when encountered.
+      - Retain dependencies only when needed by maintained code, tooling, or commands.
+    donts:
+      - Do not combine responsibilities for convenience or because a module is small.
+      - Do not defer evident responsibility splits beyond the changed lines.
+      - Do not retain unused dependencies.

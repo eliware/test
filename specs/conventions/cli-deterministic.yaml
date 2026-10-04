@@ -1,0 +1,19 @@
+version: "12.0"
+description: Defines deterministic requirements for Eliware command-line applications.
+requires:
+  - application
+directives:
+  - id: E-0.1.5.1.0
+    dos:
+      - Add CLI to AGENTS.md at the canonical profile position.
+      - Add Commands and Exit codes to README.md and its Table of Contents.
+      - Give every declared public executable --help and --version.
+      - Make --help return nonempty output and exit code 0.
+      - Make --version report package.json.version and exit code 0.
+    donts:
+      - Do not report a different version or omit informational options.
+    examples:
+      - "## CLI"
+      - "## Commands\n\n## Exit codes"
+      - "example --help"
+      - "example --version"

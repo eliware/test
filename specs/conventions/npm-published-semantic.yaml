@@ -1,0 +1,13 @@
+version: "12.0"
+description: Defines semantic requirements for publicly distributed Eliware npm packages.
+requires: []
+directives:
+  - id: E-0.1.10.0.0
+    dos:
+      - Document installation, entrypoints, distribution contents, version guidance, and publication boundaries accurately.
+      - Include assets needed for supported consumer workflows.
+      - Keep published environment examples complete and populated only with placeholders.
+      - Describe explicit release-authorization boundaries without granting publication authority through repository instructions.
+    donts:
+      - Do not omit runtime assets or publish sensitive content.
+      - Do not present profile selection or passing validation as publication authorization.

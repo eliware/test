@@ -1,0 +1,150 @@
+version: "12.0"
+description: Defines deterministic requirements shared by Eliware repositories.
+requires: []
+directives:
+  - id: E-0.1.0.1.0
+    dos:
+      - Give package.json.eliware exactly the ordered keys id and apply followed optionally by exempt.
+      - Set id to the assigned repository E-number.
+      - Explicitly list general and all selected prerequisites in a nonempty array of distinct known profile names.
+      - When /eliware/docs/repo-map.yaml contains the repository entry, match its id, description, keywords, and applied profiles.
+      - Require paired profile documents to agree on version and prerequisites.
+      - Give exemptions unique known check IDs, nonempty reasons, approver Eli, valid approvalTimestamp, and valid expiry or null.
+    donts:
+      - Do not add other eliware keys or infer profile selection.
+      - Do not accept duplicate, unknown, self-referential, or missing prerequisites.
+      - Do not accept expired or malformed exemptions or use AGENTS.md as exemption metadata.
+
+  - id: E-0.1.0.1.1
+    dos:
+      - Maintain package.json, package-lock.json, README.md, AGENTS.md, LICENSE, and specs/README.md.
+      - Define a scoped @eliware name, nonempty description, distinct nonempty keywords, and boolean private.
+      - Use the canonical author, repository, homepage, license, module type, and Node.js metadata shown in the example.
+      - Use numeric MAJOR.MINOR.PATCH matching the applied convention version.
+      - Keep lockfile metadata and dependency references consistent with package.json.
+      - Use the MIT license text with Copyright (c) 2026 Eliware.
+    donts:
+      - Do not use prerelease or build suffixes, alternative identity metadata, or malformed dependency maps.
+      - Do not use CommonJS module syntax in maintained implementation.
+    examples:
+      - "{\"name\":\"@eliware/example\",\"version\":\"12.0.0\",\"description\":\"Example repository\",\"keywords\":[\"example\"],\"author\":\"Eliware <eliware@eliware.org>\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/eliware/example.git\"},\"homepage\":\"https://github.com/eliware/example#readme\",\"license\":\"MIT\",\"private\":true,\"type\":\"module\",\"engines\":{\"node\":\"26\"}}"
+
+  - id: E-0.1.0.1.2
+    dos:
+      - Begin AGENTS.md with the exact title and seven headings shown in the example.
+      - Append applied profile sections after Changes.
+      - Use profile order general, documentation, workspace, library, application, cli, web, discord, mcp-server, infrastructure, npm-published, ghcr-published, private.
+      - Append repository-specific sections only afterward with exact headings declared in repository specifications.
+      - Include the literal markers Node.js 26 and native ESM and every required shared validation command.
+    donts:
+      - Do not omit, duplicate, rename, or reorder required headings.
+      - Do not derive section order from eliware.apply.
+      - Do not create README.md inside .knit/.
+    examples:
+      - "# AGENTS.md\n\n## Project\n\n## Scope and boundaries\n\n## Layout\n\n## Development\n\n## Validation\n\n## Security\n\n## Changes"
+
+  - id: E-0.1.0.1.3
+    dos:
+      - Begin README.md with the exact logo header followed by a title matching package.json.name and canonical license and CI badges.
+      - Place Table of Contents next with only blank lines between header, title, and Table of Contents.
+      - Use Features, Requirements, Setup, Usage, Development, Testing, Troubleshooting, and Security as general content headings.
+      - Insert applied profile headings after Security in canonical profile order.
+      - Deduplicate exact shared headings at their first canonical occurrence.
+      - End with Support, License, and Links.
+      - Use each required level-two heading once and no additional level-two headings.
+      - Link every content heading once in the Table of Contents in document order using lowercase space-to-hyphen fragments.
+      - Include the exact package description, author, and license value.
+      - Link specs/README.md and LICENSE.
+      - Include the exact support block in Support and canonical homepage, repository, website, organization, and Discord links in Links.
+    donts:
+      - Do not place introductory content before the Table of Contents.
+      - Do not include the title or Table of Contents in its own section list.
+      - Do not append badges to title text or display git+https URLs.
+      - Do not include npm branding without npm-published.
+    examples:
+      - "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)"
+      - "[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)\n\n**[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**"
+      - "[![License](https://img.shields.io/github/license/eliware/example)](https://github.com/eliware/example/blob/main/LICENSE)"
+      - "[![CI](https://github.com/eliware/example/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/example/actions/workflows/ci.yaml)"
+      - "- [Home Page](https://github.com/eliware/example#readme)\n- [GitHub repository](https://github.com/eliware/example.git)\n- [Eliware](https://eliware.org)\n- [GitHub organization](https://github.com/eliware)\n- [Discord](https://discord.gg/M6aTR9eTwN)"
+
+  - id: E-0.1.0.1.4
+    dos:
+      - Make supported README local links resolve inside the checkout.
+      - Make local Markdown fragments resolve to headings or explicit HTML IDs.
+      - Give HTTP and HTTPS links hostnames without embedded credentials and mailto links email addresses.
+      - Use full HTTPS GitHub URLs for cross-repository links.
+      - Maintain specs/directives.yaml and validate directive documents against the v12 schema.
+      - Give every specs directory one navigation-only README.md linking its direct YAML files and immediate subdirectory indexes.
+      - Permit only YAML documents, README.md indexes, and conforming subdirectories under specs/.
+      - Use unique E-rule IDs within the assigned repository namespace.
+      - Number siblings sequentially from 0 within their document prefix and append sequential child numbers to actual parent IDs.
+    donts:
+      - Do not use escaping relative links, A-rule IDs, duplicate IDs, or invalid child ancestry.
+      - Do not leave specifications unindexed or duplicate nested inventories in parent indexes.
+    examples:
+      - "An E-38 document prefix may contain E-38.0 with children E-38.0.0 and E-38.0.1."
+
+  - id: E-0.1.0.1.5
+    dos:
+      - Define the five shared scripts exactly as shown.
+      - In @eliware/test only, replace eliware-test with node bin/eliware-test.mjs.
+      - Run lint and format-check plus stages required by applied profiles during aggregate validation.
+      - Give additional scripts nonempty commands.
+      - Pass lint with zero errors and warnings.
+      - Keep maintained .mjs, .json, .yml, .yaml, and .md files syntactically valid and canonically formatted.
+      - Define package.json.prettier exactly as shown and use it as the sole formatting configuration.
+    donts:
+      - Do not replace shared scripts with partial validation.
+      - Do not directly declare or import Oxlint or Prettier or invoke them in validation commands except inside @eliware/test.
+      - Do not exclude maintained files of the required types from formatting.
+      - Do not add standalone Prettier configuration.
+      - Do not add publication commands to package scripts or validation workflows.
+    examples:
+      - "{\"test\":\"eliware-test\",\"lint\":\"eliware-test --lint\",\"audit\":\"eliware-test --audit\",\"format\":\"eliware-test --format\",\"format:check\":\"eliware-test --format-check\"}"
+      - "{\"printWidth\":100,\"tabWidth\":2,\"useTabs\":false,\"semi\":true,\"singleQuote\":false,\"quoteProps\":\"as-needed\",\"jsxSingleQuote\":false,\"trailingComma\":\"all\",\"bracketSpacing\":true,\"bracketSameLine\":false,\"arrowParens\":\"always\",\"proseWrap\":\"preserve\",\"endOfLine\":\"lf\"}"
+
+  - id: E-0.1.0.1.6
+    dos:
+      - Maintain .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
+      - Define every commands field as an array of strings beginning with the exact command prefix shown.
+      - Keep secondary Knit scripts under .knit/.
+    donts:
+      - Do not omit or reorder the required prefix.
+      - Do not include npm publication or explicit GHCR image-publication commands.
+      - Do not invoke CodeScope from automatic validation.
+    examples:
+      - "commands:\n  - git pull --ff-only origin main\n  - npm ci\n  - npm test"
+
+  - id: E-0.1.0.1.7
+    dos:
+      - Maintain ci.yaml with one document under .github/workflows/.
+      - Explicitly enable push and pull_request events for main.
+      - Declare repository-and-ref concurrency with cancel-in-progress true.
+      - Set workflow and validation-job permissions to contents read only.
+      - Run validation unconditionally on Ubuntu using checkout major v6 and setup-node major v7 with Node.js 26.
+      - Install npm latest before one standalone npm ci step immediately followed by one standalone npm test step.
+      - Before npm ci, permit only approved setup actions, npm latest installation, and literal safe echo or printf reporting.
+      - Keep required install and test steps free of environment, shell, and working-directory overrides.
+      - Permit publish.yaml only when required by an applied publication profile.
+    donts:
+      - Do not add other workflow files or duplicate aggregate stages in CI.
+      - Do not use conditional validation or continue-on-error.
+      - Do not override checkout repository or ref.
+      - Do not use pre-install reporting with expansion, redirects, control operators, backslashes, or embedded line breaks.
+      - Do not include publication commands or permissions in validation jobs.
+    examples:
+      - "name: Validation\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\nconcurrency:\n  group: ${{ github.repository }}-${{ github.ref }}\n  cancel-in-progress: true\npermissions:\n  contents: read\njobs:\n  test:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          cache: npm\n      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: npm test"
+
+  - id: E-0.1.0.1.8
+    dos:
+      - Ignore directories named node_modules, .git, coverage, dist, build, generated, artifacts, and test-results at every depth.
+      - Ignore .env-prefixed files except names ending in .example.
+      - Ignore .DS_Store and Thumbs.db.
+      - Keep tracked and staged files outside applicable ignore rules.
+      - Keep all tracked paths free of symlinks.
+    donts:
+      - Do not track ignored files or symlinks.
+      - Do not accept unreadable Git-index status as success.
+    examples:
+      - ".env.production is ignored and .env.production.example may be tracked."

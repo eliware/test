@@ -1,0 +1,16 @@
+version: "12.0"
+description: Defines semantic requirements for Eliware command-line applications.
+requires:
+  - application
+directives:
+  - id: E-0.1.5.0.0
+    dos:
+      - Document installation, entrypoints, commands, options, positional arguments, defaults, forwarding, errors, and exit meanings accurately.
+      - Provide useful help and safe copyable examples.
+      - Distinguish supported platforms, direct testing, and inferred compatibility.
+      - Explain destructive-action scope and provide confirmation, dry-run, or equivalent safeguards.
+      - Keep informational commands free of unintended state changes.
+      - Keep output free of secrets and credentials.
+    donts:
+      - Do not present inferred compatibility as direct testing.
+      - Do not leave forwarding boundaries ambiguous or show destructive examples without safeguards.

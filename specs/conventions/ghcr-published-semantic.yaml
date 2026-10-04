@@ -1,0 +1,14 @@
+version: "12.0"
+description: Defines semantic repository requirements for Eliware container distribution.
+requires: []
+directives:
+  - id: E-0.1.11.0.0
+    dos:
+      - Document image purpose, intended visibility, architectures, access boundaries, and deployment-consumer expectations accurately.
+      - Define ownership of build inputs and architecture decisions.
+      - Keep publication and deployment authorization separate.
+      - Describe latest only as a mutable convenience alias.
+    donts:
+      - Do not imply publication authorization from profile selection or workflow presence.
+      - Do not identify releases or deployments solely by mutable tags.
+      - Do not embed automatic deployment in the publication workflow.

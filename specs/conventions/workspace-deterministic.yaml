@@ -1,0 +1,15 @@
+version: "12.0"
+description: Defines deterministic requirements for Eliware workspace repositories.
+requires:
+  - private
+directives:
+  - id: E-0.1.2.1.0
+    dos:
+      - Add Workspace to AGENTS.md at the canonical profile position.
+      - Add Runbooks, Communication, and Recovery to README.md at the canonical profile position.
+      - Include these README headings in the Table of Contents.
+    donts:
+      - Do not omit workspace-specific headings.
+    examples:
+      - "## Workspace"
+      - "## Runbooks\n\n## Communication\n\n## Recovery"

@@ -1,0 +1,15 @@
+version: "12.0"
+description: Defines deterministic requirements for Eliware MCP server applications.
+requires:
+  - application
+directives:
+  - id: E-0.1.8.1.0
+    dos:
+      - Add MCP server to AGENTS.md at the canonical profile position.
+      - Add Tools, Resources, Prompts, Transport, Authentication, Schemas, and Operations to README.md and its Table of Contents.
+      - Deduplicate headings shared with other profiles.
+    donts:
+      - Do not omit MCP-specific headings.
+    examples:
+      - "## MCP server"
+      - "## Tools\n\n## Resources\n\n## Prompts\n\n## Transport\n\n## Authentication\n\n## Schemas\n\n## Operations"

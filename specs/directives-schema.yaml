@@ -1,78 +1,32 @@
-version: "11.0"
-description: Schema for version 11.0 Eliware directive documents and records.
-record:
-  type: object
-  required:
-    - id
-    - dos
-    - donts
-  properties:
-    id:
-      type: string
-      pattern: ^(E|A)-[0-9]+(?:\.[0-9]+)*$
-    dos:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        pattern: \S
-      minItems: 1
-    donts:
-      type: array
-      items:
-        type: string
-        minLength: 1
-        pattern: \S
-      minItems: 1
-    directives:
-      type: array
-      items:
-        $ref: "#/$defs/directive"
-      minItems: 1
-    examples:
-      type: array
-      items:
-        type: object
-        required:
-          - purpose
-          - markdown
-        properties:
-          purpose:
-            type: string
-            minLength: 1
-            pattern: \S
-          markdown:
-            type: string
-            minLength: 1
-            pattern: \S
-          generalHeadings:
-            description: When supplied, general README headings must be non-empty.
-            type: array
-            minItems: 1
-            items:
-              type: string
-              minLength: 1
-              pattern: \S
-          profileHeadings:
-            description: Empty arrays explicitly declare that a profile has no additional README headings.
-            type: object
-            properties:
-              application: { type: array, items: { type: string } }
-              cli: { type: array, items: { type: string } }
-              discord: { type: array, items: { type: string } }
-              mcp-server: { type: array, items: { type: string } }
-              web: { type: array, items: { type: string } }
-              library: { type: array, items: { type: string } }
-              infrastructure: { type: array, items: { type: string } }
-              workspace: { type: array, items: { type: string } }
-              documentation: { type: array, items: { type: string } }
-              npm-published: { type: array, items: { type: string } }
-              ghcr-published: { type: array, items: { type: string } }
-              private: { type: array, items: { type: string } }
-            additionalProperties: false
-        additionalProperties: false
-  additionalProperties: false
+$schema: https://json-schema.org/draft/2020-12/schema
+$ref: "#/$defs/document"
 $defs:
+  document:
+    type: object
+    required:
+      - version
+      - description
+      - directives
+    properties:
+      version:
+        type: string
+        minLength: 1
+        pattern: \S
+      description:
+        type: string
+        minLength: 1
+        pattern: \S
+      requires:
+        type: array
+        items:
+          type: string
+          pattern: ^[a-z0-9-]+$
+      directives:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/directive"
+    additionalProperties: false
   directive:
     type: object
     required:
@@ -82,87 +36,31 @@ $defs:
     properties:
       id:
         type: string
-        pattern: ^(E|A)-[0-9]+(?:\.[0-9]+)*$
+        pattern: ^E-[0-9]+(?:\.[0-9]+)*$
       dos:
         type: array
+        minItems: 1
         items:
           type: string
           minLength: 1
           pattern: \S
-        minItems: 1
       donts:
         type: array
+        minItems: 1
         items:
           type: string
           minLength: 1
           pattern: \S
-        minItems: 1
-      directives:
-        type: array
-        items:
-          $ref: "#/$defs/directive"
-        minItems: 1
       examples:
         type: array
+        minItems: 1
         items:
-          type: object
-          required:
-            - purpose
-            - markdown
-          properties:
-            purpose:
-              type: string
-              minLength: 1
-              pattern: \S
-          markdown:
-            type: string
-            minLength: 1
-            pattern: \S
-          generalHeadings:
-            description: When supplied, general README headings must be non-empty.
-            type: array
-            minItems: 1
-            items:
-              type: string
-              minLength: 1
-              pattern: \S
-          profileHeadings:
-            description: Empty arrays explicitly declare that a profile has no additional README headings.
-            type: object
-            properties:
-              application: { type: array, items: { type: string } }
-              cli: { type: array, items: { type: string } }
-              discord: { type: array, items: { type: string } }
-              mcp-server: { type: array, items: { type: string } }
-              web: { type: array, items: { type: string } }
-              library: { type: array, items: { type: string } }
-              infrastructure: { type: array, items: { type: string } }
-              workspace: { type: array, items: { type: string } }
-              documentation: { type: array, items: { type: string } }
-              npm-published: { type: array, items: { type: string } }
-              ghcr-published: { type: array, items: { type: string } }
-              private: { type: array, items: { type: string } }
-            additionalProperties: false
-          additionalProperties: false
+          type: string
+          minLength: 1
+          pattern: \S
+      children:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/directive"
     additionalProperties: false
-document:
-  type: object
-  required:
-    - version
-    - description
-    - directives
-  properties:
-    version:
-      type: string
-      minLength: 1
-      pattern: \S
-    description:
-      type: string
-      minLength: 1
-      pattern: \S
-    directives:
-      type: array
-      minItems: 1
-      items:
-        $ref: "#/$defs/directive"
-  additionalProperties: false

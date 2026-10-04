@@ -1,0 +1,36 @@
+version: "12.0"
+description: Defines deterministic requirements for Eliware web applications.
+requires:
+  - application
+directives:
+  - id: E-0.1.6.1.0
+    dos:
+      - Add Web to AGENTS.md at the canonical profile position.
+      - Add Configuration, Routes, Assets, Development server, Build, and Deployment to README.md and its Table of Contents.
+      - Deduplicate headings shared with other profiles.
+    donts:
+      - Do not omit web-specific headings.
+    examples:
+      - "## Web"
+      - "## Configuration\n\n## Routes\n\n## Assets\n\n## Development server\n\n## Build\n\n## Deployment"
+
+  - id: E-0.1.6.1.1
+    dos:
+      - Use public/ as the default existing public asset directory.
+      - Declare overrides through package.json.webRoot as a nonempty repository-relative directory path.
+      - Declare additional exclusions through package.json.webAssetExcludes as nonempty repository-relative path strings.
+      - Exclude dist, build, coverage, node_modules, and .git directories at every depth from the asset inventory.
+    donts:
+      - Do not put web configuration inside eliware or accept absolute, traversing, or escaping paths.
+      - Do not let configured exclusions replace mandatory exclusions.
+    examples:
+      - "{\"webRoot\":\"public\",\"webAssetExcludes\":[\"public/internal\"]}"
+
+  - id: E-0.1.6.1.2
+    dos:
+      - Define build as one command invoking a directly declared build tool and run it during aggregate validation.
+      - Declare lighthouse and puppeteer as direct dependencies.
+      - Define nonempty lighthouse and puppeteer scripts.
+    donts:
+      - Do not chain or redirect build or duplicate it in CI.
+      - Do not automatically execute live-server browser scripts during aggregate validation.

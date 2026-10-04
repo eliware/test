@@ -1,0 +1,13 @@
+version: "12.0"
+description: Defines semantic requirements for Eliware MCP server applications.
+requires:
+  - application
+directives:
+  - id: E-0.1.8.0.0
+    dos:
+      - Document tools, resources, prompts, transports, authentication, schemas, and protocol behavior accurately.
+      - Explain network exposure, access boundaries, lifecycle, and protocol validation.
+      - State unsupported capabilities and provide safe startup and shutdown examples.
+    donts:
+      - Do not expose credentials or claim unsupported protocol guarantees.
+      - Do not provide instructions that unintentionally expose a live endpoint.

@@ -1,0 +1,15 @@
+version: "12.0"
+description: Defines semantic requirements for Eliware infrastructure repositories.
+requires:
+  - private
+directives:
+  - id: E-0.1.9.0.0
+    dos:
+      - Define managed targets, environments, ownership, desired state, configuration, and deployment inputs accurately.
+      - Organize content by target and environment where both apply.
+      - Define repository-specific paths, schemas, validation, and platform boundaries in indexed specifications.
+      - Explain change control, rollback, secret handling, and operational ownership.
+      - Keep committed desired state canonical in its owning repository.
+    donts:
+      - Do not mix unrelated targets without boundaries or assume generic rules define platform-specific behavior.
+      - Do not confuse committed inputs with live state or duplicate canonical operational procedures.

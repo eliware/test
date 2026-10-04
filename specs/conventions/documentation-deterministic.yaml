@@ -1,0 +1,15 @@
+version: "12.0"
+description: Defines deterministic requirements for documentation-only Eliware repositories.
+requires:
+  - private
+directives:
+  - id: E-0.1.1.1.0
+    dos:
+      - Add Documentation to AGENTS.md at the canonical profile position.
+      - Add Scope, Navigation, Contribution, and Documentation validation to README.md at the canonical profile position.
+      - Include these README headings in the Table of Contents.
+    donts:
+      - Do not replace shared Testing or validation commands.
+    examples:
+      - "## Documentation"
+      - "## Scope\n\n## Navigation\n\n## Contribution\n\n## Documentation validation"

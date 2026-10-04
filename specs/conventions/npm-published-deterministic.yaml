@@ -1,0 +1,58 @@
+version: "12.0"
+description: Defines deterministic repository requirements for Eliware npm publication.
+requires: []
+directives:
+  - id: E-0.1.10.1.0
+    dos:
+      - Set private false and publishConfig.provenance true.
+      - Add npm publication to AGENTS.md at the canonical profile position.
+      - Include the canonical npm badge beside the README title and a public package link.
+      - Define pack as eliware-test --pack and run package validation during aggregate validation.
+      - In @eliware/test only, define pack as node bin/eliware-test.mjs --pack.
+    donts:
+      - Do not add an npm-specific README heading or replace required package validation with script presence.
+    examples:
+      - "## npm publication"
+      - "[![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/package/@eliware/example)"
+
+  - id: E-0.1.10.1.1
+    dos:
+      - Define files as distinct nonempty safe repository-relative paths.
+      - Include package.json, README.md, AGENTS.md, LICENSE, and specs/ in the tarball.
+      - Include src/ and docs/ for application or library, bin/ for application, and examples/ for library.
+      - Include RELEASE_NOTES.md for application or library.
+      - Include every declared runtime entrypoint, export, and declaration target.
+      - Include tracked .env-prefixed example files whose names end in .example.
+      - Permit additional root-level files and folders regardless of filename or type unless excluded.
+      - Exclude tests, test-fixtures, .github, .knit, .git, node_modules, coverage, dist, build, generated, artifacts, and test-results directories at every depth.
+      - Exclude .gitignore and package-lock.json at every depth.
+      - Exclude .env-prefixed files unless their names end in .example.
+      - Validate actual packed contents against minimum contents and exclusions.
+    donts:
+      - Do not impose an exact allowlist or let extras bypass exclusions.
+      - Do not use absolute or traversing files entries.
+      - Do not maintain .npmignore or packaging lifecycle scripts prepare, prepublish, prepublishOnly, prepack, or postpack.
+    examples:
+      - "{\"files\":[\"src/\",\"docs/\",\"examples/\",\"specs/\",\"README.md\",\"AGENTS.md\",\"LICENSE\",\"RELEASE_NOTES.md\",\"assets/\",\"data.json\"]}"
+      - "assets/templates/email.html is permitted but assets/tests/example.json is excluded."
+      - ".env.production.example is permitted but .env.production is excluded."
+
+  - id: E-0.1.10.1.2
+    dos:
+      - Maintain one publish.yaml alongside ci.yaml and share it with ghcr-published when both apply.
+      - Declare publication only on push tags matching the candidate glob shown.
+      - Declare a pre-publication guard requiring canonical numeric vMAJOR.MINOR.PATCH matching package.json.version.
+      - Make the npm publisher depend on unconditional Ubuntu validation installing npm latest and running npm ci then npm test.
+      - Set workflow and validation permissions to contents read only.
+      - Give an npm-only publisher exactly contents read and id-token write.
+      - Give a combined publisher the exact permission union required by both profiles.
+      - Declare a GitHub-hosted publisher with checkout major v6 and setup-node major v7 using Node.js 26.
+      - Permit only node-version and optional registry-url https://registry.npmjs.org and package-manager-cache false as publisher setup-node inputs.
+      - Install npm latest before npm ci and use one unconditional standalone npm publish --provenance step.
+    donts:
+      - Do not declare branch, pull-request, or manual publication triggers.
+      - Do not grant publication permissions to validation jobs or workflow-level permissions.
+      - Do not declare NPM_TOKEN or NODE_AUTH_TOKEN in workflow environment or setup.
+      - Do not rerun npm test in the publisher or allow continue-on-error on publication.
+    examples:
+      - "name: Publish\non:\n  push:\n    tags: [\"v[0-9]*.[0-9]*.[0-9]*\"]\npermissions:\n  contents: read\njobs:\n  validate:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          cache: npm\n      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: npm test\n  publish:\n    needs: validate\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      id-token: write\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n      - run: npm -g install npm@latest\n      - run: npm ci\n      - shell: bash\n        run: |\n          [[ \"${GITHUB_REF_NAME}\" =~ ^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$ ]] && test \"$(node -p \"require(process.argv[1]).version\" ./package.json)\" = \"${GITHUB_REF_NAME#v}\"\n      - run: npm publish --provenance"

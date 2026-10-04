@@ -1,0 +1,43 @@
+version: "12.0"
+description: Defines semantic requirements for Eliware applications and services.
+requires: []
+directives:
+  - id: E-0.1.4.0.0
+    dos:
+      - Document supported workflows, runtime entrypoints, startup, shutdown, configuration, and operational boundaries accurately.
+      - Make end-user documentation sufficient for supported application use.
+      - Distinguish runtime settings from metadata and deployment configuration.
+      - State when runtime configuration is absent.
+      - Describe supported environment variables, defaults, options, and required or optional status.
+      - Supply complete placeholder-only environment examples when environment configuration is supported.
+      - Explain examples' prerequisites, commands, and expected results.
+    donts:
+      - Do not hide user-facing behavior in internal runbooks or claim unsupported guarantees.
+      - Do not omit supported settings or activate optional environment variables in templates.
+      - Do not duplicate canonical production procedures.
+
+  - id: E-0.1.4.0.1
+    dos:
+      - Validate configuration before opening connections and make shutdown repeatable.
+      - Test public inputs and observable results of supported workflows.
+      - Keep unit assertions with the lowest owning module and coordinator tests focused on integration.
+      - Inject replaceable dependencies and keep launchers thin.
+      - Remove superseded compatibility branches, aliases, and fallbacks.
+      - Use mapped shared packages for substantial production concerns.
+    donts:
+      - Do not open connections using unvalidated configuration.
+      - Do not omit supported workflow tests or duplicate helper assertions.
+      - Do not preserve obsolete contracts or hide behavior through coverage exclusions.
+    examples:
+      - "Redaction uses @eliware/redact and logging uses @eliware/log."
+      - "Filesystem and import-meta utilities use @eliware/path."
+      - "Exception and rejection handling uses @eliware/errors."
+      - "Signals and graceful shutdown use @eliware/signals."
+
+  - id: E-0.1.4.0.2
+    dos:
+      - Describe user-visible changes accurately in release notes.
+      - Include applicable breaking changes, migration guidance, and security information.
+      - Represent pending user-visible changes under Unreleased.
+    donts:
+      - Do not omit user-impacting changes or use release notes as a second specification.

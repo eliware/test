@@ -1,0 +1,38 @@
+version: "12.0"
+description: Defines semantic requirements for Eliware libraries.
+requires: []
+directives:
+  - id: E-0.1.3.0.0
+    dos:
+      - Document public APIs, supported workflows, compatibility, installation, runtime settings, and package contents accurately.
+      - Make end-user documentation sufficient for supported workflows.
+      - Explain examples' prerequisites, commands, and expected results.
+      - Describe supported environment variables, defaults, options, and required or optional status.
+      - Supply complete placeholder-only environment examples when environment configuration is supported.
+    donts:
+      - Do not present private implementation as public API or imply unsupported compatibility.
+      - Do not omit supported settings or activate optional environment variables in templates.
+
+  - id: E-0.1.3.0.1
+    dos:
+      - Test public contracts and observable results of supported workflows.
+      - Keep unit assertions with the lowest owning module and coordinator tests focused on integration.
+      - Inject replaceable external dependencies and keep entrypoints thin.
+      - Remove superseded compatibility branches, aliases, and fallbacks.
+      - Use mapped shared packages for substantial production concerns.
+    donts:
+      - Do not duplicate helper assertions or preserve obsolete contracts for convenience.
+      - Do not hide production behavior through coverage exclusions.
+    examples:
+      - "Redaction uses @eliware/redact and logging uses @eliware/log."
+      - "Filesystem and import-meta utilities use @eliware/path."
+      - "Exception and rejection handling uses @eliware/errors."
+      - "Signals and graceful shutdown use @eliware/signals."
+
+  - id: E-0.1.3.0.2
+    dos:
+      - Describe user-visible changes accurately in release notes.
+      - Include applicable breaking changes, migration guidance, and security information.
+      - Represent pending user-visible changes under Unreleased.
+    donts:
+      - Do not omit consumer-impacting changes or use release notes as a second specification.
