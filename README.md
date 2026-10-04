@@ -26,7 +26,9 @@ The CLI supports deterministic repository validation across structure,
 documentation, conventions, and repository-specific requirements. Aggregate
 stages depend on the repository's declared profiles; Jest and coverage run only
 when selected by an applied profile, and package checks run for npm-published
-repositories. It does not perform live operational validation.
+repositories. Eliware Test owns this validation CLI; it does not own or implement
+the consuming repositories that the CLI validates. It does not perform live
+operational validation.
 
 Package description: Shared deterministic repository validation for Eliware projects. Author:
 Eliware <eliware@eliware.org>. Repository: https://github.com/eliware/test. License: MIT.
