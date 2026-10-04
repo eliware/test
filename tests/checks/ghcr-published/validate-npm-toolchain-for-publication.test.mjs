@@ -44,6 +44,7 @@ test("integrates npm latest setup into GHCR workflow validation", async () => {
     checkGhcrPublicationWorkflow({
       root,
       packageJson: { name: "@eliware/example", version: "1.2.3" },
+      env: { GITHUB_REF_TYPE: "branch", GITHUB_REF_NAME: "main" },
     });
   await writeFile(
     publicationPath,
