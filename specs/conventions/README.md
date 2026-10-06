@@ -1,7 +1,5 @@
 # Repository profile specifications
 
-Each profile has semantic and deterministic rules.
-
 - [Application, deterministic](application-deterministic.yaml)
 - [Application, semantic](application-semantic.yaml)
 - [CLI, deterministic](cli-deterministic.yaml)

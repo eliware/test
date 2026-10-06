@@ -1,13 +1,13 @@
 node_modules/
 .git/
-/coverage/
+coverage/
 /public/dist/
 /public/build/
 build/
 dist/
 .env
 .env.*
-!.env.example
+!.env*.example
 *.log
 *.tgz
 *.tsbuildinfo
@@ -25,4 +25,6 @@ Thumbs.db
 restore/
 runtime-state/
 artifacts/
+generated/
+test-results/
 /eliware-test.lock
