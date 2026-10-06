@@ -8,7 +8,10 @@ test("keeps focused lint and formatting enabled while disabling aggregate stages
     executeJest: true,
     executeLint: true,
     executeAudit: false,
+    executeOutdated: false,
     executePack: false,
+    executeTypecheck: false,
+    executeBuild: false,
     executePackageChecks: false,
     executeFormat: true,
     mode: null,
@@ -18,7 +21,15 @@ test("keeps focused lint and formatting enabled while disabling aggregate stages
 
 test("enables lint and format for the default repository-wide validation run", () => {
   expect(resolveValidationStageOptions({ mode: null }, {})).toEqual(
-    expect.objectContaining({ executeLint: true, executeFormat: true }),
+    expect.objectContaining({
+      executeLint: true,
+      executeFormat: true,
+      executeAudit: true,
+      executeOutdated: true,
+      executePack: true,
+      executeTypecheck: true,
+      executeBuild: true,
+    }),
   );
 });
 

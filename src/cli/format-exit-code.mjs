@@ -1,10 +1,16 @@
 const descriptions = new Map([
-  [8, "Jest failure"],
-  [10, "coverage failure"],
-  [12, "lint failure"],
-  [14, "internal tool failure"],
-  [17, "package-check failure"],
-  [18, "convention, configuration, argument, format, or format-check failure"],
+  [1, "unclassified or configuration failure"],
+  [2, "Jest test failure"],
+  [3, "unexpected test output"],
+  [4, "coverage failure"],
+  [5, "lint failure"],
+  [6, "format failure"],
+  [7, "npm audit failure"],
+  [8, "npm outdated failure"],
+  [9, "npm pack failure"],
+  [10, "typecheck failure"],
+  [11, "build failure"],
+  [12, "convention failure"],
 ]);
 
 export function formatExitCode(code) {

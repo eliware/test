@@ -18,9 +18,16 @@ export function resolveValidationStageOptions(diagnosticOptions, options) {
     executeAudit:
       !focused &&
       (diagnosticOptions.mode === "audit" || (options.executeAudit ?? options.executeJest ?? true)),
+    executeOutdated:
+      !focused &&
+      diagnosticOptions.mode === null &&
+      (options.executeOutdated ?? options.executeJest ?? true),
     executePack:
       !focused &&
       (diagnosticOptions.mode === "pack" || (options.executePack ?? options.executeJest ?? true)),
+    executeTypecheck:
+      !focused && diagnosticOptions.mode === null && (options.executeTypecheck ?? true),
+    executeBuild: !focused && diagnosticOptions.mode === null && (options.executeBuild ?? true),
     executePackageChecks: focused ? false : (options.executePackageChecks ?? true),
     executeFormat:
       diagnosticOptions.mode === "format" ||

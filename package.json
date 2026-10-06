@@ -89,11 +89,11 @@
     }
   },
   "dependencies": {
-    "@babel/parser": "^7.29.9",
+    "@babel/parser": "^8.0.6",
     "istanbul-lib-instrument": "6.0.3",
     "jest": "^30.5.2",
     "minimatch": "^10.2.6",
-    "oxlint": "^1.86.0",
+    "oxlint": "^1.87.0",
     "prettier": "3.9.9",
     "semver": "^7.8.5",
     "yaml": "^2.8.1"

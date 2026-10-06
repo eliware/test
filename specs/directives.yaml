@@ -91,9 +91,13 @@ directives:
         dos:
           - Report each failure with its identity, observed failure, and complete matched directive including examples and children.
           - Aggregate diagnostics in deterministic order.
-          - Use exit codes 0 success, 8 test failure, 10 coverage failure, 12 lint failure, 14 internal tool or process failure, 17 package-check failure, and 18 convention, configuration, applicability, argument, or formatting failure.
+          - Use exit codes 0 success, 1 unclassified or configuration failure, 2 test failure, 3 unexpected test output, 4 coverage failure, 5 lint failure, 6 format failure, 7 audit failure, 8 outdated dependency failure, 9 package failure, 10 typecheck failure, 11 build failure, and 12 convention failure.
           - Stop before tests for invalid configuration, arguments, or selected-stage applicability.
-          - Use the highest applicable post-test failure code without discarding diagnostics.
+          - Use the highest applicable failure code without discarding diagnostics.
+          - Run lint, formatting, audit, outdated, pack, typecheck, and build stages before convention checks.
+          - Run all convention checks before Jest.
+          - Run Jest only when all enabled pre-Jest stages and convention checks pass.
+          - Store each completed stage result for later convention checks.
           - Emit exactly Aggregate validation passed. for aggregate success without diagnostics.
           - Report only the executed mode for mode-specific success.
         donts:
@@ -103,7 +107,7 @@ directives:
           - Do not emit incidental logs or subprocess output during a clean normal run.
         examples:
           - "Aggregate validation passed."
-          - "Test and coverage failures retain both diagnostics and return exit code 10."
+          - "Failures retain all diagnostics and return the highest applicable exit code."
 
       - id: E-0.0.5
         dos:

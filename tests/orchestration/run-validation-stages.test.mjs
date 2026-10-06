@@ -28,7 +28,7 @@ test("reuses cached results and returns stage failures", async () => {
   const runner = jest.fn(async () => ({
     stage: "lint",
     status: "fail",
-    code: 12,
+    code: 5,
     message: "failed",
   }));
 
@@ -47,7 +47,7 @@ test("records runner errors as internal stage failures", async () => {
         throw new Error("child failed");
       },
     }),
-  ).resolves.toMatchObject([{ stage: "audit", code: 14, status: "fail", message: "child failed" }]);
+  ).resolves.toMatchObject([{ stage: "audit", code: 1, status: "fail", message: "child failed" }]);
 });
 
 test("does not run stages that are disabled", async () => {
@@ -62,5 +62,5 @@ test("records non-Error runner failures", async () => {
         throw "audit failed";
       },
     }),
-  ).resolves.toMatchObject([{ code: 14, message: "audit failed", status: "fail" }]);
+  ).resolves.toMatchObject([{ code: 1, message: "audit failed", status: "fail" }]);
 });

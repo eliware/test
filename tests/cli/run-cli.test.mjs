@@ -56,7 +56,7 @@ function resetCli() {
   dispatchInformationalCommand.mockReturnValue(null);
   createValidationRunOptions.mockReturnValue({ runOption: true });
   writeValidationResults.mockImplementation(() => {});
-  normalizeCliError.mockReturnValue(18);
+  normalizeCliError.mockReturnValue(1);
   formatExitCode.mockReturnValue("formatted exit code");
   acquireValidationLock.mockResolvedValue(jest.fn());
   runNpmPrerequisite.mockClear().mockResolvedValue(true);
@@ -79,7 +79,7 @@ test("returns informational command results before starting validation", async (
 test("refuses to run when another validation process holds the repository lock", async () => {
   acquireValidationLock.mockResolvedValueOnce(null);
   const write = jest.fn();
-  await expect(runCli([], write, "/repo")).resolves.toBe(18);
+  await expect(runCli([], write, "/repo")).resolves.toBe(1);
   expect(write).toHaveBeenCalledWith(
     expect.stringMatching(
       /^Cannot run eliware-test because the lock file exists: .*eliware-test\.lock\. If no validation run is active, remove the stale lock file and retry\.$/,
@@ -93,7 +93,7 @@ test("stops before validation when npm is unsupported", async () => {
   const checkPrerequisite = jest.fn(async () => false);
   await expect(
     runCli([], jest.fn(), "/repo", { runNpmPrerequisite: checkPrerequisite }),
-  ).resolves.toBe(18);
+  ).resolves.toBe(1);
   expect(acquireValidationLock).not.toHaveBeenCalled();
 });
 
@@ -184,9 +184,9 @@ test("normalizes and formats failures raised by the CLI pipeline", async () => {
   runConventionStage.mockRejectedValueOnce(error);
   const write = jest.fn();
 
-  await expect(runCli([], write)).resolves.toBe(18);
+  await expect(runCli([], write)).resolves.toBe(1);
   expect(normalizeCliError).toHaveBeenCalledWith(error, write);
-  expect(formatExitCode).toHaveBeenCalledWith(18);
+  expect(formatExitCode).toHaveBeenCalledWith(1);
   expect(write).toHaveBeenCalledWith("formatted exit code");
 });
 
@@ -195,6 +195,6 @@ test("normalizes failures while acquiring the validation lock", async () => {
   const write = jest.fn();
   acquireValidationLock.mockRejectedValueOnce(error);
 
-  await expect(runCli([], write, "/repo")).resolves.toBe(18);
+  await expect(runCli([], write, "/repo")).resolves.toBe(1);
   expect(normalizeCliError).toHaveBeenCalledWith(error, write);
 });

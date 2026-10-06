@@ -192,12 +192,15 @@ behavior. The check fails when Git index inspection is unavailable.
 
 ## Testing
 
-For this npm-published package, `npm test` runs aggregate Jest, lint,
-format-check, audit, outdated-dependency, and pack validation. In consuming
+For this npm-published package, `npm test` runs lint, format-check, audit,
+outdated-dependency, pack, convention, Jest, and coverage validation in that
+order. Typecheck runs for libraries. Build runs for web repositories. In consuming
 repositories, `npm test` is the aggregate validation entrypoint and selects
 stages from the profiles declared in `package.json`; see the
 [conventions](specs/conventions/) for the canonical profile stage requirements.
-Pack validation runs only when the `npm-published` profile applies. One
+Pack runs only when the `npm-published` profile applies. All enabled stages
+and convention checks run before the Jest gate. Jest runs only when they pass.
+Each completed stage result stays available to convention checks. One
 repository-relative `.test.*` or
 `.spec.*` file under `tests/` can be supplied to
 `eliware-test`. `.test.*` and `.spec.*` files may use `.js`, `.jsx`, `.ts`,
@@ -298,11 +301,11 @@ behavior; the project does not claim direct macOS validation.
 
 ## Exit codes
 
-Exit code `0` is success, `8` is Jest failure, `10` is coverage failure, `12` is lint
-failure, `14` is an internal tool failure, `17` is a package-check failure, and
-`18` is a convention, configuration, argument, format, or format-check failure.
-Rejected wrapper arguments, unsupported mode combinations, and rejected
-forwarded tool arguments return exit code `18`.
+Exit code `0` is success. Exit code `1` is an unclassified or configuration
+failure. Codes `2` through `12` identify Jest test, unexpected output, coverage,
+lint, format, audit, outdated, pack, typecheck, build, and convention failures,
+in that order. If failures have multiple codes, the CLI returns the highest code.
+Invalid arguments and configuration errors return code `1`.
 Every failed convention check includes the check ID, the observed failure, and
 the complete matching directive, including all `dos`, `donts`, and examples
 when present. The canonical profile specifications live in `specs/conventions/`

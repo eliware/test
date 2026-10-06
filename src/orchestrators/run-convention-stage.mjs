@@ -1,17 +1,7 @@
 import { formatConventionFailure } from "./format-convention-failure.mjs";
 
 function failureCode(result) {
-  const { ruleId, message = "" } = result;
-  if (Number.isInteger(result.code)) return result.code;
-  if (["E-0.1.130.14", "E-0.1.40.16"].includes(ruleId)) return 10;
-  if (ruleId === "E-0.1.4") return /could not be started/i.test(message) ? 14 : 12;
-  if (["E-0.1.130.13", "E-0.1.40.15"].includes(ruleId)) {
-    if (/focused test path|unsupported focused path|ambiguous focused path/i.test(message))
-      return 18;
-    return /could not be started/i.test(message) ? 14 : 8;
-  }
-  if (/^E-0.1\.140(?:\.|$)/.test(ruleId) || /^E-0.1\.20\.(?:14|19)$/.test(ruleId)) return 17;
-  return 18;
+  return Number.isInteger(result.code) ? result.code : 12;
 }
 
 export async function runConventionStage(runChecks) {
@@ -30,7 +20,7 @@ export async function runConventionStage(runChecks) {
     };
   } catch (error) {
     return {
-      code: 18,
+      code: 1,
       category: "conventions",
       diagnostics: [
         `${error.message}\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.`,

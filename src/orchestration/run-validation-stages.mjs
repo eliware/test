@@ -5,7 +5,7 @@ export async function runValidationStages(context, stages, runners) {
   const selectedRunners = runners ?? createValidationStageRunners();
   const results = [];
   for (const stage of stages) {
-    const enabled = stage === "jest" ? context.executeJest : context[`execute${capitalize(stage)}`];
+    const enabled = context[`execute${capitalize(stage)}`];
     if (!enabled) continue;
     if (!Object.hasOwn(context.stageResults, stage)) {
       try {
@@ -14,7 +14,7 @@ export async function runValidationStages(context, stages, runners) {
         context.stageResults[stage] = {
           ruleId: `stage:${stage}`,
           stage,
-          code: 14,
+          code: 1,
           status: "fail",
           message: error instanceof Error ? error.message : String(error),
         };

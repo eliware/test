@@ -12,10 +12,10 @@ test("returns a passing convention stage", async () => {
 test("reports cached stage failures without convention directives", async () => {
   await expect(
     runConventionStage(async () => [
-      { ruleId: "stage:lint", stage: "lint", code: 12, status: "fail", message: "lint output" },
+      { ruleId: "stage:lint", stage: "lint", code: 5, status: "fail", message: "lint output" },
     ]),
   ).resolves.toEqual({
-    code: 12,
+    code: 5,
     category: "validation",
     diagnostics: ["lint stage failed: lint output"],
   });
@@ -25,7 +25,7 @@ test("includes the complete failed directive in each check diagnostic", async ()
   const failure = { ruleId: "E-0.1.0.0.0", status: "fail", message: "missing file" };
   const result = await runConventionStage(async () => [failure]);
   expect(result).toEqual({
-    code: 18,
+    code: 12,
     category: "conventions",
     diagnostics: [formatConventionFailure(failure)],
   });
@@ -34,55 +34,33 @@ test("includes the complete failed directive in each check diagnostic", async ()
   expect(result.diagnostics[0]).toContain('"id": "E-0.1.0.0.0"');
 });
 
-test("preserves stable failure codes for each validation stage", async () => {
-  const cases = [
-    ["E-0.1.130.13", "Jest failed", 8],
-    ["E-0.1.130.14", "coverage gap", 10],
-    ["E-0.1.4", "Oxlint failed", 12],
-    ["E-0.1.4", "process could not be started", 14],
-    ["E-0.1.140.1", "pack failed", 17],
-    ["E-0.1.40.15", "Jest could not be started", 14],
-    ["E-0.1.130.13", "unsupported focused path", 18],
-    ["E-0.1.14", "outdated packages", 18],
-    ["E-0.1.20.12", "retired outdated check", 18],
-  ];
-  for (const [ruleId, message, code] of cases) {
-    const failure = { ruleId, status: "fail", message };
-    await expect(runConventionStage(async () => [failure])).resolves.toEqual({
-      code,
-      category: "conventions",
-      diagnostics: [formatConventionFailure(failure)],
-    });
-  }
-});
-
-test("uses the highest code when several checks fail and preserves each remediation", async () => {
+test("uses the convention code for check failures", async () => {
   const failures = [
     { ruleId: "E-0.1.0.0.0", status: "fail", message: "first" },
     { ruleId: "E-0.1.130.14", status: "fail", message: "coverage" },
   ];
   const result = await runConventionStage(async () => failures);
-  expect(result.code).toBe(18);
+  expect(result.code).toBe(12);
   expect(result.diagnostics).toEqual(failures.map((failure) => formatConventionFailure(failure)));
 });
 
 test("provides remediation even when a check omitted its message", async () => {
   const failure = { ruleId: "E-0.1.0.0.0", status: "fail" };
   await expect(runConventionStage(async () => [failure])).resolves.toEqual({
-    code: 18,
+    code: 12,
     category: "conventions",
     diagnostics: [formatConventionFailure(failure)],
   });
 });
 
-test("classifies invalid focused paths as argument failures and provides guidance", async () => {
+test("uses the convention code for each failed convention check", async () => {
   const failure = {
     ruleId: "E-0.1.130.13",
     status: "fail",
     message: "Jest could not be started: Focused test path does not exist: tests/missing.test.mjs",
   };
   await expect(runConventionStage(async () => [failure])).resolves.toEqual({
-    code: 18,
+    code: 12,
     category: "conventions",
     diagnostics: [formatConventionFailure(failure)],
   });
@@ -93,7 +71,7 @@ test("normalizes convention-runner errors as convention failures", async () => {
     throw new Error("invalid config");
   });
   expect(result).toEqual({
-    code: 18,
+    code: 1,
     category: "conventions",
     diagnostics: [
       "invalid config\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.",

@@ -14,7 +14,7 @@ test("caches Jest output and maps its failures", async () => {
   const fail = createValidationStageRunners({
     runJest: async () => ({ ruleId: "stage:jest", status: "fail", message: "Jest failed" }),
   });
-  await expect(fail.jest(context)).resolves.toMatchObject({ code: 8, status: "fail" });
+  await expect(fail.jest(context)).resolves.toMatchObject({ code: 2, status: "fail" });
   const startup = createValidationStageRunners({
     runJest: async () => ({
       ruleId: "stage:jest",
@@ -22,7 +22,7 @@ test("caches Jest output and maps its failures", async () => {
       message: "Jest could not be started",
     }),
   });
-  await expect(startup.jest(context)).resolves.toMatchObject({ code: 14, status: "fail" });
+  await expect(startup.jest(context)).resolves.toMatchObject({ code: 1, status: "fail" });
 });
 
 test("runs lint and keeps its process output", async () => {
@@ -41,7 +41,7 @@ test("runs lint and keeps its process output", async () => {
   await expect(
     failed.lint({ root: ".", toolArgs: [], focusedScope: { paths: ["src/a.mjs"] } }),
   ).resolves.toMatchObject({
-    code: 12,
+    code: 5,
     message: "bad",
   });
   const startup = createValidationStageRunners({
@@ -50,7 +50,7 @@ test("runs lint and keeps its process output", async () => {
     },
   });
   await expect(startup.lint({ root: ".", toolArgs: [] })).resolves.toMatchObject({
-    code: 14,
+    code: 5,
     message: "spawn",
   });
 });
@@ -68,7 +68,7 @@ test("runs formatting and stores formatter output", async () => {
   await expect(
     invalid.format({ root: ".", executeFormat: true, mode: null, toolArgs: [] }),
   ).resolves.toMatchObject({
-    code: 18,
+    code: 6,
     message: "format failed",
   });
   const noChanges = createValidationStageRunners({ validateFormatter: async () => undefined });
@@ -86,7 +86,7 @@ test("runs audit and stores its process report", async () => {
   });
   const invalid = createValidationStageRunners({ runAudit: async () => ({ code: 1 }) });
   await expect(invalid.audit({ root: ".", toolArgs: [] })).resolves.toMatchObject({
-    code: 17,
+    code: 7,
     message: "npm audit failed.",
   });
   const startup = createValidationStageRunners({
@@ -94,7 +94,7 @@ test("runs audit and stores its process report", async () => {
       throw new Error("audit spawn");
     },
   });
-  await expect(startup.audit({ root: ".", toolArgs: [] })).resolves.toMatchObject({ code: 14 });
+  await expect(startup.audit({ root: ".", toolArgs: [] })).resolves.toMatchObject({ code: 7 });
 });
 
 test("runs pack only for its profile and stores the pack result", async () => {
@@ -120,5 +120,42 @@ test("runs pack only for its profile and stores the pack result", async () => {
   const invalid = createValidationStageRunners({ validatePack: async () => "pack failed" });
   await expect(
     invalid.pack({ packageJson: { eliware: { apply: ["npm-published"] } } }),
-  ).resolves.toMatchObject({ code: 17, message: "pack failed" });
+  ).resolves.toMatchObject({ code: 9, message: "pack failed" });
+});
+
+test("caches outdated package data for convention checks and uses its exit code", async () => {
+  const dependencies = { alpha: { current: "1" } };
+  const runners = createValidationStageRunners({
+    runOutdated: async () => ({ dependencies, outdated: ["alpha@latest"] }),
+  });
+  const context = { root: ".", env: {} };
+  await expect(runners.outdated(context)).resolves.toMatchObject({
+    code: 8,
+    stage: "outdated",
+    status: "fail",
+  });
+  expect(context.outdatedDependencies).toBe(dependencies);
+});
+
+test("runs typecheck and build only for their selected profiles", async () => {
+  const runScript = jest.fn(async () => ({ code: 1, stderr: "script failed" }));
+  const runners = createValidationStageRunners({ runScript });
+  const typecheck = {
+    root: ".",
+    packageJson: {
+      eliware: { apply: ["library"] },
+      scripts: { typecheck: "tsc --noEmit" },
+    },
+    env: {},
+  };
+  const build = {
+    ...typecheck,
+    packageJson: {
+      eliware: { apply: ["web"] },
+      scripts: { build: "vite build" },
+    },
+  };
+  await expect(runners.typecheck(typecheck)).resolves.toMatchObject({ code: 10, status: "fail" });
+  await expect(runners.build(build)).resolves.toMatchObject({ code: 11, status: "fail" });
+  expect(runScript.mock.calls.map(([, name]) => name)).toEqual(["typecheck", "build"]);
 });
