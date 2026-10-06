@@ -1,19 +1,18 @@
 # Troubleshooting
 
-Run `eliware-test --help` to confirm supported command forms. To run one focused
-test, use `eliware-test tests/example.test.mjs` or
-`node bin/eliware-test.mjs tests/example.test.mjs`. The path must be under
-`tests/`, must exist, and its filename must end in `.test.*` or `.spec.*` with
-one of these extensions: `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, or
-`.cts`. Missing or unsupported paths are rejected rather than silently
-expanding to the full suite. Supported Jest option/value forms include the
-wrapper's declared options such as `--testNamePattern "case name"`; option
-values are forwarded unchanged and are not counted as focused paths. Ambiguous
-or multiple actual focused paths are rejected.
+Run `eliware-test --help` to see valid commands.
+Run one focused test with `eliware-test tests/example.test.mjs`.
+You can also run `node bin/eliware-test.mjs tests/example.test.mjs`.
+The test path must exist under `tests/`.
+Its name must end in `.test.*` or `.spec.*`.
+Supported extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
+The CLI rejects missing or unsupported paths. It does not expand them to the full suite.
+You may pass supported Jest options, such as `--testNamePattern "case name"`.
+The CLI forwards option values unchanged. It does not treat them as test paths.
+The CLI rejects multiple or ambiguous test paths.
 
-For a failure, preserve the stage diagnostics and collect `node --version`,
-the exact command, and a redacted package configuration. Do not include
-credentials, tokens, private environment values, coverage artifacts, or
-generated runtime output.
+When a command fails, save its diagnostics.
+Also collect `node --version`, the exact command, and redacted package settings.
+Do not include credentials, tokens, private environment values, coverage files, or generated output.
 
 [Return to documentation](README.md).

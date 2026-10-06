@@ -1,5 +1,5 @@
 version: "12.0"
-description: Defines semantic requirements for Eliware libraries.
+description: Lists semantic rules for Eliware libraries.
 requires: []
 directives:
   - id: E-0.1.3.0.0

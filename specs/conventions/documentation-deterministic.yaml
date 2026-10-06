@@ -1,5 +1,5 @@
 version: "12.0"
-description: Defines deterministic requirements for documentation-only Eliware repositories.
+description: Lists deterministic rules for documentation-only Eliware repositories.
 requires:
   - private
 directives:

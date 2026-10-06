@@ -1,5 +1,5 @@
 version: "12.0"
-description: Defines deterministic requirements for Eliware web applications.
+description: Lists deterministic rules for Eliware web applications.
 requires:
   - application
 directives:
@@ -17,8 +17,8 @@ directives:
   - id: E-0.1.6.1.1
     dos:
       - Use public/ as the default existing public asset directory.
-      - Declare overrides through package.json.webRoot as a nonempty repository-relative directory path.
-      - Declare additional exclusions through package.json.webAssetExcludes as nonempty repository-relative path strings.
+      - Set overrides through package.json.webRoot as a nonempty repository-relative directory path.
+      - Set additional exclusions through package.json.webAssetExcludes as nonempty repository-relative path strings.
       - Exclude dist, build, coverage, node_modules, and .git directories at every depth from the asset inventory.
     donts:
       - Do not put web configuration inside eliware or accept absolute, traversing, or escaping paths.
@@ -29,7 +29,7 @@ directives:
   - id: E-0.1.6.1.2
     dos:
       - Define build as one command invoking a directly declared build tool and run it during aggregate validation.
-      - Declare lighthouse and puppeteer as direct dependencies.
+      - Set lighthouse and puppeteer as direct dependencies.
       - Define nonempty lighthouse and puppeteer scripts.
     donts:
       - Do not chain or redirect build or duplicate it in CI.

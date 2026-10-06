@@ -1,5 +1,5 @@
 version: "12.0"
-description: Defines semantic requirements for Eliware Discord applications.
+description: Lists semantic rules for Eliware Discord applications.
 requires:
   - application
 directives:

@@ -1,5 +1,5 @@
 version: "12.0"
-description: Defines semantic requirements for Eliware workspace repositories.
+description: Lists semantic rules for Eliware workspace repositories.
 requires:
   - private
 directives:

@@ -1,12 +1,12 @@
 version: "12.0"
-description: Defines deterministic requirements for Eliware applications and services.
+description: Lists deterministic rules for Eliware applications and services.
 requires: []
 directives:
   - id: E-0.1.4.1.0
     dos:
       - Add Application to AGENTS.md at the canonical profile position.
       - Add Configuration and Operations to README.md and its Table of Contents.
-      - Maintain docs/README.md and link it from root README.md.
+      - Keep docs/README.md and link it from root README.md.
       - Index every Markdown document beneath docs/ except its index.
       - When examples/ contains .mjs or .js examples, maintain examples/README.md linking every example.
     donts:
@@ -18,7 +18,7 @@ directives:
 
   - id: E-0.1.4.1.1
     dos:
-      - Declare at least one runtime entrypoint through main or bin.
+      - Set at least one runtime entrypoint through main or bin.
       - Make every main and bin target a nonempty repository-relative path to an existing file under bin/.
       - Give bin object keys nonempty names containing ASCII letters, digits, underscores, dots, or hyphens.
       - When start exists, include a standalone token matching a declared entrypoint after removing optional quotes and leading ./.
@@ -60,9 +60,9 @@ directives:
 
   - id: E-0.1.4.1.4
     dos:
-      - Maintain RELEASE_NOTES.md and link it from README.md Links.
+      - Keep RELEASE_NOTES.md and link it from README.md Links.
       - Use the exact level-one title and level-two entry formats shown.
-      - Permit one Unreleased section before versioned entries.
+      - Allow one Unreleased section before versioned entries.
       - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.
       - Give every entry nonempty level-three subsections from Added, Changed, Fixed, Breaking changes, Migration, or Security.
     donts:

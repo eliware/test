@@ -1,14 +1,14 @@
 version: "12.0"
-description: Defines deterministic requirements for Eliware libraries.
+description: Lists deterministic rules for Eliware libraries.
 requires: []
 directives:
   - id: E-0.1.3.1.0
     dos:
       - Add Library to AGENTS.md at the canonical profile position.
       - Add API, Packaging, and Examples to README.md and its Table of Contents.
-      - Maintain docs/README.md and examples/README.md and link both from root README.md.
+      - Keep docs/README.md and examples/README.md and link both from root README.md.
       - Index every Markdown document beneath docs/ except its index.
-      - Maintain and index at least one native-ESM .mjs or .js example under examples/.
+      - Keep and index at least one native-ESM .mjs or .js example under examples/.
     donts:
       - Do not count .cjs files as required examples or leave discovered examples unindexed.
     examples:
@@ -47,7 +47,7 @@ directives:
       - Run required Jest tests through eliware-test with the exact configuration shown.
       - Use Istanbul coverage for production .mjs files under src/.
       - Reach 100 percent statements, branches, functions, and lines with zero uncovered lines.
-      - Permit coverage exclusion and Istanbul ignore directives only for the exact primary public entrypoint when it is a pure export barrel.
+      - Allow coverage exclusion and Istanbul ignore directives only for the exact primary public entrypoint when it is a pure export barrel.
       - Keep successful test runs free of console and process output unless explicitly asserted by tests.
     donts:
       - Do not directly invoke Jest, import its runner, or directly declare Jest packages.
@@ -58,9 +58,9 @@ directives:
 
   - id: E-0.1.3.1.4
     dos:
-      - Maintain RELEASE_NOTES.md and link it from README.md Links.
+      - Keep RELEASE_NOTES.md and link it from README.md Links.
       - Use the exact level-one title and level-two entry formats shown.
-      - Permit one Unreleased section before versioned entries.
+      - Allow one Unreleased section before versioned entries.
       - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.
       - Give every entry nonempty level-three subsections from Added, Changed, Fixed, Breaking changes, Migration, or Security.
     donts:

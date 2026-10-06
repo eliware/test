@@ -23,7 +23,7 @@ directives:
       - Include RELEASE_NOTES.md for application or library.
       - Include every declared runtime entrypoint, export, and declaration target.
       - Include tracked .env-prefixed example files whose names end in .example.
-      - Permit additional root-level files and folders regardless of filename or type unless excluded.
+      - Allow additional root-level files and folders regardless of filename or type unless excluded.
       - Exclude tests, test-fixtures, .github, .knit, .git, node_modules, coverage, dist, build, generated, artifacts, and test-results directories at every depth.
       - Exclude .gitignore and package-lock.json at every depth.
       - Exclude .env-prefixed files unless their names end in .example.
@@ -39,15 +39,15 @@ directives:
 
   - id: E-0.1.10.1.2
     dos:
-      - Maintain one publish.yaml alongside ci.yaml and share it with ghcr-published when both apply.
-      - Declare publication only on push tags matching the candidate glob shown.
-      - Declare a pre-publication guard requiring canonical numeric vMAJOR.MINOR.PATCH matching package.json.version.
+      - Keep one publish.yaml alongside ci.yaml and share it with ghcr-published when both apply.
+      - Set publication only on push tags matching the candidate glob shown.
+      - Set a pre-publication guard requiring canonical numeric vMAJOR.MINOR.PATCH matching package.json.version.
       - Make the npm publisher depend on unconditional Ubuntu validation installing npm latest and running npm ci then npm test.
       - Set workflow and validation permissions to contents read only.
       - Give an npm-only publisher exactly contents read and id-token write.
       - Give a combined publisher the exact permission union required by both profiles.
-      - Declare a GitHub-hosted publisher with checkout major v6 and setup-node major v7 using Node.js 26.
-      - Permit only node-version and optional registry-url https://registry.npmjs.org and package-manager-cache false as publisher setup-node inputs.
+      - Set a GitHub-hosted publisher with checkout major v6 and setup-node major v7 using Node.js 26.
+      - Allow only node-version and optional registry-url https://registry.npmjs.org and package-manager-cache false as publisher setup-node inputs.
       - Install npm latest before npm ci and use one unconditional standalone npm publish --provenance step.
     donts:
       - Do not declare branch, pull-request, or manual publication triggers.

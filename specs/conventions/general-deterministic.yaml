@@ -17,7 +17,7 @@ directives:
 
   - id: E-0.1.0.1.1
     dos:
-      - Maintain package.json, package-lock.json, README.md, AGENTS.md, LICENSE, and specs/README.md.
+      - Keep package.json, package-lock.json, README.md, AGENTS.md, LICENSE, and specs/README.md.
       - Define a scoped @eliware name, nonempty description, distinct nonempty keywords, and boolean private.
       - Use the canonical author, repository, homepage, license, module type, and Node.js metadata shown in the example.
       - Use numeric MAJOR.MINOR.PATCH matching the applied convention version.
@@ -74,9 +74,9 @@ directives:
       - Make local Markdown fragments resolve to headings or explicit HTML IDs.
       - Give HTTP and HTTPS links hostnames without embedded credentials and mailto links email addresses.
       - Use full HTTPS GitHub URLs for cross-repository links.
-      - Maintain specs/directives.yaml and validate directive documents against the v12 schema.
+      - Keep specs/directives.yaml and validate directive documents against the v12 schema.
       - Give every specs directory one navigation-only README.md linking its direct YAML files and immediate subdirectory indexes.
-      - Permit only YAML documents, README.md indexes, and conforming subdirectories under specs/.
+      - Allow only YAML documents, README.md indexes, and conforming subdirectories under specs/.
       - Use unique E-rule IDs within the assigned repository namespace.
       - Number siblings sequentially from 0 within their document prefix and append sequential child numbers to actual parent IDs.
     donts:
@@ -106,7 +106,7 @@ directives:
 
   - id: E-0.1.0.1.6
     dos:
-      - Maintain .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
+      - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
       - Define every commands field as an array of strings beginning with the exact command prefix shown.
       - Keep secondary Knit scripts under .knit/.
     donts:
@@ -118,15 +118,15 @@ directives:
 
   - id: E-0.1.0.1.7
     dos:
-      - Maintain ci.yaml with one document under .github/workflows/.
+      - Keep ci.yaml with one document under .github/workflows/.
       - Explicitly enable push and pull_request events for main.
-      - Declare repository-and-ref concurrency with cancel-in-progress true.
+      - Set repository-and-ref concurrency with cancel-in-progress true.
       - Set workflow and validation-job permissions to contents read only.
       - Run validation unconditionally on Ubuntu using checkout major v6 and setup-node major v7 with Node.js 26.
       - Install npm latest before one standalone npm ci step immediately followed by one standalone npm test step.
       - Before npm ci, permit only approved setup actions, npm latest installation, and literal safe echo or printf reporting.
       - Keep required install and test steps free of environment, shell, and working-directory overrides.
-      - Permit publish.yaml only when required by an applied publication profile.
+      - Allow publish.yaml only when required by an applied publication profile.
     donts:
       - Do not add other workflow files or duplicate aggregate stages in CI.
       - Do not use conditional validation or continue-on-error.

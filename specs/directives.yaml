@@ -1,52 +1,52 @@
 version: "12.0"
-description: Defines Eliware Test execution, enforcement mechanics, and public interfaces.
+description: Sets rules for Eliware Test execution, checks, and public interfaces.
 directives:
   - id: E-0.0
     dos:
-      - Provide self-contained deterministic validation through eliware-test.
-      - Enforce the applied profiles' bundled *-deterministic.yaml requirements.
-      - Keep convention documents authoritative for consumer requirements.
-      - Treat overlapping invocations on one worktree as unsupported.
+      - Run deterministic repository validation through eliware-test.
+      - Enforce each selected profile's bundled deterministic rules.
+      - Use convention documents as the source for consumer requirements.
+      - Reject overlapping runs in one worktree.
     donts:
       - Do not enforce semantic conventions or duplicate consumer requirements.
       - Do not require an external repository to load bundled checks.
-      - Do not publish, deploy, synchronize, tag, push, or mutate external publication state during validation.
-      - Do not expose internal modules or injected collaborators as consumer APIs.
+        - Do not publish, deploy, sync, tag, push, or change external state during validation.
+        - Do not expose internal modules or injected helpers as consumer APIs.
     children:
       - id: E-0.0.0
         dos:
-          - Parse configuration and arguments before executing validation.
-          - Resolve explicitly selected profiles and their declared prerequisites.
-          - Require each profile's paired documents to agree on version and prerequisites.
-          - Discover checks deterministically under src/checks/<profile>/ using directive IDs as filenames.
-          - Require module filename, exported ruleId, canonical directive, and reported identity to agree.
-          - Represent actual directive ancestry through check subdirectories.
-          - Validate exemptions against the complete bundled check tree.
-          - Exclude exempted checks and their discovered descendants before execution.
-          - Read /eliware/docs/repo-map.yaml only when available for the comparisons required by conventions.
+          - Parse settings and arguments before validation.
+          - Resolve selected profiles and their listed prerequisites.
+          - Match each profile pair's version and prerequisite list.
+          - Find checks under src/checks/<profile>/ by directive ID filename.
+          - Match each module name, exported ruleId, directive, and reported ID.
+          - Show directive ancestry in check subfolders.
+          - Check exemptions against the full bundled check tree.
+          - Skip exempt checks and their discovered children.
+          - Read /eliware/docs/repo-map.yaml only when it exists and a convention needs it.
         donts:
           - Do not infer profiles from repository contents or runtime behavior.
-          - Do not begin validation with malformed required configuration.
+          - Do not run validation with invalid required settings.
           - Do not accept duplicate, unknown, malformed, or misprofiled checks.
           - Do not create semantic, advisory, or placeholder check modules.
           - Do not maintain generated directive copies or a separate canonical check registry.
-          - Do not let checks independently select profiles or evaluate exemptions.
+          - Do not let checks select profiles or handle exemptions.
           - Do not require the optional repository map.
 
       - id: E-0.0.1
         dos:
-          - Sequence selected work by dependency.
-          - Run all test-independent checks before Jest.
-          - Preserve independent failures and omit Jest and its dependent work when independent checks fail.
-          - Convert thrown checks into identified failures and continue other executable checks.
-          - Preserve all executed results and required post-test diagnostics.
-          - Keep aggregate stages derived from applied deterministic conventions.
+          - Run selected work in dependency order.
+          - Run every enabled stage and convention check before Jest.
+          - Keep all failures and skip Jest if any earlier work fails.
+          - Report thrown checks as failures and continue other executable checks.
+          - Keep each completed stage result for convention checks.
+          - Derive aggregate stages from selected deterministic rules.
         donts:
           - Do not silently omit executable selected checks or turn failures into warnings.
-          - Do not represent omitted, partial, unknown, or inapplicable work as passing.
+          - Do not report skipped, partial, unknown, or inapplicable work as passing.
           - Do not let exemptions suppress unrelated required work.
           - Do not recursively invoke the consumer's aggregate test script.
-          - Do not add undeclared registry, release, deployment, or synchronization checks.
+          - Do not add undeclared registry, release, deployment, or sync checks.
 
       - id: E-0.0.2
         dos:
@@ -89,17 +89,21 @@ directives:
 
       - id: E-0.0.4
         dos:
-          - Report each failure with its identity, observed failure, and complete matched directive including examples and children.
-          - Aggregate diagnostics in deterministic order.
-          - Use exit codes 0 success, 1 unclassified or configuration failure, 2 test failure, 3 unexpected test output, 4 coverage failure, 5 lint failure, 6 format failure, 7 audit failure, 8 outdated dependency failure, 9 package failure, 10 typecheck failure, 11 build failure, and 12 convention failure.
-          - Stop before tests for invalid configuration, arguments, or selected-stage applicability.
+          - Report each failure's ID, observed result, and full matching directive.
+          - Include all directive examples and child rules.
+          - List diagnostics in a fixed order.
+          - Use code 0 for success and code 1 for other failures.
+          - Use code 2 for Jest failure, code 3 for unexpected test output, and code 4 for low coverage.
+          - Use codes 5 to 8 for lint, format, audit, and outdated dependency failures.
+          - Use codes 9 to 12 for pack, typecheck, build, and convention failures.
+          - Stop before Jest for invalid settings, arguments, or stage selection.
           - Use the highest applicable failure code without discarding diagnostics.
-          - Run lint, formatting, audit, outdated, pack, typecheck, and build stages before convention checks.
+          - Run lint, format, audit, outdated, pack, typecheck, and build before conventions.
           - Run all convention checks before Jest.
-          - Run Jest only when all enabled pre-Jest stages and convention checks pass.
-          - Store each completed stage result for later convention checks.
-          - Emit exactly Aggregate validation passed. for aggregate success without diagnostics.
-          - Report only the executed mode for mode-specific success.
+          - Run Jest only when every earlier stage passes.
+          - Cache each completed stage result for convention checks.
+          - Print exactly Aggregate validation passed. after clean aggregate validation.
+          - Report only the selected mode after mode-specific success.
         donts:
           - Do not truncate or paraphrase matched directives.
           - Do not change public exit semantics incidentally.
@@ -116,7 +120,9 @@ directives:
           - Traverse iteratively and keep paths and resource use bounded.
           - Parse every document in generic YAML streams.
           - Inspect supported README links outside code spans and fenced blocks.
-          - Support inline Markdown links and images, full reference links, quoted HTML href and src attributes, and angle-bracket HTTP, HTTPS, and mailto autolinks.
+          - Support inline Markdown links and images.
+          - Support full reference links and quoted HTML href and src attributes.
+          - Support angle-bracket HTTP, HTTPS, and mailto links.
           - Resolve local targets within the checkout and local Markdown fragments against headings and HTML IDs.
           - Validate lockfile dependency-map shapes and references locally.
           - Resolve linked lockfile entries through their declared target package paths.
@@ -139,15 +145,16 @@ directives:
           - Resolve executables through supported package resolution.
           - Bound captured stdout and stderr under an aggregate budget.
           - Preserve UTF-8 boundaries, surrogate pairs, and complete redaction markers.
-          - Redact sensitive values in harness-owned diagnostics including encrypted and unencrypted PEM private keys.
-          - Move emission before secret matches crossing a truncation boundary.
-          - Use platform-appropriate bounded termination.
+          - Redact sensitive values in harness diagnostics, including PEM private keys.
+          - Redact both encrypted and unencrypted PEM private keys.
+          - Emit buffered text before a secret reaches the output limit.
+          - Stop child processes within a platform-specific time limit.
         donts:
           - Do not depend on shell pipelines, quoting, arbitrary installation layouts, or unbounded capture.
           - Do not invoke Windows command shims through non-shell execution.
           - Do not selectively inherit or sanitize child environments.
           - Do not expose secrets through harness-owned diagnostics.
-          - Do not promise comprehensive secret detection or universal descendant cleanup.
+          - Do not promise complete secret detection or cleanup of every child process.
 
       - id: E-0.0.7
         dos:
@@ -157,8 +164,10 @@ directives:
           - Execute requested Jest validation once with established ordering and lifecycle behavior.
           - Monitor suite progress during every run.
           - Enforce a 5-second total suite deadline and a separate 15-second startup or between-suite no-progress deadline.
-          - Report the current or last known suite and applicable deadline on termination.
-          - Escalate graceful termination after bounded grace and confirm termination only on child close.
+          - Report the current or last known suite and its time limit on termination.
+          - Request graceful stop first.
+          - Escalate after a time limit.
+          - Confirm termination only after the child closes.
           - Fail within a bounded period if forced termination does not close the child.
           - Stream suite start, completion, and elapsed time under --debug-timing.
           - Keep timing output separate from captured failure output.
@@ -192,10 +201,13 @@ directives:
       - id: E-0.0.9
         dos:
           - Keep implementation native ESM, injectable, and covered by mirrored tests.
-          - Keep cohesive orchestration in coordinators and independently changing operations in focused helpers.
+          - Keep one workflow's orchestration in its coordinator.
+          - Move operations with separate change reasons into focused helpers.
           - Reuse bounded repository inventory and content caches.
-          - Preserve prior cache values and byte accounting after failed refreshes or remove both exactly once.
-          - Protect pending refreshes from eviction and preserve successful directory listings after failed refreshes.
+          - Keep old cache values and byte counts when a refresh fails.
+          - Remove both values exactly once when required.
+          - Do not evict a pending refresh.
+          - Keep successful directory listings when a later refresh fails.
           - Remove rejected inventory views for retry.
           - Prevent older parse completions from replacing newer cached results.
           - Test refresh failures followed by eviction and out-of-order parse completion.
@@ -209,14 +221,15 @@ directives:
           - Keep --pack limited to local package-content validation.
           - Provide opt-in smoke execution through npm run smoke -- --target <repository-path>.
           - Support smoke from the source checkout or installed harness directory.
-          - Resolve source and target before mutation and require an existing installed disposable consumer.
+          - Resolve source and target before changes.
+          - Require an existing consumer with dependencies installed.
           - Pack the harness and install that exact tarball with npm install --no-save --package-lock=false.
           - Verify installed resolution and version before running the consumer's ordinary npm test.
           - Restore the prior manifest, lockfiles, installed harness directory, and its executable shims.
           - Snapshot only those exact files and the installed package directory.
           - Recreate captured Windows directory links as junctions.
           - Reject captured Windows file symlinks before mutation.
-          - Report cleanup failures and retain precise recovery paths when restoration fails.
+          - Report cleanup failures and keep exact recovery paths when restore fails.
         donts:
           - Do not install tarballs or run consumer suites during --pack.
           - Do not accept targets resolving inside the source checkout.

@@ -21,15 +21,15 @@ directives:
 
   - id: E-0.1.11.1.1
     dos:
-      - Maintain root Dockerfile and declare root build context.
-      - Declare one image name ghcr.io/eliware/<unscoped-package-name>.
-      - Declare the exact v-prefixed package version tag.
+      - Keep root Dockerfile and declare root build context.
+      - Set one image name ghcr.io/eliware/<unscoped-package-name>.
+      - Set the exact v-prefixed package version tag.
       - Make additional tags use that same image name.
-      - Maintain one publish.yaml shared with npm-published when both apply.
-      - Declare publication only on push tags matching the candidate glob shown.
-      - Declare a pre-push guard requiring canonical numeric tag and package-version agreement.
+      - Keep one publish.yaml shared with npm-published when both apply.
+      - Set publication only on push tags matching the candidate glob shown.
+      - Set a pre-push guard requiring canonical numeric tag and package-version agreement.
       - Make publication depend on unconditional Ubuntu validation installing npm latest and running npm ci then npm test.
-      - Declare ghcr-publish as the publication job environment.
+      - Set ghcr-publish as the publication job environment.
       - Set workflow and validation permissions to contents read only.
       - Give the GHCR publisher exactly contents read, packages write, id-token write, attestations write, and artifact-metadata write.
       - Use checkout major v6 and setup-node major v7 when present.
@@ -46,11 +46,11 @@ directives:
   - id: E-0.1.11.1.2
     dos:
       - Give push steps valid IDs beginning with ASCII letters or underscores and containing only letters, digits, underscores, or hyphens.
-      - Declare actions/attest major v4 after each final image push.
+      - Set actions/attest major v4 after each final image push.
       - Bind subject-name to the untagged package-derived image and subject-digest to that push step's digest output.
       - Set push-to-registry true.
       - Append the exact digest reference to GITHUB_STEP_SUMMARY through one single-line echo command.
-      - Declare unconditional post-push steps for version-to-digest verification and image and attestation inspection.
+      - Set unconditional post-push steps for version-to-digest verification and image and attestation inspection.
       - Make the final push's required verification chain end at the last job step.
     donts:
       - Do not reference missing steps, unrelated digests, or mutable attestation subjects.
