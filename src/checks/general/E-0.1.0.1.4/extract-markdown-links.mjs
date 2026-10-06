@@ -1,5 +1,5 @@
 const pattern =
-  /!?\[[^\]]*\]\((<[^>\r\n]+>|[^)\s]+)(?:\s+[^)]*)?\)|\b(?:href|src)=["']([^"']+)["']|<((?:https?|mailto):[^ >]+)>/giu;
+  /(?<!!)\[[^\]]*\]\((<[^>\r\n]+>|[^)\s]+)(?:\s+[^)]*)?\)|\bhref=["']([^"']+)["']|<((?:https?|mailto):[^ >]+)>/giu;
 
 export function extractMarkdownLinks(content) {
   const markdown = removeMarkdownCode(content);
@@ -15,7 +15,7 @@ export function extractMarkdownLinks(content) {
   const referenceText = markdown.replace(/^ {0,3}\[[^\]]+\]:[^\r\n]*/gimu, (line) =>
     " ".repeat(line.length),
   );
-  for (const match of referenceText.matchAll(/!?\[([^\]]+)\](?:\[([^\]]*)\])?/gu)) {
+  for (const match of referenceText.matchAll(/(?<!!)\[([^\]]+)\](?:\[([^\]]*)\])?/gu)) {
     if (referenceText[match.index + match[0].length] === "(") continue;
     const label = normalizeLabel(match[2] || match[1]);
     const isReferenceSyntax = match[2] !== undefined || definitions.has(label);

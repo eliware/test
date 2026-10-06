@@ -1,4 +1,5 @@
 import { parseAllDocuments } from "yaml";
+import { posix } from "node:path";
 
 const prefix = ["git pull --ff-only origin main", "npm ci", "npm test"];
 
@@ -52,7 +53,7 @@ function validateCommands(commands, index) {
     for (const [, script] of command.matchAll(
       /(?:^|[\s"'`])([^\s"'`;&|]+\.(?:mjs|cjs|js|sh|ps1|py|rb|ts))\b/giu,
     ))
-      if (!script.replaceAll("\\", "/").replace(/^\.\//u, "").startsWith(".knit/"))
+      if (!posix.normalize(script.replaceAll("\\", "/")).startsWith(".knit/"))
         errors.push(`${label} must keep secondary scripts under .knit/: ${script}.`);
   }
   return errors;

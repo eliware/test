@@ -26,6 +26,12 @@ test("does not count links inside indented code", () => {
   ]);
 });
 
+test("does not count image sources as links", () => {
+  expect(
+    validateMarkdownIndex('![Example](a.md) <img src="a.md">', ["a.md"], "docs/README.md"),
+  ).toEqual(["docs/README.md must link a.md."]);
+});
+
 test("requires each discovered target exactly once and rejects extras", () => {
   expect(
     validateMarkdownIndex(

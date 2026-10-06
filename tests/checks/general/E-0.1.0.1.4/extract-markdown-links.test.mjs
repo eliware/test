@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { extractMarkdownLinks } from "../../../../src/checks/general/E-0.1.0.1.4/extract-markdown-links.mjs";
+import {
+  extractMarkdownLinks,
+  removeMarkdownCode,
+} from "../../../../src/checks/general/E-0.1.0.1.4/extract-markdown-links.mjs";
 
 test("extracts inline, reference, HTML, and angle links", () => {
   expect(
@@ -12,6 +15,14 @@ test("extracts inline, reference, HTML, and angle links", () => {
     { reference: "three.md" },
     { reference: "https://example.org" },
   ]);
+});
+
+test("does not treat Markdown images or HTML image sources as links", () => {
+  expect(extractMarkdownLinks('![image](image.png) <img src="image.png">')).toEqual([]);
+});
+
+test("keeps inline code text when requested", () => {
+  expect(removeMarkdownCode("`heading`", { preserveInlineCodeText: true })).toBe("heading");
 });
 
 test("strips angle brackets from inline and reference destinations", () => {

@@ -58,6 +58,15 @@ test("accepts quoted secondary script paths inside .knit", async () => {
   ).resolves.toEqual([]);
 });
 
+test("rejects secondary script paths that escape .knit", async () => {
+  const errors = await validateKnitConfiguration({
+    files: async () => [".knit/deploy.yaml"],
+    readText: async () =>
+      "commands: [git pull --ff-only origin main, npm ci, npm test, node .knit/../outside.mjs]",
+  });
+  expect(errors.join(" ")).toContain("must keep secondary scripts under .knit/");
+});
+
 test("rejects quoted secondary script paths outside .knit", async () => {
   const errors = await validateKnitConfiguration({
     files: async () => [".knit/deploy.yaml"],
