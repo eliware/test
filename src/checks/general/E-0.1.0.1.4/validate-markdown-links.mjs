@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { findMarkdownFiles } from "./find-markdown-files.mjs";
+import { validateExternalLink } from "./validate-external-markdown-link.mjs";
 
 export async function validateMarkdownLinks(root, context = {}, dependencies = {}) {
   const read = dependencies.read ?? readFile;
@@ -60,26 +61,6 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
     }
   }
   return errors;
-}
-
-function validateExternalLink(value) {
-  if (/^mailto:/iu.test(value))
-    return /^mailto:[^\s@]+@[^\s@]+\.[^\s@]+$/iu.test(value)
-      ? null
-      : `Documentation link is invalid: ${value}.`;
-  try {
-    const url = new URL(value);
-    const github =
-      url.hostname.toLowerCase() === "github.com" && /^\/[^/]+\/[^/]+(?:\/|$)/u.test(url.pathname);
-    return ["http:", "https:"].includes(url.protocol) &&
-      (!github || url.protocol === "https:") &&
-      !url.username &&
-      !url.password
-      ? null
-      : `Documentation link is invalid: ${value}.`;
-  } catch {
-    return `Documentation link is invalid: ${value}.`;
-  }
 }
 
 function splitReference(value) {

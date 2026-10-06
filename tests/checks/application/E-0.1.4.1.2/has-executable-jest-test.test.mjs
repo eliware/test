@@ -1,0 +1,51 @@
+import { expect, test } from "@jest/globals";
+import { inspectJestTestModule } from "../../../../src/checks/application/E-0.1.4.1.2/has-executable-jest-test.mjs";
+
+test("accepts direct and table-driven Jest callbacks", () => {
+  expect(
+    inspectJestTestModule('test("direct", () => {});', "tests/a.test.mjs", "src/a.mjs"),
+  ).toMatchObject({ hasExecutableTest: true, importsSource: false });
+  expect(
+    inspectJestTestModule(
+      'it.each([1])("table", (value) => value);',
+      "tests/a.test.mjs",
+      "src/a.mjs",
+    ),
+  ).toMatchObject({ hasExecutableTest: true });
+});
+
+test("rejects comments, strings, and table declarations without callbacks", () => {
+  for (const content of [
+    '// test("comment", () => {});',
+    'const text = "test(\\\"string\\\", () => {})";',
+    "test.each([1]);",
+  ])
+    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+      false,
+    );
+});
+
+test("rejects invalid JavaScript", () => {
+  expect(inspectJestTestModule("test(;", "tests/a.test.mjs", "src/a.mjs")).toEqual({
+    hasExecutableTest: false,
+    importsSource: false,
+  });
+});
+
+test("recognizes exact static, dynamic, and re-exported source references", () => {
+  for (const content of [
+    'import { value } from "../src/a.mjs";',
+    'export { value } from "../src/a.mjs";',
+    'await import("../src/a.mjs");',
+  ])
+    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").importsSource).toBe(
+      true,
+    );
+  expect(
+    inspectJestTestModule(
+      '// import { value } from "../src/a.mjs";',
+      "tests/a.test.mjs",
+      "src/a.mjs",
+    ).importsSource,
+  ).toBe(false);
+});
