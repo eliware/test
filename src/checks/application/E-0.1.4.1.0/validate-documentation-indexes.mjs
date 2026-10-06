@@ -11,6 +11,7 @@ export async function validateDocumentationIndexes(context = {}) {
     paths = await inventory.documentationFiles({
       directory: join(root, "docs"),
       predicate: (name) => /\.md$/iu.test(name),
+      includeGenerated: true,
     });
   } catch {
     return ["docs/README.md and its Markdown index are required."];

@@ -6,14 +6,16 @@ export async function validateExamplesIndex(context = {}) {
   const root = context.root ?? process.cwd();
   let files;
   try {
-    files = await context.repositoryInventory.files("repository");
-  } catch {
+    files = await context.repositoryInventory.documentationFiles({
+      directory: join(root, "examples"),
+      predicate: (name) => /\.(?:mjs|js)$/iu.test(name),
+      includeGenerated: true,
+    });
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
     return ["examples/ could not be inspected for JavaScript examples."];
   }
-  const examples = files
-    .filter((path) => /^examples\/.+\.(?:mjs|js)$/iu.test(path))
-    .map((path) => path.slice("examples/".length))
-    .sort();
+  const examples = files.sort();
   if (!examples.length) return [];
   let index;
   try {

@@ -1,15 +1,18 @@
 import { readdir, readFile } from "node:fs/promises";
-import { basename, dirname, join, relative, sep } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
+import { listSpecificationEntries } from "./list-specification-entries.mjs";
 
 export async function validateSpecificationIndexes(root, dependencies = {}) {
   const read = dependencies.read ?? readFile;
   const list = dependencies.readdir ?? readdir;
   let entries;
   try {
-    entries = await walk(join(root, "specs"), join(root, "specs"), list);
-  } catch {
-    return ["specs/ is required to contain indexed YAML specifications."];
+    entries = await listSpecificationEntries(root, { list });
+  } catch (error) {
+    if (error.code === "ENOENT")
+      return ["specs/ is required to contain indexed YAML specifications."];
+    return [`Specification discovery failed: ${error.message}`];
   }
   const directories = [
     "specs",
@@ -73,18 +76,4 @@ function isNavigationOnly(content) {
         /^-\s*\[[^\]]+\](?:\([^)]+\)|\[[^\]]*\])\s*$/u.test(line) ||
         /^ {0,3}\[[^\]]+\]:\s*(?:<[^>]+>|\S+)(?:\s+.*)?$/u.test(line),
     );
-}
-
-async function walk(directory, root, list) {
-  const result = [];
-  for (const entry of await list(directory, { withFileTypes: true })) {
-    const path = join(directory, entry.name);
-    const rel = relative(root, path).split(sep).join("/");
-    if (entry.isDirectory()) {
-      result.push({ type: "directory", path: `specs/${rel}` });
-      result.push(...(await walk(path, root, list)));
-    } else if (entry.isFile()) result.push({ type: "file", path: `specs/${rel}` });
-    else result.push({ type: "unsupported", path: `specs/${rel}` });
-  }
-  return result;
 }

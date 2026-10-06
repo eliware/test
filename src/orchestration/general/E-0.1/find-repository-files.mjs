@@ -2,6 +2,7 @@ import { readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 
 const pruneDirectories = new Set([".git", "node_modules", "coverage", "dist", "build"]);
+const neverExpandDirectories = new Set([".git", "node_modules"]);
 
 export async function findRepositoryEntries(
   root,
@@ -55,7 +56,10 @@ export async function findRepositoryEntries(
           const expandGeneratedDirectory = expandedDirectories.some(
             (expanded) => childPath === expanded || childPath.startsWith(`${expanded}/`),
           );
-          if (!pruneDirectories.has(entry.name) || expandGeneratedDirectory)
+          if (
+            !pruneDirectories.has(entry.name) ||
+            (expandGeneratedDirectory && !neverExpandDirectories.has(entry.name))
+          )
             await visit(join(directory, entry.name), depth + 1);
         }
       } else if (entry.isFile() && (!fileFilter || fileFilter(relativePath))) {

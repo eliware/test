@@ -6,7 +6,8 @@ import {
   validateDocumentationTraversalLimits,
 } from "./validate-documentation-traversal-limits.mjs";
 
-const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
+const neverIncludePath = /(?:^|\/)(?:\.git|node_modules)(?:\/|$)/u;
+const generatedPath = /(?:^|\/)(?:coverage|dist|build)(?:\/|$)/u;
 
 export function createDocumentationFileView(root, entriesUnder) {
   return async function documentationFiles({
@@ -28,11 +29,12 @@ export function createDocumentationFileView(root, entriesUnder) {
     const records = await entriesUnder(directory, null, {
       maxDepth,
       maxFiles,
-      maxDepthFilter: (path) => includeGenerated || !generatedPath.test(path),
+      maxDepthFilter: (path) =>
+        !neverIncludePath.test(path) && (includeGenerated || !generatedPath.test(path)),
       onFile(path) {
         traversalObserved = true;
         const file = path.slice(prefix.length);
-        if (!includeGenerated && generatedPath.test(path)) return;
+        if (neverIncludePath.test(path) || (!includeGenerated && generatedPath.test(path))) return;
         visitedFiles += 1;
         assertDocumentationFileLimit(visitedFiles, maxFiles);
         if (!matchesDocumentationFilename(predicate, basename(file))) return;
@@ -41,7 +43,10 @@ export function createDocumentationFileView(root, entriesUnder) {
       },
     });
     const directories = records.filter(
-      ({ path, type }) => type === "directory" && (includeGenerated || !generatedPath.test(path)),
+      ({ path, type }) =>
+        type === "directory" &&
+        !neverIncludePath.test(path) &&
+        (includeGenerated || !generatedPath.test(path)),
     );
     const directoryExists = base === "" || directories.some(({ path }) => path === base);
     if (!directoryExists)
@@ -62,6 +67,7 @@ export function createDocumentationFileView(root, entriesUnder) {
       if (
         record.type !== "file" ||
         !record.path.startsWith(prefix) ||
+        neverIncludePath.test(record.path) ||
         (!includeGenerated && generatedPath.test(record.path))
       )
         continue;

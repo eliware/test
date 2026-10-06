@@ -15,6 +15,8 @@ const records = [
   { path: "docs/nested/record.json", type: "file", depth: 2 },
   { path: "docs/build", type: "directory", depth: 2 },
   { path: "docs/build/index.md", type: "file", depth: 2 },
+  { path: "docs/node_modules", type: "directory", depth: 2 },
+  { path: "docs/node_modules/dependency.md", type: "file", depth: 2 },
 ];
 
 test("builds a documentation view directly from scoped entries", async () => {
@@ -81,6 +83,12 @@ test("allows generated documentation only when requested", async () => {
       includeGenerated: true,
     }),
   ).resolves.toContain("build/index.md");
+  const allGenerated = await inventory.documentationFiles({
+    directory: "/repo/docs",
+    includeGenerated: true,
+  });
+  expect(allGenerated).toContain("build/index.md");
+  expect(allGenerated).not.toContain("node_modules/dependency.md");
 });
 
 test("measures documentation depth relative to a deeply nested requested scope", async () => {

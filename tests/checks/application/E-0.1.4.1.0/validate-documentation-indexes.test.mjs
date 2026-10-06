@@ -3,14 +3,21 @@ import { validateDocumentationIndexes } from "../../../../src/checks/application
 
 test("checks the docs index against all Markdown paths", async () => {
   const inventory = {
-    documentationFiles: async ({ predicate }) =>
-      ["README.md", "guide.md", "nested/topic.md"].filter(predicate),
+    documentationFiles: async ({ predicate, includeGenerated }) => {
+      expect(includeGenerated).toBe(true);
+      return ["README.md", "guide.md", "nested/topic.md", "build/generated.md"].filter((path) =>
+        predicate(path.split("/").at(-1)),
+      );
+    },
     readText: async (path) =>
       path.endsWith("docs/README.md") ? "- [Guide](guide.md)" : "[Documentation](docs/README.md)",
   };
   await expect(
     validateDocumentationIndexes({ root: "repo", repositoryInventory: inventory }),
   ).resolves.toContain("docs/README.md must link nested/topic.md.");
+  await expect(
+    validateDocumentationIndexes({ root: "repo", repositoryInventory: inventory }),
+  ).resolves.toContain("docs/README.md must link build/generated.md.");
 });
 
 test("requires a root README link to the docs index", async () => {

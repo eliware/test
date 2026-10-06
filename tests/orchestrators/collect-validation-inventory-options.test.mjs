@@ -52,3 +52,14 @@ test("defaults checks without inventory options to an empty inventory policy", (
     includeTestResultsUnder: [],
   });
 });
+
+test("expands documentation and example trees for application indexes", () => {
+  expect(
+    collectValidationInventoryOptions([
+      {
+        ruleId: "application-docs",
+        repositoryInventoryOptions: { expandedDirectories: ["docs", "examples"] },
+      },
+    ]),
+  ).toMatchObject({ expandedDirectories: ["docs", "examples"] });
+});

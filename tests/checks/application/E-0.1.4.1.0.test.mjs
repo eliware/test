@@ -11,7 +11,10 @@ test("E-0.1.4.1.0 passes when docs indexes exist", async () => {
 
 test("E-0.1.4.1.0 reports missing documentation indexes", async () => {
   const target = context(["guide.md"], "");
-  target.repositoryInventory.files = async () => ["examples/demo.mjs"];
+  target.repositoryInventory.documentationFiles = async ({ directory, predicate }) => {
+    const files = directory.endsWith("examples") ? ["demo.mjs"] : ["README.md", "guide.md"];
+    return files.filter(predicate);
+  };
   await expect(run(target)).resolves.toMatchObject({
     ruleId,
     status: "fail",
@@ -27,7 +30,11 @@ function context(documents, index) {
   return {
     root: "repo",
     repositoryInventory: {
-      documentationFiles: async () => ["README.md", ...documents],
+      documentationFiles: async ({ directory, predicate, includeGenerated }) => {
+        expect(includeGenerated).toBe(true);
+        const files = directory.endsWith("examples") ? [] : ["README.md", ...documents];
+        return files.filter(predicate);
+      },
       files: async () => [],
       readText: async (path) => (path.includes("docs") ? index : "[Documentation](docs/README.md)"),
     },

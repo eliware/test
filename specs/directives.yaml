@@ -122,6 +122,7 @@ directives:
           - Inspect supported README links outside code spans and fenced blocks.
           - Support inline Markdown links and images.
           - Support full reference links and quoted HTML href and src attributes.
+          - Limit specification discovery to 10000 entries and 128 directory levels.
           - Support angle-bracket HTTP, HTTPS, and mailto links.
           - Resolve local targets within the checkout and local Markdown fragments against headings and HTML IDs.
           - Validate lockfile dependency-map shapes and references locally.

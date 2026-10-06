@@ -92,3 +92,13 @@ test("rejects entries that are not files or directories", async () => {
   expect(errors).toContain("specs/directives.yaml is required.");
   expect(errors).toContain("specs/link is an unsupported filesystem entry under specs/.");
 });
+
+test("reports bounded discovery errors", async () => {
+  await expect(
+    validateSpecificationIndexes("/repo", {
+      readdir: async () => {
+        throw new Error("blocked");
+      },
+    }),
+  ).resolves.toContain("Specification discovery failed: blocked");
+});

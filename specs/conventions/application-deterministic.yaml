@@ -9,6 +9,7 @@ directives:
       - Keep docs/README.md and link it from root README.md.
       - Index every Markdown document beneath docs/ except its index.
       - When examples/ contains .mjs or .js examples, maintain examples/README.md linking every example.
+      - Keep implementation modules under src/, launchers under bin/, tests under tests/, fixtures under test-fixtures/, and examples under examples/.
     donts:
       - Do not require examples/ solely because application is selected.
       - Do not leave discovered documentation or examples unindexed.
@@ -30,6 +31,7 @@ directives:
   - id: E-0.1.4.1.2
     dos:
       - Keep implementation under src/ and launchers under bin/.
+      - Keep maintained JavaScript, TypeScript, and JSX modules under src/, except launchers under bin/, tests under tests/, fixtures under test-fixtures/, and examples under examples/.
       - Mirror every src/ .mjs file with exactly one same-path tests/ .test.mjs file.
       - Give every test file a matching source, executable Jest test callback, and matching source reference.
       - Keep unmatched fixtures, snapshots, generators, and test support under root test-fixtures/.

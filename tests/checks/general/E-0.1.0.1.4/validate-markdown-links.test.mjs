@@ -37,6 +37,18 @@ test("reports invalid external, escaping, missing, and fragment links", async ()
   }
 });
 
+test("validates local Markdown image and HTML source targets", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-links-"));
+  try {
+    await writeFile(join(root, "README.md"), "![missing](missing.png) <img src='absent.png'>");
+    const errors = await validateMarkdownLinks(root);
+    expect(errors).toContain("Documentation link does not resolve: missing.png in README.md.");
+    expect(errors).toContain("Documentation link does not resolve: absent.png in README.md.");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("rejects Markdown links that escape through a directory symlink", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-links-"));
   const outside = await mkdtemp(join(tmpdir(), "eliware-outside-"));

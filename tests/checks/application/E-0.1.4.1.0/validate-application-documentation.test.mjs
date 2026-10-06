@@ -4,16 +4,18 @@ import { validateApplicationDocumentation } from "../../../../src/checks/applica
 test("combines documentation and example index errors", async () => {
   const context = {
     repositoryInventory: {
-      documentationFiles: async () => {
-        throw new Error("missing docs");
+      documentationFiles: async ({ directory, predicate }) => {
+        if (directory.endsWith("docs")) throw new Error("missing docs");
+        return ["demo.js"].filter(predicate);
       },
       files: async () => ["examples/demo.js"],
-      readText: async () => "",
+      readText: async () => "[Other](other.js)",
     },
   };
   await expect(validateApplicationDocumentation(context)).resolves.toEqual([
     "docs/README.md and its Markdown index are required.",
     "examples/README.md must link demo.js.",
+    "examples/README.md links to unexpected target other.js.",
   ]);
 });
 

@@ -1,12 +1,14 @@
-import { readdir, readFile } from "node:fs/promises";
-import { join, relative, sep } from "node:path";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { parseAllDocuments } from "yaml";
+import { listSpecificationEntries } from "./list-specification-entries.mjs";
 import { validateSpecificationDocument } from "./validate-specification-document.mjs";
 import { validateSpecificationIds } from "./validate-specification-ids.mjs";
 import { validateV12DirectiveSchema } from "./validate-v12-directive-schema.mjs";
 
 export async function validateSpecificationDirectives(root, packageJson = {}, dependencies = {}) {
   const read = dependencies.read ?? readFile;
+  const list = dependencies.readdir;
   let schema;
   let harness;
   try {
@@ -25,10 +27,15 @@ export async function validateSpecificationDirectives(root, packageJson = {}, de
     value,
   }));
   try {
-    for (const path of await yamlFiles(join(root, "specs", "conventions"))) {
-      const values = parseDocuments(await read(join(root, "specs", "conventions", path), "utf8"));
+    const entries = await listSpecificationEntries(root, { list });
+    if (!entries.some(({ path, type }) => path === "specs/conventions" && type === "directory"))
+      throw new Error("specs/conventions is missing.");
+    for (const { path } of entries.filter(
+      ({ path, type }) => type === "file" && /^specs\/conventions\/.*\.ya?ml$/iu.test(path),
+    )) {
+      const values = parseDocuments(await read(join(root, path), "utf8"));
       values.forEach((value, index) =>
-        documents.push({ path: `specs/conventions/${path} document ${index + 1}`, value }),
+        documents.push({ path: `${path} document ${index + 1}`, value }),
       );
     }
   } catch (error) {
@@ -77,15 +84,4 @@ function parseDocuments(source) {
   const errors = documents.flatMap((document) => document.errors);
   if (errors.length) throw new Error(errors.map(({ message }) => message).join("; "));
   return documents.map((document) => document.toJSON());
-}
-
-async function yamlFiles(directory, root = directory) {
-  const files = [];
-  for (const entry of await readdir(directory, { withFileTypes: true })) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) files.push(...(await yamlFiles(path, root)));
-    else if (entry.isFile() && /\.ya?ml$/iu.test(entry.name))
-      files.push(relative(root, path).split(sep).join("/"));
-  }
-  return files;
 }

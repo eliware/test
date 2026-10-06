@@ -12,6 +12,16 @@ test("runs layout validators against the repository inventory", async () => {
   ).resolves.toEqual([]);
 });
 
+test("rejects implementation modules outside src and approved roots", async () => {
+  const inventory = {
+    files: async (view) => (view === "all" ? ["lib/worker.mjs"] : []),
+    readText: async () => "",
+  };
+  await expect(validateApplicationLayout({ repositoryInventory: inventory })).resolves.toContain(
+    "lib/worker.mjs is an implementation module outside its allowed root.",
+  );
+});
+
 test("uses the default context", async () => {
   await expect(validateApplicationLayout()).rejects.toThrow();
 });

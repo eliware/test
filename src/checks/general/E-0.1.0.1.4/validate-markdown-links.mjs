@@ -1,5 +1,6 @@
 import { readFile, realpath, stat } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { extractMarkdownAssets } from "./extract-markdown-assets.mjs";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { findMarkdownFiles } from "./find-markdown-files.mjs";
 import { hasMarkdownFragment } from "./resolve-markdown-fragment.mjs";
@@ -28,7 +29,7 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
       errors.push(`${file} could not be read: ${error.message}`);
       continue;
     }
-    for (const { reference } of extractMarkdownLinks(text)) {
+    for (const { reference } of [...extractMarkdownLinks(text), ...extractMarkdownAssets(text)]) {
       if (!reference) {
         errors.push(`Markdown reference link has no definition in ${file}.`);
         continue;
