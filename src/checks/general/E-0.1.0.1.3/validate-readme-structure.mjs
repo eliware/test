@@ -21,7 +21,7 @@ export function validateReadmeStructure(readme, expected, packageJson = {}) {
     return "README.md headings must match the required order without duplicates or extras.";
   const tocEnd = markdownLines.findIndex((line, index) => index > tocIndex && /^##\s+/u.test(line));
   const tocContent = markdownLines.slice(tocIndex, tocEnd).join("\n");
-  const links = [...tocContent.matchAll(/\[([^\]]+)\]\(#([^)]+)\)/gu)];
+  const links = [...tocContent.matchAll(/(?<!!)\[([^\]]+)\]\(#([^)]+)\)/gu)];
   const expectedLinks = expected
     .slice(1)
     .map((heading) => [heading, heading.toLowerCase().replaceAll(" ", "-")]);

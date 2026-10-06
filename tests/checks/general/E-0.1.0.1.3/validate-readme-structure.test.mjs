@@ -52,6 +52,13 @@ test("does not count table-of-contents links inside code", () => {
   );
 });
 
+test("does not count table-of-contents images as links", () => {
+  const content = valid.replace("- [Features](#features)", "- ![Features](#features)");
+  expect(validateReadmeStructure(content, expected, { name: "fixture" })).toContain(
+    "Table of Contents",
+  );
+});
+
 test("does not count the required title inside code", () => {
   const content = valid.replace("\n\nfixture\n\n", "\n\n```text\nfixture\n```\n\n");
   expect(validateReadmeStructure(content, expected, { name: "fixture" })).toContain("title");
