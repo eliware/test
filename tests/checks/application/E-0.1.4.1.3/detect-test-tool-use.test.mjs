@@ -4,6 +4,8 @@ import { detectTestToolUse } from "../../../../src/checks/application/E-0.1.4.1.
 test("detects static, aliased, and computed runner imports", () => {
   expect(detectTestToolUse('import "vitest";')).toBe(true);
   expect(detectTestToolUse('const runner = "@vitest/runner"; import(runner);')).toBe(true);
+  expect(detectTestToolUse('import("@jest/" + "core");')).toBe(true);
+  expect(detectTestToolUse('const runner = "@jest/" + suffix; import(runner);')).toBe(false);
   expect(detectTestToolUse("import(`mocha`);")).toBe(true);
   expect(detectTestToolUse('import "@jest/globals";')).toBe(false);
   expect(detectTestToolUse('import "istanbul-lib-instrument";', true)).toBe(false);
