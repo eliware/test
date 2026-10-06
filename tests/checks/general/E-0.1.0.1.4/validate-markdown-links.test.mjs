@@ -57,6 +57,18 @@ test("uses inventory and reports unreadable markdown", async () => {
   expect(errors[0]).toContain("could not be read");
 });
 
+test("reports reference links without a definition", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-links-"));
+  try {
+    await writeFile(join(root, "README.md"), "[label][missing]");
+    await expect(validateMarkdownLinks(root)).resolves.toContain(
+      "Markdown reference link has no definition in README.md.",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("rejects targets that are neither files nor directories", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-links-"));
   try {

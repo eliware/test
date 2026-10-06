@@ -26,3 +26,20 @@ test("reports index failures and tracked links", async () => {
   expect(errors).toContain("Git index status could not be read; tracked ignore status is unknown.");
   expect(errors).toContain("Tracked symlink entries are prohibited: link.");
 });
+
+test("checks deep generated paths and production environment files", async () => {
+  const runGit = async (_command, args) => {
+    if (args.includes("check-ignore")) {
+      const path = args.at(-1);
+      if (path === "nested/deep/layer/four/.env.production")
+        throw Object.assign(new Error("not ignored"), { code: 1 });
+      return args.at(-1).endsWith(".example")
+        ? Promise.reject(Object.assign(new Error("not ignored"), { code: 1 }))
+        : { code: 0 };
+    }
+    return { stdout: Buffer.from("") };
+  };
+  await expect(validateGitHygiene("repo", runGit)).resolves.toContain(
+    "nested/deep/layer/four/.env.production must be ignored.",
+  );
+});

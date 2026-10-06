@@ -14,6 +14,30 @@ test("accepts direct and table-driven Jest callbacks", () => {
   ).toMatchObject({ hasExecutableTest: true });
 });
 
+test("accepts active modifiers and imported test aliases", () => {
+  for (const content of [
+    'test.only("focused", () => {});',
+    'it.concurrent("parallel", () => {});',
+    'test.each([1]).only("row", () => {});',
+    'import { test as caseTest } from "@jest/globals"; caseTest("alias", () => {});',
+  ])
+    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+      true,
+    );
+});
+
+test("ignores non-test imports and inactive modifiers", () => {
+  for (const content of [
+    'import { describe } from "@jest/globals"; describe("suite", () => {});',
+    'test.skip("skipped", () => {});',
+    'test["skip"]("computed", () => {});',
+    '(1)("not a test", () => {});',
+  ])
+    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+      false,
+    );
+});
+
 test("rejects comments, strings, and table declarations without callbacks", () => {
   for (const content of [
     '// test("comment", () => {});',

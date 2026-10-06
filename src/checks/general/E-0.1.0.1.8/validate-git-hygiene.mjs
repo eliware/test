@@ -2,20 +2,27 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 const executeFile = promisify(execFile);
+const ignoredDirectories = [
+  "node_modules",
+  ".git",
+  "coverage",
+  "dist",
+  "build",
+  "generated",
+  "artifacts",
+  "test-results",
+];
+const nestedRoots = ["nested", "nested/deep", "nested/deep/layer/four"];
 const requiredIgnoreCases = [
-  ...[
-    "node_modules",
-    ".git",
-    "coverage",
-    "dist",
-    "build",
-    "generated",
-    "artifacts",
-    "test-results",
-  ].map((directory) => [`nested/${directory}/item.txt`, true]),
-  ["nested/.env.local", true],
-  ["nested/.env", true],
-  ["nested/.env.local.example", false],
+  ...nestedRoots.flatMap((root) =>
+    ignoredDirectories.map((directory) => [`${root}/${directory}/item.txt`, true]),
+  ),
+  ...nestedRoots.flatMap((root) => [
+    [`${root}/.env`, true],
+    [`${root}/.env.production`, true],
+    [`${root}/.env.local`, true],
+    [`${root}/.env.production.example`, false],
+  ]),
   ["nested/.DS_Store", true],
   ["nested/Thumbs.db", true],
 ];

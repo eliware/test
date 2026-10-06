@@ -42,3 +42,31 @@ test("finds public targets in arrays", async () => {
     ),
   ).resolves.toEqual([]);
 });
+
+test("detects pure re-exports with comments and multiline syntax", async () => {
+  await expect(
+    validateInternalExportBarrels(
+      ["src/internal.mjs"],
+      async () => '// public surface\nexport {\n  value,\n} from "./value.mjs";',
+      {},
+      "repo",
+    ),
+  ).resolves.toEqual(["src/internal.mjs is an internal pure export barrel."]);
+});
+
+test("ignores invalid module syntax", async () => {
+  await expect(
+    validateInternalExportBarrels(["src/broken.mjs"], async () => "export {", {}, "repo"),
+  ).resolves.toEqual([]);
+});
+
+test("detects export-all barrels", async () => {
+  await expect(
+    validateInternalExportBarrels(
+      ["src/internal.mjs"],
+      async () => 'export * from "./values.mjs";',
+      {},
+      "repo",
+    ),
+  ).resolves.toEqual(["src/internal.mjs is an internal pure export barrel."]);
+});

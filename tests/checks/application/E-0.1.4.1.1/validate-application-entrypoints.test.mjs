@@ -53,6 +53,33 @@ test("reports stat errors and rejects absolute paths", async () => {
   expect(errors.join("\n")).toContain("does not exist");
 });
 
+test("rejects invalid main and bin target types beside valid targets", async () => {
+  const errors = await validateApplicationEntrypoints(
+    {
+      root: "repo",
+      packageJson: { main: 42, bin: { cli: "bin/cli.mjs", invalid: null } },
+    },
+    { stat: async () => ({ isFile: () => true }) },
+  );
+  expect(errors).toContain("package.json main must be a nonempty path string.");
+  expect(errors).toContain("package.json bin target for invalid must be a nonempty path string.");
+});
+
+test("rejects empty entrypoint paths and invalid bin shapes", async () => {
+  for (const packageJson of [
+    { main: " " },
+    { bin: " " },
+    { bin: 7 },
+    { main: "bin/main.mjs", bin: [] },
+  ]) {
+    const errors = await validateApplicationEntrypoints(
+      { root: "repo", packageJson },
+      { stat: async () => ({ isFile: () => true }) },
+    );
+    expect(errors.length).toBeGreaterThan(0);
+  }
+});
+
 test("uses the default context and dependencies", async () => {
   await expect(validateApplicationEntrypoints()).resolves.toContain(
     "package.json must declare at least one runtime entrypoint through main or bin.",

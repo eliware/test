@@ -8,33 +8,45 @@ export function inspectJestTestModule(content, testPath, sourcePath) {
   } catch {
     return { hasExecutableTest: false, importsSource: false };
   }
+  const testNames = findTestNames(ast.program);
   return {
-    hasExecutableTest: containsTestCall(ast.program),
+    hasExecutableTest: containsTestCall(ast.program, testNames),
     importsSource: containsSourceImport(ast.program, testPath, sourcePath),
   };
 }
 
-function containsTestCall(node) {
-  if (Array.isArray(node)) return node.some(containsTestCall);
+function findTestNames(program) {
+  const names = new Set(["test", "it"]);
+  for (const node of program.body) {
+    if (node.type !== "ImportDeclaration" || node.source.value !== "@jest/globals") continue;
+    for (const specifier of node.specifiers)
+      if (specifier.type === "ImportSpecifier" && ["test", "it"].includes(specifier.imported.name))
+        names.add(specifier.local.name);
+  }
+  return names;
+}
+
+function containsTestCall(node, names) {
+  if (Array.isArray(node)) return node.some((item) => containsTestCall(item, names));
   if (!node || typeof node !== "object") return false;
-  if (node.type === "CallExpression" && isTestCall(node)) return true;
-  return Object.values(node).some(containsTestCall);
+  if (node.type === "CallExpression" && isTestCall(node, names)) return true;
+  return Object.values(node).some((item) => containsTestCall(item, names));
 }
 
-function isTestCall(call) {
+function isTestCall(call, names) {
   if (!isCallback(call.arguments[1])) return false;
-  if (isTestIdentifier(call.callee)) return true;
-  const tableCall = call.callee;
-  return (
-    tableCall.type === "CallExpression" &&
-    tableCall.callee.type === "MemberExpression" &&
-    tableCall.callee.property.name === "each" &&
-    isTestIdentifier(tableCall.callee.object)
-  );
+  return isActiveTestExpression(call.callee, names);
 }
 
-function isTestIdentifier(node) {
-  return node.type === "Identifier" && ["test", "it"].includes(node.name);
+function isActiveTestExpression(node, names) {
+  if (node?.type === "Identifier") return names.has(node.name);
+  if (node?.type === "CallExpression") return isActiveTestExpression(node.callee, names);
+  if (node?.type !== "MemberExpression") return false;
+  const property = node.computed ? node.property.value : node.property.name;
+  return (
+    ["each", "only", "concurrent", "failing"].includes(property) &&
+    isActiveTestExpression(node.object, names)
+  );
 }
 
 function isCallback(node) {

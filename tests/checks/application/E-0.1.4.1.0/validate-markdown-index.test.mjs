@@ -12,3 +12,9 @@ test("reports each missing Markdown link", () => {
     "docs/README.md must link a.md.",
   ]);
 });
+
+test("does not count links inside code examples", () => {
+  expect(validateMarkdownIndex("```md\n[Example](a.md)\n```", ["a.md"], "docs/README.md")).toEqual([
+    "docs/README.md must link a.md.",
+  ]);
+});

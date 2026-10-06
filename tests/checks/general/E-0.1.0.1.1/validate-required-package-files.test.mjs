@@ -1,10 +1,9 @@
 import { expect, test } from "@jest/globals";
+import { readFile } from "node:fs/promises";
 import { validateRequiredPackageFiles } from "../../../../src/checks/general/E-0.1.0.1.1/validate-required-package-files.mjs";
 
-const license =
-  'MIT License\nCopyright (c) 2026 Eliware\nPermission is hereby granted\nTHE SOFTWARE IS PROVIDED "AS IS"\nWITHOUT WARRANTY OF ANY KIND\nIN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE';
 const successStat = async () => ({ isFile: () => true });
-const successRead = async () => license;
+const successRead = async () => readFile(new URL("../../../../LICENSE", import.meta.url), "utf8");
 
 test("accepts all required files and the approved license", async () => {
   await expect(
@@ -23,7 +22,16 @@ test("reports missing, non-file, and malformed license paths", async () => {
   });
   expect(errors.join("\n")).toContain("README.md is required");
   expect(errors.join("\n")).toContain("LICENSE must be a file");
-  expect(errors.join("\n")).toContain("LICENSE is missing approved MIT text");
+  expect(errors.join("\n")).toContain("LICENSE must contain the complete approved MIT text");
+});
+
+test("rejects altered license text that keeps the old marker fragments", async () => {
+  const license = await readFile(new URL("../../../../LICENSE", import.meta.url), "utf8");
+  const errors = await validateRequiredPackageFiles("/repo", {
+    getStat: successStat,
+    read: async () => license.replace("free of charge", "only for Eliware"),
+  });
+  expect(errors).toContain("LICENSE must contain the complete approved MIT text.");
 });
 
 test("reports required files when the stat call fails", async () => {

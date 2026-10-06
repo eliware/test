@@ -47,9 +47,9 @@ test("reports Git status errors", async () => {
   const result = await run({ root: "repo", runGit: createGitRunner({ failAt: 0 }) });
   expect(result.status).toBe("fail");
   expect(result.message).toContain("Git ignore rules could not be inspected");
-  const indexResult = await run({ root: "repo", runGit: createGitRunner({ failAt: 13 }) });
+  const indexResult = await run({ root: "repo", runGit: createGitRunner({ failAt: 38 }) });
   expect(indexResult.message).toContain("Git index status could not be read");
-  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 14 }));
+  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 39 }));
   expect(linkIndex).toContain("Git index status could not be read; tracked symlinks are unknown.");
 });
 
@@ -75,7 +75,7 @@ test("reports failure when Git treats an example file as ignored", async () => {
     return { stdout: Buffer.from("") };
   };
   await expect(validateGitHygiene("repo", runner)).resolves.toContain(
-    "nested/.env.local.example must not be ignored.",
+    "nested/.env.production.example must not be ignored.",
   );
 });
 

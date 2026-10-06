@@ -13,3 +13,12 @@ test("rejects incomplete or invalid schema definitions", () => {
     "specs/directives-schema.yaml must define the v12 document and directive schema.",
   ]);
 });
+
+test("rejects weakened property types and nested item constraints", async () => {
+  const schema = parse(await readFile("specs/directives-schema.yaml", "utf8"));
+  schema.$defs.document.properties.version.type = "number";
+  expect(validateV12DirectiveSchema(schema)).not.toEqual([]);
+  schema.$defs.document.properties.version.type = "string";
+  schema.$defs.directive.properties.children.items = { type: "object" };
+  expect(validateV12DirectiveSchema(schema)).not.toEqual([]);
+});

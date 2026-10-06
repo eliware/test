@@ -19,3 +19,7 @@ test("ignores links inside fenced and inline code", () => {
     { reference: "ok.md" },
   ]);
 });
+
+test("retains unresolved reference links for validation", () => {
+  expect(extractMarkdownLinks("[label][missing]")).toEqual([{ reference: null }]);
+});

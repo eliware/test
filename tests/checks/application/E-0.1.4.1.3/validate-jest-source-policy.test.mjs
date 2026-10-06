@@ -3,18 +3,29 @@ import { validateJestSourcePolicy } from "../../../../src/checks/application/E-0
 
 test("rejects runner imports, coverage exclusions, and separate config files", async () => {
   const texts = new Map([
-    ["src/run.mjs", 'import runner from "jest"; /* istanbul ignore next */'],
+    [
+      "src/run.mjs",
+      'const load = createRequire(import.meta.url); load("jest-cli"); /* c8 ignore next */',
+    ],
+    [
+      "src/launch.mjs",
+      'spawn("node", ["node_modules/.bin/vitest/vitest.mjs"]); /* v8 ignore next */',
+    ],
     ["tests/run.test.mjs", 'import { test } from "@jest/globals";'],
   ]);
   const inventory = {
     files: async (view) =>
-      view === "source" ? ["src/run.mjs", "tests/run.test.mjs"] : ["nested/jest.config.ts"],
+      view === "source"
+        ? ["src/run.mjs", "src/launch.mjs", "tests/run.test.mjs"]
+        : ["nested/jest.config.ts"],
     readText: async (path) => texts.get(path.replaceAll("\\", "/").replace("repo/", "")) ?? "",
   };
   const errors = await validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory });
   expect(errors).toEqual([
-    "src/run.mjs must not import or invoke the Jest runner.",
+    "src/run.mjs must not import or invoke a test runner or coverage tool.",
     "src/run.mjs must not exclude production coverage.",
+    "src/launch.mjs must not import or invoke a test runner or coverage tool.",
+    "src/launch.mjs must not exclude production coverage.",
     "nested/jest.config.ts is a separate Jest configuration file.",
   ]);
 });

@@ -1,3 +1,4 @@
+import { parse } from "@babel/parser";
 import { join, posix } from "node:path";
 
 export async function validateInternalExportBarrels(files, readText, packageJson, root) {
@@ -12,19 +13,28 @@ export async function validateInternalExportBarrels(files, readText, packageJson
       errors.push(`${path} could not be read to check export barrels.`);
       continue;
     }
-    const lines = content
-      .split(/\r?\n/u)
-      .map((line) => line.trim())
-      .filter(Boolean);
-    if (
-      !lines.length ||
-      lines.some((line) => !/^export\s+\*?\s*(?:\{[^}]*\})?\s+from\s+["'][^"']+["'];?$/u.test(line))
-    )
-      continue;
+    if (!isPureExportBarrel(content)) continue;
     if (publicTargets.has(path)) continue;
     errors.push(`${path} is an internal pure export barrel.`);
   }
   return errors;
+}
+
+function isPureExportBarrel(content) {
+  let program;
+  try {
+    program = parse(content, { sourceType: "module" }).program;
+  } catch {
+    return false;
+  }
+  return (
+    program.body.length > 0 &&
+    program.body.every(
+      (node) =>
+        (node.type === "ExportNamedDeclaration" && !node.declaration && node.source) ||
+        (node.type === "ExportAllDeclaration" && node.source),
+    )
+  );
 }
 
 function collectPublicTargets(packageJson) {

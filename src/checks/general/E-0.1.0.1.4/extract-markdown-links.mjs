@@ -9,11 +9,9 @@ export function extractMarkdownLinks(content) {
       match[2],
     ]),
   );
-  return [...markdown.matchAll(pattern)]
-    .map((match) => ({
-      reference: match[1] ?? match[3] ?? match[4] ?? definitions.get(match[2]?.toLowerCase()),
-    }))
-    .filter(({ reference }) => reference);
+  return [...markdown.matchAll(pattern)].map((match) => ({
+    reference: match[1] ?? match[3] ?? match[4] ?? definitions.get(match[2]?.toLowerCase()) ?? null,
+  }));
 }
 
 function removeCode(content) {

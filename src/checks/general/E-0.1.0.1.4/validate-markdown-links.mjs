@@ -26,6 +26,10 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
       continue;
     }
     for (const { reference } of extractMarkdownLinks(text)) {
+      if (!reference) {
+        errors.push(`Markdown reference link has no definition in ${file}.`);
+        continue;
+      }
       if (/^(?:https?|mailto):/iu.test(reference)) {
         const error = validateExternalLink(reference);
         if (error) errors.push(`${error} in ${file}.`);

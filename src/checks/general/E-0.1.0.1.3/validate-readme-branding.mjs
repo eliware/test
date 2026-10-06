@@ -22,7 +22,12 @@ export function validateReadmeBranding(readme, packageJson = {}) {
   if (!npm && readme.includes("npmjs.com"))
     return "README.md must not include npm branding without npm-published.";
   const badgeLine = `${name} ${npm}[![License](https://img.shields.io/github/license/${repository.slice(19)})](https://github.com/${repository.slice(19)}/blob/main/LICENSE) [![CI](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml/badge.svg)](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml)`;
-  return readme.split(/\r?\n/u).includes(badgeLine)
+  const lines = readme.split(/\r?\n/u);
+  return lines[0] === expectedLogoHeader() && lines[2] === badgeLine
     ? null
-    : "README.md must show the canonical title, license badge, and CI badge.";
+    : "README.md must begin with the canonical logo header and title badge row.";
+}
+
+function expectedLogoHeader() {
+  return "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
 }
