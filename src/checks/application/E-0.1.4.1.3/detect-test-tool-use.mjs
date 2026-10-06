@@ -5,7 +5,6 @@ const toolName =
   /^(?:@jest\/(?!globals$)[^/]+|@vitest\/|@tapjs\/|@wdio\/|@cypress\/|@istanbuljs\/|jest(?:-|$)|vitest(?:\/|$)|mocha(?:\/|$)|ava$|tap$|tape$|uvu$|c8$|nyc$|istanbul(?:-|$)|babel-plugin-istanbul$|node:test$|playwright$|@playwright\/|cypress$|jasmine$|@bcoe\/v8-coverage$)/iu;
 const commandName =
   /(?:^|[\s/\\])(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\s/\\]|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|\s)|\b(?:bun|deno)\s+test(?:\s|$)/iu;
-
 export function detectTestToolUse(content, allowHarnessTools = false) {
   let ast;
   try {
@@ -45,9 +44,10 @@ export function detectTestToolUse(content, allowHarnessTools = false) {
 function collectStaticStrings(root) {
   const strings = new Map();
   visit(root, (node) => {
-    if (node.type === "VariableDeclarator" && node.id?.type === "Identifier") {
-      const value = staticString(node.init, strings);
-      if (value !== null) strings.set(node.id.name, value);
+    if (["VariableDeclarator", "AssignmentExpression"].includes(node.type)) {
+      const binding = node.id ?? node.left;
+      const value = staticString(node.init ?? node.right, strings);
+      if (binding?.type === "Identifier" && value !== null) strings.set(binding.name, value);
     }
     return false;
   });
