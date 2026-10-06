@@ -32,6 +32,12 @@ test("does not count image sources as links", () => {
   ).toEqual(["docs/README.md must link a.md."]);
 });
 
+test("does not count non-anchor HTML href values as links", () => {
+  expect(validateMarkdownIndex('<div href="a.md">A</div>', ["a.md"], "docs/README.md")).toEqual([
+    "docs/README.md must link a.md.",
+  ]);
+});
+
 test("requires each discovered target exactly once and rejects extras", () => {
   expect(
     validateMarkdownIndex(

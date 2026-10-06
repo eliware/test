@@ -1,5 +1,5 @@
 const pattern =
-  /(?<!!)\[[^\]]*\]\((<[^>\r\n]+>|[^)\s]+)(?:\s+[^)]*)?\)|\bhref=["']([^"']+)["']|<((?:https?|mailto):[^ >]+)>/giu;
+  /(?<!!)\[[^\]]*\]\((<[^>\r\n]+>|[^)\s]+)(?:\s+[^)]*)?\)|<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>|<((?:https?|mailto):[^ >]+)>/giu;
 
 export function extractMarkdownLinks(content) {
   const markdown = removeMarkdownCode(content);

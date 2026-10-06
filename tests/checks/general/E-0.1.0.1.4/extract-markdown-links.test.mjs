@@ -21,6 +21,12 @@ test("does not treat Markdown images or HTML image sources as links", () => {
   expect(extractMarkdownLinks('![image](image.png) <img src="image.png">')).toEqual([]);
 });
 
+test("only treats anchor href values as HTML links", () => {
+  expect(extractMarkdownLinks('<div href="bad.md">bad</div> <a href="good.md">good</a>')).toEqual([
+    { reference: "good.md" },
+  ]);
+});
+
 test("keeps inline code text when requested", () => {
   expect(removeMarkdownCode("`heading`", { preserveInlineCodeText: true })).toBe("heading");
 });
