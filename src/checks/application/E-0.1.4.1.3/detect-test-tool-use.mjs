@@ -1,5 +1,6 @@
 import { parse } from "@babel/parser";
 import { collectLauncherAliases, isLauncher } from "./collect-launcher-aliases.mjs";
+import { readStaticString } from "./read-static-string.mjs";
 
 const toolName =
   /^(?:@jest\/(?!globals$)[^/]+|@vitest\/|@tapjs\/|@wdio\/|@cypress\/|@istanbuljs\/|jest(?:-|$)|vitest(?:\/|$)|mocha(?:\/|$)|ava$|tap$|tape$|uvu$|c8$|nyc$|istanbul(?:-|$)|babel-plugin-istanbul$|node:test$|playwright$|@playwright\/|cypress$|jasmine$|@bcoe\/v8-coverage$)/iu;
@@ -28,7 +29,7 @@ export function detectTestToolUse(content, allowHarnessTools = false) {
       return true;
     if (
       isModuleLoad(node) &&
-      node.arguments.some((argument) => toolName.test(staticString(argument, strings) ?? ""))
+      node.arguments.some((argument) => toolName.test(readStaticString(argument, strings) ?? ""))
     )
       return true;
     if (node.type === "CallExpression" && isLauncher(node.callee, launchNames)) {
@@ -46,7 +47,7 @@ function collectStaticStrings(root) {
   visit(root, (node) => {
     if (["VariableDeclarator", "AssignmentExpression"].includes(node.type)) {
       const binding = node.id ?? node.left;
-      const value = staticString(node.init ?? node.right, strings);
+      const value = readStaticString(node.init ?? node.right, strings);
       if (binding?.type === "Identifier" && value !== null) strings.set(binding.name, value);
     }
     return false;
@@ -54,36 +55,27 @@ function collectStaticStrings(root) {
   return strings;
 }
 
-function staticString(node, strings) {
-  if (node?.type === "StringLiteral") return node.value;
-  if (node?.type === "BinaryExpression" && node.operator === "+") {
-    const left = staticString(node.left, strings);
-    const right = staticString(node.right, strings);
-    return left !== null && right !== null ? left + right : null;
-  }
-  if (node?.type === "TemplateLiteral" && node.expressions.length === 0)
-    return node.quasis[0].value.cooked;
-  if (node?.type === "Identifier") return strings.get(node.name) ?? null;
-  return null;
-}
-
 function importSpecifier(node, strings) {
   if (["ImportDeclaration", "ExportNamedDeclaration", "ExportAllDeclaration"].includes(node.type))
-    return staticString(node.source, strings);
-  if (node.type === "ImportExpression") return staticString(node.source, strings);
+    return readStaticString(node.source, strings);
+  if (node.type === "ImportExpression") return readStaticString(node.source, strings);
   return null;
 }
 
 function isModuleLoad(node) {
+  const callee = node.callee;
   return (
     node.type === "CallExpression" &&
-    ((node.callee?.type === "Identifier" && ["require", "load"].includes(node.callee.name)) ||
-      node.callee?.type === "Import")
+    (callee?.type === "Import" ||
+      (callee?.type === "Identifier" && ["require", "load"].includes(callee.name)) ||
+      (callee?.type === "MemberExpression" &&
+        callee.object?.name === "module" &&
+        ["require"].includes(callee.property?.name ?? callee.property?.value)))
   );
 }
 
 function collectStrings(node, strings) {
-  const value = staticString(node, strings);
+  const value = readStaticString(node, strings);
   if (value !== null) return [value];
   if (Array.isArray(node)) return node.flatMap((item) => collectStrings(item, strings));
   if (node && typeof node === "object")

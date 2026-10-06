@@ -15,6 +15,8 @@ test("detects static, aliased, and computed runner imports", () => {
 
 test("detects test runner and coverage tools in executable calls", () => {
   expect(detectTestToolUse('require("jest-cli");')).toBe(true);
+  expect(detectTestToolUse('module.require("@jest/core");')).toBe(true);
+  expect(detectTestToolUse('module["require"]("@jest/core");')).toBe(true);
   expect(detectTestToolUse('const runner = "vitest"; spawn(runner, ["run"]);')).toBe(true);
   expect(
     detectTestToolUse(
