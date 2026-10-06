@@ -35,3 +35,35 @@ test("rejects invalid brand, title, headings, and contents list", () => {
   ).toContain("title");
   expect(validateReadmeStructure(valid, expected)).toContain("title");
 });
+
+test("does not count table-of-contents links inside code", () => {
+  const codeLinks = expected
+    .slice(1)
+    .map((heading) => `- [${heading}](#${heading.toLowerCase().replaceAll(" ", "-")})`)
+    .join("\n");
+  const content = valid
+    .replace(/- \[[^\]]+\]\(#[^)]+\)(?:\n)?/gu, "")
+    .replace(
+      "## Table of Contents\n\n",
+      `## Table of Contents\n\n\`\`\`md\n${codeLinks}\n\`\`\`\n\n`,
+    );
+  expect(validateReadmeStructure(content, expected, { name: "fixture" })).toContain(
+    "Table of Contents",
+  );
+});
+
+test("does not count the required title inside code", () => {
+  const content = valid.replace("\n\nfixture\n\n", "\n\n```text\nfixture\n```\n\n");
+  expect(validateReadmeStructure(content, expected, { name: "fixture" })).toContain("title");
+});
+
+test("does not count section headings inside code", () => {
+  const sections = expected
+    .slice(1)
+    .map((heading) => `## ${heading}`)
+    .join("\n");
+  const content = valid
+    .replace(/## (Features|Support|License|Links)/gu, "")
+    .replace("## Table of Contents", `## Table of Contents\n\n\`\`\`md\n${sections}\n\`\`\``);
+  expect(validateReadmeStructure(content, expected, { name: "fixture" })).toContain("headings");
+});

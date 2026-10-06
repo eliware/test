@@ -18,3 +18,9 @@ test("does not count links inside code examples", () => {
     "docs/README.md must link a.md.",
   ]);
 });
+
+test("does not count links inside indented code", () => {
+  expect(validateMarkdownIndex("    [Example](a.md)", ["a.md"], "docs/README.md")).toEqual([
+    "docs/README.md must link a.md.",
+  ]);
+});

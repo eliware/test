@@ -14,12 +14,33 @@ test("accepts direct and table-driven Jest callbacks", () => {
   ).toMatchObject({ hasExecutableTest: true });
 });
 
+test("accepts named Jest callback functions", () => {
+  const source = 'function verify() {} test("named", verify);';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    true,
+  );
+  const variable = 'const verify = () => {}; test("named", verify);';
+  expect(inspectJestTestModule(variable, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    true,
+  );
+  const nested = 'describe("suite", () => { function verify() {} test("named", verify); });';
+  expect(inspectJestTestModule(nested, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    true,
+  );
+});
+
 test("accepts active modifiers and imported test aliases", () => {
   for (const content of [
     'test.only("focused", () => {});',
     'it.concurrent("parallel", () => {});',
     'test.each([1]).only("row", () => {});',
     'import { test as caseTest } from "@jest/globals"; caseTest("alias", () => {});',
+    'import * as jestApi from "@jest/globals"; jestApi.test("namespace", () => {});',
+    'const check = test; check("global alias", () => {});',
+    'const { test: check } = globalThis; check("destructured global alias", () => {});',
+    'const { "test": check } = globalThis; check("quoted global alias", () => {});',
+    'import * as jestApi from "@jest/globals"; const check = jestApi.test; check("import alias", () => {});',
+    'globalThis.test("global property", () => {});',
   ])
     expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
       true,

@@ -1,3 +1,5 @@
+import { removeMarkdownCode } from "../E-0.1.0.1.4/extract-markdown-links.mjs";
+
 const requiredLinks = [
   ["Eliware", "https://eliware.org"],
   ["GitHub organization", "https://github.com/eliware"],
@@ -6,9 +8,10 @@ const requiredLinks = [
 ];
 
 export function validateReadmeLinks(readme, packageJson = {}) {
-  const linksSection = readSection(readme, "Links");
-  const licenseSection = readSection(readme, "License");
-  const supportSection = readSection(readme, "Support");
+  const markdown = removeMarkdownCode(readme);
+  const linksSection = readSection(markdown, "Links");
+  const licenseSection = readSection(markdown, "License");
+  const supportSection = readSection(markdown, "Support");
   const links = [...linksSection.matchAll(/\[([^\]]+)\]\(([^)]+)\)/gu)].map((match) => [
     match[1],
     match[2],

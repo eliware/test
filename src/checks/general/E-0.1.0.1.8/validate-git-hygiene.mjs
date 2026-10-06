@@ -1,34 +1,18 @@
 import { execFile } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { promisify } from "node:util";
+import { requiredIgnoreCases, validateRequiredIgnoreRules } from "./validate-ignore-patterns.mjs";
 
 const executeFile = promisify(execFile);
-const ignoredDirectories = [
-  "node_modules",
-  ".git",
-  "coverage",
-  "dist",
-  "build",
-  "generated",
-  "artifacts",
-  "test-results",
-];
-const nestedRoots = ["nested", "nested/deep", "nested/deep/layer/four"];
-const requiredIgnoreCases = [
-  ...nestedRoots.flatMap((root) =>
-    ignoredDirectories.map((directory) => [`${root}/${directory}/item.txt`, true]),
-  ),
-  ...nestedRoots.flatMap((root) => [
-    [`${root}/.env`, true],
-    [`${root}/.env.production`, true],
-    [`${root}/.env.local`, true],
-    [`${root}/.env.production.example`, false],
-  ]),
-  ["nested/.DS_Store", true],
-  ["nested/Thumbs.db", true],
-];
 
-export async function validateGitHygiene(root, runGit = executeFile) {
+export async function validateGitHygiene(root, runGit = executeFile, { readText = readFile } = {}) {
   const errors = [];
+  try {
+    const ignoreText = await readText(`${root}/.gitignore`, "utf8");
+    errors.push(...validateRequiredIgnoreRules(ignoreText));
+  } catch {
+    errors.push(".gitignore could not be read to check required ignore rules.");
+  }
   for (const [path, shouldIgnore] of requiredIgnoreCases) {
     try {
       const result = await runGit("git", ["-C", root, "check-ignore", "--quiet", path], {

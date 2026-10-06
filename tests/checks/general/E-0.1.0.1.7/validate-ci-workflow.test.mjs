@@ -60,3 +60,36 @@ test("reports unreadable workflow inventories", async () => {
     }),
   ).resolves.toEqual(["GitHub workflow files could not be inspected: offline"]);
 });
+
+test.each([
+  workflow.replace(
+    "permissions:\n  contents: read",
+    "permissions:\n  contents: read\ndefaults:\n  run:\n    shell: bash",
+  ),
+  workflow.replace(
+    "    steps:",
+    "    defaults:\n      run:\n        working-directory: tools\n    steps:",
+  ),
+])("rejects inherited shell and working-directory overrides", async (source) => {
+  await expect(
+    validateCiWorkflow(
+      { files: async () => [".github/workflows/ci.yaml"], readText: async () => source },
+      { eliware: { apply: ["general"] } },
+    ),
+  ).resolves.toContain("ci.yaml must not set inherited shell or working-directory overrides.");
+});
+
+test.each([
+  workflow.replace("name: Validation", "name: Validation\nenv:\n  NPM_CONFIG_IGNORE_SCRIPTS: true"),
+  workflow.replace(
+    "    runs-on: ubuntu-latest",
+    "    runs-on: ubuntu-latest\n    env:\n      CI: false",
+  ),
+  workflow.replace("branches: [main]", "branches: [main]\n    paths: ['**.md']"),
+])("rejects inherited environment values and event path filters", async (source) => {
+  const errors = await validateCiWorkflow(
+    { files: async () => [".github/workflows/ci.yaml"], readText: async () => source },
+    { eliware: { apply: ["general"] } },
+  );
+  expect(errors.join(" ")).toMatch(/environment values|filter validation by file path/u);
+});

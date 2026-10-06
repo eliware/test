@@ -29,7 +29,7 @@ function context(documents, index) {
     repositoryInventory: {
       documentationFiles: async () => ["README.md", ...documents],
       files: async () => [],
-      readText: async (path) => (path.includes("docs") ? index : ""),
+      readText: async (path) => (path.includes("docs") ? index : "[Documentation](docs/README.md)"),
     },
   };
 }

@@ -38,8 +38,14 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
       error: "package.json.name cannot identify a repo-map entry.",
     };
   const repository = `eliware/${match[1]}`;
-  const record = document.repositories.find((candidate) => candidate?.repository === repository);
-  return record
-    ? { available: true, record, error: null }
+  const records = document.repositories.filter((candidate) => candidate?.repository === repository);
+  if (records.length > 1)
+    return {
+      available: true,
+      record: null,
+      error: `repo-map.yaml has duplicate entries for ${repository}.`,
+    };
+  return records[0]
+    ? { available: true, record: records[0], error: null }
     : { available: true, record: null, error: `repo-map.yaml has no entry for ${repository}.` };
 }

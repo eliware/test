@@ -51,6 +51,18 @@ test("loads the package repository record", async () => {
   }
 });
 
+test("rejects duplicate repository records", async () => {
+  const read = async () =>
+    "repositories:\n  - repository: eliware/example\n    id: E-1\n  - repository: eliware/example\n    id: E-2\n";
+  await expect(
+    loadRepoMapRecord("repo", { name: "@eliware/example" }, { read }),
+  ).resolves.toMatchObject({
+    available: true,
+    record: null,
+    error: "repo-map.yaml has duplicate entries for eliware/example.",
+  });
+});
+
 test.each([
   ["repositories: bad", "repositories array"],
   ["repositories: [", "invalid YAML"],

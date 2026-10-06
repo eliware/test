@@ -19,10 +19,18 @@ export function validateWorkflowSteps(steps) {
     count(steps, (step) => step.run === "npm test") !== 1
   )
     errors.push("ci.yaml must use checkout v6, setup-node v7, npm latest, npm ci, then npm test.");
+  if (test >= 0 && test !== steps.length - 1)
+    errors.push("ci.yaml npm test must be the final validation-job step.");
   if (![26, "26"].includes(steps[setup]?.with?.["node-version"]))
     errors.push("ci.yaml setup-node must use Node.js 26.");
-  if (steps[checkout]?.with?.repository !== undefined || steps[checkout]?.with?.ref !== undefined)
-    errors.push("ci.yaml must not override the checkout repository or ref.");
+  const checkoutOptions = steps[checkout]?.with ?? {};
+  if (
+    checkoutOptions.repository !== undefined ||
+    checkoutOptions.ref !== undefined ||
+    checkoutOptions["sparse-checkout"] !== undefined ||
+    checkoutOptions["sparse-checkout-cone-mode"] !== undefined
+  )
+    errors.push("ci.yaml must not override the checkout repository, ref, or sparse scope.");
   for (const step of steps.slice(0, Math.max(ci, 0)))
     if (!isApprovedPreInstallStep(step))
       errors.push("ci.yaml has an unapproved step before npm ci.");
@@ -30,29 +38,35 @@ export function validateWorkflowSteps(steps) {
     if (hasPublicationCommand(step?.run))
       errors.push("ci.yaml validation job must not include publication commands.");
   for (const step of steps)
-    if (
-      typeof step?.run === "string" &&
-      /\bnpm\s+run\s+(?:lint|audit|format(?::check)?|pack|outdated|typecheck|build)\b/iu.test(
-        step.run,
-      )
-    )
+    if (hasDuplicateAggregateStage(step?.run))
       errors.push("ci.yaml must not duplicate aggregate validation stages.");
   if (steps.some((step) => step?.if !== undefined || step?.["continue-on-error"] !== undefined))
     errors.push("ci.yaml validation steps must run unconditionally without continue-on-error.");
-  for (const step of [steps[ci], steps[test]])
-    if (step?.env || step?.shell || step?.["working-directory"])
-      errors.push("npm ci and npm test steps must not override env, shell, or working-directory.");
+  for (const step of [steps[npmInstall], steps[ci], steps[test]])
+    if (["env", "shell", "working-directory"].some((key) => Object.hasOwn(step ?? {}, key)))
+      errors.push(
+        "npm install, npm ci, and npm test steps must not override env, shell, or working-directory.",
+      );
   return errors;
+}
+
+function hasDuplicateAggregateStage(command) {
+  if (typeof command !== "string") return false;
+  return [
+    /(?:^|[\s;&|])npm\s+run\s+(?:--\s+)?(?:test|lint|audit|format(?::check)?|pack|outdated|typecheck|build)(?=$|\s)/iu,
+    /(?:^|[\s;&|])npm\s+(?:audit|outdated|pack)(?=$|\s)/iu,
+    /(?:^|[\s;&|])(?:(?:node|npx)\s+)?(?:\.\/)?(?:bin[\\/])?eliware-test(?:\.mjs|\.cmd)?\s+--(?:lint|format|format-check|audit|pack)(?=$|\s)/iu,
+    /(?:^|[\s;&|])npm\s+exec\s+(?:--\s+)?(?:node\s+)?(?:\.\/)?(?:bin[\\/])?eliware-test(?:\.mjs|\.cmd)?\s+--(?:lint|format|format-check|audit|pack)(?=$|\s)/iu,
+  ].some((pattern) => pattern.test(command));
 }
 
 function hasPublicationCommand(command) {
   if (typeof command !== "string") return false;
   return [
-    /(?:^|(?:&&|\|\||[;&|])\s*)npm\s+(?:--[^\s]+\s+)*publish\b/iu,
-    /\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*\bghcr\.io\//iu,
-    /\b(?:docker|podman|buildah)\s+buildx\s+build\b[^;\r\n]*--push[^;\r\n]*\bghcr\.io\//iu,
-    /\b(?:oras|crane)\s+push\b[^;\r\n]*\bghcr\.io\//iu,
-    /\bskopeo\s+copy\b[^;\r\n]*docker:\/\/ghcr\.io\//iu,
+    /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu,
+    /\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*/iu,
+    /\b(?:docker|podman|buildah)\s+(?:buildx\s+)?build\b[^;\r\n]*--push\b/iu,
+    /\b(?:oras|crane)\s+push\b|\bskopeo\s+copy\b/iu,
   ].some((pattern) => pattern.test(command));
 }
 

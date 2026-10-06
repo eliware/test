@@ -1,5 +1,6 @@
 import { parse } from "@babel/parser";
-import { dirname, posix } from "node:path";
+import { collectJestTestNames, isActiveTestExpression } from "./collect-jest-test-names.mjs";
+import { referencesTestSource } from "./references-test-source.mjs";
 
 export function inspectJestTestModule(content, testPath, sourcePath) {
   let ast;
@@ -8,72 +9,42 @@ export function inspectJestTestModule(content, testPath, sourcePath) {
   } catch {
     return { hasExecutableTest: false, importsSource: false };
   }
-  const testNames = findTestNames(ast.program);
+  const testNames = collectJestTestNames(ast.program);
+  const callbackNames = findCallbackNames(ast.program);
   return {
-    hasExecutableTest: containsTestCall(ast.program, testNames),
-    importsSource: containsSourceImport(ast.program, testPath, sourcePath),
+    hasExecutableTest: containsTestCall(ast.program, testNames, callbackNames),
+    importsSource: referencesTestSource(ast.program, testPath, sourcePath),
   };
 }
 
-function findTestNames(program) {
-  const names = new Set(["test", "it"]);
-  for (const node of program.body) {
-    if (node.type !== "ImportDeclaration" || node.source.value !== "@jest/globals") continue;
-    for (const specifier of node.specifiers)
-      if (specifier.type === "ImportSpecifier" && ["test", "it"].includes(specifier.imported.name))
-        names.add(specifier.local.name);
-  }
-  return names;
-}
-
-function containsTestCall(node, names) {
-  if (Array.isArray(node)) return node.some((item) => containsTestCall(item, names));
+function containsTestCall(node, names, callbackNames) {
+  if (Array.isArray(node)) return node.some((item) => containsTestCall(item, names, callbackNames));
   if (!node || typeof node !== "object") return false;
-  if (node.type === "CallExpression" && isTestCall(node, names)) return true;
-  return Object.values(node).some((item) => containsTestCall(item, names));
+  if (node.type === "CallExpression" && isTestCall(node, names, callbackNames)) return true;
+  return Object.values(node).some((item) => containsTestCall(item, names, callbackNames));
 }
 
-function isTestCall(call, names) {
-  if (!isCallback(call.arguments[1])) return false;
+function isTestCall(call, names, callbackNames) {
+  if (!isCallback(call.arguments[1], callbackNames)) return false;
   return isActiveTestExpression(call.callee, names);
 }
 
-function isActiveTestExpression(node, names) {
-  if (node?.type === "Identifier") return names.has(node.name);
-  if (node?.type === "CallExpression") return isActiveTestExpression(node.callee, names);
-  if (node?.type !== "MemberExpression") return false;
-  const property = node.computed ? node.property.value : node.property.name;
-  return (
-    ["each", "only", "concurrent", "failing"].includes(property) &&
-    isActiveTestExpression(node.object, names)
-  );
+function isCallback(node, callbackNames) {
+  if (node?.type === "ArrowFunctionExpression" || node?.type === "FunctionExpression") return true;
+  return node?.type === "Identifier" && callbackNames.has(node.name);
 }
 
-function isCallback(node) {
-  return node?.type === "ArrowFunctionExpression" || node?.type === "FunctionExpression";
-}
-
-function containsSourceImport(node, testPath, sourcePath) {
-  if (Array.isArray(node))
-    return node.some((item) => containsSourceImport(item, testPath, sourcePath));
-  if (!node || typeof node !== "object") return false;
-  if (isModuleReference(node)) {
-    const specifier = node.source.value;
+function findCallbackNames(node, names = new Set()) {
+  if (Array.isArray(node)) node.forEach((item) => findCallbackNames(item, names));
+  else if (node && typeof node === "object") {
+    if (node.type === "FunctionDeclaration" && node.id?.name) names.add(node.id.name);
     if (
-      specifier.startsWith(".") &&
-      posix.normalize(posix.join(dirname(testPath), specifier)) === sourcePath
+      node.type === "VariableDeclarator" &&
+      ["ArrowFunctionExpression", "FunctionExpression"].includes(node.init?.type) &&
+      node.id?.type === "Identifier"
     )
-      return true;
+      names.add(node.id.name);
+    Object.values(node).forEach((item) => findCallbackNames(item, names));
   }
-  return Object.values(node).some((item) => containsSourceImport(item, testPath, sourcePath));
-}
-
-function isModuleReference(node) {
-  return (
-    ((node.type === "ImportDeclaration" ||
-      node.type === "ExportNamedDeclaration" ||
-      node.type === "ExportAllDeclaration") &&
-      node.source) ||
-    (node.type === "ImportExpression" && node.source)
-  );
+  return names;
 }

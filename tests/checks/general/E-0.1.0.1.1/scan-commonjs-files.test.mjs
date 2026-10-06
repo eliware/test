@@ -11,12 +11,14 @@ test("detects CommonJS extensions and syntax", async () => {
   };
   const findings = await scanCommonJsFiles(
     "/repo",
-    ["entry.cjs", "types.cts", "plain.txt", "code.js", "syntax.mjs"],
+    ["entry.cjs", "types.cts", "entry.jsx", "plain.txt", "code.mts", "code.js", "syntax.mjs"],
     parseAst,
   );
   expect(findings).toEqual([
     "entry.cjs: CommonJS module extension",
     "types.cts: CommonJS module extension",
+    "entry.jsx: CommonJS identifier __dirname",
+    "code.mts: CommonJS identifier __dirname",
     "code.js: CommonJS identifier __dirname",
     "syntax.mjs: invalid module syntax (bad syntax)",
   ]);

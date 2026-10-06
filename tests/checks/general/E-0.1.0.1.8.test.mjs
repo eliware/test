@@ -2,6 +2,8 @@ import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.8.mjs";
 import { validateGitHygiene } from "../../../src/checks/general/E-0.1.0.1.8/validate-git-hygiene.mjs";
 
+const ignoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.env*\n!.env*.example\n.DS_Store\nThumbs.db`;
+
 function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
   let index = 0;
   return async (_command, args) => {
@@ -22,7 +24,9 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
 }
 
 test("accepts required ignore rules and a clean Git index", async () => {
-  await expect(validateGitHygiene("repo", createGitRunner())).resolves.toEqual([]);
+  await expect(
+    validateGitHygiene("repo", createGitRunner(), { readText: async () => ignoreText }),
+  ).resolves.toEqual([]);
 });
 
 test("runs from the current repository when the caller omits its context", async () => {
@@ -35,7 +39,7 @@ test("reports missing ignore rules, ignored tracked files, and symlinks", async 
     if (args.includes("--ignored")) return { stdout: Buffer.from("tracked.env\0") };
     return { stdout: Buffer.from("120000 deadbeef 0\tlink\0") };
   };
-  const result = await run({ root: "repo", runGit: runner });
+  const result = await run({ root: "repo", runGit: runner, readText: async () => ignoreText });
   expect(result.ruleId).toBe(ruleId);
   expect(result.status).toBe("fail");
   expect(result.message).toContain("must be ignored");
@@ -44,18 +48,30 @@ test("reports missing ignore rules, ignored tracked files, and symlinks", async 
 });
 
 test("reports Git status errors", async () => {
-  const result = await run({ root: "repo", runGit: createGitRunner({ failAt: 0 }) });
+  const result = await run({
+    root: "repo",
+    runGit: createGitRunner({ failAt: 0 }),
+    readText: async () => ignoreText,
+  });
   expect(result.status).toBe("fail");
   expect(result.message).toContain("Git ignore rules could not be inspected");
-  const indexResult = await run({ root: "repo", runGit: createGitRunner({ failAt: 38 }) });
+  const indexResult = await run({
+    root: "repo",
+    runGit: createGitRunner({ failAt: 58 }),
+    readText: async () => ignoreText,
+  });
   expect(indexResult.message).toContain("Git index status could not be read");
-  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 39 }));
+  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 59 }), {
+    readText: async () => ignoreText,
+  });
   expect(linkIndex).toContain("Git index status could not be read; tracked symlinks are unknown.");
 });
 
 test("reports a tracked ignored path", async () => {
   await expect(
-    validateGitHygiene("repo", createGitRunner({ trackedIgnored: ["ignored.txt"] })),
+    validateGitHygiene("repo", createGitRunner({ trackedIgnored: ["ignored.txt"] }), {
+      readText: async () => ignoreText,
+    }),
   ).resolves.toContain("Tracked or staged paths match ignore rules: ignored.txt.");
 });
 
@@ -64,7 +80,7 @@ test("uses the current directory and detects an ignored example file", async () 
     if (args.includes("check-ignore")) return { code: 0 };
     return { stdout: Buffer.from("") };
   };
-  await expect(run({ runGit: runner })).resolves.toMatchObject({
+  await expect(run({ runGit: runner, readText: async () => ignoreText })).resolves.toMatchObject({
     message: expect.stringContaining("must not be ignored"),
   });
 });
@@ -74,9 +90,9 @@ test("reports failure when Git treats an example file as ignored", async () => {
     if (args.includes("check-ignore")) return { code: 0 };
     return { stdout: Buffer.from("") };
   };
-  await expect(validateGitHygiene("repo", runner)).resolves.toContain(
-    "nested/.env.production.example must not be ignored.",
-  );
+  await expect(
+    validateGitHygiene("repo", runner, { readText: async () => ignoreText }),
+  ).resolves.toContain("nested/.env.production.example must not be ignored.");
 });
 
 test("handles Git ignore command codes and missing Git", async () => {
@@ -91,7 +107,9 @@ test("handles Git ignore command codes and missing Git", async () => {
     }
     return { stdout: Buffer.from("") };
   };
-  const errors = await validateGitHygiene("repo", failedIgnore);
+  const errors = await validateGitHygiene("repo", failedIgnore, {
+    readText: async () => ignoreText,
+  });
   expect(errors).toContain("nested/node_modules/item.txt must be ignored.");
   expect(errors).toContain("Git ignore rules could not be inspected for nested/.git/item.txt.");
 });

@@ -11,3 +11,9 @@ test("requires a release link in the Links section", () => {
 test("rejects prose that names the release file without a Markdown link", () => {
   expect(validateReleaseNotesLink("## Links\n\nSee RELEASE_NOTES.md")).toHaveLength(1);
 });
+
+test("does not count release links inside code fences", () => {
+  expect(
+    validateReleaseNotesLink("## Links\n\n```md\n[notes](RELEASE_NOTES.md)\n```"),
+  ).toHaveLength(1);
+});

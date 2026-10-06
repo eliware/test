@@ -55,3 +55,16 @@ test("rejects duplicate, unselected, and undeclared section headings", () => {
 test("accepts repository sections that a YAML specification declares", () => {
   expect(validateAgentsStructure(`${base}\n## Custom`, {}, new Set(["Custom"]))).toEqual([]);
 });
+
+test("does not count required headings inside code blocks", () => {
+  const content = `# AGENTS.md\n\n\`\`\`md\n${base}\n\`\`\``;
+  expect(validateAgentsStructure(content)).toEqual([
+    "AGENTS.md must begin with the seven required headings in order.",
+  ]);
+});
+
+test("does not ignore a code block before the required title", () => {
+  expect(validateAgentsStructure("```text\ncode\n```\n" + base)).toEqual([
+    "AGENTS.md must begin with # AGENTS.md.",
+  ]);
+});

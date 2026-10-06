@@ -31,4 +31,14 @@ test("rejects invalid script maps, empty scripts, and publish commands", () => {
   expect(validatePackageScripts({ scripts: { test: "", other: "npm publish" } })).toContain(
     "package.json.scripts.other must not publish packages or images.",
   );
+  for (const command of [
+    "pnpm publish",
+    "yarn npm publish",
+    "bun publish",
+    "npm --workspace app publish",
+    "docker build --push image",
+  ])
+    expect(validatePackageScripts({ scripts: { other: command } })).toContain(
+      "package.json.scripts.other must not publish packages or images.",
+    );
 });

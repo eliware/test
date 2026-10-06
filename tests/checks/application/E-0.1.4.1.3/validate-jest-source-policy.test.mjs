@@ -14,10 +14,12 @@ test("rejects runner imports, coverage exclusions, and separate config files", a
     ["tests/run.test.mjs", 'import { test } from "@jest/globals";'],
   ]);
   const inventory = {
-    files: async (view) =>
-      view === "source"
-        ? ["src/run.mjs", "src/launch.mjs", "tests/run.test.mjs"]
-        : ["nested/jest.config.ts"],
+    files: async () => [
+      "src/run.mjs",
+      "src/launch.mjs",
+      "tests/run.test.mjs",
+      "nested/jest.config.ts",
+    ],
     readText: async (path) => texts.get(path.replaceAll("\\", "/").replace("repo/", "")) ?? "",
   };
   const errors = await validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory });
@@ -26,7 +28,7 @@ test("rejects runner imports, coverage exclusions, and separate config files", a
     "src/run.mjs must not exclude production coverage.",
     "src/launch.mjs must not import or invoke a test runner or coverage tool.",
     "src/launch.mjs must not exclude production coverage.",
-    "nested/jest.config.ts is a separate Jest configuration file.",
+    "nested/jest.config.ts is a separate test runner or coverage configuration file.",
   ]);
 });
 
@@ -54,7 +56,7 @@ test("allows clean sources and the supported Jest API", async () => {
 
 test("rejects unreadable source files", async () => {
   const inventory = {
-    files: async (view) => (view === "source" ? ["src/missing.mjs"] : []),
+    files: async () => ["src/missing.mjs"],
     readText: async () => {
       throw new Error("read failed");
     },
@@ -68,4 +70,60 @@ test("reports errors from the default context", async () => {
   await expect(validateJestSourcePolicy()).resolves.toEqual([
     "Jest source policy could not read the repository inventory.",
   ]);
+});
+
+test.each([
+  ["src/dynamic.mts", "import(`jest`);"],
+  ["tests/runner.jsx", 'spawn("jest");'],
+  ["src/alternative.tsx", 'import("@vitest/coverage-v8");'],
+  ["tests/runner.mjs", 'import("@vitest/runner");'],
+  ["scripts/run.mjs", 'import("@tapjs/run");'],
+  ["vite.config.mts", 'import { defineConfig } from "vitest/config";'],
+])("rejects runner references in %s", async (path, content) => {
+  const inventory = {
+    files: async () => [path],
+    readText: async () => content,
+  };
+  await expect(
+    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+  ).resolves.toContain(`${path} must not import or invoke a test runner or coverage tool.`);
+});
+
+test("rejects alternative runners in package scripts", async () => {
+  const inventory = {
+    files: async () => ["package.json"],
+    readText: async () => '{"scripts":{"test:extra":"vitest run"}}',
+  };
+  await expect(
+    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+  ).resolves.toContain("package.json must not import or invoke a test runner or coverage tool.");
+});
+
+test("rejects Node test runner flags after Node options", async () => {
+  const inventory = {
+    files: async () => ["package.json"],
+    readText: async () => '{"scripts":{"test:extra":"node --experimental-test-coverage --test"}}',
+  };
+  await expect(
+    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+  ).resolves.toContain("package.json must not import or invoke a test runner or coverage tool.");
+});
+
+test.each([
+  "jest.config.mts",
+  ".jestrc.cjs",
+  "nested/jest.config.json5",
+  "vitest.config.js",
+  ".mocharc.yaml",
+  ".nycrc.json",
+  "playwright.config.ts",
+  ".babelrc",
+  ".taprc",
+  "uvu.config.mjs",
+  "vitest.workspace.mts",
+])("rejects separate Jest config %s", async (path) => {
+  const inventory = { files: async () => [path], readText: async () => "" };
+  await expect(
+    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+  ).resolves.toContain(`${path} is a separate test runner or coverage configuration file.`);
 });

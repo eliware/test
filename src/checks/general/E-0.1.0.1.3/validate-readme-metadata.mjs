@@ -5,6 +5,10 @@ export function validateReadmeMetadata(readme, packageJson = {}) {
   if (values.some((value) => typeof value !== "string" || !value.trim()))
     return "package.json must define a description, author, and license.";
   const labels = ["description", "author", "license"];
-  const missing = values.flatMap((value, index) => (readme.includes(value) ? [] : [labels[index]]));
+  const markdown = removeMarkdownCode(readme);
+  const missing = values.flatMap((value, index) =>
+    markdown.includes(value) ? [] : [labels[index]],
+  );
   return missing.length ? `README.md must include exact package ${missing.join(", ")}.` : null;
 }
+import { removeMarkdownCode } from "../E-0.1.0.1.4/extract-markdown-links.mjs";

@@ -22,7 +22,28 @@ function validateDirectTestTools(packageJson) {
   for (const [name, command] of Object.entries(packageJson.scripts ?? {}))
     if (typeof command === "string" && hasAlternativeToolCommand(command))
       errors.push(`package.json script ${name} must not invoke a separate test or coverage tool.`);
-  if (packageJson.nyc || packageJson.c8 || packageJson.vitest)
+  if (
+    [
+      "ava",
+      "@bcoe/v8-coverage",
+      "c8",
+      "cypress",
+      "jasmine",
+      "nightwatch",
+      "protractor",
+      "karma",
+      "mocha",
+      "nyc",
+      "playwright",
+      "qunit",
+      "tap",
+      "vitest",
+      "webdriverio",
+      "testcafe",
+      "istanbul",
+      "coverage",
+    ].some((key) => packageJson[key] !== undefined)
+  )
     errors.push("package.json must not configure a separate test runner or coverage engine.");
   return errors;
 }
@@ -55,15 +76,20 @@ function isAlternativeTestOrCoverageTool(name, version) {
       "webdriverio",
     ].includes(name) ||
     name.startsWith("@playwright/") ||
-    name.startsWith("@vitest/coverage-") ||
+    name.startsWith("@vitest/") ||
+    name.startsWith("@tapjs/") ||
+    name.startsWith("@wdio/") ||
+    name.startsWith("@cypress/") ||
     (typeof version === "string" &&
-      /^npm:(?:@jest\/|jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc)/iu.test(version))
+      /^npm:(?:@jest\/|@playwright\/|@vitest\/|@tapjs\/|@wdio\/|@cypress\/|jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|jasmine)/iu.test(
+        version,
+      ))
   );
 }
 
 function hasAlternativeToolCommand(command) {
   return (
-    /(?:^|[\s;&|])(?:npx\s+)?(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|bun\s+test|deno\s+test)(?=$|\s)/iu.test(
+    /(?:^|[\s;&|])(?:(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor|bun\s+test|deno\s+test)|(?:(?:npx|npm\s+exec|pnpm(?:\s+(?:exec|dlx))?|yarn(?:\s+(?:dlx|exec))?|bunx)(?:\s+--[^\s]+)*\s+(?:--\s+)?(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)))(?=$|\s)/iu.test(
       command,
     ) ||
     /node_modules[\\/]\.bin[\\/](?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul)/iu.test(

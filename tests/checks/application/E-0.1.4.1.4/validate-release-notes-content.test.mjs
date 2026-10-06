@@ -37,6 +37,13 @@ test("requires known, nonempty subsections", () => {
   expect(errors).toContain("subsection Unknown must contain text");
 });
 
+test("does not count a nested heading as subsection content", () => {
+  const notes = "# Release Notes\n\n## Unreleased\n\n### Changed\n\n#### Nested only\n";
+  expect(validateReleaseNotesContent(notes).join(" ")).toContain(
+    "subsection Changed must contain text",
+  );
+});
+
 test("requires an entry and rejects SemVer leading zeroes", () => {
   expect(validateReleaseNotesContent("# Release Notes")).toContain(
     "RELEASE_NOTES.md must contain an Unreleased or versioned entry.",
@@ -51,5 +58,18 @@ test("requires an entry and rejects SemVer leading zeroes", () => {
 test("rejects more than one level-one title", () => {
   expect(validateReleaseNotesContent("# Release Notes\n\n# Extra\n\n## Unreleased\n")).toContain(
     "RELEASE_NOTES.md must contain one level-one title.",
+  );
+});
+
+test("does not count release entries inside code fences", () => {
+  const code = "# Release Notes\n\n```md\n## Unreleased\n\n### Added\n\nExample.\n```";
+  expect(validateReleaseNotesContent(code)).toContain(
+    "RELEASE_NOTES.md must contain an Unreleased or versioned entry.",
+  );
+});
+
+test("requires the release title before code blocks", () => {
+  expect(validateReleaseNotesContent("```text\nexample\n```\n" + valid)).toContain(
+    "RELEASE_NOTES.md must begin with # Release Notes.",
   );
 });

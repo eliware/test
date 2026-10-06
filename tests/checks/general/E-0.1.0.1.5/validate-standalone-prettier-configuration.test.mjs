@@ -7,6 +7,16 @@ test("accepts the package configuration without standalone files", async () => {
   ).resolves.toEqual([]);
 });
 
+test("rejects EditorConfig as a second formatting configuration", async () => {
+  await expect(
+    validateStandalonePrettierConfiguration({
+      files: async () => ["package.json", "nested/.editorconfig"],
+    }),
+  ).resolves.toEqual([
+    "Standalone Prettier configuration files are not allowed: nested/.editorconfig.",
+  ]);
+});
+
 test("skips file inspection when inventory is missing", async () => {
   await expect(validateStandalonePrettierConfiguration()).resolves.toEqual([]);
 });
@@ -37,4 +47,15 @@ test("supports ignore exceptions and ignores non-maintained files", async () => 
       readText: async () => "src/**\n!src/index.mjs\nassets/**",
     }),
   ).resolves.toEqual([]);
+});
+
+test("checks Git ignore rules and basename patterns", async () => {
+  await expect(
+    validateStandalonePrettierConfiguration({
+      files: async () => [".gitignore", "src/index.mjs", "docs/guide.md"],
+      readText: async () => "*.mjs\ndocs/",
+    }),
+  ).resolves.toEqual([
+    ".gitignore must not exclude maintained files: src/index.mjs, docs/guide.md.",
+  ]);
 });

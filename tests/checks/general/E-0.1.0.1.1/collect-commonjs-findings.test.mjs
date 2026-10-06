@@ -6,6 +6,7 @@ test("finds CommonJS calls, exports, identifiers, and import.meta.require", () =
     type: "Program",
     body: [
       { type: "CallExpression", callee: { type: "Identifier", name: "require" } },
+      { type: "OptionalCallExpression", callee: { type: "Identifier", name: "require" } },
       {
         type: "MemberExpression",
         object: { type: "Identifier", name: "module" },
@@ -32,6 +33,7 @@ test("finds CommonJS calls, exports, identifiers, and import.meta.require", () =
   collectCommonJsFindings(ast, findings, "source.mjs");
   expect(findings).toEqual([
     "source.mjs: require()",
+    "source.mjs: require()",
     "source.mjs: CommonJS export",
     "source.mjs: CommonJS export",
     "source.mjs: CommonJS identifier __dirname",
@@ -49,4 +51,72 @@ test("ignores null nodes and location metadata", () => {
     "file.mjs",
   );
   expect(findings).toEqual([]);
+});
+
+test("finds computed module exports and require member calls", () => {
+  const findings = [];
+  collectCommonJsFindings(
+    {
+      type: "Program",
+      body: [
+        {
+          type: "MemberExpression",
+          object: { type: "Identifier", name: "module" },
+          property: { type: "StringLiteral", value: "exports" },
+        },
+        {
+          type: "CallExpression",
+          callee: {
+            type: "MemberExpression",
+            object: { type: "Identifier", name: "require" },
+            property: { type: "Identifier", name: "resolve" },
+          },
+        },
+      ],
+    },
+    findings,
+    "source.mts",
+  );
+  expect(findings).toEqual(["source.mts: CommonJS export", "source.mts: require()"]);
+});
+
+test("finds module.require calls", () => {
+  const findings = [];
+  collectCommonJsFindings(
+    {
+      type: "CallExpression",
+      callee: {
+        type: "MemberExpression",
+        object: { type: "Identifier", name: "module" },
+        property: { type: "StringLiteral", value: "require" },
+      },
+    },
+    findings,
+    "source.mjs",
+  );
+  expect(findings).toEqual(["source.mjs: module.require()"]);
+});
+
+test("finds CommonJS require aliases and TypeScript module syntax", () => {
+  const findings = [];
+  collectCommonJsFindings(
+    {
+      type: "Program",
+      body: [
+        { type: "VariableDeclarator", init: { type: "Identifier", name: "require" } },
+        {
+          type: "TSImportEqualsDeclaration",
+          moduleReference: { type: "TSExternalModuleReference" },
+        },
+        { type: "TSExportAssignment" },
+      ],
+    },
+    findings,
+    "source.mts",
+  );
+  expect(findings).toEqual([
+    "source.mts: require alias",
+    "source.mts: TypeScript CommonJS module syntax",
+    "source.mts: TypeScript CommonJS module syntax",
+  ]);
 });

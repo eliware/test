@@ -35,9 +35,15 @@ export async function validateCiWorkflow(inventory, packageJson = {}) {
 function validateDocument(document) {
   const errors = [];
   const events = document.on ?? document.true;
-  for (const event of ["push", "pull_request"])
+  for (const event of ["push", "pull_request"]) {
     if (!events?.[event]?.branches?.includes("main"))
       errors.push(`ci.yaml must enable ${event} for main.`);
+    if (
+      Object.hasOwn(events?.[event] ?? {}, "paths") ||
+      Object.hasOwn(events?.[event] ?? {}, "paths-ignore")
+    )
+      errors.push(`ci.yaml ${event} must not filter validation by file path.`);
+  }
   if (
     document.concurrency?.group !== "${{ github.repository }}-${{ github.ref }}" ||
     document.concurrency?.["cancel-in-progress"] !== true
@@ -45,6 +51,8 @@ function validateDocument(document) {
     errors.push("ci.yaml must set repository-and-ref concurrency with cancellation enabled.");
   if (!onlyReadPermissions(document.permissions))
     errors.push("ci.yaml workflow permissions must contain only contents: read.");
+  if (Object.hasOwn(document, "env"))
+    errors.push("ci.yaml must not define inherited workflow environment values.");
   const jobs = Object.values(document.jobs ?? {});
   if (jobs.length !== 1) errors.push("ci.yaml must define one validation job.");
   const job = jobs.find((item) => Array.isArray(item?.steps));
@@ -55,7 +63,15 @@ function validateDocument(document) {
     errors.push("ci.yaml validation job must run unconditionally without continue-on-error.");
   if (!onlyReadPermissions(job.permissions))
     errors.push("ci.yaml validation job permissions must contain only contents: read.");
+  if (Object.hasOwn(job, "env"))
+    errors.push("ci.yaml validation job must not define inherited environment values.");
+  if (hasRunOverrides(document.defaults) || hasRunOverrides(job.defaults))
+    errors.push("ci.yaml must not set inherited shell or working-directory overrides.");
   return [...errors, ...validateWorkflowSteps(job.steps)];
+}
+
+function hasRunOverrides(defaults) {
+  return ["shell", "working-directory"].some((key) => Object.hasOwn(defaults?.run ?? {}, key));
 }
 
 function onlyReadPermissions(permissions) {

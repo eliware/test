@@ -1,3 +1,5 @@
+import { removeMarkdownCode } from "../../general/E-0.1.0.1.4/extract-markdown-links.mjs";
+
 const allowedSections = new Set([
   "Added",
   "Changed",
@@ -11,8 +13,9 @@ const versionHeading =
 
 export function validateReleaseNotesContent(content) {
   const errors = [];
-  const lines = content.split(/\r?\n/u);
-  if (lines[0] !== "# Release Notes")
+  const originalLines = content.split(/\r?\n/u);
+  const lines = removeMarkdownCode(content).split(/\r?\n/u);
+  if (originalLines[0] !== "# Release Notes")
     errors.push("RELEASE_NOTES.md must begin with # Release Notes.");
   if (lines.filter((line) => /^#\s/u.test(line)).length !== 1)
     errors.push("RELEASE_NOTES.md must contain one level-one title.");
@@ -71,7 +74,9 @@ function validateEntrySections(lines, start, headings, title) {
     const end = sections[index + 1]?.index ?? next;
     if (!allowedSections.has(section.name))
       errors.push(`${title} has an unsupported subsection: ${section.name}.`);
-    if (!lines.slice(section.index + 1, end).some((line) => line.trim()))
+    if (
+      !lines.slice(section.index + 1, end).some((line) => line.trim() && !/^#{1,6}\s/u.test(line))
+    )
       errors.push(`${title} subsection ${section.name} must contain text.`);
   }
   return errors;

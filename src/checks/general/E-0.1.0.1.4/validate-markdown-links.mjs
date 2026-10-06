@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { findMarkdownFiles } from "./find-markdown-files.mjs";
+import { hasMarkdownFragment } from "./resolve-markdown-fragment.mjs";
 import { validateExternalLink } from "./validate-external-markdown-link.mjs";
 
 export async function validateMarkdownLinks(root, context = {}, dependencies = {}) {
@@ -54,7 +55,7 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
         const info = await inspect(target);
         if (fragment && target.toLowerCase().endsWith(".md")) {
           const targetText = await read(target, "utf8");
-          if (!hasFragment(targetText, fragment))
+          if (!hasMarkdownFragment(targetText, fragment))
             errors.push(`Documentation fragment does not resolve: ${reference} in ${file}.`);
         } else if (!info.isFile() && !info.isDirectory()) {
           errors.push(`Documentation link does not resolve: ${reference} in ${file}.`);
@@ -70,26 +71,4 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
 function splitReference(value) {
   const [path, ...fragment] = value.split("#");
   return [path.split("?")[0], fragment.join("#")];
-}
-
-function hasFragment(content, fragment) {
-  let wanted;
-  try {
-    wanted = decodeURIComponent(fragment).toLowerCase();
-  } catch {
-    return false;
-  }
-  return content.split(/\r?\n/u).some((line) => {
-    const heading = /^(?:#{1,6})\s+(.+?)\s*#*$/u.exec(line);
-    const slug = heading?.[1]
-      .toLowerCase()
-      .replace(/[`*_~]/gu, "")
-      .replace(/[^\p{Letter}\p{Number}\s-]/gu, "")
-      .trim()
-      .replace(/\s+/gu, "-");
-    return (
-      slug === wanted ||
-      [...line.matchAll(/\bid=["']([^"']+)["']/giu)].some(([, id]) => id.toLowerCase() === wanted)
-    );
-  });
 }

@@ -53,6 +53,13 @@ test("rejects missing test commands and checkout overrides", () => {
   expect(result.join(" ")).toContain("must not override env, shell");
 });
 
+test("rejects environment overrides on npm installation and validation steps", () => {
+  const changed = steps.map((step) => (step.run === "npm ci" ? { ...step, env: {} } : step));
+  expect(validateWorkflowSteps(changed)).toContain(
+    "npm install, npm ci, and npm test steps must not override env, shell, or working-directory.",
+  );
+});
+
 test("rejects conditional validation steps", () => {
   expect(
     validateWorkflowSteps(
@@ -61,8 +68,46 @@ test("rejects conditional validation steps", () => {
   ).toContain("ci.yaml validation steps must run unconditionally without continue-on-error.");
 });
 
+test.each([
+  "pnpm publish",
+  "yarn npm publish",
+  "bun publish",
+  "npm --workspace app publish",
+  "docker build --push docker.io/x",
+])("rejects publication command %s", (run) => {
+  expect(validateWorkflowSteps([...steps.slice(0, -1), { run }, steps.at(-1)])).toContain(
+    "ci.yaml validation job must not include publication commands.",
+  );
+});
+
 test("rejects duplicate validation stages after npm test", () => {
   expect(validateWorkflowSteps([...steps, { run: "npm run lint" }])).toContain(
     "ci.yaml must not duplicate aggregate validation stages.",
+  );
+});
+
+test.each([
+  "npm run test",
+  "node bin/eliware-test.mjs --lint",
+  "eliware-test --format-check",
+  "npx eliware-test --audit",
+  "npm exec -- eliware-test --pack",
+  "npm outdated",
+])("rejects duplicate stage command %s", (run) => {
+  expect(validateWorkflowSteps([...steps, { run }])).toContain(
+    "ci.yaml must not duplicate aggregate validation stages.",
+  );
+});
+
+test("requires npm test to be the final job step", () => {
+  expect(validateWorkflowSteps([...steps, { uses: "third-party/publish-action@v1" }])).toContain(
+    "ci.yaml npm test must be the final validation-job step.",
+  );
+});
+
+test("rejects sparse checkout options", () => {
+  const checkout = { ...steps[0], with: { "sparse-checkout": "src/" } };
+  expect(validateWorkflowSteps([checkout, ...steps.slice(1)])).toContain(
+    "ci.yaml must not override the checkout repository, ref, or sparse scope.",
   );
 });

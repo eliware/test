@@ -7,4 +7,7 @@ test("requires package fields and includes their exact values", () => {
   const pkg = { description: "Description", author: { name: "Author" }, license: "MIT" };
   expect(validateReadmeMetadata("Description Author MIT", pkg)).toBeNull();
   expect(validateReadmeMetadata("Description", pkg)).toContain("author, license");
+  expect(validateReadmeMetadata("```text\nDescription Author MIT\n```", pkg)).toContain(
+    "description, author, license",
+  );
 });

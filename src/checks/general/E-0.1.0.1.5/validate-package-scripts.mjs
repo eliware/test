@@ -25,8 +25,20 @@ export function validatePackageScripts(packageJson = {}) {
     if (Object.hasOwn(required, name)) continue;
     if (typeof command !== "string" || !command.trim())
       errors.push(`package.json.scripts.${name} must be a nonempty command.`);
-    else if (/\b(?:npm\s+publish|docker\s+push|ghcr\.io)\b/iu.test(command))
+    else if (hasPublicationCommand(command))
       errors.push(`package.json.scripts.${name} must not publish packages or images.`);
   }
   return errors;
+}
+
+function hasPublicationCommand(command) {
+  return (
+    /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu.test(
+      command,
+    ) ||
+    /\b(?:docker|podman|buildah)\s+(?:push\b|(?:buildx\s+)?build\b[^;\r\n]*--push\b)/iu.test(
+      command,
+    ) ||
+    /\b(?:oras|crane)\s+push\b|\bskopeo\s+copy\b|\bghcr\.io\//iu.test(command)
+  );
 }

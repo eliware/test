@@ -1,3 +1,5 @@
+import { removeMarkdownCode } from "../E-0.1.0.1.4/extract-markdown-links.mjs";
+
 const requiredMarkers = [
   "Node.js 26",
   "native ESM",
@@ -9,6 +11,7 @@ const requiredMarkers = [
 ];
 
 export function validateAgentsContent(content) {
-  const missing = requiredMarkers.filter((marker) => !content.includes(marker));
+  const markdown = removeMarkdownCode(content, { preserveInlineCodeText: true });
+  const missing = requiredMarkers.filter((marker) => !markdown.includes(marker));
   return missing.length ? [`AGENTS.md must include: ${missing.join(", ")}.`] : [];
 }

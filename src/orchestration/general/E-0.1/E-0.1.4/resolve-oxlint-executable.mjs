@@ -6,8 +6,8 @@ export async function resolveOxlintExecutable(
   requireFactory = () => createRequire(import.meta.url),
   readPackage = readFile,
 ) {
-  const require = requireFactory();
-  const packagePath = require.resolve("oxlint/package.json");
+  const resolvePackage = requireFactory();
+  const packagePath = resolvePackage.resolve("oxlint/package.json");
   const metadata = JSON.parse(await readPackage(packagePath, "utf8"));
   const binary = typeof metadata.bin === "string" ? metadata.bin : metadata.bin?.oxlint;
   if (!binary) throw new Error("Oxlint package does not declare an executable.");

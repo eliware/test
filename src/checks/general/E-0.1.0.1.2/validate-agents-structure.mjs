@@ -28,9 +28,10 @@ export function validateAgentsStructure(
   packageJson = {},
   specificationHeadings = new Set(),
 ) {
-  const lines = content.split(/\r?\n/u);
-  const first = lines.find((line) => line.trim() !== "");
-  if (first !== "# AGENTS.md") return ["AGENTS.md must begin with # AGENTS.md."];
+  const firstContentLine = content.split(/\r?\n/u).find((line) => line.trim() !== "");
+  if (firstContentLine !== "# AGENTS.md") return ["AGENTS.md must begin with # AGENTS.md."];
+  const markdown = removeMarkdownCode(content);
+  const lines = markdown.split(/\r?\n/u);
   const actual = lines.filter((line) => /^##\s+/u.test(line)).map((line) => line.slice(3).trim());
   if (requiredSections.some((section, index) => actual[index] !== section))
     return ["AGENTS.md must begin with the seven required headings in order."];
@@ -55,3 +56,4 @@ export function validateAgentsStructure(
     return ["AGENTS.md has duplicate, undeclared, or misordered section headings."];
   return [];
 }
+import { removeMarkdownCode } from "../E-0.1.0.1.4/extract-markdown-links.mjs";

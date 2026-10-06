@@ -20,6 +20,35 @@ test("ignores links inside fenced and inline code", () => {
   ]);
 });
 
+test("ignores links inside indented code", () => {
+  expect(extractMarkdownLinks("    [code](bad.md)\n[good](ok.md)")).toEqual([
+    { reference: "ok.md" },
+  ]);
+});
+
+test("keeps nested list items out of indented code", () => {
+  expect(extractMarkdownLinks("- item\n    - [nested](valid.md)")).toEqual([
+    { reference: "valid.md" },
+  ]);
+});
+
+test("ignores links inside HTML comments", () => {
+  expect(extractMarkdownLinks("<!-- [hidden](missing.md) --> [shown](valid.md)")).toEqual([
+    { reference: "valid.md" },
+  ]);
+});
+
 test("retains unresolved reference links for validation", () => {
   expect(extractMarkdownLinks("[label][missing]")).toEqual([{ reference: null }]);
+});
+
+test("extracts shortcut and collapsed reference links", () => {
+  expect(
+    extractMarkdownLinks("[short] [collapsed][]\n\n[short]: one.md\n[collapsed]: two.md"),
+  ).toEqual([{ reference: "one.md" }, { reference: "two.md" }]);
+});
+
+test("reports undefined shortcut reference syntax", () => {
+  expect(extractMarkdownLinks("[missing]")).toEqual([]);
+  expect(extractMarkdownLinks("[missing][]")).toEqual([{ reference: null }]);
 });

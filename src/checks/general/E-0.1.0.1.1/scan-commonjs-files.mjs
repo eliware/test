@@ -8,7 +8,7 @@ import {
 import { findRepositoryFiles } from "../../../orchestration/general/E-0.1/find-repository-files.mjs";
 import { collectCommonJsFindings } from "./collect-commonjs-findings.mjs";
 
-const moduleFile = /\.(?:mjs|js|cjs|ts|tsx|cts)$/iu;
+const moduleFile = /\.(?:mjs|js|jsx|cjs|ts|tsx|cts|mts|mjsx|cjsx)$/iu;
 
 export async function scanCommonJsFiles(root, files, parseAst) {
   const findings = [];

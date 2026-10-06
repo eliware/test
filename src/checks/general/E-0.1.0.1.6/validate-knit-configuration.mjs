@@ -50,9 +50,9 @@ function validateCommands(commands, index) {
       errors.push(`${label} must not publish npm packages or GHCR images.`);
     if (/codescope/iu.test(command)) errors.push(`${label} must not invoke CodeScope.`);
     for (const [, script] of command.matchAll(
-      /(?:^|\s)([^\s"';&|]+\.(?:mjs|cjs|js|sh|ps1|py|rb|ts))\b/giu,
+      /(?:^|[\s"'`])([^\s"'`;&|]+\.(?:mjs|cjs|js|sh|ps1|py|rb|ts))\b/giu,
     ))
-      if (!script.replace(/^\.\//u, "").startsWith(".knit/"))
+      if (!script.replaceAll("\\", "/").replace(/^\.\//u, "").startsWith(".knit/"))
         errors.push(`${label} must keep secondary scripts under .knit/: ${script}.`);
   }
   return errors;
@@ -60,9 +60,9 @@ function validateCommands(commands, index) {
 
 function isProhibitedPublishCommand(command) {
   return [
-    /(?:^|(?:&&|\|\||[;&|])\s*)npm\s+(?:--[^\s]+\s+)*publish\b/iu,
+    /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu,
     /\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*(?:\bghcr\.io\/|\$\{?GHCR_[A-Z0-9_]+\}?)/iu,
-    /\b(?:docker|podman|buildah)\s+buildx\s+build\b[^;\r\n]*--push[^;\r\n]*(?:\bghcr\.io\/|\$\{?GHCR_[A-Z0-9_]+\}?)/iu,
+    /\b(?:docker|podman|buildah)\s+(?:buildx\s+)?build\b[^;\r\n]*--push[^;\r\n]*(?:\bghcr\.io\/|\$\{?GHCR_[A-Z0-9_]+\}?)/iu,
     /\b(?:oras|crane)\s+push\b[^;\r\n]*\bghcr\.io\//iu,
     /\bskopeo\s+copy\b[^;\r\n]*docker:\/\/ghcr\.io\//iu,
   ].some((pattern) => pattern.test(command));

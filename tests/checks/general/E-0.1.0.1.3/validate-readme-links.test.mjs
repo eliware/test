@@ -24,3 +24,8 @@ test("requires canonical links and Discord support block", () => {
   expect(validateReadmeLinks(`${links}\n${license}\n${support}`, pkg)).toContain("Eliware");
   expect(validateReadmeLinks("", undefined)).toContain("Eliware");
 });
+
+test("does not count canonical links or support text inside code", () => {
+  const fake = `## Links\n\`\`\`md\n${links}\n\`\`\`\n## License\n\`\`\`md\n${license}\n\`\`\`\n## Support\n\`\`\`md\n${support}\n\`\`\``;
+  expect(validateReadmeLinks(fake, pkg)).toContain("Eliware");
+});

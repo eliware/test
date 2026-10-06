@@ -5,11 +5,22 @@ test("checks the docs index against all Markdown paths", async () => {
   const inventory = {
     documentationFiles: async ({ predicate }) =>
       ["README.md", "guide.md", "nested/topic.md"].filter(predicate),
-    readText: async () => "- [Guide](guide.md)",
+    readText: async (path) =>
+      path.endsWith("docs/README.md") ? "- [Guide](guide.md)" : "[Documentation](docs/README.md)",
   };
   await expect(
     validateDocumentationIndexes({ root: "repo", repositoryInventory: inventory }),
   ).resolves.toContain("docs/README.md must link nested/topic.md.");
+});
+
+test("requires a root README link to the docs index", async () => {
+  const inventory = {
+    documentationFiles: async ({ predicate }) => ["README.md"].filter(predicate),
+    readText: async () => "# Documentation",
+  };
+  await expect(
+    validateDocumentationIndexes({ root: "repo", repositoryInventory: inventory }),
+  ).resolves.toContain("README.md must link docs/README.md.");
 });
 
 test("reports a missing default context", async () => {
@@ -30,6 +41,7 @@ test("reports missing index and inaccessible docs", async () => {
     }),
   ).resolves.toEqual([
     "docs/README.md is required.",
+    "README.md must link docs/README.md.",
     "docs/README.md is required to index documentation.",
   ]);
 });
