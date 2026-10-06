@@ -10,6 +10,7 @@ test("accepts plain and dot-relative links", () => {
 test("reports each missing Markdown link", () => {
   expect(validateMarkdownIndex("[A](other.md)", ["a.md"], "docs/README.md")).toEqual([
     "docs/README.md must link a.md.",
+    "docs/README.md links to unexpected target other.md.",
   ]);
 });
 
@@ -22,5 +23,26 @@ test("does not count links inside code examples", () => {
 test("does not count links inside indented code", () => {
   expect(validateMarkdownIndex("    [Example](a.md)", ["a.md"], "docs/README.md")).toEqual([
     "docs/README.md must link a.md.",
+  ]);
+});
+
+test("requires each discovered target exactly once and rejects extras", () => {
+  expect(
+    validateMarkdownIndex(
+      "[A](a.md) [A again](a.md) [Extra](other.md)",
+      ["a.md"],
+      "docs/README.md",
+    ),
+  ).toEqual([
+    "docs/README.md links to unexpected target other.md.",
+    "docs/README.md must link each target only once.",
+  ]);
+});
+
+test("rejects links with incorrect path casing and unresolved references", () => {
+  expect(validateMarkdownIndex("[A](A.md) [missing][x]", ["a.md"], "docs/README.md")).toEqual([
+    "docs/README.md must link a.md.",
+    "docs/README.md links to unexpected target A.md.",
+    "docs/README.md links to unexpected target an undefined reference.",
   ]);
 });

@@ -20,12 +20,36 @@ function actionableJestOutput(text) {
     .trim();
 }
 
+function failedProgressOutput(text) {
+  return String(text ?? "")
+    .split(/\r?\n/u)
+    .flatMap((line) => {
+      const marker = line.match(/^\[eliware-test-progress\] (.+)$/u);
+      if (!marker) return [];
+      try {
+        const event = JSON.parse(marker[1]);
+        if (event.event !== "result" || !event.failed) return [];
+        return [
+          [event.path, ...(event.failures ?? []), ...(event.unexpectedOutput ?? [])]
+            .filter(Boolean)
+            .join("\n"),
+        ];
+      } catch {
+        return [];
+      }
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function classifyJestResult(
   ruleId,
   result,
   timeoutDiagnostic,
   { failuresReported = false } = {},
 ) {
+  if (timeoutDiagnostic && (result.timedOut || result.code !== 0))
+    return fail(ruleId, timeoutDiagnostic);
   if (result.timedOut) {
     return fail(ruleId, timeoutDiagnostic ?? "Jest timed out after 15 seconds without progress.");
   }
@@ -34,6 +58,9 @@ export function classifyJestResult(
     const detail = [result.stdout, result.stderr]
       .map(actionableJestOutput)
       .filter(Boolean)
+      .concat(failedProgressOutput(result.stdout), failedProgressOutput(result.stderr))
+      .filter(Boolean)
+      .filter((value, index, values) => values.indexOf(value) === index)
       .join("\n")
       .trim();
     const exitDetails = [
@@ -43,7 +70,7 @@ export function classifyJestResult(
       .filter(Boolean)
       .join(", ");
     const fallback = exitDetails
-      ? `Jest failed without output (${exitDetails}).`
+      ? `Jest exited with no captured output (${exitDetails}).`
       : "Jest failed without diagnostics.";
     return fail(ruleId, detail ? `Jest failed: ${detail}` : fallback);
   }

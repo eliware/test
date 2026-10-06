@@ -41,10 +41,26 @@ test("accepts active modifiers and imported test aliases", () => {
     'const { "test": check } = globalThis; check("quoted global alias", () => {});',
     'import * as jestApi from "@jest/globals"; const check = jestApi.test; check("import alias", () => {});',
     'globalThis.test("global property", () => {});',
+    'const { test: run } = await import("@jest/globals"); run("dynamic alias", () => {});',
+    'const api = await import("@jest/globals"); api.test("dynamic namespace", () => {});',
   ])
     expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
       true,
     );
+});
+
+test("rejects callbacks shadowed by non-function parameters", () => {
+  const source = 'function callback() {} function unused(callback) { test("shadowed", callback); }';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+});
+
+test("rejects a Jest function alias after reassignment", () => {
+  const source = 'let run = test; run = () => {}; run("not a test", () => {});';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
 });
 
 test("ignores non-test imports and inactive modifiers", () => {

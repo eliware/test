@@ -33,7 +33,7 @@ export async function validateGitHygiene(root, runGit = executeFile, { readText 
       ["-C", root, "ls-files", "--cached", "--ignored", "--exclude-standard", "-z"],
       { windowsHide: true, encoding: "buffer" },
     );
-    const ignored = stdout.toString("utf8").split("\0").filter(Boolean);
+    const ignored = parseNulPaths(stdout);
     if (ignored.length)
       errors.push(`Tracked or staged paths match ignore rules: ${ignored.join(", ")}.`);
   } catch {
@@ -44,14 +44,30 @@ export async function validateGitHygiene(root, runGit = executeFile, { readText 
       windowsHide: true,
       encoding: "buffer",
     });
-    const links = stdout
-      .toString("utf8")
-      .split("\0")
-      .filter((entry) => entry.startsWith("120000 "))
-      .map((entry) => entry.slice(entry.indexOf("\t") + 1));
+    const links = parseIndexEntries(stdout)
+      .filter(({ mode }) => mode === "120000")
+      .map(({ path }) => path);
     if (links.length) errors.push(`Tracked symlink entries are prohibited: ${links.join(", ")}.`);
   } catch {
     errors.push("Git index status could not be read; tracked symlinks are unknown.");
   }
   return errors;
+}
+
+function parseNulPaths(output) {
+  const text = Buffer.isBuffer(output) ? output.toString("utf8") : output;
+  if (typeof text !== "string" || (text && !text.endsWith("\0")))
+    throw new Error("Git returned incomplete NUL-delimited paths.");
+  const paths = text ? text.slice(0, -1).split("\0") : [];
+  if (paths.some((path) => !path || path.startsWith("/") || /^[A-Za-z]:/u.test(path)))
+    throw new Error("Git returned an invalid repository path.");
+  return paths;
+}
+
+function parseIndexEntries(output) {
+  return parseNulPaths(output).map((entry) => {
+    const match = /^(\d{6}) ([0-9a-f]{40}|[0-9a-f]{64}) ([0-3])\t(.+)$/iu.exec(entry);
+    if (!match) throw new Error("Git returned an invalid index entry.");
+    return { mode: match[1], path: match[4] };
+  });
 }

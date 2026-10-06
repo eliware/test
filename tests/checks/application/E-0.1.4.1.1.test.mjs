@@ -5,9 +5,9 @@ test("E-0.1.4.1.1 accepts existing entrypoints and matching start tokens", async
   const result = await run(
     {
       root: "repo",
-      packageJson: { bin: { app: "./bin/app.mjs" }, scripts: { start: 'node "./bin/app.mjs"' } },
+      packageJson: { bin: { app: "bin/app.mjs" }, scripts: { start: 'node "bin/app.mjs"' } },
     },
-    { stat: async () => ({ isFile: () => true }) },
+    { lstat: async () => ({ isFile: () => true, isSymbolicLink: () => false }) },
   );
   expect(result).toEqual({ ruleId, status: "pass", message: "" });
 });
@@ -18,7 +18,7 @@ test("E-0.1.4.1.1 rejects escaping paths and invalid command names", async () =>
   });
   expect(result).toMatchObject({ ruleId, status: "fail" });
   expect(result.message).toContain("command name is invalid");
-  expect(result.message).toContain("stay under bin/");
+  expect(result.message).toContain("canonical path under bin/");
 });
 
 test("E-0.1.4.1.1 rejects missing entrypoint files and start tokens", async () => {

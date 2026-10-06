@@ -3,7 +3,7 @@ import { validateWorkflowSteps } from "../../../../src/checks/general/E-0.1.0.1.
 
 const steps = [
   { uses: "actions/checkout@v6" },
-  { uses: "actions/setup-node@v7", with: { "node-version": 26 } },
+  { uses: "actions/setup-node@v7", with: { "node-version": 26, cache: "npm" } },
   { run: "npm -g install npm@latest" },
   { run: "npm ci" },
   { run: "npm test" },
@@ -11,6 +11,15 @@ const steps = [
 
 test("accepts the required ordered validation steps", () => {
   expect(validateWorkflowSteps(steps)).toEqual([]);
+});
+
+test("accepts null workflow entries and safe reporting commands", () => {
+  expect(
+    validateWorkflowSteps([...steps.slice(0, 2), { run: "echo ready" }, ...steps.slice(2)]),
+  ).toEqual([]);
+  expect(validateWorkflowSteps([...steps, null])).toContain(
+    "ci.yaml npm test must be the final validation-job step.",
+  );
 });
 
 test("accepts literal reporting before the npm install", () => {
@@ -39,6 +48,12 @@ test("rejects missing, reordered, duplicate, and unsupported stage steps", () =>
   expect(result.join(" ")).toContain("npm ci, then npm test");
   expect(result.join(" ")).toContain("unapproved step");
   expect(result.join(" ")).toContain("publication commands");
+});
+
+test("reports a missing setup-node input map", () => {
+  expect(
+    validateWorkflowSteps([steps[0], { uses: "actions/setup-node@v7" }, ...steps.slice(2)]),
+  ).toContain("ci.yaml setup-node must use Node.js 26.");
 });
 
 test("rejects missing test commands and checkout overrides", () => {
@@ -93,6 +108,9 @@ test.each([
   "npx eliware-test --audit",
   "npm exec -- eliware-test --pack",
   "npm outdated",
+  "pnpm run lint",
+  "yarn test",
+  "bun run format:check",
 ])("rejects duplicate stage command %s", (run) => {
   expect(validateWorkflowSteps([...steps, { run }])).toContain(
     "ci.yaml must not duplicate aggregate validation stages.",
@@ -110,4 +128,21 @@ test("rejects sparse checkout options", () => {
   expect(validateWorkflowSteps([checkout, ...steps.slice(1)])).toContain(
     "ci.yaml must not override the checkout repository, ref, or sparse scope.",
   );
+});
+
+test("rejects unsupported workflow step keys and setup-node inputs", () => {
+  const changed = steps.map((step, index) =>
+    index === 1 ? { ...step, with: { ...step.with, "check-latest": true } } : step,
+  );
+  expect(validateWorkflowSteps(changed)).toContain(
+    "ci.yaml setup-node may use only node-version 26 and npm cache inputs.",
+  );
+  expect(
+    validateWorkflowSteps([{ ...steps[0], name: "checkout" }, ...steps.slice(1)]).join(" "),
+  ).toContain("steps must use only approved keys and inputs");
+});
+
+test("rejects reporting commands with embedded line breaks", () => {
+  const changed = [steps[0], steps[1], { run: 'echo "safe\nunsafe"' }, ...steps.slice(2)];
+  expect(validateWorkflowSteps(changed)).toContain("ci.yaml has an unapproved step before npm ci.");
 });

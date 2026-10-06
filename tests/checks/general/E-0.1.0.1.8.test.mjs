@@ -19,7 +19,9 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
       return {
         stdout: Buffer.from(`${trackedIgnored.join("\0")}${trackedIgnored.length ? "\0" : ""}`),
       };
-    return { stdout: Buffer.from(symlinks.map((path) => `120000 deadbeef 0\t${path}`).join("\0")) };
+    return {
+      stdout: Buffer.from(symlinks.map((path) => `120000 ${"a".repeat(40)} 0\t${path}`).join("\0")),
+    };
   };
 }
 
@@ -37,7 +39,7 @@ test("reports missing ignore rules, ignored tracked files, and symlinks", async 
   const runner = async (_command, args) => {
     if (args.includes("check-ignore")) throw Object.assign(new Error("not ignored"), { code: 1 });
     if (args.includes("--ignored")) return { stdout: Buffer.from("tracked.env\0") };
-    return { stdout: Buffer.from("120000 deadbeef 0\tlink\0") };
+    return { stdout: Buffer.from(`120000 ${"a".repeat(40)} 0\tlink\0`) };
   };
   const result = await run({ root: "repo", runGit: runner, readText: async () => ignoreText });
   expect(result.ruleId).toBe(ruleId);
@@ -73,6 +75,20 @@ test("reports a tracked ignored path", async () => {
       readText: async () => ignoreText,
     }),
   ).resolves.toContain("Tracked or staged paths match ignore rules: ignored.txt.");
+});
+
+test("rejects malformed Git path and index output", async () => {
+  const indexRunner = async (_command, args) =>
+    args.includes("--stage")
+      ? { stdout: Buffer.from("120000 invalid 0\tlink\0") }
+      : args.includes("--ignored")
+        ? { stdout: Buffer.from("/absolute/path\0") }
+        : { code: 0, stdout: "" };
+  const errors = await validateGitHygiene("repo", indexRunner, {
+    readText: async () => ignoreText,
+  });
+  expect(errors).toContain("Git index status could not be read; tracked ignore status is unknown.");
+  expect(errors).toContain("Git index status could not be read; tracked symlinks are unknown.");
 });
 
 test("uses the current directory and detects an ignored example file", async () => {

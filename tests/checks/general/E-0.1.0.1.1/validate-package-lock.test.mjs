@@ -74,3 +74,73 @@ test("reports malformed package dependency maps", async () => {
   );
   expect(errors).toContain("package.json peerDependencies must be an object.");
 });
+
+test("rejects null dependency maps and malformed dependency ranges", async () => {
+  const packageJson = { ...pkg, dependencies: null };
+  const errors = await validatePackageLock("/repo", packageJson, { read: readLock(validLock) });
+  expect(errors).toContain("package.json dependencies must be an object.");
+
+  const malformed = await validatePackageLock(
+    "/repo",
+    { ...pkg, dependencies: { alpha: [] } },
+    {
+      read: readLock({
+        ...validLock,
+        packages: {
+          "": { name: pkg.name, version: pkg.version, dependencies: { alpha: [] } },
+          "node_modules/alpha": { version: "1.0.0" },
+        },
+      }),
+    },
+  );
+  expect(malformed).toContain(
+    "package.json dependencies has an invalid dependency range for alpha.",
+  );
+});
+
+test("requires each locked direct package version to satisfy its declared range", async () => {
+  const errors = await validatePackageLock(
+    "/repo",
+    { ...pkg, dependencies: { alpha: "^2.0.0" } },
+    {
+      read: readLock({
+        ...validLock,
+        packages: {
+          "": { name: pkg.name, version: pkg.version, dependencies: { alpha: "^2.0.0" } },
+          "node_modules/alpha": { version: "1.5.0" },
+        },
+      }),
+    },
+  );
+  expect(errors).toContain("package-lock.json version for alpha does not satisfy ^2.0.0.");
+});
+
+test("accepts npm alias ranges and rejects unsupported direct ranges", async () => {
+  const packageJson = { ...pkg, dependencies: { alias: "npm:actual@^1.0.0" } };
+  const lock = {
+    ...validLock,
+    packages: {
+      "": { name: pkg.name, version: pkg.version, dependencies: packageJson.dependencies },
+      "node_modules/alias": { version: "1.2.0" },
+    },
+  };
+  await expect(
+    validatePackageLock("/repo", packageJson, { read: readLock(lock) }),
+  ).resolves.toEqual([]);
+  const invalid = await validatePackageLock(
+    "/repo",
+    { ...pkg, dependencies: { alias: "file:../alias" } },
+    {
+      read: readLock({
+        ...lock,
+        packages: {
+          ...lock.packages,
+          "": { ...lock.packages[""], dependencies: { alias: "file:../alias" } },
+        },
+      }),
+    },
+  );
+  expect(invalid).toContain(
+    "package.json dependencies has an unsupported dependency range for alias.",
+  );
+});

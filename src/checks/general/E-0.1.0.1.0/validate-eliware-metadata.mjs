@@ -30,7 +30,10 @@ export function validateEliwareMetadata(packageJson) {
   }
   if (eliware && Object.hasOwn(eliware, "exempt")) {
     try {
-      validateExemptionRecords(eliware.exempt);
+      validateExemptionRecords(
+        eliware.exempt,
+        Object.keys(readBundledProfileCatalog().deterministicDirectives),
+      );
     } catch (error) {
       errors.push(error.message);
     }

@@ -33,6 +33,7 @@ export function validatePackageScripts(packageJson = {}) {
 
 function hasPublicationCommand(command) {
   return (
+    /\b(?:semantic-release|release-it|lerna\s+publish|changesets?\s+publish)\b/iu.test(command) ||
     /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu.test(
       command,
     ) ||

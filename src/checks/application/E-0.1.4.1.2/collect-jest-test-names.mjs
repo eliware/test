@@ -1,3 +1,7 @@
+import { findInvalidJestTestAliases } from "./find-invalid-jest-test-aliases.mjs";
+import { isActiveJestTestExpression } from "./is-active-jest-test-expression.mjs";
+import { isJestGlobalsImport, isTestNamespace } from "./jest-globals-import.mjs";
+
 export function collectJestTestNames(program) {
   const names = { callbacks: new Set(["test", "it"]), namespaces: new Set() };
   for (const node of program.body) {
@@ -10,6 +14,7 @@ export function collectJestTestNames(program) {
   }
   let changed = true;
   while (changed) changed = addTestAliases(program, names);
+  for (const name of findInvalidJestTestAliases(program, names)) names.callbacks.delete(name);
   return names;
 }
 
@@ -17,6 +22,24 @@ function addTestAliases(node, names) {
   if (Array.isArray(node)) return node.some((item) => addTestAliases(item, names));
   if (!node || typeof node !== "object") return false;
   let changed = false;
+  if (node.type === "VariableDeclarator" && isJestGlobalsImport(node.init)) {
+    if (node.id?.type === "Identifier" && !names.namespaces.has(node.id.name)) {
+      names.namespaces.add(node.id.name);
+      changed = true;
+    }
+    if (node.id?.type === "ObjectPattern")
+      for (const property of node.id.properties) {
+        const imported = property.key?.name ?? property.key?.value;
+        if (
+          ["test", "it"].includes(imported) &&
+          property.value?.type === "Identifier" &&
+          !names.callbacks.has(property.value.name)
+        ) {
+          names.callbacks.add(property.value.name);
+          changed = true;
+        }
+      }
+  }
   if (
     node.type === "VariableDeclarator" &&
     node.id?.type === "ObjectPattern" &&
@@ -38,35 +61,11 @@ function addTestAliases(node, names) {
     node.type === "VariableDeclarator" &&
     node.id?.type === "Identifier" &&
     ["Identifier", "MemberExpression"].includes(node.init?.type) &&
-    isActiveTestExpression(node.init, names) &&
+    isActiveJestTestExpression(node.init, names) &&
     !names.callbacks.has(node.id.name)
   ) {
     names.callbacks.add(node.id.name);
     changed = true;
   }
   return Object.values(node).reduce((found, item) => addTestAliases(item, names) || found, changed);
-}
-
-function isTestNamespace(node, names) {
-  return (
-    node?.type === "Identifier" &&
-    (names.namespaces.has(node.name) || ["global", "globalThis"].includes(node.name))
-  );
-}
-
-export function isActiveTestExpression(node, names) {
-  if (node?.type === "Identifier") return names.callbacks.has(node.name);
-  if (node?.type === "CallExpression") return isActiveTestExpression(node.callee, names);
-  if (node?.type !== "MemberExpression") return false;
-  const property = node.computed ? node.property.value : node.property.name;
-  if (
-    ["test", "it"].includes(property) &&
-    node.object?.type === "Identifier" &&
-    (names.namespaces.has(node.object.name) || ["global", "globalThis"].includes(node.object.name))
-  )
-    return true;
-  return (
-    ["each", "only", "concurrent", "failing"].includes(property) &&
-    isActiveTestExpression(node.object, names)
-  );
 }

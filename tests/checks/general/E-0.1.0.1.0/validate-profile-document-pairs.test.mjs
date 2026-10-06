@@ -44,3 +44,26 @@ test("ignores unmatched profiles and unrelated files", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("rejects malformed YAML and mismatched stream lengths", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));
+  const directory = join(root, "specs", "conventions");
+  await mkdir(directory, { recursive: true });
+  try {
+    await writeFile(join(directory, "general-semantic.yaml"), "version: [\n");
+    await expect(validateProfileDocumentPairs(root)).rejects.toThrow();
+    await writeFile(
+      join(directory, "general-semantic.yaml"),
+      "version: '12.0'\nrequires: []\n---\nversion: '12.0'\nrequires: []\n",
+    );
+    await writeFile(
+      join(directory, "general-deterministic.yaml"),
+      "version: '12.0'\nrequires: []\n",
+    );
+    expect(await validateProfileDocumentPairs(root)).toContain(
+      "general semantic and deterministic documents must use the same stream length.",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

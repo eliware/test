@@ -10,7 +10,10 @@ export async function run(context = {}) {
   const errors = [
     ...validatePackageScripts(context.packageJson),
     ...validatePrettierConfiguration(context.packageJson),
-    ...(await validateStandalonePrettierConfiguration(context.repositoryInventory)),
+    ...(await validateStandalonePrettierConfiguration(
+      context.repositoryInventory,
+      context.root ?? process.cwd(),
+    )),
     ...validateFormattingStages(context.stageResults),
   ];
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);

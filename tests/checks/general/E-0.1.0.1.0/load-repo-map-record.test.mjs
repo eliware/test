@@ -63,6 +63,14 @@ test("rejects duplicate repository records", async () => {
   });
 });
 
+test("counts repository records in every YAML stream document", async () => {
+  const read = async () =>
+    "repositories: []\n---\nrepositories:\n  - repository: eliware/example\n    id: E-1\n";
+  await expect(
+    loadRepoMapRecord("repo", { name: "@eliware/example" }, { read }),
+  ).resolves.toMatchObject({ record: { id: "E-1" }, error: null });
+});
+
 test.each([
   ["repositories: bad", "repositories array"],
   ["repositories: [", "invalid YAML"],

@@ -3,6 +3,13 @@ import { classifyJestResult } from "../../../../../src/orchestration/general/E-0
 
 test("classifies timeout, failure, and success results", () => {
   expect(classifyJestResult("E-0.1.130.13", { timedOut: true }, "timed out").status).toBe("fail");
+  expect(
+    classifyJestResult(
+      "E-0.1.130.13",
+      { code: 1, stdout: "", stderr: "" },
+      "Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.",
+    ).message,
+  ).toBe("Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.");
   expect(classifyJestResult("E-0.1.130.13", { timedOut: true }).message).toBe(
     "Jest timed out after 15 seconds without progress.",
   );
@@ -10,13 +17,13 @@ test("classifies timeout, failure, and success results", () => {
     classifyJestResult("E-0.1.130.13", { code: 1, stdout: "out", stderr: "err" }).message,
   ).toBe("Jest failed: out\nerr");
   expect(classifyJestResult("E-0.1.130.13", { code: 1, stdout: "", stderr: "" }).message).toBe(
-    "Jest failed without output (code 1).",
+    "Jest exited with no captured output (code 1).",
   );
   expect(classifyJestResult("E-0.1.130.13", { code: 1 }).message).toBe(
-    "Jest failed without output (code 1).",
+    "Jest exited with no captured output (code 1).",
   );
   expect(classifyJestResult("E-0.1.130.13", { code: null, signal: "SIGKILL" }).message).toBe(
-    "Jest failed without output (signal SIGKILL).",
+    "Jest exited with no captured output (signal SIGKILL).",
   );
   expect(classifyJestResult("E-0.1.130.13", {}).message).toBe("Jest failed without diagnostics.");
   expect(classifyJestResult("E-0.1.130.13", { code: 0 }).status).toBe("pass");
@@ -52,4 +59,24 @@ test("keeps one copy of Jest failures in final non-debug diagnostics", () => {
       stderr: "",
     }).message,
   ).toBe("Jest failed: FAIL tests/bad.test.mjs\nFailure details");
+});
+
+test("shows failed suite details from reporter progress when Jest has no other output", () => {
+  const progress =
+    '[eliware-test-progress] {"event":"result","path":"tests/bad.test.mjs","failed":true,"failures":["expected 1 to equal 2"]}';
+  expect(
+    classifyJestResult("E-0.1.130.13", { code: 1, stdout: "", stderr: progress }).message,
+  ).toBe("Jest failed: tests/bad.test.mjs\nexpected 1 to equal 2");
+});
+
+test("ignores passing and malformed reporter progress records", () => {
+  const stdout = [
+    '[eliware-test-progress] {"event":"start","path":"tests/active.test.mjs"}',
+    '[eliware-test-progress] {"event":"result","path":"tests/pass.test.mjs","failed":false}',
+    '[eliware-test-progress] {"event":"result","path":"tests/fail.test.mjs","failed":true}',
+    "[eliware-test-progress] {malformed}",
+  ].join("\n");
+  expect(classifyJestResult("E-0.1.130.13", { code: 1, stdout }).message).toBe(
+    "Jest failed: tests/fail.test.mjs",
+  );
 });

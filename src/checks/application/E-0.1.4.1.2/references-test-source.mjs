@@ -19,8 +19,6 @@ function getSpecifier(node) {
     node.type === "ImportExpression"
   )
     return staticString(node.source);
-  if (node.type === "CallExpression" && node.callee?.name === "require")
-    return staticString(node.arguments[0]);
   return null;
 }
 

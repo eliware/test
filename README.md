@@ -29,8 +29,9 @@ Package checks run for the `npm-published` profile.
 Eliware Test owns this CLI, not the repositories that it checks.
 It does not run live operational checks.
 
-Package description: Shared deterministic repository validation for Eliware projects.
-Author: Eliware <eliware@eliware.org>. Repository: https://github.com/eliware/test. License: MIT.
+Package description: Shared deterministic repository validation for Eliware projects
+Author: Eliware <eliware@eliware.org>
+License: MIT
 
 ## Requirements
 

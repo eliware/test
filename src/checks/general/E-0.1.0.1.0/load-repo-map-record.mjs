@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
+import { parseAllDocuments } from "yaml";
 
 export async function loadRepoMapRecord(root, packageJson, { read = readFile } = {}) {
   let source;
@@ -14,9 +14,11 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
       error: `repo-map.yaml could not be read: ${error.message}`,
     };
   }
-  let document;
+  let documents;
   try {
-    document = parse(source);
+    documents = parseAllDocuments(source);
+    const parseError = documents.flatMap((document) => document.errors)[0];
+    if (parseError) throw parseError;
   } catch (error) {
     return {
       available: true,
@@ -24,7 +26,8 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
       error: `repo-map.yaml is invalid YAML: ${error.message}`,
     };
   }
-  if (!Array.isArray(document?.repositories))
+  const values = documents.map((document) => document.toJSON());
+  if (!values.length || values.some((document) => !Array.isArray(document?.repositories)))
     return {
       available: true,
       record: null,
@@ -38,7 +41,9 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
       error: "package.json.name cannot identify a repo-map entry.",
     };
   const repository = `eliware/${match[1]}`;
-  const records = document.repositories.filter((candidate) => candidate?.repository === repository);
+  const records = values.flatMap((document) =>
+    document.repositories.filter((candidate) => candidate?.repository === repository),
+  );
   if (records.length > 1)
     return {
       available: true,

@@ -26,13 +26,11 @@ export function createJestProcessOptions(root, args = [], options = {}) {
         for (const output of formatJestSuiteProgress(event)) options.writeOutput?.(output);
       }
     },
+    onTimeout: () => options.onTimeout?.(progress.timeoutMessage()),
     onSuiteTimeout(path) {
       options.onTimeout?.(`Test suite ${path} exceeded its 5 second maximum runtime.`);
     },
-    onTimeout: () => options.onTimeout?.(progress.timeoutMessage()),
-    ...(args.includes("--debug-timing") || typeof options.writeOutput === "function"
-      ? { maxOutputLength: 1_000_000 }
-      : {}),
+    maxOutputLength: 1_000_000,
     ...(typeof options.writeOutput === "function"
       ? { maxProgressLineLength: Number.MAX_SAFE_INTEGER }
       : {}),

@@ -17,3 +17,9 @@ test("does not count release links inside code fences", () => {
     validateReleaseNotesLink("## Links\n\n```md\n[notes](RELEASE_NOTES.md)\n```"),
   ).toHaveLength(1);
 });
+
+test("accepts a reference link to the release notes", () => {
+  expect(
+    validateReleaseNotesLink("## Links\n\n[notes][release]\n\n[release]: RELEASE_NOTES.md"),
+  ).toEqual([]);
+});

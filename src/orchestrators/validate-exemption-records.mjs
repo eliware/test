@@ -1,4 +1,4 @@
-export function validateExemptionRecords(records) {
+export function validateExemptionRecords(records, knownRuleIds) {
   if (
     !Array.isArray(records) ||
     records.some((entry) => {
@@ -25,6 +25,8 @@ export function validateExemptionRecords(records) {
   const ids = records.map(({ ruleId }) => ruleId);
   if (new Set(ids).size !== ids.length)
     throw new Error("Convention exemption rule IDs must be unique.");
+  if (knownRuleIds && ids.some((id) => !knownRuleIds.includes(id)))
+    throw new Error("Every convention exemption must identify a known rule ID.");
 }
 
 function isValidDate(value) {

@@ -44,7 +44,7 @@ test("reports errors from the default context", async () => {
   );
 });
 
-test.each(["nyc", "c8", "vitest", "mocha", "ava"])(
+test.each(["nyc", "c8", "vitest", "mocha", "ava", "tape", "uvu", "testRunner"])(
   "rejects %s runner configuration",
   async (tool) => {
     const context = {
@@ -79,6 +79,7 @@ test.each([
   "node build.mjs",
   "node_modules/.bin/jest",
   "node --test",
+  "node --experimental-test-coverage --test",
   "npx --yes jest",
   "npm exec --package=jest -- jest",
   "pnpm exec vitest",

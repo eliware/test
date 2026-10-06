@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import semver from "semver";
 import { validateLockfilePackageEntries } from "./validate-lockfile-package-entries.mjs";
 
 const dependencyFields = [
@@ -34,11 +35,25 @@ export async function validatePackageLock(root, packageJson, { read = readFile }
     return ["package-lock.json root package metadata must match package.json."];
   const errors = [];
   for (const field of dependencyFields) {
-    const expected = packageJson?.[field] ?? {};
-    const actual = rootPackage[field] ?? {};
-    if (!object(expected)) errors.push(`package.json ${field} must be an object.`);
-    else if (!object(actual)) errors.push(`package-lock.json root ${field} must be an object.`);
-    else if (sorted(expected) !== sorted(actual))
+    const expected = packageJson?.[field];
+    const actual = rootPackage[field];
+    if (expected !== undefined && !object(expected)) {
+      errors.push(`package.json ${field} must be an object.`);
+      continue;
+    }
+    if (actual !== undefined && !object(actual)) {
+      errors.push(`package-lock.json root ${field} must be an object.`);
+      continue;
+    }
+    const expectedMap = expected ?? {};
+    const actualMap = actual ?? {};
+    for (const [name, range] of Object.entries(expectedMap))
+      if (typeof range !== "string" || !range.trim())
+        errors.push(`package.json ${field} has an invalid dependency range for ${name}.`);
+    for (const [name, range] of Object.entries(actualMap))
+      if (typeof range !== "string" || !range.trim())
+        errors.push(`package-lock.json root ${field} has an invalid dependency range for ${name}.`);
+    if (sorted(expectedMap) !== sorted(actualMap))
       errors.push(`package-lock.json root ${field} must match package.json.`);
   }
   const directDependencies = new Set(
@@ -51,7 +66,26 @@ export async function validatePackageLock(root, packageJson, { read = readFile }
   );
   if (missing.length)
     errors.push(`package-lock.json must contain every direct dependency: ${missing.join(", ")}.`);
+  for (const field of dependencyFields) {
+    const dependencies = packageJson?.[field];
+    if (!object(dependencies)) continue;
+    for (const [name, range] of Object.entries(dependencies)) {
+      const version = lockfile.packages[`node_modules/${name}`]?.version;
+      const semverRange = toSemverRange(range);
+      if (!semverRange)
+        errors.push(`package.json ${field} has an unsupported dependency range for ${name}.`);
+      else if (version && !semver.satisfies(version, semverRange))
+        errors.push(`package-lock.json version for ${name} does not satisfy ${range}.`);
+    }
+  }
   const packageErrors = validateLockfilePackageEntries(lockfile.packages);
   if (packageErrors) errors.push(packageErrors);
   return errors;
+}
+
+function toSemverRange(value) {
+  if (typeof value !== "string") return null;
+  if (semver.validRange(value)) return value;
+  const alias = /^npm:(?:@[^/]+\/[^@]+|[^@]+)@(.+)$/u.exec(value);
+  return alias && semver.validRange(alias[1]) ? alias[1] : null;
 }

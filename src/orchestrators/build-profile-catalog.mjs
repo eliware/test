@@ -20,6 +20,8 @@ function collectDirectives(directives, profile, source, catalog) {
       throw new Error(`Duplicate bundled convention directive ID: ${directive.id}.`);
     }
     catalog.directives[directive.id] = profile;
+    if (source.endsWith("-deterministic.yaml"))
+      catalog.deterministicDirectives[directive.id] = profile;
     catalog.rules[directive.id] = {
       id: directive.id,
       dos: directive.dos,
@@ -35,7 +37,13 @@ export function buildProfileCatalog(documents, expectedVersion) {
   if (!Array.isArray(documents) || documents.length === 0) {
     throw new Error("Bundled convention profile catalog cannot be empty.");
   }
-  const catalog = { version: expectedVersion, profiles: {}, directives: {}, rules: {} };
+  const catalog = {
+    version: expectedVersion,
+    profiles: {},
+    directives: {},
+    deterministicDirectives: {},
+    rules: {},
+  };
   const sources = new Set();
   for (const { source, document } of documents) {
     if (typeof source !== "string" || basename(source) !== source || !source.endsWith(".yaml")) {

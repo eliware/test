@@ -16,19 +16,11 @@ test("assembles the Jest process configuration and forwards timeout diagnostics"
     env: { NODE_OPTIONS: "--no-warnings --experimental-vm-modules" },
   });
   expect(options.resetOnAnyOutput).toBeUndefined();
+  expect(options.maxOutputLength).toBe(1_000_000);
   options.onProgress('[eliware-test-progress] {"event":"start","path":"tests/example.test.mjs"}\n');
   options.onTimeout();
   expect(onTimeout).toHaveBeenCalledWith(
     "Test suite tests/example.test.mjs timed out after 15 seconds without progress.",
-  );
-});
-
-test("reports a suite-specific maximum-runtime diagnostic", () => {
-  const onTimeout = jest.fn();
-  const options = createJestProcessOptions("C:/fixture", [], { onTimeout });
-  options.onSuiteTimeout("tests/slow.test.mjs");
-  expect(onTimeout).toHaveBeenCalledWith(
-    "Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.",
   );
 });
 
@@ -38,6 +30,15 @@ test("enables expanded output and forwards stderr callback in debug mode", () =>
 
   expect(options.maxOutputLength).toBe(1_000_000);
   expect(options.onStderr).toBe(onStderr);
+});
+
+test("reports the suite that exceeds the five second limit", () => {
+  const onTimeout = jest.fn();
+  const options = createJestProcessOptions("C:/fixture", [], { onTimeout });
+  options.onSuiteTimeout("tests/slow.test.mjs");
+  expect(onTimeout).toHaveBeenCalledWith(
+    "Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.",
+  );
 });
 
 test("streams concise suite progress and separates it from the enclosing check line", () => {
@@ -71,7 +72,7 @@ test("supports omitted options and optional timeout callbacks", () => {
   const options = createJestProcessOptions("C:/fixture");
 
   expect(options.cwd).toBe("C:/fixture");
-  expect(options.maxOutputLength).toBeUndefined();
+  expect(options.maxOutputLength).toBe(1_000_000);
   expect(() => options.onTimeout()).not.toThrow();
 });
 

@@ -1,8 +1,10 @@
+import prettier from "prettier";
 import { minimatch } from "minimatch";
+import { join } from "node:path";
 
 const maintainedExtensions = new Set([".mjs", ".json", ".yml", ".yaml", ".md"]);
 
-export async function validateStandalonePrettierConfiguration(repositoryInventory) {
+export async function validateStandalonePrettierConfiguration(repositoryInventory, root) {
   if (!repositoryInventory?.files) return [];
   try {
     const files = await repositoryInventory.files("all");
@@ -20,11 +22,13 @@ export async function validateStandalonePrettierConfiguration(repositoryInventor
           .split(/\r?\n/u)
           .map((line) => line.trim())
           .filter((line) => line && !line.startsWith("#"));
-        const excluded = files.filter(
-          (file) =>
-            maintainedExtensions.has(file.slice(file.lastIndexOf("."))) &&
-            isIgnored(file, patterns),
-        );
+        const excluded = root
+          ? await findPrettierIgnored(files, root, ignoreFile)
+          : files.filter(
+              (file) =>
+                maintainedExtensions.has(file.slice(file.lastIndexOf("."))) &&
+                isIgnored(file, patterns),
+            );
         if (excluded.length)
           errors.push(`${ignoreFile} must not exclude maintained files: ${excluded.join(", ")}.`);
       }
@@ -33,6 +37,16 @@ export async function validateStandalonePrettierConfiguration(repositoryInventor
   } catch (error) {
     return [`Prettier configuration files could not be inspected: ${error.message}`];
   }
+}
+
+async function findPrettierIgnored(files, root, ignoreFile) {
+  const ignorePath = [join(root, ignoreFile)];
+  const ignored = [];
+  for (const file of files) {
+    if (!maintainedExtensions.has(file.slice(file.lastIndexOf(".")))) continue;
+    if ((await prettier.getFileInfo(join(root, file), { ignorePath })).ignored) ignored.push(file);
+  }
+  return ignored;
 }
 
 function isIgnored(file, patterns) {

@@ -12,10 +12,6 @@ export function validateReadmeLinks(readme, packageJson = {}) {
   const linksSection = readSection(markdown, "Links");
   const licenseSection = readSection(markdown, "License");
   const supportSection = readSection(markdown, "Support");
-  const links = [...linksSection.matchAll(/\[([^\]]+)\]\(([^)]+)\)/gu)].map((match) => [
-    match[1],
-    match[2],
-  ]);
   const repository =
     typeof packageJson?.repository === "string"
       ? packageJson.repository
@@ -33,10 +29,10 @@ export function validateReadmeLinks(readme, packageJson = {}) {
     ["GitHub repository", `${repo}.git`],
   ];
   const missing = required.find(
-    ([label, target]) => !links.some((link) => link[0] === label && link[1] === target),
+    ([label, target]) => !hasCanonicalLink(linksSection, label, target),
   );
   if (missing) return `README.md Links must include ${missing[0]} with its canonical target.`;
-  if (!/\[license\]\(LICENSE\)/iu.test(licenseSection))
+  if (!hasCanonicalLink(licenseSection, "license", "LICENSE"))
     return "README.md License must link the repository LICENSE file.";
   if (
     !supportSection.includes(
@@ -45,6 +41,39 @@ export function validateReadmeLinks(readme, packageJson = {}) {
   )
     return "README.md Support must include the exact Discord support block.";
   return null;
+}
+
+function hasCanonicalLink(section, label, target) {
+  if (typeof target !== "string" || !target) return false;
+  const escapedLabel = escapeRegExp(label);
+  const escapedTarget = escapeRegExp(target);
+  const inline = new RegExp(`\\[${escapedLabel}\\]\\(${escapedTarget}(?:\\s+[^)]*)?\\)`, "iu");
+  if (inline.test(section)) return true;
+  const definitions = new Map();
+  for (const match of section.matchAll(/^ {0,3}\[([^\]]+)\]:\s*(?:<([^>]+)>|(\S+))/gimu))
+    definitions.set(normalizeLabel(match[1]), match[2] ?? match[3]);
+  for (const match of section.matchAll(/\[([^\]]+)\](?:\[([^\]]*)\])?/gu)) {
+    if (normalizeLabel(match[1]) !== normalizeLabel(label)) continue;
+    const reference = normalizeLabel(match[2] || match[1]);
+    if (definitions.get(reference) === target) return true;
+  }
+  const html = new RegExp(
+    `<a\\b[^>]*\\bhref=["']${escapedTarget}["'][^>]*>([\\s\\S]*?)<\\/a>`,
+    "iu",
+  );
+  const anchor = html
+    .exec(section)?.[1]
+    ?.replace(/<[^>]*>/gu, "")
+    .trim();
+  return anchor === label;
+}
+
+function normalizeLabel(value) {
+  return value.trim().replace(/\s+/gu, " ").toLowerCase();
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 function readSection(readme, heading) {

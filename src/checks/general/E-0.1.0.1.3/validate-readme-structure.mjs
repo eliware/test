@@ -8,7 +8,7 @@ export function validateReadmeStructure(readme, expected, packageJson = {}) {
   const markdownLines = removeMarkdownCode(readme).split(/\r?\n/u);
   if (lines[0] !== brand) return "README.md must begin with the exact Eliware logo header.";
   const toc = expected[0];
-  const tocIndex = lines.findIndex((line) => line === `## ${toc}`);
+  const tocIndex = markdownLines.findIndex((line) => line === `## ${toc}`);
   if (tocIndex < 0) return "README.md must include Table of Contents after its title.";
   const titleLines = lines.slice(1, tocIndex).filter((line) => line.trim());
   if (titleLines.length !== 1) return "README.md must place its title before Table of Contents.";

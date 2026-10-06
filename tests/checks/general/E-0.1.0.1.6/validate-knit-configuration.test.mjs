@@ -30,6 +30,15 @@ test("rejects alternate package managers that publish packages", async () => {
   expect(errors.join(" ")).toContain("must not publish npm packages or GHCR images");
 });
 
+test("rejects semantic release commands", async () => {
+  const errors = await validateKnitConfiguration({
+    files: async () => [".knit/deploy.yaml"],
+    readText: async () =>
+      "commands: [git pull --ff-only origin main, npm ci, npm test, npx semantic-release]",
+  });
+  expect(errors.join(" ")).toContain("must not publish npm packages or GHCR images");
+});
+
 test("rejects quoted secondary script paths outside .knit", async () => {
   const errors = await validateKnitConfiguration({
     files: async () => [".knit/deploy.yaml"],

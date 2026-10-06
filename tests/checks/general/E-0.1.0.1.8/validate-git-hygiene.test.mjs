@@ -34,7 +34,7 @@ test("reports index failures and tracked links", async () => {
     call += 1;
     if (args.includes("check-ignore")) return { code: args.at(-1).endsWith(".example") ? 1 : 0 };
     if (args.includes("--ignored")) throw new Error("index unavailable");
-    return { stdout: Buffer.from("120000 object 0\tlink\0") };
+    return { stdout: Buffer.from(`120000 ${"a".repeat(40)} 0\tlink\0`) };
   };
   const errors = await validateGitHygiene("repo", runGit, { readText: async () => ignoreRules });
   expect(call).toBeGreaterThan(14);
@@ -88,6 +88,16 @@ test("reports an unreadable ignore file", async () => {
   expect(errors).toContain(".gitignore could not be read to check required ignore rules.");
 });
 
+test("rejects incomplete NUL-delimited Git index output", async () => {
+  const runGit = async (_command, args) => {
+    if (args.includes("check-ignore")) return { code: args.at(-1).endsWith(".example") ? 1 : 0 };
+    return { stdout: Buffer.from(args.includes("--ignored") ? "tracked" : "broken-entry\0") };
+  };
+  const errors = await validateGitHygiene("repo", runGit, { readText: async () => ignoreRules });
+  expect(errors).toContain("Git index status could not be read; tracked ignore status is unknown.");
+  expect(errors).toContain("Git index status could not be read; tracked symlinks are unknown.");
+});
+
 test("reads the repository ignore file by default", async () => {
   const runGit = async (_command, args) => {
     if (args.includes("check-ignore"))
@@ -95,4 +105,15 @@ test("reads the repository ignore file by default", async () => {
     return { stdout: Buffer.from("") };
   };
   await expect(validateGitHygiene(process.cwd(), runGit)).resolves.toEqual([]);
+});
+
+test("accepts string output from Git commands", async () => {
+  const runGit = async (_command, args) => {
+    if (args.includes("check-ignore"))
+      return args.at(-1).endsWith(".example") ? { code: 1, stdout: "" } : { code: 0, stdout: "" };
+    return { code: 0, stdout: "" };
+  };
+  await expect(
+    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
+  ).resolves.toEqual([]);
 });

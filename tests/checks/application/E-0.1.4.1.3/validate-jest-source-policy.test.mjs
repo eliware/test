@@ -54,6 +54,23 @@ test("allows clean sources and the supported Jest API", async () => {
   ).resolves.toEqual([]);
 });
 
+test("allows the harness API and checks its package scripts", async () => {
+  const inventory = {
+    files: async () => ["src/run.mjs", "package.json"],
+    readText: async (path) =>
+      path.endsWith("package.json")
+        ? '{"scripts":{"test":"vitest run"}}'
+        : 'import "istanbul-lib-instrument"; import { test } from "@jest/globals";',
+  };
+  await expect(
+    validateJestSourcePolicy({
+      root: "repo",
+      packageJson: { name: "@eliware/test" },
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toContain("package.json must not import or invoke a test runner or coverage tool.");
+});
+
 test("rejects unreadable source files", async () => {
   const inventory = {
     files: async () => ["src/missing.mjs"],

@@ -75,3 +75,54 @@ test("uses the coverage code for a Jest coverage threshold failure", async () =>
     })),
   ).resolves.toMatchObject({ code: 4, status: "fail" });
 });
+
+test("classifies Jest's reported global coverage wording with code 4", async () => {
+  const context = {
+    root: ".",
+    jestResult: {
+      code: 1,
+      stdout: 'Jest: Coverage for statements (99.92%) does not meet "global" threshold (100%)',
+    },
+  };
+  await expect(
+    runJestValidationStage(context, async () => ({
+      ruleId: "stage:jest",
+      status: "fail",
+      message: 'Jest: Coverage for statements (99.92%) does not meet "global" threshold (100%)',
+    })),
+  ).resolves.toMatchObject({ code: 4, status: "fail" });
+});
+
+test("adds coverage file and location details to the stage failure", async () => {
+  const context = {
+    root: "C:/repo",
+    jestResult: {
+      code: 1,
+      coverageDirectory: "C:/coverage",
+      stdout: 'Jest: Coverage for statements (99.92%) does not meet "global" threshold (100%)',
+    },
+  };
+  const coverage = {
+    "C:/repo/src/example.mjs": {
+      statementMap: { 0: { start: { line: 17 } } },
+      s: { 0: 0 },
+      branchMap: {},
+      b: {},
+      fnMap: {},
+      f: {},
+    },
+  };
+  const result = await runJestValidationStage(
+    context,
+    async () => ({
+      ruleId: "stage:jest",
+      status: "fail",
+      message: "Jest failed: coverage threshold failure",
+    }),
+    async () => JSON.stringify(coverage),
+  );
+
+  expect(result).toMatchObject({ code: 4, status: "fail" });
+  expect(result.message).toContain("src/example.mjs");
+  expect(result.message).toContain("statements uncovered at: statement 0 at line 17");
+});

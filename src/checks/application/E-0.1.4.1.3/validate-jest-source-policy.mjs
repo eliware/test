@@ -1,15 +1,20 @@
 import { basename, join } from "node:path";
+import { detectTestToolUse } from "./detect-test-tool-use.mjs";
 
 const forbiddenToolReference =
   /["'`](@jest\/(?!globals(?:["'/]))[^"'`]+|@vitest\/[^"'`]+|@tapjs\/[^"'`]+|@wdio\/[^"'`]+|@cypress\/[^"'`]+|jest(?:-[^/"'`]+)?(?:\/[^/"'`]*)?|vitest(?:\/[^"'`]*)?|mocha(?:\/[^"'`]*)?|ava|tap|tape|uvu|c8|nyc|istanbul|babel-plugin-istanbul|node:test|playwright|@playwright\/test|cypress|jasmine|@bcoe\/v8-coverage)["'`]/giu;
 const forbiddenToolCommand =
   /(?:^|[\s/\\"'`])(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\\/"'`]|\s|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|[\s"'`])|\b(?:bun|deno)\s+test(?:\s|$)/iu;
 const forbiddenCoverage = /\b(?:istanbul|c8|v8|coverage)\s+ignore\b|\bcoverage\s*:\s*false/iu;
+const forbiddenAlternativeReference =
+  /["'`](@vitest\/[^"'`]+|@tapjs\/[^"'`]+|@wdio\/[^"'`]+|@cypress\/[^"'`]+|vitest(?:\/[^"'`]*)?|mocha(?:\/[^"'`]*)?|ava|tap|tape|uvu|c8|nyc|istanbul|babel-plugin-istanbul|node:test|playwright|@playwright\/test|cypress|jasmine|@bcoe\/v8-coverage)["'`]/giu;
+const forbiddenAlternativeCommand =
+  /(?:^|[\s/\\"'`])(?:vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\\/"'`]|\s|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|[\s"'`])|\b(?:bun|deno)\s+test(?:\s|$)/iu;
 
 export async function validateJestSourcePolicy(context = {}) {
   const root = context.root ?? process.cwd();
   const inventory = context.repositoryInventory;
-  if (context.packageJson?.name === "@eliware/test") return [];
+  const harness = context.packageJson?.name === "@eliware/test";
   const errors = [];
   let files = [];
   try {
@@ -26,10 +31,21 @@ export async function validateJestSourcePolicy(context = {}) {
       errors.push(`${path} could not be read to check Jest source policy.`);
       continue;
     }
-    if (forbiddenToolReference.test(content) || forbiddenToolCommand.test(content))
+    const plainText =
+      path === "package.json" ||
+      /\.(?:json|ya?ml|sh|ps1|py)$/iu.test(path) ||
+      !/\.(?:mjs|js|cjs|jsx|ts|tsx|cts|mts|mjsx|cjsx)$/iu.test(path);
+    const referencesTool = plainText
+      ? harness
+        ? forbiddenAlternativeReference.test(content) || forbiddenAlternativeCommand.test(content)
+        : forbiddenToolReference.test(content) || forbiddenToolCommand.test(content)
+      : detectTestToolUse(content, harness);
+    if (referencesTool)
       errors.push(`${path} must not import or invoke a test runner or coverage tool.`);
     forbiddenToolReference.lastIndex = 0;
     forbiddenToolCommand.lastIndex = 0;
+    forbiddenAlternativeReference.lastIndex = 0;
+    forbiddenAlternativeCommand.lastIndex = 0;
     if (path.startsWith("src/") && forbiddenCoverage.test(content))
       errors.push(`${path} must not exclude production coverage.`);
   }
@@ -45,7 +61,7 @@ export async function validateJestSourcePolicy(context = {}) {
 
 function isPolicyFile(path) {
   if (path === "package.json") return true;
-  const codeFile = /\.(?:mjs|js|cjs|jsx|ts|tsx|cts|mts|mjsx|cjsx)$/iu.test(path);
+  const codeFile = /\.(?:mjs|js|cjs|jsx|ts|tsx|cts|mts|mjsx|cjsx|sh|ps1|py)$/iu.test(path);
   const configurationFile = /(?:config|rc|opts)(?:\.[^.]+)?$/iu.test(basename(path));
   return (/^(?:src|tests|bin|scripts|examples)\//u.test(path) && codeFile) || configurationFile;
 }

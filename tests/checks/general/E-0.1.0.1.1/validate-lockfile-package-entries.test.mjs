@@ -31,8 +31,8 @@ test("reports invalid entry shapes and missing dependencies", () => {
 test("resolves dependency entries from nested package scopes", () => {
   expect(
     validateLockfilePackageEntries({
-      "node_modules/parent": { version: "1", dependencies: { child: "1" } },
-      "node_modules/parent/node_modules/child": { version: "1" },
+      "node_modules/parent": { version: "1.0.0", dependencies: { child: "1.0.0" } },
+      "node_modules/parent/node_modules/child": { version: "1.0.0" },
     }),
   ).toBeNull();
 });
@@ -55,4 +55,42 @@ test("requires a non-optional peer lockfile entry", () => {
       "node_modules/parent": { version: "1", peerDependencies: { required: "*" } },
     }),
   ).toContain("references missing dependency required");
+});
+
+test("rejects malformed dependency ranges in package entries", () => {
+  expect(
+    validateLockfilePackageEntries({
+      "node_modules/parent": { version: "1", dependencies: { child: [] } },
+      "node_modules/child": { version: "1" },
+    }),
+  ).toContain(
+    "package-lock.json entry node_modules/parent has an invalid dependencies range for child.",
+  );
+});
+
+test("requires transitive locked versions to satisfy dependency ranges", () => {
+  expect(
+    validateLockfilePackageEntries({
+      "node_modules/parent": { version: "1.0.0", dependencies: { child: "^2.0.0" } },
+      "node_modules/child": { version: "1.5.0" },
+    }),
+  ).toContain("dependency child does not satisfy its range");
+});
+
+test("rejects unsupported ranges and malformed optional peer metadata", () => {
+  const errors = validateLockfilePackageEntries({
+    "node_modules/parent": {
+      version: "1.0.0",
+      dependencies: { child: "file:../child" },
+      peerDependencies: { optional: "*" },
+      peerDependenciesMeta: { optional: [] },
+    },
+    "node_modules/child": { version: "1.0.0" },
+  });
+  expect(errors).toContain(
+    "package-lock.json entry node_modules/parent has an unsupported dependencies range for child.",
+  );
+  expect(errors).toContain(
+    "package-lock.json entry node_modules/parent references missing dependency optional.",
+  );
 });

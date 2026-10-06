@@ -22,6 +22,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 26
+          cache: npm
       - run: npm -g install npm@latest
       - run: npm ci
       - run: npm test`;

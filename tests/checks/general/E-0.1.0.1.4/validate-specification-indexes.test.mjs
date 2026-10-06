@@ -29,6 +29,26 @@ test("accepts complete navigation indexes", async () => {
   }
 });
 
+test("sorts multiple specifications and child indexes in expected order", async () => {
+  const root = await fixture();
+  try {
+    await writeFile(join(root, "specs", "extra.yaml"), "version: 12\n");
+    await mkdir(join(root, "specs", "alpha"));
+    await writeFile(join(root, "specs", "alpha", "rules.yaml"), "version: 12\n");
+    await writeFile(
+      join(root, "specs", "alpha", "README.md"),
+      "# Alpha\n\n- [rules](rules.yaml)\n",
+    );
+    await writeFile(
+      join(root, "specs", "README.md"),
+      "# Specs\n\n- [directives](directives.yaml)\n- [extra](extra.yaml)\n- [alpha](alpha/README.md)\n- [nested](nested/README.md)\n",
+    );
+    await expect(validateSpecificationIndexes(root)).resolves.toEqual([]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("rejects missing directories, files, indexes, and invalid links", async () => {
   await expect(validateSpecificationIndexes("missing")).resolves.toContain(
     "specs/ is required to contain indexed YAML specifications.",
@@ -66,8 +86,9 @@ test("requires a YAML file in every specification directory", async () => {
   }
 });
 
-test("ignores entries that are not files or directories", async () => {
+test("rejects entries that are not files or directories", async () => {
   const entries = [{ name: "link", isDirectory: () => false, isFile: () => false }];
   const errors = await validateSpecificationIndexes("/repo", { readdir: async () => entries });
   expect(errors).toContain("specs/directives.yaml is required.");
+  expect(errors).toContain("specs/link is an unsupported filesystem entry under specs/.");
 });

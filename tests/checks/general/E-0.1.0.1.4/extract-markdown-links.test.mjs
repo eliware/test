@@ -14,6 +14,13 @@ test("extracts inline, reference, HTML, and angle links", () => {
   ]);
 });
 
+test("strips angle brackets from inline and reference destinations", () => {
+  expect(extractMarkdownLinks("[inline](<guide.md>) [ref][id]\n[id]: <other.md>")).toEqual([
+    { reference: "guide.md" },
+    { reference: "other.md" },
+  ]);
+});
+
 test("ignores links inside fenced and inline code", () => {
   expect(extractMarkdownLinks("`[inline](bad)`\n```md\n[block](bad)\n```\n[good](ok.md)")).toEqual([
     { reference: "ok.md" },
@@ -24,6 +31,14 @@ test("ignores links inside indented code", () => {
   expect(extractMarkdownLinks("    [code](bad.md)\n[good](ok.md)")).toEqual([
     { reference: "ok.md" },
   ]);
+});
+
+test("ignores links inside blockquoted indented and fenced code", () => {
+  expect(
+    extractMarkdownLinks(
+      ">     [indented](bad.md)\n> ```md\n> [fenced](bad.md)\n> ```\n[real](good.md)",
+    ),
+  ).toEqual([{ reference: "good.md" }]);
 });
 
 test("keeps nested list items out of indented code", () => {

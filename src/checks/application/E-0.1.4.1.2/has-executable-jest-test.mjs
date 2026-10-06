@@ -1,6 +1,8 @@
 import { parse } from "@babel/parser";
-import { collectJestTestNames, isActiveTestExpression } from "./collect-jest-test-names.mjs";
+import { collectJestTestNames } from "./collect-jest-test-names.mjs";
+import { isActiveJestTestExpression } from "./is-active-jest-test-expression.mjs";
 import { referencesTestSource } from "./references-test-source.mjs";
+import { collectShadowedJestNames } from "./collect-shadowed-jest-names.mjs";
 
 export function inspectJestTestModule(content, testPath, sourcePath) {
   let ast;
@@ -17,21 +19,51 @@ export function inspectJestTestModule(content, testPath, sourcePath) {
   };
 }
 
-function containsTestCall(node, names, callbackNames) {
-  if (Array.isArray(node)) return node.some((item) => containsTestCall(item, names, callbackNames));
+function containsTestCall(
+  node,
+  names,
+  callbackNames,
+  blockedTests = new Set(),
+  blockedCallbacks = new Set(),
+) {
+  if (Array.isArray(node))
+    return node.some((item) =>
+      containsTestCall(item, names, callbackNames, blockedTests, blockedCallbacks),
+    );
   if (!node || typeof node !== "object") return false;
-  if (node.type === "CallExpression" && isTestCall(node, names, callbackNames)) return true;
-  return Object.values(node).some((item) => containsTestCall(item, names, callbackNames));
+  let testNames = blockedTests;
+  let callbacks = blockedCallbacks;
+  if (
+    ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"].includes(node.type)
+  ) {
+    const local = collectShadowedJestNames(node, names, callbackNames);
+    testNames = new Set([...blockedTests, ...local.tests]);
+    callbacks = new Set([...blockedCallbacks, ...local.callbacks]);
+  }
+  if (
+    node.type === "CallExpression" &&
+    isTestCall(node, names, callbackNames, testNames, callbacks)
+  )
+    return true;
+  return Object.values(node).some((item) =>
+    containsTestCall(item, names, callbackNames, testNames, callbacks),
+  );
 }
 
-function isTestCall(call, names, callbackNames) {
-  if (!isCallback(call.arguments[1], callbackNames)) return false;
-  return isActiveTestExpression(call.callee, names);
+function isTestCall(call, names, callbackNames, blockedTests, blockedCallbacks) {
+  if (!isCallback(call.arguments[1], callbackNames, blockedCallbacks)) return false;
+  const active = {
+    callbacks: new Set([...names.callbacks].filter((name) => !blockedTests.has(name))),
+    namespaces: new Set([...names.namespaces].filter((name) => !blockedTests.has(name))),
+  };
+  return isActiveJestTestExpression(call.callee, active);
 }
 
-function isCallback(node, callbackNames) {
+function isCallback(node, callbackNames, blockedCallbacks) {
   if (node?.type === "ArrowFunctionExpression" || node?.type === "FunctionExpression") return true;
-  return node?.type === "Identifier" && callbackNames.has(node.name);
+  return (
+    node?.type === "Identifier" && callbackNames.has(node.name) && !blockedCallbacks.has(node.name)
+  );
 }
 
 function findCallbackNames(node, names = new Set()) {

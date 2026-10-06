@@ -24,3 +24,8 @@ test("rejects malformed fragment encoding", () => {
 test("does not resolve HTML IDs inside inline code", () => {
   expect(hasMarkdownFragment('`<span id="hidden"></span>`', "hidden")).toBe(false);
 });
+
+test("ignores HTML IDs in blockquoted code and handles blockquoted fences", () => {
+  expect(hasMarkdownFragment('>     <span id="hidden"></span>', "hidden")).toBe(false);
+  expect(hasMarkdownFragment('> ```md\n> <span id="hidden"></span>\n> ```', "hidden")).toBe(false);
+});

@@ -37,6 +37,8 @@ test("rejects invalid script maps, empty scripts, and publish commands", () => {
     "bun publish",
     "npm --workspace app publish",
     "docker build --push image",
+    "npx semantic-release",
+    "npm exec -- release-it",
   ])
     expect(validatePackageScripts({ scripts: { other: command } })).toContain(
       "package.json.scripts.other must not publish packages or images.",

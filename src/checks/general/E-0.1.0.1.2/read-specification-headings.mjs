@@ -1,14 +1,15 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "yaml";
+import { parseAllDocuments } from "yaml";
 
-function collectHeadings(value, headings) {
-  if (typeof value === "string") {
-    for (const match of value.matchAll(/^## ([^\r\n]+)$/gmu)) headings.add(match[1].trim());
-  } else if (Array.isArray(value)) {
-    value.forEach((item) => collectHeadings(item, headings));
-  } else if (value && typeof value === "object") {
-    Object.values(value).forEach((item) => collectHeadings(item, headings));
+function collectDeclaredHeadings(directives, headings) {
+  if (!Array.isArray(directives)) return;
+  for (const directive of directives) {
+    for (const text of directive?.dos ?? []) {
+      if (typeof text !== "string") continue;
+      for (const match of text.matchAll(/^## ([^\r\n]+)$/gmu)) headings.add(match[1].trim());
+    }
+    collectDeclaredHeadings(directive?.children, headings);
   }
 }
 
@@ -31,6 +32,12 @@ export async function readSpecificationHeadings(root, { read = readFile } = {}) 
   const files = [];
   await collectYamlFiles(join(root, "specs"), files);
   const headings = new Set();
-  for (const file of files) collectHeadings(parse(await read(file, "utf8")), headings);
+  for (const file of files) {
+    const documents = parseAllDocuments(await read(file, "utf8"));
+    const error = documents.flatMap((document) => document.errors)[0];
+    if (error) throw error;
+    for (const document of documents)
+      collectDeclaredHeadings(document.toJSON()?.directives, headings);
+  }
   return headings;
 }

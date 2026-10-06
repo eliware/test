@@ -163,7 +163,7 @@ directives:
           - Supply harness reporters and detailed coverage output without weakening configured requirements.
           - Execute requested Jest validation once with established ordering and lifecycle behavior.
           - Monitor suite progress during every run.
-          - Enforce a 5-second total suite deadline and a separate 15-second startup or between-suite no-progress deadline.
+          - Enforce a 5-second maximum runtime for each test suite and a separate 15-second startup or between-suite no-progress deadline.
           - Report the current or last known suite and its time limit on termination.
           - Request graceful stop first.
           - Escalate after a time limit.
