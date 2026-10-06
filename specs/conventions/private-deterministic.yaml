@@ -14,4 +14,4 @@ directives:
       - Do not add a separate private-distribution README heading.
     examples:
       - "## Private distribution"
-      - "{\"private\":true,\"eliware\":{\"id\":\"E-38\",\"apply\":[\"general\",\"private\"]}}"
+      - '{"private":true,"eliware":{"id":"E-38","apply":["general","private"]}}'

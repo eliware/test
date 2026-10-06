@@ -1,6 +1,8 @@
 import { formatConventionFailure } from "./format-convention-failure.mjs";
 
-function failureCode({ ruleId, message = "" }) {
+function failureCode(result) {
+  const { ruleId, message = "" } = result;
+  if (Number.isInteger(result.code)) return result.code;
   if (["E-0.1.130.14", "E-0.1.40.16"].includes(ruleId)) return 10;
   if (ruleId === "E-0.1.4") return /could not be started/i.test(message) ? 14 : 12;
   if (["E-0.1.130.13", "E-0.1.40.15"].includes(ruleId)) {
@@ -16,10 +18,14 @@ export async function runConventionStage(runChecks) {
   try {
     const results = await runChecks();
     const failures = results.filter(({ status }) => status === "fail");
-    const diagnostics = failures.map((failure) => formatConventionFailure(failure));
+    const diagnostics = failures.map((failure) =>
+      failure.stage
+        ? `${failure.stage} stage failed: ${failure.message}`
+        : formatConventionFailure(failure),
+    );
     return {
       code: failures.length > 0 ? Math.max(...failures.map(failureCode)) : 0,
-      category: "conventions",
+      category: failures.some(({ stage }) => stage) ? "validation" : "conventions",
       diagnostics,
     };
   } catch (error) {

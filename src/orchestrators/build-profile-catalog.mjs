@@ -36,11 +36,16 @@ export function buildProfileCatalog(documents, expectedVersion) {
     throw new Error("Bundled convention profile catalog cannot be empty.");
   }
   const catalog = { version: expectedVersion, profiles: {}, directives: {}, rules: {} };
+  const sources = new Set();
   for (const { source, document } of documents) {
     if (typeof source !== "string" || basename(source) !== source || !source.endsWith(".yaml")) {
       throw new Error(`Bundled convention profile ${source} has an invalid name.`);
     }
-    const profile = basename(source, ".yaml");
+    if (sources.has(source))
+      throw new Error(`Duplicate bundled convention profile document: ${source}.`);
+    sources.add(source);
+    const match = /^(?<profile>[a-z0-9-]+)-(?:semantic|deterministic)\.yaml$/u.exec(source);
+    const profile = match?.groups?.profile ?? basename(source, ".yaml");
     if (!/^[a-z0-9-]+$/u.test(profile)) {
       throw new Error(`Bundled convention profile ${source} has an invalid name.`);
     }
@@ -48,9 +53,6 @@ export function buildProfileCatalog(documents, expectedVersion) {
       throw new Error(
         `Bundled convention profile ${source} must match Convention v${expectedVersion}.`,
       );
-    }
-    if (catalog.profiles[profile]) {
-      throw new Error(`Duplicate bundled convention profile: ${profile}.`);
     }
     collectDirectives(document.directives, profile, source, catalog);
     const requires = document.requires;
@@ -63,6 +65,10 @@ export function buildProfileCatalog(documents, expectedVersion) {
       requires.includes(profile)
     ) {
       throw new Error(`Bundled convention profile ${source} has an invalid requires list.`);
+    }
+    const existing = catalog.profiles[profile];
+    if (existing && JSON.stringify(existing.requires) !== JSON.stringify(requires)) {
+      throw new Error(`Bundled convention profile ${profile} has mismatched dependencies.`);
     }
     catalog.profiles[profile] = { profile, requires };
   }

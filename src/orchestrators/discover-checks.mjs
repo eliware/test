@@ -36,7 +36,14 @@ export async function discoverChecks(
 export async function discoverAllChecks(options = {}) {
   const root = options.root ?? checksRoot;
   const readDirectory = options.readDirectory ?? readdir;
-  const groups = (await readDirectory(root, { withFileTypes: true }))
+  let entries;
+  try {
+    entries = await readDirectory(root, { withFileTypes: true });
+  } catch (error) {
+    if (options.root === undefined && error?.code === "ENOENT") return [];
+    throw error;
+  }
+  const groups = entries
     .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
     .map((entry) => entry.name)
     .sort();

@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
 import semver from "semver";
-import { npmCommand } from "../checks/npm-command.mjs";
+import { npmCommand } from "../orchestration/npm-command.mjs";
 
 export async function checkNpmVersion({
   executeProcess = execFile,

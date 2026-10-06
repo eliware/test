@@ -47,12 +47,8 @@ test("selects the requested rule and does not omit nondeterministic checks", () 
   ).toEqual([selected]);
 });
 
-test("rejects a requested mode without a selected check", () => {
-  expect(() =>
-    filterConventionChecksForExecution(
-      [check("E-0.1.4")],
-      { modeRuleId: "E-0.1.20.19" },
-      new Set(),
-    ),
-  ).toThrow("is unavailable in the selected checks");
+test("does not require convention checks to run an available tool mode", () => {
+  expect(filterConventionChecksForExecution([], { modeRuleId: "E-0.1.20.19" }, new Set())).toEqual(
+    [],
+  );
 });

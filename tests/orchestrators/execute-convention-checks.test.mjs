@@ -65,6 +65,89 @@ test("runs all independent checks before Jest regardless of rule order", async (
   expect(results.map(({ status }) => status)).toEqual(["pass", "pass", "pass", "pass"]);
 });
 
+test("shares pre-Jest and Jest stage output with checks", async () => {
+  const order = [];
+  const context = {
+    executeLint: true,
+    executeJest: true,
+    validationStageRunners: {
+      lint: async () => {
+        order.push("lint");
+        return { stage: "lint", code: 0, status: "pass", output: "lint report" };
+      },
+      jest: async () => {
+        order.push("jest");
+        return { stage: "jest", code: 0, status: "pass", output: "jest report" };
+      },
+    },
+  };
+  const checks = [
+    {
+      ruleId: "E-before",
+      run: async (checkContext) => {
+        order.push("independent check");
+        expect(checkContext.stageResults.lint.output).toBe("lint report");
+        return { ruleId: "E-before", status: "pass", message: "" };
+      },
+    },
+    {
+      ruleId: "E-after",
+      executionPhase: "jest-dependent",
+      run: async (checkContext) => {
+        order.push("dependent check");
+        expect(checkContext.stageResults.jest.output).toBe("jest report");
+        return { ruleId: "E-after", status: "pass", message: "" };
+      },
+    },
+  ];
+
+  await expect(executeConventionChecks(checks, context, new Set())).resolves.toEqual([
+    { ruleId: "E-before", status: "pass", message: "" },
+    { ruleId: "E-after", status: "pass", message: "" },
+  ]);
+  expect(order).toEqual(["lint", "independent check", "jest", "dependent check"]);
+});
+
+test("runs pre-Jest checks and stops before Jest after any failure", async () => {
+  const order = [];
+  const context = {
+    executeLint: true,
+    executeJest: true,
+    validationStageRunners: {
+      lint: async () => {
+        order.push("lint");
+        return {
+          stage: "lint",
+          ruleId: "stage:lint",
+          code: 12,
+          status: "fail",
+          message: "lint failed",
+        };
+      },
+      jest: async () => {
+        order.push("jest");
+        return { stage: "jest", code: 0, status: "pass", message: "" };
+      },
+    },
+  };
+  const checks = [
+    {
+      ruleId: "E-before",
+      run: async () => {
+        order.push("independent check");
+        return { ruleId: "E-before", status: "pass", message: "" };
+      },
+    },
+    { ruleId: "E-after", executionPhase: "jest-dependent", run: jest.fn() },
+  ];
+
+  const results = await executeConventionChecks(checks, context, new Set());
+  expect(order).toEqual(["lint", "independent check"]);
+  expect(context.stageResults.jest.status).toBe("skip");
+  expect(checks[1].run).not.toHaveBeenCalled();
+  expect(results.map(({ status }) => status)).toEqual(["fail", "pass", "skip"]);
+});
+
 test("a failed independent check skips Jest and Jest-dependent checks", async () => {
   const calls = [];
   const timing = { skip: jest.fn() };

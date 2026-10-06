@@ -101,3 +101,21 @@ test("supports discoverAllChecks default options", async () => {
 test("uses the default filesystem and options without scanning the bundled registry", async () => {
   await expect(discoverAllChecks()).resolves.toEqual([]);
 });
+
+test("treats a missing default checks directory as an empty registry", async () => {
+  const missing = Object.assign(new Error("missing"), { code: "ENOENT" });
+  readDirectory.mockRejectedValueOnce(missing);
+  await expect(discoverAllChecks()).resolves.toEqual([]);
+});
+
+test("propagates other directory read failures", async () => {
+  const denied = Object.assign(new Error("denied"), { code: "EACCES" });
+  await expect(
+    discoverAllChecks({
+      root: "explicit-root",
+      readDirectory: async () => {
+        throw denied;
+      },
+    }),
+  ).rejects.toBe(denied);
+});

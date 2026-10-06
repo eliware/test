@@ -24,7 +24,7 @@ directives:
       - Do not put web configuration inside eliware or accept absolute, traversing, or escaping paths.
       - Do not let configured exclusions replace mandatory exclusions.
     examples:
-      - "{\"webRoot\":\"public\",\"webAssetExcludes\":[\"public/internal\"]}"
+      - '{"webRoot":"public","webAssetExcludes":["public/internal"]}'
 
   - id: E-0.1.6.1.2
     dos:

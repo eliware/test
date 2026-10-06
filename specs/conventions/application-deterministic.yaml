@@ -25,7 +25,7 @@ directives:
     donts:
       - Do not declare invalid names, escaping paths, or entrypoints outside bin/.
     examples:
-      - "{\"bin\":{\"example\":\"./bin/example.mjs\"},\"scripts\":{\"start\":\"node bin/example.mjs\"}}"
+      - '{"bin":{"example":"./bin/example.mjs"},"scripts":{"start":"node bin/example.mjs"}}'
 
   - id: E-0.1.4.1.2
     dos:
@@ -56,7 +56,7 @@ directives:
       - Do not substitute other runners or coverage engines or add separate Jest configuration.
       - Do not use production coverage exclusions or Istanbul ignore directives.
     examples:
-      - "{\"testEnvironment\":\"node\",\"testMatch\":[\"**/tests/**/*.test.mjs\"],\"collectCoverageFrom\":[\"src/**/*.mjs\"],\"coverageReporters\":[\"text\",\"json-summary\"],\"coverageThreshold\":{\"global\":{\"branches\":100,\"functions\":100,\"lines\":100,\"statements\":100}}}"
+      - '{"testEnvironment":"node","testMatch":["**/tests/**/*.test.mjs"],"collectCoverageFrom":["src/**/*.mjs"],"coverageReporters":["text","json-summary"],"coverageThreshold":{"global":{"branches":100,"functions":100,"lines":100,"statements":100}}}'
 
   - id: E-0.1.4.1.4
     dos:

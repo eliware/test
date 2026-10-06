@@ -6,15 +6,17 @@ import { readProfileDocuments } from "../../src/orchestrators/read-profile-docum
 
 test("reads profile YAML in sorted order and excludes maintenance documents", async () => {
   const directory = await mkdtemp(join(tmpdir(), "eliware-profile-documents-"));
-  await writeFile(join(directory, "zeta.yaml"), '{"name":"zeta"}');
-  await writeFile(join(directory, "alpha.yaml"), '{"name":"alpha"}');
+  await writeFile(join(directory, "zeta-semantic.yaml"), '{"name":"zeta"}');
+  await writeFile(join(directory, "alpha-deterministic.yaml"), '{"name":"alpha"}');
+  await writeFile(join(directory, "alpha-semantic.yaml"), '{"name":"alpha"}');
   await writeFile(join(directory, "directives.yaml"), "{}");
   await writeFile(join(directory, "notes.md"), "ignored");
   await mkdir(join(directory, "nested"));
 
   expect(readProfileDocuments(directory)).toEqual([
-    { source: "alpha.yaml", document: { name: "alpha" } },
-    { source: "zeta.yaml", document: { name: "zeta" } },
+    { source: "alpha-deterministic.yaml", document: { name: "alpha" } },
+    { source: "alpha-semantic.yaml", document: { name: "alpha" } },
+    { source: "zeta-semantic.yaml", document: { name: "zeta" } },
   ]);
   await rm(directory, { recursive: true, force: true });
 });

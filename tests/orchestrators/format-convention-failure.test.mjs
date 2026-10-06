@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { formatConventionFailure } from "../../src/orchestrators/format-convention-failure.mjs";
 
 const rule = {
-  id: "E-0.1.1.0",
+  id: "E-0.1.0.0.0",
   dos: ["Use the canonical README heading order.", "Include package metadata verbatim."],
   donts: ["Do not omit a required heading."],
   examples: [{ purpose: "README structure", markdown: "## Features\n## Requirements" }],
@@ -31,10 +31,10 @@ test("includes every do, don't, and example without selecting a subset", () => {
 });
 
 test("uses the complete bundled rule by default and handles a missing diagnostic", () => {
-  expect(formatConventionFailure({ ruleId: "E-0.1.1.0" })).toContain(
+  expect(formatConventionFailure({ ruleId: "E-0.1.0.0.0" })).toContain(
     "The check failed without a diagnostic.",
   );
-  expect(formatConventionFailure({ ruleId: "E-0.1.1.0" })).toContain('"donts":');
+  expect(formatConventionFailure({ ruleId: "E-0.1.0.0.0" })).toContain('"donts":');
 });
 
 test("reports an unknown rule identity without inventing a directive", () => {

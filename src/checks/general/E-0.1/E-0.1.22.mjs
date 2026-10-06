@@ -1,8 +1,0 @@
-import { pass } from "../../check-result.mjs";
-
-export const ruleId = "E-0.1.22";
-export const parentRuleId = "E-0.1";
-
-export function run() {
-  return pass(ruleId);
-}

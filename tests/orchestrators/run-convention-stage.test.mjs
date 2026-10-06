@@ -4,13 +4,25 @@ import { formatConventionFailure } from "../../src/orchestrators/format-conventi
 
 test("returns a passing convention stage", async () => {
   const result = await runConventionStage(async () => [
-    { ruleId: "E-0.1.0", status: "pass", message: "" },
+    { ruleId: "E-0.1.0.0.0", status: "pass", message: "" },
   ]);
   expect(result).toEqual({ code: 0, category: "conventions", diagnostics: [] });
 });
 
+test("reports cached stage failures without convention directives", async () => {
+  await expect(
+    runConventionStage(async () => [
+      { ruleId: "stage:lint", stage: "lint", code: 12, status: "fail", message: "lint output" },
+    ]),
+  ).resolves.toEqual({
+    code: 12,
+    category: "validation",
+    diagnostics: ["lint stage failed: lint output"],
+  });
+});
+
 test("includes the complete failed directive in each check diagnostic", async () => {
-  const failure = { ruleId: "E-0.1.0", status: "fail", message: "missing file" };
+  const failure = { ruleId: "E-0.1.0.0.0", status: "fail", message: "missing file" };
   const result = await runConventionStage(async () => [failure]);
   expect(result).toEqual({
     code: 18,
@@ -19,7 +31,7 @@ test("includes the complete failed directive in each check diagnostic", async ()
   });
   expect(result.diagnostics[0]).toContain('"dos":');
   expect(result.diagnostics[0]).toContain('"donts":');
-  expect(result.diagnostics[0]).toContain('"id": "E-0.1.0"');
+  expect(result.diagnostics[0]).toContain('"id": "E-0.1.0.0.0"');
 });
 
 test("preserves stable failure codes for each validation stage", async () => {
@@ -46,7 +58,7 @@ test("preserves stable failure codes for each validation stage", async () => {
 
 test("uses the highest code when several checks fail and preserves each remediation", async () => {
   const failures = [
-    { ruleId: "E-0.1.0", status: "fail", message: "first" },
+    { ruleId: "E-0.1.0.0.0", status: "fail", message: "first" },
     { ruleId: "E-0.1.130.14", status: "fail", message: "coverage" },
   ];
   const result = await runConventionStage(async () => failures);
@@ -55,7 +67,7 @@ test("uses the highest code when several checks fail and preserves each remediat
 });
 
 test("provides remediation even when a check omitted its message", async () => {
-  const failure = { ruleId: "E-0.1.0", status: "fail" };
+  const failure = { ruleId: "E-0.1.0.0.0", status: "fail" };
   await expect(runConventionStage(async () => [failure])).resolves.toEqual({
     code: 18,
     category: "conventions",

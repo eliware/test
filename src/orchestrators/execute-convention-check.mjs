@@ -1,4 +1,4 @@
-import { assertCheckResult } from "../checks/check-result.mjs";
+import { assertCheckResult } from "../orchestration/check-result.mjs";
 
 export async function executeConventionCheck(check, context) {
   if (typeof check.run !== "function")

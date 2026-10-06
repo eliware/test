@@ -58,4 +58,4 @@ directives:
       - Do not declare bypass conditions or continue-on-error on required verification steps.
     examples:
       - "uses: actions/attest@v4\nwith:\n  subject-name: ghcr.io/eliware/example\n  subject-digest: ${{ steps.push.outputs.digest }}\n  push-to-registry: true"
-      - "echo \"${{ steps.push.outputs.digest }}\" >> \"$GITHUB_STEP_SUMMARY\""
+      - 'echo "${{ steps.push.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"'

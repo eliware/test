@@ -27,7 +27,7 @@ directives:
       - Do not use prerelease or build suffixes, alternative identity metadata, or malformed dependency maps.
       - Do not use CommonJS module syntax in maintained implementation.
     examples:
-      - "{\"name\":\"@eliware/example\",\"version\":\"12.0.0\",\"description\":\"Example repository\",\"keywords\":[\"example\"],\"author\":\"Eliware <eliware@eliware.org>\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/eliware/example.git\"},\"homepage\":\"https://github.com/eliware/example#readme\",\"license\":\"MIT\",\"private\":true,\"type\":\"module\",\"engines\":{\"node\":\"26\"}}"
+      - '{"name":"@eliware/example","version":"12.0.0","description":"Example repository","keywords":["example"],"author":"Eliware <eliware@eliware.org>","repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},"homepage":"https://github.com/eliware/example#readme","license":"MIT","private":true,"type":"module","engines":{"node":"26"}}'
 
   - id: E-0.1.0.1.2
     dos:
@@ -101,8 +101,8 @@ directives:
       - Do not add standalone Prettier configuration.
       - Do not add publication commands to package scripts or validation workflows.
     examples:
-      - "{\"test\":\"eliware-test\",\"lint\":\"eliware-test --lint\",\"audit\":\"eliware-test --audit\",\"format\":\"eliware-test --format\",\"format:check\":\"eliware-test --format-check\"}"
-      - "{\"printWidth\":100,\"tabWidth\":2,\"useTabs\":false,\"semi\":true,\"singleQuote\":false,\"quoteProps\":\"as-needed\",\"jsxSingleQuote\":false,\"trailingComma\":\"all\",\"bracketSpacing\":true,\"bracketSameLine\":false,\"arrowParens\":\"always\",\"proseWrap\":\"preserve\",\"endOfLine\":\"lf\"}"
+      - '{"test":"eliware-test","lint":"eliware-test --lint","audit":"eliware-test --audit","format":"eliware-test --format","format:check":"eliware-test --format-check"}'
+      - '{"printWidth":100,"tabWidth":2,"useTabs":false,"semi":true,"singleQuote":false,"quoteProps":"as-needed","jsxSingleQuote":false,"trailingComma":"all","bracketSpacing":true,"bracketSameLine":false,"arrowParens":"always","proseWrap":"preserve","endOfLine":"lf"}'
 
   - id: E-0.1.0.1.6
     dos:

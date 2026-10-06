@@ -1,8 +1,5 @@
 export function filterConventionChecksForExecution(checks, context, exemptions) {
   const byRuleId = new Map(checks.map((check) => [check.ruleId, check]));
-  if (context.modeRuleId && !byRuleId.has(context.modeRuleId)) {
-    throw new Error(`Validation mode ${context.modeRuleId} is unavailable in the selected checks.`);
-  }
   const isExempt = (ruleId) => {
     let current = byRuleId.get(ruleId);
     while (current) {

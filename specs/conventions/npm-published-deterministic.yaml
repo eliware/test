@@ -33,7 +33,7 @@ directives:
       - Do not use absolute or traversing files entries.
       - Do not maintain .npmignore or packaging lifecycle scripts prepare, prepublish, prepublishOnly, prepack, or postpack.
     examples:
-      - "{\"files\":[\"src/\",\"docs/\",\"examples/\",\"specs/\",\"README.md\",\"AGENTS.md\",\"LICENSE\",\"RELEASE_NOTES.md\",\"assets/\",\"data.json\"]}"
+      - '{"files":["src/","docs/","examples/","specs/","README.md","AGENTS.md","LICENSE","RELEASE_NOTES.md","assets/","data.json"]}'
       - "assets/templates/email.html is permitted but assets/tests/example.json is excluded."
       - ".env.production.example is permitted but .env.production is excluded."
 

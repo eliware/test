@@ -100,6 +100,30 @@ test("requires every profile document to declare a valid dependency list", () =>
   }
 });
 
+test("requires paired profile files to declare the same dependencies", () => {
+  const base = {
+    version: conventionVersion,
+    requires: [],
+    directives: [{ id: "E-0.1", dos: ["Do."], donts: ["Do not."] }],
+  };
+  expect(() =>
+    buildProfileCatalog(
+      [
+        { source: "general-semantic.yaml", document: base },
+        {
+          source: "general-deterministic.yaml",
+          document: {
+            ...base,
+            requires: ["application"],
+            directives: [{ id: "E-0.2", dos: ["Do."], donts: ["Do not."] }],
+          },
+        },
+      ],
+      conventionVersion,
+    ),
+  ).toThrow("mismatched dependencies");
+});
+
 test("rejects invalid names, versions, duplicate identifiers, and malformed directives", () => {
   const directive = { id: "E-0.1", dos: ["rule"], donts: ["bad"] };
   const document = { version: conventionVersion, requires: [], directives: [directive] };
