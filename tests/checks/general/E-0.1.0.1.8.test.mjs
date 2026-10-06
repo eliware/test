@@ -59,11 +59,11 @@ test("reports Git status errors", async () => {
   expect(result.message).toContain("Git ignore rules could not be inspected");
   const indexResult = await run({
     root: "repo",
-    runGit: createGitRunner({ failAt: 58 }),
+    runGit: createGitRunner({ failAt: 60 }),
     readText: async () => ignoreText,
   });
   expect(indexResult.message).toContain("Git index status could not be read");
-  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 59 }), {
+  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 61 }), {
     readText: async () => ignoreText,
   });
   expect(linkIndex).toContain("Git index status could not be read; tracked symlinks are unknown.");

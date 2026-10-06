@@ -1,5 +1,5 @@
-import { readFile, stat } from "node:fs/promises";
-import { dirname, join, relative, resolve, sep } from "node:path";
+import { readFile, realpath, stat } from "node:fs/promises";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { findMarkdownFiles } from "./find-markdown-files.mjs";
 import { hasMarkdownFragment } from "./resolve-markdown-fragment.mjs";
@@ -8,6 +8,7 @@ import { validateExternalLink } from "./validate-external-markdown-link.mjs";
 export async function validateMarkdownLinks(root, context = {}, dependencies = {}) {
   const read = dependencies.read ?? readFile;
   const inspect = dependencies.stat ?? stat;
+  const resolveRealpath = dependencies.realpath ?? realpath;
   let files;
   try {
     files = await (context.repositoryInventory?.documentationFiles?.({
@@ -18,6 +19,7 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
     return [`Markdown files could not be listed: ${error.message}`];
   }
   const errors = [];
+  let realRoot;
   for (const file of files) {
     let text;
     try {
@@ -52,6 +54,13 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
         continue;
       }
       try {
+        realRoot ??= await resolveRealpath(root);
+        const realTarget = await resolveRealpath(target);
+        const realRelative = relative(realRoot, realTarget);
+        if (escapesRoot(realRelative)) {
+          errors.push(`Documentation link escapes the repository: ${reference} in ${file}.`);
+          continue;
+        }
         const info = await inspect(target);
         if (fragment && target.toLowerCase().endsWith(".md")) {
           const targetText = await read(target, "utf8");
@@ -66,6 +75,10 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
     }
   }
   return errors;
+}
+
+function escapesRoot(path) {
+  return path === ".." || path.startsWith(`..${sep}`) || isAbsolute(path);
 }
 
 function splitReference(value) {

@@ -8,8 +8,7 @@ const executeFile = promisify(execFile);
 export async function validateGitHygiene(root, runGit = executeFile, { readText = readFile } = {}) {
   const errors = [];
   try {
-    const ignoreText = await readText(`${root}/.gitignore`, "utf8");
-    errors.push(...validateRequiredIgnoreRules(ignoreText));
+    errors.push(...validateRequiredIgnoreRules(await readText(`${root}/.gitignore`, "utf8")));
   } catch {
     errors.push(".gitignore could not be read to check required ignore rules.");
   }
@@ -26,6 +25,34 @@ export async function validateGitHygiene(root, runGit = executeFile, { readText 
         errors.push(`Git ignore rules could not be inspected for ${path}.`);
       else if (shouldIgnore) errors.push(`${path} must be ignored.`);
     }
+  }
+  try {
+    const tracked = await runGit(
+      "git",
+      ["-C", root, "ls-files", "--cached", "-z", "--", ":(glob)**/.gitignore"],
+      { windowsHide: true, encoding: "buffer" },
+    );
+    const untracked = await runGit(
+      "git",
+      [
+        "-C",
+        root,
+        "ls-files",
+        "--others",
+        "--ignored",
+        "--exclude-standard",
+        "-z",
+        "--",
+        ":(glob)**/.gitignore",
+      ],
+      { windowsHide: true, encoding: "buffer" },
+    );
+    const nested = [...parseNulPaths(tracked.stdout), ...parseNulPaths(untracked.stdout)].filter(
+      (path) => path.endsWith("/.gitignore") && path !== ".gitignore",
+    );
+    if (nested.length) errors.push(`Nested .gitignore files are prohibited: ${nested.join(", ")}.`);
+  } catch {
+    errors.push("Repository ignore files could not be listed; nested overrides are unknown.");
   }
   try {
     const { stdout } = await runGit(

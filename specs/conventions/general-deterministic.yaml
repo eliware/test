@@ -100,6 +100,7 @@ directives:
       - Do not exclude maintained files of the required types from formatting.
       - Do not add standalone Prettier configuration.
       - Do not add publication commands to package scripts or validation workflows.
+      - Do not create or upload GitHub releases from package scripts or validation workflows.
     examples:
       - '{"test":"eliware-test","lint":"eliware-test --lint","audit":"eliware-test --audit","format":"eliware-test --format","format:check":"eliware-test --format-check"}'
       - '{"printWidth":100,"tabWidth":2,"useTabs":false,"semi":true,"singleQuote":false,"quoteProps":"as-needed","jsxSingleQuote":false,"trailingComma":"all","bracketSpacing":true,"bracketSameLine":false,"arrowParens":"always","proseWrap":"preserve","endOfLine":"lf"}'
@@ -144,6 +145,7 @@ directives:
       - Ignore .DS_Store and Thumbs.db.
       - Keep tracked and staged files outside applicable ignore rules.
       - Keep all tracked paths free of symlinks.
+      - Use only the root .gitignore; do not add nested .gitignore files.
     donts:
       - Do not track ignored files or symlinks.
       - Do not accept unreadable Git-index status as success.

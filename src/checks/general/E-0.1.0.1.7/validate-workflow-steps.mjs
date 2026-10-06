@@ -1,4 +1,5 @@
 import { hasDuplicateAggregateStage } from "./has-duplicate-aggregate-stage.mjs";
+import { hasPublicationCommand } from "../E-0.1.0.1.5/validate-package-scripts.mjs";
 export function validateWorkflowSteps(steps) {
   const workflowSteps = steps.map((step) => step ?? {});
   const errors = [];
@@ -70,17 +71,6 @@ export function validateWorkflowSteps(steps) {
         "npm install, npm ci, and npm test steps must not override env, shell, or working-directory.",
       );
   return errors;
-}
-
-function hasPublicationCommand(command) {
-  if (typeof command !== "string") return false;
-  return [
-    /\b(?:semantic-release|release-it|lerna\s+publish|changesets?\s+publish)\b/iu,
-    /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu,
-    /\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*/iu,
-    /\b(?:docker|podman|buildah)\s+(?:buildx\s+)?build\b[^;\r\n]*--push\b/iu,
-    /\b(?:oras|crane)\s+push\b|\bskopeo\s+copy\b/iu,
-  ].some((pattern) => pattern.test(command));
 }
 
 function count(items, predicate) {

@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateMarkdownLinks } from "../../../../src/checks/general/E-0.1.0.1.4/validate-markdown-links.mjs";
@@ -34,6 +34,22 @@ test("reports invalid external, escaping, missing, and fragment links", async ()
     expect(errors.join("\n")).toContain("link is invalid: //host/path");
   } finally {
     await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects Markdown links that escape through a directory symlink", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-links-"));
+  const outside = await mkdtemp(join(tmpdir(), "eliware-outside-"));
+  try {
+    await writeFile(join(outside, "target.md"), "## Outside heading\n");
+    await symlink(outside, join(root, "linked"), process.platform === "win32" ? "junction" : "dir");
+    await writeFile(join(root, "README.md"), "[outside](linked/target.md#outside-heading)");
+    await expect(validateMarkdownLinks(root)).resolves.toContain(
+      "Documentation link escapes the repository: linked/target.md#outside-heading in README.md.",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+    await rm(outside, { recursive: true, force: true });
   }
 });
 
@@ -134,6 +150,7 @@ test("rejects targets that are neither files nor directories", async () => {
       {},
       {
         stat: async () => ({ isFile: () => false, isDirectory: () => false }),
+        realpath: async (path) => path,
       },
     );
     expect(errors[0]).toContain("does not resolve");

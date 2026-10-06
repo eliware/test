@@ -39,6 +39,8 @@ test("rejects invalid script maps, empty scripts, and publish commands", () => {
     "docker build --push image",
     "npx semantic-release",
     "npm exec -- release-it",
+    "gh release create v1.0.0",
+    "gh release upload v1.0.0 app.zip",
   ])
     expect(validatePackageScripts({ scripts: { other: command } })).toContain(
       "package.json.scripts.other must not publish packages or images.",

@@ -34,12 +34,24 @@ test("reports index failures and tracked links", async () => {
     call += 1;
     if (args.includes("check-ignore")) return { code: args.at(-1).endsWith(".example") ? 1 : 0 };
     if (args.includes("--ignored")) throw new Error("index unavailable");
+    if (args.includes("--others")) return { stdout: Buffer.from("") };
     return { stdout: Buffer.from(`120000 ${"a".repeat(40)} 0\tlink\0`) };
   };
   const errors = await validateGitHygiene("repo", runGit, { readText: async () => ignoreRules });
   expect(call).toBeGreaterThan(14);
   expect(errors).toContain("Git index status could not be read; tracked ignore status is unknown.");
   expect(errors).toContain("Tracked symlink entries are prohibited: link.");
+});
+
+test("rejects nested ignore files that can override universal rules", async () => {
+  const runGit = async (_command, args) => {
+    if (args.includes("check-ignore")) return { code: args.at(-1).endsWith(".example") ? 1 : 0 };
+    if (args.includes("--others")) return { stdout: Buffer.from("docs/.gitignore\0") };
+    return { stdout: Buffer.from("") };
+  };
+  await expect(
+    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
+  ).resolves.toContain("Nested .gitignore files are prohibited: docs/.gitignore.");
 });
 
 test("checks deep generated paths and production environment files", async () => {

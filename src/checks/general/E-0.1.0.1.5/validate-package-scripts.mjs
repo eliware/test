@@ -31,9 +31,10 @@ export function validatePackageScripts(packageJson = {}) {
   return errors;
 }
 
-function hasPublicationCommand(command) {
+export function hasPublicationCommand(command) {
   return (
     /\b(?:semantic-release|release-it|lerna\s+publish|changesets?\s+publish)\b/iu.test(command) ||
+    /\bgh\s+release\s+(?:create|upload)\b/iu.test(command) ||
     /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu.test(
       command,
     ) ||

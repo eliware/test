@@ -89,6 +89,7 @@ test.each([
   "bun publish",
   "npm --workspace app publish",
   "docker build --push docker.io/x",
+  "gh release create v1.0.0",
 ])("rejects publication command %s", (run) => {
   expect(validateWorkflowSteps([...steps.slice(0, -1), { run }, steps.at(-1)])).toContain(
     "ci.yaml validation job must not include publication commands.",
