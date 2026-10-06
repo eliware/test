@@ -108,11 +108,12 @@ directives:
     dos:
       - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
       - Define every commands field as an array of strings beginning with the exact command prefix shown.
-      - Keep secondary Knit scripts under .knit/.
+      - Keep secondary Knit scripts under .knit/ and use the .mjs extension.
     donts:
       - Do not omit or reorder the required prefix.
       - Do not include npm publication or explicit GHCR image-publication commands.
       - Do not invoke CodeScope from automatic validation.
+      - Do not use secondary Knit scripts with extensions other than .mjs.
     examples:
       - "commands:\n  - git pull --ff-only origin main\n  - npm ci\n  - npm test"
 

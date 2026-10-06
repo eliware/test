@@ -67,6 +67,18 @@ test("rejects secondary script paths that escape .knit", async () => {
   expect(errors.join(" ")).toContain("must keep secondary scripts under .knit/");
 });
 
+test.each([".mts", ".cts", ".js", ".cjs", ".ts", ".sh"])(
+  "rejects secondary scripts with the %s extension",
+  async (extension) => {
+    const errors = await validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () =>
+        `commands: [git pull --ff-only origin main, npm ci, npm test, node .knit/scripts/run${extension}]`,
+    });
+    expect(errors.join(" ")).toContain("must keep secondary scripts under .knit/ and use .mjs");
+  },
+);
+
 test("rejects quoted secondary script paths outside .knit", async () => {
   const errors = await validateKnitConfiguration({
     files: async () => [".knit/deploy.yaml"],

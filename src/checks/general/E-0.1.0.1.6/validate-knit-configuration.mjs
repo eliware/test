@@ -51,10 +51,13 @@ function validateCommands(commands, index) {
       errors.push(`${label} must not publish npm packages or GHCR images.`);
     if (/codescope/iu.test(command)) errors.push(`${label} must not invoke CodeScope.`);
     for (const [, script] of command.matchAll(
-      /(?:^|[\s"'`])([^\s"'`;&|]+\.(?:mjs|cjs|js|sh|ps1|py|rb|ts))\b/giu,
+      /(?:^|[\s"'`])([^\s"'`;&|]+\.(?:mjs|mts|cjs|cts|js|jsx|tsx|ts|sh|ps1|py|rb))\b/giu,
     ))
-      if (!posix.normalize(script.replaceAll("\\", "/")).startsWith(".knit/"))
-        errors.push(`${label} must keep secondary scripts under .knit/: ${script}.`);
+      if (
+        !script.toLowerCase().endsWith(".mjs") ||
+        !posix.normalize(script.replaceAll("\\", "/")).startsWith(".knit/")
+      )
+        errors.push(`${label} must keep secondary scripts under .knit/ and use .mjs: ${script}.`);
   }
   return errors;
 }
