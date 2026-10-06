@@ -6,7 +6,6 @@ import { validateAgentsStructure } from "./E-0.1.0.1.2/validate-agents-structure
 import { validateAgentsContent } from "./E-0.1.0.1.2/validate-agents-content.mjs";
 
 export const ruleId = "E-0.1.0.1.2";
-export const enforcementMode = "deterministic";
 
 export async function run(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();

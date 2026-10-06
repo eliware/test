@@ -5,7 +5,6 @@ import { validatePackageLock } from "./E-0.1.0.1.1/validate-package-lock.mjs";
 import { findCommonJsUses } from "./E-0.1.0.1.1/find-commonjs-uses.mjs";
 
 export const ruleId = "E-0.1.0.1.1";
-export const enforcementMode = "deterministic";
 
 export async function run(context = {}) {
   const root = context.root ?? process.cwd();

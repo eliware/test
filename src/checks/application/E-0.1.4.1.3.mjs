@@ -2,7 +2,6 @@ import { fail, pass } from "../../orchestration/check-result.mjs";
 import { validateApplicationJestPolicy } from "./E-0.1.4.1.3/validate-application-jest-policy.mjs";
 
 export const ruleId = "E-0.1.4.1.3";
-export const enforcementMode = "deterministic";
 
 export async function run(context = {}) {
   const errors = await validateApplicationJestPolicy(context);

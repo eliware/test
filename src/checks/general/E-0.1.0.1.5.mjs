@@ -5,7 +5,6 @@ import { validateFormattingStages } from "./E-0.1.0.1.5/validate-formatting-stag
 import { validateStandalonePrettierConfiguration } from "./E-0.1.0.1.5/validate-standalone-prettier-configuration.mjs";
 
 export const ruleId = "E-0.1.0.1.5";
-export const enforcementMode = "deterministic";
 
 export async function run(context = {}) {
   const errors = [

@@ -5,7 +5,6 @@ import { loadRepoMapRecord } from "./E-0.1.0.1.0/load-repo-map-record.mjs";
 import { validateRepoMapMetadata } from "./E-0.1.0.1.0/validate-repo-map-metadata.mjs";
 
 export const ruleId = "E-0.1.0.1.0";
-export const enforcementMode = "deterministic";
 
 export async function run(context = {}) {
   const failures = [...validateEliwareMetadata(context.packageJson)];

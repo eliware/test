@@ -4,7 +4,6 @@ import { validateSpecificationIndexes } from "./E-0.1.0.1.4/validate-specificati
 import { validateSpecificationDirectives } from "./E-0.1.0.1.4/validate-specification-directives.mjs";
 
 export const ruleId = "E-0.1.0.1.4";
-export const enforcementMode = "deterministic";
 
 export async function run(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();

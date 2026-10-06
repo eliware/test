@@ -8,7 +8,6 @@ import { validateReadmeMetadata } from "./E-0.1.0.1.3/validate-readme-metadata.m
 import { validateReadmeLinks } from "./E-0.1.0.1.3/validate-readme-links.mjs";
 
 export const ruleId = "E-0.1.0.1.3";
-export const enforcementMode = "deterministic";
 
 export async function run(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();
