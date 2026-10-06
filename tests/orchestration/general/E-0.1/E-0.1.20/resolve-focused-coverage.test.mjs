@@ -4,37 +4,23 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { resolveFocusedCoverage } from "../../../../../src/orchestration/general/E-0.1/E-0.1.20/resolve-focused-coverage.mjs";
 
-test("maps an existing mirrored test to its source coverage", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
+test("maps mirrored tests across root, case, and separator variants", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-roots-"));
   await mkdir(join(root, "src"));
   await mkdir(join(root, "tests"));
   await writeFile(join(root, "src", "sample.mjs"), "export {};");
   await writeFile(join(root, "tests", "sample.test.mjs"), 'test("sample", () => {});');
-  await expect(resolveFocusedCoverage(root, "tests/sample.test.mjs")).resolves.toEqual([
-    "--collectCoverageFrom",
-    "src/sample.mjs",
-  ]);
-  await expect(resolveFocusedCoverage(root, "tests\\sample.test.mjs")).resolves.toEqual([
-    "--collectCoverageFrom",
-    "src/sample.mjs",
-  ]);
-  await rm(root, { recursive: true, force: true });
-});
-
-test("maps singular and case-variant test roots to source coverage", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-singular-root-"));
-  await mkdir(join(root, "src"));
-  await mkdir(join(root, "test"));
-  await writeFile(join(root, "src", "sample.mjs"), "export {};");
-  await writeFile(join(root, "test", "sample.test.mjs"), 'test("sample", () => {});');
-  await expect(resolveFocusedCoverage(root, "test/sample.test.mjs")).resolves.toEqual([
-    "--collectCoverageFrom",
-    "src/sample.mjs",
-  ]);
-  await expect(resolveFocusedCoverage(root, "Tests/sample.test.mjs")).resolves.toEqual([
-    "--collectCoverageFrom",
-    "src/sample.mjs",
-  ]);
+  for (const focusedPath of [
+    "tests/sample.test.mjs",
+    "tests\\sample.test.mjs",
+    "test/sample.test.mjs",
+    "Tests/sample.test.mjs",
+  ]) {
+    await expect(resolveFocusedCoverage(root, focusedPath)).resolves.toEqual([
+      "--collectCoverageFrom",
+      "src/sample.mjs",
+    ]);
+  }
   await rm(root, { recursive: true, force: true });
 });
 

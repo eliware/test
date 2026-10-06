@@ -49,25 +49,16 @@ test("ignores close events after the child has settled", () => {
   expect(dependencies.resolve).not.toHaveBeenCalled();
 });
 
-test("reports missing exit codes and includes an available signal", () => {
-  const { handleClose, dependencies } = createHandler();
-
-  handleClose(null, "SIGTERM");
-
-  expect(dependencies.settleError).toHaveBeenCalledWith(
-    new Error("Child process exited without an exit code (SIGTERM)."),
-  );
-  expect(dependencies.resolve).not.toHaveBeenCalled();
-});
-
-test("reports a missing exit code without adding an empty signal", () => {
-  const { handleClose, dependencies } = createHandler();
-
-  handleClose(null, null);
-
-  expect(dependencies.settleError).toHaveBeenCalledWith(
-    new Error("Child process exited without an exit code."),
-  );
+test("reports missing exit codes with or without a signal", () => {
+  for (const [signal, message] of [
+    ["SIGTERM", "Child process exited without an exit code (SIGTERM)."],
+    [null, "Child process exited without an exit code."],
+  ]) {
+    const { handleClose, dependencies } = createHandler();
+    handleClose(null, signal);
+    expect(dependencies.settleError).toHaveBeenCalledWith(new Error(message));
+    expect(dependencies.resolve).not.toHaveBeenCalled();
+  }
 });
 
 test("resolves timed-out children with termination status", () => {

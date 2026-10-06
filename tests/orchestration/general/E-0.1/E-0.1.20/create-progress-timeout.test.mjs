@@ -15,30 +15,26 @@ test.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
 
 test("reports a timed-out process", () => {
   jest.useFakeTimers();
+  let callback;
+  const originalSetTimeout = global.setTimeout;
+  const setTimeoutSpy = jest.spyOn(global, "setTimeout").mockImplementation((handler, delay) => {
+    callback = handler;
+    return originalSetTimeout(handler, delay);
+  });
   const onTimeout = jest.fn();
   const timeout = createProgressTimeout({ timeoutMs: 15, onTimeout });
-  timeout.reset();
-  jest.advanceTimersByTime(15);
-  expect(timeout.wasTriggered()).toBe(true);
-  expect(onTimeout).toHaveBeenCalledTimes(1);
-  timeout.stop();
-  jest.useRealTimers();
-});
-
-test("does not invoke timeout repeatedly after the terminal callback", () => {
-  let callback;
-  const setTimeoutSpy = jest.spyOn(global, "setTimeout").mockImplementation((handler) => {
-    callback = handler;
-    return 1;
-  });
-  const clearTimeoutSpy = jest.spyOn(global, "clearTimeout").mockImplementation(() => {});
-  const onTimeout = jest.fn();
-  const timeout = createProgressTimeout({ timeoutMs: 5, onTimeout });
-  timeout.reset();
-  callback();
-  callback();
-  expect(onTimeout).toHaveBeenCalledTimes(1);
-  timeout.stop();
-  setTimeoutSpy.mockRestore();
-  clearTimeoutSpy.mockRestore();
+  try {
+    timeout.reset();
+    jest.advanceTimersByTime(14);
+    expect(timeout.wasTriggered()).toBe(false);
+    jest.advanceTimersByTime(1);
+    expect(timeout.wasTriggered()).toBe(true);
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+    callback();
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+  } finally {
+    timeout.stop();
+    setTimeoutSpy.mockRestore();
+    jest.useRealTimers();
+  }
 });
