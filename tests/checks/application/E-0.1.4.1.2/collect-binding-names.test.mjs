@@ -25,4 +25,5 @@ test("ignores unsupported binding forms", () => {
   expect(
     collectBindingNames({ type: "RestElement", argument: { type: "Identifier", name: "rest" } }),
   ).toEqual(["rest"]);
+  expect(collectBindingNames({ type: "ObjectPattern" })).toEqual([]);
 });

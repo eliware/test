@@ -3,6 +3,7 @@ import { collectJestTestNames } from "./collect-jest-test-names.mjs";
 import { isActiveJestTestExpression } from "./is-active-jest-test-expression.mjs";
 import { referencesTestSource } from "./references-test-source.mjs";
 import { collectShadowedJestNames } from "./collect-shadowed-jest-names.mjs";
+import { collectModuleShadowedNames } from "./collect-module-shadowed-jest-names.mjs";
 
 export function inspectJestTestModule(content, testPath, sourcePath) {
   let ast;
@@ -13,19 +14,20 @@ export function inspectJestTestModule(content, testPath, sourcePath) {
   }
   const testNames = collectJestTestNames(ast.program);
   const callbackNames = findCallbackNames(ast.program);
+  const moduleBindings = collectModuleShadowedNames(ast.program, testNames);
   return {
-    hasExecutableTest: containsTestCall(ast.program, testNames, callbackNames),
+    hasExecutableTest: containsTestCall(
+      ast.program,
+      testNames,
+      callbackNames,
+      moduleBindings.tests,
+      moduleBindings.callbacks,
+    ),
     importsSource: referencesTestSource(ast.program, testPath, sourcePath),
   };
 }
 
-function containsTestCall(
-  node,
-  names,
-  callbackNames,
-  blockedTests = new Set(),
-  blockedCallbacks = new Set(),
-) {
+function containsTestCall(node, names, callbackNames, blockedTests, blockedCallbacks) {
   if (Array.isArray(node))
     return node.some((item) =>
       containsTestCall(item, names, callbackNames, blockedTests, blockedCallbacks),

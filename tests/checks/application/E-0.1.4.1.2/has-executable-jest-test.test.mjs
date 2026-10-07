@@ -56,6 +56,17 @@ test("rejects callbacks shadowed by non-function parameters", () => {
   );
 });
 
+test("rejects a test call shadowed by a module binding", () => {
+  const source = 'const test = (name, callback) => callback(); test("fake", () => {});';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+  const declaration = 'function test(name, callback) { callback(); } test("fake", () => {});';
+  expect(
+    inspectJestTestModule(declaration, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest,
+  ).toBe(false);
+});
+
 test("rejects a Jest function alias after reassignment", () => {
   const source = 'let run = test; run = () => {}; run("not a test", () => {});';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(

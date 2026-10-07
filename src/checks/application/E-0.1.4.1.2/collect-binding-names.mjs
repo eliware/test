@@ -3,7 +3,7 @@ export function collectBindingNames(node) {
   if (node?.type === "RestElement") return collectBindingNames(node.argument);
   if (node?.type === "AssignmentPattern") return collectBindingNames(node.left);
   if (["ObjectPattern", "ArrayPattern"].includes(node?.type))
-    return node.properties.flatMap((property) =>
+    return (node.properties ?? []).flatMap((property) =>
       collectBindingNames(
         property.type === "RestElement" ? property.argument : (property.value ?? property),
       ),
