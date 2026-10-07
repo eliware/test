@@ -1,6 +1,6 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { fail, pass } from "../../orchestration/check-result.mjs";
+import { fail, pass } from "../check-result.mjs";
 import { readSpecificationHeadings } from "./E-0.1.0.1.2/read-specification-headings.mjs";
 import { validateAgentsStructure } from "./E-0.1.0.1.2/validate-agents-structure.mjs";
 import { validateAgentsContent } from "./E-0.1.0.1.2/validate-agents-content.mjs";

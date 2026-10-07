@@ -1,5 +1,5 @@
 import semver from "semver";
-import { bundledConventionVersion } from "../../../orchestrators/read-bundled-profile-catalog.mjs";
+import { bundledConventionVersion } from "../../../validation/check-discovery/read-bundled-profile-catalog.mjs";
 
 const nonempty = (value) => typeof value === "string" && value.trim().length > 0;
 

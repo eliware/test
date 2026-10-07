@@ -1,0 +1,16 @@
+import { execute } from "../../shared/process/execute-child-process.mjs";
+import { buildOxlintArguments } from "./build-oxlint-arguments.mjs";
+import { resolveOxlintExecutable } from "./resolve-oxlint-executable.mjs";
+
+export async function runOxlint(
+  root,
+  run = execute,
+  resolveExecutable = resolveOxlintExecutable,
+  extraArgs = [],
+  paths = [],
+) {
+  const executable = await resolveExecutable();
+  return run(process.execPath, [executable, ...buildOxlintArguments(extraArgs, paths)], {
+    cwd: root,
+  });
+}

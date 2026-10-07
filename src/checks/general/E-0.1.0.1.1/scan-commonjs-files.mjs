@@ -4,8 +4,8 @@ import { parse } from "@babel/parser";
 import {
   moduleParserOptions,
   repositorySourceParserOptions,
-} from "../../../orchestration/create-repository-ast-cache.mjs";
-import { findRepositoryFiles } from "../../../orchestration/general/E-0.1/find-repository-files.mjs";
+} from "../../../validation/shared/ast/create-repository-ast-cache.mjs";
+import { findRepositoryFiles } from "../../../validation/shared/repository/find-repository-files.mjs";
 import { collectCommonJsFindings } from "./collect-commonjs-findings.mjs";
 
 const moduleFile = /\.(?:mjs|js|jsx|cjs|ts|tsx|cts|mts|mjsx|cjsx)$/iu;

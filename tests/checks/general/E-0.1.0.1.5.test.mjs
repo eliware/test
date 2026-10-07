@@ -10,7 +10,7 @@ const packageJson = {
     format: "node bin/eliware-test.mjs --format",
     "format:check": "node bin/eliware-test.mjs --format-check",
     pack: "node bin/eliware-test.mjs --pack",
-    smoke: "node src/orchestration/npm-published/E-0.1.140/smoke-cli.mjs",
+    smoke: "node src/validation/stages/smoke/smoke-cli.mjs",
   },
   prettier: {
     printWidth: 100,

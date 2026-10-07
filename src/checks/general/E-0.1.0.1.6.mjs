@@ -1,4 +1,4 @@
-import { fail, pass } from "../../orchestration/check-result.mjs";
+import { fail, pass } from "../check-result.mjs";
 import { validateKnitConfiguration } from "./E-0.1.0.1.6/validate-knit-configuration.mjs";
 
 export const ruleId = "E-0.1.0.1.6";

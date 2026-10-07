@@ -1,6 +1,6 @@
-import { readBundledProfileCatalog } from "../../../orchestrators/read-bundled-profile-catalog.mjs";
-import { validateAppliedProfiles } from "../../../orchestrators/validate-applied-profiles.mjs";
-import { validateExemptionRecords } from "../../../orchestrators/validate-exemption-records.mjs";
+import { readBundledProfileCatalog } from "../../../validation/check-discovery/read-bundled-profile-catalog.mjs";
+import { validateAppliedProfiles } from "../../../validation/planning/validate-applied-profiles.mjs";
+import { validateExemptionRecords } from "../../../validation/planning/validate-exemption-records.mjs";
 
 export function validateEliwareMetadata(packageJson) {
   const eliware = packageJson?.eliware;

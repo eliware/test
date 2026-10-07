@@ -1,0 +1,21 @@
+import { expect, test } from "@jest/globals";
+import { validateExemptionIds } from "../../../src/validation/planning/validate-exemption-ids.mjs";
+
+test("accepts exemptions for discovered checks", () => {
+  expect(() => validateExemptionIds({}, [{ ruleId: "E-0.1" }])).not.toThrow();
+  expect(() =>
+    validateExemptionIds({ eliware: { exempt: [{ ruleId: "E-0.1" }] } }, [{ ruleId: "E-0.1" }]),
+  ).not.toThrow();
+});
+
+test("rejects exemptions for unknown checks", () => {
+  expect(() =>
+    validateExemptionIds({ eliware: { exempt: [{ ruleId: "E-9" }] } }, [{ ruleId: "E-0.1" }]),
+  ).toThrow("Unknown convention exemption rule ID: E-9");
+});
+
+test("validates CLI ignored IDs against the complete registry", () => {
+  expect(() =>
+    validateExemptionIds({ eliware: { exempt: [] } }, [{ ruleId: "E-0.1" }], ["E-9"]),
+  ).toThrow("Unknown convention exemption rule ID: E-9");
+});

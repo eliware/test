@@ -1,4 +1,4 @@
-import { fail, pass } from "../../orchestration/check-result.mjs";
+import { fail, pass } from "../check-result.mjs";
 import { validateCiWorkflow } from "./E-0.1.0.1.7/validate-ci-workflow.mjs";
 
 export const ruleId = "E-0.1.0.1.7";

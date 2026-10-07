@@ -1,4 +1,4 @@
-import { fail, pass } from "../../orchestration/check-result.mjs";
+import { fail, pass } from "../check-result.mjs";
 import { validatePackageMetadata } from "./E-0.1.0.1.1/validate-package-metadata.mjs";
 import { validateRequiredPackageFiles } from "./E-0.1.0.1.1/validate-required-package-files.mjs";
 import { validatePackageLock } from "./E-0.1.0.1.1/validate-package-lock.mjs";

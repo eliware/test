@@ -18,10 +18,10 @@ jest.unstable_mockModule("../../src/cli/read-diagnostic-options.mjs", () => ({
 jest.unstable_mockModule("../../src/cli/timing/create-stage-timer.mjs", () => ({
   createStageTimer,
 }));
-jest.unstable_mockModule("../../src/orchestrators/run-convention-stage.mjs", () => ({
+jest.unstable_mockModule("../../src/validation/check-execution/run-convention-stage.mjs", () => ({
   runConventionStage,
 }));
-jest.unstable_mockModule("../../src/orchestrators/run-validation.mjs", () => ({ runValidation }));
+jest.unstable_mockModule("../../src/validation/run-validation.mjs", () => ({ runValidation }));
 jest.unstable_mockModule("../../src/cli/dispatch-informational-command.mjs", () => ({
   dispatchInformationalCommand,
 }));

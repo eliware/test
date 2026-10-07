@@ -1,7 +1,7 @@
 import { readDiagnosticOptions } from "./read-diagnostic-options.mjs";
 import { createStageTimer } from "./timing/create-stage-timer.mjs";
-import { runConventionStage } from "../orchestrators/run-convention-stage.mjs";
-import { runValidation } from "../orchestrators/run-validation.mjs";
+import { runConventionStage } from "../validation/check-execution/run-convention-stage.mjs";
+import { runValidation } from "../validation/run-validation.mjs";
 import { dispatchInformationalCommand } from "./dispatch-informational-command.mjs";
 import { createValidationRunOptions } from "./create-validation-run-options.mjs";
 import { writeValidationResults } from "./write-validation-results.mjs";

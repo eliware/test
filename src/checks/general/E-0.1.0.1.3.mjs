@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { fail, pass } from "../../orchestration/check-result.mjs";
+import { fail, pass } from "../check-result.mjs";
 import { resolveReadmeHeadings } from "./E-0.1.0.1.3/resolve-readme-headings.mjs";
 import { validateReadmeStructure } from "./E-0.1.0.1.3/validate-readme-structure.mjs";
 import { validateReadmeBranding } from "./E-0.1.0.1.3/validate-readme-branding.mjs";

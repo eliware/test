@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { readRepositoryText } from "../../../orchestration/read-repository-text.mjs";
+import { readRepositoryText } from "../../../validation/shared/repository/read-repository-text.mjs";
 import { extractMarkdownLinks } from "../../general/E-0.1.0.1.4/extract-markdown-links.mjs";
 import { validateMarkdownIndex } from "./validate-markdown-index.mjs";
 
