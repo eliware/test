@@ -1,27 +1,19 @@
-import { basename, join } from "node:path";
-import { detectTestToolUse } from "./detect-test-tool-use.mjs";
-
-const forbiddenToolReference =
-  /["'`](@jest\/(?!globals(?:["'/]))[^"'`]+|@vitest\/[^"'`]+|@tapjs\/[^"'`]+|@wdio\/[^"'`]+|@cypress\/[^"'`]+|jest(?:-[^/"'`]+)?(?:\/[^/"'`]*)?|vitest(?:\/[^"'`]*)?|mocha(?:\/[^"'`]*)?|ava|tap|tape|uvu|c8|nyc|istanbul|babel-plugin-istanbul|node:test|playwright|@playwright\/test|cypress|jasmine|@bcoe\/v8-coverage)["'`]/giu;
-const forbiddenToolCommand =
-  /(?:^|[\s/\\"'`])(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\\/"'`]|\s|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|[\s"'`])|\b(?:bun|deno)\s+test(?:\s|$)/iu;
-const forbiddenCoverage = /\b(?:istanbul|c8|v8|coverage)\s+ignore\b|\bcoverage\s*:\s*false/iu;
-const forbiddenAlternativeReference =
-  /["'`](@vitest\/[^"'`]+|@tapjs\/[^"'`]+|@wdio\/[^"'`]+|@cypress\/[^"'`]+|vitest(?:\/[^"'`]*)?|mocha(?:\/[^"'`]*)?|ava|tap|tape|uvu|c8|nyc|istanbul|babel-plugin-istanbul|node:test|playwright|@playwright\/test|cypress|jasmine|@bcoe\/v8-coverage)["'`]/giu;
-const forbiddenAlternativeCommand =
-  /(?:^|[\s/\\"'`])(?:vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\\/"'`]|\s|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|[\s"'`])|\b(?:bun|deno)\s+test(?:\s|$)/iu;
+import { join } from "node:path";
+import { findSeparateTestRunnerConfigs } from "./find-separate-test-runner-configs.mjs";
+import { validateProductionCoveragePolicy } from "./validate-production-coverage-policy.mjs";
+import { validateTestToolReferences } from "./validate-test-tool-references.mjs";
 
 export async function validateJestSourcePolicy(context = {}) {
   const root = context.root ?? process.cwd();
   const inventory = context.repositoryInventory;
   const harness = context.packageJson?.name === "@eliware/test";
-  const errors = [];
-  let files = [];
+  let files;
   try {
     files = await inventory.files("all");
   } catch {
     return ["Jest source policy could not read the repository inventory."];
   }
+  const errors = [];
   for (const path of files) {
     if (!isPolicyFile(path)) continue;
     let content;
@@ -31,30 +23,12 @@ export async function validateJestSourcePolicy(context = {}) {
       errors.push(`${path} could not be read to check Jest source policy.`);
       continue;
     }
-    const plainText =
-      path === "package.json" ||
-      /\.(?:json|ya?ml|sh|ps1|py)$/iu.test(path) ||
-      !/\.(?:mjs|js|cjs|jsx|ts|tsx|cts|mts|mjsx|cjsx)$/iu.test(path);
-    const referencesTool = plainText
-      ? harness
-        ? forbiddenAlternativeReference.test(content) || forbiddenAlternativeCommand.test(content)
-        : forbiddenToolReference.test(content) || forbiddenToolCommand.test(content)
-      : detectTestToolUse(content, harness);
-    if (referencesTool)
-      errors.push(`${path} must not import or invoke a test runner or coverage tool.`);
-    forbiddenToolReference.lastIndex = 0;
-    forbiddenToolCommand.lastIndex = 0;
-    forbiddenAlternativeReference.lastIndex = 0;
-    forbiddenAlternativeCommand.lastIndex = 0;
-    if (path.startsWith("src/") && forbiddenCoverage.test(content))
-      errors.push(`${path} must not exclude production coverage.`);
+    const toolError = validateTestToolReferences(path, content, harness);
+    const coverageError = validateProductionCoveragePolicy(path, content);
+    if (toolError) errors.push(toolError);
+    if (coverageError) errors.push(coverageError);
   }
-  const configFiles = files.filter((path) =>
-    /^(?:jest\.config|\.jestrc|vitest\.(?:config|workspace)|\.mocharc|mocha\.config|ava\.config|\.nycrc|nyc\.config|c8\.config|playwright\.config|cypress\.config|karma\.conf|jasmine\.config|babel\.config|\.babelrc|\.taprc|tap\.config|tape\.config|uvu\.config|qunit\.config|webdriverio\.config|istanbul\.config)(?:\.[^.]+)?$/iu.test(
-      basename(path),
-    ),
-  );
-  for (const path of configFiles)
+  for (const path of findSeparateTestRunnerConfigs(files))
     errors.push(`${path} is a separate test runner or coverage configuration file.`);
   return errors;
 }
@@ -62,6 +36,6 @@ export async function validateJestSourcePolicy(context = {}) {
 function isPolicyFile(path) {
   if (path === "package.json") return true;
   const codeFile = /\.(?:mjs|js|cjs|jsx|ts|tsx|cts|mts|mjsx|cjsx|sh|ps1|py)$/iu.test(path);
-  const configurationFile = /(?:config|rc|opts)(?:\.[^.]+)?$/iu.test(basename(path));
+  const configurationFile = /(?:config|rc|opts)(?:\.[^.]+)?$/iu.test(path.split("/").at(-1));
   return (/^(?:src|tests|bin|scripts|examples)\//u.test(path) && codeFile) || configurationFile;
 }
