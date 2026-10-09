@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
+import { validateCanonicalOrderDocument } from "./validate-canonical-order-document.mjs";
 
 const cache = new Map();
 
@@ -9,6 +10,8 @@ export function readCanonicalOrder(fileName, read = (url) => readFileSync(url, "
     const url = new URL(`../../../../specs/conventions/ordering/${fileName}`, import.meta.url);
     const document = parse(read(url));
     if (document?.version !== "12.0" || !document.orders || typeof document.orders !== "object")
+      throw new Error(`Invalid canonical ordering specification: ${fileName}.`);
+    if (validateCanonicalOrderDocument(document, fileName).length)
       throw new Error(`Invalid canonical ordering specification: ${fileName}.`);
     cache.set(fileName, document.orders);
   }

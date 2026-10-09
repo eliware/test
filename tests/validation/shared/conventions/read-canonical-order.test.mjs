@@ -30,3 +30,12 @@ test("rejects an ordering document with the wrong version", () => {
     readCanonicalOrder("invalid.yaml", () => "version: '11.0'\norders: { fields: [a] }"),
   ).toThrow("Invalid canonical ordering specification: invalid.yaml.");
 });
+
+test("rejects missing required package profile entries", () => {
+  expect(() =>
+    readCanonicalOrder(
+      "package-files.yaml",
+      () => "version: '12.0'\norders:\n  profileEntries: {application: bin/, library: examples/}\n",
+    ),
+  ).toThrow("Invalid canonical ordering specification: package-files.yaml.");
+});

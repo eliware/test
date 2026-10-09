@@ -1,3 +1,5 @@
+import { validateCanonicalOrderDocument } from "../../../validation/shared/conventions/validate-canonical-order-document.mjs";
+
 const documentFields = new Set(["version", "description", "requires", "conflicts", "directives"]);
 const directiveFields = new Set(["id", "dos", "donts", "examples", "children"]);
 
@@ -36,6 +38,7 @@ function validateOrderingDocument(value, path) {
   if (typeof value.description !== "string" || !value.description.trim())
     errors.push(`${path}.description must be a nonempty string.`);
   if (!isOrderRecord(value.orders)) errors.push(`${path}.orders must contain ordered values.`);
+  errors.push(...validateCanonicalOrderDocument(value, path));
   return errors;
 }
 

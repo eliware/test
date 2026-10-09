@@ -10,3 +10,117 @@ orders:
     - number
     - array
     - object
+  requiredFields:
+    agents-sections.yaml:
+      - baseSections
+      - profileOrder
+      - profileHeadings
+    ci-workflow.yaml:
+      - validationSteps
+      - stepValues
+    eliware-apply.yaml:
+      - profiles
+    ordering-data-schema.yaml:
+      - documentFields
+      - orderValueTypes
+      - requiredFields
+      - requiredEntries
+      - requiredTypes
+    package-files.yaml:
+      - baseEntries
+      - profileEntries
+      - profileEntryOrder
+      - finalOptionalEntries
+      - environmentExampleProfiles
+    package-json.yaml:
+      - topLevelKeys
+      - eliwareKeys
+    publication-workflow.yaml:
+      - profiles
+      - jobs
+    readme-sections.yaml:
+      - header
+      - headerLines
+      - tableOfContentsHeading
+      - badgeOrder
+      - generalSections
+      - profileOrder
+      - profileSections
+      - finalSections
+      - sharedSections
+    specification-indexes.yaml:
+      - directYamlFiles
+      - subdirectoryIndexes
+      - placement
+  requiredEntries:
+    ordering-data-schema.yaml:
+      requiredFields:
+        - agents-sections.yaml
+        - ci-workflow.yaml
+        - eliware-apply.yaml
+        - ordering-data-schema.yaml
+        - package-files.yaml
+        - package-json.yaml
+        - publication-workflow.yaml
+        - readme-sections.yaml
+        - specification-indexes.yaml
+      requiredEntries:
+        - agents-sections.yaml
+        - ci-workflow.yaml
+        - ordering-data-schema.yaml
+        - package-files.yaml
+        - readme-sections.yaml
+      requiredTypes:
+        - readme-sections.yaml
+    agents-sections.yaml:
+      profileHeadings:
+        - application
+        - cli
+        - discord
+        - mcp-server
+        - web
+        - library
+        - infrastructure
+        - workspace
+        - documentation
+        - npm-published
+        - ghcr-published
+        - private
+    ci-workflow.yaml:
+      stepValues:
+        - checkout
+        - setup-node
+        - install-npm
+        - npm-ci
+        - npm-test
+    package-files.yaml:
+      profileEntries:
+        - application
+        - library
+        - npm-published
+    readme-sections.yaml:
+      headerLines:
+        - brand
+        - title-and-badges
+        - description
+        - table-of-contents
+      profileSections:
+        - application
+        - cli
+        - discord
+        - mcp-server
+        - web
+        - library
+        - infrastructure
+        - workspace
+        - documentation
+        - npm-published
+        - ghcr-published
+        - private
+      sharedSections:
+        - Commands
+      sharedSections.Commands:
+        - profiles
+  requiredTypes:
+    readme-sections.yaml:
+      sharedSections.Commands.profiles: nonempty-text-list
