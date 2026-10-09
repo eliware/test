@@ -18,3 +18,18 @@ directives:
     examples:
       - "## MCP server"
       - "## Tools\n\n## Resources\n\n## Prompts\n\n## Transport\n\n## Authentication\n\n## Schemas\n\n## Operations"
+
+  - id: E-0.1.8.1.1
+    dos:
+      - Put each tool adapter in tools/<name>.mjs.
+      - Put each tool handler in src/tools/<name>.mjs.
+      - Make each tools/ adapter re-export its matching source handler.
+      - Use a default function export in each tool handler.
+      - Allow any tool name when matching adapter and handler files exist.
+      - Provide at least one tool adapter.
+    donts:
+      - Do not omit a tool adapter or its matching source handler.
+      - Do not import or execute repository handlers during validation.
+    examples:
+      - "tools/echo.mjs re-exports src/tools/echo.mjs."
+      - "src/tools/echo.mjs default-exports a tool registration function."
