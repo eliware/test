@@ -37,6 +37,7 @@ test("allows the self-hosted pack script only when requested", () => {
 test.each([
   { engines: { node: ">=25" } },
   { publishConfig: {} },
+  { files: undefined },
   { files: ["README.md"] },
   { files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "specs/"] },
   { files: ["src/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "docs/"] },
@@ -47,21 +48,43 @@ test.each([
   expect(validatePublicationMetadata({ ...validPackage, ...override })).toBeTruthy();
 });
 
-test("requires exact profile-derived allowlists", () => {
+test("allows runtime entries after the required profile entries", () => {
   const cliPackage = {
     ...validPackage,
     eliware: { apply: ["application", "cli", "npm-published"] },
   };
   expect(validatePublicationMetadata(cliPackage)).toBeNull();
   expect(
-    validatePublicationMetadata({ ...cliPackage, files: [...cliPackage.files, "tests/"] }),
-  ).toContain("profile-derived");
+    validatePublicationMetadata({
+      ...cliPackage,
+      files: [...cliPackage.files, "assets/", "data.json"],
+    }),
+  ).toBeNull();
+});
+
+test("rejects duplicate and misordered required entries", () => {
+  const cliPackage = {
+    ...validPackage,
+    eliware: { apply: ["application", "cli", "npm-published"] },
+  };
   expect(
     validatePublicationMetadata({ ...cliPackage, files: [...cliPackage.files, "bin/"] }),
-  ).toContain("profile-derived");
+  ).toContain("duplicate paths");
+  expect(
+    validatePublicationMetadata({
+      ...cliPackage,
+      files: ["bin/", ...cliPackage.files.filter((entry) => entry !== "bin/")],
+    }),
+  ).toContain("must start with required entries in this order");
   expect(
     validatePublicationMetadata({ ...cliPackage, files: ["../outside", ...cliPackage.files] }),
-  ).toContain("profile-derived");
+  ).toContain("must start with required entries in this order");
+  expect(
+    validatePublicationMetadata({
+      ...cliPackage,
+      files: [...cliPackage.files, { path: "runtime.mjs" }],
+    }),
+  ).toContain("only string paths");
 });
 
 test("limits environment examples to runtime environment profiles", () => {
@@ -87,4 +110,10 @@ test("limits environment examples to runtime environment profiles", () => {
   expect(validatePublicationMetadata(packageWithEnvironmentTemplate)).toContain(
     "profile that supports runtime environment configuration",
   );
+  expect(
+    validatePublicationMetadata({
+      ...validPackage,
+      files: [...validPackage.files, ".env.example", "assets/"],
+    }),
+  ).toContain(".env.example must be the final");
 });

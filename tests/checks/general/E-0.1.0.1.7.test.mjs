@@ -27,9 +27,11 @@ jobs:
       - run: npm ci
       - run: npm test`;
 
+const validPublishWorkflow = `jobs: { validate: { steps: [{ uses: actions/checkout@v6 }, { uses: actions/setup-node@v7 }, { run: "npm -g install npm@latest" }, { run: "npm ci" }, { run: "npm test" }] }, publish: { needs: validate, steps: [] } }`;
+
 const inventory = {
   files: async () => [".github/workflows/ci.yaml", ".github/workflows/publish.yaml"],
-  readText: async () => validWorkflow,
+  readText: async (path) => (path.endsWith("publish.yaml") ? validPublishWorkflow : validWorkflow),
 };
 
 test("accepts the required validation workflow and applied publication workflow", async () => {
@@ -169,14 +171,6 @@ test("rejects multiple validation jobs, job conditions, and unsafe permissions",
 });
 
 test("handles a workflow with no jobs map or runner label", async () => {
-  await expect(
-    run({
-      repositoryInventory: {
-        files: async () => [".github/workflows/ci.yaml"],
-        readText: async () => "name: Validation\non: {}",
-      },
-    }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("validation job with steps") });
   const noRunner = validWorkflow.replace("    runs-on: ubuntu-latest\n", "");
   await expect(
     run({

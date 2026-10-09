@@ -1,6 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
 import { createProfileValidationStageRunners } from "../../../../src/validation/stages/registry/create-profile-validation-stage-runners.mjs";
 
+test("uses default stage dependencies", () => {
+  expect(createProfileValidationStageRunners()).toHaveProperty("typecheck");
+});
+
 test("runs pack only for the published profile and maps failures", async () => {
   const runners = createProfileValidationStageRunners({
     validatePack: async () => "pack failure",
@@ -45,11 +49,17 @@ test("runs typecheck and build only for valid profile scripts", async () => {
     packageJson: {
       eliware: { apply: ["library"] },
       scripts: { typecheck: "tsc --noEmit" },
+      devDependencies: { typescript: "*" },
     },
   };
   const web = {
     ...library,
-    packageJson: { eliware: { apply: ["web"] }, scripts: { build: "vite build" } },
+    env: { npm_config_ignore_scripts: "false", TASK_SETTING: "keep" },
+    packageJson: {
+      eliware: { apply: ["web"] },
+      scripts: { build: "vite build" },
+      devDependencies: { vite: "*" },
+    },
   };
   await expect(runners.typecheck(library)).resolves.toMatchObject({ code: 10 });
   await expect(runners.build(web)).resolves.toMatchObject({ code: 11 });
@@ -58,6 +68,11 @@ test("runs typecheck and build only for valid profile scripts", async () => {
     code: 0,
   });
   expect(runScript.mock.calls.map(([, name]) => name)).toEqual(["typecheck", "build", "typecheck"]);
+  expect(runScript.mock.calls[0][4]).toEqual({});
+  expect(runScript.mock.calls[1][4]).toEqual({
+    npm_config_ignore_scripts: "true",
+    TASK_SETTING: "keep",
+  });
   const notApplicable = await runners.typecheck({
     packageJson: { eliware: { apply: ["application"] } },
   });
@@ -71,13 +86,26 @@ test("runs typecheck and build only for valid profile scripts", async () => {
 });
 
 test("reports missing and unsafe profile scripts as configuration failures", async () => {
-  const runners = createProfileValidationStageRunners();
+  const runScript = jest.fn(async () => ({ code: 0 }));
+  const runners = createProfileValidationStageRunners({ runScript });
   await expect(
     runners.typecheck({ packageJson: { eliware: { apply: ["library"] } } }),
   ).resolves.toMatchObject({ code: 1 });
   await expect(
     runners.build({
-      packageJson: { eliware: { apply: ["web"] }, scripts: { build: "npm run unsafe" } },
+      packageJson: {
+        eliware: { apply: ["web"] },
+        scripts: { build: "npm run unsafe" },
+      },
     }),
   ).resolves.toMatchObject({ code: 1 });
+  await expect(
+    runners.typecheck({
+      packageJson: {
+        eliware: { apply: ["library"] },
+        scripts: { typecheck: "tsc --noEmit" },
+      },
+    }),
+  ).resolves.toMatchObject({ code: 1 });
+  expect(runScript).not.toHaveBeenCalled();
 });

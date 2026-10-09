@@ -62,6 +62,20 @@ test("reports unreadable workflow inventories", async () => {
   ).resolves.toEqual(["GitHub workflow files could not be inspected: offline"]);
 });
 
+test("reports a workflow without a jobs map", async () => {
+  await expect(
+    validateCiWorkflow(
+      {
+        files: async () => [".github/workflows/ci.yaml"],
+        readText: async () => "name: Validation\non: {}",
+      },
+      { eliware: { apply: ["general"] } },
+    ),
+  ).resolves.toEqual(
+    expect.arrayContaining([expect.stringContaining("validation job with steps")]),
+  );
+});
+
 test("rejects unsupported workflow events", async () => {
   const source = workflow.replace("on:\n", "on:\n  schedule: []\n");
   await expect(

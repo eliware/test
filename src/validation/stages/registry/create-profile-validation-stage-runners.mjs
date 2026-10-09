@@ -64,16 +64,12 @@ async function runProfileScript(script, code, profile, context, runScript) {
   const command = context.packageJson?.scripts?.[script];
   if (typeof command !== "string" || !command.trim())
     return createValidationStageResult(script, 1, `${script} script is not configured.`);
-  const configurationError = validateDirectToolScript(command, script);
+  const configurationError = validateDirectToolScript(command, script, context.packageJson);
   if (configurationError) return createValidationStageResult(script, 1, configurationError);
   try {
-    const value = await runScript(
-      context.root,
-      script,
-      undefined,
-      undefined,
-      context.env ?? process.env,
-    );
+    const env = { ...(context.env ?? process.env) };
+    if (script === "build") env.npm_config_ignore_scripts = "true";
+    const value = await runScript(context.root, script, undefined, undefined, env);
     return createValidationStageResult(
       script,
       value.code === 0 ? 0 : code,

@@ -1,6 +1,11 @@
 version: "12.0"
 description: Defines semantic repository requirements for Eliware container distribution.
-requires: []
+requires:
+  - general
+conflicts:
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.11.0.0
     dos:

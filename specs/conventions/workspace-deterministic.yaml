@@ -1,13 +1,28 @@
 version: "12.0"
 description: Lists deterministic rules for Eliware workspace repositories.
 requires:
+  - general
   - private
+conflicts:
+  - application
+  - cli
+  - web
+  - discord
+  - mcp-server
+  - library
+  - documentation
+  - infrastructure
+  - npm-published
+  - ghcr-published
 directives:
   - id: E-0.1.2.1.0
     dos:
-      - Add Workspace to AGENTS.md at the canonical profile position.
-      - Add Runbooks, Communication, and Recovery to README.md at the canonical profile position.
-      - Include these README headings in the Table of Contents.
+      - Add a Workspace section to AGENTS.md.
+      - Add Runbooks, Communication, and Recovery sections to README.md.
+      - Keep a navigation-only runbooks/README.md index.
+      - Store each runbook as a separate .yaml file under runbooks/.
+      - Link every runbook from runbooks/README.md.
+      - Validate each runbook against the bundled v12 runbook schema.
     donts:
       - Do not omit workspace-specific headings.
     examples:

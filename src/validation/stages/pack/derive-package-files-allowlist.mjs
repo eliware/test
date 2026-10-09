@@ -1,11 +1,15 @@
-const baseEntries = ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md"];
+import { readCanonicalOrder } from "../../shared/conventions/read-canonical-order.mjs";
 
 export function derivePackageFilesAllowlist(packageJson) {
   const profiles = packageJson?.eliware?.apply ?? [];
-  const entries = [...baseEntries];
-  if (profiles.includes("application")) entries.push("bin/");
-  if (profiles.includes("library")) entries.push("examples/");
-  if (packageJson?.name === "@eliware/test") entries.push("specs/");
+  const order = readCanonicalOrder("package-files.yaml");
+  const entries = [...order.baseEntries];
+  for (const profile of order.profileEntryOrder) {
+    if (profiles.includes(profile) && order.profileEntries[profile]) {
+      entries.push(order.profileEntries[profile]);
+    }
+  }
+  entries.push(...(order.packageEntries[packageJson?.name] ?? []));
   if (packageJson?.files?.includes(".env.example")) entries.push(".env.example");
   return entries;
 }

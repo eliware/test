@@ -1,11 +1,18 @@
 version: "12.0"
 description: Lists semantic rules for Eliware web applications.
 requires:
+  - general
   - application
+conflicts:
+  - library
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.6.0.0
     dos:
       - Document routes, ownership, assets, runtime and build settings, ports, output paths, and deployment boundaries accurately.
+      - Set webpack output to <repo-root>/dist.
       - Explain browser-validation prerequisites, commands, and expected results.
       - Define acceptance expectations for supported browser workflows.
       - Keep public assets limited to intentionally served content.

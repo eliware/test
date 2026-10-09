@@ -1,15 +1,27 @@
 version: "12.0"
 description: Lists semantic rules for Eliware workspace repositories.
 requires:
+  - general
   - private
+conflicts:
+  - application
+  - cli
+  - web
+  - discord
+  - mcp-server
+  - library
+  - documentation
+  - infrastructure
+  - npm-published
+  - ghcr-published
 directives:
   - id: E-0.1.2.0.0
     dos:
       - Define workspace purpose, ownership, role boundaries, communication, escalation, and recovery responsibilities.
-      - Keep workspace procedures canonical and discoverable.
       - Give runbooks clear purposes, owners, boundaries, prerequisites, and actionable steps.
+      - Write runbook instructions with ASD-STE100 rules.
       - Keep recovery usable without unavailable conversation history.
       - Keep durable workspace decisions in indexed specifications.
     donts:
       - Do not imply authority beyond assigned scope.
-      - Do not duplicate canonical procedures or maintain a competing company-wide task tracker.
+      - Do not maintain a competing company-wide task tracker.

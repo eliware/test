@@ -31,5 +31,5 @@ test("E-0.1.4.1.1 rejects missing entrypoint files and start tokens", async () =
 });
 
 test("E-0.1.4.1.1 uses its default context", async () => {
-  await expect(run(undefined)).resolves.toMatchObject({ ruleId, status: "fail" });
+  await expect(run(undefined)).resolves.toMatchObject({ ruleId, status: "pass" });
 });

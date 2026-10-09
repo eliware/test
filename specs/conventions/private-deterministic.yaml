@@ -1,17 +1,16 @@
 version: "12.0"
 description: Lists deterministic rules for private Eliware distribution.
-requires: []
+requires:
+  - general
+conflicts:
+  - npm-published
 directives:
   - id: E-0.1.12.1.0
     dos:
       - Set private true.
-      - Add Private distribution to AGENTS.md at the canonical profile position.
-      - Allow publish.yaml only when ghcr-published is explicitly applied.
+      - Add a Private distribution section to AGENTS.md.
     donts:
-      - Do not apply npm-published alongside private.
       - Do not declare npm publication commands or npm publication tokens in scripts or workflows.
-      - Do not include an npm badge or package link for this repository in README.md.
-      - Do not add a separate private-distribution README heading.
     examples:
       - "## Private distribution"
       - '{"private":true,"eliware":{"id":"E-38","apply":["general","private"]}}'

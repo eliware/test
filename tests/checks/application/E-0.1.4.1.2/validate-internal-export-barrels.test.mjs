@@ -103,3 +103,34 @@ test("does not classify side-effect imports as pure re-export barrels", async ()
     ),
   ).resolves.toEqual([]);
 });
+
+test("allows declared library indexes from conditional and array exports", async () => {
+  await expect(
+    validateInternalExportBarrels(
+      ["src/index.mjs", "src/nested/index.mjs", "src/private.mjs"],
+      async () => 'export { value } from "./value.mjs";',
+      {
+        main: "./src/index.mjs",
+        exports: {
+          ".": { import: ["./src/index.mjs"] },
+          "./nested": ["./src/nested/index.mjs", "./src/private.mjs"],
+          "./ignored": null,
+        },
+      },
+      "repo",
+      { library: true },
+    ),
+  ).resolves.toEqual(["src/private.mjs is an internal pure export barrel."]);
+});
+
+test("accepts conditional exports without a root subpath", async () => {
+  await expect(
+    validateInternalExportBarrels(
+      ["src/index.mjs"],
+      async () => 'export { value } from "./value.mjs";',
+      { exports: { import: "./src/index.mjs" } },
+      "repo",
+      { library: true },
+    ),
+  ).resolves.toEqual([]);
+});

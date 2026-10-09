@@ -1,3 +1,5 @@
+import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
+
 function repoUrl(packageJson) {
   const value =
     typeof packageJson?.repository === "string"
@@ -16,12 +18,19 @@ export function validateReadmeBranding(readme, packageJson = {}) {
   const repository = repoUrl(packageJson);
   if (!name || !repository.startsWith("https://github.com/"))
     return "package.json must define a package name and GitHub repository for README badges.";
-  const npm = packageJson?.eliware?.apply?.includes("npm-published")
-    ? `[![npm](https://img.shields.io/npm/v/${name})](https://www.npmjs.com/package/${name}) `
-    : "";
+  const npm = packageJson?.eliware?.apply?.includes("npm-published");
   if (!npm && readme.includes("npmjs.com"))
     return "README.md must not include npm branding without npm-published.";
-  const badgeLine = `${name} ${npm}[![License](https://img.shields.io/github/license/${repository.slice(19)})](https://github.com/${repository.slice(19)}/blob/main/LICENSE) [![CI](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml/badge.svg)](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml)`;
+  const badges = {
+    npm: `[![npm](https://img.shields.io/npm/v/${name})](https://www.npmjs.com/package/${name})`,
+    License: `[![License](https://img.shields.io/github/license/${repository.slice(19)})](https://github.com/${repository.slice(19)}/blob/main/LICENSE)`,
+    CI: `[![CI](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml/badge.svg)](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml)`,
+  };
+  const order = readCanonicalOrder("readme-sections.yaml").badgeOrder;
+  const badgeLine = `${name} ${order
+    .filter((badge) => badge !== "npm" || npm)
+    .map((badge) => badges[badge])
+    .join(" ")}`;
   const lines = readme.split(/\r?\n/u);
   return lines[0] === expectedLogoHeader() && lines[2] === badgeLine
     ? null

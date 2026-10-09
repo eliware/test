@@ -49,6 +49,27 @@ test("sorts multiple specifications and child indexes in expected order", async 
   }
 });
 
+test("uses the supplied index placement and ordering rules", async () => {
+  const root = await fixture();
+  try {
+    await writeFile(
+      join(root, "specs", "README.md"),
+      "# Specs\n\n- [nested](nested/README.md)\n- [directives](directives.yaml)\n",
+    );
+    await expect(
+      validateSpecificationIndexes(root, {
+        readOrder: () => ({
+          directYamlFiles: "unsorted",
+          subdirectoryIndexes: "unsorted",
+          placement: "before-yaml-files",
+        }),
+      }),
+    ).resolves.toEqual([]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("rejects missing directories, files, indexes, and invalid links", async () => {
   await expect(validateSpecificationIndexes("missing")).resolves.toContain(
     "specs/ is required to contain indexed YAML specifications.",

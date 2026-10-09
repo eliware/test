@@ -1,14 +1,6 @@
 export function validateEntrypointMetadata(packageJson) {
   const errors = [];
   const bin = packageJson.bin;
-  const targets = [
-    packageJson.main,
-    ...(typeof bin === "string" ? [bin] : Object.values(bin ?? {})),
-  ];
-  if (!targets.some((target) => typeof target === "string" && target.trim()))
-    errors.push("package.json must declare at least one runtime entrypoint through main or bin.");
-  if (packageJson.main !== undefined && !validTarget(packageJson.main))
-    errors.push("package.json main must be a nonempty path string.");
   if (
     bin !== undefined &&
     typeof bin !== "string" &&

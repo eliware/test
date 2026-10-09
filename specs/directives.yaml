@@ -10,15 +10,18 @@ directives:
     donts:
       - Do not enforce semantic conventions or duplicate consumer requirements.
       - Do not require an external repository to load bundled checks.
-        - Do not publish, deploy, sync, tag, push, or change external state during validation.
-        - Do not expose internal modules or injected helpers as consumer APIs.
+      - Do not publish, deploy, sync, tag, push, or change external state during validation.
+      - Do not expose internal modules or injected helpers as consumer APIs.
     children:
       - id: E-0.0.0
         dos:
           - Parse settings and arguments before validation.
-          - Resolve selected profiles and their listed prerequisites.
-          - Match each profile pair's version and prerequisite list.
-          - Find checks under src/checks/<profile>/ by directive ID filename.
+          - Resolve selected profiles, listed prerequisites, and conflicts.
+          - Reject selected profile sets with declared conflicts.
+          - Match each profile pair's version, prerequisite list, and conflict list.
+          - Find profile checks under src/checks/<profile>/ by directive ID filename.
+          - Find combination checks under src/checks/shared/ by directive ID filename.
+          - Apply cross-profile rules from these harness directives.
           - Match each module name, exported ruleId, directive, and reported ID.
           - Show directive ancestry in check subfolders.
           - Check exemptions against the full bundled check tree.
@@ -47,17 +50,19 @@ directives:
           - Do not let exemptions suppress unrelated required work.
           - Do not recursively invoke the consumer's aggregate test script.
           - Do not add undeclared registry, release, deployment, or sync checks.
+          - Do not invoke CodeScope from automatic validation.
 
       - id: E-0.0.2
         dos:
           - Expose --help, --version, --debug-timing, --lint, --format, --format-check, --audit, and --pack.
           - Return informational output and exit code 0 for --help and --version without validation.
           - Require locally active npm 12 or later before validation.
+          - In this harness package, use node bin/eliware-test.mjs in the five shared scripts.
           - Accept --debug-timing once and only before a focused path or tool mode.
           - Accept only --threads=<positive-count> as additional lint input.
           - Validate other mode arguments against documented mode-specific allowlists.
           - Preserve wrapper-selected formatting behavior, configuration, and required file coverage.
-          - Keep --audit an explicitly requested tool mode rather than an implicit aggregate stage.
+          - Run audit in aggregate validation and expose --audit as an explicit audit-only mode.
         donts:
           - Do not require npm verification for informational commands.
           - Do not accept wrapper options after the -- separator.
@@ -98,7 +103,7 @@ directives:
           - Use codes 9 to 12 for pack, typecheck, build, and convention failures.
           - Stop before Jest for invalid settings, arguments, or stage selection.
           - Use the highest applicable failure code without discarding diagnostics.
-          - Run lint, format, audit, outdated, pack, typecheck, and build before conventions.
+          - Run profile-enabled lint, format, audit, outdated, pack, typecheck, and build before conventions.
           - Run all convention checks before Jest.
           - Run Jest only when every earlier stage passes.
           - Cache each completed stage result for convention checks.
@@ -141,6 +146,10 @@ directives:
 
       - id: E-0.0.6
         dos:
+          - Inject child-process execution into stages and checks.
+          - Mock every CLI call in tests/**/*.test.mjs.
+          - Keep tests/**/*.test.mjs from launching real CLI tools or child processes.
+          - Mock calls to Git, npm, audit, lint, format, pack, typecheck, build, Jest, and package scripts.
           - Invoke child processes with argument arrays, explicit working directories, and shell-disabled execution.
           - Copy the complete invoking environment defensively and apply only documented overrides.
           - Resolve executables through supported package resolution.
@@ -202,6 +211,8 @@ directives:
       - id: E-0.0.9
         dos:
           - Keep implementation native ESM, injectable, and covered by mirrored tests.
+          - Allow the harness to declare and import Oxlint and Prettier as direct dependencies.
+          - Invoke Oxlint and Prettier through harness validation stages.
           - Keep one workflow's orchestration in its coordinator.
           - Move operations with separate change reasons into focused helpers.
           - Reuse bounded repository inventory and content caches.
@@ -220,6 +231,7 @@ directives:
       - id: E-0.0.10
         dos:
           - Keep --pack limited to local package-content validation.
+          - In this harness package, define pack as node bin/eliware-test.mjs --pack.
           - Provide opt-in smoke execution through npm run smoke -- --target <repository-path>.
           - Support smoke from the source checkout or installed harness directory.
           - Resolve source and target before changes.
@@ -241,3 +253,73 @@ directives:
           - Do not treat smoke success as release authorization.
         examples:
           - "npm run smoke -- --target ../disposable-consumer"
+
+      - id: E-0.0.11
+        dos:
+          - Use package.json.eliware.apply to classify each repository and select its enabled profiles.
+          - Require general for every repository, including repositories that select no other profile.
+          - Allow a repository to select general alone.
+          - Treat application, library, documentation, workspace, and infrastructure as mutually exclusive repository types.
+          - Require application when cli, web, discord, or mcp-server applies.
+          - Allow cli, web, discord, and mcp-server to combine with each other under application.
+          - Require private when workspace or infrastructure applies.
+          - Allow documentation with general and optional private only.
+          - Allow workspace with general and private only.
+          - Allow infrastructure with general and private only.
+          - Reject npm-published and ghcr-published with documentation, workspace, or infrastructure.
+          - Reject npm-published with private.
+          - Allow ghcr-published with private.
+          - Allow npm-published and ghcr-published to share one publication workflow.
+          - Require reciprocal conflict metadata for every incompatible profile pair.
+          - Reject profile sets that violate these repository-type boundaries.
+          - Put only universal repository rules and checks in general.
+          - Keep each profile's rules unique from general and every profile that can apply with it.
+          - Keep child-profile rules unique from general and their required parent profiles.
+          - Allow equivalent rules in mutually exclusive profile branches when each branch needs them.
+          - Put profile-specific rules and checks in that profile and enable them only when selected.
+          - Put combination-dependent rules and checks in a separate shared composition layer.
+          - Keep the shared composition layer separate from profile checks and shared utility helpers.
+          - Run shared composition checks only when their declared profile combination applies.
+          - Map each deterministic requirement to one executable check in its owning profile or the shared composition layer.
+          - Run profile-required stages only when their profile applies.
+          - Run package packing only when npm-published applies.
+        donts:
+          - Do not put conditional profile rules or checks in general.
+          - Do not duplicate enforcement between general and a profile or among profiles that can apply together.
+          - Do not reject shared rules across profiles that cannot apply together.
+          - Do not infer profiles from repository contents or runtime behavior.
+          - Do not run checks or stages for unselected profiles.
+          - Do not keep profiles without unique deterministic or semantic requirements.
+          - Do not run package packing when npm-published does not apply.
+
+      - id: E-0.0.12
+        dos:
+          - Put checks for rules that depend on multiple selected profiles in src/checks/shared/.
+          - Give each shared check a directive that states its required profile combination.
+          - Run a shared check only when every required profile applies.
+          - Mirror each shared check under tests/checks/shared/.
+          - Keep profile-only rules and checks in their selected profile.
+          - Read cross-profile canonical order data from specs/conventions/ordering/.
+          - Order package.json keys by ordering/package-json.yaml.
+          - Order package.json.eliware.apply entries by ordering/eliware-apply.yaml.
+          - Order README.md sections and badges by ordering/readme-sections.yaml.
+          - Order AGENTS.md sections by ordering/agents-sections.yaml.
+          - Order specification indexes by ordering/specification-indexes.yaml.
+          - Order CI validation steps by ordering/ci-workflow.yaml.
+          - Order publication profiles and jobs by ordering/publication-workflow.yaml.
+          - Order package files by ordering/package-files.yaml when npm-published applies.
+          - Include shared README.md or AGENTS.md sections when any listed profile applies.
+          - Add each shared README.md section once at its first required position.
+          - Show the npm badge and package link only when npm-published applies.
+          - Use one publish.yaml when npm-published or ghcr-published applies.
+          - Use one publisher when npm-published and ghcr-published both apply.
+          - Publish only on canonical vMAJOR.MINOR.PATCH tags that match package.json.version.
+          - Require one unconditional Ubuntu validation job before publication.
+          - Give publication jobs only the permissions required by their selected profiles.
+          - Do not run npm test again in a publisher job.
+          - Do not use continue-on-error for publication or required verification steps.
+        donts:
+          - Do not put combination checks in profile directories or shared utility directories.
+          - Do not copy canonical order values into check modules.
+          - Do not run shared checks when a required profile does not apply.
+          - Do not add a publication workflow when neither publication profile applies.

@@ -29,6 +29,7 @@ test.each(["documentation", "workspace", "infrastructure"])(
 
     expect(ruleIds).toContain("E-0.1.4");
     expect(ruleIds).toContain("E-0.1.20.17");
+    expect(ruleIds).toContain(`${profile}-rule`);
   },
 );
 

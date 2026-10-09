@@ -13,19 +13,23 @@ test("accepts a missing conventions directory", async () => {
   }
 });
 
-test("reports paired version and prerequisite mismatches", async () => {
+test("reports paired version, prerequisite, and conflict mismatches", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));
   const directory = join(root, "specs", "conventions");
   await mkdir(directory, { recursive: true });
   try {
-    await writeFile(join(directory, "general-semantic.yaml"), "version: '12.0'\nrequires: []\n");
+    await writeFile(
+      join(directory, "general-semantic.yaml"),
+      "version: '12.0'\nrequires: []\nconflicts: []\n",
+    );
     await writeFile(
       join(directory, "general-deterministic.yaml"),
-      "version: '11.0'\nrequires: [application]\n",
+      "version: '11.0'\nrequires: [application]\nconflicts: [private]\n",
     );
     expect(await validateProfileDocumentPairs(root)).toEqual([
       "general semantic and deterministic documents must use the same version.",
       "general semantic and deterministic documents must use the same prerequisites.",
+      "general semantic and deterministic documents must use the same conflicts.",
     ]);
   } finally {
     await rm(root, { recursive: true, force: true });
@@ -37,7 +41,10 @@ test("ignores unmatched profiles and unrelated files", async () => {
   const directory = join(root, "specs", "conventions");
   await mkdir(directory, { recursive: true });
   try {
-    await writeFile(join(directory, "general-semantic.yaml"), "version: '12.0'\nrequires: []\n");
+    await writeFile(
+      join(directory, "general-semantic.yaml"),
+      "version: '12.0'\nrequires: []\nconflicts: []\n",
+    );
     await writeFile(join(directory, "README.md"), "index\n");
     expect(await validateProfileDocumentPairs(root)).toEqual([]);
   } finally {
@@ -54,11 +61,11 @@ test("rejects malformed YAML and mismatched stream lengths", async () => {
     await expect(validateProfileDocumentPairs(root)).rejects.toThrow();
     await writeFile(
       join(directory, "general-semantic.yaml"),
-      "version: '12.0'\nrequires: []\n---\nversion: '12.0'\nrequires: []\n",
+      "version: '12.0'\nrequires: []\nconflicts: []\n---\nversion: '12.0'\nrequires: []\nconflicts: []\n",
     );
     await writeFile(
       join(directory, "general-deterministic.yaml"),
-      "version: '12.0'\nrequires: []\n",
+      "version: '12.0'\nrequires: []\nconflicts: []\n",
     );
     expect(await validateProfileDocumentPairs(root)).toContain(
       "general semantic and deterministic documents must use the same stream length.",

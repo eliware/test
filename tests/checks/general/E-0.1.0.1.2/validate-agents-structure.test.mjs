@@ -25,7 +25,7 @@ test("requires the exact title and ordered base headings", () => {
   ]);
 });
 
-test("orders selected profile headings by the canonical list", () => {
+test("orders selected profile headings by canonical document order", () => {
   expect(
     validateAgentsStructure(`${base}\n## Application\n## CLI`, {
       eliware: { apply: ["cli", "application"] },
@@ -36,6 +36,24 @@ test("orders selected profile headings by the canonical list", () => {
       eliware: { apply: ["application", "cli"] },
     }),
   ).toEqual(["AGENTS.md profile headings must use canonical order after Changes."]);
+  expect(
+    validateAgentsStructure(`${base}\n## Application\n## Discord`, {
+      eliware: { apply: ["general", "discord", "application"] },
+    }),
+  ).toEqual([]);
+});
+
+test("requires the Documentation heading after Changes for documentation repositories", () => {
+  expect(
+    validateAgentsStructure(`${base}\n## Documentation\n## Private distribution`, {
+      eliware: { apply: ["general", "documentation", "private"] },
+    }),
+  ).toEqual([]);
+  expect(
+    validateAgentsStructure(base, {
+      eliware: { apply: ["general", "documentation", "private"] },
+    }),
+  ).toEqual(["AGENTS.md has duplicate, undeclared, or misordered section headings."]);
 });
 
 test("rejects duplicate, unselected, and undeclared section headings", () => {

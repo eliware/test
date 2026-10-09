@@ -26,3 +26,4 @@
 - [Web, semantic](web-semantic.yaml)
 - [Workspace, deterministic](workspace-deterministic.yaml)
 - [Workspace, semantic](workspace-semantic.yaml)
+- [Ordering specifications](ordering/README.md)

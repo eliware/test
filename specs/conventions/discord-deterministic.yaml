@@ -1,15 +1,20 @@
 version: "12.0"
 description: Lists deterministic rules for Eliware Discord applications.
 requires:
+  - general
   - application
+conflicts:
+  - library
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.7.1.0
     dos:
-      - Add Discord to AGENTS.md at the canonical profile position.
-      - Add Commands, Events, Intents and permissions, and Operations to README.md and its Table of Contents.
-      - Deduplicate headings shared with other profiles.
+      - Add a Discord section to AGENTS.md.
+      - Add Events and Intents and permissions sections to README.md.
     donts:
       - Do not omit Discord-specific headings.
     examples:
       - "## Discord"
-      - "## Commands\n\n## Events\n\n## Intents and permissions\n\n## Operations"
+      - "discord: [Commands, Events, Intents and permissions, Operations]"

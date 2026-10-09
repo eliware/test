@@ -1,13 +1,21 @@
 version: "12.0"
 description: Lists semantic rules for Eliware MCP server applications.
 requires:
+  - general
   - application
+conflicts:
+  - library
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.8.0.0
     dos:
       - Document tools, resources, prompts, transports, authentication, schemas, and protocol behavior accurately.
       - Explain network exposure, access boundaries, lifecycle, and protocol validation.
       - State unsupported capabilities and provide safe startup and shutdown examples.
+      - Define tool, resource, prompt, and transport contracts in indexed repository specifications.
+      - Apply each contract consistently to every matching MCP record.
     donts:
       - Do not expose credentials or claim unsupported protocol guarantees.
       - Do not provide instructions that unintentionally expose a live endpoint.

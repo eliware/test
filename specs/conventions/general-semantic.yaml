@@ -1,6 +1,7 @@
 version: "12.0"
 description: Defines semantic requirements shared by Eliware repositories.
 requires: []
+conflicts: []
 directives:
   - id: E-0.1.0.0.0
     dos:

@@ -21,7 +21,7 @@ export async function validateProfileDocumentPairs(root) {
     const pair = profiles.get(match[1]) ?? {};
     pair[match[2]] = documents.map((document) => {
       const value = document.toJSON();
-      return { version: value?.version, requires: value?.requires };
+      return { version: value?.version, requires: value?.requires, conflicts: value?.conflicts };
     });
     profiles.set(match[1], pair);
   }
@@ -47,6 +47,14 @@ export async function validateProfileDocumentPairs(root) {
       errors.push(
         `${profile} semantic and deterministic documents must use the same prerequisites.`,
       );
+    if (
+      pair.semantic.some(
+        (document, index) =>
+          JSON.stringify(document.conflicts) !==
+          JSON.stringify(pair.deterministic[index]?.conflicts),
+      )
+    )
+      errors.push(`${profile} semantic and deterministic documents must use the same conflicts.`);
   }
   return errors;
 }

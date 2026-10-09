@@ -54,6 +54,31 @@ test("allows clean sources and the supported Jest API", async () => {
   ).resolves.toEqual([]);
 });
 
+test("allows Istanbul ignore only in the primary library export barrel", async () => {
+  const content = '/* istanbul ignore file */\nexport { value } from "./value.mjs";';
+  const inventory = { files: async () => ["src/index.mjs"], readText: async () => content };
+  await expect(
+    validateJestSourcePolicy({
+      root: "repo",
+      packageJson: {
+        main: "./src/index.mjs",
+        eliware: { apply: ["library"] },
+      },
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toEqual([]);
+  await expect(
+    validateJestSourcePolicy({
+      root: "repo",
+      packageJson: {
+        main: "./src/index.mjs",
+        eliware: { apply: ["library", "application"] },
+      },
+      repositoryInventory: inventory,
+    }),
+  ).resolves.toContain("src/index.mjs must not exclude production coverage.");
+});
+
 test("allows the harness API and checks its package scripts", async () => {
   const inventory = {
     files: async () => ["src/run.mjs", "package.json"],

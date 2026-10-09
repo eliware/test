@@ -56,6 +56,13 @@ test("rejects callbacks shadowed by non-function parameters", () => {
   );
 });
 
+test("ignores Jest calls inside functions that are never invoked", () => {
+  const source = 'function unused() { test("fake", () => {}); }';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+});
+
 test("rejects a test call shadowed by a module binding", () => {
   const source = 'const test = (name, callback) => callback(); test("fake", () => {});';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(

@@ -37,3 +37,41 @@ test("accepts valid documents and reports schema violations", () => {
     ).join(" "),
   ).toContain("unsupported fields");
 });
+
+test("accepts structured ordering documents and rejects malformed order values", () => {
+  const ordering = {
+    version: "12.0",
+    description: "Canonical order",
+    orders: { sections: ["first", "second"] },
+  };
+  expect(
+    validateSpecificationDocument(ordering, "specs/conventions/ordering/sections.yaml"),
+  ).toEqual([]);
+  expect(
+    validateSpecificationDocument(
+      { ...ordering, orders: { sections: ["first", 4] } },
+      "specs/conventions/ordering/sections.yaml",
+    ).join(" "),
+  ).toContain("orders must contain ordered values");
+  expect(
+    validateSpecificationDocument(null, "specs/conventions/ordering/sections.yaml").join(" "),
+  ).toContain("ordering object");
+  expect(
+    validateSpecificationDocument(
+      { ...ordering, other: true },
+      "specs/conventions/ordering/x.yaml",
+    ).join(" "),
+  ).toContain("unsupported ordering fields");
+  expect(
+    validateSpecificationDocument(
+      { ...ordering, version: "" },
+      "specs/conventions/ordering/x.yaml",
+    ).join(" "),
+  ).toContain("version must be a nonempty string");
+  expect(
+    validateSpecificationDocument(
+      { ...ordering, description: "" },
+      "specs/conventions/ordering/x.yaml",
+    ).join(" "),
+  ).toContain("description must be a nonempty string");
+});

@@ -1,12 +1,19 @@
 version: "12.0"
 description: Lists deterministic rules for Eliware command-line applications.
 requires:
+  - general
   - application
+conflicts:
+  - library
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.5.1.0
     dos:
-      - Add CLI to AGENTS.md at the canonical profile position.
-      - Add Commands and Exit codes to README.md and its Table of Contents.
+      - Add a CLI section to AGENTS.md.
+      - Add an Exit codes section to README.md.
+      - Require package.json.bin to declare each public CLI executable.
       - Give every declared public executable --help and --version.
       - Make --help return nonempty output and exit code 0.
       - Make --version report package.json.version and exit code 0.

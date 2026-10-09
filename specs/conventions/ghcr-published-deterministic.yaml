@@ -1,15 +1,20 @@
 version: "12.0"
 description: Defines deterministic repository requirements for Eliware GHCR publication.
-requires: []
+requires:
+  - general
+conflicts:
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.11.1.0
     dos:
-      - Add GHCR publication to AGENTS.md at the canonical profile position.
+      - Add a GHCR publication section to AGENTS.md.
       - Include the exact Usage markers shown with package-derived image identity and version.
       - Append latest to supported tags only when the workflow declares that tag.
       - Include the mutable-alias statement when latest is declared.
     donts:
-      - Do not add a separate GHCR README heading or use stale identity markers.
+      - Do not use stale identity markers.
     examples:
       - "## GHCR publication"
       - "Image: ghcr.io/eliware/example"
@@ -25,19 +30,12 @@ directives:
       - Set one image name ghcr.io/eliware/<unscoped-package-name>.
       - Set the exact v-prefixed package version tag.
       - Make additional tags use that same image name.
-      - Keep one publish.yaml shared with npm-published when both apply.
-      - Set publication only on push tags matching the candidate glob shown.
-      - Set a pre-push guard requiring canonical numeric tag and package-version agreement.
-      - Make publication depend on unconditional Ubuntu validation installing npm latest and running npm ci then npm test.
       - Set ghcr-publish as the publication job environment.
-      - Set workflow and validation permissions to contents read only.
-      - Give the GHCR publisher exactly contents read, packages write, id-token write, attestations write, and artifact-metadata write.
-      - Use checkout major v6 and setup-node major v7 when present.
-      - Apply npm publisher setup rules when npm publication shares the job.
+      - Use checkout major v6 in the GHCR publisher.
     donts:
-      - Do not declare other image owners, branch publication, pull-request publication, or manual publication.
-      - Do not grant publication permissions to validation jobs or require npm setup in jobs not invoking npm.
-      - Do not declare deployment commands or continue-on-error on required publication steps.
+      - Do not declare other image owners.
+      - Do not require npm setup in jobs that do not invoke npm.
+      - Do not declare deployment commands.
     examples:
       - "on:\n  push:\n    tags: [\"v[0-9]*.[0-9]*.[0-9]*\"]"
       - "environment: ghcr-publish"

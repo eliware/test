@@ -9,6 +9,7 @@ const expectedSchema = {
         version: { type: "string", minLength: 1, pattern: "\\S" },
         description: { type: "string", minLength: 1, pattern: "\\S" },
         requires: { type: "array", items: { type: "string", pattern: "^[a-z0-9-]+$" } },
+        conflicts: { type: "array", items: { type: "string", pattern: "^[a-z0-9-]+$" } },
         directives: { type: "array", minItems: 1, items: { $ref: "#/$defs/directive" } },
       },
       additionalProperties: false,

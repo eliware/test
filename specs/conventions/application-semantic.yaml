@@ -1,6 +1,12 @@
 version: "12.0"
 description: Lists semantic rules for Eliware applications and services.
-requires: []
+requires:
+  - general
+conflicts:
+  - library
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.4.0.0
     dos:
@@ -14,7 +20,6 @@ directives:
     donts:
       - Do not hide user-facing behavior in internal runbooks or claim unsupported guarantees.
       - Do not omit supported settings or activate optional environment variables in templates.
-      - Do not duplicate canonical production procedures.
 
   - id: E-0.1.4.0.1
     dos:
@@ -24,6 +29,7 @@ directives:
       - Inject replaceable dependencies and keep launchers thin.
       - Remove superseded compatibility branches, aliases, and fallbacks.
       - Use mapped shared packages for substantial production concerns.
+      - Assert intended output behavior in tests.
     donts:
       - Do not open connections using unvalidated configuration.
       - Do not omit supported workflow tests or duplicate helper assertions.

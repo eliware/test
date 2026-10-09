@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { listSpecificationEntries } from "./list-specification-entries.mjs";
+import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
 
 export async function validateSpecificationIndexes(root, dependencies = {}) {
   const read = dependencies.read ?? readFile;
@@ -19,6 +20,7 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
     ...entries.filter((entry) => entry.type === "directory").map((entry) => entry.path),
   ];
   const files = entries.filter((entry) => entry.type === "file");
+  const indexOrder = (dependencies.readOrder ?? readCanonicalOrder)("specification-indexes.yaml");
   const errors = [];
   errors.push(
     ...entries
@@ -29,12 +31,14 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
     errors.push("specs/directives.yaml is required.");
   for (const directory of directories) {
     const local = files.filter((entry) => dirname(entry.path).replaceAll("\\", "/") === directory);
-    const yaml = local
-      .filter(({ path }) => /\.ya?ml$/iu.test(path))
-      .sort((left, right) => left.path.localeCompare(right.path));
-    const children = directories
-      .filter((child) => dirname(child).replaceAll("\\", "/") === directory)
-      .sort((left, right) => left.localeCompare(right));
+    const yaml = local.filter(({ path }) => /\.ya?ml$/iu.test(path));
+    if (indexOrder.directYamlFiles === "filename-ascending")
+      yaml.sort((left, right) => basename(left.path).localeCompare(basename(right.path)));
+    const children = directories.filter(
+      (child) => dirname(child).replaceAll("\\", "/") === directory,
+    );
+    if (indexOrder.subdirectoryIndexes === "directory-name-ascending")
+      children.sort((left, right) => basename(left).localeCompare(basename(right)));
     if (!yaml.length) errors.push(`${directory} must contain at least one YAML specification.`);
     for (const { path } of local)
       if (!/\.ya?ml$/iu.test(path) && basename(path) !== "README.md")
@@ -48,10 +52,12 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
     }
     if (!isNavigationOnly(index))
       errors.push(`${directory}/README.md must be a navigation-only index.`);
-    const expected = [
-      ...yaml.map(({ path }) => basename(path)),
-      ...children.map((path) => `${basename(path)}/README.md`),
-    ];
+    const yamlTargets = yaml.map(({ path }) => basename(path));
+    const childTargets = children.map((path) => `${basename(path)}/README.md`);
+    const expected =
+      indexOrder.placement === "after-yaml-files"
+        ? [...yamlTargets, ...childTargets]
+        : [...childTargets, ...yamlTargets];
     const actual = extractMarkdownLinks(index).map(({ reference }) => reference);
     for (const target of expected)
       if (!actual.includes(target)) errors.push(`${directory}/README.md must link ${target}.`);

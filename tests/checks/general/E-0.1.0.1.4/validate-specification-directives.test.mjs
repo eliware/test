@@ -15,7 +15,7 @@ async function createFixture() {
     "version: '12.0'\ndescription: Harness\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n    children:\n      - id: E-0.0.0\n        dos: [Do]\n        donts: [Do not]\n",
   );
   const convention =
-    "version: '12.0'\ndescription: General rules\nrequires: []\ndirectives:\n  - id: E-0.1.0\n    dos: [Do]\n    donts: [Do not]\n";
+    "version: '12.0'\ndescription: General rules\nrequires: []\nconflicts: []\ndirectives:\n  - id: E-0.1.0\n    dos: [Do]\n    donts: [Do not]\n";
   await writeFile(join(specs, "conventions", "general.yaml"), convention);
   await writeFile(
     join(specs, "conventions", "nested", "extra.yml"),
@@ -46,7 +46,7 @@ test("parses every document in a YAML stream", async () => {
     const general = join(root, "specs", "conventions", "general.yaml");
     await writeFile(
       general,
-      `${await readFile(general, "utf8")}\n---\nversion: '12.0'\ndescription: Second profile document\nrequires: []\ndirectives:\n  - id: E-0.1.1\n    dos: [Do]\n    donts: [Do not]\n`,
+      `${await readFile(general, "utf8")}\n---\nversion: '12.0'\ndescription: Second profile document\nrequires: []\nconflicts: []\ndirectives:\n  - id: E-0.1.1\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     await expect(
       validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
@@ -113,6 +113,27 @@ test("rejects duplicate, unknown, and self-referential profile prerequisites", a
     );
     expect(errors).toContain(
       "specs/conventions/custom-deterministic.yaml document 1.requires names unknown profiles: missing, missing.",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("requires each profile conflict to have a matching declaration", async () => {
+  const root = await createFixture();
+  const directory = join(root, "specs", "conventions");
+  const profile = (conflicts, id) =>
+    `version: '12.0'\ndescription: Profile\nrequires: []\nconflicts: [${conflicts}]\ndirectives:\n  - id: ${id}\n    dos: [Do]\n    donts: [Do not]\n`;
+  try {
+    await writeFile(join(directory, "application-semantic.yaml"), profile("cli", "E-0.3.0"));
+    const cli = join(directory, "cli-deterministic.yaml");
+    await writeFile(cli, profile("application", "E-0.4.0"));
+    await expect(
+      validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
+    ).resolves.toEqual([]);
+    await writeFile(cli, profile("", "E-0.4.0"));
+    expect(await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).toContain(
+      "specs/conventions/application-semantic.yaml document 1.conflicts must be declared by cli.",
     );
   } finally {
     await rm(root, { recursive: true, force: true });

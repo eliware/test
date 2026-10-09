@@ -1,4 +1,8 @@
 import { basename } from "node:path";
+import {
+  readProfileComposition,
+  validateProfileComposition,
+} from "./validate-profile-composition.mjs";
 function collectDirectives(directives, profile, source, catalog) {
   if (!Array.isArray(directives)) {
     throw new Error(`Bundled convention profile ${source} has no directive list.`);
@@ -63,30 +67,17 @@ export function buildProfileCatalog(documents, expectedVersion) {
       );
     }
     collectDirectives(document.directives, profile, source, catalog);
-    const requires = document.requires;
-    if (
-      !Array.isArray(requires) ||
-      requires.some(
-        (required) => typeof required !== "string" || !/^[a-z0-9-]+$/u.test(required),
-      ) ||
-      new Set(requires).size !== requires.length ||
-      requires.includes(profile)
-    ) {
-      throw new Error(`Bundled convention profile ${source} has an invalid requires list.`);
-    }
+    const { requires, conflicts } = readProfileComposition(document, source, profile);
     const existing = catalog.profiles[profile];
-    if (existing && JSON.stringify(existing.requires) !== JSON.stringify(requires)) {
-      throw new Error(`Bundled convention profile ${profile} has mismatched dependencies.`);
+    if (
+      existing &&
+      (JSON.stringify(existing.requires) !== JSON.stringify(requires) ||
+        JSON.stringify(existing.conflicts) !== JSON.stringify(conflicts))
+    ) {
+      throw new Error(`Bundled convention profile ${profile} has mismatched composition metadata.`);
     }
-    catalog.profiles[profile] = { profile, requires };
+    catalog.profiles[profile] = { profile, requires, conflicts };
   }
-  for (const [profile, metadata] of Object.entries(catalog.profiles)) {
-    const unknown = metadata.requires.filter((required) => !catalog.profiles[required]);
-    if (unknown.length) {
-      throw new Error(
-        `Bundled convention profile ${profile} requires unknown profiles: ${unknown.join(", ")}.`,
-      );
-    }
-  }
+  validateProfileComposition(catalog.profiles);
   return catalog;
 }

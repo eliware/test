@@ -19,12 +19,9 @@ export async function validateApplicationEntrypoints(context = {}, dependencies 
 }
 
 function collectTargets(packageJson) {
-  return [
-    packageJson.main,
-    ...(typeof packageJson.bin === "string"
-      ? [packageJson.bin]
-      : Object.values(packageJson.bin ?? {})),
-  ].filter((value) => typeof value === "string");
+  const targets =
+    typeof packageJson.bin === "string" ? [packageJson.bin] : Object.values(packageJson.bin ?? {});
+  return targets.filter((value) => typeof value === "string");
 }
 
 async function validateEntrypointTarget(target, root, checkStat) {

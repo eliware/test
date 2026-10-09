@@ -145,6 +145,7 @@ test("runs typecheck and build only for their selected profiles", async () => {
     packageJson: {
       eliware: { apply: ["library"] },
       scripts: { typecheck: "tsc --noEmit" },
+      devDependencies: { typescript: "*" },
     },
     env: {},
   };
@@ -153,6 +154,7 @@ test("runs typecheck and build only for their selected profiles", async () => {
     packageJson: {
       eliware: { apply: ["web"] },
       scripts: { build: "vite build" },
+      devDependencies: { vite: "*" },
     },
   };
   await expect(runners.typecheck(typecheck)).resolves.toMatchObject({ code: 10, status: "fail" });

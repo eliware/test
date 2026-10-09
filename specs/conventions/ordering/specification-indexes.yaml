@@ -1,0 +1,6 @@
+version: "12.0"
+description: Defines order for YAML links and subdirectory indexes in specs README.md files.
+orders:
+  directYamlFiles: filename-ascending
+  subdirectoryIndexes: directory-name-ascending
+  placement: after-yaml-files

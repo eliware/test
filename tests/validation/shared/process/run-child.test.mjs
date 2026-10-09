@@ -1,11 +1,33 @@
 import { EventEmitter } from "node:events";
+import * as childProcessModule from "node:child_process";
 import { expect, jest, test } from "@jest/globals";
-import { runChild } from "../../../../src/validation/shared/process/run-child.mjs";
+const spawn = jest.fn();
+jest.unstable_mockModule("node:child_process", () => ({ ...childProcessModule, spawn }));
+const { runChild } = await import("../../../../src/validation/shared/process/run-child.mjs");
+
+function fakeSpawn(output = {}) {
+  return () => {
+    const child = Object.assign(new EventEmitter(), {
+      stdout: new EventEmitter(),
+      stderr: new EventEmitter(),
+    });
+    queueMicrotask(() => {
+      if (output.stdout) {
+        for (let offset = 0; offset < output.stdout.length; offset += 100_000)
+          child.stdout.emit("data", output.stdout.slice(offset, offset + 100_000));
+      }
+      if (output.stderr) child.stderr.emit("data", output.stderr);
+      child.emit("close", 0, null);
+    });
+    return child;
+  };
+}
 
 test("spawns a child and returns captured process output", async () => {
   const output = [];
   await expect(
-    runChild(process.execPath, ["-e", "process.stdout.write('ok'); process.stderr.write('err')"], {
+    runChild("mock-cli", [], {
+      spawnProcess: fakeSpawn({ stdout: "ok", stderr: "err" }),
       onStdout: (value) => output.push(`out:${value}`),
       onStderr: (value) => output.push(`err:${value}`),
     }),
@@ -14,9 +36,11 @@ test("spawns a child and returns captured process output", async () => {
 });
 
 test("uses process defaults when options are omitted", async () => {
-  await expect(
-    runChild(process.execPath, ["-e", "process.stdout.write('default')"]),
-  ).resolves.toEqual(expect.objectContaining({ code: 0, stdout: "default" }));
+  spawn.mockImplementation(fakeSpawn({ stdout: "default" }));
+  await expect(runChild("mock-cli", [])).resolves.toEqual(
+    expect.objectContaining({ code: 0, stdout: "default" }),
+  );
+  expect(spawn).toHaveBeenCalledTimes(1);
 });
 
 test("uses the default output bound for an invalid output limit", async () => {
@@ -27,11 +51,10 @@ test("uses the default output bound for an invalid output limit", async () => {
 });
 
 test("caps captured child output even when a larger limit is requested", async () => {
-  const result = await runChild(
-    process.execPath,
-    ["-e", "process.stdout.write('x'.repeat(1_100_000))"],
-    { maxOutputLength: 2_000_000 },
-  );
+  const result = await runChild("mock-cli", [], {
+    maxOutputLength: 2_000_000,
+    spawnProcess: fakeSpawn({ stdout: "x".repeat(1_100_000) }),
+  });
   expect(result.stdout.length).toBeGreaterThan(0);
   expect(result.stdout.length).toBeLessThanOrEqual(1_000_000);
 });

@@ -1,6 +1,10 @@
 import { hasDuplicateAggregateStage } from "./has-duplicate-aggregate-stage.mjs";
 import { hasPublicationCommand } from "../E-0.1.0.1.5/validate-package-scripts.mjs";
+import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
+
 export function validateWorkflowSteps(steps) {
+  const order = readCanonicalOrder("ci-workflow.yaml");
+  const { validationSteps, stepValues } = order;
   const workflowSteps = steps.map((step) => step ?? {});
   const errors = [];
   for (const step of workflowSteps) {
@@ -13,11 +17,11 @@ export function validateWorkflowSteps(steps) {
     if (Object.keys(step).some((key) => !allowed.includes(key)))
       errors.push("ci.yaml steps must use only approved keys and inputs.");
   }
-  const checkout = workflowSteps.findIndex((step) => step.uses === "actions/checkout@v6");
-  const setup = workflowSteps.findIndex((step) => step.uses === "actions/setup-node@v7");
-  const npmInstall = workflowSteps.findIndex((step) => step.run === "npm -g install npm@latest");
-  const ci = workflowSteps.findIndex((step) => step.run === "npm ci");
-  const test = workflowSteps.findIndex((step) => step.run === "npm test");
+  const checkout = workflowSteps.findIndex((step) => step.uses === stepValues[validationSteps[0]]);
+  const setup = workflowSteps.findIndex((step) => step.uses === stepValues[validationSteps[1]]);
+  const npmInstall = workflowSteps.findIndex((step) => step.run === stepValues[validationSteps[2]]);
+  const ci = workflowSteps.findIndex((step) => step.run === stepValues[validationSteps[3]]);
+  const test = workflowSteps.findIndex((step) => step.run === stepValues[validationSteps[4]]);
   if (
     checkout < 0 ||
     setup <= checkout ||
@@ -25,11 +29,12 @@ export function validateWorkflowSteps(steps) {
     npmInstall <= setup ||
     ci <= npmInstall ||
     test !== ci + 1 ||
-    count(workflowSteps, (step) => step.uses === "actions/checkout@v6") !== 1 ||
-    count(workflowSteps, (step) => step.uses === "actions/setup-node@v7") !== 1 ||
-    count(workflowSteps, (step) => step.run === "npm -g install npm@latest") !== 1 ||
-    count(workflowSteps, (step) => step.run === "npm ci") !== 1 ||
-    count(workflowSteps, (step) => step.run === "npm test") !== 1
+    validationSteps.some(
+      (name, index) =>
+        count(workflowSteps, (step) =>
+          index < 2 ? step.uses === stepValues[name] : step.run === stepValues[name],
+        ) !== 1,
+    )
   )
     errors.push("ci.yaml must use checkout v6, setup-node v7, npm latest, npm ci, then npm test.");
   if (test >= 0 && test !== workflowSteps.length - 1)

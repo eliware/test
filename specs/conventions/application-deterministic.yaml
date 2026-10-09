@@ -1,11 +1,17 @@
 version: "12.0"
 description: Lists deterministic rules for Eliware applications and services.
-requires: []
+requires:
+  - general
+conflicts:
+  - library
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.4.1.0
     dos:
-      - Add Application to AGENTS.md at the canonical profile position.
-      - Add Configuration and Operations to README.md and its Table of Contents.
+      - Add an Application section to AGENTS.md.
+      - Add Configuration and Operations sections to README.md.
       - Keep docs/README.md and link it from root README.md.
       - Index every Markdown document beneath docs/ except its index.
       - When examples/ contains .mjs or .js examples, maintain examples/README.md linking every example.
@@ -19,8 +25,8 @@ directives:
 
   - id: E-0.1.4.1.1
     dos:
-      - Set at least one runtime entrypoint through main or bin.
-      - Make every main and bin target a nonempty repository-relative path to an existing file under bin/.
+      - When bin exists, make each target a nonempty repository-relative path to an existing file under bin/.
+      - Make every bin target a nonempty repository-relative path to an existing file under bin/.
       - Give bin object keys nonempty names containing ASCII letters, digits, underscores, dots, or hyphens.
       - When start exists, include a standalone token matching a declared entrypoint after removing optional quotes and leading ./.
     donts:
@@ -31,13 +37,17 @@ directives:
   - id: E-0.1.4.1.2
     dos:
       - Keep implementation under src/ and launchers under bin/.
-      - Keep maintained JavaScript, TypeScript, and JSX modules under src/, except launchers under bin/, tests under tests/, fixtures under test-fixtures/, and examples under examples/.
+      - Put implementation modules under src/. Put launchers under bin/.
+      - Put tests under tests/, fixtures under test-fixtures/, and examples under examples/.
       - Mirror every src/ .mjs file with exactly one same-path tests/ .test.mjs file.
       - Give every test file a matching source, executable Jest test callback, and matching source reference.
       - Keep unmatched fixtures, snapshots, generators, and test support under root test-fixtures/.
       - Keep generated test output under ignored artifacts/.
       - Limit every .mjs file under src/ to 100 physical lines and every .test.mjs file under tests/ to 200.
       - Count blank lines, comments, and unterminated final lines.
+      - Define a pure export barrel as a nonempty module with only top-level static imports, source re-exports, or local exports.
+      - Require local exports to expose exactly the imported binding names.
+      - Treat a barrel as public only when its normalized path matches a main, bin, or exports target in package.json.
     donts:
       - Do not impose a line limit on bin/ launchers.
       - Do not exempt sources from mirroring or line limits because of coverage exclusions.
@@ -52,7 +62,7 @@ directives:
       - Run required Jest tests through eliware-test with the exact configuration shown.
       - Use Istanbul coverage for production .mjs files under src/.
       - Reach 100 percent statements, branches, functions, and lines with zero uncovered lines.
-      - Keep successful test runs free of console and process output unless explicitly asserted by tests.
+      - Keep successful test runs free of console and process output.
     donts:
       - Do not directly invoke Jest, import its runner, or directly declare Jest packages.
       - Do not substitute other runners or coverage engines or add separate Jest configuration.

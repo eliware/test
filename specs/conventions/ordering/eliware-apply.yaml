@@ -1,0 +1,17 @@
+version: "12.0"
+description: Defines canonical order for package.json.eliware.apply.
+orders:
+  profiles:
+    - general
+    - documentation
+    - workspace
+    - library
+    - application
+    - cli
+    - web
+    - discord
+    - mcp-server
+    - infrastructure
+    - npm-published
+    - ghcr-published
+    - private

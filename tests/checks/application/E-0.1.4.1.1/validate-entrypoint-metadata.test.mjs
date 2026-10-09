@@ -1,10 +1,9 @@
 import { expect, test } from "@jest/globals";
 import { validateEntrypointMetadata } from "../../../../src/checks/application/E-0.1.4.1.1/validate-entrypoint-metadata.mjs";
 
-test("requires a runtime entrypoint and validates bin object names", () => {
-  expect(validateEntrypointMetadata({})).toContain(
-    "package.json must declare at least one runtime entrypoint through main or bin.",
-  );
+test("allows profiles without an entrypoint and validates bin object names", () => {
+  expect(validateEntrypointMetadata({})).toEqual([]);
+  expect(validateEntrypointMetadata({ main: 42 })).toEqual([]);
   expect(validateEntrypointMetadata({ bin: { "bad name": "bin/a" } })).toContain(
     "package.json bin command name is invalid: bad name.",
   );

@@ -1,15 +1,25 @@
 version: "12.0"
 description: Lists deterministic rules for documentation-only Eliware repositories.
 requires:
-  - private
+  - general
+conflicts:
+  - application
+  - cli
+  - web
+  - discord
+  - mcp-server
+  - library
+  - workspace
+  - infrastructure
+  - npm-published
+  - ghcr-published
 directives:
   - id: E-0.1.1.1.0
     dos:
-      - Add Documentation to AGENTS.md at the canonical profile position.
-      - Add Scope, Navigation, Contribution, and Documentation validation to README.md at the canonical profile position.
-      - Include these README headings in the Table of Contents.
+      - Add a Documentation section to AGENTS.md.
+      - Add Scope, Navigation, Contribution, and Documentation validation sections to README.md.
     donts:
-      - Do not replace shared Testing or validation commands.
+      - Do not omit a documentation-specific section.
     examples:
       - "## Documentation"
       - "## Scope\n\n## Navigation\n\n## Contribution\n\n## Documentation validation"

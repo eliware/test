@@ -1,27 +1,5 @@
-const requiredSections = [
-  "Project",
-  "Scope and boundaries",
-  "Layout",
-  "Development",
-  "Validation",
-  "Security",
-  "Changes",
-];
-const profileHeadings = [
-  ["documentation", "Documentation"],
-  ["workspace", "Workspace"],
-  ["library", "Library"],
-  ["application", "Application"],
-  ["cli", "CLI"],
-  ["web", "Web"],
-  ["discord", "Discord"],
-  ["mcp-server", "MCP server"],
-  ["infrastructure", "Infrastructure"],
-  ["npm-published", "npm publication"],
-  ["ghcr-published", "GHCR publication"],
-  ["private", "Private distribution"],
-];
-const profileSet = new Set(profileHeadings.map(([, heading]) => heading));
+import { removeMarkdownCode } from "../E-0.1.0.1.4/extract-markdown-links.mjs";
+import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
 
 export function validateAgentsStructure(
   content,
@@ -33,13 +11,17 @@ export function validateAgentsStructure(
   const markdown = removeMarkdownCode(content);
   const lines = markdown.split(/\r?\n/u);
   const actual = lines.filter((line) => /^##\s+/u.test(line)).map((line) => line.slice(3).trim());
-  if (requiredSections.some((section, index) => actual[index] !== section))
+  const order = readCanonicalOrder("agents-sections.yaml");
+  const baseSections = order.baseSections;
+  if (baseSections.some((section, index) => actual[index] !== section))
     return ["AGENTS.md must begin with the seven required headings in order."];
   const applied = new Set(packageJson?.eliware?.apply ?? []);
-  const expectedProfiles = profileHeadings
-    .filter(([profile]) => applied.has(profile))
-    .map(([, heading]) => heading);
-  const remaining = actual.slice(requiredSections.length);
+  const expectedProfiles = order.profileOrder
+    .filter((profile) => applied.has(profile))
+    .map((profile) => order.profileHeadings[profile]);
+  const profileHeadings = Object.values(order.profileHeadings);
+  const profileSet = new Set(profileHeadings);
+  const remaining = actual.slice(baseSections.length);
   const profileCount = remaining.filter((heading) => profileSet.has(heading)).length;
   if (
     remaining
@@ -56,4 +38,3 @@ export function validateAgentsStructure(
     return ["AGENTS.md has duplicate, undeclared, or misordered section headings."];
   return [];
 }
-import { removeMarkdownCode } from "../E-0.1.0.1.4/extract-markdown-links.mjs";

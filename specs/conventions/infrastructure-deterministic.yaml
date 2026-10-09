@@ -1,13 +1,24 @@
 version: "12.0"
 description: Lists deterministic rules for Eliware infrastructure repositories.
 requires:
+  - general
   - private
+conflicts:
+  - application
+  - cli
+  - web
+  - discord
+  - mcp-server
+  - library
+  - documentation
+  - workspace
+  - npm-published
+  - ghcr-published
 directives:
   - id: E-0.1.9.1.0
     dos:
-      - Add Infrastructure to AGENTS.md at the canonical profile position.
-      - Add Managed targets, Configuration, Desired state, Validation, and Change boundaries to README.md and its Table of Contents.
-      - Deduplicate headings shared with other profiles.
+      - Add an Infrastructure section to AGENTS.md.
+      - Add Managed targets, Configuration, Desired state, Validation, and Change boundaries sections to README.md.
     donts:
       - Do not omit infrastructure-specific headings.
     examples:

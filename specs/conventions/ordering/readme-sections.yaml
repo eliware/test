@@ -1,0 +1,93 @@
+version: "12.0"
+description: Defines cross-profile title, section, and profile order in README.md.
+orders:
+  header:
+    - brand
+    - title-and-badges
+    - description
+    - table-of-contents
+  headerLines:
+    brand: 0
+    title-and-badges: 2
+    description: 4
+    table-of-contents: 6
+  tableOfContentsHeading: Table of Contents
+  badgeOrder:
+    - npm
+    - License
+    - CI
+  generalSections:
+    - Features
+    - Requirements
+    - Setup
+    - Usage
+    - Development
+    - Testing
+    - Troubleshooting
+    - Security
+  profileOrder:
+    - application
+    - cli
+    - discord
+    - mcp-server
+    - web
+    - library
+    - infrastructure
+    - workspace
+    - documentation
+    - npm-published
+    - ghcr-published
+    - private
+  profileSections:
+    application:
+      - Configuration
+      - Operations
+    cli:
+      - Exit codes
+    discord:
+      - Events
+      - Intents and permissions
+    mcp-server:
+      - Tools
+      - Resources
+      - Prompts
+      - Transport
+      - Authentication
+      - Schemas
+    web:
+      - Routes
+      - Assets
+      - Development server
+      - Build
+      - Deployment
+    library:
+      - API
+      - Packaging
+      - Examples
+    infrastructure:
+      - Managed targets
+      - Configuration
+      - Desired state
+      - Validation
+      - Change boundaries
+    workspace:
+      - Runbooks
+      - Communication
+      - Recovery
+    documentation:
+      - Scope
+      - Navigation
+      - Contribution
+      - Documentation validation
+    npm-published: []
+    ghcr-published: []
+    private: []
+  finalSections:
+    - Support
+    - Links
+    - License
+  sharedSections:
+    Commands:
+      profiles:
+        - cli
+        - discord

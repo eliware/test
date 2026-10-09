@@ -1,11 +1,21 @@
 version: "12.0"
 description: Lists deterministic rules for Eliware libraries.
-requires: []
+requires:
+  - general
+conflicts:
+  - application
+  - cli
+  - web
+  - discord
+  - mcp-server
+  - documentation
+  - workspace
+  - infrastructure
 directives:
   - id: E-0.1.3.1.0
     dos:
-      - Add Library to AGENTS.md at the canonical profile position.
-      - Add API, Packaging, and Examples to README.md and its Table of Contents.
+      - Add a Library section to AGENTS.md.
+      - Add API, Packaging, and Examples sections to README.md.
       - Keep docs/README.md and examples/README.md and link both from root README.md.
       - Index every Markdown document beneath docs/ except its index.
       - Keep and index at least one native-ESM .mjs or .js example under examples/.
@@ -18,7 +28,8 @@ directives:
   - id: E-0.1.3.1.1
     dos:
       - Define explicit exports targeting existing runtime files under src/.
-      - Keep main and declaration metadata under src/ when present.
+      - Require package.json.main to target an existing runtime module under src/.
+      - Keep declaration metadata under src/ when present.
       - Place each .d.ts declaration beside its same-basename .mjs implementation.
       - Define typecheck as one command invoking a directly declared typechecker and run it during aggregate validation.
       - Allow pure export barrels only as the primary public entrypoint or index.
@@ -30,6 +41,7 @@ directives:
   - id: E-0.1.3.1.2
     dos:
       - Mirror every src/ .mjs file with exactly one same-path tests/ .test.mjs file.
+      - Keep library implementation under src/.
       - Give every test file a matching source, executable Jest test callback, and matching source reference.
       - Keep unmatched fixtures, snapshots, generators, and test support under root test-fixtures/.
       - Keep generated test output under ignored artifacts/.
@@ -47,8 +59,9 @@ directives:
       - Run required Jest tests through eliware-test with the exact configuration shown.
       - Use Istanbul coverage for production .mjs files under src/.
       - Reach 100 percent statements, branches, functions, and lines with zero uncovered lines.
-      - Allow coverage exclusion and Istanbul ignore directives only for the exact primary public entrypoint when it is a pure export barrel.
-      - Keep successful test runs free of console and process output unless explicitly asserted by tests.
+      - Allow coverage exclusions only in the exact primary public entrypoint.
+      - Allow Istanbul ignore directives there only when it is a pure export barrel.
+      - Keep successful test runs free of console and process output.
     donts:
       - Do not directly invoke Jest, import its runner, or directly declare Jest packages.
       - Do not substitute other runners or coverage engines or add separate Jest configuration.

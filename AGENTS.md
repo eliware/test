@@ -24,7 +24,8 @@ Move separate policies and operations into focused modules with mirrored tests.
 Keep each `.mjs` source file at or below 100 lines.
 Keep each `.test.mjs` file at or below 200 lines.
 These limits do not prove that a module has one purpose.
-Shared requirements live in `specs/conventions/`.
+Shared consumer requirements live in `specs/conventions/`.
+Keep harness rules in `specs/directives.yaml`; do not mix them with consumer conventions.
 Operational procedures live in Eliware Operations.
 
 ## Validation
@@ -118,8 +119,9 @@ No CLI mode authorizes a release, deployment, or external change.
 
 The public package is `@eliware/test`.
 `package.json.version` sets its version.
-The exact `package.json.files` allowlist is `bin/`, `src/`, `specs/`, `docs/`,
-`README.md`, `AGENTS.md`, `LICENSE`, and `RELEASE_NOTES.md`.
+Start `package.json.files` with `src/`, `docs/`, `README.md`, `AGENTS.md`, `LICENSE`, and `RELEASE_NOTES.md`.
+Add `bin/` for applications, `examples/` for libraries, and `specs/` for this package.
+Put extra runtime paths after required paths. Put `.env.example` last when it appears.
 Run `node bin/eliware-test.mjs --pack` or `npm run pack` to check package contents.
 Pack validation must pass before publication.
 Before publication, run the checkout integration pass through the established link.

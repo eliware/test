@@ -2,6 +2,8 @@
 
 @eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yaml)
 
+Shared deterministic repository validation for Eliware projects
+
 ## Table of Contents
 
 - [Features](#features)
@@ -17,8 +19,8 @@
 - [Commands](#commands)
 - [Exit codes](#exit-codes)
 - [Support](#support)
-- [License](#license)
 - [Links](#links)
+- [License](#license)
 
 ## Features
 
@@ -29,7 +31,6 @@ Package checks run for the `npm-published` profile.
 Eliware Test owns this CLI, not the repositories that it checks.
 It does not run live operational checks.
 
-Package description: Shared deterministic repository validation for Eliware projects
 Author: Eliware <eliware@eliware.org>
 License: MIT
 
@@ -164,6 +165,7 @@ Validation fails when it cannot read the Git index.
 In this npm-published repository, `npm test` runs lint, format check, audit,
 outdated, pack, conventions, Jest, and coverage in that order.
 It runs typecheck for library repositories and build for web repositories.
+The web build runs without npm prebuild or postbuild scripts.
 Consumer repositories use `npm test` and select stages from their profiles.
 See [conventions](specs/conventions/) for profile requirements.
 
@@ -278,10 +280,6 @@ Use the [Eliware Discord community](https://discord.gg/M6aTR9eTwN),
 [GitHub issues](https://github.com/eliware/test/issues), or email eliware@eliware.org.
 Include the command, Node.js version, and redacted diagnostics.
 
-## License
-
-[license](LICENSE)
-
 ## Links
 
 - Documentation: [docs](docs/README.md) · [specifications](specs/README.md)
@@ -294,3 +292,7 @@ Include the command, Node.js version, and redacted diagnostics.
 - [npm Package](https://www.npmjs.com/package/@eliware/test)
 - [Release Notes](RELEASE_NOTES.md)
 - [Discord](https://discord.gg/M6aTR9eTwN)
+
+## License
+
+[license](LICENSE)

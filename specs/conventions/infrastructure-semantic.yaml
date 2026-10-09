@@ -1,7 +1,19 @@
 version: "12.0"
 description: Lists semantic rules for Eliware infrastructure repositories.
 requires:
+  - general
   - private
+conflicts:
+  - application
+  - cli
+  - web
+  - discord
+  - mcp-server
+  - library
+  - documentation
+  - workspace
+  - npm-published
+  - ghcr-published
 directives:
   - id: E-0.1.9.0.0
     dos:
@@ -12,4 +24,4 @@ directives:
       - Keep committed desired state canonical in its owning repository.
     donts:
       - Do not mix unrelated targets without boundaries or assume generic rules define platform-specific behavior.
-      - Do not confuse committed inputs with live state or duplicate canonical operational procedures.
+      - Do not confuse committed inputs with live state.

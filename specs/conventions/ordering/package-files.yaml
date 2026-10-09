@@ -1,0 +1,27 @@
+version: "12.0"
+description: Defines required package.json.files order for npm packages.
+orders:
+  baseEntries:
+    - src/
+    - docs/
+    - README.md
+    - AGENTS.md
+    - LICENSE
+    - RELEASE_NOTES.md
+  profileEntries:
+    application: bin/
+    library: examples/
+  profileEntryOrder:
+    - application
+    - library
+  packageEntries:
+    "@eliware/test":
+      - specs/
+  finalOptionalEntries:
+    - .env.example
+  environmentExampleProfiles:
+    - application
+    - library
+    - web
+    - discord
+    - mcp-server

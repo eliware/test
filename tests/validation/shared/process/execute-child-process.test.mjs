@@ -1,6 +1,10 @@
 import { EventEmitter } from "node:events";
+import * as childProcessModule from "node:child_process";
 import { expect, jest, test } from "@jest/globals";
-import { execute } from "../../../../src/validation/shared/process/execute-child-process.mjs";
+const spawn = jest.fn();
+jest.unstable_mockModule("node:child_process", () => ({ ...childProcessModule, spawn }));
+const { execute } =
+  await import("../../../../src/validation/shared/process/execute-child-process.mjs");
 function childProcess() {
   const child = new EventEmitter();
   child.stdout = new EventEmitter();
@@ -162,7 +166,11 @@ test("normalizes malformed child adapters and stream-wiring failures", async () 
   });
 });
 test("uses default execution options and preserves diagnostics without redaction secrets", async () => {
-  await expect(execute(process.execPath, ["-e", ""])).resolves.toMatchObject({ code: 0 });
+  const defaultChild = childProcess();
+  spawn.mockReturnValue(defaultChild);
+  const defaultResult = execute("mock-cli", []);
+  defaultChild.emit("close", 0, null);
+  await expect(defaultResult).resolves.toMatchObject({ code: 0 });
   const child = childProcess();
   const promise = execute("tool", [], { env: {} }, () => child);
   child.emit("error", "adapter failure");

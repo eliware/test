@@ -1,0 +1,37 @@
+version: "12.0"
+description: Defines cross-profile section order in AGENTS.md.
+orders:
+  baseSections:
+    - Project
+    - Scope and boundaries
+    - Layout
+    - Development
+    - Validation
+    - Security
+    - Changes
+  profileOrder:
+    - application
+    - cli
+    - discord
+    - mcp-server
+    - web
+    - library
+    - infrastructure
+    - workspace
+    - documentation
+    - npm-published
+    - ghcr-published
+    - private
+  profileHeadings:
+    application: Application
+    cli: CLI
+    discord: Discord
+    mcp-server: MCP server
+    web: Web
+    library: Library
+    infrastructure: Infrastructure
+    workspace: Workspace
+    documentation: Documentation
+    npm-published: npm publication
+    ghcr-published: GHCR publication
+    private: Private distribution

@@ -1,5 +1,17 @@
-import { expect, test } from "@jest/globals";
-import { validateGitHygiene } from "../../../../src/checks/general/E-0.1.0.1.8/validate-git-hygiene.mjs";
+import * as childProcessModule from "node:child_process";
+import { expect, jest, test } from "@jest/globals";
+
+const execFile = jest.fn();
+const runMockGit = jest.fn(async (_command, args) => {
+  if (args.includes("check-ignore") && args.at(-1).endsWith(".example"))
+    throw Object.assign(new Error("not ignored"), { code: 1 });
+  if (args.includes("check-ignore")) return {};
+  return { stdout: Buffer.from("") };
+});
+execFile[Symbol.for("nodejs.util.promisify.custom")] = runMockGit;
+jest.unstable_mockModule("node:child_process", () => ({ ...childProcessModule, execFile }));
+const { validateGitHygiene } =
+  await import("../../../../src/checks/general/E-0.1.0.1.8/validate-git-hygiene.mjs");
 
 const ignoreRules = `node_modules/
 .git/
@@ -26,6 +38,13 @@ test("accepts required ignore rules and clean index records", async () => {
   await expect(
     validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
   ).resolves.toEqual([]);
+});
+
+test("uses the default Git runner and default exit code through a mocked executable", async () => {
+  await expect(
+    validateGitHygiene("repo", undefined, { readText: async () => ignoreRules }),
+  ).resolves.toEqual([]);
+  expect(runMockGit).toHaveBeenCalled();
 });
 
 test("reports index failures and tracked links", async () => {

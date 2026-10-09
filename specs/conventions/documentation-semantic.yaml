@@ -1,7 +1,18 @@
 version: "12.0"
 description: Lists semantic rules for documentation-only Eliware repositories.
 requires:
-  - private
+  - general
+conflicts:
+  - application
+  - cli
+  - web
+  - discord
+  - mcp-server
+  - library
+  - workspace
+  - infrastructure
+  - npm-published
+  - ghcr-published
 directives:
   - id: E-0.1.1.0.0
     dos:
@@ -11,4 +22,3 @@ directives:
       - Make navigation sufficient to discover maintained documentation.
     donts:
       - Do not ship application or library runtime behavior as documentation-only content.
-      - Do not duplicate canonical policy or redefine procedures owned elsewhere.

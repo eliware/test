@@ -31,8 +31,16 @@ test("accepts required ignore rules and a clean Git index", async () => {
   ).resolves.toEqual([]);
 });
 
-test("runs from the current repository when the caller omits its context", async () => {
-  await expect(run()).resolves.toMatchObject({ ruleId, status: "pass" });
+test("runs with injected Git and file dependencies", async () => {
+  await expect(
+    run({ root: "repo", runGit: createGitRunner(), readText: async () => ignoreText }),
+  ).resolves.toMatchObject({ ruleId, status: "pass" });
+});
+
+test("uses injected dependencies when the check context is omitted", async () => {
+  await expect(
+    run(undefined, { runGit: createGitRunner(), readText: async () => ignoreText }),
+  ).resolves.toMatchObject({ ruleId, status: "pass" });
 });
 
 test("reports missing ignore rules, ignored tracked files, and symlinks", async () => {
