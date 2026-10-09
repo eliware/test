@@ -30,6 +30,11 @@ test("E-0.1.4.1.1 rejects missing entrypoint files and start tokens", async () =
   expect(result.message).toContain("standalone token");
 });
 
-test("E-0.1.4.1.1 uses its default context", async () => {
+test("E-0.1.4.1.1 allows an Application without a bin entry", async () => {
+  await expect(run({ root: "repo", packageJson: {} })).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
   await expect(run(undefined)).resolves.toMatchObject({ ruleId, status: "pass" });
 });

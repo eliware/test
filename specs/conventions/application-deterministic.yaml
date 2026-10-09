@@ -26,10 +26,10 @@ directives:
   - id: E-0.1.4.1.1
     dos:
       - When bin exists, make each target a nonempty repository-relative path to an existing file under bin/.
-      - Make every bin target a nonempty repository-relative path to an existing file under bin/.
       - Give bin object keys nonempty names containing ASCII letters, digits, underscores, dots, or hyphens.
       - When start exists, include a standalone token matching a declared entrypoint after removing optional quotes and leading ./.
     donts:
+      - Do not require package.json.bin for the Application profile.
       - Do not declare invalid names, escaping paths, or entrypoints outside bin/.
     examples:
       - '{"bin":{"example":"./bin/example.mjs"},"scripts":{"start":"node bin/example.mjs"}}'
