@@ -45,6 +45,33 @@ test("accepts every registered bundled directive", async () => {
   ).toBe(true);
 });
 
+test("accepts a shared check with a registered owner and required profiles", () => {
+  expect(
+    validateBundledDirectiveCompleteness(
+      [
+        {
+          ...check("E-0.1"),
+          modulePath: "shared/E-0.1.mjs",
+          ownerProfile: "general",
+          requiredProfiles: ["general", "application"],
+        },
+      ],
+      ["general", "application"],
+      catalog,
+    ),
+  ).toBe(true);
+});
+
+test("rejects a shared check without declared profile requirements", () => {
+  expect(() =>
+    validateBundledDirectiveCompleteness(
+      [{ ...check("E-0.1"), modulePath: "shared/E-0.1.mjs", ownerProfile: "general" }],
+      ["general"],
+      catalog,
+    ),
+  ).toThrow("no matching catalog entry");
+});
+
 test("fails when the bundled catalog version does not match the package baseline", async () => {
   expect(() =>
     validateBundledDirectiveCompleteness([], ["general"], {

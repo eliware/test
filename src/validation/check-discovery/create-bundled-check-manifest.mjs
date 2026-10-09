@@ -23,11 +23,20 @@ export function createBundledCheckManifest(checks) {
     throw new Error("Every bundled check must declare a valid enforcement mode.");
   }
   const records = checks.map(
-    ({ ruleId, parentRuleId = null, enforcementMode = "deterministic", modulePath }) => ({
+    ({
+      ruleId,
+      parentRuleId = null,
+      enforcementMode = "deterministic",
+      modulePath,
+      ownerProfile,
+      requiredProfiles,
+    }) => ({
       ruleId,
       parentRuleId,
       enforcementMode,
       modulePath,
+      ...(ownerProfile === undefined ? {} : { ownerProfile }),
+      ...(requiredProfiles === undefined ? {} : { requiredProfiles }),
     }),
   );
   if (records.some(({ modulePath }) => typeof modulePath !== "string" || modulePath.length === 0)) {

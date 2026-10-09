@@ -9,12 +9,9 @@ export async function validateLibraryLayout(context = {}) {
   const files = await inventory.files("all");
   const read = inventory.readText;
   const root = context.root ?? process.cwd();
-  const applicationApplies = context.packageJson?.eliware?.apply?.includes("application");
-  const errors = validateLibrarySourcePlacement(files, { applicationApplies });
-  if (!applicationApplies) {
-    errors.push(...validateTestFileLayout(files));
-    errors.push(...(await validateMirroredTests(files, read, root)));
-    errors.push(...(await validateApplicationLineLimits(files, read, root)));
-  }
+  const errors = validateLibrarySourcePlacement(files);
+  errors.push(...validateTestFileLayout(files));
+  errors.push(...(await validateMirroredTests(files, read, root)));
+  errors.push(...(await validateApplicationLineLimits(files, read, root)));
   return errors;
 }

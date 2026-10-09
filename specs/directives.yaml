@@ -295,7 +295,7 @@ directives:
       - id: E-0.0.12
         dos:
           - Put checks for rules that depend on multiple selected profiles in src/checks/shared/.
-          - Give each shared check a directive that states its required profile combination.
+          - Declare each shared check's owning profile and required profiles in its module.
           - Run a shared check only when every required profile applies.
           - Mirror each shared check under tests/checks/shared/.
           - Keep profile-only rules and checks in their selected profile.

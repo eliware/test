@@ -9,11 +9,16 @@ const { selectConventionChecks } =
   await import("../../../src/validation/check-discovery/select-convention-checks.mjs");
 
 test("selects checks only from explicitly applied profiles", async () => {
-  const checks = [{ ruleId: "E-0.1" }, { ruleId: "E-0.1.130" }];
+  const checks = [
+    { ruleId: "E-0.1", modulePath: "general/E-0.1.mjs" },
+    { ruleId: "E-0.1.130", modulePath: "application/E-0.1.130.mjs" },
+  ];
   discoverChecks.mockResolvedValueOnce(checks);
 
-  await expect(selectConventionChecks({ apply: ["general", "application"] })).resolves.toBe(checks);
-  expect(discoverChecks).toHaveBeenCalledWith(["general", "application"]);
+  await expect(selectConventionChecks({ apply: ["general", "application"] })).resolves.toEqual(
+    checks,
+  );
+  expect(discoverChecks).toHaveBeenCalledWith(["general", "application", "shared"]);
 });
 
 test.each(["documentation", "workspace", "infrastructure"])(
@@ -51,6 +56,24 @@ test("filters supplied checks to the selected profile", async () => {
     { ruleId: "E-0.1", modulePath: "general/E-0.1.mjs" },
     { ruleId: "E-0.1.1", modulePath: "general/E-0.1.1.mjs" },
   ]);
+});
+
+test("selects shared checks only when every declared profile applies", async () => {
+  const shared = {
+    ruleId: "E-shared",
+    modulePath: "shared/E-shared.mjs",
+    requiredProfiles: ["general", "application"],
+  };
+  const skipped = {
+    ruleId: "E-other",
+    modulePath: "shared/E-other.mjs",
+    requiredProfiles: ["general", "discord"],
+  };
+  const checks = await selectConventionChecks({ apply: ["general", "application"] }, [
+    shared,
+    skipped,
+  ]);
+  expect(checks).toEqual([shared]);
 });
 
 test("private selection includes private rules and excludes npm publication rules", async () => {

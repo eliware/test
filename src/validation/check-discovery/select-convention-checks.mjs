@@ -8,9 +8,14 @@ export async function selectConventionChecks(conventions, availableChecks = null
   const failure = validateAppliedProfiles(conventions.apply, catalog);
   if (failure) throw new Error(failure);
   const profiles = expandAppliedProfiles(conventions.apply, catalog);
+  const selected = new Set(profiles);
+  const applicable = ({ modulePath, requiredProfiles = [] }) =>
+    modulePath?.split("/")[0] === "shared"
+      ? requiredProfiles.every((profile) => selected.has(profile))
+      : selected.has(modulePath?.split("/")[0]);
   if (availableChecks) {
-    const allowedGroups = new Set(profiles);
-    return availableChecks.filter(({ modulePath }) => allowedGroups.has(modulePath?.split("/")[0]));
+    return availableChecks.filter(applicable);
   }
-  return discoverChecks(profiles);
+  const checks = await discoverChecks([...profiles, "shared"]);
+  return checks.filter(applicable);
 }

@@ -32,11 +32,19 @@ test("uses the default context", async () => {
   await expect(run()).resolves.toMatchObject({ status: "pass" });
 });
 
-test("uses application checks when application also applies", async () => {
+test("enforces release note policy for the valid library profile set", async () => {
   await expect(
-    run({ packageJson: { eliware: { apply: ["general", "application", "library"] } } }),
+    run({
+      root: "/repo",
+      packageJson: { eliware: { apply: ["general", "library"] } },
+      repositoryInventory: {
+        readText: async (path) =>
+          path.endsWith("RELEASE_NOTES.md")
+            ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate."
+            : "## Links\n\n- [Release notes](RELEASE_NOTES.md)",
+      },
+    }),
   ).resolves.toMatchObject({
     status: "pass",
-    message: "Application checks enforce the shared release note rules.",
   });
 });

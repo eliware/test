@@ -28,11 +28,11 @@ test("uses the default context", async () => {
   await expect(run()).resolves.toMatchObject({ status: "fail" });
 });
 
-test("uses application checks when application also applies", async () => {
+test("enforces Jest policy for the valid library profile set", async () => {
   await expect(
-    run({ packageJson: { eliware: { apply: ["general", "application", "library"] } } }),
-  ).resolves.toMatchObject({
-    status: "pass",
-    message: "Application checks enforce the shared Jest and coverage policy.",
-  });
+    run({
+      packageJson: { eliware: { apply: ["general", "library"] } },
+      repositoryInventory: { files: async () => [], readText: async () => "" },
+    }),
+  ).resolves.toMatchObject({ status: "fail" });
 });

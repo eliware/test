@@ -25,15 +25,18 @@ beforeEach(() => {
   validateLibraryExamplesLink.mockResolvedValue([]);
 });
 
-test("coordinates documentation indexes and native ESM examples", async () => {
-  await expect(run({ root: "/repo" })).resolves.toEqual({
+test("checks library documentation indexes and native ESM examples", async () => {
+  await expect(
+    run({ root: "/repo", packageJson: { eliware: { apply: ["general", "library"] } } }),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
-    message: "General checks enforce README.md and AGENTS.md order.",
+    message: "",
   });
-  expect(validateApplicationDocumentation).toHaveBeenCalledWith({ root: "/repo" });
-  expect(validateLibraryExamples).toHaveBeenCalledWith({ root: "/repo" });
-  expect(validateLibraryExamplesLink).toHaveBeenCalledWith({ root: "/repo" });
+  const context = { root: "/repo", packageJson: { eliware: { apply: ["general", "library"] } } };
+  expect(validateApplicationDocumentation).toHaveBeenCalledWith(context);
+  expect(validateLibraryExamples).toHaveBeenCalledWith(context);
+  expect(validateLibraryExamplesLink).toHaveBeenCalledWith(context);
 });
 
 test("reports documentation and example index gaps", async () => {
@@ -46,11 +49,4 @@ test("reports documentation and example index gaps", async () => {
     message:
       "docs/README.md is required.\nLibraries must provide an example.\nREADME.md must link examples/README.md.",
   });
-});
-
-test("uses application documentation checks when application applies", async () => {
-  await expect(
-    run({ packageJson: { eliware: { apply: ["general", "application", "library"] } } }),
-  ).resolves.toMatchObject({ status: "pass" });
-  expect(validateApplicationDocumentation).not.toHaveBeenCalled();
 });

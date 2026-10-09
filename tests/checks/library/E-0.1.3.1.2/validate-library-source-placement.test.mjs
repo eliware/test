@@ -19,11 +19,3 @@ test("rejects implementation modules outside library roots", () => {
     "scripts/build.js is outside the allowed library source and test directories.",
   ]);
 });
-
-test("allows bin modules when the application profile applies", () => {
-  expect(
-    validateLibrarySourcePlacement(["bin/cli.mjs", "lib/worker.mjs"], {
-      applicationApplies: true,
-    }),
-  ).toEqual(["lib/worker.mjs is outside the allowed library source and test directories."]);
-});

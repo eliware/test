@@ -7,7 +7,7 @@ test("reports a missing repository inventory", async () => {
   ]);
 });
 
-test("checks mirrored source and tests for libraries", async () => {
+test("checks mirrored source and tests for the valid library profile set", async () => {
   const testContent =
     'import { test } from "@jest/globals"; import "../src/index.mjs"; test("works", () => {});';
   const inventory = {
@@ -23,14 +23,15 @@ test("checks mirrored source and tests for libraries", async () => {
   ).resolves.toEqual([]);
 });
 
-test("checks library placement when application profile owns shared layout", async () => {
+test("checks library layout without Application profile branches", async () => {
   const inventory = { files: async () => ["bin/command.mjs", "lib/worker.mjs"] };
   await expect(
     validateLibraryLayout({
-      packageJson: { eliware: { apply: ["general", "application", "library"] } },
+      packageJson: { eliware: { apply: ["general", "library"] } },
       repositoryInventory: inventory,
     }),
   ).resolves.toEqual([
+    "bin/command.mjs is outside the allowed library source and test directories.",
     "lib/worker.mjs is outside the allowed library source and test directories.",
   ]);
 });

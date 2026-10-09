@@ -7,11 +7,8 @@ export const ruleId = "E-0.1.3.1.0";
 export const repositoryInventoryOptions = { expandedDirectories: ["docs", "examples"] };
 
 export async function run(context = {}) {
-  const applicationApplies = context.packageJson?.eliware?.apply?.includes("application");
-  const errors = applicationApplies ? [] : await validateApplicationDocumentation(context);
+  const errors = await validateApplicationDocumentation(context);
   errors.push(...(await validateLibraryExamples(context)));
   errors.push(...(await validateLibraryExamplesLink(context)));
-  return errors.length
-    ? fail(ruleId, errors.join("\n"))
-    : pass(ruleId, "General checks enforce README.md and AGENTS.md order.");
+  return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }
