@@ -160,3 +160,15 @@ directives:
       - Do not track ignored files or symlinks.
     examples:
       - ".env.production is ignored and .env.production.example may be tracked."
+
+  - id: E-0.1.0.1.9
+    dos:
+      - Scan maintained repository text files for machine-specific absolute paths.
+      - 'Reject Windows paths rooted at Users, home, srv, or var\lib directories.'
+      - Reject POSIX paths rooted at /home, /users, or /srv directories.
+      - "Reject C: or D: paths rooted at eliware or Users/<name>/src."
+      - Skip invalid UTF-8 and binary files.
+      - Fail validation when repository files cannot be listed or read.
+    donts:
+      - Do not scan for labels, hostnames, or file URLs.
+      - Do not reject POSIX paths rooted at /var/lib.
