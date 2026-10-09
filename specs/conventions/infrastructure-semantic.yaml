@@ -22,6 +22,8 @@ directives:
       - Define repository-specific paths, schemas, validation, and platform boundaries in indexed specifications.
       - Explain change control, rollback, secret handling, and operational ownership.
       - Keep committed desired state canonical in its owning repository.
+      - Link from README.md to canonical operational procedures in Eliware Operations or the owning workspace.
     donts:
       - Do not mix unrelated targets without boundaries or assume generic rules define platform-specific behavior.
       - Do not confuse committed inputs with live state.
+      - Do not duplicate canonical operational procedures in the repository.
