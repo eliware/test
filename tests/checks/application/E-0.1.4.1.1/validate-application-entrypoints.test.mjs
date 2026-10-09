@@ -38,7 +38,11 @@ test("reports stat errors and rejects absolute paths", async () => {
     {
       root: "repo",
       packageJson: {
-        bin: { absolute: "C:/repo/bin/app.mjs", missing: "bin/missing.mjs" },
+        bin: {
+          absolute: "C:/repo/bin/app.mjs",
+          posixAbsolute: "/repo/bin/app.mjs",
+          missing: "bin/missing.mjs",
+        },
       },
     },
     {

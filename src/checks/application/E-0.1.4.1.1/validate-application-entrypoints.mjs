@@ -1,5 +1,5 @@
 import { lstat } from "node:fs/promises";
-import { isAbsolute, join } from "node:path";
+import { isAbsolute, join, win32 } from "node:path";
 import { validateEntrypointMetadata } from "./validate-entrypoint-metadata.mjs";
 import { validateStartCommand } from "./validate-start-command.mjs";
 
@@ -25,7 +25,8 @@ function collectTargets(packageJson) {
 }
 
 async function validateEntrypointTarget(target, root, checkStat) {
-  if (typeof target !== "string" || !target.trim() || isAbsolute(target))
+  const absolutePaths = [isAbsolute(target), win32.isAbsolute(target)];
+  if (typeof target !== "string" || !target.trim() || absolutePaths.includes(true))
     return `Entrypoint target must be a nonempty repository-relative path under bin/: ${target}.`;
   const normalized = canonicalEntrypoint(target);
   if (!normalized) return `Entrypoint target must use a canonical path under bin/: ${target}.`;

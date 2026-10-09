@@ -102,3 +102,13 @@ test("reports invalid package names and missing map entries", async () => {
     await rm(base, { recursive: true, force: true });
   }
 });
+
+test("reports missing package metadata when a repository map exists", async () => {
+  await expect(
+    loadRepoMapRecord("repo", {}, { read: async () => "repositories: []\n" }),
+  ).resolves.toMatchObject({
+    available: true,
+    record: null,
+    error: "package.json.name cannot identify a repo-map entry.",
+  });
+});

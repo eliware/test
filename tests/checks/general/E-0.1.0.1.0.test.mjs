@@ -67,6 +67,22 @@ test("passes when package metadata matches the repo map", async () => {
   }
 });
 
+test("reports available repo maps that do not list the repository", async () => {
+  const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
+  const root = join(base, "repo");
+  const docs = join(base, "docs");
+  await mkdir(root);
+  await mkdir(docs);
+  try {
+    await writeFile(join(docs, "repo-map.yaml"), "repositories: []\n");
+    const result = await run({ root, packageJson });
+    expect(result.status).toBe("fail");
+    expect(result.message).toContain("has no entry for eliware/example");
+  } finally {
+    await rm(base, { recursive: true, force: true });
+  }
+});
+
 test("reports invalid Eliware metadata", async () => {
   const result = await run({ packageJson: { eliware: { apply: ["general", "general"] } } });
   expect(result).toMatchObject({ status: "fail" });
