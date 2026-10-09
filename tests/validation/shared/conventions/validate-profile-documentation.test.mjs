@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateProfileDocumentation } from "../../../src/checks/shared/validate-profile-documentation.mjs";
+import { validateProfileDocumentation } from "../../../../src/validation/shared/conventions/validate-profile-documentation.mjs";
 
 const order = {
   "agents-sections.yaml": { profileHeadings: { web: "Web", private: "Private distribution" } },

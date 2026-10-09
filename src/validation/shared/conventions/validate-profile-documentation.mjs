@@ -1,5 +1,5 @@
-import { removeMarkdownCode } from "../general/E-0.1.0.1.4/extract-markdown-links.mjs";
-import { readCanonicalOrder } from "../../validation/shared/conventions/read-canonical-order.mjs";
+import { removeMarkdownCode } from "../../../checks/general/E-0.1.0.1.4/extract-markdown-links.mjs";
+import { readCanonicalOrder } from "./read-canonical-order.mjs";
 
 export async function validateProfileDocumentation(
   profile,

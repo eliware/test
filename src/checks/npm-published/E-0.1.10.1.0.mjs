@@ -1,5 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateProfileDocumentation } from "../shared/validate-profile-documentation.mjs";
+import { validateProfileDocumentation } from "../../validation/shared/conventions/validate-profile-documentation.mjs";
 import { validateNpmReadmeBadge } from "./E-0.1.10.1.0/validate-npm-readme-badge.mjs";
 
 export const ruleId = "E-0.1.10.1.0";

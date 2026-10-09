@@ -1,5 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateProfileDocumentation } from "../shared/validate-profile-documentation.mjs";
+import { validateProfileDocumentation } from "../../validation/shared/conventions/validate-profile-documentation.mjs";
 import { validatePrivatePackageScripts } from "./E-0.1.12.1.0/validate-private-package-scripts.mjs";
 import { validatePrivateWorkflows } from "./E-0.1.12.1.0/validate-private-workflows.mjs";
 
