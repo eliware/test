@@ -9,6 +9,8 @@ directives:
     dos:
       - Set private true.
       - Add a Private distribution section to AGENTS.md.
+      - Reject npm publication commands in package scripts and GitHub workflows.
+      - Reject NPM_TOKEN and NODE_AUTH_TOKEN settings in package scripts and GitHub workflows.
     donts:
       - Do not declare npm publication commands or npm publication tokens in scripts or workflows.
     examples:
