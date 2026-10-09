@@ -5,6 +5,9 @@ import { validatePackageLifecycleScripts } from "./validate-package-lifecycle-sc
 import { readCanonicalOrder } from "../../shared/conventions/read-canonical-order.mjs";
 
 export function validatePublicationMetadata(packageJson, { selfHosted = false } = {}) {
+  if (packageJson?.private !== false) {
+    return "Public npm packages must set package.json.private to false.";
+  }
   if (
     typeof packageJson?.engines?.node !== "string" ||
     !compatibleWithNode26(packageJson.engines.node.trim())

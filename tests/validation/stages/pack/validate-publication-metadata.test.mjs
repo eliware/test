@@ -2,6 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validatePublicationMetadata } from "../../../../src/validation/stages/pack/validate-publication-metadata.mjs";
 
 const validPackage = {
+  private: false,
   engines: { node: ">=26 <27" },
   publishConfig: { provenance: true },
   files: [
@@ -43,6 +44,8 @@ test("allows the self-hosted pack script only when requested", () => {
 });
 
 test.each([
+  { private: true },
+  { private: undefined },
   { engines: { node: ">=25" } },
   { publishConfig: {} },
   { files: undefined },

@@ -5,6 +5,7 @@ import { join } from "node:path";
 export const packageJson = {
   name: "@eliware/test",
   version: "11.0.0",
+  private: false,
   engines: { node: "26" },
   publishConfig: { provenance: true },
   files: [
