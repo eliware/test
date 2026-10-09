@@ -12,3 +12,7 @@ test("reports invalid shared Discord ordering", () => {
     message: expect.stringContaining("Canonical AGENTS.md ordering"),
   });
 });
+
+test("uses its default context", () => {
+  expect(run()).toEqual({ ruleId, status: "pass", message: "" });
+});

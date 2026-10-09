@@ -24,7 +24,7 @@ test("rejects incomplete package metadata and badge rows", () => {
   );
 });
 
-test("supports object repository metadata and rejects npm branding without publication", () => {
+test("supports object repository metadata without selecting publication profiles", () => {
   const plain = {
     name: "@eliware/fixture",
     repository: { url: "https://github.com/eliware/fixture" },
@@ -34,6 +34,6 @@ test("supports object repository metadata and rejects npm branding without publi
     "",
   );
   expect(validateReadmeBranding(`${header}\n\n${plainRow}`, plain)).toBeNull();
-  expect(validateReadmeBranding(readme, plain)).toContain("without npm-published");
+  expect(validateReadmeBranding(readme, plain)).toBeNull();
   expect(validateReadmeBranding("", undefined)).toContain("package name");
 });

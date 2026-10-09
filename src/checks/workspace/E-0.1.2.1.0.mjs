@@ -3,6 +3,7 @@ import { collectRunbookFiles } from "./E-0.1.2.1.0/collect-runbook-files.mjs";
 import { readRunbookSchema } from "./E-0.1.2.1.0/read-runbook-schema.mjs";
 import { validateRunbookIndex } from "./E-0.1.2.1.0/validate-runbook-index.mjs";
 import { validateRunbookDocument } from "./E-0.1.2.1.0/validate-runbook-document.mjs";
+import { validateProfileDocumentation } from "../shared/validate-profile-documentation.mjs";
 
 export const ruleId = "E-0.1.2.1.0";
 export const repositoryInventoryOptions = { expandedDirectories: ["runbooks"] };
@@ -11,7 +12,7 @@ export async function run(context = {}, dependencies = {}) {
   const inventory = context.repositoryInventory;
   if (!inventory?.files || !inventory.readText)
     return fail(ruleId, "Repository inventory is required for runbook checks.");
-  const errors = [];
+  const errors = await validateProfileDocumentation("workspace", inventory);
   let files;
   try {
     files = await inventory.files("all");

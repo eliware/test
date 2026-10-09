@@ -51,14 +51,12 @@ test("allows a publish workflow for publication profiles", async () => {
   ).resolves.toEqual([]);
 });
 
-test("reports unreadable workflow inventories", async () => {
+test("requires readable validation workflow content", async () => {
   await expect(
-    validateCiWorkflow({
-      files: async () => {
-        throw new Error("offline");
-      },
-      readText: async () => "",
-    }),
+    validateCiWorkflow({ files: async () => [".github/workflows/ci.yaml"] }),
+  ).resolves.toEqual(["GitHub workflow files could not be inspected."]);
+  await expect(
+    validateCiWorkflow({ readText: async () => Promise.reject(new Error("offline")) }),
   ).resolves.toEqual(["GitHub workflow files could not be inspected: offline"]);
 });
 

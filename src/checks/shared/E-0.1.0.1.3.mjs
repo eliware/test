@@ -6,6 +6,7 @@ import { validateReadmeStructure } from "./E-0.1.0.1.3/validate-readme-structure
 import { validateReadmeBranding } from "./E-0.1.0.1.3/validate-readme-branding.mjs";
 import { validateReadmeMetadata } from "./E-0.1.0.1.3/validate-readme-metadata.mjs";
 import { validateReadmeLinks } from "./E-0.1.0.1.3/validate-readme-links.mjs";
+import { validateReadmeCompositionOrder } from "./E-0.1.0.1.3/validate-readme-composition-order.mjs";
 
 export const ruleId = "E-0.1.0.1.3";
 export const ownerProfile = "general";
@@ -22,6 +23,7 @@ export async function run(context = {}, dependencies = {}) {
   const headings = resolveReadmeHeadings(context.packageJson);
   const errors = [
     validateReadmeStructure(readme, headings, context.packageJson),
+    validateReadmeCompositionOrder(readme, headings),
     validateReadmeBranding(readme, context.packageJson),
     validateReadmeMetadata(readme, context.packageJson),
     validateReadmeLinks(readme, context.packageJson),

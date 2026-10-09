@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { validateAgentsStructure } from "../../../../src/checks/shared/E-0.1.0.1.2/validate-agents-structure.mjs";
+import { validateAgentsCompositionOrder } from "../../../../src/checks/shared/E-0.1.0.1.2/validate-agents-composition-order.mjs";
 
 const base = [
   "# AGENTS.md",
@@ -25,35 +26,35 @@ test("requires the exact title and ordered base headings", () => {
   ]);
 });
 
-test("orders selected profile headings by canonical document order", () => {
+test("keeps profile ordering in the shared composition check", () => {
   expect(
-    validateAgentsStructure(`${base}\n## Application\n## CLI`, {
+    validateAgentsCompositionOrder(`${base}\n## Application\n## CLI`, {
       eliware: { apply: ["cli", "application"] },
     }),
   ).toEqual([]);
   expect(
-    validateAgentsStructure(`${base}\n## CLI\n## Application`, {
+    validateAgentsCompositionOrder(`${base}\n## CLI\n## Application`, {
       eliware: { apply: ["application", "cli"] },
     }),
   ).toEqual(["AGENTS.md profile headings must use canonical order after Changes."]);
   expect(
-    validateAgentsStructure(`${base}\n## Application\n## Discord`, {
+    validateAgentsCompositionOrder(`${base}\n## Application\n## Discord`, {
       eliware: { apply: ["general", "discord", "application"] },
     }),
   ).toEqual([]);
 });
 
-test("requires the Documentation heading after Changes for documentation repositories", () => {
+test("allows profile checks to require headings independently", () => {
   expect(
-    validateAgentsStructure(`${base}\n## Documentation\n## Private distribution`, {
+    validateAgentsCompositionOrder(`${base}\n## Documentation\n## Private distribution`, {
       eliware: { apply: ["general", "documentation", "private"] },
     }),
   ).toEqual([]);
   expect(
-    validateAgentsStructure(base, {
+    validateAgentsCompositionOrder(base, {
       eliware: { apply: ["general", "documentation", "private"] },
     }),
-  ).toEqual(["AGENTS.md has duplicate, undeclared, or misordered section headings."]);
+  ).toEqual([]);
 });
 
 test("rejects duplicate, unselected, and undeclared section headings", () => {
@@ -62,16 +63,16 @@ test("rejects duplicate, unselected, and undeclared section headings", () => {
       eliware: { apply: ["application"] },
     }),
   ).toEqual(["AGENTS.md has duplicate, undeclared, or misordered section headings."]);
-  expect(validateAgentsStructure(`${base}\n## Application`, { eliware: { apply: [] } })).toEqual([
-    "AGENTS.md has duplicate, undeclared, or misordered section headings.",
-  ]);
-  expect(validateAgentsStructure(`${base}\n## Custom`, {}, new Set())).toEqual([
+  expect(
+    validateAgentsCompositionOrder(`${base}\n## Application`, { eliware: { apply: [] } }),
+  ).toEqual(["AGENTS.md profile headings must use canonical order after Changes."]);
+  expect(validateAgentsStructure(`${base}\n## Custom`, new Set())).toEqual([
     "AGENTS.md has duplicate, undeclared, or misordered section headings.",
   ]);
 });
 
 test("accepts repository sections that a YAML specification declares", () => {
-  expect(validateAgentsStructure(`${base}\n## Custom`, {}, new Set(["Custom"]))).toEqual([]);
+  expect(validateAgentsStructure(`${base}\n## Custom`, new Set(["Custom"]))).toEqual([]);
 });
 
 test("does not count required headings inside code blocks", () => {

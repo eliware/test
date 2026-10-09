@@ -11,10 +11,18 @@ conflicts:
 directives:
   - id: E-0.1.7.1.0
     dos:
+      - Use canonical order for Discord commands, events, and permissions.
+    donts:
+      - Do not change the canonical Discord order.
+    examples:
+      - "discord: [Commands, Events, Intents and permissions, Operations]"
+
+  - id: E-0.1.7.1.1
+    dos:
       - Add a Discord section to AGENTS.md.
       - Add Events and Intents and permissions sections to README.md.
     donts:
       - Do not omit Discord-specific headings.
     examples:
       - "## Discord"
-      - "discord: [Commands, Events, Intents and permissions, Operations]"
+      - "## Events\n\n## Intents and permissions"

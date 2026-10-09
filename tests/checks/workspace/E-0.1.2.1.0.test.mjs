@@ -7,7 +7,14 @@ const index = "# Runbooks\n\n- [Deploy](deploy.yaml)";
 const document = "schema-version: 12\ntitle: Deploy\nsteps:\n  - Run npm test";
 
 function inventory(files, readText = async () => "") {
-  return { files: async () => files, readText };
+  return {
+    files: async () => files,
+    readText: async (path) => {
+      if (path === "AGENTS.md") return "## Workspace";
+      if (path === "README.md") return "## Runbooks\n## Communication\n## Recovery";
+      return readText(path);
+    },
+  };
 }
 
 test("validates the workspace runbook index and schema", async () => {

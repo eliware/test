@@ -3,30 +3,14 @@ import { validateWorkflowSteps } from "./validate-workflow-steps.mjs";
 
 const workflowPath = ".github/workflows/ci.yaml";
 
-export async function validateCiWorkflow(inventory, packageJson = {}) {
-  if (!inventory?.files || !inventory.readText)
-    return ["GitHub workflow files could not be inspected."];
+export async function validateCiWorkflow(inventory) {
+  if (!inventory?.readText) return ["GitHub workflow files could not be inspected."];
   try {
-    const files = (await inventory.files("all")).filter((path) =>
-      path.startsWith(".github/workflows/"),
-    );
-    const publishAllowed = ["npm-published", "ghcr-published"].some((profile) =>
-      packageJson?.eliware?.apply?.includes(profile),
-    );
-    const allowed = publishAllowed
-      ? new Set([workflowPath, ".github/workflows/publish.yaml"])
-      : new Set([workflowPath]);
-    const errors = files
-      .filter((file) => !allowed.has(file))
-      .map((file) => `Unexpected workflow file: ${file}.`);
-    if (!files.includes(workflowPath)) return [...errors, `${workflowPath} is required.`];
     const documents = parseAllDocuments(await inventory.readText(workflowPath));
     const parseError = documents.flatMap((document) => document.errors)[0];
-    if (parseError)
-      return [...errors, `${workflowPath} could not be parsed: ${parseError.message}`];
-    if (documents.length !== 1)
-      return [...errors, `${workflowPath} must contain exactly one document.`];
-    return [...errors, ...validateDocument(documents[0].toJS())];
+    if (parseError) return [`${workflowPath} could not be parsed: ${parseError.message}`];
+    if (documents.length !== 1) return [`${workflowPath} must contain exactly one document.`];
+    return validateDocument(documents[0].toJS());
   } catch (error) {
     return [`GitHub workflow files could not be inspected: ${error.message}`];
   }

@@ -37,7 +37,7 @@ test("uses default arguments when callers pass undefined", async () => {
   await expect(run(undefined, undefined)).resolves.toMatchObject({
     ruleId,
     status: "fail",
-    message: "AGENTS.md has duplicate, undeclared, or misordered section headings.",
+    message: expect.stringContaining("canonical order"),
   });
 });
 

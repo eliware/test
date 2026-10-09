@@ -30,13 +30,17 @@ function context(documents, index) {
   return {
     root: "repo",
     repositoryInventory: {
+      readText: async (path) => {
+        if (path === "AGENTS.md") return "## Application";
+        if (path === "README.md") return "## Configuration\n## Operations";
+        return path.includes("docs") ? index : "[Documentation](docs/README.md)";
+      },
       documentationFiles: async ({ directory, predicate, includeGenerated }) => {
         expect(includeGenerated).toBe(true);
         const files = directory.endsWith("examples") ? [] : ["README.md", ...documents];
         return files.filter(predicate);
       },
       files: async () => [],
-      readText: async (path) => (path.includes("docs") ? index : "[Documentation](docs/README.md)"),
     },
   };
 }
