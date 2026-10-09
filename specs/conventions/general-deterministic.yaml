@@ -42,25 +42,38 @@ directives:
 
   - id: E-0.1.0.1.3
     dos:
-      - Include the exact brand header, a title row, a package description, and a Table of Contents.
-      - Include package.json.name on the title row.
-      - Include the License and CI badges.
+      - Use the README header and footer order in ordering/readme-sections.yaml.
+      - "Use this exact header sequence: linked Eliware brand image, blank line, level-two package title with applicable badges, blank line, exact package.json description, blank line, and Table of Contents."
+      - Use the exact package.json.name as the title text. Format it as `## @eliware/<repo-name>` followed by badges on the same line.
+      - Use the npm, License, and CI badges in that order. Include npm only when package.json.eliware.apply includes npm-published.
+      - Use the exact brand image, badge targets, and title markers shown in the examples.
       - Use Features, Requirements, Setup, Usage, Development, Testing, Troubleshooting, and Security as general content headings.
       - Include Support, Links, and License sections.
       - Use each general level-two heading once.
       - Link every content heading once in the Table of Contents using lowercase space-to-hyphen fragments.
-      - Include the exact package description, author, and license value.
-      - Link specs/README.md and LICENSE.
-      - Include the exact support block in Support and canonical homepage, repository, website, organization, and Discord links in Links.
+      - Put local documentation and specifications navigation under a content heading, not in the header or footer.
+      - Include the exact package description in the header and exact author and license values in the README.
+      - Link specs/README.md from a content section.
+      - Use the exact License section and link text shown in the examples.
+      - Use the exact Support block shown in the examples.
+      - "Use these exact Links labels and targets in this order: Home Page, GitHub Org, GitHub Repo, Bug Reports, npm, and Discord."
+      - Include npm in Links only when package.json.eliware.apply includes npm-published.
+      - Keep the Links section limited to the ordered canonical links.
+      - Do not link to the private Eliware Docs repository.
     donts:
       - Do not include the title or Table of Contents in its own section list.
-      - Do not change the package name text or display git+https URLs.
+      - Do not change the package name text, add header navigation, use `.git` in the GitHub Repo link, or display git+https URLs.
     examples:
       - "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)"
-      - "[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)\n\n**[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**"
+      - "## @eliware/<repo-name> [![npm](https://img.shields.io/npm/v/@eliware/<repo-name>)](https://www.npmjs.com/package/@eliware/<repo-name>) [![License](https://img.shields.io/github/license/eliware/<repo-name>)](https://github.com/eliware/<repo-name>/blob/main/LICENSE) [![CI](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml)"
+      - "For a repository without public npm publication, omit the npm badge and keep License before CI."
+      - "The next header line is the exact non-empty package.json description."
+      - "## Table of Contents"
+      - "## Support\n\nFor help, questions, or to chat with the author and community, visit:\n\n[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)[![eliware.org](https://eliware.org/logos/eliware_96.png)](https://discord.gg/M6aTR9eTwN)\n\n**[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**"
       - "[![License](https://img.shields.io/github/license/eliware/example)](https://github.com/eliware/example/blob/main/LICENSE)"
       - "[![CI](https://github.com/eliware/example/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/example/actions/workflows/ci.yaml)"
-      - "- [Home Page](https://github.com/eliware/example#readme)\n- [GitHub repository](https://github.com/eliware/example.git)\n- [Eliware](https://eliware.org)\n- [GitHub organization](https://github.com/eliware)\n- [Discord](https://discord.gg/M6aTR9eTwN)"
+      - "- [Home Page](https://eliware.org)\n- [GitHub Org](https://github.com/eliware)\n- [GitHub Repo](https://github.com/eliware/<repo-name>)\n- [Bug Reports](https://github.com/eliware/<repo-name>/issues)\n- [npm](https://www.npmjs.com/package/@eliware/<repo-name>)\n- [Discord](https://discord.gg/M6aTR9eTwN)"
+      - "[MIT © Eliware](LICENSE)"
 
   - id: E-0.1.0.1.4
     dos:

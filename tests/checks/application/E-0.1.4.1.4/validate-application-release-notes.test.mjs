@@ -7,7 +7,7 @@ test("reports a missing README link after reading release notes", async () => {
   };
   await expect(
     validateApplicationReleaseNotes({ root: "repo", repositoryInventory: inventory }),
-  ).resolves.toContain("README.md Links must contain RELEASE_NOTES.md.");
+  ).resolves.toContain("README.md Usage must link RELEASE_NOTES.md.");
 });
 
 test("reports an unreadable README as a missing release notes link", async () => {
@@ -19,7 +19,7 @@ test("reports an unreadable README as a missing release notes link", async () =>
   };
   await expect(
     validateApplicationReleaseNotes({ root: "repo", repositoryInventory: inventory }),
-  ).resolves.toContain("README.md Links must contain RELEASE_NOTES.md.");
+  ).resolves.toContain("README.md Usage must link RELEASE_NOTES.md.");
 });
 
 test("uses the default context", async () => {

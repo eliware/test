@@ -1,79 +1,49 @@
 import { removeMarkdownCode } from "../../general/E-0.1.0.1.4/extract-markdown-links.mjs";
-
-const requiredLinks = [
-  ["Eliware", "https://eliware.org"],
-  ["GitHub organization", "https://github.com/eliware"],
-  ["Discord", "https://discord.gg/M6aTR9eTwN"],
-  ["specifications", "specs/README.md"],
-];
+import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
 
 export function validateReadmeLinks(readme, packageJson = {}) {
   const markdown = removeMarkdownCode(readme);
-  const linksSection = readSection(markdown, "Links");
-  const licenseSection = readSection(markdown, "License");
-  const supportSection = readSection(markdown, "Support");
-  const repository =
-    typeof packageJson?.repository === "string"
-      ? packageJson.repository
-      : packageJson?.repository?.url;
-  const repo =
-    typeof repository === "string"
-      ? repository
-          .replace(/^git\+/u, "")
-          .replace(/\.git$/u, "")
-          .replace(/\/$/u, "")
-      : "";
-  const required = [
-    ...requiredLinks,
-    ["Home Page", packageJson?.homepage],
-    ["GitHub repository", `${repo}.git`],
-  ];
-  const missing = required.find(
-    ([label, target]) => !hasCanonicalLink(linksSection, label, target),
-  );
-  if (missing) return `README.md Links must include ${missing[0]} with its canonical target.`;
-  if (!hasCanonicalLink(licenseSection, "license", "LICENSE"))
-    return "README.md License must link the repository LICENSE file.";
+  const order = readCanonicalOrder("readme-sections.yaml");
+  const repository = getRepository(packageJson);
+  if (!repository) return "package.json must define the canonical GitHub repository.";
   if (
-    !supportSection.includes(
-      "[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)\n\n**[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**",
-    )
+    packageJson?.eliware?.apply?.includes("npm-published") &&
+    (typeof packageJson.name !== "string" || !packageJson.name)
   )
-    return "README.md Support must include the exact Discord support block.";
+    return "package.json.name is required for the npm link.";
+  const targets = {
+    "Home Page": "https://eliware.org",
+    "GitHub Org": "https://github.com/eliware",
+    "GitHub Repo": repository,
+    "Bug Reports": `${repository}/issues`,
+    npm: `https://www.npmjs.com/package/${packageJson.name}`,
+    Discord: "https://discord.gg/M6aTR9eTwN",
+  };
+  const links = order.linksSectionOrder
+    .filter((label) => label !== "npm" || packageJson?.eliware?.apply?.includes("npm-published"))
+    .map((label) => [label, targets[label]]);
+  const expectedLinks = links.map(([label, target]) => `- [${label}](${target})`);
+  const linksBody = readSection(markdown, "Links").trim().split(/\r?\n/u);
+  if (JSON.stringify(linksBody) !== JSON.stringify(expectedLinks))
+    return "README.md Links must contain only the canonical links in the required order.";
+  if (readSection(markdown, "License").trim() !== order.licenseLink)
+    return "README.md License must contain the exact MIT link.";
+  if (readSection(markdown, "Support").trim() !== order.supportBlock)
+    return "README.md Support must contain the exact support block.";
   return null;
 }
 
-function hasCanonicalLink(section, label, target) {
-  if (typeof target !== "string" || !target) return false;
-  const escapedLabel = escapeRegExp(label);
-  const escapedTarget = escapeRegExp(target);
-  const inline = new RegExp(`\\[${escapedLabel}\\]\\(${escapedTarget}(?:\\s+[^)]*)?\\)`, "iu");
-  if (inline.test(section)) return true;
-  const definitions = new Map();
-  for (const match of section.matchAll(/^ {0,3}\[([^\]]+)\]:\s*(?:<([^>]+)>|(\S+))/gimu))
-    definitions.set(normalizeLabel(match[1]), match[2] ?? match[3]);
-  for (const match of section.matchAll(/\[([^\]]+)\](?:\[([^\]]*)\])?/gu)) {
-    if (normalizeLabel(match[1]) !== normalizeLabel(label)) continue;
-    const reference = normalizeLabel(match[2] || match[1]);
-    if (definitions.get(reference) === target) return true;
-  }
-  const html = new RegExp(
-    `<a\\b[^>]*\\bhref=["']${escapedTarget}["'][^>]*>([\\s\\S]*?)<\\/a>`,
-    "iu",
-  );
-  const anchor = html
-    .exec(section)?.[1]
-    ?.replace(/<[^>]*>/gu, "")
-    .trim();
-  return anchor === label;
-}
-
-function normalizeLabel(value) {
-  return value.trim().replace(/\s+/gu, " ").toLowerCase();
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+function getRepository(packageJson) {
+  const value =
+    typeof packageJson?.repository === "string"
+      ? packageJson.repository
+      : packageJson?.repository?.url;
+  if (typeof value !== "string") return "";
+  const repository = value
+    .replace(/^git\+/u, "")
+    .replace(/\.git$/u, "")
+    .replace(/\/$/u, "");
+  return /^https:\/\/github\.com\/eliware\/[\w.-]+$/u.test(repository) ? repository : "";
 }
 
 function readSection(readme, heading) {

@@ -6,7 +6,7 @@ test("enforces shared release note rules for libraries", async () => {
     readText: async (path) =>
       path.endsWith("RELEASE_NOTES.md")
         ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate."
-        : "## Links\n\n- [Release notes](RELEASE_NOTES.md)",
+        : "## Usage\n\n- [Release notes](RELEASE_NOTES.md)",
   };
   await expect(run({ root: "/repo", repositoryInventory })).resolves.toEqual({
     ruleId,
@@ -41,7 +41,7 @@ test("enforces release note policy for the valid library profile set", async () 
         readText: async (path) =>
           path.endsWith("RELEASE_NOTES.md")
             ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate."
-            : "## Links\n\n- [Release notes](RELEASE_NOTES.md)",
+            : "## Usage\n\n- [Release notes](RELEASE_NOTES.md)",
       },
     }),
   ).resolves.toMatchObject({

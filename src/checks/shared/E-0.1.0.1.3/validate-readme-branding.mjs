@@ -16,24 +16,20 @@ function repoUrl(packageJson) {
 export function validateReadmeBranding(readme, packageJson = {}) {
   const name = packageJson?.name;
   const repository = repoUrl(packageJson);
-  if (!name || !repository.startsWith("https://github.com/"))
+  const slug = repository.replace("https://github.com/eliware/", "");
+  if (!/^@eliware\/[\w.-]+$/u.test(name ?? "") || !slug || name !== `@eliware/${slug}`)
     return "package.json must define a package name and GitHub repository for README badges.";
-  const badges = {
-    npm: `[![npm](https://img.shields.io/npm/v/${name})](https://www.npmjs.com/package/${name})`,
-    License: `[![License](https://img.shields.io/github/license/${repository.slice(19)})](https://github.com/${repository.slice(19)}/blob/main/LICENSE)`,
-    CI: `[![CI](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml/badge.svg)](https://github.com/${repository.slice(19)}/actions/workflows/ci.yaml)`,
-  };
-  const order = readCanonicalOrder("readme-sections.yaml").badgeOrder;
-  const commonBadges = order.filter((badge) => badge !== "npm");
-  const badgeLines = [commonBadges, order].map(
-    (selected) => `${name} ${selected.map((badge) => badges[badge]).join(" ")}`,
-  );
+  const order = readCanonicalOrder("readme-sections.yaml");
+  const includeNpm = packageJson?.eliware?.apply?.includes("npm-published");
+  const template = order.headerTemplates;
+  const badgeNames = includeNpm
+    ? order.badgeOrder
+    : order.badgeOrder.filter((badge) => badge !== "npm");
+  const badgeLine = `${template.title.replace("@eliware/<repo-name>", name)} ${badgeNames
+    .map((badge) => template[`${badge.toLowerCase()}Badge`]?.replaceAll("<repo-name>", slug))
+    .join(" ")}`;
   const lines = readme.split(/\r?\n/u);
-  return lines[0] === expectedLogoHeader() && badgeLines.includes(lines[2])
+  return lines[0] === template.brand && lines[2] === badgeLine
     ? null
     : "README.md must begin with the canonical logo header and title badge row.";
-}
-
-function expectedLogoHeader() {
-  return "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
 }

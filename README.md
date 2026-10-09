@@ -1,6 +1,6 @@
 # [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)
 
-@eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yaml)
+## @eliware/test [![npm](https://img.shields.io/npm/v/@eliware/test)](https://www.npmjs.com/package/@eliware/test) [![License](https://img.shields.io/github/license/eliware/test)](https://github.com/eliware/test/blob/main/LICENSE) [![CI](https://github.com/eliware/test/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/test/actions/workflows/ci.yaml)
 
 Shared deterministic repository validation for Eliware projects
 
@@ -114,6 +114,9 @@ Smoke rejects a captured file link before changes on Windows.
 The npm-published profile defines the package file allowlist.
 The general profile does not add files to that allowlist.
 Include `specs/` only when package runtime needs it, as this package does.
+
+See [documentation](docs/README.md) and [specifications](specs/README.md).
+See [release notes](RELEASE_NOTES.md).
 
 Applications put launchers in `bin/` and code in `src/`.
 Published applications include `bin/` in the exact package allowlist.
@@ -272,27 +275,21 @@ Validation does not deploy, publish, release, or change external systems.
 
 ## Support
 
-[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)
+For help, questions, or to chat with the author and community, visit:
+
+[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)[![eliware.org](https://eliware.org/logos/eliware_96.png)](https://discord.gg/M6aTR9eTwN)
 
 **[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**
 
-Use the [Eliware Discord community](https://discord.gg/M6aTR9eTwN),
-[GitHub issues](https://github.com/eliware/test/issues), or email eliware@eliware.org.
-Include the command, Node.js version, and redacted diagnostics.
-
 ## Links
 
-- Documentation: [docs](docs/README.md) · [specifications](specs/README.md)
-- [Usage](docs/usage.md) · [Troubleshooting](docs/troubleshooting.md) · [Support](docs/support.md)
-- [Canonical repository profile specifications](specs/conventions/README.md)
-- [Home Page](https://github.com/eliware/test#readme)
-- [GitHub repository](https://github.com/eliware/test.git)
-- [Eliware](https://eliware.org)
-- [GitHub organization](https://github.com/eliware)
-- [npm Package](https://www.npmjs.com/package/@eliware/test)
-- [Release Notes](RELEASE_NOTES.md)
+- [Home Page](https://eliware.org)
+- [GitHub Org](https://github.com/eliware)
+- [GitHub Repo](https://github.com/eliware/test)
+- [Bug Reports](https://github.com/eliware/test/issues)
+- [npm](https://www.npmjs.com/package/@eliware/test)
 - [Discord](https://discord.gg/M6aTR9eTwN)
 
 ## License
 
-[license](LICENSE)
+[MIT © Eliware](LICENSE)

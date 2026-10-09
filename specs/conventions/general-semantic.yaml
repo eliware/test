@@ -7,11 +7,14 @@ directives:
     dos:
       - Describe repository purpose, intended use, ownership, scope, and boundaries accurately.
       - Keep authoritative descriptions and keywords relevant to repository contents.
+      - Keep README branding, section order, support copy, and link labels consistent with the canonical deterministic examples.
+      - Make each public link label and destination clear and accurate for its intended action.
       - Keep documentation current, sufficient for supported use, and contributor instructions actionable.
       - Distinguish runtime settings, package metadata, command arguments, and deployment configuration.
       - Distinguish implemented behavior from versions already released.
     donts:
       - Do not use misleading identities, stale instructions, or unsupported capability claims.
+      - Do not add private repository links or alternate public branding to repository READMEs.
       - Do not confuse npm publishability with source-hosting visibility.
       - Do not present unpublished versions as available to users.
 

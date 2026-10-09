@@ -6,7 +6,7 @@ const packageJson = {
   repository: { url: "git+https://github.com/eliware/example.git" },
 };
 const line =
-  "@eliware/example [![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/package/@eliware/example) [![License](https://img.shields.io/github/license/eliware/example)](https://github.com/eliware/example/blob/main/LICENSE) [![CI](https://github.com/eliware/example/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/example/actions/workflows/ci.yaml)";
+  "## @eliware/example [![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/package/@eliware/example) [![License](https://img.shields.io/github/license/eliware/example)](https://github.com/eliware/example/blob/main/LICENSE) [![CI](https://github.com/eliware/example/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/example/actions/workflows/ci.yaml)";
 
 test("requires the canonical npm publication badge order", () => {
   expect(validateNpmReadmeBadge(`header\n\n${line}`, packageJson)).toBeNull();

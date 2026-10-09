@@ -12,7 +12,7 @@ const brand =
 const valid = [
   brand,
   "",
-  "fixture",
+  "## fixture",
   "",
   "Description",
   "",
@@ -38,7 +38,7 @@ test("enforces Documentation headings and their Table of Contents links", () => 
   const content = [
     brand,
     "",
-    documentationPackage.name,
+    `## ${documentationPackage.name}`,
     "",
     documentationPackage.description,
     "",
@@ -74,7 +74,7 @@ test("requires selected profile sections in canonical order", () => {
   const content = [
     brand,
     "",
-    selected.name,
+    `## ${selected.name}`,
     "",
     selected.description,
     "",
@@ -97,8 +97,8 @@ test("requires selected profile sections in canonical order", () => {
 
 test("accepts a title with trailing badges", () => {
   const content = valid.replace(
-    "fixture\n\nDescription",
-    "fixture [![build](https://example.com/build.svg)](https://example.com/build)\n\nDescription",
+    "## fixture\n\nDescription",
+    "## fixture [![build](https://example.com/build.svg)](https://example.com/build)\n\nDescription",
   );
   expect(validateReadmeStructure(content, expected, packageJson)).toBeNull();
 });
@@ -107,7 +107,7 @@ test("rejects invalid brand, title, headings, and contents list", () => {
   expect(validateReadmeStructure("bad", expected, packageJson)).toContain("logo header");
   expect(
     validateReadmeStructure(
-      `${brand}\n\nwrong\n\nDescription\n\n## Table of Contents`,
+      `${brand}\n\n## wrong\n\nDescription\n\n## Table of Contents`,
       expected,
       packageJson,
     ),
@@ -118,12 +118,12 @@ test("rejects invalid brand, title, headings, and contents list", () => {
   expect(
     validateReadmeStructure(valid.replace("#features", "#wrong"), expected, packageJson),
   ).toContain("Table of Contents");
-  expect(validateReadmeStructure(`${brand}\n\nfixture`, expected, packageJson)).toContain(
+  expect(validateReadmeStructure(`${brand}\n\n## fixture`, expected, packageJson)).toContain(
     "Table of Contents",
   );
   expect(
     validateReadmeStructure(
-      `${brand}\n\nfixture\n\nextra\n\n## Table of Contents`,
+      `${brand}\n\n## fixture\n\nextra\n\n## Table of Contents`,
       expected,
       packageJson,
     ),
@@ -163,7 +163,7 @@ test("does not count table-of-contents images as links", () => {
 });
 
 test("does not count the required title inside code", () => {
-  const content = valid.replace("\n\nfixture\n\n", "\n\n```text\nfixture\n```\n\n");
+  const content = valid.replace("\n\n## fixture\n\n", "\n\n```text\n## fixture\n```\n\n");
   expect(validateReadmeStructure(content, expected, packageJson)).toContain("title");
   expect(validateReadmeStructure(brand, expected, packageJson)).toContain("title");
 });

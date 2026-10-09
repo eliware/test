@@ -47,6 +47,10 @@ orders:
       - profileOrder
       - profileSections
       - finalSections
+      - linksSectionOrder
+      - headerTemplates
+      - supportBlock
+      - licenseLink
       - sharedSections
     specification-indexes.yaml:
       - directYamlFiles
@@ -104,6 +108,21 @@ orders:
         - title-and-badges
         - description
         - table-of-contents
+      linksSectionOrder:
+        - Home Page
+        - GitHub Org
+        - GitHub Repo
+        - Bug Reports
+        - npm
+        - Discord
+      headerTemplates:
+        - brand
+        - title
+        - npmBadge
+        - licenseBadge
+        - ciBadge
+      supportBlock: text
+      licenseLink: text
       profileSections:
         - application
         - cli
@@ -123,4 +142,5 @@ orders:
         - profiles
   requiredTypes:
     readme-sections.yaml:
+      linksSectionOrder: nonempty-text-list
       sharedSections.Commands.profiles: nonempty-text-list

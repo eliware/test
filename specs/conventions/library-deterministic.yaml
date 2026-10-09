@@ -79,7 +79,7 @@ directives:
   - id: E-0.1.3.1.4
     dos:
       - Keep RELEASE_NOTES.md.
-      - Link RELEASE_NOTES.md from README.md Links.
+      - Link RELEASE_NOTES.md from README.md Usage.
       - Use the exact level-one title and level-two entry formats shown.
       - Allow one Unreleased section before versioned entries.
       - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.

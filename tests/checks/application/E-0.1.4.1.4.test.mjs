@@ -6,7 +6,7 @@ test("E-0.1.4.1.4 accepts valid notes and a README link", async () => {
     readText: async (path) =>
       path.endsWith("RELEASE_NOTES.md")
         ? releaseNotes
-        : "## Links\n\n[Release notes](RELEASE_NOTES.md)",
+        : "## Usage\n\n[Release notes](RELEASE_NOTES.md)",
   };
   await expect(run({ root: "repo", repositoryInventory: inventory })).resolves.toEqual({
     ruleId,

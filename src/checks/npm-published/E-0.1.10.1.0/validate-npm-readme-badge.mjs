@@ -19,7 +19,7 @@ export function validateNpmReadmeBadge(readme, packageJson = {}) {
     `[![License](https://img.shields.io/github/license/${repoPath})](https://github.com/${repoPath}/blob/main/LICENSE)`,
     `[![CI](https://github.com/${repoPath}/actions/workflows/ci.yaml/badge.svg)](https://github.com/${repoPath}/actions/workflows/ci.yaml)`,
   ];
-  return readme.split(/\r?\n/u)[2] === `${name} ${badges.join(" ")}`
+  return readme.split(/\r?\n/u)[2] === `## ${name} ${badges.join(" ")}`
     ? null
     : "README.md must include the canonical npm, License, and CI badges.";
 }

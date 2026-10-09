@@ -14,10 +14,9 @@ export function validateReadmeStructure(readme, _expected, packageJson = {}) {
     (index, position) => position === 0 || index === headerIndexes[position - 1] + 2,
   );
   if (lines[0] !== brand) return "README.md must begin with the exact Eliware logo header.";
-  const title = (lines[headerIndexes[1]] ?? "").replace(
-    /(?:\s+\[!\[[^\]]+\]\([^)]+\)\]\([^)]+\))+$/u,
-    "",
-  );
+  const title = (lines[headerIndexes[1]] ?? "")
+    .replace(/(?:\s+\[!\[[^\]]+\]\([^)]+\)\]\([^)]+\))+$/u, "")
+    .replace(/^## /u, "");
   if (title !== packageJson?.name) return "README.md title must match package.json.name.";
   if (
     !headerOrderIsValid ||
@@ -27,7 +26,7 @@ export function validateReadmeStructure(readme, _expected, packageJson = {}) {
   )
     return "README.md must order its logo, title, description, and Table of Contents with blank lines.";
   const actual = markdownLines
-    .filter((line) => /^##\s+/u.test(line))
+    .filter((line, index) => index !== headerIndexes[1] && /^##\s+/u.test(line))
     .map((line) => line.slice(3).trim());
   const expectedGeneral = [
     order.tableOfContentsHeading,

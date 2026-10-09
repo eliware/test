@@ -7,7 +7,7 @@ const pkg = {
   eliware: { apply: ["npm-published"] },
 };
 const line =
-  "@eliware/fixture [![npm](https://img.shields.io/npm/v/@eliware/fixture)](https://www.npmjs.com/package/@eliware/fixture) [![License](https://img.shields.io/github/license/eliware/fixture)](https://github.com/eliware/fixture/blob/main/LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yaml)";
+  "## @eliware/fixture [![npm](https://img.shields.io/npm/v/@eliware/fixture)](https://www.npmjs.com/package/@eliware/fixture) [![License](https://img.shields.io/github/license/eliware/fixture)](https://github.com/eliware/fixture/blob/main/LICENSE) [![CI](https://github.com/eliware/fixture/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/fixture/actions/workflows/ci.yaml)";
 const header =
   "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
 const readme = `${header}\n\n${line}`;
@@ -34,6 +34,6 @@ test("supports object repository metadata without selecting publication profiles
     "",
   );
   expect(validateReadmeBranding(`${header}\n\n${plainRow}`, plain)).toBeNull();
-  expect(validateReadmeBranding(readme, plain)).toBeNull();
+  expect(validateReadmeBranding(readme, plain)).toContain("badge row");
   expect(validateReadmeBranding("", undefined)).toContain("package name");
 });

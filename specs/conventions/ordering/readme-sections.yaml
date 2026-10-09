@@ -86,6 +86,21 @@ orders:
     - Support
     - Links
     - License
+  linksSectionOrder:
+    - Home Page
+    - GitHub Org
+    - GitHub Repo
+    - Bug Reports
+    - npm
+    - Discord
+  headerTemplates:
+    brand: "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)"
+    title: "## @eliware/<repo-name>"
+    npmBadge: "[![npm](https://img.shields.io/npm/v/@eliware/<repo-name>)](https://www.npmjs.com/package/@eliware/<repo-name>)"
+    licenseBadge: "[![License](https://img.shields.io/github/license/eliware/<repo-name>)](https://github.com/eliware/<repo-name>/blob/main/LICENSE)"
+    ciBadge: "[![CI](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml/badge.svg)](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml)"
+  supportBlock: "For help, questions, or to chat with the author and community, visit:\n\n[![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9eTwN)[![eliware.org](https://eliware.org/logos/eliware_96.png)](https://discord.gg/M6aTR9eTwN)\n\n**[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**"
+  licenseLink: "[MIT © Eliware](LICENSE)"
   sharedSections:
     Commands:
       profiles:
