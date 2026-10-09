@@ -29,8 +29,14 @@ directives:
       - Include every declared runtime entrypoint, export, and declaration target.
       - Include tracked .env-prefixed example files whose names end in .example.
       - Allow additional runtime files and folders at any depth unless excluded.
-      - Exclude tests, test-fixtures, .github, .knit, .git, node_modules, coverage, dist, build, generated, artifacts, and test-results directories at every depth.
+      - Exclude tests, test, __tests__, and test-fixtures directories at every depth.
+      - Exclude .github, .knit, .git, and node_modules directories at every depth.
+      - Exclude coverage, dist, build, generated, artifacts, and test-results directories at every depth.
       - Exclude .gitignore and package-lock.json at every depth.
+      - Exclude .npmrc, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml, bun.lock, and bun.lockb at every depth.
+      - Exclude secret, secrets, credential, credentials, token, and tokens directories at every depth.
+      - Exclude non-source files named secret, secrets, credential, credentials, token, or tokens at every depth.
+      - Exclude files with .pem, .key, .p12, or .pfx extensions at every depth.
       - Exclude .env-prefixed files unless their names end in .example.
       - Validate actual packed contents against minimum contents and exclusions.
     donts:

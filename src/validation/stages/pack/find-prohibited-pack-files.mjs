@@ -13,6 +13,7 @@ const prohibitedNames = new Set([
   "generated",
   "artifacts",
   "test-results",
+  ".gitignore",
   "package-lock.json",
   "npm-shrinkwrap.json",
   "yarn.lock",
@@ -20,9 +21,6 @@ const prohibitedNames = new Set([
   "bun.lock",
   "bun.lockb",
   ".npmrc",
-  ".env",
-  ".env.local",
-  ".env.production",
 ]);
 
 export function findProhibitedPackFiles(paths = []) {
@@ -33,6 +31,7 @@ export function findProhibitedPackFiles(paths = []) {
       const fileName = segment.replace(/\.[^.]+$/u, "");
       const sourceFile = /\.(?:mjs|cjs|js|mts|cts|ts|tsx|jsx)$/u.test(segment);
       return (
+        (segment.startsWith(".env") && !segment.endsWith(".example")) ||
         (!sourceFile &&
           /^(?:secret|secrets|credential|credentials|token|tokens)$/u.test(fileName)) ||
         /(?:private[-_.]?key|credentials?)[.](?:pem|key|p12|pfx)$/u.test(segment) ||
