@@ -50,7 +50,7 @@ directives:
           - Do not silently omit executable selected checks or turn failures into warnings.
           - Do not report skipped, partial, unknown, or inapplicable work as passing.
           - Do not let exemptions suppress unrelated required work.
-          - Do not recursively invoke the consumer's aggregate test script.
+          - Do not invoke the consumer's aggregate test script during aggregate validation.
           - Do not add undeclared registry, release, deployment, or sync checks.
           - Do not invoke CodeScope from automatic validation.
 
@@ -248,7 +248,7 @@ directives:
           - Pack the harness.
           - Install that exact tarball with npm install --no-save --package-lock=false.
           - Verify installed resolution and version.
-          - Run the consumer's ordinary npm test only after verification.
+          - In smoke mode, run the consumer's npm test after tarball installation and verification.
           - Restore the prior manifest, lockfiles, installed harness directory, and its executable shims.
           - Snapshot only those exact files and the installed package directory.
           - Recreate captured Windows directory links as junctions.
