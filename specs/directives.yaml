@@ -40,8 +40,10 @@ directives:
         dos:
           - Run selected work in dependency order.
           - Run every enabled stage and convention check before Jest.
-          - Keep all failures and skip Jest if any earlier work fails.
-          - Report thrown checks as failures and continue other executable checks.
+          - Keep all failures.
+          - Skip Jest if any earlier work fails.
+          - Report thrown checks as failures.
+          - Continue other executable checks.
           - Keep each completed stage result for convention checks.
           - Derive aggregate stages from selected deterministic rules.
         donts:
@@ -62,7 +64,8 @@ directives:
           - Accept only --threads=<positive-count> as additional lint input.
           - Validate other mode arguments against documented mode-specific allowlists.
           - Preserve wrapper-selected formatting behavior, configuration, and required file coverage.
-          - Run audit in aggregate validation and expose --audit as an explicit audit-only mode.
+          - Run audit in aggregate validation.
+          - Expose --audit as an explicit audit-only mode.
         donts:
           - Do not require npm verification for informational commands.
           - Do not accept wrapper options after the -- separator.
@@ -78,7 +81,8 @@ directives:
       - id: E-0.0.3
         dos:
           - Accept focused test paths through the public CLI under test/ or tests/.
-          - Require repository-relative paths and reject absolute paths and parent traversal before resolution.
+          - Require repository-relative paths.
+          - Reject absolute paths and parent traversal before resolution.
           - Reject missing, ambiguous, unsupported, or escaping focused paths before unrelated execution.
           - Keep stage selection independent of path focus.
           - Limit focused discovery, coverage, and diagnostics to the requested scope.
@@ -116,13 +120,15 @@ directives:
           - Do not emit incidental logs or subprocess output during a clean normal run.
         examples:
           - "Aggregate validation passed."
-          - "Failures retain all diagnostics and return the highest applicable exit code."
+          - "Failures retain all diagnostics."
+          - "Failures return the highest applicable exit code."
 
       - id: E-0.0.5
         dos:
           - Discover working-tree files including untracked and ignored files within each check's declared scope.
           - Exclude .git, node_modules, coverage, dist, build, and test-results directories from ordinary repository discovery.
-          - Traverse iteratively and keep paths and resource use bounded.
+          - Traverse directories iteratively.
+          - Keep paths and resource use bounded.
           - Parse every document in generic YAML streams.
           - Inspect supported README links outside code spans and fenced blocks.
           - Support inline Markdown links and images.
@@ -151,7 +157,8 @@ directives:
           - Keep tests/**/*.test.mjs from launching real CLI tools or child processes.
           - Mock calls to Git, npm, audit, lint, format, pack, typecheck, build, Jest, and package scripts.
           - Invoke child processes with argument arrays, explicit working directories, and shell-disabled execution.
-          - Copy the complete invoking environment defensively and apply only documented overrides.
+          - Copy the complete invoking environment defensively.
+          - Apply only documented overrides.
           - Resolve executables through supported package resolution.
           - Bound captured stdout and stderr under an aggregate budget.
           - Preserve UTF-8 boundaries, surrogate pairs, and complete redaction markers.
@@ -188,14 +195,16 @@ directives:
           - Do not reset suite deadlines on output.
           - Do not require debug timing for watchdog enforcement.
           - Do not run each test separately to collect timing.
-          - Do not buffer all timing until completion or expose raw timing payloads.
+          - Do not buffer all timing until completion.
+          - Do not expose raw timing payloads.
           - Do not interpret quotes or backslashes in NODE_OPTIONS or accept path-valued flags.
 
       - id: E-0.0.8
         dos:
           - Remove documented prior coverage candidates before tests.
           - Read current-run coverage candidates in fixed precedence order.
-          - Continue past stale or unusable candidates and fail when none remain usable.
+          - Continue past stale or unusable candidates.
+          - Fail when none remain usable.
           - Validate maps and counters against source-derived Istanbul instrumentation.
           - Accept empty maps only when the matching instrumentation shape is empty.
           - Count positively executed entries as covered without weighting execution frequency.
@@ -236,15 +245,19 @@ directives:
           - Support smoke from the source checkout or installed harness directory.
           - Resolve source and target before changes.
           - Require an existing consumer with dependencies installed.
-          - Pack the harness and install that exact tarball with npm install --no-save --package-lock=false.
-          - Verify installed resolution and version before running the consumer's ordinary npm test.
+          - Pack the harness.
+          - Install that exact tarball with npm install --no-save --package-lock=false.
+          - Verify installed resolution and version.
+          - Run the consumer's ordinary npm test only after verification.
           - Restore the prior manifest, lockfiles, installed harness directory, and its executable shims.
           - Snapshot only those exact files and the installed package directory.
           - Recreate captured Windows directory links as junctions.
           - Reject captured Windows file symlinks before mutation.
-          - Report cleanup failures and keep exact recovery paths when restore fails.
+          - Report cleanup failures.
+          - Keep exact recovery paths when restore fails.
         donts:
-          - Do not install tarballs or run consumer suites during --pack.
+          - Do not install tarballs during --pack.
+          - Do not run consumer suites during --pack.
           - Do not accept targets resolving inside the source checkout.
           - Do not rewrite dependency declarations or regenerate consumer lockfiles.
           - Do not snapshot ancestor directories such as node_modules/.bin or node_modules/@eliware.
@@ -256,7 +269,8 @@ directives:
 
       - id: E-0.0.11
         dos:
-          - Use package.json.eliware.apply to classify each repository and select its enabled profiles.
+          - Use package.json.eliware.apply to classify each repository.
+          - Use package.json.eliware.apply to select enabled profiles.
           - Require general for every repository, including repositories that select no other profile.
           - Allow a repository to select general alone.
           - Treat application, library, documentation, workspace, and infrastructure as mutually exclusive repository types.
@@ -276,7 +290,8 @@ directives:
           - Keep each profile's rules unique from general and every profile that can apply with it.
           - Keep child-profile rules unique from general and their required parent profiles.
           - Allow equivalent rules in mutually exclusive profile branches when each branch needs them.
-          - Put profile-specific rules and checks in that profile and enable them only when selected.
+          - Put profile-specific rules and checks in that profile.
+          - Enable profile-specific rules and checks only when selected.
           - Put combination-dependent rules and checks in a separate shared composition layer.
           - Keep the shared composition layer separate from profile checks and shared utility helpers.
           - Run shared composition checks only when their declared profile combination applies.

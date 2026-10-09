@@ -18,7 +18,8 @@ directives:
       - Make --help return nonempty output and exit code 0.
       - Make --version report package.json.version and exit code 0.
     donts:
-      - Do not report a different version or omit informational options.
+      - Do not report a different version.
+      - Do not omit informational options.
     examples:
       - "## CLI"
       - "## Commands\n\n## Exit codes"

@@ -16,7 +16,9 @@ directives:
     dos:
       - Add a Library section to AGENTS.md.
       - Add API, Packaging, and Examples sections to README.md.
-      - Keep docs/README.md and examples/README.md and link both from root README.md.
+      - Keep docs/README.md.
+      - Keep examples/README.md.
+      - Link both indexes from root README.md.
       - Index every Markdown document beneath docs/ except its index.
       - Keep and index at least one native-ESM .mjs or .js example under examples/.
     donts:
@@ -31,10 +33,13 @@ directives:
       - Require package.json.main to target an existing runtime module under src/.
       - Keep declaration metadata under src/ when present.
       - Place each .d.ts declaration beside its same-basename .mjs implementation.
-      - Define typecheck as one command invoking a directly declared typechecker and run it during aggregate validation.
+      - Define typecheck as one command that invokes a directly declared typechecker.
+      - Run typecheck during aggregate validation.
       - Allow pure export barrels only as the primary public entrypoint or index.
     donts:
-      - Do not chain or redirect typecheck or add internal convenience barrels.
+      - Do not chain typecheck.
+      - Do not redirect typecheck.
+      - Do not add internal convenience barrels.
     examples:
       - '{"main":"./src/index.mjs","exports":"./src/index.mjs","types":"./src/index.d.ts"}'
 
@@ -64,19 +69,23 @@ directives:
       - Keep successful test runs free of console and process output.
     donts:
       - Do not directly invoke Jest, import its runner, or directly declare Jest packages.
-      - Do not substitute other runners or coverage engines or add separate Jest configuration.
+      - Do not substitute other test runners.
+      - Do not substitute other coverage engines.
+      - Do not add separate Jest configuration.
       - Do not ignore coverage in other production modules.
     examples:
       - '{"testEnvironment":"node","testMatch":["**/tests/**/*.test.mjs"],"collectCoverageFrom":["src/**/*.mjs"],"coverageReporters":["text","json-summary"],"coverageThreshold":{"global":{"branches":100,"functions":100,"lines":100,"statements":100}}}'
 
   - id: E-0.1.3.1.4
     dos:
-      - Keep RELEASE_NOTES.md and link it from README.md Links.
+      - Keep RELEASE_NOTES.md.
+      - Link RELEASE_NOTES.md from README.md Links.
       - Use the exact level-one title and level-two entry formats shown.
       - Allow one Unreleased section before versioned entries.
       - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.
       - Give every entry nonempty level-three subsections from Added, Changed, Fixed, Breaking changes, Migration, or Security.
     donts:
-      - Do not duplicate versions or use malformed, empty, unsupported, or out-of-order sections.
+      - Do not duplicate versions.
+      - Do not use malformed, empty, unsupported, or out-of-order sections.
     examples:
       - "# Release Notes\n\n## Unreleased\n\n### Changed\n\nPending change.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."

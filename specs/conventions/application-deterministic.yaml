@@ -12,7 +12,8 @@ directives:
     dos:
       - Add an Application section to AGENTS.md.
       - Add Configuration and Operations sections to README.md.
-      - Keep docs/README.md and link it from root README.md.
+      - Keep docs/README.md.
+      - Link docs/README.md from root README.md.
       - Index every Markdown document beneath docs/ except its index.
       - When examples/ contains .mjs or .js examples, maintain examples/README.md linking every example.
       - Keep implementation modules under src/, launchers under bin/, tests under tests/, fixtures under test-fixtures/, and examples under examples/.
@@ -65,19 +66,23 @@ directives:
       - Keep successful test runs free of console and process output.
     donts:
       - Do not directly invoke Jest, import its runner, or directly declare Jest packages.
-      - Do not substitute other runners or coverage engines or add separate Jest configuration.
+      - Do not substitute other test runners.
+      - Do not substitute other coverage engines.
+      - Do not add separate Jest configuration.
       - Do not use production coverage exclusions or Istanbul ignore directives.
     examples:
       - '{"testEnvironment":"node","testMatch":["**/tests/**/*.test.mjs"],"collectCoverageFrom":["src/**/*.mjs"],"coverageReporters":["text","json-summary"],"coverageThreshold":{"global":{"branches":100,"functions":100,"lines":100,"statements":100}}}'
 
   - id: E-0.1.4.1.4
     dos:
-      - Keep RELEASE_NOTES.md and link it from README.md Links.
+      - Keep RELEASE_NOTES.md.
+      - Link RELEASE_NOTES.md from README.md Links.
       - Use the exact level-one title and level-two entry formats shown.
       - Allow one Unreleased section before versioned entries.
       - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.
       - Give every entry nonempty level-three subsections from Added, Changed, Fixed, Breaking changes, Migration, or Security.
     donts:
-      - Do not duplicate versions or use malformed, empty, unsupported, or out-of-order sections.
+      - Do not duplicate versions.
+      - Do not use malformed, empty, unsupported, or out-of-order sections.
     examples:
       - "# Release Notes\n\n## Unreleased\n\n### Changed\n\nPending change.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."

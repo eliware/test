@@ -17,4 +17,5 @@ directives:
       - Explain localized message meaning accurately for each supported locale.
     donts:
       - Do not expose bot credentials or imply unavailable permissions.
-      - Do not provide instructions that unintentionally connect or expose a live bot.
+      - Do not provide instructions that unintentionally connect a live bot.
+      - Do not provide instructions that unintentionally expose a live bot.

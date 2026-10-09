@@ -11,7 +11,8 @@ directives:
       - '{"id":"E-38","apply":["general"],"exempt":[]}'
     donts:
       - Do not add unknown eliware keys.
-      - Do not accept expired or malformed exemptions or use AGENTS.md as exemption metadata.
+      - Do not accept expired or malformed exemptions.
+      - Do not use AGENTS.md as exemption metadata.
 
   - id: E-0.1.0.1.1
     dos:
@@ -67,7 +68,8 @@ directives:
       - Make local Markdown fragments resolve to headings or explicit HTML IDs.
       - Give HTTP and HTTPS links hostnames without embedded credentials and mailto links email addresses.
       - Use full HTTPS GitHub URLs for cross-repository links.
-      - Keep specs/directives.yaml and validate directive documents against the v12 schema.
+      - Keep specs/directives.yaml.
+      - Validate directive documents against the v12 schema.
       - Give every specs directory one navigation-only README.md linking its direct YAML files and immediate subdirectory indexes.
       - Allow only YAML documents, README.md indexes, and conforming subdirectories under specs/.
       - Use unique E-rule IDs within the assigned repository namespace.
@@ -85,7 +87,8 @@ directives:
       - Give additional scripts nonempty commands.
       - Pass lint with zero errors and warnings.
       - Keep .mjs, .json, .yml, .yaml, and .md files valid and formatted as shown.
-      - Define package.json.prettier exactly as shown and use it as the sole formatting configuration.
+      - Define package.json.prettier exactly as shown.
+      - Use package.json.prettier as the sole formatting configuration.
     donts:
       - Do not replace shared scripts with partial validation.
       - For consumer repositories, do not directly declare or import Oxlint or Prettier or invoke them in validation commands.
@@ -101,7 +104,8 @@ directives:
     dos:
       - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
       - Define every commands field as an array of strings beginning with the exact command prefix shown.
-      - Keep secondary Knit scripts under .knit/ and use the .mjs extension.
+      - Keep secondary Knit scripts under .knit/.
+      - Use the .mjs extension for secondary Knit scripts.
     donts:
       - Do not omit or reorder the required prefix.
       - Do not include npm publication or explicit GHCR image-publication commands.
@@ -116,12 +120,15 @@ directives:
       - Set repository-and-ref concurrency with cancel-in-progress true.
       - Set workflow and validation-job permissions to contents read only.
       - Run validation unconditionally on Ubuntu using checkout major v6 and setup-node major v7 with Node.js 26.
-      - Install npm latest and run one standalone npm ci step and one standalone npm test step.
+      - Install npm latest.
+      - Run one standalone npm ci step.
+      - Run one standalone npm test step.
       - Before npm ci, permit only approved setup actions, npm latest installation, and literal safe echo or printf reporting.
       - Keep required install and test steps free of environment, shell, and working-directory overrides.
     donts:
       - Do not add other workflow files or duplicate aggregate stages in CI.
-      - Do not use conditional validation or continue-on-error.
+      - Do not use conditional validation.
+      - Do not use continue-on-error.
       - Do not override checkout repository or ref.
       - Do not use pre-install reporting with expansion, redirects, control operators, backslashes, or embedded line breaks.
       - Do not include publication commands or permissions in validation jobs.

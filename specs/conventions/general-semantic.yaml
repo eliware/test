@@ -22,7 +22,8 @@ directives:
       - Keep repository specifications focused on committed contents and repository validation.
       - Define security and change-authorization boundaries clearly.
     donts:
-      - Do not maintain competing normative copies or use local instructions to weaken shared requirements.
+      - Do not maintain competing normative copies.
+      - Do not use local instructions to weaken shared requirements.
       - Do not turn AGENTS.md into a second README, implementation specification, or release history.
       - Do not present validation success as authorization to release or deploy.
 

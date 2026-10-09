@@ -23,10 +23,12 @@ directives:
 
   - id: E-0.1.4.0.1
     dos:
-      - Validate configuration before opening connections and make shutdown repeatable.
+      - Validate configuration before opening connections.
+      - Make shutdown repeatable.
       - Test public inputs and observable results of supported workflows.
       - Keep unit assertions with the lowest owning module and coordinator tests focused on integration.
-      - Inject replaceable dependencies and keep launchers thin.
+      - Inject replaceable dependencies.
+      - Keep launchers thin.
       - Remove superseded compatibility branches, aliases, and fallbacks.
       - Use mapped shared packages for substantial production concerns.
       - Assert intended output behavior in tests.
@@ -46,4 +48,5 @@ directives:
       - Include applicable breaking changes, migration guidance, and security information.
       - Represent pending user-visible changes under Unreleased.
     donts:
-      - Do not omit user-impacting changes or use release notes as a second specification.
+      - Do not omit user-impacting changes.
+      - Do not use release notes as a second specification.

@@ -26,7 +26,8 @@ directives:
 
   - id: E-0.1.11.1.1
     dos:
-      - Keep root Dockerfile and declare root build context.
+      - Keep the Dockerfile at the repository root.
+      - Declare the repository root as the build context.
       - Set one image name ghcr.io/eliware/<unscoped-package-name>.
       - Set the exact v-prefixed package version tag.
       - Make additional tags use that same image name.
@@ -53,7 +54,8 @@ directives:
     donts:
       - Do not reference missing steps, unrelated digests, or mutable attestation subjects.
       - Do not use control operators or command substitution in the summary command except its required append redirection.
-      - Do not declare bypass conditions or continue-on-error on required verification steps.
+      - Do not declare bypass conditions on required verification steps.
+      - Do not use continue-on-error on required verification steps.
     examples:
       - "uses: actions/attest@v4\nwith:\n  subject-name: ghcr.io/eliware/example\n  subject-digest: ${{ steps.push.outputs.digest }}\n  push-to-registry: true"
       - 'echo "${{ steps.push.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"'

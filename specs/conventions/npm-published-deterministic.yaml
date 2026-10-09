@@ -13,7 +13,8 @@ directives:
       - Set private false and publishConfig.provenance true.
       - Add an npm publication section to AGENTS.md.
       - Include the canonical npm badge beside the README title and a public package link.
-      - For consumer repositories, define pack as eliware-test --pack and run package validation during aggregate validation.
+      - For consumer repositories, define pack as eliware-test --pack.
+      - Run package validation during aggregate validation.
     donts:
       - Do not replace required package validation with script presence.
     examples:

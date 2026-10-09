@@ -45,7 +45,8 @@ directives:
       - Use a default function export in each command and event handler.
     donts:
       - Do not omit a command definition or its matching adapter or handler.
-      - Do not omit a locale record or add an unsupported locale record.
+      - Do not omit a locale record.
+      - Do not add an unsupported locale record.
       - Do not add locale keys that are absent from locales/en-US.json.
       - Do not require optional Discord event adapters.
       - Do not import or execute repository handlers during validation.

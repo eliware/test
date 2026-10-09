@@ -15,4 +15,5 @@ directives:
       - Keep published environment examples complete and populated only with placeholders.
       - Describe explicit release-authorization boundaries without granting publication authority through repository instructions.
     donts:
-      - Do not omit runtime assets or publish sensitive content.
+      - Do not omit runtime assets.
+      - Do not publish sensitive content.

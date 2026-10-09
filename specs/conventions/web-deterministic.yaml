@@ -32,7 +32,8 @@ directives:
 
   - id: E-0.1.6.1.2
     dos:
-      - Define build as one command invoking a directly declared build tool and run it during aggregate validation.
+      - Define build as one command that invokes a directly declared build tool.
+      - Run build during aggregate validation.
       - Set lighthouse and puppeteer as direct dependencies.
       - Define nonempty lighthouse and puppeteer scripts.
     donts:
