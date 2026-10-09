@@ -12,8 +12,8 @@ directives:
   - id: E-0.1.8.0.0
     dos:
       - Document tools, resources, prompts, transports, authentication, schemas, and protocol behavior accurately.
-      - Explain network exposure, access boundaries, lifecycle, and protocol validation.
-      - State unsupported capabilities and provide safe startup and shutdown examples.
+      - Explain network exposure, access boundaries, and protocol validation.
+      - State unsupported capabilities.
       - Explain each tool's purpose, input schema, response, and side effects accurately.
       - Explain the behavior of each supported resource, prompt, and transport accurately.
     donts:

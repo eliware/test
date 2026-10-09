@@ -11,7 +11,7 @@ conflicts:
 directives:
   - id: E-0.1.5.0.0
     dos:
-      - Document installation, entrypoints, commands, options, positional arguments, defaults, forwarding, errors, and exit meanings accurately.
+      - Document installation, commands, options, positional arguments, defaults, forwarding, errors, and exit meanings accurately.
       - Provide useful help and safe copyable examples.
       - Distinguish supported platforms, direct testing, and inferred compatibility.
       - Explain destructive-action scope and provide confirmation, dry-run, or equivalent safeguards.
