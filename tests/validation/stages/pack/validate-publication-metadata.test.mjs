@@ -4,7 +4,16 @@ import { validatePublicationMetadata } from "../../../../src/validation/stages/p
 const validPackage = {
   engines: { node: ">=26 <27" },
   publishConfig: { provenance: true },
-  files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "bin/"],
+  files: [
+    "src/",
+    "docs/",
+    "README.md",
+    "AGENTS.md",
+    "LICENSE",
+    "RELEASE_NOTES.md",
+    "bin/",
+    "specs/",
+  ],
   scripts: { pack: "eliware-test --pack" },
   eliware: { apply: ["application", "npm-published"] },
 };
@@ -24,7 +33,6 @@ test("allows the self-hosted pack script only when requested", () => {
   const selfHostedPackage = {
     ...validPackage,
     name: "@eliware/test",
-    files: [...validPackage.files, "specs/"],
     eliware: { apply: ["application", "cli", "npm-published"] },
     scripts: { pack: "node bin/eliware-test.mjs --pack" },
   };
@@ -39,7 +47,7 @@ test.each([
   { publishConfig: {} },
   { files: undefined },
   { files: ["README.md"] },
-  { files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "specs/"] },
+  { files: ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "bin/"] },
   { files: ["src/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md", "docs/"] },
   { files: ["README.md", "LICENSE", "RELEASE_NOTES.md"] },
   { scripts: {} },
@@ -60,6 +68,12 @@ test("allows runtime entries after the required profile entries", () => {
       files: [...cliPackage.files, "assets/", "data.json"],
     }),
   ).toBeNull();
+  expect(
+    validatePublicationMetadata({
+      ...cliPackage,
+      files: cliPackage.files.filter((entry) => entry !== "specs/"),
+    }),
+  ).toContain("must start with required entries in this order");
 });
 
 test("rejects duplicate and misordered required entries", () => {
@@ -103,6 +117,7 @@ test("limits environment examples to runtime environment profiles", () => {
       "AGENTS.md",
       "LICENSE",
       "RELEASE_NOTES.md",
+      "specs/",
       ".env.example",
     ],
     eliware: { apply: ["general", "npm-published"] },

@@ -11,12 +11,11 @@ orders:
   profileEntries:
     application: bin/
     library: examples/
+    npm-published: specs/
   profileEntryOrder:
     - application
     - library
-  packageEntries:
-    "@eliware/test":
-      - specs/
+    - npm-published
   finalOptionalEntries:
     - .env.example
   environmentExampleProfiles:

@@ -24,7 +24,7 @@ directives:
     dos:
       - Define files as distinct nonempty safe repository-relative paths.
       - Include the base entries listed in ordering/package-files.yaml.
-      - Include specs/ for @eliware/test.
+      - Include specs/ for every npm-published repository.
       - Include package.json, README.md, AGENTS.md, LICENSE, and specs/ in the tarball.
       - Include every declared runtime entrypoint, export, and declaration target.
       - Include tracked .env-prefixed example files whose names end in .example.

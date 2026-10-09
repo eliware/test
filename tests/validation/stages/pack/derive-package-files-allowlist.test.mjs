@@ -14,10 +14,19 @@ test("derives common package contents and profile additions", () => {
     ...base,
     "examples/",
   ]);
+  expect(derivePackageFilesAllowlist({ eliware: { apply: ["general", "npm-published"] } })).toEqual(
+    [...base, "specs/"],
+  );
+  expect(
+    derivePackageFilesAllowlist({ eliware: { apply: ["application", "npm-published"] } }),
+  ).toEqual([...base, "bin/", "specs/"]);
+  expect(derivePackageFilesAllowlist({ eliware: { apply: ["library", "npm-published"] } })).toEqual(
+    [...base, "examples/", "specs/"],
+  );
   expect(
     derivePackageFilesAllowlist({
       name: "@eliware/test",
-      eliware: { apply: ["application", "cli"] },
+      eliware: { apply: ["application", "cli", "npm-published"] },
     }),
   ).toEqual([...base, "bin/", "specs/"]);
 });

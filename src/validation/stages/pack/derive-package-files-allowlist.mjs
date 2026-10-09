@@ -9,7 +9,6 @@ export function derivePackageFilesAllowlist(packageJson) {
       entries.push(order.profileEntries[profile]);
     }
   }
-  entries.push(...(order.packageEntries[packageJson?.name] ?? []));
   if (packageJson?.files?.includes(".env.example")) entries.push(".env.example");
   return entries;
 }

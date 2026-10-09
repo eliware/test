@@ -41,7 +41,6 @@ test("rejects invalid package publication metadata before smoke setup", () => {
       packageJson: {
         ...packageJson,
         name: undefined,
-        files: packageJson.files.filter((path) => path !== "specs/"),
         eliware: { apply: ["application", "cli", "npm-published"] },
         scripts: { pack: "eliware-test --pack" },
       },
