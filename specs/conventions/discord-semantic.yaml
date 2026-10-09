@@ -14,8 +14,8 @@ directives:
       - Document commands, events, intents, permissions, runtime settings, and lifecycle accurately.
       - Request only permissions and intents needed by supported behavior.
       - Explain safe startup, shutdown, deployment boundaries, and effects on users and servers.
-      - Define the command handler, event handler, and locale contracts in indexed repository specifications.
-      - Apply each contract consistently to every matching command handler, event handler, and locale record.
+      - Describe the purpose and user-visible effects of each command and event accurately.
+      - Explain localized message meaning accurately for each supported locale.
     donts:
       - Do not expose bot credentials or imply unavailable permissions.
       - Do not provide instructions that unintentionally connect or expose a live bot.

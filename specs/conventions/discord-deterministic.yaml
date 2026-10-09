@@ -26,3 +26,31 @@ directives:
     examples:
       - "## Discord"
       - "## Events\n\n## Intents and permissions"
+
+  - id: E-0.1.7.1.2
+    dos:
+      - Put each command definition in commands/<name>.json.
+      - Put each command adapter in commands/<name>.mjs.
+      - Put each command handler in src/commands/<name>.mjs.
+      - Use a type 1 command definition with valid names and descriptions.
+      - Define localized command names and descriptions for every supported locale.
+      - Use the supported locale list in this directive for locale records and command localization.
+      - Put each locale record in locales/<locale>.json.
+      - Include every supported locale listed below.
+      - Keep each locale record's keys equal to locales/en-US.json keys.
+      - Put each event adapter in events/<name>.mjs.
+      - Put each event handler in src/events/<name>.mjs.
+      - Include clientReady.mjs and interactionCreate.mjs event adapters and handlers.
+      - Make each root command and event adapter re-export its matching default handler.
+      - Use a default function export in each command and event handler.
+    donts:
+      - Do not omit a command definition or its matching adapter or handler.
+      - Do not omit a locale record or add an unsupported locale record.
+      - Do not add locale keys that are absent from locales/en-US.json.
+      - Do not require optional Discord event adapters.
+      - Do not import or execute repository handlers during validation.
+    examples:
+      - "commands/help.json and commands/help.mjs match src/commands/help.mjs."
+      - "events/clientReady.mjs and events/interactionCreate.mjs are required."
+      - "locales/en-US.json and every supported locale use the same keys."
+      - "Supported locale IDs: bg, cs, da, de, el, en-GB, en-US, es-419, es-ES, fi, fr, hi, hr, hu, id, it, ja, ko, lt, nl, no, pl, pt-BR, ro, ru, sv-SE, th, tr, uk, vi, zh-CN, zh-TW."
