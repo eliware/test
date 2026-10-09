@@ -8,10 +8,6 @@ function entry(name, directory = true) {
 
 test("accepts public assets and rejects custom web asset metadata", async () => {
   const repositoryInventory = {
-    readText: async (path) =>
-      path === "AGENTS.md"
-        ? "## Web"
-        : "## Routes\n## Assets\n## Development server\n## Build\n## Deployment",
     directoryEntries: jest.fn(async (path) =>
       path === resolve("C:/repo/public") ? [entry("images"), entry("logo.svg", false)] : [],
     ),
@@ -44,10 +40,6 @@ test("accepts public assets and rejects custom web asset metadata", async () => 
 
 test("rejects excluded directories at every depth", async () => {
   const repositoryInventory = {
-    readText: async (path) =>
-      path === "AGENTS.md"
-        ? "## Web"
-        : "## Routes\n## Assets\n## Development server\n## Build\n## Deployment",
     directoryEntries: jest.fn(async (path) => {
       if (path === resolve("/repo/public")) return [entry("images"), entry("dist")];
       if (path === resolve("/repo/public/images")) return [entry(".git")];
@@ -66,10 +58,6 @@ test("rejects excluded directories at every depth", async () => {
 test("requires the public directory", async () => {
   await expect(run()).resolves.toMatchObject({ status: "fail" });
   const repositoryInventory = {
-    readText: async (path) =>
-      path === "AGENTS.md"
-        ? "## Web"
-        : "## Routes\n## Assets\n## Development server\n## Build\n## Deployment",
     directoryEntries: jest.fn().mockRejectedValue(new Error("missing")),
   };
   await expect(run({ root: "/repo", repositoryInventory })).resolves.toMatchObject({

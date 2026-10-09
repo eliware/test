@@ -2,13 +2,11 @@ import { join } from "node:path";
 import { fail, pass } from "../check-result.mjs";
 import { collectWebAssetDirectories } from "./E-0.1.6.1.1/collect-web-asset-directories.mjs";
 import { validateWebAssetMetadata } from "./E-0.1.6.1.1/validate-web-asset-metadata.mjs";
-import { validateProfileDocumentation } from "../shared/validate-profile-documentation.mjs";
 
 export const ruleId = "E-0.1.6.1.1";
 
 export async function run(context = {}, dependencies = {}) {
   const errors = validateWebAssetMetadata(context.packageJson);
-  errors.push(...(await validateProfileDocumentation("web", context.repositoryInventory)));
   try {
     const directories = await collectWebAssetDirectories(
       join(context.root ?? process.cwd(), "public"),
