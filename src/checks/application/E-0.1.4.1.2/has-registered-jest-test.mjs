@@ -85,6 +85,7 @@ function isCallback(node, callbackNames, blockedCallbacks) {
   );
 }
 
+// codescope ignore this because callbackNames has function-valued bindings, and identifiers alone do not register tests.
 function isDescribeCall(call, describeNames, callbackNames) {
   const callback = call.arguments[1];
   return (

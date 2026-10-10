@@ -102,6 +102,13 @@ test("rejects comments, strings, and table declarations without callbacks", () =
     expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
       false,
     );
+  expect(
+    inspectJestTestModule(
+      'const suite = 1; describe("suite", suite);',
+      "tests/a.test.mjs",
+      "src/a.mjs",
+    ).hasExecutableTest,
+  ).toBe(false);
 });
 
 test("rejects invalid JavaScript", () => {
