@@ -75,11 +75,11 @@ test("rejects a mismatched installed version", async () => {
   await expect(
     installSmokeCandidate(
       options(targetRoot, async () => {
-        await installMock(targetRoot, "10.0.0");
+        await installMock(targetRoot, "12.0.1");
         return { code: 0 };
       }),
     ),
-  ).rejects.toThrow("Installed package version 10.0.0 does not match 11.0.0");
+  ).rejects.toThrow("Installed package version 12.0.1 does not match 12.0.0");
 });
 
 test("reports consumer test failures", async () => {

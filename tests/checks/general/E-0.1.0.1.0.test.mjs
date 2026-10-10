@@ -98,7 +98,7 @@ test("reports mismatched paired convention metadata", async () => {
     await writeFile(join(directory, "general-semantic.yaml"), "version: '12.0'\nrequires: []\n");
     await writeFile(
       join(directory, "general-deterministic.yaml"),
-      "version: '11.0'\nrequires: [application]\n",
+      "version: '12.1'\nrequires: [application]\n",
     );
     const result = await run({ root, packageJson });
     expect(result.status).toBe("fail");

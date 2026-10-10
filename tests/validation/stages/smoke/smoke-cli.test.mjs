@@ -18,7 +18,7 @@ test("validates the target argument and calls smoke with source package metadata
   root = await mkdtemp(join(tmpdir(), "eliware-smoke-cli-"));
   await writeFile(join(root, "package.json"), JSON.stringify({ name: "@eliware/test" }));
   const write = jest.fn();
-  const smoke = jest.fn(async () => "Smoke passed: @eliware/test@11.0.0");
+  const smoke = jest.fn(async () => "Smoke passed: @eliware/test@12.0.0");
   await expect(runSmokeCli({ args: ["--target", "consumer"], root, write, smoke })).resolves.toBe(
     0,
   );

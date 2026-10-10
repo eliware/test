@@ -24,7 +24,7 @@ test("reports paired version, prerequisite, and conflict mismatches", async () =
     );
     await writeFile(
       join(directory, "general-deterministic.yaml"),
-      "version: '11.0'\nrequires: [application]\nconflicts: [private]\n",
+      "version: '12.1'\nrequires: [application]\nconflicts: [private]\n",
     );
     expect(await validateProfileDocumentPairs(root)).toEqual([
       "general semantic and deterministic documents must use the same version.",

@@ -75,7 +75,7 @@ test.each([
 
 test.each([
   [
-    (stdout) => stdout.replace('"version":"11.0.0"', '"version":"10.0.0"'),
+    (stdout) => stdout.replace('"version":"12.0.0"', '"version":"12.0.1"'),
     "version does not match",
   ],
   [

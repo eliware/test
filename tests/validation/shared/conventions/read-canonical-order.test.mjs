@@ -27,7 +27,7 @@ test("rejects paths outside the ordering specification names", () => {
 
 test("rejects an ordering document with the wrong version", () => {
   expect(() =>
-    readCanonicalOrder("invalid.yaml", () => "version: '11.0'\norders: { fields: [a] }"),
+    readCanonicalOrder("invalid.yaml", () => "version: '12.1'\norders: { fields: [a] }"),
   ).toThrow("Invalid canonical ordering specification: invalid.yaml.");
 });
 

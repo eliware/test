@@ -59,7 +59,7 @@ test.each([
     "image tags",
   ],
   [
-    (flow) => (flow.jobs.publish.steps[1].with.tags = ["ghcr.io/eliware/example:v11.0.0"]),
+    (flow) => (flow.jobs.publish.steps[1].with.tags = ["ghcr.io/eliware/example:v13.0.0"]),
     "image tags",
   ],
   [

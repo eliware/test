@@ -42,7 +42,7 @@ test("packs, installs, tests, and restores the existing consumer package", async
   const { fixture, calls, run } = await createFakeSmokeTarget(roots);
   execute.mockImplementation(run);
   const result = await runSmoke(fixture, { run: undefined });
-  expect(result).toContain("@eliware/test@11.0.0");
+  expect(result).toContain("@eliware/test@12.0.0");
   expect(
     calls.map(({ args }) => args.find((arg) => ["pack", "install", "test"].includes(arg))),
   ).toEqual(["pack", "install", "test"]);
@@ -50,10 +50,10 @@ test("packs, installs, tests, and restores the existing consumer package", async
     expect.arrayContaining(["--ignore-scripts", "--no-save", "--package-lock=false"]),
   );
   await expect(readFile(join(fixture.target, "package.json"), "utf8")).resolves.toContain(
-    '"@eliware/test":"10.0.0"',
+    '"@eliware/test":"12.0.0"',
   );
   await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
-    '"version":"10.0.0"',
+    '"version":"12.0.0"',
   );
 });
 test("preserves consumer-created sibling files in package installation ancestor directories", async () => {
@@ -92,7 +92,7 @@ test("restores the prior installation when the consumer test fails", async () =>
   const { fixture, run } = await createFakeSmokeTarget(roots, { testCode: 1 });
   await expect(runSmoke(fixture, { run })).resolves.toContain("Consumer npm test failed");
   await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
-    '"version":"10.0.0"',
+    '"version":"12.0.0"',
   );
 });
 test("validates the smoke request before capturing consumer state", async () => {
@@ -159,7 +159,7 @@ test("requires the target test script and an eliware-test dependency", async () 
   const fixture = await createSmokeTarget(roots);
   await writeFile(
     join(fixture.target, "package.json"),
-    JSON.stringify({ devDependencies: { "@eliware/test": "10" } }),
+    JSON.stringify({ devDependencies: { "@eliware/test": "12" } }),
   );
   await expect(runSmoke(fixture)).resolves.toContain("npm test script");
   await writeFile(
@@ -174,7 +174,7 @@ test.each(smokeFailureCases)(
     const { fixture, run } = await createFakeSmokeTarget(roots, config);
     await expect(runSmoke(fixture, { run })).resolves.toContain(text);
     await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
-      '"version":"10.0.0"',
+      '"version":"12.0.0"',
     );
   },
 );

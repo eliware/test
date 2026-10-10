@@ -7,7 +7,7 @@
     "test": "node verify-installed.mjs"
   },
   "devDependencies": {
-    "@eliware/test": "10.0.0"
+    "@eliware/test": "12.0.0"
   },
   "eliware": {
     "id": "E-0.1",
