@@ -28,6 +28,7 @@ export function createValidationContext(root, packageJson, options = {}) {
     jestArgs: options.jestArgs ?? [],
     toolArgs: options.toolArgs ?? [],
     timing: options.timing,
+    validationSummary: options.validationSummary ?? {},
     writeOutput: options.writeOutput,
     repositoryInventory,
     parseAst: options.parseAst ?? repositoryInventory.parseAst,

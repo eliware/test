@@ -24,6 +24,7 @@ test("creates the complete execution context from validation options", () => {
         toolArgs: ["--watch"],
         timing,
         writeOutput,
+        validationSummary: {},
       },
     ),
   ).toEqual({
@@ -48,6 +49,7 @@ test("creates the complete execution context from validation options", () => {
     toolArgs: ["--watch"],
     timing,
     writeOutput,
+    validationSummary: {},
   });
 });
 
@@ -74,6 +76,7 @@ test("creates default options without enabling stages", () => {
     toolArgs: [],
     timing: undefined,
     writeOutput: undefined,
+    validationSummary: {},
   });
 });
 
@@ -105,6 +108,7 @@ test("preserves a shared AST parser and optional run scope data", () => {
     toolArgs: [],
     timing: undefined,
     writeOutput: undefined,
+    validationSummary: {},
     repositoryInventory: expect.objectContaining({ files: expect.any(Function) }),
     parseAst,
     repositoryFiles,

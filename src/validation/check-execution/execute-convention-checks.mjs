@@ -4,6 +4,8 @@ import { runValidationStages } from "../stages/run-validation-stages.mjs";
 
 export async function executeConventionChecks(checks, context, exemptions) {
   const selected = filterConventionChecksForExecution(checks, context, exemptions);
+  context.validationSummary ??= {};
+  context.validationSummary.conventionCheckCount = selected.length;
   const stageFailures = await runValidationStages(
     context,
     ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"],

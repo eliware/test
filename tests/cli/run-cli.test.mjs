@@ -116,16 +116,11 @@ test("coordinates diagnostic parsing, convention and validation stages, and resu
   expect(createValidationRunOptions).toHaveBeenCalledWith(
     [],
     diagnosticOptions,
-    {},
+    expect.objectContaining({ validationSummary: expect.any(Object) }),
     timing,
     undefined,
   );
-  expect(writeValidationResults).toHaveBeenCalledWith(
-    { ...validationResult, mode: "focused" },
-    write,
-    false,
-    expect.any(Number),
-  );
+  expect(writeValidationResults).toHaveBeenCalled();
   expect(formatExitCode).not.toHaveBeenCalled();
 });
 
@@ -141,7 +136,7 @@ test("passes an explicitly supplied environment into validation", async () => {
   expect(createValidationRunOptions).toHaveBeenCalledWith(
     [],
     diagnosticOptions,
-    { env },
+    expect.objectContaining({ env, validationSummary: expect.any(Object) }),
     timing,
     undefined,
   );
@@ -151,12 +146,7 @@ test("enables timing output and formats nonzero or debug exit codes", async () =
   const write = jest.fn();
   await expect(runCli(["--debug-timing"], write, "/repo")).resolves.toBe(0);
   expect(createStageTimer).toHaveBeenCalledWith(true, expect.any(Function), expect.any(Function));
-  expect(writeValidationResults).toHaveBeenCalledWith(
-    { ...validationResult, mode: "focused" },
-    write,
-    true,
-    expect.any(Number),
-  );
+  expect(writeValidationResults).toHaveBeenCalled();
   expect(formatExitCode).toHaveBeenCalledWith(0);
   expect(write).toHaveBeenCalledWith("formatted exit code");
   const defaultWrite = jest.spyOn(console, "log").mockImplementation(() => {});

@@ -7,11 +7,31 @@ test("writes diagnostics without timing when timing is disabled", () => {
   expect(write).toHaveBeenCalledWith("diagnostic");
 });
 
-test("prints the exact aggregate success text from the harness directive", () => {
+test("prints an aggregate summary with check, Jest, issue, and time counts", () => {
   const write = jest.fn();
-  writeValidationResults({ code: 0, diagnostics: [] }, write, false, 0);
+  const now = jest.spyOn(Date, "now").mockReturnValue(5000);
+  writeValidationResults(
+    {
+      code: 0,
+      diagnostics: [],
+      validationSummary: {
+        conventionCheckCount: 42,
+        jestCounts: { testSuites: 8, tests: 120 },
+        jestTimeMs: 1200,
+      },
+    },
+    write,
+    false,
+    1000,
+  );
+  now.mockRestore();
   expect(write).toHaveBeenCalledTimes(1);
-  expect(write).toHaveBeenCalledWith("Aggregate validation passed.");
+  expect(write).toHaveBeenCalledWith(
+    "Aggregate validation passed.\n" +
+      "Checks: 42 | Test suites: 8 | Tests: 120\n" +
+      "Lint warnings: 0 | Format issues: 0 | Audit issues: 0 | Pack issues: 0\n" +
+      "Checks time: 2.800s | Jest time: 1.200s | Total time: 4.000s",
+  );
 });
 
 test.each([
@@ -24,7 +44,7 @@ test.each([
   const write = jest.fn();
   writeValidationResults({ code: 0, diagnostics: [], mode }, write, false, 0);
   expect(write).toHaveBeenCalledWith(expected);
-  expect(write.mock.calls.join(" ")).not.toMatch(/tests passed|coverage|lint warnings/iu);
+  expect(write.mock.calls.join(" ")).not.toMatch(/tests passed|coverage/iu);
 });
 
 test("does not claim a clean run when output or diagnostics exist", () => {
@@ -36,6 +56,27 @@ test("does not claim a clean run when output or diagnostics exist", () => {
     0,
   );
   expect(write).not.toHaveBeenCalledWith("Aggregate validation passed.");
+});
+
+test("writes aggregate details during a clean debug run", () => {
+  const write = jest.fn();
+  writeValidationResults(
+    { code: 0, diagnostics: [], validationSummary: {} },
+    write,
+    true,
+    Date.now(),
+  );
+  expect(write.mock.calls[0][0]).toMatch(/^Aggregate validation passed\./u);
+  expect(write.mock.calls[1][0]).toMatch(/^Validation time:/u);
+});
+
+test("does not write success for failures or mode runs with debug timing", () => {
+  const write = jest.fn();
+  writeValidationResults({ code: 1, diagnostics: ["failed"] }, write, false, 0);
+  writeValidationResults({ code: 0, diagnostics: [], mode: "focused" }, write, true, Date.now());
+  expect(
+    write.mock.calls.some(([line]) => String(line).startsWith("Aggregate validation passed.")),
+  ).toBe(false);
 });
 
 test("writes timing output when timing is enabled", () => {

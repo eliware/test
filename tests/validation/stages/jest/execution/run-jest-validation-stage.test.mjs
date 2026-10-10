@@ -1,8 +1,17 @@
 import { expect, jest, test } from "@jest/globals";
 import { runJestValidationStage } from "../../../../../src/validation/stages/jest/execution/run-jest-validation-stage.mjs";
 
-test("passes a clean Jest result and keeps its output", async () => {
-  const context = { root: ".", jestResult: { code: 0, consoleOutput: [] } };
+test("passes clean Jest results and records aggregate counts", async () => {
+  const context = {
+    root: ".",
+    jestResult: {
+      code: 0,
+      startedAt: 100,
+      consoleOutput: [],
+      stderr: '[eliware-test-progress] {"event":"run-complete","testSuites":3,"tests":17}',
+    },
+    validationSummary: {},
+  };
   const runJest = jest.fn(async () => ({ ruleId: "stage:jest", status: "pass", message: "" }));
   await expect(runJestValidationStage(context, runJest)).resolves.toMatchObject({
     stage: "jest",
@@ -11,6 +20,25 @@ test("passes a clean Jest result and keeps its output", async () => {
     output: context.jestResult,
   });
   expect(runJest).toHaveBeenCalledWith(context, "stage:jest");
+  expect(context.validationSummary).toMatchObject({
+    jestCounts: { testSuites: 3, tests: 17 },
+  });
+  expect(context.validationSummary.jestTimeMs).toBeGreaterThanOrEqual(0);
+});
+
+test("uses empty counts when Jest progress has no valid completion event", async () => {
+  const context = {
+    root: ".",
+    jestResult: {
+      code: 0,
+      stdout:
+        'ordinary output\n[eliware-test-progress] {"event":"start"}\n[eliware-test-progress] {bad-json}',
+    },
+    validationSummary: {},
+  };
+  await runJestValidationStage(context, async () => ({ status: "pass", message: "" }));
+
+  expect(context.validationSummary.jestCounts).toEqual({ testSuites: 0, tests: 0 });
 });
 
 test("fails when Jest reports unexpected test console output", async () => {

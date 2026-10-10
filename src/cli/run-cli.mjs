@@ -32,6 +32,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
     try {
       const diagnosticOptions = readDiagnosticOptions(args);
       const startedAt = Date.now();
+      const validationSummary = {};
       const timingOutput = args.includes("--debug-timing")
         ? write === console.log
           ? process.stdout.write.bind(process.stdout)
@@ -48,12 +49,19 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
         executeValidation(
           root,
           [],
-          createValidationRunOptions(args, diagnosticOptions, options, timing, timingOutput),
+          createValidationRunOptions(
+            args,
+            diagnosticOptions,
+            { ...options, validationSummary },
+            timing,
+            timingOutput,
+          ),
         ),
       );
       writeValidationResults(
         {
           ...result,
+          validationSummary,
           mode:
             diagnosticOptions.mode ??
             (parseFocusedArguments(diagnosticOptions.jestArgs ?? []).positional.length > 0

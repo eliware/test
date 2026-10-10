@@ -151,6 +151,23 @@ test("does not write a console report when no report path is configured", () => 
   }
 });
 
+test("reports aggregate suite and test counts at run completion", () => {
+  const output = [];
+  const reporter = new JestProgressReporter({ write: (text) => output.push(text) });
+  reporter.onRunComplete([], { numTotalTestSuites: 3, numTotalTests: 17 });
+
+  expect(events(output)).toEqual([{ event: "run-complete", testSuites: 3, tests: 17 }]);
+});
+
+test("uses zero counts when Jest omits aggregate totals", () => {
+  const output = [];
+  const reporter = new JestProgressReporter({ write: (text) => output.push(text) });
+  reporter.onRunComplete([], {});
+  reporter.onRunComplete();
+
+  expect(events(output)).toEqual([{ event: "run-complete", testSuites: 0, tests: 0 }]);
+});
+
 test("redacts secrets and hides external paths in progress events", () => {
   const output = [];
   const reporter = new JestProgressReporter({

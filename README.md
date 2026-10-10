@@ -150,6 +150,7 @@ Programmatic callers must provide an output writer to receive timing data.
 ## Development
 
 Run `npm test` for aggregate validation.
+Clean aggregate validation reports check counts, Jest suite and test counts, issue counts, and elapsed times.
 Run `npm run lint`, `npm run format:check`, `npm run audit`, or `npm run pack` as needed.
 Use `npm run format` to change formatting.
 Use native ESM `.mjs` modules and mirror `src/` in `tests/`.

@@ -64,7 +64,14 @@ export default class JestProgressReporter {
     });
   }
 
-  onRunComplete() {
+  onRunComplete(_contexts, results) {
+    if (results) {
+      this.writeProgress({
+        event: "run-complete",
+        testSuites: results.numTotalTestSuites ?? 0,
+        tests: results.numTotalTests ?? 0,
+      });
+    }
     if (this.consoleReportFile)
       writeFileSync(this.consoleReportFile, JSON.stringify(this.consoleOutput), "utf8");
   }

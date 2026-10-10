@@ -9,6 +9,7 @@ export function createValidationRunOptions(args, diagnosticOptions, options, tim
     jestArgs: diagnosticOptions.jestArgs,
     toolArgs: focusedScope ? [] : diagnosticOptions.toolArgs,
     timing,
+    validationSummary: options.validationSummary,
     writeOutput: args.includes("--debug-timing") ? write : undefined,
     ...(focusedScope ? { focusedScope } : {}),
   };

@@ -3,6 +3,7 @@ import { findUnexpectedJestOutput } from "../progress/inspect-jest-output.mjs";
 import { formatJestCoverageFailure } from "../progress/format-jest-coverage-failure.mjs";
 
 export async function runJestValidationStage(context, runJest, readCoverage) {
+  const jestStartedAt = Date.now();
   const value = await runJest(context, "stage:jest");
   const outputText = [context.jestResult?.stdout, context.jestResult?.stderr, value.message]
     .filter(Boolean)
@@ -29,6 +30,12 @@ export async function runJestValidationStage(context, runJest, readCoverage) {
   }
   if (code !== 0) return result;
 
+  if (context.validationSummary) {
+    context.validationSummary.jestTimeMs =
+      Date.now() - (context.jestResult?.startedAt ?? jestStartedAt);
+    context.validationSummary.jestCounts = readJestCounts(outputText);
+  }
+
   const findings = findUnexpectedJestOutput(
     context.jestResult,
     collectRedactionSecrets(context.env ?? process.env),
@@ -41,4 +48,19 @@ export async function runJestValidationStage(context, runJest, readCoverage) {
     status: "fail",
     message: `Unexpected test-process output detected: ${findings.join(" | ")}`,
   };
+}
+
+function readJestCounts(text) {
+  for (const line of text.split(/\r?\n/u)) {
+    const match = line.match(/^\[eliware-test-progress\] (.+)$/u);
+    if (!match) continue;
+    try {
+      const event = JSON.parse(match[1]);
+      if (event.event === "run-complete")
+        return { testSuites: event.testSuites, tests: event.tests };
+    } catch {
+      continue;
+    }
+  }
+  return { testSuites: 0, tests: 0 };
 }

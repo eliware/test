@@ -37,9 +37,11 @@ function createStageContext(stages, calls, failedStage = "") {
 test("executes selected checks in discovery order", async () => {
   const calls = [];
   const checks = ["E-0.1.4", "E-0.1.20.17", "E-0.1.20.19"].map((id) => makeCheck(id, calls));
-  const results = await executeConventionChecks(checks, {}, new Set());
+  const context = { validationSummary: {} };
+  const results = await executeConventionChecks(checks, context, new Set());
   expect(calls).toEqual(checks.map(({ ruleId }) => ruleId));
   expect(results).toEqual(checks.map(({ ruleId }) => pass(ruleId)));
+  expect(context.validationSummary.conventionCheckCount).toBe(3);
 });
 
 test("reports thrown checks and continues with later checks", async () => {

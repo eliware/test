@@ -111,7 +111,14 @@ directives:
           - Run all convention checks before Jest.
           - Run Jest only when every earlier stage passes.
           - Cache each completed stage result for convention checks.
-          - Print exactly Aggregate validation passed. after clean aggregate validation.
+          - Print an aggregate success summary after clean aggregate validation.
+          - Report the number of convention checks that ran.
+          - Report the number of Jest test suites and tests that ran.
+          - Report zero lint warnings, format issues, audit issues, and pack issues after success.
+          - Report total checks time as total validation time minus Jest time.
+          - Report Jest time and total validation time in seconds to three decimal places.
+          - Count Jest test suites and tests from Jest run-complete results.
+          - Count only executed convention checks as checks; do not count validation stages.
           - Report only the selected mode after mode-specific success.
         donts:
           - Do not truncate or paraphrase matched directives.
@@ -120,6 +127,9 @@ directives:
           - Do not emit incidental logs or subprocess output during a clean normal run.
         examples:
           - "Aggregate validation passed."
+          - "Checks: 42 | Test suites: 8 | Tests: 120"
+          - "Lint warnings: 0 | Format issues: 0 | Audit issues: 0 | Pack issues: 0"
+          - "Checks time: 1.200s | Jest time: 3.400s | Total time: 4.600s"
           - "Failures retain all diagnostics."
           - "Failures return the highest applicable exit code."
 
