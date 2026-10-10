@@ -2,13 +2,36 @@
 
 ## 12.0.0 — 2026-10-10
 
+### Breaking changes
+
+- Require npm-published repositories to include `specs/` in the package and packed tarball.
+- Replace JSON workspace runbooks with YAML files that use the shared v12 schema.
+
 ### Added
 
-- Add profile-scoped checks for deterministic repository requirements.
+- Split each profile's requirements into deterministic and semantic YAML files.
+- Add cross-profile checks and canonical order data for package keys, profile lists, README sections, AGENTS sections, and workflows.
+- Add the shared v12 runbook schema. Require workspace runbooks to use this schema and ASD-STE100 instructions.
+- Implement deterministic checks for application, CLI, web, library, Discord, MCP server, infrastructure, documentation, workspace, npm, GHCR, and private profiles.
+- Require tests to mock Git, npm, audit, lint, format, pack, typecheck, build, Jest, and package-script calls.
 
 ### Changed
 
-- Align the v12 validation flow with its harness specifications and conventions.
+- Limit general requirements to rules that apply to every repository. Keep profile rules in their own profiles.
+- Require every repository to apply general. Enforce profile prerequisites, exclusions, and private-repository rules through the harness specifications.
+- Support Node.js 26 or later. Require ESM and place the required `type` key after `version` in `package.json`.
+- Apply profile checks and package stages only when the selected profiles require them. Run pack only for npm-published repositories.
+- Require the canonical README header, badges, section order, Support block, Links section, and License footer.
+- Allow additional runtime files in npm packages. Keep explicit exclusions for tests, build output, credentials, and unsafe files.
+- Keep check and test modules focused. Mirror every source module with its own test.
+- Remove the `MAIL_OWNER_ADDRESS` convention and Tasklist integration requirements.
+
+### Fixed
+
+- Complete deterministic validation for selected profile requirements that lacked v12 checks.
+- Match aggregate success output to the exact text in the harness specification.
+- Detect directory changes with full nanosecond timestamps when the platform supports them.
+- Report smoke cleanup failures with the run result and preserve recovery details.
 
 ## 11.0.0 — 2026-10-03
 
