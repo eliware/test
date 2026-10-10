@@ -1,5 +1,7 @@
 version: "12.0"
-description: Defines cross-profile title, section, and profile order in README.md.
+description: >-
+  Defines README section order. Profile sections follow profileOrder.
+  Shared sections come before sections of the first matching profile.
 orders:
   header:
     - brand

@@ -15,7 +15,7 @@ directives:
     donts:
       - Do not change the canonical Discord order.
     examples:
-      - "discord: [Commands, Events, Intents and permissions, Operations]"
+      - "discord: [Commands, Events, Intents and permissions]"
 
   - id: E-0.1.7.1.1
     dos:
@@ -25,7 +25,7 @@ directives:
       - Do not omit Discord-specific headings.
     examples:
       - "## Discord"
-      - "## Events\n\n## Intents and permissions"
+      - "## Configuration\n\n## Operations\n\n## Commands\n\n## Events\n\n## Intents and permissions"
 
   - id: E-0.1.7.1.2
     dos:

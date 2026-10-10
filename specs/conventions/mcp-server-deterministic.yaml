@@ -17,7 +17,7 @@ directives:
       - Do not omit MCP-specific headings.
     examples:
       - "## MCP server"
-      - "## Tools\n\n## Resources\n\n## Prompts\n\n## Transport\n\n## Authentication\n\n## Schemas\n\n## Operations"
+      - "## Configuration\n\n## Operations\n\n## Tools\n\n## Resources\n\n## Prompts\n\n## Transport\n\n## Authentication\n\n## Schemas"
 
   - id: E-0.1.8.1.1
     dos:
