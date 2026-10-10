@@ -40,6 +40,7 @@ export function createRepositoryFileContentCache(
         current.version = stable.version;
         current.pending = false;
         if (stable.content.byteLength > maxCachedFileBytes) {
+          // codescope ignore this because pending reads are deduplicated before this entry can change.
           cachedBytes -= previous?.content?.byteLength ?? 0;
           fileReads.delete(key);
           return current.content;

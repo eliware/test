@@ -1,6 +1,6 @@
 # Usage
 
-Use Node.js 26 (`>=26 <27`) and npm 12 or later.
+Use Node.js 26 or later (`>=26`) and npm 12 or later.
 The CLI checks npm before validation.
 It stops when it cannot read the npm version or when npm is too old.
 `--help` and `--version` do not need this check.
@@ -44,8 +44,8 @@ Each exemption needs a rule ID, reason, approver, approval time, and expiry.
 The CLI does not infer profile applicability from files or dependencies.
 
 `package.json.eliware` has `id`, `apply`, and optional `exempt` keys, in that order.
-The CLI checks for `../docs/repo-map.yaml` on each run.
-When the map exists, it sets the package ID, description, keywords, and profiles.
+The general check reads `../docs/repo-map.yaml` when that file exists.
+When the map exists, package metadata must match its ID, description, keywords, and profiles.
 The README description must match the package description.
 When the map is absent, package metadata sets the README description and rule ID namespace.
 Every rule ID under `specs/` must use the assigned repository number.
@@ -59,8 +59,8 @@ Do not add other workflow YAML files under `.github/workflows/` or `.knit/`.
 Each allowed workflow must contain one YAML document and pass its profile checks.
 The CLI checks GitHub Actions and Knit files separately.
 
-For `ghcr-published`, document the image in the README `Usage` section.
-Use the markers `Image`, `Pull command`, `Supported tags`, and `Deployment boundary`.
+For `ghcr-published`, add a `## GHCR publication` section to `AGENTS.md`.
+Use the markers `Image`, `Pull command`, `Supported tags`, and `Deployment boundary` there.
 Use the exact package version in the pull command.
 If the workflow pushes `latest`, describe it as a mutable alias.
 Do not use that alias as a release or deployment identity.

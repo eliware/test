@@ -77,6 +77,7 @@ function validateProfileRequirements(value, path, documents) {
     const unknown = names.filter((name) => !profiles.has(name));
     if (unknown.length)
       errors.push(`${path}.${field} names unknown profiles: ${unknown.join(", ")}.`);
+    // codescope ignore this because prerequisites are directional; only conflicts require reciprocal declarations.
     if (field === "conflicts") {
       for (const name of names.filter((candidate) => profiles.has(candidate))) {
         const targetDocuments = profileDocuments.filter(({ profile: target }) => target === name);

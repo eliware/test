@@ -14,6 +14,10 @@ test("redacts short bearer and basic credentials", () => {
   expect(output).not.toMatch(/Bearer x|Basic ab/u);
 });
 
+test("redacts bearer tokens with punctuation", () => {
+  expect(redactHttpCredentials("Bearer abc.def:ghi~jkl")).toBe("Bearer [REDACTED]");
+});
+
 test("redacts URL user-info, credential query values, sensitive headers, and cookies", () => {
   const output = redactHttpCredentials(
     "https://user:pass@example.test/?token=secret&apiKey=private\nx-auth-token: header\nCookie: session=x",

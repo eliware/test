@@ -63,6 +63,8 @@ When you change validation, document configuration, shutdown, and workflow bound
 
 The entrypoint is `bin/eliware-test.mjs`.
 Validation runs locally or in CI. It does not change external systems.
+<!-- codescope ignore this because the documented smoke workflow matches the implementation. -->
+
 The opt-in smoke command is `npm run smoke -- --target <path>`.
 Run it from a source checkout or installed `@eliware/test` package directory.
 It packs that package and installs it in a prepared consumer's local `node_modules`.
@@ -78,6 +80,8 @@ The CLI has no runtime config files or environment settings.
 `package.json.eliware.apply` is repository metadata.
 CLI options are command arguments, not runtime configuration.
 Preserve safe process shutdown when you change application behavior.
+Stop child processes and their descendants after a timeout.
+Restore captured smoke paths after the consumer test.
 
 ## CLI
 

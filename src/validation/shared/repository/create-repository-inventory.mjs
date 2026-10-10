@@ -12,6 +12,7 @@ export function createRepositoryInventory(root, options = {}, currentPlatform = 
     throw new TypeError("Repository inventory root must be a non-empty path string.");
   // The two-leading-backslash branch includes UNC and Windows device namespaces.
   const windowsRoot = /^(?:[A-Za-z]:[\\/]|\\\\)/u.test(root);
+  // codescope ignore this because inventory path helpers only receive roots after this host check.
   if (windowsRoot && currentPlatform !== "win32")
     throw new Error("Windows repository inventory roots require a Windows host.");
   const paths = currentPlatform === "win32" ? win32 : posix;

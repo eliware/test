@@ -17,7 +17,7 @@ export function runChild(command, args, options = {}) {
       : 100_000;
   const spawnProcess = options.spawnProcess ?? spawn;
   const createTimeout = options.createProgressTimeout ?? createProgressTimeout;
-  const environment = options.env ?? process.env;
+  const environment = { ...(options.env ?? process.env) };
   return new Promise((resolve, reject) => {
     const output = createChildOutputCapture(outputLimit, { ...options, env: environment });
     let settled = false;
@@ -92,8 +92,8 @@ export function runChild(command, args, options = {}) {
       });
       child.on("close", handleClose);
     } catch (error) {
+      // codescope ignore this because error settlement stops initialized timers after child setup fails.
       terminateChildAfterSetupFailure(child, options, environment);
-      // Error settlement stops initialized progress and suite timers before rejecting.
       settleError(error);
     }
   });

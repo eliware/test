@@ -51,6 +51,14 @@ test("rejects invalid command fields and localization", async () => {
   );
 });
 
+test("requires each command definition name to match its file name", async () => {
+  const inventory = createDiscordRecordFixture();
+  inventory.contents.set("commands/help.json", JSON.stringify(commandDefinition("other")));
+  await expect(validateDiscordCommandRecords(inventory.fileList, inventory)).resolves.toContain(
+    "commands/help.json name must match its file name.",
+  );
+});
+
 test("ignores nested command paths and allows an absent source inventory", async () => {
   const inventory = createDiscordRecordFixture({ commands: [] });
   inventory.fileList.push("commands/nested/extra.json");

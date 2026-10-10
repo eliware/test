@@ -12,6 +12,7 @@ test("redacts CI credential assignments and common provider tokens", () => {
 
 test("redacts SSH keys, opaque token strings, JWTs, and leaves ordinary text", () => {
   expect(redactKnownTokenFormats("ssh-ed25519 AAAAB3NzaC1yc2E= key")).not.toContain("AAAAB");
+  expect(redactKnownTokenFormats("ecdsa-sha2-nistp256 AAAAB3NzaC1yc2E= key")).toBe("[REDACTED]");
   expect(redactKnownTokenFormats(`${"a".repeat(31)}2`)).toBe("[REDACTED]");
   expect(redactKnownTokenFormats("eyJhbGci.eyJzdWIi.signature")).toBe("[REDACTED]");
   expect(redactKnownTokenFormats("ordinary output")).toBe("ordinary output");

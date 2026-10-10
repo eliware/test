@@ -12,6 +12,7 @@ import { loadSmokeTarget } from "./load-smoke-target.mjs";
 import { validateNpmConsumerSmokeRequest } from "./validate-npm-consumer-smoke-request.mjs";
 import { resolveSmokeTarget } from "./resolve-smoke-target.mjs";
 import { finishSmokeRun } from "./finish-smoke-run.mjs";
+import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
 
 export async function runNpmConsumerSmoke({
   root,
@@ -40,6 +41,7 @@ export async function runNpmConsumerSmoke({
   try {
     tempIdentity = await inspectTempRoot(tempRoot);
   } catch (error) {
+    // codescope ignore this because an unverified path may now name a replacement outside this process.
     return `Cannot verify temporary smoke directory; left untouched at ${tempRoot}: ${error.message}`;
   }
   const packDirectory = join(tempRoot, "pack");
@@ -47,6 +49,8 @@ export async function runNpmConsumerSmoke({
   let outcome;
   try {
     await assertTargetIdentity();
+    // codescope ignore this because smoke checks package parents before capture and before each mutation.
+    await assertSmokePackageParents(targetRoot, packageJson.name);
     state = await captureState(targetRoot, packageJson.name, binNames);
     write(`Target recovery snapshot: ${state.storage}`);
     await mkdir(packDirectory);
@@ -61,11 +65,13 @@ export async function runNpmConsumerSmoke({
       env: childEnv,
     });
     await assertTargetIdentity();
+    // codescope ignore this because prepareSmokeTarget checks package parents before removal.
     await prepareSmokeTarget({
       targetRoot,
       packageName: packageJson.name,
     });
     await assertTargetIdentity();
+    // codescope ignore this because installSmokeCandidate checks package parents before install.
     await installSmokeCandidate({
       targetRoot,
       packageJson,
@@ -79,6 +85,7 @@ export async function runNpmConsumerSmoke({
   } catch (error) {
     outcome = `Tarball consumer smoke failed: ${error.message}`;
   } finally {
+    // codescope ignore this because restoration checks target identity and package parents before each captured path.
     outcome = await finishSmokeRun({
       outcome,
       state,

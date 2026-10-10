@@ -16,6 +16,8 @@ function collectDirectives(directives, profile, source, catalog) {
       directive.dos.length === 0 ||
       !Array.isArray(directive.donts) ||
       directive.donts.length === 0 ||
+      (directive.children !== undefined &&
+        (!Array.isArray(directive.children) || directive.children.length === 0)) ||
       (directive.examples !== undefined && !Array.isArray(directive.examples))
     ) {
       throw new Error(`Bundled convention profile ${source} has a malformed directive.`);
@@ -31,9 +33,10 @@ function collectDirectives(directives, profile, source, catalog) {
       dos: directive.dos,
       donts: directive.donts,
       ...(directive.examples === undefined ? {} : { examples: directive.examples }),
+      ...(directive.children === undefined ? {} : { children: directive.children }),
     };
-    if (directive.directives !== undefined) {
-      collectDirectives(directive.directives, profile, source, catalog);
+    if (directive.children !== undefined) {
+      collectDirectives(directive.children, profile, source, catalog);
     }
   }
 }

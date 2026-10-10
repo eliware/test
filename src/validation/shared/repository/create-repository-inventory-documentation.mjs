@@ -58,7 +58,7 @@ export function createDocumentationFileView(root, entriesUnder) {
       prefix,
       maxDepth,
       maxFiles,
-      fileCount: traversalObserved ? selectedPaths.size : 0,
+      fileCount: traversalObserved ? visitedFiles : 0,
       includeGenerated,
       generatedPath,
     });

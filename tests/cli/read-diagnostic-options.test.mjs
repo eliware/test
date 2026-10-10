@@ -22,6 +22,12 @@ test("accepts each documented focused test extension", () => {
   }
 });
 
+test("rejects focused tests without a source module name", () => {
+  expect(() => readDiagnosticOptions(["tests/.test.mjs"])).toThrow(
+    "must have a source module name",
+  );
+});
+
 test("forwards non-wrapper Jest options unchanged", () => {
   expect(readDiagnosticOptions(["--runInBand"]).jestArgs).toEqual(["--runInBand"]);
 });

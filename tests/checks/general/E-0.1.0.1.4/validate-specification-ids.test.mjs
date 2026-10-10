@@ -43,3 +43,10 @@ test("rejects child IDs outside their parent prefix", () => {
     validateSpecificationIds([{ path: "rules.yaml", directives: deep }], "E-0").join(" "),
   ).toContain("extend parent");
 });
+
+test("rejects padded and oversized sibling suffixes", () => {
+  const directives = [{ id: "E-0.1.00" }, { id: "E-0.1.9007199254740993" }];
+  expect(validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ")).toContain(
+    "sequential",
+  );
+});

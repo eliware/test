@@ -23,12 +23,15 @@ function checkSiblings(rules, path, namespace, ids, errors, parentId) {
     ids.add(rule.id);
     const parts = rule.id.split(".");
     const prefix = parts.slice(0, -1).join(".");
-    groups.set(prefix, [...(groups.get(prefix) ?? []), Number(parts.at(-1))]);
+    groups.set(prefix, [...(groups.get(prefix) ?? []), parts.at(-1)]);
     checkSiblings(rule.children, path, namespace, ids, errors, rule.id);
   }
   for (const [prefix, numbers] of groups) {
-    numbers.sort((left, right) => left - right);
-    if (numbers.some((number, index) => number !== index))
+    numbers.sort((left, right) => {
+      const difference = BigInt(left) - BigInt(right);
+      return difference < 0n ? -1 : difference > 0n ? 1 : 0;
+    });
+    if (numbers.some((number, index) => number !== String(index)))
       errors.push(`${path} sibling IDs under ${prefix} must start at 0 and be sequential.`);
   }
 }

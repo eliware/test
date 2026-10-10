@@ -3,19 +3,49 @@ import { isJestGlobalsImport } from "./jest-globals-import.mjs";
 
 export function collectModuleShadowedNames(program, names) {
   const tests = new Set();
+  const describes = new Set();
   const add = (name, initializer) => {
     if (
       ["test", "it"].includes(name) ||
       (names.namespaces.has(name) && !isJestGlobalsImport(initializer))
     )
       tests.add(name);
+    if (names.describes?.has(name) && !isJestGlobalsImport(initializer)) describes.add(name);
   };
   for (const node of program.body) {
     if (node.type === "ImportDeclaration" && node.source.value !== "@jest/globals")
       node.specifiers.forEach((item) => add(item.local.name));
-    else declarationNames(node, add);
+    else {
+      declarationNames(node, add);
+      collectHoistedVarNames(node, add);
+    }
   }
-  return { tests, callbacks: new Set() };
+  return { tests, callbacks: new Set(), describes };
+}
+
+function collectHoistedVarNames(node, add) {
+  if (!node || typeof node !== "object") return;
+  if (
+    [
+      "FunctionDeclaration",
+      "FunctionExpression",
+      "ArrowFunctionExpression",
+      "ClassDeclaration",
+      "ClassExpression",
+    ].includes(node.type)
+  )
+    return;
+  if (node.type === "VariableDeclaration") {
+    if (node.kind === "var")
+      node.declarations.forEach((item) =>
+        collectBindingNames(item.id).forEach((name) => add(name, item.init)),
+      );
+    return;
+  }
+  Object.values(node).forEach((value) => {
+    if (Array.isArray(value)) value.forEach((item) => collectHoistedVarNames(item, add));
+    else collectHoistedVarNames(value, add);
+  });
 }
 
 function declarationNames(node, add) {

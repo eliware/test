@@ -23,7 +23,7 @@ export function createRedactedTextStreamSession(policy, outputLimit) {
 
   return {
     push(chunk) {
-      if (finished) return "";
+      if (finished || suppressed) return "";
       const text = decoder.write(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
       return streamBuffer.addText(text);
     },

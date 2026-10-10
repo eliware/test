@@ -40,6 +40,33 @@ test("requires latest markers when a published image uses latest", async () => {
   );
 });
 
+test("ignores latest tags from unrelated workflow steps", async () => {
+  const workflow = createGhcrWorkflow();
+  workflow.jobs.publish.steps.push({
+    uses: "other/action@v1",
+    with: { tags: ["ghcr.io/other/image:latest"] },
+  });
+  await expect(
+    validateGhcrAgentsSection(createGhcrInventory({ workflow }), ghcrPackage),
+  ).resolves.toEqual([]);
+});
+
+test("reads version tags from a multiline workflow string", async () => {
+  const workflow = createGhcrWorkflow();
+  workflow.jobs.publish.steps[2].with.tags = "ghcr.io/eliware/example:v12.0.0";
+  await expect(
+    validateGhcrAgentsSection(createGhcrInventory({ workflow }), ghcrPackage),
+  ).resolves.toEqual([]);
+});
+
+test("accepts a publish step without an optional tags field", async () => {
+  const workflow = createGhcrWorkflow();
+  delete workflow.jobs.publish.steps[2].with.tags;
+  await expect(
+    validateGhcrAgentsSection(createGhcrInventory({ workflow }), ghcrPackage),
+  ).resolves.toEqual([]);
+});
+
 test("uses the base tags when the workflow has no publish steps", async () => {
   const workflow = createGhcrWorkflow();
   delete workflow.jobs.publish.steps;

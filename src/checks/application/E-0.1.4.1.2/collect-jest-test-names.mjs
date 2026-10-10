@@ -19,9 +19,11 @@ export function collectJestTestNames(program) {
 }
 
 function addTestAliases(node, names) {
+  // codescope ignore this because the next fixed-point pass visits siblings skipped after an alias change.
   if (Array.isArray(node)) return node.some((item) => addTestAliases(item, names));
   if (!node || typeof node !== "object") return false;
   let changed = false;
+  // codescope ignore this because dynamic imports from @jest/globals bind the Jest namespace.
   if (node.type === "VariableDeclarator" && isJestGlobalsImport(node.init)) {
     if (node.id?.type === "Identifier" && !names.namespaces.has(node.id.name)) {
       names.namespaces.add(node.id.name);

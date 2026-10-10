@@ -18,3 +18,21 @@ test("finds Markdown files and skips generated folders", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("limits fallback traversal depth and entry count", async () => {
+  const readDeepDirectory = async () => [
+    { name: "nested", isDirectory: () => true, isFile: () => false },
+  ];
+  await expect(findMarkdownFiles("/repo", "/repo", readDeepDirectory)).rejects.toThrow(
+    "128-level depth limit",
+  );
+  const readWideDirectory = async () =>
+    Array.from({ length: 10_001 }, (_, index) => ({
+      name: `file-${index}.md`,
+      isDirectory: () => false,
+      isFile: () => true,
+    }));
+  await expect(findMarkdownFiles("/repo", "/repo", readWideDirectory)).rejects.toThrow(
+    "10000-entry limit",
+  );
+});

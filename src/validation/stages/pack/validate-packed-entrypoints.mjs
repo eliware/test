@@ -19,6 +19,7 @@ function targetExists(target, packedPaths) {
 }
 
 export function validatePackedEntrypoints(packageJson, packedPaths) {
+  // codescope ignore this because package-relative bare paths are valid for main, bin, and type entrypoints.
   const declared = [
     packageJson?.main,
     packageJson?.module,

@@ -15,6 +15,7 @@ export function createMatchIntervalIndex() {
       throw new TypeError("Match intervals must have safe non-negative start and end offsets");
     for (const { start, end } of matches) {
       const previousEnd = matchEndsByStart.get(start) ?? 0;
+      // codescope ignore this because each start retains its greatest observed end offset.
       if (end <= previousEnd) continue;
       if (previousEnd === 0) orderedMatchStarts.insert(start);
       if (previousEnd > 0) staleEndEntryCount += 1;

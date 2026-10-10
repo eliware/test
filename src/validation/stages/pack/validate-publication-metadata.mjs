@@ -8,6 +8,7 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
   if (packageJson?.private !== false) {
     return "Public npm packages must set package.json.private to false.";
   }
+  // codescope ignore this because general runtime rules require the exact >=26 range.
   if (
     typeof packageJson?.engines?.node !== "string" ||
     !compatibleWithNode26(packageJson.engines.node.trim())

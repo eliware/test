@@ -54,7 +54,7 @@ export async function captureSmokeTargetState(
   try {
     const entries = [];
     for (const path of new Set(paths)) entries.push(await capturePath(path, storage, fs, platform));
-    return { entries, storage };
+    return { entries, storage, targetRoot: root, packageName };
   } catch (error) {
     try {
       await fs.rm(storage, { recursive: true, force: true });

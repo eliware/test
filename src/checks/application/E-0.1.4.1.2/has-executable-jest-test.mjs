@@ -2,6 +2,7 @@ import { parse } from "@babel/parser";
 import { collectJestTestNames } from "./collect-jest-test-names.mjs";
 import { hasRegisteredJestTest } from "./has-registered-jest-test.mjs";
 import { referencesTestSource } from "./references-test-source.mjs";
+import { collectJestDescribeNames } from "./collect-jest-describe-names.mjs";
 import { collectModuleShadowedNames } from "./collect-module-shadowed-jest-names.mjs";
 
 export function inspectJestTestModule(content, testPath, sourcePath) {
@@ -12,14 +13,18 @@ export function inspectJestTestModule(content, testPath, sourcePath) {
     return { hasExecutableTest: false, importsSource: false };
   }
   const testNames = collectJestTestNames(ast.program);
+  const describeNames = collectJestDescribeNames(ast.program);
+  const names = { ...testNames, describes: describeNames };
   const callbackNames = findCallbackNames(ast.program);
-  const moduleBindings = collectModuleShadowedNames(ast.program, testNames);
+  const moduleBindings = collectModuleShadowedNames(ast.program, names);
   return {
     hasExecutableTest: hasRegisteredJestTest(ast.program, {
-      names: testNames,
+      names,
+      describeNames,
       callbackNames,
       blockedTests: moduleBindings.tests,
       blockedCallbacks: moduleBindings.callbacks,
+      blockedDescribes: moduleBindings.describes,
     }),
     importsSource: referencesTestSource(ast.program, testPath, sourcePath),
   };

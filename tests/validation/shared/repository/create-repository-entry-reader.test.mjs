@@ -8,6 +8,7 @@ function createReaderState() {
   const readDirectoryCached = jest.fn(async () => []);
   readDirectoryCached.getRevision = () => revision;
   readDirectoryCached.getTrackedDirectories = () => ["/repo"];
+  readDirectoryCached.forget = jest.fn();
   const reader = createRepositoryEntryReader({
     root: "/repo",
     findEntries,
@@ -59,6 +60,7 @@ test("rediscovers when a previously indexed directory disappears", async () => {
 
   await expect(reader.entries()).resolves.toEqual([]);
   expect(findEntries).toHaveBeenCalledTimes(2);
+  expect(readDirectoryCached.forget).toHaveBeenCalledWith("/repo");
 });
 
 test("propagates refresh failures other than a missing directory", async () => {
@@ -72,7 +74,7 @@ test("propagates refresh failures other than a missing directory", async () => {
   expect(findEntries).toHaveBeenCalledTimes(1);
 });
 
-test("refreshes tracked directories with bounded concurrency", async () => {
+test("refreshes tracked directories one at a time", async () => {
   let revision = 0;
   let active = 0;
   let maximumActive = 0;

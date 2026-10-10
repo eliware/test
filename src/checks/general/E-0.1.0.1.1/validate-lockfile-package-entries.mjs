@@ -4,6 +4,7 @@ const dependencyFields = ["dependencies", "optionalDependencies", "peerDependenc
 
 function findDependencyEntry(packages, parent, name) {
   let current = parent;
+  // codescope ignore this because npm can hoist a dependency to any ancestor node_modules directory.
   while (true) {
     const candidate = `${current}/node_modules/${name}`.replace(/^\//u, "");
     if (Object.hasOwn(packages, candidate)) return candidate;
@@ -33,6 +34,12 @@ export function validateLockfilePackageEntries(packages) {
         continue;
       }
       for (const name of Object.keys(entry[field])) {
+        if (!isValidDependencyName(name)) {
+          errors.push(
+            `package-lock.json entry ${path} has an invalid ${field} package name ${name}.`,
+          );
+          continue;
+        }
         const rawRange = entry[field][name];
         const range = toSemverRange(rawRange);
         if (typeof rawRange !== "string" || !rawRange.trim())
@@ -57,6 +64,10 @@ export function validateLockfilePackageEntries(packages) {
     }
   }
   return errors.length ? errors.join("\n") : null;
+}
+
+function isValidDependencyName(name) {
+  return /^(?:@[a-z0-9][a-z0-9._~-]*\/[a-z0-9][a-z0-9._~-]*|[a-z0-9][a-z0-9._~-]*)$/u.test(name);
 }
 
 function toSemverRange(value) {

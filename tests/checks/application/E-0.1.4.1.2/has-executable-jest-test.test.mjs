@@ -74,6 +74,32 @@ test("rejects a test call shadowed by a module binding", () => {
   ).toBe(false);
 });
 
+test("rejects a Jest name shadowed by a top-level block var", () => {
+  const source = '{ var test = custom; } test("fake", () => {});';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+});
+
+test("rejects fake suites that shadow the Jest describe function", () => {
+  const source =
+    'function describe(name, callback) { callback(); } describe("fake", () => { test("fake", () => {}); });';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+});
+
+test("ignores tests inside skipped Jest suites", () => {
+  const source = 'describe.skip("suite", () => { test("skipped", () => {}); });';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+  const focused = 'describe.only("suite", () => { test("active", () => {}); });';
+  expect(inspectJestTestModule(focused, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    true,
+  );
+});
+
 test("rejects a Jest function alias after reassignment", () => {
   const source = 'let run = test; run = () => {}; run("not a test", () => {});';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(

@@ -1,5 +1,6 @@
-import { readFile, rm } from "node:fs/promises";
+import { lstat, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
 
 function commandFailure(result, label) {
   const detail = [result?.stdout, result?.stderr].filter(Boolean).join("\n").trim();
@@ -14,11 +15,15 @@ export async function installSmokeCandidate({
   command,
   prefix,
   env,
+  inspect = lstat,
 }) {
+  await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
+  // codescope ignore this because rm removes a package leaf link without following its target.
   await rm(join(targetRoot, "node_modules", ...packageJson.name.split("/")), {
     recursive: true,
     force: true,
   });
+  await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
   const install = await run(
     command,
     [

@@ -37,6 +37,21 @@ test("resolves dependency entries from nested package scopes", () => {
   ).toBeNull();
 });
 
+test("accepts scoped names and rejects dependency names with invalid path segments", () => {
+  expect(
+    validateLockfilePackageEntries({
+      "node_modules/parent": {
+        version: "1.0.0",
+        dependencies: { "@scope/pkg": "1.0.0", "bad/name": "1.0.0" },
+      },
+      "node_modules/@scope/pkg": { version: "1.0.0" },
+      "node_modules/bad/name": { version: "1.0.0" },
+    }),
+  ).toContain(
+    "package-lock.json entry node_modules/parent has an invalid dependencies package name bad/name.",
+  );
+});
+
 test("allows an optional peer without a lockfile package entry", () => {
   expect(
     validateLockfilePackageEntries({

@@ -44,6 +44,7 @@ async function validateDefinition(inventory, name) {
   const errors = [];
   if (definition?.type !== 1) errors.push(`${path} type must be 1.`);
   if (!commandName.test(definition?.name ?? "")) errors.push(`${path} name is invalid.`);
+  else if (definition.name !== name) errors.push(`${path} name must match its file name.`);
   if (!validDescription(definition?.description)) errors.push(`${path} description is invalid.`);
   for (const locale of supportedDiscordLocales) {
     if (!commandName.test(definition?.name_localizations?.[locale] ?? ""))

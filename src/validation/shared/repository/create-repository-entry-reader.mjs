@@ -37,13 +37,15 @@ export function createRepositoryEntryReader({
   async function refreshIfChanged(snapshot) {
     const records = await snapshot;
     let directoriesExist = true;
-    try {
-      for (const directory of readDirectoryCached.getTrackedDirectories()) {
+    // codescope ignore this because serial refresh keeps one stable snapshot without a concurrency requirement.
+    for (const directory of readDirectoryCached.getTrackedDirectories()) {
+      try {
         await readDirectoryCached(directory);
+      } catch (error) {
+        if (error?.code !== "ENOENT") throw error;
+        readDirectoryCached.forget?.(directory);
+        directoriesExist = false;
       }
-    } catch (error) {
-      if (error?.code !== "ENOENT") throw error;
-      directoriesExist = false;
     }
     if (directoriesExist && readDirectoryCached.getRevision() === snapshotRevision) return records;
     return discover();

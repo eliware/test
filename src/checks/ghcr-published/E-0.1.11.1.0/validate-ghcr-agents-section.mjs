@@ -12,7 +12,7 @@ export async function validateGhcrAgentsSection(inventory, packageJson = {}) {
     const section = lines.slice(heading, nextHeading < 0 ? undefined : nextHeading);
     const name = String(packageJson?.name ?? "").replace(/^@eliware\//u, "");
     const image = `ghcr.io/eliware/${name}`;
-    const latest = hasLatestTag(parsed.workflow);
+    const latest = hasLatestTag(parsed.workflow, image);
     const required = [
       `Image: ${image}`,
       `Pull command: docker pull ${image}:v${packageJson?.version}`,
@@ -31,12 +31,13 @@ export async function validateGhcrAgentsSection(inventory, packageJson = {}) {
   }
 }
 
-function hasLatestTag(workflow) {
+function hasLatestTag(workflow, image) {
   const steps = workflow?.jobs?.publish?.steps ?? [];
   return steps.some((step) => {
+    if (step?.uses !== "docker/build-push-action@v6") return false;
     const tags = step?.with?.tags;
-    return (Array.isArray(tags) ? tags : String(tags ?? "").split(/\r?\n/u)).some((tag) =>
-      /:latest\s*$/u.test(String(tag).trim()),
+    return (Array.isArray(tags) ? tags : String(tags ?? "").split(/\r?\n/u)).some(
+      (tag) => String(tag).trim() === `${image}:latest`,
     );
   });
 }

@@ -33,7 +33,7 @@ test("builds profile applicability and complete directive records", () => {
               dos: ["Do this."],
               donts: ["Do not do that."],
               examples: [{ markdown: "example" }],
-              directives: [{ id: "A-0.1.1", dos: ["Nested."], donts: ["Do not skip it."] }],
+              children: [{ id: "E-0.1.1", dos: ["Nested."], donts: ["Do not skip it."] }],
             },
           ],
         },
@@ -47,8 +47,9 @@ test("builds profile applicability and complete directive records", () => {
     dos: ["Do this."],
     donts: ["Do not do that."],
     examples: [{ markdown: "example" }],
+    children: [{ id: "E-0.1.1", dos: ["Nested."], donts: ["Do not skip it."] }],
   });
-  expect(catalog.rules["A-0.1.1"].dos).toEqual(["Nested."]);
+  expect(catalog.rules["E-0.1.1"].dos).toEqual(["Nested."]);
   const withDependency = buildProfileCatalog(
     [
       profileDocument("general.yaml", [], "E-1"),

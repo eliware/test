@@ -184,6 +184,11 @@ test("drops a failed listing so a later read can retry", async () => {
   await expect(read("src")).rejects.toThrow("stat denied");
   await expect(read("src")).resolves.toEqual(["entry"]);
   expect(readDirectory).toHaveBeenCalledTimes(1);
+  read.forget("missing");
+  expect(read.getRevision()).toBe(0);
+  read.forget("src");
+  expect(read.getRevision()).toBe(1);
+  expect(read.getTrackedDirectories()).toEqual([]);
 });
 test("uses the filesystem stat implementation by default", async () => {
   const readDirectory = jest.fn().mockResolvedValue([]);

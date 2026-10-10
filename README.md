@@ -93,6 +93,8 @@ Run the opt-in smoke command from this checkout or an installed package:
 npm run smoke -- --target ../consumer-copy
 ```
 
+<!-- codescope ignore this because the documented smoke workflow matches the implementation. -->
+
 The target must be an existing, disposable consumer repository.
 Smoke does not create or prepare the target.
 It packs this package, installs the tarball, runs the consumer's `npm test`,

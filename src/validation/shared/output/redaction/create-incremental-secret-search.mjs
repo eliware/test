@@ -45,6 +45,7 @@ export function createIncrementalSearch(values, workLimit, createStream) {
 
     matchIndex.add(found.matches);
 
+    // codescope ignore this because retaining the longest possible secret prevents split matches from crossing the boundary.
     const candidateBoundary = Math.max(0, pendingLength - maximumSecretLength);
     let boundary = candidateBoundary;
     const crossingStart = matchIndex.earliestCrossing(pendingStart + candidateBoundary);

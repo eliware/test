@@ -76,3 +76,28 @@ test("handles explicit directory and non-rule entry shapes", async () => {
   expect(checks).toHaveLength(2);
   expect(checks.find(({ ruleId }) => ruleId === "E-2").parentRuleId).toBeNull();
 });
+
+test("limits check discovery depth and entry count", async () => {
+  const nested = { name: "nested", isDirectory: () => true, isFile: () => false };
+  await expect(
+    discoverCheckTree(
+      "root",
+      async () => ({}),
+      null,
+      async () => [nested],
+    ),
+  ).rejects.toThrow("128-level depth limit");
+  const unrelatedEntries = Array.from({ length: 10_001 }, (_, index) => ({
+    name: `readme-${index}.md`,
+    isDirectory: () => false,
+    isFile: () => true,
+  }));
+  await expect(
+    discoverCheckTree(
+      "root",
+      async () => ({}),
+      null,
+      async () => unrelatedEntries,
+    ),
+  ).rejects.toThrow("10000-entry limit");
+});

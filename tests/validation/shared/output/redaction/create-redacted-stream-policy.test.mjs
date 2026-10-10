@@ -75,6 +75,12 @@ test("suppresses output when suffix preprocessing would exceed its work budget",
   expect(policy.trimSuffix).toBeNull();
 });
 
+test("suppresses output before sorting excessive secret values", () => {
+  const excessiveCount = Array.from({ length: 10_001 }, (_, index) => `secret-${index}`);
+  expect(createRedactedStreamPolicy(excessiveCount, 200_000).suppressed).toBe(true);
+  expect(createRedactedStreamPolicy(["s".repeat(166_667)], 200_000).suppressed).toBe(true);
+});
+
 test.each([null, {}])("suppresses output when matcher construction returns %p", (matcher) => {
   const policy = createRedactedStreamPolicy(["secret"], 20, {
     getSecretMatcher: () => matcher,

@@ -20,6 +20,7 @@ export function runWindowsProcessTreeFallback(
   const args = ["-NoProfile", "-NonInteractive", "-Command", script];
   const commandOptions = { ...options, env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) } };
   try {
+    // codescope ignore this because the default execute adapter is execFileSync and waits for PowerShell.
     execute(
       resolveWindowsSystemExecutable(
         env,

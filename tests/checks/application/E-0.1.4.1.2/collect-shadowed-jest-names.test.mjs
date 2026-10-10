@@ -14,6 +14,7 @@ test("collects shadowed Jest names and local test callbacks", () => {
   expect(collectShadowedJestNames(fn, names, new Set(["callback"]))).toEqual({
     tests: new Set(["test", "it"]),
     callbacks: new Set(),
+    describes: new Set(),
   });
 });
 
@@ -79,5 +80,64 @@ test("ignores function declarations that do not shadow Jest names", () => {
     { callbacks: new Set(["test"]), namespaces: new Set(["jest"]) },
     new Set(["callback"]),
   );
-  expect(result).toEqual({ tests: new Set(), callbacks: new Set() });
+  expect(result).toEqual({ tests: new Set(), callbacks: new Set(), describes: new Set() });
+});
+
+test("tracks local describe bindings", () => {
+  const names = {
+    callbacks: new Set(["test"]),
+    namespaces: new Set(),
+    describes: new Set(["describe"]),
+  };
+  expect(
+    collectShadowedJestNames(
+      { params: [{ type: "Identifier", name: "describe" }], body: [] },
+      names,
+      new Set(),
+    ).describes,
+  ).toEqual(new Set(["describe"]));
+  expect(
+    collectShadowedJestNames(
+      {
+        params: [],
+        body: { type: "FunctionDeclaration", id: { name: "describe" }, params: [], body: [] },
+      },
+      names,
+      new Set(),
+    ).describes,
+  ).toEqual(new Set(["describe"]));
+  expect(
+    collectShadowedJestNames(
+      {
+        params: [],
+        body: {
+          type: "VariableDeclarator",
+          id: { type: "Identifier", name: "describe" },
+          init: { type: "FunctionExpression" },
+        },
+      },
+      names,
+      new Set(),
+    ).describes,
+  ).toEqual(new Set(["describe"]));
+  expect(
+    collectShadowedJestNames(
+      {
+        params: [],
+        body: { type: "AssignmentExpression", left: { type: "Identifier", name: "describe" } },
+      },
+      names,
+      new Set(),
+    ).describes,
+  ).toEqual(new Set(["describe"]));
+  expect(
+    collectShadowedJestNames(
+      {
+        params: [],
+        body: { type: "FunctionDeclaration", id: { name: "test" }, params: [], body: [] },
+      },
+      names,
+      new Set(),
+    ).tests,
+  ).toEqual(new Set(["test"]));
 });

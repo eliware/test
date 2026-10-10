@@ -38,6 +38,26 @@ test("restores files, directories, symlinks, and absent paths", async () => {
   expect(fs.rm).toHaveBeenCalledWith("backup", { recursive: true, force: true });
 });
 
+test("checks package parents before restoring captured paths", async () => {
+  const fs = mockFs();
+  fs.lstat.mockImplementation(async (path) => {
+    if (path.startsWith("consumer"))
+      return { isSymbolicLink: () => false, isDirectory: () => true };
+    throw Object.assign(new Error("missing"), { code: "ENOENT" });
+  });
+  await restoreSmokeTargetState(
+    {
+      storage: "backup",
+      targetRoot: "consumer",
+      packageName: "@eliware/test",
+      entries: [{ path: "package", type: "missing" }],
+    },
+    fs,
+  );
+  expect(fs.lstat).toHaveBeenCalledWith(join("consumer", "node_modules"));
+  expect(fs.rm).toHaveBeenCalledWith("backup", { recursive: true, force: true });
+});
+
 test("retains backup files and reports restoration failures", async () => {
   const fs = mockFs();
   fs.chmod.mockRejectedValue(new Error("denied"));

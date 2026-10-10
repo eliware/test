@@ -30,6 +30,7 @@ directives:
   - id: E-0.1.7.1.2
     dos:
       - Put each command definition in commands/<name>.json.
+      - Set each command definition name to its file name without the extension.
       - Put each command adapter in commands/<name>.mjs.
       - Put each command handler in src/commands/<name>.mjs.
       - Use a type 1 command definition with valid names and descriptions.

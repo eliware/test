@@ -1,10 +1,19 @@
-import { isActiveJestTestExpression } from "./is-active-jest-test-expression.mjs";
 import { collectShadowedJestNames } from "./collect-shadowed-jest-names.mjs";
-import { collectJestDescribeNames } from "./collect-jest-describe-names.mjs";
+import {
+  isRegisteredJestSuiteCall,
+  isRegisteredJestTestCall,
+  isSkippedJestSuiteCall,
+} from "./is-registered-jest-call.mjs";
 
 export function hasRegisteredJestTest(program, bindings) {
-  const { names, callbackNames, blockedTests, blockedCallbacks } = bindings;
-  const describeNames = collectJestDescribeNames(program);
+  const {
+    names,
+    describeNames = new Set(["describe", "context"]),
+    callbackNames,
+    blockedTests,
+    blockedCallbacks,
+    blockedDescribes = new Set(),
+  } = bindings;
   return containsTestCall(
     program,
     names,
@@ -12,6 +21,7 @@ export function hasRegisteredJestTest(program, bindings) {
     blockedTests,
     blockedCallbacks,
     describeNames,
+    blockedDescribes,
   );
 }
 
@@ -22,11 +32,20 @@ function containsTestCall(
   blockedTests,
   blockedCallbacks,
   describeNames,
+  blockedDescribes,
   allowFunction = false,
 ) {
   if (Array.isArray(node))
     return node.some((item) =>
-      containsTestCall(item, names, callbackNames, blockedTests, blockedCallbacks, describeNames),
+      containsTestCall(
+        item,
+        names,
+        callbackNames,
+        blockedTests,
+        blockedCallbacks,
+        describeNames,
+        blockedDescribes,
+      ),
     );
   if (!node || typeof node !== "object") return false;
   if (isFunction(node)) {
@@ -39,11 +58,14 @@ function containsTestCall(
       new Set([...blockedTests, ...local.tests]),
       new Set([...blockedCallbacks, ...local.callbacks]),
       describeNames,
+      new Set([...blockedDescribes, ...local.describes]),
     );
   }
   if (node.type === "CallExpression") {
-    if (isTestCall(node, names, callbackNames, blockedTests, blockedCallbacks)) return true;
-    if (isDescribeCall(node, describeNames, callbackNames)) {
+    if (isRegisteredJestTestCall(node, names, callbackNames, blockedTests, blockedCallbacks))
+      return true;
+    if (isSkippedJestSuiteCall(node, describeNames)) return false;
+    if (isRegisteredJestSuiteCall(node, describeNames, blockedDescribes, callbackNames)) {
       const callback = node.arguments[1];
       return containsTestCall(
         callback,
@@ -52,46 +74,26 @@ function containsTestCall(
         blockedTests,
         blockedCallbacks,
         describeNames,
+        blockedDescribes,
         true,
       );
     }
   }
   return Object.values(node).some((item) =>
-    containsTestCall(item, names, callbackNames, blockedTests, blockedCallbacks, describeNames),
+    containsTestCall(
+      item,
+      names,
+      callbackNames,
+      blockedTests,
+      blockedCallbacks,
+      describeNames,
+      blockedDescribes,
+    ),
   );
 }
 
 function isFunction(node) {
   return ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"].includes(
     node?.type,
-  );
-}
-
-function isTestCall(call, names, callbackNames, blockedTests, blockedCallbacks) {
-  if (!isCallback(call.arguments[1], callbackNames, blockedCallbacks)) return false;
-  const active = {
-    callbacks: new Set([...names.callbacks].filter((name) => !blockedTests.has(name))),
-    namespaces: new Set([...names.namespaces].filter((name) => !blockedTests.has(name))),
-  };
-  return isActiveJestTestExpression(call.callee, active);
-}
-
-function isCallback(node, callbackNames, blockedCallbacks) {
-  return (
-    isFunction(node) ||
-    (node?.type === "Identifier" &&
-      callbackNames.has(node.name) &&
-      !blockedCallbacks.has(node.name))
-  );
-}
-
-// codescope ignore this because callbackNames has function-valued bindings, and identifiers alone do not register tests.
-function isDescribeCall(call, describeNames, callbackNames) {
-  const callback = call.arguments[1];
-  return (
-    (isFunction(callback) ||
-      (callback?.type === "Identifier" && callbackNames.has(callback.name))) &&
-    call.callee.type === "Identifier" &&
-    describeNames.has(call.callee.name)
   );
 }

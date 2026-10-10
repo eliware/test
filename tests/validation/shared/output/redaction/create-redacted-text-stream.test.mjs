@@ -63,12 +63,14 @@ test("suppresses complete diagnostics when matcher work exceeds its budget", () 
   expect(output.redactComplete("a".repeat(500_000))).toBe("");
 });
 
-test("suppresses complete output after the stream session exceeds its suffix work budget", () => {
-  const secrets = Array.from({ length: 6 }, (_, index) => `${index}${"x".repeat(59_999)}`);
-  const output = createRedactedTextStream(secrets, 100_000);
-  output.push("safe output");
+test("checks complete output after the stream session exceeds its cumulative work budget", () => {
+  const output = createRedactedTextStream(["secret"], 2_000_000, {
+    maxSearchWorkPerChunk: 600_000,
+  });
+  output.push("x".repeat(400_000));
+  output.push("x".repeat(400_000));
 
-  expect(output.redactComplete("safe output")).toBe("");
+  expect(output.redactComplete("safe output")).toBe("safe output");
 });
 
 test("suppresses complete diagnostics after a runtime matcher failure", () => {
@@ -76,4 +78,12 @@ test("suppresses complete diagnostics after a runtime matcher failure", () => {
 
   expect(output.push("safe prefix")).toBe("");
   expect(output.redactComplete("diagnostic secret")).toBe("");
+});
+
+test("does not convert stream chunks after policy suppression", () => {
+  const output = createRedactedTextStream(["long-secret"], 4);
+  const toString = jest.fn(() => "sensitive input");
+
+  expect(output.push({ toString })).toBe("");
+  expect(toString).not.toHaveBeenCalled();
 });

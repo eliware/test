@@ -89,9 +89,12 @@ test("forwards suite-end progress to the configured callback", async () => {
 
 test("normalizes and redacts synchronous spawn failures before process setup", async () => {
   const createProgressTimeout = jest.fn();
+  const environment = { API_TOKEN: "private-token-value" };
+  let spawnOptions;
   const result = runChild("ignored", [], {
-    env: { API_TOKEN: "private-token-value" },
-    spawnProcess: () => {
+    env: environment,
+    spawnProcess: (_command, _args, options) => {
+      spawnOptions = options;
       throw new Error("spawn failed with private-token-value");
     },
     createProgressTimeout,
@@ -104,6 +107,9 @@ test("normalizes and redacts synchronous spawn failures before process setup", a
   }
   expect(error.message).toBe("spawn failed with [REDACTED]");
   expect(createProgressTimeout).not.toHaveBeenCalled();
+  expect(spawnOptions.env).toEqual(environment);
+  expect(spawnOptions.env).not.toBe(environment);
+  expect(environment.API_TOKEN).toBe("private-token-value");
 });
 
 test("normalizes non-Error synchronous spawn failures", async () => {
@@ -126,10 +132,12 @@ test("normalizes non-Error synchronous spawn failures", async () => {
 test("terminates a spawned child when progress-timeout setup fails", async () => {
   const child = Object.assign(new EventEmitter(), { kill: jest.fn() });
   const terminateChild = jest.fn(() => true);
+  const environment = { PATH: process.env.PATH };
 
   await expect(
     runChild("ignored", [], {
       spawnProcess: () => child,
+      env: environment,
       createProgressTimeout: () => {
         throw new Error("timeout setup failed");
       },
@@ -142,9 +150,10 @@ test("terminates a spawned child when progress-timeout setup fails", async () =>
     process.platform,
     process.kill,
     undefined,
-    process.env,
+    expect.objectContaining(environment),
     "SIGTERM",
   );
+  expect(terminateChild.mock.calls[0][4]).not.toBe(environment);
   expect(child.kill).not.toHaveBeenCalled();
 });
 

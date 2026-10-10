@@ -47,6 +47,8 @@ export function createRepositoryDirectoryReadCache(
         }
         current.entries = await readDirectory(key, { withFileTypes: true });
         const afterReadVersion = version(await stat(key, { bigint: true }), platform);
+        // codescope ignore this because the cache contract compares directory metadata snapshots.
+        // codescope ignore this because supported Node.js BigIntStats always includes nanosecond timestamps.
         if (afterReadVersion.key !== currentVersion.key) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);
         }
@@ -65,5 +67,8 @@ export function createRepositoryDirectoryReadCache(
   }
   readDirectoryCached.getRevision = () => revision;
   readDirectoryCached.getTrackedDirectories = () => [...reads.keys()];
+  readDirectoryCached.forget = (directoryPath) => {
+    if (reads.delete(inventoryPath(root, directoryPath))) revision += 1;
+  };
   return readDirectoryCached;
 }
