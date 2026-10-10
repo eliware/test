@@ -30,6 +30,7 @@ test.each([
   [{ author: "Other" }, "author"],
   [{ license: "ISC" }, "license"],
   [{ type: "commonjs" }, "type"],
+  [{ type: undefined }, 'package.json.type must be "module"'],
   [{ engines: { node: "26" } }, 'engines.node must be ">=26"'],
   [{ repository: { type: "git", url: "https://example.com" } }, "repository"],
   [{ homepage: "https://example.com" }, "homepage"],

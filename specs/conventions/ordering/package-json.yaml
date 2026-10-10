@@ -1,9 +1,10 @@
 version: "12.0"
-description: Defines canonical order for package.json keys.
+description: Defines package key order. Put type after version. Put unlisted keys last.
 orders:
   topLevelKeys:
     - name
     - version
+    - type
     - description
     - keywords
     - private
