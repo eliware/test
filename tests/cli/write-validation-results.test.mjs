@@ -30,7 +30,8 @@ test("prints an aggregate summary with check, Jest, issue, and time counts", () 
     "Aggregate validation passed.\n" +
       "Checks: 42 | Test suites: 8 | Tests: 120\n" +
       "Lint warnings: 0 | Format issues: 0 | Audit issues: 0 | Pack issues: 0\n" +
-      "Checks time: 2.800s | Jest time: 1.200s | Total time: 4.000s",
+      "Checks time: 2.800s | Jest time: 1.200s | Total time: 4.000s\n" +
+      "Exit-code: 0",
   );
 });
 

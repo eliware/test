@@ -32,6 +32,7 @@ function formatAggregateSuccess(result, startedAt) {
     `Checks: ${checkCount} | Test suites: ${counts.testSuites} | Tests: ${counts.tests}`,
     "Lint warnings: 0 | Format issues: 0 | Audit issues: 0 | Pack issues: 0",
     `Checks time: ${seconds(totalMs - jestMs)}s | Jest time: ${seconds(jestMs)}s | Total time: ${seconds(totalMs)}s`,
+    "Exit-code: 0",
   ].join("\n");
 }
 
