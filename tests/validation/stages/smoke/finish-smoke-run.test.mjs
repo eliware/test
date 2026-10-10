@@ -43,6 +43,15 @@ test("skips restoration for invalid snapshots", async () => {
   expect(restoreState).not.toHaveBeenCalled();
 });
 
+test("reports cleanup rejection as a smoke failure result", async () => {
+  await expect(
+    finishSmokeRun({
+      ...base,
+      cleanup: async () => Promise.reject(new Error("cleanup denied")),
+    }),
+  ).resolves.toContain("Temporary smoke cleanup failed: cleanup denied.");
+});
+
 test("uses the default cleanup for the verified temporary directory", async () => {
   const tempRoot = await mkdtemp(join(tmpdir(), "eliware-smoke-finish-"));
   const result = await finishSmokeRun({

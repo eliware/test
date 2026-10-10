@@ -21,6 +21,6 @@ function formatValidationSuccess(mode) {
     pack: "Pack validation passed",
     focused: "Focused validation passed",
   };
-  const summary = mode === null ? "Aggregate validation passed" : summaries[mode];
-  return `${summary} | Exit-code: 0`;
+  if (mode === null) return "Aggregate validation passed.";
+  return `${summaries[mode]} | Exit-code: 0`;
 }

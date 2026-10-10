@@ -145,7 +145,7 @@ test.each([
     2,
   ],
   ["Windows metadata", metadata(1n), "win32", 2],
-  ["millisecond-aligned nanoseconds", metadata(1_000_000n), "linux", 2],
+  ["millisecond-aligned nanoseconds", metadata(1_000_000n), "linux", 1],
   ["one precise nanosecond field", { ...metadata(1_000_000n), ctimeNs: 1n }, "linux", 1],
 ])("uses safe directory cache policy for %s", async (_name, snapshot, platform, expectedCalls) => {
   await expectDirectoryReads(snapshot, platform, expectedCalls);

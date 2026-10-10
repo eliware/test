@@ -19,9 +19,14 @@ export async function finishSmokeRun({
       restoreError = error.message;
     }
   }
-  const cleanupMessage = await cleanup(tempRoot, tempIdentity, {
-    preserve: Boolean(restoreError),
-  });
+  let cleanupMessage;
+  try {
+    cleanupMessage = await cleanup(tempRoot, tempIdentity, {
+      preserve: Boolean(restoreError),
+    });
+  } catch (error) {
+    cleanupMessage = `Temporary smoke cleanup failed: ${error.message}.`;
+  }
   if (restoreError)
     return `${outcome} Target restoration failed: ${restoreError}. ${cleanupMessage}`;
   if (state && !state.error) outcome = `${outcome} Previous target package state restored.`;
