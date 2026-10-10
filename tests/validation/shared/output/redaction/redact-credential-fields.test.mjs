@@ -16,6 +16,9 @@ test("redacts key-value, quoted, whitespace-delimited, and private-key credentia
       "-----BEGIN ENCRYPTED PRIVATE KEY-----\nciphertext\n-----END ENCRYPTED PRIVATE KEY-----",
     ),
   ).toBe("[REDACTED PRIVATE KEY]");
+  expect(
+    redactCredentialFields("-----BEGIN PUBLIC KEY-----\npublic-data\n-----END PUBLIC KEY-----"),
+  ).toBe("[REDACTED PUBLIC KEY]");
   expect(redactCredentialFields("ordinary output")).toBe("ordinary output");
 });
 

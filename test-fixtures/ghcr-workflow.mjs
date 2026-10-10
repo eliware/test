@@ -32,6 +32,9 @@ export function createGhcrWorkflow() {
         steps: [
           { uses: "actions/checkout@v6" },
           {
+            run: `node -e "const version=require('./package.json').version;if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"`,
+          },
+          {
             id: "push",
             uses: "docker/build-push-action@v6",
             with: {

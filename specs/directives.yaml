@@ -162,8 +162,9 @@ directives:
           - Resolve executables through supported package resolution.
           - Bound captured stdout and stderr under an aggregate budget.
           - Preserve UTF-8 boundaries, surrogate pairs, and complete redaction markers.
-          - Redact sensitive values in harness diagnostics, including PEM private keys.
+          - Redact sensitive values in harness diagnostics, including PEM key blocks.
           - Redact both encrypted and unencrypted PEM private keys.
+          - Redact PEM public key blocks.
           - Emit buffered text before a secret reaches the output limit.
           - Stop child processes within a platform-specific time limit.
         donts:

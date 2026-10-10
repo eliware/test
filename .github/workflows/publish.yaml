@@ -41,7 +41,5 @@ jobs:
       - run: npm -g install npm@latest
       - run: npm ci
       - name: Verify release tag matches package version
-        shell: bash
-        run: |
-          [[ "${GITHUB_REF_NAME}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] && test "$(node -p "require(process.argv[1]).version" ./package.json)" = "${GITHUB_REF_NAME#v}"
+        run: node -e "const version=require('./package.json').version;if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
       - run: npm publish --provenance

@@ -11,7 +11,7 @@ test("accepts local files, folders, fragments, and valid external links", async 
     await writeFile(join(root, "target.md"), "## Link target\n<div id='anchor'></div>");
     await writeFile(
       join(root, "README.md"),
-      "[file](target.md#link-target) [id](target.md#anchor) [folder](folder/) https://github.com/eliware/test <mailto:eli@eliware.org>",
+      "[file](target.md#link-target) [id](target.md#anchor) [folder](folder/) https://github.com/eliware/test <mailto:eli@eliware.org> <https://example.org/?q=(x)> //example.org/path",
     );
     await expect(validateMarkdownLinks(root)).resolves.toEqual([]);
   } finally {
@@ -24,14 +24,14 @@ test("reports invalid external, escaping, missing, and fragment links", async ()
   try {
     await writeFile(
       join(root, "README.md"),
-      "[escape](../outside.md) [missing](missing.md) [fragment](README.md#bad%ZZ) [network](//host/path) <http://> <https://u:p@example.org> <mailto:nope>",
+      "[escape](../outside.md) [missing](missing.md) [fragment](README.md#bad%ZZ) [network](//u:p@host/path) <http://> <https://u:p@example.org> <mailto:nope>",
     );
     const errors = await validateMarkdownLinks(root);
     expect(errors.join("\n")).toContain("escapes the repository");
     expect(errors.join("\n")).toContain("does not resolve");
     expect(errors.join("\n")).toContain("invalid");
     expect(errors.join("\n")).toContain("fragment does not resolve");
-    expect(errors.join("\n")).toContain("link is invalid: //host/path");
+    expect(errors.join("\n")).toContain("link is invalid: https://u:p@host/path");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

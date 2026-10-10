@@ -23,36 +23,36 @@ test("rejects missing workflow inventory", async () => {
 
 test("requires valid, unique push IDs and one matching attestation", async () => {
   const missingId = createGhcrWorkflow();
-  delete missingId.jobs.publish.steps[1].id;
+  delete missingId.jobs.publish.steps[2].id;
   await expect(validate(missingId)).resolves.toMatchObject({
     message: expect.stringContaining("valid step ID"),
   });
   const duplicateId = createGhcrWorkflow();
-  duplicateId.jobs.publish.steps.splice(2, 0, structuredClone(duplicateId.jobs.publish.steps[1]));
+  duplicateId.jobs.publish.steps.splice(3, 0, structuredClone(duplicateId.jobs.publish.steps[2]));
   await expect(validate(duplicateId)).resolves.toMatchObject({
     message: expect.stringContaining("IDs must be unique"),
   });
   const missingAttestation = createGhcrWorkflow();
-  missingAttestation.jobs.publish.steps.splice(2, 1);
+  missingAttestation.jobs.publish.steps.splice(3, 1);
   await expect(validate(missingAttestation)).resolves.toMatchObject({
     message: expect.stringContaining("one matching attestation"),
   });
 });
 
 test.each([
-  [(flow) => (flow.jobs.publish.steps[2].uses = "actions/attest@v3"), "actions/attest v4"],
+  [(flow) => (flow.jobs.publish.steps[3].uses = "actions/attest@v3"), "actions/attest v4"],
   [
-    (flow) => (flow.jobs.publish.steps[2].with["subject-name"] = "ghcr.io/other/image"),
+    (flow) => (flow.jobs.publish.steps[3].with["subject-name"] = "ghcr.io/other/image"),
     "actions/attest v4",
   ],
-  [(flow) => (flow.jobs.publish.steps[2].with["subject-digest"] = "wrong"), "actions/attest v4"],
-  [(flow) => (flow.jobs.publish.steps[2].with["push-to-registry"] = false), "actions/attest v4"],
-  [(flow) => (flow.jobs.publish.steps[2].if = "false"), "actions/attest v4"],
-  [(flow) => (flow.jobs.publish.steps[3].run = "echo no digest"), "must run in order"],
-  [(flow) => (flow.jobs.publish.steps[4].run = "echo no image inspect"), "must run in order"],
-  [(flow) => (flow.jobs.publish.steps[5].run = "echo no attestation verify"), "must run in order"],
-  [(flow) => (flow.jobs.publish.steps[6].run = "echo digest"), "must run in order"],
-  [(flow) => (flow.jobs.publish.steps[6].if = "false"), "must run in order"],
+  [(flow) => (flow.jobs.publish.steps[3].with["subject-digest"] = "wrong"), "actions/attest v4"],
+  [(flow) => (flow.jobs.publish.steps[3].with["push-to-registry"] = false), "actions/attest v4"],
+  [(flow) => (flow.jobs.publish.steps[3].if = "false"), "actions/attest v4"],
+  [(flow) => (flow.jobs.publish.steps[4].run = "echo no digest"), "must run in order"],
+  [(flow) => (flow.jobs.publish.steps[5].run = "echo no image inspect"), "must run in order"],
+  [(flow) => (flow.jobs.publish.steps[6].run = "echo no attestation verify"), "must run in order"],
+  [(flow) => (flow.jobs.publish.steps[7].run = "echo digest"), "must run in order"],
+  [(flow) => (flow.jobs.publish.steps[7].if = "false"), "must run in order"],
   [(flow) => flow.jobs.publish.steps.push({ run: "echo after chain" }), "must end at the last"],
 ])("rejects an invalid digest attestation chain", async (change, message) => {
   const workflow = createGhcrWorkflow();
@@ -65,7 +65,7 @@ test.each([
 
 test("rejects a workflow with no image push", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps.splice(1);
+  workflow.jobs.publish.steps.splice(2);
   await expect(validate(workflow)).resolves.toMatchObject({
     message: expect.stringContaining("image push before attestation"),
   });

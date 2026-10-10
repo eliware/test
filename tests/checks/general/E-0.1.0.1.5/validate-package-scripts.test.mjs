@@ -5,6 +5,7 @@ test("accepts canonical self-hosted scripts and nonempty extra scripts", () => {
   expect(
     validatePackageScripts({
       name: "@eliware/test",
+      repository: { url: "git+https://github.com/eliware/test.git" },
       scripts: {
         test: "node bin/eliware-test.mjs",
         lint: "node bin/eliware-test.mjs --lint",
@@ -15,6 +16,12 @@ test("accepts canonical self-hosted scripts and nonempty extra scripts", () => {
       },
     }),
   ).toEqual([]);
+});
+
+test("does not grant self-hosted scripts to a package that copies the package name", () => {
+  expect(
+    validatePackageScripts({ name: "@eliware/test", repository: { url: "other" }, scripts: {} }),
+  ).toHaveLength(5);
 });
 
 test("requires the shared consumer script commands", () => {

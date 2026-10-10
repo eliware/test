@@ -17,6 +17,15 @@ test("keeps each insertion order balanced and sorted", () => {
   }
 });
 
+test("inserts large ordered input without recursive insertion", () => {
+  const tree = createBalancedNumericTree();
+  for (let value = 0; value < 20_000; value += 1) tree.insert(value);
+  expect(tree.minimum()).toBe(0);
+  expect(tree.lowerBound(19_999)).toBe(19_999);
+  tree.removeMinimum();
+  expect(tree.minimum()).toBe(1);
+});
+
 test("removes minimum values and handles an empty tree", () => {
   const tree = createBalancedNumericTree();
   expect(tree.minimum()).toBeUndefined();

@@ -1,9 +1,10 @@
 import { parseAllDocuments } from "yaml";
 import { findNpmTokenSettings } from "./find-npm-token-settings.mjs";
+import { hasCanonicalReleaseTagGuard } from "../../shared/publish-workflow/validate-release-tag-guard.mjs";
 
 const workflowPath = ".github/workflows/publish.yaml";
 
-export async function validateNpmPublishWorkflow(inventory) {
+export async function validateNpmPublishWorkflow(inventory, packageJson = {}) {
   if (!inventory?.files || !inventory.readText) return ["publish.yaml could not be inspected."];
   try {
     if (!(await inventory.files("all")).includes(workflowPath))
@@ -11,13 +12,13 @@ export async function validateNpmPublishWorkflow(inventory) {
     const documents = parseAllDocuments(await inventory.readText(workflowPath));
     if (documents.length !== 1 || documents[0].errors.length)
       return [`${workflowPath} must contain one valid YAML document.`];
-    return validateWorkflow(documents[0].toJS());
+    return validateWorkflow(documents[0].toJS(), packageJson);
   } catch (error) {
     return [`${workflowPath} could not be inspected: ${error.message}`];
   }
 }
 
-function validateWorkflow(document) {
+function validateWorkflow(document, packageJson) {
   const errors = findNpmTokenSettings(document);
   const steps = document?.jobs?.publish?.steps;
   if (!Array.isArray(steps)) return [...errors, "publish.yaml publish job must define steps."];
@@ -31,6 +32,9 @@ function validateWorkflow(document) {
   const publish = steps.filter(
     (step) => typeof step?.run === "string" && /\bnpm publish\b/u.test(step.run),
   );
+  const publishIndex = steps.indexOf(publish[0]);
+  if (!hasCanonicalReleaseTagGuard(document, steps, packageJson.version, publishIndex))
+    errors.push("npm publisher must guard publication with the canonical package version tag.");
   if (
     install < 0 ||
     ci <= install ||

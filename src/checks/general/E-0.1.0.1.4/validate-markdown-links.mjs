@@ -32,13 +32,10 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
         errors.push(`Markdown reference link has no definition in ${file}.`);
         continue;
       }
-      if (/^(?:https?|mailto):/iu.test(reference)) {
-        const error = validateExternalLink(reference);
+      if (/^(?:https?|mailto):/iu.test(reference) || reference.startsWith("//")) {
+        const externalReference = reference.startsWith("//") ? `https:${reference}` : reference;
+        const error = validateExternalLink(externalReference);
         if (error) errors.push(`${error} in ${file}.`);
-        continue;
-      }
-      if (reference.startsWith("//")) {
-        errors.push(`Documentation link is invalid: ${reference} in ${file}.`);
         continue;
       }
       const error = await validateLocal(file, reference);

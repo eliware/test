@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { attachChildProcessOutput, terminateChildProcess } from "./attach-child-process-output.mjs";
 import { createChildProcessOutputCapture } from "./create-child-process-output-capture.mjs";
 import { redactChildProcessError } from "../output/redaction/redact-child-process-error.mjs";
 
@@ -31,11 +32,11 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
         throw new TypeError("Child process adapter returned an invalid child process.");
       }
       child.on("error", (error) => {
-        terminateChild(child);
+        terminateChildProcess(child);
         rejectOnce(error);
       });
-      attachOutputStream(child, child.stdout, "stdout", output, rejectOnce, () => settled);
-      attachOutputStream(child, child.stderr, "stderr", output, rejectOnce, () => settled);
+      attachChildProcessOutput(child, child.stdout, "stdout", output, rejectOnce, () => settled);
+      attachChildProcessOutput(child, child.stderr, "stderr", output, rejectOnce, () => settled);
       child.on("close", (code, signal) => {
         if (settled) return;
         if (signal != null) {
@@ -50,31 +51,8 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
         resolveResult({ code, signal, ...output.finish() });
       });
     } catch (error) {
-      terminateChild(child);
+      terminateChildProcess(child);
       rejectOnce(error);
     }
-  });
-}
-
-function terminateChild(child) {
-  if (typeof child?.kill !== "function") return;
-  try {
-    child.kill();
-  } catch {
-    // Preserve the stream setup error as the actionable failure.
-  }
-}
-
-function attachOutputStream(child, stream, name, output, rejectOnce, isSettled) {
-  if (stream == null) return;
-  if (typeof stream.on !== "function") {
-    throw new TypeError(`Child process adapter returned an invalid ${name} stream.`);
-  }
-  stream.on("data", (chunk) => {
-    if (!isSettled()) output.push(name, chunk);
-  });
-  stream.on("error", (error) => {
-    terminateChild(child);
-    rejectOnce(error);
   });
 }

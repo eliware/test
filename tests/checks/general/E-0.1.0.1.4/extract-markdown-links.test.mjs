@@ -17,6 +17,15 @@ test("extracts inline, reference, HTML, and angle links", () => {
   ]);
 });
 
+test("extracts angle-bracket URLs with parentheses in query values", () => {
+  expect(
+    extractMarkdownLinks("<https://example.org/?q=(x)> [link](<https://example.org/?q=(x)>)"),
+  ).toEqual([
+    { reference: "https://example.org/?q=(x)" },
+    { reference: "https://example.org/?q=(x)" },
+  ]);
+});
+
 test("does not treat Markdown images or HTML image sources as links", () => {
   expect(extractMarkdownLinks('![image](image.png) <img src="image.png">')).toEqual([]);
 });

@@ -12,12 +12,15 @@ const selfScripts = {
   format: "node bin/eliware-test.mjs --format",
   "format:check": "node bin/eliware-test.mjs --format-check",
 };
+const selfRepository = "git+https://github.com/eliware/test.git";
 
 export function validatePackageScripts(packageJson = {}) {
   const scripts = packageJson?.scripts;
   if (!scripts || typeof scripts !== "object" || Array.isArray(scripts))
     return ["package.json.scripts must be an object."];
-  const required = packageJson.name === "@eliware/test" ? selfScripts : consumerScripts;
+  const isSelf =
+    packageJson.name === "@eliware/test" && packageJson.repository?.url === selfRepository;
+  const required = isSelf ? selfScripts : consumerScripts;
   const errors = [];
   for (const [name, command] of Object.entries(required))
     if (scripts[name] !== command) errors.push(`package.json.scripts.${name} must be ${command}.`);

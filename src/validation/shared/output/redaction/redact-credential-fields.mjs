@@ -8,6 +8,10 @@ export function redactCredentialFields(text) {
       "[REDACTED PRIVATE KEY]",
     )
     .replace(
+      /-----BEGIN(?: [A-Z0-9]+)* PUBLIC KEY-----[\s\S]*?-----END(?: [A-Z0-9]+)* PUBLIC KEY-----/gu,
+      "[REDACTED PUBLIC KEY]",
+    )
+    .replace(
       new RegExp(
         String.raw`(["']?(?:${credentialKey})["']?[ \t]*[=:][ \t]*)(?:"(?:\\.|[^"\\\r\n])*"|'[^'\r\n]*'|[^\s,;}]+)`,
         "giu",

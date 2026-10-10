@@ -20,11 +20,21 @@ test("reports a missing workflow file", async () => {
 
 test("reports an image tag outside the package image", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[1].with.tags = "ghcr.io/other/image:v12.0.0";
+  workflow.jobs.publish.steps[2].with.tags = "ghcr.io/other/image:v12.0.0";
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
   ).resolves.toContain(
     "GHCR image tags must use one package-derived name and the exact v-prefixed version.",
+  );
+});
+
+test("requires an unconditional version tag guard before the image push", async () => {
+  const workflow = createGhcrWorkflow();
+  workflow.jobs.publish.steps.splice(1, 1);
+  await expect(
+    validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
+  ).resolves.toContain(
+    "GHCR publisher must guard publication with the canonical package version tag.",
   );
 });
 
@@ -50,7 +60,7 @@ test("rejects missing workflow sections and incomplete publisher data", async ()
 
 test("rejects missing image tag values", async () => {
   const workflow = createGhcrWorkflow();
-  delete workflow.jobs.publish.steps[1].with.tags;
+  delete workflow.jobs.publish.steps[2].with.tags;
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
   ).resolves.toContain(

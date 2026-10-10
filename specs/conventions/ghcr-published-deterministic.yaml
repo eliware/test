@@ -30,6 +30,7 @@ directives:
       - Declare the repository root as the build context.
       - Set one image name ghcr.io/eliware/<unscoped-package-name>.
       - Set the exact v-prefixed package version tag.
+      - Check that the release tag matches the canonical package version before image push.
       - Make additional tags use that same image name.
       - Set ghcr-publish as the publication job environment.
       - Use checkout major v6 in the GHCR publisher.

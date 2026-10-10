@@ -3,6 +3,7 @@ import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.5.mjs";
 
 const packageJson = {
   name: "@eliware/test",
+  repository: { url: "git+https://github.com/eliware/test.git" },
   scripts: {
     test: "node bin/eliware-test.mjs",
     lint: "node bin/eliware-test.mjs --lint",

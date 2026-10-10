@@ -20,16 +20,20 @@ const workflow = `jobs:
           package-manager-cache: false
       - run: npm -g install npm@latest
       - run: npm ci
-      - run: node verify-release-tag.mjs
+      - run: node -e "const version=require('./package.json').version;if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
       - run: npm publish --provenance
+on:
+  push:
+    tags: ["v[0-9]*.[0-9]*.[0-9]*"]
 `;
+const packageJson = { version: "12.0.0" };
 
 function inventory(source = workflow, files = [".github/workflows/publish.yaml"]) {
   return { files: async () => files, readText: async () => source };
 }
 
 test("accepts the required npm publisher setup and command", async () => {
-  await expect(run({ repositoryInventory: inventory() })).resolves.toEqual({
+  await expect(run({ repositoryInventory: inventory(), packageJson })).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
@@ -38,9 +42,11 @@ test("accepts the required npm publisher setup and command", async () => {
 
 test("accepts Node.js 26 as a quoted setup-node value", async () => {
   const source = workflow.replace("node-version: 26", 'node-version: "26"');
-  await expect(run({ repositoryInventory: inventory(source) })).resolves.toMatchObject({
-    status: "pass",
-  });
+  await expect(run({ repositoryInventory: inventory(source), packageJson })).resolves.toMatchObject(
+    {
+      status: "pass",
+    },
+  );
 });
 
 test.each([
@@ -73,8 +79,8 @@ test.each([
   ],
   [
     workflow.replace(
-      "      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: node verify-release-tag.mjs",
-      "      - run: npm ci\n      - run: npm -g install npm@latest\n      - run: node verify-release-tag.mjs",
+      "      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: node -e",
+      "      - run: npm ci\n      - run: npm -g install npm@latest\n      - run: node -e",
     ),
     "install npm latest",
   ],
@@ -101,11 +107,13 @@ test.each([
     "must not define NODE_AUTH_TOKEN",
   ],
 ])("rejects an invalid publisher workflow", async (source, message) => {
-  await expect(run({ repositoryInventory: inventory(source) })).resolves.toMatchObject({
-    ruleId,
-    status: "fail",
-    message: expect.stringContaining(message),
-  });
+  await expect(run({ repositoryInventory: inventory(source), packageJson })).resolves.toMatchObject(
+    {
+      ruleId,
+      status: "fail",
+      message: expect.stringContaining(message),
+    },
+  );
 });
 
 test("rejects missing, malformed, and unreadable publisher workflows", async () => {

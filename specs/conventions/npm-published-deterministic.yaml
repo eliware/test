@@ -52,8 +52,10 @@ directives:
   - id: E-0.1.10.1.2
     dos:
       - Use setup-node major v7 with Node.js 26 for the npm publisher.
+      - Use checkout major v6 before tag verification in the npm publisher.
       - Set registry-url to https://registry.npmjs.org and package-manager-cache to false.
       - Install npm latest before npm ci in the npm publisher.
+      - Check that the release tag matches the canonical package version before publication.
       - Use one unconditional standalone npm publish --provenance step.
     donts:
       - Do not declare NPM_TOKEN or NODE_AUTH_TOKEN in workflow environment or setup.

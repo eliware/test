@@ -4,6 +4,6 @@ import { validateNpmPublishWorkflow } from "./E-0.1.10.1.2/validate-npm-publish-
 export const ruleId = "E-0.1.10.1.2";
 
 export async function run(context = {}) {
-  const errors = await validateNpmPublishWorkflow(context.repositoryInventory);
+  const errors = await validateNpmPublishWorkflow(context.repositoryInventory, context.packageJson);
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }

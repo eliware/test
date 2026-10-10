@@ -48,22 +48,22 @@ test.each([
   [(flow) => (flow.jobs.publish.permissions.packages = "read"), "required read, package"],
   [(flow) => (flow.jobs.publish.steps[0].uses = "actions/checkout@v5"), "checkout v6 once"],
   [(flow) => flow.jobs.publish.steps.push({ uses: "actions/checkout@v6" }), "checkout v6 once"],
-  [(flow) => (flow.jobs.publish.steps[1].if = "false"), "run unconditionally"],
-  [(flow) => flow.jobs.publish.steps.splice(1, 1), "must build and push an image"],
-  [(flow) => (flow.jobs.publish.steps[1].uses = "docker/build-push-action@v5"), "action v6"],
-  [(flow) => (flow.jobs.publish.steps[1].with.context = "src"), "root context"],
-  [(flow) => (flow.jobs.publish.steps[1].with.file = "Dockerfile.dev"), "root context"],
-  [(flow) => (flow.jobs.publish.steps[1].with.push = false), "root context"],
+  [(flow) => (flow.jobs.publish.steps[2].if = "false"), "run unconditionally"],
+  [(flow) => flow.jobs.publish.steps.splice(2, 1), "must build and push an image"],
+  [(flow) => (flow.jobs.publish.steps[2].uses = "docker/build-push-action@v5"), "action v6"],
+  [(flow) => (flow.jobs.publish.steps[2].with.context = "src"), "root context"],
+  [(flow) => (flow.jobs.publish.steps[2].with.file = "Dockerfile.dev"), "root context"],
+  [(flow) => (flow.jobs.publish.steps[2].with.push = false), "root context"],
   [
-    (flow) => (flow.jobs.publish.steps[1].with.tags = ["ghcr.io/other/example:v12.0.0"]),
+    (flow) => (flow.jobs.publish.steps[2].with.tags = ["ghcr.io/other/example:v12.0.0"]),
     "image tags",
   ],
   [
-    (flow) => (flow.jobs.publish.steps[1].with.tags = ["ghcr.io/eliware/example:v13.0.0"]),
+    (flow) => (flow.jobs.publish.steps[2].with.tags = ["ghcr.io/eliware/example:v13.0.0"]),
     "image tags",
   ],
   [
-    (flow) => (flow.jobs.publish.steps[1].with.tags = ["ghcr.io/other/example:latest"]),
+    (flow) => (flow.jobs.publish.steps[2].with.tags = ["ghcr.io/other/example:latest"]),
     "image tags",
   ],
   [(flow) => (flow.on.push.tags = ["main"]), "version tags"],
@@ -84,12 +84,12 @@ test.each([
 
 test("permits additional tags that use the same image name", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[1].with.tags.push("ghcr.io/eliware/example:latest");
+  workflow.jobs.publish.steps[2].with.tags.push("ghcr.io/eliware/example:latest");
   await expect(validate(workflow)).resolves.toMatchObject({ status: "pass" });
 });
 
 test("accepts image tags as a multiline string", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[1].with.tags = "ghcr.io/eliware/example:v12.0.0\n";
+  workflow.jobs.publish.steps[2].with.tags = "ghcr.io/eliware/example:v12.0.0\n";
   await expect(validate(workflow)).resolves.toMatchObject({ status: "pass" });
 });
