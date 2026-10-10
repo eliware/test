@@ -33,7 +33,7 @@ It does not run live operational checks.
 
 ## Requirements
 
-Use Node.js 26 and npm 12 or later.
+Use Node.js 26 or later and npm 12 or later.
 The CLI checks the npm version before validation.
 It stops when npm is too old or its version is unknown.
 `--help` and `--version` skip this check.
@@ -52,7 +52,7 @@ Install the public package in a consumer repository:
 npm install --save-dev @eliware/test
 ```
 
-Use Node.js 26 (`>=26 <27`) and npm 12 or later.
+Use Node.js 26 or later and npm 12 or later.
 
 ## Usage
 
@@ -252,8 +252,8 @@ eliware-test tests/checks/example.test.mjs
 `--pack` checks package contents. It does not publish.
 No command authorizes a release, deployment, or external change.
 Legacy `--ignore-*` options are unsupported.
-Supported platforms are Windows, macOS, and Linux with Node.js 26 and npm.
-Development tests Windows. CI tests Ubuntu.
+Supported platforms are Windows, macOS, and Linux with Node.js 26 or later and npm 12 or later.
+Development tests Windows. CI tests Ubuntu with Node.js 26.
 macOS support is inferred from Ubuntu behavior, not direct testing.
 
 ## Exit codes

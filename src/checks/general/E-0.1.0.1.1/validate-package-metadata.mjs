@@ -36,7 +36,8 @@ export function validatePackageMetadata(packageJson) {
     errors.push("package.json.author must use the canonical Eliware value.");
   if (packageJson?.license !== "MIT") errors.push('package.json.license must be "MIT".');
   if (packageJson?.type !== "module") errors.push('package.json.type must be "module".');
-  if (packageJson?.engines?.node !== "26") errors.push('package.json.engines.node must be "26".');
+  if (packageJson?.engines?.node !== ">=26")
+    errors.push('package.json.engines.node must be ">=26".');
   const slug = match?.[1];
   const repository = packageJson?.repository;
   if (

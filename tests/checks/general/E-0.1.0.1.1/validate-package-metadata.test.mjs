@@ -12,7 +12,7 @@ const valid = {
   homepage: "https://github.com/eliware/example#readme",
   license: "MIT",
   type: "module",
-  engines: { node: "26" },
+  engines: { node: ">=26" },
 };
 
 test("accepts canonical package metadata", () => {
@@ -30,7 +30,7 @@ test.each([
   [{ author: "Other" }, "author"],
   [{ license: "ISC" }, "license"],
   [{ type: "commonjs" }, "type"],
-  [{ engines: { node: ">=20" } }, "engines.node"],
+  [{ engines: { node: "26" } }, 'engines.node must be ">=26"'],
   [{ repository: { type: "git", url: "https://example.com" } }, "repository"],
   [{ homepage: "https://example.com" }, "homepage"],
 ])("reports invalid package field %#", (change, message) => {

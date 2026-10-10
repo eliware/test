@@ -12,7 +12,7 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
     typeof packageJson?.engines?.node !== "string" ||
     !compatibleWithNode26(packageJson.engines.node.trim())
   ) {
-    return "Public npm packages must declare Node.js 26 compatibility.";
+    return "Public npm packages must declare Node.js 26 or later compatibility.";
   }
   if (packageJson?.publishConfig?.provenance !== true) {
     return "Public npm packages must enable npm provenance.";

@@ -3,7 +3,7 @@ import { validatePublicationMetadata } from "../../../../src/validation/stages/p
 
 const validPackage = {
   private: false,
-  engines: { node: ">=26 <27" },
+  engines: { node: ">=26" },
   publishConfig: { provenance: true },
   files: [
     "src/",

@@ -2,7 +2,7 @@
 
 ## Project
 
-Build the Eliware Test validation CLI with Node.js 26 and native ESM modules.
+Build the Eliware Test validation CLI with Node.js 26 or later and native ESM modules.
 
 ## Scope and boundaries
 
@@ -30,7 +30,7 @@ Operational procedures live in Eliware Operations.
 
 ## Validation
 
-Use Node.js 26 and npm 12 or later.
+Use Node.js 26 or later and npm 12 or later.
 The CLI checks npm before validation. `--help` and `--version` skip that check.
 Run `npm test` for aggregate validation.
 Run `npm run lint`, `npm run format:check`, `npm run audit`, or `npm run pack` as needed.

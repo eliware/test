@@ -18,6 +18,7 @@ directives:
     dos:
       - Keep package.json, package-lock.json, README.md, AGENTS.md, LICENSE, and specs/README.md.
       - Define a scoped @eliware name, nonempty description, distinct nonempty keywords, and boolean private.
+      - Require Node.js 26 or later with package.json.engines.node set to ">=26".
       - Use the canonical author, repository, homepage, license, module type, and Node.js metadata shown in the example.
       - Use numeric MAJOR.MINOR.PATCH matching the applied convention version.
       - Keep lockfile metadata and dependency references consistent with package.json.
@@ -26,7 +27,7 @@ directives:
       - Do not use prerelease or build suffixes, alternative identity metadata, or malformed dependency maps.
       - Do not use CommonJS module syntax in maintained implementation.
     examples:
-      - '{"name":"@eliware/example","version":"12.0.0","description":"Example repository","keywords":["example"],"private":true,"publishConfig":{},"main":"src/index.mjs","bin":"bin/example.mjs","files":["src/"],"scripts":{},"engines":{"node":"26"},"dependencies":{},"devDependencies":{},"jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT","repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},"homepage":"https://github.com/eliware/example#readme","bugs":{},"eliware":{},"type":"module"}'
+      - '{"name":"@eliware/example","version":"12.0.0","description":"Example repository","keywords":["example"],"private":true,"publishConfig":{},"main":"src/index.mjs","bin":"bin/example.mjs","files":["src/"],"scripts":{},"engines":{"node":">=26"},"dependencies":{},"devDependencies":{},"jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT","repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},"homepage":"https://github.com/eliware/example#readme","bugs":{},"eliware":{},"type":"module"}'
 
   - id: E-0.1.0.1.2
     dos:
