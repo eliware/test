@@ -1,5 +1,6 @@
 import {
   focusedPathFrom,
+  focusedPathsFrom,
   parseFocusedArguments,
 } from "../../../../cli/parse-focused-arguments.mjs";
 
@@ -37,16 +38,16 @@ export function buildJestArguments(args = []) {
       throw new Error(`Jest option ${argument.split("=", 1)[0]} is controlled by eliware-test.`);
   }
   const { forwardedTestPaths } = parseFocusedArguments(args);
-  const focusedPath = focusedPathFrom(args);
-  if (focusedPath && forwardedTestPaths.length > 0)
-    throw new Error("Only one focused test path may be supplied.");
+  const focusedPaths = focusedPathsFrom(args);
+  if (focusedPaths.length > 0 && forwardedTestPaths.length > 0)
+    throw new Error("Focused test paths must be supplied before the -- separator.");
   const forwarded = args.filter(
-    (argument) => argument !== focusedPath && argument !== "--debug-timing",
+    (argument) => !focusedPaths.includes(argument) && argument !== "--debug-timing",
   );
   const concurrency = ["--runInBand"];
   return [
     "--coverage",
-    ...(focusedPath ? ["--runTestsByPath", focusedPath] : []),
+    ...(focusedPaths.length > 0 ? ["--runTestsByPath", ...focusedPaths] : []),
     ...concurrency,
     ...forwarded,
   ];

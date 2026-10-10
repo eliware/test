@@ -72,7 +72,11 @@ export function parseFocusedArguments(args = []) {
 }
 
 export function focusedPathFrom(args = []) {
-  return parseFocusedArguments(args).positional.find((argument) =>
+  return focusedPathsFrom(args)[0];
+}
+
+export function focusedPathsFrom(args = []) {
+  return parseFocusedArguments(args).positional.filter((argument) =>
     /^tests(?:[\\/]|$)/iu.test(argument),
   );
 }

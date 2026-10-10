@@ -24,6 +24,23 @@ test("maps mirrored tests across root, case, and separator variants", async () =
   await rm(root, { recursive: true, force: true });
 });
 
+test("selects coverage for each focused test source", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-focused-multiple-coverage-"));
+  await mkdir(join(root, "src", "nested"), { recursive: true });
+  await mkdir(join(root, "tests", "nested"), { recursive: true });
+  await writeFile(join(root, "src", "one.mjs"), "export {};\n");
+  await writeFile(join(root, "src", "nested", "two.mjs"), "export {};\n");
+  await expect(
+    resolveFocusedCoverage(root, ["tests/one.test.mjs", "tests/nested/two.spec.mjs"]),
+  ).resolves.toEqual([
+    "--collectCoverageFrom",
+    "src/one.mjs",
+    "--collectCoverageFrom",
+    "src/nested/two.mjs",
+  ]);
+  await rm(root, { recursive: true, force: true });
+});
+
 test("maps .mts and .cts tests to the native ESM source module", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-typed-test-"));
   await mkdir(join(root, "src"));

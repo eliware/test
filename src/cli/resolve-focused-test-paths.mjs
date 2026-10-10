@@ -15,7 +15,6 @@ export function resolveFocusedTestPaths(args, hasToolMode) {
     throw new Error("Focused test paths cannot be combined with tool modes.");
   }
   const focused = hasToolMode ? [] : parsed.positional;
-  if (focused.length > 1) throw new Error("Only one focused test path may be supplied.");
   if (focused.some((argument) => !focusedTestPathPattern.test(argument))) {
     throw new Error("Focused paths must be under tests/.");
   }

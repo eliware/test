@@ -22,11 +22,18 @@ test("builds focused and default Jest argument lists", () => {
     "--runInBand",
     "--watch",
   ]);
+  expect(buildJestArguments(["tests/one.test.mjs", "tests/two.test.mjs"])).toEqual([
+    "--coverage",
+    "--runTestsByPath",
+    "tests/one.test.mjs",
+    "tests/two.test.mjs",
+    "--runInBand",
+  ]);
 });
 
 test("rejects extra focused test paths forwarded after the separator", () => {
   expect(() => buildJestArguments(["tests/sample.test.mjs", "--", "tests/other.test.mjs"])).toThrow(
-    "Only one focused test path",
+    "before the -- separator",
   );
 });
 

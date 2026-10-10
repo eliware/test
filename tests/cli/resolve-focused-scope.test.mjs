@@ -5,7 +5,24 @@ test("maps a focused test to its normalized source/test pair", () => {
   expect(resolveFocusedScope(["--runInBand", "tests\\cli\\example.test.mjs"])).toEqual({
     testPath: "tests/cli/example.test.mjs",
     sourcePath: "src/cli/example.mjs",
+    testPaths: ["tests/cli/example.test.mjs"],
+    sourcePaths: ["src/cli/example.mjs"],
     paths: ["tests/cli/example.test.mjs", "src/cli/example.mjs"],
+  });
+});
+
+test("maps multiple focused tests to all mirrored source paths", () => {
+  expect(resolveFocusedScope(["tests/cli/one.test.mjs", "tests/runtime/two.spec.mjs"])).toEqual({
+    testPath: "tests/cli/one.test.mjs",
+    sourcePath: "src/cli/one.mjs",
+    testPaths: ["tests/cli/one.test.mjs", "tests/runtime/two.spec.mjs"],
+    sourcePaths: ["src/cli/one.mjs", "src/runtime/two.mjs"],
+    paths: [
+      "tests/cli/one.test.mjs",
+      "tests/runtime/two.spec.mjs",
+      "src/cli/one.mjs",
+      "src/runtime/two.mjs",
+    ],
   });
 });
 

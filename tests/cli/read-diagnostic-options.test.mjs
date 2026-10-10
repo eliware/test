@@ -50,10 +50,11 @@ test("rejects repeated informational commands", () => {
   expect(() => readDiagnosticOptions(["--help", "--help"])).toThrow("cannot be repeated");
 });
 
-test("rejects multiple focused paths", () => {
-  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"])).toThrow(
-    "Only one focused test path",
-  );
+test("accepts multiple focused paths", () => {
+  expect(readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"]).jestArgs).toEqual([
+    "tests/a.test.mjs",
+    "tests/b.test.mjs",
+  ]);
 });
 
 test("rejects test paths after the Jest delegation separator", () => {
@@ -65,9 +66,9 @@ test("rejects test paths after the Jest delegation separator", () => {
   );
 });
 
-test("rejects an unrecognized positional argument alongside a focused test path", () => {
+test("rejects an unrecognized positional argument alongside focused paths", () => {
   expect(() => readDiagnosticOptions(["tests/a.test.mjs", "unexpected-selector"])).toThrow(
-    "Only one focused test path",
+    "Focused paths must be under tests/",
   );
 });
 

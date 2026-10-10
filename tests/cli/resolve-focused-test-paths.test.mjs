@@ -7,15 +7,19 @@ test("returns a single supported test file before the Jest separator", () => {
   ]);
 });
 
-test("rejects forwarded, multiple, and unsupported focused paths", () => {
+test("returns multiple supported test files in the supplied order", () => {
+  expect(resolveFocusedTestPaths(["tests/first.test.mjs", "tests/second.spec.ts"], false)).toEqual([
+    "tests/first.test.mjs",
+    "tests/second.spec.ts",
+  ]);
+});
+
+test("rejects forwarded and unsupported focused paths", () => {
   expect(() => resolveFocusedTestPaths(["--", "tests/example.test.mjs"], false)).toThrow(
     "before the -- separator",
   );
   expect(() => resolveFocusedTestPaths(["--", "tests/example.test.mjs"], true)).toThrow(
     "cannot be combined with tool modes",
-  );
-  expect(() => resolveFocusedTestPaths(["tests/a.test.mjs", "tests/b.test.mjs"], false)).toThrow(
-    "Only one focused test path",
   );
   expect(() => resolveFocusedTestPaths(["src/example.mjs"], false)).toThrow("must be under tests/");
 });

@@ -241,14 +241,17 @@ Arguments after `--` still follow the mode allowlist.
 
 For example, `eliware-test --audit --no-fund` passes the allowed flag to npm.
 
-To run one focused test, pass one existing repository-relative test path under `tests/`.
-Put the path before optional `--`.
+To run focused tests, pass one or more existing repository-relative test paths under `tests/`.
+Put each path before optional `--`.
+Clean focused validation reports convention check counts, Jest suite and test counts,
+issue counts, and elapsed times.
 Only supported non-path Jest options may follow `--`.
 The CLI rejects paths after `--`.
 Supported extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
 
 ```text
 eliware-test tests/checks/example.test.mjs
+eliware-test tests/checks/example.test.mjs tests/cli/example.test.mjs
 ```
 
 `--format` writes files. `--format-check` does not.

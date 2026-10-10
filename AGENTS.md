@@ -101,8 +101,8 @@ Formatting modes reject positional paths and use the repository scope.
 Put tool arguments after the mode or after `--`.
 Reject tool arguments before the mode.
 With no arguments, run aggregate validation.
-Without a tool mode, accept at most one repository-relative test path under `tests/`.
-Put the path before an optional `--`.
+Without a tool mode, accept one or more repository-relative test paths under `tests/`.
+Put all paths before an optional `--`.
 Reject paths after `--`, absolute paths, and unsupported combinations.
 Supported test extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
 Focused runs validate only the selected test and applicable checks.

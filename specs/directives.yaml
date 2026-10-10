@@ -80,12 +80,12 @@ directives:
 
       - id: E-0.0.3
         dos:
-          - Accept focused test paths through the public CLI under test/ or tests/.
+          - Accept one or more focused test paths through the public CLI under tests/.
           - Require repository-relative paths.
           - Reject absolute paths and parent traversal before resolution.
           - Reject missing, ambiguous, unsupported, or escaping focused paths before unrelated execution.
           - Keep stage selection independent of path focus.
-          - Limit focused discovery, coverage, and diagnostics to the requested scope.
+          - Limit focused discovery, coverage, and diagnostics to all requested test and source paths.
           - Forward arguments after -- only through the selected invocation contract.
           - Fail focused formatting when no valid resolved paths remain.
         donts:
@@ -94,6 +94,7 @@ directives:
           - Do not report unrelated-module coverage failures during focused execution.
         examples:
           - "eliware-test tests/example.test.mjs"
+          - "eliware-test tests/first.test.mjs tests/second.test.mjs"
           - "eliware-test --debug-timing tests/example.test.mjs"
 
       - id: E-0.0.4
@@ -119,7 +120,8 @@ directives:
           - Report Jest time and total validation time in seconds to three decimal places.
           - "Put Exit-code: 0 on the last line of the aggregate success summary."
           - Count Jest test suites and tests from Jest run-complete results.
-          - Count only executed convention checks as checks; do not count validation stages.
+          - Count executed convention checks and completed non-Jest stages as checks.
+          - Report the same counts and times after clean focused validation.
           - Report only the selected mode after mode-specific success.
         donts:
           - Do not truncate or paraphrase matched directives.

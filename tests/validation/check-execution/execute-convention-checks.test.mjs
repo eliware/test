@@ -41,7 +41,7 @@ test("executes selected checks in discovery order", async () => {
   const results = await executeConventionChecks(checks, context, new Set());
   expect(calls).toEqual(checks.map(({ ruleId }) => ruleId));
   expect(results).toEqual(checks.map(({ ruleId }) => pass(ruleId)));
-  expect(context.validationSummary.conventionCheckCount).toBe(3);
+  expect(context.validationSummary.checkCount).toBe(3);
 });
 
 test("reports thrown checks and continues with later checks", async () => {
@@ -79,6 +79,7 @@ test("runs every enabled stage before checks and Jest, with cached output", asyn
   }));
   await executeConventionChecks(checks, context, new Set());
   expect(calls).toEqual([...stages, "E-first", "E-second", "jest"]);
+  expect(context.validationSummary.checkCount).toBe(9);
 });
 
 test("runs all checks but skips Jest after a stage failure", async () => {

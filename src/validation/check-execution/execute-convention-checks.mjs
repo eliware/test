@@ -4,13 +4,16 @@ import { runValidationStages } from "../stages/run-validation-stages.mjs";
 
 export async function executeConventionChecks(checks, context, exemptions) {
   const selected = filterConventionChecksForExecution(checks, context, exemptions);
-  context.validationSummary ??= {};
-  context.validationSummary.conventionCheckCount = selected.length;
   const stageFailures = await runValidationStages(
     context,
     ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"],
     context.validationStageRunners,
   );
+  context.validationSummary ??= {};
+  const completedStages = Object.values(context.stageResults).filter(
+    (result) => result.status === "pass" && result.stage !== "jest",
+  ).length;
+  context.validationSummary.checkCount = selected.length + completedStages;
   const results = [...stageFailures];
   for (const check of selected) results.push(await executeConventionCheck(check, context));
   if (results.some(({ status }) => status === "fail")) {

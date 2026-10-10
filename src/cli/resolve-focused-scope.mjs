@@ -1,16 +1,18 @@
-import { focusedPathFrom } from "./parse-focused-arguments.mjs";
+import { focusedPathsFrom } from "./parse-focused-arguments.mjs";
 
 export function resolveFocusedScope(args = []) {
-  const testPath = focusedPathFrom(args);
-  if (!testPath) return null;
-  const normalizedTestPath = testPath.replaceAll("\\", "/").replace(/^\.\//u, "");
-  const match = normalizedTestPath.match(/^tests\/(.+)$/iu);
-  if (!match) return null;
-  const relativeTestPath = match[1];
-  const sourcePath = relativeTestPath.replace(/\.(?:test|spec)(?=\.[^.]+$)/iu, "");
+  const testPaths = focusedPathsFrom(args).map((path) =>
+    path.replaceAll("\\", "/").replace(/^\.\//u, ""),
+  );
+  if (testPaths.length === 0 || testPaths.some((path) => !/^tests\/.+/iu.test(path))) return null;
+  const sourcePaths = testPaths.map((path) =>
+    path.slice("tests/".length).replace(/\.(?:test|spec)(?=\.[^.]+$)/iu, ""),
+  );
   return Object.freeze({
-    testPath: normalizedTestPath,
-    sourcePath: `src/${sourcePath}`,
-    paths: Object.freeze([normalizedTestPath, `src/${sourcePath}`]),
+    testPath: testPaths[0],
+    sourcePath: `src/${sourcePaths[0]}`,
+    testPaths: Object.freeze(testPaths),
+    sourcePaths: Object.freeze(sourcePaths.map((path) => `src/${path}`)),
+    paths: Object.freeze([...testPaths, ...sourcePaths.map((path) => `src/${path}`)]),
   });
 }

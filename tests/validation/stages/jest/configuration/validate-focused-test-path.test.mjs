@@ -9,17 +9,26 @@ test("validates focused test paths before execution", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
   await mkdir(join(root, "tests"));
   await writeFile(join(root, "tests", "sample.test.mjs"), 'test("sample", () => {});');
-  await expect(validateFocusedTestPath(root)).resolves.toBeNull();
-  await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toBe(
+  await expect(validateFocusedTestPath(root)).resolves.toEqual([]);
+  await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toEqual([
     "tests/sample.test.mjs",
-  );
-  await expect(validateFocusedTestPath(root, ["tests\\sample.test.mjs"])).resolves.toBe(
+  ]);
+  await expect(validateFocusedTestPath(root, ["tests\\sample.test.mjs"])).resolves.toEqual([
     "tests/sample.test.mjs",
-  );
+  ]);
+  await mkdir(join(root, "tests", "nested"));
+  await writeFile(join(root, "tests", "nested", "second.test.mjs"), 'test("second", () => {});');
+  await expect(
+    validateFocusedTestPath(root, ["tests/sample.test.mjs", "tests/nested/second.test.mjs"]),
+  ).resolves.toEqual(["tests/sample.test.mjs", "tests/nested/second.test.mjs"]);
   await expect(validateFocusedTestPath(root, ["tests/missing.test.mjs"])).rejects.toThrow(
     "does not exist",
   );
-  await expect(validateFocusedTestPath(root, ["tests"])).rejects.toThrow("regular file");
+  await expect(validateFocusedTestPath(root, ["tests"])).rejects.toThrow("under tests/");
+  await mkdir(join(root, "tests", "directory.test.mjs"));
+  await expect(validateFocusedTestPath(root, ["tests/directory.test.mjs"])).rejects.toThrow(
+    "regular file",
+  );
   await rm(root, { recursive: true, force: true });
 });
 
@@ -30,9 +39,9 @@ casePathTest("returns the canonical casing accepted by Windows", async () => {
   await mkdir(tests);
   await writeFile(join(tests, "Sample.test.mjs"), "test('sample', () => {});\n");
   try {
-    await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toBe(
+    await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toEqual([
       "tests/Sample.test.mjs",
-    );
+    ]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

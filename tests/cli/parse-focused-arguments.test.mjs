@@ -1,5 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { focusedPathFrom, parseFocusedArguments } from "../../src/cli/parse-focused-arguments.mjs";
+import {
+  focusedPathFrom,
+  focusedPathsFrom,
+  parseFocusedArguments,
+} from "../../src/cli/parse-focused-arguments.mjs";
 
 test("separates option values from focused positional paths", () => {
   expect(
@@ -44,6 +48,7 @@ test("handles empty and non-string argument values", () => {
     forwardedTestPaths: [],
   });
   expect(focusedPathFrom()).toBeUndefined();
+  expect(focusedPathsFrom()).toEqual([]);
   expect(parseFocusedArguments([null, "--watch"]).positional).toEqual([]);
   expect(parseFocusedArguments(["--watch", "tests/example.test.mjs"]).positional).toEqual([
     "tests/example.test.mjs",
