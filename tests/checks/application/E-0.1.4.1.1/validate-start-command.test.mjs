@@ -15,6 +15,9 @@ test("rejects invalid start values and unmatched tokens", () => {
   expect(validateStartCommand({ scripts: { start: "node bin/ab.mjs" } }, ["bin/a.mjs"])).toContain(
     "standalone token",
   );
+  expect(validateStartCommand({ scripts: { start: "" } }, ["bin/a.mjs"])).toContain(
+    "standalone token",
+  );
 });
 
 test("matches equivalent path separators and rejects traversing aliases", () => {
@@ -24,4 +27,7 @@ test("matches equivalent path separators and rejects traversing aliases", () => 
   expect(
     validateStartCommand({ scripts: { start: "node bin/../bin/app.mjs" } }, ["bin/app.mjs"]),
   ).toContain("standalone token");
+  expect(validateStartCommand({ scripts: { start: "node bin/a.mjs" } }, [null])).toContain(
+    "standalone token",
+  );
 });

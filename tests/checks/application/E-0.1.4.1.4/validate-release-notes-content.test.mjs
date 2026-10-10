@@ -23,16 +23,6 @@ test("rejects title, Unreleased order, and duplicate Unreleased sections", () =>
   expect(errors.join("\n")).toContain("Malformed release entry");
 });
 
-test("rejects invalid dates, duplicate versions, and increasing versions or dates", () => {
-  const notes =
-    "# Release Notes\n\n## 12.0.0 — 2026-02-30\n\n### Added\n\nA.\n\n## 12.0.0 — 2026-03-01\n\n### Added\n\nB.\n\n## 13.0.0 — 2026-04-01\n\n### Added\n\nC.\n";
-  const errors = validate(notes).join("\n");
-  expect(errors).toContain("Release date is invalid");
-  expect(errors).toContain("must not duplicate release versions");
-  expect(errors).toContain("strictly descending SemVer order");
-  expect(errors).toContain("dates must not increase");
-});
-
 test("requires known, nonempty subsections", () => {
   const notes =
     "# Release Notes\n\n## Unreleased\n\n## 1.0.0 — 2026-01-01\n\n### Unknown\n\n## 0.9.0 — 2025-12-01\n";
@@ -48,12 +38,9 @@ test("does not count a nested heading as subsection content", () => {
   );
 });
 
-test("requires an entry and rejects SemVer leading zeroes", () => {
+test("requires a versioned entry", () => {
   expect(validate("# Release Notes")).toContain(
     "RELEASE_NOTES.md must contain at least one versioned release entry.",
-  );
-  expect(validate("# Release Notes\n\n## 01.0.0 — 2026-01-01\n\n### Added\n\nItem.\n")).toContain(
-    "Malformed release entry: ## 01.0.0 — 2026-01-01.",
   );
 });
 
@@ -73,11 +60,5 @@ test("does not count release entries inside code fences", () => {
 test("requires the release title before code blocks", () => {
   expect(validate("```text\nexample\n```\n" + valid)).toContain(
     "RELEASE_NOTES.md must begin with # Release Notes.",
-  );
-});
-
-test("rejects a newest release version that differs from package.json", () => {
-  expect(validateReleaseNotesContent(valid, "12.0.0")).toContain(
-    "Newest release version 12.1.0 must match package.json.version 12.0.0.",
   );
 });

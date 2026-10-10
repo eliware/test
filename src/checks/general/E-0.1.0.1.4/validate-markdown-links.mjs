@@ -1,15 +1,14 @@
-import { readFile, realpath, stat } from "node:fs/promises";
-import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { extractMarkdownAssets } from "./extract-markdown-assets.mjs";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
+import { createLocalMarkdownReferenceValidator } from "./create-local-markdown-reference-validator.mjs";
 import { findMarkdownFiles } from "./find-markdown-files.mjs";
-import { hasMarkdownFragment } from "./resolve-markdown-fragment.mjs";
 import { validateExternalLink } from "./validate-external-markdown-link.mjs";
 
 export async function validateMarkdownLinks(root, context = {}, dependencies = {}) {
   const read = dependencies.read ?? readFile;
-  const inspect = dependencies.stat ?? stat;
-  const resolveRealpath = dependencies.realpath ?? realpath;
+  const validateLocal = createLocalMarkdownReferenceValidator(root, dependencies);
   let files;
   try {
     files = await (context.repositoryInventory?.documentationFiles?.({
@@ -20,7 +19,6 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
     return [`Markdown files could not be listed: ${error.message}`];
   }
   const errors = [];
-  let realRoot;
   for (const file of files) {
     let text;
     try {
@@ -43,46 +41,9 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
         errors.push(`Documentation link is invalid: ${reference} in ${file}.`);
         continue;
       }
-      const [pathname, fragment] = splitReference(reference);
-      const target = resolve(dirname(join(root, file)), pathname || file);
-      const relativeTarget = relative(root, target).split(sep).join("/");
-      if (
-        relativeTarget === ".." ||
-        relativeTarget.startsWith("../") ||
-        /^[A-Za-z]:\//u.test(relativeTarget)
-      ) {
-        errors.push(`Documentation link escapes the repository: ${reference} in ${file}.`);
-        continue;
-      }
-      try {
-        realRoot ??= await resolveRealpath(root);
-        const realTarget = await resolveRealpath(target);
-        const realRelative = relative(realRoot, realTarget);
-        if (escapesRoot(realRelative)) {
-          errors.push(`Documentation link escapes the repository: ${reference} in ${file}.`);
-          continue;
-        }
-        const info = await inspect(target);
-        if (fragment && target.toLowerCase().endsWith(".md")) {
-          const targetText = await read(target, "utf8");
-          if (!hasMarkdownFragment(targetText, fragment))
-            errors.push(`Documentation fragment does not resolve: ${reference} in ${file}.`);
-        } else if (!info.isFile() && !info.isDirectory()) {
-          errors.push(`Documentation link does not resolve: ${reference} in ${file}.`);
-        }
-      } catch {
-        errors.push(`Documentation link does not resolve: ${reference} in ${file}.`);
-      }
+      const error = await validateLocal(file, reference);
+      if (error) errors.push(error);
     }
   }
   return errors;
-}
-
-function escapesRoot(path) {
-  return path === ".." || path.startsWith(`..${sep}`) || isAbsolute(path);
-}
-
-function splitReference(value) {
-  const [path, ...fragment] = value.split("#");
-  return [path.split("?")[0], fragment.join("#")];
 }
