@@ -11,6 +11,21 @@ test("validates nested Knit command lists", async () => {
   ).resolves.toEqual([]);
 });
 
+test.each([
+  ["git pull --ff-only origin main", "git pull origin main"],
+  ["npm ci", "npm install"],
+  ["npm test", "npm run test"],
+])("rejects a changed required prefix command: %s", async (required, changed) => {
+  const commands = ["git pull --ff-only origin main", "npm ci", "npm test"].map((command) =>
+    command === required ? changed : command,
+  );
+  const errors = await validateKnitConfiguration({
+    files: async () => [".knit/deploy.yaml"],
+    readText: async () => `commands:\n${commands.map((command) => `  - ${command}`).join("\n")}`,
+  });
+  expect(errors.join(" ")).toContain("must begin with");
+});
+
 test("rejects commands that publish images or use scripts outside .knit", async () => {
   const errors = await validateKnitConfiguration({
     files: async () => [".knit/deploy.yaml"],

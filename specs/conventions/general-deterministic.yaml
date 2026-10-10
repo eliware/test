@@ -117,11 +117,12 @@ directives:
   - id: E-0.1.0.1.6
     dos:
       - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
-      - Define every commands field as an array of strings beginning with the exact command prefix shown.
+      - "Begin every commands array with these exact commands in this order: git pull --ff-only origin main, npm ci, npm test."
+      - Add commands after this prefix only when they follow the other requirements in this rule.
       - Keep secondary Knit scripts under .knit/.
       - Use the .mjs extension for secondary Knit scripts.
     donts:
-      - Do not omit or reorder the required prefix.
+      - Do not change, omit, or reorder any command in the required prefix.
       - Do not include npm publication or explicit GHCR image-publication commands.
       - Do not use secondary Knit scripts with extensions other than .mjs.
     examples:
