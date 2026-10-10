@@ -29,6 +29,7 @@ export function createRedactedStreamPolicy(
     Math.max(1, Math.floor(maxPendingLength), maximumSecretLength),
   );
   let suppressed = maximumSecretLength > outputLimit;
+  // codescope ignore: the trimmer uses a fixed work budget and returns a function for empty secrets.
   const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
   if (!trimSuffix) suppressed = true;
   let findSecretEnds = null;

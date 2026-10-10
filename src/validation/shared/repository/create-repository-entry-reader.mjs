@@ -26,6 +26,7 @@ export function createRepositoryEntryReader({
       return normalizeRepositoryInventoryRecords(root, records);
     });
     const discovery = pending.catch((error) => {
+      // codescope ignore: failed discovery clears entriesPromise, so the next entries() call retries.
       entriesPromise = undefined;
       throw error;
     });

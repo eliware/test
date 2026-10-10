@@ -16,3 +16,15 @@ test("finds token names and secret references in nested workflow settings", () =
 test("accepts workflow settings without npm token declarations", () => {
   expect(findNpmTokenSettings({ env: { CI: "true" } })).toEqual([]);
 });
+
+test.each([
+  ["echo $NPM_TOKEN"],
+  ["echo ${NODE_AUTH_TOKEN}"],
+  ["${{ env.NPM_TOKEN }}"],
+  ["$env:NODE_AUTH_TOKEN"],
+  ["%NPM_TOKEN%"],
+])("rejects token references in workflow strings: %s", (value) => {
+  expect(findNpmTokenSettings({ jobs: { publish: { steps: [{ run: value }] } } })).toEqual([
+    "publish.yaml.jobs.publish.steps.0.run must not reference NPM_TOKEN or NODE_AUTH_TOKEN.",
+  ]);
+});

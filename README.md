@@ -194,7 +194,7 @@ Run the reported focused test path to diagnose a failure.
 Then run `npm test` to check the full validation gate.
 See [Troubleshooting](docs/troubleshooting.md) for more help.
 
-The v11 orchestration and check registry use focused ESM modules under `src/`.
+The v12 orchestration and check registry use focused ESM modules under `src/`.
 Application and library guidance applies only when their profiles are selected.
 Some profile requirements are advisory because no deterministic check can enforce them.
 
