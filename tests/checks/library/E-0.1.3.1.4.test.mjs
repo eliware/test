@@ -5,10 +5,12 @@ test("enforces shared release note rules for libraries", async () => {
   const repositoryInventory = {
     readText: async (path) =>
       path.endsWith("RELEASE_NOTES.md")
-        ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate."
+        ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
         : "## Usage\n\n- [Release notes](RELEASE_NOTES.md)",
   };
-  await expect(run({ root: "/repo", repositoryInventory })).resolves.toEqual({
+  await expect(
+    run({ root: "/repo", packageJson: { version: "12.0.0" }, repositoryInventory }),
+  ).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
@@ -16,6 +18,7 @@ test("enforces shared release note rules for libraries", async () => {
   await expect(
     run({
       root: "/repo",
+      packageJson: { version: "12.0.0" },
       repositoryInventory: {
         readText: async () => {
           throw new Error();
@@ -28,19 +31,22 @@ test("enforces shared release note rules for libraries", async () => {
   });
 });
 
-test("uses the default context", async () => {
-  await expect(run()).resolves.toMatchObject({ status: "pass" });
+test("requires package metadata in its context", async () => {
+  await expect(run()).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("package.json.version is required"),
+  });
 });
 
 test("enforces release note policy for the valid library profile set", async () => {
   await expect(
     run({
       root: "/repo",
-      packageJson: { eliware: { apply: ["general", "library"] } },
+      packageJson: { version: "12.0.0", eliware: { apply: ["general", "library"] } },
       repositoryInventory: {
         readText: async (path) =>
           path.endsWith("RELEASE_NOTES.md")
-            ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate."
+            ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
             : "## Usage\n\n- [Release notes](RELEASE_NOTES.md)",
       },
     }),

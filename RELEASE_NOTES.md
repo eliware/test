@@ -1,5 +1,15 @@
 # Release Notes
 
+## 12.0.0 — 2026-10-10
+
+### Added
+
+- Add profile-scoped checks for deterministic repository requirements.
+
+### Changed
+
+- Align the v12 validation flow with its harness specifications and conventions.
+
 ## 11.0.0 — 2026-10-03
 
 ### Added

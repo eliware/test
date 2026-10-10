@@ -79,10 +79,16 @@ directives:
       - Link RELEASE_NOTES.md from README.md Usage.
       - Use the exact level-one title and level-two entry formats shown.
       - Allow one Unreleased section before versioned entries.
+      - Keep at least one versioned release entry.
+      - Match the newest versioned entry with package.json.version.
       - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.
-      - Give every entry nonempty level-three subsections from Added, Changed, Fixed, Breaking changes, Migration, or Security.
+      - Give every entry at least one level-three category from Added, Changed, Fixed, Breaking changes, Migration, or Security.
+      - Give each category user-visible change text.
+      - Do not repeat categories within one entry.
     donts:
       - Do not duplicate versions.
       - Do not use malformed, empty, unsupported, or out-of-order sections.
+      - Do not put text outside a release category.
+      - Do not put headings outside a release entry or category.
     examples:
       - "# Release Notes\n\n## Unreleased\n\n### Changed\n\nPending change.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."

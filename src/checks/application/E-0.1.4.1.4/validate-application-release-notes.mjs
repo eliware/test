@@ -12,5 +12,8 @@ export async function validateApplicationReleaseNotes(context = {}) {
     return ["RELEASE_NOTES.md is required."];
   }
   const readme = await readRepositoryText(context, join(root, "README.md")).catch(() => "");
-  return [...validateReleaseNotesContent(content), ...validateReleaseNotesLink(readme)];
+  return [
+    ...validateReleaseNotesContent(content, context.packageJson?.version),
+    ...validateReleaseNotesLink(readme),
+  ];
 }

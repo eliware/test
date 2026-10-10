@@ -1,53 +1,56 @@
 import { removeMarkdownCode } from "../../general/E-0.1.0.1.4/extract-markdown-links.mjs";
+import { validateReleaseNoteSections } from "./validate-release-note-sections.mjs";
 
-const allowedSections = new Set([
-  "Added",
-  "Changed",
-  "Fixed",
-  "Breaking changes",
-  "Migration",
-  "Security",
-]);
 const versionHeading =
   /^## ((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)) — (\d{4}-\d{2}-\d{2})$/u;
 
-export function validateReleaseNotesContent(content) {
+export function validateReleaseNotesContent(content, packageVersion) {
   const errors = [];
-  const originalLines = content.split(/\r?\n/u);
-  const lines = removeMarkdownCode(content).split(/\r?\n/u);
+  const normalized = content.replace(/^\uFEFF/u, "");
+  const originalLines = normalized.split(/\r?\n/u);
+  const lines = removeMarkdownCode(normalized).split(/\r?\n/u);
   if (originalLines[0] !== "# Release Notes")
     errors.push("RELEASE_NOTES.md must begin with # Release Notes.");
   if (lines.filter((line) => /^#\s/u.test(line)).length !== 1)
     errors.push("RELEASE_NOTES.md must contain one level-one title.");
-  const headings = lines
-    .map((line, index) => ({ line, index }))
-    .filter(({ line }) => /^##\s/u.test(line));
-  const titles = headings.map(({ line }) => line);
-  if (!headings.length)
+  errors.push(...validateReleaseNoteSections(lines));
+  const titles = lines.filter((line) => /^##\s/u.test(line));
+  if (!titles.length)
     errors.push("RELEASE_NOTES.md must contain an Unreleased or versioned entry.");
-  if (titles.some((title) => title === "## Unreleased") && titles[0] !== "## Unreleased")
+  if (titles.includes("## Unreleased") && titles[0] !== "## Unreleased")
     errors.push("Unreleased must appear before versioned entries.");
   if (titles.filter((title) => title === "## Unreleased").length > 1)
     errors.push("RELEASE_NOTES.md must contain at most one Unreleased section.");
-  const unreleased = headings.find(({ line }) => line === "## Unreleased");
-  if (unreleased)
-    errors.push(...validateEntrySections(lines, unreleased.index, headings, unreleased.line));
-  const entries = headings.filter(({ line }) => line !== "## Unreleased");
+  const entries = titles.filter((title) => title !== "## Unreleased");
+  if (!entries.length)
+    errors.push("RELEASE_NOTES.md must contain at least one versioned release entry.");
+  const newestVersion = versionHeading.exec(entries[0] ?? "")?.[1];
+  if (typeof packageVersion !== "string" || !packageVersion)
+    errors.push("package.json.version is required for release-note validation.");
+  else if (newestVersion && newestVersion !== packageVersion)
+    errors.push(
+      `Newest release version ${newestVersion} must match package.json.version ${packageVersion}.`,
+    );
+  errors.push(...validateVersionEntries(entries));
+  return errors;
+}
+
+function validateVersionEntries(entries) {
+  const errors = [];
   const versions = [];
   const dates = [];
   for (const entry of entries) {
-    const match = versionHeading.exec(entry.line);
+    const match = versionHeading.exec(entry);
     if (!match) {
-      errors.push(`Malformed release entry: ${entry.line}.`);
+      errors.push(`Malformed release entry: ${entry}.`);
       continue;
     }
     const [, version, date] = match;
     if (!validDate(date)) errors.push(`Release date is invalid: ${date}.`);
-    versions.push(version.split(".").map(Number));
+    versions.push(version);
     dates.push(date);
-    errors.push(...validateEntrySections(lines, entry.index, headings, entry.line));
   }
-  if (new Set(versions.map((version) => version.join("."))).size !== versions.length)
+  if (new Set(versions).size !== versions.length)
     errors.push("RELEASE_NOTES.md must not duplicate release versions.");
   for (let index = 1; index < versions.length; index++) {
     if (compareVersions(versions[index - 1], versions[index]) <= 0)
@@ -62,28 +65,11 @@ function validDate(value) {
   return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
 }
 
-function validateEntrySections(lines, start, headings, title) {
-  const next = headings.find(({ index }) => index > start)?.index ?? lines.length;
-  const sections = [];
-  for (let index = start + 1; index < next; index++)
-    if (lines[index].startsWith("### ")) sections.push({ name: lines[index].slice(4), index });
-  const errors = [];
-  if (!sections.length) return [`${title} must contain a nonempty release subsection.`];
-  for (let index = 0; index < sections.length; index++) {
-    const section = sections[index];
-    const end = sections[index + 1]?.index ?? next;
-    if (!allowedSections.has(section.name))
-      errors.push(`${title} has an unsupported subsection: ${section.name}.`);
-    if (
-      !lines.slice(section.index + 1, end).some((line) => line.trim() && !/^#{1,6}\s/u.test(line))
-    )
-      errors.push(`${title} subsection ${section.name} must contain text.`);
-  }
-  return errors;
-}
-
 function compareVersions(left, right) {
-  for (let index = 0; index < left.length; index++)
-    if (left[index] !== right[index]) return left[index] - right[index];
+  const leftParts = left.split(".").map(BigInt);
+  const rightParts = right.split(".").map(BigInt);
+  for (let index = 0; index < leftParts.length; index++)
+    if (leftParts[index] !== rightParts[index])
+      return leftParts[index] > rightParts[index] ? 1 : -1;
   return 0;
 }
