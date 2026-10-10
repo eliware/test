@@ -4,7 +4,6 @@ import { fail, pass } from "../check-result.mjs";
 import { resolveReadmeHeadings } from "./E-0.1.0.1.3/resolve-readme-headings.mjs";
 import { validateReadmeStructure } from "./E-0.1.0.1.3/validate-readme-structure.mjs";
 import { validateReadmeBranding } from "./E-0.1.0.1.3/validate-readme-branding.mjs";
-import { validateReadmeMetadata } from "./E-0.1.0.1.3/validate-readme-metadata.mjs";
 import { validateReadmeLinks } from "./E-0.1.0.1.3/validate-readme-links.mjs";
 import { validateReadmeCompositionOrder } from "./E-0.1.0.1.3/validate-readme-composition-order.mjs";
 
@@ -25,7 +24,6 @@ export async function run(context = {}, dependencies = {}) {
     validateReadmeStructure(readme, headings, context.packageJson),
     validateReadmeCompositionOrder(readme, headings),
     validateReadmeBranding(readme, context.packageJson),
-    validateReadmeMetadata(readme, context.packageJson),
     validateReadmeLinks(readme, context.packageJson),
   ].filter(Boolean);
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);

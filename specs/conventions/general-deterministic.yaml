@@ -52,7 +52,7 @@ directives:
       - Use each general level-two heading once.
       - Link every content heading once in the Table of Contents using lowercase space-to-hyphen fragments.
       - Put local documentation and specifications navigation under a content heading, not in the header or footer.
-      - Include the exact package description in the header and exact author and license values in the README.
+      - Include the exact package description in the header.
       - Link specs/README.md from a content section.
       - Use the exact License section and link text shown in the examples.
       - Use the exact Support block shown in the examples.

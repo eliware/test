@@ -31,9 +31,6 @@ Package checks run for the `npm-published` profile.
 Eliware Test owns this CLI, not the repositories that it checks.
 It does not run live operational checks.
 
-Author: Eliware <eliware@eliware.org>
-License: MIT
-
 ## Requirements
 
 Use Node.js 26 and npm 12 or later.
