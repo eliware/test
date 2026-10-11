@@ -1,20 +1,28 @@
-import { access, readdir, readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseAllDocuments } from "yaml";
 
-export async function validateProfileDocumentPairs(root) {
-  const directory = join(root, "specs", "conventions");
+const bundledDirectory = new URL("../../../../specs/conventions/", import.meta.url);
+
+export async function validateProfileDocumentPairs({
+  directory = bundledDirectory,
+  list = readdir,
+  read = readFile,
+} = {}) {
+  const path = directory instanceof URL ? fileURLToPath(directory) : directory;
+  let names;
   try {
-    await access(directory);
-  } catch {
-    return [];
+    names = await list(directory);
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
   }
-  const names = await readdir(directory);
   const profiles = new Map();
   for (const name of names) {
     const match = /^([a-z0-9-]+)-(semantic|deterministic)\.yaml$/u.exec(name);
     if (!match) continue;
-    const source = await readFile(join(directory, name), "utf8");
+    const source = await read(join(path, name), "utf8");
     const documents = parseAllDocuments(source);
     const parseError = documents.flatMap((document) => document.errors)[0];
     if (parseError) throw parseError;

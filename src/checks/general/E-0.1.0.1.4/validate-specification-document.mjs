@@ -1,10 +1,11 @@
-import { validateCanonicalOrderDocument } from "../../../validation/shared/conventions/validate-canonical-order-document.mjs";
+import { validateOrderingSpecificationDocument } from "./validate-ordering-specification-document.mjs";
 
 const documentFields = new Set(["version", "description", "requires", "conflicts", "directives"]);
 const directiveFields = new Set(["id", "dos", "donts", "examples", "children"]);
 
-export function validateSpecificationDocument(value, path) {
-  if (path.startsWith("specs/conventions/ordering/")) return validateOrderingDocument(value, path);
+export function validateSpecificationDocument(value, path, { ordering = true } = {}) {
+  if (ordering && path.startsWith("specs/conventions/ordering/"))
+    return validateOrderingSpecificationDocument(value, path);
   const errors = [];
   if (!value || typeof value !== "object" || Array.isArray(value))
     return [`${path} must contain a document object.`];
@@ -25,45 +26,6 @@ export function validateSpecificationDocument(value, path) {
   }
   validateRules(value.directives, `${path}.directives`, errors);
   return errors;
-}
-
-function validateOrderingDocument(value, path) {
-  const errors = [];
-  if (!value || typeof value !== "object" || Array.isArray(value))
-    return [`${path} must contain an ordering object.`];
-  if (Object.keys(value).some((key) => !["version", "description", "orders"].includes(key)))
-    errors.push(`${path} contains unsupported ordering fields.`);
-  if (typeof value.version !== "string" || !value.version.trim())
-    errors.push(`${path}.version must be a nonempty string.`);
-  if (typeof value.description !== "string" || !value.description.trim())
-    errors.push(`${path}.description must be a nonempty string.`);
-  if (!isOrderRecord(value.orders)) errors.push(`${path}.orders must contain ordered values.`);
-  errors.push(...validateCanonicalOrderDocument(value, path));
-  return errors;
-}
-
-function isOrderRecord(value) {
-  return (
-    value &&
-    typeof value === "object" &&
-    !Array.isArray(value) &&
-    Object.keys(value).length > 0 &&
-    Object.values(value).every(isOrderValue)
-  );
-}
-
-function isOrderValue(value) {
-  if (typeof value === "number") return Number.isFinite(value) && value >= 0;
-  if (typeof value === "string") return Boolean(value.trim());
-  if (Array.isArray(value))
-    return value.every((item) => typeof item === "string" && Boolean(item.trim()));
-  return Boolean(
-    value &&
-    typeof value === "object" &&
-    !Array.isArray(value) &&
-    Object.keys(value).length > 0 &&
-    Object.values(value).every(isOrderValue),
-  );
 }
 
 function validateRules(rules, label, errors) {

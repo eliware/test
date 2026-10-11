@@ -87,7 +87,8 @@ directives:
       - Give HTTP and HTTPS links hostnames without embedded credentials and mailto links email addresses.
       - Use full HTTPS GitHub URLs for cross-repository links.
       - Keep specs/directives.yaml.
-      - Validate directive documents against the v12 schema.
+      - Parse every YAML file under specs/, including files in nested directories.
+      - Validate only YAML documents with a top-level directives key against the v12 schema.
       - Give every specs directory one navigation-only README.md linking its direct YAML files and immediate subdirectory indexes.
       - Allow only YAML documents, README.md indexes, and conforming subdirectories under specs/.
       - Use unique E-rule IDs within the assigned repository namespace.

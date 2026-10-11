@@ -7,24 +7,15 @@ import { validateSpecificationDirectives } from "../../../../src/checks/general/
 async function createFixture() {
   const root = await mkdtemp(join(tmpdir(), "eliware-directives-"));
   const specs = join(root, "specs");
-  await mkdir(join(specs, "conventions", "nested"), { recursive: true });
-  const schema = await readFile(join(process.cwd(), "specs", "directives-schema.yaml"), "utf8");
-  await writeFile(join(specs, "directives-schema.yaml"), schema);
+  await mkdir(specs, { recursive: true });
   await writeFile(
     join(specs, "directives.yaml"),
     "version: '12.0'\ndescription: Harness\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n    children:\n      - id: E-0.0.0\n        dos: [Do]\n        donts: [Do not]\n",
   );
-  const convention =
-    "version: '12.0'\ndescription: General rules\nrequires: []\nconflicts: []\ndirectives:\n  - id: E-0.1.0\n    dos: [Do]\n    donts: [Do not]\n";
-  await writeFile(join(specs, "conventions", "general.yaml"), convention);
-  await writeFile(
-    join(specs, "conventions", "nested", "extra.yml"),
-    convention.replace("E-0.1.0", "E-0.2.0"),
-  );
   return root;
 }
 
-test("validates the schema and nested directive documents", async () => {
+test("uses the bundled schema and validates consumer directive documents", async () => {
   const root = await createFixture();
   try {
     await expect(
@@ -46,18 +37,13 @@ test("uses default package metadata and reports the missing namespace", async ()
   }
 });
 
-test("parses every document in a YAML stream", async () => {
+test("parses every consumer document in a YAML stream", async () => {
   const root = await createFixture();
   try {
     const harness = join(root, "specs", "directives.yaml");
     await writeFile(
       harness,
       `${await readFile(harness, "utf8")}\n---\nversion: '12.0'\ndescription: Second harness document\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n`,
-    );
-    const general = join(root, "specs", "conventions", "general.yaml");
-    await writeFile(
-      general,
-      `${await readFile(general, "utf8")}\n---\nversion: '12.0'\ndescription: Second profile document\nrequires: []\nconflicts: []\ndirectives:\n  - id: E-0.1.1\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     await expect(
       validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
@@ -75,54 +61,78 @@ test("reports schema, namespace, and file errors", async () => {
       {},
       {
         read: async (path, encoding) =>
-          path.endsWith("directives-schema.yaml") ? "{}" : readFile(path, encoding),
+          String(path).endsWith("specs/directives-schema.yaml") ? "{}" : readFile(path, encoding),
       },
     );
     expect(errors.join(" ")).toContain("v12 document and directive schema");
     expect(errors.join(" ")).toContain("assigned E-number");
-    await rm(join(root, "specs", "conventions"), { recursive: true, force: true });
+    await rm(join(root, "specs", "directives.yaml"));
     expect(
       (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),
-    ).toContain("Specification YAML could not be read");
+    ).toContain("specs/directives.yaml is required");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
 });
 
-test("reports a convention YAML read error", async () => {
+test("validates nested specification files and does not require a consumer schema copy", async () => {
   const root = await createFixture();
   try {
-    const errors = await validateSpecificationDirectives(
+    const nested = join(root, "specs", "nested", "deep");
+    await mkdir(nested, { recursive: true });
+    await writeFile(
+      join(nested, "extra.yaml"),
+      "version: '12.0'\ndescription: Extra rules\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n",
+    );
+    await expect(
+      validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
+    ).resolves.toEqual([]);
+    await writeFile(
+      join(nested, "extra.yaml"),
+      "version: '12.0'\ndescription: Extra rules\nunknown: true\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n",
+    );
+    expect(
+      (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),
+    ).toContain("contains unsupported document fields");
+    await writeFile(
+      join(nested, "extra.yaml"),
+      "version: '12.0'\ndescription: Duplicate rule\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n",
+    );
+    expect(
+      (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),
+    ).toContain("Duplicate specification rule ID: E-0.0");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("reports malformed bundled schema YAML and invalid directive data", async () => {
+  const root = await createFixture();
+  try {
+    const schemaError = await validateSpecificationDirectives(
       root,
       { eliware: { id: "E-0" } },
       {
-        read: async (path, encoding) => {
-          if (path.endsWith("general.yaml")) throw new Error("blocked");
-          return readFile(path, encoding);
-        },
+        read: async (path, encoding) =>
+          String(path).endsWith("specs/directives-schema.yaml")
+            ? "directives: [\n"
+            : readFile(path, encoding),
       },
     );
-    expect(errors.join(" ")).toContain("Specification YAML could not be read");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("reports malformed schema YAML and non-array directive data", async () => {
-  const root = await createFixture();
-  try {
-    await writeFile(
-      join(root, "specs", "conventions", "general-deterministic.yaml"),
-      "version: '12.0'\ndescription: General\nrequires: []\ndirectives: null\n",
-    );
-    const invalid = await validateSpecificationDirectives(root, { eliware: { id: "E-0" } });
-    expect(invalid.join(" ")).toContain("directives");
-    await writeFile(join(root, "specs", "directives-schema.yaml"), "directives: [\n");
+    expect(schemaError.join(" ")).toContain("Bundled specifications are missing or invalid");
+    await writeFile(join(root, "specs", "directives.yaml"), "directives: [\n");
     await expect(
       validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
     ).resolves.toEqual(
-      expect.arrayContaining([expect.stringContaining("Directive schema or document is missing")]),
+      expect.arrayContaining([expect.stringContaining("specs/directives.yaml is invalid YAML")]),
     );
+    await writeFile(
+      join(root, "specs", "directives.yaml"),
+      "version: '12.0'\ndescription: Invalid\ndirectives: null\n",
+    );
+    expect(
+      (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),
+    ).toContain("directives must be a nonempty array");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

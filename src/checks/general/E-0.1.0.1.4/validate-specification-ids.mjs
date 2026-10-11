@@ -1,14 +1,22 @@
 export function validateSpecificationIds(documents, namespace) {
   const errors = [];
   const ids = new Set();
+  const groups = new Map();
   for (const { path, directives } of documents)
-    checkSiblings(directives, path, namespace, ids, errors, null);
+    checkSiblings(directives, path, namespace, ids, groups, errors, null);
+  for (const [prefix, numbers] of groups) {
+    numbers.sort((left, right) => {
+      const difference = BigInt(left) - BigInt(right);
+      return difference < 0n ? -1 : difference > 0n ? 1 : 0;
+    });
+    if (numbers.some((number, index) => number !== String(index)))
+      errors.push(`Sibling IDs under ${prefix} must start at 0 and be sequential.`);
+  }
   return errors;
 }
 
-function checkSiblings(rules, path, namespace, ids, errors, parentId) {
+function checkSiblings(rules, path, namespace, ids, groups, errors, parentId) {
   if (!Array.isArray(rules)) return;
-  const groups = new Map();
   for (const rule of rules) {
     if (typeof rule?.id !== "string" || !/^E-\d+(?:\.\d+)*$/u.test(rule.id)) continue;
     if (namespace && !rule.id.startsWith(`${namespace}.`) && rule.id !== namespace)
@@ -24,14 +32,6 @@ function checkSiblings(rules, path, namespace, ids, errors, parentId) {
     const parts = rule.id.split(".");
     const prefix = parts.slice(0, -1).join(".");
     groups.set(prefix, [...(groups.get(prefix) ?? []), parts.at(-1)]);
-    checkSiblings(rule.children, path, namespace, ids, errors, rule.id);
-  }
-  for (const [prefix, numbers] of groups) {
-    numbers.sort((left, right) => {
-      const difference = BigInt(left) - BigInt(right);
-      return difference < 0n ? -1 : difference > 0n ? 1 : 0;
-    });
-    if (numbers.some((number, index) => number !== String(index)))
-      errors.push(`${path} sibling IDs under ${prefix} must start at 0 and be sequential.`);
+    checkSiblings(rule.children, path, namespace, ids, groups, errors, rule.id);
   }
 }

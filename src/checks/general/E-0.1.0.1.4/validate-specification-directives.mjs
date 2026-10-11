@@ -1,64 +1,10 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import { parseAllDocuments } from "yaml";
-import { listSpecificationEntries } from "./list-specification-entries.mjs";
-import { validateSpecificationDocument } from "./validate-specification-document.mjs";
-import { validateSpecificationIds } from "./validate-specification-ids.mjs";
-import { validateV12DirectiveSchema } from "./validate-v12-directive-schema.mjs";
-import { validateProfileRequirements } from "./validate-profile-requirements.mjs";
+import { validateBundledSpecifications } from "./validate-bundled-specifications.mjs";
+import { validateConsumerSpecifications } from "./validate-consumer-specifications.mjs";
 
 export async function validateSpecificationDirectives(root, packageJson = {}, dependencies = {}) {
-  const read = dependencies.read ?? readFile;
-  const list = dependencies.readdir;
-  let schema;
-  let harness;
-  try {
-    schema = parseDocuments(await read(join(root, "specs", "directives-schema.yaml"), "utf8"));
-    harness = parseDocuments(await read(join(root, "specs", "directives.yaml"), "utf8"));
-  } catch (error) {
-    return [`Directive schema or document is missing or invalid: ${error.message}`];
-  }
-  const errors = [];
-  errors.push(...schema.flatMap((document) => validateV12DirectiveSchema(document)));
-  const expectedNamespace = packageJson?.eliware?.id;
-  if (typeof expectedNamespace !== "string" || !/^E-\d+$/u.test(expectedNamespace))
-    errors.push("package.json.eliware.id must define the assigned E-number.");
-  const documents = harness.map((value, index) => ({
-    path: `specs/directives.yaml document ${index + 1}`,
-    value,
-  }));
-  try {
-    const entries = await listSpecificationEntries(root, { list });
-    if (!entries.some(({ path, type }) => path === "specs/conventions" && type === "directory"))
-      throw new Error("specs/conventions is missing.");
-    for (const { path } of entries.filter(
-      ({ path, type }) => type === "file" && /^specs\/conventions\/.*\.ya?ml$/iu.test(path),
-    )) {
-      const values = parseDocuments(await read(join(root, path), "utf8"));
-      values.forEach((value, index) =>
-        documents.push({ path: `${path} document ${index + 1}`, value }),
-      );
-    }
-  } catch (error) {
-    errors.push(`Specification YAML could not be read: ${error.message}`);
-  }
-  const idDocuments = new Map();
-  for (const { path, value } of documents) {
-    errors.push(...validateSpecificationDocument(value, path));
-    errors.push(...validateProfileRequirements(value, path, documents));
-    const sourcePath = path.replace(/ document \d+$/u, "");
-    const entry = idDocuments.get(sourcePath) ?? [];
-    if (Array.isArray(value?.directives)) entry.push(...value.directives);
-    idDocuments.set(sourcePath, entry);
-  }
-  const allIds = [...idDocuments].map(([path, directives]) => ({ path, directives }));
-  errors.push(...validateSpecificationIds(allIds, expectedNamespace));
+  const errors = [...(await validateBundledSpecifications(dependencies))];
+  errors.push(
+    ...(await validateConsumerSpecifications(root, packageJson?.eliware?.id, dependencies)),
+  );
   return errors;
-}
-
-function parseDocuments(source) {
-  const documents = parseAllDocuments(source);
-  const errors = documents.flatMap((document) => document.errors);
-  if (errors.length) throw new Error(errors.map(({ message }) => message).join("; "));
-  return documents.map((document) => document.toJSON());
 }

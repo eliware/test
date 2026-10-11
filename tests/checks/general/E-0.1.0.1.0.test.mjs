@@ -90,7 +90,7 @@ test("reports invalid Eliware metadata", async () => {
   expect(result.message).toContain("duplicate profile");
 });
 
-test("reports mismatched paired convention metadata", async () => {
+test("ignores consumer convention files when it checks bundled profiles", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-rule-"));
   const directory = join(root, "specs", "conventions");
   await mkdir(directory, { recursive: true });
@@ -100,10 +100,7 @@ test("reports mismatched paired convention metadata", async () => {
       join(directory, "general-deterministic.yaml"),
       "version: '12.1'\nrequires: [application]\n",
     );
-    const result = await run({ root, packageJson });
-    expect(result.status).toBe("fail");
-    expect(result.message).toContain("same version");
-    expect(result.message).toContain("same prerequisites");
+    await expect(run({ root, packageJson })).resolves.toMatchObject({ status: "pass" });
   } finally {
     await rm(root, { recursive: true, force: true });
   }

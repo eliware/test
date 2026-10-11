@@ -9,7 +9,7 @@ export const ruleId = "E-0.1.0.1.0";
 export async function run(context = {}) {
   const failures = [...validateEliwareMetadata(context.packageJson)];
   const root = context.root ?? process.cwd();
-  failures.push(...(await validateProfileDocumentPairs(root)));
+  failures.push(...(await validateProfileDocumentPairs()));
   const map = await loadRepoMapRecord(root, context.packageJson);
   if (map.error) failures.push(map.error);
   if (map.available && map.record) {
