@@ -1,6 +1,6 @@
 const pathPatterns = [
   /[a-z]:[\\/]+(?:users|home|srv|var[\\/]lib)[\\/]+[^\s"'`,;\])]+/iu,
-  /\/(?:home|users|srv)\/[^\s"'`,;\])]+/iu,
+  /(?:^|[^a-z0-9])\/(?:home|users|srv)\/[^\s"'`,;\])]+/iu,
   /(?:^|[^a-z0-9])(?:C:|D:)[\\/]+(?:eliware|Users[\\/]\w+[\\/]src)(?:[\\/]|$)/iu,
 ];
 

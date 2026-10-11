@@ -27,3 +27,10 @@ test("skips invalid UTF-8 and binary content", async () => {
     findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
   ).resolves.toEqual([]);
 });
+
+test("does not treat application routes as machine paths", async () => {
+  const contents = new Map([["routes.txt", Buffer.from("/admin/app/users/:id /api/users/me")]]);
+  await expect(
+    findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
+  ).resolves.toEqual([]);
+});
