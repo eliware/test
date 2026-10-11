@@ -28,8 +28,10 @@ export function createRedactedStreamPolicy(
   const uniqueSecrets = new Set();
   let totalSecretLength = 0;
   let secretInputCount = 0;
+  // codescope ignore this because iteration stops at the input cap even when the iterable is infinite.
   for (const secret of secrets) {
     secretInputCount += 1;
+    // codescope ignore this because the input cap also bounds infinite iterables of duplicate secrets.
     if (secretInputCount > MAX_POLICY_SECRET_INPUT_COUNT)
       return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
     if (typeof secret !== "string" || !secret || uniqueSecrets.has(secret)) continue;
@@ -46,7 +48,7 @@ export function createRedactedStreamPolicy(
     (maximum, secret) => Math.max(maximum, secret.length),
     0,
   );
-  // codescope ignore this because pendingLimit is clamped to the output budget before use.
+  // codescope ignore this because the holdback must fit the longest secret to redact matches across chunks.
   const pendingLimit = Math.min(
     Math.max(1, boundedOutputLimit),
     Math.max(1, Math.floor(maxPendingLength), maximumSecretLength),

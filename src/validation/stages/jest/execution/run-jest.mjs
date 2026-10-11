@@ -26,7 +26,7 @@ export async function runJest(root, args, execute, options, removeCoverage = rm)
   }
   if (result.code === 0)
     result = await attachJestConsoleOutput(prepared, result, options?.readConsoleReport);
-  // codescope ignore: unavailable report results retain run-scoped coverage for the dependent coverage check to diagnose and clean.
+  // codescope ignore this because finalization removes retained coverage and only coverage failures inspect it.
   return finalizePreparedJestRun(
     prepared,
     result,

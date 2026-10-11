@@ -14,6 +14,7 @@ export function collectJestTestNames(program) {
   }
   let changed = true;
   while (changed) changed = addTestAliases(program, names);
+  // codescope ignore this because static validation blocks aliases after any same-name assignment in unproven control flow.
   for (const name of findInvalidJestTestAliases(program, names)) names.callbacks.delete(name);
   return names;
 }
@@ -62,12 +63,13 @@ function addTestAliases(node, names) {
   if (
     node.type === "VariableDeclarator" &&
     node.id?.type === "Identifier" &&
-    ["Identifier", "MemberExpression"].includes(node.init?.type) &&
+    ["Identifier", "MemberExpression", "CallExpression"].includes(node.init?.type) &&
     isActiveJestTestExpression(node.init, names) &&
     !names.callbacks.has(node.id.name)
   ) {
     names.callbacks.add(node.id.name);
     changed = true;
   }
+  // codescope ignore this because Babel parser nodes omit parent links in this configured parse.
   return Object.values(node).reduce((found, item) => addTestAliases(item, names) || found, changed);
 }

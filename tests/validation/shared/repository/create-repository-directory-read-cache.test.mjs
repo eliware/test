@@ -1,6 +1,8 @@
 import { expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 import { createRepositoryDirectoryReadCache } from "../../../../src/validation/shared/repository/create-repository-directory-read-cache.mjs";
+import { verifyDirectoryCacheBirthtimeRefresh } from "../../../../test-fixtures/verify-directory-cache-birthtime.mjs";
+const root = join(process.cwd(), "inventory-fixture");
 const metadata = (mtimeNs) => ({ dev: 1n, ino: 2n, size: 0n, mtimeNs, ctimeNs: mtimeNs });
 async function expectDirectoryReads(snapshot, platform, expectedCalls) {
   const root = join(process.cwd(), "inventory-fixture");
@@ -12,7 +14,6 @@ async function expectDirectoryReads(snapshot, platform, expectedCalls) {
   expect(readDirectory).toHaveBeenCalledTimes(expectedCalls);
 }
 test("deduplicates concurrent directory reads and reuses unchanged listings", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const stat = jest.fn(async () => metadata(1n));
   const entries = [];
   const readDirectory = jest.fn(async () => entries);
@@ -26,7 +27,6 @@ test("deduplicates concurrent directory reads and reuses unchanged listings", as
   expect(readDirectory).toHaveBeenCalledWith(join(root, "src"), { withFileTypes: true });
 });
 test("refreshes a directory listing when its on-disk version changes", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const stat = jest
     .fn()
     .mockResolvedValueOnce(metadata(1n))
@@ -45,7 +45,6 @@ test("refreshes a directory listing when its on-disk version changes", async () 
 });
 // codescope ignore this because a later read checks current metadata before it reuses the prior listing.
 test("preserves the last successful listing when a forced refresh fails", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const stat = jest
     .fn()
     .mockResolvedValueOnce(metadata(1n))
@@ -64,7 +63,6 @@ test("preserves the last successful listing when a forced refresh fails", async 
   expect(readDirectory).toHaveBeenCalledTimes(2);
 });
 test("uses one stat call to validate an unchanged cached listing", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const stat = jest.fn(async () => metadata(1n));
   const readDirectory = jest.fn().mockResolvedValue([]);
   const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
@@ -75,7 +73,6 @@ test("uses one stat call to validate an unchanged cached listing", async () => {
   expect(readDirectory).toHaveBeenCalledTimes(1);
 });
 test("forced refresh waits for a pending read and starts a fresh listing", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const stat = jest
     .fn()
     .mockResolvedValueOnce(metadata(1n))
@@ -107,7 +104,6 @@ test("forced refresh waits for a pending read and starts a fresh listing", async
   expect(readDirectory).toHaveBeenCalledTimes(2);
 });
 test("forced refresh retries after the pending read fails", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const stat = jest
     .fn()
     .mockRejectedValueOnce(new Error("temporary stat failure"))
@@ -152,7 +148,6 @@ test.each([
   await expectDirectoryReads(snapshot, platform, expectedCalls);
 });
 test("detects nanosecond changes within the same millisecond", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const sameMillisecond = (mtimeNs) => ({ ...metadata(mtimeNs), mtimeMs: 1, ctimeMs: 1 });
   const stat = jest
     .fn()
@@ -166,8 +161,13 @@ test("detects nanosecond changes within the same millisecond", async () => {
   await expect(read("src")).resolves.toEqual(["new"]);
   expect(readDirectory).toHaveBeenCalledTimes(2);
 });
+test("refreshes a recreated directory when its birth time changes", async () => {
+  const { read, readDirectory } = await verifyDirectoryCacheBirthtimeRefresh(jest);
+  await expect(read("src")).resolves.toEqual(["old"]);
+  await expect(read("src")).resolves.toEqual(["new"]);
+  expect(readDirectory).toHaveBeenCalledTimes(2);
+});
 test("rejects listings when a directory changes during readdir", async () => {
-  const root = join(process.cwd(), "inventory-fixture");
   const stat = jest.fn().mockResolvedValueOnce(metadata(1n)).mockResolvedValueOnce(metadata(2n));
   const readDirectory = jest.fn().mockResolvedValue(["possibly-incomplete"]);
   const read = createRepositoryDirectoryReadCache(root, readDirectory, stat);

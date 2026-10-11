@@ -39,6 +39,7 @@ test("accepts active modifiers and imported test aliases", () => {
     'const check = test; check("global alias", () => {});',
     'const { test: check } = globalThis; check("destructured global alias", () => {});',
     'const { "test": check } = globalThis; check("quoted global alias", () => {});',
+    'const focused = test.each([1]); focused("table alias", () => {});',
     'import * as jestApi from "@jest/globals"; const check = jestApi.test; check("import alias", () => {});',
     'globalThis.test("global property", () => {});',
     'const { test: run } = await import("@jest/globals"); run("dynamic alias", () => {});',
@@ -81,9 +82,32 @@ test("rejects a Jest name shadowed by a top-level block var", () => {
   );
 });
 
+test("rejects a test call that uses a block-scoped fake Jest binding", () => {
+  const source = '{ let test = (name, callback) => callback(); test("fake", () => {}); }';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+});
+
+test("keeps a real Jest call outside a block-local shadow", () => {
+  const source =
+    'import { test } from "@jest/globals"; { let test = custom; } test("real", () => {});';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    true,
+  );
+});
+
 test("rejects fake suites that shadow the Jest describe function", () => {
   const source =
     'function describe(name, callback) { callback(); } describe("fake", () => { test("fake", () => {}); });';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+});
+
+test("rejects suites that reassign the imported Jest describe function", () => {
+  const source =
+    'import { describe, test } from "@jest/globals"; describe = custom; describe("fake", () => { test("fake", () => {}); });';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
     false,
   );

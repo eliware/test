@@ -79,3 +79,21 @@ test("accepts declared non-index exports without a root subpath", async () => {
     ),
   ).resolves.toEqual([]);
 });
+
+test("accepts the implementation beside a public library declaration target", async () => {
+  await expect(
+    validateInternalExportBarrels(
+      ["src/index.mjs", "src/internal.mjs"],
+      async () => 'export { value } from "./value.mjs";',
+      { main: "./src/index.mjs", types: "./src/index.d.ts" },
+      "repo",
+      { library: true },
+    ),
+  ).resolves.toEqual(["src/internal.mjs is an internal pure export barrel."]);
+});
+
+test("uses the default non-library target policy", async () => {
+  await expect(
+    validateInternalExportBarrels([], async () => "", {}, "repo", null),
+  ).resolves.toEqual([]);
+});

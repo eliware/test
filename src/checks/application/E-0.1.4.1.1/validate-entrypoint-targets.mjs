@@ -1,5 +1,5 @@
 import { lstat } from "node:fs/promises";
-import { isAbsolute, join, win32 } from "node:path";
+import { isAbsolute, join, resolve, win32 } from "node:path";
 
 export async function validateEntrypointTargets(targets, root, checkPath = lstat) {
   const errors = [];
@@ -22,7 +22,7 @@ async function validateEntrypointTarget(target, root, checkPath) {
   if (!normalized) return `Entrypoint target must use a canonical path under bin/: ${target}.`;
   try {
     const segments = normalized.split("/");
-    let current = root;
+    let current = resolve(root);
     for (const [index, segment] of segments.entries()) {
       current = join(current, segment);
       const metadata = await checkPath(current);

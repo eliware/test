@@ -1,4 +1,5 @@
 import { readGhcrPublishWorkflow } from "../shared/read-ghcr-publish-workflow.mjs";
+import { createRequiredGhcrVerificationCommands } from "./create-required-ghcr-verification-commands.mjs";
 
 export async function validateGhcrAttestationChain(inventory, packageJson = {}) {
   const parsed = await readGhcrPublishWorkflow(inventory);
@@ -18,6 +19,7 @@ export async function validateGhcrAttestationChain(inventory, packageJson = {}) 
   if (ids.some((id) => typeof id !== "string" || !/^[A-Za-z_][A-Za-z0-9_-]*$/u.test(id)))
     errors.push("Each GHCR image push must have a valid step ID.");
   if (new Set(ids).size !== ids.length) errors.push("GHCR image push step IDs must be unique.");
+  // codescope ignore this because each push checks its own bounded step range for a matching attestation.
   const attests = steps.filter(
     (step) => typeof step?.uses === "string" && step.uses.startsWith("actions/attest@"),
   );
@@ -39,15 +41,11 @@ export async function validateGhcrAttestationChain(inventory, packageJson = {}) 
       );
       return;
     }
-    const required = [
-      (run) =>
-        run.includes(`docker buildx imagetools inspect ${image}:v${packageJson?.version}`) &&
-        run.includes(expression) &&
-        run.includes("="),
-      (run) => run.includes(`docker buildx imagetools inspect ${image}@${expression}`),
-      (run) => run.includes(`gh attestation verify oci://${image}@${expression}`),
-      (run) => validSummaryCommand(run, expression),
-    ];
+    const required = createRequiredGhcrVerificationCommands(
+      image,
+      packageJson?.version,
+      expression,
+    );
     let prior = attestation.index;
     for (const [ruleIndex, matches] of required.entries()) {
       const found = chain.find(
@@ -80,17 +78,6 @@ function validAttestation(step, image, expression) {
     step.with?.["push-to-registry"] === true &&
     unconditional(step)
   );
-}
-
-function validSummaryCommand(command, expression) {
-  return new RegExp(
-    `^echo\\s+["']?${escapePattern(expression)}["']?\\s+>>\\s+["']?\\$GITHUB_STEP_SUMMARY["']?$`,
-    "u",
-  ).test(command);
-}
-
-function escapePattern(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 function unconditional(step) {

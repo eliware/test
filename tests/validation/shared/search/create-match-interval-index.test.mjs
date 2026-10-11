@@ -111,6 +111,12 @@ test("materializes a sparse interval map when the pending range has no matches",
   expect(Object.hasOwn(materialized, 10_000)).toBe(false);
 });
 
+test("rejects a match window above the fixed allocation limit", () => {
+  expect(() => createMatchIntervalIndex().materialize(0, 1_000_001)).toThrow(
+    "Match window must be between 0 and 1000000 characters.",
+  );
+});
+
 test("materializes only intervals inside the requested sparse range", () => {
   const index = createMatchIntervalIndex();
   index.add([

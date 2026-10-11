@@ -46,6 +46,8 @@ export async function installSmokeCandidate({
     "package.json",
   );
   const installed = JSON.parse(await readFile(installedPath, "utf8"));
+  if (installed.name !== packageJson.name)
+    throw new Error(`Installed package ${installed.name} does not match ${packageJson.name}.`);
   if (installed.version !== packageJson.version)
     throw new Error(
       `Installed package version ${installed.version} does not match ${packageJson.version}.`,

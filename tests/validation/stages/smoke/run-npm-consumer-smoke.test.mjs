@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
-import { readFile, rm, symlink, writeFile } from "node:fs/promises";
+import { lstat, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { cleanupSmokeTempRoot as cleanupTempRoot } from "../../../../src/validation/stages/smoke/cleanup-smoke-temp-root.mjs";
 import {
@@ -138,17 +138,17 @@ test("stops if the canonical target directory is replaced after validation", asy
   expect(inspectTargetRoot).toHaveBeenCalledTimes(2);
   expect(calls).toEqual([]);
 });
-test("leaves an unverified temporary path untouched", async () => {
+test("removes an empty temporary path when identity inspection fails", async () => {
   const fixture = await createSmokeTarget(roots);
   const result = await runSmoke(fixture, {
     inspectTempRoot: async () => {
       throw new Error("identity unavailable");
     },
   });
-  expect(result).toContain("Cannot verify temporary smoke directory; left untouched");
-  const path = result.match(/left untouched at (.+): identity unavailable/u)?.[1];
+  expect(result).toContain("Cannot verify temporary smoke directory; removed empty path");
+  const path = result.match(/removed empty path (.+): identity unavailable/u)?.[1];
   expect(path).toBeTruthy();
-  await rm(path, { recursive: true, force: true });
+  await expect(lstat(path)).rejects.toMatchObject({ code: "ENOENT" });
 });
 test.each(smokeFailureCases)(
   "reports candidate and installation failures and restores prior package %#",

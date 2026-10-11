@@ -24,13 +24,10 @@ async function setup() {
   return { targetRoot, installed };
 }
 
-async function installMock(targetRoot, version = packageJson.version) {
+async function installMock(targetRoot, version = packageJson.version, name = packageJson.name) {
   const installed = join(targetRoot, "node_modules", "@eliware", "test");
   await mkdir(installed, { recursive: true });
-  await writeFile(
-    join(installed, "package.json"),
-    JSON.stringify({ name: packageJson.name, version }),
-  );
+  await writeFile(join(installed, "package.json"), JSON.stringify({ name, version }));
 }
 
 const options = (targetRoot, run) => ({
@@ -80,6 +77,18 @@ test("rejects a mismatched installed version", async () => {
       }),
     ),
   ).rejects.toThrow("Installed package version 12.0.1 does not match 12.0.0");
+});
+
+test("rejects a mismatched installed package name", async () => {
+  const { targetRoot } = await setup();
+  await expect(
+    installSmokeCandidate(
+      options(targetRoot, async () => {
+        await installMock(targetRoot, packageJson.version, "@other/package");
+        return { code: 0 };
+      }),
+    ),
+  ).rejects.toThrow("Installed package @other/package does not match @eliware/test");
 });
 
 test("reports consumer test failures", async () => {

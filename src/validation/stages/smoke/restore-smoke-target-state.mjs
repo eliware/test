@@ -14,6 +14,7 @@ export async function restoreSmokeTargetState(state, fs = defaultFs) {
         await assertSmokePackageParents(state.targetRoot, state.packageName, fs.lstat);
       // codescope ignore this because smoke restores only paths that its install process owns.
       await removeCapturedPath(entry.path, fs);
+      // codescope ignore this because a path that was absent before smoke must remain absent.
       if (entry.type === "missing") continue;
       await fs.mkdir(dirname(entry.path), { recursive: true });
       // The target runs on the smoke host; capture rejects Windows file links and records junctions.

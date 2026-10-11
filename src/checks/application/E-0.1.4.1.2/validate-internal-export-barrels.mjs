@@ -1,8 +1,14 @@
 import { join, posix } from "node:path";
 import { isPureExportBarrel } from "./is-pure-export-barrel.mjs";
 
-export async function validateInternalExportBarrels(files, readText, packageJson, root) {
-  const publicTargets = collectPublicTargets(packageJson);
+export async function validateInternalExportBarrels(
+  files,
+  readText,
+  packageJson,
+  root,
+  options = {},
+) {
+  const publicTargets = collectPublicTargets(packageJson, options);
   const sources = files.filter((path) => /^src\/.*\.mjs$/u.test(path));
   const errors = [];
   for (const path of sources) {
@@ -20,7 +26,11 @@ export async function validateInternalExportBarrels(files, readText, packageJson
   return errors;
 }
 
-function collectPublicTargets(packageJson) {
+function collectPublicTargets(packageJson, options) {
+  const library = options?.library ?? false;
+  const declarationTargets = library
+    ? [packageJson.types, packageJson.typings, ...collectDeclarationExports(packageJson.exports)]
+    : [];
   const values = [packageJson.main, packageJson.bin, packageJson.exports];
   const targets = new Set();
   const visit = (value) => {
@@ -30,5 +40,15 @@ function collectPublicTargets(packageJson) {
     else if (value && typeof value === "object") Object.values(value).forEach(visit);
   };
   values.forEach(visit);
+  for (const target of declarationTargets)
+    if (typeof target === "string" && target.startsWith("./") && target.endsWith(".d.ts"))
+      targets.add(posix.normalize(target.slice(2, -5) + ".mjs"));
   return targets;
+}
+
+function collectDeclarationExports(exportsValue) {
+  if (typeof exportsValue === "string") return exportsValue.endsWith(".d.ts") ? [exportsValue] : [];
+  if (Array.isArray(exportsValue)) return exportsValue.flatMap(collectDeclarationExports);
+  if (!exportsValue || typeof exportsValue !== "object") return [];
+  return Object.values(exportsValue).flatMap(collectDeclarationExports);
 }

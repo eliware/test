@@ -8,8 +8,10 @@ export async function validateGitIgnoreProbes(root, runGit) {
         windowsHide: true,
       });
       const code = result.code ?? 0;
-      if (code !== 0 && shouldIgnore) errors.push(`${path} must be ignored.`);
       if (code === 0 && !shouldIgnore) errors.push(`${path} must not be ignored.`);
+      else if (code === 1 && shouldIgnore) errors.push(`${path} must be ignored.`);
+      else if (![0, 1].includes(code))
+        errors.push(`Git ignore rules could not be inspected for ${path}.`);
     } catch (error) {
       if (error.code === "ENOENT" || error.code !== 1)
         errors.push(`Git ignore rules could not be inspected for ${path}.`);

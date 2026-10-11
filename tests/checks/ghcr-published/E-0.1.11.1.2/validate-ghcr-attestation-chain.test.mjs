@@ -12,6 +12,18 @@ test("validates each publication digest chain", async () => {
   );
 });
 
+test("rejects commands that mention a check without running it", async () => {
+  const workflow = createGhcrWorkflow();
+  workflow.jobs.publish.steps[4].run =
+    'echo "docker buildx imagetools inspect ghcr.io/eliware/example:v12.0.0"';
+
+  await expect(
+    validateGhcrAttestationChain(createGhcrInventory({ workflow }), ghcrPackage),
+  ).resolves.toContain(
+    "GHCR push verification, inspection, attestation, and digest summary steps must run in order and unconditionally.",
+  );
+});
+
 test("reports missing workflow data and missing push steps", async () => {
   await expect(validateGhcrAttestationChain()).resolves.toContain(
     "publish.yaml could not be inspected.",

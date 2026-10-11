@@ -40,3 +40,11 @@ test("treats exit code one as an ignore miss and reports other command failures"
   expect(errors).toHaveLength(requiredIgnoreCases.filter(([, ignore]) => ignore).length);
   expect(errors.every((error) => error.includes("could not be inspected"))).toBe(true);
 });
+
+test("reports resolved Git failures for paths that should not be ignored", async () => {
+  const runGit = async () => ({ code: 2 });
+  const errors = await validateGitIgnoreProbes("repo", runGit);
+
+  expect(errors).toHaveLength(requiredIgnoreCases.length);
+  expect(errors.every((error) => error.includes("could not be inspected"))).toBe(true);
+});

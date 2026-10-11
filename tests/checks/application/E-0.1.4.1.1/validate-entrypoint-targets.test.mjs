@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { join, resolve } from "node:path";
 import { validateEntrypointTargets } from "../../../../src/checks/application/E-0.1.4.1.1/validate-entrypoint-targets.mjs";
 
 const file = { isFile: () => true, isSymbolicLink: () => false };
@@ -52,4 +53,14 @@ test("requires the target to be a file and reports missing path errors", async (
 
 test("uses the default filesystem check", async () => {
   await expect(validateEntrypointTargets([], "repo")).resolves.toEqual([]);
+});
+
+test("anchors a relative root before checking target paths", async () => {
+  let checkedPath;
+  await validateEntrypointTargets(["bin/tool.mjs"], "relative-repo", async (path) => {
+    checkedPath = path;
+    return file;
+  });
+
+  expect(checkedPath).toBe(join(resolve("relative-repo"), "bin", "tool.mjs"));
 });

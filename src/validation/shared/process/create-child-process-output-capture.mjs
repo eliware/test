@@ -13,6 +13,7 @@ export function createChildProcessOutputCapture(
   outputLimit,
   makeSecretMatcher = createSecretTextMatcher,
 ) {
+  // codescope ignore this because the combined secret list feeds stream and complete diagnostic redaction.
   const redactionSecrets = [
     ...collectRedactionSecrets(options.env ?? process.env),
     ...(Array.isArray(suppliedSecrets) ? suppliedSecrets : []),

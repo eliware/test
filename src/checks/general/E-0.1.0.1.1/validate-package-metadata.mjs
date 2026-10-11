@@ -9,6 +9,7 @@ export function validatePackageMetadata(packageJson) {
   const match = typeof name === "string" ? /^@eliware\/([^/\s]+)$/u.exec(name) : null;
   if (!match) errors.push("package.json.name must be a scoped @eliware name.");
   const version = packageJson?.version;
+  // codescope ignore this because strict semver validation rejects leading-zero numeric components.
   if (
     typeof version !== "string" ||
     !/^\d+\.\d+\.\d+$/u.test(version) ||

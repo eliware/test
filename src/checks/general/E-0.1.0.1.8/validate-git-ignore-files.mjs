@@ -15,6 +15,20 @@ export async function validateGitIgnoreFiles(root, runGit) {
         root,
         "ls-files",
         "--others",
+        "--exclude-standard",
+        "-z",
+        "--",
+        ":(glob)**/.gitignore",
+      ],
+      { windowsHide: true, encoding: "buffer" },
+    );
+    const ignored = await runGit(
+      "git",
+      [
+        "-C",
+        root,
+        "ls-files",
+        "--others",
         "--ignored",
         "--exclude-standard",
         "-z",
@@ -23,11 +37,15 @@ export async function validateGitIgnoreFiles(root, runGit) {
       ],
       { windowsHide: true, encoding: "buffer" },
     );
-    const nested = [
-      ...parseGitNulPaths(tracked.stdout),
-      ...parseGitNulPaths(untracked.stdout),
-    ].filter((path) => path.endsWith("/.gitignore") && path !== ".gitignore");
-    if (nested.length) errors.push(`Nested .gitignore files are prohibited: ${nested.join(", ")}.`);
+    const nested = new Set(
+      [
+        ...parseGitNulPaths(tracked.stdout),
+        ...parseGitNulPaths(untracked.stdout),
+        ...parseGitNulPaths(ignored.stdout),
+      ].filter((path) => path.endsWith("/.gitignore") && path !== ".gitignore"),
+    );
+    if (nested.size)
+      errors.push(`Nested .gitignore files are prohibited: ${[...nested].join(", ")}.`);
   } catch {
     errors.push("Repository ignore files could not be listed; nested overrides are unknown.");
   }

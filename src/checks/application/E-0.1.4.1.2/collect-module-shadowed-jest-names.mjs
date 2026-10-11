@@ -20,8 +20,23 @@ export function collectModuleShadowedNames(program, names) {
       declarationNames(node, add);
       collectHoistedVarNames(node, add);
     }
+    collectAssignedDescribeNames(node, names.describes, describes);
   }
   return { tests, callbacks: new Set(), describes };
+}
+
+function collectAssignedDescribeNames(node, describeNames, describes) {
+  if (!node || typeof node !== "object" || typeof node.type !== "string") return;
+  if (
+    node.type === "AssignmentExpression" &&
+    node.left?.type === "Identifier" &&
+    describeNames?.has(node.left.name)
+  )
+    describes.add(node.left.name);
+  for (const value of Object.values(node))
+    if (Array.isArray(value))
+      value.forEach((child) => collectAssignedDescribeNames(child, describeNames, describes));
+    else if (value?.type) collectAssignedDescribeNames(value, describeNames, describes);
 }
 
 function collectHoistedVarNames(node, add) {

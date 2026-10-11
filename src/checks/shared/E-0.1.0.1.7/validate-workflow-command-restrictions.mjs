@@ -48,6 +48,7 @@ export function validateWorkflowCommandRestrictions(steps) {
 function isApprovedPreInstallStep(step) {
   if (step?.uses === "actions/checkout@v6" || step?.uses === "actions/setup-node@v7")
     return step.run === undefined;
+  // codescope ignore this because validateWorkflowStepOrder enforces the canonical position.
   if (step?.run === "npm -g install npm@latest") return step.uses === undefined;
   return (
     typeof step?.run === "string" &&

@@ -13,12 +13,24 @@ test("reports nested ignore files and tracked ignored paths", async () => {
   const runGit = async (_command, args) => {
     if (args.includes("--cached") && args.includes(":(glob)**/.gitignore"))
       return { stdout: Buffer.from("docs/.gitignore\0") };
+    if (args.includes("--others") && args.includes("--exclude-standard"))
+      return { stdout: Buffer.from("") };
     if (args.includes("--others")) return { stdout: Buffer.from("") };
     return { stdout: Buffer.from("tracked-output\0") };
   };
   const errors = await validateGitIgnoreFiles("repo", runGit);
   expect(errors).toContain("Nested .gitignore files are prohibited: docs/.gitignore.");
   expect(errors).toContain("Tracked or staged paths match ignore rules: tracked-output.");
+});
+
+test("reports ordinary untracked nested ignore files", async () => {
+  const runGit = async (_command, args) => ({
+    stdout: Buffer.from(args.includes("--others") ? "examples/.gitignore\0" : ""),
+  });
+
+  await expect(validateGitIgnoreFiles("repo", runGit)).resolves.toContain(
+    "Nested .gitignore files are prohibited: examples/.gitignore.",
+  );
 });
 
 test("reports failures while listing nested or tracked ignore paths", async () => {

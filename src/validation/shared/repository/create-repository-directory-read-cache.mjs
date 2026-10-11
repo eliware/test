@@ -8,7 +8,14 @@ function version(metadata, platform) {
   return {
     cacheable: platform !== "win32" && nanosecondTimestamps,
     // String conversion is safe for BigIntStats; Windows disables reuse but still compares snapshots around readdir.
-    key: [metadata.dev, metadata.ino, metadata.size, metadata.mtimeNs, metadata.ctimeNs]
+    key: [
+      metadata.dev,
+      metadata.ino,
+      metadata.size,
+      metadata.mtimeNs,
+      metadata.ctimeNs,
+      metadata.birthtimeNs,
+    ]
       .map(String)
       .join(":"),
   };
@@ -47,11 +54,12 @@ export function createRepositoryDirectoryReadCache(
         }
         current.entries = await readDirectory(key, { withFileTypes: true });
         const afterReadVersion = version(await stat(key, { bigint: true }), platform);
-        // codescope ignore this because Node.js 26 supplies timestamps and Windows only disables cache reuse.
+        // codescope ignore this because repository inventory does not promise atomic snapshots during concurrent writes.
         if (afterReadVersion.key !== currentVersion.key) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);
         }
         if (previous) revision += 1;
+        // codescope ignore this because repository inventory does not promise an atomic snapshot during concurrent writes.
         current.version = afterReadVersion;
         current.pending = false;
         return current.entries;

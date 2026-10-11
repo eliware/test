@@ -1,6 +1,8 @@
 import { createNumericMinHeap } from "./create-numeric-min-heap.mjs";
 import { createOrderedMatchStartIndex } from "./create-ordered-match-start-index.mjs";
 
+const MAX_MATCH_WINDOW = 1_000_000;
+
 export function createMatchIntervalIndex() {
   const matchEndsByStart = new Map();
   const orderedMatchStarts = createOrderedMatchStartIndex((start) => matchEndsByStart.has(start));
@@ -20,7 +22,6 @@ export function createMatchIntervalIndex() {
       if (previousEnd === 0) orderedMatchStarts.insert(start);
       if (previousEnd > 0) staleEndEntryCount += 1;
       matchEndsByStart.set(start, end);
-      // The matcher emits intervals in increasing end order, so this index is a queue.
       endEntries.push({ start, end });
       if (!activeEndsByStart.has(start)) activeStarts.insert(start);
       activeEndsByStart.set(start, end);
@@ -39,9 +40,17 @@ export function createMatchIntervalIndex() {
   }
 
   function materialize(start, length) {
+    if (
+      !Number.isSafeInteger(start) ||
+      start < 0 ||
+      !Number.isSafeInteger(length) ||
+      length < 0 ||
+      length > MAX_MATCH_WINDOW ||
+      !Number.isSafeInteger(start + length)
+    )
+      throw new RangeError(`Match window must be between 0 and ${MAX_MATCH_WINDOW} characters.`);
     const matches = [];
     matches.length = length + 1;
-    // discardThrough removes inactive starts below the earliest live crossing interval.
     for (const matchStart of orderedMatchStarts.range(start, start + length)) {
       const offset = matchStart - start;
       const end = matchEndsByStart.get(matchStart);

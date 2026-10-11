@@ -1,5 +1,4 @@
-import { mkdtemp, mkdir, lstat } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { mkdir, lstat } from "node:fs/promises";
 import { join } from "node:path";
 import { execute } from "../../shared/process/execute-child-process.mjs";
 import { resolvePackExecutable } from "../pack/resolve-pack-executable.mjs";
@@ -13,6 +12,7 @@ import { validateNpmConsumerSmokeRequest } from "./validate-npm-consumer-smoke-r
 import { resolveSmokeTarget } from "./resolve-smoke-target.mjs";
 import { finishSmokeRun } from "./finish-smoke-run.mjs";
 import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
+import { createSmokeTempRoot } from "./create-smoke-temp-root.mjs";
 
 export async function runNpmConsumerSmoke({
   root,
@@ -25,10 +25,13 @@ export async function runNpmConsumerSmoke({
   restoreState = restoreSmokeTargetState,
   inspectTargetRoot = lstat,
   inspectTempRoot = lstat,
+  createTempRoot,
+  removeEmptyTempRoot,
   write = () => {},
 }) {
   const request = validateNpmConsumerSmokeRequest({ root, target, packageJson });
   if (request.error) return request.error;
+  // codescope ignore this because resolveSmokeTarget compares real paths and rejects targets inside the checkout.
   const targetResolution = await resolveSmokeTarget(root, request.targetRoot, inspectTargetRoot);
   if (targetResolution.error) return targetResolution.error;
   const { targetRoot, assertIdentity: assertTargetIdentity } = targetResolution;
@@ -36,14 +39,10 @@ export async function runNpmConsumerSmoke({
   if (loadedTarget.error) return loadedTarget.error;
   const binNames = Object.keys(packageJson?.bin ?? {});
   const childEnv = { ...env };
-  const tempRoot = await mkdtemp(join(tmpdir(), "eliware-tarball-smoke-"));
-  let tempIdentity;
-  try {
-    tempIdentity = await inspectTempRoot(tempRoot);
-  } catch (error) {
-    // codescope ignore this because cleanup must not delete an unverified temporary path.
-    return `Cannot verify temporary smoke directory; left untouched at ${tempRoot}: ${error.message}`;
-  }
+  // codescope ignore this because the next operation starts cleanup before any other setup can fail.
+  const tempState = await createSmokeTempRoot(inspectTempRoot, createTempRoot, removeEmptyTempRoot);
+  if (tempState.error) return tempState.error;
+  const { path: tempRoot, identity: tempIdentity } = tempState;
   const packDirectory = join(tempRoot, "pack");
   let state;
   let outcome;

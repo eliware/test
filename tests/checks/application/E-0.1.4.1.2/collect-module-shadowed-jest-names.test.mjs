@@ -23,3 +23,21 @@ test("keeps Jest imports and test aliases active", () => {
   ).program;
   expect([...collectModuleShadowedNames(program, jestNames).tests]).toEqual([]);
 });
+
+test("blocks an imported Jest suite name after assignment", () => {
+  const program = parse('import { describe } from "@jest/globals"; describe = custom;', {
+    sourceType: "module",
+  }).program;
+
+  expect(
+    collectModuleShadowedNames(program, { ...jestNames, describes: new Set(["describe"]) })
+      .describes,
+  ).toEqual(new Set(["describe"]));
+});
+
+test("ignores empty nodes during recursive assignment scans", () => {
+  const program = { body: [{ type: "ExpressionStatement", nested: [null] }] };
+  expect(
+    collectModuleShadowedNames(program, { ...jestNames, describes: new Set() }).describes,
+  ).toEqual(new Set());
+});

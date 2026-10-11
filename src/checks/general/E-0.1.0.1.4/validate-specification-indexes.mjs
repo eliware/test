@@ -1,7 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
-import { basename, dirname, join } from "node:path";
+import { basename, join } from "node:path";
 import { extractMarkdownLinks } from "./extract-markdown-links.mjs";
 import { listSpecificationEntries } from "./list-specification-entries.mjs";
+import { groupSpecificationEntries } from "./group-specification-entries.mjs";
 import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
 
 export async function validateSpecificationIndexes(root, dependencies = {}) {
@@ -20,6 +21,7 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
     ...entries.filter((entry) => entry.type === "directory").map((entry) => entry.path),
   ];
   const files = entries.filter((entry) => entry.type === "file");
+  const { filesByDirectory, childrenByDirectory } = groupSpecificationEntries(entries);
   const indexOrder = (dependencies.readOrder ?? readCanonicalOrder)("specification-indexes.yaml");
   const errors = [];
   errors.push(
@@ -30,13 +32,11 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
   if (!files.some(({ path }) => path === "specs/directives.yaml"))
     errors.push("specs/directives.yaml is required.");
   for (const directory of directories) {
-    const local = files.filter((entry) => dirname(entry.path).replaceAll("\\", "/") === directory);
+    const local = filesByDirectory.get(directory) ?? [];
     const yaml = local.filter(({ path }) => /\.ya?ml$/iu.test(path));
     if (indexOrder.directYamlFiles === "filename-ascending")
       yaml.sort((left, right) => basename(left.path).localeCompare(basename(right.path)));
-    const children = directories.filter(
-      (child) => dirname(child).replaceAll("\\", "/") === directory,
-    );
+    const children = childrenByDirectory.get(directory) ?? [];
     if (indexOrder.subdirectoryIndexes === "directory-name-ascending")
       children.sort((left, right) => basename(left).localeCompare(basename(right)));
     if (!yaml.length) errors.push(`${directory} must contain at least one YAML specification.`);

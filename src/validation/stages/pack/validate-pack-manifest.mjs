@@ -39,6 +39,7 @@ export function validatePackManifest(stdout, files, packageName, packageJson = {
   if (unsafePackedPath)
     return `npm pack manifest contains an unsafe file path: ${unsafePackedPath.path}.`;
   const packedPaths = new Set(packed.map((entry) => entry.path));
+  // codescope ignore this because every actual tarball path is checked against all prohibited path segments.
   const prohibited = findProhibitedPackFiles([...packedPaths]);
   if (prohibited.length) return `npm pack included prohibited files: ${prohibited.join(", ")}.`;
   const required = new Set([

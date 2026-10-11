@@ -92,7 +92,7 @@ export function runChild(command, args, options = {}) {
       });
       child.on("close", handleClose);
     } catch (error) {
-      // codescope ignore this because error settlement stops initialized timers after child setup fails.
+      // codescope ignore this because cleanup stops timers before the rejected promise settles.
       terminateChildAfterSetupFailure(child, options, environment);
       settleError(error);
     }

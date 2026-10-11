@@ -44,6 +44,7 @@ export function createIncrementalSearch(values, workLimit, createStream) {
     consumedWork += found.work;
     if (consumedWork > workLimit) return { boundary: 0, matchEnds: [], suppressed: true };
 
+    // codescope ignore this because the scanner counts each match against its finite work limit before allocation.
     matchIndex.add(found.matches);
 
     // codescope ignore this because retaining the longest possible secret prevents split matches from crossing the boundary.
