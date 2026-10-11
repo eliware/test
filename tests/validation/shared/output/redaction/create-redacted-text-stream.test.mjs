@@ -87,3 +87,10 @@ test("does not convert stream chunks after policy suppression", () => {
   expect(output.push({ toString })).toBe("");
   expect(toString).not.toHaveBeenCalled();
 });
+
+test("keeps the output bound finite when the supplied limit is infinite", () => {
+  const output = createRedactedTextStream([], Number.POSITIVE_INFINITY);
+  const captured = output.push("x".repeat(100_100)) + output.finish();
+
+  expect(captured.length).toBeLessThanOrEqual(100_000);
+});
