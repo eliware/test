@@ -4,7 +4,7 @@ import { readCanonicalOrder } from "../../../validation/shared/conventions/read-
 const brand =
   "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
 
-export function validateReadmeStructure(readme, _expected, packageJson = {}) {
+export function validateReadmeStructure(readme, expected, packageJson = {}) {
   const lines = readme.split(/\r?\n/u);
   const markdownLines = removeMarkdownCode(readme).split(/\r?\n/u);
   const order = readCanonicalOrder("readme-sections.yaml");
@@ -25,33 +25,30 @@ export function validateReadmeStructure(readme, _expected, packageJson = {}) {
     markdownLines[tocIndex] !== `## ${order.tableOfContentsHeading}`
   )
     return "README.md must order its logo, title, description, and Table of Contents with blank lines.";
-  const actual = markdownLines
-    .filter((line, index) => index !== headerIndexes[1] && /^##\s+/u.test(line))
-    .map((line) => line.slice(3).trim());
-  const expectedGeneral = [
-    order.tableOfContentsHeading,
-    ...order.generalSections,
-    ...order.finalSections,
-  ];
+  const headings = markdownLines.flatMap((line, index) =>
+    index !== headerIndexes[1] && /^##\s+/u.test(line)
+      ? [{ index, heading: line.slice(3).trim() }]
+      : [],
+  );
+  const actualSections = headings
+    .filter(({ index }) => index !== tocIndex)
+    .map(({ heading }) => heading);
+  const expectedSections = expected.slice(1);
   if (
-    new Set(actual).size !== actual.length ||
-    expectedGeneral.some((heading) => !actual.includes(heading)) ||
-    !isOrdered(actual, expectedGeneral)
+    new Set(actualSections).size !== actualSections.length ||
+    actualSections.length !== expectedSections.length ||
+    actualSections.some((heading) => !expectedSections.includes(heading))
   )
-    return "README.md must include universal sections in canonical order without duplicates.";
+    return "README.md must include every required section once and no unlisted sections.";
   const tocEnd = markdownLines.findIndex((line, index) => index > tocIndex && /^##\s+/u.test(line));
   const tocContent = markdownLines.slice(tocIndex, tocEnd).join("\n");
   const links = [...tocContent.matchAll(/(?<!!)\[([^\]]+)\]\(#([^)]+)\)/gu)];
-  const expectedLinks = actual
-    .slice(1)
-    .map((heading) => [heading, heading.toLowerCase().replaceAll(" ", "-")]);
+  const expectedLinks = expectedSections.map((heading) => [
+    heading,
+    heading.toLowerCase().replaceAll(" ", "-"),
+  ]);
   const actualLinks = links.map((match) => [match[1], match[2]]);
   return JSON.stringify(actualLinks) === JSON.stringify(expectedLinks)
     ? null
     : "README.md Table of Contents must link each content heading once in order.";
-}
-
-function isOrdered(actual, expected) {
-  const indexes = expected.map((heading) => actual.indexOf(heading));
-  return indexes.every((index, position) => position === 0 || index > indexes[position - 1]);
 }

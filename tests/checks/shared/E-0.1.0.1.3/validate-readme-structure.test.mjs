@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { validateReadmeStructure } from "../../../../src/checks/shared/E-0.1.0.1.3/validate-readme-structure.mjs";
 import { resolveReadmeHeadings } from "../../../../src/checks/shared/E-0.1.0.1.3/resolve-readme-headings.mjs";
-import { validateReadmeCompositionOrder } from "../../../../src/checks/shared/E-0.1.0.1.3/validate-readme-composition-order.mjs";
 import { readCanonicalOrder } from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
 
 const order = readCanonicalOrder("readme-sections.yaml");
@@ -9,21 +8,25 @@ const expected = [order.tableOfContentsHeading, ...order.generalSections, ...ord
 const packageJson = { name: "fixture", description: "Description" };
 const brand =
   "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
-const valid = [
-  brand,
-  "",
-  "## fixture",
-  "",
-  "Description",
-  "",
-  `## ${expected[0]}`,
-  "",
-  ...expected
-    .slice(1)
-    .map((heading) => `- [${heading}](#${heading.toLowerCase().replaceAll(" ", "-")})`),
-  "",
-  ...expected.slice(1).flatMap((heading) => [`## ${heading}`, ""]),
-].join("\n");
+const valid = createReadme(expected, packageJson);
+
+function createReadme(headings, metadata) {
+  return [
+    brand,
+    "",
+    `## ${metadata.name}`,
+    "",
+    metadata.description,
+    "",
+    `## ${headings[0]}`,
+    "",
+    ...headings
+      .slice(1)
+      .map((heading) => `- [${heading}](#${heading.toLowerCase().replaceAll(" ", "-")})`),
+    "",
+    ...headings.slice(1).flatMap((heading) => [`## ${heading}`, ""]),
+  ].join("\n");
+}
 
 test("accepts canonical section and link order", () => {
   expect(validateReadmeStructure(valid, expected, packageJson)).toBeNull();
@@ -35,21 +38,7 @@ test("enforces Documentation headings and their Table of Contents links", () => 
     eliware: { apply: ["general", "documentation", "private"] },
   };
   const headings = resolveReadmeHeadings(documentationPackage);
-  const content = [
-    brand,
-    "",
-    `## ${documentationPackage.name}`,
-    "",
-    documentationPackage.description,
-    "",
-    `## ${headings[0]}`,
-    "",
-    ...headings
-      .slice(1)
-      .map((heading) => `- [${heading}](#${heading.toLowerCase().replaceAll(" ", "-")})`),
-    "",
-    ...headings.slice(1).map((heading) => `## ${heading}`),
-  ].join("\n");
+  const content = createReadme(headings, documentationPackage);
 
   expect(validateReadmeStructure(content, headings, documentationPackage)).toBeNull();
   expect(
@@ -58,7 +47,7 @@ test("enforces Documentation headings and their Table of Contents links", () => 
       headings,
       documentationPackage,
     ),
-  ).toContain("Table of Contents");
+  ).toContain("every required section");
   expect(
     validateReadmeStructure(
       content.replace("- [Scope](#scope)\n", ""),
@@ -68,31 +57,35 @@ test("enforces Documentation headings and their Table of Contents links", () => 
   ).toContain("Table of Contents");
 });
 
-test("requires selected profile sections in canonical order", () => {
-  const selected = { ...packageJson, eliware: { apply: ["general", "documentation"] } };
-  const headings = resolveReadmeHeadings(selected);
-  const content = [
-    brand,
-    "",
-    `## ${selected.name}`,
-    "",
-    selected.description,
-    "",
-    `## ${headings[0]}`,
-    "",
-    ...headings
-      .slice(1)
-      .map((heading) => `- [${heading}](#${heading.toLowerCase().replaceAll(" ", "-")})`),
-    "",
-    ...headings.slice(1).map((heading) => `## ${heading}`),
-  ].join("\n");
+test("requires every selected application section and rejects unknown headings", () => {
+  const applicationPackage = {
+    ...packageJson,
+    eliware: { apply: ["general", "application"] },
+  };
+  const headings = resolveReadmeHeadings(applicationPackage);
+  const content = createReadme(headings, applicationPackage);
+  expect(validateReadmeStructure(content, headings, applicationPackage)).toBeNull();
   expect(
-    validateReadmeCompositionOrder(
-      content.replace("## Scope\n## Navigation", "## Navigation\n## Scope"),
+    validateReadmeStructure(
+      content.replace("## Configuration", "## Configuration omitted"),
       headings,
-      selected,
+      applicationPackage,
     ),
-  ).toContain("profile sections");
+  ).toContain("every required section");
+  expect(
+    validateReadmeStructure(
+      content.replace("- [Configuration](#configuration)\n", ""),
+      headings,
+      applicationPackage,
+    ),
+  ).toContain("Table of Contents");
+  expect(
+    validateReadmeStructure(
+      content.replace("## Features", "## News\n\n## Features"),
+      headings,
+      applicationPackage,
+    ),
+  ).toContain("unlisted sections");
 });
 
 test("accepts a title with trailing badges", () => {
@@ -114,7 +107,7 @@ test("rejects invalid brand, title, headings, and contents list", () => {
   ).toContain("title");
   expect(
     validateReadmeStructure(valid.replace("## Features", "## Other"), expected, packageJson),
-  ).toContain("universal sections");
+  ).toContain("required section");
   expect(
     validateReadmeStructure(valid.replace("#features", "#wrong"), expected, packageJson),
   ).toContain("Table of Contents");
@@ -166,6 +159,7 @@ test("does not count the required title inside code", () => {
   const content = valid.replace("\n\n## fixture\n\n", "\n\n```text\n## fixture\n```\n\n");
   expect(validateReadmeStructure(content, expected, packageJson)).toContain("title");
   expect(validateReadmeStructure(brand, expected, packageJson)).toContain("title");
+  expect(validateReadmeStructure(valid, expected)).toContain("title");
 });
 
 test("does not count section headings inside code", () => {
@@ -176,5 +170,5 @@ test("does not count section headings inside code", () => {
   const content = valid
     .replace(/## (Features|Support|License|Links)/gu, "")
     .replace("## Table of Contents", `## Table of Contents\n\n\`\`\`md\n${sections}\n\`\`\``);
-  expect(validateReadmeStructure(content, expected, packageJson)).toContain("universal sections");
+  expect(validateReadmeStructure(content, expected, packageJson)).toContain("required section");
 });

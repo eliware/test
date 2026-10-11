@@ -31,3 +31,31 @@ test("uses an injected README reader", async () => {
     run({ root: process.cwd(), packageJson }, { read: async () => readme }),
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
+
+test("rejects a README that omits a selected profile section", async () => {
+  const packageJson = JSON.parse(await readFile("package.json", "utf8"));
+  const readme = await readFile("README.md", "utf8");
+  const incomplete = readme
+    .replace("- [Configuration](#configuration)\n", "")
+    .replace("## Configuration\n", "");
+  await expect(
+    run({ root: process.cwd(), packageJson }, { read: async () => incomplete }),
+  ).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining("every required section"),
+  });
+});
+
+test("rejects an unlisted README section", async () => {
+  const packageJson = JSON.parse(await readFile("package.json", "utf8"));
+  const readme = await readFile("README.md", "utf8");
+  const unlisted = readme.replace("## License", "## News\n\n## License");
+  await expect(
+    run({ root: process.cwd(), packageJson }, { read: async () => unlisted }),
+  ).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining("unlisted sections"),
+  });
+});

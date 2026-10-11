@@ -10,6 +10,7 @@ const valid = {
   author: "Eliware <eliware@eliware.org>",
   repository: { type: "git", url: "git+https://github.com/eliware/example.git" },
   homepage: "https://github.com/eliware/example#readme",
+  bugs: { url: "https://github.com/eliware/example/issues" },
   license: "MIT",
   type: "module",
   engines: { node: ">=26" },
@@ -34,6 +35,9 @@ test.each([
   [{ engines: { node: "26" } }, 'engines.node must be ">=26"'],
   [{ repository: { type: "git", url: "https://example.com" } }, "repository"],
   [{ homepage: "https://example.com" }, "homepage"],
+  [{ bugs: undefined }, "package.json.bugs.url"],
+  [{ bugs: { url: "not a URL" } }, "package.json.bugs.url"],
+  [{ bugs: { url: "https://github.com/eliware/other/issues" } }, "package.json.bugs.url"],
 ])("reports invalid package field %#", (change, message) => {
   expect(validatePackageMetadata({ ...valid, ...change }).join("\n")).toContain(message);
 });

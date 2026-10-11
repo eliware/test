@@ -7,6 +7,8 @@ directives:
     dos:
       - Describe repository purpose, intended use, ownership, scope, and boundaries accurately.
       - Keep authoritative descriptions and keywords relevant to repository contents.
+      - Use package.json.keywords as the authoritative list for GitHub topic sync.
+      - Review and update keywords when they no longer describe repository contents.
       - Keep README branding, section order, support copy, and link labels consistent with the canonical deterministic examples.
       - Make each public link label and destination clear and accurate for its intended action.
       - Keep documentation current, sufficient for supported use, and contributor instructions actionable.
@@ -29,6 +31,7 @@ directives:
       - Do not use local instructions to weaken shared requirements.
       - Do not turn AGENTS.md into a second README, implementation specification, or release history.
       - Do not present validation success as authorization to release or deploy.
+      - Do not add GitHub API calls to local deterministic checks.
 
   - id: E-0.1.0.0.2
     dos:

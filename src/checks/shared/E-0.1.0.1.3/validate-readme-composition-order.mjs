@@ -3,24 +3,17 @@ import { readCanonicalOrder } from "../../../validation/shared/conventions/read-
 
 export function validateReadmeCompositionOrder(readme, expected) {
   const order = readCanonicalOrder("readme-sections.yaml");
-  const profileSections = new Set([
-    ...Object.values(order.profileSections).flat(),
-    ...Object.keys(order.sharedSections),
-  ]);
-  const actual = removeMarkdownCode(readme)
+  const headings = removeMarkdownCode(readme)
     .split(/\r?\n/u)
     .filter((line) => /^##\s+/u.test(line))
-    .map((line) => line.slice(3).trim())
-    .filter((heading) => profileSections.has(heading));
-  const selected = expected.filter((heading) => profileSections.has(heading));
-  return isSubsequence(actual, selected)
+    .map((line) => line.slice(3).trim());
+  const actual = headings.slice(2);
+  const selected = expected.slice(1);
+  return actual.length === selected.length && isSameOrder(actual, selected)
     ? null
-    : "README.md profile sections must use canonical order.";
+    : `README.md sections must use the complete order from ${order.tableOfContentsHeading}.`;
 }
 
-function isSubsequence(actual, expected) {
-  const indexes = actual.map((heading) => expected.indexOf(heading));
-  return indexes.every(
-    (index, position) => index >= 0 && (position === 0 || index > indexes[position - 1]),
-  );
+function isSameOrder(actual, expected) {
+  return actual.every((heading, index) => heading === expected[index]);
 }

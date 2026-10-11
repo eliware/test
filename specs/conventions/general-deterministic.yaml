@@ -20,6 +20,7 @@ directives:
       - Define a scoped @eliware name, nonempty description, distinct nonempty keywords, and boolean private.
       - Require Node.js 26 or later with package.json.engines.node set to ">=26".
       - Use the canonical author, repository, homepage, license, module type, and Node.js metadata shown in the example.
+      - Set package.json.bugs.url to the matching GitHub repository issues URL.
       - Use numeric MAJOR.MINOR.PATCH matching the applied convention version.
       - Keep lockfile metadata and dependency references consistent with package.json.
       - Use the MIT license text with Copyright (c) 2026 Eliware.
@@ -27,7 +28,7 @@ directives:
       - Do not use prerelease or build suffixes, alternative identity metadata, or malformed dependency maps.
       - Do not use CommonJS module syntax in maintained implementation.
     examples:
-      - '{"name":"@eliware/example","version":"12.0.0","type":"module","description":"Example repository","keywords":["example"],"private":true,"publishConfig":{},"main":"src/index.mjs","bin":"bin/example.mjs","files":["src/"],"scripts":{},"engines":{"node":">=26"},"dependencies":{},"devDependencies":{},"jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT","repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},"homepage":"https://github.com/eliware/example#readme","bugs":{},"eliware":{}}'
+      - '{"name":"@eliware/example","version":"12.0.0","type":"module","description":"Example repository","keywords":["example"],"private":true,"publishConfig":{},"main":"src/index.mjs","bin":"bin/example.mjs","files":["src/"],"scripts":{},"engines":{"node":">=26"},"dependencies":{},"devDependencies":{},"jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT","repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},"homepage":"https://github.com/eliware/example#readme","bugs":{"url":"https://github.com/eliware/example/issues"},"eliware":{}}'
 
   - id: E-0.1.0.1.2
     dos:
@@ -48,10 +49,12 @@ directives:
       - Use the exact package.json.name as the title text. Format it as `## @eliware/<repo-name>` followed by badges on the same line.
       - Use the npm, License, and CI badges in that order. Include npm only when package.json.eliware.apply includes npm-published.
       - Use the exact brand image, badge targets, and title markers shown in the examples.
+      - Include every section resolved from package.json.eliware.apply and ordering/readme-sections.yaml.
       - Use Features, Requirements, Setup, Usage, Development, Testing, Troubleshooting, and Security as general content headings.
       - Include Support, Links, and License sections.
       - Use each general level-two heading once.
-      - Link every content heading once in the Table of Contents using lowercase space-to-hyphen fragments.
+      - Link every required content section once in canonical order in the Table of Contents.
+      - Use lowercase space-to-hyphen fragments for Table of Contents links.
       - Put local documentation and specifications navigation under a content heading, not in the header or footer.
       - Include the exact package description in the header.
       - Link specs/README.md from a content section.
@@ -63,6 +66,7 @@ directives:
       - Do not link to the private Eliware Docs repository.
     donts:
       - Do not include the title or Table of Contents in its own section list.
+      - Do not add unlisted level-two sections.
       - Do not change the package name text, add header navigation, use `.git` in the GitHub Repo link, or display git+https URLs.
     examples:
       - "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)"

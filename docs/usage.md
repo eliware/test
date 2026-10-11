@@ -33,7 +33,8 @@ The CLI does not infer profiles.
 Package installation does not add these scripts.
 Run `eliware-test --help` to see modes and options.
 
-A successful aggregate run prints `Aggregate validation passed.`
+A successful aggregate run prints check counts, test counts, issue counts, and elapsed times.
+The final summary line prints the exit code.
 Tool modes print their own result.
 
 ## Configuration
@@ -80,7 +81,8 @@ eliware-test --audit
 Run `npm test`, `npm run lint`, `npm run format`, `npm run format:check`, and
 `npm run audit` from the source checkout.
 Run `npm run pack` from this checkout or an installed package directory.
-The `--pack` mode is available only with the `npm-published` profile.
+The `--pack` mode is available in every repository.
+It checks package contents only when the `npm-published` profile applies.
 That profile also requires the `npm run pack` script.
 
 ## Smoke test
@@ -116,7 +118,7 @@ Aggregate validation runs applicable stages in this order:
 2. format check
 3. npm audit
 4. npm outdated
-5. package check
+5. package pack check for npm-published repositories only
 6. typecheck for libraries
 7. build for web applications
 8. convention checks
@@ -129,16 +131,17 @@ The CLI reports all earlier failures and returns the highest failure code.
 
 ## Focused tests
 
-Run one `.test.*` or `.spec.*` file under `tests/`:
+Run one or more `.test.*` or `.spec.*` files under `tests/`:
 
 ```text
 eliware-test tests/example.test.mjs
+eliware-test tests/example.test.mjs tests/other.test.mjs
 ```
 
 Put the test path before an optional `--` separator.
 Only supported non-path Jest options may follow `--`.
 The CLI rejects test paths after `--`.
-Focused validation runs that test with applicable coverage, formatting, lint,
+Focused validation runs those tests with applicable coverage, formatting, lint,
 mirroring, and convention checks.
 It maps `.mts` and `.cts` tests to `.mjs` sources.
 It maps other supported extensions to the same source extension.

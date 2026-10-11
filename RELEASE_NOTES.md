@@ -10,10 +10,11 @@
 ### Added
 
 - Split each profile's requirements into deterministic and semantic YAML files.
-- Add cross-profile checks and canonical order data for package keys, profile lists, README sections, AGENTS sections, and workflows.
+- Add shared checks and canonical order data for package keys and files, profile lists, README and AGENTS sections, specification indexes, and workflows.
 - Add the shared v12 runbook schema. Require workspace runbooks to use this schema and ASD-STE100 instructions.
 - Implement deterministic checks for application, CLI, web, library, Discord, MCP server, infrastructure, documentation, workspace, npm, GHCR, and private profiles.
 - Require tests to mock Git, npm, audit, lint, format, pack, typecheck, build, Jest, and package-script calls.
+- Allow focused validation to select multiple test files in one command.
 
 ### Changed
 
@@ -21,15 +22,16 @@
 - Require every repository to apply general. Enforce profile prerequisites, exclusions, and private-repository rules through the harness specifications.
 - Support Node.js 26 or later. Require ESM and place the required `type` key after `version` in `package.json`.
 - Apply profile checks and package stages only when the selected profiles require them. Run pack only for npm-published repositories.
+- Run focused lint, format, line-limit, and applicable layout checks on each selected test and its mirrored source.
 - Require the canonical README header, badges, section order, Support block, Links section, and License footer.
 - Allow additional runtime files in npm packages. Keep explicit exclusions for tests, build output, credentials, and unsafe files.
 - Keep check and test modules focused. Mirror every source module with its own test.
 - Remove the `MAIL_OWNER_ADDRESS` convention and Tasklist integration requirements.
+- Show check counts, test counts, issue counts, stage times, and the exit code in clean aggregate and focused summaries.
 
 ### Fixed
 
 - Complete deterministic validation for selected profile requirements that lacked v12 checks.
-- Match aggregate success output to the exact text in the harness specification.
 - Detect directory changes with full nanosecond timestamps when the platform supports them.
 - Report smoke cleanup failures with the run result and preserve recovery details.
 

@@ -52,5 +52,7 @@ export function validatePackageMetadata(packageJson) {
     errors.push("package.json.repository must use the canonical Eliware Git URL.");
   if (!slug || packageJson?.homepage !== `https://github.com/eliware/${slug}#readme`)
     errors.push("package.json.homepage must use the canonical Eliware README URL.");
+  if (!slug || packageJson?.bugs?.url !== `https://github.com/eliware/${slug}/issues`)
+    errors.push("package.json.bugs.url must use the matching GitHub issues URL.");
   return errors;
 }
