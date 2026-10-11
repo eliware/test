@@ -32,6 +32,15 @@ test("marks reassigned callbacks as shadowed", () => {
   ).toEqual(new Set(["callback"]));
 });
 
+test("marks callback parameters as shadowed", () => {
+  const result = collectShadowedJestNames(
+    { params: [{ type: "Identifier", name: "callback" }], body: [] },
+    { callbacks: new Set(), namespaces: new Set() },
+    new Set(["callback"]),
+  );
+  expect(result.callbacks).toEqual(new Set(["callback"]));
+});
+
 test("ignores unsupported parameters and shadows Jest names in nested declarations", () => {
   const names = { callbacks: new Set(["test", "callback"]), namespaces: new Set(["jest"]) };
   const fn = {

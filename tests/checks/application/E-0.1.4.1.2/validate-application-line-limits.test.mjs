@@ -15,6 +15,13 @@ test("accepts the maximum when the final newline is present", async () => {
   ).resolves.toEqual([]);
 });
 
+test("counts an extra trailing blank line", async () => {
+  const source = Array(101).fill("").join("\n") + "\n";
+  await expect(
+    validateApplicationLineLimits(["src/a.mjs"], async () => source, "repo"),
+  ).resolves.toEqual(["src/a.mjs has 101 physical lines; maximum is 100."]);
+});
+
 test("fails when it cannot read a source file", async () => {
   await expect(
     validateApplicationLineLimits(

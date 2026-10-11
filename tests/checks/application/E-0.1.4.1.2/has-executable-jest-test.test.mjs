@@ -110,6 +110,8 @@ test("rejects a Jest function alias after reassignment", () => {
 test("ignores non-test imports and inactive modifiers", () => {
   for (const content of [
     'import { describe } from "@jest/globals"; describe("suite", () => {});',
+    'import { describe } from "other"; describe("fake", () => { test("fake", () => {}); });',
+    'describe("suite", () => { function describe(name, callback) { callback(); } describe("fake", () => { test("fake", () => {}); }); });',
     'test.skip("skipped", () => {});',
     'test["skip"]("computed", () => {});',
     '(1)("not a test", () => {});',

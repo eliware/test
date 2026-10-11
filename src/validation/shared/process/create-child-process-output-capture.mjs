@@ -17,6 +17,7 @@ export function createChildProcessOutputCapture(
   let redactors;
   let secretMatcher;
   let matcherCreated = false;
+  // codescope ignore this because each redactor creates an independent stream from the matcher factory.
   const getSecretMatcher = (secrets, matcherOptions) => {
     if (!matcherCreated) {
       secretMatcher = makeSecretMatcher(secrets, matcherOptions);
@@ -24,6 +25,7 @@ export function createChildProcessOutputCapture(
     }
     return secretMatcher;
   };
+  // codescope ignore this because streams get private search state and a shared byte budget caps combined output.
   const getRedactors = () => {
     if (!redactors) {
       redactors = {

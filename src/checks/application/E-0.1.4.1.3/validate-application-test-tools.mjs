@@ -1,6 +1,6 @@
 export function validateApplicationTestTools(packageJson = {}) {
   const harness = packageJson.name === "@eliware/test";
-  const allowedHarnessTools = new Set(["jest", "istanbul-lib-instrument"]);
+  const allowedHarnessTools = new Set(["@jest/globals", "jest", "istanbul-lib-instrument"]);
   const sections = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"];
   const dependencies = sections.flatMap((section) => Object.entries(packageJson[section] ?? {}));
   const direct = dependencies

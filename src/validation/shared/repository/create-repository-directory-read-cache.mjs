@@ -58,6 +58,7 @@ export function createRepositoryDirectoryReadCache(
         return current.entries;
       })
       .catch((error) => {
+        // codescope ignore this because later reads compare current metadata before reusing this entry.
         if (previous) reads.set(key, previous);
         else reads.delete(key);
         throw error;

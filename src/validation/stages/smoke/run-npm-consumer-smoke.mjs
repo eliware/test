@@ -41,7 +41,7 @@ export async function runNpmConsumerSmoke({
   try {
     tempIdentity = await inspectTempRoot(tempRoot);
   } catch (error) {
-    // codescope ignore this because an unverified path may now name a replacement outside this process.
+    // codescope ignore this because cleanup must not delete an unverified temporary path.
     return `Cannot verify temporary smoke directory; left untouched at ${tempRoot}: ${error.message}`;
   }
   const packDirectory = join(tempRoot, "pack");

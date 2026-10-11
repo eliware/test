@@ -13,6 +13,7 @@ export function collectModuleShadowedNames(program, names) {
     if (names.describes?.has(name) && !isJestGlobalsImport(initializer)) describes.add(name);
   };
   for (const node of program.body) {
+    // codescope ignore this because add records imported describe names as blocked Jest suites.
     if (node.type === "ImportDeclaration" && node.source.value !== "@jest/globals")
       node.specifiers.forEach((item) => add(item.local.name));
     else {

@@ -43,6 +43,7 @@ test("refreshes a directory listing when its on-disk version changes", async () 
   expect(read.getTrackedDirectories()).toEqual([join(root, "src")]);
   expect(readDirectory).toHaveBeenCalledTimes(2);
 });
+// codescope ignore this because a later read checks current metadata before it reuses the prior listing.
 test("preserves the last successful listing when a forced refresh fails", async () => {
   const root = join(process.cwd(), "inventory-fixture");
   const stat = jest

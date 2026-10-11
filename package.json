@@ -52,6 +52,9 @@
     "semver": "^7.8.5",
     "yaml": "^2.8.1"
   },
+  "devDependencies": {
+    "@jest/globals": "^30.5.2"
+  },
   "jest": {
     "testEnvironment": "node",
     "testMatch": [

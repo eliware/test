@@ -36,6 +36,17 @@ test("builds one immutable secret matcher for both output streams", () => {
   expect(makeSecretMatcher).toHaveBeenCalledTimes(1);
 });
 
+test("keeps incremental redaction state separate across interleaved streams", () => {
+  const capture = createChildProcessOutputCapture(
+    { env: { SERVICE_TOKEN: "shared-secret" } },
+    [],
+    1_000,
+  );
+  capture.push("stdout", "unrelated output ".repeat(20));
+  capture.push("stderr", "shared-secret");
+  expect(capture.finish().stderr).toBe("[REDACTED]");
+});
+
 test("uses inherited environment by default and accepts binary chunks", () => {
   const capture = createChildProcessOutputCapture({ env: {} }, undefined, 4);
   capture.push("stdout", Buffer.from("okay"));

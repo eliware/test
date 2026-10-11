@@ -81,6 +81,20 @@ test("suppresses output before sorting excessive secret values", () => {
   expect(createRedactedStreamPolicy(["s".repeat(166_667)], 200_000).suppressed).toBe(true);
 });
 
+test("stops reading excessive duplicate secret inputs", () => {
+  let reads = 0;
+  const repeatedSecrets = {
+    *[Symbol.iterator]() {
+      while (true) {
+        reads += 1;
+        yield "same-secret";
+      }
+    },
+  };
+  expect(createRedactedStreamPolicy(repeatedSecrets, 200_000).suppressed).toBe(true);
+  expect(reads).toBe(10_001);
+});
+
 test.each([null, {}])("suppresses output when matcher construction returns %p", (matcher) => {
   const policy = createRedactedStreamPolicy(["secret"], 20, {
     getSecretMatcher: () => matcher,

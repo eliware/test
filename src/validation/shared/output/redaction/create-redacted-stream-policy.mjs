@@ -5,6 +5,7 @@ import { createPartialSecretSuffixTrimmer } from "./create-partial-secret-suffix
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
 const DEFAULT_PENDING_LENGTH = 64_000;
 const MAX_POLICY_SECRET_COUNT = 10_000;
+const MAX_POLICY_SECRET_INPUT_COUNT = 10_000;
 const MAX_POLICY_SECRET_LENGTH = 166_666;
 export function createRedactedStreamPolicy(
   secrets,
@@ -21,7 +22,11 @@ export function createRedactedStreamPolicy(
   const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, finiteWorkLimit));
   const uniqueSecrets = new Set();
   let totalSecretLength = 0;
+  let secretInputCount = 0;
   for (const secret of secrets) {
+    secretInputCount += 1;
+    if (secretInputCount > MAX_POLICY_SECRET_INPUT_COUNT)
+      return createSuppressedPolicy(outputLimit, workLimit, maxPendingLength);
     if (typeof secret !== "string" || !secret || uniqueSecrets.has(secret)) continue;
     totalSecretLength += secret.length;
     if (
