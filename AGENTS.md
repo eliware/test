@@ -105,7 +105,9 @@ Without a tool mode, accept one or more repository-relative test paths under `te
 Put all paths before an optional `--`.
 Reject paths after `--`, absolute paths, and unsupported combinations.
 Supported test extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
-Focused runs validate only the selected test and applicable checks.
+Focused runs check lint, format, and layout for each selected test and matching source module.
+Layout checks include mirrored tests, source placement, export barrels, and line limits.
+Run other focused checks only when their full rules use the selected files.
 Exit codes are 0 success, 1 other failure, 2 Jest, 3 unexpected output, and 4 coverage.
 Codes 5 to 12 mean lint, format, audit, outdated, pack, typecheck, build, and convention failure.
 When failures have different codes, return the highest code.

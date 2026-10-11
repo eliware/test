@@ -86,6 +86,10 @@ directives:
           - Reject missing, ambiguous, unsupported, or escaping focused paths before unrelated execution.
           - Keep stage selection independent of path focus.
           - Limit focused discovery, coverage, and diagnostics to all requested test and source paths.
+          - Run lint and format checks only on all requested test and source paths.
+          - Run application or library layout checks only on all requested test and source paths.
+          - Include mirrored-test, source-placement, barrel, and line-limit checks in focused layout validation.
+          - Run other focused checks only when their full rules can use the focused file inventory.
           - Forward arguments after -- only through the selected invocation contract.
           - Fail focused formatting when no valid resolved paths remain.
         donts:

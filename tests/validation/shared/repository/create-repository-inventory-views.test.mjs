@@ -50,6 +50,7 @@ test("serves a scoped facade view without discovering unrelated repository files
   const focused = createRepositoryFileViews(entries, { paths: ["tests/one.test.mjs"] });
 
   await expect(focused.focusedFiles()).resolves.toEqual(["tests/one.test.mjs"]);
+  await expect(focused.files("all")).resolves.toEqual(["tests/one.test.mjs"]);
   expect(entries).not.toHaveBeenCalled();
 
   const fallback = createRepositoryFileViews(entries, { paths: [] });

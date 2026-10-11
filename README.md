@@ -243,6 +243,9 @@ For example, `eliware-test --audit --no-fund` passes the allowed flag to npm.
 
 To run focused tests, pass one or more existing repository-relative test paths under `tests/`.
 Put each path before optional `--`.
+Focused validation checks lint and format on each selected test and its matching source file.
+It also checks application or library layout, mirrored tests, source placement, export barrels, and line limits on those files.
+It runs other checks only when their full rules can use those selected files.
 Clean focused validation reports convention check counts, Jest suite and test counts,
 issue counts, and elapsed times.
 Only supported non-path Jest options may follow `--`.

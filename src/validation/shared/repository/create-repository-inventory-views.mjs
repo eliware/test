@@ -12,6 +12,7 @@ export function createRepositoryFileViews(entries, focusedScope) {
       if (focusedScope?.paths?.length) return [...focusedScope.paths];
       return files("repository");
     }
+    if (view === "all" && focusedScope?.paths?.length) return [...focusedScope.paths];
     if (!views.has(view)) {
       let request;
       request = entries()
