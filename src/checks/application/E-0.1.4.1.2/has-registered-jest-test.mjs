@@ -48,6 +48,7 @@ function containsTestCall(
       ),
     );
   if (!node || typeof node !== "object") return false;
+  // codescope ignore this because ordinary uncalled function bodies stop before alias names can register tests.
   if (isFunction(node)) {
     if (!allowFunction) return false;
     const local = collectShadowedJestNames(node, names, callbackNames);

@@ -11,6 +11,7 @@ const dependencyFields = [
 ];
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
+// codescope ignore this because both dependency maps use the same comparator before equality checks.
 function sorted(value) {
   return JSON.stringify(
     Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right))),

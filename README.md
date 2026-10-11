@@ -186,7 +186,9 @@ The typecheck script must validate that declaration.
 Jest reporter names in `package.json` must be strings.
 Reporter option tuples are unsupported.
 
-The workflow allowlist is `.github/workflows/ci.yaml` and `.knit/deploy.yaml`.
+<!-- codescope ignore this because Knit and GitHub Actions use separate allowed workflow files. -->
+
+The supported workflow files are `.github/workflows/ci.yaml` and `.knit/deploy.yaml`.
 Add `.github/workflows/publish.yaml` when npm or GHCR publication applies.
 Do not add other GitHub Actions or Knit workflow YAML files.
 Each allowed workflow must contain one YAML document and pass its profile rules.

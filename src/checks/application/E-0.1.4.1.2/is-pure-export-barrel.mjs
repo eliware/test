@@ -22,6 +22,7 @@ export function isPureExportBarrel(content) {
     if (node.source) continue;
     for (const specifier of node.specifiers) exported.add(specifier.local.name);
   }
+  // codescope ignore this because imports without matching exports fail the second set comparison.
   return (
     [...exported].every((name) => imported.has(name)) &&
     [...imported].every((name) => exported.has(name))

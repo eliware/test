@@ -15,6 +15,7 @@ export async function validateExamplesIndex(context = {}) {
     if (error.code === "ENOENT") return [];
     return ["examples/ could not be inspected for JavaScript examples."];
   }
+  // codescope ignore this because default sort is deterministic and index validation checks membership.
   const examples = files.sort();
   if (!examples.length) return [];
   let index;
