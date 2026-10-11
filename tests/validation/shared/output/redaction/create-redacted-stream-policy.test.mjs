@@ -57,6 +57,13 @@ test("suppresses unsafe output when a secret is too long for the output limit", 
   expect(policy.findSafeBoundary).toBeNull();
 });
 
+test("bounds direct policy calls when the output limit is infinite", () => {
+  const policy = createRedactedStreamPolicy(["s".repeat(100_001)], Number.POSITIVE_INFINITY);
+
+  expect(policy.pendingLimit).toBeLessThanOrEqual(100_000);
+  expect(policy.suppressed).toBe(true);
+});
+
 test("retains enough bounded text to redact secrets longer than the default window", () => {
   const longSecret = "s".repeat(65_000);
   const policy = createRedactedStreamPolicy([longSecret], 70_000, {

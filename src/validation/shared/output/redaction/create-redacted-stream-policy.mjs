@@ -7,6 +7,8 @@ const DEFAULT_PENDING_LENGTH = 64_000;
 const MAX_POLICY_SECRET_COUNT = 10_000;
 const MAX_POLICY_SECRET_INPUT_COUNT = 10_000;
 const MAX_POLICY_SECRET_LENGTH = 166_666;
+const DEFAULT_OUTPUT_LIMIT = 100_000;
+const MAX_OUTPUT_LIMIT = 1_000_000;
 export function createRedactedStreamPolicy(
   secrets,
   outputLimit,
@@ -16,6 +18,9 @@ export function createRedactedStreamPolicy(
     getSecretMatcher,
   } = {},
 ) {
+  const boundedOutputLimit = Number.isFinite(outputLimit)
+    ? Math.max(0, Math.min(Math.floor(outputLimit), MAX_OUTPUT_LIMIT))
+    : DEFAULT_OUTPUT_LIMIT;
   const finiteWorkLimit = Number.isFinite(maxSearchWorkPerChunk)
     ? maxSearchWorkPerChunk
     : MAX_SECRET_SEARCH_WORK_PER_CHUNK;
@@ -26,14 +31,14 @@ export function createRedactedStreamPolicy(
   for (const secret of secrets) {
     secretInputCount += 1;
     if (secretInputCount > MAX_POLICY_SECRET_INPUT_COUNT)
-      return createSuppressedPolicy(outputLimit, workLimit, maxPendingLength);
+      return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
     if (typeof secret !== "string" || !secret || uniqueSecrets.has(secret)) continue;
     totalSecretLength += secret.length;
     if (
       uniqueSecrets.size >= MAX_POLICY_SECRET_COUNT ||
       totalSecretLength > MAX_POLICY_SECRET_LENGTH
     )
-      return createSuppressedPolicy(outputLimit, workLimit, maxPendingLength);
+      return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
     uniqueSecrets.add(secret);
   }
   const values = [...uniqueSecrets].sort((left, right) => right.length - left.length);
@@ -43,11 +48,11 @@ export function createRedactedStreamPolicy(
   );
   // codescope ignore this because pendingLimit is clamped to the output budget before use.
   const pendingLimit = Math.min(
-    Math.max(1, Math.floor(outputLimit)),
+    Math.max(1, boundedOutputLimit),
     Math.max(1, Math.floor(maxPendingLength), maximumSecretLength),
   );
   // codescope ignore this because secrets longer than the output limit suppress the stream first.
-  let suppressed = maximumSecretLength > outputLimit;
+  let suppressed = maximumSecretLength > boundedOutputLimit;
   // codescope ignore: the trimmer uses a fixed work budget and returns a function for empty secrets.
   const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
   if (!trimSuffix) suppressed = true;
