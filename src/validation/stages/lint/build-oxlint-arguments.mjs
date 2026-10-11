@@ -1,3 +1,8 @@
 export function buildOxlintArguments(extraArgs = [], paths = []) {
-  return ["--deny-warnings", ...(paths.length > 0 ? paths : ["."]), ...extraArgs];
+  return [
+    "--deny-warnings",
+    "--no-error-on-unmatched-pattern",
+    ...(paths.length > 0 ? paths : ["."]),
+    ...extraArgs,
+  ];
 }

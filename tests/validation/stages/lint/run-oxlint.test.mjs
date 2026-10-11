@@ -16,7 +16,9 @@ test("runs Oxlint through an injected argument-array executor", async () => {
   });
   expect(result.code).toBe(0);
   expect(calls[0][0]).toBe(process.execPath);
-  expect(calls[0][1]).toEqual(expect.arrayContaining(["--deny-warnings", "."]));
+  expect(calls[0][1]).toEqual(
+    expect.arrayContaining(["--deny-warnings", "--no-error-on-unmatched-pattern", "."]),
+  );
   expect(calls[0][2]).toMatchObject({ cwd: "C:/repo" });
 });
 
@@ -34,7 +36,7 @@ test("passes the resolved executable to the injected runner", async () => {
   ).resolves.toEqual({ code: 1, stdout: "out", stderr: "err" });
   expect(calls[0]).toEqual([
     process.execPath,
-    ["C:/pkg/oxlint.js", "--deny-warnings", "."],
+    ["C:/pkg/oxlint.js", "--deny-warnings", "--no-error-on-unmatched-pattern", "."],
     { cwd: "C:/repo" },
   ]);
 });
@@ -50,7 +52,13 @@ test("forwards additional Oxlint arguments", async () => {
     async () => "C:/pkg/oxlint.js",
     ["--threads=2"],
   );
-  expect(calls[0][1]).toEqual(["C:/pkg/oxlint.js", "--deny-warnings", ".", "--threads=2"]);
+  expect(calls[0][1]).toEqual([
+    "C:/pkg/oxlint.js",
+    "--deny-warnings",
+    "--no-error-on-unmatched-pattern",
+    ".",
+    "--threads=2",
+  ]);
 });
 
 test("supports the child-process runner with an injected child adapter", async () => {
@@ -81,7 +89,7 @@ test("uses the default executor with a mocked child process", async () => {
   ).resolves.toMatchObject({ code: 0 });
   expect(spawn).toHaveBeenCalledWith(
     process.execPath,
-    ["mock-oxlint.js", "--deny-warnings", "."],
+    ["mock-oxlint.js", "--deny-warnings", "--no-error-on-unmatched-pattern", "."],
     expect.objectContaining({ cwd: "C:/repo", shell: false }),
   );
 });
