@@ -92,6 +92,15 @@ test("requires transitive locked versions to satisfy dependency ranges", () => {
   ).toContain("dependency child does not satisfy its range");
 });
 
+test("accepts npm registry tags in installed dependency metadata", () => {
+  expect(
+    validateLockfilePackageEntries({
+      "node_modules/parent": { version: "1.0.0", dependencies: { child: "latest" } },
+      "node_modules/child": { version: "2.0.0" },
+    }),
+  ).toBeNull();
+});
+
 test("rejects unsupported ranges and malformed optional peer metadata", () => {
   const errors = validateLockfilePackageEntries({
     "node_modules/parent": {

@@ -10,15 +10,16 @@ const forbiddenAlternativeCommand =
   /(?:^|[\s/\\"'`])(?:vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\\/"'`]|\s|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|[\s"'`])|\b(?:bun|deno)\s+test(?:\s|$)/iu;
 
 export function validateTestToolReferences(path, content, harness = false) {
+  const candidate = path === "package.json" ? withoutJestConfiguration(content) : content;
   const plainText =
     path === "package.json" ||
     /\.(?:json|ya?ml|sh|ps1|py)$/iu.test(path) ||
     !/\.(?:mjs|js|cjs|jsx|ts|tsx|cts|mts|mjsx|cjsx)$/iu.test(path);
   const referencesTool = plainText
     ? harness
-      ? forbiddenAlternativeReference.test(content) || forbiddenAlternativeCommand.test(content)
-      : forbiddenToolReference.test(content) || forbiddenToolCommand.test(content)
-    : detectTestToolUse(content, harness);
+      ? forbiddenAlternativeReference.test(candidate) || forbiddenAlternativeCommand.test(candidate)
+      : forbiddenToolReference.test(candidate) || forbiddenToolCommand.test(candidate)
+    : detectTestToolUse(candidate, harness);
   for (const pattern of [
     forbiddenToolReference,
     forbiddenToolCommand,
@@ -29,4 +30,14 @@ export function validateTestToolReferences(path, content, harness = false) {
   return referencesTool
     ? `${path} must not import or invoke a test runner or coverage tool.`
     : null;
+}
+
+function withoutJestConfiguration(content) {
+  try {
+    const manifest = JSON.parse(content);
+    delete manifest.jest;
+    return JSON.stringify(manifest);
+  } catch {
+    return content;
+  }
 }

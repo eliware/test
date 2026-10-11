@@ -21,3 +21,18 @@ test("allows source, launchers, tests, fixtures, and examples", () => {
     ]),
   ).toEqual([]);
 });
+
+test("allows Discord and MCP discovery modules for their profiles", () => {
+  expect(
+    validateImplementationPlacement(
+      ["commands/start.mjs", "events/ready.mjs", "tools/echo.mjs"],
+      ["discord", "mcp-server"],
+    ),
+  ).toEqual([]);
+});
+
+test("does not allow discovery modules without their profiles", () => {
+  expect(validateImplementationPlacement(["commands/start.mjs"], ["web"])).toEqual([
+    "commands/start.mjs is an implementation module outside its allowed root.",
+  ]);
+});

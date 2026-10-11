@@ -44,7 +44,7 @@ export function validateLockfilePackageEntries(packages) {
         const range = toSemverRange(rawRange);
         if (typeof rawRange !== "string" || !rawRange.trim())
           errors.push(`package-lock.json entry ${path} has an invalid ${field} range for ${name}.`);
-        else if (!range)
+        else if (!range && !isRegistryTag(rawRange))
           errors.push(
             `package-lock.json entry ${path} has an unsupported ${field} range for ${name}.`,
           );
@@ -64,6 +64,10 @@ export function validateLockfilePackageEntries(packages) {
     }
   }
   return errors.length ? errors.join("\n") : null;
+}
+
+function isRegistryTag(value) {
+  return /^[a-z][a-z0-9._-]*$/iu.test(value);
 }
 
 function isValidDependencyName(name) {

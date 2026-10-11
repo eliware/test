@@ -19,6 +19,21 @@ test("allows the supported Jest API and harness instrumentation", () => {
   ).toBeNull();
 });
 
+test("allows required Jest configuration in package.json", () => {
+  expect(
+    validateTestToolReferences(
+      "package.json",
+      '{"jest":{"testEnvironment":"node"},"scripts":{"test":"eliware-test"}}',
+    ),
+  ).toBeNull();
+});
+
+test("checks package.json text when JSON parsing fails", () => {
+  expect(validateTestToolReferences("package.json", '{"vitest":')).toContain(
+    "package.json must not import or invoke a test runner or coverage tool.",
+  );
+});
+
 test("uses separate text rules for consumer and harness manifests", () => {
   expect(validateTestToolReferences("package.json", '"vitest"')).toContain(
     "package.json must not import or invoke a test runner or coverage tool.",
