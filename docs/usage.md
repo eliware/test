@@ -1,14 +1,29 @@
 # Usage
 
-Use Node.js 26 or later (`>=26`) and npm 12 or later.
-The CLI checks npm before validation.
-It stops when it cannot read the npm version or when npm is too old.
-`--help` and `--version` do not need this check.
-Install `@eliware/test` as a development dependency:
+## Requirements
+
+Use Node.js 26 or later and npm 12 or later.
+The CLI checks the active npm version before validation.
+It skips this check for `--help` and `--version`.
+
+## Install Eliware Test
+
+Install the package as a development dependency in the consumer repository:
 
 ```text
 npm install --save-dev @eliware/test
 ```
+
+Install the locked dependencies after you add the package:
+
+```text
+npm install
+```
+
+Use `npm ci` in CI when the repository has a lockfile.
+Run `npm test` in CI to start aggregate validation.
+
+## Configure the repository
 
 Set the shared scripts and profiles in `package.json`:
 
@@ -28,228 +43,85 @@ Set the shared scripts and profiles in `package.json`:
 }
 ```
 
-List every applicable profile in `eliware.apply`.
-The CLI does not infer profiles.
-Package installation does not add these scripts.
-Run `eliware-test --help` to see modes and options.
+Replace `E-0` with the assigned repository ID.
+List every applicable profile in `package.json.eliware.apply`.
+Use the canonical profile order in [Profiles](profiles.md).
+The CLI does not infer profiles from files or dependencies.
 
-A successful aggregate run prints check counts, test counts, issue counts, and elapsed times.
-The final summary line prints the exit code.
-Tool modes print their own result.
+Set `package.json.eliware.exempt` only for an approved rule exemption.
+Each exemption needs a unique known `ruleId`, a reason, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+The CLI rejects invalid, expired, or unknown exemptions.
 
-## Configuration
+The `package.json.eliware` keys must appear in this order: `id`, `apply`, then optional `exempt`.
 
-Set profiles in `package.json.eliware.apply`.
-Record approved rule exemptions in `package.json.eliware.exempt`.
-Each exemption needs a rule ID, reason, approver, approval time, and expiry.
-The CLI does not infer profile applicability from files or dependencies.
+## Run commands
 
-`package.json.eliware` has `id`, `apply`, and optional `exempt` keys, in that order.
-The general check reads `../docs/repo-map.yaml` when that file exists.
-When the map exists, package metadata must match its ID, description, keywords, and profiles.
-The README description must match the package description.
-When the map is absent, package metadata sets the README description and rule ID namespace.
-Every rule ID under `specs/` must use the assigned repository number.
-Author, repository URL, homepage, Node.js engine, and keyword rules always apply.
-
-## Common commands
-
-Shared validation needs `.github/workflows/ci.yaml` and `.knit/deploy.yaml`.
-The npm and GHCR profiles also need `.github/workflows/publish.yaml`.
-Do not add other workflow YAML files under `.github/workflows/` or `.knit/`.
-Each allowed workflow must contain one YAML document and pass its profile checks.
-The CLI checks GitHub Actions and Knit files separately.
-
-For `ghcr-published`, add a `## GHCR publication` section to `AGENTS.md`.
-Use the markers `Image`, `Pull command`, `Supported tags`, and `Deployment boundary` there.
-Use the exact package version in the pull command.
-If the workflow pushes `latest`, describe it as a mutable alias.
-Do not use that alias as a release or deployment identity.
-The check validates the markers. Owners must confirm meaning and deployment steps.
-
-Run these commands:
+Run commands from the consumer repository root:
 
 ```text
+eliware-test
 eliware-test --help
 eliware-test --version
-eliware-test
+eliware-test --debug-timing
 eliware-test --lint
+eliware-test --format
 eliware-test --format-check
 eliware-test --audit
+eliware-test --pack
 ```
 
-Run `npm test`, `npm run lint`, `npm run format`, `npm run format:check`, and
-`npm run audit` from the source checkout.
-Run `npm run pack` from this checkout or an installed package directory.
-The `--pack` mode is available in every repository.
-It checks package contents only when the `npm-published` profile applies.
-That profile also requires the `npm run pack` script.
+With no arguments, the CLI runs aggregate validation.
+Use `--help` for command syntax and `--version` for the CLI version.
+Use `--debug-timing` alone or before a focused path or tool mode.
+Do not combine informational commands or validation modes.
 
-## Smoke test
+## Use tool modes
 
-Run smoke from this checkout or an installed package directory:
+Use `--lint` to run lint checks.
+Pass `--threads=<positive-count>` only when you need to set the lint thread count.
 
-```text
-npm run smoke -- --target <path>
-```
+Use `--format` to write formatted files.
+Use `--format-check` to check formatting without writing files.
+Formatting modes use the repository scope.
+They reject file paths and options that change the mode, configuration, or file scope.
 
-The target must be an existing, prepared consumer repository.
-Smoke does not create or prepare the target.
-It packs this package and installs that tarball in the target.
-Then it runs the target's `npm test` and restores captured package paths.
-Use a disposable consumer copy.
-Smoke restores the manifest, lockfiles, installed package, and local executable shims.
-Other files created by consumer tests remain in the target.
-It snapshots only the exact paths that it replaces.
-It does not snapshot ancestor directories.
-On Windows, it restores directory links as junctions.
-It rejects captured file links before it changes files.
-It reports a backup path if restore fails.
-It does not touch system-wide links or junctions.
-The outdated check omits only the unpublished smoke candidate.
-All other packages use the normal registry check.
-Prepare the target and install its dependencies first.
+Use `--audit` to run the audit check by itself.
+Audit accepts only `--no-fund` and `--no-progress`.
+It rejects options that change audit scope or severity.
 
-## Validation stages
+Use `--pack` to check package contents.
+The check runs only when `npm-published` applies.
+It does not publish a package.
 
-Aggregate validation runs applicable stages in this order:
+Put mode arguments after the mode or after `--`.
+Do not pass arguments before a tool mode.
+Do not pass npm script names as CLI arguments.
 
-1. lint
-2. format check
-3. npm audit
-4. npm outdated
-5. package pack check for npm-published repositories only
-6. typecheck for libraries
-7. build for web applications
-8. convention checks
-9. Jest and coverage
+## Run focused tests
 
-The CLI runs every enabled stage and convention check before Jest.
-It skips Jest if any earlier stage fails.
-Convention checks can read completed stage results from the run cache.
-The CLI reports all earlier failures and returns the highest failure code.
-
-## Focused tests
-
-Run one or more `.test.*` or `.spec.*` files under `tests/`:
+Pass one or more repository-relative test paths under `tests/`:
 
 ```text
 eliware-test tests/example.test.mjs
-eliware-test tests/example.test.mjs tests/other.test.mjs
+eliware-test tests/first.test.mjs tests/second.test.mjs
+eliware-test tests/example.test.mjs -- --testNamePattern "case name"
 ```
 
-Put the test path before an optional `--` separator.
-Only supported non-path Jest options may follow `--`.
-The CLI rejects test paths after `--`.
-Focused validation runs those tests with applicable coverage, formatting, lint,
-mirroring, and convention checks.
-It maps `.mts` and `.cts` tests to `.mjs` sources.
-It maps other supported extensions to the same source extension.
-This mapping does not change the source mirror rule.
-Every maintained `.mjs` source still needs one matching `.test.mjs` file.
-Application coverage applies to production `.mjs` files.
-In libraries, a `.d.ts` file must sit beside an `.mjs` source with the same base name.
-The typecheck script must validate that declaration.
-Each mirror test needs an executable Jest `test` or `it` declaration.
-It must import its exact source module.
-The syntax check ignores comments and strings.
-Focused checks may read repository metadata beyond the selected test.
+Use `.test.*` or `.spec.*` names.
+Supported extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
+Put every test path before an optional `--` separator.
+Put only supported Jest options after the separator.
+Do not use absolute paths or parent-directory paths.
+Do not combine focused paths with a tool mode.
 
-## Tool options
+The CLI checks lint, formatting, and layout for each selected test and its matching source file.
+It runs other checks only when their rules can use the selected files.
+Read [Validation](validation.md) for coverage and stage details.
 
-Each public tool mode has an argument allowlist.
-Audit accepts only `--no-fund` and `--no-progress`.
-Lint accepts only `--threads=<positive-count>`.
-The CLI rejects options such as `--omit` because they change audit scope.
-Pack has its own allowlist.
-The CLI rejects wrapper settings that weaken required checks.
+## Read specifications
 
-Put tool arguments after the mode or after `--`.
-The CLI removes `--` before it forwards arguments.
-It keeps each argument group's order.
-For example, `eliware-test --audit --no-fund -- --no-progress` forwards both flags.
-`--debug-timing` may appear once before a path or mode.
-It may also run alone for aggregate validation.
-Do not put it after `--`.
-Prettier arguments cannot replace the selected mode, required config, or file scope.
+Read [Profiles](profiles.md) to select repository profiles.
+Read the profile files in [`specs/conventions/`](../specs/conventions/README.md) for exact rules.
+Read [ordering specifications](../specs/conventions/ordering/README.md) for cross-profile order rules.
 
-```text
-eliware-test --lint --threads=2
-eliware-test --format
-eliware-test --format-check
-eliware-test --audit --no-fund
-```
-
-Run audit and pack scripts from the `@eliware/test` checkout.
-Consumers use `eliware-test --audit` and, when applicable, `eliware-test --pack`.
-The CLI does not accept npm script names as positional arguments.
-Do not combine tool modes with a focused Jest path.
-The CLI rejects missing focused paths.
-Focused coverage uses the matching source when the mapping is clear.
-The CLI checks only the selected source and test pair for lint and format.
-It still runs safe convention checks.
-Repository-wide convention checks and aggregate audit and pack stages stay skipped.
-
-## Jest timing and limits
-
-`--debug-timing` streams stage times and suite start, finish, and duration.
-It does not write a separate Jest timing report after validation.
-Programmatic callers must supply a writer to receive timing output.
-Jest runs in-band by default.
-The CLI forwards supported Jest options and values unchanged.
-It does not treat an option value as a test path.
-Each suite has a five-second runtime limit, even when it prints output.
-A separate 15-second watchdog covers startup and pauses between suites.
-These limits apply without `--debug-timing`.
-On timeout, the CLI requests graceful stop.
-It forces stop after one second and checks for child close.
-If close does not occur, it reports an unconfirmed timeout.
-The CLI cannot guarantee cleanup of every child process.
-Captured child output has a one-million-character limit.
-
-## Development boundaries
-
-Give each module one contract or workflow.
-A coordinator may select helpers, sequence them, and combine their results.
-Split a policy or operation when it has a separate reason to change.
-Give each new source module a mirrored test.
-Keep coordinator tests on wiring and workflow results.
-Test helper behavior in the helper's own test.
-
-Repository input caches keep the last successful file content after a failed refresh.
-This keeps the byte budget consistent.
-A caller may receive an AST from its own source snapshot.
-A later read cannot replace a newer cached parse.
-Tests cover failed refreshes, eviction, retry, and out-of-order reads.
-Line counting uses the shared cached repository reader.
-
-## Compatibility boundaries
-
-The CLI resolves Jest, Oxlint, Prettier, and npm from the consumer or supported
-Node.js and Windows executable paths.
-Workflow parsing normalizes YAML 1.1 `true` keys and equivalent runner values.
-Profile checks resolve declared local file references inside the consumer.
-General README checks do not treat arbitrary JSON or YAML `path` values as links.
-Reject local paths that leave the repository.
-Resolve external references by URI scheme, not as local files.
-Git checks use Git metadata when available.
-They use filesystem discovery for non-Git fixtures.
-The symlink check reads Git index mode `120000`.
-It rejects tracked file and directory links without resolving their targets.
-Validation fails if it cannot read the Git index.
-
-## README link validation
-
-The general profile checks every `README.md`.
-Supported links include inline links and images, full reference links, quoted
-HTML `href` and `src` attributes, and HTTP, HTTPS, or `mailto` autolinks.
-Inline destinations cannot contain spaces or a closing parenthesis.
-The check ignores links in code spans and fenced code blocks.
-It does not parse shortcut or collapsed references, other HTML links, or extensions.
-Local links must point to files or directories in the checkout.
-Local Markdown fragments must match a heading or HTML `id`.
-The check does not validate fragments on local non-Markdown files.
-HTTP and HTTPS links need a hostname and cannot contain credentials.
-Mail links need an email address.
-Cross-repository GitHub links need a full HTTPS URL with owner and repository.
-The check does not fetch external links or fragments.
+[Return to documentation](README.md).
