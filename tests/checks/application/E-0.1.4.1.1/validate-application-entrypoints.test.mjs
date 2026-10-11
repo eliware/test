@@ -7,7 +7,13 @@ test("combines metadata, target, and start-command diagnostics", async () => {
       root: "repo",
       packageJson: { bin: { "bad name": "bin/tool.mjs" }, scripts: { start: "node app.mjs" } },
     },
-    { lstat: async () => ({ isFile: () => true, isSymbolicLink: () => false }) },
+    {
+      lstat: async (path) => ({
+        isFile: () => !path.endsWith("\\bin"),
+        isDirectory: () => path.endsWith("\\bin"),
+        isSymbolicLink: () => false,
+      }),
+    },
   );
   expect(errors).toContain("package.json bin command name is invalid: bad name.");
   expect(errors).toContain(
@@ -21,7 +27,13 @@ test("accepts valid entrypoint metadata and targets", async () => {
       root: "repo",
       packageJson: { bin: "bin/tool.mjs", scripts: { start: "node bin/tool.mjs" } },
     },
-    { lstat: async () => ({ isFile: () => true, isSymbolicLink: () => false }) },
+    {
+      lstat: async (path) => ({
+        isFile: () => !path.endsWith("\\bin"),
+        isDirectory: () => path.endsWith("\\bin"),
+        isSymbolicLink: () => false,
+      }),
+    },
   );
   expect(errors).toEqual([]);
 });

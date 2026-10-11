@@ -24,7 +24,7 @@ export function createRepositoryDirectoryEntries({
     );
     if (base && !hasFullDiscovery()) {
       const records = await entriesUnder(directory, null, traversal);
-      // codescope ignore this because scoped discovery includes the requested base directory record.
+      // codescope ignore this because scoped discovery adds the base record before reading children.
       if (!records.some((record) => record.path === base)) {
         throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
           code: "ENOENT",

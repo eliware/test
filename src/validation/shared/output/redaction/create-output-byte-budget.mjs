@@ -15,6 +15,7 @@ export function createOutputByteBudget(limit) {
 
   return {
     append(stream, text) {
+      if (stream !== "stdout" && stream !== "stderr") return;
       const remaining = Math.max(0, limit - capturedBytes);
       const bounded = truncateOutputTextToBytes(text, remaining);
       capturedBytes += bounded.byteLength;

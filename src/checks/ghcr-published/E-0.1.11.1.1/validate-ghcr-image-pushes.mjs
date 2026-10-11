@@ -26,7 +26,10 @@ function validImageTags(value, image, version) {
     .filter(Boolean);
   return (
     tags.length > 0 &&
-    tags.every((tag) => tag.startsWith(`${image}:`)) &&
+    tags.every((tag) => {
+      if (!tag.startsWith(`${image}:`)) return false;
+      return /^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$/u.test(tag.slice(image.length + 1));
+    }) &&
     tags.includes(`${image}:v${version}`)
   );
 }

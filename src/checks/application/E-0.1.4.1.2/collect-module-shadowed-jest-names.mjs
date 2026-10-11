@@ -4,7 +4,10 @@ import { isJestGlobalsImport } from "./jest-globals-import.mjs";
 export function collectModuleShadowedNames(program, names) {
   const tests = new Set();
   const describes = new Set();
+  const shadowedGlobals = new Set();
   const add = (name, initializer) => {
+    if (["global", "globalThis"].includes(name) && !isJestGlobalsImport(initializer))
+      shadowedGlobals.add(name);
     if (
       ["test", "it"].includes(name) ||
       (names.namespaces.has(name) && !isJestGlobalsImport(initializer))
@@ -22,7 +25,7 @@ export function collectModuleShadowedNames(program, names) {
     }
     collectAssignedDescribeNames(node, names.describes, describes);
   }
-  return { tests, callbacks: new Set(), describes };
+  return { tests, callbacks: new Set(), describes, shadowedGlobals };
 }
 
 function collectAssignedDescribeNames(node, describeNames, describes) {

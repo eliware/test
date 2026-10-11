@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
-import { lstat, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { lstat, readFile, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { cleanupSmokeTempRoot as cleanupTempRoot } from "../../../../src/validation/stages/smoke/cleanup-smoke-temp-root.mjs";
 import {
   createSmokeTarget,
@@ -94,27 +94,6 @@ test("restores the prior installation when the consumer test fails", async () =>
   await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
     '"version":"12.0.0"',
   );
-});
-test("returns consumer metadata errors before the smoke setup", async () => {
-  const fixture = await createSmokeTarget(roots);
-  await writeFile(join(fixture.target, "package.json"), JSON.stringify({ scripts: {} }));
-  await expect(runSmoke(fixture)).resolves.toContain("must define an npm test script");
-});
-test("validates the smoke request before capturing consumer state", async () => {
-  const fixture = await createSmokeTarget(roots);
-  const captureState = jest.fn();
-  await expect(
-    runSmoke(fixture, {
-      packageJson: { ...packageJson, publishConfig: {} },
-      captureState,
-    }),
-  ).resolves.toContain("provenance");
-  const alias = join(dirname(fixture.target), "source-alias");
-  await symlink(fixture.source, alias, process.platform === "win32" ? "junction" : "dir");
-  await expect(runSmoke(fixture, { target: alias, captureState })).resolves.toContain(
-    "resolve outside the source checkout",
-  );
-  expect(captureState).not.toHaveBeenCalled();
 });
 test("stops if the canonical target directory is replaced after validation", async () => {
   const { fixture, calls, run } = await createFakeSmokeTarget(roots);

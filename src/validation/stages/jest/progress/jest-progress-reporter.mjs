@@ -1,7 +1,7 @@
-import { writeFileSync } from "node:fs";
 import { collectRedactionSecrets } from "../../../shared/output/redaction/collect-redaction-secrets.mjs";
 import { normalizeRepositoryRelativePath } from "../../../shared/repository/normalize-repository-relative-path.mjs";
 import { redactProcessOutput } from "../../../shared/output/redaction/redact-process-output.mjs";
+import { createJestConsoleReport } from "./create-jest-console-report.mjs";
 
 function durationSeconds(result) {
   const start = Number(result?.perfStats?.start ?? result?.startTime);
@@ -14,8 +14,7 @@ export default class JestProgressReporter {
     this.root = options.rootDir ?? process.cwd();
     this.write = options.write ?? ((text) => process.stderr.write(text));
     this.secrets = collectRedactionSecrets(options.env ?? process.env);
-    this.consoleReportFile = process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
-    this.consoleOutput = [];
+    this.consoleReport = createJestConsoleReport(process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT);
   }
 
   onTestStart(test) {
@@ -27,14 +26,7 @@ export default class JestProgressReporter {
 
   onTestResult(test, result) {
     const path = normalizeRepositoryRelativePath(test.path, this.root);
-    for (const output of result.console ?? []) {
-      this.consoleOutput.push({
-        testFilePath: path,
-        type: output.type,
-        message: output.message,
-        origin: output.origin,
-      });
-    }
+    this.consoleReport.capture(path, result.console);
     const assertionFailures = (result.assertionResults ?? [])
       .filter((assertion) => assertion.status === "failed")
       .map((assertion) => {
@@ -72,8 +64,7 @@ export default class JestProgressReporter {
         tests: results.numTotalTests ?? 0,
       });
     }
-    if (this.consoleReportFile)
-      writeFileSync(this.consoleReportFile, JSON.stringify(this.consoleOutput), "utf8");
+    this.consoleReport.persist();
   }
 
   writeProgress(event) {

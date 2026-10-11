@@ -40,6 +40,7 @@ function visit(node, state, allowFunction = false) {
         state.blockedCallbacks,
       )
     )
+      // codescope ignore this because the validator needs only one proven registered test.
       return true;
     if (isSkippedJestSuiteCall(node, state.describeNames)) return false;
     if (

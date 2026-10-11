@@ -19,3 +19,8 @@ test("rejects a computed source reference", () => {
   const ast = parse("await import(`../src/${name}.mjs`);", { sourceType: "module" });
   expect(referencesTestSource(ast.program, "tests/a.test.mjs", "src/a.mjs")).toBe(false);
 });
+
+test("recognizes re-exported source references", () => {
+  const ast = parse('export { value } from "../src/a.mjs";', { sourceType: "module" });
+  expect(referencesTestSource(ast.program, "tests/a.test.mjs", "src/a.mjs")).toBe(true);
+});

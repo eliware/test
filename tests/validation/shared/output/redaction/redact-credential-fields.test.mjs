@@ -6,6 +6,7 @@ test("redacts key-value, quoted, whitespace-delimited, and private-key credentia
     "apiKey=[REDACTED] refreshToken:[REDACTED]",
   );
   expect(redactCredentialFields("password 'secret value'")).toBe("password [REDACTED]");
+  expect(redactCredentialFields('"token" "secret-value"')).toBe('"token" [REDACTED]');
   expect(
     redactCredentialFields(
       "-----BEGIN RSA PRIVATE KEY-----\nsecret\n-----END RSA PRIVATE KEY-----",

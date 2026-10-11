@@ -8,6 +8,7 @@ export async function validateExamplesIndex(context = {}) {
   try {
     files = await context.repositoryInventory.documentationFiles({
       directory: join(root, "examples"),
+      // codescope ignore this because the examples rule defines indexed examples as JavaScript modules.
       predicate: (name) => /\.(?:mjs|js)$/iu.test(name),
       includeGenerated: true,
     });

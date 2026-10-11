@@ -9,8 +9,11 @@ export function createJestProgressTracker(timeoutSeconds = 15) {
         if (!marker) continue;
         try {
           const event = JSON.parse(marker[1]);
-          if (event.event === "start" && typeof event.path === "string") currentSuite = event.path;
-          if (["start", "result"].includes(event.event)) events.push(event);
+          if (event.event === "start" && isSuitePath(event.path)) {
+            currentSuite = event.path;
+            events.push(event);
+          }
+          if (isSuiteResult(event)) events.push(event);
         } catch {
           continue;
         }
@@ -21,4 +24,19 @@ export function createJestProgressTracker(timeoutSeconds = 15) {
       return `Test suite ${currentSuite} timed out after ${timeoutSeconds} seconds without progress.`;
     },
   };
+}
+
+function isSuitePath(path) {
+  return typeof path === "string" && path.length > 0 && !path.startsWith("/");
+}
+
+function isSuiteResult(event) {
+  return (
+    event.event === "result" &&
+    isSuitePath(event.path) &&
+    typeof event.duration === "string" &&
+    typeof event.failed === "boolean" &&
+    Array.isArray(event.failures) &&
+    Array.isArray(event.unexpectedOutput)
+  );
 }

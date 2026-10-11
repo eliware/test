@@ -28,6 +28,8 @@ async function validateEntrypointTarget(target, root, checkPath) {
       const metadata = await checkPath(current);
       if (metadata.isSymbolicLink())
         return `Entrypoint target path must not contain a symlink: ${target}.`;
+      if (index < segments.length - 1 && !metadata.isDirectory())
+        return `Entrypoint target path segment must be a directory: ${target}.`;
       if (index === segments.length - 1 && !metadata.isFile())
         return `Entrypoint target must be an existing file: ${target}.`;
     }

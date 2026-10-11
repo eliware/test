@@ -17,12 +17,13 @@ test("reports startup timeout until progress identifies a suite", () => {
   );
 
   expect(progress.readProgress("[eliware-test-progress] not-json\n")).toEqual([]);
-  expect(progress.readProgress('[eliware-test-progress] {"event":"start","path":3}\n')).toEqual([
-    { event: "start", path: 3 },
-  ]);
-  expect(progress.readProgress('[eliware-test-progress] {"event":"result"}\n')).toEqual([
-    { event: "result" },
-  ]);
+  expect(progress.readProgress('[eliware-test-progress] {"event":"start","path":3}\n')).toEqual([]);
+  expect(progress.readProgress('[eliware-test-progress] {"event":"result"}\n')).toEqual([]);
+  expect(
+    progress.readProgress(
+      '[eliware-test-progress] {"event":"result","path":"tests/a.test.mjs","duration":"0.1","failed":false,"failures":[],"unexpectedOutput":[]}\n',
+    ),
+  ).toHaveLength(1);
   expect(progress.readProgress('[eliware-test-progress] {"event":"other"}\n')).toEqual([]);
   progress.readProgress("unrecognized progress text\n");
   expect(progress.timeoutMessage()).toBe(

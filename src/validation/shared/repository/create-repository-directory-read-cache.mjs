@@ -3,8 +3,11 @@ import { inventoryPath } from "./repository-inventory-paths.mjs";
 
 function version(metadata, platform) {
   // codescope ignore: The five-field snapshot string is constant-size and avoids retaining or comparing mutable stat objects.
+  // codescope ignore this because reuse requires all snapshot fields, including birthtime, to be reliable.
   const nanosecondTimestamps =
-    typeof metadata.mtimeNs === "bigint" && typeof metadata.ctimeNs === "bigint";
+    typeof metadata.mtimeNs === "bigint" &&
+    typeof metadata.ctimeNs === "bigint" &&
+    typeof metadata.birthtimeNs === "bigint";
   return {
     cacheable: platform !== "win32" && nanosecondTimestamps,
     // String conversion is safe for BigIntStats; Windows disables reuse but still compares snapshots around readdir.
@@ -54,7 +57,7 @@ export function createRepositoryDirectoryReadCache(
         }
         current.entries = await readDirectory(key, { withFileTypes: true });
         const afterReadVersion = version(await stat(key, { bigint: true }), platform);
-        // codescope ignore this because repository inventory does not promise atomic snapshots during concurrent writes.
+        // codescope ignore this because cached traversal uses native high-resolution directory stat values.
         if (afterReadVersion.key !== currentVersion.key) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);
         }

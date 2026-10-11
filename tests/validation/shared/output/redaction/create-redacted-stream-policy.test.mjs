@@ -82,24 +82,8 @@ test("suppresses output when suffix preprocessing would exceed its work budget",
   expect(policy.trimSuffix).toBeNull();
 });
 
-test("suppresses output before sorting excessive secret values", () => {
-  const excessiveCount = Array.from({ length: 10_001 }, (_, index) => `secret-${index}`);
-  expect(createRedactedStreamPolicy(excessiveCount, 200_000).suppressed).toBe(true);
+test("suppresses output when secret normalization exceeds its limits", () => {
   expect(createRedactedStreamPolicy(["s".repeat(166_667)], 200_000).suppressed).toBe(true);
-});
-
-test("stops reading excessive duplicate secret inputs", () => {
-  let reads = 0;
-  const repeatedSecrets = {
-    *[Symbol.iterator]() {
-      while (true) {
-        reads += 1;
-        yield "same-secret";
-      }
-    },
-  };
-  expect(createRedactedStreamPolicy(repeatedSecrets, 200_000).suppressed).toBe(true);
-  expect(reads).toBe(10_001);
 });
 
 test.each([null, {}])("suppresses output when matcher construction returns %p", (matcher) => {

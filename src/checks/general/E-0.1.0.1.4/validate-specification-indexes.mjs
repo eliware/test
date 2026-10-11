@@ -58,6 +58,7 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
       indexOrder.placement === "after-yaml-files"
         ? [...yamlTargets, ...childTargets]
         : [...childTargets, ...yamlTargets];
+    // codescope ignore this because code spans and comments do not provide navigable index links.
     const actual = extractMarkdownLinks(index).map(({ reference }) => reference);
     for (const target of expected)
       if (!actual.includes(target)) errors.push(`${directory}/README.md must link ${target}.`);

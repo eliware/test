@@ -75,6 +75,13 @@ test("rejects a test call shadowed by a module binding", () => {
   ).toBe(false);
 });
 
+test("rejects a destructured Jest alias from a shadowed globalThis binding", () => {
+  const source = 'const globalThis = {}; const { test: run } = globalThis; run("fake", () => {});';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
+  );
+});
+
 test("rejects a Jest name shadowed by a top-level block var", () => {
   const source = '{ var test = custom; } test("fake", () => {});';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
@@ -94,6 +101,22 @@ test("keeps a real Jest call outside a block-local shadow", () => {
     'import { test } from "@jest/globals"; { let test = custom; } test("real", () => {});';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
     true,
+  );
+});
+
+test("keeps a real Jest call outside a nested function declaration shadow", () => {
+  const source =
+    'import { test } from "@jest/globals"; describe("suite", () => { { function test() {} } test("real", () => {}); });';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    true,
+  );
+});
+
+test("rejects a Jest call shadowed by a block-local function declaration", () => {
+  const source =
+    'import { test } from "@jest/globals"; { function test() {} test("fake", () => {}); }';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
+    false,
   );
 });
 
@@ -124,6 +147,7 @@ test("ignores tests inside skipped Jest suites", () => {
   );
 });
 
+// codescope ignore this because alias validation rejects assignments in every control-flow branch.
 test("rejects a Jest function alias after reassignment", () => {
   const source = 'let run = test; run = () => {}; run("not a test", () => {});';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
@@ -170,20 +194,7 @@ test("rejects invalid JavaScript", () => {
   });
 });
 
-test("recognizes exact static, dynamic, and re-exported source references", () => {
-  for (const content of [
-    'import { value } from "../src/a.mjs";',
-    'export { value } from "../src/a.mjs";',
-    'await import("../src/a.mjs");',
-  ])
-    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").importsSource).toBe(
-      true,
-    );
-  expect(
-    inspectJestTestModule(
-      '// import { value } from "../src/a.mjs";',
-      "tests/a.test.mjs",
-      "src/a.mjs",
-    ).importsSource,
-  ).toBe(false);
+test("includes a re-exported source module", () => {
+  const source = 'export { value } from "../src/a.mjs";';
+  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").importsSource).toBe(true);
 });

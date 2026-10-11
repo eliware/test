@@ -18,6 +18,7 @@ export function resolveFocusedTestPaths(args, hasToolMode) {
   if (focused.some((argument) => !focusedTestPathPattern.test(argument))) {
     throw new Error("Focused paths must be under tests/.");
   }
+  // codescope ignore this because focused paths pass through validateFocusedTestPath before checks run.
   if (focused.some((argument) => !hasFocusedSourceName(argument)))
     throw new Error("Focused test paths must have a source module name.");
   return focused;

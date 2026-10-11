@@ -31,3 +31,15 @@ test("requires at least one image push", () => {
     "GHCR publisher must build and push an image.",
   ]);
 });
+
+test("rejects empty and malformed additional image tags", () => {
+  for (const suffix of ["", "bad:tag", "a".repeat(129)]) {
+    const push = {
+      ...validPush,
+      with: { ...validPush.with, tags: `${image}:${suffix}\n${image}:v1.2.3` },
+    };
+    expect(validateGhcrImagePushes([push], image, "1.2.3")).toContain(
+      "GHCR image tags must use one package-derived name and the exact v-prefixed version.",
+    );
+  }
+});

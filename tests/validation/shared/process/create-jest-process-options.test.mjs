@@ -50,7 +50,7 @@ test("streams concise suite progress and separates it from the enclosing check l
   });
   options.onProgress('[eliware-test-progress] {"event":"start","path":"tests/a.test.mjs"}\n');
   options.onProgress(
-    '[eliware-test-progress] {"event":"result","path":"tests/a.test.mjs","duration":"0.212","failed":false}\n',
+    '[eliware-test-progress] {"event":"result","path":"tests/a.test.mjs","duration":"0.212","failed":false,"failures":[],"unexpectedOutput":[]}\n',
   );
 
   expect(beginNestedOutput).toHaveBeenCalledTimes(1);

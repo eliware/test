@@ -52,7 +52,5 @@ function validatePublicationSteps(steps) {
   )
     return "publish.yaml validate steps must order checkout, setup-node, npm install, npm ci, then npm test.";
   if (indexes[4] !== indexes[3] + 1) return "publish.yaml npm ci must be followed by npm test.";
-  if (indexes.at(-1) !== steps.length - 1)
-    return "publish.yaml npm test must end the validate job.";
   return null;
 }

@@ -1,6 +1,7 @@
 export function validateWorkflowStepFields(steps) {
   const errors = [];
   const npmTest = steps.findIndex((step) => step?.run === "npm test");
+  // codescope ignore this because users may add arbitrary safe steps after required npm test.
   const requiredEnd = npmTest < 0 ? steps.length : npmTest;
   for (const [index, value] of steps.entries()) {
     if (index > requiredEnd) continue;

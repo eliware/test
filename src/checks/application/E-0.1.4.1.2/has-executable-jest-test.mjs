@@ -8,6 +8,7 @@ import { collectModuleShadowedNames } from "./collect-module-shadowed-jest-names
 export function inspectJestTestModule(content, testPath, sourcePath) {
   let ast;
   try {
+    // codescope ignore this because the application layout rule parses only its required ESM test files.
     ast = parse(content, { sourceType: "module" });
   } catch {
     return { hasExecutableTest: false, importsSource: false };

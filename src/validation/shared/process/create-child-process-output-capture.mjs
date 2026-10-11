@@ -20,16 +20,7 @@ export function createChildProcessOutputCapture(
   ];
   const maxPendingLength = Math.max(1, Math.floor(outputLimit / 2));
   let redactors;
-  let secretMatcher;
-  let matcherCreated = false;
-  // codescope ignore this because each redactor creates an independent stream from the matcher factory.
-  const getSecretMatcher = (secrets, matcherOptions) => {
-    if (!matcherCreated) {
-      secretMatcher = makeSecretMatcher(secrets, matcherOptions);
-      matcherCreated = true;
-    }
-    return secretMatcher;
-  };
+  const getSecretMatcher = (secrets, matcherOptions) => makeSecretMatcher(secrets, matcherOptions);
   // codescope ignore this because streams get private search state and a shared byte budget caps combined output.
   const getRedactors = () => {
     if (!redactors) {

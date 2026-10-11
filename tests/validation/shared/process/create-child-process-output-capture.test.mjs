@@ -25,7 +25,7 @@ test("keeps diagnostic truncation at complete redaction markers and UTF-8 bounda
   expect(capture.redactDiagnostic("éé secret")).toBe("éé ");
 });
 
-test("builds one immutable secret matcher for both output streams", () => {
+test("builds a separate secret matcher for each output stream", () => {
   const makeSecretMatcher = jest.fn(createSecretTextMatcher);
   const capture = createChildProcessOutputCapture(
     { env: { SERVICE_TOKEN: "shared-secret" } },
@@ -40,7 +40,7 @@ test("builds one immutable secret matcher for both output streams", () => {
     stdout: "stdout [REDACTED]",
     stderr: "stderr [REDACTED]",
   });
-  expect(makeSecretMatcher).toHaveBeenCalledTimes(1);
+  expect(makeSecretMatcher).toHaveBeenCalledTimes(2);
 });
 
 test("keeps incremental redaction state separate across interleaved streams", () => {

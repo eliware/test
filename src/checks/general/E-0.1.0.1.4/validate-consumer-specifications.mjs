@@ -31,7 +31,13 @@ export async function validateConsumerSpecifications(
       errors.push(`${path} could not be read: ${error.message}`);
       continue;
     }
-    const parsed = parseAllDocuments(source);
+    let parsed;
+    try {
+      parsed = parseAllDocuments(source);
+    } catch (error) {
+      errors.push(`${path} is invalid YAML: ${error.message}`);
+      continue;
+    }
     const parseErrors = parsed.flatMap((document) => document.errors);
     if (parseErrors.length) {
       errors.push(

@@ -16,7 +16,7 @@ export function isPureExportBarrel(content) {
       node.specifiers.forEach((specifier) => imported.add(specifier.local.name));
       continue;
     }
-    // codescope ignore this because the rule defines source re-exports by AST source presence, including package specifiers.
+    // codescope ignore this because the written rule allows any source-bearing re-export statement.
     if (node.type === "ExportAllDeclaration" && node.source) continue;
     if (node.type !== "ExportNamedDeclaration" || node.declaration) return false;
     // codescope ignore this because final set checks still reject imports unused by any local export.

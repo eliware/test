@@ -1,12 +1,10 @@
 import { createSecretTextMatcher } from "./create-secret-text-matcher.mjs";
 import { createBoundedSecretSearch } from "./create-bounded-secret-search.mjs";
 import { createPartialSecretSuffixTrimmer } from "./create-partial-secret-suffix-trimmer.mjs";
+import { normalizeRedactionPolicySecrets } from "./normalize-redaction-policy-secrets.mjs";
 
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
 const DEFAULT_PENDING_LENGTH = 64_000;
-const MAX_POLICY_SECRET_COUNT = 10_000;
-const MAX_POLICY_SECRET_INPUT_COUNT = 10_000;
-const MAX_POLICY_SECRET_LENGTH = 166_666;
 const DEFAULT_OUTPUT_LIMIT = 100_000;
 const MAX_OUTPUT_LIMIT = 1_000_000;
 export function createRedactedStreamPolicy(
@@ -25,30 +23,13 @@ export function createRedactedStreamPolicy(
     ? maxSearchWorkPerChunk
     : MAX_SECRET_SEARCH_WORK_PER_CHUNK;
   const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, finiteWorkLimit));
-  const uniqueSecrets = new Set();
-  let totalSecretLength = 0;
-  let secretInputCount = 0;
-  // codescope ignore this because iteration stops at the input cap even when the iterable is infinite.
-  for (const secret of secrets) {
-    secretInputCount += 1;
-    // codescope ignore this because the input cap also bounds infinite iterables of duplicate secrets.
-    if (secretInputCount > MAX_POLICY_SECRET_INPUT_COUNT)
-      return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
-    if (typeof secret !== "string" || !secret || uniqueSecrets.has(secret)) continue;
-    totalSecretLength += secret.length;
-    if (
-      uniqueSecrets.size >= MAX_POLICY_SECRET_COUNT ||
-      totalSecretLength > MAX_POLICY_SECRET_LENGTH
-    )
-      return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
-    uniqueSecrets.add(secret);
-  }
-  const values = [...uniqueSecrets].sort((left, right) => right.length - left.length);
+  const values = normalizeRedactionPolicySecrets(secrets);
+  if (!values) return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
   const maximumSecretLength = values.reduce(
     (maximum, secret) => Math.max(maximum, secret.length),
     0,
   );
-  // codescope ignore this because the holdback must fit the longest secret to redact matches across chunks.
+  // codescope ignore this because chunk-safe redaction needs a holdback as long as the longest secret.
   const pendingLimit = Math.min(
     Math.max(1, boundedOutputLimit),
     Math.max(1, Math.floor(maxPendingLength), maximumSecretLength),

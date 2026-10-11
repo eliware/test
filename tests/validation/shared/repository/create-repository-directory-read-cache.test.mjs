@@ -3,7 +3,14 @@ import { join } from "node:path";
 import { createRepositoryDirectoryReadCache } from "../../../../src/validation/shared/repository/create-repository-directory-read-cache.mjs";
 import { verifyDirectoryCacheBirthtimeRefresh } from "../../../../test-fixtures/verify-directory-cache-birthtime.mjs";
 const root = join(process.cwd(), "inventory-fixture");
-const metadata = (mtimeNs) => ({ dev: 1n, ino: 2n, size: 0n, mtimeNs, ctimeNs: mtimeNs });
+const metadata = (mtimeNs) => ({
+  dev: 1n,
+  ino: 2n,
+  size: 0n,
+  mtimeNs,
+  ctimeNs: mtimeNs,
+  birthtimeNs: 3n,
+});
 async function expectDirectoryReads(snapshot, platform, expectedCalls) {
   const root = join(process.cwd(), "inventory-fixture");
   const stat = jest.fn().mockResolvedValue(snapshot);
@@ -43,25 +50,6 @@ test("refreshes a directory listing when its on-disk version changes", async () 
   expect(read.getTrackedDirectories()).toEqual([join(root, "src")]);
   expect(readDirectory).toHaveBeenCalledTimes(2);
 });
-// codescope ignore this because a later read checks current metadata before it reuses the prior listing.
-test("preserves the last successful listing when a forced refresh fails", async () => {
-  const stat = jest
-    .fn()
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n));
-  const readDirectory = jest
-    .fn()
-    .mockResolvedValueOnce(["stable"])
-    .mockRejectedValueOnce(new Error("refresh failed"));
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
-  await expect(read("src")).resolves.toEqual(["stable"]);
-  await expect(read("src", true)).rejects.toThrow("refresh failed");
-  await expect(read("src")).resolves.toEqual(["stable"]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
-});
 test("uses one stat call to validate an unchanged cached listing", async () => {
   const stat = jest.fn(async () => metadata(1n));
   const readDirectory = jest.fn().mockResolvedValue([]);
@@ -71,68 +59,6 @@ test("uses one stat call to validate an unchanged cached listing", async () => {
   await read("src");
   expect(stat).toHaveBeenCalledTimes(1);
   expect(readDirectory).toHaveBeenCalledTimes(1);
-});
-test("forced refresh waits for a pending read and starts a fresh listing", async () => {
-  const stat = jest
-    .fn()
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(2n));
-  let markStarted;
-  let releaseRead;
-  const readStarted = new Promise((resolve) => {
-    markStarted = resolve;
-  });
-  const readDirectory = jest
-    .fn()
-    .mockImplementationOnce(
-      () =>
-        new Promise((resolve) => {
-          releaseRead = resolve;
-          markStarted();
-        }),
-    )
-    .mockResolvedValueOnce(["fresh"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
-  const initial = read("src");
-  await readStarted;
-  const refresh = read("src", true);
-  releaseRead(["initial"]);
-  await expect(initial).resolves.toEqual(["initial"]);
-  await expect(refresh).resolves.toEqual(["fresh"]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
-});
-test("forced refresh retries after the pending read fails", async () => {
-  const stat = jest
-    .fn()
-    .mockRejectedValueOnce(new Error("temporary stat failure"))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n));
-  const readDirectory = jest.fn().mockResolvedValue(["retried"]);
-  let rejectStat;
-  const initialStatStarted = new Promise((resolve) => {
-    rejectStat = resolve;
-  });
-  const firstStat = stat;
-  const delayedStat = jest.fn(
-    () =>
-      new Promise((resolve, reject) => {
-        firstStat().then(resolve, reject);
-        rejectStat();
-      }),
-  );
-  const retryingRead = createRepositoryDirectoryReadCache(
-    root,
-    readDirectory,
-    delayedStat,
-    "linux",
-  );
-  const initial = retryingRead("src");
-  await initialStatStarted;
-  const refresh = retryingRead("src", true);
-  await expect(initial).rejects.toThrow("temporary stat failure");
-  await expect(refresh).resolves.toEqual(["retried"]);
 });
 test.each([
   [
@@ -144,6 +70,7 @@ test.each([
   ["Windows metadata", metadata(1n), "win32", 2],
   ["millisecond-aligned nanoseconds", metadata(1_000_000n), "linux", 1],
   ["one precise nanosecond field", { ...metadata(1_000_000n), ctimeNs: 1n }, "linux", 1],
+  ["missing birth time", { ...metadata(1n), birthtimeNs: undefined }, "linux", 2],
 ])("uses safe directory cache policy for %s", async (_name, snapshot, platform, expectedCalls) => {
   await expectDirectoryReads(snapshot, platform, expectedCalls);
 });
@@ -157,12 +84,6 @@ test("detects nanosecond changes within the same millisecond", async () => {
     .mockResolvedValueOnce(sameMillisecond(2n));
   const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["new"]);
   const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
-  await expect(read("src")).resolves.toEqual(["old"]);
-  await expect(read("src")).resolves.toEqual(["new"]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
-});
-test("refreshes a recreated directory when its birth time changes", async () => {
-  const { read, readDirectory } = await verifyDirectoryCacheBirthtimeRefresh(jest);
   await expect(read("src")).resolves.toEqual(["old"]);
   await expect(read("src")).resolves.toEqual(["new"]);
   expect(readDirectory).toHaveBeenCalledTimes(2);
@@ -196,4 +117,84 @@ test("uses the filesystem stat implementation by default", async () => {
   const read = createRepositoryDirectoryReadCache(process.cwd(), readDirectory);
   await expect(read(process.cwd())).resolves.toEqual([]);
   expect(readDirectory).toHaveBeenCalledTimes(1);
+});
+
+test("preserves the last successful listing when a forced refresh fails", async () => {
+  const stat = jest
+    .fn()
+    .mockResolvedValueOnce(metadata(1n))
+    .mockResolvedValueOnce(metadata(1n))
+    .mockResolvedValueOnce(metadata(2n))
+    .mockResolvedValueOnce(metadata(1n))
+    .mockResolvedValueOnce(metadata(1n));
+  const readDirectory = jest
+    .fn()
+    .mockResolvedValueOnce(["stable"])
+    .mockRejectedValueOnce(new Error("refresh failed"));
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
+  await expect(read("src")).resolves.toEqual(["stable"]);
+  await expect(read("src", true)).rejects.toThrow("refresh failed");
+  await expect(read("src")).resolves.toEqual(["stable"]);
+  expect(readDirectory).toHaveBeenCalledTimes(2);
+});
+
+test("waits for a pending listing before a forced refresh", async () => {
+  const stat = jest
+    .fn()
+    .mockResolvedValueOnce(metadata(1n))
+    .mockResolvedValueOnce(metadata(1n))
+    .mockResolvedValueOnce(metadata(2n))
+    .mockResolvedValueOnce(metadata(2n));
+  let releaseRead;
+  let markStarted;
+  const readStarted = new Promise((resolve) => (markStarted = resolve));
+  const readDirectory = jest
+    .fn()
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseRead = resolve;
+          markStarted();
+        }),
+    )
+    .mockResolvedValueOnce(["fresh"]);
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
+  const initial = read("src");
+  await readStarted;
+  const refresh = read("src", true);
+  releaseRead(["initial"]);
+  await expect(initial).resolves.toEqual(["initial"]);
+  await expect(refresh).resolves.toEqual(["fresh"]);
+  expect(readDirectory).toHaveBeenCalledTimes(2);
+});
+
+test("retries a forced refresh after a pending stat fails", async () => {
+  const stat = jest
+    .fn()
+    .mockRejectedValueOnce(new Error("temporary stat failure"))
+    .mockResolvedValueOnce(metadata(1n))
+    .mockResolvedValueOnce(metadata(1n));
+  const readDirectory = jest.fn().mockResolvedValue(["retried"]);
+  let rejectStat;
+  const initialStatStarted = new Promise((resolve) => (rejectStat = resolve));
+  const delayedStat = jest.fn(
+    () =>
+      new Promise((resolve, reject) => {
+        stat().then(resolve, reject);
+        rejectStat();
+      }),
+  );
+  const read = createRepositoryDirectoryReadCache(root, readDirectory, delayedStat, "linux");
+  const initial = read("src");
+  await initialStatStarted;
+  const refresh = read("src", true);
+  await expect(initial).rejects.toThrow("temporary stat failure");
+  await expect(refresh).resolves.toEqual(["retried"]);
+});
+
+test("refreshes a recreated directory when its birth time changes", async () => {
+  const { read, readDirectory } = await verifyDirectoryCacheBirthtimeRefresh(jest);
+  await expect(read("src")).resolves.toEqual(["old"]);
+  await expect(read("src")).resolves.toEqual(["new"]);
+  expect(readDirectory).toHaveBeenCalledTimes(2);
 });

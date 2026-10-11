@@ -9,13 +9,7 @@ export async function resolveSmokeTarget(root, target, inspect = lstat) {
   } catch {
     return { error: "Smoke source and target must both resolve to existing directories." };
   }
-  const pathFromSource = relative(sourceRoot, targetRoot);
-  if (
-    pathFromSource === "" ||
-    (pathFromSource !== ".." &&
-      !pathFromSource.startsWith(`..${sep}`) &&
-      !isAbsolute(pathFromSource))
-  )
+  if (containsOrMatches(sourceRoot, targetRoot) || containsOrMatches(targetRoot, sourceRoot))
     return { error: "Smoke target must resolve outside the source checkout." };
 
   let identity;
@@ -48,4 +42,12 @@ export async function resolveSmokeTarget(root, target, inspect = lstat) {
         );
     },
   };
+}
+
+function containsOrMatches(parent, path) {
+  const relativePath = relative(parent, path);
+  return (
+    relativePath === "" ||
+    (relativePath !== ".." && !relativePath.startsWith(`..${sep}`) && !isAbsolute(relativePath))
+  );
 }

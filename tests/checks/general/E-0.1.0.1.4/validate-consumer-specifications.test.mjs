@@ -105,3 +105,14 @@ test("reports unreadable specification files", async () => {
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("reports parser exceptions for a specification file", async () => {
+  const { root } = await createRoot();
+  try {
+    await expect(
+      validateConsumerSpecifications(root, "E-0", { read: async () => ({}) }),
+    ).resolves.toEqual(["specs/directives.yaml is invalid YAML: source is not a string"]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

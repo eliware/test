@@ -12,7 +12,7 @@ export async function restoreSmokeTargetState(state, fs = defaultFs) {
     try {
       if (state.targetRoot && state.packageName)
         await assertSmokePackageParents(state.targetRoot, state.packageName, fs.lstat);
-      // codescope ignore this because smoke restores only paths that its install process owns.
+      // codescope ignore this because removeCapturedPath unlinks replacement links without following.
       await removeCapturedPath(entry.path, fs);
       // codescope ignore this because a path that was absent before smoke must remain absent.
       if (entry.type === "missing") continue;

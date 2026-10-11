@@ -44,6 +44,7 @@ export function validateLockfilePackageEntries(packages) {
         const range = toSemverRange(rawRange);
         if (typeof rawRange !== "string" || !rawRange.trim())
           errors.push(`package-lock.json entry ${path} has an invalid ${field} range for ${name}.`);
+        // codescope ignore this because protocol specifiers contain characters rejected by isRegistryTag.
         else if (!range && !isRegistryTag(rawRange))
           errors.push(
             `package-lock.json entry ${path} has an unsupported ${field} range for ${name}.`,
@@ -67,6 +68,7 @@ export function validateLockfilePackageEntries(packages) {
 }
 
 function isRegistryTag(value) {
+  // codescope ignore this because npm registry tags are single lowercase tokens without protocol separators.
   return /^[a-z][a-z0-9._-]*$/iu.test(value);
 }
 

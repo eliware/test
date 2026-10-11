@@ -81,7 +81,7 @@ test("requires validate before publish and a validation dependency", async () =>
   );
 });
 
-test("requires the ordered validation steps and a final npm test", async () => {
+test("requires the ordered validation steps and allows later safe steps", async () => {
   await expect(
     validatePublishWorkflowOrder(
       inventory("jobs:\n  validate: {}\n  publish:\n    needs: validate"),
@@ -112,11 +112,7 @@ test("requires the ordered validation steps and a final npm test", async () => {
       ),
       packageJson,
     ),
-  ).resolves.toEqual(
-    expect.arrayContaining([
-      expect.stringContaining("publish.yaml npm test must end the validate job"),
-    ]),
-  );
+  ).resolves.toEqual([]);
   await expect(
     validatePublishWorkflowOrder(
       inventory(validPublish.replace("      - run: npm test\n", "")),

@@ -10,6 +10,7 @@ export async function validateMirroredTests(files, readText, root) {
   for (const path of expected)
     if (!actual.has(path)) errors.push(`${path} is required for its source.`);
   for (const path of tests) {
+    // codescope ignore this because the application layout rule requires mirrored .test.mjs files.
     if (!path.endsWith(".test.mjs")) {
       errors.push(
         `${path} is not a mirrored .test.mjs file; move support files to test-fixtures/.`,

@@ -7,7 +7,13 @@ test("E-0.1.4.1.1 accepts existing entrypoints and matching start tokens", async
       root: "repo",
       packageJson: { bin: { app: "bin/app.mjs" }, scripts: { start: 'node "bin/app.mjs"' } },
     },
-    { lstat: async () => ({ isFile: () => true, isSymbolicLink: () => false }) },
+    {
+      lstat: async (path) => ({
+        isFile: () => !path.endsWith("\\bin"),
+        isDirectory: () => path.endsWith("\\bin"),
+        isSymbolicLink: () => false,
+      }),
+    },
   );
   expect(result).toEqual({ ruleId, status: "pass", message: "" });
 });

@@ -1,6 +1,7 @@
 import { findInvalidJestTestAliases } from "./find-invalid-jest-test-aliases.mjs";
 import { isActiveJestTestExpression } from "./is-active-jest-test-expression.mjs";
 import { isJestGlobalsImport, isTestNamespace } from "./jest-globals-import.mjs";
+import { collectModuleShadowedNames } from "./collect-module-shadowed-jest-names.mjs";
 
 export function collectJestTestNames(program) {
   const names = { callbacks: new Set(["test", "it"]), namespaces: new Set() };
@@ -12,6 +13,7 @@ export function collectJestTestNames(program) {
       else if (specifier.type === "ImportNamespaceSpecifier")
         names.namespaces.add(specifier.local.name);
   }
+  names.shadowedGlobals = collectModuleShadowedNames(program, names).shadowedGlobals;
   let changed = true;
   while (changed) changed = addTestAliases(program, names);
   // codescope ignore this because static validation blocks aliases after any same-name assignment in unproven control flow.

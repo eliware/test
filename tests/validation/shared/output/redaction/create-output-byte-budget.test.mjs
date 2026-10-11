@@ -13,6 +13,13 @@ test("accounts for a shared byte limit across output streams", () => {
   expect(budget.isFull()).toBe(true);
 });
 
+test("ignores unsupported stream names", () => {
+  const budget = createOutputByteBudget(10);
+  budget.append("other", "ignored");
+  budget.append("stdout", "okay");
+  expect(budget.output).toEqual({ stdout: "okay", stderr: "" });
+});
+
 test("joins bounded stream chunks without changing their order", () => {
   const budget = createOutputByteBudget(1000);
   for (let index = 0; index < 100; index += 1) budget.append("stdout", "x");

@@ -24,6 +24,9 @@ test("rejects unresolved and source-contained targets", async () => {
   await expect(resolveSmokeTarget(fixture.root, fixture.target)).resolves.toMatchObject({
     error: expect.stringContaining("outside the source"),
   });
+  await expect(resolveSmokeTarget(fixture.source, fixture.root)).resolves.toMatchObject({
+    error: expect.stringContaining("outside the source"),
+  });
   await removeRoots(roots);
 });
 
