@@ -23,6 +23,8 @@ const wrapperOwnedOptions = [
   "findRelatedTests",
   "changedSince",
   "config",
+  "runInBand",
+  "detectOpenHandles",
 ];
 const wrapperOwnedOptionAliases = new Set(
   wrapperOwnedOptions.flatMap((option) => {
@@ -44,11 +46,11 @@ export function buildJestArguments(args = []) {
   const forwarded = args.filter(
     (argument) => !focusedPaths.includes(argument) && argument !== "--debug-timing",
   );
-  const concurrency = ["--runInBand"];
+  const requiredOptions = ["--runInBand", "--detectOpenHandles"];
   return [
     "--coverage",
     ...(focusedPaths.length > 0 ? ["--runTestsByPath", ...focusedPaths] : []),
-    ...concurrency,
+    ...requiredOptions,
     ...forwarded,
   ];
 }

@@ -197,6 +197,7 @@ directives:
           - Use consumer-resolvable Jest when available and bundled Jest otherwise.
           - Keep Jest execution rooted in the consumer repository.
           - Supply harness reporters and detailed coverage output without weakening configured requirements.
+          - Run Jest with --runInBand and --detectOpenHandles.
           - Execute requested Jest validation once with established ordering and lifecycle behavior.
           - Monitor suite progress during every run.
           - Enforce a 5-second maximum runtime for each test suite and a separate 15-second startup or between-suite no-progress deadline.

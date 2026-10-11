@@ -7,19 +7,25 @@ import {
 test("builds focused and default Jest argument lists", () => {
   expect(focusedPathFrom()).toBeUndefined();
   expect(focusedPathFrom(["--watch", "tests/sample.test.mjs"])).toBe("tests/sample.test.mjs");
-  expect(buildJestArguments([])).toEqual(["--coverage", "--runInBand"]);
-  expect(buildJestArguments(undefined)).toEqual(["--coverage", "--runInBand"]);
+  expect(buildJestArguments([])).toEqual(["--coverage", "--runInBand", "--detectOpenHandles"]);
+  expect(buildJestArguments(undefined)).toEqual([
+    "--coverage",
+    "--runInBand",
+    "--detectOpenHandles",
+  ]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing"])).toEqual([
     "--coverage",
     "--runTestsByPath",
     "tests/sample.test.mjs",
     "--runInBand",
+    "--detectOpenHandles",
   ]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing", "--watch"])).toEqual([
     "--coverage",
     "--runTestsByPath",
     "tests/sample.test.mjs",
     "--runInBand",
+    "--detectOpenHandles",
     "--watch",
   ]);
   expect(buildJestArguments(["tests/one.test.mjs", "tests/two.test.mjs"])).toEqual([
@@ -28,6 +34,7 @@ test("builds focused and default Jest argument lists", () => {
     "tests/one.test.mjs",
     "tests/two.test.mjs",
     "--runInBand",
+    "--detectOpenHandles",
   ]);
 });
 
@@ -53,6 +60,9 @@ test.each([
   ["--test-path-patterns=tests/other"],
   ["-c", "jest.config.mjs"],
   ["--find-related-tests", "src/other.mjs"],
+  ["--no-runInBand"],
+  ["--detectOpenHandles=false"],
+  ["--no-detectOpenHandles"],
 ])("rejects forwarded wrapper-owned Jest options: %s", (...args) => {
   expect(() => buildJestArguments(args)).toThrow("controlled by eliware-test");
 });
