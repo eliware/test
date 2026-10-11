@@ -1,6 +1,10 @@
 export function validateWorkflowStepFields(steps) {
   const errors = [];
-  for (const step of steps.map((value) => value ?? {})) {
+  const npmTest = steps.findIndex((step) => step?.run === "npm test");
+  const requiredEnd = npmTest < 0 ? steps.length : npmTest;
+  for (const [index, value] of steps.entries()) {
+    if (index > requiredEnd) continue;
+    const step = value ?? {};
     const allowed =
       step?.uses === "actions/setup-node@v7"
         ? ["uses", "with"]

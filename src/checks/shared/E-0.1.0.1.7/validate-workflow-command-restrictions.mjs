@@ -1,5 +1,4 @@
-import { hasDuplicateAggregateStage } from "./has-duplicate-aggregate-stage.mjs";
-import { hasPublicationCommand } from "../../general/E-0.1.0.1.5/validate-package-scripts.mjs";
+import { isProhibitedNpmOrGhcrPublishCommand } from "../is-prohibited-npm-or-ghcr-publish-command.mjs";
 import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
 
 export function validateWorkflowCommandRestrictions(steps) {
@@ -28,13 +27,16 @@ export function validateWorkflowCommandRestrictions(steps) {
     if (!isApprovedPreInstallStep(step))
       errors.push("ci.yaml has an unapproved step before npm ci.");
   for (const step of steps)
-    if (hasPublicationCommand(step?.run))
-      errors.push("ci.yaml validation job must not include publication commands.");
-  for (const step of steps)
-    if (step?.run !== "npm test" && hasDuplicateAggregateStage(step?.run))
-      errors.push("ci.yaml must not duplicate aggregate validation stages.");
-  if (steps.some((step) => step?.if !== undefined || step?.["continue-on-error"] !== undefined))
-    errors.push("ci.yaml validation steps must run unconditionally without continue-on-error.");
+    if (isProhibitedNpmOrGhcrPublishCommand(step?.run))
+      errors.push("ci.yaml validation job must not publish npm packages or GHCR images.");
+  if (
+    steps
+      .slice(0, test + 1)
+      .some((step) => step?.if !== undefined || step?.["continue-on-error"] !== undefined)
+  )
+    errors.push(
+      "ci.yaml required validation steps must run unconditionally without continue-on-error.",
+    );
   for (const step of [steps[npmInstall], steps[ci], steps[test]])
     if (["env", "shell", "working-directory"].some((key) => Object.hasOwn(step ?? {}, key)))
       errors.push(

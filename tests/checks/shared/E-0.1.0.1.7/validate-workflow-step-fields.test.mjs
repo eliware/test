@@ -12,6 +12,19 @@ test("accepts approved step shapes and null entries", () => {
   ).toEqual([]);
 });
 
+test("allows arbitrary fields on steps after the required npm test", () => {
+  expect(
+    validateWorkflowStepFields([
+      { uses: "actions/checkout@v6" },
+      { uses: "actions/setup-node@v7", with: {} },
+      { run: "npm -g install npm@latest" },
+      { run: "npm ci" },
+      { run: "npm test" },
+      { uses: "vendor/action@v1", with: { token: "secret" }, if: "always()" },
+    ]),
+  ).toEqual([]);
+});
+
 test.each([
   { uses: "actions/checkout@v6", name: "checkout" },
   { uses: "actions/setup-node@v7", name: "setup" },

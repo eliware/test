@@ -1,5 +1,6 @@
 import { parseAllDocuments } from "yaml";
 import { posix } from "node:path";
+import { isProhibitedNpmOrGhcrPublishCommand } from "../../shared/is-prohibited-npm-or-ghcr-publish-command.mjs";
 
 const prefix = ["git pull --ff-only origin main", "npm ci", "npm test"];
 
@@ -47,9 +48,8 @@ function validateCommands(commands, index) {
     commands[position] === command ? [] : [`${label} must begin with ${prefix.join(", ")}.`],
   );
   for (const command of commands) {
-    if (isProhibitedPublishCommand(command))
+    if (isProhibitedNpmOrGhcrPublishCommand(command))
       errors.push(`${label} must not publish npm packages or GHCR images.`);
-    if (/codescope/iu.test(command)) errors.push(`${label} must not invoke CodeScope.`);
     for (const [, script] of command.matchAll(
       /(?:^|[\s"'`])([^\s"'`;&|]+\.(?:mjs|mts|cjs|cts|js|jsx|tsx|ts|sh|ps1|py|rb))\b/giu,
     ))
@@ -60,15 +60,4 @@ function validateCommands(commands, index) {
         errors.push(`${label} must keep secondary scripts under .knit/ and use .mjs: ${script}.`);
   }
   return errors;
-}
-
-function isProhibitedPublishCommand(command) {
-  return [
-    /\b(?:semantic-release|release-it|lerna\s+publish|changesets?\s+publish)\b/iu,
-    /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu,
-    /\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*(?:\bghcr\.io\/|\$\{?GHCR_[A-Z0-9_]+\}?)/iu,
-    /\b(?:docker|podman|buildah)\s+(?:buildx\s+)?build\b[^;\r\n]*--push[^;\r\n]*(?:\bghcr\.io\/|\$\{?GHCR_[A-Z0-9_]+\}?)/iu,
-    /\b(?:oras|crane)\s+push\b[^;\r\n]*\bghcr\.io\//iu,
-    /\bskopeo\s+copy\b[^;\r\n]*docker:\/\/ghcr\.io\//iu,
-  ].some((pattern) => pattern.test(command));
 }

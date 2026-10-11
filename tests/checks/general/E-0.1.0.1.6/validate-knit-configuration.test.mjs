@@ -36,6 +36,28 @@ test("rejects commands that publish images or use scripts outside .knit", async 
   expect(errors.join(" ")).toContain("must keep secondary scripts under .knit/");
 });
 
+test("allows arbitrary extra commands that do not publish npm packages or GHCR images", async () => {
+  await expect(
+    validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () =>
+        "commands: [git pull --ff-only origin main, npm ci, npm test, npm run validate, codescope all, docker push registry.example.com/app:latest]",
+    }),
+  ).resolves.toEqual([]);
+});
+
+test.each(["npm publish", "docker push ghcr.io/eliware/app:latest"])(
+  "rejects publish command %s",
+  async (command) => {
+    const errors = await validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () =>
+        `commands: [git pull --ff-only origin main, npm ci, npm test, ${command}]`,
+    });
+    expect(errors.join(" ")).toContain("must not publish npm packages or GHCR images");
+  },
+);
+
 test("rejects alternate package managers that publish packages", async () => {
   const errors = await validateKnitConfiguration({
     files: async () => [".knit/deploy.yaml"],

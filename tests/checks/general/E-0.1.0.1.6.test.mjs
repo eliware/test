@@ -45,7 +45,7 @@ test("rejects missing inventory, missing files, and invalid YAML", async () => {
   ).resolves.toMatchObject({ message: expect.stringContaining("could not be parsed") });
 });
 
-test("rejects multiple YAML documents and CodeScope commands", async () => {
+test("rejects multiple YAML documents and allows additional commands", async () => {
   await expect(
     run({
       repositoryInventory: {
@@ -62,7 +62,7 @@ test("rejects multiple YAML documents and CodeScope commands", async () => {
           "commands: [git pull --ff-only origin main, npm ci, npm test, codescope run]",
       },
     }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("must not invoke CodeScope") });
+  ).resolves.toMatchObject({ status: "pass" });
 });
 
 test("rejects missing commands, non-string items, and publishing commands", async () => {

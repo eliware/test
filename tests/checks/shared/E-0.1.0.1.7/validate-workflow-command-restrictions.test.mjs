@@ -49,17 +49,29 @@ test.each([{ run: "echo $TOKEN" }, { run: 'printf "safe\nunsafe"' }, { uses: "ve
   },
 );
 
-test("rejects publish commands, duplicate stages, and conditional steps", () => {
-  const changed = [
-    ...steps,
-    { run: "npm publish", if: "always()", "continue-on-error": true },
-    { run: "npm run lint" },
-  ];
+test("rejects npm and GHCR publication commands", () => {
+  const changed = [...steps, { run: "npm publish" }, { run: "docker push ghcr.io/a/b:latest" }];
   const errors = validateWorkflowCommandRestrictions(changed);
-  expect(errors).toContain("ci.yaml validation job must not include publication commands.");
-  expect(errors).toContain("ci.yaml must not duplicate aggregate validation stages.");
+  expect(errors).toContain("ci.yaml validation job must not publish npm packages or GHCR images.");
+});
+
+test("allows extra non-publishing commands after npm test", () => {
+  expect(
+    validateWorkflowCommandRestrictions([
+      ...steps,
+      { run: "npm run lint", if: "always()", "continue-on-error": true },
+      { run: "docker push registry.example.com/a/b:latest" },
+      { run: "gh release create v12.0.0" },
+    ]),
+  ).toEqual([]);
+});
+
+test("rejects conditional required steps", () => {
+  const errors = validateWorkflowCommandRestrictions(
+    steps.map((step, index) => (index === 4 ? { ...step, if: "always()" } : step)),
+  );
   expect(errors).toContain(
-    "ci.yaml validation steps must run unconditionally without continue-on-error.",
+    "ci.yaml required validation steps must run unconditionally without continue-on-error.",
   );
 });
 

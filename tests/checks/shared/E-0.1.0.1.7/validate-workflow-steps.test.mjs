@@ -13,6 +13,12 @@ test("coordinates all policies for valid ordered workflow steps", () => {
   expect(validateWorkflowSteps(steps)).toEqual([]);
 });
 
+test("allows additional commands after npm test", () => {
+  expect(validateWorkflowSteps([...steps, { run: "npm run validate", if: "always()" }])).toEqual(
+    [],
+  );
+});
+
 test("combines errors from the step shape, order, and command policies", () => {
   const errors = validateWorkflowSteps([
     { uses: "actions/checkout@v6", name: "checkout" },
@@ -28,10 +34,7 @@ test("combines errors from the step shape, order, and command policies", () => {
   );
   expect(errors).toContain("ci.yaml setup-node must use Node.js 26.");
   expect(errors).toContain("ci.yaml has an unapproved step before npm ci.");
-  expect(errors).toContain("ci.yaml validation job must not include publication commands.");
-  expect(errors).toContain(
-    "ci.yaml validation steps must run unconditionally without continue-on-error.",
-  );
+  expect(errors).toContain("ci.yaml validation job must not publish npm packages or GHCR images.");
   expect(errors).toContain(
     "npm install, npm ci, and npm test steps must not override env, shell, or working-directory.",
   );

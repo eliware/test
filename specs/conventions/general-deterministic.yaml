@@ -113,8 +113,8 @@ directives:
       - For consumer repositories, do not directly declare or import Oxlint or Prettier or invoke them in validation commands.
       - Do not exclude maintained files of the required types from formatting.
       - Do not add standalone Prettier configuration.
-      - Do not add publication commands to package scripts or validation workflows.
-      - Do not create or upload GitHub releases from package scripts or validation workflows.
+      - Do not add publication commands to package scripts.
+      - Do not create or upload GitHub releases from package scripts.
     examples:
       - '{"test":"eliware-test","lint":"eliware-test --lint","audit":"eliware-test --audit","format":"eliware-test --format","format:check":"eliware-test --format-check"}'
       - '{"printWidth":100,"tabWidth":2,"useTabs":false,"semi":true,"singleQuote":false,"quoteProps":"as-needed","jsxSingleQuote":false,"trailingComma":"all","bracketSpacing":true,"bracketSameLine":false,"arrowParens":"always","proseWrap":"preserve","endOfLine":"lf"}'
@@ -123,7 +123,7 @@ directives:
     dos:
       - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
       - "Begin every commands array with these exact commands in this order: git pull --ff-only origin main, npm ci, npm test."
-      - Add commands after this prefix only when they follow the other requirements in this rule.
+      - Add any commands after this prefix unless a command publishes an npm package or a GHCR image.
       - Keep secondary Knit scripts under .knit/.
       - Use the .mjs extension for secondary Knit scripts.
     donts:
@@ -141,17 +141,17 @@ directives:
       - Set workflow and validation-job permissions to contents read only.
       - Run validation unconditionally on Ubuntu using checkout major v6 and setup-node major v7 with Node.js 26.
       - Install npm latest.
-      - Run one standalone npm ci step.
-      - Run one standalone npm test step.
+      - Run one standalone npm ci step, then one standalone npm test step.
+      - Add any workflow steps after the required npm test step unless a command publishes an npm package or a GHCR image.
       - Before npm ci, permit only approved setup actions, npm latest installation, and literal safe echo or printf reporting.
       - Keep required install and test steps free of environment, shell, and working-directory overrides.
     donts:
-      - Do not add other workflow files or duplicate aggregate stages in CI.
-      - Do not use conditional validation.
-      - Do not use continue-on-error.
+      - Do not add other workflow files.
+      - Do not make required validation steps conditional.
+      - Do not use continue-on-error for required validation steps.
       - Do not override checkout repository or ref.
       - Do not use pre-install reporting with expansion, redirects, control operators, backslashes, or embedded line breaks.
-      - Do not include publication commands or permissions in validation jobs.
+      - Do not publish npm packages or GHCR images in validation jobs.
     examples:
       - "name: Validation\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\nconcurrency:\n  group: ${{ github.repository }}-${{ github.ref }}\n  cancel-in-progress: true\npermissions:\n  contents: read\njobs:\n  test:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n    steps:\n      - uses: actions/checkout@v6\n      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          cache: npm\n      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: npm test"
 

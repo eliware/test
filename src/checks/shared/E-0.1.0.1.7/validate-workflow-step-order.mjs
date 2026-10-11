@@ -16,12 +16,11 @@ export function validateWorkflowStepOrder(steps) {
     test !== ci + 1 ||
     validationSteps.some(
       (name, index) =>
-        steps.filter((step) => (index < 2 ? step.uses : step.run) === stepValues[name]).length !==
-        1,
+        steps
+          .slice(0, test + 1)
+          .filter((step) => (index < 2 ? step.uses : step.run) === stepValues[name]).length !== 1,
     )
   )
     errors.push("ci.yaml must use checkout v6, setup-node v7, npm latest, npm ci, then npm test.");
-  if (test >= 0 && test !== steps.length - 1)
-    errors.push("ci.yaml npm test must be the final validation-job step.");
   return errors;
 }

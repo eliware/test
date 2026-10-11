@@ -13,11 +13,14 @@ test("accepts each required stage in its canonical position", () => {
   expect(validateWorkflowStepOrder(steps)).toEqual([]);
 });
 
-test("rejects missing, reordered, duplicate, and trailing stages", () => {
+test("rejects missing, reordered, or duplicate required stages", () => {
   expect(validateWorkflowStepOrder([...steps.slice(1), steps[0], steps[4]])).toEqual(
     expect.arrayContaining([
       "ci.yaml must use checkout v6, setup-node v7, npm latest, npm ci, then npm test.",
-      "ci.yaml npm test must be the final validation-job step.",
     ]),
   );
+});
+
+test("allows additional steps after npm test", () => {
+  expect(validateWorkflowStepOrder([...steps, { run: "npm run validate" }])).toEqual([]);
 });
