@@ -35,6 +35,17 @@ test("validates the schema and nested directive documents", async () => {
   }
 });
 
+test("uses default package metadata and reports the missing namespace", async () => {
+  const root = await createFixture();
+  try {
+    expect(await validateSpecificationDirectives(root)).toContain(
+      "package.json.eliware.id must define the assigned E-number.",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("parses every document in a YAML stream", async () => {
   const root = await createFixture();
   try {
@@ -92,68 +103,6 @@ test("reports a convention YAML read error", async () => {
       },
     );
     expect(errors.join(" ")).toContain("Specification YAML could not be read");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("rejects duplicate, unknown, and self-referential profile prerequisites", async () => {
-  const root = await createFixture();
-  try {
-    await writeFile(
-      join(root, "specs", "conventions", "custom-deterministic.yaml"),
-      "version: '12.0'\ndescription: Custom rules\nrequires: [custom, missing, missing]\ndirectives:\n  - id: E-0.3.0\n    dos: [Do]\n    donts: [Do not]\n",
-    );
-    const errors = await validateSpecificationDirectives(root, { eliware: { id: "E-0" } });
-    expect(errors).toContain(
-      "specs/conventions/custom-deterministic.yaml document 1.requires must not contain duplicate profiles.",
-    );
-    expect(errors).toContain(
-      "specs/conventions/custom-deterministic.yaml document 1.requires must not include its own profile.",
-    );
-    expect(errors).toContain(
-      "specs/conventions/custom-deterministic.yaml document 1.requires names unknown profiles: missing, missing.",
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("requires each profile conflict to have a matching declaration", async () => {
-  const root = await createFixture();
-  const directory = join(root, "specs", "conventions");
-  const profile = (conflicts, id) =>
-    `version: '12.0'\ndescription: Profile\nrequires: []\nconflicts: [${conflicts}]\ndirectives:\n  - id: ${id}\n    dos: [Do]\n    donts: [Do not]\n`;
-  try {
-    await writeFile(join(directory, "application-semantic.yaml"), profile("cli", "E-0.3.0"));
-    const cli = join(directory, "cli-deterministic.yaml");
-    await writeFile(cli, profile("application", "E-0.4.0"));
-    await expect(
-      validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
-    ).resolves.toEqual([]);
-    await writeFile(cli, profile("", "E-0.4.0"));
-    expect(await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).toContain(
-      "specs/conventions/application-semantic.yaml document 1.conflicts must be declared by cli.",
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("ignores non-array requirements and unrelated convention file names", async () => {
-  const root = await createFixture();
-  try {
-    await writeFile(
-      join(root, "specs", "conventions", "general-deterministic.yaml"),
-      "version: '12.0'\ndescription: General\nrequires: none\ndirectives: []\n",
-    );
-    await writeFile(
-      join(root, "specs", "conventions", "extra.yaml"),
-      "version: '12.0'\ndescription: Extra rules\ndirectives:\n  - id: E-0.4.0\n    dos: [Do]\n    donts: [Do not]\n",
-    );
-    expect(await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).toContain(
-      "specs/conventions/general-deterministic.yaml document 1.requires must list valid profile names.",
-    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

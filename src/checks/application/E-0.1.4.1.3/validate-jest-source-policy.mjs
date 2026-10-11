@@ -2,7 +2,7 @@ import { join, posix } from "node:path";
 import { findSeparateTestRunnerConfigs } from "./find-separate-test-runner-configs.mjs";
 import { validateProductionCoveragePolicy } from "./validate-production-coverage-policy.mjs";
 import { validateTestToolReferences } from "./validate-test-tool-references.mjs";
-import { isPureExportBarrel } from "../E-0.1.4.1.2/validate-internal-export-barrels.mjs";
+import { isPureExportBarrel } from "../E-0.1.4.1.2/is-pure-export-barrel.mjs";
 
 export async function validateJestSourcePolicy(context = {}) {
   const root = context.root ?? process.cwd();

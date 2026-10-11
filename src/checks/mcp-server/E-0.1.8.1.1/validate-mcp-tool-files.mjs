@@ -1,4 +1,4 @@
-import { parse } from "@babel/parser";
+import { validateAdapterHandlerPair } from "../../application/shared/validate-adapter-handler-pair.mjs";
 
 export async function validateMcpToolFiles(files, inventory) {
   const adapters = listNames(files, "tools");
@@ -29,44 +29,10 @@ function findMissingPairErrors(adapters, handlers) {
 }
 
 async function validateAdapter(inventory, name) {
-  const adapter = `tools/${name}.mjs`;
-  const handler = `src/tools/${name}.mjs`;
-  const errors = [];
-  try {
-    const ast = parse(await inventory.readText(adapter), { sourceType: "module" });
-    if (!reexportsMatchingHandler(ast, name))
-      errors.push(`${adapter} must re-export its matching source handler.`);
-  } catch (error) {
-    errors.push(`${adapter} could not be inspected: ${error.message}`);
-  }
-  try {
-    const ast = parse(await inventory.readText(handler), { sourceType: "module" });
-    if (!hasDefaultFunction(ast)) errors.push(`${handler} must default-export a function.`);
-  } catch (error) {
-    errors.push(`${handler} could not be inspected: ${error.message}`);
-  }
-  return errors;
-}
-
-function reexportsMatchingHandler(ast, name) {
-  if (ast.program.body.length !== 1) return false;
-  const statement = ast.program.body[0];
-  if (statement.type !== "ExportNamedDeclaration" || statement.specifiers.length !== 1)
-    return false;
-  const specifier = statement.specifiers[0];
-  return (
-    statement.source?.value === `../src/tools/${name}.mjs` &&
-    specifier.type === "ExportSpecifier" &&
-    specifier.local.name === "default" &&
-    specifier.exported.name === "default"
-  );
-}
-
-function hasDefaultFunction(ast) {
-  const declaration = ast.program.body.find(
-    (node) => node.type === "ExportDefaultDeclaration",
-  )?.declaration;
-  return ["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"].includes(
-    declaration?.type,
+  return validateAdapterHandlerPair(
+    inventory,
+    `tools/${name}.mjs`,
+    `src/tools/${name}.mjs`,
+    `../src/tools/${name}.mjs`,
   );
 }

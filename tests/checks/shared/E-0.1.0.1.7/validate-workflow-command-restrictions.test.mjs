@@ -1,0 +1,73 @@
+import { expect, test } from "@jest/globals";
+import { validateWorkflowCommandRestrictions } from "../../../../src/checks/shared/E-0.1.0.1.7/validate-workflow-command-restrictions.mjs";
+
+const steps = [
+  { uses: "actions/checkout@v6" },
+  { uses: "actions/setup-node@v7", with: { "node-version": 26, cache: "npm" } },
+  { run: "npm -g install npm@latest" },
+  { run: "npm ci" },
+  { run: "npm test" },
+];
+
+test("accepts approved commands and Node.js setup", () => {
+  expect(validateWorkflowCommandRestrictions(steps)).toEqual([]);
+  expect(
+    validateWorkflowCommandRestrictions([
+      steps[0],
+      { ...steps[1], with: { "node-version": "26", cache: "npm" } },
+      { run: "echo ready" },
+      ...steps.slice(2),
+    ]),
+  ).toEqual([]);
+});
+
+test("rejects invalid setup values and checkout scope", () => {
+  const changed = [
+    { ...steps[0], with: { ref: "main" } },
+    { ...steps[1], with: { "node-version": 20, "check-latest": true } },
+    ...steps.slice(2),
+  ];
+  expect(validateWorkflowCommandRestrictions(changed).join(" ")).toContain(
+    "must not override the checkout",
+  );
+  expect(validateWorkflowCommandRestrictions(changed).join(" ")).toContain("Node.js 26");
+  expect(validateWorkflowCommandRestrictions(changed).join(" ")).toContain("npm cache inputs");
+});
+
+test("handles missing workflow stages without execution overrides", () => {
+  expect(validateWorkflowCommandRestrictions([{ run: "echo ready" }]).join(" ")).toContain(
+    "Node.js 26",
+  );
+});
+
+test.each([{ run: "echo $TOKEN" }, { run: 'printf "safe\nunsafe"' }, { uses: "vendor/action@v1" }])(
+  "rejects unapproved pre-install steps",
+  (step) => {
+    expect(
+      validateWorkflowCommandRestrictions([...steps.slice(0, 2), step, ...steps.slice(2)]),
+    ).toContain("ci.yaml has an unapproved step before npm ci.");
+  },
+);
+
+test("rejects publish commands, duplicate stages, and conditional steps", () => {
+  const changed = [
+    ...steps,
+    { run: "npm publish", if: "always()", "continue-on-error": true },
+    { run: "npm run lint" },
+  ];
+  const errors = validateWorkflowCommandRestrictions(changed);
+  expect(errors).toContain("ci.yaml validation job must not include publication commands.");
+  expect(errors).toContain("ci.yaml must not duplicate aggregate validation stages.");
+  expect(errors).toContain(
+    "ci.yaml validation steps must run unconditionally without continue-on-error.",
+  );
+});
+
+test.each([3, 4])("rejects execution overrides on validation steps", (index) => {
+  const changed = steps.map((step, stepIndex) =>
+    stepIndex === index ? { ...step, shell: "bash" } : step,
+  );
+  expect(validateWorkflowCommandRestrictions(changed)).toContain(
+    "npm install, npm ci, and npm test steps must not override env, shell, or working-directory.",
+  );
+});

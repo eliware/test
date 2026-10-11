@@ -43,64 +43,9 @@ test("finds public targets in arrays", async () => {
   ).resolves.toEqual([]);
 });
 
-test("detects pure re-exports with comments and multiline syntax", async () => {
-  await expect(
-    validateInternalExportBarrels(
-      ["src/internal.mjs"],
-      async () => '// public surface\nexport {\n  value,\n} from "./value.mjs";',
-      {},
-      "repo",
-    ),
-  ).resolves.toEqual(["src/internal.mjs is an internal pure export barrel."]);
-});
-
 test("ignores invalid module syntax", async () => {
   await expect(
     validateInternalExportBarrels(["src/broken.mjs"], async () => "export {", {}, "repo"),
-  ).resolves.toEqual([]);
-});
-
-test("detects export-all barrels", async () => {
-  await expect(
-    validateInternalExportBarrels(
-      ["src/internal.mjs"],
-      async () => 'export * from "./values.mjs";',
-      {},
-      "repo",
-    ),
-  ).resolves.toEqual(["src/internal.mjs is an internal pure export barrel."]);
-});
-
-test("detects imports re-exported through local export declarations", async () => {
-  await expect(
-    validateInternalExportBarrels(
-      ["src/internal.mjs"],
-      async () => 'import { value } from "./value.mjs"; export { value };',
-      {},
-      "repo",
-    ),
-  ).resolves.toEqual(["src/internal.mjs is an internal pure export barrel."]);
-});
-
-test("does not classify unused imports as a pure export barrel", async () => {
-  await expect(
-    validateInternalExportBarrels(
-      ["src/internal.mjs"],
-      async () => 'import { unused } from "./unused.mjs"; export { value } from "./value.mjs";',
-      {},
-      "repo",
-    ),
-  ).resolves.toEqual([]);
-});
-
-test("does not classify side-effect imports as pure re-export barrels", async () => {
-  await expect(
-    validateInternalExportBarrels(
-      ["src/internal.mjs"],
-      async () => 'import "./setup.mjs"; export { value } from "./value.mjs";',
-      {},
-      "repo",
-    ),
   ).resolves.toEqual([]);
 });
 

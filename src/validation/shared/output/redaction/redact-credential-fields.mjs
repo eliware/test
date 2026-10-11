@@ -1,5 +1,4 @@
-const credentialKey =
-  "(?:password|passwd|pwd|token|secret|credential|api[_-]?key|apiKey|access[_-]?key|accessKey|private[_-]?key|privateKey|client[_-]?(?:secret|id)|client(?:Secret|Id)|refresh[_-]?token|refreshToken|session[_-]?id|sessionId)";
+import { credentialKeyPattern } from "./credential-key-pattern.mjs";
 
 export function redactCredentialFields(text) {
   return String(text)
@@ -13,14 +12,14 @@ export function redactCredentialFields(text) {
     )
     .replace(
       new RegExp(
-        String.raw`(["']?(?:${credentialKey})["']?[ \t]*[=:][ \t]*)(?:"(?:\\.|[^"\\\r\n])*"|'[^'\r\n]*'|[^\s,;}]+)`,
+        String.raw`(["']?(?:${credentialKeyPattern})["']?[ \t]*[=:][ \t]*)(?:"(?:\\.|[^"\\\r\n])*"|'[^'\r\n]*'|[^\s,;}]+)`,
         "giu",
       ),
       "$1[REDACTED]",
     )
     .replace(
       new RegExp(
-        String.raw`((?:${credentialKey})[ \t]+)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}|]+)`,
+        String.raw`((?:${credentialKeyPattern})[ \t]+)(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s,;}|]+)`,
         "giu",
       ),
       "$1[REDACTED]",
