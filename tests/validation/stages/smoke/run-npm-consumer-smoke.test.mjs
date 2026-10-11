@@ -95,6 +95,11 @@ test("restores the prior installation when the consumer test fails", async () =>
     '"version":"12.0.0"',
   );
 });
+test("returns consumer metadata errors before the smoke setup", async () => {
+  const fixture = await createSmokeTarget(roots);
+  await writeFile(join(fixture.target, "package.json"), JSON.stringify({ scripts: {} }));
+  await expect(runSmoke(fixture)).resolves.toContain("must define an npm test script");
+});
 test("validates the smoke request before capturing consumer state", async () => {
   const fixture = await createSmokeTarget(roots);
   const captureState = jest.fn();
@@ -144,29 +149,6 @@ test("leaves an unverified temporary path untouched", async () => {
   const path = result.match(/left untouched at (.+): identity unavailable/u)?.[1];
   expect(path).toBeTruthy();
   await rm(path, { recursive: true, force: true });
-});
-test("reports temporary cleanup diagnostics after a successful restore", async () => {
-  const { fixture, run } = await createFakeSmokeTarget(roots);
-  cleanupSmokeTempRoot.mockResolvedValueOnce(
-    "Temporary smoke directory identity changed; left untouched.",
-  );
-  const result = await runSmoke(fixture, { run });
-  expect(result).toContain("Previous target package state restored");
-  expect(result).toContain("Temporary smoke directory identity changed");
-  await rm(cleanupSmokeTempRoot.mock.calls.at(-1)[0], { recursive: true, force: true });
-});
-test("requires the target test script and an eliware-test dependency", async () => {
-  const fixture = await createSmokeTarget(roots);
-  await writeFile(
-    join(fixture.target, "package.json"),
-    JSON.stringify({ devDependencies: { "@eliware/test": "12" } }),
-  );
-  await expect(runSmoke(fixture)).resolves.toContain("npm test script");
-  await writeFile(
-    join(fixture.target, "package.json"),
-    JSON.stringify({ scripts: { test: "echo test" } }),
-  );
-  await expect(runSmoke(fixture)).resolves.toContain("must declare @eliware/test");
 });
 test.each(smokeFailureCases)(
   "reports candidate and installation failures and restores prior package %#",

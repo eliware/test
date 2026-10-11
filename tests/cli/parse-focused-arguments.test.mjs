@@ -66,3 +66,10 @@ test("handles empty and non-string argument values", () => {
   expect(focusedPathFrom(["specs/example.spec.mjs"])).toBeUndefined();
   expect(focusedPathFrom(["src/example.mjs"])).toBeUndefined();
 });
+
+test("recognizes forwarded focused test paths from parsed Jest arguments", () => {
+  expect(
+    parseFocusedArguments(["--", "tests/example.test.mjs", "C:\\repo\\file.txt"])
+      .forwardedTestPaths,
+  ).toEqual(["tests/example.test.mjs", "C:\\repo\\file.txt"]);
+});

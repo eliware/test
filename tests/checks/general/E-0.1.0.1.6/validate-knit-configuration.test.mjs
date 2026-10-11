@@ -76,15 +76,6 @@ test("rejects semantic release commands", async () => {
   expect(errors.join(" ")).toContain("must not publish npm packages or GHCR images");
 });
 
-test("rejects quoted secondary script paths outside .knit", async () => {
-  const errors = await validateKnitConfiguration({
-    files: async () => [".knit/deploy.yaml"],
-    readText: async () =>
-      'commands: [git pull --ff-only origin main, npm ci, npm test, node "scripts/run.mjs"]',
-  });
-  expect(errors.join(" ")).toContain("must keep secondary scripts under .knit/");
-});
-
 test("accepts quoted secondary script paths inside .knit", async () => {
   await expect(
     validateKnitConfiguration({

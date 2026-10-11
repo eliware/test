@@ -52,6 +52,15 @@ test("reports cleanup rejection as a smoke failure result", async () => {
   ).resolves.toContain("Temporary smoke cleanup failed: cleanup denied.");
 });
 
+test("appends cleanup diagnostics after a successful restore", async () => {
+  const cleanup = jest
+    .fn()
+    .mockResolvedValue("Temporary directory identity changed; left untouched.");
+  await expect(finishSmokeRun({ ...base, cleanup })).resolves.toContain(
+    "Smoke passed. Previous target package state restored. Temporary directory identity changed; left untouched.",
+  );
+});
+
 test("uses the default cleanup for the verified temporary directory", async () => {
   const tempRoot = await mkdtemp(join(tmpdir(), "eliware-smoke-finish-"));
   const result = await finishSmokeRun({

@@ -92,28 +92,6 @@ test("materializes only newly emitted ranges and pending matches on finish", () 
   ]);
 });
 
-test.each([
-  [{ start: -1, end: 2 }],
-  [{ start: 1.5, end: 3 }],
-  [{ start: 2, end: 2 }],
-  [{ start: 2, end: 7 }],
-  [null],
-])("suppresses malformed or out-of-window match intervals: %s", (interval) => {
-  const search = createIncrementalSearch(["abc"], 100, () => () => ({
-    matches: [interval],
-    work: 1,
-  }));
-  expect(search("secret")).toMatchObject({ boundary: 0, matchEnds: [], suppressed: true });
-});
-
-test("suppresses malformed work counts", () => {
-  const search = createIncrementalSearch(["abc"], 100, () => () => ({
-    matches: [],
-    work: Number.NaN,
-  }));
-  expect(search("secret").suppressed).toBe(true);
-});
-
 test("merges newly discovered intervals into retained order", () => {
   let orderedCall = 0;
   const orderedSearch = createIncrementalSearch(["abcd"], 100, () => () => ({

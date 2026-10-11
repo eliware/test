@@ -1,4 +1,5 @@
 import { createMatchIntervalIndex } from "../../search/create-match-interval-index.mjs";
+import { hasValidSecretMatchResults } from "./has-valid-secret-match-results.mjs";
 
 export function createIncrementalSearch(values, workLimit, createStream) {
   const findNewMatches = createStream();
@@ -38,7 +39,7 @@ export function createIncrementalSearch(values, workLimit, createStream) {
     const pendingStart = bufferStart;
     const pendingEnd = pendingStart + pendingLength;
     const found = findNewMatches(appended);
-    if (!hasValidMatches(found, pendingStart, pendingEnd))
+    if (!hasValidSecretMatchResults(found, pendingStart, pendingEnd))
       return { boundary: 0, matchEnds: [], suppressed: true };
     consumedWork += found.work;
     if (consumedWork > workLimit) return { boundary: 0, matchEnds: [], suppressed: true };
@@ -57,24 +58,4 @@ export function createIncrementalSearch(values, workLimit, createStream) {
     bufferStart = pendingStart + boundary;
     return { boundary, matchEnds, suppressed: false };
   }
-}
-
-function hasValidMatches(found, pendingStart, pendingEnd) {
-  return (
-    found !== null &&
-    typeof found === "object" &&
-    Number.isSafeInteger(found.work) &&
-    found.work >= 0 &&
-    Array.isArray(found.matches) &&
-    Array.from(found.matches).every(
-      (interval) =>
-        interval !== null &&
-        typeof interval === "object" &&
-        Number.isSafeInteger(interval.start) &&
-        Number.isSafeInteger(interval.end) &&
-        interval.start >= pendingStart &&
-        interval.end > interval.start &&
-        interval.end <= pendingEnd,
-    )
-  );
 }
