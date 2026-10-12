@@ -9,8 +9,8 @@ test("E-0.1.4.1.1 accepts existing entrypoints and matching start tokens", async
     },
     {
       lstat: async (path) => ({
-        isFile: () => !path.endsWith("\\bin"),
-        isDirectory: () => path.endsWith("\\bin"),
+        isFile: () => !path.endsWith("bin"),
+        isDirectory: () => path.endsWith("bin"),
         isSymbolicLink: () => false,
       }),
     },
