@@ -4,12 +4,10 @@ const dependencyFields = ["dependencies", "optionalDependencies", "peerDependenc
 
 function findDependencyEntry(packages, parent, name) {
   let current = parent;
-  // codescope ignore this because npm can hoist a dependency to any ancestor node_modules directory.
   while (true) {
     const candidate = `${current}/node_modules/${name}`.replace(/^\//u, "");
     if (Object.hasOwn(packages, candidate)) return candidate;
     const nested = current.lastIndexOf("/node_modules/");
-    // codescope ignore this because the root fallback runs after every ancestor lookup, including nested package scopes.
     if (nested < 0)
       return Object.hasOwn(packages, `node_modules/${name}`) ? `node_modules/${name}` : null;
     current = current.slice(0, nested);
@@ -45,7 +43,6 @@ export function validateLockfilePackageEntries(packages) {
         const range = toSemverRange(rawRange);
         if (typeof rawRange !== "string" || !rawRange.trim())
           errors.push(`package-lock.json entry ${path} has an invalid ${field} range for ${name}.`);
-        // codescope ignore this because protocol specifiers contain characters rejected by isRegistryTag.
         else if (!range && !isRegistryTag(rawRange))
           errors.push(
             `package-lock.json entry ${path} has an unsupported ${field} range for ${name}.`,
@@ -69,7 +66,6 @@ export function validateLockfilePackageEntries(packages) {
 }
 
 function isRegistryTag(value) {
-  // codescope ignore this because npm registry tags are single lowercase tokens without protocol separators.
   return /^[a-z][a-z0-9._-]*$/iu.test(value);
 }
 

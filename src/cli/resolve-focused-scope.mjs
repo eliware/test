@@ -5,7 +5,6 @@ export function resolveFocusedScope(args = []) {
     path.replaceAll("\\", "/").replace(/^\.\//u, ""),
   );
   if (testPaths.length === 0 || testPaths.some((path) => !/^tests\/.+/iu.test(path))) return null;
-  // codescope ignore this because focused tests use the same source extension except for MTS and CTS.
   const sourcePaths = testPaths.map((path) =>
     path.slice("tests/".length).replace(/\.(?:test|spec)(?=\.[^.]+$)/iu, ""),
   );

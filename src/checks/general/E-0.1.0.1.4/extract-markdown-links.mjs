@@ -41,7 +41,6 @@ export function removeMarkdownCode(content, { preserveInlineCodeText = false } =
   let fence;
   let previousLine = "";
   for (let index = 0; index < lines.length; index += 1) {
-    // codescope ignore this because every detected blockquote fence line is blanked in the original text.
     const content = removeBlockquotePrefixes(lines[index]);
     const opening = /^ {0,3}(`{3,}|~{3,})/u.exec(content);
     if (!fence && opening) {
@@ -56,14 +55,10 @@ export function removeMarkdownCode(content, { preserveInlineCodeText = false } =
     }
     if (lines[index].trim()) previousLine = content;
   }
-  // codescope ignore this because blockquoted Markdown links render as ordinary navigable links.
-  return (
-    lines
-      .join("\n")
-      .replace(/(`+)([^`]*?)\1/gu, preserveInlineCodeText ? "$2" : "")
-      // codescope ignore this because comment removal runs before link and asset extraction.
-      .replace(/<!--[\s\S]*?-->/gu, (comment) => comment.replace(/[^\n]/gu, ""))
-  );
+  return lines
+    .join("\n")
+    .replace(/(`+)([^`]*?)\1/gu, preserveInlineCodeText ? "$2" : "")
+    .replace(/<!--[\s\S]*?-->/gu, (comment) => comment.replace(/[^\n]/gu, ""));
 }
 
 function removeBlockquotePrefixes(line) {

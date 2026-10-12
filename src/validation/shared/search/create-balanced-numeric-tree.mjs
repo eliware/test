@@ -28,7 +28,6 @@ export function createBalancedNumericTree() {
   function lowerBound(value) {
     assertFiniteNumber(value, "lowerBound");
     let node = root;
-    // codescope ignore this because the initial size is the insertion rank when no node meets the bound.
     let result = sizeBalancedNumericTreeNode(root);
     let offset = 0;
     while (node) {

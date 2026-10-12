@@ -34,7 +34,6 @@ export async function runNpmConsumerSmoke({
   });
   if (context.error) return context.error;
   const { targetRoot, assertTargetIdentity, binNames, childEnv } = context;
-  // codescope ignore this because the next operation starts cleanup before any other setup can fail.
   const tempState = await createSmokeTempRoot(inspectTempRoot, createTempRoot, removeEmptyTempRoot);
   if (tempState.error) return tempState.error;
   const { path: tempRoot, identity: tempIdentity } = tempState;
@@ -43,7 +42,6 @@ export async function runNpmConsumerSmoke({
   let outcome;
   try {
     await assertTargetIdentity();
-    // codescope ignore this because smoke checks package parents before capture and before each mutation.
     await assertSmokePackageParents(targetRoot, packageJson.name);
     state = await captureState(targetRoot, packageJson.name, binNames);
     write(`Target recovery snapshot: ${state.storage}`);
@@ -64,7 +62,6 @@ export async function runNpmConsumerSmoke({
   } catch (error) {
     outcome = `Tarball consumer smoke failed: ${error.message}`;
   } finally {
-    // codescope ignore this because restoration checks target identity and package parents before each captured path.
     outcome = await finishSmokeRun({
       outcome,
       state,

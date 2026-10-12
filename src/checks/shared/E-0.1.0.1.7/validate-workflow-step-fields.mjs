@@ -1,10 +1,8 @@
 export function validateWorkflowStepFields(steps) {
   const errors = [];
   const npmTest = steps.findIndex((step) => step?.run === "npm test");
-  // codescope ignore this because the user-approved policy permits extra steps after npm test except publication commands.
   const requiredEnd = npmTest < 0 ? steps.length : npmTest;
   for (const [index, value] of steps.entries()) {
-    // codescope ignore this because later fields are allowed and separate checks reject npm and GHCR publication commands.
     if (index > requiredEnd) continue;
     const step = value ?? {};
     const allowed =

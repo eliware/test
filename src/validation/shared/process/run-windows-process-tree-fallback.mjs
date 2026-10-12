@@ -8,7 +8,6 @@ export function runWindowsProcessTreeFallback(
   options,
   resolvePowerShellCore = resolveWindowsPowerShellCoreExecutable,
 ) {
-  // codescope ignore this because Windows descendant membership follows ParentProcessId from the timed-out PID.
   const script =
     "$ErrorActionPreference='Stop'; $root=[int]$env:ELIWARE_TEST_PROCESS_ID; " +
     "$all=@(Get-CimInstance Win32_Process); $known=[Collections.Generic.HashSet[int]]::new(); " +
@@ -21,7 +20,6 @@ export function runWindowsProcessTreeFallback(
   const args = ["-NoProfile", "-NonInteractive", "-Command", script];
   const commandOptions = { ...options, env: { ...env, ELIWARE_TEST_PROCESS_ID: String(pid) } };
   try {
-    // codescope ignore this because the default execute adapter is execFileSync and waits for PowerShell.
     execute(
       resolveWindowsSystemExecutable(
         env,

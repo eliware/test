@@ -24,7 +24,6 @@ function visit(node, state, allowFunction = false) {
       extendState(state, collectBlockShadowedJestNames(node, state.names, state.callbackNames)),
     );
   if (isFunction(node)) {
-    // codescope ignore this because nested functions run only when called, and Jest registration requires execution now.
     if (!allowFunction) return false;
     return visit(
       node.body,
@@ -41,7 +40,6 @@ function visit(node, state, allowFunction = false) {
         state.blockedCallbacks,
       )
     )
-      // codescope ignore this because the validator needs only one proven registered test.
       return true;
     if (isSkippedJestSuiteCall(node, state.describeNames)) return false;
     if (

@@ -17,7 +17,6 @@ async function resolveSource(root, focusedPath) {
   if (!marker || !/\.(?:test|spec)\.[^.]+$/i.test(marker[1])) return null;
   const sourceBase = marker[1].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, "");
   const extension = extname(sourceBase);
-  // codescope ignore this because only MTS and CTS tests map to the required MJS source extension.
   const sourceRelative = `src/${sourceBase.slice(0, -extension.length)}${mapFocusedSourceExtension(extension)}`;
   const sourcePath = join(root, ...sourceRelative.split("/"));
   try {

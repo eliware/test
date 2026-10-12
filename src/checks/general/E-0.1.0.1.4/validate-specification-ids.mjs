@@ -2,7 +2,6 @@ export function validateSpecificationIds(documents, namespace) {
   const errors = [];
   const ids = new Set();
   const groups = new Map();
-  // codescope ignore this because top-level convention IDs can have nested prefixes; child ancestry applies only to explicit children.
   for (const { path, directives } of documents)
     checkSiblings(directives, path, namespace, ids, groups, errors, null);
   for (const [prefix, numbers] of groups) {

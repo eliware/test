@@ -2,7 +2,6 @@ import { collectBindingNames } from "./collect-binding-names.mjs";
 
 export function collectBlockShadowedJestNames(block, names, callbackNames) {
   const shadowed = { tests: new Set(), callbacks: new Set(), describes: new Set() };
-  // codescope ignore this because module and function collectors handle hoisted var bindings.
   for (const statement of block.body) {
     if (statement.type === "VariableDeclaration" && statement.kind !== "var")
       for (const declaration of statement.declarations)

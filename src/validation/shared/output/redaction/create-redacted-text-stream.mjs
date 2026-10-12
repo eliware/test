@@ -22,7 +22,6 @@ export function createRedactedTextStream(
 
   return {
     redactComplete(text) {
-      // codescope ignore this because complete output has its own bounded matcher and suppression state.
       return redactCompleteOutput(text, policy);
     },
     push: session.push,

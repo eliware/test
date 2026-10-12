@@ -16,7 +16,6 @@ export function resolveWindowsSystemExecutable(env, ...parts) {
 
 function isAbsoluteWindowsPath(path) {
   const normalized = typeof path === "string" ? path.replaceAll("/", "\\") : "";
-  // codescope ignore: SystemRoot is the locally booted Windows installation; executing taskkill from a UNC share is unsupported.
   const hasDriveRoot = /^[A-Za-z]:\\/u.test(normalized);
   return hasDriveRoot && !normalized.split(/\\+/u).some((part) => part === "." || part === "..");
 }

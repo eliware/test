@@ -114,7 +114,6 @@ test("suppresses output when repeated scans exceed the work limit", () => {
   expect(session.finish()).toBe("");
 });
 
-// codescope ignore this because the test checks secret offsets after safe prefixes leave the stream buffer.
 test("scans only new stream text when a long secret spans several chunks", () => {
   const secret = Array.from({ length: 10_000 }, (_, index) =>
     String.fromCharCode(0x1000 + index),

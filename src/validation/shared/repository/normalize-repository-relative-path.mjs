@@ -12,7 +12,6 @@ export function normalizeRepositoryRelativePath(path, root = process.cwd()) {
     return "[outside repository]";
   }
 
-  // codescope ignore: relative roots use POSIX joining after Windows separators normalize to '/', which preserves their relative relationship.
   const pathApi = windowsRoot || windowsPath ? win32 : posix;
   const normalizedRoot = pathApi.resolve(root);
   const normalizedPath = pathApi.resolve(normalizedRoot, path.replaceAll("\\", "/"));

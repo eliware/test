@@ -42,7 +42,6 @@ export function runChild(command, args, options = {}) {
     try {
       child = spawnProcess(command, args, createChildSpawnOptions(options, environment));
     } catch (error) {
-      // codescope ignore: output capture is initialized before spawn, so synchronous launch errors are redacted by the same complete-output adapter as async errors
       settleError(error);
       return;
     }
@@ -86,13 +85,11 @@ export function runChild(command, args, options = {}) {
         settleError,
         resolve,
       });
-      // codescope ignore: an error rejects before timeout settlement or is ignored only after the promise already settled.
       child.on("error", (error) => {
         settleError(error);
       });
       child.on("close", handleClose);
     } catch (error) {
-      // codescope ignore this because cleanup stops timers before the rejected promise settles.
       terminateChildAfterSetupFailure(child, options, environment);
       settleError(error);
     }

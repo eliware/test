@@ -11,7 +11,6 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
   const validateLocal = createLocalMarkdownReferenceValidator(root, dependencies);
   let files;
   try {
-    // codescope ignore this because nullish coalescing selects the fallback when the inventory method is absent.
     files = await (context.repositoryInventory?.documentationFiles?.({
       directory: root,
       predicate: (name) => name.toLowerCase().endsWith(".md"),
@@ -28,8 +27,6 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
       errors.push(`${file} could not be read: ${error.message}`);
       continue;
     }
-    // codescope ignore this because asset extraction resolves reference-definition images too.
-    // codescope ignore this because serial path checks avoid unbounded filesystem concurrency.
     for (const { reference } of [...extractMarkdownLinks(text), ...extractMarkdownAssets(text)]) {
       if (!reference) {
         errors.push(`Markdown reference link has no definition in ${file}.`);

@@ -7,7 +7,6 @@ export function normalizeRepositoryInventoryRecords(root, records) {
   return records.flatMap((record) => {
     if (!record || typeof record.path !== "string") return [];
     const recordPath = windowsRoot ? normalizeWindowsDevicePath(record.path) : record.path;
-    // codescope ignore: A POSIX-rooted input cannot be contained by a Windows root; Windows UNC paths use backslashes.
     if (windowsRoot && recordPath.startsWith("/")) return [];
     if (windowsRoot && /^[A-Za-z]:(?![\\/])/u.test(recordPath)) return [];
     if (!windowsRoot && /^(?:[A-Za-z]:[\\/]|\\\\)/u.test(recordPath)) return [];

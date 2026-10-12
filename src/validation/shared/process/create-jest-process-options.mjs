@@ -9,7 +9,6 @@ export function createJestProcessOptions(root, args = [], options = {}) {
   let nestedOutputStarted = false;
   if (options.consoleReportFile) env.ELIWARE_TEST_JEST_CONSOLE_REPORT = options.consoleReportFile;
   return {
-    // codescope ignore: every Jest invocation runs from its owning consumer repository root so Jest discovers that repository's configuration and tests
     cwd: root,
     env,
     progressPattern: /^\[eliware-test-progress\]/m,

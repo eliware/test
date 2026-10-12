@@ -21,7 +21,6 @@ async function validateEntrypointTarget(target, root, checkPath) {
   const normalized = canonicalEntrypoint(target);
   if (!normalized) return `Entrypoint target must use a canonical path under bin/: ${target}.`;
   try {
-    // codescope ignore this because canonicalEntrypoint converts both separators before native path joins.
     if ((await checkPath(resolve(root))).isSymbolicLink())
       return `Entrypoint target path must not contain a symlink: ${target}.`;
     const segments = normalized.split("/");

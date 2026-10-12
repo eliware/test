@@ -62,7 +62,6 @@ export async function acquireValidationLock(root, operations = {}) {
     throw error;
   }
   return async () => {
-    // codescope ignore this because the lock is an advisory file and the harness does not defend against external replacement.
     try {
       const lock = JSON.parse(await readText(lockPath, "utf8"));
       if (lock.lockId === lockId) await removeFile(lockPath);

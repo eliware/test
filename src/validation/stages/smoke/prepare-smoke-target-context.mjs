@@ -12,7 +12,6 @@ export async function prepareSmokeTargetContext({
 }) {
   const request = validateNpmConsumerSmokeRequest({ root, target, packageJson });
   if (request.error) return request;
-  // codescope ignore this because resolveSmokeTarget compares real paths and rejects targets inside the checkout.
   const targetResolution = await resolveSmokeTarget(root, request.targetRoot, inspectTargetRoot);
   if (targetResolution.error) return targetResolution;
   const { targetRoot, assertIdentity: assertTargetIdentity } = targetResolution;

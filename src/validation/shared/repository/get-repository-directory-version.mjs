@@ -1,5 +1,4 @@
 export function getRepositoryDirectoryVersion(metadata, platform) {
-  // codescope ignore: Windows disables reuse but still compares snapshots around readdir.
   const nanosecondTimestamps =
     typeof metadata.mtimeNs === "bigint" &&
     typeof metadata.ctimeNs === "bigint" &&

@@ -1,6 +1,5 @@
 export function validateEntrypointMetadata(packageJson) {
   const errors = [];
-  // codescope ignore this because the CLI rule requires a nonempty bin entrypoint.
   const bin = packageJson.bin;
   if (
     bin !== undefined &&

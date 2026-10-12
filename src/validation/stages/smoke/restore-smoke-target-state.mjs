@@ -5,18 +5,14 @@ import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
 const defaultFs = { cp, mkdir, rm, symlink, writeFile, chmod, lstat, unlink };
 
 export async function restoreSmokeTargetState(state, fs = defaultFs) {
-  // codescope ignore this because finishSmokeRun never calls restore for capture errors, which clean their own backup path.
   if (state?.error) throw new Error(state.error);
   const failures = [];
-  // codescope ignore this because smoke restores a prepared copy without concurrent hostile filesystem mutation.
   // Snapshot entries are exact independent paths; keep restoring siblings after an entry fails.
   for (const entry of [...state.entries].reverse()) {
     try {
       if (state.targetRoot && state.packageName)
         await assertSmokePackageParents(state.targetRoot, state.packageName, fs.lstat);
-      // codescope ignore this because removeCapturedPath unlinks replacement links without following.
       await removeCapturedPath(entry.path, fs);
-      // codescope ignore this because a path that was absent before smoke must remain absent.
       if (entry.type === "missing") continue;
       await fs.mkdir(dirname(entry.path), { recursive: true });
       // The target runs on the smoke host; capture rejects Windows file links and records junctions.
@@ -46,7 +42,6 @@ async function removeCapturedPath(path, fs) {
     if (error.code === "ENOENT") return;
     throw error;
   }
-  // codescope ignore this because lstat selects unlink for links and never follows their targets.
   if (metadata.isSymbolicLink()) await fs.unlink(path);
   else await fs.rm(path, { recursive: metadata.isDirectory(), force: true });
 }

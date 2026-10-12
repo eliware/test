@@ -32,7 +32,6 @@ export function createDocumentationFileView(root, entriesUnder) {
       maxDepthFilter: (path) =>
         !neverIncludePath.test(path) && (includeGenerated || !generatedPath.test(path)),
       onFile(path) {
-        // codescope ignore this because onFile counts every traversed file before the name predicate selects results.
         traversalObserved = true;
         const file = path.slice(prefix.length);
         if (neverIncludePath.test(path) || (!includeGenerated && generatedPath.test(path))) return;
@@ -64,7 +63,6 @@ export function createDocumentationFileView(root, entriesUnder) {
       generatedPath,
     });
     const result = [];
-    // codescope ignore this because the fallback checks depth from records and checks result length below.
     for (const record of records) {
       if (
         record.type !== "file" ||

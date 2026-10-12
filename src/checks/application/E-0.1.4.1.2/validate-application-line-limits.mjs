@@ -14,7 +14,6 @@ export async function validateApplicationLineLimits(files, readText, root) {
       continue;
     }
     const lines = content ? content.split(/\r\n|\n|\r/u) : [];
-    // codescope ignore this because every newline form adds one final split sentinel.
     if (content.endsWith("\n") || content.endsWith("\r")) lines.pop();
     const maximum = path.startsWith("src/") ? 100 : 200;
     if (lines.length > maximum)

@@ -8,7 +8,6 @@ export async function validateExamplesIndex(context = {}) {
   try {
     files = await context.repositoryInventory.documentationFiles({
       directory: join(root, "examples"),
-      // codescope ignore this because the examples rule defines indexed examples as JavaScript modules.
       predicate: (name) => /\.(?:mjs|js)$/iu.test(name),
       includeGenerated: true,
     });
@@ -16,7 +15,6 @@ export async function validateExamplesIndex(context = {}) {
     if (error.code === "ENOENT") return [];
     return ["examples/ could not be inspected for JavaScript examples."];
   }
-  // codescope ignore this because default sort is deterministic and index validation checks membership.
   const examples = files.sort();
   if (!examples.length) return [];
   let index;

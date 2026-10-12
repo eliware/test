@@ -26,7 +26,6 @@ export function createRepositoryEntryReader({
       return normalizeRepositoryInventoryRecords(root, records);
     });
     const discovery = pending.catch((error) => {
-      // codescope ignore: failed discovery clears entriesPromise, so the next entries() call retries.
       entriesPromise = undefined;
       throw error;
     });
@@ -37,7 +36,6 @@ export function createRepositoryEntryReader({
   async function refreshIfChanged(snapshot) {
     const records = await snapshot;
     let directoriesExist = true;
-    // codescope ignore this because serial refresh keeps one stable snapshot without a concurrency requirement.
     for (const directory of readDirectoryCached.getTrackedDirectories()) {
       try {
         await readDirectoryCached(directory);

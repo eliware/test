@@ -26,7 +26,6 @@ export function createRepositoryFileContentCache(
     current.promise = Promise.resolve()
       .then(async () => {
         const currentVersion = repositoryFileVersion(await stat(key, { bigint: true }));
-        // codescope ignore this because stable file metadata defines content-cache reuse.
         if (previous?.version === currentVersion) {
           const confirmedVersion = repositoryFileVersion(await stat(key, { bigint: true }));
           if (confirmedVersion === currentVersion) {
@@ -40,10 +39,7 @@ export function createRepositoryFileContentCache(
         current.content = stable.content;
         current.version = stable.version;
         current.pending = false;
-        // codescope ignore this because same-path reads share one pending promise and cannot replace this entry while pending.
-        // codescope ignore this because this branch runs only after stable content reads successfully.
         if (stable.content.byteLength > maxCachedFileBytes) {
-          // codescope ignore this because same-path reads share this pending entry, which cache eviction skips.
           cachedBytes -= previous?.content?.byteLength ?? 0;
           fileReads.delete(key);
           return current.content;
@@ -68,7 +64,6 @@ export function createRepositoryFileContentCache(
   function evictOldContent() {
     for (const [path, entry] of fileReads) {
       if (cachedBytes <= maxCachedFileBytes) break;
-      // codescope ignore: pending replacements are never evicted, preserving their previous content and byte accounting until settle.
       if (entry.pending) continue;
       fileReads.delete(path);
       cachedBytes -= entry.content.byteLength;

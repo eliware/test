@@ -48,7 +48,6 @@ export async function validateConsumerSpecifications(
     const values = parsed.map((document) => document.toJSON());
     if (path === "specs/directives.yaml" && !values.some(hasDirectives))
       errors.push("specs/directives.yaml must contain a directive document.");
-    // codescope ignore this because the convention schema-checks and IDs only for documents with a directives key.
     values.forEach((value, index) => {
       if (hasDirectives(value)) documents.push({ path: `${path} document ${index + 1}`, value });
     });
@@ -71,7 +70,6 @@ export async function validateConsumerSpecifications(
 }
 
 function hasDirectives(value) {
-  // codescope ignore this because unrelated YAML documents have no directive key and receive parse-only validation.
   return Boolean(
     value && typeof value === "object" && !Array.isArray(value) && "directives" in value,
   );

@@ -11,7 +11,6 @@ const dependencyFields = [
 ];
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
-// codescope ignore this because both dependency maps use the same comparator before equality checks.
 function sorted(value) {
   return JSON.stringify(
     Object.fromEntries(Object.entries(value).sort(([left], [right]) => left.localeCompare(right))),
@@ -62,7 +61,6 @@ export async function validatePackageLock(root, packageJson, { read = readFile }
       object(packageJson?.[field]) ? Object.keys(packageJson[field]) : [],
     ),
   );
-  // codescope ignore this because Node resolves root dependencies from this top-level lock entry.
   const missing = [...directDependencies].filter(
     (name) => !Object.hasOwn(lockfile.packages, `node_modules/${name}`),
   );
@@ -76,8 +74,6 @@ export async function validatePackageLock(root, packageJson, { read = readFile }
       const semverRange = toSemverRange(range);
       if (!semverRange)
         errors.push(`package.json ${field} has an unsupported dependency range for ${name}.`);
-      // codescope ignore this because every present lock entry must have a version before this check.
-      // codescope ignore this because the package-entry pass rejects missing and empty versions.
       else if (version && !semver.satisfies(version, semverRange))
         errors.push(`package-lock.json version for ${name} does not satisfy ${range}.`);
     }

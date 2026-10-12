@@ -14,7 +14,6 @@ export function npmCommand(
   searchPath = process.env.PATH,
 ) {
   if (platform === "win32") {
-    // codescope ignore: drive-rooted Windows paths with forward slashes are handled by isAbsoluteWindowsNpmPath below.
     if (typeof npmExecPath === "string" && npmExecPath.startsWith("//"))
       throw new Error("Cannot resolve a POSIX-style npm_execpath on Windows.");
     if (typeof npmExecPath === "string" && npmExecPath.trim()) {
@@ -25,7 +24,6 @@ export function npmCommand(
         return [execPath, [npmExecPath]];
     }
     const npmCli = win32.join(win32.dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js");
-    // codescope ignore: probe the adjacent CLI before selecting it, then fall back to PATH when it is absent
     if (fileExists(npmCli)) return [execPath, [npmCli]];
     const pathNpmCli = resolveWindowsNpmCliFromPath(searchPath, fileExists);
     if (pathNpmCli) return [execPath, [pathNpmCli]];
@@ -38,7 +36,6 @@ export function npmCommand(
       "Unable to resolve the npm CLI on Windows from npm_execpath, beside Node.js, or on PATH.",
     );
   }
-  // codescope ignore: Windows drive and UNC npm_execpath values fall back to PATH before POSIX path resolution.
   if (isAbsoluteWindowsNpmPath(npmExecPath)) return ["npm", []];
   if (npmExecPath) {
     const resolvedNpmExecPath = isAbsolute(npmExecPath)

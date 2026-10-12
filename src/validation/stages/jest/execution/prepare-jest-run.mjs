@@ -27,7 +27,6 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
       jestCli,
       jestArguments[0],
       "--no-color",
-      // codescope ignore: request the text reporter so successful aggregate runs include the coverage summary
       "--coverageReporters=json",
       "--coverageReporters=json-summary",
       "--coverageReporters=text",

@@ -10,7 +10,6 @@ export async function validateMirroredTests(files, readText, root) {
   for (const path of expected)
     if (!actual.has(path)) errors.push(`${path} is required for its source.`);
   for (const path of tests) {
-    // codescope ignore this because the profile rule requires mirrored .test.mjs files; other CLI suffixes do not waive repository layout.
     if (!path.endsWith(".test.mjs")) {
       errors.push(
         `${path} is not a mirrored .test.mjs file; move support files to test-fixtures/.`,

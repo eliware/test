@@ -57,7 +57,6 @@ test("maps .mts and .cts tests to the native ESM source module", async () => {
 });
 
 test("maps every advertised focused extension to its mirrored source file", async () => {
-  // codescope ignore this because this test checks extension path mapping, while maintained implementation rules require .mjs sources.
   const root = await mkdtemp(join(tmpdir(), "eliware-focused-extension-"));
   await mkdir(join(root, "src"));
   await mkdir(join(root, "tests"));

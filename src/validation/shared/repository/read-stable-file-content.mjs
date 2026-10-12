@@ -1,13 +1,10 @@
 import { stat as statPath } from "node:fs/promises";
 
 export function repositoryFileVersion(metadata) {
-  // codescope ignore this because Node.js 26 BigIntStats provides nanosecond timestamps on supported platforms.
   return [metadata.dev, metadata.ino, metadata.size, metadata.mtimeNs, metadata.ctimeNs].join(":");
 }
 
 export async function readStableFileContent(path, read, stat = statPath) {
-  // codescope ignore this because the inventory snapshot treats stable nanosecond metadata as unchanged content.
-  // codescope ignore this because two changed reads must fail instead of returning unstable content.
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const before = repositoryFileVersion(await stat(path, { bigint: true }));
     const content = await Promise.resolve(read(path)).then((value) =>

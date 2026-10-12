@@ -147,7 +147,6 @@ test("ignores tests inside skipped Jest suites", () => {
   );
 });
 
-// codescope ignore this because alias validation rejects assignments in every control-flow branch.
 test("rejects a Jest function alias after reassignment", () => {
   const source = 'let run = test; run = () => {}; run("not a test", () => {});';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(

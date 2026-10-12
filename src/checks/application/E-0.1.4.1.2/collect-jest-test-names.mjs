@@ -21,7 +21,6 @@ export function collectJestTestNames(program) {
   const moduleBindings = collectModuleShadowedNames(program, names);
   names.shadowedGlobals = moduleBindings.shadowedGlobals;
   collectExecutableJestTestAliases(program, names, moduleBindings.describes);
-  // codescope ignore this because static validation blocks aliases after any same-name assignment in unproven control flow.
   for (const name of findInvalidJestTestAliases(program, names)) names.callbacks.delete(name);
   return names;
 }

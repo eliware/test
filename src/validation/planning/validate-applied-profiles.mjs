@@ -5,7 +5,6 @@ export function validateAppliedProfiles(apply, catalog = readBundledProfileCatal
   const unknown = apply.filter((name) => !catalog.profiles[name]);
   if (unknown.length > 0) return `Unknown convention group: ${unknown.join(", ")}.`;
   if (!apply.includes("general")) return "Every repository must explicitly apply general.";
-  // codescope ignore this because application before cli matches the canonical profile list.
   const canonicalProfileOrder = readCanonicalOrder("eliware-apply.yaml").profiles;
   const ordered = [...apply].sort(
     (left, right) => canonicalProfileOrder.indexOf(left) - canonicalProfileOrder.indexOf(right),
@@ -17,7 +16,6 @@ export function validateAppliedProfiles(apply, catalog = readBundledProfileCatal
   );
   if (missing.length > 0)
     return `Applied profiles require explicit profiles: ${[...new Set(missing)].join(", ")}.`;
-  // codescope ignore this because conflicts are explicit pair rules; parent-child incompatibilities are declared directly.
   const conflicts = apply.flatMap((profile) =>
     catalog.profiles[profile].conflicts
       .filter(

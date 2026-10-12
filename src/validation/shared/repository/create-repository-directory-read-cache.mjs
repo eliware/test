@@ -44,18 +44,15 @@ export function createRepositoryDirectoryReadCache(
           await stat(key, { bigint: true }),
           platform,
         );
-        // codescope ignore this because cached traversal uses native high-resolution directory stat values.
         if (afterReadVersion.key !== currentVersion.key) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);
         }
         if (previous) revision += 1;
-        // codescope ignore this because repository inventory does not promise an atomic snapshot during concurrent writes.
         current.version = afterReadVersion;
         current.pending = false;
         return current.entries;
       })
       .catch((error) => {
-        // codescope ignore this because later reads compare current metadata before reusing this entry.
         if (previous) reads.set(key, previous);
         else reads.delete(key);
         throw error;

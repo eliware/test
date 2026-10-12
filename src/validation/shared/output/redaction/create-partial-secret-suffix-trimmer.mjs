@@ -7,7 +7,6 @@ export function createPartialSecretSuffixTrimmer(secrets, maxWork = MAX_SUFFIX_T
     secretLength += secret.length;
     if (secretLength > Math.floor(maxWork / 6)) return null;
   }
-  // codescope ignore this because total secret length is bounded before prefix arrays are allocated.
   const patterns = secrets.map((secret) => {
     const prefixLengths = Array.from({ length: secret.length }, () => 0);
     for (let index = 1, prefixLength = 0; index < secret.length; index += 1) {

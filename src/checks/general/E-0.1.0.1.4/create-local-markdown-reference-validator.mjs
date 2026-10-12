@@ -45,6 +45,5 @@ function escapesRoot(path) {
 
 function splitReference(value) {
   const [path, ...fragment] = value.split("#");
-  // codescope ignore this because the query is removed before path resolution and the fragment stays intact.
   return [path.split("?")[0], fragment.join("#")];
 }

@@ -19,7 +19,6 @@ export async function validateGhcrAttestationChain(inventory, packageJson = {}) 
   if (ids.some((id) => typeof id !== "string" || !/^[A-Za-z_][A-Za-z0-9_-]*$/u.test(id)))
     errors.push("Each GHCR image push must have a valid step ID.");
   if (new Set(ids).size !== ids.length) errors.push("GHCR image push step IDs must be unique.");
-  // codescope ignore this because each push checks its own bounded step range for a matching attestation.
   const attests = steps.filter(
     (step) => typeof step?.uses === "string" && step.uses.startsWith("actions/attest@"),
   );

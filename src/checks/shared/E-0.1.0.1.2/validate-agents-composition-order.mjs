@@ -3,7 +3,6 @@ import { readCanonicalOrder } from "../../../validation/shared/conventions/read-
 
 export function validateAgentsCompositionOrder(content, packageJson = {}) {
   const order = readCanonicalOrder("agents-sections.yaml");
-  // codescope ignore this because validate-agents-structure rejects duplicate headings first.
   const allHeadings = new Set(Object.values(order.profileHeadings));
   const actual = removeMarkdownCode(content)
     .split(/\r?\n/u)

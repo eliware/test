@@ -23,7 +23,6 @@ export function scanSecretTextAutomaton(nodes, text, maxScanWork, initialState =
         if (work > maxScanWork) return null;
         const start = index - length + 1;
         matchEnds[start] = Math.max(matchEnds[start], index + 1);
-        // codescope ignore this because each interval consumes the scan work limit before allocation.
         matches.push({ start: offset + start, end: offset + index + 1 });
       }
     }

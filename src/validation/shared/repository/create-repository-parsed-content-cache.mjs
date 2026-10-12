@@ -5,7 +5,6 @@ export function createRepositoryParsedContentCache(root, readText) {
 
   return async function readParsed(filePath, cacheKey, parse) {
     const key = `${inventoryPath(root, filePath)}\0${cacheKey}`;
-    // codescope ignore this because file metadata checks detect changes while the byte cache avoids rereading unchanged content.
     const text = await readText(filePath);
     const cached = parsedReads.get(key);
     if (cached?.text === text) return cached.promise;

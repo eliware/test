@@ -21,7 +21,6 @@ export function resolveWindowsPowerShellCoreExecutable(env, fileExists = existsS
     .filter(([key]) => ["programfiles", "programw6432"].includes(key.toLowerCase()))
     .map(([, value]) => value)
     .filter((value) => typeof value === "string" && win32.isAbsolute(value));
-  // codescope ignore this because Windows PowerShell is tried first and PATH follows normal user executable resolution.
   const candidates = [
     ...pathEntries.map((directory) => win32.join(directory, "pwsh.exe")),
     ...programFiles.map((directory) => win32.join(directory, "PowerShell", "7", "pwsh.exe")),

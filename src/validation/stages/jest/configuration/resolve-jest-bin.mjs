@@ -33,7 +33,6 @@ export function resolveJestBin(requireFromConsumer, packageName, resolveRealPath
     throw new Error(`Installed ${packageName} Jest executable escapes its package directory.`);
   let isFile = false;
   try {
-    // codescope ignore this because fallback paths also pass realpath containment before execution.
     if (!isPathInside(packageDirectory, resolveRealPath(resolved)))
       throw new Error(`Installed ${packageName} Jest executable escapes its package directory.`);
     isFile = statSync(resolved).isFile();
