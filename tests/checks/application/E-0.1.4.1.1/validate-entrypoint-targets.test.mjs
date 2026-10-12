@@ -4,7 +4,7 @@ import { validateEntrypointTargets } from "../../../../src/checks/application/E-
 
 const file = { isFile: () => true, isDirectory: () => false, isSymbolicLink: () => false };
 const directory = { isFile: () => false, isDirectory: () => true, isSymbolicLink: () => false };
-const checkPath = async (path) => (path.endsWith("\\bin") ? directory : file);
+const checkPath = async (path) => (path.endsWith(join("bin")) ? directory : file);
 
 test("accepts canonical entrypoint files and a leading dot segment", async () => {
   await expect(validateEntrypointTargets(["./bin/tool.mjs"], "repo", checkPath)).resolves.toEqual(
@@ -60,7 +60,7 @@ test("rejects a repository root that is a symlink", async () => {
 test("requires the target to be a file and reports missing path errors", async () => {
   await expect(
     validateEntrypointTargets(["bin/tool.mjs"], "repo", async (path) =>
-      path.endsWith("\\bin") ? directory : { ...file, isFile: () => false },
+      path.endsWith(join("bin")) ? directory : { ...file, isFile: () => false },
     ),
   ).resolves.toEqual(["Entrypoint target must be an existing file: bin/tool.mjs."]);
   await expect(
@@ -84,7 +84,7 @@ test("anchors a relative root before checking target paths", async () => {
   let checkedPath;
   await validateEntrypointTargets(["bin/tool.mjs"], "relative-repo", async (path) => {
     checkedPath = path;
-    return path.endsWith("\\bin") ? directory : file;
+    return path.endsWith(join("bin")) ? directory : file;
   });
 
   expect(checkedPath).toBe(join(resolve("relative-repo"), "bin", "tool.mjs"));

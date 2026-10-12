@@ -9,8 +9,8 @@ test("combines metadata, target, and start-command diagnostics", async () => {
     },
     {
       lstat: async (path) => ({
-        isFile: () => !path.endsWith("\\bin"),
-        isDirectory: () => path.endsWith("\\bin"),
+        isFile: () => !path.endsWith("bin"),
+        isDirectory: () => path.endsWith("bin"),
         isSymbolicLink: () => false,
       }),
     },
@@ -29,8 +29,8 @@ test("accepts valid entrypoint metadata and targets", async () => {
     },
     {
       lstat: async (path) => ({
-        isFile: () => !path.endsWith("\\bin"),
-        isDirectory: () => path.endsWith("\\bin"),
+        isFile: () => !path.endsWith("bin"),
+        isDirectory: () => path.endsWith("bin"),
         isSymbolicLink: () => false,
       }),
     },
