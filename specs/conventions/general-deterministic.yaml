@@ -173,7 +173,9 @@ directives:
     dos:
       - Scan maintained repository text files for machine-specific absolute paths.
       - 'Reject Windows paths rooted at Users, home, srv, or var\lib directories.'
-      - Reject POSIX paths rooted at /home, /users, or /srv directories.
+      - Reject POSIX paths rooted at /home except paths with node, argocd, or runner as the next segment.
+      - Reject POSIX paths rooted at /users.
+      - Reject POSIX paths rooted at /srv except paths with repository or workspace as the next segment.
       - "Reject C: or D: paths rooted at eliware or Users/<name>/src."
       - Skip invalid UTF-8 and binary files.
       - Fail validation when repository files cannot be listed or read.

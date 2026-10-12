@@ -34,3 +34,23 @@ test("does not treat application routes as machine paths", async () => {
     findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
   ).resolves.toEqual([]);
 });
+
+test("allows standard Linux container accounts and mount paths", async () => {
+  const contents = new Map([
+    [
+      "container-paths.txt",
+      Buffer.from(
+        [
+          ["", "home", "node", ".cache", "puppeteer"].join("/"),
+          ["", "home", "argocd", ".config", "sops", "age", "keys.txt"].join("/"),
+          ["", "home", "runner", "_work"].join("/"),
+          `\`${["", "srv", "repository"].join("/")}\``,
+          `\`${["", "srv", "workspace"].join("/")}\``,
+        ].join(" "),
+      ),
+    ],
+  ]);
+  await expect(
+    findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
+  ).resolves.toEqual([]);
+});
