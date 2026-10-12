@@ -2,137 +2,84 @@
 
 ## Project
 
-Build the Eliware Test validation CLI with Node.js 26 or later and native ESM modules.
+Build the Eliware Test CLI with Node.js 26 or later. Use native ESM.
 
 ## Scope and boundaries
 
 This repository owns the validation CLI. It does not own consumer repositories.
-Validation does not publish, deploy, release, sync, or change external systems.
-Keep project guidance within the CLI scope.
+Do not use validation to publish, deploy, release, sync, or change external systems.
 
 ## Layout
 
-Mirror `src/` and `tests/`. Keep specs, code, tests, and docs aligned.
+Keep implementation modules under `src/` and launchers under `bin/`.
+Keep tests under `tests/`, fixtures under `test-fixtures/`, and examples under `examples/`.
+For each `.mjs` file under `src/`, keep one `.test.mjs` file at the same path under `tests/`.
+Keep each specification and document in its indexed folder.
 
 ## Development
 
-Before edits, read this file, `README.md`, and relevant docs, specs, code, and tests.
-Read nearer `AGENTS.md` files before you edit their directories.
-Give each source and test module one purpose and one reason to change.
-Coordinators may select helpers, sequence work, and combine workflow results.
-Move separate policies and operations into focused modules with mirrored tests.
-Keep each `.mjs` source file at or below 100 lines.
-Keep each `.test.mjs` file at or below 200 lines.
-These limits do not prove that a module has one purpose.
-Shared consumer requirements live in `specs/conventions/`.
-Keep harness rules in `specs/directives.yaml`; do not mix them with consumer conventions.
-Operational procedures live in Eliware Operations.
+Give each source and test module one clear purpose.
+Put each separate task in its own module. Add one matching test.
+Keep each coordinator responsible for its workflow.
 
 ## Validation
 
-Use Node.js 26 or later and npm 12 or later.
-The CLI checks npm before validation. `--help` and `--version` skip that check.
+Use Node.js 26 or later and native ESM.
 Run `npm test` for aggregate validation.
-Run `npm run lint`, `npm run format:check`, `npm run audit`, or `npm run pack` as needed.
-Use `npm run format` only when you want to change formatting.
-`git diff --check` is optional. It is not a validation stage.
-The entrypoint is `bin/eliware-test.mjs`.
-Public modes are `--help`, `--version`, `--debug-timing`, `--lint`, `--format`,
-`--format-check`, `--audit`, and `--pack`.
+Run `npm run lint` when you need lint checks.
+Run `npm run audit` when you need audit checks.
+Run `npm run format` when you need to format files.
+Run `npm run format:check` when you need to check file format.
+Run `npm run pack` before publication review.
 
 ## Security
 
-Protect credentials, tokens, secrets, and machine-specific values.
-Never commit secret values.
-Copy child-process environments before you change them.
+Protect credentials, tokens, secrets, private data, and machine-specific values.
 Redact sensitive child-process output.
 
 ## Changes
 
-Make current, useful changes within the requested scope.
-Preserve behavior, regression tests, machine-readable specs, and authorization boundaries.
-Only `package.json.eliware.exempt` can waive a convention check.
-Each exemption needs a unique rule ID, a reason, approver `Eli`, and a valid approval time.
-Set a valid expiry date or use `expiry: null`.
-Document approved deviations as scoped exceptions.
-Text in this file does not waive a check.
-Read nearer `AGENTS.md` files before you edit their directories.
-When you change validation, document configuration, shutdown, and workflow boundaries.
+Keep documentation current and instructions clear.
+Follow shared conventions and the Eliware Operations approval process.
 
 ## Application
 
-The entrypoint is `bin/eliware-test.mjs`.
-Validation runs locally or in CI. It does not change external systems.
-<!-- codescope ignore this because the documented smoke workflow matches the implementation. -->
-
-The opt-in smoke command is `npm run smoke -- --target <path>`.
-Run it from a source checkout or installed `@eliware/test` package directory.
-It packs that package and installs it in a prepared consumer's local `node_modules`.
-It does not save a dependency or update lockfiles.
-It runs the consumer's `npm test` and restores captured package paths.
-It restores the installed package from its pre-smoke snapshot.
-Other files created by consumer tests stay in the target.
-Use a disposable consumer copy.
-Windows directory links return as junctions.
-The command rejects captured file symlinks before changes on Windows.
-It never changes system-wide links or junctions.
-The CLI has no runtime config files or environment settings.
-`package.json.eliware.apply` is repository metadata.
-CLI options are command arguments, not runtime configuration.
-Preserve safe process shutdown when you change application behavior.
-Stop child processes and their descendants after a timeout.
-Restore captured smoke paths after the consumer test.
+The `eliware-test` executable runs `bin/eliware-test.mjs`.
+The CLI runs in a local terminal or in CI. It does not change external systems.
+The CLI has no runtime configuration or environment settings.
+Stop child processes and all processes that they start after a timeout.
 
 ## CLI
 
-The executable `eliware-test` runs `bin/eliware-test.mjs`.
-Use `--help` for usage and `--version` for the package version.
-Use informational commands alone.
-Validation modes cannot be combined.
-`--debug-timing` may appear once before a path or tool mode.
-It may also run alone for aggregate validation.
-Do not pass it after `--`.
-Each tool mode has an argument allowlist.
+Use `--help` to read usage. Use `--version` to read the package version.
+With no arguments, run aggregate validation.
+The CLI supports `--debug-timing`, `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`.
+Run informational commands alone. Do not combine validation modes.
+Use `--debug-timing` once before a path or tool mode, or alone for aggregate validation.
+Without a tool mode, pass one or more repository-relative test paths under `tests/`.
+The CLI accepts test files with these extensions: `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
+Put test paths before an optional `--`.
+Do not use absolute paths.
+Do not pass test paths after `--`.
+Each focused run checks lint, format, and layout for each test and its source module.
 Lint accepts only `--threads=<positive-count>`.
 Audit accepts only `--no-fund` and `--no-progress`.
-Audit rejects scope-changing options such as `--omit`.
-Format, format-check, and pack use their own allowlists.
-Formatting modes reject positional paths and use the repository scope.
-Put tool arguments after the mode or after `--`.
-Reject tool arguments before the mode.
-With no arguments, run aggregate validation.
-Without a tool mode, accept one or more repository-relative test paths under `tests/`.
-Put all paths before an optional `--`.
-Reject paths after `--`, absolute paths, and unsupported combinations.
-Supported test extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
-Focused runs check lint, format, and layout for each selected test and matching source module.
-Layout checks include mirrored tests, source placement, export barrels, and line limits.
-Run other focused checks only when their full rules use the selected files.
-Exit codes are 0 success, 1 other failure, 2 Jest, 3 unexpected output, and 4 coverage.
-Codes 5 to 12 mean lint, format, audit, outdated, pack, typecheck, build, and convention failure.
-When failures have different codes, return the highest code.
-Run lint, format, audit, outdated, pack, typecheck, and build before conventions.
-Run every convention check before Jest.
-Run Jest only when all earlier stages pass.
-Supported platforms are Windows, macOS, and Linux.
-Windows is tested during development. CI tests Ubuntu.
-macOS support is inferred from Ubuntu behavior; direct macOS testing is not claimed.
-`--format` writes files. `--format-check` does not.
-`--pack` checks package contents. It does not publish.
-No CLI mode authorizes a release, deployment, or external change.
+Audit rejects options that change the files or packages in scope, such as `--omit`.
+Format, format-check, and pack use separate argument allowlists.
+Put tool arguments after the tool mode or after `--`.
+Do not put tool arguments before the tool mode.
+The `--format` and `--format-check` modes reject paths.
+The `--format` mode changes files. The `--format-check` mode checks files without changes.
+The `--pack` mode checks package contents. It does not publish.
+Aggregate validation runs lint, format, audit, outdated, pack, typecheck, build, conventions, and Jest in this order.
+Exit codes are 0 for success, 1 for other failures, 2 for Jest, 3 for unexpected output, and 4 for coverage.
+Codes 5 to 12 map to lint, format, audit, outdated, pack, typecheck, build, and convention failure.
+The CLI supports Windows, macOS, and Linux.
+We test Windows and Ubuntu. We use Ubuntu test results as evidence for macOS support.
 
 ## npm publication
 
-The public package is `@eliware/test`.
-`package.json.version` sets its version.
-Start `package.json.files` with `src/`, `docs/`, `README.md`, `AGENTS.md`, `LICENSE`, and `RELEASE_NOTES.md`.
-Add `bin/` for applications, `examples/` for libraries, and `specs/` for this package.
-Put extra runtime paths after required paths. Put `.env.example` last when it appears.
-Run `node bin/eliware-test.mjs --pack` or `npm run pack` to check package contents.
-Pack validation must pass before publication.
-Before publication, run the checkout integration pass through the established link.
-Then run smoke against a prepared consumer copy.
-Smoke installs only in local `node_modules` and restores captured package paths.
-If restore fails, use the reported backup path for recovery.
-Smoke never changes system-wide links or junctions.
+The public package is `@eliware/test`; `package.json.version` sets its version.
+Include `src/`, `docs/`, `README.md`, `AGENTS.md`, `LICENSE`, `RELEASE_NOTES.md`, `bin/`, and `specs/` in the package.
+Run package validation before publication review.
 Follow the Eliware Operations publication checklist and approval process.
