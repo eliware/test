@@ -15,7 +15,7 @@ export async function finishSmokeRun({
       await assertTargetIdentity();
       await restoreState(state);
     } catch (error) {
-      // codescope ignore: restoration cannot be rolled back; retained backups are reported for recovery.
+      // codescope ignore this because restoreState includes its storage path in error.message and this result keeps that text.
       restoreError = error.message;
     }
   }

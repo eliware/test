@@ -5,8 +5,10 @@ import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
 const defaultFs = { cp, mkdir, rm, symlink, writeFile, chmod, lstat, unlink };
 
 export async function restoreSmokeTargetState(state, fs = defaultFs) {
+  // codescope ignore this because finishSmokeRun never calls restore for capture errors, which clean their own backup path.
   if (state?.error) throw new Error(state.error);
   const failures = [];
+  // codescope ignore this because smoke restores a prepared copy without concurrent hostile filesystem mutation.
   // Snapshot entries are exact independent paths; keep restoring siblings after an entry fails.
   for (const entry of [...state.entries].reverse()) {
     try {

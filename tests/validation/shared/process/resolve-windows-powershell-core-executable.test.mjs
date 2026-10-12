@@ -23,6 +23,15 @@ test("overrides the existing PATH key without changing its casing", () => {
   ).toBe("C:\\Tools\\pwsh.exe");
 });
 
+test("resolves PowerShell Core from a quoted PATH entry", () => {
+  expect(
+    resolveWindowsPowerShellCoreExecutable(
+      { Path: '"C:\\Program Files\\PowerShell\\7"' },
+      (candidate) => candidate === "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+    ),
+  ).toBe("C:\\Program Files\\PowerShell\\7\\pwsh.exe");
+});
+
 test("resolves PowerShell Core from Program Files when it is absent from PATH", () => {
   expect(
     resolveWindowsPowerShellCoreExecutable(

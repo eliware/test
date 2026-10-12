@@ -11,6 +11,7 @@ test("rejects malformed protocols, GitHub HTTP links, and credentials", () => {
   expect(validateExternalLink("mailto:not-an-email")).toContain("invalid");
   expect(validateExternalLink("ftp://example.com")).toContain("invalid");
   expect(validateExternalLink("http://github.com/eliware/test")).toContain("invalid");
+  expect(validateExternalLink("//github.com/eliware/test")).toContain("invalid");
   expect(validateExternalLink("https://user:pass@example.com")).toContain("invalid");
   expect(validateExternalLink("not a URL")).toContain("invalid");
 });

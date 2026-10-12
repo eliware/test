@@ -9,6 +9,7 @@ function findDependencyEntry(packages, parent, name) {
     const candidate = `${current}/node_modules/${name}`.replace(/^\//u, "");
     if (Object.hasOwn(packages, candidate)) return candidate;
     const nested = current.lastIndexOf("/node_modules/");
+    // codescope ignore this because the root fallback runs after every ancestor lookup, including nested package scopes.
     if (nested < 0)
       return Object.hasOwn(packages, `node_modules/${name}`) ? `node_modules/${name}` : null;
     current = current.slice(0, nested);

@@ -37,6 +37,7 @@ const options = (targetRoot, run) => ({
   command: "npm",
   prefix: [],
   env: {},
+  resolveModule: (specifier) => specifier,
   run,
 });
 
@@ -89,6 +90,57 @@ test("rejects a mismatched installed package name", async () => {
       }),
     ),
   ).rejects.toThrow("Installed package @other/package does not match @eliware/test");
+});
+
+test("rejects a CLI resolution outside the installed smoke package", async () => {
+  const { targetRoot } = await setup();
+  await expect(
+    installSmokeCandidate({
+      ...options(targetRoot, async (_command, args) => {
+        if (args[0] === "install") await installMock(targetRoot);
+        return { code: 0 };
+      }),
+      resolveModule: () => join(targetRoot, "other-package", "bin", "eliware-test.mjs"),
+    }),
+  ).rejects.toThrow("Consumer does not resolve the installed smoke package CLI entrypoint");
+});
+
+test("resolves a string-shaped CLI entrypoint", async () => {
+  const { targetRoot } = await setup();
+  const run = async (_command, args) => {
+    if (args[0] === "install") await installMock(targetRoot);
+    return { code: 0 };
+  };
+  await expect(
+    installSmokeCandidate({
+      ...options(targetRoot, run),
+      packageJson: { ...packageJson, bin: "bin/eliware-test.mjs" },
+      resolveModule: () =>
+        join(targetRoot, "node_modules", "@eliware", "test", "bin", "eliware-test.mjs"),
+    }),
+  ).resolves.toBeUndefined();
+});
+
+test("resolves a CLI path inside the installed package without requiring an export", async () => {
+  const { targetRoot } = await setup();
+  const resolved = [];
+  const resolveModule = (specifier, parent) => {
+    resolved.push([specifier, parent]);
+    return specifier;
+  };
+  await installSmokeCandidate({
+    ...options(targetRoot, async (_command, args) => {
+      if (args[0] === "install") await installMock(targetRoot);
+      return { code: 0 };
+    }),
+    resolveModule,
+  });
+  expect(resolved).toEqual([
+    [
+      join(targetRoot, "node_modules", "@eliware", "test", "bin", "eliware-test.mjs"),
+      join(targetRoot, "package.json"),
+    ],
+  ]);
 });
 
 test("reports consumer test failures", async () => {

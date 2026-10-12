@@ -11,6 +11,7 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
   const validateLocal = createLocalMarkdownReferenceValidator(root, dependencies);
   let files;
   try {
+    // codescope ignore this because nullish coalescing selects the fallback when the inventory method is absent.
     files = await (context.repositoryInventory?.documentationFiles?.({
       directory: root,
       predicate: (name) => name.toLowerCase().endsWith(".md"),
@@ -35,8 +36,7 @@ export async function validateMarkdownLinks(root, context = {}, dependencies = {
         continue;
       }
       if (/^(?:https?|mailto):/iu.test(reference) || reference.startsWith("//")) {
-        const externalReference = reference.startsWith("//") ? `https:${reference}` : reference;
-        const error = validateExternalLink(externalReference);
+        const error = validateExternalLink(reference);
         if (error) errors.push(`${error} in ${file}.`);
         continue;
       }

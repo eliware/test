@@ -30,10 +30,19 @@ export async function runJestValidationStage(context, runJest, readCoverage) {
   }
   if (code !== 0) return result;
 
+  const jestCounts = readJestCounts(outputText);
+  if (!jestCounts?.testSuites || !jestCounts.tests)
+    return {
+      ...result,
+      code: 2,
+      status: "fail",
+      message: "Jest completed without running at least one test in one suite.",
+    };
+
   if (context.validationSummary) {
     context.validationSummary.jestTimeMs =
       Date.now() - (context.jestResult?.startedAt ?? jestStartedAt);
-    context.validationSummary.jestCounts = readJestCounts(outputText);
+    context.validationSummary.jestCounts = jestCounts;
   }
 
   const findings = findUnexpectedJestOutput(
@@ -62,5 +71,5 @@ function readJestCounts(text) {
       continue;
     }
   }
-  return { testSuites: 0, tests: 0 };
+  return null;
 }

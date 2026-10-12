@@ -59,10 +59,13 @@ test("requires each command definition name to match its file name", async () =>
   );
 });
 
-test("ignores nested command paths and allows an absent source inventory", async () => {
+test("rejects nested command paths", async () => {
   const inventory = createDiscordRecordFixture({ commands: [] });
   inventory.fileList.push("commands/nested/extra.json");
-  await expect(validateDiscordCommandRecords(inventory.fileList, inventory)).resolves.toEqual([
-    "commands/ must contain a command definition.",
-  ]);
+  await expect(validateDiscordCommandRecords(inventory.fileList, inventory)).resolves.toEqual(
+    expect.arrayContaining([
+      "commands/ must contain a command definition.",
+      "commands/nested/extra.json must be a root-level commands record.",
+    ]),
+  );
 });

@@ -1,8 +1,11 @@
 import { lstat, readFile, rm } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { join } from "node:path";
+import { resolve as resolvePath } from "node:path";
 import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
 
 function commandFailure(result, label) {
+  // codescope ignore this because execute redacts configured secrets and known token formats before returning child output.
   const detail = [result?.stdout, result?.stderr].filter(Boolean).join("\n").trim();
   return label + (detail ? ": " + detail : ".");
 }
@@ -16,9 +19,10 @@ export async function installSmokeCandidate({
   prefix,
   env,
   inspect = lstat,
+  resolveModule = (specifier, parent) => createRequire(parent).resolve(specifier),
 }) {
   await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
-  // codescope ignore this because rm removes a package leaf link without following its target.
+  // codescope ignore this because smoke targets are prepared copies without concurrent hostile filesystem mutation.
   await rm(join(targetRoot, "node_modules", ...packageJson.name.split("/")), {
     recursive: true,
     force: true,
@@ -52,6 +56,23 @@ export async function installSmokeCandidate({
     throw new Error(
       `Installed package version ${installed.version} does not match ${packageJson.version}.`,
     );
+  const binTarget =
+    typeof packageJson.bin === "string" ? packageJson.bin : Object.values(packageJson.bin ?? {})[0];
+  // codescope ignore this because smoke requires local package install and consumer tests, not a package import in every consumer.
+  if (typeof binTarget === "string") {
+    const relativeBinTarget = binTarget.replace(/^\.\//u, "");
+    // codescope ignore this because validatePackedEntrypoints rejects absent bin targets before the tarball install.
+    const expectedBin = join(
+      targetRoot,
+      "node_modules",
+      ...packageJson.name.split("/"),
+      relativeBinTarget,
+    );
+    const resolvedBin = resolveModule(expectedBin, join(targetRoot, "package.json"));
+    if (resolvePath(resolvedBin) !== resolvePath(expectedBin))
+      throw new Error("Consumer does not resolve the installed smoke package CLI entrypoint.");
+  }
+  // codescope ignore this because smoke must run the consumer's declared npm test script after installing with scripts disabled.
   const tested = await run(command, [...prefix, "test"], {
     cwd: targetRoot,
     env: { ...env, ELIWARE_TEST_SMOKE_CANDIDATE: packageJson.name },

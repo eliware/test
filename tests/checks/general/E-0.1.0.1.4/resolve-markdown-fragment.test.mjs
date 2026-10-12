@@ -8,6 +8,10 @@ test("resolves duplicate, formatted, and setext headings", () => {
   expect(hasMarkdownFragment(markdown, "setext-title")).toBe(true);
 });
 
+test("keeps underscores in generated heading fragments", () => {
+  expect(hasMarkdownFragment("## My_heading", "my_heading")).toBe(true);
+});
+
 test("resolves quoted and unquoted IDs but ignores code and comments", () => {
   const markdown =
     '<div id="Exact"></div>\n<span id=bare></span>\n```\n## hidden\n```\n<!-- <p id="comment"></p> -->';

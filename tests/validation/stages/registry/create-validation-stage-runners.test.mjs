@@ -2,7 +2,12 @@ import { expect, jest, test } from "@jest/globals";
 import { createValidationStageRunners } from "../../../../src/validation/stages/registry/create-validation-stage-runners.mjs";
 
 test("caches Jest output and maps its failures", async () => {
-  const context = { jestResult: { code: 0 } };
+  const context = {
+    jestResult: {
+      code: 0,
+      stdout: '[eliware-test-progress] {"event":"run-complete","testSuites":1,"tests":1}',
+    },
+  };
   const pass = createValidationStageRunners({
     runJest: async () => ({ ruleId: "stage:jest", status: "pass", message: "" }),
   });

@@ -12,6 +12,17 @@ test("accepts canonical entrypoint files and a leading dot segment", async () =>
   );
 });
 
+test("accepts Windows separators after canonical path normalization", async () => {
+  const checked = [];
+  await expect(
+    validateEntrypointTargets(["bin\\tool.mjs"], "repo", async (path) => {
+      checked.push(path);
+      return path.endsWith(join("bin", "tool.mjs")) ? file : directory;
+    }),
+  ).resolves.toEqual([]);
+  expect(checked.at(-1)).toBe(join(resolve("repo"), "bin", "tool.mjs"));
+});
+
 test.each([null, "", " ", "/repo/bin/tool.mjs", "C:/repo/bin/tool.mjs"])(
   "rejects invalid or absolute targets: %s",
   async (target) => {
@@ -32,11 +43,18 @@ test.each(["src/tool.mjs", "bin/../tool.mjs", "bin//tool.mjs", "bin/C:/tool.mjs"
 
 test("rejects a symlink in any target path segment", async () => {
   await expect(
-    validateEntrypointTargets(["bin/link/tool.mjs"], "repo", async () => ({
-      ...file,
-      isSymbolicLink: () => true,
-    })),
+    validateEntrypointTargets(["bin/link/tool.mjs"], "repo", async (path) =>
+      path === resolve("repo") ? directory : { ...file, isSymbolicLink: () => true },
+    ),
   ).resolves.toEqual(["Entrypoint target path must not contain a symlink: bin/link/tool.mjs."]);
+});
+
+test("rejects a repository root that is a symlink", async () => {
+  await expect(
+    validateEntrypointTargets(["bin/tool.mjs"], "repo", async (path) =>
+      path === resolve("repo") ? { ...directory, isSymbolicLink: () => true } : file,
+    ),
+  ).resolves.toEqual(["Entrypoint target path must not contain a symlink: bin/tool.mjs."]);
 });
 
 test("requires the target to be a file and reports missing path errors", async () => {

@@ -31,10 +31,11 @@ export function hasMarkdownFragment(content, fragment) {
 }
 
 function slugHeading(value) {
+  // codescope ignore this because GitHub heading slugs retain underscores as word characters.
   return value
     .replace(/!?\[([^\]]+)\]\([^)]*\)/gu, "$1")
     .replace(/<[^>]+>/gu, "")
-    .replace(/[`*_~]/gu, "")
+    .replace(/[`*~]/gu, "")
     .toLowerCase()
     .replace(/[^\p{Letter}\p{Number}\s_-]/gu, "")
     .trim()

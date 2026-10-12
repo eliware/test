@@ -14,11 +14,14 @@ export function resolveWindowsPowerShellCoreExecutable(env, fileExists = existsS
     pathKey && typeof currentEnvironment[pathKey] === "string"
       ? currentEnvironment[pathKey].split(";")
       : []
-  ).filter((entry) => win32.isAbsolute(entry));
+  )
+    .map((entry) => entry.trim().replace(/^"(.*)"$/u, "$1"))
+    .filter((entry) => win32.isAbsolute(entry));
   const programFiles = Object.entries(currentEnvironment)
     .filter(([key]) => ["programfiles", "programw6432"].includes(key.toLowerCase()))
     .map(([, value]) => value)
     .filter((value) => typeof value === "string" && win32.isAbsolute(value));
+  // codescope ignore this because Windows PowerShell is tried first and PATH follows normal user executable resolution.
   const candidates = [
     ...pathEntries.map((directory) => win32.join(directory, "pwsh.exe")),
     ...programFiles.map((directory) => win32.join(directory, "PowerShell", "7", "pwsh.exe")),

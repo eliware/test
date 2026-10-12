@@ -15,6 +15,12 @@ test("ignores image targets inside Markdown code and comments", () => {
   ).toEqual([{ reference: "good.png" }]);
 });
 
+test("ignores image targets inside blockquoted fenced code", () => {
+  expect(
+    extractMarkdownAssets("> ```md\n> ![fake](missing.png)\n> ```\n![real](good.png)"),
+  ).toEqual([{ reference: "good.png" }]);
+});
+
 test("handles shortcut, missing, and angle-bracket image references", () => {
   expect(
     extractMarkdownAssets(

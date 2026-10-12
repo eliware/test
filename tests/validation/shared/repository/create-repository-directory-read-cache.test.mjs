@@ -11,15 +11,6 @@ const metadata = (mtimeNs) => ({
   ctimeNs: mtimeNs,
   birthtimeNs: 3n,
 });
-async function expectDirectoryReads(snapshot, platform, expectedCalls) {
-  const root = join(process.cwd(), "inventory-fixture");
-  const stat = jest.fn().mockResolvedValue(snapshot);
-  const readDirectory = jest.fn().mockResolvedValue(["stable"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, platform);
-  await read("src");
-  await read("src");
-  expect(readDirectory).toHaveBeenCalledTimes(expectedCalls);
-}
 test("deduplicates concurrent directory reads and reuses unchanged listings", async () => {
   const stat = jest.fn(async () => metadata(1n));
   const entries = [];
@@ -60,19 +51,11 @@ test("uses one stat call to validate an unchanged cached listing", async () => {
   expect(stat).toHaveBeenCalledTimes(1);
   expect(readDirectory).toHaveBeenCalledTimes(1);
 });
-test.each([
-  [
-    "coarse millisecond fields",
-    { dev: 1n, ino: 2n, size: 0n, mtimeMs: 1n, ctimeMs: 1n },
-    "linux",
-    2,
-  ],
-  ["Windows metadata", metadata(1n), "win32", 2],
-  ["millisecond-aligned nanoseconds", metadata(1_000_000n), "linux", 1],
-  ["one precise nanosecond field", { ...metadata(1_000_000n), ctimeNs: 1n }, "linux", 1],
-  ["missing birth time", { ...metadata(1n), birthtimeNs: undefined }, "linux", 2],
-])("uses safe directory cache policy for %s", async (_name, snapshot, platform, expectedCalls) => {
-  await expectDirectoryReads(snapshot, platform, expectedCalls);
+test("uses the filesystem stat function by default", async () => {
+  const readDirectory = jest.fn().mockResolvedValue([]);
+  const read = createRepositoryDirectoryReadCache(process.cwd(), readDirectory);
+  await expect(read(process.cwd())).resolves.toEqual([]);
+  expect(readDirectory).toHaveBeenCalledTimes(1);
 });
 test("detects nanosecond changes within the same millisecond", async () => {
   const sameMillisecond = (mtimeNs) => ({ ...metadata(mtimeNs), mtimeMs: 1, ctimeMs: 1 });
@@ -112,30 +95,40 @@ test("drops a failed listing so a later read can retry", async () => {
   expect(read.getRevision()).toBe(1);
   expect(read.getTrackedDirectories()).toEqual([]);
 });
-test("uses the filesystem stat implementation by default", async () => {
-  const readDirectory = jest.fn().mockResolvedValue([]);
-  const read = createRepositoryDirectoryReadCache(process.cwd(), readDirectory);
-  await expect(read(process.cwd())).resolves.toEqual([]);
-  expect(readDirectory).toHaveBeenCalledTimes(1);
-});
-
 test("preserves the last successful listing when a forced refresh fails", async () => {
   const stat = jest
     .fn()
     .mockResolvedValueOnce(metadata(1n))
     .mockResolvedValueOnce(metadata(1n))
     .mockResolvedValueOnce(metadata(2n))
-    .mockResolvedValueOnce(metadata(1n))
-    .mockResolvedValueOnce(metadata(1n));
+    .mockResolvedValueOnce(metadata(3n))
+    .mockResolvedValueOnce(metadata(3n))
+    .mockResolvedValueOnce(metadata(3n))
+    .mockResolvedValueOnce(metadata(3n));
+  let rejectRefresh;
+  let markRefreshStarted;
+  const refreshStarted = new Promise((resolve) => (markRefreshStarted = resolve));
   const readDirectory = jest
     .fn()
     .mockResolvedValueOnce(["stable"])
-    .mockRejectedValueOnce(new Error("refresh failed"));
+    .mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectRefresh = reject;
+          markRefreshStarted();
+        }),
+    )
+    .mockResolvedValueOnce(["refreshed"]);
   const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
   await expect(read("src")).resolves.toEqual(["stable"]);
-  await expect(read("src", true)).rejects.toThrow("refresh failed");
-  await expect(read("src")).resolves.toEqual(["stable"]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
+  const refresh = read("src", true);
+  await refreshStarted;
+  const concurrentRefresh = read("src", true);
+  rejectRefresh(new Error("refresh failed"));
+  await expect(refresh).rejects.toThrow("refresh failed");
+  await expect(concurrentRefresh).resolves.toEqual(["refreshed"]);
+  await expect(read("src")).resolves.toEqual(["refreshed"]);
+  expect(readDirectory).toHaveBeenCalledTimes(3);
 });
 
 test("waits for a pending listing before a forced refresh", async () => {

@@ -67,6 +67,10 @@ test("ignores links inside blockquoted indented and fenced code", () => {
   ).toEqual([{ reference: "good.md" }]);
 });
 
+test("extracts ordinary links inside Markdown blockquotes", () => {
+  expect(extractMarkdownLinks("> [quoted guide](guide.md)")).toEqual([{ reference: "guide.md" }]);
+});
+
 test("keeps nested list items out of indented code", () => {
   expect(extractMarkdownLinks("- item\n    - [nested](valid.md)")).toEqual([
     { reference: "valid.md" },

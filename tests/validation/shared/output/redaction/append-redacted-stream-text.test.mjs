@@ -27,6 +27,18 @@ test("retains text while its safety boundary cannot advance", () => {
   expect(result).toEqual({ output: "", pending: "plain" });
 });
 
+test("retains a secret that crosses the emitted safety boundary", () => {
+  const result = appendRedactedStreamText(
+    options({
+      text: "abcXYZtail",
+      pendingLimit: 20,
+      findSafeBoundary: () => ({ boundary: 3, matchEnds: [6], suppressed: false }),
+    }),
+  );
+  expect(result.output).toBe("");
+  expect(result.pending).toBe("abcXYZtail");
+});
+
 test("suppresses output when the safety search fails or the bounded buffer fills", () => {
   const suppress = jest.fn();
   expect(
@@ -62,6 +74,15 @@ test("keeps surrogate pairs intact while splitting input and emitted boundaries"
   expect(result.output).toBe("A😀");
   expect(result.pending).toBe("B");
   expect(append.mock.calls.map(([value]) => value)).toEqual(["A", "😀"]);
+});
+
+test("holds a high surrogate until the next input chunk can complete its pair", () => {
+  const first = appendRedactedStreamText(options({ text: "\uD83D" }));
+  expect(first).toEqual({ output: "", pending: "\uD83D" });
+  expect(appendRedactedStreamText(options({ text: "\uDE00", pending: first.pending }))).toEqual({
+    output: "😀",
+    pending: "",
+  });
 });
 
 test("streams through the incremental chunk queue and handles empty or stopped input", () => {

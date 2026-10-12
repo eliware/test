@@ -12,7 +12,14 @@ export function createChildProgressHandler(options) {
   const maximumPendingLineLength = options.maxProgressLineLength ?? 4096;
   let pending = "";
   let pendingOverflowed = false;
-  const report = (text) => handleChildProgress(options.redactProgressText?.(text) ?? text, options);
+  const report = (text) => {
+    const redacted = options.redactProgressText?.(text);
+    if (redacted === "" && options.progressPattern?.test(text)) {
+      if (!options.resetOnAnyOutput) options.resetProgressTimer();
+      return true;
+    }
+    return handleChildProgress(redacted ?? text, options);
+  };
   return {
     push(chunk) {
       const text = decoder.write(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));

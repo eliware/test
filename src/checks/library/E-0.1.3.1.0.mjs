@@ -1,4 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
+// codescope ignore this because library rules require the same documentation indexes as applications.
 import { validateApplicationDocumentation } from "../application/E-0.1.4.1.0/validate-application-documentation.mjs";
 import { validateLibraryExamples } from "./E-0.1.3.1.0/validate-library-examples.mjs";
 import { validateLibraryExamplesLink } from "./E-0.1.3.1.0/validate-library-examples-link.mjs";

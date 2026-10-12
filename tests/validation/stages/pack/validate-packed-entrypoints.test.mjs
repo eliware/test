@@ -29,6 +29,24 @@ test("matches wildcard export targets and reports missing public targets", () =>
   ).toContain("types/index.d.ts");
 });
 
+test("matches nested files for Node.js wildcard export targets", () => {
+  expect(
+    validatePackedEntrypoints(
+      { exports: { "./features/*": "./src/features/*.mjs" } },
+      new Set(["src/features/nested/feature.mjs"]),
+    ),
+  ).toBeNull();
+});
+
+test("rejects wildcard targets with an empty substitution", () => {
+  expect(
+    validatePackedEntrypoints(
+      { exports: { "./features/*": "./src/features/*.mjs" } },
+      new Set(["src/features/.mjs"]),
+    ),
+  ).toContain("src/features/*.mjs");
+});
+
 test("ignores package export labels and built-in targets", () => {
   expect(
     validatePackedEntrypoints(

@@ -13,6 +13,7 @@ export function collectShadowedJestNames(fn, names, callbackNames) {
     if (!node || typeof node !== "object") return;
     if (node.type === "BlockStatement") return visit(node.body, true);
     // codescope ignore this because local describe names are blocked before nested traversal stops.
+    // codescope ignore this because block collectors record nested declarations before this walk skips their bodies.
     if (node.type === "FunctionDeclaration" && node.id?.name) {
       // codescope ignore this because the block visitor collects declarations from nested blocks.
       if (nestedBlock) return;
@@ -21,6 +22,7 @@ export function collectShadowedJestNames(fn, names, callbackNames) {
       if (names.describes?.has(node.id.name)) shadowed.describes.add(node.id.name);
       return;
     }
+    // codescope ignore this because only the describe callback runs; nested function bodies cannot register tests.
     if (isFunction(node)) return;
     if (node.type === "VariableDeclarator") {
       for (const name of collectBindingNames(node.id)) {

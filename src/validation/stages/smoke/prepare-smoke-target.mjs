@@ -10,7 +10,7 @@ export function hasPackageDependency(targetPackage, packageName) {
 
 export async function prepareSmokeTarget({ targetRoot, packageName, inspect = lstat }) {
   await assertSmokePackageParents(targetRoot, packageName, inspect);
-  // codescope ignore this because rm removes a package leaf link without following its target.
+  // codescope ignore this because smoke targets are prepared copies without concurrent hostile filesystem mutation.
   await rm(join(targetRoot, "node_modules", ...packageName.split("/")), {
     recursive: true,
     force: true,

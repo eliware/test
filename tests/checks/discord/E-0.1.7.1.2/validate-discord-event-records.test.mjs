@@ -17,8 +17,10 @@ test("reports each missing required event", async () => {
   ]);
 });
 
-test("ignores nested event modules", async () => {
+test("rejects nested event modules", async () => {
   const inventory = createDiscordRecordFixture({ events: ["clientReady", "interactionCreate"] });
   inventory.fileList.push("events/nested/other.mjs");
-  await expect(validateDiscordEventRecords(inventory.fileList, inventory)).resolves.toEqual([]);
+  await expect(validateDiscordEventRecords(inventory.fileList, inventory)).resolves.toContain(
+    "events/nested/other.mjs must be a root-level events record.",
+  );
 });

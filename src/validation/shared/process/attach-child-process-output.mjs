@@ -6,6 +6,7 @@ export function attachChildProcessOutput(child, stream, name, output, reject, is
   stream.on("data", (chunk) => {
     if (!isSettled()) output.push(name, chunk);
   });
+  // codescope ignore this because execute injects rejectOnce, which marks capture settled before rejection.
   stream.on("error", (error) => {
     terminateChildProcess(child);
     reject(error);

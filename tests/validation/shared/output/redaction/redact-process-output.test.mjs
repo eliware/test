@@ -38,6 +38,11 @@ test("redacts common header, provider token, JWT, and private-key formats", () =
   expect(output).not.toContain("BEGIN PRIVATE KEY");
 });
 
+test("skips credential scans for text shorter than every supported token", () => {
+  expect(redactProcessOutput("abc")).toBe("abc");
+  expect(redactProcessOutput("sk-a")).toBe("[REDACTED]");
+});
+
 test("redacts JSON and camelCase credential keys", () => {
   expect(redactProcessOutput('{"apiKey":"json-secret","refreshToken":"refresh-secret"}')).toBe(
     '{"apiKey":[REDACTED],"refreshToken":[REDACTED]}',

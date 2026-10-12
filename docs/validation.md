@@ -58,7 +58,7 @@ The CLI rejects paths outside `tests/`, absolute paths, and parent traversal.
 The CLI also rejects options that replace its Jest configuration, reporters, coverage, or test selection.
 
 Application and library profiles require one matching `.test.mjs` file for each maintained `.mjs` source.
-Each application or library test must call Jest's `test` or `it` and import its exact source module.
+Each application or library test must register an executable Jest test and import its exact source module.
 Library declaration files must sit beside matching `.mjs` source files.
 
 ## Jest and coverage

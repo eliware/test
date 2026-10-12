@@ -3,13 +3,19 @@ import { supportedDiscordLocales } from "./supported-discord-locales.mjs";
 const localeDirectory = "locales";
 
 export async function validateDiscordLocaleRecords(files, inventory) {
+  const errors = files
+    .filter((path) => path.startsWith(`${localeDirectory}/`) && path.endsWith(".json"))
+    .filter((path) => path.slice(localeDirectory.length + 1).includes("/"))
+    .map((path) => `${path} must be a root-level locales record.`);
   const names = files
     .filter((path) => path.startsWith(`${localeDirectory}/`) && path.endsWith(".json"))
     .map((path) => path.slice(localeDirectory.length + 1, -5))
     .filter((name) => !name.includes("/"));
-  const errors = supportedDiscordLocales
-    .filter((locale) => !names.includes(locale))
-    .map((locale) => `locales/${locale}.json is required.`);
+  errors.push(
+    ...supportedDiscordLocales
+      .filter((locale) => !names.includes(locale))
+      .map((locale) => `locales/${locale}.json is required.`),
+  );
   errors.push(
     ...names
       .filter((locale) => !supportedDiscordLocales.includes(locale))

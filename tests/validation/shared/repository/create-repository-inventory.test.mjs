@@ -33,6 +33,18 @@ test("provides the default discovery configuration when options are omitted", ()
   expect(inventory.repositoryFiles).toEqual(expect.any(Function));
 });
 
+test("excludes test-results from documentation views even when discovery includes them", async () => {
+  const inventory = createRepositoryInventory("/repo", {
+    includeTestResults: true,
+    findEntries: async () => [
+      { path: "README.md", type: "file" },
+      { path: "test-results", type: "directory" },
+      { path: "test-results/report.md", type: "file" },
+    ],
+  });
+  await expect(inventory.documentationFiles()).resolves.toEqual(["README.md"]);
+});
+
 test("normalizes a relative repository root", () => {
   expect(createRepositoryInventory("relative-repository").root).toBe(
     resolve("relative-repository"),

@@ -26,6 +26,21 @@ test.each([
   expect(errors.join(" ")).toContain("must begin with");
 });
 
+test.each([0, 1, 2])(
+  "rejects a command list with only %i required prefix commands",
+  async (count) => {
+    const commands = ["git pull --ff-only origin main", "npm ci", "npm test"].slice(0, count);
+    const errors = await validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () =>
+        count === 0
+          ? "commands: []"
+          : `commands:\n${commands.map((command) => `  - ${command}`).join("\n")}`,
+    });
+    expect(errors.join(" ")).toContain("full required command prefix");
+  },
+);
+
 test("rejects commands that publish images or use scripts outside .knit", async () => {
   const errors = await validateKnitConfiguration({
     files: async () => [".knit/deploy.yaml"],

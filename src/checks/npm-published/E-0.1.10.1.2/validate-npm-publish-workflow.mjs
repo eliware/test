@@ -19,6 +19,7 @@ export async function validateNpmPublishWorkflow(inventory, packageJson = {}) {
 }
 
 function validateWorkflow(document, packageJson) {
+  // codescope ignore this because the npm convention defines setup, tag guard, install, and publish checks without a runner or permission policy.
   const errors = findNpmTokenSettings(document);
   const steps = document?.jobs?.publish?.steps;
   if (!Array.isArray(steps)) return [...errors, "publish.yaml publish job must define steps."];
@@ -33,6 +34,7 @@ function validateWorkflow(document, packageJson) {
     (step) => typeof step?.run === "string" && /\bnpm publish\b/u.test(step.run),
   );
   const publishIndex = steps.indexOf(publish[0]);
+  // codescope ignore this because the validator requires one publish step and checks its order after the release tag guard.
   if (!hasCanonicalReleaseTagGuard(document, steps, packageJson.version, publishIndex))
     errors.push("npm publisher must guard publication with the canonical package version tag.");
   if (

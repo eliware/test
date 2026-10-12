@@ -23,3 +23,35 @@ test("recognizes string-key aliases from a dynamic Jest import", () => {
   }).program;
   expect(collectJestTestNames(program).callbacks).toContain("run");
 });
+
+test("does not promote a test alias from an uninvoked function", () => {
+  const program = parse(
+    'import { test } from "@jest/globals"; function unused() { const fake = test; } fake("name", () => {});',
+    { sourceType: "module" },
+  ).program;
+  expect(collectJestTestNames(program).callbacks).not.toContain("fake");
+});
+
+test("collects aliases inside executable Jest suite callbacks", () => {
+  const program = parse(
+    'import { test } from "@jest/globals"; describe("suite", () => { const run = test; run("name", () => {}); });',
+    { sourceType: "module" },
+  ).program;
+  expect(collectJestTestNames(program).callbacks).toContain("run");
+});
+
+test("drops reassigned aliases and ignores unrelated Jest imports", () => {
+  const program = parse(
+    'import { test, describe } from "@jest/globals"; let run = test; run = custom; run("fake", () => {});',
+    { sourceType: "module" },
+  ).program;
+  expect(collectJestTestNames(program).callbacks).not.toContain("run");
+});
+
+test("drops aliases after a dynamic Jest namespace changes", () => {
+  const program = parse(
+    'let api = await import("@jest/globals"); const { test: run } = api; api = {}; run("fake", () => {});',
+    { sourceType: "module" },
+  ).program;
+  expect(collectJestTestNames(program).callbacks).not.toContain("run");
+});

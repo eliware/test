@@ -15,6 +15,9 @@ test("rejects invalid start values and unmatched tokens", () => {
   expect(validateStartCommand({ scripts: { start: "node bin/ab.mjs" } }, ["bin/a.mjs"])).toContain(
     "standalone token",
   );
+  expect(
+    validateStartCommand({ scripts: { start: "node bin/a.mjs; echo started" } }, ["bin/a.mjs"]),
+  ).toContain("standalone token");
   expect(validateStartCommand({ scripts: { start: "" } }, ["bin/a.mjs"])).toContain(
     "standalone token",
   );

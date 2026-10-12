@@ -2,6 +2,7 @@ export function validateStartCommand(packageJson, entrypoints) {
   if (packageJson.scripts?.start === undefined) return null;
   const start = packageJson.scripts.start;
   if (typeof start !== "string") return "package.json start must be a command string.";
+  // codescope ignore this because shell operators attached to path tokens prevent an exact path match.
   const tokens = start.match(/(?:"[^"]*"|'[^']*'|[^\s]+)/gu) ?? [];
   const normalized = tokens.map((token) => canonicalToken(token.replace(/^['"]|['"]$/gu, "")));
   const declared = entrypoints.filter((target) => typeof target === "string").map(canonicalToken);

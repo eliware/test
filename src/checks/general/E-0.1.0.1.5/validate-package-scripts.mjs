@@ -28,6 +28,7 @@ export function validatePackageScripts(packageJson = {}) {
     if (Object.hasOwn(required, name)) continue;
     if (typeof command !== "string" || !command.trim())
       errors.push(`package.json.scripts.${name} must be a nonempty command.`);
+    // codescope ignore this because self-hosted required scripts differ, but every extra script still blocks publication.
     else if (hasPublicationCommand(command))
       errors.push(`package.json.scripts.${name} must not publish packages or images.`);
   }

@@ -29,6 +29,11 @@ test("does not treat a following line as a whitespace-delimited credential value
   );
 });
 
+test("redacts quoted credentials that span multiple lines", () => {
+  expect(redactCredentialFields('token="first line\nsecond line"')).toBe("token=[REDACTED]");
+  expect(redactCredentialFields("password 'first line\nsecond line'")).toBe("password [REDACTED]");
+});
+
 test("preserves coverage rows whose paths contain credential-like words", () => {
   expect(redactCredentialFields("src/app/routes/token | 100 | 90")).toBe(
     "src/app/routes/token | 100 | 90",

@@ -150,6 +150,32 @@ test("uses redacted progress text when recognizing reporter output", () => {
   expect(onProgress).toHaveBeenCalledWith("safe progress");
 });
 
+test("resets on a raw progress marker when redaction must suppress its text", () => {
+  const resetProgressTimer = jest.fn();
+  const onProgress = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^safe progress$/u,
+    redactProgressText: () => "",
+    resetProgressTimer,
+    onProgress,
+  });
+  progress.push("safe progress\n");
+  expect(resetProgressTimer).toHaveBeenCalledTimes(1);
+  expect(onProgress).not.toHaveBeenCalled();
+});
+
+test("does not reset twice for a suppressed marker after observable output", () => {
+  const resetProgressTimer = jest.fn();
+  const progress = createChildProgressHandler({
+    progressPattern: /^safe progress$/u,
+    redactProgressText: () => "",
+    resetOnAnyOutput: true,
+    resetProgressTimer,
+  });
+  progress.push("safe progress\n");
+  expect(resetProgressTimer).toHaveBeenCalledTimes(1);
+});
+
 test("forwards recognized activity without resetting the timer a second time", () => {
   const resetProgressTimer = jest.fn();
   expect(

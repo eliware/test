@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { parseExpression } from "@babel/parser";
 import { isActiveJestTestExpression } from "../../../../src/checks/application/E-0.1.4.1.2/is-active-jest-test-expression.mjs";
 
 test.each(["test", "it"])("recognizes global %s calls", (name) => {
@@ -24,5 +25,12 @@ test("recognizes chained test modifiers and rejects unrelated members", () => {
       { type: "Identifier", name: "other" },
       { callbacks: new Set(), namespaces: new Set() },
     ),
+  ).toBe(false);
+});
+
+test("rejects a computed property without a string name", () => {
+  const expression = parseExpression("globalThis[{}]");
+  expect(
+    isActiveJestTestExpression(expression, { callbacks: new Set(), namespaces: new Set() }),
   ).toBe(false);
 });

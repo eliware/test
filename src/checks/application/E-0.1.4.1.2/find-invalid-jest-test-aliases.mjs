@@ -10,6 +10,8 @@ export function findInvalidJestTestAliases(program, names) {
       !isActiveJestTestExpression(node.right, names)
     )
       invalid.add(node.left.name);
+    if (node.type === "AssignmentExpression" && node.left?.type === "Identifier")
+      for (const alias of names.namespaceAliases?.get(node.left.name) ?? []) invalid.add(alias);
   });
   return invalid;
 }

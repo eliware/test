@@ -43,6 +43,14 @@ test("rejects locale keys that differ from en-US", async () => {
   );
 });
 
+test("rejects nested locale records", async () => {
+  const inventory = createDiscordRecordFixture();
+  inventory.fileList.push("locales/nested/fr.json");
+  await expect(validateDiscordLocaleRecords(inventory.fileList, inventory)).resolves.toContain(
+    "locales/nested/fr.json must be a root-level locales record.",
+  );
+});
+
 test("reports a missing base locale and compares other keys with an empty base", async () => {
   const locales = supportedDiscordLocales.filter((locale) => locale !== "en-US");
   const inventory = createDiscordRecordFixture({ locales });

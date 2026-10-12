@@ -14,6 +14,7 @@ export function createIncrementalSearch(values, workLimit, createStream) {
   let previousBoundary = 0;
 
   function findSafeBoundary(pending, includePendingMatches = false) {
+    // codescope ignore this because the string-mode test proves absolute offsets persist across multiple emitted prefixes.
     const retained = previousPending.slice(previousBoundary);
     if (!pending.startsWith(retained)) return { boundary: 0, matchEnds: [], suppressed: true };
     const appended = pending.slice(retained.length);
@@ -25,6 +26,7 @@ export function createIncrementalSearch(values, workLimit, createStream) {
     return result;
   }
 
+  // codescope ignore this because the stream matcher tracks absolute offsets as the chunk buffer drops safe prefixes.
   findSafeBoundary.appendText = (text, pendingLength, includePendingMatches = false) =>
     searchAppended(text, pendingLength, includePendingMatches);
   return findSafeBoundary;

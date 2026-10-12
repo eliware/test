@@ -37,6 +37,19 @@ test("resolves dependency entries from nested package scopes", () => {
   ).toBeNull();
 });
 
+test("resolves a hoisted dependency after several nested package scopes", () => {
+  expect(
+    validateLockfilePackageEntries({
+      "node_modules/parent": { version: "1.0.0" },
+      "node_modules/parent/node_modules/child": {
+        version: "1.0.0",
+        dependencies: { hoisted: "1.0.0" },
+      },
+      "node_modules/hoisted": { version: "1.0.0" },
+    }),
+  ).toBeNull();
+});
+
 test("accepts scoped names and rejects dependency names with invalid path segments", () => {
   expect(
     validateLockfilePackageEntries({

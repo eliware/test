@@ -31,6 +31,14 @@ export function appendRedactedStreamText({
       : findSafeBoundary(pending);
     let { boundary, matchEnds, suppressed } = result;
     if (suppressed) return suppressStreamBuffer(pendingChunks, suppress);
+    // Keep every secret interval inside the retained buffer until its full match is redacted.
+    const crossingStart = (matchEnds ?? []).findIndex(
+      (end, index) => index < boundary && end > boundary,
+    );
+    if (crossingStart >= 0) {
+      boundary = crossingStart;
+      matchEnds = matchEnds.slice(0, boundary + 1);
+    }
     boundary = moveBoundaryBeforeSurrogate(boundary, pendingChunks, pending);
     if (boundary === 0) continue;
     const safePrefix = pendingChunks
@@ -72,5 +80,6 @@ function moveBoundaryBeforeSurrogate(boundary, pendingChunks, pending) {
     next <= 0xdfff
   )
     return boundary - 1;
+  if (boundary === length && previous >= 0xd800 && previous <= 0xdbff) return boundary - 1;
   return boundary;
 }

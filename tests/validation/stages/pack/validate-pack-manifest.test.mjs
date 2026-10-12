@@ -7,10 +7,19 @@ const basePaths = [
   "AGENTS.md",
   "LICENSE",
   "RELEASE_NOTES.md",
+  "specs/directives.yaml",
   "src/index.mjs",
   "docs/README.md",
 ];
-const baseAllowlist = ["src/", "docs/", "README.md", "AGENTS.md", "LICENSE", "RELEASE_NOTES.md"];
+const baseAllowlist = [
+  "src/",
+  "docs/",
+  "specs/",
+  "README.md",
+  "AGENTS.md",
+  "LICENSE",
+  "RELEASE_NOTES.md",
+];
 const manifest = (paths) => JSON.stringify([{ files: paths.map((path) => ({ path })) }]);
 
 test("accepts actual packed files covered by the profile allowlist", () => {
@@ -103,4 +112,6 @@ test("requires nonempty runtime and documentation trees and all allowlist entrie
   expect(validatePackManifest(manifest(emptyRuntime), baseAllowlist)).toContain("runtime files");
   const noDocs = basePaths.filter((path) => path !== "docs/README.md");
   expect(validatePackManifest(manifest(noDocs), baseAllowlist)).toContain("documentation files");
+  const noSpecs = basePaths.filter((path) => !path.startsWith("specs/"));
+  expect(validatePackManifest(manifest(noSpecs), baseAllowlist)).toContain("specification files");
 });

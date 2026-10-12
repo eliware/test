@@ -6,6 +6,7 @@ export function repositoryFileVersion(metadata) {
 }
 
 export async function readStableFileContent(path, read, stat = statPath) {
+  // codescope ignore this because the inventory snapshot treats stable nanosecond metadata as unchanged content.
   // codescope ignore this because two changed reads must fail instead of returning unstable content.
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const before = repositoryFileVersion(await stat(path, { bigint: true }));

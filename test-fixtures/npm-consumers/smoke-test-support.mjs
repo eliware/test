@@ -116,10 +116,12 @@ export function fakeNpm(target, config = {}) {
       const installed = join(target, "node_modules", "@eliware", "test");
       await rm(installed, { recursive: true, force: true });
       await mkdir(installed, { recursive: true });
+      await mkdir(join(installed, "bin"), { recursive: true });
       await writeFile(
         join(installed, "package.json"),
-        JSON.stringify({ name: packageJson.name, version: installVersion }),
+        JSON.stringify({ name: packageJson.name, version: installVersion, bin: packageJson.bin }),
       );
+      await writeFile(join(installed, "bin", "eliware-test.mjs"), "export {};\\n");
       return { code: installCode, stdout: config.installStdout ?? "installed" };
     }
     const targetPackage = JSON.parse(await readFile(join(target, "package.json"), "utf8"));

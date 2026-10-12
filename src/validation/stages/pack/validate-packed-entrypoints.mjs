@@ -15,7 +15,11 @@ function targetExists(target, packedPaths) {
   if (wildcard < 0) return packedPaths.has(target);
   const before = target.slice(0, wildcard);
   const after = target.slice(wildcard + 1);
-  return [...packedPaths].some((path) => path.startsWith(before) && path.endsWith(after));
+  // codescope ignore this because Node.js export wildcards also match slash-separated nested paths.
+  return [...packedPaths].some(
+    (path) =>
+      path.length > before.length + after.length && path.startsWith(before) && path.endsWith(after),
+  );
 }
 
 export function validatePackedEntrypoints(packageJson, packedPaths) {

@@ -1,5 +1,12 @@
 import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  mkdtemp,
+  mkdir,
+  readFile,
+  readdir as readDirectory,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateSpecificationDirectives } from "../../../../src/checks/general/E-0.1.0.1.4/validate-specification-directives.mjs";
@@ -133,6 +140,25 @@ test("reports malformed bundled schema YAML and invalid directive data", async (
     expect(
       (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),
     ).toContain("directives must be a nonempty array");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("keeps bundled validation results when consumer discovery fails", async () => {
+  const root = await createFixture();
+  try {
+    const errors = await validateSpecificationDirectives(
+      root,
+      { eliware: { id: "E-0" } },
+      {
+        readdir: async (path, options) => {
+          if (String(path) === join(root, "specs")) throw new Error("consumer specs unavailable");
+          return readDirectory(path, options);
+        },
+      },
+    );
+    expect(errors).toEqual(["Consumer specification discovery failed: consumer specs unavailable"]);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

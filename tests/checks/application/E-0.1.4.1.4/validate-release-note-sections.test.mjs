@@ -13,6 +13,9 @@ test("requires release entries to contain categories and user-visible text", () 
       validateReleaseNoteSections(["# Release Notes", "## 1.0.0", "### Added", text]).join("\n"),
     ).toContain("must contain user-visible change text");
   }
+  expect(validateReleaseNoteSections(["# Release Notes", "## 1.0.0", "### Added", "1"])).toContain(
+    "## 1.0.0 subsection Added must contain user-visible change text.",
+  );
 });
 
 test("rejects repeated or misplaced categories and text outside categories", () => {

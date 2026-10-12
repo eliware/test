@@ -64,6 +64,9 @@ export function validatePackManifest(stdout, files, packageName, packageJson = {
     return "npm pack must include runtime files under src/.";
   if (![...packedPaths].some((path) => path.startsWith("docs/")))
     return "npm pack must include documentation files under docs/.";
+  // codescope ignore this because the pack stage runs only for npm-published profiles and smoke requires that profile.
+  if (![...packedPaths].some((path) => path.startsWith("specs/")))
+    return "npm pack must include specification files under specs/.";
   // codescope ignore this because each unmatched package.json.files entry fails validation.
   const unused = allowlist.filter(
     (entry) => typeof entry === "string" && !packed.some(({ path }) => allowedByEntry(path, entry)),

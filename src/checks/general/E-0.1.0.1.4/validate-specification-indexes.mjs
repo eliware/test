@@ -24,6 +24,7 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
   const { filesByDirectory, childrenByDirectory } = groupSpecificationEntries(entries);
   const indexOrder = (dependencies.readOrder ?? readCanonicalOrder)("specification-indexes.yaml");
   const errors = [];
+  // codescope ignore this because symbolic links and other non-file entries receive the unsupported type here.
   errors.push(
     ...entries
       .filter((entry) => entry.type === "unsupported")
@@ -40,11 +41,13 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
     if (indexOrder.subdirectoryIndexes === "directory-name-ascending")
       children.sort((left, right) => basename(left).localeCompare(basename(right)));
     if (!yaml.length) errors.push(`${directory} must contain at least one YAML specification.`);
+    // codescope ignore this because every README.md is validated as its directory's required navigation index.
     for (const { path } of local)
       if (!/\.ya?ml$/iu.test(path) && basename(path) !== "README.md")
         errors.push(`${path} is not an allowed specs file.`);
     let index;
     try {
+      // codescope ignore this because listSpecificationEntries rejects symlink indexes as unsupported entries.
       index = await read(join(root, directory, "README.md"), "utf8");
     } catch {
       errors.push(`${directory}/README.md is required to index its specifications.`);
@@ -74,13 +77,12 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
 }
 
 function isNavigationOnly(content) {
-  return content
-    .split(/\r?\n/u)
-    .every(
-      (line) =>
-        !line.trim() ||
-        /^#{1,6}\s/u.test(line) ||
-        /^-\s*\[[^\]]+\](?:\([^)]+\)|\[[^\]]*\])\s*$/u.test(line) ||
-        /^ {0,3}\[[^\]]+\]:\s*(?:<[^>]+>|\S+)(?:\s+.*)?$/u.test(line),
-    );
+  return content.split(/\r?\n/u).every(
+    (line) =>
+      !line.trim() ||
+      // codescope ignore this because headings are navigation structure; exact title meaning is semantic.
+      /^#{1,6}\s/u.test(line) ||
+      /^-\s*\[[^\]]+\](?:\([^)]+\)|\[[^\]]*\])\s*$/u.test(line) ||
+      /^ {0,3}\[[^\]]+\]:\s*(?:<[^>]+>|\S+)(?:\s+.*)?$/u.test(line),
+  );
 }

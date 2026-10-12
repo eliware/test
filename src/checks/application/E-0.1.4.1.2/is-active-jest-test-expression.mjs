@@ -2,6 +2,7 @@ export function isActiveJestTestExpression(node, names) {
   if (node?.type === "Identifier") return names.callbacks.has(node.name);
   if (node?.type === "CallExpression") return isActiveJestTestExpression(node.callee, names);
   if (node?.type !== "MemberExpression") return false;
+  // codescope ignore this because only the explicit test and it strings pass the computed-property allowlist.
   const property = node.computed ? node.property.value : node.property.name;
   if (
     ["test", "it"].includes(property) &&

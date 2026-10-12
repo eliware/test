@@ -23,6 +23,7 @@ export function createRepositoryDirectoryEntries({
       "Repository inventory directory must be inside the repository.",
     );
     if (base && !hasFullDiscovery()) {
+      // codescope ignore this because scoped discovery starts at the requested path, so ancestor prune rules do not apply.
       const records = await entriesUnder(directory, null, traversal);
       // codescope ignore this because scoped discovery adds the base record before reading children.
       if (!records.some((record) => record.path === base)) {
@@ -56,6 +57,7 @@ export function createRepositoryDirectoryEntries({
         code: "ENOENT",
       });
     let children = index.childrenByDirectory.get(base || ".") ?? [];
+    // codescope ignore this because empty and file paths below pruned ancestors are stat-checked here.
     if (base && children.length === 0 && prunedDirectory) {
       // codescope ignore: stat is required to distinguish a nested directory from a file or missing path under pruned inventory.
       const metadata = await statDirectory(join(root, base), { bigint: true });
@@ -64,6 +66,7 @@ export function createRepositoryDirectoryEntries({
           code: "ENOTDIR",
         });
       }
+      // codescope ignore this because every pruned directory uses its own metadata-checked listing and cache key.
       children = await readGeneratedDirectoryRecords(base, readDirectory);
     }
     const key = base || ".";

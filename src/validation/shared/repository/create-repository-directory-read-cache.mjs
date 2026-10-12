@@ -1,28 +1,6 @@
 import { stat as statPath } from "node:fs/promises";
 import { inventoryPath } from "./repository-inventory-paths.mjs";
-
-function version(metadata, platform) {
-  // codescope ignore: The five-field snapshot string is constant-size and avoids retaining or comparing mutable stat objects.
-  // codescope ignore this because reuse requires all snapshot fields, including birthtime, to be reliable.
-  const nanosecondTimestamps =
-    typeof metadata.mtimeNs === "bigint" &&
-    typeof metadata.ctimeNs === "bigint" &&
-    typeof metadata.birthtimeNs === "bigint";
-  return {
-    cacheable: platform !== "win32" && nanosecondTimestamps,
-    // String conversion is safe for BigIntStats; Windows disables reuse but still compares snapshots around readdir.
-    key: [
-      metadata.dev,
-      metadata.ino,
-      metadata.size,
-      metadata.mtimeNs,
-      metadata.ctimeNs,
-      metadata.birthtimeNs,
-    ]
-      .map(String)
-      .join(":"),
-  };
-}
+import { getRepositoryDirectoryVersion } from "./get-repository-directory-version.mjs";
 
 export function createRepositoryDirectoryReadCache(
   root,
@@ -37,13 +15,19 @@ export function createRepositoryDirectoryReadCache(
     const previous = reads.get(key);
     if (previous?.pending) {
       if (!forceRefresh) return previous.promise;
-      return previous.promise.catch(() => undefined).then(() => readDirectoryCached(key, true));
+      return previous.promise.then(
+        () => readDirectoryCached(key, true),
+        () => readDirectoryCached(key, true),
+      );
     }
 
     const current = { pending: true };
     current.promise = Promise.resolve()
       .then(async () => {
-        let currentVersion = version(await stat(key, { bigint: true }), platform);
+        let currentVersion = getRepositoryDirectoryVersion(
+          await stat(key, { bigint: true }),
+          platform,
+        );
         if (
           !forceRefresh &&
           currentVersion.cacheable &&
@@ -56,7 +40,10 @@ export function createRepositoryDirectoryReadCache(
           return current.entries;
         }
         current.entries = await readDirectory(key, { withFileTypes: true });
-        const afterReadVersion = version(await stat(key, { bigint: true }), platform);
+        const afterReadVersion = getRepositoryDirectoryVersion(
+          await stat(key, { bigint: true }),
+          platform,
+        );
         // codescope ignore this because cached traversal uses native high-resolution directory stat values.
         if (afterReadVersion.key !== currentVersion.key) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);

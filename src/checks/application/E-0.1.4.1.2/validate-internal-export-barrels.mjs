@@ -31,15 +31,22 @@ function collectPublicTargets(packageJson, options) {
   const declarationTargets = library
     ? [packageJson.types, packageJson.typings, ...collectDeclarationExports(packageJson.exports)]
     : [];
-  const values = [packageJson.main, packageJson.bin, packageJson.exports];
   const targets = new Set();
-  const visit = (value) => {
-    if (typeof value === "string" && value.startsWith("./"))
-      targets.add(posix.normalize(value.slice(2)));
-    else if (Array.isArray(value)) value.forEach(visit);
-    else if (value && typeof value === "object") Object.values(value).forEach(visit);
+  const visit = (value, allowBarePath, skipTypesCondition = false) => {
+    if (typeof value === "string") {
+      if (value.startsWith("./")) targets.add(posix.normalize(value.slice(2)));
+      else if (allowBarePath && !value.startsWith("#") && !value.includes(":"))
+        targets.add(posix.normalize(value));
+    } else if (Array.isArray(value))
+      value.forEach((entry) => visit(entry, allowBarePath, skipTypesCondition));
+    else if (value && typeof value === "object")
+      Object.entries(value)
+        .filter(([key]) => !skipTypesCondition || key !== "types")
+        .forEach(([, entry]) => visit(entry, allowBarePath, skipTypesCondition));
   };
-  values.forEach(visit);
+  visit(packageJson.main, true);
+  visit(packageJson.bin, true);
+  visit(packageJson.exports, false, true);
   for (const target of declarationTargets)
     if (typeof target === "string" && target.startsWith("./") && target.endsWith(".d.ts"))
       targets.add(posix.normalize(target.slice(2, -5) + ".mjs"));

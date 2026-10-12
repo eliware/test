@@ -135,9 +135,4 @@ Then run smoke against a prepared consumer copy.
 Smoke installs only in local `node_modules` and restores captured package paths.
 If restore fails, use the reported backup path for recovery.
 Smoke never changes system-wide links or junctions.
-The release workflow must use npm provenance.
-Verify the exact package version at `registry.npmjs.org`.
-Eli and the developer run TagIt preflight together.
-Eli decides release readiness and instructs DevOps.
-DevOps performs the release.
-Use the Eliware Operations handoff for publication approval.
+Follow the Eliware Operations publication checklist and approval process.

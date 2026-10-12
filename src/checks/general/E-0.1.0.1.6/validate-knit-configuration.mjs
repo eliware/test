@@ -44,8 +44,16 @@ function validateCommands(commands, index) {
   const label = `.knit/deploy.yaml commands field ${index + 1}`;
   if (!Array.isArray(commands) || commands.some((command) => typeof command !== "string"))
     return [`${label} must be an array of strings.`];
-  const errors = prefix.flatMap((command, position) =>
-    commands[position] === command ? [] : [`${label} must begin with ${prefix.join(", ")}.`],
+  const errors =
+    commands.length < prefix.length
+      ? [`${label} must contain the full required command prefix.`]
+      : [];
+  errors.push(
+    ...prefix
+      .slice(0, commands.length)
+      .flatMap((command, position) =>
+        commands[position] === command ? [] : [`${label} must begin with ${prefix.join(", ")}.`],
+      ),
   );
   for (const command of commands) {
     if (isProhibitedNpmOrGhcrPublishCommand(command))

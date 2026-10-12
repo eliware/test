@@ -63,7 +63,13 @@ export function createRepositoryScopedEntryReader({
             );
       subtreeEntries.set(base, records);
     }
-    const records = await subtreeEntries.get(base);
+    const pending = subtreeEntries.get(base);
+    let records;
+    try {
+      records = await pending;
+    } finally {
+      if (subtreeEntries.get(base) === pending) subtreeEntries.delete(base);
+    }
     if (!hasFullDiscovery()) return records;
     const fullRecords = await entries();
     return fullRecords.filter(({ path }) => path === base || path.startsWith(`${base}/`));

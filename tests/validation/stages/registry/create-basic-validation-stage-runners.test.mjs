@@ -6,7 +6,14 @@ test("runs Jest and lint and maps tool output", async () => {
     runJest: async () => ({ ruleId: "stage:jest", status: "pass", message: "" }),
     runLint: async () => ({ code: 1, stdout: "lint failure", stderr: "" }),
   });
-  await expect(runners.jest({ jestResult: { code: 0 } })).resolves.toMatchObject({ code: 0 });
+  await expect(
+    runners.jest({
+      jestResult: {
+        code: 0,
+        stdout: '[eliware-test-progress] {"event":"run-complete","testSuites":1,"tests":1}',
+      },
+    }),
+  ).resolves.toMatchObject({ code: 0 });
   await expect(
     runners.lint({ root: ".", toolArgs: [], focusedScope: null }),
   ).resolves.toMatchObject({ code: 5, message: "lint failure" });

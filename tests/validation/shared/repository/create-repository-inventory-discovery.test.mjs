@@ -77,7 +77,7 @@ test("refreshes full discovery when repository directories change on disk", asyn
   }
 });
 
-test("discovers default-finder subtrees lazily and caches repeated scoped reads", async () => {
+test("refreshes repeated scoped reads without traversing unrelated directories", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-discovery-subtree-"));
   await mkdir(join(root, "src"), { recursive: true });
   await mkdir(join(root, "other"), { recursive: true });
@@ -98,7 +98,7 @@ test("discovers default-finder subtrees lazily and caches repeated scoped reads"
     ]);
     expect(reads.has(root)).toBe(false);
     await expect(discovery.entriesUnder(join(root, "src"))).resolves.toHaveLength(2);
-    expect(reads.get(join(root, "src"))).toBe(1);
+    expect(reads.get(join(root, "src"))).toBe(2);
     await expect(discovery.entriesUnder(root)).resolves.toEqual(await discovery.entries());
     await expect(discovery.entriesUnder()).resolves.toEqual(await discovery.entries());
     await expect(discovery.entriesUnder(join(root, "..", "outside"))).rejects.toThrow(
@@ -107,4 +107,29 @@ test("discovers default-finder subtrees lazily and caches repeated scoped reads"
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("shares one in-flight scan across concurrent scoped reads", async () => {
+  let finishScan;
+  const findEntries = jest.fn(() => new Promise((resolve) => (finishScan = resolve)));
+  const root = await mkdtemp(join(tmpdir(), "eliware-discovery-concurrent-"));
+  const discovery = createRepositoryDiscovery({ root, findEntries, readDirectory: readdir });
+  const first = discovery.entriesUnder(join(root, "docs"));
+  const second = discovery.entriesUnder(join(root, "docs"));
+  finishScan([
+    { path: "docs", type: "directory", depth: 1 },
+    { path: "docs/guide.md", type: "file", depth: 1 },
+  ]);
+  await expect(Promise.all([first, second])).resolves.toEqual([
+    [
+      { path: "docs", type: "directory", depth: 1 },
+      { path: "docs/guide.md", type: "file", depth: 1 },
+    ],
+    [
+      { path: "docs", type: "directory", depth: 1 },
+      { path: "docs/guide.md", type: "file", depth: 1 },
+    ],
+  ]);
+  expect(findEntries).toHaveBeenCalledTimes(1);
+  await rm(root, { recursive: true, force: true });
 });

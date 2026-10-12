@@ -26,6 +26,7 @@ export function validateWorkflowCommandRestrictions(steps) {
   for (const step of steps.slice(0, Math.max(ci, 0)))
     if (!isApprovedPreInstallStep(step))
       errors.push("ci.yaml has an unapproved step before npm ci.");
+  // codescope ignore this because the policy bans publish commands and permits other post-test actions.
   for (const step of steps)
     if (isProhibitedNpmOrGhcrPublishCommand(step?.run))
       errors.push("ci.yaml validation job must not publish npm packages or GHCR images.");

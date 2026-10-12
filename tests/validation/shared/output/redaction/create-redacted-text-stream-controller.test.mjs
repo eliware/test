@@ -107,13 +107,14 @@ test("suppresses an excessive pending secret scan when a stream finishes", () =>
   expect(session.finish()).toBe("");
 });
 
-test("bounds repeated scans while a long secret keeps the pending suffix large", () => {
+test("suppresses output when repeated scans exceed the work limit", () => {
   const session = createSession(["s".repeat(10_000)], 20_000, { maxSearchWorkPerChunk: 10_000 });
   expect(session.push("s".repeat(4_096))).toBe("");
   expect(session.push("s".repeat(4_096))).toBe("");
   expect(session.finish()).toBe("");
 });
 
+// codescope ignore this because the test checks secret offsets after safe prefixes leave the stream buffer.
 test("scans only new stream text when a long secret spans several chunks", () => {
   const secret = Array.from({ length: 10_000 }, (_, index) =>
     String.fromCharCode(0x1000 + index),
@@ -127,6 +128,13 @@ test("scans only new stream text when a long secret spans several chunks", () =>
   const result = emitted.join("") + session.finish();
   expect(result).not.toContain(secret);
   expect(result).toContain("[REDACTED]");
+});
+
+test("keeps offsets correct after a secret crosses chunks beyond an emitted prefix", () => {
+  const session = createSession(["XXAB"], 100);
+  const result = session.push("safeXX") + session.push("ABtail") + session.finish();
+  expect(result).toBe("safe[REDACTED]tail");
+  expect(result).not.toContain("XXAB");
 });
 
 test("suppresses stream output when matcher work exceeds its estimate", () => {
@@ -162,4 +170,11 @@ test("expands a configured pending window to fit the longest secret", () => {
   const output = session.push("safe prefix") + session.finish();
   expect(output).toBe("safe prefix");
   expect(session.suppressed).toBe(false);
+});
+
+test("suppresses all stream output when a secret exceeds the output limit", () => {
+  const session = createSession(["x".repeat(101)], 100);
+  expect(session.suppressed).toBe(true);
+  expect(session.push("safe diagnostic")).toBe("");
+  expect(session.finish()).toBe("");
 });

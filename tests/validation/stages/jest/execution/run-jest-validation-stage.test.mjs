@@ -26,7 +26,22 @@ test("passes clean Jest results and records aggregate counts", async () => {
   expect(context.validationSummary.jestTimeMs).toBeGreaterThanOrEqual(0);
 });
 
-test("uses empty counts when Jest progress has no valid completion event", async () => {
+test("records Jest time when the process result has no start time", async () => {
+  const context = {
+    root: ".",
+    jestResult: {
+      code: 0,
+      stdout: '[eliware-test-progress] {"event":"run-complete","testSuites":1,"tests":1}',
+    },
+    validationSummary: {},
+  };
+  await expect(
+    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
+  ).resolves.toMatchObject({ code: 0 });
+  expect(context.validationSummary.jestTimeMs).toBeGreaterThanOrEqual(0);
+});
+
+test("rejects a passing Jest process without a completion event", async () => {
   const context = {
     root: ".",
     jestResult: {
@@ -36,10 +51,34 @@ test("uses empty counts when Jest progress has no valid completion event", async
     },
     validationSummary: {},
   };
-  await runJestValidationStage(context, async () => ({ status: "pass", message: "" }));
-
-  expect(context.validationSummary.jestCounts).toEqual({ testSuites: 0, tests: 0 });
+  await expect(
+    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
+  ).resolves.toMatchObject({
+    code: 2,
+    status: "fail",
+    message: "Jest completed without running at least one test in one suite.",
+  });
+  expect(context.validationSummary.jestCounts).toBeUndefined();
 });
+
+test.each([
+  [0, 0],
+  [1, 0],
+])(
+  "rejects a passing Jest report with counts %i suites and %i tests",
+  async (testSuites, tests) => {
+    const context = {
+      root: ".",
+      jestResult: {
+        code: 0,
+        stderr: `[eliware-test-progress] ${JSON.stringify({ event: "run-complete", testSuites, tests })}`,
+      },
+    };
+    await expect(
+      runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
+    ).resolves.toMatchObject({ code: 2, status: "fail" });
+  },
+);
 
 test("fails when Jest reports unexpected test console output", async () => {
   const context = {
@@ -47,6 +86,7 @@ test("fails when Jest reports unexpected test console output", async () => {
     env: {},
     jestResult: {
       code: 0,
+      stderr: '[eliware-test-progress] {"event":"run-complete","testSuites":1,"tests":1}',
       consoleOutput: [
         {
           testFilePath: "tests/example.test.mjs",

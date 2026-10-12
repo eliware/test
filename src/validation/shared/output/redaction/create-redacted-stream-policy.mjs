@@ -34,13 +34,14 @@ export function createRedactedStreamPolicy(
     Math.max(1, boundedOutputLimit),
     Math.max(1, Math.floor(maxPendingLength), maximumSecretLength),
   );
-  // codescope ignore this because secrets longer than the output limit suppress the stream first.
+  // codescope ignore this because longer secrets suppress the stream before any text can be emitted.
   let suppressed = maximumSecretLength > boundedOutputLimit;
   // codescope ignore: the trimmer uses a fixed work budget and returns a function for empty secrets.
   const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
   if (!trimSuffix) suppressed = true;
   let findSecretEnds = null;
   if (!suppressed) {
+    // codescope ignore this because empty secret sets use the default scan limit instead of the caller's work cap.
     const matcher = getSecretMatcher
       ? getSecretMatcher(values, { maxScanWork: workLimit })
       : createSecretTextMatcher(values, values.length === 0 ? {} : { maxScanWork: workLimit });

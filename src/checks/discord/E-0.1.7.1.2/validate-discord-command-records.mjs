@@ -7,7 +7,10 @@ const commandName = /^[-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$/u;
 export async function validateDiscordCommandRecords(files, inventory) {
   const jsonNames = names(files, ".json");
   const moduleNames = names(files, ".mjs");
-  const errors = [];
+  const errors = files
+    .filter((path) => path.startsWith(`${commandDirectory}/`))
+    .filter((path) => path.slice(commandDirectory.length + 1).includes("/"))
+    .map((path) => `${path} must be a root-level commands record.`);
   if (!jsonNames.length) errors.push("commands/ must contain a command definition.");
   errors.push(...mismatchedNames(jsonNames, moduleNames));
   errors.push(...(await validateDiscordHandlerFiles(inventory, commandDirectory, moduleNames)));
