@@ -1,10 +1,11 @@
 import prettier from "prettier";
 import { minimatch } from "minimatch";
 import { join } from "node:path";
+import { readTrackedFilePaths } from "./read-tracked-file-paths.mjs";
 
 const maintainedExtensions = new Set([".mjs", ".json", ".yml", ".yaml", ".md"]);
 
-export async function validateStandalonePrettierConfiguration(repositoryInventory, root) {
+export async function validateStandalonePrettierConfiguration(repositoryInventory, root, runGit) {
   if (!repositoryInventory?.files) return [];
   try {
     const files = await repositoryInventory.files("all");
@@ -14,8 +15,11 @@ export async function validateStandalonePrettierConfiguration(repositoryInventor
     const errors = configs.length
       ? [`Standalone Prettier configuration files are not allowed: ${configs.join(", ")}.`]
       : [];
+    const prettierIgnoreFiles = files.filter((file) => /(?:^|\/)\.prettierignore$/iu.test(file));
+    if (prettierIgnoreFiles.length)
+      errors.push(`Prettier ignore files are not allowed: ${prettierIgnoreFiles.join(", ")}.`);
     if (repositoryInventory.readText) {
-      for (const ignoreFile of [".gitignore", ".prettierignore"]) {
+      for (const ignoreFile of [".gitignore"]) {
         if (!files.includes(ignoreFile)) continue;
         const ignoreText = await repositoryInventory.readText(ignoreFile);
         const patterns = ignoreText
@@ -23,7 +27,12 @@ export async function validateStandalonePrettierConfiguration(repositoryInventor
           .map((line) => line.trim())
           .filter((line) => line && !line.startsWith("#"));
         const excluded = root
-          ? await findPrettierIgnored(files, root, ignoreFile)
+          ? await findPrettierIgnored(
+              files,
+              root,
+              ignoreFile,
+              await readTrackedFilePaths(root, runGit),
+            )
           : files.filter(
               (file) =>
                 maintainedExtensions.has(file.slice(file.lastIndexOf("."))) &&
@@ -39,12 +48,16 @@ export async function validateStandalonePrettierConfiguration(repositoryInventor
   }
 }
 
-async function findPrettierIgnored(files, root, ignoreFile) {
+async function findPrettierIgnored(files, root, ignoreFile, trackedFiles) {
   const ignorePath = [join(root, ignoreFile)];
   const ignored = [];
   for (const file of files) {
     if (!maintainedExtensions.has(file.slice(file.lastIndexOf(".")))) continue;
-    if ((await prettier.getFileInfo(join(root, file), { ignorePath })).ignored) ignored.push(file);
+    if (
+      trackedFiles.has(file) &&
+      (await prettier.getFileInfo(join(root, file), { ignorePath })).ignored
+    )
+      ignored.push(file);
   }
   return ignored;
 }

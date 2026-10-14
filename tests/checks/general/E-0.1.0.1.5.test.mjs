@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.5.mjs";
 
 const packageJson = {
@@ -70,4 +70,21 @@ test("reports standalone formatter configuration files", async () => {
   ).resolves.toMatchObject({
     message: expect.stringContaining("Standalone Prettier configuration files"),
   });
+});
+
+test("accepts a mocked Git adapter without running it when no ignore text exists", async () => {
+  const runGit = jest.fn();
+  await expect(
+    run({
+      repositoryInventory: { files: async () => [".gitignore"] },
+      runGit,
+    }),
+  ).resolves.toMatchObject({ ruleId, status: "fail" });
+  expect(runGit).not.toHaveBeenCalled();
+});
+
+test("selects the default Git adapter without calling it when no ignore text exists", async () => {
+  await expect(
+    run({ repositoryInventory: { files: async () => [".gitignore"] } }),
+  ).resolves.toMatchObject({ ruleId, status: "fail" });
 });

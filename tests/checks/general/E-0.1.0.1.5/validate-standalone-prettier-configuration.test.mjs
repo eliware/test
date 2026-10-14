@@ -45,19 +45,30 @@ test("reports inventory read errors", async () => {
 test("rejects ignore patterns that exclude maintained files", async () => {
   await expect(
     validateStandalonePrettierConfiguration({
-      files: async () => [".prettierignore", "src/index.mjs", "assets/image.png"],
+      files: async () => [".gitignore", "src/index.mjs", "assets/image.png"],
       readText: async () => "src/**\n# comment\n",
     }),
-  ).resolves.toEqual([".prettierignore must not exclude maintained files: src/index.mjs."]);
+  ).resolves.toEqual([".gitignore must not exclude maintained files: src/index.mjs."]);
 });
 
 test("supports ignore exceptions and ignores non-maintained files", async () => {
   await expect(
     validateStandalonePrettierConfiguration({
-      files: async () => [".prettierignore", "src/index.mjs", "assets/image.png"],
+      files: async () => [".gitignore", "src/index.mjs", "assets/image.png"],
       readText: async () => "src/**\n!src/index.mjs\nassets/**",
     }),
   ).resolves.toEqual([]);
+});
+
+test("rejects .prettierignore files at every directory level", async () => {
+  await expect(
+    validateStandalonePrettierConfiguration({
+      files: async () => [".prettierignore", "nested/.prettierignore"],
+      readText: async () => "",
+    }),
+  ).resolves.toEqual([
+    "Prettier ignore files are not allowed: .prettierignore, nested/.prettierignore.",
+  ]);
 });
 
 test("checks Git ignore rules and basename patterns", async () => {
@@ -84,6 +95,7 @@ test("uses Prettier ignore semantics for nested patterns", async () => {
           readText: async () => "*.mjs\n",
         },
         root,
+        async () => ({ stdout: Buffer.from("nested/deep/entry.mjs\0") }),
       ),
     ).resolves.toContain(".gitignore must not exclude maintained files: nested/deep/entry.mjs.");
   } finally {
@@ -104,8 +116,51 @@ test("does not report maintained files that Prettier does not ignore", async () 
           readText: async () => "*.tmp\n",
         },
         root,
+        async () => ({ stdout: Buffer.from("src/entry.mjs\0") }),
       ),
     ).resolves.toEqual([]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("allows an ignored, untracked YAML runtime file", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-prettier-ignore-"));
+  try {
+    await mkdir(join(root, "repos"), { recursive: true });
+    await writeFile(join(root, ".gitignore"), "repos/targets.yaml\n");
+    await writeFile(join(root, "repos", "targets.yaml"), "targets: []\n");
+    await expect(
+      validateStandalonePrettierConfiguration(
+        {
+          files: async () => [".gitignore", "repos/targets.yaml"],
+          readText: async () => "repos/targets.yaml\n",
+        },
+        root,
+        async () => ({ stdout: Buffer.alloc(0) }),
+      ),
+    ).resolves.toEqual([]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects a Git ignore rule for a tracked maintained YAML file", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-prettier-ignore-"));
+  try {
+    await mkdir(join(root, "specs"), { recursive: true });
+    await writeFile(join(root, ".gitignore"), "specs/*.yaml\n");
+    await writeFile(join(root, "specs", "rules.yaml"), "rules: []\n");
+    await expect(
+      validateStandalonePrettierConfiguration(
+        {
+          files: async () => [".gitignore", "specs/rules.yaml"],
+          readText: async () => "specs/*.yaml\n",
+        },
+        root,
+        async () => ({ stdout: Buffer.from("specs/rules.yaml\0") }),
+      ),
+    ).resolves.toContain(".gitignore must not exclude maintained files: specs/rules.yaml.");
   } finally {
     await rm(root, { recursive: true, force: true });
   }

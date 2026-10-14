@@ -113,7 +113,7 @@ directives:
       - Do not replace shared scripts with partial validation.
       - For consumer repositories, do not directly declare or import Oxlint or Prettier or invoke them in validation commands.
       - Do not exclude maintained files of the required types from formatting.
-      - Do not add standalone Prettier configuration.
+      - Do not add standalone Prettier configuration or a .prettierignore file.
       - Do not add publication commands to package scripts.
       - Do not create or upload GitHub releases from package scripts.
     examples:
