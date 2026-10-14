@@ -1,10 +1,12 @@
 import { readGhcrPublishWorkflow } from "../shared/read-ghcr-publish-workflow.mjs";
 import { createRequiredGhcrVerificationCommands } from "./create-required-ghcr-verification-commands.mjs";
+import { hasRequiredGhToken } from "./has-required-gh-token.mjs";
 
 export async function validateGhcrAttestationChain(inventory, packageJson = {}) {
   const parsed = await readGhcrPublishWorkflow(inventory);
   if (parsed.error) return [parsed.error];
-  const steps = parsed.workflow?.jobs?.publish?.steps ?? [];
+  const publishJob = parsed.workflow?.jobs?.publish;
+  const steps = publishJob?.steps ?? [];
   const pushes = steps
     .map((step, index) => ({ step, index }))
     .filter(
@@ -54,6 +56,12 @@ export async function validateGhcrAttestationChain(inventory, packageJson = {}) 
       if (!found || !unconditional(found.item)) {
         errors.push(
           "GHCR push verification, inspection, attestation, and digest summary steps must run in order and unconditionally.",
+        );
+        break;
+      }
+      if (ruleIndex === required.length - 2 && !hasRequiredGhToken(found.item, publishJob)) {
+        errors.push(
+          "GH attestation verification must set GH_TOKEN to ${{ github.token }} in its step or publish job.",
         );
         break;
       }

@@ -49,6 +49,7 @@ directives:
       - Set actions/attest major v4 after each final image push.
       - Bind subject-name to the untagged package-derived image and subject-digest to that push step's digest output.
       - Set push-to-registry true.
+      - Set GH_TOKEN to ${{ github.token }} on the attestation verification step or publish job.
       - Append the exact digest reference to GITHUB_STEP_SUMMARY through one single-line echo command.
       - Set unconditional post-push steps for version-to-digest verification and image and attestation inspection.
       - Make the final push's required verification chain end at the last job step.
@@ -60,3 +61,4 @@ directives:
     examples:
       - "uses: actions/attest@v4\nwith:\n  subject-name: ghcr.io/eliware/example\n  subject-digest: ${{ steps.push.outputs.digest }}\n  push-to-registry: true"
       - 'echo "${{ steps.push.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"'
+      - "env:\n  GH_TOKEN: ${{ github.token }}\nrun: gh attestation verify oci://ghcr.io/eliware/example@${{ steps.push.outputs.digest }} --repo ${{ github.repository }}"

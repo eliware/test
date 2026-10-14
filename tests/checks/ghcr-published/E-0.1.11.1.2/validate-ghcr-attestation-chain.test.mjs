@@ -12,6 +12,23 @@ test("validates each publication digest chain", async () => {
   );
 });
 
+test("requires GH_TOKEN on the verification step or publish job", async () => {
+  const missingToken = createGhcrWorkflow();
+  delete missingToken.jobs.publish.steps[6].env;
+  await expect(
+    validateGhcrAttestationChain(createGhcrInventory({ workflow: missingToken }), ghcrPackage),
+  ).resolves.toContain(
+    "GH attestation verification must set GH_TOKEN to ${{ github.token }} in its step or publish job.",
+  );
+
+  const jobToken = createGhcrWorkflow();
+  delete jobToken.jobs.publish.steps[6].env;
+  jobToken.jobs.publish.env = { GH_TOKEN: "${{ github.token }}" };
+  await expect(
+    validateGhcrAttestationChain(createGhcrInventory({ workflow: jobToken }), ghcrPackage),
+  ).resolves.toEqual([]);
+});
+
 test("rejects commands that mention a check without running it", async () => {
   const workflow = createGhcrWorkflow();
   workflow.jobs.publish.steps[4].run =

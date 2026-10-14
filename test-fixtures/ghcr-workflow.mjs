@@ -57,6 +57,7 @@ export function createGhcrWorkflow() {
           },
           { run: `docker buildx imagetools inspect ${image}@${digest}` },
           {
+            env: { GH_TOKEN: "${{ github.token }}" },
             run: `gh attestation verify oci://${image}@${digest} --repo \${{ github.repository }}`,
           },
           { run: `echo "${digest}" >> "$GITHUB_STEP_SUMMARY"` },
