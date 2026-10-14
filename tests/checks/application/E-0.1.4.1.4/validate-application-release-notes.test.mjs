@@ -24,7 +24,7 @@ test("reports an unreadable README as a missing release notes link", async () =>
 
 test("uses the default context", async () => {
   await expect(
-    validateApplicationReleaseNotes({ packageJson: { version: "12.0.0" } }),
+    validateApplicationReleaseNotes({ packageJson: { version: "12.0.1" } }),
   ).resolves.toEqual([]);
 });
 

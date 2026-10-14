@@ -1,5 +1,11 @@
 # Release Notes
 
+## 12.0.1 — 2026-10-14
+
+### Changed
+
+- Set the package version to 12.0.1.
+
 ## 12.0.0 — 2026-10-10
 
 ### Breaking changes

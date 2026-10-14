@@ -1,161 +1,157 @@
-import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
-import { lstat, readFile, rm, writeFile } from "node:fs/promises";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { cleanupSmokeTempRoot as cleanupTempRoot } from "../../../../src/validation/stages/smoke/cleanup-smoke-temp-root.mjs";
-import {
-  createSmokeTarget,
-  createFakeSmokeTarget,
-  fakeNpm,
-  packageJson,
-  removeRoots,
-  smokeFailureCases,
-} from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
-const cleanupSmokeTempRoot = jest.fn();
+
+const assertSmokePackageParents = jest.fn();
+const captureSmokeTargetState = jest.fn();
+const createSmokeTempRoot = jest.fn();
 const execute = jest.fn();
+const finishSmokeRun = jest.fn();
+const lstat = jest.fn();
+const mkdir = jest.fn();
+const prepareSmokeTargetContext = jest.fn();
+const resolvePackExecutable = jest.fn();
+const restoreSmokeTargetState = jest.fn();
+const runSmokePackageTransaction = jest.fn();
+
+jest.unstable_mockModule("node:fs/promises", () => ({ lstat, mkdir }));
 jest.unstable_mockModule(
   "../../../../src/validation/shared/process/execute-child-process.mjs",
   () => ({ execute }),
 );
 jest.unstable_mockModule(
-  "../../../../src/validation/stages/smoke/cleanup-smoke-temp-root.mjs",
-  () => ({ cleanupSmokeTempRoot }),
+  "../../../../src/validation/stages/pack/resolve-pack-executable.mjs",
+  () => ({ resolvePackExecutable }),
 );
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/smoke/assert-smoke-package-parents.mjs",
+  () => ({ assertSmokePackageParents }),
+);
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/smoke/capture-smoke-target-state.mjs",
+  () => ({ captureSmokeTargetState }),
+);
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/smoke/create-smoke-temp-root.mjs",
+  () => ({ createSmokeTempRoot }),
+);
+jest.unstable_mockModule("../../../../src/validation/stages/smoke/finish-smoke-run.mjs", () => ({
+  finishSmokeRun,
+}));
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/smoke/prepare-smoke-target-context.mjs",
+  () => ({ prepareSmokeTargetContext }),
+);
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/smoke/restore-smoke-target-state.mjs",
+  () => ({ restoreSmokeTargetState }),
+);
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/smoke/run-smoke-package-transaction.mjs",
+  () => ({ runSmokePackageTransaction }),
+);
+
 const { runNpmConsumerSmoke } =
   await import("../../../../src/validation/stages/smoke/run-npm-consumer-smoke.mjs");
-let roots = [];
-beforeEach(() => cleanupSmokeTempRoot.mockImplementation((...args) => cleanupTempRoot(...args)));
-afterEach(async () => {
-  await removeRoots(roots);
-  roots = [];
+
+const packageJson = { name: "@eliware/test", version: "12.0.1" };
+const targetContext = {
+  targetRoot: "consumer-root",
+  assertTargetIdentity: jest.fn(),
+  binNames: ["eliware-test"],
+  childEnv: { PATH: "consumer-path" },
+};
+const tempState = { path: "temp-root", identity: "temp-identity" };
+const smokeState = { storage: "snapshot-root" };
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  prepareSmokeTargetContext.mockResolvedValue(targetContext);
+  createSmokeTempRoot.mockResolvedValue(tempState);
+  captureSmokeTargetState.mockResolvedValue(smokeState);
+  mkdir.mockResolvedValue(undefined);
+  resolvePackExecutable.mockReturnValue(["npm", []]);
+  runSmokePackageTransaction.mockResolvedValue("sha256-digest");
+  finishSmokeRun.mockImplementation(async ({ outcome }) => outcome);
 });
-function runSmoke(fixture, options = {}) {
+
+function smoke(options = {}) {
   return runNpmConsumerSmoke({
-    root: fixture.source,
-    target: fixture.target,
+    root: "source-root",
+    target: "consumer-path",
     packageJson,
-    resolveCommand: () => ["npm", []],
-    env: {},
     ...options,
   });
 }
-test("packs, installs, tests, and restores the existing consumer package", async () => {
-  const { fixture, calls, run } = await createFakeSmokeTarget(roots);
-  execute.mockImplementation(run);
-  const result = await runSmoke(fixture, { run: undefined });
-  expect(result).toContain("@eliware/test@12.0.0");
-  expect(
-    calls.map(({ args }) => args.find((arg) => ["pack", "install", "test"].includes(arg))),
-  ).toEqual(["pack", "install", "test"]);
-  expect(calls.flatMap(({ args }) => args)).toEqual(
-    expect.arrayContaining(["--ignore-scripts", "--no-save", "--package-lock=false"]),
+
+test("prepares, runs, and finishes the package consumer workflow", async () => {
+  const write = jest.fn();
+  await expect(smoke({ write })).resolves.toBe(
+    "Smoke passed: @eliware/test@12.0.1; SHA-256 sha256-digest.",
   );
-  await expect(readFile(join(fixture.target, "package.json"), "utf8")).resolves.toContain(
-    '"@eliware/test":"12.0.0"',
-  );
-  await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
-    '"version":"12.0.0"',
-  );
-});
-test("preserves consumer-created sibling files in package installation ancestor directories", async () => {
-  const { fixture, run: fakeRun } = await createFakeSmokeTarget(roots);
-  const binSibling = join(fixture.target, "node_modules", ".bin", "consumer-created.txt");
-  const scopeSibling = join(fixture.target, "node_modules", "@eliware", "consumer-created.txt");
-  const run = async (command, args, options) => {
-    const result = await fakeRun(command, args, options);
-    if (args.includes("test")) {
-      await writeFile(binSibling, "preserve bin sibling");
-      await writeFile(scopeSibling, "preserve scope sibling");
-    }
-    return result;
-  };
-  await expect(runSmoke(fixture, { run })).resolves.toContain("Smoke passed");
-  await expect(readFile(binSibling, "utf8")).resolves.toBe("preserve bin sibling");
-  await expect(readFile(scopeSibling, "utf8")).resolves.toBe("preserve scope sibling");
-  await expect(
-    readFile(join(fixture.target, "node_modules", ".bin", "eliware-test.cmd"), "utf8"),
-  ).resolves.toBe("old-bin\n");
-});
-test("supports packages that have no bin entrypoint", async () => {
-  const { fixture, run } = await createFakeSmokeTarget(roots);
-  await expect(
-    runSmoke(fixture, { packageJson: { ...packageJson, bin: undefined }, run }),
-  ).resolves.toContain("Smoke passed");
-});
-test("uses default npm environment and executable resolution", async () => {
-  const { source, target } = await createSmokeTarget(roots);
-  const { run } = fakeNpm(target);
-  await expect(runNpmConsumerSmoke({ root: source, target, packageJson, run })).resolves.toContain(
-    "Smoke passed",
-  );
-});
-test("restores the prior installation when the consumer test fails", async () => {
-  const { fixture, run } = await createFakeSmokeTarget(roots, { testCode: 1 });
-  await expect(runSmoke(fixture, { run })).resolves.toContain("Consumer npm test failed");
-  await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
-    '"version":"12.0.0"',
-  );
-});
-test("stops if the canonical target directory is replaced after validation", async () => {
-  const { fixture, calls, run } = await createFakeSmokeTarget(roots);
-  const { lstat } = await import("node:fs/promises");
-  const initial = await lstat(fixture.target);
-  let inspections = 0;
-  const inspectTargetRoot = jest.fn(async () => {
-    inspections += 1;
-    return inspections === 1
-      ? initial
-      : {
-          dev: initial.dev,
-          ino: initial.ino,
-          birthtimeMs: initial.birthtimeMs + 1,
-          isDirectory: () => true,
-        };
+  expect(prepareSmokeTargetContext).toHaveBeenCalledWith({
+    root: "source-root",
+    target: "consumer-path",
+    packageJson,
+    env: process.env,
+    inspectTargetRoot: expect.any(Function),
   });
-  await expect(runSmoke(fixture, { run, inspectTargetRoot })).resolves.toContain(
-    "refusing unsafe access",
+  expect(createSmokeTempRoot).toHaveBeenCalledWith(expect.any(Function), undefined, undefined);
+  expect(assertSmokePackageParents).toHaveBeenCalledWith("consumer-root", packageJson.name);
+  expect(captureSmokeTargetState).toHaveBeenCalledWith("consumer-root", packageJson.name, [
+    "eliware-test",
+  ]);
+  expect(mkdir).toHaveBeenCalledWith(join("temp-root", "pack"));
+  expect(resolvePackExecutable).toHaveBeenCalledWith(
+    targetContext.childEnv,
+    process.platform,
+    process.execPath,
+    "source-root",
   );
-  expect(inspectTargetRoot).toHaveBeenCalledTimes(2);
-  expect(calls).toEqual([]);
-});
-test("removes an empty temporary path when identity inspection fails", async () => {
-  const fixture = await createSmokeTarget(roots);
-  const result = await runSmoke(fixture, {
-    inspectTempRoot: async () => {
-      throw new Error("identity unavailable");
-    },
-  });
-  expect(result).toContain("Cannot verify temporary smoke directory; removed empty path");
-  const path = result.match(/removed empty path (.+): identity unavailable/u)?.[1];
-  expect(path).toBeTruthy();
-  await expect(lstat(path)).rejects.toMatchObject({ code: "ENOENT" });
-});
-test.each(smokeFailureCases)(
-  "reports candidate and installation failures and restores prior package %#",
-  async (config, text) => {
-    const { fixture, run } = await createFakeSmokeTarget(roots, config);
-    await expect(runSmoke(fixture, { run })).resolves.toContain(text);
-    await expect(readFile(join(fixture.installed, "package.json"), "utf8")).resolves.toContain(
-      '"version":"12.0.0"',
-    );
-  },
-);
-test("reports snapshot and restoration failures", async () => {
-  const { fixture, run } = await createFakeSmokeTarget(roots);
-  await expect(
-    runSmoke(fixture, { captureState: async () => Promise.reject(new Error("snapshot denied")) }),
-  ).resolves.toContain("snapshot denied");
-  const result = await runSmoke(fixture, {
-    run,
-    captureState: async () => ({ entries: [], storage: "backup-location" }),
-    restoreState: async () =>
-      Promise.reject(new Error("restore denied; backups at backup-location")),
-  });
-  expect(result).toContain("Target restoration failed: restore denied");
-  expect(result).toContain("backups at backup-location");
-  expect(cleanupSmokeTempRoot).toHaveBeenLastCalledWith(
-    expect.any(String),
-    expect.objectContaining({ isDirectory: expect.any(Function) }),
-    { preserve: true },
+  expect(runSmokePackageTransaction).toHaveBeenCalledWith(
+    expect.objectContaining({
+      root: "source-root",
+      packageJson,
+      command: "npm",
+      prefix: [],
+      packDirectory: join("temp-root", "pack"),
+      targetRoot: "consumer-root",
+      assertTargetIdentity: targetContext.assertTargetIdentity,
+      env: targetContext.childEnv,
+    }),
   );
-  await rm(cleanupSmokeTempRoot.mock.calls.at(-1)[0], { recursive: true, force: true });
+  expect(write).toHaveBeenCalledWith("Target recovery snapshot: snapshot-root");
+  expect(finishSmokeRun).toHaveBeenCalledWith(
+    expect.objectContaining({
+      outcome: "Smoke passed: @eliware/test@12.0.1; SHA-256 sha256-digest.",
+      state: smokeState,
+      targetRoot: "consumer-root",
+      tempRoot: "temp-root",
+      tempIdentity: "temp-identity",
+    }),
+  );
+});
+
+test("returns a consumer context error before it creates a temporary directory", async () => {
+  prepareSmokeTargetContext.mockResolvedValue({ error: "consumer metadata failed" });
+  await expect(smoke()).resolves.toBe("consumer metadata failed");
+  expect(createSmokeTempRoot).not.toHaveBeenCalled();
+  expect(finishSmokeRun).not.toHaveBeenCalled();
+});
+
+test("returns a temporary directory error before it captures target state", async () => {
+  createSmokeTempRoot.mockResolvedValue({ error: "temporary path failed" });
+  await expect(smoke()).resolves.toBe("temporary path failed");
+  expect(captureSmokeTargetState).not.toHaveBeenCalled();
+  expect(finishSmokeRun).not.toHaveBeenCalled();
+});
+
+test("reports workflow failures and passes them to finalization", async () => {
+  runSmokePackageTransaction.mockRejectedValue(new Error("consumer test failed"));
+  await expect(smoke()).resolves.toBe("Tarball consumer smoke failed: consumer test failed");
+  expect(finishSmokeRun).toHaveBeenCalledWith(
+    expect.objectContaining({
+      outcome: "Tarball consumer smoke failed: consumer test failed",
+      state: smokeState,
+    }),
+  );
 });

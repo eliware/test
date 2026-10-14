@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "@jest/globals";
+import { afterEach, expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -30,6 +30,13 @@ async function installMock(targetRoot, version = packageJson.version, name = pac
   await writeFile(join(installed, "package.json"), JSON.stringify({ name, version }));
 }
 
+async function installWithCli(targetRoot, manifest) {
+  const installed = join(targetRoot, "node_modules", "@eliware", "test");
+  await mkdir(join(installed, "bin"), { recursive: true });
+  await writeFile(join(installed, "package.json"), JSON.stringify(manifest));
+  await writeFile(join(installed, "bin", "eliware-test.mjs"), "export {};\n");
+}
+
 const options = (targetRoot, run) => ({
   targetRoot,
   packageJson,
@@ -52,8 +59,7 @@ test("installs the tarball without changing a lockfile and runs consumer npm tes
     }),
   );
   expect(calls.map(({ args }) => args[0])).toEqual(["install", "test"]);
-  expect(calls[0].args).toContain("--package-lock=false");
-  expect(calls[0].args).toContain("--no-save");
+  expect(calls[0].args).toEqual(expect.arrayContaining(["--package-lock=false", "--no-save"]));
   expect(calls[0].options.cwd).toBe(targetRoot);
   expect(calls[1].options.env.ELIWARE_TEST_SMOKE_CANDIDATE).toBe(packageJson.name);
 });
@@ -141,6 +147,43 @@ test("resolves a CLI path inside the installed package without requiring an expo
       join(targetRoot, "package.json"),
     ],
   ]);
+});
+
+test("uses createRequire for CLI packages and skips resolution without a bin entry", async () => {
+  const { targetRoot } = await setup();
+  const manifest = { ...packageJson, bin: { "eliware-test": "bin/eliware-test.mjs" } };
+  const run = async (_command, args) => {
+    if (args[0] === "install") await installWithCli(targetRoot, manifest);
+    return { code: 0 };
+  };
+
+  await expect(
+    installSmokeCandidate({
+      targetRoot,
+      packageJson: manifest,
+      tarball: "candidate.tgz",
+      run,
+      command: "npm",
+      prefix: [],
+      env: {},
+    }),
+  ).resolves.toBeUndefined();
+  const packageWithoutBin = { ...packageJson, bin: undefined };
+  const resolveModule = jest.fn();
+  const runWithoutBin = async (_command, args) => {
+    if (args[0] === "install")
+      await installMock(targetRoot, packageWithoutBin.version, packageWithoutBin.name);
+    return { code: 0 };
+  };
+
+  await expect(
+    installSmokeCandidate({
+      ...options(targetRoot, runWithoutBin),
+      packageJson: packageWithoutBin,
+      resolveModule,
+    }),
+  ).resolves.toBeUndefined();
+  expect(resolveModule).not.toHaveBeenCalled();
 });
 
 test("reports consumer test failures", async () => {

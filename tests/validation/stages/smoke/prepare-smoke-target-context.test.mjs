@@ -43,3 +43,14 @@ test("returns request errors before it inspects the target", async () => {
   expect(result.error).toContain("Supply one existing consumer");
   expect(inspectTargetRoot).not.toHaveBeenCalled();
 });
+
+test("returns no executable names when the package has no bin entry", async () => {
+  const fixture = await createSmokeTarget(roots);
+  const context = await prepareSmokeTargetContext({
+    root: fixture.source,
+    target: fixture.target,
+    packageJson: { ...packageJson, bin: undefined },
+  });
+
+  expect(context.binNames).toEqual([]);
+});

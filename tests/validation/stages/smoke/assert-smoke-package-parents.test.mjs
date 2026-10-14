@@ -12,6 +12,12 @@ test("checks node_modules and package scope parents", async () => {
   ]);
 });
 
+test("uses lstat when no inspection function is supplied", async () => {
+  await expect(
+    assertSmokePackageParents(join("missing-consumer", "unique-test-path"), "@eliware/test"),
+  ).resolves.toBeUndefined();
+});
+
 test("rejects a linked package parent", async () => {
   const inspect = jest.fn(async () => ({ isSymbolicLink: () => true, isDirectory: () => false }));
   await expect(assertSmokePackageParents("consumer", "@eliware/test", inspect)).rejects.toThrow(
