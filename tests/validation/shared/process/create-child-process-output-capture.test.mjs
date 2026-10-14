@@ -19,10 +19,14 @@ test("captures both streams and redacts diagnostics using the effective environm
 });
 
 test("keeps diagnostic truncation at complete redaction markers and UTF-8 boundaries", () => {
-  const capture = createChildProcessOutputCapture({ env: { SERVICE_TOKEN: "secret" } }, [], 8);
-  expect(capture.redactDiagnostic("secret")).toBe("");
-  expect(Buffer.byteLength(capture.redactDiagnostic("éé secret"))).toBeLessThanOrEqual(8);
-  expect(capture.redactDiagnostic("éé secret")).toBe("éé ");
+  const capture = createChildProcessOutputCapture(
+    { env: { SERVICE_TOKEN: "secret-value" } },
+    [],
+    14,
+  );
+  expect(capture.redactDiagnostic("secret-value")).toBe("[REDACTED]");
+  expect(Buffer.byteLength(capture.redactDiagnostic("éé secret-value"))).toBeLessThanOrEqual(14);
+  expect(capture.redactDiagnostic("éé secret-value")).toBe("éé ");
 });
 
 test("builds a separate secret matcher for each output stream", () => {

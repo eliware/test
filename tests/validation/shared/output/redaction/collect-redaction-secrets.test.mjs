@@ -11,7 +11,7 @@ test("collects unique string values from sensitive environment keys", () => {
       EMPTY_SECRET: "",
       NUMERIC_PASSWORD: 123,
     }),
-  ).toEqual(["long-secret", "short"]);
+  ).toEqual(["long-secret"]);
 });
 
 test("returns no secrets for missing or non-object environments", () => {
@@ -26,17 +26,28 @@ test("collects configured secret values regardless of environment size", () => {
   environment.SHORT_TOKEN = "x";
 
   const secrets = collectRedactionSecrets(environment);
-  expect(secrets).toHaveLength(106);
+  expect(secrets).toHaveLength(105);
   expect(secrets).toContain("secret-104");
-  expect(secrets).toContain("x");
+  expect(secrets).not.toContain("x");
 });
 
 test("collects common cloud, GitHub, and npm credential variables", () => {
   expect(
     collectRedactionSecrets({
-      AWS_ACCESS_KEY_ID: "aws-key",
+      AWS_ACCESS_KEY_ID: "aws-access-key",
       GITHUB_TOKEN: "github-token",
       NPM_AUTH_TOKEN: "npm-auth",
     }),
-  ).toEqual(["github-token", "npm-auth", "aws-key"]);
+  ).toEqual(["aws-access-key", "github-token", "npm-auth"]);
+});
+
+test("ignores short values that can overlap ordinary command output", () => {
+  expect(
+    collectRedactionSecrets({
+      XDG_SESSION_ID: "1",
+      SERVICE_TOKEN: "12",
+      API_KEY: "12.0.0",
+      API_TOKEN: "secret-token-value",
+    }),
+  ).toEqual(["secret-token-value"]);
 });

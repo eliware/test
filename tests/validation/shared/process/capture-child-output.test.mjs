@@ -120,3 +120,10 @@ test("suppresses complete progress output when a configured secret exceeds the c
   const capture = createChildOutputCapture(4, { env: { SERVICE_TOKEN: "secret-value" } });
   expect(capture.redactComplete("secret-value")).toBe("");
 });
+
+test("preserves version output when a sensitive environment value is short", () => {
+  const capture = createChildOutputCapture(100, { env: { XDG_SESSION_ID: "1" } });
+  capture.stdout("12.0.0");
+
+  expect(capture.result().stdout).toBe("12.0.0");
+});
