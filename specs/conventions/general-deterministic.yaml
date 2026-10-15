@@ -9,6 +9,8 @@ directives:
       - Allow ../docs/repo-map.yaml to be absent.
       - When ../docs/repo-map.yaml lists this repository, match package.json eliware.id,
         description, keywords, and applied profiles.
+      - When no repository entry exists, validate package metadata through the general
+        package rules.
       - Give exemptions unique known check IDs, nonempty reasons, approver Eli, valid
         approvalTimestamp, and valid expiry or null.
     examples:
