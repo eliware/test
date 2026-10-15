@@ -1,4 +1,4 @@
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { validateWorkflowStepFields } from "./workflow/step/fields.mjs";
 import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
 
@@ -11,7 +11,7 @@ export async function validatePublishWorkflowOrder(inventory, packageJson) {
   try {
     const files = await inventory.files("all");
     if (!files.includes(publishPath)) return [`${publishPath} is required.`];
-    const documents = parseAllDocuments(await inventory.readText(publishPath));
+    const documents = parseBoundedYamlDocuments(await inventory.readText(publishPath), publishPath);
     if (documents.length !== 1 || documents[0].errors.length)
       return [`${publishPath} must contain one valid YAML document.`];
     return validatePublishJobs(documents[0].toJS());

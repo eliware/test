@@ -10,16 +10,21 @@ conflicts:
 directives:
   - id: E-0.1.4.0.0
     dos:
-      - Document supported workflows, runtime entrypoints, startup, shutdown, configuration, and operational boundaries accurately.
+      - Document supported workflows, runtime entrypoints, startup, shutdown,
+        configuration, and operational boundaries accurately.
       - Make end-user documentation sufficient for supported application use.
       - Distinguish runtime settings from metadata and deployment configuration.
       - State when runtime configuration is absent.
-      - Describe supported environment variables, defaults, options, and required or optional status.
-      - Supply complete placeholder-only environment examples when environment configuration is supported.
+      - Describe supported environment variables, defaults, options, and required or
+        optional status.
+      - Supply complete placeholder-only environment examples when environment
+        configuration is supported.
       - Explain examples' prerequisites, commands, and expected results.
     donts:
-      - Do not hide user-facing behavior in internal runbooks or claim unsupported guarantees.
-      - Do not omit supported settings or activate optional environment variables in templates.
+      - Do not hide user-facing behavior in internal runbooks or claim unsupported
+        guarantees.
+      - Do not omit supported settings or activate optional environment variables in
+        templates.
 
   - id: E-0.1.4.0.1
     dos:
@@ -28,7 +33,8 @@ directives:
       - Test public inputs and observable results of supported workflows.
       - Use a separate test database that can be created and deleted for each test run.
       - Use synthetic data in database-backed tests.
-      - Keep unit assertions with the lowest owning module and coordinator tests focused on integration.
+      - Keep unit assertions with the lowest owning module and coordinator tests focused
+        on integration.
       - Inject replaceable dependencies.
       - Keep launchers thin.
       - Remove superseded compatibility branches, aliases, and fallbacks.

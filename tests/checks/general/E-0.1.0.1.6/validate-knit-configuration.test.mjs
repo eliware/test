@@ -1,8 +1,17 @@
 import { expect, test } from "@jest/globals";
 import { validateKnitConfiguration } from "../../../../src/checks/general/E-0.1.0.1.6/validate-knit-configuration.mjs";
 
-const deploy = (commands) =>
-  `version: 1\non:\n  push:\n    deployments:\n      - cwd: /repo\n        timeoutMs: 300000\n        ${commands.replaceAll("\n", "\n        ")}\n`;
+const deploy = (commands) => {
+  const normalized = commands.replace(
+    /commands: \[([^\]]+)\]/u,
+    (_, values) =>
+      `commands:\n${values
+        .split(", ")
+        .map((value) => `  - ${value}`)
+        .join("\n")}`,
+  );
+  return `version: 1\non:\n  push:\n    deployments:\n      - cwd: /repo\n        timeoutMs: 300000\n        ${normalized.replaceAll("\n", "\n        ")}\n`;
+};
 
 test("validates nested Knit command lists", async () => {
   await expect(

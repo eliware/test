@@ -12,6 +12,12 @@ test("validates the GHCR workflow profile requirements", async () => {
   );
 });
 
+test("reports a missing package image name when package data is absent", async () => {
+  await expect(validateGhcrPublishWorkflow(createGhcrInventory())).resolves.toContain(
+    "GHCR image name must use the unscoped package name.",
+  );
+});
+
 test.each([
   [{ name: "@eliware/application-template", version: ghcrPackage.version }],
   [{ name: "@eliware/web-template", version: ghcrPackage.version }],

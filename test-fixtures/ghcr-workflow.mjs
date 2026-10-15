@@ -33,7 +33,7 @@ export function createGhcrWorkflow() {
         steps: [
           { uses: "actions/checkout@v6" },
           {
-            run: `node -e "const version=require('./package.json').version;if(process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"`,
+            run: `node -e "const version=require('./package.json').version;\nif(process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"`,
           },
           {
             id: "image",

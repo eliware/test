@@ -1,11 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 
 export async function loadRepoMapRecord(root, packageJson, { read = readFile } = {}) {
+  const repoMapPath = join(root, "..", "docs", "repo-map.yaml");
   let source;
   try {
-    source = await read(join(root, "..", "docs", "repo-map.yaml"), "utf8");
+    source = await read(repoMapPath, "utf8");
   } catch (error) {
     if (error.code === "ENOENT") return { available: false, record: null, error: null };
     return {
@@ -16,7 +17,7 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
   }
   let documents;
   try {
-    documents = parseAllDocuments(source);
+    documents = parseBoundedYamlDocuments(source, repoMapPath);
     const parseError = documents.flatMap((document) => document.errors)[0];
     if (parseError) throw parseError;
   } catch (error) {

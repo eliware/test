@@ -23,7 +23,10 @@ const workflow = `jobs:
           package-manager-cache: false
       - run: npm -g install npm@latest
       - run: npm ci
-      - run: node -e "const version=require('./package.json').version;if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
+      - run: >-
+          node -e "const version=require('./package.json').version;
+          if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||
+          process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
       - run: npm publish --provenance
 on:
   push:
@@ -82,8 +85,8 @@ test.each([
   ],
   [
     workflow.replace(
-      "      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: node -e",
-      "      - run: npm ci\n      - run: npm -g install npm@latest\n      - run: node -e",
+      "      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: >-",
+      "      - run: npm ci\n      - run: npm -g install npm@latest\n      - run: >-",
     ),
     "install npm latest",
   ],

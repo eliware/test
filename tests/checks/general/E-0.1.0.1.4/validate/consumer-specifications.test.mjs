@@ -95,6 +95,17 @@ test("reports specification discovery failures", async () => {
   ).resolves.toEqual(["Consumer specification discovery failed: blocked"]);
 });
 
+test("requires a valid assigned rule namespace", async () => {
+  const { root } = await createRoot();
+  try {
+    expect((await validateConsumerSpecifications(root, "invalid")).join(" ")).toContain(
+      "package.json.eliware.id must define the assigned E-number.",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("reports unreadable specification files", async () => {
   const { root } = await createRoot();
   try {

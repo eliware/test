@@ -15,8 +15,10 @@ directives:
       - Keep docs/README.md.
       - Link docs/README.md from root README.md.
       - Index every Markdown document beneath docs/ except its index.
-      - When examples/ contains .mjs or .js examples, maintain examples/README.md linking every JavaScript example.
-      - Keep implementation modules under src/, launchers under bin/, tests under tests/, fixtures under test-fixtures/, and examples under examples/.
+      - When examples/ contains .mjs or .js examples, maintain examples/README.md linking
+        every JavaScript example.
+      - Keep implementation modules under src/, launchers under bin/, tests under tests/,
+        fixtures under test-fixtures/, and examples under examples/.
       - Use focused test runs to validate small changes.
       - Show commands for one test file and multiple test files through npm test.
       - Run the full npm test suite before a commit or milestone.
@@ -25,38 +27,56 @@ directives:
       - Do not leave discovered docs documents or JavaScript examples unindexed.
     examples:
       - "## Application"
-      - "For a small change, run one or more focused tests.\nRun one test file with `npm test -- tests/path/to/example.test.mjs`.\nRun multiple test files with `npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs`.\nRun the full `npm test` suite before a commit or milestone."
+      - "For a small change, run one or more focused tests.
+
+        Run one test file with `npm test -- tests/path/to/example.test.mjs`.
+
+        Run multiple test files with `npm test -- tests/path/to/first.test.mjs
+        tests/path/to/second.test.mjs`.
+
+        Run the full `npm test` suite before a commit or milestone."
       - "## Configuration\n\n## Operations"
 
   - id: E-0.1.4.1.1
     dos:
-      - When bin exists, make each target a nonempty repository-relative path to an existing file under bin/.
-      - Give bin object keys nonempty names containing ASCII letters, digits, underscores, dots, or hyphens.
-      - When start exists, include a standalone token matching a declared entrypoint after removing optional quotes and leading ./.
+      - When bin exists, make each target a nonempty repository-relative path to an
+        existing file under bin/.
+      - Give bin object keys nonempty names containing ASCII letters, digits, underscores,
+        dots, or hyphens.
+      - When start exists, include a standalone token matching a declared entrypoint after
+        removing optional quotes and leading ./.
     donts:
       - Do not require package.json.bin for the Application profile.
       - Do not declare invalid names, escaping paths, or entrypoints outside bin/.
     examples:
-      - '{"bin":{"example":"./bin/example.mjs"},"scripts":{"start":"node bin/example.mjs"}}'
+      - '{"bin":{"example":"./bin/example.mjs"},"scripts":{"start":"node
+        bin/example.mjs"}}'
 
   - id: E-0.1.4.1.2
     dos:
       - Keep implementation under src/ and launchers under bin/.
       - Put implementation modules under src/. Put launchers under bin/.
-      - Put tests under tests/, fixtures under test-fixtures/, and examples under examples/.
+      - Put tests under tests/, fixtures under test-fixtures/, and examples under
+        examples/.
       - Mirror every src/ .mjs file with exactly one same-path tests/ .test.mjs file.
-      - Give every test file a matching source, executable Jest test callback, and matching source reference.
-      - Keep unmatched fixtures, snapshots, generators, and test support under root test-fixtures/.
+      - Give every test file a matching source, executable Jest test callback, and
+        matching source reference.
+      - Keep unmatched fixtures, snapshots, generators, and test support under root
+        test-fixtures/.
       - Keep generated test output under ignored artifacts/.
-      - Limit every .mjs file under src/ to 100 physical lines and every .test.mjs file under tests/ to 200.
+      - Limit every .mjs file under src/ to 100 physical lines and every .test.mjs file
+        under tests/ to 200.
       - Count blank lines, comments, and unterminated final lines.
-      - Define a pure export barrel as a nonempty module with only top-level static imports, source re-exports, or local exports.
+      - Define a pure export barrel as a nonempty module with only top-level static
+        imports, source re-exports, or local exports.
       - Require local exports to expose exactly the imported binding names.
-      - Treat a barrel as public only when its normalized path matches a main, bin, or exports target in package.json.
+      - Treat a barrel as public only when its normalized path matches a main, bin, or
+        exports target in package.json.
     donts:
       - Do not impose a line limit on bin/ launchers.
       - Do not exempt sources from mirroring or line limits because of coverage exclusions.
-      - Do not put generated output or unmatched tests and support files under src/ or tests/.
+      - Do not put generated output or unmatched tests and support files under src/ or
+        tests/.
       - Do not count skipped, todo, or describe-only declarations as executable tests.
       - Do not use internal pure export barrels.
     examples:
@@ -70,7 +90,8 @@ directives:
       - Use fake timers or injected fixed clocks.
       - Mock process calls and other external effects.
       - Use Istanbul coverage for production .mjs files under src/.
-      - Reach 100 percent statements, branches, functions, and lines with zero uncovered lines.
+      - Reach 100 percent statements, branches, functions, and lines with zero uncovered
+        lines.
       - Keep successful test runs free of console and process output.
     donts:
       - Do not change file-system state in tests.
@@ -83,7 +104,11 @@ directives:
       - Do not add separate Jest configuration.
       - Do not use production coverage exclusions or Istanbul ignore directives.
     examples:
-      - '{"testEnvironment":"node","testMatch":["**/tests/**/*.test.mjs"],"collectCoverageFrom":["src/**/*.mjs"],"coverageReporters":["text","json-summary"],"coverageThreshold":{"global":{"branches":100,"functions":100,"lines":100,"statements":100}}}'
+      - >-
+        {"testEnvironment":"node","testMatch":["**/tests/**/*.test.mjs"],
+        "collectCoverageFrom":["src/**/*.mjs"],"coverageReporters":["text","json-summary"],
+        "coverageThreshold":{"global":{"branches":100,"functions":100,"lines":100,
+        "statements":100}}}
 
   - id: E-0.1.4.1.4
     dos:
@@ -96,8 +121,10 @@ directives:
       - Require a v<version> repository tag for every older release entry.
       - Allow the current package.json.version without a repository tag.
       - Make all repository tags available during validation.
-      - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.
-      - Give every entry at least one level-three category from Added, Changed, Fixed, Breaking changes, Migration, or Security.
+      - Use valid calendar dates, strictly descending numeric SemVer versions, and
+        non-increasing dates.
+      - Give every entry at least one level-three category from Added, Changed, Fixed,
+        Breaking changes, Migration, or Security.
       - Give each category user-visible change text.
       - Do not repeat categories within one entry.
     donts:
@@ -107,4 +134,13 @@ directives:
       - Do not put text outside a release category.
       - Do not put headings outside a release entry or category.
     examples:
-      - "# Release Notes\n\n## 13.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
+      - "# Release Notes
+
+
+        ## 13.0.0 — 2026-06-01
+
+
+        ### Added
+
+
+        Initial release."

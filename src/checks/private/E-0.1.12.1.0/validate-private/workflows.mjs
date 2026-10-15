@@ -1,4 +1,4 @@
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 
 const workflowDirectory = ".github/workflows/";
 const tokenNames = new Set(["NPM_TOKEN", "NODE_AUTH_TOKEN"]);
@@ -20,7 +20,7 @@ export async function validatePrivateWorkflows(inventory) {
 
 async function validateWorkflow(inventory, path) {
   try {
-    const documents = parseAllDocuments(await inventory.readText(path));
+    const documents = parseBoundedYamlDocuments(await inventory.readText(path), path);
     if (documents.length !== 1 || documents[0].errors.length)
       return [`${path} must contain one valid YAML document.`];
     return findViolations(documents[0].toJS(), path);

@@ -3,7 +3,9 @@ const workflowReleaseTagGuard = `node -e "const version=require('./package.json'
 
 export function hasCanonicalReleaseTagGuard(workflow, steps, version, finalStepIndex) {
   const guardIndex = steps.findIndex(
-    (step) => step?.run === releaseTagGuard || step?.run === workflowReleaseTagGuard,
+    (step) =>
+      normalizeCommand(step?.run) === normalizeCommand(releaseTagGuard) ||
+      normalizeCommand(step?.run) === normalizeCommand(workflowReleaseTagGuard),
   );
   const checkoutIndex = steps.findIndex((step) => step?.uses === "actions/checkout@v6");
   return (
@@ -15,6 +17,10 @@ export function hasCanonicalReleaseTagGuard(workflow, steps, version, finalStepI
     steps[guardIndex]?.if === undefined &&
     steps[guardIndex]?.["continue-on-error"] === undefined
   );
+}
+
+function normalizeCommand(command) {
+  return typeof command === "string" ? command.replace(/\s+/gu, "") : "";
 }
 
 export function hasCanonicalReleaseTagFilter(workflow) {

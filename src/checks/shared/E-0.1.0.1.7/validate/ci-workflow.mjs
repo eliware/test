@@ -1,4 +1,4 @@
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { validateWorkflowSteps } from "./workflow/steps.mjs";
 
 const workflowPath = ".github/workflows/ci.yaml";
@@ -6,7 +6,10 @@ const workflowPath = ".github/workflows/ci.yaml";
 export async function validateCiWorkflow(inventory) {
   if (!inventory?.readText) return ["GitHub workflow files could not be inspected."];
   try {
-    const documents = parseAllDocuments(await inventory.readText(workflowPath));
+    const documents = parseBoundedYamlDocuments(
+      await inventory.readText(workflowPath),
+      workflowPath,
+    );
     const parseError = documents.flatMap((document) => document.errors)[0];
     if (parseError) return [`${workflowPath} could not be parsed: ${parseError.message}`];
     if (documents.length !== 1) return [`${workflowPath} must contain exactly one document.`];

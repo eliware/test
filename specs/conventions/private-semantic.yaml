@@ -7,8 +7,11 @@ conflicts:
 directives:
   - id: E-0.1.12.0.0
     dos:
-      - Document authorized audiences, access boundaries, private distribution, and publication restrictions accurately.
-      - Distinguish source-hosting visibility, npm publishability, and container visibility.
+      - Document authorized audiences, access boundaries, private distribution, and
+        publication restrictions accurately.
+      - Distinguish source-hosting visibility, npm publishability, and container
+        visibility.
     donts:
       - Do not describe private distribution as unrestricted public access.
-      - Do not present container publication as authorization to publish npm packages or deploy.
+      - Do not present container publication as authorization to publish npm packages or
+        deploy.

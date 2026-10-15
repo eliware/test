@@ -18,9 +18,22 @@ directives:
   - id: E-0.1.9.1.0
     dos:
       - Add an Infrastructure section to AGENTS.md.
-      - Add Managed targets, Configuration, Desired state, Validation, and Change boundaries sections to README.md.
+      - Add Managed targets, Configuration, Desired state, Validation, and Change
+        boundaries sections to README.md.
     donts:
       - Do not omit infrastructure-specific headings.
     examples:
       - "## Infrastructure"
-      - "## Managed targets\n\n## Configuration\n\n## Desired state\n\n## Validation\n\n## Change boundaries"
+      - "## Managed targets
+
+
+        ## Configuration
+
+
+        ## Desired state
+
+
+        ## Validation
+
+
+        ## Change boundaries"

@@ -1,4 +1,4 @@
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { posix } from "node:path";
 import { isProhibitedNpmOrGhcrPublishCommand } from "../../shared/is-prohibited-npm-or-ghcr-publish-command.mjs";
 
@@ -15,7 +15,10 @@ export async function validateKnitConfiguration(inventory) {
     if (yamlFiles.length !== 1 || yamlFiles[0] !== ".knit/deploy.yaml")
       errors.push(".knit/deploy.yaml must be the only YAML file under .knit/.");
     if (!yamlFiles.includes(".knit/deploy.yaml")) return errors;
-    const documents = parseAllDocuments(await inventory.readText(".knit/deploy.yaml"));
+    const documents = parseBoundedYamlDocuments(
+      await inventory.readText(".knit/deploy.yaml"),
+      ".knit/deploy.yaml",
+    );
     const parseError = documents.flatMap((document) => document.errors)[0];
     if (parseError)
       return [...errors, `.knit/deploy.yaml could not be parsed: ${parseError.message}`];

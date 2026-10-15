@@ -12,20 +12,38 @@ directives:
   - id: E-0.1.6.1.0
     dos:
       - Add a Web section to AGENTS.md.
-      - Add Routes, Assets, Development server, Build, and Deployment sections to README.md.
+      - Add Routes, Assets, Development server, Build, and Deployment sections to
+        README.md.
     donts:
       - Do not omit web-specific headings.
     examples:
       - "## Web"
-      - "## Configuration\n\n## Routes\n\n## Assets\n\n## Development server\n\n## Build\n\n## Deployment"
+      - "## Configuration
+
+
+        ## Routes
+
+
+        ## Assets
+
+
+        ## Development server
+
+
+        ## Build
+
+
+        ## Deployment"
 
   - id: E-0.1.6.1.1
     dos:
       - Use <repo-root>/public as the web asset inventory root.
-      - Keep dist, build, coverage, node_modules, and .git directories out of public/ at every depth.
+      - Keep dist, build, coverage, node_modules, and .git directories out of public/ at
+        every depth.
     donts:
       - Do not set package.json.eliware.webRoot or package.json.eliware.webAssetExcludes.
-      - Do not automatically run lighthouse, puppeteer, prebuild, or postbuild scripts during aggregate validation.
+      - Do not automatically run lighthouse, puppeteer, prebuild, or postbuild scripts
+        during aggregate validation.
     examples:
       - "<repo-root>/public"
       - "<repo-root>/dist"

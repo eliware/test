@@ -11,7 +11,8 @@ conflicts:
 directives:
   - id: E-0.1.6.0.0
     dos:
-      - Document routes, ownership, assets, build settings, ports, and output paths accurately.
+      - Document routes, ownership, assets, build settings, ports, and output paths
+        accurately.
       - Set webpack output to <repo-root>/dist.
       - Explain browser-validation prerequisites, commands, and expected results.
       - Define acceptance expectations for supported browser workflows.

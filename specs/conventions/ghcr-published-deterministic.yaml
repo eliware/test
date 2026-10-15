@@ -10,7 +10,8 @@ directives:
   - id: E-0.1.11.1.0
     dos:
       - Add a GHCR publication section to AGENTS.md.
-      - Include the exact Usage markers shown with package-derived image identity and version.
+      - Include the exact Usage markers shown with package-derived image identity and
+        version.
       - Append latest to supported tags only when the workflow declares that tag.
       - Include the mutable-alias statement when latest is declared.
     donts:
@@ -21,14 +22,17 @@ directives:
       - "Pull command: docker pull ghcr.io/eliware/example:v13.0.0"
       - "Supported tags: vMAJOR.MINOR.PATCH"
       - "Supported tags: vMAJOR.MINOR.PATCH, latest"
-      - "Deployment boundary: publication does not deploy; deploy by immutable version tag and recorded sha256 digest."
-      - "latest is a mutable convenience alias and is never the release or deployment identity."
+      - "Deployment boundary: publication does not deploy; deploy by immutable version tag
+        and recorded sha256 digest."
+      - "latest is a mutable convenience alias and is never the release or deployment
+        identity."
 
   - id: E-0.1.11.1.1
     dos:
       - Keep the Dockerfile at the repository root.
       - Declare the repository root as the build context.
-      - Set publish.env.IMAGE_NAME to ghcr.io/${{ github.repository }}. General rules match the repository name to the package name.
+      - Set publish.env.IMAGE_NAME to ghcr.io/${{ github.repository }}. General rules
+        match the repository name to the package name.
       - Use ${{ env.IMAGE_NAME }}:${{ github.ref_name }} as the package version tag.
       - Check that the release tag matches the canonical package version before image push.
       - Make additional tags use ${{ env.IMAGE_NAME }} and a valid tag.
@@ -39,31 +43,70 @@ directives:
       - Do not require npm setup in jobs that do not invoke npm.
       - Do not declare deployment commands.
     examples:
-      - "on:\n  push:\n    tags: [\"v[0-9]*.[0-9]*.[0-9]*\"]"
+      - "on:
+
+        \  push:
+
+        \    tags: [\"v[0-9]*.[0-9]*.[0-9]*\"]"
       - "environment: ghcr-publish"
-      - "env:\n  IMAGE_NAME: ghcr.io/${{ github.repository }}"
+      - "env:
+
+        \  IMAGE_NAME: ghcr.io/${{ github.repository }}"
       - "tags: ${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
-      - 'run: node -e "const version=require(''./package.json'').version;if(process.env.GITHUB_REF_NAME!==''v''+version)process.exit(1)"'
-      - "permissions:\n  contents: read\n  packages: write\n  id-token: write\n  attestations: write\n  artifact-metadata: write"
+      - >-
+        run: node -e "const version=require(''./package.json'').version; if(
+        process.env.GITHUB_REF_NAME!==''v''+version)process.exit(1)"
+      - "permissions:
+
+        \  contents: read
+
+        \  packages: write
+
+        \  id-token: write
+
+        \  attestations: write
+
+        \  artifact-metadata: write"
 
   - id: E-0.1.11.1.2
     dos:
-      - Give push steps valid IDs beginning with ASCII letters or underscores and containing only letters, digits, underscores, or hyphens.
+      - Give push steps valid IDs beginning with ASCII letters or underscores and
+        containing only letters, digits, underscores, or hyphens.
       - Set actions/attest major v4 after each final image push.
-      - Bind subject-name to the untagged package-derived image and subject-digest to that push step's digest output.
+      - Bind subject-name to the untagged package-derived image and subject-digest to that
+        push step's digest output.
       - Set push-to-registry true.
-      - Set GH_TOKEN to ${{ github.token }} on the attestation verification step or publish job.
-      - Append the exact digest reference to GITHUB_STEP_SUMMARY through one single-line echo command.
-      - Set unconditional post-push steps for version-to-digest verification and image and attestation inspection.
+      - Set GH_TOKEN to ${{ github.token }} on the attestation verification step or
+        publish job.
+      - Append the exact digest reference to GITHUB_STEP_SUMMARY through one single-line
+        echo command.
+      - Set unconditional post-push steps for version-to-digest verification and image and
+        attestation inspection.
       - Make the final push's required verification chain end at the last job step.
     donts:
       - Do not reference missing steps, unrelated digests, or mutable attestation subjects.
-      - Do not use control operators or command substitution in the summary command except its required append redirection.
+      - Do not use control operators or command substitution in the summary command except
+        its required append redirection.
       - Do not declare bypass conditions on required verification steps.
       - Do not use continue-on-error on required verification steps.
     examples:
-      - "uses: actions/attest@v4\nwith:\n  subject-name: ${{ env.IMAGE_NAME }}\n  subject-digest: ${{ steps.image.outputs.digest }}\n  push-to-registry: true"
-      - 'run: test "$(docker buildx imagetools inspect "$IMAGE_NAME:$GITHUB_REF_NAME" --format ''{{.Manifest.Digest}}'')" = "${{ steps.image.outputs.digest }}"'
-      - 'run: docker buildx imagetools inspect "$IMAGE_NAME@${{ steps.image.outputs.digest }}"'
+      - "uses: actions/attest@v4
+
+        with:
+
+        \  subject-name: ${{ env.IMAGE_NAME }}
+
+        \  subject-digest: ${{ steps.image.outputs.digest }}
+
+        \  push-to-registry: true"
+      - 'run: test "$(docker buildx imagetools inspect "$IMAGE_NAME:$GITHUB_REF_NAME"
+        --format ''{{.Manifest.Digest}}'')" = "${{ steps.image.outputs.digest }}"'
+      - 'run: docker buildx imagetools inspect "$IMAGE_NAME@${{ steps.image.outputs.digest
+        }}"'
       - 'echo "${{ steps.image.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"'
-      - "env:\n  GH_TOKEN: ${{ github.token }}\nrun: gh attestation verify \"oci://$IMAGE_NAME@${{ steps.image.outputs.digest }}\" --repo \"${{ github.repository }}\""
+      - "env:
+
+        \  GH_TOKEN: ${{ github.token }}
+
+        run: gh attestation verify \"oci://$IMAGE_NAME@${{ steps.image.outputs.digest }}\"
+        --repo \"${{ github.repository }}\""

@@ -9,7 +9,8 @@ conflicts:
 directives:
   - id: E-0.1.11.0.0
     dos:
-      - Document image purpose, intended visibility, architectures, access boundaries, and deployment-consumer expectations accurately.
+      - Document image purpose, intended visibility, architectures, access boundaries, and
+        deployment-consumer expectations accurately.
       - Define ownership of build inputs and architecture decisions.
       - Keep publication and deployment authorization separate.
       - Describe latest only as a mutable convenience alias.

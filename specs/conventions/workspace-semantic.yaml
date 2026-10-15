@@ -17,8 +17,10 @@ conflicts:
 directives:
   - id: E-0.1.2.0.0
     dos:
-      - Define workspace purpose, ownership, role boundaries, communication, escalation, and recovery responsibilities.
-      - Give runbooks clear purposes, owners, boundaries, prerequisites, and actionable steps.
+      - Define workspace purpose, ownership, role boundaries, communication, escalation,
+        and recovery responsibilities.
+      - Give runbooks clear purposes, owners, boundaries, prerequisites, and actionable
+        steps.
       - Write runbook instructions with ASD-STE100 rules.
       - Keep recovery usable without unavailable conversation history.
       - Keep durable workspace decisions in indexed specifications.

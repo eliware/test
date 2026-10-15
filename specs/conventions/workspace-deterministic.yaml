@@ -27,4 +27,10 @@ directives:
       - Do not omit workspace-specific headings.
     examples:
       - "## Workspace"
-      - "## Runbooks\n\n## Communication\n\n## Recovery"
+      - "## Runbooks
+
+
+        ## Communication
+
+
+        ## Recovery"

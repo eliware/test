@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { listSpecificationEntries } from "../../general/E-0.1.0.1.4/list-specification-entries.mjs";
 
 function collectDeclaredHeadings(directives, headings) {
@@ -27,7 +27,7 @@ export async function readSpecificationHeadings(root, { read = readFile, readdir
     ({ path, type }) => type === "file" && /^specs\/.*\.ya?ml$/iu.test(path),
   )) {
     const file = join(root, path);
-    const documents = parseAllDocuments(await read(file, "utf8"));
+    const documents = parseBoundedYamlDocuments(await read(file, "utf8"), path);
     const error = documents.flatMap((document) => document.errors)[0];
     if (error) throw error;
     for (const document of documents)

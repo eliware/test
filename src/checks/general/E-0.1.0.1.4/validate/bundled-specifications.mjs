@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { listSpecificationEntries } from "../list-specification-entries.mjs";
 import { validateProfileRequirements } from "./profile-requirements.mjs";
 import { validateSpecificationDocument } from "./specification/document.mjs";
@@ -19,7 +19,7 @@ export async function validateBundledSpecifications({ read = readFile, readdir }
   let schema;
   let documents;
   try {
-    schema = parseDocuments(await read(schemaUrl, "utf8"));
+    schema = parseDocuments(await read(schemaUrl, "utf8"), schemaUrl.pathname);
     const entries = await listSpecificationEntries(suiteRoot, { list: readdir });
     documents = await readConventionDocuments(entries, read);
   } catch (error) {
@@ -50,7 +50,7 @@ async function readConventionDocuments(entries, read) {
     .map(({ path }) => path);
   const documents = [];
   for (const path of paths) {
-    const values = parseDocuments(await read(join(suiteRoot, path), "utf8"));
+    const values = parseDocuments(await read(join(suiteRoot, path), "utf8"), path);
     values.forEach((value, index) =>
       documents.push({ path: `${path} document ${index + 1}`, value }),
     );
@@ -58,8 +58,8 @@ async function readConventionDocuments(entries, read) {
   return documents;
 }
 
-function parseDocuments(source) {
-  const parsed = parseAllDocuments(source);
+function parseDocuments(source, path) {
+  const parsed = parseBoundedYamlDocuments(source, path);
   const errors = parsed.flatMap((document) => document.errors);
   if (errors.length) throw new Error(errors.map(({ message }) => message).join("; "));
   return parsed.map((document) => document.toJSON());

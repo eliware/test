@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { listSpecificationEntries } from "../list-specification-entries.mjs";
 import { validateSpecificationDocument } from "./specification/document.mjs";
 import { validateSpecificationIds } from "./specification/ids.mjs";
@@ -33,7 +33,7 @@ export async function validateConsumerSpecifications(
     }
     let parsed;
     try {
-      parsed = parseAllDocuments(source);
+      parsed = parseBoundedYamlDocuments(source, path);
     } catch (error) {
       errors.push(`${path} is invalid YAML: ${error.message}`);
       continue;

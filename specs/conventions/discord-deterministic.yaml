@@ -25,7 +25,19 @@ directives:
       - Do not omit Discord-specific headings.
     examples:
       - "## Discord"
-      - "## Configuration\n\n## Operations\n\n## Commands\n\n## Events\n\n## Intents and permissions"
+      - "## Configuration
+
+
+        ## Operations
+
+
+        ## Commands
+
+
+        ## Events
+
+
+        ## Intents and permissions"
 
   - id: E-0.1.7.1.2
     dos:
@@ -35,7 +47,8 @@ directives:
       - Put each command handler in src/commands/<name>.mjs.
       - Use a type 1 command definition with valid names and descriptions.
       - Define localized command names and descriptions for every supported locale.
-      - Use the supported locale list in this directive for locale records and command localization.
+      - Use the supported locale list in this directive for locale records and command
+        localization.
       - Put each locale record in locales/<locale>.json.
       - Include every supported locale listed below.
       - Keep each locale record's keys equal to locales/en-US.json keys.
@@ -55,4 +68,6 @@ directives:
       - "commands/help.json and commands/help.mjs match src/commands/help.mjs."
       - "events/clientReady.mjs and events/interactionCreate.mjs are required."
       - "locales/en-US.json and every supported locale use the same keys."
-      - "Supported locale IDs: bg, cs, da, de, el, en-GB, en-US, es-419, es-ES, fi, fr, hi, hr, hu, id, it, ja, ko, lt, nl, no, pl, pt-BR, ro, ru, sv-SE, th, tr, uk, vi, zh-CN, zh-TW."
+      - "Supported locale IDs: bg, cs, da, de, el, en-GB, en-US, es-419, es-ES, fi, fr,
+        hi, hr, hu, id, it, ja, ko, lt, nl, no, pl, pt-BR, ro, ru, sv-SE, th, tr, uk, vi,
+        zh-CN, zh-TW."

@@ -19,7 +19,8 @@ directives:
       - Do not replace required package validation with script presence.
     examples:
       - "## npm publication"
-      - "[![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/package/@eliware/example)"
+      - "[![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/pa\
+        ckage/@eliware/example)"
 
   - id: E-0.1.10.1.1
     dos:
@@ -31,20 +32,28 @@ directives:
       - Allow additional runtime files and folders at any depth unless excluded.
       - Exclude tests, test, __tests__, and test-fixtures directories at every depth.
       - Exclude .github, .knit, .git, and node_modules directories at every depth.
-      - Exclude coverage, dist, build, generated, artifacts, and test-results directories at every depth.
+      - Exclude coverage, dist, build, generated, artifacts, and test-results directories
+        at every depth.
       - Exclude .gitignore and package-lock.json at every depth.
-      - Exclude .npmrc, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml, bun.lock, and bun.lockb at every depth.
-      - Exclude secret, secrets, credential, credentials, token, and tokens directories at every depth.
-      - Exclude non-source files named secret, secrets, credential, credentials, token, or tokens at every depth.
+      - Exclude .npmrc, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml, bun.lock, and
+        bun.lockb at every depth.
+      - Exclude secret, secrets, credential, credentials, token, and tokens directories at
+        every depth.
+      - Exclude non-source files named secret, secrets, credential, credentials, token, or
+        tokens at every depth.
       - Exclude files with .pem, .key, .p12, or .pfx extensions at every depth.
       - Validate actual packed contents against minimum contents and exclusions.
     donts:
       - Do not impose an exact allowlist or let extras bypass exclusions.
       - Do not use absolute or traversing files entries.
-      - Do not maintain .npmignore or packaging lifecycle scripts prepare, prepublish, prepublishOnly, prepack, or postpack.
+      - Do not maintain .npmignore or packaging lifecycle scripts prepare, prepublish,
+        prepublishOnly, prepack, or postpack.
     examples:
-      - '{"files":["src/","docs/","examples/","specs/","README.md","AGENTS.md","LICENSE","RELEASE_NOTES.md","assets/","data.json"]}'
-      - "assets/templates/email.html is permitted but assets/tests/example.json is excluded."
+      - >-
+        {"files":["src/","docs/","examples/","specs/","README.md","AGENTS.md","LICENSE",
+        "RELEASE_NOTES.md","assets/","data.json"]}
+      - "assets/templates/email.html is permitted but assets/tests/example.json is
+        excluded."
 
   - id: E-0.1.10.1.2
     dos:
@@ -52,12 +61,21 @@ directives:
       - Use checkout major v6 before tag verification in the npm publisher.
       - Set registry-url to https://registry.npmjs.org and package-manager-cache to false.
       - Install npm latest before npm ci in the npm publisher.
-      - Check that the release tag matches the canonical package version before publication.
+      - Check that the release tag matches the canonical package version before
+        publication.
       - Use one unconditional standalone npm publish --provenance step.
     donts:
       - Do not declare NPM_TOKEN or NODE_AUTH_TOKEN in workflow environment or setup.
     examples:
-      - "uses: actions/setup-node@v7\nwith:\n  node-version: 26\n  registry-url: https://registry.npmjs.org\n  package-manager-cache: false"
+      - "uses: actions/setup-node@v7
+
+        with:
+
+        \  node-version: 26
+
+        \  registry-url: https://registry.npmjs.org
+
+        \  package-manager-cache: false"
       - "run: npm publish --provenance"
 
   - id: E-0.1.10.1.3

@@ -1,9 +1,9 @@
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 
 export function validateRunbookDocument(content, path, schema) {
   let documents;
   try {
-    documents = parseAllDocuments(content);
+    documents = parseBoundedYamlDocuments(content, path);
   } catch (error) {
     return [`${path} is invalid YAML: ${error.message}`];
   }

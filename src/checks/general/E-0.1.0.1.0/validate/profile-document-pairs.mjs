@@ -1,7 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 
 const bundledDirectory = new URL("../../../../../specs/conventions", import.meta.url);
 
@@ -23,7 +23,7 @@ export async function validateProfileDocumentPairs({
     const match = /^([a-z0-9-]+)-(semantic|deterministic)\.yaml$/u.exec(name);
     if (!match) continue;
     const source = await read(join(path, name), "utf8");
-    const documents = parseAllDocuments(source);
+    const documents = parseBoundedYamlDocuments(source, join(path, name));
     const parseError = documents.flatMap((document) => document.errors)[0];
     if (parseError) throw parseError;
     const pair = profiles.get(match[1]) ?? {};

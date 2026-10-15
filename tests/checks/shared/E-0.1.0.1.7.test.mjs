@@ -29,7 +29,19 @@ jobs:
       - run: npm ci
       - run: npm test`;
 
-const validPublishWorkflow = `jobs: { validate: { steps: [{ uses: actions/checkout@v6, with: { fetch-depth: 0 } }, { uses: actions/setup-node@v7 }, { run: "npm -g install npm@latest" }, { run: "npm ci" }, { run: "npm test" }] }, publish: { needs: validate, steps: [] } }`;
+const validPublishWorkflow = `jobs:
+  validate:
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+      - run: npm -g install npm@latest
+      - run: npm ci
+      - run: npm test
+  publish:
+    needs: validate
+    steps: []`;
 
 const inventory = {
   files: async () => [".github/workflows/ci.yaml", ".github/workflows/publish.yaml"],

@@ -1,4 +1,4 @@
-import { parseAllDocuments } from "yaml";
+import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { findNpmTokenSettings } from "./find-npm-token-settings.mjs";
 import { hasCanonicalReleaseTagGuard } from "../../shared/publish-workflow/validate-release-tag-guard.mjs";
 
@@ -9,7 +9,10 @@ export async function validateNpmPublishWorkflow(inventory, packageJson = {}) {
   try {
     if (!(await inventory.files("all")).includes(workflowPath))
       return [`${workflowPath} is required.`];
-    const documents = parseAllDocuments(await inventory.readText(workflowPath));
+    const documents = parseBoundedYamlDocuments(
+      await inventory.readText(workflowPath),
+      workflowPath,
+    );
     if (documents.length !== 1 || documents[0].errors.length)
       return [`${workflowPath} must contain one valid YAML document.`];
     return validateWorkflow(documents[0].toJS(), packageJson);

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { parse } from "yaml";
+import { parseBoundedYamlValue } from "../yaml/parse-bounded-yaml-documents.mjs";
 import { bundledConventionVersion } from "../../check-discovery/read/bundled-profile-catalog.mjs";
 import { validateCanonicalOrderDocument } from "./validate/canonical-order-document.mjs";
 
@@ -9,7 +9,7 @@ export function readCanonicalOrder(fileName, read = (url) => readFileSync(url, "
   if (!/^[a-z-]+\.yaml$/u.test(fileName)) throw new Error("Invalid canonical ordering file name.");
   if (!cache.has(fileName)) {
     const url = new URL(`../../../../specs/conventions/ordering/${fileName}`, import.meta.url);
-    const document = parse(read(url));
+    const document = parseBoundedYamlValue(read(url), url.pathname);
     if (
       document?.version !== bundledConventionVersion ||
       !document.orders ||

@@ -6,7 +6,10 @@ const source = `jobs:
   publish:
     steps:
       - uses: actions/checkout@v6
-      - run: node -e "const version=require('./package.json').version;if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
+      - run: >-
+          node -e "const version=require('./package.json').version;
+          if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||
+          process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
       - uses: actions/setup-node@v7
         with:
           node-version: 26
@@ -41,7 +44,10 @@ test.each([
 });
 
 test("requires a canonical package-version tag guard", async () => {
-  const withoutGuard = source.replace(/^      - run: node -e .*\r?\n/mu, "");
+  const withoutGuard = source.replace(
+    "GITHUB_REF_NAME!=='v'+version",
+    "GITHUB_REF_NAME==='v'+version",
+  );
   await expect(
     validateNpmPublishWorkflow(inventory(withoutGuard), { version: packageVersion }),
   ).resolves.toContain(
@@ -56,8 +62,8 @@ test("requires a canonical package-version tag guard", async () => {
 
 test("rejects a publish step before the tag guard even when a later publish step is valid", async () => {
   const withEarlyPublish = source.replace(
-    "      - run: node -e",
-    "      - run: npm publish --provenance\n      - run: node -e",
+    "      - run: >-",
+    "      - run: npm publish --provenance\n      - run: >-",
   );
   const errors = await validateNpmPublishWorkflow(inventory(withEarlyPublish), {
     version: packageVersion,

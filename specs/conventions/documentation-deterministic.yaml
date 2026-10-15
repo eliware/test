@@ -17,9 +17,19 @@ directives:
   - id: E-0.1.1.1.0
     dos:
       - Add a Documentation section to AGENTS.md.
-      - Add Scope, Navigation, Contribution, and Documentation validation sections to README.md.
+      - Add Scope, Navigation, Contribution, and Documentation validation sections to
+        README.md.
     donts:
       - Do not omit a documentation-specific section.
     examples:
       - "## Documentation"
-      - "## Scope\n\n## Navigation\n\n## Contribution\n\n## Documentation validation"
+      - "## Scope
+
+
+        ## Navigation
+
+
+        ## Contribution
+
+
+        ## Documentation validation"

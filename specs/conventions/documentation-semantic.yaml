@@ -18,7 +18,8 @@ directives:
     dos:
       - Keep contents focused on documentation and structured records.
       - Limit implementation tooling to validation of the documentation repository.
-      - Explain documentation scope, ownership, authoritative sources, contribution expectations, and documentation-only boundaries.
+      - Explain documentation scope, ownership, authoritative sources, contribution
+        expectations, and documentation-only boundaries.
       - Make navigation sufficient to discover maintained documentation.
     donts:
       - Do not ship application or library runtime behavior as documentation-only content.
