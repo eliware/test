@@ -55,6 +55,10 @@ test.each([
   [(flow) => (flow.jobs.publish.if = "false"), "bypass conditions"],
   [(flow) => (flow.jobs.publish["continue-on-error"] = true), "bypass conditions"],
   [(flow) => (flow.permissions = { contents: "write" }), "workflow permissions"],
+  [
+    (flow) => (flow.jobs.validate.permissions = { contents: "read", packages: "write" }),
+    "validation job permissions",
+  ],
   [(flow) => (flow.jobs.publish.permissions.packages = "read"), "required read, package"],
   [(flow) => (flow.jobs.publish.steps[0].uses = "actions/checkout@v6"), "checkout v7 once"],
   [(flow) => flow.jobs.publish.steps.push({ uses: "actions/checkout@v7" }), "checkout v7 once"],

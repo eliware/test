@@ -1,4 +1,8 @@
 export const npmPublishWorkflow = `jobs:
+  validate:
+    permissions:
+      contents: read
+    steps: []
   publish:
     permissions:
       contents: read
@@ -20,6 +24,8 @@ export const npmPublishWorkflow = `jobs:
 on:
   push:
     tags: ["v[0-9]*.[0-9]*.[0-9]*"]
+permissions:
+  contents: read
 `;
 
 export function createNpmPublishInventory(text = npmPublishWorkflow) {

@@ -18,6 +18,7 @@ export function createGhcrWorkflow() {
     on: { push: { tags: ["v[0-9]*.[0-9]*.[0-9]*"] } },
     permissions: { contents: "read" },
     jobs: {
+      validate: { permissions: { contents: "read" }, steps: [] },
       publish: {
         needs: "validate",
         "runs-on": "ubuntu-latest",

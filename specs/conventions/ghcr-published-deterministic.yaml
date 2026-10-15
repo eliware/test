@@ -38,6 +38,10 @@ directives:
       - Make additional tags use ${{ env.IMAGE_NAME }} and a valid tag.
       - Set ghcr-publish as the publication job environment.
       - Use checkout major v7 in the GHCR publisher.
+      - "Set workflow permissions to contents: read."
+      - Keep validation job permissions read-only.
+      - Omit validation job permissions to inherit the read-only workflow permissions.
+      - Set the required write permissions on the publish job only.
     donts:
       - Do not declare other image owners.
       - Do not require npm setup in jobs that do not invoke npm.
@@ -61,17 +65,21 @@ directives:
       - >-
         run: node -e "const version=require(''./package.json'').version; if(
         process.env.GITHUB_REF_NAME!==''v''+version)process.exit(1)"
-      - "permissions:
-
-        \  contents: read
-
-        \  packages: write
-
-        \  id-token: write
-
-        \  attestations: write
-
-        \  artifact-metadata: write"
+      - |
+        permissions:
+          contents: read
+      - |
+        jobs:
+          validate:
+            permissions:
+              contents: read
+          publish:
+            permissions:
+              contents: read
+              packages: write
+              id-token: write
+              attestations: write
+              artifact-metadata: write
 
   - id: E-0.1.11.1.2
     dos:

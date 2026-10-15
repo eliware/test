@@ -34,6 +34,8 @@ const workflow = `jobs:
 on:
   push:
     tags: ["v[0-9]*.[0-9]*.[0-9]*"]
+permissions:
+  contents: read
 `;
 const packageJson = { version: packageVersion };
 
@@ -62,9 +64,12 @@ test.each([
   [
     "workflow-level grant",
     workflow
-      .replace("jobs:\n", "permissions:\n  contents: read\n  id-token: write\njobs:\n")
+      .replace(
+        "permissions:\n  contents: read",
+        "permissions:\n  contents: read\n  id-token: write",
+      )
       .replace("    permissions:\n      contents: read\n      id-token: write\n", ""),
-    "pass",
+    "fail",
   ],
   ["job-level grant", workflow, "pass"],
   [
@@ -76,17 +81,20 @@ test.each([
   [
     "job scope overrides workflow grant",
     workflow
-      .replace("jobs:\n", "permissions:\n  contents: read\n  id-token: write\njobs:\n")
+      .replace(
+        "permissions:\n  contents: read",
+        "permissions:\n  contents: read\n  id-token: write",
+      )
       .replace(
         "    permissions:\n      contents: read\n      id-token: write\n",
         "    permissions:\n      contents: read\n",
       ),
     "fail",
   ],
-])("checks effective OIDC permission for %s", async (_name, source, status) => {
+])("checks npm permission scope for %s", async (_name, source, status) => {
   const result = await run({ repositoryInventory: inventory(source), packageJson });
   expect(result.status).toBe(status);
-  if (status === "fail") expect(result.message).toContain("id-token: write");
+  if (status === "fail") expect(result.message).toContain("npm publish job must set");
 });
 
 test.each([

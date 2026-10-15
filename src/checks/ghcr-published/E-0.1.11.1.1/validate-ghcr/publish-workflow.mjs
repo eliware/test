@@ -6,6 +6,7 @@ import {
 } from "../../../shared/publish-workflow/validate-release-tag-guard.mjs";
 import {
   hasGhcrPublisherPermissions,
+  hasGhcrValidationReadPermissions,
   hasGhcrWorkflowReadPermissions,
 } from "./workflow-permissions.mjs";
 import { validateGhcrImagePushes } from "./image-pushes.mjs";
@@ -19,6 +20,8 @@ export async function validateGhcrPublishWorkflow(inventory, packageJson = {}) {
   const jobs = parsed.workflow?.jobs ?? {};
   if (!hasGhcrWorkflowReadPermissions(parsed.workflow?.permissions))
     errors.push("GHCR workflow permissions must contain only contents: read.");
+  if (!hasGhcrValidationReadPermissions(jobs.validate?.permissions))
+    errors.push("GHCR validation job permissions must contain only contents: read.");
   const publish = jobs.publish;
   const steps = publish?.steps ?? [];
   const packageName = String(packageJson?.name ?? "").replace(/^@eliware\//u, "");

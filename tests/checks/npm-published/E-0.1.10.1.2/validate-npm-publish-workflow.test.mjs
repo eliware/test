@@ -64,6 +64,37 @@ test("rejects publish jobs that do not define workflow steps", async () => {
   ).resolves.toContain("publish.yaml publish job must define steps.");
 });
 
+test.each([
+  [
+    "workflow-level provenance permission",
+    source.replace(
+      "permissions:\n  contents: read",
+      "permissions:\n  contents: read\n  id-token: write",
+    ),
+    "npm workflow permissions must contain only contents: read.",
+  ],
+  [
+    "validation write permission",
+    source.replace(
+      "  validate:\n    permissions:\n      contents: read",
+      "  validate:\n    permissions:\n      contents: write",
+    ),
+    "npm validation job permissions must contain only contents: read.",
+  ],
+  [
+    "publish permission at workflow scope only",
+    source.replace(
+      "    permissions:\n      contents: read\n      id-token: write",
+      "    permissions:\n      contents: read",
+    ),
+    "npm publish job must set contents: read and id-token: write for provenance.",
+  ],
+])("rejects %s", async (_name, workflow, expected) => {
+  await expect(
+    validateNpmPublishWorkflow(createNpmPublishInventory(workflow), { version: packageVersion }),
+  ).resolves.toContain(expected);
+});
+
 test("reports missing workflow files, invalid YAML, and inventory failures", async () => {
   await expect(
     validateNpmPublishWorkflow({ files: async () => [], readText: async () => "" }, {}),
