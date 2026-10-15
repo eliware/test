@@ -9,11 +9,14 @@ conflicts:
 directives:
   - id: E-0.1.11.0.0
     dos:
-      - Document image purpose, intended visibility, architectures, access boundaries, and
-        deployment-consumer expectations accurately.
-      - Define ownership of build inputs and architecture decisions.
+      - Document image purpose, visibility, architectures, access boundaries, and
+        deployment use from the image workflow, package settings, and access policy.
+      - Name each build input owner and architecture decision from repository settings and
+        workflow files.
       - Keep publication and deployment authorization separate.
       - Describe latest only as a mutable convenience alias.
+      - Compare image claims with workflow files, build definitions, package metadata, and
+        deployment documentation.
     donts:
       - Do not imply publication authorization from profile selection or workflow presence.
       - Do not identify releases or deployments solely by mutable tags.

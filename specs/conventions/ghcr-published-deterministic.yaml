@@ -84,7 +84,8 @@ directives:
         attestation inspection.
       - Make the final push's required verification chain end at the last job step.
     donts:
-      - Do not reference missing steps, unrelated digests, or mutable attestation subjects.
+      - Do not reference missing steps or a digest output from a different image push step.
+      - Do not use a mutable tag as an attestation subject digest.
       - Do not use control operators or command substitution in the summary command except
         its required append redirection.
       - Do not declare bypass conditions on required verification steps.

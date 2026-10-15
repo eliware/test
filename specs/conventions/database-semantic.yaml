@@ -19,6 +19,8 @@ directives:
       - Mock file-system operations, process calls, and external effects.
       - Use a fixed clock or fake timers.
       - Allow CI to provide the local database service before tests start.
+      - Compare test targets, credentials, and cleanup with test code, CI files, and
+        database configuration.
     donts:
       - Do not use production endpoints, records, or credentials in tests or CI.
       - Do not connect tests to a host other than localhost, 127.0.0.1, or ::1.
@@ -41,6 +43,7 @@ directives:
       - Use one transaction when partial writes can violate a stated invariant.
       - Test each failure path for a multi-record operation.
       - Verify that a failed operation leaves no partial records.
+      - Compare each invariant with schema definitions, write code, and database tests.
     donts:
       - Do not leave a stated invariant without a database constraint or application check.
       - Do not leave partial records after a failed multi-record operation.
@@ -52,6 +55,7 @@ directives:
       - Test the same operation twice with the same input or key.
       - Verify stored records after both calls.
       - Mock external effects in repeated-write tests.
+      - Compare repeated-write claims with operation code, database constraints, and tests.
     donts:
       - Do not create duplicate records on the second call.
       - Do not leave a different undocumented state after the second call.
@@ -62,11 +66,17 @@ directives:
       - Store each schema change in a tracked migration file.
       - Give each migration a unique, ordered version.
       - State the starting and ending schema versions.
+      - State the migration version that changes the schema.
       - Document the application version that uses the resulting schema.
-      - Link to the application migration guidance and the applicable DBA and Operations
-        runbooks.
+      - Link to application migration guidance and the DBA procedure selected from the
+        DBA runbook index.
+      - Follow Operations directive E-12.4 for release, deployment, rollback, and recovery
+        actions.
       - Follow the outage-first release model in COO issue 6.
+      - Compare each schema claim with migration files, schema definitions, application
+        version metadata, and linked procedures.
     donts:
       - Do not require old and new application versions to run at the same time.
-      - Do not leave a schema change without a tracked migration or a clear schema result.
+      - Do not leave a schema change without a tracked migration, starting schema version,
+        ending schema version, migration version, or application version.
       - Do not require an undocumented manual step.

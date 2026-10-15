@@ -10,37 +10,50 @@ conflicts:
 directives:
   - id: E-0.1.4.0.0
     dos:
-      - Document supported workflows, runtime entrypoints, startup, shutdown,
-        configuration, and operational boundaries accurately.
-      - Make end-user documentation sufficient for supported application use.
+      - Document each workflow, entrypoint, startup path, shutdown path, setting, and
+        operational boundary listed in README.md, linked documents, or package metadata.
+      - Keep documentation current and comprehensive for those workflows and settings.
       - Distinguish runtime settings from metadata and deployment configuration.
       - State when runtime configuration is absent.
-      - Describe supported environment variables, defaults, options, and required or
-        optional status.
-      - Supply complete placeholder-only environment examples when environment
-        configuration is supported.
-      - Explain examples' prerequisites, commands, and expected results.
+      - Describe each environment variable, default, option, and required or optional
+        status declared by code or configuration schemas.
+      - For each environment setting in code or schemas, show its name, default, and
+        required status with placeholder values.
+      - State when a setting has no default.
+      - Explain each example's prerequisites, commands, and results that tests or code
+        show.
+      - Compare README.md, linked documents, package metadata, configuration schemas,
+        maintained code, tests, and workflows for each application claim.
     donts:
-      - Do not hide user-facing behavior in internal runbooks or claim unsupported
-        guarantees.
-      - Do not omit supported settings or activate optional environment variables in
-        templates.
+      - Do not hide user-facing behavior in internal runbooks.
+      - Do not claim a guarantee unless maintained code, tests, or public documentation
+        show it.
+      - Do not omit settings declared by code or schemas.
+      - Do not enable optional environment variables in templates.
 
   - id: E-0.1.4.0.1
     dos:
       - Validate configuration before opening connections.
       - Make shutdown repeatable.
-      - Test public inputs and observable results of supported workflows.
-      - Keep unit assertions with the lowest owning module and coordinator tests focused
-        on integration.
+      - Test each public input and each workflow result stated in README.md or linked API
+        documents.
+      - Keep unit assertions with the module that owns the behavior.
+      - Keep coordinator tests for calls and results across module boundaries.
       - Inject replaceable dependencies.
       - Keep launchers thin.
       - Remove superseded compatibility branches, aliases, and fallbacks.
-      - Use mapped shared packages for substantial production concerns.
-      - Assert intended output behavior in tests.
+      - Use @eliware/redact for redaction and @eliware/log for logging.
+      - Use @eliware/path for filesystem and import-meta utilities.
+      - Use @eliware/errors for exception and rejection handling.
+      - Use @eliware/signals for signal handling and graceful shutdown.
+      - Test outputs and side effects stated in documentation or workflow contracts.
+      - Review maintained code, tests, package metadata, configuration schemas, and
+        package scripts for these requirements.
     donts:
       - Do not open connections using unvalidated configuration.
-      - Do not omit supported workflow tests or duplicate helper assertions.
+      - Do not omit tests for workflows listed in README.md, linked documents, or package
+        metadata.
+      - Do not duplicate helper assertions.
       - Do not preserve obsolete contracts or hide behavior through coverage exclusions.
     examples:
       - "Redaction uses @eliware/redact and logging uses @eliware/log."
@@ -50,8 +63,10 @@ directives:
 
   - id: E-0.1.4.0.2
     dos:
-      - Describe user-visible changes accurately in release notes.
-      - Include applicable breaking changes, migration guidance, and security information.
+      - Describe each user-visible change in RELEASE_NOTES.md.
+      - List each breaking change, migration step, and security change shown by the
+        release diff, tests, and configuration changes.
+      - Compare RELEASE_NOTES.md with the changes since the prior repository tag.
     donts:
       - Do not omit user-impacting changes.
       - Do not use release notes as a second specification.

@@ -11,13 +11,17 @@ conflicts:
 directives:
   - id: E-0.1.6.0.0
     dos:
-      - Document routes, ownership, assets, build settings, ports, and output paths
-        accurately.
+      - Document routes, owners, assets, build settings, ports, and output paths from
+        route code, configuration, and workflow files.
       - Set webpack output to <repo-root>/dist.
-      - Explain browser-validation prerequisites, commands, and expected results.
-      - Define acceptance expectations for supported browser workflows.
-      - Keep public assets limited to intentionally served content.
-      - State when a documented category does not apply.
+      - Name browser-validation prerequisites, commands, and visible results for each
+        documented browser workflow.
+      - Keep public assets limited to files listed by route code or static asset settings.
+      - State "Not used" for Routes, Assets, Development server, Build, or Deployment
+        sections that do not apply.
+      - Compare route, asset, and build claims with maintained code, configuration, tests,
+        and browser workflow files.
     donts:
       - Do not expose private configuration.
       - Do not claim browser or deployment validation that was not performed.
+      - Do not describe a browser workflow without its route or action and visible result.

@@ -11,15 +11,21 @@ conflicts:
 directives:
   - id: E-0.1.5.0.0
     dos:
-      - Document installation, commands, options, positional arguments, defaults,
-        forwarding, errors, and exit meanings accurately.
-      - Provide useful help and safe copyable examples.
-      - Distinguish supported platforms, direct testing, and inferred compatibility.
-      - Explain destructive-action scope.
-      - Provide confirmation, dry-run, or equivalent safeguards.
-      - Keep informational commands free of unintended state changes.
+      - Document command behavior from the CLI implementation, parser, tests, and README.md.
+      - State command purpose, syntax, options, arguments, and defaults in help output.
+      - Use placeholder credentials and named non-production targets in copyable examples.
+      - Show a confirmation or dry-run step before each destructive example.
+      - Name platforms in the CI matrix as CI-tested platforms.
+      - Mark other platform claims as untested compatibility claims.
+      - State the files, services, or records that each destructive command can change.
+      - Keep informational commands such as --help and --version read-only.
+      - Compare help output and examples with the CLI implementation, parser, tests, and
+        platform workflow files.
       - Keep output free of secrets and credentials.
+      - State whether each child command requires a delimiter before pass-through arguments.
     donts:
-      - Do not present inferred compatibility as direct testing.
-      - Do not leave forwarding boundaries ambiguous.
-      - Do not show destructive examples without safeguards.
+      - Do not claim a platform test unless the CI matrix names that platform.
+      - Do not omit the pass-through arguments or delimiter rules from CLI documentation.
+      - Do not let an informational command write files, change package metadata, connect
+        to a network, or start a service process.
+      - Do not show a destructive example without a confirmation or dry-run step.

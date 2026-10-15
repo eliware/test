@@ -11,12 +11,22 @@ conflicts:
 directives:
   - id: E-0.1.8.0.0
     dos:
-      - Document tools, resources, prompts, transports, authentication, schemas, and
-        protocol behavior accurately.
-      - Explain network exposure, access boundaries, and protocol validation.
-      - State unsupported capabilities.
-      - Explain each tool's purpose, input schema, response, and side effects accurately.
-      - Explain the behavior of each supported resource, prompt, and transport accurately.
+      - Document each tool, resource, prompt, transport, and schema from server code,
+        protocol schemas, tests, and configuration.
+      - Explain network exposure and access boundaries from server configuration and
+        deployment files.
+      - List unsupported capabilities from protocol schemas, tests, and server code.
+      - Explain each tool's purpose, input schema, response, and side effects from code,
+        schemas, and tests.
+      - Explain each resource, prompt, and transport listed in public documentation from
+        code, schemas, and tests.
+      - Use placeholder credentials and name a test endpoint in each copyable connection
+        command.
+      - Mark each command that connects to or exposes a live endpoint.
+      - Name the live target and required authorization in each live-service instruction.
     donts:
-      - Do not expose credentials or claim unsupported protocol guarantees.
-      - Do not provide instructions that unintentionally expose a live endpoint.
+      - Do not expose credentials.
+      - Do not claim a protocol guarantee unless server code, schemas, or tests show it.
+      - Do not present a live endpoint as a test endpoint.
+      - Do not provide a live-service command without a live target label and authorization
+        step.

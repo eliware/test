@@ -18,12 +18,13 @@ conflicts:
 directives:
   - id: E-0.1.9.0.0
     dos:
-      - Define managed targets, environments, ownership, desired state, configuration, and
-        deployment inputs accurately.
-      - Organize content by target and environment where both apply.
+      - Define each managed target, environment, owner, desired state, configuration, and
+        deployment input from maintained configuration and schemas.
+      - Put target and environment data in separate indexed sections when both fields exist.
       - Define repository-specific paths, schemas, validation, and platform boundaries in
         indexed specifications.
-      - Explain change control, rollback, secret handling, and operational ownership.
+      - Explain change control, rollback, secret handling, and ownership from linked
+        Operations procedures and workspace runbooks.
       - Use a SHA-256 digest for each production Kubernetes image reference.
       - Restore each backup to an isolated test target before certification.
       - Check the integrity of each restored backup before certification.
@@ -33,8 +34,11 @@ directives:
       - Keep committed desired state canonical in its owning repository.
       - Link from README.md to canonical operational procedures in Eliware Operations or
         the owning workspace.
+      - Compare target and platform claims with maintained configuration, schemas,
+        validation code, workflows, and linked runbooks.
     donts:
-      - Do not mix unrelated targets without boundaries or assume generic rules define
-        platform-specific behavior.
+      - Do not place settings for multiple targets in one record unless its schema defines
+        one shared target.
+      - Do not use a general rule as evidence for platform-specific behavior.
       - Do not confuse committed inputs with live state.
       - Do not duplicate canonical operational procedures in the repository.

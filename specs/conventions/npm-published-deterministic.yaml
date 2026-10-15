@@ -24,7 +24,8 @@ directives:
 
   - id: E-0.1.10.1.1
     dos:
-      - Define files as distinct nonempty safe repository-relative paths.
+      - Define files as distinct nonempty repository-relative paths without dot-segment
+        traversal.
       - Include the base entries listed in ordering/package-files.yaml.
       - Include specs/ for every npm-published repository.
       - Include package.json, README.md, AGENTS.md, LICENSE, and specs/ in the tarball.

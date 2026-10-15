@@ -11,11 +11,17 @@ conflicts:
 directives:
   - id: E-0.1.7.0.0
     dos:
-      - Document commands, events, intents, and permissions accurately.
-      - Request only permissions and intents needed by supported behavior.
-      - Describe the purpose and user-visible effects of each command and event accurately.
-      - Explain localized message meaning accurately for each supported locale.
+      - Document each command and event from its handler, JSON definition, and tests.
+      - Request only intents and permissions used by documented command and event behavior.
+      - Describe each command and event purpose and visible result from handler code and
+        tests.
+      - Compare localized message meaning across locale files and the en-US.json source.
+      - Use placeholder bot credentials and name a test bot and test server in each
+        copyable connection command.
+      - Mark each command that connects a live bot or exposes a live bot.
+      - Name the live target and required authorization in each live-service instruction.
     donts:
       - Do not expose bot credentials or imply unavailable permissions.
-      - Do not provide instructions that unintentionally connect a live bot.
-      - Do not provide instructions that unintentionally expose a live bot.
+      - Do not present a live bot or server as a test target.
+      - Do not provide a live-service command without a live target label and authorization
+        step.

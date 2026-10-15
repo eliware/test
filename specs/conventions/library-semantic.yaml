@@ -15,30 +15,39 @@ conflicts:
 directives:
   - id: E-0.1.3.0.0
     dos:
-      - Document public APIs, supported workflows, compatibility, installation, runtime
-        settings, and package contents accurately.
-      - Make end-user documentation sufficient for supported workflows.
-      - Explain examples' prerequisites, commands, and expected results.
-      - Describe supported environment variables, defaults, options, and required or
-        optional status.
-      - Supply complete placeholder-only environment examples when environment
-        configuration is supported.
+      - Document each exported API, workflow, compatibility promise, install step,
+        runtime setting, and package file declared in package metadata or public docs.
+      - Keep documentation current and comprehensive for those APIs and workflows.
+      - Explain each example's prerequisites, commands, and results shown by tests or
+        maintained code.
+      - Describe each environment variable, default, option, and required or optional
+        status declared by code or configuration schemas.
+      - For each environment setting in code or schemas, show its name, default, and
+        required status with placeholder values.
+      - Compare public docs with exports, package metadata, configuration schemas,
+        maintained code, tests, and release records.
     donts:
-      - Do not present private implementation as public API or imply unsupported
-        compatibility.
-      - Do not omit supported settings or activate optional environment variables in
-        templates.
+      - Do not present private implementation as public API.
+      - Do not claim compatibility beyond versions named in public documentation and CI
+        configuration.
+      - Do not omit settings declared by code or schemas.
+      - Do not enable optional environment variables in templates.
 
   - id: E-0.1.3.0.1
     dos:
-      - Test public contracts and observable results of supported workflows.
-      - Keep unit assertions with the lowest owning module and coordinator tests focused
-        on integration.
+      - Test each public contract and workflow result stated in public documentation.
+      - Keep unit assertions with the module that owns the behavior.
+      - Keep coordinator tests for calls and results across module boundaries.
       - Inject replaceable external dependencies.
       - Keep entrypoints thin.
       - Remove superseded compatibility branches, aliases, and fallbacks.
-      - Use mapped shared packages for substantial production concerns.
-      - Assert intended output behavior in tests.
+      - Use @eliware/redact for redaction and @eliware/log for logging.
+      - Use @eliware/path for filesystem and import-meta utilities.
+      - Use @eliware/errors for exception and rejection handling.
+      - Use @eliware/signals for signal handling and graceful shutdown.
+      - Test outputs and side effects stated in public contracts.
+      - Review package exports, package metadata, maintained code, tests, and package
+        scripts for these requirements.
     donts:
       - Do not duplicate helper assertions or preserve obsolete contracts for convenience.
       - Do not hide production behavior through coverage exclusions.
@@ -50,8 +59,10 @@ directives:
 
   - id: E-0.1.3.0.2
     dos:
-      - Describe user-visible changes accurately in release notes.
-      - Include applicable breaking changes, migration guidance, and security information.
+      - Describe each consumer-visible change in RELEASE_NOTES.md.
+      - List each breaking change, migration step, and security change shown by the
+        release diff, tests, and package changes.
+      - Compare RELEASE_NOTES.md with the changes since the prior repository tag.
     donts:
       - Do not omit consumer-impacting changes.
       - Do not use release notes as a second specification.

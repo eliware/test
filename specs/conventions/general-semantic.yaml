@@ -5,25 +5,35 @@ conflicts: []
 directives:
   - id: E-0.1.0.0.0
     dos:
-      - Describe repository purpose, intended use, ownership, scope, and boundaries
-        accurately.
-      - Keep authoritative descriptions and keywords relevant to repository contents.
-      - Use package.json.keywords as the authoritative list for GitHub topic sync.
-      - Review and update keywords when they no longer describe repository contents.
+      - Describe the repository purpose, owner, scope, and boundaries with the evidence in
+        package metadata, maintained code, and canonical repository documents.
+      - Use package.json keywords as the source list for GitHub topic sync.
+      - Use each keyword to name a package capability, platform, protocol, technology, or
+        subject that code and package behavior provide.
+      - Add a platform keyword when README.md or linked support documents state that the
+        package supports that platform.
+      - Keep each keyword only when maintained code, package behavior, README.md, or linked
+        documents provide evidence for its claim.
       - Keep README branding, section order, support copy, and link labels consistent with
         the canonical deterministic examples.
-      - Make each public link label and destination clear and accurate for its intended
-        action.
-      - Keep documentation current, sufficient for supported use, and contributor
-        instructions actionable.
-      - Distinguish runtime settings, package metadata, command arguments, and deployment
-        configuration.
-      - Distinguish implemented behavior from versions already released.
+      - Match each public link label to its destination and stated action.
+      - Keep all documentation current and comprehensive for each use described in
+        README.md, linked support documents, package metadata, and maintained workflows.
+      - Give contributors commands and steps for tasks listed in package scripts and
+        maintained workflows.
+      - Compare documentation with maintained code, configuration, package scripts,
+        schemas, workflows, tests, and release records.
+      - Identify runtime settings from configuration schemas and code; identify package
+        metadata from package.json; identify command arguments from the CLI parser; and
+        identify deployment settings from workflow and deployment files.
+      - Compare claims about released behavior with RELEASE_NOTES.md, package.json, and
+        repository tags.
       - Update each GitHub Action to its latest major version when Eli becomes aware of a
         newer major version.
     donts:
       - Do not use misleading identities, stale instructions, or unsupported capability
         claims.
+      - Do not require a fixed keyword list or every search term.
       - Do not add private repository links or alternate public branding to repository
         READMEs.
       - Do not confuse npm publishability with source-hosting visibility.
@@ -32,10 +42,12 @@ directives:
   - id: E-0.1.0.0.1
     dos:
       - Keep requirements and canonical procedures authoritative in one location.
-      - Use documentation for concise context and links to authoritative records.
-      - Keep repository specifications focused on committed contents and repository
-        validation.
-      - Define security and change-authorization boundaries clearly.
+      - Compare each procedure with its owning specification or Operations directive.
+      - Use documentation for context and links to the authoritative specification or
+        procedure.
+      - Limit repository specifications to committed content and repository validation.
+      - Name each action that requires approval, the approving role, and its governing
+        procedure.
     donts:
       - Do not maintain competing normative copies.
       - Do not use local instructions to weaken shared requirements.
@@ -43,6 +55,8 @@ directives:
         release history.
       - Do not present validation success as authorization to release or deploy.
       - Do not add GitHub API calls to local deterministic checks.
+    examples:
+      - "Use the Operations directives for cross-repository procedures."
 
   - id: E-0.1.0.0.2
     dos:
@@ -51,6 +65,8 @@ directives:
       - Distinguish minimal non-sensitive bootstrap data from backups and live database
         contents.
       - Limit internal infrastructure information to authorized repository audiences.
+      - Review tracked files, generated artifacts, and repository access settings for each
+        data or access claim.
     donts:
       - Do not expose private access information or machine details through public
         documentation.
@@ -59,12 +75,15 @@ directives:
   - id: E-0.1.0.0.3
     dos:
       - Give each source and test module one cohesive purpose and one reason to change.
-      - Introduce distinct responsibilities through focused submodules wired through their
-        owner.
+      - Split a source or test module when its behavior, tests, or reasons for change show
+        more than one responsibility.
+      - Put each split responsibility in a submodule and call it through its owning module.
       - Keep coordinators responsible for their own orchestration.
-      - Refactor evident mixed responsibilities when encountered.
-      - Retain dependencies only when needed by maintained code, tooling, or commands.
+      - Review module behavior, mirrored tests, and reasons for change when you review
+        responsibility boundaries.
+      - Keep a dependency when maintained code imports it, a package script invokes it, or
+        maintained tool configuration names it.
     donts:
-      - Do not combine responsibilities for convenience or because a module is small.
-      - Do not defer evident responsibility splits beyond the changed lines.
+      - Do not combine responsibilities for convenience.
+      - Do not leave multiple responsibilities in a module that you change.
       - Do not retain unused dependencies.

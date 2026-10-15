@@ -17,6 +17,7 @@ directives:
     dos:
       - Add a Library section to AGENTS.md.
       - Tell developers to run focused tests first during development.
+      - Define focused tests as runs that pass one or more test paths to npm test.
       - Show valid npm test commands for one test file and multiple test files.
       - Tell developers to avoid repeated full-suite runs during development.
       - Require the full npm test suite for final validation before a commit, milestone,
