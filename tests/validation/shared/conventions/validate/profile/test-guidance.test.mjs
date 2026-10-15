@@ -2,10 +2,11 @@ import { expect, test } from "@jest/globals";
 import { validateProfileTestGuidance } from "../../../../../../src/validation/shared/conventions/validate/profile/test-guidance.mjs";
 
 const guidance = [
-  "For a small change, run one or more focused tests.",
+  "Run focused tests first during development.",
   "Run one test file with `npm test -- tests/path/to/example.test.mjs`.",
   "Run multiple test files with `npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs`.",
-  "Run the full `npm test` suite before a commit or milestone.",
+  "Avoid repeated full-suite runs during development.",
+  "Run the full `npm test` suite for final validation before a commit, milestone, or release.",
 ].join("\n");
 
 function inventory(content) {

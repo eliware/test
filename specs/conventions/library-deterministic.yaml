@@ -16,9 +16,11 @@ directives:
   - id: E-0.1.3.1.0
     dos:
       - Add a Library section to AGENTS.md.
-      - Use focused test runs to validate small changes.
-      - Show commands for one test file and multiple test files through npm test.
-      - Run the full npm test suite before a commit or milestone.
+      - Tell developers to run focused tests first during development.
+      - Show valid npm test commands for one test file and multiple test files.
+      - Tell developers to avoid repeated full-suite runs during development.
+      - Require the full npm test suite for final validation before a commit, milestone,
+        or release.
       - Add API, Packaging, and Examples sections to README.md.
       - Keep docs/README.md.
       - Keep examples/README.md.
@@ -30,14 +32,17 @@ directives:
         unindexed.
     examples:
       - "## Library"
-      - "For a small change, run one or more focused tests.
+      - "Run focused tests first during development.
 
         Run one test file with `npm test -- tests/path/to/example.test.mjs`.
 
         Run multiple test files with `npm test -- tests/path/to/first.test.mjs
         tests/path/to/second.test.mjs`.
 
-        Run the full `npm test` suite before a commit or milestone."
+        Avoid repeated full-suite runs during development.
+
+        Run the full `npm test` suite for final validation before a commit, milestone,
+        or release."
       - "## API\n\n## Packaging\n\n## Examples"
 
   - id: E-0.1.3.1.1
