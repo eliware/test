@@ -36,8 +36,8 @@ function hasLatestTag(workflow, image) {
   return steps.some((step) => {
     if (step?.uses !== "docker/build-push-action@v6") return false;
     const tags = step?.with?.tags;
-    return (Array.isArray(tags) ? tags : String(tags ?? "").split(/\r?\n/u)).some(
-      (tag) => String(tag).trim() === `${image}:latest`,
+    return (Array.isArray(tags) ? tags : String(tags ?? "").split(/\r?\n/u)).some((tag) =>
+      [`${image}:latest`, "${{ env.IMAGE_NAME }}:latest"].includes(String(tag).trim()),
     );
   });
 }

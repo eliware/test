@@ -15,7 +15,7 @@ test("accepts package-specific GHCR usage markers", async () => {
 
 test("requires latest markers only when the publication workflow uses latest", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[2].with.tags.push("ghcr.io/eliware/example:latest");
+  workflow.jobs.publish.steps[2].with.tags += "\n${{ env.IMAGE_NAME }}:latest";
   const agents = ghcrAgents
     .replace("Supported tags: vMAJOR.MINOR.PATCH", "Supported tags: vMAJOR.MINOR.PATCH, latest")
     .concat(

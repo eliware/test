@@ -2,10 +2,12 @@ import { readGhcrPublishWorkflow } from "../shared/read-ghcr-publish-workflow.mj
 import { createRequiredGhcrVerificationCommands } from "./create-required-ghcr-verification-commands.mjs";
 import { hasRequiredGhToken } from "./has-required-gh-token.mjs";
 
-export async function validateGhcrAttestationChain(inventory, packageJson = {}) {
+export async function validateGhcrAttestationChain(inventory) {
   const parsed = await readGhcrPublishWorkflow(inventory);
   if (parsed.error) return [parsed.error];
   const publishJob = parsed.workflow?.jobs?.publish;
+  if (publishJob?.env?.IMAGE_NAME !== "ghcr.io/${{ github.repository }}")
+    return ["GHCR publisher must derive IMAGE_NAME from github.repository."];
   const steps = publishJob?.steps ?? [];
   const pushes = steps
     .map((step, index) => ({ step, index }))
@@ -26,7 +28,7 @@ export async function validateGhcrAttestationChain(inventory, packageJson = {}) 
   );
   if (attests.length !== pushes.length)
     errors.push("Each GHCR image push must have one matching attestation.");
-  const image = `ghcr.io/eliware/${String(packageJson?.name ?? "").replace(/^@eliware\//u, "")}`;
+  const image = "${{ env.IMAGE_NAME }}";
   pushes.forEach(({ step, index }, position) => {
     const end = pushes[position + 1]?.index ?? steps.length;
     const expression = "${{ steps." + step.id + ".outputs.digest }}";
@@ -42,11 +44,7 @@ export async function validateGhcrAttestationChain(inventory, packageJson = {}) 
       );
       return;
     }
-    const required = createRequiredGhcrVerificationCommands(
-      image,
-      packageJson?.version,
-      expression,
-    );
+    const required = createRequiredGhcrVerificationCommands(expression);
     let prior = attestation.index;
     for (const [ruleIndex, matches] of required.entries()) {
       const found = chain.find(

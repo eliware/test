@@ -22,7 +22,9 @@ export async function validateGhcrPublishWorkflow(inventory, packageJson = {}) {
   const publish = jobs.publish;
   const steps = publish?.steps ?? [];
   const packageName = String(packageJson?.name ?? "").replace(/^@eliware\//u, "");
-  const image = `ghcr.io/eliware/${packageName}`;
+  const image = "${{ env.IMAGE_NAME }}";
+  if (publish?.env?.IMAGE_NAME !== "ghcr.io/${{ github.repository }}")
+    errors.push("GHCR publish job must derive IMAGE_NAME from github.repository.");
   if (!/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/u.test(packageName))
     errors.push("GHCR image name must use the unscoped package name.");
   if (!publish || publish.environment !== "ghcr-publish")
@@ -54,7 +56,7 @@ export async function validateGhcrPublishWorkflow(inventory, packageJson = {}) {
     errors.push("GHCR publisher must guard publication with the canonical package version tag.");
   if (!hasCanonicalReleaseTagFilter(parsed.workflow))
     errors.push("GHCR workflow must trigger on version tags.");
-  errors.push(...validateGhcrImagePushes(pushes, image, packageJson?.version));
+  errors.push(...validateGhcrImagePushes(pushes, image));
   if (hasDeploymentCommand(steps))
     errors.push("GHCR publisher must not declare deployment commands.");
   return errors;

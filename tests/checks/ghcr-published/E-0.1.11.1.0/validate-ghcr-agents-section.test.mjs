@@ -29,7 +29,10 @@ test("requires the GHCR publication heading", async () => {
 
 test("requires latest markers when a published image uses latest", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[2].with.tags.push("ghcr.io/eliware/example:latest");
+  workflow.jobs.publish.steps[2].with.tags = [
+    "${{ env.IMAGE_NAME }}:${{ github.ref_name }}",
+    "${{ env.IMAGE_NAME }}:latest",
+  ];
   await expect(
     validateGhcrAgentsSection(createGhcrInventory({ workflow, agents: ghcrAgents }), ghcrPackage),
   ).resolves.toEqual(

@@ -11,8 +11,7 @@ export const ghcrAgents = [
 ].join("\n");
 
 export function createGhcrWorkflow() {
-  const image = "ghcr.io/eliware/example";
-  const digest = "${{ steps.push.outputs.digest }}";
+  const digest = "${{ steps.image.outputs.digest }}";
   return {
     name: "Publish",
     on: { push: { tags: ["v[0-9]*.[0-9]*.[0-9]*"] } },
@@ -22,6 +21,7 @@ export function createGhcrWorkflow() {
         needs: "validate",
         "runs-on": "ubuntu-latest",
         environment: "ghcr-publish",
+        env: { IMAGE_NAME: "ghcr.io/${{ github.repository }}" },
         permissions: {
           contents: "read",
           packages: "write",
@@ -32,33 +32,33 @@ export function createGhcrWorkflow() {
         steps: [
           { uses: "actions/checkout@v6" },
           {
-            run: `node -e "const version=require('./package.json').version;if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"`,
+            run: `node -e "const version=require('./package.json').version;if(process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"`,
           },
           {
-            id: "push",
+            id: "image",
             uses: "docker/build-push-action@v6",
             with: {
               context: ".",
               file: "./Dockerfile",
               push: true,
-              tags: [`${image}:v12.0.0`],
+              tags: "${{ env.IMAGE_NAME }}:${{ github.ref_name }}",
             },
           },
           {
             uses: "actions/attest@v4",
             with: {
-              "subject-name": image,
+              "subject-name": "${{ env.IMAGE_NAME }}",
               "subject-digest": digest,
               "push-to-registry": true,
             },
           },
           {
-            run: `test "$(docker buildx imagetools inspect ${image}:v12.0.0 --format '{{.Manifest.Digest}}')" = "${digest}"`,
+            run: `test "$(docker buildx imagetools inspect "$IMAGE_NAME:$GITHUB_REF_NAME" --format '{{.Manifest.Digest}}')" = "${digest}"`,
           },
-          { run: `docker buildx imagetools inspect ${image}@${digest}` },
+          { run: `docker buildx imagetools inspect "$IMAGE_NAME@${digest}"` },
           {
             env: { GH_TOKEN: "${{ github.token }}" },
-            run: `gh attestation verify oci://${image}@${digest} --repo \${{ github.repository }}`,
+            run: `gh attestation verify "oci://$IMAGE_NAME@${digest}" --repo "\${{ github.repository }}"`,
           },
           { run: `echo "${digest}" >> "$GITHUB_STEP_SUMMARY"` },
         ],

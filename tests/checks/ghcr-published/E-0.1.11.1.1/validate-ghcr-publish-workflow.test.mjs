@@ -12,6 +12,16 @@ test("validates the GHCR workflow profile requirements", async () => {
   );
 });
 
+test.each([
+  [{ name: "@eliware/application-template", version: "12.0.4" }],
+  [{ name: "@eliware/web-template", version: "12.0.9" }],
+  [{ name: "@eliware/discord-template", version: "12.0.12" }],
+])("accepts the same workflow for package identity and version %s", async (packageJson) => {
+  await expect(validateGhcrPublishWorkflow(createGhcrInventory(), packageJson)).resolves.toEqual(
+    [],
+  );
+});
+
 test("reports a missing workflow file", async () => {
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ files: ["Dockerfile"] }), ghcrPackage),
@@ -48,13 +58,19 @@ test.each([
   [(flow) => (flow.jobs.publish.steps[2].with.context = "src"), "root context"],
   [(flow) => (flow.jobs.publish.steps[2].with.file = "Dockerfile.dev"), "root context"],
   [(flow) => (flow.jobs.publish.steps[2].with.push = false), "root context"],
+  [(flow) => (flow.jobs.publish.env.IMAGE_NAME = "ghcr.io/other/example"), "derive IMAGE_NAME"],
   [
-    (flow) => (flow.jobs.publish.steps[2].with.tags = ["ghcr.io/other/example:v12.0.0"]),
-    "image tags",
+    (flow) =>
+      (flow.jobs.publish.steps[2].with.tags = ["ghcr.io/other/example:${{ github.ref_name }}"]),
+    "IMAGE_NAME and the release tag",
   ],
   [
-    (flow) => (flow.jobs.publish.steps[2].with.tags = ["ghcr.io/eliware/example:v13.0.0"]),
-    "image tags",
+    (flow) => (flow.jobs.publish.steps[2].with.tags = ["${{ env.IMAGE_NAME }}:v13.0.0"]),
+    "IMAGE_NAME and the release tag",
+  ],
+  [
+    (flow) => (flow.jobs.publish.steps[2].with.tags = ["${{ env.IMAGE_NAME }}:${{ github.sha }}"]),
+    "IMAGE_NAME and the release tag",
   ],
   [(flow) => (flow.on.push.tags = ["main"]), "version tags"],
   [(flow) => ((flow.on = undefined), (flow.true = { push: { tags: ["main"] } })), "version tags"],
@@ -72,17 +88,28 @@ test.each([
 
 test("reports an image tag outside the package image", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[2].with.tags = "ghcr.io/other/image:v12.0.0";
+  workflow.jobs.publish.steps[2].with.tags = "ghcr.io/other/image:${{ github.ref_name }}";
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
-  ).resolves.toContain(
-    "GHCR image tags must use one package-derived name and the exact v-prefixed version.",
-  );
+  ).resolves.toContain("GHCR image tags must use IMAGE_NAME and the release tag.");
 });
 
 test("requires an unconditional version tag guard before the image push", async () => {
   const workflow = createGhcrWorkflow();
   workflow.jobs.publish.steps.splice(1, 1);
+  await expect(
+    validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
+  ).resolves.toContain(
+    "GHCR publisher must guard publication with the canonical package version tag.",
+  );
+});
+
+test("rejects a guard that does not compare the release tag to the package version", async () => {
+  const workflow = createGhcrWorkflow();
+  workflow.jobs.publish.steps[1].run = workflow.jobs.publish.steps[1].run.replace(
+    "GITHUB_REF_NAME!=='v'+version",
+    "GITHUB_REF_NAME==='v'+version",
+  );
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
   ).resolves.toContain(
@@ -115,14 +142,12 @@ test("rejects missing image tag values", async () => {
   delete workflow.jobs.publish.steps[2].with.tags;
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
-  ).resolves.toContain(
-    "GHCR image tags must use one package-derived name and the exact v-prefixed version.",
-  );
+  ).resolves.toContain("GHCR image tags must use IMAGE_NAME and the release tag.");
 });
 
 test("permits additional tags that use the same image name", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[2].with.tags.push("ghcr.io/eliware/example:latest");
+  workflow.jobs.publish.steps[2].with.tags += "\n${{ env.IMAGE_NAME }}:latest";
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
   ).resolves.toEqual([]);
@@ -130,7 +155,7 @@ test("permits additional tags that use the same image name", async () => {
 
 test("accepts image tags as a multiline string", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[2].with.tags = "ghcr.io/eliware/example:v12.0.0\n";
+  workflow.jobs.publish.steps[2].with.tags += "\n${{ env.IMAGE_NAME }}:latest\n";
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), ghcrPackage),
   ).resolves.toEqual([]);

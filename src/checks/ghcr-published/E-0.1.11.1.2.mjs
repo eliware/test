@@ -4,9 +4,6 @@ import { validateGhcrAttestationChain } from "./E-0.1.11.1.2/validate-ghcr-attes
 export const ruleId = "E-0.1.11.1.2";
 
 export async function run(context = {}) {
-  const errors = await validateGhcrAttestationChain(
-    context.repositoryInventory,
-    context.packageJson,
-  );
+  const errors = await validateGhcrAttestationChain(context.repositoryInventory);
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }
