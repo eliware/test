@@ -286,6 +286,43 @@ test.each([".mts", ".cts", ".js", ".cjs", ".ts", ".sh"])(
   },
 );
 
+test.each([".knit/scripts/run", ".knit/scripts/run.xyz"])(
+  "rejects secondary scripts without the required .mjs extension: %s",
+  async (script) => {
+    const errors = await validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () =>
+        deploy(
+          `commands:\n  - git pull --ff-only origin main\n  - npm ci\n  - npm test\n  - node ${script}`,
+        ),
+    });
+    expect(errors.join(" ")).toContain("must keep secondary scripts under .knit/ and use .mjs");
+  },
+);
+
+test("rejects an extensionless secondary script outside .knit", async () => {
+  const errors = await validateKnitConfiguration({
+    files: async () => [".knit/deploy.yaml"],
+    readText: async () =>
+      deploy(
+        "commands:\n  - git pull --ff-only origin main\n  - npm ci\n  - npm test\n  - node scripts/runner",
+      ),
+  });
+  expect(errors.join(" ")).toContain("must keep secondary scripts under .knit/ and use .mjs");
+});
+
+test("ignores an empty quoted command argument", async () => {
+  await expect(
+    validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () =>
+        deploy(
+          'commands:\n  - git pull --ff-only origin main\n  - npm ci\n  - npm test\n  - node ""',
+        ),
+    }),
+  ).resolves.toEqual([]);
+});
+
 test("rejects quoted secondary script paths outside .knit", async () => {
   const errors = await validateKnitConfiguration({
     files: async () => [".knit/deploy.yaml"],

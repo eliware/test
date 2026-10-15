@@ -4,6 +4,8 @@ import { isProhibitedNpmOrGhcrPublishCommand } from "../../../src/checks/shared/
 test.each([
   "npm publish",
   "pnpm publish",
+  "npx --yes npm@latest publish",
+  "corepack pnpm@latest publish",
   "npx semantic-release",
   "docker push ghcr.io/eliware/app:latest",
   "docker buildx build --push -t ghcr.io/eliware/app:latest .",
