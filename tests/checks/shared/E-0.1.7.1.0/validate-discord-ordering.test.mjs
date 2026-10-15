@@ -2,11 +2,11 @@ import { expect, jest, test } from "@jest/globals";
 import { validateDiscordOrdering } from "../../../../src/checks/shared/E-0.1.7.1.0/validate-discord-ordering.mjs";
 
 const agentsOrder = {
-  profileOrder: ["application", "cli", "discord", "mcp-server", "web"],
+  profileOrder: ["application", "database", "cli", "discord", "mcp-server", "web"],
   profileHeadings: { discord: "Discord" },
 };
 const readmeOrder = {
-  profileOrder: ["application", "cli", "discord", "mcp-server", "web"],
+  profileOrder: ["application", "database", "cli", "discord", "mcp-server", "web"],
   profileSections: {
     discord: ["Events", "Intents and permissions"],
   },

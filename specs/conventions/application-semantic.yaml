@@ -31,8 +31,6 @@ directives:
       - Validate configuration before opening connections.
       - Make shutdown repeatable.
       - Test public inputs and observable results of supported workflows.
-      - Use a separate test database that can be created and deleted for each test run.
-      - Use synthetic data in database-backed tests.
       - Keep unit assertions with the lowest owning module and coordinator tests focused
         on integration.
       - Inject replaceable dependencies.
@@ -42,8 +40,6 @@ directives:
       - Assert intended output behavior in tests.
     donts:
       - Do not open connections using unvalidated configuration.
-      - Do not connect tests or CI to production databases.
-      - Do not use production database credentials in tests or CI.
       - Do not omit supported workflow tests or duplicate helper assertions.
       - Do not preserve obsolete contracts or hide behavior through coverage exclusions.
     examples:

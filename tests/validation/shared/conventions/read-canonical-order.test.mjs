@@ -9,6 +9,7 @@ test("reads structured canonical order data", () => {
     "workspace",
     "library",
     "application",
+    "database",
     "cli",
     "web",
     "discord",

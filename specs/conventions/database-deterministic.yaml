@@ -1,0 +1,23 @@
+version: "13.0"
+description: Lists deterministic rules for Eliware database applications.
+requires:
+  - application
+conflicts:
+  - library
+  - documentation
+  - workspace
+  - infrastructure
+directives:
+  - id: E-0.1.13.1.0
+    dos:
+      - Select the database profile in package.json under eliware.apply.
+      - Apply the application profile with the database profile.
+      - Use the canonical profile order in ordering/eliware-apply.yaml.
+      - Keep database profile metadata equal in both database convention files.
+      - Keep each profile conflict reciprocal.
+    donts:
+      - Do not select the database profile from source files or package dependencies.
+      - Do not apply the database profile with library, documentation, workspace, or
+        infrastructure.
+      - Do not add deterministic checks for SQL meaning, data invariants, repeated
+        writes, or migration meaning.

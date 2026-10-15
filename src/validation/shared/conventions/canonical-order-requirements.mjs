@@ -1,5 +1,6 @@
 const profiles = [
   "application",
+  "database",
   "cli",
   "discord",
   "mcp-server",

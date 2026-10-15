@@ -5,6 +5,7 @@ requires:
   - private
 conflicts:
   - application
+  - database
   - cli
   - web
   - discord

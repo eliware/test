@@ -1,6 +1,6 @@
 import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
 
-const profileOrder = ["application", "cli", "discord", "mcp-server"];
+const profileOrder = ["application", "database", "cli", "discord", "mcp-server"];
 const discordSections = ["Events", "Intents and permissions"];
 
 export function validateDiscordOrdering(readOrder = readCanonicalOrder) {

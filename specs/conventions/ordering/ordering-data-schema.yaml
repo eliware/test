@@ -78,6 +78,7 @@ orders:
     agents-sections.yaml:
       profileHeadings:
         - application
+        - database
         - cli
         - discord
         - mcp-server
@@ -126,6 +127,7 @@ orders:
       licenseLink: text
       profileSections:
         - application
+        - database
         - cli
         - discord
         - mcp-server

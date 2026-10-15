@@ -11,6 +11,7 @@ orders:
     - Changes
   profileOrder:
     - application
+    - database
     - cli
     - discord
     - mcp-server
@@ -24,6 +25,7 @@ orders:
     - private
   profileHeadings:
     application: Application
+    database: Database
     cli: CLI
     discord: Discord
     mcp-server: MCP server

@@ -29,6 +29,7 @@ orders:
     - Security
   profileOrder:
     - application
+    - database
     - cli
     - discord
     - mcp-server
@@ -44,6 +45,7 @@ orders:
     application:
       - Configuration
       - Operations
+    database: []
     cli:
       - Exit codes
     discord:

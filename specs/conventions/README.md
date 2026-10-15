@@ -4,6 +4,8 @@
 - [Application, semantic](application-semantic.yaml)
 - [CLI, deterministic](cli-deterministic.yaml)
 - [CLI, semantic](cli-semantic.yaml)
+- [Database, deterministic](database-deterministic.yaml)
+- [Database, semantic](database-semantic.yaml)
 - [Discord, deterministic](discord-deterministic.yaml)
 - [Discord, semantic](discord-semantic.yaml)
 - [Documentation, deterministic](documentation-deterministic.yaml)

@@ -29,9 +29,16 @@ Add one or more application profiles for its interfaces:
 - `discord` for a Discord bot or service.
 - `mcp-server` for an MCP server.
 
-Each application profile requires `application`.
+Each interface profile requires `application`.
 You can combine these four profiles under `application`.
-Do not apply them to a library, documentation, workspace, or infrastructure repository.
+
+## Add the database profile
+
+Apply `database` with `application` when runtime code reads or writes persistent data.
+You can combine it with applicable interface and publication profiles.
+Do not select it from repository files or package dependencies.
+Do not apply it for documentation, runbooks, deployment settings, or unused packages.
+Do not apply it with `library`, `documentation`, `workspace`, or `infrastructure`.
 
 ## Add publication profiles
 
@@ -61,6 +68,7 @@ documentation
 workspace
 library
 application
+database
 cli
 web
 discord
@@ -109,6 +117,7 @@ Read the semantic file for the rules that the CLI does not enforce.
 | Workspace      | [workspace-deterministic.yaml](../specs/conventions/workspace-deterministic.yaml)           | [workspace-semantic.yaml](../specs/conventions/workspace-semantic.yaml)           |
 | Library        | [library-deterministic.yaml](../specs/conventions/library-deterministic.yaml)               | [library-semantic.yaml](../specs/conventions/library-semantic.yaml)               |
 | Application    | [application-deterministic.yaml](../specs/conventions/application-deterministic.yaml)       | [application-semantic.yaml](../specs/conventions/application-semantic.yaml)       |
+| Database       | [database-deterministic.yaml](../specs/conventions/database-deterministic.yaml)             | [database-semantic.yaml](../specs/conventions/database-semantic.yaml)             |
 | CLI            | [cli-deterministic.yaml](../specs/conventions/cli-deterministic.yaml)                       | [cli-semantic.yaml](../specs/conventions/cli-semantic.yaml)                       |
 | Web            | [web-deterministic.yaml](../specs/conventions/web-deterministic.yaml)                       | [web-semantic.yaml](../specs/conventions/web-semantic.yaml)                       |
 | Discord        | [discord-deterministic.yaml](../specs/conventions/discord-deterministic.yaml)               | [discord-semantic.yaml](../specs/conventions/discord-semantic.yaml)               |

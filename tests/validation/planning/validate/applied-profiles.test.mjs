@@ -4,16 +4,25 @@ import { validateAppliedProfiles } from "../../../../src/validation/planning/val
 const catalog = {
   profiles: {
     general: { requires: [], conflicts: [] },
-    application: { requires: [], conflicts: [] },
+    application: {
+      requires: [],
+      conflicts: ["documentation", "workspace", "infrastructure", "library"],
+    },
+    database: {
+      requires: ["application"],
+      conflicts: ["library", "documentation", "workspace", "infrastructure"],
+    },
     cli: { requires: ["application"], conflicts: [] },
     discord: { requires: ["application"], conflicts: [] },
     "mcp-server": { requires: ["application"], conflicts: [] },
     web: { requires: ["application"], conflicts: [] },
-    documentation: { requires: ["private"], conflicts: [] },
-    workspace: { requires: ["private"], conflicts: [] },
-    infrastructure: { requires: ["private"], conflicts: [] },
+    documentation: { requires: ["private"], conflicts: ["application", "database"] },
+    workspace: { requires: ["private"], conflicts: ["application", "database"] },
+    infrastructure: { requires: ["private"], conflicts: ["application", "database"] },
+    library: { requires: ["general"], conflicts: ["application", "database"] },
     private: { requires: [], conflicts: ["npm-published"] },
     "npm-published": { requires: [], conflicts: ["private"] },
+    "ghcr-published": { requires: [], conflicts: ["documentation", "workspace", "infrastructure"] },
   },
 };
 
@@ -50,6 +59,38 @@ test.each(["cli", "discord", "mcp-server", "web"])(
     expect(validateAppliedProfiles(["general", "application", profile], catalog)).toBeNull();
   },
 );
+
+test.each(
+  [
+    ["general", "application", "database"],
+    ["general", "application", "database", "web", "ghcr-published"],
+    ["general", "application", "database", "private"],
+  ].map((profiles) => ({ profiles })),
+)("accepts database profile composition %j", ({ profiles }) => {
+  expect(validateAppliedProfiles(profiles, catalog)).toBeNull();
+});
+
+test.each([
+  { profile: "library", profiles: ["general", "library", "application", "database"] },
+  {
+    profile: "documentation",
+    profiles: ["general", "documentation", "application", "database", "private"],
+  },
+  {
+    profile: "workspace",
+    profiles: ["general", "workspace", "application", "database", "private"],
+  },
+  {
+    profile: "infrastructure",
+    profiles: ["general", "application", "database", "infrastructure", "private"],
+  },
+])("rejects database with $profile", ({ profiles }) => {
+  expect(validateAppliedProfiles(profiles, catalog)).toContain("conflict");
+});
+
+test("requires application when database applies", () => {
+  expect(validateAppliedProfiles(["general", "database"], catalog)).toContain("application");
+});
 
 test("uses bundled catalog when no catalog is supplied", () => {
   expect(validateAppliedProfiles(["general"])).toBeNull();

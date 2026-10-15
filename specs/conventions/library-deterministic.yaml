@@ -4,6 +4,7 @@ requires:
   - general
 conflicts:
   - application
+  - database
   - cli
   - web
   - discord
