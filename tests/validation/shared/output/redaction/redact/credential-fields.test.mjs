@@ -23,6 +23,21 @@ test("redacts key-value, quoted, whitespace-delimited, and private-key credentia
   expect(redactCredentialFields("ordinary output")).toBe("ordinary output");
 });
 
+test("redacts mature sensitive key names from Eliware Redact", () => {
+  const keys = [
+    "cookie",
+    "set-cookie",
+    "passphrase",
+    "webhook",
+    "signature",
+    "tlsKey",
+    "tlsCert",
+    "proxyAuthorization",
+  ];
+  for (const key of keys)
+    expect(redactCredentialFields(`${key}=private-value`)).toBe(`${key}=[REDACTED]`);
+});
+
 test("does not treat a following line as a whitespace-delimited credential value", () => {
   expect(redactCredentialFields("secret\n  ✓ handles overlapping entries")).toBe(
     "secret\n  ✓ handles overlapping entries",
@@ -37,5 +52,8 @@ test("redacts quoted credentials that span multiple lines", () => {
 test("preserves coverage rows whose paths contain credential-like words", () => {
   expect(redactCredentialFields("src/app/routes/token | 100 | 90")).toBe(
     "src/app/routes/token | 100 | 90",
+  );
+  expect(redactCredentialFields("src/app/routes/webhook | 100 | 90")).toBe(
+    "src/app/routes/webhook | 100 | 90",
   );
 });

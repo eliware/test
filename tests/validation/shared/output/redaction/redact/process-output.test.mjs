@@ -58,6 +58,16 @@ test("redacts cookie and common CI credential formats", () => {
   expect(output).not.toContain("abc123secret");
 });
 
+test("redacts mature sensitive key names from Eliware Redact", () => {
+  const output = redactProcessOutput(
+    "passphrase=private webhook=private signature=private tlsKey=private tlsCert=private",
+  );
+  expect(output).toBe(
+    "passphrase=[REDACTED] webhook=[REDACTED] signature=[REDACTED] " +
+      "tlsKey=[REDACTED] tlsCert=[REDACTED]",
+  );
+});
+
 test("composes environment-value and pattern-family redaction", () => {
   expect(redactProcessOutput('password="xoxb-123456789"', ["private-value"])).toBe(
     "password=[REDACTED]",
