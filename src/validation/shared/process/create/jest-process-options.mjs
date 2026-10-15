@@ -34,5 +34,7 @@ export function createJestProcessOptions(root, args = [], options = {}) {
       ? { maxProgressLineLength: Number.MAX_SAFE_INTEGER }
       : {}),
     ...(options.onStderr ? { onStderr: options.onStderr } : {}),
+    ...(options.onRawStdout ? { onRawStdout: options.onRawStdout } : {}),
+    ...(options.onRawStderr ? { onRawStderr: options.onRawStderr } : {}),
   };
 }

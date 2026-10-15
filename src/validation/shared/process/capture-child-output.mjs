@@ -4,7 +4,15 @@ import { truncateChildOutputText } from "./truncate-child-output-text.mjs";
 
 export function createChildOutputCapture(
   options,
-  { onStdout, onStderr, captureStderr, env, createTextStream = createRedactedTextStream } = {},
+  {
+    onStdout,
+    onStderr,
+    onRawStdout,
+    onRawStderr,
+    captureStderr,
+    env,
+    createTextStream = createRedactedTextStream,
+  } = {},
 ) {
   const outputLimit = options;
   const redactionSecrets = collectRedactionSecrets(env);
@@ -64,9 +72,11 @@ export function createChildOutputCapture(
 
   return {
     stdout(text) {
+      onRawStdout?.(text);
       appendStdout(stdoutRedactor.push(text));
     },
     stderr(text) {
+      onRawStderr?.(text);
       const redacted = stderrRedactor.push(text);
       appendStderr(redacted);
       return redacted;

@@ -23,11 +23,13 @@ test("clears old coverage and keeps current coverage after Jest succeeds", async
   const coverage = join(root, "coverage");
   await mkdir(coverage);
   await writeFile(join(coverage, "old-report.json"), "old");
-  const execute = jest.fn(async (_command, args) => {
+  const execute = jest.fn(async (_command, args, options) => {
     const directory = args[args.indexOf("--coverageDirectory") + 1];
+    options.onRawStdout("passed");
+    options.onRawStderr("diagnostic");
     await writeFile(join(directory, "coverage-final.json"), "current");
     await writeFile(
-      join(directory, "jest-console-output.json"),
+      join(directory, "jest-console-events.json"),
       JSON.stringify([{ testFilePath: "tests/example.test.mjs", type: "log", message: "output" }]),
     );
     return { code: 0, stdout: "passed", stderr: "" };
@@ -41,7 +43,11 @@ test("clears old coverage and keeps current coverage after Jest succeeds", async
     { testFilePath: "tests/example.test.mjs", type: "log", message: "output" },
   ]);
   await expect(readFile(join(coverage, "coverage-final.json"), "utf8")).resolves.toBe("current");
-  await expect(readFile(join(coverage, "jest-console-output.json"), "utf8")).resolves.toContain(
+  const savedOutput = JSON.parse(
+    await readFile(join(coverage, "jest-console-output.json"), "utf8"),
+  );
+  expect(savedOutput).toEqual({ stdout: "passed", stderr: "diagnostic", truncated: false });
+  await expect(readFile(join(coverage, "jest-console-events.json"), "utf8")).resolves.toContain(
     "tests/example.test.mjs",
   );
   await expect(readFile(join(coverage, "old-report.json"), "utf8")).rejects.toMatchObject({
@@ -51,6 +57,49 @@ test("clears old coverage and keeps current coverage after Jest succeeds", async
     expect.stringContaining("Unexpected output from unknown test suite: passed"),
     expect.stringContaining("console.log in tests/example.test.mjs: output"),
   ]);
+});
+
+test("redacts streamed secrets after Jest closes", async () => {
+  const root = await createRoot();
+  const execute = async (_command, _args, options) => {
+    options.onRawStdout("token-");
+    options.onRawStdout("secret-value");
+    return { code: 0, stdout: "[REDACTED]", stderr: "" };
+  };
+  const result = await runJest(root, [], execute, { env: { API_TOKEN: "token-secret-value" } });
+  const log = JSON.parse(
+    await readFile(join(root, "coverage", "jest-console-output.json"), "utf8"),
+  );
+
+  expect(log.stdout).toContain("[REDACTED]");
+  expect(JSON.stringify(log)).not.toContain("token-secret-value");
+  expect(result).toMatchObject({ code: 1, outputRedacted: true });
+});
+
+test("keeps an unconfirmed timeout log for later inspection", async () => {
+  const root = await createRoot();
+  const result = await runJest(root, [], async (_command, _args, options) => {
+    options.onRawStdout("partial output");
+    return { code: null, timedOut: true, terminationConfirmed: false };
+  });
+
+  await expect(
+    readFile(join(root, "coverage", "jest-console-output.json"), "utf8"),
+  ).resolves.toContain("partial output");
+  expect(result.terminationConfirmed).toBe(false);
+});
+
+test("fails when the saved output log cannot be written", async () => {
+  const root = await createRoot();
+  const result = await runJest(root, [], async () => ({ code: 0 }), {
+    consoleLogFs: {
+      replace: () => {
+        throw new Error("write blocked");
+      },
+    },
+  });
+
+  expect(result).toMatchObject({ code: 1, outputLogError: true });
 });
 
 test.each([

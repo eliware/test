@@ -162,7 +162,7 @@ test("reports every suite and preserves long file paths", () => {
 test("writes captured Jest console output to the retained report path", () => {
   const writeFile = jest.fn();
   const previous = process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
-  process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = "coverage/jest-console-output.json";
+  process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = "coverage/jest-console-events.json";
   try {
     const reporter = new JestProgressReporter({ write: () => {}, writeConsoleReport: writeFile });
     reporter.onTestResult(
@@ -175,7 +175,7 @@ test("writes captured Jest console output to the retained report path", () => {
     else process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = previous;
   }
   expect(writeFile).toHaveBeenCalledWith(
-    "coverage/jest-console-output.json",
+    "coverage/jest-console-events.json",
     '[{"testFilePath":"tests/noisy.test.mjs","type":"warn","message":"expected leak","origin":"line 4"}]',
     "utf8",
   );

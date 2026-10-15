@@ -60,12 +60,21 @@ test("streams concise suite progress and separates it from the enclosing check l
 
 test("passes the run-scoped console report path to Jest's reporter", () => {
   const options = createJestProcessOptions("C:/fixture", [], {
-    consoleReportFile: "C:/fixture/coverage/jest-console-output.json",
+    consoleReportFile: "C:/fixture/coverage/jest-console-events.json",
   });
 
   expect(options.env.ELIWARE_TEST_JEST_CONSOLE_REPORT).toBe(
-    "C:/fixture/coverage/jest-console-output.json",
+    "C:/fixture/coverage/jest-console-events.json",
   );
+});
+
+test("forwards raw stdout and stderr handlers", () => {
+  const onRawStdout = jest.fn();
+  const onRawStderr = jest.fn();
+  const options = createJestProcessOptions("C:/fixture", [], { onRawStdout, onRawStderr });
+
+  expect(options.onRawStdout).toBe(onRawStdout);
+  expect(options.onRawStderr).toBe(onRawStderr);
 });
 
 test("supports omitted options and optional timeout callbacks", () => {

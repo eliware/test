@@ -27,6 +27,19 @@ test("supports omitted output callbacks", () => {
   expect(capture.result()).toEqual({ stdout: "visible", stderr: "" });
 });
 
+test("sends original stream chunks to raw output handlers", () => {
+  const raw = [];
+  const capture = createChildOutputCapture(100, {
+    env: { SERVICE_TOKEN: "private-value" },
+    onRawStdout: (text) => raw.push(text),
+  });
+  capture.stdout("private-value");
+  capture.flush();
+
+  expect(raw).toEqual(["private-value"]);
+  expect(capture.result().stdout).toBe("[REDACTED]");
+});
+
 test("enforces a shared output budget across stdout and stderr", () => {
   const capture = createChildOutputCapture(10);
   capture.stdout("1234567");

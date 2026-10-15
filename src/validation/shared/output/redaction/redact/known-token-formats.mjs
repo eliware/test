@@ -13,7 +13,7 @@ export function redactKnownTokenFormats(text) {
       "[REDACTED]",
     )
     .replace(
-      /\b(?![A-Fa-f0-9]{32,}=?)(?=[A-Za-z0-9+/]{32,}={0,2}\b)(?=[A-Za-z0-9+/]*[0-9])[A-Za-z0-9+/]{32,}={0,2}\b/gu,
+      /(?<![A-Za-z0-9_./-])(?![A-Fa-f0-9]{32,}=?)(?=[A-Za-z0-9+/]{32,}={0,2}(?![A-Za-z0-9_./-]))(?=[A-Za-z0-9+/]*[0-9])[A-Za-z0-9+/]{32,}={0,2}(?![A-Za-z0-9_./-])/gu,
       "[REDACTED]",
     )
     .replace(/(eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/gu, "[REDACTED]");

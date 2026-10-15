@@ -2,6 +2,21 @@ import { expect, test } from "@jest/globals";
 import { classifyJestResult } from "../../../../../src/validation/stages/jest/execution/classify-jest-result.mjs";
 
 test("classifies timeout, failure, and success results", () => {
+  expect(
+    classifyJestResult("E-0.1.130.13", {
+      code: 1,
+      outputRedacted: true,
+      outputRedactionKinds: ["environment secret"],
+    }).message,
+  ).toBe(
+    "Jest output contained secret material. Redaction occurred in coverage/jest-console-output.json (environment secret).",
+  );
+  expect(classifyJestResult("E-0.1.130.13", { code: 1, outputRedacted: true }).message).toContain(
+    "(secret rule).",
+  );
+  expect(classifyJestResult("E-0.1.130.13", { code: 1, outputLogError: true }).message).toBe(
+    "Jest output could not be saved to coverage/jest-console-output.json.",
+  );
   expect(classifyJestResult("E-0.1.130.13", { timedOut: true }, "timed out").status).toBe("fail");
   expect(
     classifyJestResult(

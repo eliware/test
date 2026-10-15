@@ -34,7 +34,8 @@ test("sets the consumer coverage path and clears old files before Jest runs", as
   const coverageOption = prepared.args.indexOf("--coverageDirectory");
   expect(prepared.args[coverageOption + 1]).toBe(coverage);
   expect(prepared.coverageDirectory).toBe(coverage);
-  expect(prepared.consoleReportFile).toBe(join(coverage, "jest-console-output.json"));
+  expect(prepared.consoleOutputFile).toBe(join(coverage, "jest-console-output.json"));
+  expect(prepared.consoleReportFile).toBe(join(coverage, "jest-console-events.json"));
   expect(prepared.options).toEqual(expect.objectContaining({ env: expect.any(Object) }));
   await expect(readFile(join(coverage, "old-report.json"), "utf8")).rejects.toMatchObject({
     code: "ENOENT",

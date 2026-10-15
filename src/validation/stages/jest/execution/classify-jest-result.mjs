@@ -48,6 +48,13 @@ export function classifyJestResult(
   timeoutDiagnostic,
   { failuresReported = false } = {},
 ) {
+  if (result.outputRedacted)
+    return fail(
+      ruleId,
+      `Jest output contained secret material. Redaction occurred in coverage/jest-console-output.json (${result.outputRedactionKinds?.join(", ") ?? "secret rule"}).`,
+    );
+  if (result.outputLogError)
+    return fail(ruleId, "Jest output could not be saved to coverage/jest-console-output.json.");
   if (timeoutDiagnostic && (result.timedOut || result.code !== 0))
     return fail(ruleId, timeoutDiagnostic);
   if (result.timedOut) {
