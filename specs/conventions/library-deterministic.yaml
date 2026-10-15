@@ -66,12 +66,20 @@ directives:
   - id: E-0.1.3.1.3
     dos:
       - Run required Jest tests through eliware-test with the exact configuration shown.
+      - Use mocked file-system operations in every test suite.
+      - Allow network access to localhost only.
+      - Use fake timers or injected fixed clocks.
+      - Mock process calls and other external effects.
       - Use Istanbul coverage for production .mjs files under src/.
       - Reach 100 percent statements, branches, functions, and lines with zero uncovered lines.
       - Allow coverage exclusions only in the exact primary public entrypoint.
       - Allow Istanbul ignore directives there only when it is a pure export barrel.
       - Keep successful test runs free of console and process output.
     donts:
+      - Do not change file-system state in tests.
+      - Do not access external network services in tests.
+      - Do not launch real processes or command-line tools in tests.
+      - Do not use wall-clock waits, sleeps, or uncontrolled timers in tests.
       - Do not directly invoke Jest, import its runner, or directly declare Jest packages.
       - Do not substitute other test runners.
       - Do not substitute other coverage engines.

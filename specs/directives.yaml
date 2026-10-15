@@ -173,6 +173,10 @@ directives:
           - Inject child-process execution into stages and checks.
           - Mock every CLI call in tests/**/*.test.mjs.
           - Keep tests/**/*.test.mjs from launching real CLI tools or child processes.
+          - Mock file-system operations in tests/**/*.test.mjs.
+          - Allow network access to localhost only in tests/**/*.test.mjs.
+          - Use fake timers or injected fixed clocks in tests/**/*.test.mjs.
+          - Mock process calls and other external effects in tests/**/*.test.mjs.
           - Mock calls to Git, npm, audit, lint, format, pack, typecheck, build, Jest, and package scripts.
           - Invoke child processes with argument arrays, explicit working directories, and shell-disabled execution.
           - Copy the complete invoking environment defensively.
@@ -186,6 +190,10 @@ directives:
           - Emit buffered text before a secret reaches the output limit.
           - Stop child processes within a platform-specific time limit.
         donts:
+          - Do not change file-system state in tests/**/*.test.mjs.
+          - Do not access external network services in tests/**/*.test.mjs.
+          - Do not launch real processes or command-line tools in tests/**/*.test.mjs.
+          - Do not use wall-clock waits, sleeps, or uncontrolled timers in tests/**/*.test.mjs.
           - Do not depend on shell pipelines, quoting, arbitrary installation layouts, or unbounded capture.
           - Do not invoke Windows command shims through non-shell execution.
           - Do not selectively inherit or sanitize child environments.
@@ -222,6 +230,7 @@ directives:
       - id: E-0.0.8
         dos:
           - Clear the consumer coverage directory before each Jest run.
+          - Keep harness-owned coverage reports and validation output separate from test side effects.
           - Write current coverage reports and Jest console output to the consumer coverage directory.
           - Keep current-run coverage reports and Jest output after Jest completes.
           - Read coverage data from the consumer coverage directory.
