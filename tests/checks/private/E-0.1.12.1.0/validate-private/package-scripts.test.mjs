@@ -1,14 +1,18 @@
 import { expect, test } from "@jest/globals";
 import { validatePrivatePackageScripts } from "../../../../../src/checks/private/E-0.1.12.1.0/validate-private/package-scripts.mjs";
 
-test.each(["npm publish", "pnpm publish --access public", "yarn npm publish"])(
-  "rejects npm publication command %s",
-  (command) => {
-    expect(validatePrivatePackageScripts({ scripts: { release: command } })).toEqual([
-      "package.json.scripts.release must not run an npm publication command.",
-    ]);
-  },
-);
+test.each([
+  "npm publish",
+  "pnpm publish --access public",
+  "yarn npm publish",
+  "npx npm publish",
+  "corepack pnpm publish",
+  "npx --yes npm@latest publish",
+])("rejects npm publication command %s", (command) => {
+  expect(validatePrivatePackageScripts({ scripts: { release: command } })).toEqual([
+    "package.json.scripts.release must not run an npm publication command.",
+  ]);
+});
 
 test.each(["NPM_TOKEN=value node publish.mjs", "export NODE_AUTH_TOKEN=value", "echo $NPM_TOKEN"])(
   "rejects npm token setting %s",

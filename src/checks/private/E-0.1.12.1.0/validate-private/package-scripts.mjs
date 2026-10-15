@@ -1,6 +1,6 @@
+import { isNpmPublishCommand } from "../../../shared/is-npm-publish-command.mjs";
+
 const tokenNames = ["NPM_TOKEN", "NODE_AUTH_TOKEN"];
-const npmPublish =
-  /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu;
 
 export function validatePrivatePackageScripts(packageJson = {}) {
   const scripts = packageJson?.scripts ?? {};
@@ -8,7 +8,7 @@ export function validatePrivatePackageScripts(packageJson = {}) {
   return Object.entries(scripts).flatMap(([name, command]) => {
     if (typeof command !== "string") return [];
     const errors = [];
-    if (npmPublish.test(command))
+    if (isNpmPublishCommand(command))
       errors.push(`package.json.scripts.${name} must not run an npm publication command.`);
     if (tokenNames.some((token) => hasTokenSetting(command, token)))
       errors.push(`package.json.scripts.${name} must not set or reference npm publication tokens.`);

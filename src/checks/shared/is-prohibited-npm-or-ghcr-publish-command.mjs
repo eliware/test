@@ -1,6 +1,7 @@
+import { isNpmPublishCommand } from "./is-npm-publish-command.mjs";
+
 const publishPatterns = [
   /\b(?:semantic-release|release-it|lerna\s+publish|changesets?\s+publish)\b/iu,
-  /\b(?:npm|pnpm|yarn|bun)(?:@[^\s]+)?\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm(?:@[^\s]+)?\s+)?publish\b/iu,
   /\b(?:docker|podman|buildah)\s+push\b[^;\r\n]*(?:\bghcr\.io\/|\$\{?GHCR_[A-Z0-9_]+\}?)/iu,
   /\b(?:docker|podman|buildah)\s+(?:buildx\s+)?build\b[^;\r\n]*--push[^;\r\n]*(?:\bghcr\.io\/|\$\{?GHCR_[A-Z0-9_]+\}?)/iu,
   /\b(?:oras|crane)\s+push\b[^;\r\n]*\bghcr\.io\//iu,
@@ -8,5 +9,8 @@ const publishPatterns = [
 ];
 
 export function isProhibitedNpmOrGhcrPublishCommand(command) {
-  return typeof command === "string" && publishPatterns.some((pattern) => pattern.test(command));
+  return (
+    isNpmPublishCommand(command) ||
+    (typeof command === "string" && publishPatterns.some((pattern) => pattern.test(command)))
+  );
 }

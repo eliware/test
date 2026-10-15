@@ -1,9 +1,8 @@
 import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
+import { isNpmPublishCommand } from "../../../shared/is-npm-publish-command.mjs";
 
 const workflowDirectory = ".github/workflows/";
 const tokenNames = new Set(["NPM_TOKEN", "NODE_AUTH_TOKEN"]);
-const npmPublish =
-  /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu;
 
 export async function validatePrivateWorkflows(inventory) {
   if (!inventory?.files || !inventory?.readText)
@@ -39,7 +38,7 @@ function findViolations(value, path) {
   for (const [key, child] of Object.entries(value)) {
     const childPath = `${path}.${key}`;
     if (tokenNames.has(key)) errors.push(`${childPath} must not define npm publication tokens.`);
-    if (key === "run" && typeof child === "string" && npmPublish.test(child))
+    if (key === "run" && isNpmPublishCommand(child))
       errors.push(`${childPath} must not run an npm publication command.`);
     errors.push(...findViolations(child, childPath));
   }

@@ -68,3 +68,22 @@ test("allows GHCR publication in a workflow for a Private repository", async () 
     run({ packageJson: { private: true }, repositoryInventory: inventory }),
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
+
+test.each(["npx npm publish", "corepack pnpm publish"])(
+  "rejects wrapped npm publication in workflow commands: %s",
+  async (command) => {
+    const path = ".github/workflows/publish.yaml";
+    const inventory = {
+      files: async () => [path],
+      readText: async () => `jobs:\n  publish:\n    steps:\n      - run: ${command}\n`,
+    };
+    await expect(
+      run({ packageJson: { private: true }, repositoryInventory: inventory }),
+    ).resolves.toMatchObject({
+      status: "fail",
+      message: expect.stringContaining(
+        `${path}.jobs.publish.steps.0.run must not run an npm publication command.`,
+      ),
+    });
+  },
+);
