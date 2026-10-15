@@ -143,6 +143,7 @@ directives:
       - Set repository-and-ref concurrency with cancel-in-progress true.
       - Set workflow and validation-job permissions to contents read only.
       - Run validation unconditionally on Ubuntu using checkout major v6 and setup-node major v7 with Node.js 26.
+      - "Allow actions/checkout@v6 to set fetch-depth: 0."
       - Install npm latest.
       - Run one standalone npm ci step, then one standalone npm test step.
       - Add any workflow steps after the required npm test step unless a command publishes an npm package or a GHCR image.

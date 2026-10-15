@@ -88,6 +88,9 @@ directives:
       - Use versioned level-two entries only.
       - Keep at least one versioned release entry.
       - Match the newest versioned entry with package.json.version.
+      - Require a v<version> repository tag for every older release entry.
+      - Allow the current package.json.version without a repository tag.
+      - Make all repository tags available during validation.
       - Use valid calendar dates, strictly descending numeric SemVer versions, and non-increasing dates.
       - Give every entry at least one level-three category from Added, Changed, Fixed, Breaking changes, Migration, or Security.
       - Give each category user-visible change text.

@@ -3,7 +3,7 @@ import { validateApplicationReleaseNotes } from "./E-0.1.4.1.4/validate/applicat
 
 export const ruleId = "E-0.1.4.1.4";
 
-export async function run(context = {}) {
-  const errors = await validateApplicationReleaseNotes(context);
+export async function run(context = {}, dependencies = {}) {
+  const errors = await validateApplicationReleaseNotes(context, dependencies);
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }

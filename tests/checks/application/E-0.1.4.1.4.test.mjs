@@ -19,6 +19,7 @@ test("E-0.1.4.1.4 rejects a newest release version that differs from package.jso
     run({
       root: "repo",
       packageJson: { version: packageVersion },
+      runGit: async () => ({ stdout: "" }),
       repositoryInventory: {
         readText: async (path) =>
           path.endsWith("RELEASE_NOTES.md")

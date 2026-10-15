@@ -2,6 +2,12 @@ import { removeMarkdownCode } from "../../../../../general/E-0.1.0.1.4/extract-m
 import { validateReleaseNoteSections } from "../note-sections.mjs";
 import { validateReleaseVersionHistory } from "../version-history.mjs";
 
+export function releaseEntryHeadings(content) {
+  const normalized = content.replace(/^\uFEFF/u, "");
+  const lines = removeMarkdownCode(normalized).split(/\r?\n/u);
+  return lines.filter((line) => /^##\s/u.test(line));
+}
+
 export function validateReleaseNotesContent(content, packageVersion) {
   const errors = [];
   const normalized = content.replace(/^\uFEFF/u, "");
@@ -14,7 +20,7 @@ export function validateReleaseNotesContent(content, packageVersion) {
   if (lines.filter((line) => /^#\s/u.test(line)).length !== 1)
     errors.push("RELEASE_NOTES.md must contain one level-one title.");
   errors.push(...validateReleaseNoteSections(lines));
-  const titles = lines.filter((line) => /^##\s/u.test(line));
+  const titles = releaseEntryHeadings(normalized);
   if (!titles.length)
     errors.push("RELEASE_NOTES.md must contain at least one versioned release entry.");
   errors.push(...validateReleaseVersionHistory(titles, packageVersion));

@@ -1,9 +1,13 @@
 const versionHeading =
   /^## ((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)) — (\d{4}-\d{2}-\d{2})$/u;
 
+export function releaseVersionFromHeading(entry) {
+  return versionHeading.exec(entry)?.[1] ?? null;
+}
+
 export function validateReleaseVersionHistory(entries, packageVersion) {
   const errors = [];
-  const newestVersion = versionHeading.exec(entries[0] ?? "")?.[1];
+  const newestVersion = releaseVersionFromHeading(entries[0] ?? "");
   if (typeof packageVersion !== "string" || !packageVersion)
     errors.push("package.json.version is required for release-note validation.");
   else if (newestVersion && newestVersion !== packageVersion)

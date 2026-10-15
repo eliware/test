@@ -9,10 +9,16 @@ export function validateWorkflowStepFields(steps) {
       step?.uses === "actions/setup-node@v7"
         ? ["uses", "with"]
         : step?.uses === "actions/checkout@v6"
-          ? ["uses"]
+          ? ["uses", "with"]
           : ["run"];
     if (Object.keys(step).some((key) => !allowed.includes(key)))
       errors.push("ci.yaml steps must use only approved keys and inputs.");
+    if (
+      step?.uses === "actions/checkout@v6" &&
+      step.with !== undefined &&
+      (Object.keys(step.with ?? {}).length !== 1 || step.with?.["fetch-depth"] !== 0)
+    )
+      errors.push("ci.yaml checkout may set only fetch-depth: 0.");
   }
   return errors;
 }

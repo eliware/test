@@ -12,6 +12,12 @@ test("accepts approved step shapes and null entries", () => {
   ).toEqual([]);
 });
 
+test("accepts full history for checks that need repository tags", () => {
+  expect(
+    validateWorkflowStepFields([{ uses: "actions/checkout@v6", with: { "fetch-depth": 0 } }]),
+  ).toEqual([]);
+});
+
 test("allows arbitrary fields on steps after the required npm test", () => {
   expect(
     validateWorkflowStepFields([
@@ -34,3 +40,12 @@ test.each([
     "ci.yaml steps must use only approved keys and inputs.",
   ]);
 });
+
+test.each([{ "fetch-depth": 1 }, { token: "secret" }, {}, null])(
+  "rejects unsupported checkout inputs %j",
+  (withValue) => {
+    expect(validateWorkflowStepFields([{ uses: "actions/checkout@v6", with: withValue }])).toEqual([
+      "ci.yaml checkout may set only fetch-depth: 0.",
+    ]);
+  },
+);
