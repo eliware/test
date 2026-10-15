@@ -1,9 +1,23 @@
 import { expect, test } from "@jest/globals";
 import { readFile } from "node:fs/promises";
+import { parse } from "yaml";
 import { validateBundledSpecifications } from "../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled-specifications.mjs";
 
 test("validates the suite schema and bundled convention files", async () => {
   await expect(validateBundledSpecifications()).resolves.toEqual([]);
+});
+
+test("keeps the package.json prohibition as its own donts item", async () => {
+  const document = parse(
+    await readFile(
+      new URL("../../../../../specs/conventions/general-deterministic.yaml", import.meta.url),
+      "utf8",
+    ),
+  );
+  const rule = document.directives.find(({ id }) => id === "E-0.1.0.1.8");
+  expect(rule.dos).toContain("Ignore .DS_Store and Thumbs.db.");
+  expect(rule.dos).not.toContain("Do not ignore package.json.");
+  expect(rule.donts).toContain("Do not ignore package.json.");
 });
 
 test("reports invalid bundled files", async () => {

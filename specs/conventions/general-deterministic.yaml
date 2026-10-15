@@ -166,13 +166,13 @@ directives:
     dos:
       - Ignore directories named node_modules, .git, coverage, dist, build, generated, artifacts, and test-results at every depth.
       - Ignore .DS_Store and Thumbs.db.
-        - Do not ignore package.json.
       - Keep tracked and staged files outside applicable ignore rules.
       - Keep all tracked paths free of symlinks.
       - Do not track paths with a component named id_rsa or credentials.
       - Use only the root .gitignore; do not add nested .gitignore files.
     donts:
       - Do not track ignored files or symlinks.
+      - Do not ignore package.json.
 
   - id: E-0.1.0.1.9
     dos:
