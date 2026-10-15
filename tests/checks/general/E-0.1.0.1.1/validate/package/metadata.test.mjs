@@ -25,6 +25,21 @@ test("accepts canonical package metadata", () => {
   expect(validatePackageMetadata(valid)).toEqual([]);
 });
 
+test("accepts 20 keywords and rejects more than 20", () => {
+  expect(
+    validatePackageMetadata({
+      ...valid,
+      keywords: Array.from({ length: 20 }, (_, index) => `key-${index}`),
+    }),
+  ).toEqual([]);
+  expect(
+    validatePackageMetadata({
+      ...valid,
+      keywords: Array.from({ length: 21 }, (_, index) => `key-${index}`),
+    }),
+  ).toContain("package.json.keywords must contain no more than 20 entries.");
+});
+
 test.each([
   [{ name: "example" }, "scoped @eliware"],
   [{ version: nextMinorVersion }, `Convention v${conventionVersion}`],

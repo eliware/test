@@ -20,7 +20,7 @@ directives:
   - id: E-0.1.0.1.1
     dos:
       - Keep package.json, package-lock.json, README.md, AGENTS.md, LICENSE, and specs/README.md.
-      - Define a scoped @eliware name, nonempty description, distinct nonempty keywords, and boolean private.
+      - Define a scoped @eliware name, nonempty description, no more than 20 distinct nonempty keywords, and boolean private.
       - Require Node.js 26 or later with package.json.engines.node set to ">=26".
       - Use the canonical author, repository, homepage, license, module type, and Node.js metadata shown in the example.
       - Set package.json.bugs.url to the matching GitHub repository issues URL.

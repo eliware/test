@@ -30,6 +30,8 @@ export function validatePackageMetadata(packageJson) {
   } else if (new Set(keywords).size !== keywords.length) {
     errors.push("package.json.keywords must be distinct.");
   }
+  if (Array.isArray(keywords) && keywords.length > 20)
+    errors.push("package.json.keywords must contain no more than 20 entries.");
   if (typeof packageJson?.private !== "boolean")
     errors.push("package.json.private must be boolean.");
   if (packageJson?.author !== "Eliware <eliware@eliware.org>")
