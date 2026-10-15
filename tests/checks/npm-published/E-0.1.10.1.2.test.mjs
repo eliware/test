@@ -14,6 +14,9 @@ const workflow = `jobs:
       - run: npm test
   publish:
     needs: validate
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v7
@@ -53,6 +56,37 @@ test("accepts Node.js 26 as a quoted setup-node value", async () => {
       status: "pass",
     },
   );
+});
+
+test.each([
+  [
+    "workflow-level grant",
+    workflow
+      .replace("jobs:\n", "permissions:\n  contents: read\n  id-token: write\njobs:\n")
+      .replace("    permissions:\n      contents: read\n      id-token: write\n", ""),
+    "pass",
+  ],
+  ["job-level grant", workflow, "pass"],
+  [
+    "missing grant",
+    workflow.replace("    permissions:\n      contents: read\n      id-token: write\n", ""),
+    "fail",
+  ],
+  ["read-only grant", workflow.replace("id-token: write", "id-token: read"), "fail"],
+  [
+    "job scope overrides workflow grant",
+    workflow
+      .replace("jobs:\n", "permissions:\n  contents: read\n  id-token: write\njobs:\n")
+      .replace(
+        "    permissions:\n      contents: read\n      id-token: write\n",
+        "    permissions:\n      contents: read\n",
+      ),
+    "fail",
+  ],
+])("checks effective OIDC permission for %s", async (_name, source, status) => {
+  const result = await run({ repositoryInventory: inventory(source), packageJson });
+  expect(result.status).toBe(status);
+  if (status === "fail") expect(result.message).toContain("id-token: write");
 });
 
 test.each([

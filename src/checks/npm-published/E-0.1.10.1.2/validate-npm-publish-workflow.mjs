@@ -1,6 +1,7 @@
 import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { findNpmTokenSettings } from "./find-npm-token-settings.mjs";
 import { hasCanonicalReleaseTagGuard } from "../../shared/publish-workflow/validate-release-tag-guard.mjs";
+import { hasNpmProvenancePermission } from "./validate-npm-publish-workflow/has-npm-provenance-permission.mjs";
 
 const workflowPath = ".github/workflows/publish.yaml";
 
@@ -23,6 +24,8 @@ export async function validateNpmPublishWorkflow(inventory, packageJson = {}) {
 
 function validateWorkflow(document, packageJson) {
   const errors = findNpmTokenSettings(document);
+  if (!hasNpmProvenancePermission(document))
+    errors.push("npm publish job must grant id-token: write for provenance.");
   const steps = document?.jobs?.publish?.steps;
   if (!Array.isArray(steps)) return [...errors, "publish.yaml publish job must define steps."];
   const setup = steps.filter(

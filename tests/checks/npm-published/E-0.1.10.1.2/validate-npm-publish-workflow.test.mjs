@@ -1,36 +1,14 @@
 import { expect, test } from "@jest/globals";
 import { validateNpmPublishWorkflow } from "../../../../src/checks/npm-published/E-0.1.10.1.2/validate-npm-publish-workflow.mjs";
 import { packageVersion } from "../../../helpers/project-version.mjs";
-
-const source = `jobs:
-  publish:
-    steps:
-      - uses: actions/checkout@v6
-      - run: >-
-          node -e "const version=require('./package.json').version;
-          if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||
-          process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          registry-url: https://registry.npmjs.org
-          package-manager-cache: false
-      - run: npm -g install npm@latest
-      - run: npm ci
-      - run: npm publish --provenance
-on:
-  push:
-    tags: ["v[0-9]*.[0-9]*.[0-9]*"]
-`;
-
-const inventory = (text = source) => ({
-  files: async () => [".github/workflows/publish.yaml"],
-  readText: async () => text,
-});
+import {
+  createNpmPublishInventory,
+  npmPublishWorkflow as source,
+} from "../../../../test-fixtures/npm-publish-workflow.mjs";
 
 test("validates the npm publisher workflow", async () => {
   await expect(
-    validateNpmPublishWorkflow(inventory(), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(), { version: packageVersion }),
   ).resolves.toEqual([]);
 });
 
@@ -39,7 +17,7 @@ test.each([
   source.replace('tags: ["v[0-9]*.[0-9]*.[0-9]*"]', 'tags:\n      - "v[0-9]*.[0-9]*.[0-9]*"'),
 ])("accepts equivalent inline and block release tag lists", async (workflow) => {
   await expect(
-    validateNpmPublishWorkflow(inventory(workflow), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(workflow), { version: packageVersion }),
   ).resolves.toEqual([]);
 });
 
@@ -49,12 +27,14 @@ test("requires a canonical package-version tag guard", async () => {
     "GITHUB_REF_NAME==='v'+version",
   );
   await expect(
-    validateNpmPublishWorkflow(inventory(withoutGuard), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(withoutGuard), {
+      version: packageVersion,
+    }),
   ).resolves.toContain(
     "npm publisher must guard publication with the canonical package version tag.",
   );
   await expect(
-    validateNpmPublishWorkflow(inventory(), { version: `${packageVersion}-beta` }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(), { version: `${packageVersion}-beta` }),
   ).resolves.toContain(
     "npm publisher must guard publication with the canonical package version tag.",
   );
@@ -65,7 +45,7 @@ test("rejects a publish step before the tag guard even when a later publish step
     "      - run: >-",
     "      - run: npm publish --provenance\n      - run: >-",
   );
-  const errors = await validateNpmPublishWorkflow(inventory(withEarlyPublish), {
+  const errors = await validateNpmPublishWorkflow(createNpmPublishInventory(withEarlyPublish), {
     version: packageVersion,
   });
   expect(errors).toContain(
@@ -78,7 +58,9 @@ test("rejects a publish step before the tag guard even when a later publish step
 
 test("rejects publish jobs that do not define workflow steps", async () => {
   await expect(
-    validateNpmPublishWorkflow(inventory("jobs: { publish: {} }"), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory("jobs: { publish: {} }"), {
+      version: packageVersion,
+    }),
   ).resolves.toContain("publish.yaml publish job must define steps.");
 });
 
@@ -87,10 +69,12 @@ test("reports missing workflow files, invalid YAML, and inventory failures", asy
     validateNpmPublishWorkflow({ files: async () => [], readText: async () => "" }, {}),
   ).resolves.toContain(".github/workflows/publish.yaml is required.");
   await expect(
-    validateNpmPublishWorkflow(inventory("jobs: ["), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory("jobs: ["), { version: packageVersion }),
   ).resolves.toContain(".github/workflows/publish.yaml must contain one valid YAML document.");
   await expect(
-    validateNpmPublishWorkflow(inventory(`${source}\n---\njobs: {}`), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(`${source}\n---\njobs: {}`), {
+      version: packageVersion,
+    }),
   ).resolves.toContain(".github/workflows/publish.yaml must contain one valid YAML document.");
   await expect(
     validateNpmPublishWorkflow({
@@ -133,7 +117,7 @@ test.each([
   ],
 ])("rejects %s", async (_name, workflow) => {
   await expect(
-    validateNpmPublishWorkflow(inventory(workflow), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(workflow), { version: packageVersion }),
   ).resolves.toContain(
     "npm publish job must use setup-node v7 with Node.js 26 and the npm registry.",
   );
@@ -161,7 +145,7 @@ test.each([
   ],
 ])("rejects invalid install order: %s", async (_name, workflow) => {
   await expect(
-    validateNpmPublishWorkflow(inventory(workflow), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(workflow), { version: packageVersion }),
   ).resolves.toContain("npm publisher must install npm latest before npm ci after setup-node.");
 });
 
@@ -184,7 +168,7 @@ test.each([
   ],
 ])("rejects invalid publish step: %s", async (_name, workflow) => {
   await expect(
-    validateNpmPublishWorkflow(inventory(workflow), { version: packageVersion }),
+    validateNpmPublishWorkflow(createNpmPublishInventory(workflow), { version: packageVersion }),
   ).resolves.toContain(
     "npm publisher must have one unconditional standalone npm publish --provenance step.",
   );
