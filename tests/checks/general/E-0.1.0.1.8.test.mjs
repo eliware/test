@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.8.mjs";
 import { validateGitHygiene } from "../../../src/checks/general/E-0.1.0.1.8/validate/git/hygiene.mjs";
 
-const ignoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.env*\n!.env*.example\n.DS_Store\nThumbs.db`;
+const ignoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.DS_Store\nThumbs.db`;
 
 function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
   let index = 0;
@@ -11,7 +11,7 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
     if (current === failAt) throw Object.assign(new Error("git failed"), { code: 2 });
     if (args.includes("check-ignore")) {
       const path = args.at(-1);
-      const shouldIgnore = !path.endsWith(".example");
+      const shouldIgnore = path !== "package.json";
       if (shouldIgnore) return { code: 0, stdout: "", stderr: "" };
       throw Object.assign(new Error("not ignored"), { code: 1 });
     }
@@ -46,7 +46,7 @@ test("uses injected dependencies when the check context is omitted", async () =>
 test("reports missing ignore rules, ignored tracked files, and symlinks", async () => {
   const runner = async (_command, args) => {
     if (args.includes("check-ignore")) throw Object.assign(new Error("not ignored"), { code: 1 });
-    if (args.includes("--ignored")) return { stdout: Buffer.from("tracked.env\0") };
+    if (args.includes("--ignored")) return { stdout: Buffer.from("tracked-output.log\0") };
     return { stdout: Buffer.from(`120000 ${"a".repeat(40)} 0\tlink\0`) };
   };
   const result = await run({ root: "repo", runGit: runner, readText: async () => ignoreText });
@@ -55,6 +55,18 @@ test("reports missing ignore rules, ignored tracked files, and symlinks", async 
   expect(result.message).toContain("must be ignored");
   expect(result.message).toContain("Tracked or staged paths");
   expect(result.message).toContain("Tracked symlink entries");
+});
+
+test("rejects tracked credential paths through the complete rule", async () => {
+  const runner = async (_command, args) => {
+    if (args.includes("check-ignore")) return { code: 0 };
+    if (args.includes("--stage"))
+      return { stdout: Buffer.from(`100644 ${"a".repeat(40)} 0\tconfig/credentials\0`) };
+    return { stdout: Buffer.from("") };
+  };
+  const result = await run({ root: "repo", runGit: runner, readText: async () => ignoreText });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("Tracked sensitive paths are prohibited: config/credentials.");
 });
 
 test("reports Git status errors", async () => {
@@ -67,11 +79,11 @@ test("reports Git status errors", async () => {
   expect(result.message).toContain("Git ignore rules could not be inspected");
   const indexResult = await run({
     root: "repo",
-    runGit: createGitRunner({ failAt: 61 }),
+    runGit: createGitRunner({ failAt: 38 }),
     readText: async () => ignoreText,
   });
   expect(indexResult.message).toContain("Git index status could not be read");
-  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 62 }), {
+  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 39 }), {
     readText: async () => ignoreText,
   });
   expect(linkIndex).toContain("Git index status could not be read; tracked symlinks are unknown.");
@@ -99,24 +111,26 @@ test("rejects malformed Git path and index output", async () => {
   expect(errors).toContain("Git index status could not be read; tracked symlinks are unknown.");
 });
 
-test("uses the current directory and detects an ignored example file", async () => {
+test("uses the current directory and checks required ignored paths", async () => {
   const runner = async (_command, args) => {
-    if (args.includes("check-ignore")) return { code: 0 };
+    if (args.includes("check-ignore")) return { code: args.at(-1) === "package.json" ? 1 : 0 };
     return { stdout: Buffer.from("") };
   };
   await expect(run({ runGit: runner, readText: async () => ignoreText })).resolves.toMatchObject({
-    message: expect.stringContaining("must not be ignored"),
+    status: "pass",
   });
 });
 
-test("reports failure when Git treats an example file as ignored", async () => {
+test("reports failure when Git does not ignore a required path", async () => {
   const runner = async (_command, args) => {
+    if (args.includes("check-ignore") && args.at(-1) === "nested/node_modules/item.txt")
+      return { code: 1 };
     if (args.includes("check-ignore")) return { code: 0 };
     return { stdout: Buffer.from("") };
   };
   await expect(
     validateGitHygiene("repo", runner, { readText: async () => ignoreText }),
-  ).resolves.toContain("nested/.env.production.example must not be ignored.");
+  ).resolves.toContain("nested/node_modules/item.txt must be ignored.");
 });
 
 test("handles Git ignore command codes and missing Git", async () => {
@@ -125,8 +139,6 @@ test("handles Git ignore command codes and missing Git", async () => {
       if (args.at(-1) === "nested/node_modules/item.txt") return { code: 1 };
       if (args.at(-1) === "nested/.git/item.txt")
         throw Object.assign(new Error("missing"), { code: "ENOENT" });
-      if (args.at(-1).endsWith(".example"))
-        throw Object.assign(new Error("not ignored"), { code: 1 });
       return { code: 0 };
     }
     return { stdout: Buffer.from("") };

@@ -21,7 +21,15 @@ export async function validateKnitConfiguration(inventory) {
       return [...errors, `.knit/deploy.yaml could not be parsed: ${parseError.message}`];
     if (documents.length !== 1)
       return [...errors, ".knit/deploy.yaml must contain exactly one document."];
-    const commandLists = findCommandLists(documents[0].toJS());
+    const document = documents[0].toJS();
+    const events = document.on;
+    const deployments = Array.isArray(events?.push?.deployments) ? events.push.deployments : [];
+    if (deployments.length === 0) errors.push(".knit/deploy.yaml must define push deployments.");
+    deployments.forEach((deployment, index) => {
+      if (deployment?.timeoutMs !== 300000)
+        errors.push(`.knit/deploy.yaml deployment ${index + 1} must set timeoutMs to 300000.`);
+    });
+    const commandLists = findCommandLists(document);
     if (commandLists.length === 0) errors.push(".knit/deploy.yaml must define commands fields.");
     commandLists.forEach((commands, index) => errors.push(...validateCommands(commands, index)));
     return errors;

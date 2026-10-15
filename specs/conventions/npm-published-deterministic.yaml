@@ -28,7 +28,6 @@ directives:
       - Include specs/ for every npm-published repository.
       - Include package.json, README.md, AGENTS.md, LICENSE, and specs/ in the tarball.
       - Include every declared runtime entrypoint, export, and declaration target.
-      - Include tracked .env-prefixed example files whose names end in .example.
       - Allow additional runtime files and folders at any depth unless excluded.
       - Exclude tests, test, __tests__, and test-fixtures directories at every depth.
       - Exclude .github, .knit, .git, and node_modules directories at every depth.
@@ -38,7 +37,6 @@ directives:
       - Exclude secret, secrets, credential, credentials, token, and tokens directories at every depth.
       - Exclude non-source files named secret, secrets, credential, credentials, token, or tokens at every depth.
       - Exclude files with .pem, .key, .p12, or .pfx extensions at every depth.
-      - Exclude .env-prefixed files unless their names end in .example.
       - Validate actual packed contents against minimum contents and exclusions.
     donts:
       - Do not impose an exact allowlist or let extras bypass exclusions.
@@ -47,7 +45,6 @@ directives:
     examples:
       - '{"files":["src/","docs/","examples/","specs/","README.md","AGENTS.md","LICENSE","RELEASE_NOTES.md","assets/","data.json"]}'
       - "assets/templates/email.html is permitted but assets/tests/example.json is excluded."
-      - ".env.production.example is permitted but .env.production is excluded."
 
   - id: E-0.1.10.1.2
     dos:
@@ -62,3 +59,10 @@ directives:
     examples:
       - "uses: actions/setup-node@v7\nwith:\n  node-version: 26\n  registry-url: https://registry.npmjs.org\n  package-manager-cache: false"
       - "run: npm publish --provenance"
+
+  - id: E-0.1.10.1.3
+    dos:
+      - Match the origin Git remote to package.json.repository.url.
+      - Accept HTTPS and SSH URLs for the same GitHub repository.
+    donts:
+      - Do not accept a missing origin remote or a different repository.

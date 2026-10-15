@@ -30,12 +30,3 @@ test("derives common package contents and profile additions", () => {
     }),
   ).toEqual([...base, "bin/", "specs/"]);
 });
-
-test("retains the explicitly selected environment example as an optional entry", () => {
-  expect(
-    derivePackageFilesAllowlist({
-      eliware: { apply: ["application"] },
-      files: [...base, "bin/", ".env.example"],
-    }),
-  ).toEqual([...base, "bin/", ".env.example"]);
-});

@@ -103,35 +103,3 @@ test("rejects duplicate and misordered required entries", () => {
     }),
   ).toContain("only string paths");
 });
-
-test("limits environment examples to runtime environment profiles", () => {
-  expect(
-    validatePublicationMetadata({
-      ...validPackage,
-      files: [...validPackage.files, ".env.example"],
-    }),
-  ).toBeNull();
-  const packageWithEnvironmentTemplate = {
-    ...validPackage,
-    files: [
-      "src/",
-      "docs/",
-      "README.md",
-      "AGENTS.md",
-      "LICENSE",
-      "RELEASE_NOTES.md",
-      "specs/",
-      ".env.example",
-    ],
-    eliware: { apply: ["general", "npm-published"] },
-  };
-  expect(validatePublicationMetadata(packageWithEnvironmentTemplate)).toContain(
-    "profile that supports runtime environment configuration",
-  );
-  expect(
-    validatePublicationMetadata({
-      ...validPackage,
-      files: [...validPackage.files, ".env.example", "assets/"],
-    }),
-  ).toContain(".env.example must be the final");
-});

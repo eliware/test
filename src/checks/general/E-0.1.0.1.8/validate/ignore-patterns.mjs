@@ -11,17 +11,10 @@ const ignoredDirectories = [
 const nestedRoots = ["nested", "nested/deep", "nested/deep/layer", "nested/deep/layer/four"];
 
 export const requiredIgnoreCases = [
+  ["package.json", false],
   ...nestedRoots.flatMap((root) =>
     ignoredDirectories.map((directory) => [`${root}/${directory}/item.txt`, true]),
   ),
-  ...nestedRoots.flatMap((root) => [
-    [`${root}/.env`, true],
-    [`${root}/.envrc`, true],
-    [`${root}/.envsecret`, true],
-    [`${root}/.env.production`, true],
-    [`${root}/.env.local`, true],
-    [`${root}/.env.production.example`, false],
-  ]),
   ["nested/.DS_Store", true],
   ["nested/Thumbs.db", true],
 ];
@@ -38,10 +31,6 @@ export function validateRequiredIgnoreRules(content) {
   if (!rules.some((rule) => isUniversalRule(rule, ".git"))) missing.push(".git");
   for (const name of [".DS_Store", "Thumbs.db"])
     if (!rules.some((rule) => isUniversalRule(rule, name))) missing.push(name);
-  if (!rules.includes(".env*")) missing.push(".env*");
-  if (!rules.includes("!.env*.example")) missing.push("!.env*.example");
-  const unsafeNegations = rules.filter((rule) => rule.startsWith("!") && rule !== "!.env*.example");
-  if (unsafeNegations.length) missing.push(`unsafe negations: ${unsafeNegations.join(", ")}`);
   return missing.length
     ? [`.gitignore must define universal rules for: ${missing.join(", ")}.`]
     : [];

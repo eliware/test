@@ -2,7 +2,6 @@ import { compatibleWithNode26 } from "../../../../checks/general/E-0.1.0.1.1/val
 import { derivePackageFilesAllowlist } from "../derive-package-files-allowlist.mjs";
 import { validateOrderedPackageFiles } from "./ordered-package-files.mjs";
 import { validatePackageLifecycleScripts } from "./package-lifecycle-scripts.mjs";
-import { readCanonicalOrder } from "../../../shared/conventions/read-canonical-order.mjs";
 
 export function validatePublicationMetadata(packageJson, { selfHosted = false } = {}) {
   if (packageJson?.private !== false) {
@@ -25,13 +24,6 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
     derivePackageFilesAllowlist(packageJson),
   );
   if (fileOrderError) return fileOrderError;
-  const profiles = packageJson?.eliware?.apply ?? [];
-  const environmentProfiles = readCanonicalOrder("package-files.yaml").environmentExampleProfiles;
-  if (
-    files.includes(".env.example") &&
-    !environmentProfiles.some((profile) => profiles.includes(profile))
-  )
-    return "package.json.files may include .env.example only for a profile that supports runtime environment configuration.";
   const packScript = selfHosted ? "node bin/eliware-test.mjs --pack" : "eliware-test --pack";
   if (packageJson?.scripts?.pack !== packScript) {
     return "Public npm packages must define pack=eliware-test --pack.";

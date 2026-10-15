@@ -123,6 +123,8 @@ directives:
   - id: E-0.1.0.1.6
     dos:
       - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
+      - Set timeoutMs to 300000 for each push deployment.
+      - Keep the deployment path repository-specific.
       - "Begin every commands array with these exact commands in this order: git pull --ff-only origin main, npm ci, npm test."
       - Add any commands after this prefix unless a command publishes an npm package or a GHCR image.
       - Keep secondary Knit scripts under .knit/.
@@ -146,6 +148,7 @@ directives:
       - Add any workflow steps after the required npm test step unless a command publishes an npm package or a GHCR image.
       - Before npm ci, permit only approved setup actions, npm latest installation, and literal safe echo or printf reporting.
       - Keep required install and test steps free of environment, shell, and working-directory overrides.
+      - Treat inline and block YAML lists as equal when their values match.
     donts:
       - Do not add other workflow files.
       - Do not make required validation steps conditional.
@@ -159,15 +162,14 @@ directives:
   - id: E-0.1.0.1.8
     dos:
       - Ignore directories named node_modules, .git, coverage, dist, build, generated, artifacts, and test-results at every depth.
-      - Ignore .env-prefixed files except names ending in .example.
       - Ignore .DS_Store and Thumbs.db.
+        - Do not ignore package.json.
       - Keep tracked and staged files outside applicable ignore rules.
       - Keep all tracked paths free of symlinks.
+      - Do not track paths with a component named id_rsa or credentials.
       - Use only the root .gitignore; do not add nested .gitignore files.
     donts:
       - Do not track ignored files or symlinks.
-    examples:
-      - ".env.production is ignored and .env.production.example may be tracked."
 
   - id: E-0.1.0.1.9
     dos:

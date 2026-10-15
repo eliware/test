@@ -31,7 +31,6 @@ export function findProhibitedPackFiles(paths = []) {
       const fileName = segment.replace(/\.[^.]+$/u, "");
       const sourceFile = /\.(?:mjs|cjs|js|mts|cts|ts|tsx|jsx)$/u.test(segment);
       return (
-        (segment.startsWith(".env") && !segment.endsWith(".example")) ||
         (!sourceFile &&
           /^(?:secret|secrets|credential|credentials|token|tokens)$/u.test(fileName)) ||
         /(?:private[-_.]?key|credentials?)[.](?:pem|key|p12|pfx)$/u.test(segment) ||

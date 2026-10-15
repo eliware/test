@@ -31,10 +31,6 @@ test("identifies every prohibited directory, lockfile, config, and secret path",
     "assets/generated/output.json",
     "artifacts/release/archive.tgz",
     "test-results/report.json",
-    "src/.env",
-    "src/.env.development",
-    "nested/.env.test",
-    "nested/.env.staging",
     "config/secret",
     "config/secrets.json",
     "secrets/private.json",
@@ -52,15 +48,15 @@ test("identifies every prohibited directory, lockfile, config, and secret path",
   expect(findProhibitedPackFiles(files)).toEqual(files);
 });
 
-test("permits ordinary runtime files and placeholder environment examples", () => {
+test("permits ordinary runtime files, including environment files", () => {
   expect(
     findProhibitedPackFiles([
       "src/index.mjs",
       "docs/README.md",
       "AGENTS.md",
-      ".env.example",
-      ".env.development.example",
-      "nested/.env.production.example",
+      ".env",
+      ".env.production",
+      "nested/.env.staging",
       "examples/demo.mjs",
       "src/redact-secrets.mjs",
       "src/collect-redaction-secrets.mjs",

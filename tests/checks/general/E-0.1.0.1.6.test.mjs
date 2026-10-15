@@ -4,8 +4,10 @@ import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.6.mjs";
 const inventory = {
   files: async () => [".knit/deploy.yaml", ".knit/secondary.mjs"],
   readText: async () =>
-    "version: 1\non:\n  push:\n    commands:\n      - git pull --ff-only origin main\n      - npm ci\n      - npm test\n",
+    "version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands:\n          - git pull --ff-only origin main\n          - npm ci\n          - npm test\n",
 };
+const deployment = (commands) =>
+  `version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands: ${commands}\n`;
 
 test("accepts the required Knit command prefix", async () => {
   await expect(run({ repositoryInventory: inventory })).resolves.toEqual({
@@ -20,7 +22,7 @@ test("reports invalid Knit files and command lists", async () => {
     repositoryInventory: {
       files: async () => [".knit/deploy.yaml", ".knit/extra.yml"],
       readText: async () =>
-        "commands: [npm test, npm ci, npm test, npm publish]\nextra:\n  commands: nope\n",
+        `${deployment("[npm test, npm ci, npm test, npm publish]")}extra:\n  commands: nope\n`,
     },
   });
   expect(result.status).toBe("fail");
@@ -59,7 +61,7 @@ test("rejects multiple YAML documents and allows additional commands", async () 
       repositoryInventory: {
         files: async () => [".knit/deploy.yaml"],
         readText: async () =>
-          "commands: [git pull --ff-only origin main, npm ci, npm test, codescope run]",
+          deployment("[git pull --ff-only origin main, npm ci, npm test, codescope run]"),
       },
     }),
   ).resolves.toMatchObject({ status: "pass" });
@@ -73,28 +75,34 @@ test("rejects missing commands, non-string items, and publishing commands", asyn
         readText: async () => source,
       },
     });
-  await expect(validate("version: 1")).resolves.toMatchObject({
+  await expect(
+    validate("version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000"),
+  ).resolves.toMatchObject({
     message: expect.stringContaining("must define commands fields"),
   });
-  await expect(validate("commands: [1, npm ci, npm test]")).resolves.toMatchObject({
+  await expect(validate(deployment("[1, npm ci, npm test]"))).resolves.toMatchObject({
     message: expect.stringContaining("array of strings"),
   });
   await expect(
     validate(
-      "commands: [git pull --ff-only origin main, npm ci, npm test, docker push ghcr.io/team/image]",
+      deployment(
+        "[git pull --ff-only origin main, npm ci, npm test, docker push ghcr.io/team/image]",
+      ),
     ),
   ).resolves.toMatchObject({
     message: expect.stringContaining("must not publish npm packages or GHCR images"),
   });
   await expect(
     validate(
-      "commands: [git pull --ff-only origin main, npm ci, npm test, node scripts/helper.mjs]",
+      deployment("[git pull --ff-only origin main, npm ci, npm test, node scripts/helper.mjs]"),
     ),
   ).resolves.toMatchObject({
     message: expect.stringContaining("keep secondary scripts under .knit/"),
   });
   await expect(
-    validate("commands: [git pull --ff-only origin main, npm ci, npm test, node .knit/helper.mjs]"),
+    validate(
+      deployment("[git pull --ff-only origin main, npm ci, npm test, node .knit/helper.mjs]"),
+    ),
   ).resolves.toMatchObject({ status: "pass" });
 });
 

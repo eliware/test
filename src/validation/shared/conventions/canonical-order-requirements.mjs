@@ -58,8 +58,6 @@ export const canonicalOrderRequirements = {
       baseEntries: "text-list",
       profileEntries: "text-map",
       profileEntryOrder: "text-list",
-      finalOptionalEntries: "text-list",
-      environmentExampleProfiles: "text-list",
     },
     maps: { profileEntries: ["application", "library", "npm-published"] },
   },

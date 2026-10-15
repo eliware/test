@@ -12,19 +12,26 @@ build/
 generated/
 artifacts/
 test-results/
-.env*
-!.env*.example
 .DS_Store
 Thumbs.db`;
 
 test("defines universal ignore rules and nested probes", () => {
   expect(validateRequiredIgnoreRules(rules)).toEqual([]);
   expect(requiredIgnoreCases.some(([path]) => path.includes("level/five"))).toBe(false);
-  expect(requiredIgnoreCases.length).toBeGreaterThan(40);
+  expect(requiredIgnoreCases.length).toBeGreaterThan(30);
 });
 
-test("rejects missing rules and other negation exceptions", () => {
-  expect(validateRequiredIgnoreRules("node_modules/\n!.env.local\n")[0]).toContain(
-    "unsafe negations: !.env.local",
+test("allows repository-specific ignore rules", () => {
+  expect(validateRequiredIgnoreRules(`${rules}\n!local-example.txt`)).toEqual([]);
+});
+
+test("reports missing ignore rules and accepts recursive directory patterns", () => {
+  expect(validateRequiredIgnoreRules("!local-example.txt")[0]).toContain(
+    ".gitignore must define universal rules for",
   );
+  expect(
+    validateRequiredIgnoreRules(
+      "**/node_modules\n**/.git\n**/coverage\n**/dist\n**/build\n**/generated\n**/artifacts\n**/test-results\n**/.DS_Store\n**/Thumbs.db",
+    ),
+  ).toEqual([]);
 });

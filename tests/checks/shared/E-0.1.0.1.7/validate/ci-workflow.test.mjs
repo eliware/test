@@ -39,6 +39,13 @@ test("accepts the required workflow file set for a general profile", async () =>
   ).resolves.toEqual([]);
 });
 
+test.each([workflow, workflow.replaceAll("branches: [main]", "branches:\n      - main")])(
+  "accepts equivalent inline and block trigger lists",
+  async (source) => {
+    await expect(validateCiWorkflow({ readText: async () => source })).resolves.toEqual([]);
+  },
+);
+
 test("allows a publish workflow for publication profiles", async () => {
   await expect(
     validateCiWorkflow(
@@ -58,6 +65,29 @@ test("requires readable validation workflow content", async () => {
   await expect(
     validateCiWorkflow({ readText: async () => Promise.reject(new Error("offline")) }),
   ).resolves.toEqual(["GitHub workflow files could not be inspected: offline"]);
+});
+
+test("reports invalid YAML and multiple YAML documents", async () => {
+  await expect(validateCiWorkflow({ readText: async () => "jobs: [" })).resolves.toEqual(
+    expect.arrayContaining([expect.stringContaining("could not be parsed")]),
+  );
+  await expect(
+    validateCiWorkflow({ readText: async () => `${workflow}\n---\nname: Extra` }),
+  ).resolves.toContain(".github/workflows/ci.yaml must contain exactly one document.");
+});
+
+test("accepts the quoted on key", async () => {
+  await expect(
+    validateCiWorkflow({ readText: async () => workflow.replace("on:", "'on':") }),
+  ).resolves.toEqual([]);
+});
+
+test("reports missing event data", async () => {
+  await expect(
+    validateCiWorkflow({
+      readText: async () => workflow.replace(/on:[\s\S]*?concurrency:/u, "on: null\nconcurrency:"),
+    }),
+  ).resolves.toContain("ci.yaml must enable push for main.");
 });
 
 test("reports a workflow without a jobs map", async () => {
@@ -118,6 +148,19 @@ test.each([
     { eliware: { apply: ["general"] } },
   );
   expect(errors.join(" ")).toMatch(/unsupported keys|approved keys and inputs|setup-node may use/u);
+});
+
+test.each([
+  workflow.replace("  test:", "  lint:"),
+  workflow.replace("    runs-on: ubuntu-latest", "    runs-on: windows-latest"),
+  workflow.replace("    runs-on: ubuntu-latest", "    runs-on: ubuntu-latest\n    if: always()"),
+  workflow.replace("    permissions:\n      contents: read", "    permissions: {}"),
+  workflow.replace("    runs-on: ubuntu-latest\n", ""),
+])("rejects invalid validation job settings", async (source) => {
+  const errors = await validateCiWorkflow({ readText: async () => source });
+  expect(errors.join(" ")).toMatch(
+    /only validation job key|must run on Ubuntu|unconditionally|permissions/u,
+  );
 });
 
 test.each([

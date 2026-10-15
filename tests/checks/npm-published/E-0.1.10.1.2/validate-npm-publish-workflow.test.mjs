@@ -28,6 +28,15 @@ test("validates the npm publisher workflow", async () => {
   await expect(validateNpmPublishWorkflow(inventory(), { version: "12.0.0" })).resolves.toEqual([]);
 });
 
+test.each([
+  source,
+  source.replace('tags: ["v[0-9]*.[0-9]*.[0-9]*"]', 'tags:\n      - "v[0-9]*.[0-9]*.[0-9]*"'),
+])("accepts equivalent inline and block release tag lists", async (workflow) => {
+  await expect(
+    validateNpmPublishWorkflow(inventory(workflow), { version: "12.0.0" }),
+  ).resolves.toEqual([]);
+});
+
 test("requires a canonical package-version tag guard", async () => {
   const withoutGuard = source.replace(/^      - run: node -e .*\r?\n/mu, "");
   await expect(
