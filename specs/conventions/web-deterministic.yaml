@@ -50,9 +50,14 @@ directives:
 
   - id: E-0.1.6.1.2
     dos:
-      - Define build as one command that invokes a directly declared build tool.
+      - Declare webpack as a direct dependency.
+      - Set build to the standard webpack command.
       - Run build during aggregate validation.
       - Set lighthouse and puppeteer as direct dependencies.
       - Define nonempty lighthouse and puppeteer scripts.
     donts:
       - Do not chain or redirect build or duplicate it in CI.
+    examples:
+      - >-
+        webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js
+        --mode production

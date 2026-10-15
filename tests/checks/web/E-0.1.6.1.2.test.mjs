@@ -7,7 +7,13 @@ test("requires direct Lighthouse and Puppeteer dependencies and scripts", () => 
     run({
       packageJson: {
         dependencies: { lighthouse: "1", puppeteer: "1" },
-        scripts: { lighthouse: "lighthouse", puppeteer: "puppeteer" },
+        scripts: {
+          lighthouse: "lighthouse",
+          puppeteer: "puppeteer",
+          build:
+            "webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js --mode production",
+        },
+        devDependencies: { webpack: "1" },
       },
     }),
   ).toEqual({ ruleId, status: "pass", message: "" });
@@ -18,13 +24,21 @@ test("requires direct Lighthouse and Puppeteer dependencies and scripts", () => 
       "Web applications must directly declare lighthouse.\n" +
       "Web applications must define a nonempty lighthouse script.\n" +
       "Web applications must directly declare puppeteer.\n" +
-      "Web applications must define a nonempty puppeteer script.",
+      "Web applications must define a nonempty puppeteer script.\n" +
+      "Web applications must directly declare webpack.\n" +
+      "Web applications must define the standard webpack build script.",
   });
   expect(
     run({
       packageJson: {
         dependencies: { lighthouse: "1" },
-        scripts: { lighthouse: "   ", puppeteer: false },
+        scripts: {
+          lighthouse: "   ",
+          puppeteer: false,
+          build:
+            "webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js --mode production",
+        },
+        devDependencies: { webpack: "1" },
       },
     }).message,
   ).toContain("Web applications must define a nonempty puppeteer script.");
@@ -33,8 +47,13 @@ test("requires direct Lighthouse and Puppeteer dependencies and scripts", () => 
 test("accepts direct browser tool dependencies in development dependencies", () => {
   const result = run({
     packageJson: {
-      devDependencies: { lighthouse: "1", puppeteer: "1" },
-      scripts: { lighthouse: "lighthouse", puppeteer: "puppeteer" },
+      devDependencies: { lighthouse: "1", puppeteer: "1", webpack: "1" },
+      scripts: {
+        lighthouse: "lighthouse",
+        puppeteer: "puppeteer",
+        build:
+          "webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js --mode production",
+      },
     },
   });
   expect(result).toEqual({ ruleId, status: "pass", message: "" });
