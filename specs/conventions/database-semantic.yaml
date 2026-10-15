@@ -72,7 +72,6 @@ directives:
         DBA runbook index.
       - Follow Operations directive E-12.4 for release, deployment, rollback, and recovery
         actions.
-      - Follow the outage-first release model in COO issue 6.
       - Compare each schema claim with migration files, schema definitions, application
         version metadata, and linked procedures.
     donts:
