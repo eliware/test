@@ -7,7 +7,7 @@ export function hasCanonicalReleaseTagGuard(workflow, steps, version, finalStepI
       normalizeCommand(step?.run) === normalizeCommand(releaseTagGuard) ||
       normalizeCommand(step?.run) === normalizeCommand(workflowReleaseTagGuard),
   );
-  const checkoutIndex = steps.findIndex((step) => step?.uses === "actions/checkout@v6");
+  const checkoutIndex = steps.findIndex((step) => step?.uses === "actions/checkout@v7");
   return (
     /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u.test(String(version)) &&
     hasCanonicalReleaseTagFilter(workflow) &&

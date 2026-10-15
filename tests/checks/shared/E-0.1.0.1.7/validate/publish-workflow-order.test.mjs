@@ -3,7 +3,7 @@ import { validatePublishWorkflowOrder } from "../../../../../src/checks/shared/E
 const validPublish = `jobs:
   validate:
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v7

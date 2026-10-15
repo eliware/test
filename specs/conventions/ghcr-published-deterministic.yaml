@@ -37,7 +37,7 @@ directives:
       - Check that the release tag matches the canonical package version before image push.
       - Make additional tags use ${{ env.IMAGE_NAME }} and a valid tag.
       - Set ghcr-publish as the publication job environment.
-      - Use checkout major v6 in the GHCR publisher.
+      - Use checkout major v7 in the GHCR publisher.
     donts:
       - Do not declare other image owners.
       - Do not require npm setup in jobs that do not invoke npm.

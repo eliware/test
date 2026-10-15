@@ -5,7 +5,7 @@ import { packageVersion } from "../../helpers/project-version.mjs";
 const workflow = `jobs:
   validate:
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v7
@@ -18,7 +18,7 @@ const workflow = `jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 26

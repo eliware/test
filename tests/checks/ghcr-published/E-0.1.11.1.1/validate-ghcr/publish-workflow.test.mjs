@@ -56,8 +56,8 @@ test.each([
   [(flow) => (flow.jobs.publish["continue-on-error"] = true), "bypass conditions"],
   [(flow) => (flow.permissions = { contents: "write" }), "workflow permissions"],
   [(flow) => (flow.jobs.publish.permissions.packages = "read"), "required read, package"],
-  [(flow) => (flow.jobs.publish.steps[0].uses = "actions/checkout@v5"), "checkout v6 once"],
-  [(flow) => flow.jobs.publish.steps.push({ uses: "actions/checkout@v6" }), "checkout v6 once"],
+  [(flow) => (flow.jobs.publish.steps[0].uses = "actions/checkout@v6"), "checkout v7 once"],
+  [(flow) => flow.jobs.publish.steps.push({ uses: "actions/checkout@v7" }), "checkout v7 once"],
   [(flow) => (flow.jobs.publish.steps[2].if = "false"), "run unconditionally"],
   [(flow) => flow.jobs.publish.steps.splice(2, 1), "must build and push an image"],
   [(flow) => (flow.jobs.publish.steps[2].uses = "docker/build-push-action@v5"), "action v6"],
@@ -140,7 +140,7 @@ test("rejects missing workflow sections and incomplete publisher data", async ()
   await expect(validateGhcrPublishWorkflow(createGhcrInventory({ workflow }), {})).resolves.toEqual(
     expect.arrayContaining([
       "GHCR image name must use the unscoped package name.",
-      "GHCR publisher must use checkout v6 once.",
+      "GHCR publisher must use checkout v7 once.",
       "GHCR publisher must build and push an image.",
     ]),
   );

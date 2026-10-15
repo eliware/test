@@ -40,8 +40,8 @@ export async function validateGhcrPublishWorkflow(inventory, packageJson = {}) {
   const checkouts = steps.filter(
     (step) => typeof step?.uses === "string" && step.uses.startsWith("actions/checkout@"),
   );
-  if (checkouts.length !== 1 || checkouts[0]?.uses !== "actions/checkout@v6")
-    errors.push("GHCR publisher must use checkout v6 once.");
+  if (checkouts.length !== 1 || checkouts[0]?.uses !== "actions/checkout@v7")
+    errors.push("GHCR publisher must use checkout v7 once.");
   const pushes = steps.filter(
     (step) => typeof step?.uses === "string" && step.uses.startsWith("docker/build-push-action@"),
   );

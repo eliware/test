@@ -3,7 +3,7 @@ import { validateWorkflowCommandRestrictions } from "../../../../../../src/check
 import { packageVersion } from "../../../../../helpers/project-version.mjs";
 
 const steps = [
-  { uses: "actions/checkout@v6" },
+  { uses: "actions/checkout@v7" },
   { uses: "actions/setup-node@v7", with: { "node-version": 26, cache: "npm" } },
   { run: "npm -g install npm@latest" },
   { run: "npm ci" },

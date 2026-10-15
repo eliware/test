@@ -18,7 +18,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v7
@@ -32,7 +32,7 @@ jobs:
 const validPublishWorkflow = `jobs:
   validate:
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v7
@@ -69,7 +69,7 @@ test("reports invalid workflow settings and steps", async () => {
     .replace("cancel-in-progress: true", "cancel-in-progress: false")
     .replace("contents: read", "contents: write")
     .replace("ubuntu-latest", "windows-latest")
-    .replace("actions/checkout@v6", "actions/checkout@v5")
+    .replace("actions/checkout@v7", "actions/checkout@v6")
     .replace("node-version: 26", "node-version: 20")
     .replace("npm ci", "npm ci && npm test");
   await expect(

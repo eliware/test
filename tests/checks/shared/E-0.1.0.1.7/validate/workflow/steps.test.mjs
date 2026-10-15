@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateWorkflowSteps } from "../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/steps.mjs";
 
 const steps = [
-  { uses: "actions/checkout@v6", with: { "fetch-depth": 0 } },
+  { uses: "actions/checkout@v7", with: { "fetch-depth": 0 } },
   { uses: "actions/setup-node@v7", with: { "node-version": 26, cache: "npm" } },
   { run: "npm -g install npm@latest" },
   { run: "npm ci" },
@@ -21,7 +21,7 @@ test("allows additional commands after npm test", () => {
 
 test("combines errors from the step shape, order, and command policies", () => {
   const errors = validateWorkflowSteps([
-    { uses: "actions/checkout@v6", with: { "fetch-depth": 0 }, name: "checkout" },
+    { uses: "actions/checkout@v7", with: { "fetch-depth": 0 }, name: "checkout" },
     { uses: "actions/setup-node@v7", with: { "node-version": 20 } },
     null,
     { run: "echo $TOKEN" },
@@ -30,7 +30,7 @@ test("combines errors from the step shape, order, and command policies", () => {
   ]);
   expect(errors).toContain("ci.yaml steps must use only approved keys and inputs.");
   expect(errors).toContain(
-    "ci.yaml must use checkout v6, setup-node v7, npm latest, npm ci, then npm test.",
+    "ci.yaml must use checkout v7, setup-node v7, npm latest, npm ci, then npm test.",
   );
   expect(errors).toContain("ci.yaml setup-node must use Node.js 26.");
   expect(errors).toContain("ci.yaml has an unapproved step before npm ci.");

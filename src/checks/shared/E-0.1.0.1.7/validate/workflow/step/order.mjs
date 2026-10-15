@@ -21,6 +21,6 @@ export function validateWorkflowStepOrder(steps) {
           .filter((step) => (index < 2 ? step.uses : step.run) === stepValues[name]).length !== 1,
     )
   )
-    errors.push("ci.yaml must use checkout v6, setup-node v7, npm latest, npm ci, then npm test.");
+    errors.push("ci.yaml must use checkout v7, setup-node v7, npm latest, npm ci, then npm test.");
   return errors;
 }

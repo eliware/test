@@ -11,13 +11,13 @@ export function validateWorkflowStepFields(steps, workflowName = "ci.yaml") {
     const allowed =
       step?.uses === "actions/setup-node@v7"
         ? ["uses", "with"]
-        : step?.uses === "actions/checkout@v6"
+        : step?.uses === "actions/checkout@v7"
           ? ["uses", "with"]
           : ["run"];
     if (Object.keys(step).some((key) => !allowed.includes(key)))
       errors.push("ci.yaml steps must use only approved keys and inputs.");
     if (
-      step?.uses === "actions/checkout@v6" &&
+      step?.uses === "actions/checkout@v7" &&
       JSON.stringify(step.with ?? {}) !== JSON.stringify(checkoutOptions)
     )
       errors.push(`${workflowName} checkout must set the canonical full-history options.`);

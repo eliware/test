@@ -4,7 +4,7 @@ export const npmPublishWorkflow = `jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: >-
           node -e "const version=require('./package.json').version;
           if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||

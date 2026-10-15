@@ -46,7 +46,7 @@ export function validateWorkflowCommandRestrictions(steps) {
 }
 
 function isApprovedPreInstallStep(step) {
-  if (step?.uses === "actions/checkout@v6" || step?.uses === "actions/setup-node@v7")
+  if (step?.uses === "actions/checkout@v7" || step?.uses === "actions/setup-node@v7")
     return step.run === undefined;
   if (step?.run === "npm -g install npm@latest") return step.uses === undefined;
   return (

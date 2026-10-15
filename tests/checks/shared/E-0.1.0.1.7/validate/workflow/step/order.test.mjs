@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateWorkflowStepOrder } from "../../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/step/order.mjs";
 
 const steps = [
-  { uses: "actions/checkout@v6", with: { "fetch-depth": 0 } },
+  { uses: "actions/checkout@v7", with: { "fetch-depth": 0 } },
   { uses: "actions/setup-node@v7" },
   { run: "npm -g install npm@latest" },
   { run: "npm ci" },
@@ -16,7 +16,7 @@ test("accepts each required stage in its canonical position", () => {
 test("rejects missing, reordered, or duplicate required stages", () => {
   expect(validateWorkflowStepOrder([...steps.slice(1), steps[0], steps[4]])).toEqual(
     expect.arrayContaining([
-      "ci.yaml must use checkout v6, setup-node v7, npm latest, npm ci, then npm test.",
+      "ci.yaml must use checkout v7, setup-node v7, npm latest, npm ci, then npm test.",
     ]),
   );
 });
