@@ -45,7 +45,6 @@ directives:
     dos:
       - Describe user-visible changes accurately in release notes.
       - Include applicable breaking changes, migration guidance, and security information.
-      - Represent pending user-visible changes under Unreleased.
     donts:
       - Do not omit consumer-impacting changes.
       - Do not use release notes as a second specification.
