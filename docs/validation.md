@@ -70,10 +70,15 @@ It rejects separate Jest configuration files.
 Configured reporter names must be strings.
 Reporter option objects are not supported.
 
-The CLI always runs Jest with `--runInBand` and `--detectOpenHandles`.
+The CLI always runs Jest with `--runInBand`, `--detectOpenHandles`, and `--no-cache`.
 It adds its progress reporter and coverage reports.
 It keeps the consumer's required coverage settings.
 The selected profile rules define required coverage thresholds.
+
+Before each Jest run, the CLI clears the consumer's `coverage/` directory.
+Jest writes coverage reports and `jest-console-output.json` to that directory.
+The CLI keeps these files after the run.
+The CLI does not use system temp or user folders for its temporary files.
 
 Each test suite has a five-second limit.
 A separate 15-second watchdog covers startup and pauses between suites.

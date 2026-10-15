@@ -1,13 +1,8 @@
-import { afterEach, beforeEach, expect, test } from "@jest/globals";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
 const writes = [];
 const originalWrite = process.stderr.write.bind(process.stderr);
 const { default: JestProgressReporter } =
   await import("../../../../../src/validation/stages/jest/progress/jest-progress-reporter.mjs");
-const roots = [];
-const previous = process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
 
 function events(output) {
   return output.map((line) => JSON.parse(line.match(/^\[eliware-test-progress\] (.+)\n$/u)[1]));
@@ -23,13 +18,6 @@ beforeEach(() => {
 
 afterEach(() => {
   process.stderr.write = originalWrite;
-});
-
-afterEach(async () => {
-  if (previous === undefined) delete process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
-  else process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = previous;
-  await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
-  roots.length = 0;
 });
 
 test("reports suite start and completion once without per-test output", () => {
@@ -171,24 +159,24 @@ test("reports every suite and preserves long file paths", () => {
   expect(events(output).at(-1).path).toBe(path);
 });
 
-test("writes captured Jest console output with its suite path", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "eliware-jest-console-"));
-  roots.push(directory);
-  const reportPath = join(directory, "console-output.json");
-  process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = reportPath;
-  const reporter = new JestProgressReporter({ write: () => {} });
-  reporter.onTestResult(
-    { path: "tests/noisy.test.mjs" },
-    { console: [{ type: "warn", message: "expected leak", origin: "line 4" }] },
-  );
-  reporter.onRunComplete();
-
-  await expect(readFile(reportPath, "utf8")).resolves.toBe(
+test("writes captured Jest console output to the retained report path", () => {
+  const writeFile = jest.fn();
+  const previous = process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
+  process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = "coverage/jest-console-output.json";
+  try {
+    const reporter = new JestProgressReporter({ write: () => {}, writeConsoleReport: writeFile });
+    reporter.onTestResult(
+      { path: "tests/noisy.test.mjs" },
+      { console: [{ type: "warn", message: "expected leak", origin: "line 4" }] },
+    );
+    reporter.onRunComplete();
+  } finally {
+    if (previous === undefined) delete process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
+    else process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT = previous;
+  }
+  expect(writeFile).toHaveBeenCalledWith(
+    "coverage/jest-console-output.json",
     '[{"testFilePath":"tests/noisy.test.mjs","type":"warn","message":"expected leak","origin":"line 4"}]',
+    "utf8",
   );
-});
-
-test("does not write a console report when no report path is configured", () => {
-  delete process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT;
-  expect(() => new JestProgressReporter({ write: () => {} }).onRunComplete()).not.toThrow();
 });

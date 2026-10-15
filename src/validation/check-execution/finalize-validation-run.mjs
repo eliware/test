@@ -1,48 +1,6 @@
-import { rm } from "node:fs/promises";
-
-export async function finalizeValidationRun({ result, planFailure, context, removeCoverage = rm }) {
-  let cleanupFailure;
-  let coverageDirectory;
-  if (context.jestCoverageDirectory) {
-    coverageDirectory = context.jestCoverageDirectory;
-    try {
-      await removeCoverage(coverageDirectory, { recursive: true, force: true });
-      context.jestCoverageDirectory = undefined;
-    } catch (error) {
-      cleanupFailure = { error };
-    }
-  }
-
-  if (planFailure) {
-    const message = errorMessage(planFailure.error);
-    const cleanupDiagnostic = cleanupFailure
-      ? `\nCould not remove run-scoped coverage artifacts at ${coverageDirectory}: ${errorMessage(cleanupFailure.error)}`
-      : "";
-    return [
-      {
-        ruleId: "E-0.1.20",
-        status: "fail",
-        message: `${message}${cleanupDiagnostic}`,
-      },
-    ];
-  }
-  if (!cleanupFailure) return result;
-
-  const diagnostic = `Could not remove run-scoped coverage artifacts at ${coverageDirectory}: ${errorMessage(cleanupFailure.error)}`;
-  if (!Array.isArray(result)) throw new Error(diagnostic);
-  const coverageRuleIds = ["E-0.1.130.14", "E-0.1.40.16"];
-  const coverageFailure = result.find((entry) => coverageRuleIds.includes(entry.ruleId));
-  if (coverageFailure) {
-    return result.map((entry) =>
-      entry === coverageFailure ? { ...entry, message: `${entry.message}\n${diagnostic}` } : entry,
-    );
-  }
-  const coverageRuleId = context.packageJson?.eliware?.apply?.includes("library")
-    ? "E-0.1.40.16"
-    : "E-0.1.130.14";
-  return [...result, { ruleId: coverageRuleId, status: "fail", message: diagnostic }];
-}
-
-function errorMessage(error) {
-  return error instanceof Error ? error.message : String(error);
+export function finalizeValidationRun({ result, planFailure }) {
+  if (!planFailure) return result;
+  const message =
+    planFailure.error instanceof Error ? planFailure.error.message : String(planFailure.error);
+  return [{ ruleId: "E-0.1.20", status: "fail", message }];
 }

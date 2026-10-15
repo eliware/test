@@ -1,5 +1,4 @@
 import { expect, test } from "@jest/globals";
-import { rm } from "node:fs/promises";
 import { captureSmokeTargetState } from "../../../../src/validation/stages/smoke/capture-smoke-target-state.mjs";
 
 function missingFs() {
@@ -37,14 +36,38 @@ test("captures file, directory, and missing target state", async () => {
     cp: async () => {},
     readFile: async () => Buffer.from("preserved"),
   };
-  const state = await captureSmokeTargetState("C:/consumer", "@eliware/test", ["eliware-test"], fs);
+  const state = await captureSmokeTargetState(
+    "C:/consumer",
+    "@eliware/test",
+    ["eliware-test"],
+    fs,
+    process.platform,
+    "C:/smoke/backup",
+  );
   expect(state.entries[0]).toMatchObject({ type: "file", data: Buffer.from("preserved") });
   expect(state.entries[1].type).toBe("missing");
   expect(state.entries[4].type).toBe("directory");
   expect(state.entries).toHaveLength(8);
-  await rm(state.storage, { recursive: true, force: true });
-  const defaults = await captureSmokeTargetState("C:/missing-consumer", "@eliware/test");
-  await rm(defaults.storage, { recursive: true, force: true });
+  expect(state.storage).toBe("C:/smoke/backup");
+});
+
+test("uses default file system dependencies when a local storage path is supplied", async () => {
+  await expect(
+    captureSmokeTargetState(
+      "C:/no-such-consumer",
+      "@eliware/test",
+      undefined,
+      undefined,
+      undefined,
+      "C:/smoke/backup",
+    ),
+  ).resolves.toMatchObject({ storage: "C:/smoke/backup", entries: expect.any(Array) });
+});
+
+test("requires backup storage inside the smoke workspace", async () => {
+  await expect(
+    captureSmokeTargetState("C:/consumer", "@eliware/test", [], missingFs()),
+  ).rejects.toThrow("Smoke state storage must be inside the smoke workspace.");
 });
 
 test("captures symlink targets and directory junction type", async () => {
@@ -60,16 +83,21 @@ test("captures symlink targets and directory junction type", async () => {
     readlink: async () => "C:/checkout/@eliware/test",
     stat: async () => ({ isDirectory: () => true }),
   };
-  const state = await captureSmokeTargetState("C:/consumer", "@eliware/test", [], fs);
+  const state = await captureSmokeTargetState(
+    "C:/consumer",
+    "@eliware/test",
+    [],
+    fs,
+    process.platform,
+    "C:/smoke/backup",
+  );
   expect(state.entries[0]).toMatchObject({
     type: "symlink",
     target: "C:/checkout/@eliware/test",
     linkType: "junction",
   });
-  await rm(state.storage, { recursive: true, force: true });
   const fileLinkFs = {
     ...missingFs(),
-    rm,
     lstat: async () => ({
       isSymbolicLink: () => true,
       isDirectory: () => false,
@@ -83,11 +111,18 @@ test("captures symlink targets and directory junction type", async () => {
     [],
     fileLinkFs,
     "linux",
+    "C:/smoke/backup",
   );
   expect(fileLink.entries[0]).toMatchObject({ type: "symlink", linkType: "file" });
-  await rm(fileLink.storage, { recursive: true, force: true });
   await expect(
-    captureSmokeTargetState("C:/consumer", "@eliware/test", [], fileLinkFs, "win32"),
+    captureSmokeTargetState(
+      "C:/consumer",
+      "@eliware/test",
+      [],
+      fileLinkFs,
+      "win32",
+      "C:/smoke/backup",
+    ),
   ).rejects.toThrow("Cannot safely preserve a Windows file symlink");
 });
 
@@ -102,7 +137,14 @@ test("removes backup storage and refuses unsupported state or filesystem errors"
     rm: async () => {},
   };
   await expect(
-    captureSmokeTargetState("C:/consumer", "@eliware/test", [], unsupported),
+    captureSmokeTargetState(
+      "C:/consumer",
+      "@eliware/test",
+      [],
+      unsupported,
+      process.platform,
+      "C:/smoke/backup",
+    ),
   ).rejects.toThrow("unsupported target path");
   const failed = {
     ...missingFs(),
@@ -110,9 +152,16 @@ test("removes backup storage and refuses unsupported state or filesystem errors"
       throw new Error("denied");
     },
   };
-  await expect(captureSmokeTargetState("C:/consumer", "@eliware/test", [], failed)).rejects.toThrow(
-    "denied",
-  );
+  await expect(
+    captureSmokeTargetState(
+      "C:/consumer",
+      "@eliware/test",
+      [],
+      failed,
+      process.platform,
+      "C:/smoke/backup",
+    ),
+  ).rejects.toThrow("denied");
 });
 
 test("reports backup location when failed snapshot cleanup also fails", async () => {
@@ -133,16 +182,19 @@ test("reports backup location when failed snapshot cleanup also fails", async ()
 
   let failure;
   try {
-    await captureSmokeTargetState("C:/consumer", "@eliware/test", [], failed);
+    await captureSmokeTargetState(
+      "C:/consumer",
+      "@eliware/test",
+      [],
+      failed,
+      process.platform,
+      "C:/smoke/backup",
+    );
   } catch (error) {
     failure = error;
   }
   expect(failure.message).toMatch(
     /copy denied.*temporary backup may remain at (.+): cleanup denied/u,
   );
-  const retained = failure.message.match(
-    /temporary backup may remain at (.+): cleanup denied/u,
-  )?.[1];
-  expect(retained).toBeTruthy();
-  await rm(retained, { recursive: true, force: true });
+  expect(failure.message).toContain("C:/smoke/backup");
 });

@@ -8,7 +8,6 @@ test("creates the execution options for a Jest check", () => {
   const options = createJestCheckOptions({ env }, onTimeout);
   expect(options).toEqual({
     onTimeout,
-    retainCoverageDirectory: true,
     env,
     writeOutput: undefined,
     beginNestedOutput: expect.any(Function),

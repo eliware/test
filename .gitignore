@@ -28,3 +28,4 @@ artifacts/
 generated/
 test-results/
 /eliware-test.lock
+.eliware-tarball-smoke-*/

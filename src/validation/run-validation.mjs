@@ -51,7 +51,5 @@ export async function runValidation(root, ignoredRuleIds, options = {}) {
   return finalizeValidationRun({
     result,
     planFailure,
-    context: plan.context,
-    removeCoverage: options.removeCoverage,
   });
 }

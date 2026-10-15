@@ -1,7 +1,6 @@
 export function createJestCheckOptions(context, onTimeout) {
   return {
     onTimeout,
-    retainCoverageDirectory: true,
     env: context.env ?? process.env,
     writeOutput:
       context.writeOutput && context.timing?.writeNestedOutput

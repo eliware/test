@@ -1,5 +1,4 @@
-import { cp, lstat, mkdtemp, readFile, readlink, rm, stat } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { cp, lstat, readFile, readlink, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 
 const defaultFs = { cp, lstat, readFile, readlink, rm, stat };
@@ -38,8 +37,10 @@ export async function captureSmokeTargetState(
   binNames = [],
   fs = defaultFs,
   platform = process.platform,
+  storage,
 ) {
-  const storage = await mkdtemp(join(tmpdir(), "eliware-smoke-backup-"));
+  if (typeof storage !== "string" || !storage)
+    throw new Error("Smoke state storage must be inside the smoke workspace.");
   const packagePath = join(root, "node_modules", ...packageName.split("/"));
   const paths = [
     join(root, "package.json"),

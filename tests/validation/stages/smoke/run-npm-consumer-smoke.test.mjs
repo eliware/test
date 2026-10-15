@@ -95,11 +95,22 @@ test("prepares, runs, and finishes the package consumer workflow", async () => {
     env: process.env,
     inspectTargetRoot: expect.any(Function),
   });
-  expect(createSmokeTempRoot).toHaveBeenCalledWith(expect.any(Function), undefined, undefined);
+  expect(createSmokeTempRoot).toHaveBeenCalledWith(
+    "source-root",
+    expect.any(Function),
+    undefined,
+    undefined,
+  );
   expect(assertSmokePackageParents).toHaveBeenCalledWith("consumer-root", packageJson.name);
-  expect(captureSmokeTargetState).toHaveBeenCalledWith("consumer-root", packageJson.name, [
-    "eliware-test",
-  ]);
+  expect(captureSmokeTargetState).toHaveBeenCalledWith(
+    "consumer-root",
+    packageJson.name,
+    ["eliware-test"],
+    undefined,
+    process.platform,
+    join("temp-root", "backup"),
+  );
+  expect(mkdir).toHaveBeenCalledWith(join("temp-root", "backup"));
   expect(mkdir).toHaveBeenCalledWith(join("temp-root", "pack"));
   expect(resolvePackExecutable).toHaveBeenCalledWith(
     targetContext.childEnv,
@@ -116,7 +127,7 @@ test("prepares, runs, and finishes the package consumer workflow", async () => {
       packDirectory: join("temp-root", "pack"),
       targetRoot: "consumer-root",
       assertTargetIdentity: targetContext.assertTargetIdentity,
-      env: targetContext.childEnv,
+      env: { ...targetContext.childEnv, npm_config_cache: join("temp-root", "npm-cache") },
     }),
   );
   expect(write).toHaveBeenCalledWith("Target recovery snapshot: snapshot-root");

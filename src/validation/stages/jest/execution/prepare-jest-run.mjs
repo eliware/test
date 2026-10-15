@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { createJestCoverageDirectory } from "../configuration/create-jest-coverage-directory.mjs";
+import { prepareConsumerCoverageDirectory } from "../configuration/prepare-consumer-coverage-directory.mjs";
 import { createJestProcessOptions } from "../../../shared/process/create-jest-process-options.mjs";
 import { buildJestArguments } from "../configuration/build-jest-arguments.mjs";
 import { resolveFocusedCoverage } from "../configuration/resolve-focused-coverage.mjs";
@@ -12,13 +12,9 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   const jestArguments = buildJestArguments(args);
   const jestCli = resolveCli(root, options);
   const reporters = await resolveJestReporters(root);
-  const coverageDirectory =
-    (await options?.createCoverageDirectory?.()) ?? (await createJestCoverageDirectory());
+  const coverageDirectory = await prepareConsumerCoverageDirectory(root, options?.coverageFs);
   const consoleReportFile = join(coverageDirectory, "jest-console-output.json");
-  const processOptions = createJestProcessOptions(root, args, {
-    ...options,
-    consoleReportFile,
-  });
+  const processOptions = createJestProcessOptions(root, args, { ...options, consoleReportFile });
   return {
     coverageDirectory,
     consoleReportFile,

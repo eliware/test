@@ -25,6 +25,8 @@ test("tracks one active suite and stops stale timers when the next suite starts"
   expect(stop).toHaveBeenCalledTimes(1);
   expect(onSuiteTimeout).toHaveBeenCalledWith("slow.test.mjs");
   expect(termination.onTimeout).toHaveBeenCalledWith(false);
+  tracker.end("slow.test.mjs");
+  expect(stop).toHaveBeenCalledTimes(2);
   tracker.stop();
   expect(stop).toHaveBeenCalledTimes(2);
 });

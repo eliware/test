@@ -34,16 +34,30 @@ export async function runNpmConsumerSmoke({
   });
   if (context.error) return context.error;
   const { targetRoot, assertTargetIdentity, binNames, childEnv } = context;
-  const tempState = await createSmokeTempRoot(inspectTempRoot, createTempRoot, removeEmptyTempRoot);
+  const tempState = await createSmokeTempRoot(
+    root,
+    inspectTempRoot,
+    createTempRoot,
+    removeEmptyTempRoot,
+  );
   if (tempState.error) return tempState.error;
   const { path: tempRoot, identity: tempIdentity } = tempState;
   const packDirectory = join(tempRoot, "pack");
+  const backupDirectory = join(tempRoot, "backup");
   let state;
   let outcome;
   try {
     await assertTargetIdentity();
     await assertSmokePackageParents(targetRoot, packageJson.name);
-    state = await captureState(targetRoot, packageJson.name, binNames);
+    await mkdir(backupDirectory);
+    state = await captureState(
+      targetRoot,
+      packageJson.name,
+      binNames,
+      undefined,
+      process.platform,
+      backupDirectory,
+    );
     write(`Target recovery snapshot: ${state.storage}`);
     await mkdir(packDirectory);
     const [command, prefix] = resolveCommand(childEnv, process.platform, process.execPath, root);
@@ -56,7 +70,7 @@ export async function runNpmConsumerSmoke({
       packDirectory,
       targetRoot,
       assertTargetIdentity,
-      env: childEnv,
+      env: { ...childEnv, npm_config_cache: join(tempRoot, "npm-cache") },
     });
     outcome = `Smoke passed: ${packageJson.name}@${packageJson.version}; SHA-256 ${digest}.`;
   } catch (error) {

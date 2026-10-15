@@ -14,7 +14,10 @@ export default class JestProgressReporter {
     this.root = options.rootDir ?? process.cwd();
     this.write = options.write ?? ((text) => process.stderr.write(text));
     this.secrets = collectRedactionSecrets(options.env ?? process.env);
-    this.consoleReport = createJestConsoleReport(process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT);
+    this.consoleReport = createJestConsoleReport(
+      process.env.ELIWARE_TEST_JEST_CONSOLE_REPORT,
+      options.writeConsoleReport,
+    );
   }
 
   onTestStart(test) {

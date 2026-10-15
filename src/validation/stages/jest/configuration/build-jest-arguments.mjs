@@ -25,6 +25,7 @@ const wrapperOwnedOptions = [
   "config",
   "runInBand",
   "detectOpenHandles",
+  "cache",
 ];
 const wrapperOwnedOptionAliases = new Set(
   wrapperOwnedOptions.flatMap((option) => {
@@ -46,7 +47,7 @@ export function buildJestArguments(args = []) {
   const forwarded = args.filter(
     (argument) => !focusedPaths.includes(argument) && argument !== "--debug-timing",
   );
-  const requiredOptions = ["--runInBand", "--detectOpenHandles"];
+  const requiredOptions = ["--runInBand", "--detectOpenHandles", "--no-cache"];
   return [
     "--coverage",
     ...(focusedPaths.length > 0 ? ["--runTestsByPath", ...focusedPaths] : []),

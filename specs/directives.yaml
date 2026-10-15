@@ -197,7 +197,7 @@ directives:
           - Use consumer-resolvable Jest when available and bundled Jest otherwise.
           - Keep Jest execution rooted in the consumer repository.
           - Supply harness reporters and detailed coverage output without weakening configured requirements.
-          - Run Jest with --runInBand and --detectOpenHandles.
+          - Run Jest with --runInBand, --detectOpenHandles, and --no-cache.
           - Execute requested Jest validation once with established ordering and lifecycle behavior.
           - Monitor suite progress during every run.
           - Enforce a 5-second maximum runtime for each test suite and a separate 15-second startup or between-suite no-progress deadline.
@@ -221,10 +221,10 @@ directives:
 
       - id: E-0.0.8
         dos:
-          - Remove documented prior coverage candidates before tests.
-          - Read current-run coverage candidates in fixed precedence order.
-          - Continue past stale or unusable candidates.
-          - Fail when none remain usable.
+          - Clear the consumer coverage directory before each Jest run.
+          - Write current coverage reports and Jest console output to the consumer coverage directory.
+          - Keep current-run coverage reports and Jest output after Jest completes.
+          - Read coverage data from the consumer coverage directory.
           - Validate maps and counters against source-derived Istanbul instrumentation.
           - Accept empty maps only when the matching instrumentation shape is empty.
           - Count positively executed entries as covered without weighting execution frequency.
@@ -232,8 +232,10 @@ directives:
           - Include guidance to extend tests or refactor when needed for testability.
         donts:
           - Do not merge candidates or choose them by recency.
-          - Do not preserve, restore, move, or rename prior coverage output.
-          - Do not create temporary coverage directories.
+          - Do not delete current-run coverage reports or Jest output after Jest completes.
+          - Do not preserve or restore prior coverage output.
+          - Do not create temporary coverage directories outside the consumer repository.
+          - Do not create validation or smoke temporary files in system temp or user folders.
           - Do not accept omitted instrumentation entries or unmatched map and counter keys.
           - Do not reduce failures to an exit code or undifferentiated percentage.
 
