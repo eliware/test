@@ -1,5 +1,8 @@
-export function validateWorkflowStepFields(steps) {
+import { readCanonicalOrder } from "../../../../../../validation/shared/conventions/read-canonical-order.mjs";
+
+export function validateWorkflowStepFields(steps, workflowName = "ci.yaml") {
   const errors = [];
+  const checkoutOptions = readCanonicalOrder("ci-workflow.yaml").checkoutOptions;
   const npmTest = steps.findIndex((step) => step?.run === "npm test");
   const requiredEnd = npmTest < 0 ? steps.length : npmTest;
   for (const [index, value] of steps.entries()) {
@@ -15,10 +18,9 @@ export function validateWorkflowStepFields(steps) {
       errors.push("ci.yaml steps must use only approved keys and inputs.");
     if (
       step?.uses === "actions/checkout@v6" &&
-      step.with !== undefined &&
-      (Object.keys(step.with ?? {}).length !== 1 || step.with?.["fetch-depth"] !== 0)
+      JSON.stringify(step.with ?? {}) !== JSON.stringify(checkoutOptions)
     )
-      errors.push("ci.yaml checkout may set only fetch-depth: 0.");
+      errors.push(`${workflowName} checkout must set the canonical full-history options.`);
   }
   return errors;
 }

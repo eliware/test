@@ -18,6 +18,7 @@ orders:
     ci-workflow.yaml:
       - validationSteps
       - stepValues
+      - checkoutOptions
     eliware-apply.yaml:
       - profiles
     ordering-data-schema.yaml:
@@ -95,6 +96,8 @@ orders:
         - install-npm
         - npm-ci
         - npm-test
+      checkoutOptions:
+        - fetch-depth
     package-files.yaml:
       profileEntries:
         - application

@@ -19,8 +19,15 @@ export const canonicalOrderRequirements = {
     maps: { profileHeadings: profiles },
   },
   "ci-workflow.yaml": {
-    fields: { validationSteps: "text-list", stepValues: "text-map" },
-    maps: { stepValues: ["checkout", "setup-node", "install-npm", "npm-ci", "npm-test"] },
+    fields: {
+      validationSteps: "text-list",
+      stepValues: "text-map",
+      checkoutOptions: "number-map",
+    },
+    maps: {
+      stepValues: ["checkout", "setup-node", "install-npm", "npm-ci", "npm-test"],
+      checkoutOptions: ["fetch-depth"],
+    },
   },
   "eliware-apply.yaml": { fields: { profiles: "text-list" } },
   "ordering-data-schema.yaml": {

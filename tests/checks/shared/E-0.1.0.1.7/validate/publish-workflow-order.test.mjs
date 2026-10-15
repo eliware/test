@@ -4,6 +4,8 @@ const validPublish = `jobs:
   validate:
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
       - run: npm -g install npm@latest
       - run: npm ci
@@ -149,4 +151,13 @@ test("accepts the shared validation and publication job order", async () => {
   ).resolves.toEqual(
     expect.arrayContaining([expect.stringContaining("npm ci must be followed by npm test")]),
   );
+});
+
+test("requires full history in the publication validation job", async () => {
+  await expect(
+    validatePublishWorkflowOrder(
+      inventory(validPublish.replace("        with:\n          fetch-depth: 0\n", "")),
+      packageJson,
+    ),
+  ).resolves.toContain("publish.yaml checkout must set the canonical full-history options.");
 });

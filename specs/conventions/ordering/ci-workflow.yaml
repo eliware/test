@@ -13,3 +13,5 @@ orders:
     install-npm: npm -g install npm@latest
     npm-ci: npm ci
     npm-test: npm test
+  checkoutOptions:
+    fetch-depth: 0

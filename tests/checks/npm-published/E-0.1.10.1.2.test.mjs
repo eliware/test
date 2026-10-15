@@ -6,6 +6,8 @@ const workflow = `jobs:
   validate:
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
       - run: npm -g install npm@latest
       - run: npm ci

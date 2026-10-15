@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateWorkflowStepOrder } from "../../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/step/order.mjs";
 
 const steps = [
-  { uses: "actions/checkout@v6" },
+  { uses: "actions/checkout@v6", with: { "fetch-depth": 0 } },
   { uses: "actions/setup-node@v7" },
   { run: "npm -g install npm@latest" },
   { run: "npm ci" },

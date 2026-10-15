@@ -1,4 +1,5 @@
 import { parseAllDocuments } from "yaml";
+import { validateWorkflowStepFields } from "./workflow/step/fields.mjs";
 import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
 
 const publishPath = ".github/workflows/publish.yaml";
@@ -31,13 +32,13 @@ function validatePublishJobs(document) {
     publishNeeds === "validate" ||
     (Array.isArray(publishNeeds) && publishNeeds.includes("validate"));
   if (!needsValidation) errors.push("publish.yaml publish job must depend on validate.");
-  const validationError = validatePublicationSteps(jobs.validate?.steps);
-  if (validationError) errors.push(validationError);
+  errors.push(...validateWorkflowStepFields(jobs.validate?.steps ?? [], "publish.yaml"));
+  errors.push(...validatePublicationSteps(jobs.validate?.steps));
   return errors;
 }
 
 function validatePublicationSteps(steps) {
-  if (!Array.isArray(steps)) return "publish.yaml validate job must define steps.";
+  if (!Array.isArray(steps)) return ["publish.yaml validate job must define steps."];
   const { validationSteps, stepValues } = readCanonicalOrder("ci-workflow.yaml");
   const indexes = [
     steps.findIndex((step) => step?.uses === stepValues[validationSteps[0]]),
@@ -50,7 +51,9 @@ function validatePublicationSteps(steps) {
     indexes.some((index) => index < 0) ||
     indexes.some((index, at) => at > 0 && index <= indexes[at - 1])
   )
-    return "publish.yaml validate steps must order checkout, setup-node, npm install, npm ci, then npm test.";
-  if (indexes[4] !== indexes[3] + 1) return "publish.yaml npm ci must be followed by npm test.";
-  return null;
+    return [
+      "publish.yaml validate steps must order checkout, setup-node, npm install, npm ci, then npm test.",
+    ];
+  if (indexes[4] !== indexes[3] + 1) return ["publish.yaml npm ci must be followed by npm test."];
+  return [];
 }
