@@ -123,7 +123,7 @@ directives:
   - id: E-0.1.0.1.6
     dos:
       - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one document.
-      - Set timeoutMs to 300000 for each push deployment.
+      - Set timeoutMs to 300000 for every push and tag deployment.
       - Keep the deployment path repository-specific.
       - "Begin every commands array with these exact commands in this order: git pull --ff-only origin main, npm ci, npm test."
       - Add any commands after this prefix unless a command publishes an npm package or a GHCR image.
@@ -135,6 +135,7 @@ directives:
       - Do not use secondary Knit scripts with extensions other than .mjs.
     examples:
       - "commands:\n  - git pull --ff-only origin main\n  - npm ci\n  - npm test"
+      - "on:\n  tags:\n    \"v*\":\n      deployments:\n        - timeoutMs: 300000\n          commands:\n            - git pull --ff-only origin main\n            - npm ci\n            - npm test"
 
   - id: E-0.1.0.1.7
     dos:

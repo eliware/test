@@ -29,6 +29,15 @@ export async function validateKnitConfiguration(inventory) {
       if (deployment?.timeoutMs !== 300000)
         errors.push(`.knit/deploy.yaml deployment ${index + 1} must set timeoutMs to 300000.`);
     });
+    const tagActions = events?.tags && typeof events.tags === "object" ? events.tags : {};
+    for (const [tag, action] of Object.entries(tagActions))
+      if (Array.isArray(action?.deployments))
+        action.deployments.forEach((deployment, index) => {
+          if (deployment?.timeoutMs !== 300000)
+            errors.push(
+              `.knit/deploy.yaml tag ${tag} deployment ${index + 1} must set timeoutMs to 300000.`,
+            );
+        });
     const commandLists = findCommandLists(document);
     if (commandLists.length === 0) errors.push(".knit/deploy.yaml must define commands fields.");
     commandLists.forEach((commands, index) => errors.push(...validateCommands(commands, index)));

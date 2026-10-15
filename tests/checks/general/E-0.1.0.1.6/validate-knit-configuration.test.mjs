@@ -31,6 +31,47 @@ test("requires the canonical timeout and allows a repository-specific deployment
   ).resolves.toEqual([]);
 });
 
+test("requires the canonical timeout for every tag deployment", async () => {
+  const source = `version: 1
+on:
+  push:
+    deployments:
+      - timeoutMs: 300000
+        commands:
+          - git pull --ff-only origin main
+          - npm ci
+          - npm test
+  tags:
+    "v*":
+      deployments:
+        - timeoutMs: 300000
+          commands:
+            - git pull --ff-only origin main
+            - npm ci
+            - npm test
+    stable: {}
+`;
+  await expect(
+    validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () => source,
+    }),
+  ).resolves.toEqual([]);
+  await expect(
+    validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () => source.replace("        - timeoutMs: 300000", "        - timeoutMs: 1"),
+    }),
+  ).resolves.toContain(".knit/deploy.yaml tag v* deployment 1 must set timeoutMs to 300000.");
+  await expect(
+    validateKnitConfiguration({
+      files: async () => [".knit/deploy.yaml"],
+      readText: async () =>
+        source.replace("        - timeoutMs: 300000\n          commands:", "        - commands:"),
+    }),
+  ).resolves.toContain(".knit/deploy.yaml tag v* deployment 1 must set timeoutMs to 300000.");
+});
+
 test("reports missing Knit inventory, unreadable files, invalid YAML, and missing deployments", async () => {
   await expect(validateKnitConfiguration()).resolves.toEqual([
     "Knit configuration could not be inspected.",
