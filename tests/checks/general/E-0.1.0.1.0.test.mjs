@@ -43,6 +43,22 @@ test("reports mismatched repo-map metadata", async () => {
   }
 });
 
+test("reports an invalid repo map when one is present", async () => {
+  const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
+  const root = join(base, "repo");
+  const docs = join(base, "docs");
+  await mkdir(root);
+  await mkdir(docs);
+  try {
+    await writeFile(join(docs, "repo-map.yaml"), "repositories: [\n");
+    const result = await run({ root, packageJson });
+    expect(result.status).toBe("fail");
+    expect(result.message).toContain("repo-map.yaml is invalid YAML");
+  } finally {
+    await rm(base, { recursive: true, force: true });
+  }
+});
+
 test("passes when package metadata matches the repo map", async () => {
   const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
   const root = join(base, "repo");
