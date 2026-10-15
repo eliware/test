@@ -4,7 +4,15 @@ import { readRunbookSchema } from "../../../../src/checks/workspace/E-0.1.2.1.0/
 test("reads the bundled runbook schema", async () => {
   await expect(readRunbookSchema()).resolves.toMatchObject({
     type: "object",
-    required: ["schema-version", "title", "steps"],
+    required: [
+      "schema-version",
+      "title",
+      "purpose",
+      "owner",
+      "boundaries",
+      "prerequisites",
+      "steps",
+    ],
   });
 });
 

@@ -4,6 +4,10 @@ type: object
 required:
   - schema-version
   - title
+  - purpose
+  - owner
+  - boundaries
+  - prerequisites
   - steps
 properties:
   schema-version:
@@ -12,6 +16,24 @@ properties:
     type: string
     minLength: 1
     pattern: \S
+  purpose:
+    type: string
+    minLength: 1
+    pattern: \S
+  owner:
+    type: string
+    minLength: 1
+    pattern: \S
+  boundaries:
+    type: string
+    minLength: 1
+    pattern: \S
+  prerequisites:
+    type: array
+    items:
+      type: string
+      minLength: 1
+      pattern: \S
   steps:
     type: array
     minItems: 1

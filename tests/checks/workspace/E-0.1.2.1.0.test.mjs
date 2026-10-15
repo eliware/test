@@ -5,7 +5,7 @@ import { ruleId, run } from "../../../src/checks/workspace/E-0.1.2.1.0.mjs";
 
 const schema = await readRunbookSchema();
 const index = "# Runbooks\n\n- [Deploy](deploy.yaml)";
-const document = `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\nsteps:\n  - Run npm test`;
+const document = `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\npurpose: Deploy the service\nowner: DevOps\nboundaries: Do not change production data\nprerequisites: []\nsteps:\n  - Run npm test`;
 
 function inventory(files, readText = async () => "") {
   return {

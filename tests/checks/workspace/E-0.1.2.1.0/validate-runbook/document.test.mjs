@@ -4,7 +4,7 @@ import { validateRunbookDocument } from "../../../../../src/checks/workspace/E-0
 import { runbookSchemaVersion } from "../../../../helpers/project-version.mjs";
 
 const schema = await readRunbookSchema();
-const valid = `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\nsteps:\n  - Run npm test`;
+const valid = `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\npurpose: Deploy the service\nowner: DevOps\nboundaries: Do not change production data\nprerequisites: []\nsteps:\n  - Run npm test`;
 
 test("accepts a valid single-document runbook", () => {
   expect(validateRunbookDocument(valid, "runbooks/deploy.yaml", schema)).toEqual([]);
@@ -19,7 +19,7 @@ test("rejects invalid YAML and multiple YAML documents", () => {
 });
 
 test("enforces runbook fields, values, and additional property rules", () => {
-  const invalid = `schema-version: ${runbookSchemaVersion - 1}\ntitle: '   '\nsteps: []\nextra: true`;
+  const invalid = `schema-version: ${runbookSchemaVersion - 1}\ntitle: '   '\npurpose: Deploy\nowner: DevOps\nboundaries: Safe scope\nprerequisites: []\nsteps: []\nextra: true`;
   const errors = validateRunbookDocument(invalid, "invalid.yaml", schema);
   expect(errors).toContain("invalid.yaml.schema-version must equal the required value.");
   expect(errors).toContain("invalid.yaml.title must contain a non-space character.");
@@ -29,7 +29,7 @@ test("enforces runbook fields, values, and additional property rules", () => {
 
 test("requires an object with all required fields and correctly typed values", () => {
   const errors = validateRunbookDocument(
-    `schema-version: ${runbookSchemaVersion}\ntitle: 3\nsteps: [false]\nunknown: value`,
+    `schema-version: ${runbookSchemaVersion}\ntitle: 3\npurpose: Deploy\nowner: DevOps\nboundaries: Safe scope\nprerequisites: []\nsteps: [false]\nunknown: value`,
     "typed.yaml",
     schema,
   );
@@ -50,17 +50,24 @@ test("requires an object with all required fields and correctly typed values", (
 test("reports missing fields and blank steps", () => {
   expect(
     validateRunbookDocument(`schema-version: ${runbookSchemaVersion}`, "missing.yaml", schema),
-  ).toEqual(["missing.yaml.title is required.", "missing.yaml.steps is required."]);
+  ).toEqual([
+    "missing.yaml.title is required.",
+    "missing.yaml.purpose is required.",
+    "missing.yaml.owner is required.",
+    "missing.yaml.boundaries is required.",
+    "missing.yaml.prerequisites is required.",
+    "missing.yaml.steps is required.",
+  ]);
   expect(
     validateRunbookDocument(
-      `schema-version: ${runbookSchemaVersion}\ntitle: ''\nsteps: invalid`,
+      `schema-version: ${runbookSchemaVersion}\ntitle: ''\npurpose: Deploy\nowner: DevOps\nboundaries: Safe scope\nprerequisites: []\nsteps: invalid`,
       "empty.yaml",
       schema,
     ),
   ).toContain("empty.yaml.title must not be empty.");
   expect(
     validateRunbookDocument(
-      `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\nsteps: ['  ']`,
+      `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\npurpose: Deploy\nowner: DevOps\nboundaries: Safe scope\nprerequisites: []\nsteps: ['  ']`,
       "blank.yaml",
       schema,
     ),
@@ -81,7 +88,7 @@ test("accepts an object schema with optional property metadata", () => {
 test("rejects a non-array steps value", () => {
   expect(
     validateRunbookDocument(
-      `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\nsteps: no`,
+      `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\npurpose: Deploy\nowner: DevOps\nboundaries: Safe scope\nprerequisites: []\nsteps: no`,
       "not-array.yaml",
       schema,
     ),
@@ -104,4 +111,27 @@ test("rejects extra fields when an object schema omits its properties map", () =
       additionalProperties: false,
     }),
   ).toEqual(["extra.yaml.extra is not allowed."]);
+});
+
+test("requires non-empty metadata and validates prerequisite items", () => {
+  const errors = validateRunbookDocument(
+    `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\npurpose: '  '\nowner: 4\nboundaries: '  '\nprerequisites: [ready, '  ']\nsteps: [Run]`,
+    "metadata.yaml",
+    schema,
+  );
+  expect(errors).toContain("metadata.yaml.purpose must contain a non-space character.");
+  expect(errors).toContain("metadata.yaml.owner must be a string.");
+  expect(errors).toContain("metadata.yaml.boundaries must contain a non-space character.");
+  expect(errors).toContain("metadata.yaml.prerequisites[1] must contain a non-space character.");
+});
+
+test("allows empty prerequisite lists and rejects invalid prerequisite values", () => {
+  expect(validateRunbookDocument(valid, "empty-prerequisites.yaml", schema)).toEqual([]);
+  expect(
+    validateRunbookDocument(
+      valid.replace("prerequisites: []", "prerequisites: [false]"),
+      "typed-prerequisites.yaml",
+      schema,
+    ),
+  ).toContain("typed-prerequisites.yaml.prerequisites[0] must be a string.");
 });
