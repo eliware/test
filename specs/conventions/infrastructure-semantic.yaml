@@ -21,6 +21,10 @@ directives:
       - Organize content by target and environment where both apply.
       - Define repository-specific paths, schemas, validation, and platform boundaries in indexed specifications.
       - Explain change control, rollback, secret handling, and operational ownership.
+      - Restore each backup to an isolated test target before certification.
+      - Check the integrity of each restored backup before certification.
+      - Remove restored test data after the checks.
+      - Record the backup identifier, restore result, integrity result, cleanup result, and time before certification.
       - Keep committed desired state canonical in its owning repository.
       - Link from README.md to canonical operational procedures in Eliware Operations or the owning workspace.
     donts:
