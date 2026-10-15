@@ -5,7 +5,7 @@ test("enforces shared release note rules for libraries", async () => {
   const repositoryInventory = {
     readText: async (path) =>
       path.endsWith("RELEASE_NOTES.md")
-        ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
+        ? "# Release Notes\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
         : "## Usage\n\n- [Release notes](RELEASE_NOTES.md)",
   };
   await expect(
@@ -38,6 +38,24 @@ test("requires package metadata in its context", async () => {
   });
 });
 
+test("rejects Unreleased in library release notes", async () => {
+  await expect(
+    run({
+      root: "/repo",
+      packageJson: { version: "12.0.0" },
+      repositoryInventory: {
+        readText: async (path) =>
+          path.endsWith("RELEASE_NOTES.md")
+            ? "# Release Notes\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nUnreleased feature."
+            : "## Usage\\n\\n- [Release notes](RELEASE_NOTES.md)",
+      },
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must not contain the word Unreleased"),
+  });
+});
+
 test("enforces release note policy for the valid library profile set", async () => {
   await expect(
     run({
@@ -46,7 +64,7 @@ test("enforces release note policy for the valid library profile set", async () 
       repositoryInventory: {
         readText: async (path) =>
           path.endsWith("RELEASE_NOTES.md")
-            ? "# Release Notes\n\n## Unreleased\n\n### Changed\n\nUpdate.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
+            ? "# Release Notes\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
             : "## Usage\n\n- [Release notes](RELEASE_NOTES.md)",
       },
     }),

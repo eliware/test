@@ -44,6 +44,24 @@ test("E-0.1.4.1.4 reports missing release notes", async () => {
   ).resolves.toMatchObject({ ruleId, status: "fail", message: "RELEASE_NOTES.md is required." });
 });
 
+test("E-0.1.4.1.4 rejects Unreleased in application release notes", async () => {
+  await expect(
+    run({
+      root: "repo",
+      packageJson: { version: "12.0.0" },
+      repositoryInventory: {
+        readText: async (path) =>
+          path.endsWith("RELEASE_NOTES.md")
+            ? releaseNotes.replace("12.0.0 —", "unreleased 12.0.0 —")
+            : "## Usage\n\n[Release notes](RELEASE_NOTES.md)",
+      },
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must not contain the word Unreleased"),
+  });
+});
+
 test("E-0.1.4.1.4 requires package metadata in its context", async () => {
   await expect(run(undefined)).resolves.toMatchObject({
     ruleId,
@@ -52,5 +70,4 @@ test("E-0.1.4.1.4 requires package metadata in its context", async () => {
   });
 });
 
-const releaseNotes =
-  "# Release Notes\n\n## Unreleased\n\n### Changed\n\nPending.\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release.\n";
+const releaseNotes = "# Release Notes\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release.\n";
