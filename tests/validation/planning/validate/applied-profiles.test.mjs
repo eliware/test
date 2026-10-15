@@ -60,13 +60,50 @@ test.each(["cli", "discord", "mcp-server", "web"])(
   },
 );
 
-test.each(
-  [
-    ["general", "application", "database"],
-    ["general", "application", "database", "web", "ghcr-published"],
-    ["general", "application", "database", "private"],
-  ].map((profiles) => ({ profiles })),
-)("accepts database profile composition %j", ({ profiles }) => {
+const databaseCompositions = [
+  {
+    name: "database without interface or publication profiles",
+    profiles: ["general", "application", "database"],
+  },
+  {
+    name: "database with CLI",
+    profiles: ["general", "application", "database", "cli"],
+  },
+  {
+    name: "database with Web",
+    profiles: ["general", "application", "database", "web"],
+  },
+  {
+    name: "database with Discord",
+    profiles: ["general", "application", "database", "discord"],
+  },
+  {
+    name: "database with MCP server",
+    profiles: ["general", "application", "database", "mcp-server"],
+  },
+  {
+    name: "database with all interface profiles",
+    profiles: ["general", "application", "database", "cli", "web", "discord", "mcp-server"],
+  },
+  {
+    name: "database with npm publication",
+    profiles: ["general", "application", "database", "npm-published"],
+  },
+  {
+    name: "database with GHCR publication",
+    profiles: ["general", "application", "database", "ghcr-published"],
+  },
+  {
+    name: "database with npm and GHCR publication",
+    profiles: ["general", "application", "database", "npm-published", "ghcr-published"],
+  },
+  {
+    name: "database with GHCR publication and private",
+    profiles: ["general", "application", "database", "ghcr-published", "private"],
+  },
+];
+
+test.each(databaseCompositions)("accepts $name", ({ profiles }) => {
   expect(validateAppliedProfiles(profiles, catalog)).toBeNull();
 });
 
@@ -90,6 +127,15 @@ test.each([
 
 test("requires application when database applies", () => {
   expect(validateAppliedProfiles(["general", "database"], catalog)).toContain("application");
+});
+
+test("rejects database with npm publication and private", () => {
+  expect(
+    validateAppliedProfiles(
+      ["general", "application", "database", "npm-published", "private"],
+      catalog,
+    ),
+  ).toContain("conflict");
 });
 
 test("uses bundled catalog when no catalog is supplied", () => {
