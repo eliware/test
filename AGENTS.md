@@ -48,6 +48,10 @@ The `eliware-test` executable runs `bin/eliware-test.mjs`.
 The CLI runs in a local terminal or in CI. It does not change external systems.
 The CLI has no runtime configuration or environment settings.
 Stop child processes and all processes that they start after a timeout.
+For a small change, run one or more focused tests.
+Run one test file with `npm test -- tests/path/to/example.test.mjs`.
+Run multiple test files with `npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs`.
+Run the full `npm test` suite before a commit or milestone.
 
 ## CLI
 

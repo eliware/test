@@ -2,7 +2,14 @@ import { expect, test } from "@jest/globals";
 import { validateProfileDocumentation } from "../../../../src/validation/shared/conventions/validate-profile-documentation.mjs";
 
 const order = {
-  "agents-sections.yaml": { profileHeadings: { web: "Web", private: "Private distribution" } },
+  "agents-sections.yaml": {
+    profileHeadings: {
+      web: "Web",
+      private: "Private distribution",
+      application: "Application",
+      library: "Library",
+    },
+  },
   "readme-sections.yaml": { profileSections: { web: ["Routes", "Build"], private: [] } },
 };
 
@@ -18,6 +25,31 @@ test("checks the selected profile document headings", async () => {
   await expect(validateProfileDocumentation("web", files, (name) => order[name])).resolves.toEqual(
     [],
   );
+});
+
+test("checks focused test guidance only for application and library", async () => {
+  const guidance = [
+    "For a small change, run one or more focused tests.",
+    "Run one test file with `npm test -- tests/path/to/example.test.mjs`.",
+    "Run multiple test files with `npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs`.",
+    "Run the full `npm test` suite before a commit or milestone.",
+  ].join("\n");
+  const readOrder = (name) => order[name];
+
+  await expect(
+    validateProfileDocumentation(
+      "application",
+      inventory({ "AGENTS.md": `## Application\n${guidance}\n## CLI` }),
+      readOrder,
+    ),
+  ).resolves.toEqual([]);
+  await expect(
+    validateProfileDocumentation(
+      "web",
+      inventory({ "AGENTS.md": "## Web", "README.md": "## Routes\n## Build" }),
+      readOrder,
+    ),
+  ).resolves.toEqual([]);
 });
 
 test("reports missing documents and profile headings", async () => {

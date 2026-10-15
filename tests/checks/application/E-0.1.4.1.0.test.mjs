@@ -31,7 +31,12 @@ function context(documents, index) {
     root: "repo",
     repositoryInventory: {
       readText: async (path) => {
-        if (path === "AGENTS.md") return "## Application";
+        if (path === "AGENTS.md")
+          return `## Application
+For a small change, run one or more focused tests.
+Run one test file with \`npm test -- tests/path/to/example.test.mjs\`.
+Run multiple test files with \`npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs\`.
+Run the full \`npm test\` suite before a commit or milestone.`;
         if (path === "README.md") return "## Configuration\n## Operations";
         return path.includes("docs") ? index : "[Documentation](docs/README.md)";
       },

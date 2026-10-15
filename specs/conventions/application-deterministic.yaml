@@ -17,11 +17,15 @@ directives:
       - Index every Markdown document beneath docs/ except its index.
       - When examples/ contains .mjs or .js examples, maintain examples/README.md linking every JavaScript example.
       - Keep implementation modules under src/, launchers under bin/, tests under tests/, fixtures under test-fixtures/, and examples under examples/.
+      - Use focused test runs to validate small changes.
+      - Show commands for one test file and multiple test files through npm test.
+      - Run the full npm test suite before a commit or milestone.
     donts:
       - Do not require examples/ solely because application is selected.
       - Do not leave discovered docs documents or JavaScript examples unindexed.
     examples:
       - "## Application"
+      - "For a small change, run one or more focused tests.\nRun one test file with `npm test -- tests/path/to/example.test.mjs`.\nRun multiple test files with `npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs`.\nRun the full `npm test` suite before a commit or milestone."
       - "## Configuration\n\n## Operations"
 
   - id: E-0.1.4.1.1

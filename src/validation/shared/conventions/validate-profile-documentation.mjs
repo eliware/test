@@ -1,5 +1,6 @@
 import { removeMarkdownCode } from "../../../checks/general/E-0.1.0.1.4/extract-markdown-links.mjs";
 import { readCanonicalOrder } from "./read-canonical-order.mjs";
+import { validateProfileTestGuidance } from "./validate-profile-test-guidance.mjs";
 
 export async function validateProfileDocumentation(
   profile,
@@ -16,6 +17,7 @@ export async function validateProfileDocumentation(
     agentsOrder.profileHeadings[profile],
   );
   if (agentsError) errors.push(agentsError);
+  errors.push(...(await validateProfileTestGuidance(profile, inventory)));
   const sections = readmeOrder.profileSections[profile] ?? [];
   if (sections.length) {
     errors.push(...(await validateHeadings(inventory, "README.md", sections)));

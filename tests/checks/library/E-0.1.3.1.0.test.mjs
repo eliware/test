@@ -19,7 +19,13 @@ jest.unstable_mockModule(
 const { ruleId, run } = await import("../../../src/checks/library/E-0.1.3.1.0.mjs");
 const repositoryInventory = {
   readText: async (path) =>
-    path === "AGENTS.md" ? "## Library" : "## API\n## Packaging\n## Examples",
+    path === "AGENTS.md"
+      ? `## Library
+For a small change, run one or more focused tests.
+Run one test file with \`npm test -- tests/path/to/example.test.mjs\`.
+Run multiple test files with \`npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs\`.
+Run the full \`npm test\` suite before a commit or milestone.`
+      : "## API\n## Packaging\n## Examples",
 };
 
 beforeEach(() => {
