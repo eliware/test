@@ -20,6 +20,24 @@ test("keeps the package.json prohibition as its own donts item", async () => {
   expect(rule.donts).toContain("Do not ignore package.json.");
 });
 
+test("keeps private rule IDs in one unique namespace", async () => {
+  const semantic = parse(
+    await readFile(
+      new URL("../../../../../specs/conventions/private-semantic.yaml", import.meta.url),
+      "utf8",
+    ),
+  ).directives[0].id;
+  const deterministic = parse(
+    await readFile(
+      new URL("../../../../../specs/conventions/private-deterministic.yaml", import.meta.url),
+      "utf8",
+    ),
+  ).directives[0].id;
+  expect(semantic).toBe("E-0.1.12.0.0");
+  expect(deterministic).toBe("E-0.1.12.1.0");
+  expect(semantic).not.toBe(deterministic);
+});
+
 test("reports invalid bundled files", async () => {
   const schemaError = await validateBundledSpecifications({
     read: async (path, encoding) =>
