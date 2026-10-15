@@ -41,7 +41,12 @@ directives:
     donts:
       - Do not declare other image owners.
       - Do not require npm setup in jobs that do not invoke npm.
-      - Do not declare deployment commands.
+      - Do not run kubectl commands in workflow run fields.
+      - Do not run helm upgrade or helm install commands in workflow run fields.
+      - Do not run terraform apply commands in workflow run fields.
+      - Do not run ansible-playbook commands in workflow run fields.
+      - Do not run flyctl deploy or wrangler deploy commands in workflow run fields.
+      - Do not run docker stack deploy commands in workflow run fields.
     examples:
       - "on:
 

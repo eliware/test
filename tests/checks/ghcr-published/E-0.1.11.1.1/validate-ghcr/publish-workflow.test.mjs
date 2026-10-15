@@ -6,7 +6,7 @@ import {
 } from "../../../../../test-fixtures/ghcr-workflow.mjs";
 import { validateGhcrPublishWorkflow } from "../../../../../src/checks/ghcr-published/E-0.1.11.1.1/validate-ghcr/publish-workflow.mjs";
 
-test("validates the GHCR workflow profile requirements", async () => {
+test("accepts image publication and verification steps", async () => {
   await expect(validateGhcrPublishWorkflow(createGhcrInventory(), ghcrPackage)).resolves.toEqual(
     [],
   );

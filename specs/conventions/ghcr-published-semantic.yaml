@@ -14,6 +14,8 @@ directives:
       - Name each build input owner and architecture decision from repository settings and
         workflow files.
       - Keep publication and deployment authorization separate.
+      - Check that publication workflows do not trigger automatic deployments through called
+        workflows or external services.
       - Describe latest only as a mutable convenience alias.
       - Compare image claims with workflow files, build definitions, package metadata, and
         deployment documentation.
