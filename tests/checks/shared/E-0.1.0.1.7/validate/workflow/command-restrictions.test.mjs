@@ -56,6 +56,24 @@ test("rejects npm and GHCR publication commands", () => {
   expect(errors).toContain("ci.yaml validation job must not publish npm packages or GHCR images.");
 });
 
+test.each([
+  "npx --yes npm@latest publish",
+  "corepack pnpm@latest publish",
+  "npx --yes docker push ghcr.io/eliware/app:latest",
+  "npm exec -- docker buildx build --push -t ghcr.io/eliware/app:latest .",
+])("rejects wrapped publication command %s", (run) => {
+  expect(validateWorkflowCommandRestrictions([...steps, { run }])).toContain(
+    "ci.yaml validation job must not publish npm packages or GHCR images.",
+  );
+});
+
+test.each([
+  "corepack pnpm@latest test",
+  "npx --yes docker push registry.example.com/eliware/app:latest",
+])("allows wrapped non-publication command %s", (run) => {
+  expect(validateWorkflowCommandRestrictions([...steps, { run }])).toEqual([]);
+});
+
 test("allows extra non-publishing commands after npm test", () => {
   expect(
     validateWorkflowCommandRestrictions([
