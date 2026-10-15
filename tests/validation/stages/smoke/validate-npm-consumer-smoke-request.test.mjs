@@ -6,7 +6,7 @@ import {
   packageJson,
   removeRoots,
 } from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
-import { runNpmConsumerSmoke } from "../../../../src/validation/stages/smoke/run-npm-consumer-smoke.mjs";
+import { runNpmConsumerSmoke } from "../../../../src/validation/stages/smoke/run/npm-consumer-smoke.mjs";
 import { validateNpmConsumerSmokeRequest } from "../../../../src/validation/stages/smoke/validate-npm-consumer-smoke-request.mjs";
 
 const root = process.cwd();

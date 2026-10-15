@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { parse } from "yaml";
-import { validateCanonicalOrderDocument } from "./validate-canonical-order-document.mjs";
+import { validateCanonicalOrderDocument } from "./validate/canonical-order-document.mjs";
 
 const cache = new Map();
 

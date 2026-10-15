@@ -2,10 +2,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../check-result.mjs";
 import { resolveReadmeHeadings } from "./E-0.1.0.1.3/resolve-readme-headings.mjs";
-import { validateReadmeStructure } from "./E-0.1.0.1.3/validate-readme-structure.mjs";
-import { validateReadmeBranding } from "./E-0.1.0.1.3/validate-readme-branding.mjs";
-import { validateReadmeLinks } from "./E-0.1.0.1.3/validate-readme-links.mjs";
-import { validateReadmeCompositionOrder } from "./E-0.1.0.1.3/validate-readme-composition-order.mjs";
+import { validateReadmeStructure } from "./E-0.1.0.1.3/validate-readme/structure.mjs";
+import { validateReadmeBranding } from "./E-0.1.0.1.3/validate-readme/branding.mjs";
+import { validateReadmeLinks } from "./E-0.1.0.1.3/validate-readme/links.mjs";
+import { validateReadmeCompositionOrder } from "./E-0.1.0.1.3/validate-readme/composition-order.mjs";
 
 export const ruleId = "E-0.1.0.1.3";
 export const ownerProfile = "general";

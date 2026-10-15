@@ -182,3 +182,21 @@ directives:
     donts:
       - Do not scan for labels, hostnames, or file URLs.
       - Do not reject POSIX paths rooted at /var/lib.
+
+  - id: E-0.1.0.1.10
+    dos:
+      - Scan every .mjs file under src/ and check each folder separately at every depth.
+      - Ignore the prefix E because it identifies rule files.
+      - Find the repeated prefix that matches the most file names in each folder.
+      - When prefixes match the same number of file names, select the longest prefix.
+      - Move matching files into a folder named for the full prefix without its final hyphen.
+      - Remove the moved prefix and hyphen from each file name.
+      - Keep multiword prefixes, such as create-repository, in one folder name.
+      - Keep main modules beside the folders that contain their submodules.
+      - Remove the parent folder name and hyphen from each child file name.
+      - Apply each source move to its matching test file under tests/.
+      - Repeat the scan until no folder has a repeated prefix.
+    donts:
+      - Do not repeat the parent folder name in a child file name.
+      - Do not split a multiword prefix into separate folders.
+      - Do not infer file relationships from code content.

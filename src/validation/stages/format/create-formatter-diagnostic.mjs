@@ -1,6 +1,6 @@
 import { collectRedactionSecrets } from "../../shared/output/redaction/collect-redaction-secrets.mjs";
-import { redactProcessOutput } from "../../shared/output/redaction/redact-process-output.mjs";
-import { createOutputByteBudget } from "../../shared/output/redaction/create-output-byte-budget.mjs";
+import { redactProcessOutput } from "../../shared/output/redaction/redact/process-output.mjs";
+import { createOutputByteBudget } from "../../shared/output/redaction/create/output-byte-budget.mjs";
 
 export function createFormatterDiagnostic(label, messages, env = process.env) {
   const secrets = collectRedactionSecrets(env);

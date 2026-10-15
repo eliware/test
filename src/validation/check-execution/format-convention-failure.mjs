@@ -1,4 +1,4 @@
-import { bundledProfileCatalog } from "../check-discovery/read-bundled-profile-catalog.mjs";
+import { bundledProfileCatalog } from "../check-discovery/read/bundled-profile-catalog.mjs";
 
 function indent(text, prefix) {
   return text

@@ -1,10 +1,10 @@
-import { executeValidationPlan } from "./check-execution/execute-validation-plan.mjs";
+import { executeValidationPlan } from "./check-execution/execute/validation-plan.mjs";
 import { selectConventionChecks } from "./check-discovery/select-convention-checks.mjs";
 import { loadValidationTarget } from "./planning/load-validation-target.mjs";
-import { prepareValidationExemptions } from "./planning/prepare-validation-exemptions.mjs";
-import { discoverAllChecks } from "./check-discovery/discover-checks.mjs";
-import { validateBundledDirectiveCompleteness } from "./planning/validate-bundled-directive-completeness.mjs";
-import { prepareValidationPlan } from "./planning/prepare-validation-plan.mjs";
+import { prepareValidationExemptions } from "./planning/prepare-validation/exemptions.mjs";
+import { discoverAllChecks } from "./check-discovery/discover/checks.mjs";
+import { validateBundledDirectiveCompleteness } from "./planning/validate/bundled-directive-completeness.mjs";
+import { prepareValidationPlan } from "./planning/prepare-validation/plan.mjs";
 import { findRepositoryEntries } from "./shared/repository/find-repository-files.mjs";
 import { finalizeValidationRun } from "./check-execution/finalize-validation-run.mjs";
 

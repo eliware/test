@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { buildPrettierArguments } from "./build-prettier-arguments.mjs";
 import { execute } from "../../shared/process/execute-child-process.mjs";
-import { resolvePrettierExecutable } from "./resolve-prettier-executable.mjs";
+import { resolvePrettierExecutable } from "./resolve/prettier-executable.mjs";
 
 export async function runPrettier(
   root,

@@ -1,5 +1,5 @@
 import { execute } from "../../shared/process/execute-child-process.mjs";
-import { validatePackManifest } from "./validate-pack-manifest.mjs";
+import { validatePackManifest } from "./validate/pack/manifest.mjs";
 
 export async function executePackValidation({
   root,

@@ -2,9 +2,9 @@ import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fail, pass } from "../check-result.mjs";
 import { readSpecificationHeadings } from "./E-0.1.0.1.2/read-specification-headings.mjs";
-import { validateAgentsStructure } from "./E-0.1.0.1.2/validate-agents-structure.mjs";
-import { validateAgentsContent } from "./E-0.1.0.1.2/validate-agents-content.mjs";
-import { validateAgentsCompositionOrder } from "./E-0.1.0.1.2/validate-agents-composition-order.mjs";
+import { validateAgentsStructure } from "./E-0.1.0.1.2/validate-agents/structure.mjs";
+import { validateAgentsContent } from "./E-0.1.0.1.2/validate-agents/content.mjs";
+import { validateAgentsCompositionOrder } from "./E-0.1.0.1.2/validate-agents/composition-order.mjs";
 
 export const ruleId = "E-0.1.0.1.2";
 export const ownerProfile = "general";

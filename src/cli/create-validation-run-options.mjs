@@ -1,5 +1,5 @@
-import { resolveValidationStageOptions } from "./resolve-validation-stage-options.mjs";
-import { resolveFocusedScope } from "./resolve-focused-scope.mjs";
+import { resolveValidationStageOptions } from "./resolve/validation-stage-options.mjs";
+import { resolveFocusedScope } from "./resolve/focused/scope.mjs";
 
 export function createValidationRunOptions(args, diagnosticOptions, options, timing, write) {
   const focusedScope = resolveFocusedScope(diagnosticOptions.jestArgs);

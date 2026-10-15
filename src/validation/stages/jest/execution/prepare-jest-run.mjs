@@ -1,10 +1,10 @@
 import { join } from "node:path";
 import { prepareConsumerCoverageDirectory } from "../configuration/prepare-consumer-coverage-directory.mjs";
-import { createJestProcessOptions } from "../../../shared/process/create-jest-process-options.mjs";
+import { createJestProcessOptions } from "../../../shared/process/create/jest-process-options.mjs";
 import { buildJestArguments } from "../configuration/build-jest-arguments.mjs";
-import { resolveFocusedCoverage } from "../configuration/resolve-focused-coverage.mjs";
+import { resolveFocusedCoverage } from "../configuration/resolve/focused-coverage.mjs";
 import { validateFocusedTestPath } from "../configuration/validate-focused-test-path.mjs";
-import { resolveJestReporters } from "../configuration/resolve-jest-reporters.mjs";
+import { resolveJestReporters } from "../configuration/resolve/jest/reporters.mjs";
 
 export async function prepareJestRun(root, args = [], resolveCli, options) {
   const focusedPath = await validateFocusedTestPath(root, args);

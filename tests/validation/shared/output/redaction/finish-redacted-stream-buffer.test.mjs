@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { createPendingTextChunks } from "../../../../../src/validation/shared/output/redaction/create-pending-text-chunks.mjs";
+import { createPendingTextChunks } from "../../../../../src/validation/shared/output/redaction/create/pending-text-chunks.mjs";
 import { finishRedactedStreamBuffer } from "../../../../../src/validation/shared/output/redaction/finish-redacted-stream-buffer.mjs";
 
 const boundary = () => ({ matchEnds: [], suppressed: false });

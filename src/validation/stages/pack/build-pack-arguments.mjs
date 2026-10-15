@@ -1,4 +1,4 @@
-import { validatePackArguments } from "./validate-pack-arguments.mjs";
+import { validatePackArguments } from "./validate/pack/arguments.mjs";
 
 export function buildPackArguments(extraArgs = []) {
   const error = validatePackArguments(extraArgs);

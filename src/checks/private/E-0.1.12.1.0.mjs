@@ -1,7 +1,7 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateProfileDocumentation } from "../../validation/shared/conventions/validate-profile-documentation.mjs";
-import { validatePrivatePackageScripts } from "./E-0.1.12.1.0/validate-private-package-scripts.mjs";
-import { validatePrivateWorkflows } from "./E-0.1.12.1.0/validate-private-workflows.mjs";
+import { validateProfileDocumentation } from "../../validation/shared/conventions/validate/profile/documentation.mjs";
+import { validatePrivatePackageScripts } from "./E-0.1.12.1.0/validate-private/package-scripts.mjs";
+import { validatePrivateWorkflows } from "./E-0.1.12.1.0/validate-private/workflows.mjs";
 
 export const ruleId = "E-0.1.12.1.0";
 

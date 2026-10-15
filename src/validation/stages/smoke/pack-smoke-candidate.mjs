@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import { readPackManifest } from "../pack/read-pack-manifest.mjs";
-import { validatePackManifest } from "../pack/validate-pack-manifest.mjs";
+import { validatePackManifest } from "../pack/validate/pack/manifest.mjs";
 
 function commandFailure(result, label) {
   const detail = [result?.stdout, result?.stderr].filter(Boolean).join("\n").trim();

@@ -4,9 +4,9 @@ import { parse } from "@babel/parser";
 import {
   moduleParserOptions,
   repositorySourceParserOptions,
-} from "../../../validation/shared/ast/create-repository-ast-cache.mjs";
+} from "../../../validation/shared/ast/create-repository-ast/cache.mjs";
 import { findRepositoryFiles } from "../../../validation/shared/repository/find-repository-files.mjs";
-import { collectCommonJsFindings } from "./collect-commonjs-findings.mjs";
+import { collectCommonJsFindings } from "./collect-commonjs/findings.mjs";
 
 const moduleFile = /\.(?:mjs|js|jsx|cjs|ts|tsx|cts|mts|mjsx|cjsx)$/iu;
 

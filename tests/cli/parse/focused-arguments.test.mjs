@@ -1,0 +1,75 @@
+import { expect, test } from "@jest/globals";
+import {
+  focusedPathFrom,
+  focusedPathsFrom,
+  parseFocusedArguments,
+} from "../../../src/cli/parse/focused-arguments.mjs";
+
+test("separates option values from focused positional paths", () => {
+  expect(
+    parseFocusedArguments(["--moduleNameMapper", "tests/value.test.mjs", "tests/example.test.mjs"])
+      .positional,
+  ).toEqual(["tests/example.test.mjs"]);
+});
+
+test("preserves separator semantics for delegated option-looking arguments", () => {
+  expect(parseFocusedArguments(["--", "--runInBand", "tests/example.test.mjs"]).positional).toEqual(
+    [],
+  );
+});
+
+test("tracks absolute POSIX, drive-qualified, and UNC paths forwarded after the separator", () => {
+  expect(
+    parseFocusedArguments([
+      "--",
+      "not-a-test",
+      "/repo/tests/example.test.mjs",
+      "C:\\repo\\tests\\example.test.mjs",
+      "\\\\server\\share\\tests\\example.test.mjs",
+    ]).forwardedTestPaths,
+  ).toEqual([
+    "/repo/tests/example.test.mjs",
+    "C:\\repo\\tests\\example.test.mjs",
+    "\\\\server\\share\\tests\\example.test.mjs",
+  ]);
+});
+
+test("treats equals-form option values as delegated values", () => {
+  expect(
+    parseFocusedArguments(["--testNamePattern=tests/value.test.mjs", "tests/example.test.mjs"])
+      .positional,
+  ).toEqual(["tests/example.test.mjs"]);
+});
+
+test("handles empty and non-string argument values", () => {
+  expect(parseFocusedArguments()).toEqual({
+    positional: [],
+    optionValues: new Set(),
+    forwardedTestPaths: [],
+  });
+  expect(focusedPathFrom()).toBeUndefined();
+  expect(focusedPathsFrom()).toEqual([]);
+  expect(parseFocusedArguments([null, "--watch"]).positional).toEqual([]);
+  expect(parseFocusedArguments(["--watch", "tests/example.test.mjs"]).positional).toEqual([
+    "tests/example.test.mjs",
+  ]);
+  expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).positional).toEqual([]);
+  expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).forwardedTestPaths).toEqual([
+    "tests/example.test.mjs",
+  ]);
+  expect(focusedPathFrom(["--", "tests/example.test.mjs"])).toBeUndefined();
+  expect(
+    parseFocusedArguments(["--testNamePattern", "tests/example.test.mjs", "tests/example.test.mjs"])
+      .positional,
+  ).toEqual([]);
+  expect(focusedPathFrom(["tests/example.test.mjs"])).toBe("tests/example.test.mjs");
+  expect(focusedPathFrom(["specs/example.spec.mjs"])).toBeUndefined();
+  expect(focusedPathFrom(["src/example.mjs"])).toBeUndefined();
+});
+
+test("recognizes forwarded focused test paths from parsed Jest arguments", () => {
+  expect(
+    parseFocusedArguments(["--", "tests/example.test.mjs", "C:\\repo\\file.txt"])
+      .forwardedTestPaths,
+  ).toEqual(["tests/example.test.mjs", "C:\\repo\\file.txt"]);
+});

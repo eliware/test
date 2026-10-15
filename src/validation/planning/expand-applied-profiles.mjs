@@ -1,4 +1,4 @@
-import { readBundledProfileCatalog } from "../check-discovery/read-bundled-profile-catalog.mjs";
+import { readBundledProfileCatalog } from "../check-discovery/read/bundled-profile-catalog.mjs";
 
 export function expandAppliedProfiles(apply, catalog = readBundledProfileCatalog()) {
   const seen = new Set();

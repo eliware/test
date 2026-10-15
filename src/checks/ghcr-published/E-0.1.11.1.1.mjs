@@ -1,5 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateGhcrPublishWorkflow } from "./E-0.1.11.1.1/validate-ghcr-publish-workflow.mjs";
+import { validateGhcrPublishWorkflow } from "./E-0.1.11.1.1/validate-ghcr/publish-workflow.mjs";
 
 export const ruleId = "E-0.1.11.1.1";
 

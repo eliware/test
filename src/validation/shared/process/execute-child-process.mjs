@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { attachChildProcessOutput, terminateChildProcess } from "./attach-child-process-output.mjs";
-import { createChildProcessOutputCapture } from "./create-child-process-output-capture.mjs";
-import { redactChildProcessError } from "../output/redaction/redact-child-process-error.mjs";
+import { createChildProcessOutputCapture } from "./create/child/process-output-capture.mjs";
+import { redactChildProcessError } from "../output/redaction/redact/child-process-error.mjs";
 
 const MAX_OUTPUT_LENGTH = 100_000;
 

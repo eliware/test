@@ -1,7 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
 
 const defaultExecute = jest.fn(async () => ({ code: 0, stdout: "{}", stderr: "" }));
-jest.unstable_mockModule("../../../../src/validation/shared/process/run-child.mjs", () => ({
+jest.unstable_mockModule("../../../../src/validation/shared/process/run/child.mjs", () => ({
   runChild: defaultExecute,
 }));
 const { runNpmOutdated } =

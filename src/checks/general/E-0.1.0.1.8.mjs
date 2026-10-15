@@ -1,5 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateGitHygiene } from "./E-0.1.0.1.8/validate-git-hygiene.mjs";
+import { validateGitHygiene } from "./E-0.1.0.1.8/validate/git/hygiene.mjs";
 
 export const ruleId = "E-0.1.0.1.8";
 

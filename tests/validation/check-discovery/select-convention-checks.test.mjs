@@ -1,7 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
 
 const discoverChecks = jest.fn();
-jest.unstable_mockModule("../../../src/validation/check-discovery/discover-checks.mjs", () => ({
+jest.unstable_mockModule("../../../src/validation/check-discovery/discover/checks.mjs", () => ({
   discoverChecks,
 }));
 

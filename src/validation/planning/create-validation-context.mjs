@@ -1,4 +1,4 @@
-import { createRepositoryInventory } from "../shared/repository/create-repository-inventory.mjs";
+import { createRepositoryInventory } from "../shared/repository/create-repository/inventory.mjs";
 
 export function createValidationContext(root, packageJson, options = {}) {
   const repositoryInventory =

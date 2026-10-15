@@ -4,15 +4,15 @@ const validateApplicationDocumentation = jest.fn();
 const validateLibraryExamples = jest.fn();
 const validateLibraryExamplesLink = jest.fn();
 jest.unstable_mockModule(
-  "../../../src/checks/application/E-0.1.4.1.0/validate-application-documentation.mjs",
+  "../../../src/checks/application/E-0.1.4.1.0/validate/application-documentation.mjs",
   () => ({ validateApplicationDocumentation }),
 );
 jest.unstable_mockModule(
-  "../../../src/checks/library/E-0.1.3.1.0/validate-library-examples.mjs",
+  "../../../src/checks/library/E-0.1.3.1.0/validate-library/examples.mjs",
   () => ({ validateLibraryExamples }),
 );
 jest.unstable_mockModule(
-  "../../../src/checks/library/E-0.1.3.1.0/validate-library-examples-link.mjs",
+  "../../../src/checks/library/E-0.1.3.1.0/validate-library/examples-link.mjs",
   () => ({ validateLibraryExamplesLink }),
 );
 

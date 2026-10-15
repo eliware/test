@@ -1,0 +1,19 @@
+import { join } from "node:path";
+import { readRepositoryText } from "../../../../validation/shared/repository/read/repository-text.mjs";
+import { validateReleaseNotesContent } from "./release/notes/content.mjs";
+import { validateReleaseNotesLink } from "./release/notes/link.mjs";
+
+export async function validateApplicationReleaseNotes(context = {}) {
+  const root = context.root ?? process.cwd();
+  let content;
+  try {
+    content = await readRepositoryText(context, join(root, "RELEASE_NOTES.md"));
+  } catch {
+    return ["RELEASE_NOTES.md is required."];
+  }
+  const readme = await readRepositoryText(context, join(root, "README.md")).catch(() => "");
+  return [
+    ...validateReleaseNotesContent(content, context.packageJson?.version),
+    ...validateReleaseNotesLink(readme),
+  ];
+}

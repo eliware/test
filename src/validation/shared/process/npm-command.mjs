@@ -3,7 +3,7 @@ import { isAbsolute, resolve, win32 } from "node:path";
 import {
   hasWindowsNpmCommandOnPath,
   resolveWindowsNpmCliFromPath,
-} from "./resolve-windows-npm-cli-from-path.mjs";
+} from "./resolve-windows/npm-cli-from-path.mjs";
 
 export function npmCommand(
   platform = process.platform,

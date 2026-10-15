@@ -1,7 +1,7 @@
 import { npmCommand } from "../../shared/process/npm-command.mjs";
-import { runChild } from "../../shared/process/run-child.mjs";
+import { runChild } from "../../shared/process/run/child.mjs";
 import { collectRedactionSecrets } from "../../shared/output/redaction/collect-redaction-secrets.mjs";
-import { redactProcessOutput } from "../../shared/output/redaction/redact-process-output.mjs";
+import { redactProcessOutput } from "../../shared/output/redaction/redact/process-output.mjs";
 
 export async function runNpmOutdated(
   root,

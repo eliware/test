@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { createRepositoryDirectoryReadCache } from "../src/validation/shared/repository/create-repository-directory-read-cache.mjs";
+import { createRepositoryDirectoryReadCache } from "../src/validation/shared/repository/create-repository/directory/read-cache.mjs";
 
 export async function verifyDirectoryCacheBirthtimeRefresh(jest) {
   const root = join(process.cwd(), "inventory-fixture");

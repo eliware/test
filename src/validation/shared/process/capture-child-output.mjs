@@ -1,5 +1,5 @@
 import { collectRedactionSecrets } from "../output/redaction/collect-redaction-secrets.mjs";
-import { createRedactedTextStream } from "../output/redaction/create-redacted-text-stream.mjs";
+import { createRedactedTextStream } from "../output/redaction/create/redacted/text/stream.mjs";
 import { truncateChildOutputText } from "./truncate-child-output-text.mjs";
 
 export function createChildOutputCapture(

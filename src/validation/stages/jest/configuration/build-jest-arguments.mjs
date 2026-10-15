@@ -2,7 +2,7 @@ import {
   focusedPathFrom,
   focusedPathsFrom,
   parseFocusedArguments,
-} from "../../../../cli/parse-focused-arguments.mjs";
+} from "../../../../cli/parse/focused-arguments.mjs";
 
 export { focusedPathFrom };
 

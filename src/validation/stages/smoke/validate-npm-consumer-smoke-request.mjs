@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { validatePublicationMetadata } from "../pack/validate-publication-metadata.mjs";
+import { validatePublicationMetadata } from "../pack/validate/publication-metadata.mjs";
 
 export function validateNpmConsumerSmokeRequest({ root, target, packageJson }) {
   if (typeof target !== "string" || !target.trim())

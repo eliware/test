@@ -1,5 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateApplicationLayout } from "./E-0.1.4.1.2/validate-application-layout.mjs";
+import { validateApplicationLayout } from "./E-0.1.4.1.2/validate/application/layout.mjs";
 
 export const ruleId = "E-0.1.4.1.2";
 export const focusedSafe = true;

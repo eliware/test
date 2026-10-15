@@ -1,10 +1,10 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fail, pass } from "../check-result.mjs";
-import { validatePackageScripts } from "./E-0.1.0.1.5/validate-package-scripts.mjs";
-import { validatePrettierConfiguration } from "./E-0.1.0.1.5/validate-prettier-configuration.mjs";
-import { validateFormattingStages } from "./E-0.1.0.1.5/validate-formatting-stages.mjs";
-import { validateStandalonePrettierConfiguration } from "./E-0.1.0.1.5/validate-standalone-prettier-configuration.mjs";
+import { validatePackageScripts } from "./E-0.1.0.1.5/validate/package-scripts.mjs";
+import { validatePrettierConfiguration } from "./E-0.1.0.1.5/validate/prettier-configuration.mjs";
+import { validateFormattingStages } from "./E-0.1.0.1.5/validate/formatting-stages.mjs";
+import { validateStandalonePrettierConfiguration } from "./E-0.1.0.1.5/validate/standalone-prettier-configuration.mjs";
 
 export const ruleId = "E-0.1.0.1.5";
 const executeFile = promisify(execFile);

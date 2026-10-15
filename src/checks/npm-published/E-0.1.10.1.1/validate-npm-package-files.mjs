@@ -1,6 +1,6 @@
 import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
 import { derivePackageFilesAllowlist } from "../../../validation/stages/pack/derive-package-files-allowlist.mjs";
-import { validateOrderedPackageFiles } from "../../../validation/stages/pack/validate-ordered-package-files.mjs";
+import { validateOrderedPackageFiles } from "../../../validation/stages/pack/validate/ordered-package-files.mjs";
 
 function isSafePath(path) {
   if (typeof path !== "string" || !path || path !== path.trim() || path.includes("\\"))

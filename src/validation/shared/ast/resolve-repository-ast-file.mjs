@@ -1,5 +1,5 @@
 import { join, resolve } from "node:path";
-import { inventoryDirectory, inventoryPath } from "../repository/repository-inventory-paths.mjs";
+import { inventoryDirectory, inventoryPath } from "../repository/repository-inventory/paths.mjs";
 
 export function resolveRepositoryAstFile(root, file) {
   const repositoryFile = inventoryDirectory(

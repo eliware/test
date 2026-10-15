@@ -1,7 +1,7 @@
 import { realpath, stat } from "node:fs/promises";
 import { isAbsolute, posix, relative, resolve, sep, win32 } from "node:path";
-import { parseFocusedArguments } from "../../../../cli/parse-focused-arguments.mjs";
-import { resolveFocusedTestPaths } from "../../../../cli/resolve-focused-test-paths.mjs";
+import { parseFocusedArguments } from "../../../../cli/parse/focused-arguments.mjs";
+import { resolveFocusedTestPaths } from "../../../../cli/resolve/focused/test-paths.mjs";
 
 export async function validateFocusedTestPath(root, args = []) {
   const absolutePath = parseFocusedArguments(args).positional.find(isAbsoluteTestPath);

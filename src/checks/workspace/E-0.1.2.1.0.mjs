@@ -1,9 +1,9 @@
 import { fail, pass } from "../check-result.mjs";
 import { collectRunbookFiles } from "./E-0.1.2.1.0/collect-runbook-files.mjs";
 import { readRunbookSchema } from "./E-0.1.2.1.0/read-runbook-schema.mjs";
-import { validateRunbookIndex } from "./E-0.1.2.1.0/validate-runbook-index.mjs";
-import { validateRunbookDocument } from "./E-0.1.2.1.0/validate-runbook-document.mjs";
-import { validateProfileDocumentation } from "../../validation/shared/conventions/validate-profile-documentation.mjs";
+import { validateRunbookIndex } from "./E-0.1.2.1.0/validate-runbook/index.mjs";
+import { validateRunbookDocument } from "./E-0.1.2.1.0/validate-runbook/document.mjs";
+import { validateProfileDocumentation } from "../../validation/shared/conventions/validate/profile/documentation.mjs";
 
 export const ruleId = "E-0.1.2.1.0";
 export const repositoryInventoryOptions = { expandedDirectories: ["runbooks"] };

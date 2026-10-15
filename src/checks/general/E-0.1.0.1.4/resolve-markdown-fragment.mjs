@@ -1,4 +1,4 @@
-import { removeMarkdownCode } from "./extract-markdown-links.mjs";
+import { removeMarkdownCode } from "./extract-markdown/links.mjs";
 
 export function hasMarkdownFragment(content, fragment) {
   let wanted;

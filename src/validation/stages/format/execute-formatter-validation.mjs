@@ -1,6 +1,6 @@
 import { validatePrettierArguments } from "./validate-prettier-arguments.mjs";
 import { createFormatterDiagnostic } from "./create-formatter-diagnostic.mjs";
-import { resolveFocusedFormatterPaths } from "./resolve-focused-formatter-paths.mjs";
+import { resolveFocusedFormatterPaths } from "./resolve/focused-formatter-paths.mjs";
 
 export async function executeFormatterValidation({
   root,

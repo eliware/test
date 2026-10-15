@@ -2,7 +2,7 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 
 const validatePackManifest = jest.fn();
 jest.unstable_mockModule(
-  "../../../../src/validation/stages/pack/validate-pack-manifest.mjs",
+  "../../../../src/validation/stages/pack/validate/pack/manifest.mjs",
   () => ({ validatePackManifest }),
 );
 

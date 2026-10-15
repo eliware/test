@@ -1,4 +1,4 @@
-import { createValidationStageRunners } from "./registry/create-validation-stage-runners.mjs";
+import { createValidationStageRunners } from "./registry/create/validation-stage-runners.mjs";
 
 export async function runValidationStages(context, stages, runners) {
   context.stageResults ??= {};

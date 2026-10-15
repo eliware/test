@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { createPendingTextChunks } from "../../../../../src/validation/shared/output/redaction/create-pending-text-chunks.mjs";
+import { createPendingTextChunks } from "../../../../../src/validation/shared/output/redaction/create/pending-text-chunks.mjs";
 import { appendRedactedStreamText } from "../../../../../src/validation/shared/output/redaction/append-redacted-stream-text.mjs";
 
 function options(overrides = {}) {
