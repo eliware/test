@@ -19,6 +19,8 @@ directives:
       - Distinguish runtime settings, package metadata, command arguments, and deployment
         configuration.
       - Distinguish implemented behavior from versions already released.
+      - Update each GitHub Action to its latest major version when Eli becomes aware of a
+        newer major version.
     donts:
       - Do not use misleading identities, stale instructions, or unsupported capability
         claims.

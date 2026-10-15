@@ -31,6 +31,8 @@ directives:
       - Set package.json.bugs.url to the matching GitHub repository issues URL.
       - Use numeric MAJOR.MINOR.PATCH matching the applied convention version.
       - Keep lockfile metadata and dependency references consistent with package.json.
+      - Keep each Node.js dependency at its latest available release. The outdated stage
+        must report no newer release.
       - Use the MIT license text with Copyright (c) 2026 Eliware.
     donts:
       - Do not use prerelease or build suffixes, alternative identity metadata, or
@@ -274,7 +276,7 @@ directives:
       - Run validation unconditionally on Ubuntu using checkout major v6 and setup-node
         major v7 with Node.js 26.
       - "Set checkout fetch-depth to 0 before validation."
-      - Install npm latest.
+      - Install npm@latest before npm ci.
       - Run one standalone npm ci step, then one standalone npm test step.
       - Add any workflow steps after the required npm test step unless a command publishes
         an npm package or a GHCR image.
