@@ -42,8 +42,7 @@ directives:
         every depth.
     donts:
       - Do not set package.json.eliware.webRoot or package.json.eliware.webAssetExcludes.
-      - Do not automatically run lighthouse, puppeteer, prebuild, or postbuild scripts
-        during aggregate validation.
+      - Do not automatically run prebuild or postbuild scripts during aggregate validation.
     examples:
       - "<repo-root>/public"
       - "<repo-root>/dist"
@@ -54,9 +53,10 @@ directives:
       - Set build to the standard webpack command.
       - Run build during aggregate validation.
       - Set lighthouse and puppeteer as direct dependencies.
-      - Define nonempty lighthouse and puppeteer scripts.
+      - Define nonempty lighthouse and screenshots scripts.
     donts:
       - Do not chain or redirect build or duplicate it in CI.
+      - Do not run lighthouse or screenshots during validation.
     examples:
       - >-
         webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js

@@ -9,7 +9,7 @@ test("requires direct Lighthouse and Puppeteer dependencies and scripts", () => 
         dependencies: { lighthouse: "1", puppeteer: "1" },
         scripts: {
           lighthouse: "lighthouse",
-          puppeteer: "puppeteer",
+          screenshots: "node scripts/screenshots.mjs",
           build:
             "webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js --mode production",
         },
@@ -22,9 +22,9 @@ test("requires direct Lighthouse and Puppeteer dependencies and scripts", () => 
     status: "fail",
     message:
       "Web applications must directly declare lighthouse.\n" +
-      "Web applications must define a nonempty lighthouse script.\n" +
       "Web applications must directly declare puppeteer.\n" +
-      "Web applications must define a nonempty puppeteer script.\n" +
+      "Web applications must define a nonempty lighthouse script.\n" +
+      "Web applications must define a nonempty screenshots script.\n" +
       "Web applications must directly declare webpack.\n" +
       "Web applications must define the standard webpack build script.",
   });
@@ -34,14 +34,14 @@ test("requires direct Lighthouse and Puppeteer dependencies and scripts", () => 
         dependencies: { lighthouse: "1" },
         scripts: {
           lighthouse: "   ",
-          puppeteer: false,
+          screenshots: false,
           build:
             "webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js --mode production",
         },
         devDependencies: { webpack: "1" },
       },
     }).message,
-  ).toContain("Web applications must define a nonempty puppeteer script.");
+  ).toContain("Web applications must define a nonempty screenshots script.");
 });
 
 test("accepts direct browser tool dependencies in development dependencies", () => {
@@ -50,7 +50,7 @@ test("accepts direct browser tool dependencies in development dependencies", () 
       devDependencies: { lighthouse: "1", puppeteer: "1", webpack: "1" },
       scripts: {
         lighthouse: "lighthouse",
-        puppeteer: "puppeteer",
+        screenshots: "node scripts/screenshots.mjs",
         build:
           "webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js --mode production",
       },
