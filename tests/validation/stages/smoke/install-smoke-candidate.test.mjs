@@ -2,6 +2,7 @@ import { afterEach, expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { nextPatchVersion } from "../../../helpers/project-version.mjs";
 import { installSmokeCandidate } from "../../../../src/validation/stages/smoke/install-smoke-candidate.mjs";
 import { packageJson } from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
 
@@ -79,11 +80,13 @@ test("rejects a mismatched installed version", async () => {
   await expect(
     installSmokeCandidate(
       options(targetRoot, async () => {
-        await installMock(targetRoot, "12.0.1");
+        await installMock(targetRoot, nextPatchVersion);
         return { code: 0 };
       }),
     ),
-  ).rejects.toThrow("Installed package version 12.0.1 does not match 12.0.0");
+  ).rejects.toThrow(
+    `Installed package version ${nextPatchVersion} does not match ${packageJson.version}`,
+  );
 });
 
 test("rejects a mismatched installed package name", async () => {

@@ -10,6 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateSpecificationDirectives } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/directives.mjs";
+import { conventionVersion } from "../../../../../helpers/project-version.mjs";
 
 async function createFixture() {
   const root = await mkdtemp(join(tmpdir(), "eliware-directives-"));
@@ -17,7 +18,7 @@ async function createFixture() {
   await mkdir(specs, { recursive: true });
   await writeFile(
     join(specs, "directives.yaml"),
-    "version: '12.0'\ndescription: Harness\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n    children:\n      - id: E-0.0.0\n        dos: [Do]\n        donts: [Do not]\n",
+    `version: '${conventionVersion}'\ndescription: Harness\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n    children:\n      - id: E-0.0.0\n        dos: [Do]\n        donts: [Do not]\n`,
   );
   return root;
 }
@@ -50,7 +51,7 @@ test("parses every consumer document in a YAML stream", async () => {
     const harness = join(root, "specs", "directives.yaml");
     await writeFile(
       harness,
-      `${await readFile(harness, "utf8")}\n---\nversion: '12.0'\ndescription: Second harness document\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n`,
+      `${await readFile(harness, "utf8")}\n---\nversion: '${conventionVersion}'\ndescription: Second harness document\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     await expect(
       validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
@@ -71,7 +72,7 @@ test("reports schema, namespace, and file errors", async () => {
           String(path).endsWith("specs/directives-schema.yaml") ? "{}" : readFile(path, encoding),
       },
     );
-    expect(errors.join(" ")).toContain("v12 document and directive schema");
+    expect(errors.join(" ")).toContain("document and directive schema");
     expect(errors.join(" ")).toContain("assigned E-number");
     await rm(join(root, "specs", "directives.yaml"));
     expect(
@@ -89,21 +90,21 @@ test("validates nested specification files and does not require a consumer schem
     await mkdir(nested, { recursive: true });
     await writeFile(
       join(nested, "extra.yaml"),
-      "version: '12.0'\ndescription: Extra rules\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n",
+      `version: '${conventionVersion}'\ndescription: Extra rules\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     await expect(
       validateSpecificationDirectives(root, { eliware: { id: "E-0" } }),
     ).resolves.toEqual([]);
     await writeFile(
       join(nested, "extra.yaml"),
-      "version: '12.0'\ndescription: Extra rules\nunknown: true\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n",
+      `version: '${conventionVersion}'\ndescription: Extra rules\nunknown: true\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     expect(
       (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),
     ).toContain("contains unsupported document fields");
     await writeFile(
       join(nested, "extra.yaml"),
-      "version: '12.0'\ndescription: Duplicate rule\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n",
+      `version: '${conventionVersion}'\ndescription: Duplicate rule\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     expect(
       (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),
@@ -135,7 +136,7 @@ test("reports malformed bundled schema YAML and invalid directive data", async (
     );
     await writeFile(
       join(root, "specs", "directives.yaml"),
-      "version: '12.0'\ndescription: Invalid\ndirectives: null\n",
+      `version: '${conventionVersion}'\ndescription: Invalid\ndirectives: null\n`,
     );
     expect(
       (await validateSpecificationDirectives(root, { eliware: { id: "E-0" } })).join(" "),

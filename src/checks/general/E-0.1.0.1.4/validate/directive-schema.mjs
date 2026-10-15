@@ -41,10 +41,10 @@ const expectedSchema = {
   },
 };
 
-export function validateV12DirectiveSchema(schema) {
+export function validateDirectiveSchema(schema) {
   return matchesSchema(schema, expectedSchema)
     ? []
-    : ["specs/directives-schema.yaml must define the v12 document and directive schema."];
+    : ["specs/directives-schema.yaml must define the document and directive schema."];
 }
 
 function matchesSchema(actual, expected) {

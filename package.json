@@ -1,6 +1,6 @@
 {
   "name": "@eliware/test",
-  "version": "12.0.1",
+  "version": "13.0.0",
   "type": "module",
   "description": "Shared deterministic repository validation for Eliware projects",
   "keywords": [

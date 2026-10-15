@@ -1,9 +1,17 @@
 import { expect, test } from "@jest/globals";
 import { validateReleaseVersionHistory } from "../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/version-history.mjs";
+import {
+  nextMinorVersion,
+  packageVersion,
+  previousMajorVersion,
+} from "../../../../../helpers/project-version.mjs";
 
 test("accepts descending SemVer entries with matching package version", () => {
   expect(
-    validateReleaseVersionHistory(["## 12.1.0 — 2026-06-01", "## 12.0.0 — 2026-05-01"], "12.1.0"),
+    validateReleaseVersionHistory(
+      [`## ${packageVersion} — 2026-10-15`, `## ${previousMajorVersion} — 2026-10-14`],
+      packageVersion,
+    ),
   ).toEqual([]);
 });
 
@@ -18,15 +26,17 @@ test("rejects malformed entries and missing package versions", () => {
 });
 
 test("requires the newest release to match the package version", () => {
-  expect(validateReleaseVersionHistory(["## 12.1.0 — 2026-06-01"], "12.0.0")).toContain(
-    "Newest release version 12.1.0 must match package.json.version 12.0.0.",
+  expect(
+    validateReleaseVersionHistory([`## ${nextMinorVersion} — 2026-10-15`], packageVersion),
+  ).toContain(
+    `Newest release version ${nextMinorVersion} must match package.json.version ${packageVersion}.`,
   );
 });
 
 test("rejects invalid dates and duplicate versions", () => {
   const errors = validateReleaseVersionHistory(
-    ["## 12.0.0 — 2026-02-30", "## 12.0.0 — 2026-03-01"],
-    "12.0.0",
+    [`## ${previousMajorVersion} — 2026-02-30`, `## ${previousMajorVersion} — 2026-03-01`],
+    previousMajorVersion,
   );
   expect(errors).toContain("Release date is invalid: 2026-02-30.");
   expect(errors).toContain("RELEASE_NOTES.md must not duplicate release versions.");
@@ -36,13 +46,13 @@ test("rejects invalid dates and duplicate versions", () => {
 
 test("rejects increasing version and date order", () => {
   const errors = validateReleaseVersionHistory(
-    ["## 12.0.0 — 2026-01-01", "## 13.0.0 — 2026-02-01"],
-    "12.0.0",
+    [`## ${previousMajorVersion} — 2026-01-01`, `## ${packageVersion} — 2026-02-01`],
+    previousMajorVersion,
   );
   expect(errors).toContain("Release versions must be in strictly descending SemVer order.");
   expect(errors).toContain("Release dates must not increase.");
 });
 
 test("handles an empty version history", () => {
-  expect(validateReleaseVersionHistory([], "12.0.0")).toEqual([]);
+  expect(validateReleaseVersionHistory([], packageVersion)).toEqual([]);
 });

@@ -1,10 +1,11 @@
 import { expect, test } from "@jest/globals";
+import { runbookSchemaVersion } from "../../helpers/project-version.mjs";
 import { readRunbookSchema } from "../../../src/checks/workspace/E-0.1.2.1.0/read-runbook-schema.mjs";
 import { ruleId, run } from "../../../src/checks/workspace/E-0.1.2.1.0.mjs";
 
 const schema = await readRunbookSchema();
 const index = "# Runbooks\n\n- [Deploy](deploy.yaml)";
-const document = "schema-version: 12\ntitle: Deploy\nsteps:\n  - Run npm test";
+const document = `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\nsteps:\n  - Run npm test`;
 
 function inventory(files, readText = async () => "") {
   return {
@@ -121,7 +122,8 @@ test("reports runbook read errors and invalid runbook content", async () => {
       {
         repositoryInventory: inventory(
           ["runbooks/README.md", "runbooks/deploy.yaml"],
-          async (path) => (path.endsWith("README.md") ? index : "schema-version: 11"),
+          async (path) =>
+            path.endsWith("README.md") ? index : `schema-version: ${runbookSchemaVersion - 1}`,
         ),
       },
       { readSchema: async () => schema },

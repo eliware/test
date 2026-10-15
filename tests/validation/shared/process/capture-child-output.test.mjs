@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { packageVersion } from "../../../helpers/project-version.mjs";
 import { createChildOutputCapture } from "../../../../src/validation/shared/process/capture-child-output.mjs";
 
 test("captures and streams redacted bounded output", () => {
@@ -123,7 +124,7 @@ test("suppresses complete progress output when a configured secret exceeds the c
 
 test("preserves version output when a sensitive environment value is short", () => {
   const capture = createChildOutputCapture(100, { env: { XDG_SESSION_ID: "1" } });
-  capture.stdout("12.0.0");
+  capture.stdout(packageVersion);
 
-  expect(capture.result().stdout).toBe("12.0.0");
+  expect(capture.result().stdout).toBe(packageVersion);
 });

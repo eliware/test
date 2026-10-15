@@ -1,10 +1,11 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { nextPatchVersion, packageVersion } from "../../tests/helpers/project-version.mjs";
 
 export const packageJson = {
   name: "@eliware/test",
-  version: "12.0.0",
+  version: packageVersion,
   private: false,
   engines: { node: "26" },
   publishConfig: { provenance: true },
@@ -40,18 +41,21 @@ export const smokeFailureCases = [
   [{ packCode: 1, noPackStdout: true }, "npm pack failed."],
   [{ noPackStdout: true }, "safe tarball filename"],
   [{ packStdout: "not-json" }, "safe tarball filename"],
-  [packReport({ name: undefined, version: "12.0.0" }), "safe tarball filename"],
-  [packReport({ version: "12.0.1" }), "version does not match"],
+  [packReport({ name: undefined, version: packageVersion }), "safe tarball filename"],
+  [packReport({ version: nextPatchVersion }), "version does not match"],
   [packReport({ filename: "../x.tgz" }), "safe tarball filename"],
   [packReport(), "omitted"],
   [{ installCode: 1, installStdout: "install output" }, "Tarball installation failed"],
-  [{ installVersion: "12.0.1" }, "Installed package version 12.0.1 does not match 12.0.0"],
+  [
+    { installVersion: nextPatchVersion },
+    `Installed package version ${nextPatchVersion} does not match ${packageVersion}`,
+  ],
 ];
 
 function packReport(entry = {}) {
   return {
     packStdout: JSON.stringify([
-      { name: "@eliware/test", version: "12.0.0", filename: "x.tgz", files: [], ...entry },
+      { name: "@eliware/test", version: packageVersion, filename: "x.tgz", files: [], ...entry },
     ]),
   };
 }
@@ -69,14 +73,14 @@ export async function createSmokeTarget(roots) {
     join(target, "package.json"),
     JSON.stringify({
       scripts: { test: "eliware-test" },
-      devDependencies: { "@eliware/test": "12.0.0" },
+      devDependencies: { "@eliware/test": packageVersion },
     }),
   );
   await writeFile(join(target, "package-lock.json"), "old-lock\n");
   await writeFile(join(target, "node_modules", ".package-lock.json"), "old-tree-lock\n");
   await writeFile(
     join(installed, "package.json"),
-    JSON.stringify({ name: "@eliware/test", version: "12.0.0" }),
+    JSON.stringify({ name: "@eliware/test", version: packageVersion }),
   );
   await writeFile(join(target, "node_modules", ".bin", "eliware-test.cmd"), "old-bin\n");
   return { root, source, target, installed };
@@ -97,7 +101,7 @@ export function fakeNpm(target, config = {}) {
       {
         name: packageJson.name,
         version: packageJson.version,
-        filename: "eliware-test-12.0.0.tgz",
+        filename: `eliware-test-${packageVersion}.tgz`,
         files: packedFiles.map((path) => ({ path })),
       },
     ]);
@@ -105,7 +109,7 @@ export function fakeNpm(target, config = {}) {
     calls.push({ args, options });
     if (args.includes("pack")) {
       const output = args[args.indexOf("--pack-destination") + 1];
-      await writeFile(join(output, "eliware-test-12.0.0.tgz"), "candidate tarball");
+      await writeFile(join(output, `eliware-test-${packageVersion}.tgz`), "candidate tarball");
       return {
         code: packCode,
         stdout: config.noPackStdout ? undefined : manifest,

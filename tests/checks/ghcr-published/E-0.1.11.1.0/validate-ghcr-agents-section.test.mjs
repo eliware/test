@@ -56,7 +56,7 @@ test("ignores latest tags from unrelated workflow steps", async () => {
 
 test("reads version tags from a multiline workflow string", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[2].with.tags = "ghcr.io/eliware/example:v12.0.0";
+  workflow.jobs.publish.steps[2].with.tags = `ghcr.io/eliware/example:v${ghcrPackage.version}`;
   await expect(
     validateGhcrAgentsSection(createGhcrInventory({ workflow }), ghcrPackage),
   ).resolves.toEqual([]);

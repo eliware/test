@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/npm-published/E-0.1.10.1.2.mjs";
+import { packageVersion } from "../../helpers/project-version.mjs";
 
 const workflow = `jobs:
   validate:
@@ -26,7 +27,7 @@ on:
   push:
     tags: ["v[0-9]*.[0-9]*.[0-9]*"]
 `;
-const packageJson = { version: "12.0.0" };
+const packageJson = { version: packageVersion };
 
 function inventory(source = workflow, files = [".github/workflows/publish.yaml"]) {
   return { files: async () => files, readText: async () => source };

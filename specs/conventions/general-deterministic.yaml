@@ -1,4 +1,4 @@
-version: "12.0"
+version: "13.0"
 description: Defines deterministic requirements shared by Eliware repositories.
 requires: []
 conflicts: []
@@ -28,7 +28,7 @@ directives:
       - Do not use prerelease or build suffixes, alternative identity metadata, or malformed dependency maps.
       - Do not use CommonJS module syntax in maintained implementation.
     examples:
-      - '{"name":"@eliware/example","version":"12.0.0","type":"module","description":"Example repository","keywords":["example"],"private":true,"publishConfig":{},"main":"src/index.mjs","bin":"bin/example.mjs","files":["src/"],"scripts":{},"engines":{"node":">=26"},"dependencies":{},"devDependencies":{},"jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT","repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},"homepage":"https://github.com/eliware/example#readme","bugs":{"url":"https://github.com/eliware/example/issues"},"eliware":{}}'
+      - '{"name":"@eliware/example","version":"13.0.0","type":"module","description":"Example repository","keywords":["example"],"private":true,"publishConfig":{},"main":"src/index.mjs","bin":"bin/example.mjs","files":["src/"],"scripts":{},"engines":{"node":">=26"},"dependencies":{},"devDependencies":{},"jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT","repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},"homepage":"https://github.com/eliware/example#readme","bugs":{"url":"https://github.com/eliware/example/issues"},"eliware":{}}'
 
   - id: E-0.1.0.1.2
     dos:
@@ -88,7 +88,7 @@ directives:
       - Use full HTTPS GitHub URLs for cross-repository links.
       - Keep specs/directives.yaml.
       - Parse every YAML file under specs/, including files in nested directories.
-      - Validate only YAML documents with a top-level directives key against the v12 schema.
+      - Validate only YAML documents with a top-level directives key against the bundled directives schema.
       # codescope ignore this because required indexes need real navigable links.
       - Give every specs directory one navigation-only README.md linking its direct YAML files and immediate subdirectory indexes.
       - Allow only YAML documents, README.md indexes, and conforming subdirectories under specs/.

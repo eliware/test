@@ -3,16 +3,17 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateSpecificationIndexes } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/indexes.mjs";
+import { conventionVersion } from "../../../../../helpers/project-version.mjs";
 
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), "eliware-index-"));
   await mkdir(join(root, "specs", "nested"), { recursive: true });
-  await writeFile(join(root, "specs", "directives.yaml"), "version: 12\n");
+  await writeFile(join(root, "specs", "directives.yaml"), `version: '${conventionVersion}'\n`);
   await writeFile(
     join(root, "specs", "README.md"),
     "# Specs\n\n- [directives](directives.yaml)\n- [nested](nested/README.md)\n",
   );
-  await writeFile(join(root, "specs", "nested", "rules.yaml"), "version: 12\n");
+  await writeFile(join(root, "specs", "nested", "rules.yaml"), `version: '${conventionVersion}'\n`);
   await writeFile(
     join(root, "specs", "nested", "README.md"),
     "# Nested\n\n- [rules](rules.yaml)\n",
@@ -32,9 +33,12 @@ test("accepts complete navigation indexes", async () => {
 test("sorts multiple specifications and child indexes in expected order", async () => {
   const root = await fixture();
   try {
-    await writeFile(join(root, "specs", "extra.yaml"), "version: 12\n");
+    await writeFile(join(root, "specs", "extra.yaml"), `version: '${conventionVersion}'\n`);
     await mkdir(join(root, "specs", "alpha"));
-    await writeFile(join(root, "specs", "alpha", "rules.yaml"), "version: 12\n");
+    await writeFile(
+      join(root, "specs", "alpha", "rules.yaml"),
+      `version: '${conventionVersion}'\n`,
+    );
     await writeFile(
       join(root, "specs", "alpha", "README.md"),
       "# Alpha\n\n- [rules](rules.yaml)\n",

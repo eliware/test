@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { packageVersion } from "../../../../helpers/project-version.mjs";
 import { collectRedactionSecrets } from "../../../../../src/validation/shared/output/redaction/collect-redaction-secrets.mjs";
 
 test("collects unique string values from sensitive environment keys", () => {
@@ -46,7 +47,7 @@ test("ignores short values that can overlap ordinary command output", () => {
     collectRedactionSecrets({
       XDG_SESSION_ID: "1",
       SERVICE_TOKEN: "12",
-      API_KEY: "12.0.0",
+      API_KEY: packageVersion,
       API_TOKEN: "secret-token-value",
     }),
   ).toEqual(["secret-token-value"]);

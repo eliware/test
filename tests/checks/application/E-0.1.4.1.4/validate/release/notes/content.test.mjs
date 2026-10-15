@@ -1,9 +1,12 @@
 import { expect, test } from "@jest/globals";
 import { validateReleaseNotesContent } from "../../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/notes/content.mjs";
+import {
+  packageVersion,
+  previousMajorVersion,
+} from "../../../../../../helpers/project-version.mjs";
 
-const valid =
-  "# Release Notes\n\n## 12.1.0 — 2026-06-01\n\n### Added\n\nNew feature.\n\n## 12.0.0 — 2026-05-01\n\n### Fixed\n\nBug fix.\n";
-const validate = (content) => validateReleaseNotesContent(content, "12.1.0");
+const valid = `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nNew feature.\n\n## ${previousMajorVersion} — 2026-10-14\n\n### Fixed\n\nBug fix.\n`;
+const validate = (content) => validateReleaseNotesContent(content, packageVersion);
 
 test("accepts valid release entries in descending order", () => {
   expect(validate(valid)).toEqual([]);
@@ -14,9 +17,13 @@ test("accepts a UTF-8 byte-order mark before the title", () => {
 });
 
 test("rejects the word Unreleased without regard to case", () => {
-  const errors = validate("# Release Notes\n\n## 12.1.0 — 2026-06-01\n\nPending unreleased work.");
+  const errors = validate(
+    `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\nPending unreleased work.`,
+  );
   expect(errors).toContain("RELEASE_NOTES.md must not contain the word Unreleased.");
-  expect(validate("# Release Notes\n\n## 12.1.0 — 2026-06-01\n\n### Added\n\nNew.")).toEqual([]);
+  expect(
+    validate(`# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nNew.`),
+  ).toEqual([]);
 });
 
 test("rejects malformed release titles", () => {
@@ -34,7 +41,7 @@ test("requires known, nonempty subsections", () => {
 });
 
 test("does not count a nested heading as subsection content", () => {
-  const notes = "# Release Notes\n\n## 12.1.0 — 2026-06-01\n\n### Changed\n\n#### Nested only\n";
+  const notes = `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Changed\n\n#### Nested only\n`;
   expect(validate(notes).join(" ")).toContain(
     "subsection Changed must contain user-visible change text",
   );
@@ -53,7 +60,7 @@ test("rejects more than one level-one title", () => {
 });
 
 test("does not count release entries inside code fences", () => {
-  const code = "# Release Notes\n\n```md\n## 12.1.0 — 2026-06-01\n\n### Added\n\nExample.\n```";
+  const code = `# Release Notes\n\n\`\`\`md\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nExample.\n\`\`\``;
   expect(validate(code)).toContain(
     "RELEASE_NOTES.md must contain at least one versioned release entry.",
   );

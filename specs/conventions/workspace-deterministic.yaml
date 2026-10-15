@@ -1,4 +1,4 @@
-version: "12.0"
+version: "13.0"
 description: Lists deterministic rules for Eliware workspace repositories.
 requires:
   - general
@@ -22,7 +22,7 @@ directives:
       - Keep a navigation-only runbooks/README.md index.
       - Store each runbook as a separate .yaml file under runbooks/.
       - Link every runbook from runbooks/README.md.
-      - Validate each runbook against the bundled v12 runbook schema.
+      - Validate each runbook against the bundled runbook schema.
     donts:
       - Do not omit workspace-specific headings.
     examples:

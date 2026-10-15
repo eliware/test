@@ -2,6 +2,7 @@ import { afterEach, expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { packageVersion } from "../../../../helpers/project-version.mjs";
 import {
   hasPackageDependency,
   prepareSmokeTarget,
@@ -17,9 +18,9 @@ afterEach(async () => {
 test.each(["dependencies", "devDependencies", "optionalDependencies"])(
   "recognizes the package dependency in %s",
   (field) => {
-    expect(hasPackageDependency({ [field]: { "@eliware/test": "12.0.0" } }, "@eliware/test")).toBe(
-      true,
-    );
+    expect(
+      hasPackageDependency({ [field]: { "@eliware/test": packageVersion } }, "@eliware/test"),
+    ).toBe(true);
     expect(hasPackageDependency({}, "@eliware/test")).toBe(false);
   },
 );
@@ -30,7 +31,7 @@ test("removes the installed package without changing consumer manifests or lockf
   const installed = join(root, "node_modules", "@eliware", "test");
   await mkdir(installed, { recursive: true });
   await writeFile(join(installed, "package.json"), "old package");
-  const manifest = '{"devDependencies":{"@eliware/test":"12.0.0"}}\n';
+  const manifest = `${JSON.stringify({ devDependencies: { "@eliware/test": packageVersion } })}\n`;
   const lockfile = '{"lockfileVersion":3}\n';
   await writeFile(join(root, "package.json"), manifest);
   await writeFile(join(root, "package-lock.json"), lockfile);

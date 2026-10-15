@@ -1,8 +1,9 @@
 import { expect, test } from "@jest/globals";
 import { validateSpecificationDocument } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/document.mjs";
+import { conventionVersion } from "../../../../../helpers/project-version.mjs";
 
 const valid = {
-  version: "12.0",
+  version: conventionVersion,
   description: "Rules",
   directives: [{ id: "E-0.1", dos: ["Do"], donts: ["Do not"] }],
 };

@@ -2,6 +2,7 @@ import { afterEach, expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { nextPatchVersion } from "../../../helpers/project-version.mjs";
 import { packSmokeCandidate } from "../../../../src/validation/stages/smoke/pack-smoke-candidate.mjs";
 import {
   packageJson,
@@ -75,7 +76,8 @@ test.each([
 
 test.each([
   [
-    (stdout) => stdout.replace('"version":"12.0.0"', '"version":"12.0.1"'),
+    (stdout) =>
+      stdout.replace(`"version":"${packageJson.version}"`, `"version":"${nextPatchVersion}"`),
     "version does not match",
   ],
   [

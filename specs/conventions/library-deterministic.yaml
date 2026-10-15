@@ -1,4 +1,4 @@
-version: "12.0"
+version: "13.0"
 description: Lists deterministic rules for Eliware libraries.
 requires:
   - general
@@ -99,4 +99,4 @@ directives:
       - Do not put text outside a release category.
       - Do not put headings outside a release entry or category.
     examples:
-      - "# Release Notes\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release."
+      - "# Release Notes\n\n## 13.0.0 — 2026-06-01\n\n### Added\n\nInitial release."

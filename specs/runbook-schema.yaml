@@ -7,7 +7,7 @@ required:
   - steps
 properties:
   schema-version:
-    const: 12
+    const: 13
   title:
     type: string
     minLength: 1

@@ -7,7 +7,7 @@ import { listSpecificationEntries } from "../list-specification-entries.mjs";
 import { validateProfileRequirements } from "./profile-requirements.mjs";
 import { validateSpecificationDocument } from "./specification/document.mjs";
 import { validateSpecificationIds } from "./specification/ids.mjs";
-import { validateV12DirectiveSchema } from "./v12-directive-schema.mjs";
+import { validateDirectiveSchema } from "./directive-schema.mjs";
 
 const schemaUrl = new URL("../../../../../specs/directives-schema.yaml", import.meta.url);
 const suiteRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
@@ -25,7 +25,7 @@ export async function validateBundledSpecifications({ read = readFile, readdir }
   } catch (error) {
     return [`Bundled specifications are missing or invalid: ${error.message}`];
   }
-  const errors = schema.flatMap((document) => validateV12DirectiveSchema(document));
+  const errors = schema.flatMap((document) => validateDirectiveSchema(document));
   const ids = new Map();
   for (const { path, value } of documents) {
     errors.push(...validateSpecificationDocument(value, path));

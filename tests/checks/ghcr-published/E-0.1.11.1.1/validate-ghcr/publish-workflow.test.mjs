@@ -13,9 +13,9 @@ test("validates the GHCR workflow profile requirements", async () => {
 });
 
 test.each([
-  [{ name: "@eliware/application-template", version: "12.0.4" }],
-  [{ name: "@eliware/web-template", version: "12.0.9" }],
-  [{ name: "@eliware/discord-template", version: "12.0.12" }],
+  [{ name: "@eliware/application-template", version: ghcrPackage.version }],
+  [{ name: "@eliware/web-template", version: ghcrPackage.version }],
+  [{ name: "@eliware/discord-template", version: ghcrPackage.version }],
 ])("accepts the same workflow for package identity and version %s", async (packageJson) => {
   await expect(validateGhcrPublishWorkflow(createGhcrInventory(), packageJson)).resolves.toEqual(
     [],
@@ -65,7 +65,10 @@ test.each([
     "IMAGE_NAME and the release tag",
   ],
   [
-    (flow) => (flow.jobs.publish.steps[2].with.tags = ["${{ env.IMAGE_NAME }}:v13.0.0"]),
+    (flow) =>
+      (flow.jobs.publish.steps[2].with.tags = [
+        `${"${{ env.IMAGE_NAME }}"}:v${ghcrPackage.version}`,
+      ]),
     "IMAGE_NAME and the release tag",
   ],
   [

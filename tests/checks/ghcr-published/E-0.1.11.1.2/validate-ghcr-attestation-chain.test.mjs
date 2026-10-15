@@ -4,6 +4,7 @@ import {
   createGhcrWorkflow,
 } from "../../../../test-fixtures/ghcr-workflow.mjs";
 import { validateGhcrAttestationChain } from "../../../../src/checks/ghcr-published/E-0.1.11.1.2/validate-ghcr-attestation-chain.mjs";
+import { ghcrPackage } from "../../../../test-fixtures/ghcr-workflow.mjs";
 
 test("validates each publication digest chain", async () => {
   await expect(validateGhcrAttestationChain(createGhcrInventory())).resolves.toEqual([]);
@@ -28,8 +29,7 @@ test("requires GH_TOKEN on the verification step or publish job", async () => {
 
 test("rejects commands that mention a check without running it", async () => {
   const workflow = createGhcrWorkflow();
-  workflow.jobs.publish.steps[4].run =
-    'echo "docker buildx imagetools inspect ghcr.io/eliware/example:v12.0.0"';
+  workflow.jobs.publish.steps[4].run = `echo "docker buildx imagetools inspect ghcr.io/eliware/example:v${ghcrPackage.version}"`;
 
   await expect(validateGhcrAttestationChain(createGhcrInventory({ workflow }))).resolves.toContain(
     "GHCR push verification, inspection, attestation, and digest summary steps must run in order and unconditionally.",

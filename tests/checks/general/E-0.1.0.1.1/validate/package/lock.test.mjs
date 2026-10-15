@@ -1,7 +1,8 @@
 import { expect, test } from "@jest/globals";
 import { validatePackageLock } from "../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/lock.mjs";
+import { packageVersion } from "../../../../../helpers/project-version.mjs";
 
-const pkg = { name: "@eliware/example", version: "12.0.0" };
+const pkg = { name: "@eliware/example", version: packageVersion };
 const validLock = {
   name: pkg.name,
   version: pkg.version,

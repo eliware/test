@@ -1,10 +1,10 @@
 # Release Notes
 
-## 12.0.1 — 2026-10-14
+## 13.0.0 — 2026-10-15
 
 ### Changed
 
-- Set the package version to 12.0.1.
+- Set the package and schema versions to 13.0.0.
 
 ## 12.0.0 — 2026-10-10
 

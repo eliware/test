@@ -1,4 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
+import { nextPatchVersion, packageVersion } from "../../helpers/project-version.mjs";
 
 const execute = jest.fn();
 jest.unstable_mockModule(
@@ -7,7 +8,7 @@ jest.unstable_mockModule(
 );
 const { ruleId, run } = await import("../../../src/checks/cli/E-0.1.5.1.0.mjs");
 
-const packageJson = { version: "12.0.0", bin: { eliwareTest: "bin/eliware-test.mjs" } };
+const packageJson = { version: packageVersion, bin: { eliwareTest: "bin/eliware-test.mjs" } };
 const repositoryInventory = {
   readText: async (path) => (path === "AGENTS.md" ? "## CLI" : "## Exit codes"),
 };
@@ -26,13 +27,13 @@ test("executes the package entrypoint through an injected process runner", async
     run(
       {
         root: process.cwd(),
-        packageJson: { version: "12.0.0", bin: "bin/eliware-test.mjs" },
+        packageJson: { version: packageVersion, bin: "bin/eliware-test.mjs" },
         repositoryInventory,
       },
       {
         execute: async (_command, args) => ({
           code: 0,
-          stdout: args.at(-1) === "--version" ? "12.0.0\n" : "Usage\n",
+          stdout: args.at(-1) === "--version" ? `${packageVersion}\n` : "Usage\n",
         }),
       },
     ),
@@ -42,7 +43,7 @@ test("executes the package entrypoint through an injected process runner", async
 test("uses the default runner through its mocked process adapter", async () => {
   execute.mockImplementation(async (_command, args) => ({
     code: 0,
-    stdout: args.at(-1) === "--version" ? "12.0.0\n" : "Usage\n",
+    stdout: args.at(-1) === "--version" ? `${packageVersion}\n` : "Usage\n",
   }));
   await expect(run({ root: process.cwd(), packageJson, repositoryInventory })).resolves.toEqual({
     ruleId,
@@ -60,7 +61,10 @@ test("runs help and version for every public command", async () => {
       {
         execute: async (_command, args) => {
           calls.push(args.at(-1));
-          return { code: 0, stdout: args.at(-1) === "--version" ? "12.0.0\n" : "Usage\n" };
+          return {
+            code: 0,
+            stdout: args.at(-1) === "--version" ? `${packageVersion}\n` : "Usage\n",
+          };
         },
       },
     ),
@@ -72,9 +76,9 @@ test("fails when version output does not match package metadata", async () => {
   const result = await run(
     { packageJson, repositoryInventory },
     {
-      execute: async () => ({ code: 0, stdout: "12.0.1\n" }),
+      execute: async () => ({ code: 0, stdout: `${nextPatchVersion}\n` }),
     },
   );
   expect(result.status).toBe("fail");
-  expect(result.message).toContain("must report package version 12.0.0");
+  expect(result.message).toContain(`must report package version ${packageVersion}`);
 });

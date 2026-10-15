@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateConsumerSpecifications } from "../../../../../src/checks/general/E-0.1.0.1.4/validate/consumer-specifications.mjs";
+import { conventionVersion } from "../../../../helpers/project-version.mjs";
 
 async function createRoot() {
   const root = await mkdtemp(join(tmpdir(), "eliware-consumer-specs-"));
@@ -10,7 +11,7 @@ async function createRoot() {
   await mkdir(specs, { recursive: true });
   await writeFile(
     join(specs, "directives.yaml"),
-    "version: '12.0'\ndescription: Rules\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n",
+    `version: '${conventionVersion}'\ndescription: Rules\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n`,
   );
   return { root, specs };
 }
@@ -26,7 +27,7 @@ test("parses every YAML file and validates directive documents recursively", asy
     );
     await writeFile(
       join(nested, "extra.yml"),
-      "version: '12.0'\ndescription: Extra\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n",
+      `version: '${conventionVersion}'\ndescription: Extra\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     await expect(validateConsumerSpecifications(root, "E-0")).resolves.toEqual([]);
     await writeFile(join(specs, "custom-schema.yaml"), "type: [\n");
@@ -44,7 +45,7 @@ test("rejects duplicate IDs across directive files", async () => {
     await mkdir(join(specs, "nested"), { recursive: true });
     await writeFile(
       join(specs, "nested", "extra.yaml"),
-      "version: '12.0'\ndescription: Duplicate\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n",
+      `version: '${conventionVersion}'\ndescription: Duplicate\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n`,
     );
     expect((await validateConsumerSpecifications(root, "E-0")).join(" ")).toContain(
       "Duplicate specification rule ID: E-0.0",
@@ -61,13 +62,16 @@ test("requires the root directive file and reports invalid YAML", async () => {
     expect((await validateConsumerSpecifications(root, "E-0")).join(" ")).toContain(
       "specs/directives.yaml is required",
     );
-    await writeFile(join(specs, "directives.yaml"), "version: '12.0'\ndescription: No rules\n");
+    await writeFile(
+      join(specs, "directives.yaml"),
+      `version: '${conventionVersion}'\ndescription: No rules\n`,
+    );
     expect((await validateConsumerSpecifications(root, "E-0")).join(" ")).toContain(
       "specs/directives.yaml must contain a directive document",
     );
     await writeFile(
       join(specs, "directives.yaml"),
-      "version: '12.0'\ndescription: Invalid\ndirectives: null\n",
+      `version: '${conventionVersion}'\ndescription: Invalid\ndirectives: null\n`,
     );
     expect((await validateConsumerSpecifications(root, "E-0")).join(" ")).toContain(
       "directives must be a nonempty array",

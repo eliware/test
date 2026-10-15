@@ -2,6 +2,7 @@ import { afterEach, expect, jest, test } from "@jest/globals";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { packageVersion } from "../../../helpers/project-version.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   runSmokeCli,
@@ -18,7 +19,7 @@ test("validates the target argument and calls smoke with source package metadata
   root = await mkdtemp(join(tmpdir(), "eliware-smoke-cli-"));
   await writeFile(join(root, "package.json"), JSON.stringify({ name: "@eliware/test" }));
   const write = jest.fn();
-  const smoke = jest.fn(async () => "Smoke passed: @eliware/test@12.0.0");
+  const smoke = jest.fn(async () => `Smoke passed: @eliware/test@${packageVersion}`);
   await expect(runSmokeCli({ args: ["--target", "consumer"], root, write, smoke })).resolves.toBe(
     0,
   );

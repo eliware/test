@@ -1,4 +1,4 @@
-version: "12.0"
+version: "13.0"
 description: Defines deterministic repository requirements for Eliware GHCR publication.
 requires:
   - general
@@ -18,7 +18,7 @@ directives:
     examples:
       - "## GHCR publication"
       - "Image: ghcr.io/eliware/example"
-      - "Pull command: docker pull ghcr.io/eliware/example:v12.0.0"
+      - "Pull command: docker pull ghcr.io/eliware/example:v13.0.0"
       - "Supported tags: vMAJOR.MINOR.PATCH"
       - "Supported tags: vMAJOR.MINOR.PATCH, latest"
       - "Deployment boundary: publication does not deploy; deploy by immutable version tag and recorded sha256 digest."

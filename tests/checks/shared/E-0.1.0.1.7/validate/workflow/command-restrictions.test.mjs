@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { validateWorkflowCommandRestrictions } from "../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/command-restrictions.mjs";
+import { packageVersion } from "../../../../../helpers/project-version.mjs";
 
 const steps = [
   { uses: "actions/checkout@v6" },
@@ -61,7 +62,7 @@ test("allows extra non-publishing commands after npm test", () => {
       ...steps,
       { run: "npm run lint", if: "always()", "continue-on-error": true },
       { run: "docker push registry.example.com/a/b:latest" },
-      { run: "gh release create v12.0.0" },
+      { run: `gh release create v${packageVersion}` },
     ]),
   ).toEqual([]);
 });

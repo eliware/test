@@ -1,9 +1,14 @@
 import { expect, test } from "@jest/globals";
 import { validatePackageMetadata } from "../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/metadata.mjs";
+import {
+  conventionVersion,
+  nextMinorVersion,
+  packageVersion,
+} from "../../../../../helpers/project-version.mjs";
 
 const valid = {
   name: "@eliware/example",
-  version: "12.0.4",
+  version: packageVersion,
   description: "Example package",
   keywords: ["eliware", "example"],
   private: true,
@@ -22,8 +27,8 @@ test("accepts canonical package metadata", () => {
 
 test.each([
   [{ name: "example" }, "scoped @eliware"],
-  [{ version: "12.1.0" }, "Convention v12.0"],
-  [{ version: "12.0.0-beta" }, "numeric MAJOR"],
+  [{ version: nextMinorVersion }, `Convention v${conventionVersion}`],
+  [{ version: `${packageVersion}-beta` }, "numeric MAJOR"],
   [{ description: " " }, "description"],
   [{ keywords: ["one", "one"] }, "distinct"],
   [{ keywords: [""] }, "nonempty strings"],

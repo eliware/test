@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/application/E-0.1.4.1.4.mjs";
+import { nextMajorVersion, packageVersion } from "../../helpers/project-version.mjs";
 
 test("E-0.1.4.1.4 accepts valid notes and a README link", async () => {
   const inventory = {
@@ -9,7 +10,7 @@ test("E-0.1.4.1.4 accepts valid notes and a README link", async () => {
         : "## Usage\n\n[Release notes](RELEASE_NOTES.md)",
   };
   await expect(
-    run({ root: "repo", packageJson: { version: "12.0.0" }, repositoryInventory: inventory }),
+    run({ root: "repo", packageJson: { version: packageVersion }, repositoryInventory: inventory }),
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
 
@@ -17,17 +18,17 @@ test("E-0.1.4.1.4 rejects a newest release version that differs from package.jso
   await expect(
     run({
       root: "repo",
-      packageJson: { version: "13.0.0" },
+      packageJson: { version: packageVersion },
       repositoryInventory: {
         readText: async (path) =>
           path.endsWith("RELEASE_NOTES.md")
-            ? releaseNotes
+            ? releaseNotes.replace(`${packageVersion} —`, `${nextMajorVersion} —`)
             : "## Usage\n\n[Release notes](RELEASE_NOTES.md)",
       },
     }),
   ).resolves.toMatchObject({
     status: "fail",
-    message: expect.stringContaining("must match package.json.version 13.0.0"),
+    message: expect.stringContaining(`must match package.json.version ${packageVersion}`),
   });
 });
 
@@ -48,11 +49,11 @@ test("E-0.1.4.1.4 rejects Unreleased in application release notes", async () => 
   await expect(
     run({
       root: "repo",
-      packageJson: { version: "12.0.0" },
+      packageJson: { version: packageVersion },
       repositoryInventory: {
         readText: async (path) =>
           path.endsWith("RELEASE_NOTES.md")
-            ? releaseNotes.replace("12.0.0 —", "unreleased 12.0.0 —")
+            ? releaseNotes.replace(`${packageVersion} —`, `unreleased ${packageVersion} —`)
             : "## Usage\n\n[Release notes](RELEASE_NOTES.md)",
       },
     }),
@@ -70,4 +71,4 @@ test("E-0.1.4.1.4 requires package metadata in its context", async () => {
   });
 });
 
-const releaseNotes = "# Release Notes\n\n## 12.0.0 — 2026-06-01\n\n### Added\n\nInitial release.\n";
+const releaseNotes = `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nInitial release.\n`;

@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.0.mjs";
+import { conventionVersion } from "../../helpers/project-version.mjs";
 
 const packageJson = { name: "@eliware/example", eliware: { id: "E-1", apply: ["general"] } };
 
@@ -95,10 +96,13 @@ test("ignores consumer convention files when it checks bundled profiles", async 
   const directory = join(root, "specs", "conventions");
   await mkdir(directory, { recursive: true });
   try {
-    await writeFile(join(directory, "general-semantic.yaml"), "version: '12.0'\nrequires: []\n");
+    await writeFile(
+      join(directory, "general-semantic.yaml"),
+      `version: '${conventionVersion}'\nrequires: []\n`,
+    );
     await writeFile(
       join(directory, "general-deterministic.yaml"),
-      "version: '12.1'\nrequires: [application]\n",
+      `version: '${conventionVersion}.1'\nrequires: [application]\n`,
     );
     await expect(run({ root, packageJson })).resolves.toMatchObject({ status: "pass" });
   } finally {

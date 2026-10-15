@@ -1,18 +1,19 @@
 import { expect, jest, test } from "@jest/globals";
 import { runCliInformationCommands } from "../../../../src/checks/cli/E-0.1.5.1.0/run-cli-information-commands.mjs";
+import { nextPatchVersion, packageVersion } from "../../../helpers/project-version.mjs";
 
 const run = (executeEntrypoint) =>
   runCliInformationCommands({
     root: process.cwd(),
     entrypoints: ["bin/cli.mjs"],
-    packageVersion: "12.0.0",
+    packageVersion,
     executeEntrypoint,
   });
 
 test("runs both informational arguments", async () => {
   const execute = jest.fn(async (_node, args) => ({
     code: 0,
-    stdout: args.at(-1) === "--version" ? "12.0.0\n" : "Usage\n",
+    stdout: args.at(-1) === "--version" ? `${packageVersion}\n` : "Usage\n",
   }));
   await expect(run(execute)).resolves.toEqual([]);
   expect(execute.mock.calls.map(([, args]) => args.at(-1))).toEqual(["--help", "--version"]);
@@ -22,7 +23,7 @@ test("accepts output on stderr", async () => {
   await expect(
     run(async (_node, args) => ({
       code: 0,
-      stderr: args.at(-1) === "--version" ? "12.0.0" : "Usage",
+      stderr: args.at(-1) === "--version" ? packageVersion : "Usage",
     })),
   ).resolves.toEqual([]);
 });
@@ -31,7 +32,7 @@ test("accepts a label and v prefix with the package version", async () => {
   await expect(
     run(async (_node, args) => ({
       code: 0,
-      stdout: args.at(-1) === "--version" ? "Eliware CLI v12.0.0" : "Usage",
+      stdout: args.at(-1) === "--version" ? `Eliware CLI v${packageVersion}` : "Usage",
     })),
   ).resolves.toEqual([]);
 });
@@ -44,7 +45,7 @@ test("reports command status, empty output, and version mismatch", async () => {
   };
   await expect(run(execute)).resolves.toEqual([
     "CLI entrypoint bin/cli.mjs must exit 0 for --help.",
-    "CLI entrypoint bin/cli.mjs --version must report package version 12.0.0.",
+    `CLI entrypoint bin/cli.mjs --version must report package version ${packageVersion}.`,
   ]);
 });
 
@@ -52,9 +53,12 @@ test("rejects output that reports more than one version", async () => {
   await expect(
     run(async (_node, args) => ({
       code: 0,
-      stdout: args.at(-1) === "--version" ? "12.0.0 (latest 12.0.1)" : "Usage",
+      stdout:
+        args.at(-1) === "--version" ? `${packageVersion} (latest ${nextPatchVersion})` : "Usage",
     })),
-  ).resolves.toContain("CLI entrypoint bin/cli.mjs --version must report package version 12.0.0.");
+  ).resolves.toContain(
+    `CLI entrypoint bin/cli.mjs --version must report package version ${packageVersion}.`,
+  );
 });
 
 test("rejects version output when package metadata has no version", async () => {
@@ -64,7 +68,7 @@ test("rejects version output when package metadata has no version", async () => 
       entrypoints: ["bin/cli.mjs"],
       executeEntrypoint: async (_node, args) => ({
         code: 0,
-        stdout: args.at(-1) === "--version" ? "12.0.0" : "Usage",
+        stdout: args.at(-1) === "--version" ? packageVersion : "Usage",
       }),
     }),
   ).resolves.toContain(

@@ -1,9 +1,10 @@
 import { expect, test } from "@jest/globals";
 import { validateOrderingSpecificationDocument } from "../../../../../src/checks/general/E-0.1.0.1.4/validate/ordering-specification-document.mjs";
+import { conventionVersion } from "../../../../helpers/project-version.mjs";
 
 const path = "specs/conventions/ordering/sections.yaml";
 const valid = {
-  version: "12.0",
+  version: conventionVersion,
   description: "Canonical order",
   orders: { sections: ["first", "second"] },
 };

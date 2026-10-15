@@ -1,11 +1,12 @@
 import { stringify } from "yaml";
+import { packageVersion } from "../tests/helpers/project-version.mjs";
 
-export const ghcrPackage = { name: "@eliware/example", version: "12.0.0" };
+export const ghcrPackage = { name: "@eliware/example", version: packageVersion };
 
 export const ghcrAgents = [
   "## GHCR publication",
   "Image: ghcr.io/eliware/example",
-  "Pull command: docker pull ghcr.io/eliware/example:v12.0.0",
+  `Pull command: docker pull ghcr.io/eliware/example:v${packageVersion}`,
   "Supported tags: vMAJOR.MINOR.PATCH",
   "Deployment boundary: publication does not deploy; deploy by immutable version tag and recorded sha256 digest.",
 ].join("\n");

@@ -1,10 +1,11 @@
 import { validatePackageKeyOrder } from "../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/key-order.mjs";
+import { packageVersion } from "../../../../../helpers/project-version.mjs";
 
 test("accepts canonical keys in order and unlisted keys at the end", () => {
   expect(
     validatePackageKeyOrder({
       name: "@eliware/example",
-      version: "12.0.0",
+      version: packageVersion,
       type: "module",
       private: true,
       eliware: {},
@@ -14,7 +15,7 @@ test("accepts canonical keys in order and unlisted keys at the end", () => {
 });
 
 test("rejects listed keys in the wrong order", () => {
-  expect(validatePackageKeyOrder({ version: "12.0.0", name: "@eliware/example" })).toEqual([
+  expect(validatePackageKeyOrder({ version: packageVersion, name: "@eliware/example" })).toEqual([
     expect.stringContaining("package.json keys must follow canonical order"),
   ]);
 });
@@ -27,12 +28,12 @@ test("rejects an unlisted key before listed keys", () => {
 
 test("requires type in its canonical position", () => {
   expect(
-    validatePackageKeyOrder({ name: "@eliware/example", version: "12.0.0", type: "module" }),
+    validatePackageKeyOrder({ name: "@eliware/example", version: packageVersion, type: "module" }),
   ).toEqual([]);
   expect(
     validatePackageKeyOrder({
       name: "@eliware/example",
-      version: "12.0.0",
+      version: packageVersion,
       description: "Example",
       type: "module",
     }),

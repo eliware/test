@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { validateApplicationReleaseNotes } from "../../../../../src/checks/application/E-0.1.4.1.4/validate/application-release-notes.mjs";
+import { packageVersion } from "../../../../helpers/project-version.mjs";
 
 test("reports a missing README link after reading release notes", async () => {
   const inventory = {
@@ -24,7 +25,7 @@ test("reports an unreadable README as a missing release notes link", async () =>
 
 test("uses the default context", async () => {
   await expect(
-    validateApplicationReleaseNotes({ packageJson: { version: "12.0.1" } }),
+    validateApplicationReleaseNotes({ packageJson: { version: packageVersion } }),
   ).resolves.toEqual([]);
 });
 

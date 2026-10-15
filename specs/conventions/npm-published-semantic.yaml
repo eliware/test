@@ -1,4 +1,4 @@
-version: "12.0"
+version: "13.0"
 description: Lists semantic rules for publicly distributed Eliware npm packages.
 requires:
   - general

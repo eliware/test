@@ -1,4 +1,4 @@
-version: "12.0"
+version: "13.0"
 description: Defines semantic repository requirements for Eliware container distribution.
 requires:
   - general

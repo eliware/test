@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { readCanonicalOrder } from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
+import { conventionVersion } from "../../../helpers/project-version.mjs";
 
 test("reads structured canonical order data", () => {
   expect(readCanonicalOrder("eliware-apply.yaml").profiles).toEqual([
@@ -27,7 +28,10 @@ test("rejects paths outside the ordering specification names", () => {
 
 test("rejects an ordering document with the wrong version", () => {
   expect(() =>
-    readCanonicalOrder("invalid.yaml", () => "version: '12.1'\norders: { fields: [a] }"),
+    readCanonicalOrder(
+      "invalid.yaml",
+      () => `version: '${conventionVersion}.1'\norders: { fields: [a] }`,
+    ),
   ).toThrow("Invalid canonical ordering specification: invalid.yaml.");
 });
 
@@ -35,7 +39,8 @@ test("rejects missing required package profile entries", () => {
   expect(() =>
     readCanonicalOrder(
       "package-files.yaml",
-      () => "version: '12.0'\norders:\n  profileEntries: {application: bin/, library: examples/}\n",
+      () =>
+        `version: '${conventionVersion}'\norders:\n  profileEntries: {application: bin/, library: examples/}\n`,
     ),
   ).toThrow("Invalid canonical ordering specification: package-files.yaml.");
 });
