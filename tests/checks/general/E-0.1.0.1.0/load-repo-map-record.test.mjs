@@ -88,7 +88,7 @@ test.each([
   }
 });
 
-test("reports invalid package names and missing map entries", async () => {
+test("reports invalid package names and allows missing map entries", async () => {
   const base = await mkdtemp(join(tmpdir(), "eliware-map-"));
   const root = join(base, "repo");
   const docs = join(base, "docs");
@@ -97,7 +97,11 @@ test("reports invalid package names and missing map entries", async () => {
   try {
     await writeFile(join(docs, "repo-map.yaml"), "repositories: []\n");
     expect((await loadRepoMapRecord(root, { name: "example" })).error).toContain("cannot identify");
-    expect((await loadRepoMapRecord(root, { name: "@eliware/other" })).error).toContain("no entry");
+    expect(await loadRepoMapRecord(root, { name: "@eliware/other" })).toEqual({
+      available: true,
+      record: null,
+      error: null,
+    });
   } finally {
     await rm(base, { recursive: true, force: true });
   }

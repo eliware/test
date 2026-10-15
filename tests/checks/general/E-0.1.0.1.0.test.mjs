@@ -68,7 +68,7 @@ test("passes when package metadata matches the repo map", async () => {
   }
 });
 
-test("reports available repo maps that do not list the repository", async () => {
+test("allows an optional repo map without an entry for the repository", async () => {
   const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
   const root = join(base, "repo");
   const docs = join(base, "docs");
@@ -76,9 +76,7 @@ test("reports available repo maps that do not list the repository", async () => 
   await mkdir(docs);
   try {
     await writeFile(join(docs, "repo-map.yaml"), "repositories: []\n");
-    const result = await run({ root, packageJson });
-    expect(result.status).toBe("fail");
-    expect(result.message).toContain("has no entry for eliware/example");
+    await expect(run({ root, packageJson })).resolves.toMatchObject({ status: "pass" });
   } finally {
     await rm(base, { recursive: true, force: true });
   }

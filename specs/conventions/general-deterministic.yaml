@@ -6,6 +6,8 @@ directives:
   - id: E-0.1.0.1.0
     dos:
       - Set id to the assigned repository E-number.
+      - Allow ../docs/repo-map.yaml to be absent.
+      - When ../docs/repo-map.yaml lists this repository, match package.json eliware.id, description, keywords, and applied profiles.
       - Give exemptions unique known check IDs, nonempty reasons, approver Eli, valid approvalTimestamp, and valid expiry or null.
     examples:
       - '{"id":"E-38","apply":["general"],"exempt":[]}'
@@ -13,6 +15,7 @@ directives:
       - Do not add unknown eliware keys.
       - Do not accept expired or malformed exemptions.
       - Do not use AGENTS.md as exemption metadata.
+      - Do not require a repository entry in ../docs/repo-map.yaml.
 
   - id: E-0.1.0.1.1
     dos:

@@ -52,5 +52,5 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
     };
   return records[0]
     ? { available: true, record: records[0], error: null }
-    : { available: true, record: null, error: `repo-map.yaml has no entry for ${repository}.` };
+    : { available: true, record: null, error: null };
 }
