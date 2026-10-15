@@ -37,6 +37,7 @@ orders:
     publication-workflow.yaml:
       - profiles
       - jobs
+      - jobDependencies
     readme-sections.yaml:
       - header
       - headerLines
@@ -99,6 +100,9 @@ orders:
         - npm-test
       checkoutOptions:
         - fetch-depth
+    publication-workflow.yaml:
+      jobDependencies:
+        - publish
     package-files.yaml:
       profileEntries:
         - application

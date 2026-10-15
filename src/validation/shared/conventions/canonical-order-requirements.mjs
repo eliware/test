@@ -71,7 +71,12 @@ export const canonicalOrderRequirements = {
   },
   "package-json.yaml": { fields: { topLevelKeys: "text-list", eliwareKeys: "text-list" } },
   "publication-workflow.yaml": {
-    fields: { profiles: "text-list", jobs: "text-list" },
+    fields: {
+      profiles: "text-list",
+      jobs: "text-list",
+      jobDependencies: "text-list-map",
+    },
+    maps: { jobDependencies: ["publish"] },
   },
   "readme-sections.yaml": {
     fields: {

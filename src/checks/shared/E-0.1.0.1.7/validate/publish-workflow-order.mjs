@@ -27,11 +27,13 @@ function validatePublishJobs(document) {
   const errors = [];
   if (JSON.stringify(names) !== JSON.stringify(order.jobs))
     errors.push("publish.yaml jobs must list validate before publish.");
+  const requiredDependencies = order.jobDependencies.publish;
   const publishNeeds = jobs.publish?.needs;
-  const needsValidation =
-    publishNeeds === "validate" ||
-    (Array.isArray(publishNeeds) && publishNeeds.includes("validate"));
-  if (!needsValidation) errors.push("publish.yaml publish job must depend on validate.");
+  const actualDependencies = typeof publishNeeds === "string" ? [publishNeeds] : publishNeeds;
+  const hasRequiredDependencies =
+    Array.isArray(actualDependencies) &&
+    requiredDependencies.every((dependency) => actualDependencies.includes(dependency));
+  if (!hasRequiredDependencies) errors.push("publish.yaml publish job must depend on validate.");
   errors.push(...validateWorkflowStepFields(jobs.validate?.steps ?? [], "publish.yaml"));
   errors.push(...validatePublicationSteps(jobs.validate?.steps));
   return errors;

@@ -7,3 +7,6 @@ orders:
   jobs:
     - validate
     - publish
+  jobDependencies:
+    publish:
+      - validate

@@ -18,7 +18,8 @@ function inventory(source = validPublish, files = [".github/workflows/publish.ya
   return { files: async () => files, readText: async () => source };
 }
 
-const packageJson = { eliware: { apply: ["npm-published", "ghcr-published"] } };
+const publicationProfiles = ["npm-published", "ghcr-published"];
+const packageJson = { eliware: { apply: publicationProfiles } };
 
 test("skips publication ordering when no publication profile applies", async () => {
   await expect(validatePublishWorkflowOrder(inventory(), {})).resolves.toEqual([]);
@@ -66,13 +67,19 @@ test("requires validate before publish and a validation dependency", async () =>
   );
   await expect(
     validatePublishWorkflowOrder(
+      inventory(validPublish.replace("    needs: validate\n", "")),
+      packageJson,
+    ),
+  ).resolves.toContain("publish.yaml publish job must depend on validate.");
+  await expect(
+    validatePublishWorkflowOrder(
       inventory(validPublish.replace("needs: validate", "needs: other")),
       packageJson,
     ),
   ).resolves.toContain("publish.yaml publish job must depend on validate.");
   await expect(
     validatePublishWorkflowOrder(
-      inventory(validPublish.replace("needs: validate", "needs: [validate]")),
+      inventory(validPublish.replace("needs: validate", "needs: [other, validate]")),
       packageJson,
     ),
   ).resolves.toEqual([]);
@@ -82,6 +89,20 @@ test("requires validate before publish and a validation dependency", async () =>
     expect.arrayContaining([expect.stringContaining("jobs must list validate before publish")]),
   );
 });
+
+test.each(publicationProfiles)(
+  "enforces the dependency for the %s profile alone",
+  async (profile) => {
+    const profilePackage = { eliware: { apply: [profile] } };
+    await expect(validatePublishWorkflowOrder(inventory(), profilePackage)).resolves.toEqual([]);
+    await expect(
+      validatePublishWorkflowOrder(
+        inventory(validPublish.replace("    needs: validate\n", "")),
+        profilePackage,
+      ),
+    ).resolves.toContain("publish.yaml publish job must depend on validate.");
+  },
+);
 
 test("requires the ordered validation steps and allows later safe steps", async () => {
   await expect(
