@@ -172,7 +172,10 @@ directives:
       - Ignore .DS_Store and Thumbs.db.
       - Keep tracked and staged files outside applicable ignore rules.
       - Keep all tracked paths free of symlinks.
-      - Do not track paths with a component named id_rsa or credentials.
+      - Allow .env.example as the only tracked environment example.
+      - Reject tracked .env and .env.<name> files except .env.example.
+      - Reject paths with a component named id_rsa, secret, secrets, credential, credentials, token, or tokens.
+      - Reject files with .pem, .key, .p12, or .pfx extensions.
       - Use only the root .gitignore; do not add nested .gitignore files.
     donts:
       - Do not track ignored files or symlinks.
