@@ -28,7 +28,8 @@
     "LICENSE",
     "RELEASE_NOTES.md",
     "bin/",
-    "specs/"
+    "specs/",
+    "dictionary/"
   ],
   "scripts": {
     "test": "node bin/eliware-test.mjs",

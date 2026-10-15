@@ -1,0 +1,31 @@
+import { fail, pass } from "../check-result.mjs";
+import dictionary from "../../../dictionary/unapproved.json" with { type: "json" };
+import { extractProse } from "./E-0.1.0.1.11/extract-prose.mjs";
+import { findLanguageViolations } from "./E-0.1.0.1.11/find-language-violations.mjs";
+import { loadExactExamples } from "./E-0.1.0.1.11/load-exact-examples.mjs";
+
+export const ruleId = "E-0.1.0.1.11";
+const supportedExtensions = new Set(["md", "yaml", "yml", "json", "mjs", "js"]);
+const internalCodePath = /^(?:tests|test-fixtures|examples)\//u;
+
+export async function run(context = {}, dependencies = {}) {
+  const inventory = context.repositoryInventory;
+  if (!inventory?.files || !inventory.readText)
+    return fail(ruleId, "Repository language files could not be inspected.");
+  try {
+    const files = await inventory.files("repository");
+    const exactSentences = await (dependencies.loadExactExamples ?? loadExactExamples)(
+      dependencies.exampleFiles,
+    );
+    const errors = [];
+    for (const path of files) {
+      if (!supportedExtensions.has(path.toLowerCase().split(".").at(-1))) continue;
+      if (internalCodePath.test(path)) continue;
+      const blocks = extractProse(path, await inventory.readText(path));
+      errors.push(...findLanguageViolations(path, blocks, dictionary, exactSentences));
+    }
+    return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
+  } catch (error) {
+    return fail(ruleId, `Repository language files could not be inspected: ${error.message}`);
+  }
+}

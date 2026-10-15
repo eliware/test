@@ -22,7 +22,7 @@ directives:
         and recovery responsibility in its indexed documentation.
       - Give each runbook a purpose, owner, scope boundary, prerequisites, ordered actions,
         and an observable result for each action.
-      - Write runbook instructions with ASD-STE100 rules.
+      - Write runbook instructions with the shared language rules.
       - Include all facts and decisions required to follow a runbook in the runbook or its
         linked authoritative procedures.
       - Link to each DBA or Operations procedure that a runbook uses.

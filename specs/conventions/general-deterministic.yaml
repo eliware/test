@@ -404,3 +404,26 @@ directives:
       - Do not repeat the parent folder name in a child file name.
       - Do not split a multiword prefix into separate folders.
       - Do not infer file relationships from code content.
+
+  - id: E-0.1.0.1.11
+    dos:
+      - Limit each instruction under dos or donts in a directive document to 20 words.
+      - Limit each other human-readable prose sentence to 25 words.
+      - Count each hyphenated compound as one word.
+      - Split sentences at terminal punctuation before whitespace or text end.
+      - Treat periods, question marks, and exclamation marks as terminal punctuation.
+      - Limit each prose paragraph to six sentences.
+      - Check human-readable JavaScript comments, strings, and JSX text.
+      - Check human-readable JSON values in documented prose fields.
+      - Check directive items, descriptive fields, and runbook text in YAML documents.
+      - Match dictionary entries as case-insensitive whole words or exact word phrases.
+      - Show the matched text, file path, line, and listed alternatives for each dictionary match.
+      - Load unapproved.json from the installed eliware-test package.
+      - Ignore code, commands, identifiers, URLs, examples, and the dictionary itself.
+      - Ignore exact sentences from bundled convention examples.
+    donts:
+      - Do not count text inside code blocks, code spans, or link destinations.
+      - Do not parse malformed YAML or JSON in this check.
+      - Do not infer a word's meaning or part of speech.
+      - Do not accept a dictionary term because its spelling appears in an alternative.
+      - Do not use semicolons in human-readable prose.

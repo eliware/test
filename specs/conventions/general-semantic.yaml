@@ -87,3 +87,45 @@ directives:
       - Do not combine responsibilities for convenience.
       - Do not leave multiple responsibilities in a module that you change.
       - Do not retain unused dependencies.
+
+  - id: E-0.1.0.0.4
+    dos:
+      - Apply these rules to all text written for people.
+      - Use clear, direct, complete sentences.
+      - Use familiar words and established technical terms.
+      - Define technical terms when readers may not know them.
+      - Use each term consistently and with one clear meaning.
+      - Keep noun groups to three words or fewer.
+      - Use simple verb forms and active voice.
+      - Write instructions as commands.
+      - Put conditions before commands and add a comma after each condition.
+      - Use one instruction in each sentence unless actions occur at the same time.
+      - Use complete sentences and include required articles.
+      - Use connecting words to show how ideas relate.
+      - Use vertical lists for complex information.
+      - Keep procedural items and descriptive items in separate lists.
+      - Give each paragraph one topic.
+      - Use standard punctuation and American English spelling unless an official name
+        requires another form.
+      - Use hyphens only to connect related words.
+      - Use parentheses only for clear references, identifiers, alternatives, or explanations.
+      - Use inclusive terms and pronouns.
+      - Make each pronoun reference clear.
+      - Use this only when its reference is clear.
+      - Use one style for repeated tasks.
+    donts:
+      - Do not use slang, regional terms, or unclear jargon.
+      - Do not use one term for different items or different terms for the same item.
+      - Do not use technical nouns as verbs or technical verbs as nouns.
+      - Do not use complex tenses or progressive verb forms.
+      - Do not use passive voice or action nouns in place of verbs.
+      - Do not use contractions or incomplete sentences.
+      - Do not omit articles when a sentence needs them.
+      - Do not combine separate instructions in one sentence.
+      - Do not write sentences that readers cannot understand on one reading.
+      - Do not mix instructions and descriptions in one list.
+      - Do not put unrelated topics in one paragraph.
+      - Do not use unclear parentheses.
+      - Do not create phrasal verbs or use Latin abbreviations.
+      - Do not use a pronoun when its reference is unclear.
+      - Do not change exact required text, identifiers, or official names.
