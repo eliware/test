@@ -19,13 +19,29 @@ test("allows only CI for general repositories", async () => {
   ).resolves.toContain("Unexpected workflow file: .github/workflows/publish.yaml.");
 });
 
-test("allows the publish workflow for publishing profiles", async () => {
+test.each(["npm-published", "ghcr-published"])(
+  "allows the publish workflow for the %s profile",
+  async (profile) => {
+    await expect(
+      validateWorkflowInventory(
+        inventory([".github/workflows/ci.yaml", ".github/workflows/publish.yaml"]),
+        { eliware: { apply: ["general", profile] } },
+      ),
+    ).resolves.toEqual([]);
+  },
+);
+
+test("rejects extra workflows when a publication profile applies", async () => {
   await expect(
     validateWorkflowInventory(
-      inventory([".github/workflows/ci.yaml", ".github/workflows/publish.yaml"]),
+      inventory([
+        ".github/workflows/ci.yaml",
+        ".github/workflows/publish.yaml",
+        ".github/workflows/extra.yaml",
+      ]),
       { eliware: { apply: ["general", "npm-published"] } },
     ),
-  ).resolves.toEqual([]);
+  ).resolves.toContain("Unexpected workflow file: .github/workflows/extra.yaml.");
 });
 
 test("reports missing or unreadable workflow inventories", async () => {

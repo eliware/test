@@ -147,11 +147,13 @@ directives:
       - Install npm latest.
       - Run one standalone npm ci step, then one standalone npm test step.
       - Add any workflow steps after the required npm test step unless a command publishes an npm package or a GHCR image.
+      - Keep ci.yaml as the validation workflow.
+      - Allow publish.yaml when npm-published or ghcr-published applies.
       - Before npm ci, permit only approved setup actions, npm latest installation, and literal safe echo or printf reporting.
       - Keep required install and test steps free of environment, shell, and working-directory overrides.
       - Treat inline and block YAML lists as equal when their values match.
     donts:
-      - Do not add other workflow files.
+      - Do not add other GitHub Actions workflow files beyond ci.yaml and a required publish.yaml.
       - Do not make required validation steps conditional.
       - Do not use continue-on-error for required validation steps.
       - Do not override checkout repository or ref.
