@@ -1,9 +1,9 @@
 import { expect, test } from "@jest/globals";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { resolvePackExecutable } from "../../../../src/validation/stages/pack/resolve-pack-executable.mjs";
 
 test("resolves a relative npm_execpath from the package root", () => {
-  const root = "C:/repo";
+  const root = resolve("/repo");
   expect(
     resolvePackExecutable({ npm_execpath: "npm-cli.js" }, "linux", process.execPath, root),
   ).toEqual([process.execPath, [join(root, "npm-cli.js")]]);

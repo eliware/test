@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { expect, jest, test } from "@jest/globals";
 import { runNpmPack } from "../../../../src/validation/stages/pack/run-npm-pack.mjs";
 import { resolvePackExecutable } from "../../../../src/validation/stages/pack/resolve-pack-executable.mjs";
@@ -38,7 +38,7 @@ test("forwards safe npm pack arguments without overriding required flags", async
 });
 
 test("uses npm's executable when npm invokes the harness", async () => {
-  const root = "C:/repo";
+  const root = resolve("/repo");
   const npmCli = join(root, "npm-cli.js");
   const calls = [];
   await runNpmPack(

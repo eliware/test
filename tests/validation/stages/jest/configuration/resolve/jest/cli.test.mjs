@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { resolve } from "node:path";
 import {
   resolveConsumerJestCli,
   resolveJestCli,
@@ -25,6 +26,7 @@ test("resolves the shared Jest fallback when its primary package provides jest-c
 });
 
 test("uses the shared Jest fallback when a consumer has no Jest package", () => {
-  expect(resolveConsumerJestCli("C:/consumer-without-jest/package.json")).toBeUndefined();
-  expect(resolveJestCli("C:/consumer-without-jest/package.json")).toContain("jest.js");
+  const root = resolve("/consumer-without-jest");
+  expect(resolveConsumerJestCli(root)).toBeUndefined();
+  expect(resolveJestCli(root)).toContain("jest.js");
 });

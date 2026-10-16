@@ -1,4 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
+import { join, resolve } from "node:path";
 import { createRepositoryScopedEntryReader } from "../../../../../src/validation/shared/repository/create-repository/scoped-entry-reader.mjs";
 test("filters directly discovered records within the requested subtree", async () => {
   const records = [
@@ -114,7 +115,7 @@ test("returns full discovered records after scoped traversal completes", async (
 test("uses the default repository traversal when no custom entry finder is set", async () => {
   const file = { name: "a.mjs", isDirectory: () => false, isFile: () => true };
   const entriesUnder = createRepositoryScopedEntryReader({
-    root: "C:\\repo",
+    root: resolve("/repo"),
     findEntries: (
       await import("../../../../../src/validation/shared/repository/find-repository-files.mjs")
     ).findRepositoryEntries,
@@ -126,7 +127,7 @@ test("uses the default repository traversal when no custom entry finder is set",
     },
   });
 
-  await expect(entriesUnder("C:\\repo\\src")).resolves.toEqual([
+  await expect(entriesUnder(join(resolve("/repo"), "src"))).resolves.toEqual([
     { path: "src", type: "directory", depth: 1 },
     { path: "src/a.mjs", type: "file", depth: 1 },
   ]);

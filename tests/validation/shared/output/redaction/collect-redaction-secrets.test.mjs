@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 import { collectRedactionSecrets } from "../../../../../src/validation/shared/output/redaction/collect-redaction-secrets.mjs";
 
-test("collects unique string values from sensitive environment keys", () => {
+test("collects unique string values from protected environment keys", () => {
   expect(
     collectRedactionSecrets({
       SAFE: "visible",
@@ -20,7 +20,7 @@ test("returns no secrets for missing or non-object environments", () => {
   expect(collectRedactionSecrets("TOKEN=value")).toEqual([]);
 });
 
-test("collects configured secret values regardless of environment size", () => {
+test("collects configured values regardless of environment size", () => {
   const environment = Object.fromEntries(
     Array.from({ length: 105 }, (_, index) => [`SERVICE_TOKEN_${index}`, `secret-${index}`]),
   );
@@ -32,7 +32,7 @@ test("collects configured secret values regardless of environment size", () => {
   expect(secrets).not.toContain("x");
 });
 
-test("collects common cloud, GitHub, and npm credential variables", () => {
+test("collects common cloud, GitHub, and npm settings", () => {
   expect(
     collectRedactionSecrets({
       AWS_ACCESS_KEY_ID: "aws-access-key",
@@ -40,6 +40,10 @@ test("collects common cloud, GitHub, and npm credential variables", () => {
       NPM_AUTH_TOKEN: "npm-auth",
     }),
   ).toEqual(["aws-access-key", "github-token", "npm-auth"]);
+});
+
+test("does not treat the working directory as protected data", () => {
+  expect(collectRedactionSecrets({ PWD: "/workspace/project" })).toEqual([]);
 });
 
 test("ignores short values that can overlap ordinary command output", () => {

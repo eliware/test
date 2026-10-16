@@ -1,5 +1,5 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-import { join } from "node:path";
+import { resolve } from "node:path";
 import { packageJson } from "../../../../../test-fixtures/helpers/smoke-package.mjs";
 
 const lstat = jest.fn();
@@ -12,8 +12,8 @@ jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, real
 const { prepareSmokeTargetContext } =
   await import("../../../../../src/validation/stages/smoke/prepare-smoke/target-context.mjs");
 
-const root = join("C:/", "source");
-const target = join("C:/", "consumer");
+const root = resolve("/source");
+const target = resolve("/consumer");
 const targetPackage = {
   scripts: { test: "eliware-test" },
   dependencies: { "@eliware/test": "13.0.0" },

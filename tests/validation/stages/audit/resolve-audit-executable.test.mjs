@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { resolveAuditExecutable } from "../../../../src/validation/stages/audit/resolve-audit-executable.mjs";
 
 test("selects npm executable variants", () => {
@@ -16,7 +16,7 @@ test("selects npm executable variants", () => {
       env: { npm_execpath: "npm-cli.js" },
       platform: "linux",
       execPath: process.execPath,
-      root: "C:/repo",
+      root: resolve("/repo"),
     }),
-  ).toEqual([process.execPath, [join("C:/repo", "npm-cli.js")]]);
+  ).toEqual([process.execPath, [join(resolve("/repo"), "npm-cli.js")]]);
 });

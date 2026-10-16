@@ -1,5 +1,5 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 
 const readFileSync = jest.fn();
 const realpathSync = jest.fn();
@@ -9,7 +9,7 @@ jest.unstable_mockModule("node:fs", () => ({ readFileSync, realpathSync, statSyn
 const { resolveJestBin } =
   await import("../../../../../../../src/validation/stages/jest/configuration/resolve/jest/bin.mjs");
 
-const packagePath = "C:/consumer/node_modules/jest/package.json";
+const packagePath = join(resolve("/consumer"), "node_modules", "jest", "package.json");
 const packageRoot = dirname(packagePath);
 const exportedBin = join(packageRoot, "bin", "jest.js");
 
@@ -65,14 +65,16 @@ test("rejects a declared executable that does not exist", () => {
 
 test("rejects exported executables that resolve outside the Jest package", () => {
   realpathSync.mockImplementation((path) =>
-    path === exportedBin ? "C:/outside/runner.mjs" : path,
+    path === exportedBin ? resolve("/outside/runner.mjs") : path,
   );
   expect(() => resolveJestBin(resolver(), "jest")).toThrow("escapes its package directory");
 });
 
 test("rejects fallback executables that resolve outside the Jest package", () => {
   const runner = join(packageRoot, "bin", "jest.js");
-  realpathSync.mockImplementation((path) => (path === runner ? "C:/outside/runner.mjs" : path));
+  realpathSync.mockImplementation((path) =>
+    path === runner ? resolve("/outside/runner.mjs") : path,
+  );
   expect(() => resolveJestBin(resolver({ binPath: new Error("not exported") }), "jest")).toThrow(
     "escapes its package directory",
   );
@@ -80,7 +82,7 @@ test("rejects fallback executables that resolve outside the Jest package", () =>
 
 test("rejects a fallback when resolving its real path fails", () => {
   realpathSync.mockImplementation((path) => {
-    if (path.endsWith("bin\\jest.js")) throw new Error("unavailable");
+    if (path.endsWith(join("bin", "jest.js"))) throw new Error("unavailable");
     return path;
   });
   expect(() => resolveJestBin(resolver({ binPath: new Error("not exported") }), "jest")).toThrow(
@@ -96,7 +98,9 @@ test("rejects declared executables that escape the package directory", () => {
 });
 
 test("rejects an exported executable when its package path resolves outside", () => {
-  realpathSync.mockImplementation((path) => (path === packageRoot ? "C:/outside/jest" : path));
+  realpathSync.mockImplementation((path) =>
+    path === packageRoot ? resolve("/outside/jest") : path,
+  );
   expect(() => resolveJestBin(resolver(), "jest")).toThrow("escapes its package directory");
 });
 

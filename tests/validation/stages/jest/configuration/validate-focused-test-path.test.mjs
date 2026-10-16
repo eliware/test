@@ -1,5 +1,5 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { platform } from "node:os";
 
 const realpath = jest.fn();
@@ -10,7 +10,7 @@ jest.unstable_mockModule("node:fs/promises", () => ({ realpath, stat }));
 const { validateFocusedTestPath } =
   await import("../../../../../src/validation/stages/jest/configuration/validate-focused-test-path.mjs");
 
-const root = join("C:/", "repo");
+const root = resolve("/repo");
 
 beforeEach(() => {
   realpath.mockReset().mockImplementation(async (path) => path);
@@ -54,7 +54,7 @@ casePathTest("returns the canonical casing accepted by Windows", async () => {
 });
 
 test("rejects traversal and symlinks that escape the repository", async () => {
-  const outside = join("C:/", "outside", "linked.test.mjs");
+  const outside = resolve("/outside", "linked.test.mjs");
   realpath.mockImplementation(async (path) =>
     path.endsWith(join("external", "linked.test.mjs")) ? outside : path,
   );

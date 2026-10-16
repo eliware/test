@@ -9,6 +9,7 @@ export function collectRedactionSecrets(environment) {
       Object.entries(environment)
         .filter(
           ([key, value]) =>
+            key.toUpperCase() !== "PWD" &&
             sensitiveEnvironmentKey.test(key) &&
             typeof value === "string" &&
             value.length >= MIN_REDACTION_SECRET_LENGTH,

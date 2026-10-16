@@ -1,4 +1,5 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
+import { fileURLToPath } from "node:url";
 
 const readdirSync = jest.fn();
 const readFileSync = jest.fn();
@@ -43,5 +44,7 @@ test("reads profile YAML in sorted order and excludes maintenance documents", ()
 
 test("reads profile YAML from a file URL", () => {
   expect(readProfileDocuments(new URL("file:///C:/profiles"))).toHaveLength(3);
-  expect(readdirSync).toHaveBeenCalledWith("C:\\profiles", { withFileTypes: true });
+  expect(readdirSync).toHaveBeenCalledWith(fileURLToPath(new URL("file:///C:/profiles")), {
+    withFileTypes: true,
+  });
 });
