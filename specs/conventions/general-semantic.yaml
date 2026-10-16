@@ -42,18 +42,16 @@ directives:
   - id: E-0.1.0.0.1
     dos:
       - Keep requirements and canonical procedures authoritative in one location.
-      - Compare each procedure with its owning specification or Operations directive.
+      - Compare each procedure with its owning specification, Operations directive, or
+        role-specific leader runbook.
       - Use documentation for context and links to the authoritative specification or
         procedure.
       - Limit repository specifications to committed content and repository validation.
-      - Name each action that requires approval, the approving role, and its governing
-        procedure.
     donts:
       - Do not maintain competing normative copies.
       - Do not use local instructions to weaken shared requirements.
       - Do not turn AGENTS.md into a second README, implementation specification, or
         release history.
-      - Do not authorize releases or deployments from validation success.
       - Do not add GitHub API calls to local deterministic checks.
     examples:
       - "Use the Operations directives for cross-repository procedures."

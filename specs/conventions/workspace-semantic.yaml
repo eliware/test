@@ -18,28 +18,23 @@ conflicts:
 directives:
   - id: E-0.1.2.0.0
     dos:
-      - Describe each workspace purpose, owner, role boundary, contact path, escalation path,
-        and recovery responsibility in its indexed documentation.
+      - Describe each workspace purpose, owner, and role boundary in its indexed
+        documentation.
       - Give each runbook a purpose, owner, scope boundary, prerequisites, ordered actions,
         and an observable result for each action.
       - When a runbook requires prerequisites, list each one.
       - Verify each action against its observable result.
-      - If a result falls outside the runbook, stop and contact Eli.
-      - Label each system that serves users or stores operational data as live.
-      - For a procedure that can change a live system, state the permitted actions and
-        required approval.
-      - For a procedure that can change a live system, document recovery steps and an
-        escalation path.
-      - Require Eli's approval before an agent starts a rollback.
       - Write runbook instructions with the shared language rules.
       - Include all facts and decisions required to follow a runbook in the runbook or its
         linked authoritative procedures.
-      - Link to each DBA or Operations procedure that a runbook uses.
+      - Link each workspace runbook to every DBA, Operations, or role-specific leader runbook
+        it uses.
+      - Link to Operations or role-specific leader runbooks for contact, escalation,
+        recovery, and change-control procedures.
       - Keep durable workspace decisions in indexed specifications.
       - Compare runbook steps and results with linked procedures and role boundaries in
         workspace specifications.
     donts:
       - Do not claim authority that the assigned scope does not grant.
-      - Do not let recovery guidance authorize an agent to make changes.
       - Do not maintain a competing company-wide task tracker.
       - Do not require private messages or prior conversation to follow a runbook.

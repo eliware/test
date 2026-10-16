@@ -23,14 +23,9 @@ directives:
       - If the document has target and environment fields, use indexed sections for each field.
       - Define repository-specific paths, schemas, validation, and platform boundaries in
         indexed specifications.
-      - Describe change control, rollback, secret handling, and ownership from linked
-        Operations procedures and workspace runbooks.
+      - Link to Operations procedures or workspace runbooks for change control, rollback,
+        secret handling, and ownership.
       - Use a SHA-256 digest for each production Kubernetes image identifier.
-      - Restore each backup to an isolated test target before certification.
-      - Check the integrity of each restored backup before certification.
-      - Remove restored test data after the checks.
-      - Record the backup identifier, restore result, integrity result, cleanup result,
-        and time before certification.
       - Keep the committed target configuration canonical in its owning repository.
       - Link from README.md to canonical operational procedures in Eliware Operations or
         the owning workspace.
