@@ -49,7 +49,8 @@ directives:
         "jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT",
         "repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},
         "homepage":"https://github.com/eliware/example#readme",
-        "bugs":{"url":"https://github.com/eliware/example/issues"},"eliware":{}}
+        "bugs":{"url":"https://github.com/eliware/example/issues"},
+        "eliware":{"id":"E-38","apply":["general"]}}
 
   - id: E-0.1.0.1.2
     dos:
