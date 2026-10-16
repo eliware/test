@@ -17,7 +17,7 @@
 
 - Split each profile's requirements into deterministic and semantic YAML files.
 - Add shared checks and canonical order data for package keys and files, profile lists, README and AGENTS sections, specification indexes, and workflows.
-- Add the shared v12 runbook schema. Require workspace runbooks to use this schema and ASD-STE100 instructions.
+- Add the shared v12 runbook schema. Require workspace runbooks to use this schema and the shared language rules.
 - Add deterministic checks for application, CLI, web, library, Discord, MCP server, infrastructure, documentation, workspace, npm, GHCR, and private profiles.
 - Require tests to mock Git, npm, audit, lint, format, pack, typecheck, build, Jest, and package-script calls.
 - Allow focused validation to select multiple test files in one command.
