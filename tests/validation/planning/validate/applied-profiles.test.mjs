@@ -142,6 +142,14 @@ test("uses bundled catalog when no catalog is supplied", () => {
   expect(validateAppliedProfiles(["general"])).toBeNull();
 });
 
+test("enforces database composition from the bundled catalog", () => {
+  expect(validateAppliedProfiles(["general", "application", "database"])).toBeNull();
+  expect(validateAppliedProfiles(["general", "database"])).toContain("application");
+  expect(validateAppliedProfiles(["general", "library", "application", "database"])).toContain(
+    "conflict",
+  );
+});
+
 test("rejects profile combinations declared as conflicts", () => {
   expect(validateAppliedProfiles(["general", "npm-published", "private"], catalog)).toBe(
     "Applied profiles conflict: npm-published and private.",

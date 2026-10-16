@@ -16,8 +16,10 @@ directives:
       - id: E-0.0.0
         dos:
           - Parse settings and arguments before validation.
-          - Resolve selected profiles, listed prerequisites, and conflicts.
+          - Validate selected profiles against requires and conflicts in bundled convention
+            metadata.
           - Reject selected profile sets with declared conflicts.
+          - Validate applied profile order with ordering/eliware-apply.yaml.
           - Match each profile pair's version, prerequisite list, and blocked-profile list.
           - Find profile check modules in src/checks/<profile>/ by directive ID filename.
           - Find combination check modules in src/checks/shared/ by directive ID filename.
