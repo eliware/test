@@ -15,4 +15,4 @@ directives:
         publication workflows.
     donts:
       - Do not use the label public access for private publication with access limits.
-      - Container publication does not give permission to publish npm packages or deploy.
+      - Do not let container publication give permission to publish npm packages or deploy.
