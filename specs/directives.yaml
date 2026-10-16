@@ -215,6 +215,15 @@ directives:
           - Redact encrypted and unencrypted PEM private keys.
           - Redact PEM public key blocks.
           - Write buffered text before a secret reaches the output limit.
+          - Write live Jest output to `coverage/jest-console-output.json` while Jest runs.
+          - After Jest closes, scan the saved output with existing secret-redaction rules.
+          - When a rule matches, replace matched values in the saved output promptly.
+          - Fail validation when redaction occurs. Report the output path and redaction
+            result.
+          - After a timeout or forced stop, scan incomplete output only after Jest closes.
+          - Keep incomplete output when Jest does not close or the harness stops before
+            scanning.
+          - If the scan does not complete, report that the output may contain secrets.
           - Stop child commands before a platform-specific time limit.
         donts:
           - Do not modify files in tests/**/*.test.mjs.
@@ -228,6 +237,8 @@ directives:
           - Do not selectively inherit or sanitize child environments.
           - Do not expose secrets through harness-owned diagnostics.
           - Do not promise full secret detection or cleanup of all child commands.
+          - Do not print matched values.
+          - Do not claim live output is redacted before it reaches disk.
 
       - id: E-0.0.7
         dos:
@@ -266,7 +277,9 @@ directives:
           - Keep all temporary coverage directories in the consumer repository.
           - Write current coverage reports and Jest console output to the consumer
             coverage directory.
+          - Write Jest console output while Jest runs.
           - Keep current-run coverage reports and Jest output after Jest completes.
+          - Keep incomplete Jest output after a timeout or forced stop.
           - Read coverage data from the consumer coverage directory.
           - Validate maps and counters against source-derived Istanbul instrumentation.
           - Accept empty maps only when the matching instrumentation shape is empty.
