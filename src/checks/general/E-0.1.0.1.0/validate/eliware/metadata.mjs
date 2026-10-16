@@ -1,6 +1,7 @@
-import { readBundledProfileCatalog } from "../../../../validation/check-discovery/read/bundled-profile-catalog.mjs";
-import { validateExemptionRecords } from "../../../../validation/planning/validate/exemption/records.mjs";
-import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+import { readBundledProfileCatalog } from "../../../../../validation/check-discovery/read/bundled-profile-catalog.mjs";
+import { validateExemptionRecords } from "../../../../../validation/planning/validate/exemption/records.mjs";
+import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
+import { validateEliwareSchema } from "./schema.mjs";
 
 export function validateEliwareMetadata(packageJson) {
   const eliware = packageJson?.eliware;
@@ -18,6 +19,7 @@ export function validateEliwareMetadata(packageJson) {
     errors.push("package.json.eliware must use the ordered keys id, apply, and optional `exempt`.");
   if (typeof eliware?.id !== "string" || !/^E-\d+$/u.test(eliware.id))
     errors.push("package.json.eliware.id must be an assigned repository E-number.");
+  errors.push(...validateEliwareSchema(eliware));
   if (eliware && Object.hasOwn(eliware, "exempt")) {
     try {
       validateExemptionRecords(

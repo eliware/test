@@ -18,6 +18,9 @@ directives:
           - Parse settings and arguments before validation.
           - Load specs/profile-combinations.yaml during preflight planning.
           - Validate required and prohibited profiles before check discovery.
+          - Require one listed profile when a requiresAny list has values.
+          - Allow an empty requiresAny list without an added requirement.
+          - Fail preflight before check discovery when no listed profile is selected.
           - Require every repository to select general as a separate planning invariant.
           - Validate applied profile order with ordering/eliware-apply.yaml.
           - Match each profile pair's version.

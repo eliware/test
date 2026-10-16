@@ -68,6 +68,11 @@ test("requires application or library with npm-published", () => {
   expect(validate(["general", "library", "npm-published"])).toBeNull();
 });
 
+test("accepts empty requiresAny lists without added requirements", () => {
+  expect(validate(["general"])).toBeNull();
+  expect(validate(["general", "application"])).toBeNull();
+});
+
 test("rejects every prohibited profile combination", () => {
   const failures = [];
   for (const [profile, values] of Object.entries(policy.profiles)) {

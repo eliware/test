@@ -73,3 +73,21 @@ test("rejects invalid profile combinations before check discovery", async () => 
   expect(dependencies.discoverAllChecks).not.toHaveBeenCalled();
   expect(dependencies.selectConventionChecks).not.toHaveBeenCalled();
 });
+
+test("rejects unsatisfied requiresAny before check discovery", async () => {
+  const dependencies = {
+    readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
+    loadValidationTarget: jest.fn(async () => ({
+      eliware: { apply: ["general", "npm-published"] },
+    })),
+    discoverAllChecks: jest.fn(),
+    selectConventionChecks: jest.fn(),
+    validateBundledDirectiveCompleteness: jest.fn(),
+    prepareValidationExemptions: jest.fn(),
+    findRepositoryEntries: jest.fn(),
+  };
+  await expect(prepareValidationPlan("/repo", [], {}, dependencies)).rejects.toThrow(
+    "at least one of: application, library",
+  );
+  expect(dependencies.discoverAllChecks).not.toHaveBeenCalled();
+});

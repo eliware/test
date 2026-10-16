@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateEliwareMetadata } from "../../../../../src/checks/general/E-0.1.0.1.0/validate/eliware-metadata.mjs";
+import { validateEliwareMetadata } from "../../../../../../src/checks/general/E-0.1.0.1.0/validate/eliware/metadata.mjs";
 
 const valid = { eliware: { id: "E-1", apply: ["general"] } };
 
