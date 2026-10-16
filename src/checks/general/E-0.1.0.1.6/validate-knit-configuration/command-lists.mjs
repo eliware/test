@@ -1,7 +1,7 @@
 import { posix } from "node:path";
 import { isProhibitedNpmOrGhcrPublishCommand } from "../../../shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
 
-const commandPrefix = ["git pull --ff-only origin main", "npm ci", "npm test"];
+const commandPrefix = ["git pull", "npm ci", "npm test"];
 const scriptRunners = new Set([
   "node",
   "node.exe",

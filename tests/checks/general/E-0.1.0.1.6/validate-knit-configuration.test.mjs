@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { validateKnitConfiguration } from "../../../../src/checks/general/E-0.1.0.1.6/validate-knit-configuration.mjs";
 
-const validCommands = ["git pull --ff-only origin main", "npm ci", "npm test"];
+const validCommands = ["git pull", "npm ci", "npm test"];
 const deploy = (commands = validCommands) =>
   `version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands:\n${commands.map((item) => `          - ${item}`).join("\n")}\n`;
 const inventory = (text, files = [".knit/deploy.yaml"]) => ({

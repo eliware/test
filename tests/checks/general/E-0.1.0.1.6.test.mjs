@@ -4,7 +4,7 @@ import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.6.mjs";
 const inventory = {
   files: async () => [".knit/deploy.yaml", ".knit/secondary.mjs"],
   readText: async () =>
-    "version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands:\n          - git pull --ff-only origin main\n          - npm ci\n          - npm test\n",
+    "version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands:\n          - git pull\n          - npm ci\n          - npm test\n",
 };
 const deployment = (commands) =>
   `version: 1\non:\n  push:\n    deployments:\n      - timeoutMs: 300000\n        commands: ${commands}\n`;
@@ -60,8 +60,7 @@ test("rejects multiple YAML documents and allows additional commands", async () 
     run({
       repositoryInventory: {
         files: async () => [".knit/deploy.yaml"],
-        readText: async () =>
-          deployment("[git pull --ff-only origin main, npm ci, npm test, codescope run]"),
+        readText: async () => deployment("[git pull, npm ci, npm test, codescope run]"),
       },
     }),
   ).resolves.toMatchObject({ status: "pass" });
@@ -84,25 +83,17 @@ test("rejects missing commands, non-string items, and publishing commands", asyn
     message: expect.stringContaining("array of strings"),
   });
   await expect(
-    validate(
-      deployment(
-        "[git pull --ff-only origin main, npm ci, npm test, docker push ghcr.io/team/image]",
-      ),
-    ),
+    validate(deployment("[git pull, npm ci, npm test, docker push ghcr.io/team/image]")),
   ).resolves.toMatchObject({
     message: expect.stringContaining("must not publish npm packages or GHCR images"),
   });
   await expect(
-    validate(
-      deployment("[git pull --ff-only origin main, npm ci, npm test, node scripts/helper.mjs]"),
-    ),
+    validate(deployment("[git pull, npm ci, npm test, node scripts/helper.mjs]")),
   ).resolves.toMatchObject({
     message: expect.stringContaining("keep secondary scripts under .knit/"),
   });
   await expect(
-    validate(
-      deployment("[git pull --ff-only origin main, npm ci, npm test, node .knit/helper.mjs]"),
-    ),
+    validate(deployment("[git pull, npm ci, npm test, node .knit/helper.mjs]")),
   ).resolves.toMatchObject({ status: "pass" });
 });
 

@@ -228,7 +228,7 @@ directives:
       - "Keep exactly one YAML file in .knit/: .knit/deploy.yaml."
       - Set timeoutMs to 300000 for each push and tag deployment.
       - Keep the deployment path repository-specific.
-      - "Start each commands array with this exact sequence: `git pull --ff-only origin main`,
+      - "Start each commands array with this exact sequence: `git pull`,
         `npm ci`, `npm test`."
       - Add commands after this prefix only when they do not publish an npm package or a
         GHCR image.
@@ -241,7 +241,7 @@ directives:
     examples:
       - "commands:
 
-        \  - git pull --ff-only origin main
+        \  - git pull
 
         \  - npm ci
 
@@ -258,7 +258,7 @@ directives:
 
         \          commands:
 
-        \            - git pull --ff-only origin main
+        \            - git pull
 
         \            - npm ci
 
