@@ -299,6 +299,9 @@ directives:
           - Write current coverage reports and Jest console output to the consumer
             coverage directory.
           - Write Jest console output while Jest runs.
+          - Keep test code read-only.
+          - Use unit tests with mocked filesystem or process results for file and process
+            behavior.
           - Keep current-run coverage reports and Jest output after Jest completes.
           - Keep incomplete Jest output after a timeout or forced stop.
           - Read coverage data from the consumer coverage directory.
@@ -317,6 +320,9 @@ directives:
           - Do not preserve or restore prior coverage output.
           - Do not create validation or smoke temporary files in system temp or user
             folders.
+          - Do not let test code create files or directories.
+          - Do not use temporary fixture repositories in tests.
+          - Do not use in-memory filesystems in tests.
           - Do not accept omitted instrumentation entries or unmatched map and counter
             keys.
           - Do not convert failures to an exit code or one percentage.

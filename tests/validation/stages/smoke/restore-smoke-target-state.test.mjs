@@ -1,8 +1,17 @@
 import { expect, jest, test } from "@jest/globals";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { restoreSmokeTargetState } from "../../../../src/validation/stages/smoke/restore-smoke-target-state.mjs";
+
+const defaultFs = Object.fromEntries(
+  ["cp", "mkdir", "rm", "symlink", "writeFile", "chmod", "lstat", "unlink"].map((name) => [
+    name,
+    jest.fn(),
+  ]),
+);
+
+jest.unstable_mockModule("node:fs/promises", () => defaultFs);
+
+const { restoreSmokeTargetState } =
+  await import("../../../../src/validation/stages/smoke/restore-smoke-target-state.mjs");
 
 function mockFs() {
   const fs = Object.fromEntries(
@@ -148,30 +157,13 @@ test("retains recovery data when a captured path cannot be inspected", async () 
   expect(fs.rm).not.toHaveBeenCalledWith("backup", { recursive: true, force: true });
 });
 
-test("restores the replaced package directory and preserves unrelated consumer files", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-smoke-restore-"));
-  const packageDirectory = join(root, "node_modules", "@eliware", "test");
-  const backup = join(root, "backup", "test");
-  const unrelatedFile = join(root, "consumer-output.txt");
-  await mkdir(packageDirectory, { recursive: true });
-  await mkdir(backup, { recursive: true });
-  await writeFile(join(packageDirectory, "candidate.txt"), "candidate");
-  await writeFile(join(backup, "original.txt"), "original");
-  await writeFile(unrelatedFile, "preserve");
-
-  try {
-    await restoreSmokeTargetState({
-      storage: join(root, "backup"),
-      entries: [{ path: packageDirectory, type: "directory", backup }],
-    });
-    await expect(readFile(join(packageDirectory, "original.txt"), "utf8")).resolves.toBe(
-      "original",
-    );
-    await expect(readFile(join(packageDirectory, "candidate.txt"))).rejects.toMatchObject({
-      code: "ENOENT",
-    });
-    await expect(readFile(unrelatedFile, "utf8")).resolves.toBe("preserve");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+test("uses mocked filesystem defaults when no operation set is supplied", async () => {
+  defaultFs.lstat.mockResolvedValue({ isDirectory: () => false, isSymbolicLink: () => false });
+  await expect(
+    restoreSmokeTargetState({
+      entries: [{ path: "file", type: "file", data: "content", mode: 420 }],
+    }),
+  ).resolves.toBeUndefined();
+  expect(defaultFs.writeFile).toHaveBeenCalledWith("file", "content");
+  expect(defaultFs.chmod).toHaveBeenCalledWith("file", 420);
 });

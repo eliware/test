@@ -1,132 +1,137 @@
-import { afterEach, expect, jest, test } from "@jest/globals";
-import { lstat, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { runJest } from "../../../../../../src/validation/stages/jest/execution/run/jest.mjs";
-import { findUnexpectedJestOutput } from "../../../../../../src/validation/stages/jest/progress/inspect-jest-output.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-const roots = [];
+const prepareJestRun = jest.fn();
+const resolveJestCli = jest.fn();
+const executePreparedJestRun = jest.fn();
+const attachJestConsoleOutput = jest.fn();
+const createJestConsoleOutputLog = jest.fn();
+const start = jest.fn();
+const append = jest.fn();
+const finish = jest.fn();
 
-afterEach(async () => {
-  await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
+jest.unstable_mockModule(
+  "../../../../../../src/validation/stages/jest/execution/prepare-jest-run.mjs",
+  () => ({
+    prepareJestRun,
+  }),
+);
+jest.unstable_mockModule(
+  "../../../../../../src/validation/stages/jest/configuration/resolve/jest/cli.mjs",
+  () => ({
+    resolveJestCli,
+  }),
+);
+jest.unstable_mockModule(
+  "../../../../../../src/validation/stages/jest/execution/execute/prepared-jest-run.mjs",
+  () => ({
+    executePreparedJestRun,
+  }),
+);
+jest.unstable_mockModule(
+  "../../../../../../src/validation/stages/jest/progress/attach-jest-console-output.mjs",
+  () => ({
+    attachJestConsoleOutput,
+  }),
+);
+jest.unstable_mockModule(
+  "../../../../../../src/validation/stages/jest/progress/create/jest/console/output-log.mjs",
+  () => ({
+    createJestConsoleOutputLog,
+  }),
+);
+
+const { runJest } =
+  await import("../../../../../../src/validation/stages/jest/execution/run/jest.mjs");
+
+const prepared = {
+  consoleOutputFile: "coverage/jest-console-events.json",
+  coverageDirectory: "coverage",
+  options: {},
+};
+
+beforeEach(() => {
+  prepareJestRun.mockReset().mockImplementation(async (root, _args, resolveCli) => {
+    resolveCli(root);
+    return prepared;
+  });
+  resolveJestCli.mockReset().mockReturnValue("jest-cli");
+  executePreparedJestRun.mockReset().mockResolvedValue({ code: 0, stdout: "passed", stderr: "" });
+  attachJestConsoleOutput.mockReset().mockImplementation(async (_prepared, result) => ({
+    ...result,
+    consoleOutput: [{ testFilePath: "tests/example.test.mjs", type: "log", message: "output" }],
+  }));
+  start.mockReset();
+  append.mockReset();
+  finish.mockReset().mockReturnValue({ redacted: false, writeError: false });
+  createJestConsoleOutputLog.mockReset().mockReturnValue({ start, append, finish });
 });
 
-async function createRoot() {
-  const root = await mkdtemp(join(tmpdir(), "eliware-consumer-jest-root-"));
-  roots.push(root);
-  await writeFile(join(root, "package.json"), JSON.stringify({ jest: { reporters: [] } }));
-  return root;
-}
-
-test("clears old coverage and keeps current coverage after Jest succeeds", async () => {
-  const root = await createRoot();
-  const coverage = join(root, "coverage");
-  await mkdir(coverage);
-  await writeFile(join(coverage, "old-report.json"), "old");
-  const execute = jest.fn(async (_command, args, options) => {
-    const directory = args[args.indexOf("--coverageDirectory") + 1];
+test("prepares and runs Jest, then returns the saved report and coverage location", async () => {
+  const onStart = jest.fn();
+  executePreparedJestRun.mockImplementation(async ({ options }) => {
     options.onRawStdout("passed");
     options.onRawStderr("diagnostic");
-    await writeFile(join(directory, "coverage-final.json"), "current");
-    await writeFile(
-      join(directory, "jest-console-events.json"),
-      JSON.stringify([{ testFilePath: "tests/example.test.mjs", type: "log", message: "output" }]),
-    );
     return { code: 0, stdout: "passed", stderr: "" };
   });
-
-  const result = await runJest(root, [], execute);
-
-  expect(execute).toHaveBeenCalledTimes(1);
-  expect(result.coverageDirectory).toBe(coverage);
-  expect(result.consoleOutput).toEqual([
-    { testFilePath: "tests/example.test.mjs", type: "log", message: "output" },
-  ]);
-  await expect(readFile(join(coverage, "coverage-final.json"), "utf8")).resolves.toBe("current");
-  const savedOutput = JSON.parse(
-    await readFile(join(coverage, "jest-console-output.json"), "utf8"),
-  );
-  expect(savedOutput).toEqual({ stdout: "passed", stderr: "diagnostic", truncated: false });
-  await expect(readFile(join(coverage, "jest-console-events.json"), "utf8")).resolves.toContain(
-    "tests/example.test.mjs",
-  );
-  await expect(readFile(join(coverage, "old-report.json"), "utf8")).rejects.toMatchObject({
-    code: "ENOENT",
+  await expect(runJest("repo", [], jest.fn(), { onStart })).resolves.toMatchObject({
+    code: 0,
+    coverageDirectory: "coverage",
+    consoleOutput: [{ message: "output" }],
   });
-  expect(findUnexpectedJestOutput(result, [], root)).toEqual([
-    expect.stringContaining("Unexpected output from unknown test suite: passed"),
-    expect.stringContaining("console.log in tests/example.test.mjs: output"),
-  ]);
+  expect(prepareJestRun).toHaveBeenCalledWith("repo", [], expect.any(Function), { onStart });
+  expect(start).toHaveBeenCalledTimes(1);
+  expect(append).toHaveBeenNthCalledWith(1, "stdout", "passed");
+  expect(append).toHaveBeenNthCalledWith(2, "stderr", "diagnostic");
+  expect(finish).toHaveBeenCalledTimes(1);
+  expect(onStart).toHaveBeenCalledTimes(1);
 });
 
-test("redacts streamed secrets after Jest closes", async () => {
-  const root = await createRoot();
-  const execute = async (_command, _args, options) => {
-    options.onRawStdout("token-");
-    options.onRawStdout("secret-value");
-    return { code: 0, stdout: "[REDACTED]", stderr: "" };
-  };
-  const result = await runJest(root, [], execute, { env: { API_TOKEN: "token-secret-value" } });
-  const log = JSON.parse(
-    await readFile(join(root, "coverage", "jest-console-output.json"), "utf8"),
-  );
-
-  expect(log.stdout).toContain("[REDACTED]");
-  expect(JSON.stringify(log)).not.toContain("token-secret-value");
-  expect(result).toMatchObject({ code: 1, outputRedacted: true });
+test("uses default arguments and marks redaction or log-write failures", async () => {
+  finish.mockReturnValue({ redacted: true, redactionKinds: ["environment"], writeError: true });
+  await expect(runJest("repo", undefined, jest.fn())).resolves.toMatchObject({
+    code: 0,
+    outputRedacted: true,
+    outputRedactionKinds: ["environment"],
+    outputLogError: true,
+  });
+  expect(prepareJestRun).toHaveBeenCalledWith("repo", [], expect.any(Function), undefined);
 });
 
-test("keeps an unconfirmed timeout log for later inspection", async () => {
-  const root = await createRoot();
-  const result = await runJest(root, [], async (_command, _args, options) => {
-    options.onRawStdout("partial output");
-    return { code: null, timedOut: true, terminationConfirmed: false };
+test("keeps timeout output open when termination is not confirmed", async () => {
+  executePreparedJestRun.mockResolvedValue({
+    code: null,
+    timedOut: true,
+    terminationConfirmed: false,
   });
-
-  await expect(
-    readFile(join(root, "coverage", "jest-console-output.json"), "utf8"),
-  ).resolves.toContain("partial output");
+  const result = await runJest("repo", [], jest.fn());
   expect(result.terminationConfirmed).toBe(false);
+  expect(finish).not.toHaveBeenCalled();
+  expect(attachJestConsoleOutput).not.toHaveBeenCalled();
 });
 
-test("fails when the saved output log cannot be written", async () => {
-  const root = await createRoot();
-  const result = await runJest(root, [], async () => ({ code: 0 }), {
-    consoleLogFs: {
-      replace: () => {
-        throw new Error("write blocked");
-      },
-    },
+test("finishes the log after execution errors and then rethrows", async () => {
+  executePreparedJestRun.mockImplementation(async ({ options }) => {
+    options.onRawStdout("partial");
+    throw new Error("runner failed");
   });
-
-  expect(result).toMatchObject({ code: 1, outputLogError: true });
-});
-
-test.each([
-  [{ code: 1, stdout: "failed", stderr: "" }, "failed"],
-  [{ code: null, timedOut: true, stdout: "timed out", stderr: "" }, "timed out"],
-])("keeps the consumer coverage directory when Jest does not pass", async (outcome, output) => {
-  const root = await createRoot();
-  const result = await runJest(root, [], async (_command, args) => {
-    const directory = args[args.indexOf("--coverageDirectory") + 1];
-    await writeFile(join(directory, "partial-report.json"), "partial");
-    return outcome;
-  });
-
-  expect(result.stdout).toBe(output);
-  await expect(readFile(join(root, "coverage", "partial-report.json"), "utf8")).resolves.toBe(
-    "partial",
-  );
-});
-
-test("keeps the prepared coverage directory when the executor rejects", async () => {
-  const root = await createRoot();
   await expect(
-    runJest(root, undefined, () => {
-      throw new Error("Jest could not start");
-    }),
-  ).rejects.toThrow("Jest could not start");
-  await expect(lstat(join(root, "coverage"))).resolves.toMatchObject({
-    isDirectory: expect.any(Function),
+    runJest("repo", [], jest.fn(), { env: { API_TOKEN: "very-secret-value" } }),
+  ).rejects.toThrow("runner failed");
+  expect(append).toHaveBeenCalledWith("stdout", "partial");
+  expect(finish).toHaveBeenCalledWith(expect.arrayContaining(["very-secret-value"]));
+});
+
+test("uses the process environment when an execution error has no options", async () => {
+  executePreparedJestRun.mockRejectedValue(new Error("runner failed"));
+  await expect(runJest("repo", [], jest.fn())).rejects.toThrow("runner failed");
+  expect(finish).toHaveBeenCalledWith(expect.any(Array));
+});
+
+test("preserves failed execution results without attaching console reports", async () => {
+  executePreparedJestRun.mockResolvedValue({ code: 1, stdout: "failed", stderr: "" });
+  await expect(runJest("repo", [], jest.fn())).resolves.toMatchObject({
+    code: 1,
+    coverageDirectory: "coverage",
   });
+  expect(attachJestConsoleOutput).not.toHaveBeenCalled();
 });

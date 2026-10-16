@@ -1,114 +1,115 @@
-import { jest } from "@jest/globals";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { acquireValidationLock } from "../../src/cli/acquire-validation-lock.mjs";
+
+const open = jest.fn();
+const readFile = jest.fn();
+const unlink = jest.fn();
+
+jest.unstable_mockModule("node:fs/promises", () => ({ open, readFile, unlink }));
+
+const { acquireValidationLock } = await import("../../src/cli/acquire-validation-lock.mjs");
+
+const root = "C:/repo";
+const lockPath = join(root, "eliware-test.lock");
+
+function createHandle() {
+  return {
+    writeFile: jest.fn().mockResolvedValue(undefined),
+    close: jest.fn().mockResolvedValue(undefined),
+  };
+}
+
+function setSuccessfulOpen(handle) {
+  open.mockResolvedValue(handle);
+  readFile.mockImplementation(async () => handle.writeFile.mock.calls[0][0]);
+}
+
+beforeEach(() => {
+  open.mockReset();
+  readFile.mockReset();
+  unlink.mockReset().mockResolvedValue(undefined);
+});
 
 test("creates a repository lock and removes it when released", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-validation-lock-"));
-  try {
-    const release = await acquireValidationLock(root);
-    const lockPath = join(root, "eliware-test.lock");
-    const lock = JSON.parse(await readFile(lockPath, "utf8"));
-    expect(lock.pid).toBe(process.pid);
-    expect(lock.startedAt).toEqual(expect.any(String));
-    await release();
-    await expect(readFile(lockPath, "utf8")).rejects.toMatchObject({ code: "ENOENT" });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  const handle = createHandle();
+  setSuccessfulOpen(handle);
+
+  const release = await acquireValidationLock(root);
+  const lock = JSON.parse(handle.writeFile.mock.calls[0][0]);
+  expect(open).toHaveBeenCalledWith(lockPath, "wx");
+  expect(lock.pid).toBe(process.pid);
+  expect(lock.startedAt).toEqual(expect.any(String));
+  await release();
+  expect(unlink).toHaveBeenCalledWith(lockPath);
 });
 
 test("refuses to acquire an existing repository lock", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-validation-lock-existing-"));
-  try {
-    const lockPath = join(root, "eliware-test.lock");
-    await writeFile(lockPath, "active lock");
-    await expect(acquireValidationLock(root)).resolves.toBeNull();
-    await expect(readFile(lockPath, "utf8")).resolves.toBe("active lock");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  open.mockRejectedValue(Object.assign(new Error("active lock"), { code: "EEXIST" }));
+
+  await expect(acquireValidationLock(root)).resolves.toBeNull();
+  expect(unlink).not.toHaveBeenCalled();
 });
 
 test("allows only one lock acquisition when runs start concurrently", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-validation-lock-race-"));
-  try {
-    const releases = await Promise.all([acquireValidationLock(root), acquireValidationLock(root)]);
-    expect(releases.filter(Boolean)).toHaveLength(1);
-    await releases.find(Boolean)();
-    await expect(readFile(join(root, "eliware-test.lock"), "utf8")).rejects.toMatchObject({
-      code: "ENOENT",
-    });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  const handle = createHandle();
+  setSuccessfulOpen(handle);
+  open
+    .mockReset()
+    .mockResolvedValueOnce(handle)
+    .mockRejectedValueOnce(Object.assign(new Error("active lock"), { code: "EEXIST" }));
+
+  const releases = await Promise.all([acquireValidationLock(root), acquireValidationLock(root)]);
+  expect(releases.filter(Boolean)).toHaveLength(1);
+  await releases.find(Boolean)();
+  expect(unlink).toHaveBeenCalledWith(lockPath);
 });
 
 test("does not remove a lock file replaced after this run acquired its lock", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-validation-lock-replaced-"));
-  try {
-    const lockPath = join(root, "eliware-test.lock");
-    const release = await acquireValidationLock(root);
-    await writeFile(lockPath, JSON.stringify({ lockId: "another-run" }));
-    await release();
-    await expect(readFile(lockPath, "utf8")).resolves.toBe('{"lockId":"another-run"}');
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  const handle = createHandle();
+  open.mockResolvedValue(handle);
+  readFile.mockResolvedValue('{"lockId":"another-run"}');
+
+  const release = await acquireValidationLock(root);
+  await release();
+  expect(unlink).not.toHaveBeenCalled();
 });
 
 test("propagates failures other than an existing lock", async () => {
-  await expect(
-    acquireValidationLock(join(tmpdir(), "missing-validation-lock-root")),
-  ).rejects.toMatchObject({ code: "ENOENT" });
+  const error = Object.assign(new Error("access denied"), { code: "EACCES" });
+  open.mockRejectedValue(error);
+
+  await expect(acquireValidationLock(root)).rejects.toBe(error);
 });
 
 test("removes a partially written lock when writing its metadata fails", async () => {
-  const close = jest.fn();
-  const unlink = jest.fn();
-  const open = jest.fn(async () => ({
-    writeFile: jest.fn().mockRejectedValue(new Error("disk full")),
-    close,
-  }));
+  const handle = createHandle();
+  handle.writeFile.mockRejectedValue(new Error("disk full"));
+  open.mockResolvedValue(handle);
 
-  await expect(acquireValidationLock("/repo", { open, unlink })).rejects.toThrow("disk full");
-
-  expect(close).toHaveBeenCalledTimes(1);
-  expect(unlink).toHaveBeenCalledWith(join("/repo", "eliware-test.lock"));
+  await expect(acquireValidationLock(root)).rejects.toThrow("disk full");
+  expect(handle.close).toHaveBeenCalledTimes(1);
+  expect(unlink).toHaveBeenCalledWith(lockPath);
 });
 
 test("removes a newly written lock when closing its handle fails", async () => {
   const closeError = new Error("close failed");
-  const unlink = jest.fn();
-  await expect(
-    acquireValidationLock("/repo", {
-      open: async () => ({
-        writeFile: async () => {},
-        close: async () => {
-          throw closeError;
-        },
-      }),
-      unlink,
-    }),
-  ).rejects.toBe(closeError);
-  expect(unlink).toHaveBeenCalledWith(join("/repo", "eliware-test.lock"));
+  const handle = createHandle();
+  handle.close.mockRejectedValue(closeError);
+  open.mockResolvedValue(handle);
+
+  await expect(acquireValidationLock(root)).rejects.toBe(closeError);
+  expect(unlink).toHaveBeenCalledWith(lockPath);
 });
 
-test("reports a lock that may remain when handle close and lock cleanup fail", async () => {
+test("reports a lock that may remain when handle close and cleanup fail", async () => {
   const closeError = new Error("close failed");
   const unlinkError = new Error("unlink failed");
-  const error = await acquireValidationLock("/repo", {
-    open: async () => ({
-      writeFile: async () => {},
-      close: async () => {
-        throw closeError;
-      },
-    }),
-    unlink: async () => {
-      throw unlinkError;
-    },
-  }).catch((value) => value);
+  const handle = createHandle();
+  handle.close.mockRejectedValue(closeError);
+  open.mockResolvedValue(handle);
+  unlink.mockRejectedValue(unlinkError);
+
+  const error = await acquireValidationLock(root).catch((value) => value);
   expect(error).toBeInstanceOf(AggregateError);
   expect(error.errors).toEqual([closeError, unlinkError]);
   expect(error.message).toContain("A stale lock can stay");
@@ -118,17 +119,15 @@ test("reports both lock-write and partial-lock cleanup failures", async () => {
   const writeError = new Error("disk full");
   const closeError = new Error("close failed");
   const cleanupError = new Error("access denied");
-  const open = jest.fn(async () => ({
-    writeFile: jest.fn().mockRejectedValue(writeError),
-    close: jest.fn().mockRejectedValue(closeError),
-  }));
-  const unlink = jest.fn().mockRejectedValue(cleanupError);
+  const handle = createHandle();
+  handle.writeFile.mockRejectedValue(writeError);
+  handle.close.mockRejectedValue(closeError);
+  open.mockResolvedValue(handle);
+  unlink.mockRejectedValue(cleanupError);
 
-  const error = await acquireValidationLock("/repo", { open, unlink }).catch((value) => value);
+  const error = await acquireValidationLock(root).catch((value) => value);
   expect(error).toBeInstanceOf(AggregateError);
-  expect(error.message).toContain(
-    "The unfinished lock can stay at " + join("/repo", "eliware-test.lock"),
-  );
+  expect(error.message).toContain("The unfinished lock can stay at " + lockPath);
   expect(error.errors).toEqual([writeError, closeError, cleanupError]);
   expect(error.cause).toBe(writeError);
 });
@@ -136,43 +135,31 @@ test("reports both lock-write and partial-lock cleanup failures", async () => {
 test("reports close failure when partial lock removal succeeds", async () => {
   const writeError = new Error("disk full");
   const closeError = new Error("close failed");
-  const error = await acquireValidationLock("/repo", {
-    open: async () => ({
-      writeFile: async () => {
-        throw writeError;
-      },
-      close: async () => {
-        throw closeError;
-      },
-    }),
-    unlink: jest.fn(),
-  }).catch((value) => value);
+  const handle = createHandle();
+  handle.writeFile.mockRejectedValue(writeError);
+  handle.close.mockRejectedValue(closeError);
+  open.mockResolvedValue(handle);
 
+  const error = await acquireValidationLock(root).catch((value) => value);
   expect(error).toBeInstanceOf(AggregateError);
   expect(error.message).toBe("Could not write lock metadata and cleanup failed.");
   expect(error.errors).toEqual([writeError, closeError]);
 });
 
 test("treats a lock removed before release as already released", async () => {
-  const readFile = jest
-    .fn()
-    .mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
-  const release = await acquireValidationLock("/repo", {
-    open: async () => ({ writeFile: async () => {}, close: async () => {} }),
-    readFile,
-  });
+  const handle = createHandle();
+  open.mockResolvedValue(handle);
+  readFile.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
 
+  const release = await acquireValidationLock(root);
   await expect(release()).resolves.toBeUndefined();
 });
 
 test("reports lock cleanup errors other than a missing lock file", async () => {
-  const readFile = jest
-    .fn()
-    .mockRejectedValue(Object.assign(new Error("access denied"), { code: "EACCES" }));
-  const release = await acquireValidationLock("/repo", {
-    open: async () => ({ writeFile: async () => {}, close: async () => {} }),
-    readFile,
-  });
+  const handle = createHandle();
+  open.mockResolvedValue(handle);
+  readFile.mockRejectedValue(Object.assign(new Error("access denied"), { code: "EACCES" }));
 
+  const release = await acquireValidationLock(root);
   await expect(release()).rejects.toMatchObject({ code: "EACCES" });
 });

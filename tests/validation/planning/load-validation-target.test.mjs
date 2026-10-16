@@ -1,17 +1,22 @@
-import { expect, test } from "@jest/globals";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { loadValidationTarget } from "../../../src/validation/planning/load-validation-target.mjs";
+
+const readFile = jest.fn();
+
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
+
+const { loadValidationTarget } =
+  await import("../../../src/validation/planning/load-validation-target.mjs");
+
+beforeEach(() => readFile.mockReset());
 
 test("loads the target package metadata", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-load-target-"));
-  await writeFile(
-    join(root, "package.json"),
+  readFile.mockResolvedValue(
     JSON.stringify({ name: "@eliware/fixture", eliware: { apply: ["general"] } }),
   );
-  const packageJson = await loadValidationTarget(root);
+
+  const packageJson = await loadValidationTarget("C:/repo");
   expect(packageJson.name).toBe("@eliware/fixture");
   expect(packageJson.eliware.apply).toEqual(["general"]);
-  await rm(root, { recursive: true, force: true });
+  expect(readFile).toHaveBeenCalledWith(join("C:/repo", "package.json"), "utf8");
 });

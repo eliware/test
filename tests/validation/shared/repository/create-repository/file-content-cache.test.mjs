@@ -1,7 +1,4 @@
 import { expect, jest, test } from "@jest/globals";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { createRepositoryFileContentCache } from "../../../../../src/validation/shared/repository/create-repository/file-content-cache.mjs";
 const fileVersion = (mtimeNs, size = 4n) => ({ dev: 1n, ino: 2n, size, mtimeNs, ctimeNs: mtimeNs });
 test("shares one byte read across byte and text access", async () => {
@@ -115,21 +112,6 @@ test("keeps an in-flight previous entry accounted while another read evicts cont
   currentVersion = 1n;
   await expect(cache.readText("small.txt")).resolves.toBe("old!");
   expect(read).toHaveBeenCalledTimes(3);
-});
-test("uses filesystem versions by default and refreshes changed file content", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-file-cache-"));
-  const path = join(root, "README.md");
-  await writeFile(path, "old");
-  const read = jest.fn((filePath) => readFile(filePath));
-  const cache = createRepositoryFileContentCache(root, read);
-  try {
-    await expect(cache.readText(path)).resolves.toBe("old");
-    await writeFile(path, "new content");
-    await expect(cache.readText(path)).resolves.toBe("new content");
-    expect(read).toHaveBeenCalledTimes(2);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
 });
 test("drops failed reads so a later request can retry", async () => {
   const stat = jest

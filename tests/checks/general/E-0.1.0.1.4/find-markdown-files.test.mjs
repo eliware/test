@@ -1,38 +1,39 @@
-import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { findMarkdownFiles } from "../../../../src/checks/general/E-0.1.0.1.4/find-markdown-files.mjs";
+
+const readdir = jest.fn();
+const fileSystem = await import("node:fs/promises");
+
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, readdir }));
+
+const { findMarkdownFiles } =
+  await import("../../../../src/checks/general/E-0.1.0.1.4/find-markdown-files.mjs");
+
+const root = "C:/repo";
+const file = (name) => ({ name, isDirectory: () => false, isFile: () => true });
+const directory = (name) => ({ name, isDirectory: () => true, isFile: () => false });
+
+beforeEach(() => readdir.mockReset());
 
 test("finds Markdown files and skips generated folders", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-md-files-"));
-  try {
-    await mkdir(join(root, "docs"));
-    await mkdir(join(root, "node_modules"));
-    await writeFile(join(root, "README.md"), "root");
-    await writeFile(join(root, "docs", "guide.MD"), "guide");
-    await writeFile(join(root, "node_modules", "ignored.md"), "ignored");
-    await writeFile(join(root, "notes.txt"), "notes");
-    await expect(findMarkdownFiles(root)).resolves.toEqual(["README.md", "docs/guide.MD"]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  readdir.mockImplementation(async (path) => {
+    if (path === root)
+      return [directory("docs"), directory("node_modules"), file("README.md"), file("notes.txt")];
+    if (path === join(root, "docs")) return [file("guide.MD")];
+    throw new Error(`Unexpected directory read: ${path}`);
+  });
+
+  await expect(findMarkdownFiles(root)).resolves.toEqual(["README.md", "docs/guide.MD"]);
 });
 
-test("limits fallback traversal depth and entry count", async () => {
-  const readDeepDirectory = async () => [
-    { name: "nested", isDirectory: () => true, isFile: () => false },
-  ];
-  await expect(findMarkdownFiles("/repo", "/repo", readDeepDirectory)).rejects.toThrow(
-    "128-level depth limit",
-  );
-  const readWideDirectory = async () =>
-    Array.from({ length: 10_001 }, (_, index) => ({
-      name: `file-${index}.md`,
-      isDirectory: () => false,
-      isFile: () => true,
-    }));
-  await expect(findMarkdownFiles("/repo", "/repo", readWideDirectory)).rejects.toThrow(
-    "10000-entry limit",
-  );
+test("limits traversal depth and entry count", async () => {
+  let depth = 0;
+  readdir.mockImplementation(async () => {
+    depth += 1;
+    return [directory("nested")];
+  });
+  await expect(findMarkdownFiles(root)).rejects.toThrow("128-level depth limit");
+
+  readdir.mockResolvedValue(Array.from({ length: 10_001 }, (_, index) => file(`file-${index}.md`)));
+  await expect(findMarkdownFiles(root)).rejects.toThrow("10000-entry limit");
 });

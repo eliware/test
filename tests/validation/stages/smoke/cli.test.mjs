@@ -1,35 +1,34 @@
 import { afterEach, expect, jest, test } from "@jest/globals";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import {
-  runSmokeCli,
-  runSmokeCliEntrypoint,
-} from "../../../../src/validation/stages/smoke/cli.mjs";
 
-let root;
-afterEach(async () => {
-  if (root) await rm(root, { recursive: true, force: true });
-  root = undefined;
-});
+const readFile = jest.fn();
+const runNpmConsumerSmoke = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/smoke/run/npm-consumer-smoke.mjs",
+  () => ({ runNpmConsumerSmoke }),
+);
 
-test("validates the target argument and calls smoke with source package metadata", async () => {
-  root = await mkdtemp(join(tmpdir(), "eliware-smoke-cli-"));
-  await writeFile(join(root, "package.json"), JSON.stringify({ name: "@eliware/test" }));
+const { runSmokeCli, runSmokeCliEntrypoint } =
+  await import("../../../../src/validation/stages/smoke/cli.mjs");
+
+afterEach(() => readFile.mockReset());
+
+test("validates the target argument and calls smoke with package metadata", async () => {
+  readFile.mockResolvedValue(JSON.stringify({ name: "@eliware/test" }));
   const write = jest.fn();
-  const smoke = jest.fn(async () => `Smoke passed: @eliware/test@${packageVersion}`);
-  await expect(runSmokeCli({ args: ["--target", "consumer"], root, write, smoke })).resolves.toBe(
-    0,
-  );
+  const smoke = jest.fn(async () => "Smoke passed: @eliware/test@13.0.0");
+  await expect(
+    runSmokeCli({ args: ["--target", "consumer"], root: "repo", write, smoke }),
+  ).resolves.toBe(0);
+  expect(readFile).toHaveBeenCalledWith(expect.stringMatching(/repo[\\/]package\.json$/), "utf8");
   expect(smoke).toHaveBeenCalledWith({
-    root,
+    root: "repo",
     packageJson: { name: "@eliware/test" },
     target: "consumer",
     write,
   });
-  await expect(runSmokeCli({ args: ["consumer"], root, write })).resolves.toBe(18);
+  await expect(runSmokeCli({ args: ["consumer"], root: "repo", write })).resolves.toBe(18);
   const defaultWrite = jest.spyOn(console, "log").mockImplementation(() => {});
   try {
     await expect(runSmokeCli({ args: [] })).resolves.toBe(18);
@@ -42,12 +41,17 @@ test("validates the target argument and calls smoke with source package metadata
 });
 
 test("reports smoke failures and package read errors", async () => {
-  root = await mkdtemp(join(tmpdir(), "eliware-smoke-cli-error-"));
-  await writeFile(join(root, "package.json"), JSON.stringify({ name: "@eliware/test" }));
+  readFile.mockResolvedValue(JSON.stringify({ name: "@eliware/test" }));
   const write = jest.fn();
   await expect(
-    runSmokeCli({ args: ["--target", "consumer"], root, write, smoke: async () => "failed" }),
+    runSmokeCli({
+      args: ["--target", "consumer"],
+      root: "repo",
+      write,
+      smoke: async () => "failed",
+    }),
   ).resolves.toBe(17);
+  readFile.mockRejectedValueOnce(new Error("missing package"));
   await expect(
     runSmokeCli({ args: ["--target", "consumer"], root: "missing", write }),
   ).resolves.toBe(17);
@@ -56,7 +60,7 @@ test("reports smoke failures and package read errors", async () => {
 
 test("executes only when the entrypoint path matches", async () => {
   const prior = process.exitCode;
-  const cliUrl = pathToFileURL(join(process.cwd(), "src/validation/stages/smoke/smoke-cli.mjs"));
+  const cliUrl = pathToFileURL("C:/checkout/src/validation/stages/smoke/smoke-cli.mjs");
   const run = jest.fn(async () => 18);
   try {
     await runSmokeCliEntrypoint({
@@ -76,7 +80,7 @@ test("executes only when the entrypoint path matches", async () => {
 });
 
 test("decodes URL-escaped characters when matching an entrypoint path", async () => {
-  const path = join(process.cwd(), "checkout with spaces", "smoke-cli.mjs");
+  const path = "C:/checkout with spaces/smoke-cli.mjs";
   const run = jest.fn(async () => 18);
   const prior = process.exitCode;
   try {

@@ -1,12 +1,6 @@
-import { afterEach, expect, jest, test } from "@jest/globals";
-import { symlink, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
-import {
-  createSmokeTarget,
-  packageJson,
-  removeRoots,
-} from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
-import { runNpmConsumerSmoke } from "../../../../src/validation/stages/smoke/run/npm-consumer-smoke.mjs";
+import { expect, test } from "@jest/globals";
+import { resolve } from "node:path";
+import { packageJson } from "../../../../test-fixtures/helpers/smoke-package.mjs";
 import { validateNpmConsumerSmokeRequest } from "../../../../src/validation/stages/smoke/validate-npm-consumer-smoke-request.mjs";
 
 const root = process.cwd();
@@ -54,52 +48,4 @@ test("rejects invalid package publication metadata before smoke setup", () => {
   ).toEqual({
     error: "Source package name and version are required for tarball smoke.",
   });
-});
-
-const roots = [];
-const run = jest.fn();
-const resolveCommand = jest.fn(() => ["npm", []]);
-
-afterEach(async () => {
-  await removeRoots(roots);
-  roots.length = 0;
-  run.mockClear();
-  resolveCommand.mockClear();
-});
-
-test("returns consumer metadata errors before smoke setup", async () => {
-  const fixture = await createSmokeTarget(roots);
-  await writeFile(join(fixture.target, "package.json"), JSON.stringify({ scripts: {} }));
-  await expect(
-    runNpmConsumerSmoke({
-      root: fixture.source,
-      target: fixture.target,
-      packageJson,
-      run,
-      resolveCommand,
-      env: {},
-    }),
-  ).resolves.toContain("must define an npm test script");
-  expect(run).not.toHaveBeenCalled();
-  expect(resolveCommand).not.toHaveBeenCalled();
-});
-
-test("validates package metadata and target identity before capturing state", async () => {
-  const fixture = await createSmokeTarget(roots);
-  const captureState = jest.fn();
-  const options = { root: fixture.source, packageJson, run, resolveCommand, env: {}, captureState };
-  await expect(
-    runNpmConsumerSmoke({
-      ...options,
-      target: fixture.target,
-      packageJson: { ...packageJson, publishConfig: {} },
-    }),
-  ).resolves.toContain("provenance");
-  const alias = join(dirname(fixture.target), "source-alias");
-  await symlink(fixture.source, alias, process.platform === "win32" ? "junction" : "dir");
-  await expect(runNpmConsumerSmoke({ ...options, target: alias })).resolves.toContain(
-    "resolve outside the source checkout",
-  );
-  expect(captureState).not.toHaveBeenCalled();
-  expect(run).not.toHaveBeenCalled();
 });

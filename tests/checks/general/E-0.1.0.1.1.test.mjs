@@ -1,8 +1,5 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { readFile } from "node:fs/promises";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.1.mjs";
 
 test("validates this repository package contract", async () => {
@@ -41,13 +38,10 @@ test("uses the inventory file reader when no file list is supplied", async () =>
 });
 
 test("uses default arguments", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-default-check-"));
-  const originalRoot = process.cwd();
+  const currentDirectory = jest.spyOn(process, "cwd").mockReturnValue("missing");
   try {
-    process.chdir(root);
     await expect(run()).resolves.toMatchObject({ status: "fail" });
   } finally {
-    process.chdir(originalRoot);
-    await rm(root, { recursive: true, force: true });
+    currentDirectory.mockRestore();
   }
 });

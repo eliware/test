@@ -1,18 +1,20 @@
-import { afterEach, expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
-import {
-  hasPackageDependency,
-  prepareSmokeTarget,
-} from "../../../../../src/validation/stages/smoke/prepare-smoke/target.mjs";
+const lstat = jest.fn();
+const rm = jest.fn();
+const fileSystem = await import("node:fs/promises");
 
-let roots = [];
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, rm }));
 
-afterEach(async () => {
-  await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
-  roots = [];
+const { hasPackageDependency, prepareSmokeTarget } =
+  await import("../../../../../src/validation/stages/smoke/prepare-smoke/target.mjs");
+
+const root = "C:/consumer";
+
+beforeEach(() => {
+  lstat.mockReset().mockResolvedValue({ isDirectory: () => true, isSymbolicLink: () => false });
+  rm.mockReset().mockResolvedValue(undefined);
 });
 
 test.each(["dependencies", "devDependencies", "optionalDependencies"])(
@@ -26,19 +28,10 @@ test.each(["dependencies", "devDependencies", "optionalDependencies"])(
 );
 
 test("removes the installed package without changing consumer manifests or lockfiles", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-prepare-smoke-test-"));
-  roots.push(root);
   const installed = join(root, "node_modules", "@eliware", "test");
-  await mkdir(installed, { recursive: true });
-  await writeFile(join(installed, "package.json"), "old package");
-  const manifest = `${JSON.stringify({ devDependencies: { "@eliware/test": packageVersion } })}\n`;
-  const lockfile = '{"lockfileVersion":3}\n';
-  await writeFile(join(root, "package.json"), manifest);
-  await writeFile(join(root, "package-lock.json"), lockfile);
 
   await prepareSmokeTarget({ targetRoot: root, packageName: "@eliware/test" });
 
-  await expect(readFile(join(root, "package.json"), "utf8")).resolves.toBe(manifest);
-  await expect(readFile(join(root, "package-lock.json"), "utf8")).resolves.toBe(lockfile);
-  await expect(readFile(join(installed, "package.json"), "utf8")).rejects.toThrow();
+  expect(rm).toHaveBeenCalledWith(installed, { recursive: true, force: true });
+  expect(rm).toHaveBeenCalledTimes(1);
 });

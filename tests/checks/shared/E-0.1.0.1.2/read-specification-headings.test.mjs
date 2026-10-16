@@ -1,132 +1,66 @@
-import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { readSpecificationHeadings } from "../../../../src/checks/shared/E-0.1.0.1.2/read-specification-headings.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+
+const readFile = jest.fn();
+const readdir = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile, readdir }));
+
+const { readSpecificationHeadings } =
+  await import("../../../../src/checks/shared/E-0.1.0.1.2/read-specification-headings.mjs");
+
+const file = (name) => ({ name, isDirectory: () => false, isFile: () => true });
+const directory = (name) => ({ name, isDirectory: () => true, isFile: () => false });
+const root = "C:/repo";
+
+beforeEach(() => {
+  readFile.mockReset();
+  readdir.mockReset();
+});
 
 test("returns no headings when specs are absent", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  try {
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  readdir.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
+  await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
 });
 
-test("reads headings declared in directive requirements", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  const nested = join(root, "specs", "profiles");
-  await mkdir(nested, { recursive: true });
-  try {
-    await writeFile(
-      join(nested, "profile.yaml"),
-      "directives:\n  - dos:\n      - |\n        ## Custom\n        ## Additional\n    examples:\n      - |\n        ## Example only\n",
-    );
-    await writeFile(join(nested, "README.md"), "## Ignore");
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(
-      new Set(["Custom", "Additional"]),
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+test("reads headings declared in nested directive requirements", async () => {
+  readdir
+    .mockResolvedValueOnce([directory("profiles")])
+    .mockResolvedValueOnce([file("rules.yaml")]);
+  readFile.mockResolvedValue(
+    'directives:\n  - dos:\n      - "## Project"\n    children:\n      - dos:\n          - "## Nested"\n',
+  );
+  await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["Project", "Nested"]));
 });
 
-test("does not treat headings in examples as declarations", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  const specs = join(root, "specs");
-  await mkdir(specs);
-  try {
-    await writeFile(
-      join(specs, "profile.yaml"),
-      "directives:\n  - dos: []\n    examples:\n      - '## Unreleased'\n",
-    );
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("ignores YAML documents without directive arrays", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  const specs = join(root, "specs");
-  await mkdir(specs);
-  try {
-    await writeFile(join(specs, "profile.yaml"), "metadata: true\n");
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("ignores YAML null documents", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  const specs = join(root, "specs");
-  await mkdir(specs);
-  try {
-    await writeFile(join(specs, "profile.yaml"), "null\n");
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+test("ignores headings in examples and YAML files without directive arrays", async () => {
+  readdir.mockResolvedValueOnce([file("README.md"), file("profile.yaml")]);
+  readFile.mockResolvedValue("metadata: true\n");
+  await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
+  expect(readFile).toHaveBeenCalledTimes(1);
 });
 
 test("reads declared headings from every YAML stream document", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  const specs = join(root, "specs");
-  await mkdir(specs);
-  try {
-    await writeFile(
-      join(specs, "profile.yaml"),
-      "directives:\n  - dos: ['## First']\n---\ndirectives:\n  - dos: ['## Second']\n",
-    );
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["First", "Second"]));
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  readdir.mockResolvedValueOnce([file("profile.yaml")]);
+  readFile.mockResolvedValue(
+    'directives:\n  - dos:\n      - "## First"\n---\ndirectives:\n  - dos:\n      - "## Second"\n',
+  );
+  await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["First", "Second"]));
 });
 
-test("reports specification read errors", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  const specs = join(root, "specs");
-  await mkdir(specs);
-  await writeFile(join(specs, "valid.yaml"), "rules: []\n");
-  await writeFile(join(specs, "empty.yaml"), "null\n");
-  try {
-    await expect(
-      readSpecificationHeadings(root, {
-        read: async () => {
-          throw new Error("blocked");
-        },
-      }),
-    ).rejects.toThrow("blocked");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+test("reports listing, read, and malformed YAML errors", async () => {
+  readdir.mockRejectedValueOnce(new Error("blocked"));
+  await expect(readSpecificationHeadings(root)).rejects.toThrow("blocked");
+  readdir.mockResolvedValueOnce([file("valid.yaml")]);
+  readFile.mockRejectedValueOnce(new Error("read failed"));
+  await expect(readSpecificationHeadings(root)).rejects.toThrow("read failed");
+  readdir.mockResolvedValueOnce([file("invalid.yaml")]);
+  readFile.mockResolvedValueOnce("directives: [\n");
+  await expect(readSpecificationHeadings(root)).rejects.toThrow();
 });
 
-test("reports errors when the specifications path is not a directory", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  await writeFile(join(root, "specs"), "not a directory");
-  try {
-    await expect(readSpecificationHeadings(root)).rejects.toMatchObject({ code: "ENOTDIR" });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("ignores invalid directive fields and rejects malformed YAML", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-spec-headings-"));
-  const specs = join(root, "specs");
-  await mkdir(specs);
-  const path = join(specs, "profile.yaml");
-  try {
-    await writeFile(path, "directives: null");
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
-    await writeFile(path, "directives: [null, { dos: [null, invalid] }]");
-    await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
-    await writeFile(path, "directives: [\n");
-    await expect(readSpecificationHeadings(root)).rejects.toThrow();
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+test("ignores invalid directive fields and null YAML documents", async () => {
+  readdir.mockResolvedValueOnce([file("profile.yaml")]);
+  readFile.mockResolvedValue(
+    "null\n---\ndirectives: null\n---\ndirectives: [null, { dos: [null, invalid] }]\n",
+  );
+  await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
 });

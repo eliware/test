@@ -1,5 +1,3 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, jest, test } from "@jest/globals";
 import { runNpmPack } from "../../../../src/validation/stages/pack/run-npm-pack.mjs";
@@ -40,25 +38,20 @@ test("forwards safe npm pack arguments without overriding required flags", async
 });
 
 test("uses npm's executable when npm invokes the harness", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pack-invoked-npm-"));
+  const root = "C:/repo";
   const npmCli = join(root, "npm-cli.js");
-  await writeFile(npmCli, "");
   const calls = [];
-  try {
-    await runNpmPack(
-      root,
-      async (...args) => {
-        calls.push(args);
-        return { code: 0, signal: null, stdout: "", stderr: "" };
-      },
-      (env, _platform, execPath, directory) =>
-        resolvePackExecutable(env, "linux", execPath, directory),
-      [],
-      { npm_execpath: "npm-cli.js" },
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  await runNpmPack(
+    root,
+    async (...args) => {
+      calls.push(args);
+      return { code: 0, signal: null, stdout: "", stderr: "" };
+    },
+    (env, _platform, execPath, directory) =>
+      resolvePackExecutable(env, "linux", execPath, directory),
+    [],
+    { npm_execpath: "npm-cli.js" },
+  );
   expect(calls[0][0]).toBe(process.execPath);
   expect(calls[0][1][0]).toBe(npmCli);
 });

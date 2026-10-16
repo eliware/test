@@ -1,24 +1,25 @@
-import { expect, jest, test } from "@jest/globals";
-import { lstat, mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { cleanupSmokeTempRoot } from "../../../../src/validation/stages/smoke/cleanup-smoke-temp-root.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
+const lstat = jest.fn();
+const rm = jest.fn();
+const fileSystem = await import("node:fs/promises");
+
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, rm }));
+
+const { cleanupSmokeTempRoot } =
+  await import("../../../../src/validation/stages/smoke/cleanup-smoke-temp-root.mjs");
+
+const path = "C:/temp/smoke";
 const identity = { dev: 1, ino: 2, isDirectory: () => true, isSymbolicLink: () => false };
 
-test("removes only the original temporary directory", async () => {
-  const remove = jest.fn();
-  await expect(
-    cleanupSmokeTempRoot("C:/temp/smoke", identity, { inspect: async () => identity, remove }),
-  ).resolves.toBe("");
-  expect(remove).toHaveBeenCalledWith("C:/temp/smoke", { recursive: true, force: true });
+beforeEach(() => {
+  lstat.mockReset().mockResolvedValue(identity);
+  rm.mockReset().mockResolvedValue(undefined);
 });
 
-test("uses filesystem defaults when no cleanup adapters are supplied", async () => {
-  const path = await mkdtemp(join(tmpdir(), "eliware-smoke-cleanup-test-"));
-  const original = await lstat(path);
-  await expect(cleanupSmokeTempRoot(path, original)).resolves.toBe("");
-  await expect(lstat(path)).rejects.toMatchObject({ code: "ENOENT" });
+test("removes only the original temporary directory", async () => {
+  await expect(cleanupSmokeTempRoot(path, identity)).resolves.toBe("");
+  expect(rm).toHaveBeenCalledWith(path, { recursive: true, force: true });
 });
 
 test.each([
@@ -27,44 +28,30 @@ test.each([
   [{ ...identity, isDirectory: () => false }, "identity changed"],
   [{ ...identity, isSymbolicLink: () => true }, "identity changed"],
 ])("leaves a replacement path untouched %#", async (replacement, message) => {
-  const remove = jest.fn();
-  await expect(
-    cleanupSmokeTempRoot("C:/temp/smoke", identity, {
-      inspect: async () => replacement,
-      remove,
-    }),
-  ).resolves.toContain(message);
-  expect(remove).not.toHaveBeenCalled();
+  lstat.mockResolvedValue(replacement);
+
+  await expect(cleanupSmokeTempRoot(path, identity)).resolves.toContain(message);
+  expect(rm).not.toHaveBeenCalled();
 });
 
 test("preserves the temporary root when target restoration failed", async () => {
-  const inspect = jest.fn();
-  const remove = jest.fn();
-  await expect(
-    cleanupSmokeTempRoot("C:/temp/smoke", identity, { preserve: true, inspect, remove }),
-  ).resolves.toBe("Recovery data retained at C:/temp/smoke.");
-  expect(inspect).not.toHaveBeenCalled();
-  expect(remove).not.toHaveBeenCalled();
+  await expect(cleanupSmokeTempRoot(path, identity, { preserve: true })).resolves.toBe(
+    "Recovery data retained at C:/temp/smoke.",
+  );
+  expect(lstat).not.toHaveBeenCalled();
+  expect(rm).not.toHaveBeenCalled();
 });
 
 test("reports cleanup failures and retains the recovery location", async () => {
-  await expect(
-    cleanupSmokeTempRoot("C:/temp/smoke", identity, {
-      inspect: async () => identity,
-      remove: async () => {
-        throw new Error("access denied");
-      },
-    }),
-  ).resolves.toContain("Recovery data retained at C:/temp/smoke.");
+  rm.mockRejectedValue(new Error("access denied"));
+
+  await expect(cleanupSmokeTempRoot(path, identity)).resolves.toContain(
+    "Recovery data retained at C:/temp/smoke.",
+  );
 });
 
 test("treats an already-removed temporary root as clean", async () => {
-  const missing = Object.assign(new Error("missing"), { code: "ENOENT" });
-  await expect(
-    cleanupSmokeTempRoot("C:/temp/smoke", identity, {
-      inspect: async () => {
-        throw missing;
-      },
-    }),
-  ).resolves.toBe("");
+  lstat.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
+
+  await expect(cleanupSmokeTempRoot(path, identity)).resolves.toBe("");
 });

@@ -1,7 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
-import { mkdir, mkdtemp, readdir, rm, unlink, writeFile } from "node:fs/promises";
-import { platform, tmpdir } from "node:os";
-import { join, posix, resolve } from "node:path";
+import { platform } from "node:os";
+import { posix, resolve } from "node:path";
 import { createRepositoryInventory } from "../../../../../src/validation/shared/repository/create-repository/inventory.mjs";
 
 test("composes a frozen inventory facade over shared repository discovery", async () => {
@@ -89,38 +88,38 @@ test.each([undefined, null, "", "  ", 7])("rejects invalid inventory root %p", (
 });
 
 test("reads existing descendants beneath a pruned directory before full discovery", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pruned-scope-"));
+  const root = "/repo";
   const directory = resolve(root, "dist", "reports");
-  await mkdir(directory, { recursive: true });
-  await writeFile(resolve(directory, "report.json"), "{}\n");
-  const inventory = createRepositoryInventory(root, { readDirectory: readdir });
-  try {
-    await expect(inventory.directoryEntries(directory)).resolves.toMatchObject([
-      { name: "report.json", path: "dist/reports/report.json" },
-    ]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  const findEntries = jest.fn(async () => [
+    { path: "dist", type: "directory", depth: 1 },
+    { path: "dist/reports", type: "directory", depth: 2 },
+    { path: "dist/reports/report.json", type: "file", depth: 2 },
+  ]);
+  const inventory = createRepositoryInventory(root, { findEntries });
+  await expect(inventory.directoryEntries(directory)).resolves.toMatchObject([
+    { name: "report.json", path: "dist/reports/report.json" },
+  ]);
+  expect(findEntries).toHaveBeenCalledTimes(1);
 });
 
 test("refreshes scoped inventory after files change", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-scoped-refresh-"));
+  const root = "/repo";
   const directory = resolve(root, "docs");
-  await mkdir(directory);
-  await writeFile(resolve(directory, "old.md"), "old\n");
-  const inventory = createRepositoryInventory(root, { readDirectory: readdir });
-  try {
-    await expect(inventory.directoryEntries(directory)).resolves.toContainEqual(
-      expect.objectContaining({ name: "old.md", path: "docs/old.md" }),
-    );
-    await unlink(resolve(directory, "old.md"));
-    await writeFile(resolve(directory, "new.md"), "new\n");
-    const entries = await inventory.directoryEntries(directory);
-    expect(entries).not.toContainEqual(expect.objectContaining({ path: "docs/old.md" }));
-    expect(entries).toContainEqual(
-      expect.objectContaining({ name: "new.md", path: "docs/new.md" }),
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  const findEntries = jest
+    .fn()
+    .mockResolvedValueOnce([
+      { path: "docs", type: "directory", depth: 1 },
+      { path: "docs/old.md", type: "file", depth: 1 },
+    ])
+    .mockResolvedValueOnce([
+      { path: "docs", type: "directory", depth: 1 },
+      { path: "docs/new.md", type: "file", depth: 1 },
+    ]);
+  const inventory = createRepositoryInventory(root, { findEntries });
+  await expect(inventory.directoryEntries(directory)).resolves.toContainEqual(
+    expect.objectContaining({ name: "old.md", path: "docs/old.md" }),
+  );
+  const entries = await inventory.directoryEntries(directory);
+  expect(entries).not.toContainEqual(expect.objectContaining({ path: "docs/old.md" }));
+  expect(entries).toContainEqual(expect.objectContaining({ name: "new.md", path: "docs/new.md" }));
 });

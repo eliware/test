@@ -1,8 +1,10 @@
-import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { loadRepoMapRecord } from "../../../../../src/checks/general/E-0.1.0.1.0/load-repo-map/record.mjs";
+import { expect, jest, test } from "@jest/globals";
+
+const readFile = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
+
+const { loadRepoMapRecord } =
+  await import("../../../../../src/checks/general/E-0.1.0.1.0/load-repo-map/record.mjs");
 
 const mapReader = (mapSource) => async (path) => {
   if (String(path).endsWith("repo-map-schema.yaml")) {
@@ -17,16 +19,27 @@ const schemaReader = (mapSource, schemaSource) => async (path) =>
   String(path).endsWith("repo-map-schema.yaml") ? schemaSource : mapSource;
 
 test("reports an absent repo map as optional", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-map-"));
-  try {
-    expect(await loadRepoMapRecord(root, {})).toEqual({
-      available: false,
-      record: null,
-      error: null,
-    });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  const read = async () => {
+    const error = new Error("not found");
+    error.code = "ENOENT";
+    throw error;
+  };
+  expect(await loadRepoMapRecord("repo", {}, { read })).toEqual({
+    available: false,
+    record: null,
+    error: null,
+  });
+});
+
+test("uses the default file reader when no reader is provided", async () => {
+  const missing = Object.assign(new Error("not found"), { code: "ENOENT" });
+  readFile.mockRejectedValue(missing);
+  await expect(loadRepoMapRecord("repo", {})).resolves.toEqual({
+    available: false,
+    record: null,
+    error: null,
+  });
+  expect(readFile).toHaveBeenCalledTimes(1);
 });
 
 test("reports repository map read failures", async () => {
@@ -43,24 +56,12 @@ test("reports repository map read failures", async () => {
 });
 
 test("loads the package repository record", async () => {
-  const base = await mkdtemp(join(tmpdir(), "eliware-map-"));
-  const root = join(base, "repo");
-  const docs = join(base, "docs");
-  await mkdir(root);
-  await mkdir(docs, { recursive: true });
-  try {
-    await writeFile(
-      join(docs, "repo-map.yaml"),
-      "repositories:\n  - repository: eliware/example\n    id: E-1\n",
-    );
-    expect(await loadRepoMapRecord(root, { name: "@eliware/example" })).toMatchObject({
-      available: true,
-      record: { id: "E-1" },
-      error: null,
-    });
-  } finally {
-    await rm(base, { recursive: true, force: true });
-  }
+  const read = mapReader("repositories:\n  - repository: eliware/example\n    id: E-1\n");
+  expect(await loadRepoMapRecord("repo", { name: "@eliware/example" }, { read })).toMatchObject({
+    available: true,
+    record: { id: "E-1" },
+    error: null,
+  });
 });
 
 test("accepts long descriptive fields in the external repository map", async () => {
@@ -102,36 +103,22 @@ test.each([
   ["repositories: bad", "repositories array"],
   ["repositories: [", "invalid YAML"],
 ])("reports invalid repository map data", async (source, expected) => {
-  const base = await mkdtemp(join(tmpdir(), "eliware-map-"));
-  const root = join(base, "repo");
-  const docs = join(base, "docs");
-  await mkdir(root);
-  await mkdir(docs);
-  try {
-    await writeFile(join(docs, "repo-map.yaml"), source);
-    expect((await loadRepoMapRecord(root, { name: "@eliware/example" })).error).toContain(expected);
-  } finally {
-    await rm(base, { recursive: true, force: true });
-  }
+  const read = mapReader(source);
+  expect((await loadRepoMapRecord("repo", { name: "@eliware/example" }, { read })).error).toContain(
+    expected,
+  );
 });
 
 test("reports invalid package names and allows missing map entries", async () => {
-  const base = await mkdtemp(join(tmpdir(), "eliware-map-"));
-  const root = join(base, "repo");
-  const docs = join(base, "docs");
-  await mkdir(root);
-  await mkdir(docs);
-  try {
-    await writeFile(join(docs, "repo-map.yaml"), "repositories: []\n");
-    expect((await loadRepoMapRecord(root, { name: "example" })).error).toContain("cannot identify");
-    expect(await loadRepoMapRecord(root, { name: "@eliware/other" })).toEqual({
-      available: true,
-      record: null,
-      error: null,
-    });
-  } finally {
-    await rm(base, { recursive: true, force: true });
-  }
+  const read = mapReader("repositories: []\n");
+  expect((await loadRepoMapRecord("repo", { name: "example" }, { read })).error).toContain(
+    "cannot identify",
+  );
+  expect(await loadRepoMapRecord("repo", { name: "@eliware/other" }, { read })).toEqual({
+    available: true,
+    record: null,
+    error: null,
+  });
 });
 
 test("reports missing package metadata when a repository map exists", async () => {

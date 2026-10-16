@@ -3,6 +3,7 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 const executeJestCheck = jest.fn();
 const recordJestContext = jest.fn();
 const classifyJestResult = jest.fn();
+const validateTestWritePolicy = jest.fn();
 jest.unstable_mockModule(
   "../../../../../../../src/validation/stages/jest/execution/execute/jest-check.mjs",
   () => ({ executeJestCheck }),
@@ -15,6 +16,10 @@ jest.unstable_mockModule(
   "../../../../../../../src/validation/stages/jest/execution/classify-jest-result.mjs",
   () => ({ classifyJestResult }),
 );
+jest.unstable_mockModule(
+  "../../../../../../../src/validation/harness/validate-test-write-policy.mjs",
+  () => ({ validateTestWritePolicy }),
+);
 
 const { runJestStage } =
   await import("../../../../../../../src/validation/stages/jest/execution/run/jest/stage.mjs");
@@ -25,6 +30,7 @@ beforeEach(() => {
   executeJestCheck.mockClear();
   recordJestContext.mockClear();
   classifyJestResult.mockClear();
+  validateTestWritePolicy.mockReset().mockResolvedValue([]);
 });
 
 test("skips the Jest pipeline when execution is disabled", async () => {
@@ -34,6 +40,7 @@ test("skips the Jest pipeline when execution is disabled", async () => {
     message: "",
   });
   expect(executeJestCheck).not.toHaveBeenCalled();
+  expect(validateTestWritePolicy).not.toHaveBeenCalled();
   expect(recordJestContext).not.toHaveBeenCalled();
   expect(classifyJestResult).not.toHaveBeenCalled();
 });
@@ -49,10 +56,24 @@ test("composes execution, context recording, and result classification", async (
 
   await expect(run(context)).resolves.toEqual({ ruleId, status: "pass", message: "" });
   expect(executeJestCheck).toHaveBeenCalledWith(context);
+  expect(validateTestWritePolicy).toHaveBeenCalledWith(undefined);
   expect(recordJestContext).toHaveBeenCalledWith(context, result);
   expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail", {
     failuresReported: false,
   });
+});
+
+test("rejects test suites that use filesystem write APIs before Jest starts", async () => {
+  const context = { executeJest: true, root: "/repo" };
+  validateTestWritePolicy.mockResolvedValueOnce([
+    "tests/example.test.mjs:2 uses a forbidden test API: import of writeFile.",
+  ]);
+  await expect(run(context)).resolves.toEqual({
+    ruleId,
+    status: "fail",
+    message: "tests/example.test.mjs:2 uses a forbidden test API: import of writeFile.",
+  });
+  expect(executeJestCheck).not.toHaveBeenCalled();
 });
 
 test("maps execution errors without recording or classifying a result", async () => {

@@ -1,53 +1,70 @@
-import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { discoverCheckTree } from "../../../../src/validation/check-discovery/discover/check-tree.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+
+const readdir = jest.fn();
+
+jest.unstable_mockModule("node:fs/promises", () => ({ readdir }));
+
+const { discoverCheckTree } =
+  await import("../../../../src/validation/check-discovery/discover/check-tree.mjs");
+
+const file = (name) => ({ name, isDirectory: () => false, isFile: () => true });
+const directory = (name) => ({ name, isDirectory: () => true, isFile: () => false });
+const loadModule = async (url) => {
+  const ruleId = url.pathname.split("/").at(-1).slice(0, -4);
+  return { ruleId, run() {} };
+};
+
+beforeEach(() => readdir.mockReset());
 
 test("discovers nested directive modules and records their parent", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-check-tree-"));
-  await mkdir(join(root, "E-0.1"));
-  await writeFile(join(root, "E-2.mjs"), 'export const ruleId = "E-2"; export function run() {}');
-  await writeFile(
-    join(root, "E-0.1", "A-0.1.1.mjs"),
-    'export const ruleId = "A-0.1.1"; export function run() {}',
+  const readDirectory = jest.fn(async (path) =>
+    path.endsWith("E-0.1") ? [file("A-0.1.1.mjs")] : [directory("E-0.1"), file("E-2.mjs")],
   );
-  const checks = await discoverCheckTree(root, (url) => import(url));
+
+  const checks = await discoverCheckTree("C:/checks", loadModule, null, readDirectory);
   expect(checks.map(({ ruleId, parentRuleId }) => ({ ruleId, parentRuleId }))).toEqual([
     { ruleId: "A-0.1.1", parentRuleId: "E-0.1" },
     { ruleId: "E-2", parentRuleId: null },
   ]);
-  await rm(root, { recursive: true, force: true });
 });
 
 test("discovers a root-level module with default parent handling", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-check-tree-root-"));
-  await writeFile(join(root, "E-3.mjs"), 'export const ruleId = "E-3"; export function run() {}');
-  const checks = await discoverCheckTree(root, (url) => import(url));
+  const checks = await discoverCheckTree("C:/checks", loadModule, null, async () => [
+    file("E-3.mjs"),
+  ]);
   expect(checks[0]).toMatchObject({ ruleId: "E-3", parentRuleId: null });
-  await rm(root, { recursive: true, force: true });
+});
+
+test("uses the default directory reader and parent rule", async () => {
+  readdir.mockResolvedValue([file("E-3.mjs")]);
+
+  await expect(discoverCheckTree("C:/checks", loadModule)).resolves.toMatchObject([
+    { ruleId: "E-3", parentRuleId: null },
+  ]);
+  expect(readdir).toHaveBeenCalledWith("C:/checks", { withFileTypes: true });
 });
 
 test("discovers advisory-only metadata without a placeholder runner", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-check-tree-advisory-"));
-  await writeFile(
-    join(root, "E-3.mjs"),
-    'export const ruleId = "E-3"; export const applicability = "advisory-only";',
+  const checks = await discoverCheckTree(
+    "C:/checks",
+    async () => ({ ruleId: "E-3", applicability: "advisory-only" }),
+    null,
+    async () => [file("E-3.mjs")],
   );
-  const checks = await discoverCheckTree(root, (url) => import(url));
   expect(checks[0]).toMatchObject({ ruleId: "E-3", applicability: "advisory-only" });
   expect(checks[0].run).toBeUndefined();
-  await rm(root, { recursive: true, force: true });
 });
 
 test("ignores unrelated entries and rejects invalid modules", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-check-tree-invalid-"));
-  await writeFile(join(root, "README.md"), "ignored");
-  await writeFile(join(root, "E-2.mjs"), 'export const ruleId = "wrong"; export function run() {}');
-  await expect(discoverCheckTree(root, (url) => import(url))).rejects.toThrow(
-    "Invalid check module",
-  );
-  await rm(root, { recursive: true, force: true });
+  const readDirectory = async () => [file("README.md"), file("E-2.mjs")];
+  await expect(
+    discoverCheckTree(
+      "C:/checks",
+      async () => ({ ruleId: "wrong", run() {} }),
+      null,
+      readDirectory,
+    ),
+  ).rejects.toThrow("Invalid check module");
 });
 
 test("handles explicit directory and non-rule entry shapes", async () => {
@@ -59,18 +76,8 @@ test("handles explicit directory and non-rule entry shapes", async () => {
     async () => {
       depth += 1;
       if (depth === 1)
-        return [
-          { name: "E-0.1", isDirectory: () => true, isFile: () => false },
-          { name: "misc", isDirectory: () => true, isFile: () => false },
-        ];
-      return [
-        { name: "README.md", isDirectory: () => false, isFile: () => true },
-        {
-          name: `${depth === 2 ? "E-0.1" : "E-2"}.mjs`,
-          isDirectory: () => false,
-          isFile: () => true,
-        },
-      ];
+        return [directory("E-0.1"), { name: "misc", isDirectory: () => true, isFile: () => false }];
+      return [file("README.md"), file(`${depth === 2 ? "E-0.1" : "E-2"}.mjs`)];
     },
   );
   expect(checks).toHaveLength(2);
@@ -78,7 +85,7 @@ test("handles explicit directory and non-rule entry shapes", async () => {
 });
 
 test("limits check discovery depth and entry count", async () => {
-  const nested = { name: "nested", isDirectory: () => true, isFile: () => false };
+  const nested = directory("nested");
   await expect(
     discoverCheckTree(
       "root",
@@ -87,11 +94,7 @@ test("limits check discovery depth and entry count", async () => {
       async () => [nested],
     ),
   ).rejects.toThrow("128-level depth limit");
-  const unrelatedEntries = Array.from({ length: 10_001 }, (_, index) => ({
-    name: `readme-${index}.md`,
-    isDirectory: () => false,
-    isFile: () => true,
-  }));
+  const unrelatedEntries = Array.from({ length: 10_001 }, (_, index) => file(`readme-${index}.md`));
   await expect(
     discoverCheckTree(
       "root",

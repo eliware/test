@@ -1,54 +1,83 @@
-import { afterEach, expect, jest, test } from "@jest/globals";
-import {
-  packageJson,
-  createSmokeTarget,
-  removeRoots,
-} from "../../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
-import { prepareSmokeTargetContext } from "../../../../../src/validation/stages/smoke/prepare-smoke/target-context.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+import { join } from "node:path";
+import { packageJson } from "../../../../../test-fixtures/helpers/smoke-package.mjs";
 
-const roots = [];
-afterEach(async () => {
-  await removeRoots(roots);
-  roots.length = 0;
+const lstat = jest.fn();
+const realpath = jest.fn();
+const readFile = jest.fn();
+const fileSystem = await import("node:fs/promises");
+
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, realpath, readFile }));
+
+const { prepareSmokeTargetContext } =
+  await import("../../../../../src/validation/stages/smoke/prepare-smoke/target-context.mjs");
+
+const root = join("C:/", "source");
+const target = join("C:/", "consumer");
+const targetPackage = {
+  scripts: { test: "eliware-test" },
+  dependencies: { "@eliware/test": "13.0.0" },
+};
+const identity = () => ({ dev: 1, ino: 2, birthtimeMs: 3, isDirectory: () => true });
+
+function setConsumerFiles() {
+  realpath.mockImplementation(async (path) => path);
+  lstat.mockResolvedValue(identity());
+  readFile
+    .mockResolvedValueOnce(JSON.stringify(targetPackage))
+    .mockResolvedValueOnce("installed tree lock")
+    .mockResolvedValueOnce('{"name":"@eliware/test","version":"13.0.0"}');
+}
+
+beforeEach(() => {
+  lstat.mockReset();
+  realpath.mockReset();
+  readFile.mockReset();
 });
 
 test("returns the resolved consumer, identity guard, executable names, and copied environment", async () => {
-  const fixture = await createSmokeTarget(roots);
+  setConsumerFiles();
   const env = { PATH: "consumer-path" };
-  const context = await prepareSmokeTargetContext({
-    root: fixture.source,
-    target: fixture.target,
-    packageJson,
-    env,
-  });
+  const context = await prepareSmokeTargetContext({ root, target, packageJson, env });
 
-  expect(context).toMatchObject({
-    targetRoot: fixture.target,
-    binNames: ["eliware-test"],
-    childEnv: env,
-  });
+  expect(context).toMatchObject({ targetRoot: target, binNames: ["eliware-test"], childEnv: env });
   expect(context.childEnv).not.toBe(env);
   await expect(context.assertTargetIdentity()).resolves.toBeUndefined();
 });
 
 test("returns request errors before it inspects the target", async () => {
-  const inspectTargetRoot = jest.fn();
-  const result = await prepareSmokeTargetContext({
-    root: process.cwd(),
-    target: "",
-    packageJson,
-    inspectTargetRoot,
-  });
+  const result = await prepareSmokeTargetContext({ root, target: "", packageJson });
 
   expect(result.error).toContain("Supply one existing consumer");
-  expect(inspectTargetRoot).not.toHaveBeenCalled();
+  expect(lstat).not.toHaveBeenCalled();
+});
+
+test("returns target resolution errors", async () => {
+  realpath.mockImplementation(async (path) => {
+    if (path === target) throw new Error("missing target");
+    return path;
+  });
+
+  await expect(prepareSmokeTargetContext({ root, target, packageJson })).resolves.toMatchObject({
+    error: expect.stringContaining("both resolve"),
+  });
+});
+
+test("returns consumer metadata errors", async () => {
+  realpath.mockImplementation(async (path) => path);
+  lstat.mockResolvedValue(identity());
+  readFile.mockRejectedValue(new Error("missing package"));
+
+  await expect(prepareSmokeTargetContext({ root, target, packageJson })).resolves.toMatchObject({
+    error: expect.stringContaining("existing npm repository"),
+  });
 });
 
 test("returns no executable names when the package has no bin entry", async () => {
-  const fixture = await createSmokeTarget(roots);
+  setConsumerFiles();
   const context = await prepareSmokeTargetContext({
-    root: fixture.source,
-    target: fixture.target,
+    root,
+    target,
     packageJson: { ...packageJson, bin: undefined },
   });
 

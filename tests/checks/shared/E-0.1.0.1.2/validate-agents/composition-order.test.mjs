@@ -15,6 +15,11 @@ test("checks selected profile order without requiring profile headings", () => {
   ).toEqual([]);
 });
 
+test("allows profile checks when package metadata is absent", () => {
+  expect(validateAgentsCompositionOrder(agents)).toEqual([]);
+  expect(validateAgentsCompositionOrder(agents, null)).toEqual([]);
+});
+
 test("rejects unselected and misordered profile headings", () => {
   expect(
     validateAgentsCompositionOrder(`${agents}\n## CLI`, {

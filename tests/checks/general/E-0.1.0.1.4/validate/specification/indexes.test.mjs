@@ -1,129 +1,134 @@
-import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { validateSpecificationIndexes } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/indexes.mjs";
-import { conventionVersion } from "../../../../../../test-fixtures/helpers/project-version.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-async function fixture() {
-  const root = await mkdtemp(join(tmpdir(), "eliware-index-"));
-  await mkdir(join(root, "specs", "nested"), { recursive: true });
-  await writeFile(join(root, "specs", "directives.yaml"), `version: '${conventionVersion}'\n`);
-  await writeFile(
-    join(root, "specs", "README.md"),
-    "# Specs\n\n- [directives](directives.yaml)\n- [nested](nested/README.md)\n",
-  );
-  await writeFile(join(root, "specs", "nested", "rules.yaml"), `version: '${conventionVersion}'\n`);
-  await writeFile(
-    join(root, "specs", "nested", "README.md"),
-    "# Nested\n\n- [rules](rules.yaml)\n",
-  );
-  return root;
-}
+const readFile = jest.fn();
+const readdir = jest.fn();
+const listSpecificationEntries = jest.fn();
+const readCanonicalOrder = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile, readdir }));
+jest.unstable_mockModule(
+  "../../../../../../src/checks/general/E-0.1.0.1.4/list-specification-entries.mjs",
+  () => ({ listSpecificationEntries }),
+);
+jest.unstable_mockModule(
+  "../../../../../../src/validation/shared/conventions/read-canonical-order.mjs",
+  () => ({ readCanonicalOrder }),
+);
+
+const { validateSpecificationIndexes } =
+  await import("../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/indexes.mjs");
+
+const root = "/repo";
+const defaultEntries = [
+  { path: "specs/README.md", type: "file" },
+  { path: "specs/directives.yaml", type: "file" },
+  { path: "specs/nested", type: "directory" },
+  { path: "specs/nested/README.md", type: "file" },
+  { path: "specs/nested/rules.yaml", type: "file" },
+];
+const canonicalOrder = {
+  directYamlFiles: "filename-ascending",
+  subdirectoryIndexes: "directory-name-ascending",
+  placement: "after-yaml-files",
+};
+const validIndexes = [
+  "# Specs\n\n- [directives](directives.yaml)\n- [nested](nested/README.md)\n",
+  "# Nested\n\n- [rules](rules.yaml)\n",
+];
+
+beforeEach(() => {
+  readFile.mockReset();
+  listSpecificationEntries.mockReset().mockResolvedValue(defaultEntries);
+  readCanonicalOrder.mockReset().mockReturnValue(canonicalOrder);
+  readFile.mockResolvedValueOnce(validIndexes[0]).mockResolvedValueOnce(validIndexes[1]);
+});
 
 test("accepts complete navigation indexes", async () => {
-  const root = await fixture();
-  try {
-    await expect(validateSpecificationIndexes(root)).resolves.toEqual([]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  await expect(validateSpecificationIndexes(root)).resolves.toEqual([]);
+  expect(readCanonicalOrder).toHaveBeenCalledWith("specification-indexes.yaml");
 });
 
-test("sorts multiple specifications and child indexes in expected order", async () => {
-  const root = await fixture();
-  try {
-    await writeFile(join(root, "specs", "extra.yaml"), `version: '${conventionVersion}'\n`);
-    await mkdir(join(root, "specs", "alpha"));
-    await writeFile(
-      join(root, "specs", "alpha", "rules.yaml"),
-      `version: '${conventionVersion}'\n`,
-    );
-    await writeFile(
-      join(root, "specs", "alpha", "README.md"),
-      "# Alpha\n\n- [rules](rules.yaml)\n",
-    );
-    await writeFile(
-      join(root, "specs", "README.md"),
+test("sorts YAML files and child indexes in canonical order", async () => {
+  listSpecificationEntries.mockResolvedValueOnce([
+    ...defaultEntries,
+    { path: "specs/extra.yaml", type: "file" },
+    { path: "specs/alpha", type: "directory" },
+    { path: "specs/alpha/README.md", type: "file" },
+    { path: "specs/alpha/rules.yaml", type: "file" },
+  ]);
+  readFile
+    .mockReset()
+    .mockResolvedValueOnce(
       "# Specs\n\n- [directives](directives.yaml)\n- [extra](extra.yaml)\n- [alpha](alpha/README.md)\n- [nested](nested/README.md)\n",
-    );
-    await expect(validateSpecificationIndexes(root)).resolves.toEqual([]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+    )
+    .mockResolvedValueOnce("# Alpha\n\n- [rules](rules.yaml)\n")
+    .mockResolvedValueOnce(validIndexes[1]);
+  await expect(validateSpecificationIndexes(root)).resolves.toEqual([]);
 });
 
-test("uses the supplied index placement and ordering rules", async () => {
-  const root = await fixture();
-  try {
-    await writeFile(
-      join(root, "specs", "README.md"),
+test("uses supplied index placement and ordering rules", async () => {
+  readFile
+    .mockReset()
+    .mockResolvedValueOnce(
       "# Specs\n\n- [nested](nested/README.md)\n- [directives](directives.yaml)\n",
-    );
-    await expect(
-      validateSpecificationIndexes(root, {
-        readOrder: () => ({
-          directYamlFiles: "unsorted",
-          subdirectoryIndexes: "unsorted",
-          placement: "before-yaml-files",
-        }),
+    )
+    .mockResolvedValueOnce(validIndexes[1]);
+  await expect(
+    validateSpecificationIndexes(root, {
+      readOrder: () => ({
+        directYamlFiles: "unsorted",
+        subdirectoryIndexes: "unsorted",
+        placement: "before-yaml-files",
       }),
-    ).resolves.toEqual([]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+    }),
+  ).resolves.toEqual([]);
 });
 
-test("rejects missing directories, files, indexes, and invalid links", async () => {
-  await expect(validateSpecificationIndexes("missing")).resolves.toContain(
+test("reports missing indexes, invalid links, unsupported files, and missing YAML files", async () => {
+  listSpecificationEntries.mockResolvedValueOnce([
+    { path: "specs/README.md", type: "file" },
+    { path: "specs/extra.txt", type: "file" },
+    { path: "specs/link", type: "unsupported" },
+    { path: "specs/nested", type: "directory" },
+    { path: "specs/nested/README.md", type: "file" },
+    { path: "specs/empty", type: "directory" },
+  ]);
+  readFile
+    .mockReset()
+    .mockResolvedValueOnce("plain text\n- [extra](extra.txt)\n- [extra](extra.txt)\n")
+    .mockRejectedValueOnce(Object.assign(new Error("missing"), { code: "ENOENT" }))
+    .mockRejectedValueOnce(Object.assign(new Error("missing"), { code: "ENOENT" }));
+  const errors = (await validateSpecificationIndexes(root)).join("\n");
+  expect(errors).toContain("navigation-only");
+  expect(errors).toContain("unexpected target");
+  expect(errors).toContain("duplicate index links");
+  expect(errors).toContain("not an allowed specs file");
+  expect(errors).toContain("README.md is required");
+  expect(errors).toContain("specs/directives.yaml is required");
+  expect(errors).toContain("must contain at least one YAML specification");
+  expect(errors).toContain("unsupported filesystem entry");
+});
+
+test("reports absent and unreadable specifications directories", async () => {
+  listSpecificationEntries.mockRejectedValueOnce(
+    Object.assign(new Error("missing"), { code: "ENOENT" }),
+  );
+  await expect(validateSpecificationIndexes(root)).resolves.toContain(
     "specs/ is required to contain indexed YAML specifications.",
   );
-  const root = await fixture();
-  try {
-    await writeFile(join(root, "specs", "extra.txt"), "extra");
-    await writeFile(
-      join(root, "specs", "README.md"),
-      "plain text\n- [extra](extra.txt)\n- [extra](extra.txt)\n",
-    );
-    await rm(join(root, "specs", "nested", "README.md"));
-    const errors = (await validateSpecificationIndexes(root)).join("\n");
-    expect(errors).toContain("navigation-only");
-    expect(errors).toContain("unexpected target");
-    expect(errors).toContain("duplicate index links");
-    expect(errors).toContain("not an allowed specs file");
-    expect(errors).toContain("README.md is required");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  listSpecificationEntries.mockRejectedValueOnce(new Error("blocked"));
+  await expect(validateSpecificationIndexes(root)).resolves.toContain(
+    "Specification discovery failed: blocked",
+  );
 });
 
-test("requires a YAML file in every specification directory", async () => {
-  const root = await fixture();
-  try {
-    await rm(join(root, "specs", "directives.yaml"));
-    await rm(join(root, "specs", "nested", "rules.yaml"));
-    const errors = (await validateSpecificationIndexes(root)).join(" ");
-    expect(errors).toContain("specs/directives.yaml is required");
-    expect(errors).toContain("specs must contain at least one YAML specification");
-    expect(errors).toContain("specs/nested must contain at least one YAML specification");
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test("rejects entries that are not files or directories", async () => {
-  const entries = [{ name: "link", isDirectory: () => false, isFile: () => false }];
-  const errors = await validateSpecificationIndexes("/repo", { readdir: async () => entries });
-  expect(errors).toContain("specs/directives.yaml is required.");
-  expect(errors).toContain("specs/link is an unsupported filesystem entry under specs/.");
-});
-
-test("reports bounded discovery errors", async () => {
-  await expect(
-    validateSpecificationIndexes("/repo", {
-      readdir: async () => {
-        throw new Error("blocked");
-      },
-    }),
-  ).resolves.toContain("Specification discovery failed: blocked");
+test("rejects index links in the wrong order", async () => {
+  readFile
+    .mockReset()
+    .mockResolvedValueOnce(
+      "# Specs\n\n- [nested](nested/README.md)\n- [directives](directives.yaml)\n",
+    )
+    .mockResolvedValueOnce(validIndexes[1]);
+  await expect(validateSpecificationIndexes(root)).resolves.toContain(
+    "specs/README.md must list index links in the required order.",
+  );
 });

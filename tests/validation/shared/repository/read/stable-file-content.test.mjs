@@ -1,8 +1,11 @@
 import { expect, jest, test } from "@jest/globals";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { readStableFileContent } from "../../../../../src/validation/shared/repository/read/stable-file-content.mjs";
+
+const stat = jest.fn();
+
+jest.unstable_mockModule("node:fs/promises", () => ({ stat }));
+
+const { readStableFileContent } =
+  await import("../../../../../src/validation/shared/repository/read/stable-file-content.mjs");
 
 const metadata = (version) => ({
   dev: 1n,
@@ -47,15 +50,20 @@ test("rejects a file that keeps changing during bounded retries", async () => {
 });
 
 test("uses filesystem stat by default", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-stable-read-"));
-  const path = join(root, "README.md");
-  await writeFile(path, "text");
+  stat.mockResolvedValue(metadata(1n));
+  const read = jest.fn().mockResolvedValue("text");
 
-  try {
-    await expect(readStableFileContent(path, readFile)).resolves.toMatchObject({
-      content: Buffer.from("text"),
-    });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  await expect(readStableFileContent("C:/repo/README.md", read)).resolves.toMatchObject({
+    content: Buffer.from("text"),
+  });
+  expect(stat).toHaveBeenCalledTimes(2);
+});
+
+test("keeps buffer content without converting it", async () => {
+  stat.mockResolvedValue(metadata(1n));
+  const content = Buffer.from("text");
+
+  await expect(
+    readStableFileContent("C:/repo/README.md", jest.fn().mockResolvedValue(content)),
+  ).resolves.toMatchObject({ content });
 });

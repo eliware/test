@@ -1,121 +1,68 @@
-import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.0.mjs";
-import { conventionVersion } from "../../../test-fixtures/helpers/project-version.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+
+const validateProfileDocumentPairs = jest.fn();
+const loadRepoMapRecord = jest.fn();
+const compareRepoMapRecord = jest.fn();
+
+jest.unstable_mockModule(
+  "../../../src/checks/general/E-0.1.0.1.0/validate/profile-document-pairs.mjs",
+  () => ({
+    validateProfileDocumentPairs,
+  }),
+);
+jest.unstable_mockModule(
+  "../../../src/checks/general/E-0.1.0.1.0/load-repo-map/record.mjs",
+  () => ({
+    loadRepoMapRecord,
+  }),
+);
+jest.unstable_mockModule(
+  "../../../src/checks/general/E-0.1.0.1.0/validate/compare-repo-map-record.mjs",
+  () => ({
+    compareRepoMapRecord,
+  }),
+);
+
+const { run, ruleId } = await import("../../../src/checks/general/E-0.1.0.1.0.mjs");
 
 const packageJson = { name: "@eliware/example", eliware: { id: "E-1", apply: ["general"] } };
 
-test("passes valid metadata when optional repository data is absent", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-rule-"));
-  try {
-    await expect(run({ root, packageJson })).resolves.toEqual({
-      ruleId,
-      status: "pass",
-      message: "",
-    });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+beforeEach(() => {
+  validateProfileDocumentPairs.mockReset().mockResolvedValue([]);
+  loadRepoMapRecord.mockReset().mockResolvedValue({ available: false, record: null, error: null });
+  compareRepoMapRecord.mockReset().mockReturnValue([]);
+});
+
+test("passes when metadata and optional repository data are valid", async () => {
+  await expect(run({ root: "repo", packageJson })).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
+  expect(loadRepoMapRecord).toHaveBeenCalledWith("repo", packageJson);
 });
 
 test("uses the current directory when context has no root", async () => {
-  await expect(run()).resolves.toMatchObject({ status: "fail" });
+  await run({ packageJson });
+  expect(loadRepoMapRecord).toHaveBeenCalledWith(process.cwd(), packageJson);
 });
 
-test("reports mismatched repo-map metadata", async () => {
-  const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
-  const root = join(base, "repo");
-  const docs = join(base, "docs");
-  await mkdir(root);
-  await mkdir(docs, { recursive: true });
-  try {
-    await writeFile(
-      join(docs, "repo-map.yaml"),
-      "repositories:\n  - repository: eliware/example\n    id: E-2\n    description: Example\n    keywords: [example]\n    profiles: [general]\n",
-    );
-    const result = await run({ root, packageJson: { ...packageJson, description: "Mismatch" } });
-    expect(result.status).toBe("fail");
-    expect(result.message).toContain("must match repo-map.yaml");
-  } finally {
-    await rm(base, { recursive: true, force: true });
-  }
+test("uses default context values when the rule receives no argument", async () => {
+  await run();
+  expect(loadRepoMapRecord).toHaveBeenCalledWith(process.cwd(), undefined);
 });
 
-test("reports an invalid repo map when one is present", async () => {
-  const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
-  const root = join(base, "repo");
-  const docs = join(base, "docs");
-  await mkdir(root);
-  await mkdir(docs);
-  try {
-    await writeFile(join(docs, "repo-map.yaml"), "repositories: [\n");
-    const result = await run({ root, packageJson });
-    expect(result.status).toBe("fail");
-    expect(result.message).toContain("repo-map.yaml is invalid YAML");
-  } finally {
-    await rm(base, { recursive: true, force: true });
-  }
-});
-
-test("passes when package metadata matches the repo map", async () => {
-  const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
-  const root = join(base, "repo");
-  const docs = join(base, "docs");
-  await mkdir(root);
-  await mkdir(docs);
-  const matchingPackage = {
-    name: "@eliware/example",
-    description: "Example",
-    keywords: ["example"],
-    eliware: { id: "E-1", apply: ["general"] },
-  };
-  try {
-    await writeFile(
-      join(docs, "repo-map.yaml"),
-      "repositories:\n  - repository: eliware/example\n    id: E-1\n    description: Example\n    keywords: [example]\n    profiles: [general]\n",
-    );
-    await expect(run({ root, packageJson: matchingPackage })).resolves.toMatchObject({
-      status: "pass",
-    });
-  } finally {
-    await rm(base, { recursive: true, force: true });
-  }
-});
-
-test("allows an optional repo map without an entry for the repository", async () => {
-  const base = await mkdtemp(join(tmpdir(), "eliware-rule-"));
-  const root = join(base, "repo");
-  const docs = join(base, "docs");
-  await mkdir(root);
-  await mkdir(docs);
-  try {
-    await writeFile(join(docs, "repo-map.yaml"), "repositories: []\n");
-    await expect(run({ root, packageJson })).resolves.toMatchObject({ status: "pass" });
-  } finally {
-    await rm(base, { recursive: true, force: true });
-  }
+test("reports invalid repository map data and comparison errors", async () => {
+  loadRepoMapRecord.mockResolvedValue({ available: true, record: null, error: "invalid map" });
+  compareRepoMapRecord.mockReturnValue(["metadata mismatch"]);
+  const result = await run({ root: "repo", packageJson });
+  expect(result.status).toBe("fail");
+  expect(result.message).toContain("invalid map");
+  expect(result.message).toContain("metadata mismatch");
 });
 
 test("reports invalid Eliware metadata", async () => {
   const result = await run({ packageJson: { eliware: { apply: ["general"], extra: true } } });
   expect(result).toMatchObject({ status: "fail" });
   expect(result.message).toContain("ordered keys");
-});
-
-test("ignores consumer convention files when it checks bundled profiles", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-rule-"));
-  const directory = join(root, "specs", "conventions");
-  await mkdir(directory, { recursive: true });
-  try {
-    await writeFile(join(directory, "general-semantic.yaml"), `version: '${conventionVersion}'\n`);
-    await writeFile(
-      join(directory, "general-deterministic.yaml"),
-      `version: '${conventionVersion}.1'\n`,
-    );
-    await expect(run({ root, packageJson })).resolves.toMatchObject({ status: "pass" });
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
 });

@@ -1,165 +1,120 @@
-import { afterEach, expect, jest, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 import { nextPatchVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
-import { installSmokeCandidate } from "../../../../src/validation/stages/smoke/install-smoke-candidate.mjs";
-import { packageJson } from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
+import { packageJson } from "../../../../test-fixtures/helpers/smoke-package.mjs";
 
-let roots = [];
+const lstat = jest.fn();
+const readFile = jest.fn();
+const rm = jest.fn();
+const fileSystem = await import("node:fs/promises");
+const createRequire = jest.fn(() => ({ resolve: (specifier) => specifier }));
+const moduleApi = await import("node:module");
 
-afterEach(async () => {
-  await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
-  roots = [];
-});
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, readFile, rm }));
+jest.unstable_mockModule("node:module", () => ({ ...moduleApi, createRequire }));
 
-async function setup() {
-  const targetRoot = await mkdtemp(join(tmpdir(), "eliware-install-smoke-test-"));
-  roots.push(targetRoot);
-  const installed = join(targetRoot, "node_modules", "@eliware", "test");
-  await mkdir(installed, { recursive: true });
-  await writeFile(
-    join(installed, "package.json"),
-    JSON.stringify({ name: packageJson.name, version: packageJson.version }),
-  );
-  return { targetRoot, installed };
-}
+const { installSmokeCandidate } =
+  await import("../../../../src/validation/stages/smoke/install-smoke-candidate.mjs");
 
-async function installMock(targetRoot, version = packageJson.version, name = packageJson.name) {
-  const installed = join(targetRoot, "node_modules", "@eliware", "test");
-  await mkdir(installed, { recursive: true });
-  await writeFile(join(installed, "package.json"), JSON.stringify({ name, version }));
-}
+const targetRoot = "C:/consumer";
+const installedPackage = {
+  name: packageJson.name,
+  version: packageJson.version,
+  bin: packageJson.bin,
+};
+const directory = () => ({ isDirectory: () => true, isSymbolicLink: () => false });
 
-async function installWithCli(targetRoot, manifest) {
-  const installed = join(targetRoot, "node_modules", "@eliware", "test");
-  await mkdir(join(installed, "bin"), { recursive: true });
-  await writeFile(join(installed, "package.json"), JSON.stringify(manifest));
-  await writeFile(join(installed, "bin", "eliware-test.mjs"), "export {};\n");
-}
-
-const options = (targetRoot, run) => ({
+const options = (run, overrides = {}) => ({
   targetRoot,
   packageJson,
   tarball: "candidate.tgz",
+  run,
   command: "npm",
   prefix: [],
   env: {},
   resolveModule: (specifier) => specifier,
-  run,
+  ...overrides,
+});
+
+beforeEach(() => {
+  lstat.mockReset().mockResolvedValue(directory());
+  readFile.mockReset().mockResolvedValue(JSON.stringify(installedPackage));
+  rm.mockReset().mockResolvedValue(undefined);
+  createRequire.mockClear();
 });
 
 test("installs the tarball without changing a lockfile and runs consumer npm test", async () => {
-  const { targetRoot } = await setup();
   const calls = [];
   await installSmokeCandidate(
-    options(targetRoot, async (_command, args, runOptions) => {
+    options(async (_command, args, runOptions) => {
       calls.push({ args, options: runOptions });
-      if (args[0] === "install") await installMock(targetRoot);
       return { code: 0 };
     }),
   );
+
   expect(calls.map(({ args }) => args[0])).toEqual(["install", "test"]);
   expect(calls[0].args).toEqual(expect.arrayContaining(["--package-lock=false", "--no-save"]));
   expect(calls[0].options.cwd).toBe(targetRoot);
   expect(calls[1].options.env.ELIWARE_TEST_SMOKE_CANDIDATE).toBe(packageJson.name);
+  expect(rm).toHaveBeenCalledWith(join(targetRoot, "node_modules", "@eliware", "test"), {
+    recursive: true,
+    force: true,
+  });
 });
 
 test.each([
-  [{ code: 1, stderr: "install failed" }, "install failed"],
+  [{ code: 1, stderr: "install failed" }, "Tarball installation failed: install failed"],
   [{ code: 1 }, "Tarball installation failed."],
 ])("reports tarball installation failures %#", async (installResult, message) => {
-  const { targetRoot } = await setup();
-  await expect(
-    installSmokeCandidate(options(targetRoot, async () => installResult)),
-  ).rejects.toThrow(message);
+  await expect(installSmokeCandidate(options(async () => installResult))).rejects.toThrow(message);
 });
 
 test("rejects a mismatched installed version", async () => {
-  const { targetRoot } = await setup();
-  await expect(
-    installSmokeCandidate(
-      options(targetRoot, async () => {
-        await installMock(targetRoot, nextPatchVersion);
-        return { code: 0 };
-      }),
-    ),
-  ).rejects.toThrow(
+  readFile.mockResolvedValue(JSON.stringify({ ...installedPackage, version: nextPatchVersion }));
+
+  await expect(installSmokeCandidate(options(async () => ({ code: 0 })))).rejects.toThrow(
     `Installed package version ${nextPatchVersion} does not match ${packageJson.version}`,
   );
 });
 
 test("rejects a mismatched installed package name", async () => {
-  const { targetRoot } = await setup();
-  await expect(
-    installSmokeCandidate(
-      options(targetRoot, async () => {
-        await installMock(targetRoot, packageJson.version, "@other/package");
-        return { code: 0 };
-      }),
-    ),
-  ).rejects.toThrow("Installed package @other/package does not match @eliware/test");
+  readFile.mockResolvedValue(JSON.stringify({ ...installedPackage, name: "@other/package" }));
+
+  await expect(installSmokeCandidate(options(async () => ({ code: 0 })))).rejects.toThrow(
+    "Installed package @other/package does not match @eliware/test",
+  );
 });
 
 test("rejects a CLI resolution outside the installed smoke package", async () => {
-  const { targetRoot } = await setup();
   await expect(
-    installSmokeCandidate({
-      ...options(targetRoot, async (_command, args) => {
-        if (args[0] === "install") await installMock(targetRoot);
-        return { code: 0 };
+    installSmokeCandidate(
+      options(async () => ({ code: 0 }), {
+        resolveModule: () => join(targetRoot, "other-package", "bin", "eliware-test.mjs"),
       }),
-      resolveModule: () => join(targetRoot, "other-package", "bin", "eliware-test.mjs"),
-    }),
+    ),
   ).rejects.toThrow("Consumer does not resolve the installed smoke package CLI entrypoint");
 });
 
 test("uses createRequire for CLI packages and skips resolution without a bin entry", async () => {
-  const { targetRoot } = await setup();
-  const manifest = { ...packageJson, bin: { "eliware-test": "bin/eliware-test.mjs" } };
-  const run = async (_command, args) => {
-    if (args[0] === "install") await installWithCli(targetRoot, manifest);
-    return { code: 0 };
-  };
-
+  const run = async () => ({ code: 0 });
   await expect(
-    installSmokeCandidate({
-      targetRoot,
-      packageJson: manifest,
-      tarball: "candidate.tgz",
-      run,
-      command: "npm",
-      prefix: [],
-      env: {},
-    }),
+    installSmokeCandidate(options(run, { resolveModule: undefined })),
   ).resolves.toBeUndefined();
-  const packageWithoutBin = { ...packageJson, bin: undefined };
-  const resolveModule = jest.fn();
-  const runWithoutBin = async (_command, args) => {
-    if (args[0] === "install")
-      await installMock(targetRoot, packageWithoutBin.version, packageWithoutBin.name);
-    return { code: 0 };
-  };
+  expect(createRequire).toHaveBeenCalledWith(join(targetRoot, "package.json"));
 
+  createRequire.mockClear();
   await expect(
-    installSmokeCandidate({
-      ...options(targetRoot, runWithoutBin),
-      packageJson: packageWithoutBin,
-      resolveModule,
-    }),
+    installSmokeCandidate(options(run, { packageJson: { ...packageJson, bin: undefined } })),
   ).resolves.toBeUndefined();
-  expect(resolveModule).not.toHaveBeenCalled();
+  expect(createRequire).not.toHaveBeenCalled();
 });
 
 test("reports consumer test failures", async () => {
-  const { targetRoot } = await setup();
   await expect(
     installSmokeCandidate(
-      options(targetRoot, async (_command, args) => {
-        if (args[0] === "test") return { code: 1, stdout: "test failed" };
-        await installMock(targetRoot);
-        return { code: 0 };
-      }),
+      options(async (_command, args) =>
+        args[0] === "test" ? { code: 1, stdout: "test failed" } : { code: 0 },
+      ),
     ),
   ).rejects.toThrow("Consumer npm test failed: test failed");
 });

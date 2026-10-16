@@ -77,6 +77,13 @@ test("handles an absent log path and ignores invalid streams", () => {
   expect(replace).not.toHaveBeenCalled();
 });
 
+test("uses default output operations without writing when the path is absent", () => {
+  const log = createJestConsoleOutputLog(undefined);
+  log.start();
+  log.append("stdout", "text");
+  expect(log.finish()).toEqual({ redacted: false, redactionKinds: [], writeError: false });
+});
+
 test("reports log write failures without throwing", () => {
   const replace = jest.fn(() => {
     throw new Error("write blocked");

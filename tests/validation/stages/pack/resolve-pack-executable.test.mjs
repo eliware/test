@@ -1,21 +1,12 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { expect, test } from "@jest/globals";
+import { join } from "node:path";
 import { resolvePackExecutable } from "../../../../src/validation/stages/pack/resolve-pack-executable.mjs";
 
-test("resolves a relative npm_execpath from the package root", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pack-npm-path-"));
-  const npmCli = join(root, "npm-cli.js");
-  await mkdir(root, { recursive: true });
-  await writeFile(npmCli, "");
-  try {
-    expect(
-      resolvePackExecutable({ npm_execpath: "npm-cli.js" }, "linux", process.execPath, root),
-    ).toEqual([process.execPath, [npmCli]]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+test("resolves a relative npm_execpath from the package root", () => {
+  const root = "C:/repo";
+  expect(
+    resolvePackExecutable({ npm_execpath: "npm-cli.js" }, "linux", process.execPath, root),
+  ).toEqual([process.execPath, [join(root, "npm-cli.js")]]);
 });
 
 test("uses the platform fallback when npm_execpath cannot be resolved", () => {

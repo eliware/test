@@ -1,8 +1,13 @@
-import { lstat, mkdtemp } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { expect, jest, test } from "@jest/globals";
-import { finishSmokeRun } from "../../../../src/validation/stages/smoke/finish-smoke-run.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+
+const lstat = jest.fn();
+const rm = jest.fn();
+const fileSystem = await import("node:fs/promises");
+
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, rm }));
+
+const { finishSmokeRun } =
+  await import("../../../../src/validation/stages/smoke/finish-smoke-run.mjs");
 
 const base = {
   outcome: "Smoke passed.",
@@ -12,6 +17,16 @@ const base = {
   tempRoot: "temporary",
   tempIdentity: {},
 };
+
+beforeEach(() => {
+  lstat.mockReset().mockResolvedValue({
+    dev: 1,
+    ino: 2,
+    isDirectory: () => true,
+    isSymbolicLink: () => false,
+  });
+  rm.mockReset().mockResolvedValue(undefined);
+});
 
 test("restores prior state and appends cleanup diagnostics", async () => {
   const cleanup = jest.fn().mockResolvedValue("Temporary directory left untouched.");
@@ -62,13 +77,19 @@ test("appends cleanup diagnostics after a successful restore", async () => {
 });
 
 test("uses the default cleanup for the verified temporary directory", async () => {
-  const tempRoot = await mkdtemp(join(tmpdir(), "eliware-smoke-finish-"));
+  const tempRoot = "C:/temp/smoke";
+  const tempIdentity = {
+    dev: 1,
+    ino: 2,
+    isDirectory: () => true,
+    isSymbolicLink: () => false,
+  };
   const result = await finishSmokeRun({
     ...base,
     state: undefined,
     tempRoot,
-    tempIdentity: await lstat(tempRoot),
+    tempIdentity,
   });
   expect(result).toBe("Smoke passed.");
-  await expect(lstat(tempRoot)).rejects.toThrow();
+  expect(rm).toHaveBeenCalledWith(tempRoot, { recursive: true, force: true });
 });

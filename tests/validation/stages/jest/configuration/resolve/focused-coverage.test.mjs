@@ -1,15 +1,18 @@
-import { expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { resolveFocusedCoverage } from "../../../../../../src/validation/stages/jest/configuration/resolve/focused-coverage.mjs";
+
+const access = jest.fn();
+
+jest.unstable_mockModule("node:fs/promises", () => ({ access }));
+
+const { resolveFocusedCoverage } =
+  await import("../../../../../../src/validation/stages/jest/configuration/resolve/focused-coverage.mjs");
+
+const root = "C:/repo";
+
+beforeEach(() => access.mockReset().mockResolvedValue(undefined));
 
 test("maps mirrored tests across root, case, and separator variants", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-roots-"));
-  await mkdir(join(root, "src"));
-  await mkdir(join(root, "tests"));
-  await writeFile(join(root, "src", "sample.mjs"), "export {};");
-  await writeFile(join(root, "tests", "sample.test.mjs"), 'test("sample", () => {});');
   for (const focusedPath of [
     "tests/sample.test.mjs",
     "tests\\sample.test.mjs",
@@ -21,15 +24,10 @@ test("maps mirrored tests across root, case, and separator variants", async () =
       "src/sample.mjs",
     ]);
   }
-  await rm(root, { recursive: true, force: true });
+  expect(access).toHaveBeenCalledWith(join(root, "src", "sample.mjs"));
 });
 
 test("selects coverage for each focused test source", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-multiple-coverage-"));
-  await mkdir(join(root, "src", "nested"), { recursive: true });
-  await mkdir(join(root, "tests", "nested"), { recursive: true });
-  await writeFile(join(root, "src", "one.mjs"), "export {};\n");
-  await writeFile(join(root, "src", "nested", "two.mjs"), "export {};\n");
   await expect(
     resolveFocusedCoverage(root, ["tests/one.test.mjs", "tests/nested/two.spec.mjs"]),
   ).resolves.toEqual([
@@ -38,63 +36,36 @@ test("selects coverage for each focused test source", async () => {
     "--collectCoverageFrom",
     "src/nested/two.mjs",
   ]);
-  await rm(root, { recursive: true, force: true });
 });
 
-test("maps .mts and .cts tests to the native ESM source module", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-typed-test-"));
-  await mkdir(join(root, "src"));
-  await mkdir(join(root, "tests"));
-  await writeFile(join(root, "src", "sample.mjs"), "export {};");
-  for (const extension of ["mts", "cts"]) {
-    await writeFile(join(root, "tests", `sample.test.${extension}`), 'test("sample", () => {});');
-    await expect(resolveFocusedCoverage(root, `tests/sample.test.${extension}`)).resolves.toEqual([
-      "--collectCoverageFrom",
-      "src/sample.mjs",
-    ]);
-  }
-  await rm(root, { recursive: true, force: true });
-});
-
-test("maps every advertised focused extension to its mirrored source file", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-extension-"));
-  await mkdir(join(root, "src"));
-  await mkdir(join(root, "tests"));
+test("maps typed tests to native ESM sources and preserves other extensions", async () => {
+  const focusedPaths = ["tests/sample.test.mts", "tests/sample.test.cts"];
+  await expect(resolveFocusedCoverage(root, focusedPaths)).resolves.toEqual([
+    "--collectCoverageFrom",
+    "src/sample.mjs",
+    "--collectCoverageFrom",
+    "src/sample.mjs",
+  ]);
   for (const extension of ["js", "jsx", "ts", "tsx", "mjs", "cjs"]) {
-    await writeFile(join(root, "src", `example.${extension}`), "export {};\n");
-    await writeFile(join(root, "tests", `example.test.${extension}`), "test('ok', () => {});\n");
     await expect(resolveFocusedCoverage(root, `tests/example.test.${extension}`)).resolves.toEqual([
       "--collectCoverageFrom",
       `src/example.${extension}`,
     ]);
   }
-  await rm(root, { recursive: true, force: true });
 });
 
 test("ignores aggregate and non-test arguments", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
   await expect(resolveFocusedCoverage(root, null)).resolves.toEqual([]);
   await expect(resolveFocusedCoverage(root, "README.md")).resolves.toEqual([]);
   await expect(resolveFocusedCoverage(root, "tests/sample.mjs")).resolves.toEqual([]);
-  await expect(resolveFocusedCoverage(root, "tests/sample.mjs")).resolves.toEqual([]);
-  await rm(root, { recursive: true, force: true });
+  await expect(resolveFocusedCoverage(root, "specs/sample.spec.mjs")).resolves.toEqual([]);
+  expect(access).not.toHaveBeenCalled();
 });
 
-test("rejects specification roots and propagates non-missing filesystem errors", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
-  await mkdir(join(root, "src"));
-  await writeFile(join(root, "src", "specimen.mjs"), "export {};");
-  await expect(resolveFocusedCoverage(root, "specs/specimen.spec.mjs")).resolves.toEqual([]);
-  const fileRoot = join(root, "not-a-directory");
-  await writeFile(fileRoot, "file");
-  await expect(resolveFocusedCoverage(fileRoot, "tests/missing.test.mjs")).rejects.toThrow();
-  await rm(root, { recursive: true, force: true });
-});
+test("rejects focused tests without a mirrored source file", async () => {
+  access.mockRejectedValue(new Error("missing source"));
 
-test("fails focused coverage when the mirrored source does not exist", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-test-"));
   await expect(resolveFocusedCoverage(root, "tests/missing.test.mjs")).rejects.toThrow(
     "Focused test has no mirrored source file: src/missing.mjs.",
   );
-  await rm(root, { recursive: true, force: true });
 });

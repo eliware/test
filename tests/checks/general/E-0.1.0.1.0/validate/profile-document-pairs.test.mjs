@@ -1,88 +1,66 @@
-import { expect, test } from "@jest/globals";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { validateProfileDocumentPairs } from "../../../../../src/checks/general/E-0.1.0.1.0/validate/profile-document-pairs.mjs";
-import { conventionVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+
+const readdir = jest.fn();
+const readFile = jest.fn();
+
+jest.unstable_mockModule("node:fs/promises", () => ({ readdir, readFile }));
+
+const { validateProfileDocumentPairs } =
+  await import("../../../../../src/checks/general/E-0.1.0.1.0/validate/profile-document-pairs.mjs");
+
+const version = "13.0";
+
+beforeEach(() => {
+  readdir.mockReset();
+  readFile.mockReset();
+});
 
 test("accepts a missing bundled directory", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));
-  try {
-    expect(await validateProfileDocumentPairs({ directory: join(root, "missing") })).toEqual([]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  readdir.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
+  await expect(validateProfileDocumentPairs({ directory: "C:/missing" })).resolves.toEqual([]);
 });
 
 test("reports bundled directory access failures", async () => {
-  await expect(
-    validateProfileDocumentPairs({
-      list: async () => {
-        throw new Error("blocked");
-      },
-    }),
-  ).rejects.toThrow("blocked");
+  readdir.mockRejectedValue(new Error("blocked"));
+  await expect(validateProfileDocumentPairs()).rejects.toThrow("blocked");
 });
 
 test("reads bundled profiles instead of consumer profile files", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));
-  const directory = join(root, "specs", "conventions");
-  await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, "general-semantic.yaml"), "invalid: [\n");
+  readdir.mockResolvedValue(["general-semantic.yaml", "general-deterministic.yaml"]);
+  readFile.mockResolvedValue(`version: '${version}'\n`);
+
   await expect(validateProfileDocumentPairs()).resolves.toEqual([]);
-  await rm(root, { recursive: true, force: true });
+  expect(readdir).toHaveBeenCalledWith(expect.any(URL));
+  expect(readFile).toHaveBeenCalledTimes(2);
 });
 
 test("reports paired version mismatches", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));
-  const directory = join(root, "specs", "conventions");
-  await mkdir(directory, { recursive: true });
-  try {
-    await writeFile(join(directory, "general-semantic.yaml"), `version: '${conventionVersion}'\n`);
-    await writeFile(
-      join(directory, "general-deterministic.yaml"),
-      `version: '${conventionVersion}.1'\n`,
-    );
-    expect(await validateProfileDocumentPairs({ directory })).toEqual([
-      "general semantic and deterministic documents must use the same version.",
-    ]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  readdir.mockResolvedValue(["general-semantic.yaml", "general-deterministic.yaml"]);
+  readFile.mockImplementation(async (path) =>
+    path.endsWith("semantic.yaml") ? `version: '${version}'\n` : `version: '${version}.1'\n`,
+  );
+
+  await expect(validateProfileDocumentPairs({ directory: "C:/profiles" })).resolves.toEqual([
+    "general semantic and deterministic documents must use the same version.",
+  ]);
 });
 
 test("ignores unmatched profiles and unrelated files", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));
-  const directory = join(root, "specs", "conventions");
-  await mkdir(directory, { recursive: true });
-  try {
-    await writeFile(join(directory, "general-semantic.yaml"), `version: '${conventionVersion}'\n`);
-    await writeFile(join(directory, "README.md"), "index\n");
-    expect(await validateProfileDocumentPairs({ directory })).toEqual([]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  readdir.mockResolvedValue(["general-semantic.yaml", "README.md"]);
+  readFile.mockResolvedValue(`version: '${version}'\n`);
+
+  await expect(validateProfileDocumentPairs({ directory: "C:/profiles" })).resolves.toEqual([]);
 });
 
 test("rejects malformed YAML and mismatched stream lengths", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));
-  const directory = join(root, "specs", "conventions");
-  await mkdir(directory, { recursive: true });
-  try {
-    await writeFile(join(directory, "general-semantic.yaml"), "version: [\n");
-    await expect(validateProfileDocumentPairs({ directory })).rejects.toThrow();
-    await writeFile(
-      join(directory, "general-semantic.yaml"),
-      `version: '${conventionVersion}'\n---\nversion: '${conventionVersion}'\n`,
-    );
-    await writeFile(
-      join(directory, "general-deterministic.yaml"),
-      `version: '${conventionVersion}'\n`,
-    );
-    expect(await validateProfileDocumentPairs({ directory })).toContain(
-      "general semantic and deterministic documents must use the same stream length.",
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  readdir.mockResolvedValue(["general-semantic.yaml"]);
+  readFile.mockResolvedValue("version: [\n");
+  await expect(validateProfileDocumentPairs({ directory: "C:/profiles" })).rejects.toThrow();
+
+  readdir.mockResolvedValue(["general-semantic.yaml", "general-deterministic.yaml"]);
+  readFile.mockResolvedValueOnce(`version: '${version}'\n---\nversion: '${version}'\n`);
+  readFile.mockResolvedValueOnce(`version: '${version}'\n`);
+  await expect(validateProfileDocumentPairs({ directory: "C:/profiles" })).resolves.toContain(
+    "general semantic and deterministic documents must use the same stream length.",
+  );
 });

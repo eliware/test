@@ -1,8 +1,11 @@
 import { expect, jest, test } from "@jest/globals";
-import { executeFormatterValidation } from "../../../../src/validation/stages/format/execute-formatter-validation.mjs";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+const resolveFocusedFormatterPaths = jest.fn();
+jest.unstable_mockModule(
+  "../../../../src/validation/stages/format/resolve/focused-formatter-paths.mjs",
+  () => ({ resolveFocusedFormatterPaths }),
+);
+const { executeFormatterValidation } =
+  await import("../../../../src/validation/stages/format/execute-formatter-validation.mjs");
 
 test("runs format and format-check modes with the correct write setting", async () => {
   const calls = [];
@@ -95,62 +98,53 @@ test("rejects forwarded formatter options that can change mode, config, or file 
 });
 
 test("skips disabled or unrelated formatter stages and scopes focused paths", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-format-"));
-  await mkdir(join(root, "tests"), { recursive: true });
-  await mkdir(join(root, "src"), { recursive: true });
-  await writeFile(join(root, "tests", "example.test.mjs"), "test('example', () => {});\n");
-  await writeFile(join(root, "src", "example.mjs"), "export {};\n");
+  const root = "C:/repo";
+  resolveFocusedFormatterPaths.mockResolvedValue(["tests/example.test.mjs", "src/example.mjs"]);
   const runFormatter = jest.fn(async () => ({ code: 0 }));
-  try {
-    await expect(
-      executeFormatterValidation({
-        executeFormat: false,
-        mode: null,
-        runFormatter,
-        toolArgs: ["--write"],
-      }),
-    ).resolves.toBeNull();
-    await expect(
-      executeFormatterValidation({
-        executeFormat: true,
-        mode: "lint",
-        runFormatter,
-        toolArgs: ["--write"],
-      }),
-    ).resolves.toBeNull();
-    await executeFormatterValidation({
-      root,
-      executeFormat: true,
-      mode: "format-check",
-      focusedScope: { paths: ["tests/example.test.mjs", "src/example.mjs"] },
+  await expect(
+    executeFormatterValidation({
+      executeFormat: false,
+      mode: null,
       runFormatter,
-    });
-    expect(runFormatter).toHaveBeenCalledWith(
-      root,
-      expect.objectContaining({
-        paths: ["tests/example.test.mjs", "src/example.mjs"],
-      }),
-    );
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+      toolArgs: ["--write"],
+    }),
+  ).resolves.toBeNull();
+  await expect(
+    executeFormatterValidation({
+      executeFormat: true,
+      mode: "lint",
+      runFormatter,
+      toolArgs: ["--write"],
+    }),
+  ).resolves.toBeNull();
+  await executeFormatterValidation({
+    root,
+    executeFormat: true,
+    mode: "format-check",
+    focusedScope: { paths: ["tests/example.test.mjs", "src/example.mjs"] },
+    runFormatter,
+  });
+  expect(resolveFocusedFormatterPaths).toHaveBeenCalledWith(root, {
+    paths: ["tests/example.test.mjs", "src/example.mjs"],
+  });
+  expect(runFormatter).toHaveBeenCalledWith(
+    root,
+    expect.objectContaining({ paths: ["tests/example.test.mjs", "src/example.mjs"] }),
+  );
 });
 
 test("fails closed when a focused formatting path does not exist", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-focused-format-missing-"));
+  const root = "C:/repo";
+  resolveFocusedFormatterPaths.mockResolvedValue(undefined);
   const runFormatter = jest.fn(async () => ({ code: 0 }));
-  try {
-    await expect(
-      executeFormatterValidation({
-        root,
-        executeFormat: true,
-        mode: "format-check",
-        focusedScope: { paths: ["src/missing.mjs"] },
-        runFormatter,
-      }),
-    ).resolves.toBe("Focused formatting requires at least one resolved path.");
-    expect(runFormatter).not.toHaveBeenCalled();
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  await expect(
+    executeFormatterValidation({
+      root,
+      executeFormat: true,
+      mode: "format-check",
+      focusedScope: { paths: ["src/missing.mjs"] },
+      runFormatter,
+    }),
+  ).resolves.toBe("Focused formatting requires at least one resolved path.");
+  expect(runFormatter).not.toHaveBeenCalled();
 });

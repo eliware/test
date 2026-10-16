@@ -1,10 +1,20 @@
 import { expect, jest, test } from "@jest/globals";
-import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { createRepositoryInventory } from "../../../../../../src/validation/shared/repository/create-repository/inventory.mjs";
 import { createDocumentationFileView } from "../../../../../../src/validation/shared/repository/create-repository/inventory/documentation.mjs";
-import { repositoryDocumentationRecords as records } from "../../../../../../test-fixtures/repository-documentation-records.mjs";
+
+const records = [
+  { path: "README.md", type: "file", depth: 0 },
+  { path: "examples", type: "directory", depth: 1 },
+  { path: "docs", type: "directory", depth: 1 },
+  { path: "docs/index.md", type: "file", depth: 1 },
+  { path: "docs/record.json", type: "file", depth: 1 },
+  { path: "docs/nested", type: "directory", depth: 2 },
+  { path: "docs/nested/record.json", type: "file", depth: 2 },
+  { path: "docs/build", type: "directory", depth: 2 },
+  { path: "docs/build/index.md", type: "file", depth: 2 },
+  { path: "docs/node_modules", type: "directory", depth: 2 },
+  { path: "docs/node_modules/dependency.md", type: "file", depth: 2 },
+];
 
 test("builds a documentation view directly from scoped entries", async () => {
   const documentationFiles = createDocumentationFileView("/repo", async () => [
@@ -12,6 +22,30 @@ test("builds a documentation view directly from scoped entries", async () => {
     { path: "docs/guide.md", type: "file", depth: 1 },
   ]);
   await expect(documentationFiles({ directory: "/repo/docs" })).resolves.toEqual(["guide.md"]);
+});
+
+test("uses traversal callbacks to select files and skip excluded paths", async () => {
+  const findEntries = jest.fn(async (_root, _readDirectory, options) => {
+    options.onFile("docs/guide.md");
+    options.onFile("docs/notes.txt");
+    options.onFile("docs/build/generated.md");
+    options.onFile("docs/node_modules/dependency.md");
+    return [
+      { path: "docs", type: "directory", depth: 1 },
+      { path: "docs/guide.md", type: "file", depth: 1 },
+      { path: "docs/notes.txt", type: "file", depth: 1 },
+      { path: "docs/build", type: "directory", depth: 2 },
+      { path: "docs/build/generated.md", type: "file", depth: 2 },
+      { path: "docs/node_modules", type: "directory", depth: 2 },
+      { path: "docs/node_modules/dependency.md", type: "file", depth: 2 },
+    ];
+  });
+  const inventory = createRepositoryInventory("/repo", { findEntries });
+
+  await expect(inventory.documentationFiles({ directory: "/repo/docs" })).resolves.toEqual([
+    "guide.md",
+    "notes.txt",
+  ]);
 });
 
 test("shares scoped documentation discovery and enforces traversal limits", async () => {
@@ -95,8 +129,13 @@ test("enforces traversal depth for files even when ancestor directory entries ar
 
 test("applies depth and matching-file limits during lazy repository traversal", async () => {
   const findEntries = jest.fn(async (_root, _readDirectory, options) => {
+    options.maxDepthFilter("docs/index.md");
+    options.maxDepthFilter("docs/build/index.md");
+    options.maxDepthFilter("docs/node_modules/dependency.md");
     options.onFile("docs/index.md");
     options.onFile("docs/other.md");
+    options.onFile("docs/build/index.md");
+    options.onFile("docs/node_modules/dependency.md");
     return records;
   });
   const inventory = createRepositoryInventory("/repo", { findEntries });
@@ -137,29 +176,15 @@ test("bounds lazy traversal by all non-generated files, including predicate miss
 });
 
 test("keeps generated files out of scoped depth and result limits unless included", async () => {
-  const root = await mkdtemp(join(tmpdir(), "eliware-documentation-limits-"));
-  await mkdir(join(root, "docs", "build", "nested"), { recursive: true });
-  await writeFile(join(root, "docs", "build", "nested", "index.md"), "generated");
-  try {
-    const included = createRepositoryInventory(root, {
-      readDirectory: readdir,
-      expandedDirectories: ["docs"],
-    });
-    await expect(
-      included.documentationFiles({ directory: join(root, "docs"), includeGenerated: true }),
-    ).resolves.toEqual(["build/nested/index.md"]);
-    const excluded = createRepositoryInventory(root, {
-      readDirectory: readdir,
-      expandedDirectories: ["docs"],
-    });
-    await expect(
-      excluded.documentationFiles({
-        directory: join(root, "docs"),
-        maxDepth: 0,
-        maxFiles: 0,
-      }),
-    ).resolves.toEqual([]);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
+  const root = "/repo";
+  const included = createRepositoryInventory(root, { findEntries: async () => records });
+  await expect(
+    included.documentationFiles({ directory: `${root}/docs`, includeGenerated: true }),
+  ).resolves.toEqual(["index.md", "record.json", "nested/record.json", "build/index.md"]);
+  const excluded = createRepositoryInventory(root, { findEntries: async () => records });
+  await expect(excluded.documentationFiles({ directory: `${root}/docs` })).resolves.toEqual([
+    "index.md",
+    "record.json",
+    "nested/record.json",
+  ]);
 });

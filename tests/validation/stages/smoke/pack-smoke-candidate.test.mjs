@@ -1,28 +1,20 @@
-import { afterEach, expect, test } from "@jest/globals";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 import { nextPatchVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
-import { packSmokeCandidate } from "../../../../src/validation/stages/smoke/pack-smoke-candidate.mjs";
-import {
-  packageJson,
-  packedFiles,
-} from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
+import { packageJson, packedFiles } from "../../../../test-fixtures/helpers/smoke-package.mjs";
 
-let roots = [];
+const readFile = jest.fn();
 
-afterEach(async () => {
-  await Promise.all(roots.map((root) => rm(root, { recursive: true, force: true })));
-  roots = [];
-});
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
 
-async function setup() {
-  const root = await mkdtemp(join(tmpdir(), "eliware-pack-smoke-test-"));
-  roots.push(root);
-  const packDirectory = join(root, "pack");
-  await mkdir(packDirectory);
-  await writeFile(join(packDirectory, "candidate.tgz"), "candidate");
-  const stdout = JSON.stringify([
+const { packSmokeCandidate } =
+  await import("../../../../src/validation/stages/smoke/pack-smoke-candidate.mjs");
+
+const root = "C:/source";
+const packDirectory = join(root, "pack");
+
+function validManifest() {
+  return JSON.stringify([
     {
       name: packageJson.name,
       version: packageJson.version,
@@ -30,28 +22,37 @@ async function setup() {
       files: packedFiles.map((path) => ({ path })),
     },
   ]);
-  const run = async (_command, args, options) => ({
-    code: 0,
-    stdout,
-    args,
-    options,
-  });
-  return { root, packDirectory, stdout, run };
 }
 
-test("packs and validates the candidate, reporting its digest", async () => {
-  const fixture = await setup();
-  const result = await packSmokeCandidate({
-    root: fixture.root,
+function options(run, stdout = validManifest()) {
+  return {
+    root,
     packageJson,
-    run: fixture.run,
+    run: async (...args) => ({ code: 0, stdout, args }),
     command: "npm",
     prefix: [],
-    packDirectory: fixture.packDirectory,
+    packDirectory,
     env: {},
-  });
-  expect(result.tarball).toBe(join(fixture.packDirectory, "candidate.tgz"));
+    ...run,
+  };
+}
+
+beforeEach(() => {
+  readFile.mockReset().mockResolvedValue(Buffer.from("candidate"));
+});
+
+test("packs and validates the candidate, reporting its digest", async () => {
+  const run = jest.fn(async (_command, args, runOptions) => ({
+    code: 0,
+    stdout: validManifest(),
+    args,
+    options: runOptions,
+  }));
+  const result = await packSmokeCandidate(options({ run }));
+
+  expect(result.tarball).toBe(join(packDirectory, "candidate.tgz"));
   expect(result.digest).toMatch(/^[a-f0-9]{64}$/u);
+  expect(readFile).toHaveBeenCalledWith(result.tarball);
 });
 
 test.each([
@@ -60,18 +61,7 @@ test.each([
   [{ code: 0, stdout: null }, "safe tarball filename"],
   [{ code: 0, stdout: "not-json" }, "safe tarball filename"],
 ])("rejects unsuccessful or invalid npm pack results %#", async (result, message) => {
-  const fixture = await setup();
-  await expect(
-    packSmokeCandidate({
-      root: fixture.root,
-      packageJson,
-      run: async () => result,
-      command: "npm",
-      prefix: [],
-      packDirectory: fixture.packDirectory,
-      env: {},
-    }),
-  ).rejects.toThrow(message);
+  await expect(packSmokeCandidate(options({ run: async () => result }))).rejects.toThrow(message);
 });
 
 test.each([
@@ -91,33 +81,12 @@ test.each([
 ])(
   "rejects a pack manifest that does not describe the source package %#",
   async (change, error) => {
-    const fixture = await setup();
-    await expect(
-      packSmokeCandidate({
-        root: fixture.root,
-        packageJson,
-        run: async () => ({ code: 0, stdout: change(fixture.stdout) }),
-        command: "npm",
-        prefix: [],
-        packDirectory: fixture.packDirectory,
-        env: {},
-      }),
-    ).rejects.toThrow(error);
+    await expect(packSmokeCandidate(options({}, change(validManifest())))).rejects.toThrow(error);
   },
 );
 
 test("rejects a missing tarball after the package manifest passes", async () => {
-  const fixture = await setup();
-  await rm(join(fixture.packDirectory, "candidate.tgz"));
-  await expect(
-    packSmokeCandidate({
-      root: fixture.root,
-      packageJson,
-      run: fixture.run,
-      command: "npm",
-      prefix: [],
-      packDirectory: fixture.packDirectory,
-      env: {},
-    }),
-  ).rejects.toThrow();
+  readFile.mockRejectedValue(new Error("missing tarball"));
+
+  await expect(packSmokeCandidate(options({}))).rejects.toThrow("missing tarball");
 });

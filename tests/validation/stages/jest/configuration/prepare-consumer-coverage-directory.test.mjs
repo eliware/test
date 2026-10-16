@@ -1,56 +1,58 @@
-import { afterEach, expect, test } from "@jest/globals";
-import { lstat, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { prepareConsumerCoverageDirectory } from "../../../../../src/validation/stages/jest/configuration/prepare-consumer-coverage-directory.mjs";
 
-const roots = [];
+const lstat = jest.fn();
+const mkdir = jest.fn();
+const readdir = jest.fn();
+const rm = jest.fn();
+const fileSystem = await import("node:fs/promises");
 
-afterEach(async () => {
-  await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
+jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, mkdir, readdir, rm }));
+
+const { prepareConsumerCoverageDirectory } =
+  await import("../../../../../src/validation/stages/jest/configuration/prepare-consumer-coverage-directory.mjs");
+
+const root = "C:/consumer";
+const coverage = join(root, "coverage");
+
+beforeEach(() => {
+  lstat.mockReset();
+  mkdir.mockReset().mockResolvedValue(undefined);
+  readdir.mockReset();
+  rm.mockReset().mockResolvedValue(undefined);
 });
 
-async function createRoot() {
-  const root = await mkdtemp(join(tmpdir(), "eliware-coverage-root-"));
-  roots.push(root);
-  return root;
-}
-
 test("creates the consumer coverage directory when it does not exist", async () => {
-  const root = await createRoot();
-  const directory = await prepareConsumerCoverageDirectory(root);
-  expect(directory).toBe(join(root, "coverage"));
-  await expect(lstat(directory)).resolves.toMatchObject({});
+  lstat.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
+
+  await expect(prepareConsumerCoverageDirectory(root)).resolves.toBe(coverage);
+  expect(mkdir).toHaveBeenCalledWith(coverage, { recursive: true });
 });
 
 test("removes old files and nested directories from consumer coverage", async () => {
-  const root = await createRoot();
-  const directory = join(root, "coverage");
-  await mkdir(join(directory, "old"), { recursive: true });
-  await writeFile(join(directory, "old", "report.json"), "old");
+  lstat.mockResolvedValue({ isSymbolicLink: () => false, isDirectory: () => true });
+  readdir.mockResolvedValue(["old", "report.json"]);
 
-  await prepareConsumerCoverageDirectory(root);
-
-  await expect(readFile(join(directory, "old", "report.json"), "utf8")).rejects.toMatchObject({
-    code: "ENOENT",
+  await expect(prepareConsumerCoverageDirectory(root)).resolves.toBe(coverage);
+  expect(rm).toHaveBeenNthCalledWith(1, join(coverage, "old"), { recursive: true, force: true });
+  expect(rm).toHaveBeenNthCalledWith(2, join(coverage, "report.json"), {
+    recursive: true,
+    force: true,
   });
 });
 
 test("rejects a coverage symbolic link", async () => {
-  const root = await createRoot();
-  const target = join(root, "target");
-  await mkdir(target);
-  await symlink(target, join(root, "coverage"), "junction");
+  lstat.mockResolvedValue({ isSymbolicLink: () => true, isDirectory: () => false });
 
   await expect(prepareConsumerCoverageDirectory(root)).rejects.toThrow(
     "coverage must not be a symbolic link.",
   );
-  await expect(lstat(target)).resolves.toMatchObject({ isDirectory: expect.any(Function) });
+  expect(readdir).not.toHaveBeenCalled();
 });
 
 test("rejects a coverage path that is a file", async () => {
-  const root = await createRoot();
-  await writeFile(join(root, "coverage"), "not a directory");
+  lstat.mockResolvedValue({ isSymbolicLink: () => false, isDirectory: () => false });
+
   await expect(prepareConsumerCoverageDirectory(root)).rejects.toThrow(
     "coverage must be a directory.",
   );
