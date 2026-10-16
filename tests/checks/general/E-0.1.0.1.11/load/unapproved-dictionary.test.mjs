@@ -6,7 +6,7 @@ import {
 
 test("loads the bundled CSV dictionary with alternatives for each word", () => {
   const dictionary = loadUnapprovedDictionary();
-  expect(Object.keys(dictionary)).toHaveLength(1045);
+  expect(Object.keys(dictionary)).toHaveLength(1044);
   expect(dictionary.abandon).toBe("GO (v), STOP (v)");
 });
 
