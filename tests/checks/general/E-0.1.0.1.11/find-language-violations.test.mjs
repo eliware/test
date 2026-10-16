@@ -1,7 +1,15 @@
 import { expect, test } from "@jest/globals";
 import { findLanguageViolations } from "../../../../src/checks/general/E-0.1.0.1.11/find-language-violations.mjs";
 
-const dictionary = { abrupt: ["SUDDEN (adj)"], "close to": ["NEAR (prep)"], "": ["invalid"] };
+const dictionary = { abrupt: "SUDDEN (adj)", "close to": "NEAR (prep)", "": "invalid" };
+
+function expectedLanguageFinding(path, line, word, alternatives) {
+  return [
+    `${path}:${line} uses "${word}"; suggested alternatives: ${alternatives}.`,
+    "These suggestions are not exhaustive or mandatory.",
+    "Rewrite the text with clear, grammatical language without the listed term.",
+  ].join(" ");
+}
 
 test("reports directive limits, semicolons, and dictionary alternatives", () => {
   const longInstruction = Array(21).fill("safe").join(" ");
@@ -17,8 +25,8 @@ test("reports directive limits, semicolons, and dictionary alternatives", () => 
   expect(errors).toEqual([
     "specs/directives.yaml:4 directive has 25 words; limit is 20.",
     "specs/directives.yaml:4 directive uses a semicolon.",
-    'specs/directives.yaml:4 uses "abrupt"; approved alternatives: SUDDEN (adj).',
-    'specs/directives.yaml:4 uses "close to"; approved alternatives: NEAR (prep).',
+    expectedLanguageFinding("specs/directives.yaml", 4, "abrupt", "SUDDEN (adj)"),
+    expectedLanguageFinding("specs/directives.yaml", 4, "close to", "NEAR (prep)"),
     "specs/directives.yaml:8 sentence 1 has 26 words; limit is 25.",
   ]);
 });
@@ -40,7 +48,7 @@ test("reports paragraph limits and matches whole words without matching longer w
     ),
   ).toEqual([
     "README.md:1 paragraph has 7 sentences; limit is 6.",
-    'README.md:3 uses "Abrupt"; approved alternatives: SUDDEN (adj).',
+    expectedLanguageFinding("README.md", 3, "Abrupt", "SUDDEN (adj)"),
     "README.md:5 sentence 1 uses a semicolon.",
   ]);
 });
@@ -57,6 +65,34 @@ test("skips exact examples and accepts text within each limit", () => {
       ],
       dictionary,
       new Set(["the exact required words", "a direct instruction"]),
+    ),
+  ).toEqual([]);
+});
+
+test("reports a banned word when no alternatives are listed", () => {
+  expect(
+    findLanguageViolations(
+      "README.md",
+      [{ text: "Act now.", line: 1, kind: "prose" }],
+      { act: "" },
+      new Set(),
+    ),
+  ).toEqual([expectedLanguageFinding("README.md", 1, "Act", "none listed")]);
+});
+
+test("does not match dictionary words inside hyphenated compounds", () => {
+  expect(
+    findLanguageViolations(
+      "README.md",
+      [
+        {
+          text: "Use an http-request on a tcp-port with a switch-interface.",
+          line: 1,
+          kind: "prose",
+        },
+      ],
+      { request: "HTTP MESSAGE (n)", port: "TCP, UDP", switch: "SET (v)" },
+      new Set(),
     ),
   ).toEqual([]);
 });

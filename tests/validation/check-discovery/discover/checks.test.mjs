@@ -98,8 +98,11 @@ test("supports discoverAllChecks default options", async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test("uses the default filesystem and options without scanning the bundled registry", async () => {
+test("uses the bundled source checks directory by default", async () => {
   await expect(discoverAllChecks()).resolves.toEqual([]);
+  expect(readDirectory).toHaveBeenCalledWith(expect.stringMatching(/[\\/]src[\\/]checks$/u), {
+    withFileTypes: true,
+  });
 });
 
 test("treats a missing default checks directory as an empty registry", async () => {

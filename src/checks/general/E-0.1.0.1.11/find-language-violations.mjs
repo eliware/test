@@ -47,9 +47,16 @@ function findDictionaryViolations(path, block, dictionary) {
           .slice(index, index + entry.tokens.length)
           .map(({ word }) => word)
           .join(" ");
-        errors.push(
-          `${path}:${block.line} uses "${match}"; approved alternatives: ${entry.alternatives.join(", ")}.`,
-        );
+        const alternatives = entry.alternatives.length
+          ? entry.alternatives.join(", ")
+          : "none listed";
+        const location = `${path}:${block.line}`;
+        const finding = [
+          `${location} uses "${match}"; suggested alternatives: ${alternatives}.`,
+          "These suggestions are not exhaustive or mandatory.",
+          "Rewrite the text with clear, grammatical language without the listed term.",
+        ].join(" ");
+        errors.push(finding);
       }
     }
   }
@@ -59,10 +66,14 @@ function findDictionaryViolations(path, block, dictionary) {
 function prepareDictionary(dictionary) {
   if (preparedDictionaries.has(dictionary)) return preparedDictionaries.get(dictionary);
   const entries = new Map();
-  for (const [word, alternatives] of Object.entries(dictionary)) {
+  for (const [word, alternativeText] of Object.entries(dictionary)) {
     const tokens = tokenizeWords(word).map(({ word: token }) => token.toLocaleLowerCase("en-US"));
     if (!tokens.length) continue;
     const group = entries.get(tokens[0]) ?? [];
+    const alternatives = alternativeText
+      .split(",")
+      .map((alternative) => alternative.trim())
+      .filter(Boolean);
     group.push({ tokens, alternatives });
     entries.set(tokens[0], group);
   }

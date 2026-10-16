@@ -417,7 +417,10 @@ directives:
       - Check human-readable JSON values in documented prose fields.
       - Check directive items, descriptive fields, and runbook text in YAML documents.
       - Match dictionary entries as case-insensitive whole words or exact word phrases.
-      - Show the matched text, file path, line, and listed alternatives for each dictionary match.
+      - Do not match a dictionary term inside a hyphenated compound.
+      - Show the matched text, file path, line, and suggested alternatives for each dictionary match.
+      - State that suggested alternatives are not exhaustive or mandatory.
+      - Ask the writer to use clear, grammatical language without the dictionary term.
       - Load unapproved.json from the installed eliware-test package.
       - Ignore code, commands, identifiers, URLs, examples, and the dictionary itself.
       - Ignore exact sentences from bundled convention examples.

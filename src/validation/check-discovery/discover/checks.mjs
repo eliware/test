@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { compareRuleIds } from "../compare-rule-ids.mjs";
 import { discoverCheckTree } from "./check-tree.mjs";
 
-const checksRoot = join(dirname(fileURLToPath(import.meta.url)), "../../checks");
+const checksRoot = join(dirname(fileURLToPath(import.meta.url)), "../../../checks");
 export async function discoverChecks(
   groups,
   { root = checksRoot, readDirectory = readdir, importCheck = (url) => import(url) } = {},
