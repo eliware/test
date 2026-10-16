@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
+import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
+import { loadRepoMapSchema } from "./schema.mjs";
+import { validateRepoMapAgainstSchema } from "../validate-repo-map-schema.mjs";
 
 export async function loadRepoMapRecord(root, packageJson, { read = readFile } = {}) {
   const repoMapPath = join(root, "..", "docs", "repo-map.yaml");
@@ -28,6 +30,14 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
     };
   }
   const values = documents.map((document) => document.toJSON());
+  const schema = await loadRepoMapSchema(repoMapPath, read);
+  if (schema.error) return { available: true, record: null, error: schema.error };
+  if (schema.available) {
+    const schemaError = values
+      .map((value) => validateRepoMapAgainstSchema(value, schema.schema))
+      .find(Boolean);
+    if (schemaError) return { available: true, record: null, error: schemaError };
+  }
   if (!values.length || values.some((document) => !Array.isArray(document?.repositories)))
     return {
       available: true,
@@ -39,7 +49,7 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
     return {
       available: true,
       record: null,
-      error: "package.json.name cannot identify a repo-map entry.",
+      error: "The package name cannot identify a repo-map entry.",
     };
   const repository = `eliware/${match[1]}`;
   const records = values.flatMap((document) =>

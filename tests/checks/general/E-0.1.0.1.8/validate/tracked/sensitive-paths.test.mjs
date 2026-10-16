@@ -1,5 +1,6 @@
 import { expect, jest, test } from "@jest/globals";
 import { validateTrackedSensitivePaths } from "../../../../../../src/checks/general/E-0.1.0.1.8/validate/tracked/sensitive-paths.mjs";
+import { matchesRepositoryPathPattern } from "../../../../../../src/validation/check-execution/matches-repository-path-pattern.mjs";
 
 const gitIndex = (paths) =>
   Buffer.from(paths.map((path) => `100644 ${"a".repeat(40)} 0\t${path}\0`).join(""));
@@ -35,6 +36,23 @@ test("allows only the exact environment example name", async () => {
       stdout: gitIndex([".env.example", "nested/.env.example", ".env.example.local"]),
     })),
   ).resolves.toEqual(["Tracked sensitive paths are prohibited: .env.example.local."]);
+});
+
+test("skips only sensitive paths matched by the rule exemption", async () => {
+  const runGit = async () => ({
+    stdout: gitIndex([
+      "secrets/token.yaml",
+      "infrastructure/prod/secrets/key.pem",
+      "config/token/token.json",
+    ]),
+  });
+  await expect(
+    validateTrackedSensitivePaths("repo", runGit, (path) =>
+      ["secrets/**", "infrastructure/**/secrets/**"].some((pattern) =>
+        matchesRepositoryPathPattern(pattern, path),
+      ),
+    ),
+  ).resolves.toEqual(["Tracked sensitive paths are prohibited: config/token/token.json."]);
 });
 
 test("reports an unreadable Git index", async () => {

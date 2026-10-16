@@ -7,7 +7,10 @@ export async function run(context = {}, dependencies = {}) {
   const errors = await validateGitHygiene(
     context.root ?? process.cwd(),
     context.runGit ?? dependencies.runGit,
-    { readText: context.readText ?? dependencies.readText },
+    {
+      readText: context.readText ?? dependencies.readText,
+      isPathExempt: context.isPathExempt,
+    },
   );
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }

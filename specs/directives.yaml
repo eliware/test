@@ -30,10 +30,19 @@ directives:
           - Skip approved check exemptions and their discovered child checks.
           - Skip the rule and child checks when paths are omitted or empty.
           - Omit each listed repository-relative path from that rule's file inventory.
-          - Match exemption paths exactly. Do not use patterns or directory prefixes.
+          - Match a path exactly when it has no wildcard.
+          - Let * match in one path segment.
+          - Let ** match zero or more path segments.
+          - Apply path matches only to the named rule.
+          - Apply path matches to checks that read the Git index.
           - Give each rule only its own path exclusions.
           - Expose excluded paths to checks that read fixed paths directly.
           - Read /eliware/docs/repo-map.yaml only when it exists and a convention needs it.
+          - Validate repo-map.yaml with repo-map-schema.yaml beside it when that schema exists.
+          - Compare matching repository exemption lists with package exemption lists.
+          - Use an empty map list when the repository record omits exemptions.
+          - Use an empty package list when package metadata omits exemptions.
+          - Ignore object key order when comparing exemption records.
         donts:
           - Do not infer profiles from repository contents or runtime behavior.
           - Do not run validation with invalid required settings.
@@ -44,6 +53,7 @@ directives:
             registry.
           - Do not let checks select profiles or apply exemptions.
           - Do not require the optional repository map.
+          - Do not use invalid repository map or schema data.
 
       - id: E-0.0.1
         dos:

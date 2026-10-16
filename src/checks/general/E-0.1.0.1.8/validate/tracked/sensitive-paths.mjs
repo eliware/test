@@ -10,7 +10,7 @@ const protectedNames = new Set([
   "tokens",
 ]);
 
-export async function validateTrackedSensitivePaths(root, runGit) {
+export async function validateTrackedSensitivePaths(root, runGit, isPathExempt = () => false) {
   try {
     const { stdout } = await runGit("git", ["-C", root, "ls-files", "--cached", "--stage", "-z"], {
       windowsHide: true,
@@ -19,6 +19,7 @@ export async function validateTrackedSensitivePaths(root, runGit) {
     const paths = parseGitIndexEntries(stdout)
       .map(({ path }) => path)
       .filter((path) => {
+        if (isPathExempt(path)) return false;
         const parts = path.replaceAll("\\", "/").split("/");
         return parts.some((part) => {
           const name = part.toLowerCase();

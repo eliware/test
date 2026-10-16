@@ -9,7 +9,11 @@ import { validateTrackedSensitivePaths } from "../tracked/sensitive-paths.mjs";
 
 const executeFile = promisify(execFile);
 
-export async function validateGitHygiene(root, runGit = executeFile, { readText = readFile } = {}) {
+export async function validateGitHygiene(
+  root,
+  runGit = executeFile,
+  { readText = readFile, isPathExempt } = {},
+) {
   const errors = [];
   try {
     errors.push(...validateRequiredIgnoreRules(await readText(`${root}/.gitignore`, "utf8")));
@@ -19,6 +23,6 @@ export async function validateGitHygiene(root, runGit = executeFile, { readText 
   errors.push(...(await validateGitIgnoreProbes(root, runGit)));
   errors.push(...(await validateGitIgnoreFiles(root, runGit)));
   errors.push(...(await validateTrackedSymlinks(root, runGit)));
-  errors.push(...(await validateTrackedSensitivePaths(root, runGit)));
+  errors.push(...(await validateTrackedSensitivePaths(root, runGit, isPathExempt)));
   return errors;
 }

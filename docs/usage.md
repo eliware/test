@@ -51,8 +51,15 @@ The CLI does not infer profiles from files or dependencies.
 Set `package.json.eliware.exempt` only for an approved rule exemption.
 Each exemption requires a unique known `ruleId`, a justification, approver `Eli`, an approval timestamp, and an expiry date or `null`.
 
-Add a `paths` array to skip exact repository-relative paths during that rule only.
-The CLI uses exact paths. It does not match patterns or directory prefixes.
+Add a `paths` array to skip repository-relative paths during that rule only.
+Use an exact path when it has no wildcard.
+Use `*` to match in one path segment.
+Use `**` to match zero or more path segments.
+The same path rules apply to checks that read the Git index.
+
+When the Docs repo map lists a repository, its `exemptions` list must match the
+repository's package exemption list. Omitted lists count as empty lists.
+The validator checks `repo-map.yaml` against `repo-map-schema.yaml` beside it when the schema exists.
 
 Omit `paths` or use an empty array to skip the rule and its child checks.
 Use forward slashes in paths. Do not use absolute paths or dot navigation segments.

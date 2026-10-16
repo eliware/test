@@ -7,12 +7,21 @@ directives:
       - Allow ../docs/repo-map.yaml to be missing.
       - When ../docs/repo-map.yaml lists this repository, match package.json eliware.id,
         description, keywords, and applied profiles.
+      - Match package exemptions to repository map exemptions.
+      - Use an empty map list when the repository record omits exemptions.
+      - Use an empty package list when package metadata omits exemptions.
+      - Ignore object key order when exemption records match.
+      - Validate ../docs/repo-map.yaml with ../docs/repo-map-schema.yaml when that file exists.
       - When no repository entry exists, validate package metadata through the general
         package rules.
       - Give exemptions unique known check IDs, nonempty reasons, approver Eli, valid
         approvalTimestamp, and valid expiry or null.
       - Allow an optional unique paths array of repository-relative paths in each exemption.
-      - Match exemption paths exactly, without glob or prefix matching.
+      - Match a path exactly when it has no wildcard.
+      - Let * match in one path segment.
+      - Let ** match zero or more path segments.
+      - Apply each path exemption only to its named rule.
+      - Apply path exemptions to checks that read the Git index.
       - Skip the rule and child checks when paths are omitted or empty.
       - Skip listed paths only in the named rule's check.
     examples:
@@ -22,6 +31,7 @@ directives:
       - Do not accept expired or malformed exemptions.
       - Do not use AGENTS.md to supply exemption metadata.
       - Do not require a repository entry in ../docs/repo-map.yaml.
+      - Do not use repository map data that fails schema validation.
 
   - id: E-0.1.0.1.1
     dos:

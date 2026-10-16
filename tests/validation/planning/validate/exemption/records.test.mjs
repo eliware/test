@@ -57,10 +57,12 @@ test("accepts temporary exemptions without non-contract review metadata", () => 
   ).not.toThrow();
 });
 
-test("accepts exact repository-relative path exemptions", () => {
+test("accepts exact and wildcard repository-relative path exemptions", () => {
   expect(() => validateExemptionRecords([record({ paths: [] })])).not.toThrow();
   expect(() =>
-    validateExemptionRecords([record({ paths: ["docs/vendor/file.yaml"] })]),
+    validateExemptionRecords([
+      record({ paths: ["docs/vendor/file.yaml", "secrets/**", "infrastructure/**/secrets/*"] }),
+    ]),
   ).not.toThrow();
 });
 

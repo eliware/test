@@ -1,10 +1,11 @@
 import { expect, test } from "@jest/globals";
 import { scopeCheckContext } from "../../../src/validation/check-execution/scope-check-context.mjs";
 
-test("excludes exact paths from every repository inventory view", async () => {
+test("excludes matching paths from every repository inventory view", async () => {
   const entries = [
     { path: "docs/guide.md", type: "file" },
-    { path: "docs/vendor.yml", type: "file" },
+    { path: "infrastructure/cluster/secrets/token.yaml", type: "file" },
+    { path: "infrastructure/cluster/config.yaml", type: "file" },
   ];
   const context = {
     repositoryFiles: entries.map(({ path }) => path),
@@ -18,18 +19,24 @@ test("excludes exact paths from every repository inventory view", async () => {
     },
   };
 
-  const scoped = scopeCheckContext(context, ["docs/vendor.yml"]);
+  const scoped = scopeCheckContext(context, ["infrastructure/**/secrets/**"]);
 
-  await expect(scoped.repositoryInventory.files("all")).resolves.toEqual(["docs/guide.md"]);
-  await expect(scoped.repositoryInventory.repositoryFiles()).resolves.toEqual(["docs/guide.md"]);
-  await expect(scoped.repositoryInventory.focusedFiles()).resolves.toEqual(["docs/guide.md"]);
-  await expect(scoped.repositoryInventory.entries()).resolves.toEqual([entries[0]]);
-  await expect(scoped.repositoryInventory.entriesUnder("docs")).resolves.toEqual([entries[0]]);
-  await expect(scoped.repositoryInventory.directoryEntries("docs")).resolves.toEqual([entries[0]]);
-  expect(scoped.repositoryFiles).toEqual(["docs/guide.md"]);
-  expect(scoped.isPathExempt("docs\\vendor.yml")).toBe(true);
+  const expectedEntries = [entries[0], entries[2]];
+  const expectedPaths = expectedEntries.map(({ path }) => path);
+  await expect(scoped.repositoryInventory.files("all")).resolves.toEqual(expectedPaths);
+  await expect(scoped.repositoryInventory.repositoryFiles()).resolves.toEqual(expectedPaths);
+  await expect(scoped.repositoryInventory.focusedFiles()).resolves.toEqual(expectedPaths);
+  await expect(scoped.repositoryInventory.entries()).resolves.toEqual(expectedEntries);
+  await expect(scoped.repositoryInventory.entriesUnder("infrastructure")).resolves.toEqual(
+    expectedEntries,
+  );
+  await expect(scoped.repositoryInventory.directoryEntries("infrastructure")).resolves.toEqual(
+    expectedEntries,
+  );
+  expect(scoped.repositoryFiles).toEqual(expectedPaths);
+  expect(scoped.isPathExempt("infrastructure\\cluster\\secrets\\token.yaml")).toBe(true);
   expect(scoped.isPathExempt("docs/guide.md")).toBe(false);
-  expect(context.repositoryFiles).toHaveLength(2);
+  expect(context.repositoryFiles).toHaveLength(3);
 });
 
 test("preserves the original context when no paths are exempt", () => {
@@ -54,7 +61,7 @@ test("scopes inventory paths when the context has no repository file list", asyn
 });
 
 test("scopes checks without a repository inventory", () => {
-  const scoped = scopeCheckContext({}, ["docs/vendor.yml"]);
+  const scoped = scopeCheckContext({}, ["secrets/**"]);
   expect(scoped.repositoryInventory).toBeUndefined();
-  expect(scoped.isPathExempt("docs/vendor.yml")).toBe(true);
+  expect(scoped.isPathExempt("secrets/token.yaml")).toBe(true);
 });

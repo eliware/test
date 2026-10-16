@@ -2,7 +2,19 @@ import { expect, test } from "@jest/globals";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadRepoMapRecord } from "../../../../src/checks/general/E-0.1.0.1.0/load-repo-map-record.mjs";
+import { loadRepoMapRecord } from "../../../../../src/checks/general/E-0.1.0.1.0/load-repo-map/record.mjs";
+
+const mapReader = (mapSource) => async (path) => {
+  if (String(path).endsWith("repo-map-schema.yaml")) {
+    const error = new Error("not found");
+    error.code = "ENOENT";
+    throw error;
+  }
+  return mapSource;
+};
+
+const schemaReader = (mapSource, schemaSource) => async (path) =>
+  String(path).endsWith("repo-map-schema.yaml") ? schemaSource : mapSource;
 
 test("reports an absent repo map as optional", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-map-"));
@@ -52,8 +64,9 @@ test("loads the package repository record", async () => {
 });
 
 test("accepts long descriptive fields in the external repository map", async () => {
-  const read = async () =>
-    `repositories:\n  - repository: eliware/example\n    description: ${"x".repeat(150)}\n`;
+  const read = mapReader(
+    `repositories:\n  - repository: eliware/example\n    description: ${"x".repeat(150)}\n`,
+  );
   await expect(
     loadRepoMapRecord("repo", { name: "@eliware/example" }, { read }),
   ).resolves.toMatchObject({
@@ -64,8 +77,9 @@ test("accepts long descriptive fields in the external repository map", async () 
 });
 
 test("rejects duplicate repository records", async () => {
-  const read = async () =>
-    "repositories:\n  - repository: eliware/example\n    id: E-1\n  - repository: eliware/example\n    id: E-2\n";
+  const read = mapReader(
+    "repositories:\n  - repository: eliware/example\n    id: E-1\n  - repository: eliware/example\n    id: E-2\n",
+  );
   await expect(
     loadRepoMapRecord("repo", { name: "@eliware/example" }, { read }),
   ).resolves.toMatchObject({
@@ -76,8 +90,9 @@ test("rejects duplicate repository records", async () => {
 });
 
 test("counts repository records in every YAML stream document", async () => {
-  const read = async () =>
-    "repositories: []\n---\nrepositories:\n  - repository: eliware/example\n    id: E-1\n";
+  const read = mapReader(
+    "repositories: []\n---\nrepositories:\n  - repository: eliware/example\n    id: E-1\n",
+  );
   await expect(
     loadRepoMapRecord("repo", { name: "@eliware/example" }, { read }),
   ).resolves.toMatchObject({ record: { id: "E-1" }, error: null });
@@ -121,10 +136,49 @@ test("reports invalid package names and allows missing map entries", async () =>
 
 test("reports missing package metadata when a repository map exists", async () => {
   await expect(
-    loadRepoMapRecord("repo", {}, { read: async () => "repositories: []\n" }),
+    loadRepoMapRecord("repo", {}, { read: mapReader("repositories: []\n") }),
   ).resolves.toMatchObject({
     available: true,
     record: null,
-    error: "package.json.name cannot identify a repo-map entry.",
+    error: "The package name cannot identify a repo-map entry.",
   });
+});
+
+test("rejects invalid map data before it selects a repository record", async () => {
+  const schema =
+    "type: object\nrequired: [repositories]\nproperties:\n  repositories: {type: array}\nadditionalProperties: false\n";
+  const result = await loadRepoMapRecord(
+    "repo",
+    { name: "@eliware/example" },
+    { read: schemaReader("repositories: []\nextra: true\n", schema) },
+  );
+  expect(result.record).toBeNull();
+  expect(result.error).toContain("does not match repo-map-schema.yaml");
+});
+
+test("uses matching records after optional schema validation", async () => {
+  const schema =
+    "type: object\nrequired: [repositories]\nproperties:\n  repositories: {type: array}\nadditionalProperties: false\n";
+  const result = await loadRepoMapRecord(
+    "repo",
+    { name: "@eliware/example" },
+    {
+      read: schemaReader("repositories:\n  - repository: eliware/example\n", schema),
+    },
+  );
+  expect(result).toEqual({
+    available: true,
+    record: { repository: "eliware/example" },
+    error: null,
+  });
+});
+
+test("rejects an invalid adjacent schema before record lookup", async () => {
+  const result = await loadRepoMapRecord(
+    "repo",
+    { name: "@eliware/example" },
+    { read: schemaReader("repositories: []\n", "type: [\n") },
+  );
+  expect(result.record).toBeNull();
+  expect(result.error).toContain("repo-map-schema.yaml is invalid YAML");
 });
