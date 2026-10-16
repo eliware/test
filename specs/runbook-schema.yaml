@@ -42,24 +42,3 @@ properties:
       minLength: 1
       pattern: \S
 additionalProperties: false
-examples:
-  - schema-version: 13
-    title: Inspect service
-    purpose: Check service status
-    owner: SysAdmin
-    boundaries: Do not change data.
-    prerequisites: []
-    steps:
-      - Check service status.
-      - Confirm that the service responds.
-  - schema-version: 13
-    title: Deploy service
-    purpose: Deploy an approved release
-    owner: DevOps
-    boundaries: Do not change service settings without approval.
-    prerequisites:
-      - Get approval from Eli.
-    steps:
-      - Check the approved release.
-      - Deploy the release.
-      - Verify service health.
