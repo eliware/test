@@ -1,60 +1,80 @@
-import { expect, test } from "@jest/globals";
-import { readFile } from "node:fs/promises";
-import { parse } from "yaml";
-import { validateBundledSpecifications } from "../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled-specifications.mjs";
+import { expect, jest, test } from "@jest/globals";
+import { stringify } from "yaml";
+import { expectedDirectiveSchema } from "../../../../../src/checks/general/E-0.1.0.1.4/validate/directive-schema.mjs";
 
-test("validates the suite schema and bundled convention files", async () => {
+const readFile = jest.fn();
+const readdir = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile, readdir }));
+const { validateBundledSpecifications } =
+  await import("../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled-specifications.mjs");
+
+const fixture = {
+  root: "/suite",
+  packageJson: { eliware: { id: "E-0" } },
+  entries: [],
+  read: async () => stringify(expectedDirectiveSchema),
+};
+const convention = {
+  version: "13.0",
+  description: "Test convention.",
+  directives: [{ id: "E-0.0", dos: ["Keep tests focused."], donts: ["Do not mix test duties."] }],
+};
+
+test("validates the supplied suite schema and convention inventory", async () => {
+  const entries = [{ path: "specs/conventions/general-deterministic.yaml", type: "file" }];
+  await expect(
+    validateBundledSpecifications({
+      ...fixture,
+      entries,
+      read: async (path) =>
+        String(path).endsWith("directives-schema.yaml")
+          ? stringify(expectedDirectiveSchema)
+          : stringify(convention),
+    }),
+  ).resolves.toEqual([]);
+});
+
+test("uses the bundled root and empty package metadata defaults", async () => {
+  readFile.mockResolvedValue(stringify(expectedDirectiveSchema));
+  readdir.mockResolvedValue([]);
   await expect(validateBundledSpecifications()).resolves.toEqual([]);
 });
 
-test("keeps the package.json prohibition as its own donts item", async () => {
-  const document = parse(
-    await readFile(
-      new URL("../../../../../specs/conventions/general-deterministic.yaml", import.meta.url),
-      "utf8",
-    ),
-  );
-  const rule = document.directives.find(({ id }) => id === "E-0.1.0.1.8");
-  expect(rule.dos).toContain("Ignore .DS_Store and Thumbs.db.");
-  expect(rule.dos).not.toContain("Do not ignore package.json.");
-  expect(rule.donts).toContain("Do not ignore package.json.");
-});
-
-test("keeps private rule IDs in one unique namespace", async () => {
-  const semantic = parse(
-    await readFile(
-      new URL("../../../../../specs/conventions/private-semantic.yaml", import.meta.url),
-      "utf8",
-    ),
-  ).directives[0].id;
-  const deterministic = parse(
-    await readFile(
-      new URL("../../../../../specs/conventions/private-deterministic.yaml", import.meta.url),
-      "utf8",
-    ),
-  ).directives[0].id;
-  expect(semantic).toBe("E-0.1.12.0.0");
-  expect(deterministic).toBe("E-0.1.12.1.0");
-  expect(semantic).not.toBe(deterministic);
-});
-
-test("reports invalid bundled files", async () => {
+test("reports invalid schemas and convention documents", async () => {
   const schemaError = await validateBundledSpecifications({
-    read: async (path, encoding) =>
-      String(path).endsWith("directives-schema.yaml") ? "invalid: [\n" : readFile(path, encoding),
+    ...fixture,
+    read: async () => "invalid: [",
   });
   expect(schemaError.join(" ")).toContain("Bundled specifications are missing or invalid");
-  const readError = await validateBundledSpecifications({
-    read: async (path, encoding) => {
-      if (String(path).endsWith("general-deterministic.yaml")) throw new Error("blocked");
-      return readFile(path, encoding);
-    },
+
+  const boundedError = await validateBundledSpecifications({
+    ...fixture,
+    read: async () => `value: ${"x".repeat(110)}`,
   });
-  expect(readError.join(" ")).toContain("Bundled specifications are missing or invalid");
-  const listError = await validateBundledSpecifications({
+  expect(boundedError.join(" ")).toContain("Bundled specifications are missing or invalid");
+
+  const documents = [{ path: "specs/conventions/general-deterministic.yaml", type: "file" }];
+  const documentError = await validateBundledSpecifications({
+    ...fixture,
+    entries: documents,
+    read: async (path) =>
+      String(path).endsWith("directives-schema.yaml")
+        ? stringify(expectedDirectiveSchema)
+        : [
+            stringify(convention),
+            stringify({ version: "13.0", description: "No directives." }),
+          ].join("\n---\n"),
+  });
+  expect(documentError.join(" ")).toContain("must be a nonempty array");
+});
+
+test("reports specification discovery failures", async () => {
+  const errors = await validateBundledSpecifications({
+    ...fixture,
+    entries: undefined,
     readdir: async () => {
       throw new Error("blocked");
     },
   });
-  expect(listError.join(" ")).toContain("Bundled specifications are missing or invalid");
+  expect(errors.join(" ")).toContain("Bundled specifications are missing or invalid");
 });

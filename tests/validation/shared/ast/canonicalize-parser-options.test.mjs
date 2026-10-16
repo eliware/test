@@ -40,7 +40,7 @@ test("bypasses option graphs it cannot serialize without collisions", () => {
   for (const value of [
     new Map(),
     new Set(),
-    new Date(),
+    new Date("2026-01-01T00:00:00Z"),
     sparse,
     sparseWithExtra,
     extended,

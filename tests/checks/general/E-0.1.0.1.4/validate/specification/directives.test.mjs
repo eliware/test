@@ -23,12 +23,16 @@ test("validates bundled and consumer directives", async () => {
   await expect(
     validateSpecificationDirectives("repo", { eliware: { id: "E-0" } }, dependencies),
   ).resolves.toEqual([]);
-  expect(validateBundledSpecifications).toHaveBeenCalledWith(dependencies);
+  expect(validateBundledSpecifications).toHaveBeenCalledWith({
+    ...dependencies,
+    packageJson: { eliware: { id: "E-0" } },
+  });
   expect(validateConsumerSpecifications).toHaveBeenCalledWith("repo", "E-0", dependencies);
 });
 
 test("uses default package data and dependencies", async () => {
   await expect(validateSpecificationDirectives("repo")).resolves.toEqual([]);
+  expect(validateBundledSpecifications).toHaveBeenCalledWith({ packageJson: {} });
   expect(validateConsumerSpecifications).toHaveBeenCalledWith("repo", undefined, {});
 });
 

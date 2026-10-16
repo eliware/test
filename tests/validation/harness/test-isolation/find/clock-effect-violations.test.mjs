@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { findClockEffectViolations } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-isolation/find/clock-effect-violations.mjs";
+import { findClockEffectViolations } from "../../../../../src/validation/harness/test-isolation/find/clock-effect-violations.mjs";
 
 test("rejects real timers and dates without fake timers", () => {
   const ast = parse(

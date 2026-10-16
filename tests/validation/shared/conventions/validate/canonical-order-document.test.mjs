@@ -1,22 +1,45 @@
-import { readFileSync } from "node:fs";
 import { expect, test } from "@jest/globals";
-import { parse } from "yaml";
 import { canonicalOrderRequirements } from "../../../../../src/validation/shared/conventions/canonical-order-requirements.mjs";
 import { validateCanonicalOrderDocument } from "../../../../../src/validation/shared/conventions/validate/canonical-order-document.mjs";
 
+function valueFor(type) {
+  if (type === "text") return "value";
+  if (type === "number") return 1;
+  if (type === "number-map") return { value: 1 };
+  if (type === "text-map") return { value: "value" };
+  if (type === "text-list-map") return { value: ["value"] };
+  if (type === "object-map") return { value: {} };
+  if (type === "object") return {};
+  return ["value"];
+}
+
+function validDocument(name) {
+  const contract = canonicalOrderRequirements[name];
+  const orders = Object.fromEntries(
+    Object.entries(contract.fields).map(([field, type]) => [field, valueFor(type)]),
+  );
+  for (const [field, keys] of Object.entries(contract.maps ?? {})) {
+    const type = contract.fields[field];
+    orders[field] = Object.fromEntries(keys.map((key) => [key, valueFor(type.slice(0, -4))]));
+  }
+  for (const [field, entries] of Object.entries(contract.nestedMaps ?? {})) {
+    orders[field] ??= {};
+    for (const [entry, keys] of Object.entries(entries)) {
+      orders[field][entry] ??= {};
+      for (const key of keys) orders[field][entry][key] = ["value"];
+    }
+  }
+  return { orders };
+}
+
 test("accepts every canonical ordering document", () => {
   for (const name of Object.keys(canonicalOrderRequirements)) {
-    const url = new URL(`../../../../../specs/conventions/ordering/${name}`, import.meta.url);
-    expect(validateCanonicalOrderDocument(parse(readFileSync(url, "utf8")), name)).toEqual([]);
+    expect(validateCanonicalOrderDocument(validDocument(name), name)).toEqual([]);
   }
 });
 
 test("requires npm-published package files and required profile headings", () => {
-  const packageUrl = new URL(
-    "../../../../../specs/conventions/ordering/package-files.yaml",
-    import.meta.url,
-  );
-  const packageOrder = parse(readFileSync(packageUrl, "utf8"));
+  const packageOrder = validDocument("package-files.yaml");
   delete packageOrder.orders.profileEntries["npm-published"];
   expect(validateCanonicalOrderDocument(packageOrder, "package-files.yaml")).toContain(
     "package-files.yaml.orders.profileEntries.npm-published is required.",

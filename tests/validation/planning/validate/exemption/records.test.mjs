@@ -1,8 +1,10 @@
-import { expect, test } from "@jest/globals";
+import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
 import { validateExemptionRecords } from "../../../../../src/validation/planning/validate/exemption/records.mjs";
 
-const futureExpiry = () =>
-  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+beforeEach(() => jest.useFakeTimers({ now: new Date("2026-10-16T00:00:00Z") }));
+afterEach(() => jest.useRealTimers());
+
+const futureExpiry = () => "2026-11-15";
 
 const record = (overrides = {}) => ({
   ruleId: "E-0.1.130.14",

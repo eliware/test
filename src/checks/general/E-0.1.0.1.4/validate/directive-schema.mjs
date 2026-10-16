@@ -1,4 +1,4 @@
-const expectedSchema = {
+export const expectedDirectiveSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $ref: "#/$defs/document",
   $defs: {
@@ -40,7 +40,7 @@ const expectedSchema = {
 };
 
 export function validateDirectiveSchema(schema) {
-  return matchesSchema(schema, expectedSchema)
+  return matchesSchema(schema, expectedDirectiveSchema)
     ? []
     : ["specs/directives-schema.yaml must define the document and directive schema."];
 }

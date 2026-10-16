@@ -6,15 +6,20 @@ import {
   temporaryDirectoryApis,
   temporaryDirectoryModules,
 } from "./api-names.mjs";
+import { visitAst } from "../visit-ast.mjs";
 
 export function findTestWritePolicyViolations(source, filePath) {
   const ast = parse(source, {
     sourceType: "unambiguous",
     plugins: ["jsx", "typescript"],
   });
+  return findTestWritePolicyViolationsInAst(ast, filePath);
+}
+
+export function findTestWritePolicyViolationsInAst(ast, filePath) {
   const namespaceBindings = new Set();
   const violations = [];
-  walk(ast, (node) => {
+  visitAst(ast, (node) => {
     if (node.type === "ImportDeclaration") {
       inspectImport(node, namespaceBindings, violations, filePath);
       return;
@@ -84,16 +89,4 @@ function addViolation(violations, filePath, node, detail) {
   violations.push(
     `${filePath}:${node.loc.start.line} uses a test API that creates files or temporary directories: ${detail}.`,
   );
-}
-
-function walk(node, visit) {
-  if (!node || typeof node !== "object") return;
-  if (Array.isArray(node)) {
-    for (const child of node) walk(child, visit);
-    return;
-  }
-  if (typeof node.type === "string") visit(node);
-  for (const [key, value] of Object.entries(node)) {
-    if (key !== "loc" && key !== "start" && key !== "end") walk(value, visit);
-  }
 }

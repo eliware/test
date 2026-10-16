@@ -1,5 +1,8 @@
-import { expect, jest, test } from "@jest/globals";
+import { afterEach, beforeEach, expect, jest, test } from "@jest/globals";
 import { writeValidationResults } from "../../../src/cli/write/validation-results.mjs";
+
+beforeEach(() => jest.useFakeTimers({ now: 5000 }));
+afterEach(() => jest.useRealTimers());
 
 test("writes diagnostics without timing when timing is disabled", () => {
   const write = jest.fn();
@@ -9,7 +12,6 @@ test("writes diagnostics without timing when timing is disabled", () => {
 
 test("prints an aggregate summary with check, Jest, issue, and time counts", () => {
   const write = jest.fn();
-  const now = jest.spyOn(Date, "now").mockReturnValue(5000);
   writeValidationResults(
     {
       code: 0,
@@ -24,7 +26,6 @@ test("prints an aggregate summary with check, Jest, issue, and time counts", () 
     false,
     1000,
   );
-  now.mockRestore();
   expect(write).toHaveBeenCalledTimes(1);
   expect(write).toHaveBeenCalledWith(
     "Aggregate validation passed.\n" +
@@ -37,7 +38,7 @@ test("prints an aggregate summary with check, Jest, issue, and time counts", () 
 
 test("prints the same summary for focused validation", () => {
   const write = jest.fn();
-  const now = jest.spyOn(Date, "now").mockReturnValue(3000);
+  jest.setSystemTime(3000);
   writeValidationResults(
     {
       code: 0,
@@ -53,7 +54,7 @@ test("prints the same summary for focused validation", () => {
     false,
     1000,
   );
-  now.mockRestore();
+  jest.setSystemTime(5000);
 
   expect(write).toHaveBeenCalledWith(
     "Focused validation passed.\n" +
@@ -90,12 +91,7 @@ test("does not claim a clean run when output or diagnostics exist", () => {
 
 test("writes aggregate details during a clean debug run", () => {
   const write = jest.fn();
-  writeValidationResults(
-    { code: 0, diagnostics: [], validationSummary: {} },
-    write,
-    true,
-    Date.now(),
-  );
+  writeValidationResults({ code: 0, diagnostics: [], validationSummary: {} }, write, true, 5000);
   expect(write.mock.calls[0][0]).toMatch(/^Aggregate validation passed\./u);
   expect(write.mock.calls[1][0]).toMatch(/^Validation time:/u);
 });
@@ -103,7 +99,7 @@ test("writes aggregate details during a clean debug run", () => {
 test("does not write success for failures or mode runs with debug timing", () => {
   const write = jest.fn();
   writeValidationResults({ code: 1, diagnostics: ["failed"] }, write, false, 0);
-  writeValidationResults({ code: 0, diagnostics: [], mode: "focused" }, write, true, Date.now());
+  writeValidationResults({ code: 0, diagnostics: [], mode: "focused" }, write, true, 5000);
   expect(
     write.mock.calls.some(([line]) => String(line).startsWith("Aggregate validation passed.")),
   ).toBe(false);
@@ -111,14 +107,14 @@ test("does not write success for failures or mode runs with debug timing", () =>
 
 test("writes timing without a mode message for tool runs with debug timing", () => {
   const write = jest.fn();
-  writeValidationResults({ code: 0, diagnostics: [], mode: "lint" }, write, true, Date.now());
+  writeValidationResults({ code: 0, diagnostics: [], mode: "lint" }, write, true, 5000);
   expect(write).toHaveBeenCalledTimes(1);
   expect(write).toHaveBeenCalledWith(expect.stringMatching(/^Validation time:/u));
 });
 
 test("writes timing output when timing is enabled", () => {
   const write = jest.fn();
-  writeValidationResults({ diagnostics: [] }, write, true, Date.now());
+  writeValidationResults({ diagnostics: [] }, write, true, 5000);
   expect(write).not.toHaveBeenCalledWith("timing line");
   expect(write).toHaveBeenCalledWith(expect.stringMatching(/^Validation time:/));
   expect(write.mock.calls.join(" ")).not.toContain("Timing report");

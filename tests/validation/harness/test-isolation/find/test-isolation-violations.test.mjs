@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findTestIsolationViolations } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-isolation/find/test-isolation-violations.mjs";
+import { findTestIsolationViolations } from "../../../../../src/validation/harness/test-isolation/find/test-isolation-violations.mjs";
 
 test("reports unparseable test modules", () => {
   expect(findTestIsolationViolations("const = ;")).toEqual(["could not parse the test module."]);

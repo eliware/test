@@ -1,5 +1,4 @@
 import { readFile } from "node:fs/promises";
-import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
@@ -8,19 +7,24 @@ import { validateSpecificationDocument } from "./specification/document.mjs";
 import { validateSpecificationIds } from "./specification/ids.mjs";
 import { validateDirectiveSchema } from "./directive-schema.mjs";
 
-const schemaUrl = new URL("../../../../../specs/directives-schema.yaml", import.meta.url);
 const suiteRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
-const suitePackage = JSON.parse(
-  readFileSync(new URL("../../../../../package.json", import.meta.url)),
-);
 
-export async function validateBundledSpecifications({ read = readFile, readdir } = {}) {
+export async function validateBundledSpecifications({
+  root = suiteRoot,
+  packageJson = {},
+  entries,
+  read = readFile,
+  readdir,
+} = {}) {
   let schema;
   let documents;
   try {
-    schema = parseDocuments(await read(schemaUrl, "utf8"), schemaUrl.pathname);
-    const entries = await listSpecificationEntries(suiteRoot, { list: readdir });
-    documents = await readConventionDocuments(entries, read);
+    schema = parseDocuments(
+      await read(join(root, "specs/directives-schema.yaml"), "utf8"),
+      "specs/directives-schema.yaml",
+    );
+    const discoveredEntries = entries ?? (await listSpecificationEntries(root, { list: readdir }));
+    documents = await readConventionDocuments(root, discoveredEntries, read);
   } catch (error) {
     return [`Bundled specifications are missing or invalid: ${error.message}`];
   }
@@ -36,19 +40,19 @@ export async function validateBundledSpecifications({ read = readFile, readdir }
   errors.push(
     ...validateSpecificationIds(
       [...ids].map(([path, directives]) => ({ path, directives })),
-      suitePackage?.eliware?.id,
+      packageJson?.eliware?.id,
     ),
   );
   return errors;
 }
 
-async function readConventionDocuments(entries, read) {
+async function readConventionDocuments(root, entries, read) {
   const paths = entries
     .filter(({ path, type }) => type === "file" && /^specs\/conventions\/.*\.ya?ml$/iu.test(path))
     .map(({ path }) => path);
   const documents = [];
   for (const path of paths) {
-    const values = parseDocuments(await read(join(suiteRoot, path), "utf8"), path);
+    const values = parseDocuments(await read(join(root, path), "utf8"), path);
     values.forEach((value, index) =>
       documents.push({ path: `${path} document ${index + 1}`, value }),
     );

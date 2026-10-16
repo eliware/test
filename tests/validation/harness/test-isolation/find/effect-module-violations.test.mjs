@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { findEffectModuleViolations } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-isolation/find/effect-module-violations.mjs";
+import { findEffectModuleViolations } from "../../../../../src/validation/harness/test-isolation/find/effect-module-violations.mjs";
 
 test("rejects unmocked file system and process modules, including namespace imports", () => {
   const ast = parse(

@@ -7,14 +7,14 @@ import { validatePackageKeyOrder } from "./E-0.1.0.1.1/validate/package/key-orde
 
 export const ruleId = "E-0.1.0.1.1";
 
-export async function run(context = {}) {
+export async function run(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();
   const errors = [
     ...validatePackageMetadata(context.packageJson),
     ...validatePackageKeyOrder(context.packageJson),
   ];
-  errors.push(...(await validateRequiredPackageFiles(root)));
-  errors.push(...(await validatePackageLock(root, context.packageJson)));
+  errors.push(...(await validateRequiredPackageFiles(root, dependencies)));
+  errors.push(...(await validatePackageLock(root, context.packageJson, dependencies)));
   const files = context.repositoryFiles ?? (await context.repositoryInventory?.repositoryFiles?.());
   errors.push(...(await findCommonJsUses(root, context.packageJson, files, context.parseAst)));
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);

@@ -81,7 +81,7 @@ test("refreshes tracked directories one at a time", async () => {
   const readDirectoryCached = jest.fn(async () => {
     active += 1;
     maximumActive = Math.max(maximumActive, active);
-    await new Promise((resolve) => setImmediate(resolve));
+    await Promise.resolve();
     active -= 1;
     return [];
   });

@@ -89,6 +89,8 @@ test("keeps byte accounting correct after a failed cache replacement", async () 
 test("keeps an in-flight previous entry accounted while another read evicts content", async () => {
   let currentVersion = 1n;
   let rejectRefresh;
+  let notifyRefresh;
+  const refreshStarted = new Promise((resolve) => (notifyRefresh = resolve));
   const largeContent = Buffer.allocUnsafe(9);
   const stat = jest.fn(async (path) =>
     fileVersion(currentVersion, path.endsWith("large.bin") ? 9n : 4n),
@@ -98,6 +100,7 @@ test("keeps an in-flight previous entry accounted while another read evicts cont
     if (path.endsWith("small.txt"))
       return new Promise((_resolve, reject) => {
         rejectRefresh = reject;
+        notifyRefresh();
       });
     return Promise.resolve(largeContent);
   });
@@ -105,7 +108,7 @@ test("keeps an in-flight previous entry accounted while another read evicts cont
   await expect(cache.readText("small.txt")).resolves.toBe("old!");
   currentVersion = 2n;
   const refresh = cache.readText("small.txt");
-  await new Promise((resolve) => setImmediate(resolve));
+  await refreshStarted;
   await expect(cache.readBytes("large.bin")).resolves.toBe(largeContent);
   rejectRefresh(new Error("refresh failed"));
   await expect(refresh).rejects.toThrow("refresh failed");
@@ -126,15 +129,19 @@ test("drops failed reads so a later request can retry", async () => {
 });
 test("shares concurrent failures until they settle, then allows a retry", async () => {
   let rejectStat;
+  let notifyStat;
+  const statStarted = new Promise((resolve) => (notifyStat = resolve));
   const stat = jest
     .fn()
-    .mockImplementationOnce(() => new Promise((_resolve, reject) => (rejectStat = reject)))
+    .mockImplementationOnce(
+      () => new Promise((_resolve, reject) => ((rejectStat = reject), notifyStat())),
+    )
     .mockResolvedValue({ dev: 1n, ino: 2n, size: 4n, mtimeNs: 1n, ctimeNs: 1n });
   const cache = createRepositoryFileContentCache("/repo", async () => "retry", stat);
   const first = cache.readBytes("README.md");
   const concurrent = cache.readBytes("/repo/README.md");
   expect(concurrent).toBe(first);
-  await new Promise((resolve) => setImmediate(resolve));
+  await statStarted;
   rejectStat(new Error("stat denied"));
   await expect(first).rejects.toThrow("stat denied");
   await expect(cache.readText("README.md")).resolves.toBe("retry");

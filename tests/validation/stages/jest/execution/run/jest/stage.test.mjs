@@ -3,7 +3,7 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 const executeJestCheck = jest.fn();
 const recordJestContext = jest.fn();
 const classifyJestResult = jest.fn();
-const validateTestWritePolicy = jest.fn();
+const validateTestIsolationPolicy = jest.fn();
 jest.unstable_mockModule(
   "../../../../../../../src/validation/stages/jest/execution/execute/jest-check.mjs",
   () => ({ executeJestCheck }),
@@ -17,8 +17,8 @@ jest.unstable_mockModule(
   () => ({ classifyJestResult }),
 );
 jest.unstable_mockModule(
-  "../../../../../../../src/validation/harness/validate-test-write-policy.mjs",
-  () => ({ validateTestWritePolicy }),
+  "../../../../../../../src/validation/harness/validate-test-isolation-policy.mjs",
+  () => ({ validateTestIsolationPolicy }),
 );
 
 const { runJestStage } =
@@ -30,7 +30,7 @@ beforeEach(() => {
   executeJestCheck.mockClear();
   recordJestContext.mockClear();
   classifyJestResult.mockClear();
-  validateTestWritePolicy.mockReset().mockResolvedValue([]);
+  validateTestIsolationPolicy.mockReset().mockResolvedValue([]);
 });
 
 test("skips the Jest pipeline when execution is disabled", async () => {
@@ -40,7 +40,7 @@ test("skips the Jest pipeline when execution is disabled", async () => {
     message: "",
   });
   expect(executeJestCheck).not.toHaveBeenCalled();
-  expect(validateTestWritePolicy).not.toHaveBeenCalled();
+  expect(validateTestIsolationPolicy).not.toHaveBeenCalled();
   expect(recordJestContext).not.toHaveBeenCalled();
   expect(classifyJestResult).not.toHaveBeenCalled();
 });
@@ -56,7 +56,7 @@ test("composes execution, context recording, and result classification", async (
 
   await expect(run(context)).resolves.toEqual({ ruleId, status: "pass", message: "" });
   expect(executeJestCheck).toHaveBeenCalledWith(context);
-  expect(validateTestWritePolicy).toHaveBeenCalledWith(undefined);
+  expect(validateTestIsolationPolicy).toHaveBeenCalledWith(undefined);
   expect(recordJestContext).toHaveBeenCalledWith(context, result);
   expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail", {
     failuresReported: false,
@@ -65,7 +65,7 @@ test("composes execution, context recording, and result classification", async (
 
 test("rejects test suites that use filesystem write APIs before Jest starts", async () => {
   const context = { executeJest: true, root: "/repo" };
-  validateTestWritePolicy.mockResolvedValueOnce([
+  validateTestIsolationPolicy.mockResolvedValueOnce([
     "tests/example.test.mjs:2 uses a forbidden test API: import of writeFile.",
   ]);
   await expect(run(context)).resolves.toEqual({

@@ -1,4 +1,4 @@
-import { visitAst } from "../visit-ast.mjs";
+import { visitAst } from "../../visit-ast.mjs";
 
 const timerNames = new Set(["setTimeout", "setInterval", "setImmediate"]);
 

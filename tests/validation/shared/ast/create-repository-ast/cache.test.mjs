@@ -1,17 +1,36 @@
 import { expect, jest, test } from "@jest/globals";
-import { createRepositoryAstCache } from "../../../../../src/validation/shared/ast/create-repository-ast/cache.mjs";
 
-test("uses the default filesystem reader and Babel parser", async () => {
+const readFile = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
+const { createRepositoryAstCache } =
+  await import("../../../../../src/validation/shared/ast/create-repository-ast/cache.mjs");
+
+test("uses the mocked filesystem reader and default parser", async () => {
+  readFile.mockResolvedValue("export const value = 1;");
   const parseAst = createRepositoryAstCache();
-  const first = await parseAst(".", "src/validation/shared/ast/create-repository-ast/cache.mjs", {
-    sourceType: "module",
-  });
-  const second = await parseAst(".", "src/validation/shared/ast/create-repository-ast/cache.mjs", {
-    sourceType: "module",
-  });
+  const ast = await parseAst("/repo", "src/example.mjs", { sourceType: "module" });
+  expect(ast.type).toBe("File");
+  expect(readFile).toHaveBeenCalledTimes(1);
+});
+
+test("uses the injected source reader and Babel parser", async () => {
+  const read = jest.fn(async () => "export const value = 1;");
+  const parseAst = createRepositoryAstCache({ read });
+  const options = { sourceType: "module" };
+  const first = await parseAst(
+    ".",
+    "src/validation/shared/ast/create-repository-ast/cache.mjs",
+    options,
+  );
+  const second = await parseAst(
+    ".",
+    "src/validation/shared/ast/create-repository-ast/cache.mjs",
+    options,
+  );
 
   expect(first).toBe(second);
   expect(first.type).toBe("File");
+  expect(read).toHaveBeenCalledTimes(2);
 });
 
 test("rejects outside paths even when source text is supplied", async () => {
@@ -45,7 +64,9 @@ test("bypasses caching for parser options it cannot canonicalize", async () => {
 
 test("shares an in-flight source snapshot across uncacheable parser options", async () => {
   let resolveRead;
-  const read = jest.fn(() => new Promise((resolve) => (resolveRead = resolve)));
+  let notifyRead;
+  const readStarted = new Promise((resolve) => (notifyRead = resolve));
+  const read = jest.fn(() => new Promise((resolve) => ((resolveRead = resolve), notifyRead())));
   const parseSource = jest.fn((source, options) => ({ source, options }));
   const parseAst = createRepositoryAstCache({ read, parseSource });
   const firstOptions = { plugins: new Map([["typescript", true]]) };
@@ -53,7 +74,7 @@ test("shares an in-flight source snapshot across uncacheable parser options", as
   const first = parseAst("/repo", "src/example.ts", firstOptions);
   const second = parseAst("/repo", "src/example.ts", secondOptions);
 
-  await new Promise((resolve) => setImmediate(resolve));
+  await readStarted;
   resolveRead("one stable source snapshot");
 
   await expect(first).resolves.toEqual({
@@ -84,19 +105,21 @@ test("parses supplied snapshots without reusing the cached disk AST", async () =
 
 test("parser options keep concurrent source reads in their own cache entries", async () => {
   let resolveFirstRead;
+  let notifyFirstRead;
+  const firstReadStarted = new Promise((resolve) => (notifyFirstRead = resolve));
   const firstSource = new Promise((resolve) => {
     resolveFirstRead = resolve;
   });
   const read = jest
     .fn()
-    .mockImplementationOnce(() => firstSource)
+    .mockImplementationOnce(() => (notifyFirstRead(), firstSource))
     .mockResolvedValueOnce("new");
   const parseSource = jest.fn((source, options) => ({ source, options }));
   const parseAst = createRepositoryAstCache({ read, parseSource });
   const moduleOptions = { sourceType: "module" };
   const scriptOptions = { sourceType: "unambiguous" };
   const moduleAst = parseAst(".", "src/example.mjs", moduleOptions);
-  await new Promise((resolve) => setImmediate(resolve));
+  await firstReadStarted;
   const scriptAst = parseAst(".", "src/example.mjs", scriptOptions);
 
   await expect(scriptAst).resolves.toEqual({ source: "new", options: scriptOptions });

@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { findNetworkProcessViolations } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-isolation/find/network-process-violations.mjs";
+import { findNetworkProcessViolations } from "../../../../../src/validation/harness/test-isolation/find/network-process-violations.mjs";
 
 test("rejects external and unknown fetch calls and direct process effects", () => {
   const source =

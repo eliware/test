@@ -1,4 +1,4 @@
-import { visitAst } from "../visit-ast.mjs";
+import { visitAst } from "../../visit-ast.mjs";
 
 export function findNetworkProcessViolations(ast, source) {
   const findings = [];

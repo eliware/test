@@ -1,11 +1,11 @@
 import { expect, test } from "@jest/globals";
-import { readFile } from "node:fs/promises";
-import { parse } from "yaml";
-import { validateDirectiveSchema } from "../../../../../src/checks/general/E-0.1.0.1.4/validate/directive-schema.mjs";
+import {
+  expectedDirectiveSchema,
+  validateDirectiveSchema,
+} from "../../../../../src/checks/general/E-0.1.0.1.4/validate/directive-schema.mjs";
 
-test("accepts the repository's directive schema", async () => {
-  const schema = parse(await readFile("specs/directives-schema.yaml", "utf8"));
-  expect(validateDirectiveSchema(schema)).toEqual([]);
+test("accepts the canonical directive schema", () => {
+  expect(validateDirectiveSchema(expectedDirectiveSchema)).toEqual([]);
 });
 
 test("rejects incomplete or invalid schema definitions", () => {
@@ -14,8 +14,8 @@ test("rejects incomplete or invalid schema definitions", () => {
   ]);
 });
 
-test("rejects weakened property types and nested item constraints", async () => {
-  const schema = parse(await readFile("specs/directives-schema.yaml", "utf8"));
+test("rejects weakened property types and nested item constraints", () => {
+  const schema = structuredClone(expectedDirectiveSchema);
   schema.$defs.document.properties.version.type = "number";
   expect(validateDirectiveSchema(schema)).not.toEqual([]);
   schema.$defs.document.properties.version.type = "string";

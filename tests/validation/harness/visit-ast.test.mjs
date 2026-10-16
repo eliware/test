@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { visitAst } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-isolation/visit-ast.mjs";
+import { visitAst } from "../../../src/validation/harness/visit-ast.mjs";
 
 test("visits object nodes and skips non-object values", () => {
   const visited = [];

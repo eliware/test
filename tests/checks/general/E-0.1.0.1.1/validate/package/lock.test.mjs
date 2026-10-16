@@ -1,6 +1,10 @@
-import { expect, test } from "@jest/globals";
-import { validatePackageLock } from "../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/lock.mjs";
+import { expect, jest, test } from "@jest/globals";
 import { packageVersion } from "../../../../../../test-fixtures/helpers/project-version.mjs";
+
+const readFile = jest.fn();
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
+const { validatePackageLock } =
+  await import("../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/lock.mjs");
 
 const pkg = { name: "@eliware/example", version: packageVersion };
 const validLock = {
@@ -10,6 +14,20 @@ const validLock = {
   packages: { "": { name: pkg.name, version: pkg.version } },
 };
 const readLock = (value) => async () => JSON.stringify(value);
+
+test("uses the mocked filesystem reader by default", async () => {
+  const packageJson = { ...pkg, dependencies: { beta: "^1.0.0", alpha: "^1.0.0" } };
+  const lockfile = {
+    ...validLock,
+    packages: {
+      "": { ...validLock.packages[""], dependencies: { alpha: "^1.0.0", beta: "^1.0.0" } },
+      "node_modules/alpha": { version: "1.0.0" },
+      "node_modules/beta": { version: "1.0.0" },
+    },
+  };
+  readFile.mockResolvedValue(JSON.stringify(lockfile));
+  await expect(validatePackageLock("/repo", packageJson)).resolves.toEqual([]);
+});
 
 test("accepts matching package lock metadata", async () => {
   await expect(validatePackageLock("/repo", pkg, { read: readLock(validLock) })).resolves.toEqual(
