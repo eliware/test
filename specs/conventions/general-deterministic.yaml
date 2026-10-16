@@ -181,18 +181,17 @@ directives:
         directives schema.
       - Give each specs directory a navigation-only README.md with links to its same-folder
         YAML files.
+      - Index all specifications.
       - Allow only YAML documents, README.md indexes, and conforming subdirectories in
         specs/.
       - Use unique E-rule IDs in the assigned repository namespace.
       - Number siblings sequentially from 0 in their document prefix and append
         sequential child numbers to actual parent IDs.
     donts:
-      - Reject YAML above a required byte, line, or alias limit.
       - Do not set a second memory cap for YAML parsing.
       - Do not use escaping relative links, A-rule IDs, duplicate IDs, or invalid child
         ancestry.
-      - Index all specifications. Do not duplicate nested inventories in parent
-        indexes.
+      - Do not duplicate nested inventories in parent indexes.
     examples:
       - "An E-38 document prefix may contain E-38.0 with children E-38.0.0 and E-38.0.1."
 
@@ -396,7 +395,6 @@ directives:
       - Scan again until no folder has a shared prefix.
     donts:
       - Do not use the parent folder name in a child file name.
-      - Keep each multiword prefix in one folder.
       - Do not infer file relationships from code content.
 
   - id: E-0.1.0.1.11
@@ -410,6 +408,7 @@ directives:
       - Check human-readable JavaScript comments, strings, and JSX text.
       - Check human-readable JSON values in documented prose fields.
       - Check directive items, descriptive fields, and runbook text in YAML documents.
+      - Exclude code blocks, code spans, and link destinations from word counts.
       - Match dictionary entries in uppercase or lowercase, at whole-word or exact-phrase
         boundaries.
       - Do not match a dictionary term in a hyphenated compound.
@@ -420,7 +419,6 @@ directives:
       - Ignore code, commands, identifiers, URLs, examples, and the dictionary itself.
       - Ignore exact sentences from bundled convention examples.
     donts:
-      - Exclude code blocks, code spans, and link destinations from word counts.
       - Do not parse malformed YAML or JSON in this check.
       - Do not derive word meanings or grammar labels from context.
       - Do not accept a dictionary term because its spelling appears in an alternative.

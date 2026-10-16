@@ -263,8 +263,7 @@ directives:
       - id: E-0.0.8
         dos:
           - Delete prior files in the consumer coverage directory before each Jest run.
-          - Do not combine harness-owned coverage reports or validation output with test
-            side effects.
+          - Keep all temporary coverage directories in the consumer repository.
           - Write current coverage reports and Jest console output to the consumer
             coverage directory.
           - Keep current-run coverage reports and Jest output after Jest completes.
@@ -278,9 +277,10 @@ directives:
           - Include guidance to extend tests or refactor when needed for testability.
         donts:
           - Do not merge candidates or select them by recency.
+          - Do not combine harness-owned coverage reports or validation output with test
+            side effects.
           - Do not delete current-run coverage reports or Jest output after Jest completes.
           - Do not preserve or restore prior coverage output.
-          - Keep all temporary coverage directories in the consumer repository.
           - Do not create validation or smoke temporary files in system temp or user
             folders.
           - Do not accept omitted instrumentation entries or unmatched map and counter

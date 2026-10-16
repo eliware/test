@@ -44,8 +44,8 @@ directives:
       - Test each failure path for a multi-record operation.
       - Verify that a failed operation stores no records.
       - Compare each invariant with schema definitions, write code, and database tests.
-    donts:
       - Require a database constraint or application check for each stated invariant.
+    donts:
       - Do not store records that fail required checks after a failed multi-record operation.
 
   - id: E-0.1.13.0.2

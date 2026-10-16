@@ -126,12 +126,12 @@ directives:
         `Breaking changes`, `Migration`, or `Security`.
       - Give each category user-visible change text.
       - Do not use a category more than one time in one entry.
+      - Put all release text in a release category.
+      - Put all headings in a release entry or category.
     donts:
       - Do not use the word Unreleased in RELEASE_NOTES.md.
       - Do not duplicate versions.
       - Do not use malformed, empty, unsupported, or out-of-order sections.
-      - Put all release text in a release category.
-      - Put all headings in a release entry or category.
     examples:
       - "# Release Notes
 

@@ -92,7 +92,7 @@ directives:
       - Set GH_TOKEN to ${{ github.token }} on the attestation verification step or
         publish job.
       - Append the exact digest identifier to GITHUB_STEP_SUMMARY with one single-line
-        echo command.
+        echo command and >> redirection.
       - Set unconditional post-push steps for version-to-digest verification and image and
         attestation inspection.
       - Run required verification after the final push, and make it the final job step.
@@ -100,7 +100,6 @@ directives:
       - Do not name missing steps or a digest output from a different image push step.
       - Do not use a mutable tag for an attestation subject digest.
       - Do not use control operators or command substitution in the summary command.
-      - Keep its required append redirection.
       - Do not declare bypass conditions on required verification steps.
       - Do not use continue-on-error on required verification steps.
     examples:
