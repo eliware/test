@@ -4,7 +4,7 @@ import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.11.mjs";
 const emptyExamples = async () => new Set();
 
 test("checks prose files and reports unapproved terms with alternatives", async () => {
-  const files = ["README.md", "image.bin", "tests/helper.mjs"];
+  const files = ["README.md", "image.bin", "docs/README.md", "tests/helper.mjs"];
   const inventory = {
     files: jest.fn(async () => files),
     readText: jest.fn(async () => "abrupt."),
@@ -17,9 +17,9 @@ test("checks prose files and reports unapproved terms with alternatives", async 
     ruleId,
     status: "fail",
     message:
-      'README.md:1 uses "abrupt". Suggested alternatives: SUDDEN (adj), SUDDENLY (adv). The alternatives are examples. They are not requirements. Rewrite the text with grammatical wording that omits the listed term.',
+      'README.md:1 uses "abrupt". Suggested alternatives: SUDDEN (adj), SUDDENLY (adv).\ndocs/README.md:1 uses "abrupt". Suggested alternatives: SUDDEN (adj), SUDDENLY (adv).\nThe alternatives are examples. They are not requirements. Rewrite the text with grammatical wording that omits the listed term.',
   });
-  expect(inventory.readText).toHaveBeenCalledTimes(1);
+  expect(inventory.readText).toHaveBeenCalledTimes(2);
 });
 
 test("returns pass when supported repository files contain clean prose", async () => {

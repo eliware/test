@@ -15,7 +15,10 @@ export async function executeConventionChecks(checks, context, exemptions) {
   ).length;
   context.validationSummary.checkCount = selected.length + completedStages;
   const results = [...stageFailures];
-  for (const check of selected) results.push(await executeConventionCheck(check, context));
+  for (const check of selected) {
+    const paths = exemptions instanceof Set ? [] : (exemptions.get(check.ruleId) ?? []);
+    results.push(await executeConventionCheck(check, context, paths));
+  }
   if (results.some(({ status }) => status === "fail")) {
     context.stageResults ??= {};
     context.stageResults.jest = {

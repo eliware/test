@@ -1,9 +1,11 @@
 export function filterConventionChecksForExecution(checks, context, exemptions) {
   const byRuleId = new Map(checks.map((check) => [check.ruleId, check]));
+  const isFullyExempt = (ruleId) =>
+    exemptions instanceof Set ? exemptions.has(ruleId) : exemptions.get(ruleId) === null;
   const isExempt = (ruleId) => {
     let current = byRuleId.get(ruleId);
     while (current) {
-      if (exemptions.has(current.ruleId)) return true;
+      if (isFullyExempt(current.ruleId)) return true;
       current = byRuleId.get(current.parentRuleId);
     }
     return false;

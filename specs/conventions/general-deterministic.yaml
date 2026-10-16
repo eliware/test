@@ -11,6 +11,10 @@ directives:
         package rules.
       - Give exemptions unique known check IDs, nonempty reasons, approver Eli, valid
         approvalTimestamp, and valid expiry or null.
+      - Allow an optional unique paths array of repository-relative paths in each exemption.
+      - Match exemption paths exactly, without glob or prefix matching.
+      - Skip the rule and child checks when paths are omitted or empty.
+      - Skip listed paths only in the named rule's check.
     examples:
       - '{"id":"E-38","apply":["general"],"exempt":[]}'
     donts:

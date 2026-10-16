@@ -51,11 +51,7 @@ function findDictionaryViolations(path, block, dictionary) {
           ? entry.alternatives.join(", ")
           : "none listed";
         const location = `${path}:${block.line}`;
-        const finding = [
-          `${location} uses "${match}". Suggested alternatives: ${alternatives}.`,
-          "The alternatives are examples. They are not requirements.",
-          "Rewrite the text with grammatical wording that omits the listed term.",
-        ].join(" ");
+        const finding = `${location} uses "${match}". Suggested alternatives: ${alternatives}.`;
         errors.push(finding);
       }
     }

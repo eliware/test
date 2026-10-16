@@ -21,6 +21,13 @@ test("an exemption preserves unrelated checks", () => {
   ).toEqual([unrelated]);
 });
 
+test("a path-scoped exemption does not remove its rule", () => {
+  const target = check("E-0.1.4");
+  expect(
+    filterConventionChecksForExecution([target], {}, new Map([[target.ruleId, ["README.md"]]])),
+  ).toEqual([target]);
+});
+
 test("keeps deterministic children executable beneath an advisory-only parent", () => {
   const parent = check("E-0.1.26", { applicability: "advisory-only" });
   const child = check("A-0.1.26.0", { parentRuleId: parent.ruleId });

@@ -44,6 +44,31 @@ test("executes selected checks in discovery order", async () => {
   expect(context.validationSummary.checkCount).toBe(3);
 });
 
+test("passes rule-scoped paths to the matching check only", async () => {
+  const calls = [];
+  const checks = [
+    {
+      ruleId: "E-0.1.4",
+      run: async (context) => {
+        calls.push(["E-0.1.4", context.exemptPaths]);
+        return pass("E-0.1.4");
+      },
+    },
+    {
+      ruleId: "E-0.1.5",
+      run: async (context) => {
+        calls.push(["E-0.1.5", context.exemptPaths]);
+        return pass("E-0.1.5");
+      },
+    },
+  ];
+  await executeConventionChecks(checks, {}, new Map([["E-0.1.4", ["README.md"]]]));
+  expect(calls).toEqual([
+    ["E-0.1.4", ["README.md"]],
+    ["E-0.1.5", undefined],
+  ]);
+});
+
 test("reports thrown checks and continues with later checks", async () => {
   const calls = [];
   const results = await executeConventionChecks(

@@ -658,7 +658,7 @@
 "plug","CONNECT (v)","SEAL (v)"
 "poor","UNSATISFACTORY","DEFECTIVE (adj)","UNSERVICEABLE (adj)"
 "pop","OPEN (v)","PROTRUDE (v)","OUT (adv)"
-"port","TCP","UDP","TCP-PORT","UDP-PORT","SWITCH-INTERFACE"
+"port","TCP","UDP","TCP-PORT","UDP-PORT","SWITCH-INTERFACE","TRANSLATE (v)","MOVE (v)"
 "portion","PIECE (n)","PART (n)"
 "position",""
 "potential",""

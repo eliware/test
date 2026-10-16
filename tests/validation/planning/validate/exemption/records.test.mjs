@@ -56,3 +56,27 @@ test("accepts temporary exemptions without non-contract review metadata", () => 
     validateExemptionRecords([record({ expiry: null, review: "2026-09-20" })]),
   ).not.toThrow();
 });
+
+test("accepts exact repository-relative path exemptions", () => {
+  expect(() => validateExemptionRecords([record({ paths: [] })])).not.toThrow();
+  expect(() =>
+    validateExemptionRecords([record({ paths: ["docs/vendor/file.yaml"] })]),
+  ).not.toThrow();
+});
+
+test.each([
+  null,
+  "docs/file.yaml",
+  [null],
+  [""],
+  ["/docs/file.yaml"],
+  ["C:/docs/file.yaml"],
+  ["docs\\file.yaml"],
+  ["docs//file.yaml"],
+  ["docs/"],
+  ["./docs/file.yaml"],
+  ["docs/../file.yaml"],
+  ["docs/file.yaml", "docs/file.yaml"],
+])("rejects invalid exemption paths %j", (paths) => {
+  expect(() => validateExemptionRecords([record({ paths })])).toThrow();
+});

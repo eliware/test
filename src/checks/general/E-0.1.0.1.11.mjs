@@ -25,6 +25,10 @@ export async function run(context = {}, dependencies = {}) {
       const blocks = extractProse(path, await inventory.readText(path));
       errors.push(...findLanguageViolations(path, blocks, dictionary, exactSentences));
     }
+    if (errors.some((error) => error.includes(". Suggested alternatives:")))
+      errors.push(
+        "The alternatives are examples. They are not requirements. Rewrite the text with grammatical wording that omits the listed term.",
+      );
     return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
   } catch (error) {
     return fail(ruleId, `Repository language files could not be inspected: ${error.message}`);

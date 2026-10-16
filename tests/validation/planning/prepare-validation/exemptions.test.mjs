@@ -17,7 +17,10 @@ test("combines package exemptions with validated ignored rule IDs", () => {
   };
   const checks = [{ ruleId: "E-0.1.0" }, { ruleId: "E-0.1.1" }];
   expect(prepareValidationExemptions(packageJson, checks, ["E-0.1.1"])).toEqual(
-    new Set(["E-0.1.0", "E-0.1.1"]),
+    new Map([
+      ["E-0.1.0", null],
+      ["E-0.1.1", null],
+    ]),
   );
 });
 

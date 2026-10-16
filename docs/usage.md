@@ -50,6 +50,12 @@ The CLI does not infer profiles from files or dependencies.
 
 Set `package.json.eliware.exempt` only for an approved rule exemption.
 Each exemption requires a unique known `ruleId`, a justification, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+
+Add a `paths` array to skip exact repository-relative paths during that rule only.
+The CLI uses exact paths. It does not match patterns or directory prefixes.
+
+Omit `paths` or use an empty array to skip the rule and its child checks.
+Use forward slashes in paths. Do not use absolute paths or dot navigation segments.
 The CLI rejects invalid, expired, or unknown exemptions.
 
 Use this order for `package.json.eliware` keys: `id`, `apply`, then optional `exempt`.

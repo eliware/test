@@ -4,11 +4,7 @@ import { findLanguageViolations } from "../../../../src/checks/general/E-0.1.0.1
 const dictionary = { abrupt: "SUDDEN (adj)", "close to": "NEAR (prep)", "": "invalid" };
 
 function expectedLanguageFinding(path, line, word, alternatives) {
-  return [
-    `${path}:${line} uses "${word}". Suggested alternatives: ${alternatives}.`,
-    "The alternatives are examples. They are not requirements.",
-    "Rewrite the text with grammatical wording that omits the listed term.",
-  ].join(" ");
+  return `${path}:${line} uses "${word}". Suggested alternatives: ${alternatives}.`;
 }
 
 test("reports directive limits, semicolons, and dictionary alternatives", () => {

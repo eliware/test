@@ -8,6 +8,9 @@ test("loads the bundled CSV dictionary with alternatives for each word", () => {
   const dictionary = loadUnapprovedDictionary();
   expect(Object.keys(dictionary)).toHaveLength(1044);
   expect(dictionary.abandon).toBe("GO (v), STOP (v)");
+  expect(dictionary.port).toBe(
+    "TCP, UDP, TCP-PORT, UDP-PORT, SWITCH-INTERFACE, TRANSLATE (v), MOVE (v)",
+  );
 });
 
 test("parses quoted fields, commas, escaped quotes, and line breaks", () => {

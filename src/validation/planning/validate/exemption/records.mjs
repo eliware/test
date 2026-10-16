@@ -14,7 +14,11 @@ export function validateExemptionRecords(records, knownRuleIds) {
         !isValidTimestamp(entry.approvalTimestamp) ||
         (entry.expiry !== null && typeof entry.expiry !== "string") ||
         (typeof entry.expiry === "string" &&
-          (!isValidDate(entry.expiry) || isExpired(entry.expiry)))
+          (!isValidDate(entry.expiry) || isExpired(entry.expiry))) ||
+        (entry.paths !== undefined &&
+          (!Array.isArray(entry.paths) ||
+            entry.paths.some((path) => !isValidRepositoryPath(path)) ||
+            new Set(entry.paths).size !== entry.paths.length))
       );
     })
   ) {
@@ -27,6 +31,17 @@ export function validateExemptionRecords(records, knownRuleIds) {
     throw new Error("Convention exemption rule IDs must be unique.");
   if (knownRuleIds && ids.some((id) => !knownRuleIds.includes(id)))
     throw new Error("Every convention exemption must identify a known rule ID.");
+}
+
+function isValidRepositoryPath(value) {
+  return (
+    typeof value === "string" &&
+    value.length > 0 &&
+    !value.startsWith("/") &&
+    !value.includes("\\") &&
+    value.split("/").every((segment) => segment && segment !== "." && segment !== "..") &&
+    !/^[A-Za-z]:/u.test(value)
+  );
 }
 
 function isValidDate(value) {

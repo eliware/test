@@ -28,6 +28,11 @@ directives:
           - Show directive ancestry in check subfolders.
           - Check exemptions against the full bundled check tree.
           - Skip approved check exemptions and their discovered child checks.
+          - Skip the rule and child checks when paths are omitted or empty.
+          - Omit each listed repository-relative path from that rule's file inventory.
+          - Match exemption paths exactly. Do not use patterns or directory prefixes.
+          - Give each rule only its own path exclusions.
+          - Expose excluded paths to checks that read fixed paths directly.
           - Read /eliware/docs/repo-map.yaml only when it exists and a convention needs it.
         donts:
           - Do not infer profiles from repository contents or runtime behavior.
