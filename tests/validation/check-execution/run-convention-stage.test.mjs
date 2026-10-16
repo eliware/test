@@ -74,7 +74,7 @@ test("normalizes convention-runner errors as convention failures", async () => {
     code: 1,
     category: "conventions",
     diagnostics: [
-      "invalid config\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.",
+      "invalid config\n  How to resolve: Inspect the reported configuration, path, or check error. Correct its cause, then rerun eliware-test.",
     ],
   });
 });

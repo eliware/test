@@ -61,7 +61,7 @@ export function createPendingTextChunks() {
 
   function toString() {
     if (head >= chunks.length) return "";
-    // Chunks are references, not copied text; join creates the single bounded string the matcher needs.
+
     const textChunks = [chunks[head].text.slice(consumed - chunks[head].start)];
     for (let index = head + 1; index < chunks.length; index += 1)
       textChunks.push(chunks[index].text);

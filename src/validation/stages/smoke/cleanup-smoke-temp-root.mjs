@@ -10,7 +10,7 @@ export async function cleanupSmokeTempRoot(path, identity, options = {}) {
       current.dev !== identity.dev ||
       current.ino !== identity.ino
     )
-      return `Temporary smoke directory identity changed; left untouched at ${path}.`;
+      return `Temporary smoke directory identity changed. left untouched at ${path}.`;
     await (options.remove ?? rm)(path, { recursive: true, force: true });
     return "";
   } catch (error) {

@@ -1,6 +1,7 @@
 import { collectRedactionSecrets } from "../../../../../shared/output/redaction/collect-redaction-secrets.mjs";
 import { findUnexpectedJestOutput } from "../../../progress/inspect-jest-output.mjs";
 import { formatJestCoverageFailure } from "../../../progress/format-jest-coverage-failure.mjs";
+import { getJestStageFailureCode } from "./failure-code.mjs";
 
 export async function runJestValidationStage(context, runJest, readCoverage) {
   const jestStartedAt = Date.now();
@@ -8,16 +9,7 @@ export async function runJestValidationStage(context, runJest, readCoverage) {
   const outputText = [context.jestResult?.stdout, context.jestResult?.stderr, value.message]
     .filter(Boolean)
     .join("\n");
-  const coverageFailure =
-    /coverage threshold.*not met|coverage for .+? does not meet .+? threshold/iu.test(outputText);
-  const code =
-    value.status === "pass"
-      ? 0
-      : /could not be started/i.test(value.message)
-        ? 1
-        : coverageFailure
-          ? 4
-          : 2;
+  const code = getJestStageFailureCode(value, outputText);
   const result = {
     ...value,
     stage: "jest",

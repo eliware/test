@@ -51,6 +51,18 @@ test("loads the package repository record", async () => {
   }
 });
 
+test("accepts long descriptive fields in the external repository map", async () => {
+  const read = async () =>
+    `repositories:\n  - repository: eliware/example\n    description: ${"x".repeat(150)}\n`;
+  await expect(
+    loadRepoMapRecord("repo", { name: "@eliware/example" }, { read }),
+  ).resolves.toMatchObject({
+    available: true,
+    record: { repository: "eliware/example" },
+    error: null,
+  });
+});
+
 test("rejects duplicate repository records", async () => {
   const read = async () =>
     "repositories:\n  - repository: eliware/example\n    id: E-1\n  - repository: eliware/example\n    id: E-2\n";

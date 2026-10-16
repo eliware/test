@@ -29,7 +29,7 @@ export function validateReadmeLinks(readme, packageJson = {}) {
   if (readSection(markdown, "License").trim() !== order.licenseLink)
     return "README.md License must contain the exact MIT link.";
   if (readSection(markdown, "Support").trim() !== order.supportBlock)
-    return "README.md Support must contain the exact support block.";
+    return "README.md Support must contain the exact support section.";
   return null;
 }
 

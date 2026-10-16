@@ -4,7 +4,7 @@ import {
   conventionVersion,
   nextMinorVersion,
   packageVersion,
-} from "../../../../../helpers/project-version.mjs";
+} from "../../../../../../test-fixtures/helpers/project-version.mjs";
 
 const valid = {
   name: "@eliware/example",

@@ -11,14 +11,14 @@ conflicts:
 directives:
   - id: E-0.1.8.0.0
     dos:
-      - Document each tool, resource, prompt, transport, and schema from server code,
+      - Document each tool, resource, MCP `prompt`, `transport`, and schema from server code,
         protocol schemas, tests, and configuration.
-      - Explain network exposure and access boundaries from server configuration and
+      - Describe network exposure and access boundaries from server configuration and
         deployment files.
       - List unsupported capabilities from protocol schemas, tests, and server code.
-      - Explain each tool's purpose, input schema, response, and side effects from code,
+      - Describe each tool's purpose, input schema, response, and side effects from code,
         schemas, and tests.
-      - Explain each resource, prompt, and transport listed in public documentation from
+      - Describe each resource, MCP `prompt`, and `transport` in public documentation from
         code, schemas, and tests.
       - Use placeholder credentials and name a test endpoint in each copyable connection
         command.
@@ -27,6 +27,6 @@ directives:
     donts:
       - Do not expose credentials.
       - Do not claim a protocol guarantee unless server code, schemas, or tests show it.
-      - Do not present a live endpoint as a test endpoint.
+      - Do not use a live endpoint to test the server.
       - Do not provide a live-service command without a live target label and authorization
         step.

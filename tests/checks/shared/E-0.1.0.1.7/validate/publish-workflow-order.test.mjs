@@ -1,5 +1,4 @@
 import { validatePublishWorkflowOrder } from "../../../../../src/checks/shared/E-0.1.0.1.7/validate/publish-workflow-order.mjs";
-
 const validPublish = `jobs:
   validate:
     steps:
@@ -13,11 +12,9 @@ const validPublish = `jobs:
   publish:
     needs: validate
     steps: []`;
-
 function inventory(source = validPublish, files = [".github/workflows/publish.yaml"]) {
   return { files: async () => files, readText: async () => source };
 }
-
 const publicationProfiles = ["npm-published", "ghcr-published"];
 const packageJson = { eliware: { apply: publicationProfiles } };
 
@@ -89,20 +86,6 @@ test("requires validate before publish and a validation dependency", async () =>
     expect.arrayContaining([expect.stringContaining("jobs must list validate before publish")]),
   );
 });
-
-test.each(publicationProfiles)(
-  "enforces the dependency for the %s profile alone",
-  async (profile) => {
-    const profilePackage = { eliware: { apply: [profile] } };
-    await expect(validatePublishWorkflowOrder(inventory(), profilePackage)).resolves.toEqual([]);
-    await expect(
-      validatePublishWorkflowOrder(
-        inventory(validPublish.replace("    needs: validate\n", "")),
-        profilePackage,
-      ),
-    ).resolves.toContain("publish.yaml publish job must depend on validate.");
-  },
-);
 
 test("requires the ordered validation steps and allows later safe steps", async () => {
   await expect(

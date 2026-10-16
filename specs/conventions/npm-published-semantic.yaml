@@ -12,10 +12,10 @@ directives:
     dos:
       - Document install commands, entrypoints, package files, version rules, and
         publication limits from package.json, exports, and the publish workflow.
-      - Include every runtime asset loaded by a package entrypoint or named in consumer
+      - Include each runtime asset loaded by a package entrypoint or named in consumer
         documentation.
-      - Include every environment setting declared by code or schemas in package examples.
-      - Use placeholder values for every credential and private endpoint in examples.
+      - Include each environment variable declared by code or schemas in package examples.
+      - Use placeholder values for each credential and private endpoint in examples.
       - Describe release authorization from Operations procedures without granting publish
         authority through repository instructions.
       - Compare consumer claims with package metadata, entrypoint code, tests, and workflow

@@ -1,6 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
-import { platform } from "node:os";
-import { posix, resolve } from "node:path";
+import { mkdir, mkdtemp, readdir, rm, unlink, writeFile } from "node:fs/promises";
+import { platform, tmpdir } from "node:os";
+import { join, posix, resolve } from "node:path";
 import { createRepositoryInventory } from "../../../../../src/validation/shared/repository/create-repository/inventory.mjs";
 
 test("composes a frozen inventory facade over shared repository discovery", async () => {
@@ -85,4 +86,41 @@ test.each([undefined, null, "", "  ", 7])("rejects invalid inventory root %p", (
   expect(() => createRepositoryInventory(root)).toThrow(
     "Repository inventory root must be a non-empty path string.",
   );
+});
+
+test("reads existing descendants beneath a pruned directory before full discovery", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-pruned-scope-"));
+  const directory = resolve(root, "dist", "reports");
+  await mkdir(directory, { recursive: true });
+  await writeFile(resolve(directory, "report.json"), "{}\n");
+  const inventory = createRepositoryInventory(root, { readDirectory: readdir });
+  try {
+    await expect(inventory.directoryEntries(directory)).resolves.toMatchObject([
+      { name: "report.json", path: "dist/reports/report.json" },
+    ]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("refreshes scoped inventory after files change", async () => {
+  const root = await mkdtemp(join(tmpdir(), "eliware-scoped-refresh-"));
+  const directory = resolve(root, "docs");
+  await mkdir(directory);
+  await writeFile(resolve(directory, "old.md"), "old\n");
+  const inventory = createRepositoryInventory(root, { readDirectory: readdir });
+  try {
+    await expect(inventory.directoryEntries(directory)).resolves.toContainEqual(
+      expect.objectContaining({ name: "old.md", path: "docs/old.md" }),
+    );
+    await unlink(resolve(directory, "old.md"));
+    await writeFile(resolve(directory, "new.md"), "new\n");
+    const entries = await inventory.directoryEntries(directory);
+    expect(entries).not.toContainEqual(expect.objectContaining({ path: "docs/old.md" }));
+    expect(entries).toContainEqual(
+      expect.objectContaining({ name: "new.md", path: "docs/new.md" }),
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

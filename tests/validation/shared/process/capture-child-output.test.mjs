@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { packageVersion } from "../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 import { createChildOutputCapture } from "../../../../src/validation/shared/process/capture-child-output.mjs";
 
 test("captures and streams redacted bounded output", () => {

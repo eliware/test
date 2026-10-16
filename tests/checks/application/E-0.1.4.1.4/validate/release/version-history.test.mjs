@@ -4,7 +4,7 @@ import {
   nextMinorVersion,
   packageVersion,
   previousMajorVersion,
-} from "../../../../../helpers/project-version.mjs";
+} from "../../../../../../test-fixtures/helpers/project-version.mjs";
 
 test("accepts descending SemVer entries with matching package version", () => {
   expect(

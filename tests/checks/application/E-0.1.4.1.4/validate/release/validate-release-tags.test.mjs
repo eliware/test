@@ -1,6 +1,9 @@
 import { expect, jest, test } from "@jest/globals";
 import { validateReleaseTagVersions } from "../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/validate-release-tags.mjs";
-import { packageVersion, previousMajorVersion } from "../../../../../helpers/project-version.mjs";
+import {
+  packageVersion,
+  previousMajorVersion,
+} from "../../../../../../test-fixtures/helpers/project-version.mjs";
 
 const entries = [`## ${packageVersion} — 2026-10-15`, `## ${previousMajorVersion} — 2026-10-14`];
 

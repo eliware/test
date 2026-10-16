@@ -12,8 +12,8 @@ directives:
   - id: E-0.1.7.0.0
     dos:
       - Document each command and event from its handler, JSON definition, and tests.
-      - Request only intents and permissions used by documented command and event behavior.
-      - Describe each command and event purpose and visible result from handler code and
+      - Use only intents and permissions required by documented command and event behavior.
+      - Describe each command and event purpose and result shown by handler code and
         tests.
       - Compare localized message meaning across locale files and the en-US.json source.
       - Use placeholder bot credentials and name a test bot and test server in each
@@ -22,6 +22,6 @@ directives:
       - Name the live target and required authorization in each live-service instruction.
     donts:
       - Do not expose bot credentials or imply unavailable permissions.
-      - Do not present a live bot or server as a test target.
+      - Do not claim that a live bot or server is a test target.
       - Do not provide a live-service command without a live target label and authorization
         step.

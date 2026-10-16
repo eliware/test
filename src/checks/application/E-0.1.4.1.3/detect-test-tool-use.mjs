@@ -1,6 +1,7 @@
 import { parse } from "@babel/parser";
 import { collectLauncherAliases, isLauncher } from "./collect-launcher-aliases.mjs";
 import { readStaticString } from "./read-static-string.mjs";
+import { visitAst } from "./visit-ast.mjs";
 
 const toolName =
   /^(?:@jest\/(?!globals$)[^/]+|@vitest\/|@tapjs\/|@wdio\/|@cypress\/|@istanbuljs\/|jest(?:-|$)|vitest(?:\/|$)|mocha(?:\/|$)|ava$|tap$|tape$|uvu$|c8$|nyc$|istanbul(?:-|$)|babel-plugin-istanbul$|node:test$|playwright$|@playwright\/|cypress$|jasmine$|@bcoe\/v8-coverage$)/iu;
@@ -19,7 +20,7 @@ export function detectTestToolUse(content, allowHarnessTools = false) {
   }
   const strings = collectStaticStrings(ast.program);
   const launchNames = collectLauncherAliases(ast.program);
-  return visit(ast.program, (node) => {
+  return visitAst(ast.program, (node) => {
     const specifier = importSpecifier(node, strings);
     if (
       specifier &&
@@ -44,7 +45,7 @@ export function detectTestToolUse(content, allowHarnessTools = false) {
 
 function collectStaticStrings(root) {
   const strings = new Map();
-  visit(root, (node) => {
+  visitAst(root, (node) => {
     if (["VariableDeclarator", "AssignmentExpression"].includes(node.type)) {
       const binding = node.id ?? node.left;
       const value = readStaticString(node.init ?? node.right, strings);
@@ -81,12 +82,4 @@ function collectStrings(node, strings) {
   if (node && typeof node === "object")
     return Object.values(node).flatMap((item) => collectStrings(item, strings));
   return [];
-}
-
-function visit(node, callback) {
-  if (!node || typeof node !== "object") return false;
-  if (callback(node)) return true;
-  return Object.values(node).some((value) =>
-    Array.isArray(value) ? value.some((child) => visit(child, callback)) : visit(value, callback),
-  );
 }

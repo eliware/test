@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { readCanonicalOrder } from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
-import { conventionVersion } from "../../../helpers/project-version.mjs";
+import { conventionVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 
 test("reads structured canonical order data", () => {
   expect(readCanonicalOrder("eliware-apply.yaml").profiles).toEqual([

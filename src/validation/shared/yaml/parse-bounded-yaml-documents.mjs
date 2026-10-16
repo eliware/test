@@ -7,9 +7,13 @@ export const yamlLimits = Object.freeze({
   aliases: 100,
 });
 
-export function parseBoundedYamlDocuments(source, path) {
+export function parseBoundedYamlDocuments(
+  source,
+  path,
+  { lineCharacters = yamlLimits.lineCharacters } = {},
+) {
   if (typeof source !== "string") throw new Error("source is not a string");
-  const limitError = findYamlLimitError(source, path);
+  const limitError = findYamlLimitError(source, path, lineCharacters);
   if (limitError) throw new Error(limitError);
   const documents = parseAllDocuments(source);
   for (const document of documents) {
@@ -19,7 +23,7 @@ export function parseBoundedYamlDocuments(source, path) {
     } catch (error) {
       if (/excessive alias count/iu.test(error.message))
         throw new Error(
-          `${path} has more than 100 expanded aliases in one document; limit is 100.`,
+          `${path} has more than 100 expanded aliases in one document. limit is 100.`,
         );
       throw error;
     }
@@ -36,16 +40,16 @@ export function parseBoundedYamlValue(source, path) {
   return document?.toJS({ maxAliasCount: yamlLimits.aliases });
 }
 
-function findYamlLimitError(source, path) {
+function findYamlLimitError(source, path, lineCharacters) {
   const bytes = Buffer.byteLength(source, "utf8");
-  if (bytes > yamlLimits.bytes) return `${path} is ${bytes} UTF-8 bytes; limit is 100000.`;
+  if (bytes > yamlLimits.bytes) return `${path} is ${bytes} UTF-8 bytes. limit is 100000.`;
   const lines = source.split(/\r\n|\n|\r/u);
   if (lines.at(-1) === "" && /(?:\r\n|\n|\r)$/u.test(source)) lines.pop();
-  if (lines.length > yamlLimits.lines) return `${path} has ${lines.length} lines; limit is 1000.`;
+  if (lines.length > yamlLimits.lines) return `${path} has ${lines.length} lines. limit is 1000.`;
   for (const [index, line] of lines.entries()) {
     const characters = Array.from(line).length;
-    if (characters > yamlLimits.lineCharacters)
-      return `${path} line ${index + 1} has ${characters} characters; limit is 100.`;
+    if (characters > lineCharacters)
+      return `${path} line ${index + 1} has ${characters} characters. limit is ${lineCharacters}.`;
   }
   return null;
 }

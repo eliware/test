@@ -15,7 +15,5 @@ export function attachChildProcessOutput(child, stream, name, output, reject, is
 export function terminateChildProcess(child) {
   try {
     if (typeof child?.kill === "function") child.kill();
-  } catch {
-    // Keep the process or stream error as the actionable failure.
-  }
+  } catch {}
 }

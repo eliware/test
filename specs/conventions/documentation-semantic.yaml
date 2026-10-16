@@ -19,12 +19,12 @@ directives:
     dos:
       - Keep repository content to documentation, structured records, and tools that
         validate those files.
-      - Explain documentation scope, ownership, authoritative sources, contribution
+      - Describe documentation scope, ownership, authoritative sources, contribution
         steps, and documentation-only boundaries.
       - Add an indexed link to each maintained document from the nearest README.md index.
       - Compare each document and index with its authoritative sources, links, and
         validation rules.
       - Keep documented facts in sync with those sources.
     donts:
-      - Do not ship application or library runtime behavior as documentation-only content.
-      - Do not leave a maintained document without an indexed link.
+      - Do not ship application or library runtime behavior in documentation-only repositories.
+      - Do not keep a maintained document without an indexed link.

@@ -4,8 +4,8 @@ import { promisify } from "node:util";
 import { validateRequiredIgnoreRules } from "../ignore-patterns.mjs";
 import { validateGitIgnoreProbes } from "./ignore/probes.mjs";
 import { validateGitIgnoreFiles } from "./ignore/files.mjs";
-import { validateTrackedSymlinks } from "../tracked-symlinks.mjs";
-import { validateTrackedSensitivePaths } from "../tracked-sensitive-paths.mjs";
+import { validateTrackedSymlinks } from "../tracked/symlinks.mjs";
+import { validateTrackedSensitivePaths } from "../tracked/sensitive-paths.mjs";
 
 const executeFile = promisify(execFile);
 

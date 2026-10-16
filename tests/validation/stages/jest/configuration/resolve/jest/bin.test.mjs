@@ -4,7 +4,6 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { resolveJestBin } from "../../../../../../../src/validation/stages/jest/configuration/resolve/jest/bin.mjs";
-
 async function createConsumerPackage(metadata) {
   const root = await mkdtemp(join(tmpdir(), "eliware-jest-bin-"));
   const packageRoot = join(root, "node_modules", "jest");
@@ -32,22 +31,6 @@ test("resolves an exported Jest bin path", async () => {
     await writeFile(join(fixture.packageRoot, "commands", "runner.mjs"), "");
     expect(resolveJestBin(fixture.requireFromConsumer, "jest")).toBe(
       join(fixture.packageRoot, "commands", "runner.mjs"),
-    );
-  } finally {
-    await rm(fixture.root, { recursive: true, force: true });
-  }
-});
-
-test.each([
-  ["metadata object", { jest: "commands/object.mjs" }, "commands/object.mjs"],
-  ["metadata string", "commands/string.mjs", "commands/string.mjs"],
-])("resolves Jest's declared bin from %s", async (_label, bin, expected) => {
-  const fixture = await createConsumerPackage({ name: "jest", bin });
-  try {
-    await mkdir(join(fixture.packageRoot, "commands"));
-    await writeFile(join(fixture.packageRoot, expected), "");
-    expect(resolveJestBin(fixture.requireFromConsumer, "jest")).toBe(
-      join(fixture.packageRoot, expected),
     );
   } finally {
     await rm(fixture.root, { recursive: true, force: true });

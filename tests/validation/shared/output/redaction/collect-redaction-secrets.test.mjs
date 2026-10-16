@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { packageVersion } from "../../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 import { collectRedactionSecrets } from "../../../../../src/validation/shared/output/redaction/collect-redaction-secrets.mjs";
 
 test("collects unique string values from sensitive environment keys", () => {

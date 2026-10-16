@@ -1,4 +1,4 @@
-import { isProhibitedNpmOrGhcrPublishCommand } from "../../../is-prohibited-npm-or-ghcr-publish-command.mjs";
+import { isProhibitedNpmOrGhcrPublishCommand } from "../../../is/prohibited-npm-or-ghcr-publish-command.mjs";
 import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
 
 export function validateWorkflowCommandRestrictions(steps) {
@@ -15,7 +15,7 @@ export function validateWorkflowCommandRestrictions(steps) {
     Object.keys(setupInputs).some((key) => !["node-version", "cache"].includes(key)) ||
     setupInputs.cache !== "npm"
   )
-    errors.push("ci.yaml setup-node may use only node-version 26 and npm cache inputs.");
+    errors.push("ci.yaml setup-node can use only node-version 26 and npm cache inputs.");
   const checkoutOptions = steps[checkout]?.with ?? {};
   if (
     ["repository", "ref", "sparse-checkout", "sparse-checkout-cone-mode"].some(

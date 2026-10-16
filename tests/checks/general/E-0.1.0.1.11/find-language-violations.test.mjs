@@ -5,9 +5,9 @@ const dictionary = { abrupt: "SUDDEN (adj)", "close to": "NEAR (prep)", "": "inv
 
 function expectedLanguageFinding(path, line, word, alternatives) {
   return [
-    `${path}:${line} uses "${word}"; suggested alternatives: ${alternatives}.`,
-    "These suggestions are not exhaustive or mandatory.",
-    "Rewrite the text with clear, grammatical language without the listed term.",
+    `${path}:${line} uses "${word}". Suggested alternatives: ${alternatives}.`,
+    "The alternatives are examples. They are not requirements.",
+    "Rewrite the text with grammatical wording that omits the listed term.",
   ].join(" ");
 }
 
@@ -23,11 +23,11 @@ test("reports directive limits, semicolons, and dictionary alternatives", () => 
     new Set(),
   );
   expect(errors).toEqual([
-    "specs/directives.yaml:4 directive has 25 words; limit is 20.",
+    "specs/directives.yaml:4 directive has 25 words. Limit: 20.",
     "specs/directives.yaml:4 directive uses a semicolon.",
     expectedLanguageFinding("specs/directives.yaml", 4, "abrupt", "SUDDEN (adj)"),
     expectedLanguageFinding("specs/directives.yaml", 4, "close to", "NEAR (prep)"),
-    "specs/directives.yaml:8 sentence 1 has 26 words; limit is 25.",
+    "specs/directives.yaml:8 sentence 1 has 26 words. Limit: 25.",
   ]);
 });
 
@@ -47,7 +47,7 @@ test("reports paragraph limits and matches whole words without matching longer w
       new Set(),
     ),
   ).toEqual([
-    "README.md:1 paragraph has 7 sentences; limit is 6.",
+    "README.md:1 paragraph has 7 sentences. Limit: 6.",
     expectedLanguageFinding("README.md", 3, "Abrupt", "SUDDEN (adj)"),
     "README.md:5 sentence 1 uses a semicolon.",
   ]);

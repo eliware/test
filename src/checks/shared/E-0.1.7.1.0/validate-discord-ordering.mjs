@@ -8,7 +8,7 @@ export function validateDiscordOrdering(readOrder = readCanonicalOrder) {
   const readme = readOrder("readme-sections.yaml");
   const errors = [];
   if (agents?.profileHeadings?.discord !== "Discord" || !hasOrderedProfiles(agents.profileOrder))
-    errors.push("Canonical AGENTS.md ordering must place Discord after CLI and before MCP server.");
+    errors.push("Canonical AGENTS.md ordering must put Discord after CLI and before MCP server.");
   if (
     !hasOrderedProfiles(readme?.profileOrder) ||
     JSON.stringify(readme.profileSections?.discord) !== JSON.stringify(discordSections) ||

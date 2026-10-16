@@ -15,21 +15,20 @@ conflicts:
 directives:
   - id: E-0.1.3.0.0
     dos:
-      - Document each exported API, workflow, compatibility promise, install step,
-        runtime setting, and package file declared in package metadata or public docs.
-      - Keep documentation current and comprehensive for those APIs and workflows.
-      - Explain each example's prerequisites, commands, and results shown by tests or
+      - Document exported APIs, workflows, compatibility promises, install steps,
+        runtime values, and package files declared in package metadata or public docs.
+      - Keep documentation current and complete for those APIs and workflows.
+      - Give each example's prerequisites, commands, and results shown by tests or
         maintained code.
       - Describe each environment variable, default, option, and required or optional
         status declared by code or configuration schemas.
-      - For each environment setting in code or schemas, show its name, default, and
+      - For each environment variable in code or schemas, show its name, default, and
         required status with placeholder values.
       - Compare public docs with exports, package metadata, configuration schemas,
         maintained code, tests, and release records.
     donts:
-      - Do not present private implementation as public API.
-      - Do not claim compatibility beyond versions named in public documentation and CI
-        configuration.
+      - Do not show private implementation in public API documentation.
+      - Do not claim compatibility with versions not named in public docs or CI configuration.
       - Do not omit settings declared by code or schemas.
       - Do not enable optional environment variables in templates.
 
@@ -38,15 +37,15 @@ directives:
       - Test each public contract and workflow result stated in public documentation.
       - Keep unit assertions with the module that owns the behavior.
       - Keep coordinator tests for calls and results across module boundaries.
-      - Inject replaceable external dependencies.
-      - Keep entrypoints thin.
+      - Allow replaceable external dependencies.
+      - Keep entrypoints simple.
       - Remove superseded compatibility branches, aliases, and fallbacks.
-      - Use @eliware/redact for redaction and @eliware/log for logging.
-      - Use @eliware/path for filesystem and import-meta utilities.
-      - Use @eliware/errors for exception and rejection handling.
-      - Use @eliware/signals for signal handling and graceful shutdown.
+      - Use `@eliware/redact` for redaction and `@eliware/log` to write logs.
+      - Use `@eliware/path` for file system and import-meta utilities.
+      - Use `@eliware/errors` for failed operations and rejected promises.
+      - Use `@eliware/signals` for signal handling and orderly shutdown.
       - Test outputs and side effects stated in public contracts.
-      - Review package exports, package metadata, maintained code, tests, and package
+      - Compare package exports, package metadata, maintained code, tests, and package
         scripts for these requirements.
     donts:
       - Do not duplicate helper assertions or preserve obsolete contracts for convenience.
@@ -60,9 +59,9 @@ directives:
   - id: E-0.1.3.0.2
     dos:
       - Describe each consumer-visible change in RELEASE_NOTES.md.
-      - List each breaking change, migration step, and security change shown by the
+      - List each breaking change, migration step, and `security` change shown by the
         release diff, tests, and package changes.
       - Compare RELEASE_NOTES.md with the changes since the prior repository tag.
     donts:
       - Do not omit consumer-impacting changes.
-      - Do not use release notes as a second specification.
+      - Do not duplicate requirements in release notes.

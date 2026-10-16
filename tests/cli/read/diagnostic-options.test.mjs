@@ -136,7 +136,7 @@ test("accepts debug timing once before a mode and rejects ambiguous placements",
     "may be supplied once",
   );
   expect(() => readDiagnosticOptions(["--lint", "--debug-timing"])).toThrow(
-    "must precede a tool mode",
+    "must come before a tool mode",
   );
   expect(() => readDiagnosticOptions(["--lint", "--", "--debug-timing"])).toThrow(
     "may be supplied once",

@@ -37,7 +37,7 @@ export function validateDirectToolScript(script, kind, packageJson = {}) {
     token === "yarn" ||
     token === "eliware-test"
   ) {
-    return `The ${kind} script must invoke its direct tool, not another package script or eliware-test.`;
+    return `The ${kind} script must invoke its direct tool, not one more package script or eliware-test.`;
   }
   const packageName = TOOL_NAMES[kind]?.get(token);
   if (!packageName) {

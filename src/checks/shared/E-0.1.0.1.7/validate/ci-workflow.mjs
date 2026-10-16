@@ -51,7 +51,7 @@ function validateDocument(document) {
     errors.push("ci.yaml must not define inherited workflow environment values.");
   const jobNames = Object.keys(document.jobs ?? {});
   if (jobNames.some((name) => name !== "test"))
-    errors.push("ci.yaml must use test as the only validation job key.");
+    errors.push("ci.yaml must use `test` for the only validation job key.");
   const jobs = Object.values(document.jobs ?? {});
   if (jobs.length !== 1) errors.push("ci.yaml must define one validation job.");
   const job = jobs.find((item) => Array.isArray(item?.steps));

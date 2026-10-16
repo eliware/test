@@ -46,11 +46,11 @@ directives:
       - Put each command adapter in commands/<name>.mjs.
       - Put each command handler in src/commands/<name>.mjs.
       - Use a type 1 command definition with valid names and descriptions.
-      - Define localized command names and descriptions for every supported locale.
+      - Define localized command names and descriptions for each supported locale.
       - Use the supported locale list in this directive for locale records and command
         localization.
       - Put each locale record in locales/<locale>.json.
-      - Include every supported locale listed below.
+      - Include each supported locale in this list.
       - Keep each locale record's keys equal to locales/en-US.json keys.
       - Put each event adapter in events/<name>.mjs.
       - Put each event handler in src/events/<name>.mjs.
@@ -61,7 +61,7 @@ directives:
       - Do not omit a command definition or its matching adapter or handler.
       - Do not omit a locale record.
       - Do not add an unsupported locale record.
-      - Do not add locale keys that are absent from locales/en-US.json.
+      - Do not add locale keys that are missing from locales/en-US.json.
       - Do not require optional Discord event adapters.
       - Do not import or execute repository handlers during validation.
     examples:

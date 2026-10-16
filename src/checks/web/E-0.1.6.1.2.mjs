@@ -1,6 +1,6 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateBrowserTooling } from "./E-0.1.6.1.2/validate-browser-tooling.mjs";
-import { validateWebBuild } from "./E-0.1.6.1.2/validate-web-build.mjs";
+import { validateBrowserTooling } from "./E-0.1.6.1.2/validate/browser-tooling.mjs";
+import { validateWebBuild } from "./E-0.1.6.1.2/validate/web-build.mjs";
 
 export const ruleId = "E-0.1.6.1.2";
 

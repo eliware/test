@@ -34,13 +34,13 @@ export async function checkNpmVersion({
       );
     });
   } catch {
-    return "Cannot determine the active npm version; npm 12 or later is required.";
+    return "Cannot determine the active npm version. Install npm 12 or later.";
   }
 
   const version = semver.valid(String(output).trim());
-  if (!version) return "Cannot determine the active npm version; npm 12 or later is required.";
+  if (!version) return "Cannot determine the active npm version. Install npm 12 or later.";
   if (semver.major(version) < 12) {
-    return `npm 12 or later is required for validation; found npm ${version}.`;
+    return `npm 12 or later is required for validation. Found npm ${version}.`;
   }
   return null;
 }

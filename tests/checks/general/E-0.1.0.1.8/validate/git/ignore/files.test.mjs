@@ -40,8 +40,8 @@ test("reports failures while listing nested or tracked ignore paths", async () =
   };
   const errors = await validateGitIgnoreFiles("repo", runGit);
   expect(errors).toEqual([
-    "Repository ignore files could not be listed; nested overrides are unknown.",
-    "Git index status could not be read; tracked ignore status is unknown.",
+    "Repository ignore files could not be listed. Nested overrides are unknown.",
+    "Git index status could not be read. Tracked ignore status is unknown.",
   ]);
 });
 
@@ -51,7 +51,7 @@ test("reports malformed Git path output", async () => {
   });
   const errors = await validateGitIgnoreFiles("repo", runGit);
   expect(errors).toEqual([
-    "Repository ignore files could not be listed; nested overrides are unknown.",
-    "Git index status could not be read; tracked ignore status is unknown.",
+    "Repository ignore files could not be listed. Nested overrides are unknown.",
+    "Git index status could not be read. Tracked ignore status is unknown.",
   ]);
 });

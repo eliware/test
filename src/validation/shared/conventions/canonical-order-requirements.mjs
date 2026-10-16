@@ -1,23 +1,10 @@
-const profiles = [
-  "application",
-  "database",
-  "cli",
-  "discord",
-  "mcp-server",
-  "web",
-  "library",
-  "infrastructure",
-  "workspace",
-  "documentation",
-  "npm-published",
-  "ghcr-published",
-  "private",
-];
+import { canonicalProfileOrder } from "./canonical-order-requirements/profiles.mjs";
+import { readmeSectionsRequirements } from "./canonical-order-requirements/readme-sections.mjs";
 
 export const canonicalOrderRequirements = {
   "agents-sections.yaml": {
     fields: { baseSections: "text-list", profileOrder: "text-list", profileHeadings: "text-map" },
-    maps: { profileHeadings: profiles },
+    maps: { profileHeadings: canonicalProfileOrder },
   },
   "ci-workflow.yaml": {
     fields: {
@@ -78,31 +65,7 @@ export const canonicalOrderRequirements = {
     },
     maps: { jobDependencies: ["publish"] },
   },
-  "readme-sections.yaml": {
-    fields: {
-      header: "text-list",
-      headerLines: "number-map",
-      tableOfContentsHeading: "text",
-      badgeOrder: "text-list",
-      generalSections: "text-list",
-      profileOrder: "text-list",
-      profileSections: "text-list-map",
-      finalSections: "text-list",
-      linksSectionOrder: "text-list",
-      sharedSections: "object-map",
-      headerTemplates: "text-map",
-      supportBlock: "text",
-      licenseLink: "text",
-    },
-    maps: {
-      headerLines: ["brand", "title-and-badges", "description", "table-of-contents"],
-      headerTemplates: ["brand", "title", "npmBadge", "licenseBadge", "ciBadge"],
-      profileSections: profiles,
-      sharedSections: ["Commands"],
-    },
-    nestedMaps: { sharedSections: { Commands: ["profiles"] } },
-    nestedTypes: { sharedSections: { Commands: { profiles: "nonempty-text-list" } } },
-  },
+  "readme-sections.yaml": readmeSectionsRequirements,
   "specification-indexes.yaml": {
     fields: { directYamlFiles: "text", subdirectoryIndexes: "text", placement: "text" },
   },

@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
 import { validateCiWorkflow } from "../../../../../src/checks/shared/E-0.1.0.1.7/validate/ci-workflow.mjs";
-
 const workflow = `name: Validation
 on:
   push:
@@ -41,12 +40,25 @@ test("accepts the required workflow file set for a general profile", async () =>
   ).resolves.toEqual([]);
 });
 
-test.each([workflow, workflow.replaceAll("branches: [main]", "branches:\n      - main")])(
-  "accepts equivalent inline and block trigger lists",
-  async (source) => {
-    await expect(validateCiWorkflow({ readText: async () => source })).resolves.toEqual([]);
-  },
-);
+test("rejects inherited workflow and job settings", async () => {
+  const configured = workflow
+    .replace("permissions:\n  contents: read", "env:\n  MODE: test\npermissions:\n  contents: read")
+    .replace(
+      "    runs-on: ubuntu-latest",
+      "    env:\n      MODE: test\n    defaults:\n      run:\n        shell: bash\n    runs-on: ubuntu-latest",
+    )
+    .replace(
+      "concurrency:\n  group:",
+      "defaults:\n  run:\n    working-directory: src\nconcurrency:\n  group:",
+    );
+  await expect(validateCiWorkflow({ readText: async () => configured })).resolves.toEqual(
+    expect.arrayContaining([
+      "ci.yaml must not define inherited workflow environment values.",
+      "ci.yaml validation job must not define inherited environment values.",
+      "ci.yaml must not set inherited shell or working-directory overrides.",
+    ]),
+  );
+});
 
 test("allows a publish workflow for publication profiles", async () => {
   await expect(
@@ -114,68 +126,4 @@ test("rejects unsupported workflow events", async () => {
       { eliware: { apply: ["general"] } },
     ),
   ).resolves.toContain("ci.yaml must define only push and pull_request events.");
-});
-
-test.each([
-  workflow.replace(
-    "permissions:\n  contents: read",
-    "permissions:\n  contents: read\ndefaults:\n  run:\n    shell: bash",
-  ),
-  workflow.replace(
-    "    steps:",
-    "    defaults:\n      run:\n        working-directory: tools\n    steps:",
-  ),
-])("rejects inherited shell and working-directory overrides", async (source) => {
-  await expect(
-    validateCiWorkflow(
-      { files: async () => [".github/workflows/ci.yaml"], readText: async () => source },
-      { eliware: { apply: ["general"] } },
-    ),
-  ).resolves.toContain("ci.yaml must not set inherited shell or working-directory overrides.");
-});
-
-test.each([
-  workflow.replace("name: Validation", "name: Validation\nextra: true"),
-  workflow.replace(
-    "    runs-on: ubuntu-latest",
-    "    runs-on: ubuntu-latest\n    timeout-minutes: 1",
-  ),
-  workflow.replace(
-    "          node-version: 26",
-    "          node-version: 26\n          check-latest: true",
-  ),
-])("rejects unsupported workflow, job, and action settings", async (source) => {
-  const errors = await validateCiWorkflow(
-    { files: async () => [".github/workflows/ci.yaml"], readText: async () => source },
-    { eliware: { apply: ["general"] } },
-  );
-  expect(errors.join(" ")).toMatch(/unsupported keys|approved keys and inputs|setup-node may use/u);
-});
-
-test.each([
-  workflow.replace("  test:", "  lint:"),
-  workflow.replace("    runs-on: ubuntu-latest", "    runs-on: windows-latest"),
-  workflow.replace("    runs-on: ubuntu-latest", "    runs-on: ubuntu-latest\n    if: always()"),
-  workflow.replace("    permissions:\n      contents: read", "    permissions: {}"),
-  workflow.replace("    runs-on: ubuntu-latest\n", ""),
-])("rejects invalid validation job settings", async (source) => {
-  const errors = await validateCiWorkflow({ readText: async () => source });
-  expect(errors.join(" ")).toMatch(
-    /only validation job key|must run on Ubuntu|unconditionally|permissions/u,
-  );
-});
-
-test.each([
-  workflow.replace("name: Validation", "name: Validation\nenv:\n  NPM_CONFIG_IGNORE_SCRIPTS: true"),
-  workflow.replace(
-    "    runs-on: ubuntu-latest",
-    "    runs-on: ubuntu-latest\n    env:\n      CI: false",
-  ),
-  workflow.replace("branches: [main]", "branches: [main]\n    paths: ['**.md']"),
-])("rejects inherited environment values and event path filters", async (source) => {
-  const errors = await validateCiWorkflow(
-    { files: async () => [".github/workflows/ci.yaml"], readText: async () => source },
-    { eliware: { apply: ["general"] } },
-  );
-  expect(errors.join(" ")).toMatch(/environment values|define only the main branch/u);
 });

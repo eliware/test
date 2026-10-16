@@ -17,7 +17,7 @@ export async function validateApplicationLineLimits(files, readText, root) {
     if (content.endsWith("\n") || content.endsWith("\r")) lines.pop();
     const maximum = path.startsWith("src/") ? 100 : 200;
     if (lines.length > maximum)
-      errors.push(`${path} has ${lines.length} physical lines; maximum is ${maximum}.`);
+      errors.push(`${path} has ${lines.length} physical lines. The maximum is ${maximum}.`);
   }
   return errors;
 }

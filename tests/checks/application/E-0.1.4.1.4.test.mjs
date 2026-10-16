@@ -1,6 +1,9 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/application/E-0.1.4.1.4.mjs";
-import { nextMajorVersion, packageVersion } from "../../helpers/project-version.mjs";
+import {
+  nextMajorVersion,
+  packageVersion,
+} from "../../../test-fixtures/helpers/project-version.mjs";
 
 test("E-0.1.4.1.4 accepts valid notes and a README link", async () => {
   const inventory = {

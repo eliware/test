@@ -23,7 +23,7 @@ export async function runConventionStage(runChecks) {
       code: 1,
       category: "conventions",
       diagnostics: [
-        `${error.message}\n  How to resolve: Inspect the reported configuration, path, or check error; correct its cause, then rerun eliware-test.`,
+        `${error.message}\n  How to resolve: Inspect the reported configuration, path, or check error. Correct its cause, then rerun eliware-test.`,
       ],
     };
   }

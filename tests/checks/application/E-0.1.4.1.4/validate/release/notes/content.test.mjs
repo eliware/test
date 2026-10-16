@@ -3,7 +3,7 @@ import { validateReleaseNotesContent } from "../../../../../../../src/checks/app
 import {
   packageVersion,
   previousMajorVersion,
-} from "../../../../../../helpers/project-version.mjs";
+} from "../../../../../../../test-fixtures/helpers/project-version.mjs";
 
 const valid = `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nNew feature.\n\n## ${previousMajorVersion} — 2026-10-14\n\n### Fixed\n\nBug fix.\n`;
 const validate = (content) => validateReleaseNotesContent(content, packageVersion);

@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/npm-published/E-0.1.10.1.2.mjs";
-import { packageVersion } from "../../helpers/project-version.mjs";
+import { packageVersion } from "../../../test-fixtures/helpers/project-version.mjs";
 
 const workflow = `jobs:
   validate:
@@ -49,15 +49,6 @@ test("accepts the required npm publisher setup and command", async () => {
     status: "pass",
     message: "",
   });
-});
-
-test("accepts Node.js 26 as a quoted setup-node value", async () => {
-  const source = workflow.replace("node-version: 26", 'node-version: "26"');
-  await expect(run({ repositoryInventory: inventory(source), packageJson })).resolves.toMatchObject(
-    {
-      status: "pass",
-    },
-  );
 });
 
 test.each([

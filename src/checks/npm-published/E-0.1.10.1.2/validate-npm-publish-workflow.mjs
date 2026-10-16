@@ -1,6 +1,7 @@
 import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { findNpmTokenSettings } from "./find-npm-token-settings.mjs";
 import { hasCanonicalReleaseTagGuard } from "../../shared/publish-workflow/validate-release-tag-guard.mjs";
+import { isValidNpmSetupNodeStep } from "./validate-npm-publish-workflow/setup-node-step.mjs";
 import {
   hasNpmProvenancePermission,
   hasNpmValidationReadPermissions,
@@ -39,7 +40,7 @@ function validateWorkflow(document, packageJson) {
   const setup = steps.filter(
     (step) => typeof step?.uses === "string" && step.uses.startsWith("actions/setup-node@"),
   );
-  if (setup.length !== 1 || !validSetup(setup[0]))
+  if (setup.length !== 1 || !isValidNpmSetupNodeStep(setup[0]))
     errors.push("npm publish job must use setup-node v7 with Node.js 26 and the npm registry.");
   const install = steps.findIndex((step) => step?.run === "npm -g install npm@latest");
   const ci = steps.findIndex((step) => step?.run === "npm ci");
@@ -64,27 +65,14 @@ function validateWorkflow(document, packageJson) {
   return errors;
 }
 
-function validSetup(step) {
-  const input = step?.with;
-  const validInputCount = Object.keys(input ?? {}).length === 3;
-  return (
-    step?.uses === "actions/setup-node@v7" &&
-    [26, "26"].includes(input?.["node-version"]) &&
-    input?.["registry-url"] === "https://registry.npmjs.org" &&
-    input?.["package-manager-cache"] === false &&
-    validInputCount &&
-    unconditional(step)
-  );
-}
-
-function unconditional(step) {
-  return step && step.if === undefined && step["continue-on-error"] === undefined;
-}
-
 function validPublishStep(step) {
   return (
     step?.run === "npm publish --provenance" &&
     Object.keys(step).every((key) => ["name", "run"].includes(key)) &&
     unconditional(step)
   );
+}
+
+function unconditional(step) {
+  return step && step.if === undefined && step["continue-on-error"] === undefined;
 }

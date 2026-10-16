@@ -12,13 +12,13 @@ directives:
     dos:
       - Use a dedicated disposable database on localhost, 127.0.0.1, or ::1.
       - Create the database for one test run.
-      - Delete the database after the run, including after a test failure.
+      - Delete the database when the run succeeds or fails.
       - Use synthetic records only.
       - Allow database client access to create, read, update, and delete synthetic records.
       - Allow tests to create and delete their dedicated database or schema.
-      - Mock file-system operations, process calls, and external effects.
+      - Mock file system operations, child-command calls, and external effects.
       - Use a fixed clock or fake timers.
-      - Allow CI to provide the local database service before tests start.
+      - Allow CI to start a local database server before tests start.
       - Compare test targets, credentials, and cleanup with test code, CI files, and
         database configuration.
     donts:
@@ -26,8 +26,8 @@ directives:
       - Do not connect tests to a host other than localhost, 127.0.0.1, or ::1.
       - Do not change files, launch processes, or invoke command-line tools in tests.
       - Do not wait for wall-clock time or use uncontrolled timers in tests.
-      - Do not exempt database tests from the test side-effect rules.
-      - Do not use mysql, Docker, or another command-line tool from test code.
+      - Do not skip database tests from the test side-effect rules.
+      - Do not call mysql, Docker, or external commands from test code.
     examples:
       - "Use localhost with synthetic data. Delete the test database after each run."
 
@@ -40,33 +40,33 @@ directives:
       - Enforce value limits with CHECK constraints when the database supports them.
       - Validate other business rules before a write.
       - Test accepted and rejected values for each business rule.
-      - Use one transaction when partial writes can violate a stated invariant.
+      - Use one transaction when a write can make a stated invariant false.
       - Test each failure path for a multi-record operation.
-      - Verify that a failed operation leaves no partial records.
+      - Verify that a failed operation stores no records.
       - Compare each invariant with schema definitions, write code, and database tests.
     donts:
-      - Do not leave a stated invariant without a database constraint or application check.
-      - Do not leave partial records after a failed multi-record operation.
+      - Require a database constraint or application check for each stated invariant.
+      - Do not store records that fail required checks after a failed multi-record operation.
 
   - id: E-0.1.13.0.2
     dos:
-      - Use a stable idempotency key with a unique database constraint, or define a
-        repeatable operation that converges to one documented final database state.
-      - Test the same operation twice with the same input or key.
-      - Verify stored records after both calls.
+      - Use a stable idempotency key with a unique database constraint, or make repeatable
+        calls return one documented database result.
+      - Test the same operation two times with the same input or key.
+      - Verify stored records after each call.
       - Mock external effects in repeated-write tests.
       - Compare repeated-write claims with operation code, database constraints, and tests.
     donts:
       - Do not create duplicate records on the second call.
-      - Do not leave a different undocumented state after the second call.
+      - Do not store a different undocumented result after the second call.
       - Do not define connection retry or failover behavior in this rule.
 
   - id: E-0.1.13.0.3
     dos:
       - Store each schema change in a tracked migration file.
       - Give each migration a unique, ordered version.
-      - State the starting and ending schema versions.
-      - State the migration version that changes the schema.
+      - Name the starting and ending schema versions.
+      - Name the migration version that changes the schema.
       - Document the application version that uses the resulting schema.
       - Link to application migration guidance and the DBA procedure selected from the
         DBA runbook index.
@@ -75,7 +75,7 @@ directives:
       - Compare each schema claim with migration files, schema definitions, application
         version metadata, and linked procedures.
     donts:
-      - Do not require old and new application versions to run at the same time.
-      - Do not leave a schema change without a tracked migration, starting schema version,
-        ending schema version, migration version, or application version.
+      - Do not require concurrent use of previous and new application versions.
+      - Do not change schema without a tracked migration, starting and ending schema versions,
+        migration version, and application version.
       - Do not require an undocumented manual step.

@@ -1,0 +1,15 @@
+export const canonicalProfileOrder = [
+  "application",
+  "database",
+  "cli",
+  "discord",
+  "mcp-server",
+  "web",
+  "library",
+  "infrastructure",
+  "workspace",
+  "documentation",
+  "npm-published",
+  "ghcr-published",
+  "private",
+];

@@ -1,5 +1,5 @@
 version: "13.0"
-description: Lists deterministic rules for private Eliware distribution.
+description: Lists deterministic rules for private Eliware access.
 requires:
   - general
 conflicts:
@@ -8,7 +8,7 @@ directives:
   - id: E-0.1.12.1.0
     dos:
       - Set private true.
-      - Add a Private distribution section to AGENTS.md.
+      - Add a Private access section to AGENTS.md.
       - Reject npm publication commands in package scripts and GitHub workflows.
       - Reject NPM_TOKEN and NODE_AUTH_TOKEN settings in package scripts and GitHub
         workflows.

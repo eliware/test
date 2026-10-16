@@ -12,7 +12,7 @@ export function resolveWindowsPowerShellCoreExecutable(env, fileExists = existsS
   const pathKey = Object.keys(currentEnvironment).find((key) => key.toLowerCase() === "path");
   const pathEntries = (
     pathKey && typeof currentEnvironment[pathKey] === "string"
-      ? currentEnvironment[pathKey].split(";")
+      ? currentEnvironment[pathKey].split(win32.delimiter)
       : []
   )
     .map((entry) => entry.trim().replace(/^"(.*)"$/u, "$1"))

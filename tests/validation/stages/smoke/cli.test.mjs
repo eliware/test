@@ -2,7 +2,7 @@ import { afterEach, expect, jest, test } from "@jest/globals";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { packageVersion } from "../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   runSmokeCli,

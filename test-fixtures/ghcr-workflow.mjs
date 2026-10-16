@@ -1,5 +1,5 @@
 import { stringify } from "yaml";
-import { packageVersion } from "../tests/helpers/project-version.mjs";
+import { packageVersion } from "./helpers/project-version.mjs";
 
 export const ghcrPackage = { name: "@eliware/example", version: packageVersion };
 
@@ -8,7 +8,7 @@ export const ghcrAgents = [
   "Image: ghcr.io/eliware/example",
   `Pull command: docker pull ghcr.io/eliware/example:v${packageVersion}`,
   "Supported tags: vMAJOR.MINOR.PATCH",
-  "Deployment boundary: publication does not deploy; deploy by immutable version tag and recorded sha256 digest.",
+  "Deployment boundary: Publication does not deploy. Use an immutable version tag and record its SHA-256 digest.",
 ].join("\n");
 
 export function createGhcrWorkflow() {

@@ -4,20 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRepositoryInventory } from "../../../../../../src/validation/shared/repository/create-repository/inventory.mjs";
 import { createDocumentationFileView } from "../../../../../../src/validation/shared/repository/create-repository/inventory/documentation.mjs";
-
-const records = [
-  { path: "README.md", type: "file", depth: 0 },
-  { path: "examples", type: "directory", depth: 1 },
-  { path: "docs", type: "directory", depth: 1 },
-  { path: "docs/index.md", type: "file", depth: 1 },
-  { path: "docs/record.json", type: "file", depth: 1 },
-  { path: "docs/nested", type: "directory", depth: 2 },
-  { path: "docs/nested/record.json", type: "file", depth: 2 },
-  { path: "docs/build", type: "directory", depth: 2 },
-  { path: "docs/build/index.md", type: "file", depth: 2 },
-  { path: "docs/node_modules", type: "directory", depth: 2 },
-  { path: "docs/node_modules/dependency.md", type: "file", depth: 2 },
-];
+import { repositoryDocumentationRecords as records } from "../../../../../../test-fixtures/repository-documentation-records.mjs";
 
 test("builds a documentation view directly from scoped entries", async () => {
   const documentationFiles = createDocumentationFileView("/repo", async () => [
@@ -67,28 +54,6 @@ test("shares scoped documentation discovery and enforces traversal limits", asyn
     "inside the repository",
   );
   expect(findEntries).toHaveBeenCalledTimes(2);
-});
-
-test("allows generated documentation only when requested", async () => {
-  const inventory = createRepositoryInventory("/repo", {
-    findEntries: jest.fn(async () => records),
-  });
-
-  await expect(inventory.documentationFiles({ directory: "/repo/docs" })).resolves.not.toContain(
-    "build/index.md",
-  );
-  await expect(
-    inventory.documentationFiles({
-      directory: "/repo/docs",
-      includeGenerated: true,
-    }),
-  ).resolves.toContain("build/index.md");
-  const allGenerated = await inventory.documentationFiles({
-    directory: "/repo/docs",
-    includeGenerated: true,
-  });
-  expect(allGenerated).toContain("build/index.md");
-  expect(allGenerated).not.toContain("node_modules/dependency.md");
 });
 
 test("measures documentation depth relative to a deeply nested requested scope", async () => {

@@ -19,7 +19,7 @@ export function validateExemptionRecords(records, knownRuleIds) {
     })
   ) {
     throw new Error(
-      "Every exemption must identify a ruleId, reason, approver, approvalTimestamp, and expiry.",
+      "Every exemption must identify a ruleId, cause, approver, approvalTimestamp, and expiry.",
     );
   }
   const ids = records.map(({ ruleId }) => ruleId);

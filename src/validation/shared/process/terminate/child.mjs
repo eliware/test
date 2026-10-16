@@ -24,9 +24,7 @@ export function createChildTerminator(defaultKillTree = killWindowsProcessTree) 
       }
       try {
         child.kill(signal);
-      } catch {
-        // The child cannot be safely addressed without its process-tree identifier.
-      }
+      } catch {}
       return false;
     }
     if (Number.isInteger(child.pid) && child.pid > 0) {

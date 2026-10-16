@@ -12,8 +12,9 @@ directives:
   - id: E-0.1.8.1.0
     dos:
       - Add an MCP server section to AGENTS.md.
-      - Add Tools, Resources, Prompts, Transport, Authentication, and Schemas sections to
-        README.md.
+      - >-
+        Add `Tools`, `Resources`, `Prompts`, `Transport`, `Authentication`, and `Schemas`
+        sections to README.md.
     donts:
       - Do not omit MCP-specific headings.
     examples:
@@ -47,8 +48,8 @@ directives:
       - Put each tool handler in src/tools/<name>.mjs.
       - Make each tools/ adapter re-export its matching source handler.
       - Use a default function export in each tool handler.
-      - Allow any tool name when matching adapter and handler files exist.
-      - Provide at least one tool adapter.
+      - Allow each tool name when matching adapter and handler files are in the repository.
+      - Provide one or more tool adapters.
     donts:
       - Do not omit a tool adapter or its matching source handler.
       - Do not import or execute repository handlers during validation.

@@ -17,7 +17,7 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
   }
   let documents;
   try {
-    documents = parseBoundedYamlDocuments(source, repoMapPath);
+    documents = parseBoundedYamlDocuments(source, repoMapPath, { lineCharacters: Infinity });
     const parseError = documents.flatMap((document) => document.errors)[0];
     if (parseError) throw parseError;
   } catch (error) {

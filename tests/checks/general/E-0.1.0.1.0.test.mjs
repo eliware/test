@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.0.mjs";
-import { conventionVersion } from "../../helpers/project-version.mjs";
+import { conventionVersion } from "../../../test-fixtures/helpers/project-version.mjs";
 
 const packageJson = { name: "@eliware/example", eliware: { id: "E-1", apply: ["general"] } };
 

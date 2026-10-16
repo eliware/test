@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateConsumerSpecifications } from "../../../../../src/checks/general/E-0.1.0.1.4/validate/consumer-specifications.mjs";
-import { conventionVersion } from "../../../../helpers/project-version.mjs";
+import { conventionVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 
 async function createRoot() {
   const root = await mkdtemp(join(tmpdir(), "eliware-consumer-specs-"));

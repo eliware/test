@@ -30,10 +30,10 @@ export function npmCommand(
     const hasNpmCommand = hasWindowsNpmCommandOnPath(searchPath, fileExists);
     if (hasNpmCommand)
       throw new Error(
-        "Windows PATH contains npm.cmd without an adjacent npm-cli.js; provide npm_execpath or install npm with its CLI beside the command.",
+        "Windows PATH contains npm.cmd without an adjacent npm-cli.js. provide npm_execpath or install npm with its CLI near the command.",
       );
     throw new Error(
-      "Unable to resolve the npm CLI on Windows from npm_execpath, beside Node.js, or on PATH.",
+      "Cannot resolve the npm CLI on Windows from npm_execpath, the Node.js folder, or PATH.",
     );
   }
   if (isAbsoluteWindowsNpmPath(npmExecPath)) return ["npm", []];

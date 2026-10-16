@@ -86,7 +86,7 @@ test("reports Git status errors", async () => {
   const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 39 }), {
     readText: async () => ignoreText,
   });
-  expect(linkIndex).toContain("Git index status could not be read; tracked symlinks are unknown.");
+  expect(linkIndex).toContain("Git index status could not be read. Tracked symlinks are unknown.");
 });
 
 test("reports a tracked ignored path", async () => {
@@ -107,8 +107,8 @@ test("rejects malformed Git path and index output", async () => {
   const errors = await validateGitHygiene("repo", indexRunner, {
     readText: async () => ignoreText,
   });
-  expect(errors).toContain("Git index status could not be read; tracked ignore status is unknown.");
-  expect(errors).toContain("Git index status could not be read; tracked symlinks are unknown.");
+  expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
+  expect(errors).toContain("Git index status could not be read. Tracked symlinks are unknown.");
 });
 
 test("uses the current directory and checks required ignored paths", async () => {

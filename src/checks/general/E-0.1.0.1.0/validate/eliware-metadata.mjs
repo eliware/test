@@ -16,7 +16,7 @@ export function validateEliwareMetadata(packageJson) {
     Array.isArray(eliware) ||
     keys.join(",") !== expectedKeys.join(",")
   )
-    errors.push("package.json.eliware must use the ordered keys id, apply, and optional exempt.");
+    errors.push("package.json.eliware must use the ordered keys id, apply, and optional `exempt`.");
   if (typeof eliware?.id !== "string" || !/^E-\d+$/u.test(eliware.id))
     errors.push("package.json.eliware.id must be an assigned repository E-number.");
   const apply = eliware?.apply;

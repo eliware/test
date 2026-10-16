@@ -21,7 +21,6 @@ export function execute(command, args, options = {}, spawnProcess = spawn) {
       reject(redactChildProcessError(error, output, output.finish()));
     };
     try {
-      // Captured pipes are required for bounded output collection and secret redaction; shell use is prohibited.
       child = spawnProcess(command, args, {
         ...childOptions,
         env: { ...(childOptions.env ?? process.env) },

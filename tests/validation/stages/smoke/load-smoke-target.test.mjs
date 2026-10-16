@@ -23,7 +23,10 @@ test("loads an existing consumer with a test script and package dependency", asy
 
 test.each([
   [{ scripts: {} }, "Smoke target must define an npm test script."],
-  [{ scripts: { test: "test" } }, "Smoke target must declare @eliware/test as a dependency."],
+  [
+    { scripts: { test: "test" } },
+    "Smoke target must list @eliware/test in package.json dependencies.",
+  ],
 ])("rejects a consumer missing required metadata %#", async (packageJson, error) => {
   const fixture = await createSmokeTarget(roots);
   await writeFile(join(fixture.target, "package.json"), JSON.stringify(packageJson));

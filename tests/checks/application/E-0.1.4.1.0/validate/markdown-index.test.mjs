@@ -55,6 +55,6 @@ test("rejects links with incorrect path casing and unresolved references", () =>
   expect(validateMarkdownIndex("[A](A.md) [missing][x]", ["a.md"], "docs/README.md")).toEqual([
     "docs/README.md must link a.md.",
     "docs/README.md links to unexpected target A.md.",
-    "docs/README.md links to unexpected target an undefined reference.",
+    "docs/README.md links to unexpected target a missing target.",
   ]);
 });

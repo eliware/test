@@ -69,7 +69,7 @@ test("selects the platform npm executable or npm exec path", () => {
     ),
   ).toEqual(["C:\\missing\\node.exe", ["C:\\tools\\node_modules\\npm\\bin\\npm-cli.js"]]);
   expect(() => npmCommand("win32", "", "C:\\missing\\node.exe", () => false)).toThrow(
-    "Unable to resolve the npm CLI on Windows",
+    "Cannot resolve the npm CLI on Windows",
   );
   expect(() =>
     npmCommand(
@@ -102,7 +102,7 @@ test("uses platform defaults when no npm executable override is set", () => {
   try {
     if (process.platform === "win32") {
       expect(() => npmCommand(undefined, undefined, "C:\\missing\\node.exe", () => false)).toThrow(
-        "Unable to resolve the npm CLI on Windows",
+        "Cannot resolve the npm CLI on Windows",
       );
     } else {
       expect(npmCommand(undefined, undefined, "C:\\missing\\node.exe")).toEqual(["npm", []]);

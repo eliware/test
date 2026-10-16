@@ -16,7 +16,7 @@ const valueOptions = new Set(["--loglevel"]);
 
 export function validatePackArguments(args = []) {
   if (!Array.isArray(args) || args.some((argument) => typeof argument !== "string"))
-    return "Pack arguments must be provided as an array of strings.";
+    return "Provide pack arguments in an array of strings.";
   let expectsValue = false;
   const failures = [];
   for (const argument of args) {

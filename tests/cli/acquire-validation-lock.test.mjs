@@ -111,7 +111,7 @@ test("reports a lock that may remain when handle close and lock cleanup fail", a
   }).catch((value) => value);
   expect(error).toBeInstanceOf(AggregateError);
   expect(error.errors).toEqual([closeError, unlinkError]);
-  expect(error.message).toContain("stale lock may remain");
+  expect(error.message).toContain("A stale lock can stay");
 });
 
 test("reports both lock-write and partial-lock cleanup failures", async () => {
@@ -127,7 +127,7 @@ test("reports both lock-write and partial-lock cleanup failures", async () => {
   const error = await acquireValidationLock("/repo", { open, unlink }).catch((value) => value);
   expect(error).toBeInstanceOf(AggregateError);
   expect(error.message).toContain(
-    "partial lock may remain at " + join("/repo", "eliware-test.lock"),
+    "The unfinished lock can stay at " + join("/repo", "eliware-test.lock"),
   );
   expect(error.errors).toEqual([writeError, closeError, cleanupError]);
   expect(error.cause).toBe(writeError);

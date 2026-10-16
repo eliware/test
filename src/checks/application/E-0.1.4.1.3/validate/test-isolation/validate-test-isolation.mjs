@@ -1,4 +1,4 @@
-import { findTestIsolationViolations } from "./find-test-isolation-violations.mjs";
+import { findTestIsolationViolations } from "./find/test-isolation-violations.mjs";
 
 export async function validateTestIsolation(context = {}) {
   if (context.packageJson?.name === "@eliware/test") return [];

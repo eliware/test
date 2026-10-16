@@ -12,11 +12,11 @@ directives:
     dos:
       - Set private false and publishConfig.provenance true.
       - Add an npm publication section to AGENTS.md.
-      - Include the canonical npm badge beside the README title and a public package link.
-      - For consumer repositories, define pack as eliware-test --pack.
+      - Put the canonical npm badge and public package link in the README header.
+      - For consumer repositories, set pack mode to `eliware-test --pack`.
       - Run package validation during aggregate validation.
     donts:
-      - Do not replace required package validation with script presence.
+      - Do not replace required package validation with a script-presence check.
     examples:
       - "## npm publication"
       - "[![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/pa\
@@ -24,25 +24,24 @@ directives:
 
   - id: E-0.1.10.1.1
     dos:
-      - Define files as distinct nonempty repository-relative paths without dot-segment
-        traversal.
-      - Include the base entries listed in ordering/package-files.yaml.
-      - Include specs/ for every npm-published repository.
+      - Require unique nonempty repository-relative file paths without dot-segment traversal.
+      - Include required entries from ordering/package-files.yaml.
+      - Include specs/ in all npm-published repositories.
       - Include package.json, README.md, AGENTS.md, LICENSE, and specs/ in the tarball.
-      - Include every declared runtime entrypoint, export, and declaration target.
-      - Allow additional runtime files and folders at any depth unless excluded.
-      - Exclude tests, test, __tests__, and test-fixtures directories at every depth.
-      - Exclude .github, .knit, .git, and node_modules directories at every depth.
+      - Include each declared runtime entrypoint, export, and declaration target.
+      - Allow runtime files and folders at all depths unless excluded.
+      - Exclude tests, test, __tests__, and test-fixtures directories at all depths.
+      - Exclude .github, .knit, .git, and node_modules directories at all depths.
       - Exclude coverage, dist, build, generated, artifacts, and test-results directories
-        at every depth.
-      - Exclude .gitignore and package-lock.json at every depth.
+        at all depths.
+      - Exclude .gitignore and package-lock.json at all depths.
       - Exclude .npmrc, npm-shrinkwrap.json, yarn.lock, pnpm-lock.yaml, bun.lock, and
-        bun.lockb at every depth.
+        bun.lockb at all depths.
       - Exclude secret, secrets, credential, credentials, token, and tokens directories at
-        every depth.
+        all depths.
       - Exclude non-source files named secret, secrets, credential, credentials, token, or
-        tokens at every depth.
-      - Exclude files with .pem, .key, .p12, or .pfx extensions at every depth.
+        tokens at all depths.
+      - Exclude files with .pem, .key, .p12, or .pfx extensions at all depths.
       - Validate actual packed contents against minimum contents and exclusions.
     donts:
       - Do not impose an exact allowlist or let extras bypass exclusions.
@@ -95,7 +94,7 @@ directives:
 
   - id: E-0.1.10.1.3
     dos:
-      - Match the origin Git remote to package.json.repository.url.
+      - Match the `origin` Git remote to package.json.repository.url.
       - Accept HTTPS and SSH URLs for the same GitHub repository.
     donts:
-      - Do not accept a missing origin remote or a different repository.
+      - Do not accept a missing `origin` remote or a different repository.

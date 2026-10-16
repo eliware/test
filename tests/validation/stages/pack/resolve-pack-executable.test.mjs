@@ -20,7 +20,7 @@ test("resolves a relative npm_execpath from the package root", async () => {
 
 test("uses the platform fallback when npm_execpath cannot be resolved", () => {
   expect(() => resolvePackExecutable({ PATH: "" }, "win32", "node.exe")).toThrow(
-    "Unable to resolve the npm CLI on Windows",
+    "Cannot resolve the npm CLI on Windows",
   );
   expect(resolvePackExecutable({}, "linux", "node")).toEqual(["npm", []]);
   expect(resolvePackExecutable()).toHaveLength(2);

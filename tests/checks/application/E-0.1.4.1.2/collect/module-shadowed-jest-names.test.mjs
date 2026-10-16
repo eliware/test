@@ -41,3 +41,12 @@ test("ignores empty nodes during recursive assignment scans", () => {
     collectModuleShadowedNames(program, { ...jestNames, describes: new Set() }).describes,
   ).toEqual(new Set());
 });
+
+test("finds shadowed global names and hoisted test variables", () => {
+  const program = parse("var global = {}; var globalThis = {}; var test = () => {};", {
+    sourceType: "module",
+  }).program;
+  const result = collectModuleShadowedNames(program, jestNames);
+  expect(result.shadowedGlobals).toEqual(new Set(["global", "globalThis"]));
+  expect(result.tests).toEqual(new Set(["test"]));
+});

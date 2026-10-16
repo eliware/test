@@ -1,8 +1,7 @@
 import { lstat, readFile, rm } from "node:fs/promises";
-import { createRequire } from "node:module";
 import { join } from "node:path";
-import { resolve as resolvePath } from "node:path";
 import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
+import { assertSmokeCliEntrypoint } from "./install-smoke-candidate/assert-smoke-cli-entrypoint.mjs";
 
 function commandFailure(result, label) {
   const detail = [result?.stdout, result?.stderr].filter(Boolean).join("\n").trim();
@@ -18,7 +17,7 @@ export async function installSmokeCandidate({
   prefix,
   env,
   inspect = lstat,
-  resolveModule = (specifier, parent) => createRequire(parent).resolve(specifier),
+  resolveModule,
 }) {
   await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
   await rm(join(targetRoot, "node_modules", ...packageJson.name.split("/")), {
@@ -54,20 +53,7 @@ export async function installSmokeCandidate({
     throw new Error(
       `Installed package version ${installed.version} does not match ${packageJson.version}.`,
     );
-  const binTarget =
-    typeof packageJson.bin === "string" ? packageJson.bin : Object.values(packageJson.bin ?? {})[0];
-  if (typeof binTarget === "string") {
-    const relativeBinTarget = binTarget.replace(/^\.\//u, "");
-    const expectedBin = join(
-      targetRoot,
-      "node_modules",
-      ...packageJson.name.split("/"),
-      relativeBinTarget,
-    );
-    const resolvedBin = resolveModule(expectedBin, join(targetRoot, "package.json"));
-    if (resolvePath(resolvedBin) !== resolvePath(expectedBin))
-      throw new Error("Consumer does not resolve the installed smoke package CLI entrypoint.");
-  }
+  assertSmokeCliEntrypoint({ targetRoot, packageJson, resolveModule });
   const tested = await run(command, [...prefix, "test"], {
     cwd: targetRoot,
     env: { ...env, ELIWARE_TEST_SMOKE_CANDIDATE: packageJson.name },

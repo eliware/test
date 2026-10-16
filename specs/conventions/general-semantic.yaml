@@ -5,39 +5,39 @@ conflicts: []
 directives:
   - id: E-0.1.0.0.0
     dos:
-      - Describe the repository purpose, owner, scope, and boundaries with the evidence in
-        package metadata, maintained code, and canonical repository documents.
-      - Use package.json keywords as the source list for GitHub topic sync.
-      - Use each keyword to name a package capability, platform, protocol, technology, or
+      - Describe repository purpose, owner, scope, and boundaries from package metadata,
+        maintained code, and canonical repository documents.
+      - Use package.json keywords for GitHub topic sync.
+      - Use each keyword to name a package purpose, platform, protocol, technology, or
         subject that code and package behavior provide.
-      - Add a platform keyword when README.md or linked support documents state that the
-        package supports that platform.
+      - Add a platform keyword when README.md or linked support documents say that the
+        package supports it.
       - Keep each keyword only when maintained code, package behavior, README.md, or linked
-        documents provide evidence for its claim.
-      - Keep README branding, section order, support copy, and link labels consistent with
+        documents support its claim.
+      - Match README branding, section order, support copy, and link labels to
         the canonical deterministic examples.
       - Match each public link label to its destination and stated action.
-      - Keep all documentation current and comprehensive for each use described in
-        README.md, linked support documents, package metadata, and maintained workflows.
+      - Keep documentation current and complete for uses described in README.md, package
+        metadata, and maintained workflows.
       - Give contributors commands and steps for tasks listed in package scripts and
         maintained workflows.
       - Compare documentation with maintained code, configuration, package scripts,
         schemas, workflows, tests, and release records.
-      - Identify runtime settings from configuration schemas and code; identify package
-        metadata from package.json; identify command arguments from the CLI parser; and
-        identify deployment settings from workflow and deployment files.
+      - Identify runtime settings from schemas and code.
+      - Identify package metadata from package.json.
+      - Identify CLI arguments from the CLI parser.
+      - Identify deployment settings from workflow files.
       - Compare claims about released behavior with RELEASE_NOTES.md, package.json, and
         repository tags.
-      - Update each GitHub Action to its latest major version when Eli becomes aware of a
+      - Update each GitHub Action to its latest major version when Eli learns about a
         newer major version.
     donts:
-      - Do not use misleading identities, stale instructions, or unsupported capability
-        claims.
-      - Do not require a fixed keyword list or every search term.
-      - Do not add private repository links or alternate public branding to repository
+      - Do not use misleading identities, stale instructions, or unsupported package claims.
+      - Do not require a fixed keyword list or all query terms.
+      - Do not add private repository links or more public branding to repository
         READMEs.
       - Do not confuse npm publishability with source-hosting visibility.
-      - Do not present unpublished versions as available to users.
+      - Do not claim that unpublished versions are available.
 
   - id: E-0.1.0.0.1
     dos:
@@ -53,79 +53,79 @@ directives:
       - Do not use local instructions to weaken shared requirements.
       - Do not turn AGENTS.md into a second README, implementation specification, or
         release history.
-      - Do not present validation success as authorization to release or deploy.
+      - Do not authorize releases or deployments from validation success.
       - Do not add GitHub API calls to local deterministic checks.
     examples:
       - "Use the Operations directives for cross-repository procedures."
 
   - id: E-0.1.0.0.2
     dos:
-      - Keep contents free of unauthorized secrets, credentials, private data, decrypted
-        sensitive payloads, operational backups, production dumps, and runtime state.
+      - Exclude unapproved secrets, credentials, private data, decrypted sensitive
+        payloads, operational backups, production dumps, and runtime data from repository contents.
       - Distinguish minimal non-sensitive bootstrap data from backups and live database
         contents.
-      - Limit internal infrastructure information to authorized repository audiences.
-      - Review tracked files, generated artifacts, and repository access settings for each
+      - Limit internal infrastructure details to users with repository access.
+      - Compare tracked files, generated artifacts, and repository access settings for each
         data or access claim.
     donts:
       - Do not expose private access information or machine details through public
         documentation.
-      - Do not use repository contents as an operational backup store.
+      - Do not store operational backups in repository contents.
 
   - id: E-0.1.0.0.3
     dos:
-      - Give each source and test module one cohesive purpose and one reason to change.
+      - Give each source and test module one cohesive purpose and one cause for change.
       - Split a source or test module when its behavior, tests, or reasons for change show
         more than one responsibility.
       - Put each split responsibility in a submodule and call it through its owning module.
       - Keep coordinators responsible for their own orchestration.
-      - Review module behavior, mirrored tests, and reasons for change when you review
-        responsibility boundaries.
+      - Compare module behavior, mirrored tests, and causes for change to set responsibility
+        boundaries.
       - Keep a dependency when maintained code imports it, a package script invokes it, or
         maintained tool configuration names it.
     donts:
       - Do not combine responsibilities for convenience.
-      - Do not leave multiple responsibilities in a module that you change.
-      - Do not retain unused dependencies.
+      - Do not keep multiple responsibilities in a module that you change.
+      - Do not keep dependencies that maintained code does not use.
 
   - id: E-0.1.0.0.4
     dos:
-      - Apply these rules to all text written for people.
-      - Use clear, direct, complete sentences.
-      - Use familiar words and established technical terms.
-      - Define technical terms when readers may not know them.
-      - Use each term consistently and with one clear meaning.
+      - Apply these rules to all text written for readers.
+      - Use concise, complete sentences.
+      - Use plain words and established technical terms.
+      - Define technical terms when readers do not know them.
+      - Use each term with one stable meaning.
       - Keep noun groups to three words or fewer.
       - Use simple verb forms and active voice.
-      - Write instructions as commands.
+      - Use a command in each instruction.
       - Put conditions before commands and add a comma after each condition.
       - Use one instruction in each sentence unless actions occur at the same time.
       - Use complete sentences and include required articles.
-      - Use connecting words to show how ideas relate.
+      - Use connecting words to show how ideas connect.
       - Use vertical lists for complex information.
-      - Keep procedural items and descriptive items in separate lists.
+      - Keep procedural items and descriptions in different lists.
       - Give each paragraph one topic.
       - Use standard punctuation and American English spelling unless an official name
-        requires another form.
+        requires a different format.
       - Use hyphens only to connect related words.
-      - Use parentheses only for clear references, identifiers, alternatives, or explanations.
+      - Use parentheses only for source links, identifiers, alternatives, or explanations.
       - Use inclusive terms and pronouns.
-      - Make each pronoun reference clear.
-      - Use this only when its reference is clear.
-      - Use one style for repeated tasks.
+      - Use pronouns only when readers can identify their nouns.
+      - Use `this` only when the noun is explicit.
+      - Use one style for recurring tasks.
     donts:
       - Do not use slang, regional terms, or unclear jargon.
       - Do not use one term for different items or different terms for the same item.
-      - Do not use technical nouns as verbs or technical verbs as nouns.
-      - Do not use complex tenses or progressive verb forms.
-      - Do not use passive voice or action nouns in place of verbs.
-      - Do not use contractions or incomplete sentences.
+      - Do not use technical nouns for actions or technical verbs for objects.
+      - Do not use complex tenses or ongoing verb forms.
+      - Do not use passive voice or action nouns to replace verbs.
+      - Do not use contractions or unfinished sentences.
       - Do not omit articles when a sentence needs them.
-      - Do not combine separate instructions in one sentence.
-      - Do not write sentences that readers cannot understand on one reading.
-      - Do not mix instructions and descriptions in one list.
+      - Do not combine different instructions in one sentence.
+      - Do not write sentences that readers cannot understand in one pass.
+      - Do not combine instructions and descriptions in one list.
       - Do not put unrelated topics in one paragraph.
       - Do not use unclear parentheses.
       - Do not create phrasal verbs or use Latin abbreviations.
-      - Do not use a pronoun when its reference is unclear.
+      - Do not use a pronoun when its meaning is unclear.
       - Do not change exact required text, identifiers, or official names.

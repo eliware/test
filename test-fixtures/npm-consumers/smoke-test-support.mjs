@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { nextPatchVersion, packageVersion } from "../../tests/helpers/project-version.mjs";
+import { nextPatchVersion, packageVersion } from "../helpers/project-version.mjs";
 
 export const packageJson = {
   name: "@eliware/test",

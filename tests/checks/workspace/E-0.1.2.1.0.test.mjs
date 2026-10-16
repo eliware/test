@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { runbookSchemaVersion } from "../../helpers/project-version.mjs";
+import { runbookSchemaVersion } from "../../../test-fixtures/helpers/project-version.mjs";
 import { readRunbookSchema } from "../../../src/checks/workspace/E-0.1.2.1.0/read-runbook-schema.mjs";
 import { ruleId, run } from "../../../src/checks/workspace/E-0.1.2.1.0.mjs";
 

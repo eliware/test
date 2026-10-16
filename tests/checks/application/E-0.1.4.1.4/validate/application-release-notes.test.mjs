@@ -1,6 +1,9 @@
 import { expect, jest, test } from "@jest/globals";
 import { validateApplicationReleaseNotes } from "../../../../../src/checks/application/E-0.1.4.1.4/validate/application-release-notes.mjs";
-import { packageVersion, previousMajorVersion } from "../../../../helpers/project-version.mjs";
+import {
+  packageVersion,
+  previousMajorVersion,
+} from "../../../../../test-fixtures/helpers/project-version.mjs";
 
 test("reports a missing README link after reading release notes", async () => {
   const inventory = {

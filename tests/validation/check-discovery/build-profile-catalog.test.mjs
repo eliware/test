@@ -1,22 +1,10 @@
 import { expect, test } from "@jest/globals";
-import packageMetadata from "../../../package.json" with { type: "json" };
+import {
+  conventionVersion,
+  otherConventionVersion,
+  profileDocument,
+} from "../../../test-fixtures/profile-catalog-test-fixtures.mjs";
 import { buildProfileCatalog } from "../../../src/validation/check-discovery/build-profile-catalog.mjs";
-
-const conventionVersion = packageMetadata.version.split(".").slice(0, 2).join(".");
-const [conventionMajor, conventionMinor] = conventionVersion.split(".");
-const otherConventionVersion = `${conventionMajor}.${Number(conventionMinor) + 1}`;
-
-function profileDocument(source, requires, id) {
-  return {
-    source,
-    document: {
-      version: conventionVersion,
-      requires,
-      conflicts: [],
-      directives: [{ id, dos: ["Do."], donts: ["Do not."] }],
-    },
-  };
-}
 
 test("builds profile applicability and complete directive records", () => {
   const catalog = buildProfileCatalog(

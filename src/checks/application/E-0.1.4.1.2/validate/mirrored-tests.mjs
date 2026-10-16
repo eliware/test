@@ -12,7 +12,7 @@ export async function validateMirroredTests(files, readText, root) {
   for (const path of tests) {
     if (!path.endsWith(".test.mjs")) {
       errors.push(
-        `${path} is not a mirrored .test.mjs file; move support files to test-fixtures/.`,
+        `${path} is not a mirrored .test.mjs file. move support files to test-fixtures/.`,
       );
       continue;
     }

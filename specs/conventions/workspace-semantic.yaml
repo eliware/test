@@ -18,7 +18,7 @@ conflicts:
 directives:
   - id: E-0.1.2.0.0
     dos:
-      - State each workspace purpose, owner, role boundary, contact path, escalation path,
+      - Describe each workspace purpose, owner, role boundary, contact path, escalation path,
         and recovery responsibility in its indexed documentation.
       - Give each runbook a purpose, owner, scope boundary, prerequisites, ordered actions,
         and an observable result for each action.
@@ -30,6 +30,6 @@ directives:
       - Compare runbook steps and results with linked procedures and role boundaries in
         workspace specifications.
     donts:
-      - Do not imply authority beyond assigned scope.
+      - Do not claim authority that the assigned scope does not grant.
       - Do not maintain a competing company-wide task tracker.
       - Do not require private messages or prior conversation to follow a runbook.

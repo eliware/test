@@ -5,13 +5,14 @@ import { runValidation } from "../../validation/run-validation.mjs";
 import { dispatchInformationalCommand } from "../dispatch-informational-command.mjs";
 import { createValidationRunOptions } from "../create-validation-run-options.mjs";
 import { writeValidationResults } from "../write/validation-results.mjs";
-import { normalizeCliError } from "../normalize-cli-error.mjs";
+import { reportCliError } from "../report-cli-error.mjs";
 import { formatExitCode } from "../format-exit-code.mjs";
 import { parseFocusedArguments } from "../parse/focused-arguments.mjs";
 import { acquireValidationLock } from "../acquire-validation-lock.mjs";
 import { completeCliValidation } from "../complete-cli-validation.mjs";
 import { runNpmPrerequisite } from "./npm-prerequisite.mjs";
 import { join } from "node:path";
+import { selectTimingOutput } from "../select-timing-output.mjs";
 
 export async function runCli(args, write = console.log, root = process.cwd(), options = {}) {
   let releaseLock;
@@ -33,11 +34,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
       const diagnosticOptions = readDiagnosticOptions(args);
       const startedAt = Date.now();
       const validationSummary = {};
-      const timingOutput = args.includes("--debug-timing")
-        ? write === console.log
-          ? process.stdout.write.bind(process.stdout)
-          : write
-        : undefined;
+      const timingOutput = selectTimingOutput(args, write);
       const timing = createStageTimer(
         args.includes("--debug-timing"),
         () => Date.now(),
@@ -88,10 +85,4 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
   } catch (error) {
     return reportCliError(error, write);
   }
-}
-
-function reportCliError(error, write) {
-  const exitCode = normalizeCliError(error, write);
-  write(formatExitCode(exitCode));
-  return exitCode;
 }

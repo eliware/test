@@ -2,7 +2,7 @@ import { prepareJestRun } from "../prepare-jest-run.mjs";
 import { resolveJestCli } from "../../configuration/resolve/jest/cli.mjs";
 import { executePreparedJestRun } from "../execute/prepared-jest-run.mjs";
 import { attachJestConsoleOutput } from "../../progress/attach-jest-console-output.mjs";
-import { createJestConsoleOutputLog } from "../../progress/create/jest/console-output-log.mjs";
+import { createJestConsoleOutputLog } from "../../progress/create/jest/console/output-log.mjs";
 import { collectRedactionSecrets } from "../../../../shared/output/redaction/collect-redaction-secrets.mjs";
 
 export async function runJest(root, args, execute, options) {

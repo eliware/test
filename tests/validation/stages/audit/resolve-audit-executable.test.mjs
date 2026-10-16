@@ -16,7 +16,7 @@ test("selects npm executable variants", async () => {
     ]);
     expect(() =>
       resolveAuditExecutable({ env: { PATH: "" }, platform: "win32", execPath: "C:\\node.exe" }),
-    ).toThrow("Unable to resolve the npm CLI on Windows");
+    ).toThrow("Cannot resolve the npm CLI on Windows");
     expect(
       resolveAuditExecutable({
         env: { npm_execpath: "npm-cli.js" },

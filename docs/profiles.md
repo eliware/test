@@ -1,18 +1,18 @@
 # Profiles
 
-Profiles classify a repository and select its deterministic checks.
+Profiles identify a repository type and select its deterministic checks.
 Set the profiles in `package.json.eliware.apply`.
 Eliware Test does not infer profiles from repository files.
-Every repository must apply `general`.
+All repositories must apply `general`.
 Use `general` alone when no other profile fits.
 
-## Choose one repository type
+## Select one repository type
 
-Choose one profile from this group:
+Select one profile from this group:
 
 - `documentation` for a repository that contains documentation only.
 - `workspace` for a repository that contains operational workspaces and runbooks.
-- `library` for a reusable code library.
+- `library` for a shared code library.
 - `application` for a runnable application.
 - `infrastructure` for infrastructure code and configuration.
 
@@ -26,26 +26,27 @@ Add one or more application profiles for its interfaces:
 
 - `cli` for a command-line application.
 - `web` for a web application.
-- `discord` for a Discord bot or service.
+- `discord` for a Discord bot or application.
 - `mcp-server` for an MCP server.
 
-Each interface profile requires `application`.
-You can combine these four profiles under `application`.
+Each user-facing profile requires `application`.
+You can combine these four profiles with `application`.
 
 ## Add the database profile
 
-Apply `database` with `application` when runtime code reads or writes persistent data.
+Apply `database` with `application` when runtime code reads or writes stored data.
 You can combine it with applicable interface and publication profiles.
 Do not select it from repository files or package dependencies.
-Do not apply it for documentation, runbooks, deployment settings, or unused packages.
+Do not apply it for documentation, runbooks, deployment settings, or packages with no runtime code.
 Do not apply it with `library`, `documentation`, `workspace`, or `infrastructure`.
 
 ## Add publication profiles
 
-Apply `npm-published` when npm publication rules apply.
+Apply `npm-published` for npm publication rules.
 Apply `ghcr-published` when GHCR image publication rules apply.
 These profiles can apply together.
-Do not apply either profile to documentation, workspace, or infrastructure repositories.
+Do not apply a publication profile to documentation, workspace, or infrastructure repositories.
+
 Do not combine `npm-published` with `private`.
 You can combine `ghcr-published` with `private`.
 An npm package must include `specs/` in `package.json.files`.
@@ -53,10 +54,10 @@ The package check runs only when `npm-published` applies.
 
 ## Add the private profile
 
-Apply `private` to mark a private repository.
+Apply `private` to identify a private repository.
 Workspace and infrastructure repositories must apply `private`.
-Documentation repositories may apply `private`.
-Other profile rules may limit its use.
+Documentation repositories can apply `private`.
+Other profile rules can limit its use.
 
 ## Use canonical order
 
@@ -79,9 +80,9 @@ ghcr-published
 private
 ```
 
-Include only the profiles that apply.
+Include only applicable profiles.
 Use `general` first.
-Keep a profile before any profile that depends on it.
+Keep each profile before its required profiles.
 
 ## Example profile lists
 
@@ -127,6 +128,6 @@ Read the semantic file for the rules that the CLI does not enforce.
 | GHCR published | [ghcr-published-deterministic.yaml](../specs/conventions/ghcr-published-deterministic.yaml) | [ghcr-published-semantic.yaml](../specs/conventions/ghcr-published-semantic.yaml) |
 | Private        | [private-deterministic.yaml](../specs/conventions/private-deterministic.yaml)               | [private-semantic.yaml](../specs/conventions/private-semantic.yaml)               |
 
-Read the [ordering rules](../specs/conventions/ordering/README.md) for rules that depend on more than one profile.
+Read the [ordering rules](../specs/conventions/ordering/README.md) for rules that use more than one profile.
 
 [Return to documentation](README.md).

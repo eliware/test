@@ -62,7 +62,7 @@ test("omits repeated Jest failure details when inline suite output is enabled", 
       undefined,
       { failuresReported: true },
     ).message,
-  ).toBe("Jest failed; see the inline suite failures above.");
+  ).toBe("Jest failed. See the inline suite failures above.");
 });
 
 test("keeps one copy of Jest failures in final non-debug diagnostics", () => {

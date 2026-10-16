@@ -17,7 +17,7 @@ export async function validateGhcrAgentsSection(inventory, packageJson = {}) {
       `Image: ${image}`,
       `Pull command: docker pull ${image}:v${packageJson?.version}`,
       latest ? "Supported tags: vMAJOR.MINOR.PATCH, latest" : "Supported tags: vMAJOR.MINOR.PATCH",
-      "Deployment boundary: publication does not deploy; deploy by immutable version tag and recorded sha256 digest.",
+      "Deployment boundary: Publication does not deploy. Use an immutable version tag and record its SHA-256 digest.",
     ];
     if (latest)
       required.push(

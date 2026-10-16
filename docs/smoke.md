@@ -5,10 +5,10 @@ Run the command from the Eliware Test checkout or an installed package directory
 
 ## Prepare a consumer
 
-Use a disposable consumer copy or worktree.
-Add its dependencies and create its lockfile before you run smoke.
-Do not use the source checkout as the target.
-Do not use a target that resolves inside the source checkout.
+Use a temporary consumer copy or worktree.
+Add dependencies and create a lockfile before smoke.
+Use a consumer directory for the target.
+Do not select the source checkout or one of its child directories.
 
 ## Run smoke
 
@@ -26,21 +26,21 @@ It then runs the consumer's `npm test` command.
 
 ## Restore target files
 
-Smoke snapshots the exact package files that it will replace.
+Smoke saves the package files that it will replace.
 It restores the package manifest, lockfiles, installed Eliware Test package, and local executable shims.
 It does not restore other files that consumer tests create.
-On Windows, it restores captured directory links as junctions.
+On Windows, it creates junctions from captured directory links.
 It rejects captured file links before it changes files.
 It does not change system-wide links or junctions.
 
 If restore fails, the command reports the backup path.
-Use that path to recover the saved files.
+Use that path to restore the saved files.
 Do not delete the backup until you confirm recovery.
 
 ## Read smoke results
 
-The command prints `Smoke passed` when the package install and consumer test pass.
+The command prints `Smoke passed` when the package install and consumer test succeed.
 It prints `Tarball consumer smoke failed` when a step fails.
-Smoke success does not approve publication.
+Smoke success does not authorize publication.
 
 [Return to documentation](README.md).

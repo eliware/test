@@ -1,6 +1,6 @@
 import { fail, pass } from "../check-result.mjs";
 import dictionary from "../../../dictionary/unapproved.json" with { type: "json" };
-import { extractProse } from "./E-0.1.0.1.11/extract-prose.mjs";
+import { extractProse } from "./E-0.1.0.1.11/extract/prose.mjs";
 import { findLanguageViolations } from "./E-0.1.0.1.11/find-language-violations.mjs";
 import { loadExactExamples } from "./E-0.1.0.1.11/load-exact-examples.mjs";
 

@@ -37,9 +37,9 @@ directives:
 
   - id: E-0.1.6.1.1
     dos:
-      - Use <repo-root>/public as the web asset inventory root.
+      - Use <repo-root>/public for the web asset inventory root.
       - Keep dist, build, coverage, node_modules, and .git directories out of public/ at
-        every depth.
+        each depth.
     donts:
       - Do not set package.json.eliware.webRoot or package.json.eliware.webAssetExcludes.
       - Do not automatically run prebuild or postbuild scripts during aggregate validation.
@@ -49,10 +49,10 @@ directives:
 
   - id: E-0.1.6.1.2
     dos:
-      - Declare webpack as a direct dependency.
+      - Declare webpack in dependencies.
       - Set build to the standard webpack command.
       - Run build during aggregate validation.
-      - Set lighthouse and puppeteer as direct dependencies.
+      - Set lighthouse and puppeteer in dependencies.
       - Define nonempty lighthouse and screenshots scripts.
     donts:
       - Do not chain or redirect build or duplicate it in CI.

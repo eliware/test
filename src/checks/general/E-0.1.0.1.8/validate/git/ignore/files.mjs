@@ -47,7 +47,7 @@ export async function validateGitIgnoreFiles(root, runGit) {
     if (nested.size)
       errors.push(`Nested .gitignore files are prohibited: ${[...nested].join(", ")}.`);
   } catch {
-    errors.push("Repository ignore files could not be listed; nested overrides are unknown.");
+    errors.push("Repository ignore files could not be listed. Nested overrides are unknown.");
   }
   try {
     const { stdout } = await runGit(
@@ -59,7 +59,7 @@ export async function validateGitIgnoreFiles(root, runGit) {
     if (ignored.length)
       errors.push(`Tracked or staged paths match ignore rules: ${ignored.join(", ")}.`);
   } catch {
-    errors.push("Git index status could not be read; tracked ignore status is unknown.");
+    errors.push("Git index status could not be read. Tracked ignore status is unknown.");
   }
   return errors;
 }

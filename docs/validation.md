@@ -25,11 +25,11 @@ It runs enabled work in this order:
 8. Convention checks.
 9. Jest and coverage.
 
-The CLI may skip a stage when its profile does not apply.
+The CLI skips a stage when its profile does not require it.
 It runs all earlier stages and checks before Jest.
 It skips Jest when an earlier stage fails.
-It reports every failure and returns the highest failure code.
-The CLI calls Jest directly; it does not call the consumer's `npm test` script.
+It reports all failures and returns the highest failure code.
+The CLI runs Jest without the consumer's `npm test` script.
 
 ## Focused validation
 
@@ -52,26 +52,26 @@ Pass a Jest option after `--`:
 eliware-test tests/example.test.mjs -- --testNamePattern "case name"
 ```
 
-Put every test path before `--`.
+Put each test path before `--`.
 Do not pass tool modes with focused paths.
-The CLI rejects paths outside `tests/`, absolute paths, and parent traversal.
+The CLI rejects absolute paths, parent traversal, and paths that do not start with `tests/`.
 The CLI also rejects options that replace its Jest configuration, reporters, coverage, or test selection.
 
-Application and library profiles require one matching `.test.mjs` file for each maintained `.mjs` source.
-Each application or library test must register an executable Jest test and import its exact source module.
-Library declaration files must sit beside matching `.mjs` source files.
+Application and library profiles require one `.test.mjs` file for each maintained `.mjs` source.
+Each application or library test must contain an executable Jest test and import its exact source module.
+Store each library declaration file in the directory of its matching `.mjs` source.
 
 ## Jest and coverage
 
-The CLI uses Jest from the consumer when available.
-Otherwise, it uses the bundled Jest.
+The CLI uses consumer Jest when available.
+If not, it uses bundled Jest.
 It reads supported Jest settings from `package.json`.
-It rejects separate Jest configuration files.
+It rejects Jest configuration files not in `package.json`.
 Configured reporter names must be strings.
 Reporter option objects are not supported.
 
-The CLI always runs Jest with `--runInBand`, `--detectOpenHandles`, and `--no-cache`.
-It adds its progress reporter and coverage reports.
+The CLI runs Jest with `--runInBand`, `--detectOpenHandles`, and `--no-cache` on each run.
+It adds a reporter and coverage reports.
 It keeps the consumer's required coverage settings.
 The selected profile rules define required coverage thresholds.
 
@@ -81,11 +81,11 @@ The CLI keeps these files after the run.
 The CLI does not use system temp or user folders for its temporary files.
 
 Each test suite has a five-second limit.
-A separate 15-second watchdog covers startup and pauses between suites.
-Output does not reset either limit.
+A 15-second watchdog also covers startup and pauses between suites.
+Output does not change the limits.
 The CLI requests a graceful stop after a timeout.
 It forces a stop after one second.
-The CLI reports an error if the child process does not close.
+The CLI reports an error if the child command does not close.
 
 ## Read the summary
 
@@ -94,10 +94,10 @@ After a clean aggregate or focused run, the CLI reports:
 - The number of checks, Jest suites, and tests.
 - The number of lint warnings, format issues, audit issues, and pack issues.
 - The time for checks, Jest, and the full run.
-- The exit code on the last line.
+- The exit code on the final line.
 
-Use `--debug-timing` to see stage and suite times as they run.
-The option does not create a separate timing report.
+Use `--debug-timing` to see stage and suite times during execution.
+The option does not create a timing report.
 
 ## README links
 
@@ -109,29 +109,31 @@ Read the general convention files for the supported link forms.
 
 ## Repository specifications
 
-The CLI parses every YAML file under `specs/`.
-It checks YAML syntax for every file.
+The CLI parses all YAML files in `specs/`.
+The CLI checks YAML syntax in all files.
 It checks the directives schema only when a YAML document has a top-level `directives` key.
 It checks unique rule IDs across all directive files.
-It checks each `specs/` index against its direct YAML files and child indexes.
+It checks each `specs/` index against YAML files in its folder and child indexes.
 Read the profile rules for the full `specs/` layout.
 
 ## Repository map and links
 
-The general check reads `../docs/repo-map.yaml` when the file exists.
+The general check reads `../docs/repo-map.yaml` when that file exists.
 When it finds a matching entry, it compares the repository ID, description, keywords, and profiles.
 Without a map, the package metadata supplies the repository description and rule ID namespace.
 The CLI checks local README links and fragments without network access.
-It does not check whether an external website responds.
+It does not check if an external website responds.
 
-## Security and scope
+## Data and validation scope
 
 The CLI checks tracked links through the Git index.
 It rejects tracked file and directory symlinks.
 It does not resolve symlink targets.
-Keep secrets out of child-process output.
+
+Keep secrets out of child command output.
 The CLI redacts known secrets when it writes diagnostics.
-That redaction cannot find every secret.
-Eliware Test runs validation only; it does not change a release or deployment system.
+That redaction cannot find all secrets.
+
+Eliware Test runs validation only. It does not change a release or deployment system.
 
 [Return to documentation](README.md).

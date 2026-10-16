@@ -62,7 +62,7 @@ test("uses the Windows PATH npm when no npm_execpath is present", async () => {
 test("rejects npm versions older than 12", async () => {
   await expect(
     checkNpmVersion({ executeProcess: executeWith(null, "11.9.0"), env: {} }),
-  ).resolves.toBe("npm 12 or later is required for validation; found npm 11.9.0.");
+  ).resolves.toBe("npm 12 or later is required for validation. Found npm 11.9.0.");
 });
 
 test.each(["", "unknown", "12", "12.0.0 extra"])(
@@ -70,14 +70,14 @@ test.each(["", "unknown", "12", "12.0.0 extra"])(
   async (output) => {
     await expect(
       checkNpmVersion({ executeProcess: executeWith(null, output), env: {} }),
-    ).resolves.toBe("Cannot determine the active npm version; npm 12 or later is required.");
+    ).resolves.toBe("Cannot determine the active npm version. Install npm 12 or later.");
   },
 );
 
 test("reports when the npm version process cannot be resolved or run", async () => {
   await expect(
     checkNpmVersion({ executeProcess: executeWith(new Error("npm missing"), ""), env: {} }),
-  ).resolves.toBe("Cannot determine the active npm version; npm 12 or later is required.");
+  ).resolves.toBe("Cannot determine the active npm version. Install npm 12 or later.");
 });
 
 test("checks the active npm executable by default", async () => {

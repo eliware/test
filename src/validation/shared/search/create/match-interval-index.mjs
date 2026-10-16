@@ -1,5 +1,6 @@
 import { createNumericMinHeap } from "./numeric-min-heap.mjs";
 import { createOrderedMatchStartIndex } from "./ordered-match-start-index.mjs";
+import { isValidMatchInterval } from "./is-valid-match-interval.mjs";
 
 const MAX_MATCH_WINDOW = 1_000_000;
 
@@ -13,7 +14,7 @@ export function createMatchIntervalIndex() {
   let staleEndEntryCount = 0;
 
   function add(matches) {
-    if (!Array.isArray(matches) || !Array.from(matches).every(isValidInterval))
+    if (!Array.isArray(matches) || !Array.from(matches).every(isValidMatchInterval))
       throw new TypeError("Match intervals must have safe non-negative start and end offsets");
     for (const { start, end } of matches) {
       const previousEnd = matchEndsByStart.get(start) ?? 0;
@@ -85,15 +86,4 @@ export function createMatchIntervalIndex() {
   }
 
   return Object.freeze({ add, earliestCrossing, materialize, discardThrough });
-}
-
-function isValidInterval(interval) {
-  return (
-    interval !== null &&
-    typeof interval === "object" &&
-    Number.isSafeInteger(interval.start) &&
-    Number.isSafeInteger(interval.end) &&
-    interval.start >= 0 &&
-    interval.end > interval.start
-  );
 }

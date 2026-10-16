@@ -70,6 +70,6 @@ test.each([
     .mockResolvedValueOnce(initial)
     .mockImplementation(() => changed(initial));
   const target = await resolveSmokeTarget(fixture.source, fixture.target, inspect);
-  await expect(target.assertIdentity()).rejects.toThrow("refusing unsafe access");
+  await expect(target.assertIdentity()).rejects.toThrow("Refusing access to an untrusted target");
   await removeRoots(roots);
 });

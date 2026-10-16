@@ -6,7 +6,7 @@ directives:
   - id: E-0.1.0.1.0
     dos:
       - Set id to the assigned repository E-number.
-      - Allow ../docs/repo-map.yaml to be absent.
+      - Allow ../docs/repo-map.yaml to be missing.
       - When ../docs/repo-map.yaml lists this repository, match package.json eliware.id,
         description, keywords, and applied profiles.
       - When no repository entry exists, validate package metadata through the general
@@ -18,21 +18,21 @@ directives:
     donts:
       - Do not add unknown eliware keys.
       - Do not accept expired or malformed exemptions.
-      - Do not use AGENTS.md as exemption metadata.
+      - Do not use AGENTS.md to supply exemption metadata.
       - Do not require a repository entry in ../docs/repo-map.yaml.
 
   - id: E-0.1.0.1.1
     dos:
       - Keep package.json, package-lock.json, README.md, AGENTS.md, LICENSE, and
         specs/README.md.
-      - Define a scoped @eliware name, nonempty description, no more than 20 distinct
+      - Define a scoped @eliware name, nonempty description, no more than 20 unique
         nonempty keywords, and boolean private.
-      - Require Node.js 26 or later with package.json.engines.node set to ">=26".
+      - Require Node.js 26 or newer with package.json.engines.node set to ">=26".
       - Use the canonical author, repository, homepage, license, module type, and Node.js
         metadata shown in the example.
       - Set package.json.bugs.url to the matching GitHub repository issues URL.
-      - Use numeric MAJOR.MINOR.PATCH matching the applied convention version.
-      - Keep lockfile metadata and dependency references consistent with package.json.
+      - Use numeric `MAJOR.MINOR.PATCH` matching the applied convention version.
+      - Match lockfile metadata and dependency references to package.json.
       - Keep each Node.js dependency at its latest available release. The outdated stage
         must report no newer release.
       - Use the MIT license text with Copyright (c) 2026 Eliware.
@@ -53,13 +53,13 @@ directives:
 
   - id: E-0.1.0.1.2
     dos:
-      - Begin AGENTS.md with the exact title shown in the example.
-      - Include every base heading shown in the example.
-      - Include the literal markers Node.js 26 and native ESM and every required shared
+      - Start AGENTS.md with the exact title shown in the example.
+      - Include all required headings shown in the example.
+      - Include the literal markers Node.js 26 and native ESM and all required shared
         validation command.
     donts:
-      - Do not omit or rename a required base heading.
-      - Do not create README.md inside .knit/.
+      - Do not omit or rename a required heading.
+      - Do not create README.md in .knit/.
     examples:
       - "# AGENTS.md
 
@@ -88,39 +88,36 @@ directives:
   - id: E-0.1.0.1.3
     dos:
       - Use the README header and footer order in ordering/readme-sections.yaml.
-      - "Use this exact header sequence: linked Eliware brand image, blank line, level-two
-        package title with the npm, License, and CI badges, blank line, exact
-        package.json description, blank line, and Table of Contents."
-      - Use the exact package.json.name as the title text. Format it as `##
+      - Use the canonical README header order in ordering/readme-sections.yaml.
+      - Use the exact package.json.name for title text. Format it with `##
         @eliware/<repo-name>` followed by badges on the same line.
       - Use the npm, License, and CI badges in that order. Include npm only when
         package.json.eliware.apply includes npm-published.
       - Use the exact brand image, badge targets, and title markers shown in the examples.
-      - Include every section resolved from package.json.eliware.apply and
+      - Include all sections resolved from package.json.eliware.apply and
         ordering/readme-sections.yaml.
-      - Use Features, Requirements, Setup, Usage, Development, Testing, Troubleshooting,
-        and Security as general content headings.
+      - "Use these exact general headings: `Features`, `Requirements`, `Setup`, `Usage`,
+        `Development`, `Testing`, `Troubleshooting`, and `Security`."
       - Include Support, Links, and License sections.
-      - Use each general level-two heading once.
-      - Link every required content section once in canonical order in the Table of
+      - Use one instance of each general level-two heading.
+      - Link each required content section in canonical order in the Table of
         Contents.
       - Use lowercase space-to-hyphen fragments for Table of Contents links.
-      - Put local documentation and specifications navigation under a content heading, not
+      - Put local documentation and specifications navigation in a content heading, not
         in the header or footer.
       - Include the exact package description in the header.
       - Link specs/README.md from a content section.
       - Use the exact License section and link text shown in the examples.
-      - Use the exact Support block shown in the examples.
-      - "Use these exact Links labels and targets in this order: Home Page, GitHub Org,
-        GitHub Repo, Bug Reports, npm, and Discord."
+      - Use the exact Support text shown in the examples.
+      - Use Links labels and targets from ordering/readme-sections.yaml.
       - Include npm in Links only when package.json.eliware.apply includes npm-published.
-      - Keep the Links section limited to the ordered canonical links.
+      - Keep the Links section to canonical links in order.
       - Do not link to the private Eliware Docs repository.
     donts:
       - Do not include the title or Table of Contents in its own section list.
       - Do not add unlisted level-two sections.
-      - Do not change the package name text, add header navigation, use `.git` in the
-        GitHub Repo link, or display git+https URLs.
+      - Do not change the package name text or add header navigation.
+      - Do not use `.git` or git+https URLs in the GitHub Repo link.
     examples:
       - "#
         [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eT\
@@ -167,50 +164,49 @@ directives:
 
   - id: E-0.1.0.1.4
     dos:
-      - Make each local Markdown link to repository content resolve inside the checkout.
+      - Make each local Markdown link to repository content resolve in the checkout.
       - Make local Markdown fragments resolve to headings or explicit HTML IDs.
       - Give HTTP and HTTPS links hostnames without embedded credentials and mailto links
         email addresses.
       - Use full HTTPS GitHub URLs for cross-repository links.
       - Keep specs/directives.yaml.
-      - Parse every YAML file under specs/, including files in nested directories.
-      - Limit every YAML file parsed during validation to 100000 UTF-8 bytes and 1000
+      - Parse all YAML files in specs/ and its nested directories.
+      - Limit each parsed YAML file to 100000 UTF-8 bytes and 1000
         lines.
       - Limit each YAML line to 100 characters, not counting line endings.
-      - Limit YAML alias expansion to 100 aliases per document.
+      - Limit each YAML document to 100 aliases.
       - Set the YAML parser alias limit explicitly.
       - Report the file path, observed value, and required limit when a YAML limit fails.
       - Validate only YAML documents with a top-level directives key against the bundled
         directives schema.
-      # codescope ignore this because required indexes need real navigable links.
-      - Give every specs directory one navigation-only README.md linking its direct YAML
-        files and immediate subdirectory indexes.
-      - Allow only YAML documents, README.md indexes, and conforming subdirectories under
+      - Give each specs directory a navigation-only README.md with links to its same-folder
+        YAML files.
+      - Allow only YAML documents, README.md indexes, and conforming subdirectories in
         specs/.
-      - Use unique E-rule IDs within the assigned repository namespace.
-      - Number siblings sequentially from 0 within their document prefix and append
+      - Use unique E-rule IDs in the assigned repository namespace.
+      - Number siblings sequentially from 0 in their document prefix and append
         sequential child numbers to actual parent IDs.
     donts:
-      - Do not parse YAML that exceeds a required size, line, or alias limit.
-      - Do not add a separate memory cap for YAML parsing.
+      - Reject YAML above a required byte, line, or alias limit.
+      - Do not set a second memory cap for YAML parsing.
       - Do not use escaping relative links, A-rule IDs, duplicate IDs, or invalid child
         ancestry.
-      - Do not leave specifications unindexed or duplicate nested inventories in parent
+      - Index all specifications. Do not duplicate nested inventories in parent
         indexes.
     examples:
       - "An E-38 document prefix may contain E-38.0 with children E-38.0.0 and E-38.0.1."
 
   - id: E-0.1.0.1.5
     dos:
-      - For consumer repositories, define the five shared scripts exactly as shown.
+      - For consumer repositories, use the five shared scripts from the examples.
       - Run lint and format-check during aggregate validation.
-      - Give additional scripts nonempty commands.
+      - Give other scripts nonempty commands.
       - Pass lint with zero errors and warnings.
-      - Keep .mjs, .json, .yml, .yaml, and .md files valid and formatted as shown.
-      - Define package.json.prettier exactly as shown.
-      - Use package.json.prettier as the sole formatting configuration.
+      - Keep .mjs, .json, .yml, .yaml, and .md files valid and formatted to match examples.
+      - Match package.json.prettier to its example.
+      - Use package.json.prettier for all formatting settings.
     donts:
-      - Do not replace shared scripts with partial validation.
+      - Do not replace shared scripts with checks that omit required stages.
       - For consumer repositories, do not directly declare or import Oxlint or Prettier or
         invoke them in validation commands.
       - Do not exclude maintained files of the required types from formatting.
@@ -229,18 +225,17 @@ directives:
 
   - id: E-0.1.0.1.6
     dos:
-      - Keep .knit/deploy.yaml as the only YAML file under .knit/ with exactly one
-        document.
-      - Set timeoutMs to 300000 for every push and tag deployment.
+      - "Keep exactly one YAML file in .knit/: .knit/deploy.yaml."
+      - Set timeoutMs to 300000 for each push and tag deployment.
       - Keep the deployment path repository-specific.
-      - "Begin every commands array with these exact commands in this order: git pull
-        --ff-only origin main, npm ci, npm test."
-      - Add any commands after this prefix unless a command publishes an npm package or a
+      - "Start each commands array with this exact sequence: `git pull --ff-only origin main`,
+        `npm ci`, `npm test`."
+      - Add commands after this prefix only when they do not publish an npm package or a
         GHCR image.
-      - Keep secondary Knit scripts under .knit/.
+      - Keep secondary Knit scripts in .knit/.
       - Use the .mjs extension for secondary Knit scripts.
     donts:
-      - Do not change, omit, or reorder any command in the required prefix.
+      - Do not change, omit, or reorder commands in the required prefix.
       - Do not include npm publication or explicit GHCR image-publication commands.
       - Do not use secondary Knit scripts with extensions other than .mjs.
     examples:
@@ -271,8 +266,8 @@ directives:
 
   - id: E-0.1.0.1.7
     dos:
-      - Keep ci.yaml with one document under .github/workflows/.
-      - Explicitly enable push and pull_request events for main.
+      - Keep one ci.yaml document in .github/workflows/.
+      - Enable push and `pull_request` events for main.
       - Set repository-and-ref concurrency with cancel-in-progress true.
       - Set workflow and validation-job permissions to contents read only.
       - Run validation unconditionally on Ubuntu using checkout major v7 and setup-node
@@ -280,17 +275,16 @@ directives:
       - "Set checkout fetch-depth to 0 before validation."
       - Install npm@latest before npm ci.
       - Run one standalone npm ci step, then one standalone npm test step.
-      - Add any workflow steps after the required npm test step unless a command publishes
-        an npm package or a GHCR image.
-      - Keep ci.yaml as the validation workflow.
+      - Add workflow steps after npm test only when they do not publish npm or GHCR packages.
+      - Keep ci.yaml for validation.
       - Allow publish.yaml when npm-published or ghcr-published applies.
-      - Before npm ci, permit only approved setup actions, npm latest installation, and
-        literal echo or printf commands that report text only.
-      - Keep required install and test steps free of environment, shell, and
-        working-directory overrides.
-      - Treat inline and block YAML lists as equal when their values match.
+      - Before `npm ci`, allow approved setup actions and npm latest installation.
+      - Allow `echo` or `printf` only when commands report literal text.
+      - Do not set environment, shell, or working-directory overrides on required install
+        and test steps.
+      - Accept inline lists and indented YAML lists with matching values.
     donts:
-      - Do not add other GitHub Actions workflow files beyond ci.yaml and a required
+      - Do not add GitHub Actions workflow files other than ci.yaml and a required
         publish.yaml.
       - Do not make required validation steps conditional.
       - Do not use continue-on-error for required validation steps.
@@ -356,29 +350,29 @@ directives:
   - id: E-0.1.0.1.8
     dos:
       - Ignore directories named node_modules, .git, coverage, dist, build, generated,
-        artifacts, and test-results at every depth.
+        artifacts, and test-results at all depths.
       - Ignore .DS_Store and Thumbs.db.
       - Keep tracked and staged files unignored by the root .gitignore.
-      - Keep all tracked paths free of symlinks.
-      - Allow .env.example as the only tracked environment example.
-      - Reject tracked .env and .env.<name> files except .env.example.
+      - Do not include symlinks in tracked paths.
+      - Allow only .env.example in tracked environment files.
+      - Reject tracked .env and .env.<name> files. Allow .env.example.
       - Reject paths with a component named id_rsa, secret, secrets, credential,
         credentials, token, or tokens.
       - Reject files with .pem, .key, .p12, or .pfx extensions.
-      - Use only the root .gitignore; do not add nested .gitignore files.
+      - Use only the root .gitignore.
+      - Do not add nested .gitignore files.
     donts:
-      - Do not track ignored files or symlinks.
+      - Do not add ignored files or symlinks to the Git index.
       - Do not ignore package.json.
 
   - id: E-0.1.0.1.9
     dos:
       - Scan maintained repository text files for machine-specific absolute paths.
       - 'Reject Windows paths rooted at Users, home, srv, or var\lib directories.'
-      - Reject POSIX paths rooted at /home except paths with node, argocd, or runner as
-        the next segment.
+      - Allow paths rooted at /home/node, /home/argocd, or /home/runner. Reject other
+        paths rooted at /home.
       - Reject POSIX paths rooted at /users.
-      - Reject POSIX paths rooted at /srv except paths with repository or workspace as the
-        next segment.
+      - Allow paths rooted at /srv/repository or /srv/workspace. Reject other /srv paths.
       - "Reject C: or D: paths rooted at eliware or Users/<name>/src."
       - Skip invalid UTF-8 and binary files.
       - Fail validation when repository files cannot be listed or read.
@@ -388,45 +382,46 @@ directives:
 
   - id: E-0.1.0.1.10
     dos:
-      - Scan every .mjs file under src/ and check each folder separately at every depth.
+      - Scan all .mjs files in src/. Check each folder at each depth.
       - Ignore the prefix E because it identifies rule files.
-      - Find the repeated prefix that matches the most file names in each folder.
+      - Find the prefix shared by the most file names in each folder.
       - When prefixes match the same number of file names, select the longest prefix.
       - Move matching files into a folder named for the full prefix without its final
         hyphen.
       - Remove the moved prefix and hyphen from each file name.
-      - Keep multiword prefixes, such as create-repository, in one folder name.
-      - Keep main modules beside the folders that contain their submodules.
+      - Keep multiword prefixes, for example create-repository, in one folder name.
+      - Store main modules and submodule folders at the same directory level.
       - Remove the parent folder name and hyphen from each child file name.
-      - Apply each source move to its matching test file under tests/.
-      - Repeat the scan until no folder has a repeated prefix.
+      - Apply each source move to its matching test file in tests/.
+      - Scan again until no folder has a shared prefix.
     donts:
-      - Do not repeat the parent folder name in a child file name.
-      - Do not split a multiword prefix into separate folders.
+      - Do not use the parent folder name in a child file name.
+      - Keep each multiword prefix in one folder.
       - Do not infer file relationships from code content.
 
   - id: E-0.1.0.1.11
     dos:
-      - Limit each instruction under dos or donts in a directive document to 20 words.
+      - Limit each instruction in a directive document's dos or donts field to 20 words.
       - Limit each other human-readable prose sentence to 25 words.
-      - Count each hyphenated compound as one word.
-      - Split sentences at terminal punctuation before whitespace or text end.
-      - Treat periods, question marks, and exclamation marks as terminal punctuation.
+      - Count one word for each hyphenated compound.
+      - Split sentences at terminal punctuation followed by whitespace or a file boundary.
+      - Use periods, question marks, and exclamation marks to mark sentence ends.
       - Limit each prose paragraph to six sentences.
       - Check human-readable JavaScript comments, strings, and JSX text.
       - Check human-readable JSON values in documented prose fields.
       - Check directive items, descriptive fields, and runbook text in YAML documents.
-      - Match dictionary entries as case-insensitive whole words or exact word phrases.
-      - Do not match a dictionary term inside a hyphenated compound.
-      - Show the matched text, file path, line, and suggested alternatives for each dictionary match.
-      - State that suggested alternatives are not exhaustive or mandatory.
-      - Ask the writer to use clear, grammatical language without the dictionary term.
+      - Match dictionary entries in uppercase or lowercase, at whole-word or exact-phrase
+        boundaries.
+      - Do not match a dictionary term in a hyphenated compound.
+      - Show each match, its file, line, and suggested alternatives.
+      - Tell writers that alternatives are examples, not requirements.
+      - Tell writers to rewrite each sentence without the listed term.
       - Load unapproved.json from the installed eliware-test package.
       - Ignore code, commands, identifiers, URLs, examples, and the dictionary itself.
       - Ignore exact sentences from bundled convention examples.
     donts:
-      - Do not count text inside code blocks, code spans, or link destinations.
+      - Exclude code blocks, code spans, and link destinations from word counts.
       - Do not parse malformed YAML or JSON in this check.
-      - Do not infer a word's meaning or part of speech.
+      - Do not derive word meanings or grammar labels from context.
       - Do not accept a dictionary term because its spelling appears in an alternative.
       - Do not use semicolons in human-readable prose.

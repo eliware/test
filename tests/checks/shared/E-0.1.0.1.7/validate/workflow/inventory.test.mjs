@@ -45,6 +45,9 @@ test("rejects extra workflows when a publication profile applies", async () => {
 });
 
 test("reports missing or unreadable workflow inventories", async () => {
+  await expect(validateWorkflowInventory(inventory([]))).resolves.toEqual([
+    ".github/workflows/ci.yaml is required.",
+  ]);
   await expect(
     validateWorkflowInventory({
       files: async () => {

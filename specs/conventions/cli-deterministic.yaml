@@ -14,7 +14,7 @@ directives:
       - Add a CLI section to AGENTS.md.
       - Add an Exit codes section to README.md.
       - Require package.json.bin to declare each public CLI executable.
-      - Give every declared public executable --help and --version.
+      - Give each declared public executable --help and --version.
       - Make --help return nonempty output and exit code 0.
       - Make --version report package.json.version and exit code 0.
     donts:

@@ -28,7 +28,7 @@ export async function resolveSmokeTarget(root, target, inspect = lstat) {
         current = await inspect(targetRoot);
       } catch {
         throw new Error(
-          "Smoke target directory changed during validation; refusing unsafe access.",
+          "Smoke target directory changed during validation. Refusing access to an untrusted target.",
         );
       }
       if (
@@ -38,7 +38,7 @@ export async function resolveSmokeTarget(root, target, inspect = lstat) {
         current.birthtimeMs !== identity.birthtimeMs
       )
         throw new Error(
-          "Smoke target directory changed during validation; refusing unsafe access.",
+          "Smoke target directory changed during validation. Refusing access to an untrusted target.",
         );
     },
   };

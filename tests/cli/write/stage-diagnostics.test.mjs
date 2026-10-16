@@ -22,7 +22,7 @@ test("omits the repeated Jest failure summary in debug timing mode", () => {
     {
       diagnostics: [
         "inline details",
-        "E-0.1.130.13: Jest failed; see the inline suite failures above.",
+        "E-0.1.130.13: Jest failed. See the inline suite failures above.",
       ],
     },
     (message) => output.push(message),

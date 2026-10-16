@@ -3,11 +3,9 @@ const writes = [];
 const originalWrite = process.stderr.write.bind(process.stderr);
 const { default: JestProgressReporter } =
   await import("../../../../../src/validation/stages/jest/progress/jest-progress-reporter.mjs");
-
 function events(output) {
   return output.map((line) => JSON.parse(line.match(/^\[eliware-test-progress\] (.+)\n$/u)[1]));
 }
-
 beforeEach(() => {
   writes.length = 0;
   process.stderr.write = (value) => {
@@ -15,7 +13,6 @@ beforeEach(() => {
     return true;
   };
 });
-
 afterEach(() => {
   process.stderr.write = originalWrite;
 });

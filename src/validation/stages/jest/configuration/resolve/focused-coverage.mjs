@@ -12,7 +12,7 @@ export async function resolveFocusedCoverage(root, focusedPaths) {
 
 async function resolveSource(root, focusedPath) {
   const normalized = focusedPath.replaceAll("\\", "/").replace(/^\.\//, "");
-  // Root matching is case-insensitive because focused-path validation accepts those paths on Windows.
+
   const marker = normalized.match(/^tests?\/(.*)$/i);
   if (!marker || !/\.(?:test|spec)\.[^.]+$/i.test(marker[1])) return null;
   const sourceBase = marker[1].replace(/\.(?:test|spec)(?=\.[^.]+$)/i, "");

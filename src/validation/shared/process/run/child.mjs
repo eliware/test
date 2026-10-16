@@ -1,5 +1,4 @@
 import { spawn } from "node:child_process";
-import { createChildProgressHandler } from "../handle-child/progress.mjs";
 import { createProgressTimeout } from "../../../stages/jest/progress/create/progress-timeout.mjs";
 import { createChildOutputCapture } from "../capture-child-output.mjs";
 import { createChildTerminationHandler } from "../create/child/termination-handler.mjs";
@@ -9,12 +8,10 @@ import { terminateChildAfterSetupFailure } from "../terminate/child-after-setup-
 import { createChildSpawnOptions } from "../create/child/spawn-options.mjs";
 import { createChildCloseHandler } from "../handle-child/close.mjs";
 import { createChildTimeoutController } from "../create/child/timeout-controller.mjs";
+import { resolveChildOutputLimit } from "../resolve-child-output-limit.mjs";
+import { createChildProgress } from "../create-child/progress.mjs";
 export function runChild(command, args, options = {}) {
-  const requestedOutputLimit = options.maxOutputLength ?? 100_000;
-  const outputLimit =
-    Number.isFinite(requestedOutputLimit) && requestedOutputLimit > 0
-      ? Math.min(Math.floor(requestedOutputLimit), 1_000_000)
-      : 100_000;
+  const outputLimit = resolveChildOutputLimit(options.maxOutputLength ?? 100_000);
   const spawnProcess = options.spawnProcess ?? spawn;
   const createTimeout = options.createProgressTimeout ?? createProgressTimeout;
   const environment = { ...(options.env ?? process.env) };
@@ -59,18 +56,12 @@ export function runChild(command, args, options = {}) {
           settled = true;
         },
       });
-      const resetProgressTimer = () => {
-        if (!settled) timeout.reset();
-      };
-      const progress = createChildProgressHandler({
-        ...options,
-        onSuiteStart: (path) =>
-          timeoutController.suiteTimeout().start(path) || options.onSuiteStart?.(path),
-        onSuiteEnd: (path) =>
-          timeoutController.suiteTimeout().end(path) || options.onSuiteEnd?.(path),
-        resetProgressTimer,
-        redactProgressText: output.redactComplete,
-      });
+      const progress = createChildProgress(
+        { ...options, isSettled: () => settled },
+        timeoutController,
+        timeout,
+        output,
+      );
       timeout.reset();
       const flushOutput = wireChildOutput(child, output, progress);
       const handleClose = createChildCloseHandler({

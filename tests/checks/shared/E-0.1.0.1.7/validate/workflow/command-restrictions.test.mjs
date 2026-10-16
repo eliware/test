@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { validateWorkflowCommandRestrictions } from "../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/command-restrictions.mjs";
-import { packageVersion } from "../../../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../../../test-fixtures/helpers/project-version.mjs";
 
 const steps = [
   { uses: "actions/checkout@v7" },

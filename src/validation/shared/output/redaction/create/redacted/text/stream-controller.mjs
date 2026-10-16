@@ -2,7 +2,6 @@ import { StringDecoder } from "node:string_decoder";
 import { createRedactedStreamBuffer } from "../stream/buffer.mjs";
 import { createRedactedStreamOutput } from "../stream/output.mjs";
 
-/** Finishing closes the stream; later pushes and repeated finishes return an empty string. */
 export function createRedactedTextStreamSession(policy, outputLimit) {
   let suppressed = policy.suppressed;
   const decoder = new StringDecoder("utf8");

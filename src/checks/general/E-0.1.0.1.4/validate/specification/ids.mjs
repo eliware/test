@@ -10,7 +10,7 @@ export function validateSpecificationIds(documents, namespace) {
       return difference < 0n ? -1 : difference > 0n ? 1 : 0;
     });
     if (numbers.some((number, index) => number !== String(index)))
-      errors.push(`Sibling IDs under ${prefix} must start at 0 and be sequential.`);
+      errors.push(`Sibling IDs in ${prefix} must start at 0 and be sequential.`);
   }
   return errors;
 }

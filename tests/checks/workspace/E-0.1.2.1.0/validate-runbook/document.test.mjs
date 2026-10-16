@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { readRunbookSchema } from "../../../../../src/checks/workspace/E-0.1.2.1.0/read-runbook-schema.mjs";
 import { validateRunbookDocument } from "../../../../../src/checks/workspace/E-0.1.2.1.0/validate-runbook/document.mjs";
-import { runbookSchemaVersion } from "../../../../helpers/project-version.mjs";
+import { runbookSchemaVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 
 const schema = await readRunbookSchema();
 const valid = `schema-version: ${runbookSchemaVersion}\ntitle: Deploy\npurpose: Deploy the service\nowner: DevOps\nboundaries: Do not change production data\nprerequisites: []\nsteps:\n  - Run npm test`;

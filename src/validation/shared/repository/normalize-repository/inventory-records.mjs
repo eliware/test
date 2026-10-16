@@ -20,6 +20,5 @@ export function normalizeRepositoryInventoryRecords(root, records) {
 }
 
 function normalizeWindowsDevicePath(path) {
-  // Keep extended volume roots intact; win32 path operations preserve their volume identity.
   return path.replace(/^\\\\[?.]\\UNC\\/iu, "\\\\").replace(/^\\\\[?.]\\(?=[A-Za-z]:[\\/])/u, "");
 }

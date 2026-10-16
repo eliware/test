@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { run, ruleId } from "../../../src/checks/library/E-0.1.3.1.4.mjs";
-import { packageVersion } from "../../helpers/project-version.mjs";
+import { packageVersion } from "../../../test-fixtures/helpers/project-version.mjs";
 
 test("enforces shared release note rules for libraries", async () => {
   const repositoryInventory = {

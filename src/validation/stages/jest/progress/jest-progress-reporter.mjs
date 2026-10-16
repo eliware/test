@@ -1,7 +1,7 @@
 import { collectRedactionSecrets } from "../../../shared/output/redaction/collect-redaction-secrets.mjs";
 import { normalizeRepositoryRelativePath } from "../../../shared/repository/normalize-repository/relative-path.mjs";
 import { redactProcessOutput } from "../../../shared/output/redaction/redact/process-output.mjs";
-import { createJestConsoleReport } from "./create/jest/console-report.mjs";
+import { createJestConsoleReport } from "./create/jest/console/report.mjs";
 
 function durationSeconds(result) {
   const start = Number(result?.perfStats?.start ?? result?.startTime);

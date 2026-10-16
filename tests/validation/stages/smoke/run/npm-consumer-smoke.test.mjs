@@ -1,6 +1,6 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
-import { packageVersion } from "../../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 
 const assertSmokePackageParents = jest.fn();
 const captureSmokeTargetState = jest.fn();
@@ -28,7 +28,7 @@ jest.unstable_mockModule(
   () => ({ assertSmokePackageParents }),
 );
 jest.unstable_mockModule(
-  "../../../../../src/validation/stages/smoke/capture-smoke-target-state.mjs",
+  "../../../../../src/validation/stages/smoke/capture-smoke/target-state.mjs",
   () => ({ captureSmokeTargetState }),
 );
 jest.unstable_mockModule(
@@ -87,7 +87,7 @@ function smoke(options = {}) {
 test("prepares, runs, and finishes the package consumer workflow", async () => {
   const write = jest.fn();
   await expect(smoke({ write })).resolves.toBe(
-    `Smoke passed: @eliware/test@${packageVersion}; SHA-256 sha256-digest.`,
+    `Smoke passed: @eliware/test@${packageVersion}. SHA-256 sha256-digest.`,
   );
   expect(prepareSmokeTargetContext).toHaveBeenCalledWith({
     root: "source-root",
@@ -134,7 +134,7 @@ test("prepares, runs, and finishes the package consumer workflow", async () => {
   expect(write).toHaveBeenCalledWith("Target recovery snapshot: snapshot-root");
   expect(finishSmokeRun).toHaveBeenCalledWith(
     expect.objectContaining({
-      outcome: `Smoke passed: @eliware/test@${packageVersion}; SHA-256 sha256-digest.`,
+      outcome: `Smoke passed: @eliware/test@${packageVersion}. SHA-256 sha256-digest.`,
       state: smokeState,
       targetRoot: "consumer-root",
       tempRoot: "temp-root",

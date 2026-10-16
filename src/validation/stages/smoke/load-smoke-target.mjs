@@ -16,6 +16,6 @@ export async function loadSmokeTarget(targetRoot, packageName) {
   if (!targetPackage?.scripts?.test)
     return { error: "Smoke target must define an npm test script." };
   if (!hasPackageDependency(targetPackage, packageName))
-    return { error: `Smoke target must declare ${packageName} as a dependency.` };
+    return { error: `Smoke target must list ${packageName} in package.json dependencies.` };
   return { targetPackage, error: null };
 }

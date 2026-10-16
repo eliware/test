@@ -3,7 +3,7 @@ import {
   hasCanonicalReleaseTagFilter,
   hasCanonicalReleaseTagGuard,
 } from "../../../../src/checks/shared/publish-workflow/validate-release-tag-guard.mjs";
-import { packageVersion } from "../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 
 const command = `node -e "const version=require('./package.json').version;if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"`;
 const workflowCommand = `node -e "const version=require('./package.json').version;if(process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"`;

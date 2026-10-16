@@ -36,7 +36,7 @@ export function readDiagnosticOptions(args) {
   if (modes.length > 0) {
     const modeIndex = wrapperArgs.indexOf(modes[0]);
     if (diagnosticFlagIndexes.some((index) => index > modeIndex))
-      throw new Error("--debug-timing must precede a tool mode.");
+      throw new Error("--debug-timing must come before a tool mode.");
     const unsupportedWrapperArgs = wrapperArgs
       .slice(0, modeIndex)
       .filter((argument) => argument !== "--debug-timing");

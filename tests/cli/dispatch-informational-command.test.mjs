@@ -10,13 +10,13 @@ test("dispatches version and help commands", () => {
   expect(dispatchInformationalCommand(["--help"], (value) => output.push(value))).toBe(0);
   expect(output[0]).toContain("Usage: eliware-test");
   expect(output[0]).toContain("[focused-test-path ...]");
-  expect(output[0]).toContain("pass one or more paths");
+  expect(output[0]).toContain("focused-test-path ...");
   expect(output[0]).toContain("tests/one.test.mjs tests/two.test.mjs");
   expect(output[0]).toContain(".js, .jsx, .ts, .tsx, .mjs, .cjs, .mts, and .cts");
-  expect(output[0]).toContain("forwarded to Jest");
-  expect(output[0]).toContain("mode arguments follow the mode or --");
+  expect(output[0]).toContain("go to Jest");
+  expect(output[0]).toContain("Mode arguments follow the mode or --");
   expect(output[0]).toContain("--debug-timing is wrapper-only");
-  expect(output[0]).toContain("cannot follow --");
+  expect(output[0]).toContain("Do not put --debug-timing after --.");
 });
 
 test("returns no result for validation commands", () => {

@@ -7,7 +7,7 @@ const defaultFs = { cp, mkdir, rm, symlink, writeFile, chmod, lstat, unlink };
 export async function restoreSmokeTargetState(state, fs = defaultFs) {
   if (state?.error) throw new Error(state.error);
   const failures = [];
-  // Snapshot entries are exact independent paths; keep restoring siblings after an entry fails.
+
   for (const entry of [...state.entries].reverse()) {
     try {
       if (state.targetRoot && state.packageName)
@@ -15,7 +15,7 @@ export async function restoreSmokeTargetState(state, fs = defaultFs) {
       await removeCapturedPath(entry.path, fs);
       if (entry.type === "missing") continue;
       await fs.mkdir(dirname(entry.path), { recursive: true });
-      // The target runs on the smoke host; capture rejects Windows file links and records junctions.
+
       if (entry.type === "symlink") await fs.symlink(entry.target, entry.path, entry.linkType);
       if (entry.type === "file") {
         await fs.writeFile(entry.path, entry.data);

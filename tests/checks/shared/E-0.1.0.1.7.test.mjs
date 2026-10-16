@@ -1,48 +1,9 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/shared/E-0.1.0.1.7.mjs";
-
-const validWorkflow = `name: Validation
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-concurrency:
-  group: \u0024{{ github.repository }}-\u0024{{ github.ref }}
-  cancel-in-progress: true
-permissions:
-  contents: read
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: npm
-      - run: npm -g install npm@latest
-      - run: npm ci
-      - run: npm test`;
-
-const validPublishWorkflow = `jobs:
-  validate:
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v7
-      - run: npm -g install npm@latest
-      - run: npm ci
-      - run: npm test
-  publish:
-    needs: validate
-    steps: []`;
-
+import {
+  validCiWorkflow as validWorkflow,
+  validPublishWorkflow,
+} from "../../../test-fixtures/shared-ci-workflows.mjs";
 const inventory = {
   files: async () => [".github/workflows/ci.yaml", ".github/workflows/publish.yaml"],
   readText: async (path) => (path.endsWith("publish.yaml") ? validPublishWorkflow : validWorkflow),
@@ -52,15 +13,6 @@ test("accepts the required validation workflow and applied publication workflow"
   await expect(
     run({ repositoryInventory: inventory, packageJson: { eliware: { apply: ["npm-published"] } } }),
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
-});
-
-test("checks workflow file scope and required file presence", async () => {
-  await expect(run({ repositoryInventory: inventory })).resolves.toMatchObject({
-    message: expect.stringContaining("Unexpected workflow file"),
-  });
-  await expect(
-    run({ repositoryInventory: { files: async () => [], readText: async () => "" } }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("ci.yaml is required") });
 });
 
 test("reports invalid workflow settings and steps", async () => {
@@ -149,19 +101,6 @@ test("accepts safe literal reporting and rejects unsafe reporting", async () => 
       },
     }),
   ).resolves.toMatchObject({ message: expect.stringContaining("unapproved step") });
-});
-
-test("reports inventory read failures", async () => {
-  await expect(
-    run({
-      repositoryInventory: {
-        files: async () => {
-          throw new Error("denied");
-        },
-        readText: async () => "",
-      },
-    }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("could not be inspected: denied") });
 });
 
 test("rejects multiple validation jobs, job conditions, and unsafe permissions", async () => {

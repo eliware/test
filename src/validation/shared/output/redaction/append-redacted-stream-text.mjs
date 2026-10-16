@@ -31,7 +31,7 @@ export function appendRedactedStreamText({
       : findSafeBoundary(pending);
     let { boundary, matchEnds, suppressed } = result;
     if (suppressed) return suppressStreamBuffer(pendingChunks, suppress);
-    // Keep every secret interval inside the retained buffer until its full match is redacted.
+
     const crossingStart = (matchEnds ?? []).findIndex(
       (end, index) => index < boundary && end > boundary,
     );

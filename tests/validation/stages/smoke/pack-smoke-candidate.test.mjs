@@ -2,7 +2,7 @@ import { afterEach, expect, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { nextPatchVersion } from "../../../helpers/project-version.mjs";
+import { nextPatchVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 import { packSmokeCandidate } from "../../../../src/validation/stages/smoke/pack-smoke-candidate.mjs";
 import {
   packageJson,

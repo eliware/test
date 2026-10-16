@@ -1,4 +1,4 @@
-import { isNpmPublishCommand } from "../../../shared/is-npm-publish-command.mjs";
+import { isNpmPublishCommand } from "../../../shared/is/npm-publish-command.mjs";
 
 const tokenNames = ["NPM_TOKEN", "NODE_AUTH_TOKEN"];
 
@@ -18,7 +18,7 @@ export function validatePrivatePackageScripts(packageJson = {}) {
 
 function hasTokenSetting(command, token) {
   return new RegExp(
-    `(?:^|[\\s;,])(?:export\\s+|set\\s+)?${token}\\s*=|\\$\\{${token}\\}|\\$${token}\\b|\\$\\{\\{\\s*secrets\\.${token}\\s*\\}\\}`,
+    `(?:^|[\\s;,.])(?:export\\s+|set\\s+)?${token}\\s*=|\\$\\{${token}\\}|\\$${token}\\b|\\$\\{\\{\\s*secrets\\.${token}\\s*\\}\\}`,
     "iu",
   ).test(command);
 }

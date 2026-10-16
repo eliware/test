@@ -2,13 +2,13 @@
 
 ## Requirements
 
-Use Node.js 26 or later and npm 12 or later.
+Use Node.js 26 or newer and npm 12 or newer.
 The CLI checks the active npm version before validation.
 It skips this check for `--help` and `--version`.
 
 ## Install Eliware Test
 
-Install the package as a development dependency in the consumer repository:
+Install the package with a development dependency in the consumer repository:
 
 ```text
 npm install --save-dev @eliware/test
@@ -44,15 +44,15 @@ Set the shared scripts and profiles in `package.json`:
 ```
 
 Replace `E-0` with the assigned repository ID.
-List every applicable profile in `package.json.eliware.apply`.
+List all profiles that apply in `package.json.eliware.apply`.
 Use the canonical profile order in [Profiles](profiles.md).
 The CLI does not infer profiles from files or dependencies.
 
 Set `package.json.eliware.exempt` only for an approved rule exemption.
-Each exemption needs a unique known `ruleId`, a reason, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+Each exemption requires a unique known `ruleId`, a justification, approver `Eli`, an approval timestamp, and an expiry date or `null`.
 The CLI rejects invalid, expired, or unknown exemptions.
 
-The `package.json.eliware` keys must appear in this order: `id`, `apply`, then optional `exempt`.
+Use this order for `package.json.eliware` keys: `id`, `apply`, then optional `exempt`.
 
 ## Run commands
 
@@ -78,7 +78,7 @@ Do not combine informational commands or validation modes.
 ## Use tool modes
 
 Use `--lint` to run lint checks.
-Pass `--threads=<positive-count>` only when you need to set the lint thread count.
+Set the lint worker count with `--threads=<positive-count>`.
 
 Use `--format` to write formatted files.
 Use `--format-check` to check formatting without writing files.
@@ -93,13 +93,13 @@ Use `--pack` to check package contents.
 The check runs only when `npm-published` applies.
 It does not publish a package.
 
-Put mode arguments after the mode or after `--`.
+Put mode arguments after the mode or `--`.
 Do not pass arguments before a tool mode.
-Do not pass npm script names as CLI arguments.
+Do not pass npm script names to the CLI.
 
 ## Run focused tests
 
-Pass one or more repository-relative test paths under `tests/`:
+Pass one or more repository-relative test paths in `tests/`:
 
 ```text
 eliware-test tests/example.test.mjs
@@ -107,9 +107,9 @@ eliware-test tests/first.test.mjs tests/second.test.mjs
 eliware-test tests/example.test.mjs -- --testNamePattern "case name"
 ```
 
-Use `.test.*` or `.spec.*` names.
+Use paths with `.test.*` or `.spec.*` names.
 Supported extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
-Put every test path before an optional `--` separator.
+Put all test paths before an optional `--`.
 Put only supported Jest options after the separator.
 Do not use absolute paths or parent-directory paths.
 Do not combine focused paths with a tool mode.

@@ -30,7 +30,7 @@ test("rejects incorrect Discord heading and section order", () => {
         : { ...readmeOrder, profileSections: { discord: ["Events", "Commands"] } },
     ),
   ).toEqual([
-    "Canonical AGENTS.md ordering must place Discord after CLI and before MCP server.",
+    "Canonical AGENTS.md ordering must put Discord after CLI and before MCP server.",
     "Canonical README.md ordering must list the Discord sections in the required order.",
   ]);
 });
@@ -44,5 +44,5 @@ test("rejects missing and malformed profile order lists", () => {
         ? { ...agentsOrder, profileOrder: [...agentsOrder.profileOrder, "discord"] }
         : readmeOrder,
     ),
-  ).toContain("Canonical AGENTS.md ordering must place Discord after CLI and before MCP server.");
+  ).toContain("Canonical AGENTS.md ordering must put Discord after CLI and before MCP server.");
 });

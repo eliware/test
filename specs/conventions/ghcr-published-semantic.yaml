@@ -1,5 +1,5 @@
 version: "13.0"
-description: Defines semantic repository requirements for Eliware container distribution.
+description: Defines semantic repository requirements for Eliware container publication.
 requires:
   - general
 conflicts:
@@ -13,13 +13,13 @@ directives:
         deployment use from the image workflow, package settings, and access policy.
       - Name each build input owner and architecture decision from repository settings and
         workflow files.
-      - Keep publication and deployment authorization separate.
-      - Check that publication workflows do not trigger automatic deployments through called
+      - Do not combine publication and deployment permissions.
+      - Check that publication workflows do not start automatic deployments through called
         workflows or external services.
-      - Describe latest only as a mutable convenience alias.
+      - Use latest only for a mutable convenience alias.
       - Compare image claims with workflow files, build definitions, package metadata, and
         deployment documentation.
     donts:
-      - Do not imply publication authorization from profile selection or workflow presence.
+      - Do not imply publication permission from profile selection or workflow inclusion.
       - Do not identify releases or deployments solely by mutable tags.
       - Do not embed automatic deployment in the publication workflow.

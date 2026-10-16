@@ -21,8 +21,8 @@ directives:
       - Add a Workspace section to AGENTS.md.
       - Add Runbooks, Communication, and Recovery sections to README.md.
       - Keep a navigation-only runbooks/README.md index.
-      - Store each runbook as a separate .yaml file under runbooks/.
-      - Link every runbook from runbooks/README.md.
+      - Store each runbook in its own .yaml file in runbooks/.
+      - Link each runbook from runbooks/README.md.
       - Validate each runbook against the bundled runbook schema.
     donts:
       - Do not omit workspace-specific headings.

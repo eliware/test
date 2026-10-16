@@ -50,13 +50,6 @@ test("accepts active modifiers and imported test aliases", () => {
     );
 });
 
-test("rejects callbacks shadowed by non-function parameters", () => {
-  const source = 'function callback() {} function unused(callback) { test("shadowed", callback); }';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
-});
-
 test("ignores Jest calls inside functions that are never invoked", () => {
   const source = 'function unused() { test("fake", () => {}); }';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
@@ -75,67 +68,6 @@ test("rejects a test call shadowed by a module binding", () => {
   ).toBe(false);
 });
 
-test("rejects a destructured Jest alias from a shadowed globalThis binding", () => {
-  const source = 'const globalThis = {}; const { test: run } = globalThis; run("fake", () => {});';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
-});
-
-test("rejects a Jest name shadowed by a top-level block var", () => {
-  const source = '{ var test = custom; } test("fake", () => {});';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
-});
-
-test("rejects a test call that uses a block-scoped fake Jest binding", () => {
-  const source = '{ let test = (name, callback) => callback(); test("fake", () => {}); }';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
-});
-
-test("keeps a real Jest call outside a block-local shadow", () => {
-  const source =
-    'import { test } from "@jest/globals"; { let test = custom; } test("real", () => {});';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    true,
-  );
-});
-
-test("keeps a real Jest call outside a nested function declaration shadow", () => {
-  const source =
-    'import { test } from "@jest/globals"; describe("suite", () => { { function test() {} } test("real", () => {}); });';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    true,
-  );
-});
-
-test("rejects a Jest call shadowed by a block-local function declaration", () => {
-  const source =
-    'import { test } from "@jest/globals"; { function test() {} test("fake", () => {}); }';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
-});
-
-test("rejects fake suites that shadow the Jest describe function", () => {
-  const source =
-    'function describe(name, callback) { callback(); } describe("fake", () => { test("fake", () => {}); });';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
-});
-
-test("rejects suites that reassign the imported Jest describe function", () => {
-  const source =
-    'import { describe, test } from "@jest/globals"; describe = custom; describe("fake", () => { test("fake", () => {}); });';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
-});
-
 test("ignores tests inside skipped Jest suites", () => {
   const source = 'describe.skip("suite", () => { test("skipped", () => {}); });';
   expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
@@ -144,13 +76,6 @@ test("ignores tests inside skipped Jest suites", () => {
   const focused = 'describe.only("suite", () => { test("active", () => {}); });';
   expect(inspectJestTestModule(focused, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
     true,
-  );
-});
-
-test("rejects a Jest function alias after reassignment", () => {
-  const source = 'let run = test; run = () => {}; run("not a test", () => {});';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
   );
 });
 

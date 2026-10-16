@@ -75,5 +75,5 @@ test("accepts non-deterministic advisory checks and rejects invalid enforcement 
         modulePath: "general/E-0.1.mjs",
       },
     ]),
-  ).toThrow("Every bundled check must declare a valid enforcement mode.");
+  ).toThrow("Each bundled check must declare a valid enforcement mode.");
 });

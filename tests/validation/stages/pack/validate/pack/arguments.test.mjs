@@ -30,7 +30,5 @@ test("allows safe options while requiring their values", () => {
 
 test("returns a stable diagnostic for malformed argument inputs", () => {
   for (const args of [null, "--dry-run", {}, ["--dry-run", 1]])
-    expect(validatePackArguments(args)).toBe(
-      "Pack arguments must be provided as an array of strings.",
-    );
+    expect(validatePackArguments(args)).toBe("Provide pack arguments in an array of strings.");
 });

@@ -16,11 +16,11 @@ export async function createSmokeTempRoot(
     } catch (cleanupError) {
       if (cleanupError.code !== "ENOENT")
         return {
-          error: `Cannot verify temporary smoke directory; cleanup failed at ${path}: ${cleanupError.message}`,
+          error: `Cannot verify temporary smoke directory. cleanup failed at ${path}: ${cleanupError.message}`,
         };
     }
     return {
-      error: `Cannot verify temporary smoke directory; removed empty path ${path}: ${error.message}`,
+      error: `Cannot verify temporary smoke directory. removed empty path ${path}: ${error.message}`,
     };
   }
 }

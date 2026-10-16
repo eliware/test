@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import semver from "semver";
 import { validateLockfilePackageEntries } from "../lockfile-package-entries.mjs";
+import { toSemverRange } from "../to-semver-range.mjs";
 
 const dependencyFields = [
   "dependencies",
@@ -81,11 +82,4 @@ export async function validatePackageLock(root, packageJson, { read = readFile }
   const packageErrors = validateLockfilePackageEntries(lockfile.packages);
   if (packageErrors) errors.push(packageErrors);
   return errors;
-}
-
-function toSemverRange(value) {
-  if (typeof value !== "string") return null;
-  if (semver.validRange(value)) return value;
-  const alias = /^npm:(?:@[^/]+\/[^@]+|[^@]+)@(.+)$/u.exec(value);
-  return alias && semver.validRange(alias[1]) ? alias[1] : null;
 }

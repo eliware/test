@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateProfileDocumentPairs } from "../../../../../src/checks/general/E-0.1.0.1.0/validate/profile-document-pairs.mjs";
-import { conventionVersion } from "../../../../helpers/project-version.mjs";
+import { conventionVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 
 test("accepts a missing bundled directory", async () => {
   const root = await mkdtemp(join(tmpdir(), "eliware-pair-"));

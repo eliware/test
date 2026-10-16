@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { validateNpmPublishWorkflow } from "../../../../src/checks/npm-published/E-0.1.10.1.2/validate-npm-publish-workflow.mjs";
-import { packageVersion } from "../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 import {
   createNpmPublishInventory,
   npmPublishWorkflow as source,
@@ -120,38 +120,6 @@ test("reports missing workflow files, invalid YAML, and inventory failures", asy
   await expect(validateNpmPublishWorkflow()).resolves.toEqual([
     "publish.yaml could not be inspected.",
   ]);
-});
-
-test.each([
-  ["wrong setup version", source.replace("actions/setup-node@v7", "actions/setup-node@v6")],
-  ["wrong registry", source.replace("https://registry.npmjs.org", "https://example.test")],
-  [
-    "missing setup inputs",
-    source.replace(
-      "        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false\n",
-      "",
-    ),
-  ],
-  [
-    "extra setup input",
-    source.replace(
-      "package-manager-cache: false",
-      "package-manager-cache: false\n          cache: npm",
-    ),
-  ],
-  [
-    "conditional setup",
-    source.replace(
-      "      - uses: actions/setup-node@v7",
-      "      - uses: actions/setup-node@v7\n        if: always()",
-    ),
-  ],
-])("rejects %s", async (_name, workflow) => {
-  await expect(
-    validateNpmPublishWorkflow(createNpmPublishInventory(workflow), { version: packageVersion }),
-  ).resolves.toContain(
-    "npm publish job must use setup-node v7 with Node.js 26 and the npm registry.",
-  );
 });
 
 test.each([

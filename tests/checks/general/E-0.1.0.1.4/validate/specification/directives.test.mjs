@@ -10,7 +10,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateSpecificationDirectives } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/directives.mjs";
-import { conventionVersion } from "../../../../../helpers/project-version.mjs";
+import { conventionVersion } from "../../../../../../test-fixtures/helpers/project-version.mjs";
 
 async function createFixture() {
   const root = await mkdtemp(join(tmpdir(), "eliware-directives-"));

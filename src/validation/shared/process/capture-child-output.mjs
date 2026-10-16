@@ -1,5 +1,6 @@
 import { collectRedactionSecrets } from "../output/redaction/collect-redaction-secrets.mjs";
 import { createRedactedTextStream } from "../output/redaction/create/redacted/text/stream.mjs";
+import { createChildOutputStream } from "./create-child/output-stream.mjs";
 import { truncateChildOutputText } from "./truncate-child-output-text.mjs";
 
 export function createChildOutputCapture(
@@ -27,7 +28,6 @@ export function createChildOutputCapture(
   const stderrChunks = [];
   let capturedLength = 0;
   let lastCapturedChunks;
-  let streamed = 0;
 
   const capture = (chunks, text) => {
     if (!text) return;
@@ -53,20 +53,13 @@ export function createChildOutputCapture(
         `${truncateChildOutputText(lastChunk, lastChunk.length - 1)}…`;
   };
 
-  const stream = (callback, text) => {
-    if (!callback || streamed >= outputLimit || text.length === 0) return;
-    const remaining = outputLimit - streamed;
-    const bounded = truncateChildOutputText(text, remaining);
-    streamed += bounded.length || outputLimit;
-    if (bounded) callback(bounded);
-  };
-
+  const stream = createChildOutputStream({ onStdout, onStderr }, outputLimit);
   const appendStdout = (text) => {
-    stream(onStdout, text);
+    stream.stdout(text);
     capture(stdoutChunks, text);
   };
   const appendStderr = (text) => {
-    stream(onStderr, text);
+    stream.stderr(text);
     capture(stderrChunks, captureStderr?.(text) ?? text);
   };
 

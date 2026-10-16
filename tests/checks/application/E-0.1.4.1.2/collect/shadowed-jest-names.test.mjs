@@ -103,6 +103,30 @@ test("ignores function declarations that do not shadow Jest names", () => {
   expect(result).toEqual({ tests: new Set(), callbacks: new Set(), describes: new Set() });
 });
 
+test("ignores unrelated top-level function declarations", () => {
+  const result = collectShadowedJestNames(
+    {
+      params: [],
+      body: { type: "FunctionDeclaration", id: { name: "helper" }, body: [] },
+    },
+    { callbacks: new Set(["test"]), namespaces: new Set() },
+    new Set(),
+  );
+  expect(result.tests).toEqual(new Set());
+});
+
+test("marks a top-level function with a Jest test name as shadowed", () => {
+  const result = collectShadowedJestNames(
+    {
+      params: [],
+      body: { type: "FunctionDeclaration", id: { name: "test" } },
+    },
+    { callbacks: new Set(["test"]), namespaces: new Set() },
+    new Set(),
+  );
+  expect(result.tests).toEqual(new Set(["test"]));
+});
+
 test("ignores function declarations inside nested blocks", () => {
   const result = collectShadowedJestNames(
     {
@@ -122,75 +146,32 @@ test("ignores function declarations inside nested blocks", () => {
   expect(result.tests).toEqual(new Set());
 });
 
-test("tracks local describe bindings", () => {
+test("tracks local describe bindings across supported declarations", () => {
   const names = {
-    callbacks: new Set(["test"]),
+    callbacks: new Set(),
     namespaces: new Set(),
     describes: new Set(["describe"]),
   };
-  expect(
-    collectShadowedJestNames(
-      { params: [{ type: "Identifier", name: "describe" }], body: [] },
-      names,
-      new Set(),
-    ).describes,
-  ).toEqual(new Set(["describe"]));
-  expect(
-    collectShadowedJestNames(
-      {
-        params: [],
-        body: [
-          {
-            type: "FunctionDeclaration",
-            id: { type: "Identifier", name: "describe" },
-            params: [],
-            body: [],
-          },
-        ],
-      },
-      names,
-      new Set(),
-    ).describes,
-  ).toEqual(new Set(["describe"]));
-  expect(
-    collectShadowedJestNames(
-      {
-        params: [],
-        body: {
+  const result = collectShadowedJestNames(
+    {
+      params: [{ type: "Identifier", name: "describe" }],
+      body: [
+        {
           type: "VariableDeclarator",
           id: { type: "Identifier", name: "describe" },
           init: { type: "FunctionExpression" },
         },
-      },
-      names,
-      new Set(),
-    ).describes,
-  ).toEqual(new Set(["describe"]));
-  expect(
-    collectShadowedJestNames(
-      {
-        params: [],
-        body: { type: "AssignmentExpression", left: { type: "Identifier", name: "describe" } },
-      },
-      names,
-      new Set(),
-    ).describes,
-  ).toEqual(new Set(["describe"]));
-  expect(
-    collectShadowedJestNames(
-      {
-        params: [],
-        body: [
-          {
-            type: "FunctionDeclaration",
-            id: { type: "Identifier", name: "test" },
-            params: [],
-            body: [],
-          },
-        ],
-      },
-      names,
-      new Set(),
-    ).tests,
-  ).toEqual(new Set(["test"]));
+        {
+          type: "FunctionDeclaration",
+          id: { type: "Identifier", name: "describe" },
+          params: [],
+          body: [],
+        },
+        { type: "AssignmentExpression", left: { type: "Identifier", name: "describe" } },
+      ],
+    },
+    names,
+    new Set(),
+  );
+  expect(result.describes).toEqual(new Set(["describe"]));
 });

@@ -14,7 +14,17 @@ export function dispatchInformationalCommand(args, write) {
   }
   if (informational.length === 1 && informational[0] === "--help") {
     write(
-      "Usage: eliware-test [--help|--version]\n       eliware-test [--debug-timing] [focused-test-path ...] [-- Jest arguments]\n       eliware-test [--debug-timing] --lint|--format|--format-check|--audit|--pack [mode arguments]\nFocused tests: pass one or more paths, such as eliware-test tests/one.test.mjs tests/two.test.mjs [-- Jest arguments].\nUse .test.* or .spec.* files under tests/; supported extensions are .js, .jsx, .ts, .tsx, .mjs, .cjs, .mts, and .cts. Focused-test arguments after -- are forwarded to Jest. Arguments before a tool mode are rejected; mode arguments follow the mode or -- and must satisfy that mode's allowlist. --debug-timing is wrapper-only, may appear once before a focused path or tool mode (or alone for aggregate validation), and cannot follow --.",
+      [
+        "Usage: eliware-test [--help|--version]",
+        "       eliware-test [--debug-timing] [focused-test-path ...] [-- Jest arguments]",
+        "       eliware-test [--debug-timing] --lint|--format|--format-check|--audit|--pack [mode arguments]",
+        "Focused tests: pass one or more paths, for example eliware-test tests/one.test.mjs tests/two.test.mjs [-- Jest arguments].",
+        "Use .test.* or .spec.* files in tests/. Supported extensions are .js, .jsx, .ts, .tsx, .mjs, .cjs, .mts, and .cts.",
+        "Focused-test arguments after -- go to Jest.",
+        "Arguments before a tool mode are rejected. Mode arguments follow the mode or -- and must match that mode's allowlist.",
+        "--debug-timing is wrapper-only. It can be listed once before a focused path or tool mode, or alone for aggregate validation.",
+        "Do not put --debug-timing after --.",
+      ].join("\n"),
     );
     return 0;
   }

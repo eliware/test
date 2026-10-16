@@ -35,9 +35,9 @@ export async function acquireValidationLock(root, operations = {}) {
     }
     if (cleanupErrors.length > 0) {
       const recovery = lockMayRemain
-        ? " The partial lock may remain at " +
+        ? " The unfinished lock can stay at " +
           lockPath +
-          "; remove it after confirming no validation run is active."
+          ". Remove it after you confirm that no validation run is active."
         : "";
       throw new AggregateError(
         [error, ...cleanupErrors],
@@ -55,7 +55,7 @@ export async function acquireValidationLock(root, operations = {}) {
     } catch (cleanupError) {
       throw new AggregateError(
         [error, cleanupError],
-        `Could not close the validation lock; a stale lock may remain at ${lockPath}.`,
+        `Could not close the validation lock. A stale lock can stay at ${lockPath}.`,
         { cause: error },
       );
     }

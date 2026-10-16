@@ -5,7 +5,7 @@ export function getRepositoryDirectoryVersion(metadata, platform) {
     typeof metadata.birthtimeNs === "bigint";
   return {
     cacheable: platform !== "win32" && nanosecondTimestamps,
-    // String conversion is safe for BigIntStats.
+
     key: [
       metadata.dev,
       metadata.ino,

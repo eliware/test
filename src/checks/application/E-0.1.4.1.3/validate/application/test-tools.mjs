@@ -1,3 +1,5 @@
+import { hasAlternativeToolCommand } from "./has-alternative-tool-command.mjs";
+
 export function validateApplicationTestTools(packageJson = {}) {
   const harness = packageJson.name === "@eliware/test";
   const allowedHarnessTools = new Set(["@jest/globals", "jest", "istanbul-lib-instrument"]);
@@ -81,17 +83,5 @@ function isAlternativeTestOrCoverageTool(name, version) {
       /^npm:(?:@jest\/|@playwright\/|@vitest\/|@tapjs\/|@wdio\/|@cypress\/|jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|jasmine)/iu.test(
         version,
       ))
-  );
-}
-
-function hasAlternativeToolCommand(command) {
-  return (
-    /(?:^|[\s;&|])(?:(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor|bun\s+test|deno\s+test)|(?:(?:npx|npm\s+exec|pnpm(?:\s+(?:exec|dlx))?|yarn(?:\s+(?:dlx|exec))?|bunx)(?:\s+--[^\s]+)*\s+(?:--\s+)?(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)))(?=$|\s)/iu.test(
-      command,
-    ) ||
-    /node_modules[\\/]\.bin[\\/](?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul)/iu.test(
-      command,
-    ) ||
-    /\bnode\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|\s)/iu.test(command)
   );
 }

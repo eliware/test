@@ -56,7 +56,7 @@ test("reports index failures and tracked links", async () => {
   };
   const errors = await validateGitHygiene("repo", runGit, { readText: async () => ignoreRules });
   expect(call).toBeGreaterThan(14);
-  expect(errors).toContain("Git index status could not be read; tracked ignore status is unknown.");
+  expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
   expect(errors).toContain("Tracked symlink entries are prohibited: link.");
 });
 
@@ -119,8 +119,8 @@ test("rejects incomplete NUL-delimited Git index output", async () => {
     return { stdout: Buffer.from(args.includes("--ignored") ? "tracked" : "broken-entry\0") };
   };
   const errors = await validateGitHygiene("repo", runGit, { readText: async () => ignoreRules });
-  expect(errors).toContain("Git index status could not be read; tracked ignore status is unknown.");
-  expect(errors).toContain("Git index status could not be read; tracked symlinks are unknown.");
+  expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
+  expect(errors).toContain("Git index status could not be read. Tracked symlinks are unknown.");
 });
 
 test("reads the repository ignore file by default", async () => {

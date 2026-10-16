@@ -8,7 +8,7 @@ export function validateMarkdownIndex(content, expectedPaths, indexPath) {
     if (!actual.includes(path)) errors.push(`${indexPath} must link ${path}.`);
   for (const path of actual)
     if (path === null || !expectedPaths.includes(path))
-      errors.push(`${indexPath} links to unexpected target ${path ?? "an undefined reference"}.`);
+      errors.push(`${indexPath} links to unexpected target ${path ?? "a missing target"}.`);
   if (new Set(actual).size !== actual.length)
     errors.push(`${indexPath} must link each target only once.`);
   return errors;

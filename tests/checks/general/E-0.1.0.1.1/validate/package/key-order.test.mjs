@@ -1,5 +1,5 @@
 import { validatePackageKeyOrder } from "../../../../../../src/checks/general/E-0.1.0.1.1/validate/package/key-order.mjs";
-import { packageVersion } from "../../../../../helpers/project-version.mjs";
+import { packageVersion } from "../../../../../../test-fixtures/helpers/project-version.mjs";
 
 test("accepts canonical keys in order and unlisted keys at the end", () => {
   expect(

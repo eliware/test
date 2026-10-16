@@ -1,5 +1,5 @@
 version: "13.0"
-description: Defines package key order. Put type after version. Put unlisted keys last.
+description: Defines package key order. Put type after version. Put unlisted keys after listed keys.
 orders:
   topLevelKeys:
     - name

@@ -4,7 +4,7 @@ import { readCanonicalOrder } from "../../shared/conventions/read-canonical-orde
 export function validateAppliedProfiles(apply, catalog = readBundledProfileCatalog()) {
   const unknown = apply.filter((name) => !catalog.profiles[name]);
   if (unknown.length > 0) return `Unknown convention group: ${unknown.join(", ")}.`;
-  if (!apply.includes("general")) return "Every repository must explicitly apply general.";
+  if (!apply.includes("general")) return "Each repository must explicitly apply general.";
   const canonicalProfileOrder = readCanonicalOrder("eliware-apply.yaml").profiles;
   const ordered = [...apply].sort(
     (left, right) => canonicalProfileOrder.indexOf(left) - canonicalProfileOrder.indexOf(right),

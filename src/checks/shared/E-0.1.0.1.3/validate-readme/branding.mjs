@@ -31,5 +31,5 @@ export function validateReadmeBranding(readme, packageJson = {}) {
   const lines = readme.split(/\r?\n/u);
   return lines[0] === template.brand && lines[2] === badgeLine
     ? null
-    : "README.md must begin with the canonical logo header and title badge row.";
+    : "README.md must start with the canonical logo header and title badge row.";
 }

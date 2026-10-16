@@ -1,5 +1,5 @@
 import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
-import { isNpmPublishCommand } from "../../../shared/is-npm-publish-command.mjs";
+import { isNpmPublishCommand } from "../../../shared/is/npm-publish-command.mjs";
 
 const workflowDirectory = ".github/workflows/";
 const tokenNames = new Set(["NPM_TOKEN", "NODE_AUTH_TOKEN"]);

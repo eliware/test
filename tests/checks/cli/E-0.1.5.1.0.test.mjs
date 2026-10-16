@@ -1,5 +1,8 @@
 import { expect, jest, test } from "@jest/globals";
-import { nextPatchVersion, packageVersion } from "../../helpers/project-version.mjs";
+import {
+  nextPatchVersion,
+  packageVersion,
+} from "../../../test-fixtures/helpers/project-version.mjs";
 
 const execute = jest.fn();
 jest.unstable_mockModule(

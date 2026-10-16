@@ -18,7 +18,7 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
   }
   const files = packageJson?.files;
   if (!Array.isArray(files))
-    return "Public npm packages must define package.json.files as an array.";
+    return "Public npm packages must define package.json.files with an array.";
   const fileOrderError = validateOrderedPackageFiles(
     files,
     derivePackageFilesAllowlist(packageJson),

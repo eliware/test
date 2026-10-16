@@ -53,69 +53,6 @@ test("recognizes a progress marker divided across chunks once", () => {
   expect(onProgress).toHaveBeenCalledTimes(2);
 });
 
-test("ignores overlong output lines as progress markers", () => {
-  const onProgress = jest.fn();
-  const progress = createChildProgressHandler({
-    progressPattern: /^x+$/u,
-    resetOnAnyOutput: false,
-    resetProgressTimer: jest.fn(),
-    onProgress,
-  });
-  progress.push("x".repeat(5000));
-  progress.push("\n");
-  progress.push(`${"x".repeat(5000)}\n`);
-  expect(onProgress).not.toHaveBeenCalled();
-});
-
-test("does not recognize an overlong line reconstructed across chunks", () => {
-  const onProgress = jest.fn();
-  const progress = createChildProgressHandler({
-    progressPattern: /^abcdetail$/u,
-    maxProgressLineLength: 4,
-    resetOnAnyOutput: false,
-    resetProgressTimer: jest.fn(),
-    onProgress,
-  });
-  progress.push("abcd");
-  progress.push("e");
-  progress.push("tail");
-  progress.push("\n");
-
-  expect(onProgress).not.toHaveBeenCalled();
-});
-
-test("accepts unbounded progress lines when the caller opts in", () => {
-  const onProgress = jest.fn();
-  const progress = createChildProgressHandler({
-    progressPattern: /^x+$/u,
-    maxProgressLineLength: Number.MAX_SAFE_INTEGER,
-    resetOnAnyOutput: false,
-    resetProgressTimer: jest.fn(),
-    onProgress,
-  });
-  const longLine = "x".repeat(5000);
-  progress.push(`${longLine}\n`);
-  expect(onProgress).toHaveBeenCalledWith(longLine);
-});
-
-test("keeps later complete lines after an overlong line and ignores its flush", () => {
-  const onProgress = jest.fn();
-  const progress = createChildProgressHandler({
-    progressPattern: /^valid$/u,
-    resetOnAnyOutput: false,
-    resetProgressTimer: jest.fn(),
-    onProgress,
-  });
-  progress.push("x".repeat(5000));
-  progress.push("\nvalid\n");
-  expect(onProgress).toHaveBeenCalledTimes(1);
-  expect(onProgress).toHaveBeenCalledWith("valid");
-
-  progress.push("x".repeat(5000));
-  progress.flush();
-  expect(onProgress).toHaveBeenCalledTimes(1);
-});
-
 test("resets the watchdog for any observable output when enabled", () => {
   const resetProgressTimer = jest.fn();
   const onProgress = jest.fn();

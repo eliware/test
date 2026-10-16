@@ -61,6 +61,6 @@ async function readConventionDocuments(entries, read) {
 function parseDocuments(source, path) {
   const parsed = parseBoundedYamlDocuments(source, path);
   const errors = parsed.flatMap((document) => document.errors);
-  if (errors.length) throw new Error(errors.map(({ message }) => message).join("; "));
+  if (errors.length) throw new Error(errors.map(({ message }) => message).join(". "));
   return parsed.map((document) => document.toJSON());
 }

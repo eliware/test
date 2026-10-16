@@ -19,14 +19,29 @@ test("accepts content at each size and line limit", () => {
 
 test("reports byte, line, and character values above each limit", () => {
   expect(() => parseBoundedYamlDocuments("x".repeat(100001), "large.yaml")).toThrow(
-    "large.yaml is 100001 UTF-8 bytes; limit is 100000.",
+    "large.yaml is 100001 UTF-8 bytes. limit is 100000.",
   );
   expect(() => parseBoundedYamlDocuments(`${"#\n".repeat(1000)}#`, "many.yaml")).toThrow(
-    "many.yaml has 1001 lines; limit is 1000.",
+    "many.yaml has 1001 lines. limit is 1000.",
   );
   expect(() => parseBoundedYamlDocuments(`value: ${"x".repeat(94)}`, "long.yaml")).toThrow(
-    "long.yaml line 1 has 101 characters; limit is 100.",
+    "long.yaml line 1 has 101 characters. limit is 100.",
   );
+  expect(() => parseBoundedYamlDocuments("x".repeat(101), "long-line.yaml")).toThrow(
+    "long-line.yaml line 1 has 101 characters. limit is 100.",
+  );
+});
+
+test("allows caller-specific line limits and keeps the other bounds", () => {
+  const source = `value: ${"x".repeat(300)}`;
+  expect(
+    parseBoundedYamlDocuments(source, "registry.yaml", { lineCharacters: Infinity }),
+  ).toHaveLength(1);
+  expect(() =>
+    parseBoundedYamlDocuments("x".repeat(100001), "large-registry.yaml", {
+      lineCharacters: Infinity,
+    }),
+  ).toThrow("limit is 100000");
 });
 
 test("sets the alias expansion limit for every document", () => {
@@ -35,7 +50,7 @@ test("sets the alias expansion limit for every document", () => {
     parseBoundedYamlDocuments(`${aliases(99)}\n---\n${aliases(99)}`, "stream.yaml"),
   ).toHaveLength(2);
   expect(() => parseBoundedYamlDocuments(aliases(100), "too-many.yaml")).toThrow(
-    "too-many.yaml has more than 100 expanded aliases in one document; limit is 100.",
+    "too-many.yaml has more than 100 expanded aliases in one document. limit is 100.",
   );
 });
 
@@ -50,6 +65,7 @@ test("parses one bounded YAML document as a value", () => {
 });
 
 test("keeps YAML parser and alias errors intact", () => {
+  expect(() => parseBoundedYamlDocuments(null, "null.yaml")).toThrow("source is not a string");
   expect(parseBoundedYamlDocuments("value: [", "broken.yaml")).toHaveLength(1);
   expect(() => parseBoundedYamlDocuments("value: *missing", "missing-alias.yaml")).toThrow(
     "Unresolved alias",

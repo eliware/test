@@ -2,7 +2,7 @@ import { afterEach, expect, jest, test } from "@jest/globals";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { nextPatchVersion } from "../../../helpers/project-version.mjs";
+import { nextPatchVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 import { installSmokeCandidate } from "../../../../src/validation/stages/smoke/install-smoke-candidate.mjs";
 import { packageJson } from "../../../../test-fixtures/npm-consumers/smoke-test-support.mjs";
 
@@ -112,44 +112,6 @@ test("rejects a CLI resolution outside the installed smoke package", async () =>
       resolveModule: () => join(targetRoot, "other-package", "bin", "eliware-test.mjs"),
     }),
   ).rejects.toThrow("Consumer does not resolve the installed smoke package CLI entrypoint");
-});
-
-test("resolves a string-shaped CLI entrypoint", async () => {
-  const { targetRoot } = await setup();
-  const run = async (_command, args) => {
-    if (args[0] === "install") await installMock(targetRoot);
-    return { code: 0 };
-  };
-  await expect(
-    installSmokeCandidate({
-      ...options(targetRoot, run),
-      packageJson: { ...packageJson, bin: "bin/eliware-test.mjs" },
-      resolveModule: () =>
-        join(targetRoot, "node_modules", "@eliware", "test", "bin", "eliware-test.mjs"),
-    }),
-  ).resolves.toBeUndefined();
-});
-
-test("resolves a CLI path inside the installed package without requiring an export", async () => {
-  const { targetRoot } = await setup();
-  const resolved = [];
-  const resolveModule = (specifier, parent) => {
-    resolved.push([specifier, parent]);
-    return specifier;
-  };
-  await installSmokeCandidate({
-    ...options(targetRoot, async (_command, args) => {
-      if (args[0] === "install") await installMock(targetRoot);
-      return { code: 0 };
-    }),
-    resolveModule,
-  });
-  expect(resolved).toEqual([
-    [
-      join(targetRoot, "node_modules", "@eliware", "test", "bin", "eliware-test.mjs"),
-      join(targetRoot, "package.json"),
-    ],
-  ]);
 });
 
 test("uses createRequire for CLI packages and skips resolution without a bin entry", async () => {

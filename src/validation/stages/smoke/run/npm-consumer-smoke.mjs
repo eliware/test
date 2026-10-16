@@ -2,7 +2,7 @@ import { mkdir, lstat } from "node:fs/promises";
 import { join } from "node:path";
 import { execute } from "../../../shared/process/execute-child-process.mjs";
 import { resolvePackExecutable } from "../../pack/resolve-pack-executable.mjs";
-import { captureSmokeTargetState } from "../capture-smoke-target-state.mjs";
+import { captureSmokeTargetState } from "../capture-smoke/target-state.mjs";
 import { restoreSmokeTargetState } from "../restore-smoke-target-state.mjs";
 import { finishSmokeRun } from "../finish-smoke-run.mjs";
 import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
@@ -72,7 +72,7 @@ export async function runNpmConsumerSmoke({
       assertTargetIdentity,
       env: { ...childEnv, npm_config_cache: join(tempRoot, "npm-cache") },
     });
-    outcome = `Smoke passed: ${packageJson.name}@${packageJson.version}; SHA-256 ${digest}.`;
+    outcome = `Smoke passed: ${packageJson.name}@${packageJson.version}. SHA-256 ${digest}.`;
   } catch (error) {
     outcome = `Tarball consumer smoke failed: ${error.message}`;
   } finally {

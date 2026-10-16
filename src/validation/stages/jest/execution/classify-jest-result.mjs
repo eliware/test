@@ -61,7 +61,7 @@ export function classifyJestResult(
     return fail(ruleId, timeoutDiagnostic ?? "Jest timed out after 15 seconds without progress.");
   }
   if (result.code !== 0) {
-    if (failuresReported) return fail(ruleId, "Jest failed; see the inline suite failures above.");
+    if (failuresReported) return fail(ruleId, "Jest failed. See the inline suite failures above.");
     const detail = [result.stdout, result.stderr]
       .map(actionableJestOutput)
       .filter(Boolean)

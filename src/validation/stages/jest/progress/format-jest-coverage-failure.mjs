@@ -55,7 +55,7 @@ function formatFile(file, data, root) {
 
 export async function formatJestCoverageFailure(result, root, read = readFile) {
   if (!result?.coverageDirectory)
-    return "Coverage details unavailable: Jest did not retain its coverage directory.";
+    return "Coverage details unavailable: Jest did not keep its coverage directory.";
   let coverage;
   try {
     coverage = JSON.parse(

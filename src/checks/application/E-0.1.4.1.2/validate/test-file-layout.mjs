@@ -3,6 +3,6 @@ export function validateTestFileLayout(files) {
     /^tests\/(?:.*\/)?(?:artifacts|coverage|test-results|__snapshots__)(?:\/|$)/u.test(path),
   );
   return forbidden.map(
-    (path) => `${path} is generated test output; store output under ignored artifacts/.`,
+    (path) => `${path} is generated test output. store output in ignored artifacts/.`,
   );
 }

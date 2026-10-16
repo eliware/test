@@ -10,14 +10,14 @@ conflicts:
 directives:
   - id: E-0.1.13.1.0
     dos:
-      - Select the database profile in package.json under eliware.apply.
+      - Select the database profile in eliware.apply in package.json.
       - Apply the application profile with the database profile.
       - Use the canonical profile order in ordering/eliware-apply.yaml.
-      - Keep database profile metadata equal in both database convention files.
-      - Keep each profile conflict reciprocal.
+      - Keep database profile metadata equal in the two database convention files.
+      - List each profile in the other profile's conflicts too.
     donts:
       - Do not select the database profile from source files or package dependencies.
       - Do not apply the database profile with library, documentation, workspace, or
         infrastructure.
-      - Do not add deterministic checks for SQL meaning, data invariants, repeated
+      - Do not add deterministic checks for SQL meaning, data invariants, recurring
         writes, or migration meaning.

@@ -1,18 +1,8 @@
 import semver from "semver";
+import { findLockfileDependencyEntry } from "./find-lockfile-dependency-entry.mjs";
+import { toSemverRange } from "./to-semver-range.mjs";
 
 const dependencyFields = ["dependencies", "optionalDependencies", "peerDependencies"];
-
-function findDependencyEntry(packages, parent, name) {
-  let current = parent;
-  while (true) {
-    const candidate = `${current}/node_modules/${name}`.replace(/^\//u, "");
-    if (Object.hasOwn(packages, candidate)) return candidate;
-    const nested = current.lastIndexOf("/node_modules/");
-    if (nested < 0)
-      return Object.hasOwn(packages, `node_modules/${name}`) ? `node_modules/${name}` : null;
-    current = current.slice(0, nested);
-  }
-}
 
 export function validateLockfilePackageEntries(packages) {
   const errors = [];
@@ -47,7 +37,7 @@ export function validateLockfilePackageEntries(packages) {
           errors.push(
             `package-lock.json entry ${path} has an unsupported ${field} range for ${name}.`,
           );
-        const targetPath = findDependencyEntry(packages, path, name);
+        const targetPath = findLockfileDependencyEntry(packages, path, name);
         if (!targetPath && field === "peerDependencies" && isOptionalPeer(entry, name)) continue;
         if (!targetPath)
           errors.push(`package-lock.json entry ${path} references missing dependency ${name}.`);
@@ -71,13 +61,6 @@ function isRegistryTag(value) {
 
 function isValidDependencyName(name) {
   return /^(?:@[a-z0-9][a-z0-9._~-]*\/[a-z0-9][a-z0-9._~-]*|[a-z0-9][a-z0-9._~-]*)$/u.test(name);
-}
-
-function toSemverRange(value) {
-  if (typeof value !== "string") return null;
-  if (semver.validRange(value)) return value;
-  const alias = /^npm:(?:@[^/]+\/[^@]+|[^@]+)@(.+)$/u.exec(value);
-  return alias && semver.validRange(alias[1]) ? alias[1] : null;
 }
 
 function isOptionalPeer(entry, name) {

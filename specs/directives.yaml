@@ -5,52 +5,51 @@ directives:
     dos:
       - Run deterministic repository validation through eliware-test.
       - Enforce each selected profile's bundled deterministic rules.
-      - Use convention documents as the source for consumer requirements.
+      - Use convention documents to define consumer requirements.
       - Reject overlapping runs in one worktree.
     donts:
       - Do not enforce semantic conventions or duplicate consumer requirements.
       - Do not require an external repository to load bundled checks.
-      - Do not publish, deploy, sync, tag, push, or change external state during
-        validation.
-      - Do not expose internal modules or injected helpers as consumer APIs.
+      - Do not publish, deploy, sync, tag, push, or change remote data during validation.
+      - Do not expose internal modules or injected helpers to consumers.
     children:
       - id: E-0.0.0
         dos:
           - Parse settings and arguments before validation.
           - Resolve selected profiles, listed prerequisites, and conflicts.
           - Reject selected profile sets with declared conflicts.
-          - Match each profile pair's version, prerequisite list, and conflict list.
-          - Find profile checks under src/checks/<profile>/ by directive ID filename.
-          - Find combination checks under src/checks/shared/ by directive ID filename.
+          - Match each profile pair's version, prerequisite list, and blocked-profile list.
+          - Find profile check modules in src/checks/<profile>/ by directive ID filename.
+          - Find combination check modules in src/checks/shared/ by directive ID filename.
           - Apply cross-profile rules from these harness directives.
           - Match each module name, exported ruleId, directive, and reported ID.
           - Show directive ancestry in check subfolders.
           - Check exemptions against the full bundled check tree.
-          - Skip exempt checks and their discovered children.
+          - Skip approved check exemptions and their discovered child checks.
           - Read /eliware/docs/repo-map.yaml only when it exists and a convention needs it.
         donts:
           - Do not infer profiles from repository contents or runtime behavior.
           - Do not run validation with invalid required settings.
           - Do not accept duplicate, unknown, malformed, or misprofiled checks.
           - Do not create semantic, advisory, or placeholder check modules.
-          - Do not maintain generated directive copies or a separate canonical check
+          - Do not maintain generated directive copies or a second canonical check
             registry.
-          - Do not let checks select profiles or handle exemptions.
+          - Do not let checks select profiles or apply exemptions.
           - Do not require the optional repository map.
 
       - id: E-0.0.1
         dos:
           - Run selected work in dependency order.
-          - Run every enabled stage and convention check before Jest.
+          - Run each enabled stage and convention check before Jest.
           - Keep all failures.
-          - Skip Jest if any earlier work fails.
-          - Report thrown checks as failures.
+          - Skip Jest when an earlier stage fails.
+          - Report thrown checks with failure status.
           - Continue other executable checks.
           - Keep each completed stage result for convention checks.
           - Derive aggregate stages from selected deterministic rules.
         donts:
           - Do not silently omit executable selected checks or turn failures into warnings.
-          - Do not report skipped, partial, unknown, or inapplicable work as passing.
+          - Do not report skipped, unfinished, unknown, or inapplicable work with passing status.
           - Do not let exemptions suppress unrelated required work.
           - Do not invoke the consumer's aggregate test script during aggregate validation.
           - Do not add undeclared registry, release, deployment, or sync checks.
@@ -62,21 +61,21 @@ directives:
             --audit, and --pack.
           - Return informational output and exit code 0 for --help and --version without
             validation.
-          - Require locally active npm 12 or later before validation.
+          - Require locally active npm 12 or newer before validation.
           - In this harness package, use node bin/eliware-test.mjs in the five shared
             scripts.
-          - Accept --debug-timing once and only before a focused path or tool mode.
-          - Accept only --threads=<positive-count> as additional lint input.
+          - Accept --debug-timing one time and only before a focused path or tool mode.
+          - Accept only --threads=<positive-count> for lint input.
           - Validate other mode arguments against documented mode-specific allowlists.
           - Preserve wrapper-selected formatting behavior, configuration, and required
             file coverage.
           - Run audit in aggregate validation.
-          - Expose --audit as an explicit audit-only mode.
+          - Expose --audit for audit-only validation.
         donts:
           - Do not require npm verification for informational commands.
           - Do not accept wrapper options after the -- separator.
           - Do not forward unsupported arguments or let format-check write files.
-          - Do not expose direct implementation tools as additional public commands.
+          - Do not expose implementation tools or second public commands.
           - Do not let diagnostic options change selected profiles or stages.
         examples:
           - "eliware-test --help"
@@ -86,12 +85,12 @@ directives:
 
       - id: E-0.0.3
         dos:
-          - Accept one or more focused test paths through the public CLI under tests/.
+          - Accept one or more focused test paths through the public CLI in tests/.
           - Require repository-relative paths.
           - Reject absolute paths and parent traversal before resolution.
           - Reject missing, ambiguous, unsupported, or escaping focused paths before
             unrelated execution.
-          - Keep stage selection independent of path focus.
+          - Do not let path focus change stage selection.
           - Limit focused discovery, coverage, and diagnostics to all requested test and
             source paths.
           - Run lint and format checks only on all requested test and source paths.
@@ -102,10 +101,10 @@ directives:
           - Run other focused checks only when their full rules can use the focused file
             inventory.
           - Forward arguments after -- only through the selected invocation contract.
-          - Fail focused formatting when no valid resolved paths remain.
+          - Fail focused formatting when resolution returns no valid paths.
         donts:
-          - Do not reinterpret package operations as test focus.
-          - Do not broaden invalid focus or fall back to repository-wide execution.
+          - Do not interpret package operations for test selection.
+          - Do not broaden invalid focus to repository-wide execution.
           - Do not report unrelated-module coverage failures during focused execution.
         examples:
           - "eliware-test tests/example.test.mjs"
@@ -127,25 +126,25 @@ directives:
           - Run profile-enabled lint, format, audit, outdated, pack, typecheck, and build
             before conventions.
           - Run all convention checks before Jest.
-          - Run Jest only when every earlier stage passes.
+          - Run Jest only after all earlier stages pass.
           - Cache each completed stage result for convention checks.
           - Print an aggregate success summary after clean aggregate validation.
           - Report the number of convention checks that ran.
           - Report the number of Jest test suites and tests that ran.
           - Report zero lint warnings, format issues, audit issues, and pack issues after
             success.
-          - Report total checks time as total validation time minus Jest time.
+          - Report total checks time by subtracting Jest time from validation time.
           - Report Jest time and total validation time in seconds to three decimal places.
-          - "Put Exit-code: 0 on the last line of the aggregate success summary."
+          - "Put Exit-code: 0 on the final line of the aggregate success summary."
           - Count Jest test suites and tests from Jest run-complete results.
-          - Count executed convention checks and completed non-Jest stages as checks.
+          - Count executed convention checks and completed non-Jest stages in the checks total.
           - Report the same counts and times after clean focused validation.
           - Report only the selected mode after mode-specific success.
         donts:
           - Do not truncate or paraphrase matched directives.
           - Do not change public exit semantics incidentally.
-          - Do not emit aggregate success when diagnostics or failures remain.
-          - Do not emit incidental logs or subprocess output during a clean normal run.
+          - Do not show aggregate success when diagnostics or failures occur.
+          - Do not show incidental logs or subprocess output during a clean standard run.
         examples:
           - "Aggregate validation passed."
           - "Checks: 42 | Test suites: 8 | Tests: 120"
@@ -157,38 +156,38 @@ directives:
 
       - id: E-0.0.5
         dos:
-          - Discover working-tree files including untracked and ignored files within each
+          - Find tracked, untracked, and ignored working-tree files in each
             check's declared scope.
           - Exclude .git, node_modules, coverage, dist, build, and test-results
             directories from ordinary repository discovery.
           - Traverse directories iteratively.
           - Keep paths and resource use bounded.
-          - Parse every document in generic YAML streams.
-          - Reject YAML files over 100000 UTF-8 bytes before parsing.
-          - Reject YAML files over 1000 lines.
-          - Reject YAML lines over 100 characters, excluding line endings.
+          - Parse all documents in generic YAML streams.
+          - Reject YAML files larger than 100000 UTF-8 bytes before parsing.
+          - Reject YAML files with more than 1000 lines.
+          - Reject YAML lines longer than 100 characters. Do not count line endings.
           - Set the YAML alias expansion limit to 100 for each document.
           - Report the file path, observed value, and required limit for each YAML limit
             failure.
-          - Inspect supported README links outside code spans and fenced blocks.
+          - Inspect supported README links that are not in code spans or fenced blocks.
           - Support inline Markdown links and images.
-          - Support full reference links and quoted HTML href and src attributes.
+          - Support full link definitions and quoted HTML href and src attributes.
           - Limit specification discovery to 10000 entries and 128 directory levels.
           - Support angle-bracket HTTP, HTTPS, and mailto links.
-          - Resolve local targets within the checkout and local Markdown fragments against
+          - Resolve local targets in the checkout and local Markdown fragments against
             headings and HTML IDs.
           - Validate lockfile dependency-map shapes and references locally.
           - Resolve linked lockfile entries through their declared target package paths.
           - Inspect ignored tracked paths and symlink modes through the Git index.
-          - Fail checks whose required local input or Git index cannot be read.
+          - Fail a check when a required local input or Git index cannot be read.
         donts:
           - Do not parse YAML above the stated byte, line, or alias limits.
-          - Do not add a separate memory cap for YAML parsing.
+          - Do not add a second memory cap for YAML parsing.
           - Do not reject valid YAML streams solely for containing multiple documents.
-          - Do not interpret unsupported Markdown extensions or structured-data paths as
+          - Do not use unsupported Markdown extensions or structured-data paths to identify
             documentation links.
           - Do not fetch external documentation targets or fragments.
-          - Do not probe registries while validating lockfiles.
+          - Do not contact registries while validating lockfiles.
           - Do not resolve symlink targets to determine tracked symlink status.
         examples:
           - "git ls-files --cached --stage -z"
@@ -196,13 +195,13 @@ directives:
 
       - id: E-0.0.6
         dos:
-          - Inject child-process execution into stages and checks.
-          - Mock every CLI call in tests/**/*.test.mjs.
-          - Keep tests/**/*.test.mjs from launching real CLI tools or child processes.
+          - Pass the child-command runner to stages and checks.
+          - Mock all CLI calls in tests/**/*.test.mjs.
+          - Do not let tests/**/*.test.mjs launch external CLI tools or child commands.
           - Mock file-system operations in tests/**/*.test.mjs.
           - Allow network access to localhost only in tests/**/*.test.mjs.
           - Use fake timers or injected fixed clocks in tests/**/*.test.mjs.
-          - Mock process calls and other external effects in tests/**/*.test.mjs.
+          - Mock child-command calls and all other external effects in tests/**/*.test.mjs.
           - Mock calls to Git, npm, audit, lint, format, pack, typecheck, build, Jest, and
             package scripts.
           - Invoke child processes with argument arrays, explicit working directories, and
@@ -210,61 +209,61 @@ directives:
           - Copy the complete invoking environment defensively.
           - Apply only documented overrides.
           - Resolve executables through supported package resolution.
-          - Bound captured stdout and stderr under an aggregate budget.
+          - Limit captured stdout and stderr to one combined byte budget.
           - Preserve UTF-8 boundaries, surrogate pairs, and complete redaction markers.
-          - Redact sensitive values in harness diagnostics, including PEM key blocks.
-          - Redact both encrypted and unencrypted PEM private keys.
+          - Redact PEM key blocks and other sensitive values from harness diagnostics.
+          - Redact encrypted and unencrypted PEM private keys.
           - Redact PEM public key blocks.
-          - Emit buffered text before a secret reaches the output limit.
-          - Stop child processes within a platform-specific time limit.
+          - Write buffered text before a secret reaches the output limit.
+          - Stop child commands before a platform-specific time limit.
         donts:
-          - Do not change file-system state in tests/**/*.test.mjs.
+          - Do not modify files in tests/**/*.test.mjs.
           - Do not access external network services in tests/**/*.test.mjs.
-          - Do not launch real processes or command-line tools in tests/**/*.test.mjs.
+          - Do not launch OS commands or command-line tools in tests/**/*.test.mjs.
           - Do not use wall-clock waits, sleeps, or uncontrolled timers in
             tests/**/*.test.mjs.
-          - Do not depend on shell pipelines, quoting, arbitrary installation layouts, or
+          - Do not require shell pipelines, quoting, arbitrary installation layouts, or
             unbounded capture.
           - Do not invoke Windows command shims through non-shell execution.
           - Do not selectively inherit or sanitize child environments.
           - Do not expose secrets through harness-owned diagnostics.
-          - Do not promise complete secret detection or cleanup of every child process.
+          - Do not promise full secret detection or cleanup of all child commands.
 
       - id: E-0.0.7
         dos:
-          - Use consumer-resolvable Jest when available and bundled Jest otherwise.
+          - Use consumer-resolvable Jest when available and bundled Jest when it is not.
           - Keep Jest execution rooted in the consumer repository.
           - Supply harness reporters and detailed coverage output without weakening
             configured requirements.
           - Run Jest with --runInBand, --detectOpenHandles, and --no-cache.
-          - Execute requested Jest validation once with established ordering and lifecycle
+          - Run requested Jest validation one time with established ordering and lifecycle
             behavior.
-          - Monitor suite progress during every run.
-          - Enforce a 5-second maximum runtime for each test suite and a separate
+          - Report suite status during each run.
+          - Enforce a 5-second limit for each test suite and a different
             15-second startup or between-suite no-progress deadline.
-          - Report the current or last known suite and its time limit on termination.
-          - Request graceful stop first.
+          - Report the current suite or the most recent suite and its time limit on stop.
+          - Send a graceful stop signal first.
           - Escalate after a time limit.
           - Confirm termination only after the child closes.
-          - Fail within a bounded period if forced termination does not close the child.
-          - Stream suite start, completion, and elapsed time under --debug-timing.
-          - Keep timing output separate from captured failure output.
+          - Fail after a fixed period if forced termination does not close the child.
+          - Show suite start, result, and elapsed time with --debug-timing.
+          - Do not combine timing output with captured failure output.
           - Fail unreadable or malformed console-output reports.
           - Accept only documented inherited NODE_OPTIONS warning and ESM flags.
         donts:
           - Do not impose a global run-duration limit.
-          - Do not reset suite deadlines on output.
+          - Do not change suite deadlines when output arrives.
           - Do not require debug timing for watchdog enforcement.
-          - Do not run each test separately to collect timing.
-          - Do not buffer all timing until completion.
+          - Do not run each test alone to collect timing.
+          - Do not buffer all timing until the run stops.
           - Do not expose raw timing payloads.
           - Do not interpret quotes or backslashes in NODE_OPTIONS or accept path-valued
             flags.
 
       - id: E-0.0.8
         dos:
-          - Clear the consumer coverage directory before each Jest run.
-          - Keep harness-owned coverage reports and validation output separate from test
+          - Delete prior files in the consumer coverage directory before each Jest run.
+          - Do not combine harness-owned coverage reports or validation output with test
             side effects.
           - Write current coverage reports and Jest console output to the consumer
             coverage directory.
@@ -272,38 +271,37 @@ directives:
           - Read coverage data from the consumer coverage directory.
           - Validate maps and counters against source-derived Istanbul instrumentation.
           - Accept empty maps only when the matching instrumentation shape is empty.
-          - Count positively executed entries as covered without weighting execution
+          - Count positively executed entries for coverage without weighting execution
             frequency.
           - Report file metrics, uncovered lines, and available statement, branch, and
             function details.
           - Include guidance to extend tests or refactor when needed for testability.
         donts:
-          - Do not merge candidates or choose them by recency.
+          - Do not merge candidates or select them by recency.
           - Do not delete current-run coverage reports or Jest output after Jest completes.
           - Do not preserve or restore prior coverage output.
-          - Do not create temporary coverage directories outside the consumer repository.
+          - Keep all temporary coverage directories in the consumer repository.
           - Do not create validation or smoke temporary files in system temp or user
             folders.
           - Do not accept omitted instrumentation entries or unmatched map and counter
             keys.
-          - Do not reduce failures to an exit code or undifferentiated percentage.
+          - Do not convert failures to an exit code or one percentage.
 
       - id: E-0.0.9
         dos:
           - Keep implementation native ESM, injectable, and covered by mirrored tests.
-          - Allow the harness to declare and import Oxlint and Prettier as direct
-            dependencies.
+          - Allow the harness to declare and import Oxlint and Prettier in its dependencies.
           - Invoke Oxlint and Prettier through harness validation stages.
           - Keep one workflow's orchestration in its coordinator.
-          - Move operations with separate change reasons into focused helpers.
-          - Reuse bounded repository inventory and content caches.
-          - Keep old cache values and byte counts when a refresh fails.
-          - Remove both values exactly once when required.
+          - Move operations with different reasons for change into focused helpers.
+          - Use bounded repository inventory and content caches.
+          - Keep prior cache values and byte counts when a refresh fails.
+          - Remove each value one time when required.
           - Do not evict a pending refresh.
-          - Keep successful directory listings when a later refresh fails.
+          - Keep valid directory listings if a subsequent refresh fails.
           - Remove rejected inventory views for retry.
           - Prevent older parse completions from replacing newer cached results.
-          - Test refresh failures followed by eviction and out-of-order parse completion.
+          - Test refresh failures, eviction, and parse results that return out of order.
         donts:
           - Do not split coordinators solely because their cohesive workflow has multiple
             phases.
@@ -313,8 +311,8 @@ directives:
 
       - id: E-0.0.10
         dos:
-          - Keep --pack limited to local package-content validation.
-          - In this harness package, define pack as node bin/eliware-test.mjs --pack.
+          - Keep --pack for local package-content validation only.
+          - Set this package's pack command to node bin/eliware-test.mjs --pack.
           - Provide opt-in smoke execution through npm run smoke -- --target
             <repository-path>.
           - Support smoke from the source checkout or installed harness directory.
@@ -328,21 +326,21 @@ directives:
           - Restore the prior manifest, lockfiles, installed harness directory, and its
             executable shims.
           - Snapshot only those exact files and the installed package directory.
-          - Recreate captured Windows directory links as junctions.
+          - Create Windows junctions from captured directory links.
           - Reject captured Windows file symlinks before mutation.
           - Report cleanup failures.
           - Keep exact recovery paths when restore fails.
         donts:
           - Do not install tarballs during --pack.
           - Do not run consumer suites during --pack.
-          - Do not accept targets resolving inside the source checkout.
+          - Do not accept targets that resolve to the source checkout or its child directories.
           - Do not rewrite dependency declarations or regenerate consumer lockfiles.
-          - Do not snapshot ancestor directories such as node_modules/.bin or
+          - Do not snapshot parent directories like node_modules/.bin or
             node_modules/@eliware.
           - Do not promise restoration of arbitrary consumer-created files.
           - Do not change system-wide links, create worktrees, run profile matrices, or
             align consumers.
-          - Do not treat smoke success as release authorization.
+          - Do not use smoke success to authorize a release.
         examples:
           - "npm run smoke -- --target ../disposable-consumer"
 
@@ -350,14 +348,12 @@ directives:
         dos:
           - Use package.json.eliware.apply to classify each repository.
           - Use package.json.eliware.apply to select enabled profiles.
-          - Require general for every repository, including repositories that select no
-            other profile.
+          - Require general for all repositories. General can be the only selected profile.
           - Allow a repository to select general alone.
-          - Treat application, library, documentation, workspace, and infrastructure as
+          - Make application, library, documentation, workspace, and infrastructure
             mutually exclusive repository types.
           - Require application when cli, web, discord, or mcp-server applies.
-          - Allow cli, web, discord, and mcp-server to combine with each other under
-            application.
+          - Allow cli, web, discord, and mcp-server to combine when application applies.
           - Require private when workspace or infrastructure applies.
           - Allow documentation with general and optional private only.
           - Allow workspace with general and private only.
@@ -367,10 +363,10 @@ directives:
           - Reject npm-published with private.
           - Allow ghcr-published with private.
           - Allow npm-published and ghcr-published to share one publication workflow.
-          - Require reciprocal conflict metadata for every incompatible profile pair.
+          - Require reciprocal exclusion metadata for each profile pair that cannot apply together.
           - Reject profile sets that violate these repository-type boundaries.
           - Put only universal repository rules and checks in general.
-          - Keep each profile's rules unique from general and every profile that can apply
+          - Keep each profile's rules unique from general and all profiles that can apply
             with it.
           - Keep child-profile rules unique from general and their required parent
             profiles.
@@ -378,9 +374,8 @@ directives:
             needs them.
           - Put profile-specific rules and checks in that profile.
           - Enable profile-specific rules and checks only when selected.
-          - Put combination-dependent rules and checks in a separate shared composition
-            layer.
-          - Keep the shared composition layer separate from profile checks and shared
+          - Put rules and checks that require multiple profiles in a shared layer.
+          - Keep multi-profile rules and checks apart from profile checks and shared
             utility helpers.
           - Run shared composition checks only when their declared profile combination
             applies.
@@ -390,7 +385,7 @@ directives:
           - Run package packing only when npm-published applies.
         donts:
           - Do not put conditional profile rules or checks in general.
-          - Do not duplicate enforcement between general and a profile or among profiles
+          - Do not duplicate enforcement between general and a profile or between profiles
             that can apply together.
           - Do not reject shared rules across profiles that cannot apply together.
           - Do not infer profiles from repository contents or runtime behavior.
@@ -400,11 +395,11 @@ directives:
 
       - id: E-0.0.12
         dos:
-          - Put checks for rules that depend on multiple selected profiles in
+          - Put checks for rules that require multiple selected profiles in
             src/checks/shared/.
           - Declare each shared check's owning profile and required profiles in its module.
-          - Run a shared check only when every required profile applies.
-          - Mirror each shared check under tests/checks/shared/.
+          - Run a shared check only when each required profile applies.
+          - Mirror each shared check in tests/checks/shared/.
           - Keep profile-only rules and checks in their selected profile.
           - Read cross-profile canonical order data from specs/conventions/ordering/.
           - Order package.json keys by ordering/package-json.yaml.
@@ -415,12 +410,12 @@ directives:
           - Order CI validation steps by ordering/ci-workflow.yaml.
           - Order publication profiles and jobs by ordering/publication-workflow.yaml.
           - Order package files by ordering/package-files.yaml when npm-published applies.
-          - Include shared README.md or AGENTS.md sections when any listed profile applies.
-          - Add each shared README.md section once at its first required position.
+          - Include shared README.md or AGENTS.md sections for each profile that requires them.
+          - Add each shared README.md section one time at its first required location.
           - Show the npm badge and package link only when npm-published applies.
           - Use one publish.yaml when npm-published or ghcr-published applies.
-          - Use one publisher when npm-published and ghcr-published both apply.
-          - Publish only on canonical vMAJOR.MINOR.PATCH tags that match
+          - Use one publisher when npm-published and ghcr-published apply together.
+          - Publish only on canonical `vMAJOR.MINOR.PATCH` tags that match
             package.json.version.
           - Require one unconditional Ubuntu validation job before publication.
           - Give publication jobs only the permissions required by their selected profiles.
@@ -431,4 +426,4 @@ directives:
             directories.
           - Do not copy canonical order values into check modules.
           - Do not run shared checks when a required profile does not apply.
-          - Do not add a publication workflow when neither publication profile applies.
+          - Do not add a publication workflow unless a publication profile applies.

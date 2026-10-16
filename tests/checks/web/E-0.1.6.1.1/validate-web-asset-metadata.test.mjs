@@ -7,7 +7,7 @@ test("rejects package metadata for configurable web assets", () => {
   expect(
     validateWebAssetMetadata({ eliware: { webRoot: "public", webAssetExcludes: [] } }),
   ).toEqual([
-    "Do not set package.json.eliware.webRoot; the web asset root is public/.",
-    "Do not set package.json.eliware.webAssetExcludes; the web asset root is public/.",
+    "Do not set package.json.eliware.webRoot. The web asset root is public/.",
+    "Do not set package.json.eliware.webAssetExcludes. The web asset root is public/.",
   ]);
 });

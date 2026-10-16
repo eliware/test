@@ -12,20 +12,20 @@ directives:
   - id: E-0.1.5.0.0
     dos:
       - Document command behavior from the CLI implementation, parser, tests, and README.md.
-      - State command purpose, syntax, options, arguments, and defaults in help output.
+      - Describe command purpose, syntax, options, arguments, and defaults in help output.
       - Use placeholder credentials and named non-production targets in copyable examples.
       - Show a confirmation or dry-run step before each destructive example.
-      - Name platforms in the CI matrix as CI-tested platforms.
-      - Mark other platform claims as untested compatibility claims.
-      - State the files, services, or records that each destructive command can change.
-      - Keep informational commands such as --help and --version read-only.
+      - Name platforms in the CI matrix and label them CI-tested.
+      - Label all other platform claims untested compatibility claims.
+      - List the files, services, or records that each destructive command can change.
+      - Keep --help and --version commands read-only.
       - Compare help output and examples with the CLI implementation, parser, tests, and
         platform workflow files.
-      - Keep output free of secrets and credentials.
-      - State whether each child command requires a delimiter before pass-through arguments.
+      - Keep secrets and credentials out of output.
+      - Specify if each child command requires a delimiter before pass-through arguments.
     donts:
       - Do not claim a platform test unless the CI matrix names that platform.
       - Do not omit the pass-through arguments or delimiter rules from CLI documentation.
-      - Do not let an informational command write files, change package metadata, connect
-        to a network, or start a service process.
+      - Do not let an informational command write files or change package metadata.
+      - Do not let an informational command connect to a network or start a background task.
       - Do not show a destructive example without a confirmation or dry-run step.

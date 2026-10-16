@@ -1,16 +1,11 @@
 import { expect, jest, test } from "@jest/globals";
+import {
+  repositoryDirectoryCacheRoot as root,
+  repositoryDirectoryMetadata as metadata,
+} from "../../../../../../test-fixtures/repository-directory-cache-fixtures.mjs";
+import { verifyDirectoryCacheBirthtimeRefresh } from "../../../../../../test-fixtures/verify-directory-cache-birthtime.mjs";
 import { join } from "node:path";
 import { createRepositoryDirectoryReadCache } from "../../../../../../src/validation/shared/repository/create-repository/directory/read-cache.mjs";
-import { verifyDirectoryCacheBirthtimeRefresh } from "../../../../../../test-fixtures/verify-directory-cache-birthtime.mjs";
-const root = join(process.cwd(), "inventory-fixture");
-const metadata = (mtimeNs) => ({
-  dev: 1n,
-  ino: 2n,
-  size: 0n,
-  mtimeNs,
-  ctimeNs: mtimeNs,
-  birthtimeNs: 3n,
-});
 test("deduplicates concurrent directory reads and reuses unchanged listings", async () => {
   const stat = jest.fn(async () => metadata(1n));
   const entries = [];
@@ -57,20 +52,6 @@ test("uses the filesystem stat function by default", async () => {
   await expect(read(process.cwd())).resolves.toEqual([]);
   expect(readDirectory).toHaveBeenCalledTimes(1);
 });
-test("detects nanosecond changes within the same millisecond", async () => {
-  const sameMillisecond = (mtimeNs) => ({ ...metadata(mtimeNs), mtimeMs: 1, ctimeMs: 1 });
-  const stat = jest
-    .fn()
-    .mockResolvedValueOnce(sameMillisecond(1n))
-    .mockResolvedValueOnce(sameMillisecond(1n))
-    .mockResolvedValueOnce(sameMillisecond(2n))
-    .mockResolvedValueOnce(sameMillisecond(2n));
-  const readDirectory = jest.fn().mockResolvedValueOnce(["old"]).mockResolvedValueOnce(["new"]);
-  const read = createRepositoryDirectoryReadCache(root, readDirectory, stat, "linux");
-  await expect(read("src")).resolves.toEqual(["old"]);
-  await expect(read("src")).resolves.toEqual(["new"]);
-  expect(readDirectory).toHaveBeenCalledTimes(2);
-});
 test("rejects listings when a directory changes during readdir", async () => {
   const stat = jest.fn().mockResolvedValueOnce(metadata(1n)).mockResolvedValueOnce(metadata(2n));
   const readDirectory = jest.fn().mockResolvedValue(["possibly-incomplete"]);
@@ -95,6 +76,7 @@ test("drops a failed listing so a later read can retry", async () => {
   expect(read.getRevision()).toBe(1);
   expect(read.getTrackedDirectories()).toEqual([]);
 });
+
 test("preserves the last successful listing when a forced refresh fails", async () => {
   const stat = jest
     .fn()

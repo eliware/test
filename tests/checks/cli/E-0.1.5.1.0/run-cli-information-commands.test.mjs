@@ -1,6 +1,9 @@
 import { expect, jest, test } from "@jest/globals";
 import { runCliInformationCommands } from "../../../../src/checks/cli/E-0.1.5.1.0/run-cli-information-commands.mjs";
-import { nextPatchVersion, packageVersion } from "../../../helpers/project-version.mjs";
+import {
+  nextPatchVersion,
+  packageVersion,
+} from "../../../../test-fixtures/helpers/project-version.mjs";
 
 const run = (executeEntrypoint) =>
   runCliInformationCommands({

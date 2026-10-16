@@ -16,7 +16,8 @@ test("checks prose files and reports unapproved terms with alternatives", async 
   expect(result).toEqual({
     ruleId,
     status: "fail",
-    message: 'README.md:1 uses "abrupt"; approved alternatives: SUDDEN (adj), SUDDENLY (adv).',
+    message:
+      'README.md:1 uses "abrupt". Suggested alternatives: SUDDEN (adj), SUDDENLY (adv). The alternatives are examples. They are not requirements. Rewrite the text with grammatical wording that omits the listed term.',
   });
   expect(inventory.readText).toHaveBeenCalledTimes(1);
 });

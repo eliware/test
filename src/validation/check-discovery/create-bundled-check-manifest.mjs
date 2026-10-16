@@ -1,8 +1,3 @@
-/**
- * Build the machine-readable implementation registry from the discovered
- * modules. The filesystem path is part of the record so an ID cannot be
- * considered implemented merely because it appears in an ID set.
- */
 export function createBundledCheckManifest(checks) {
   if (
     checks.some(
@@ -20,7 +15,7 @@ export function createBundledCheckManifest(checks) {
         enforcementMode !== "non-deterministic",
     )
   ) {
-    throw new Error("Every bundled check must declare a valid enforcement mode.");
+    throw new Error("Each bundled check must declare a valid enforcement mode.");
   }
   const records = checks.map(
     ({
@@ -40,7 +35,7 @@ export function createBundledCheckManifest(checks) {
     }),
   );
   if (records.some(({ modulePath }) => typeof modulePath !== "string" || modulePath.length === 0)) {
-    throw new Error("Every bundled check must have a module path.");
+    throw new Error("Each bundled check must have a module path.");
   }
   const ids = new Set();
   const paths = new Set();
