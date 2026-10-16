@@ -25,7 +25,7 @@ directives:
       - When a runbook requires prerequisites, list each one.
       - Verify each action against its observable result.
       - If a result falls outside the runbook, stop and contact Eli.
-      - A live system serves users or stores operational data.
+      - Label each system that serves users or stores operational data as live.
       - For a procedure that can change a live system, state the permitted actions and
         required approval.
       - For a procedure that can change a live system, document recovery steps and an
