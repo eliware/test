@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { loadExactExamples } from "../../../../src/checks/general/E-0.1.0.1.11/load-exact-examples.mjs";
+import { loadExactExamples } from "../../../../../src/checks/general/E-0.1.0.1.11/load/exact-examples.mjs";
 
 const root = "test-specs";
 

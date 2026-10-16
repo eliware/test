@@ -1,8 +1,8 @@
 import { fail, pass } from "../check-result.mjs";
-import dictionary from "../../../dictionary/unapproved.json" with { type: "json" };
 import { extractProse } from "./E-0.1.0.1.11/extract/prose.mjs";
 import { findLanguageViolations } from "./E-0.1.0.1.11/find-language-violations.mjs";
-import { loadExactExamples } from "./E-0.1.0.1.11/load-exact-examples.mjs";
+import { loadUnapprovedDictionary } from "./E-0.1.0.1.11/load/unapproved-dictionary.mjs";
+import { loadExactExamples } from "./E-0.1.0.1.11/load/exact-examples.mjs";
 
 export const ruleId = "E-0.1.0.1.11";
 const supportedExtensions = new Set(["md", "yaml", "yml", "json", "mjs", "js"]);
@@ -17,6 +17,7 @@ export async function run(context = {}, dependencies = {}) {
     const exactSentences = await (dependencies.loadExactExamples ?? loadExactExamples)(
       dependencies.exampleFiles,
     );
+    const dictionary = loadUnapprovedDictionary();
     const errors = [];
     for (const path of files) {
       if (!supportedExtensions.has(path.toLowerCase().split(".").at(-1))) continue;

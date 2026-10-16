@@ -2,10 +2,10 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isMap, isSeq, isScalar, parseAllDocuments } from "yaml";
-import { extractMarkdownProse } from "./extract/markdown-prose.mjs";
-import { normalizeSentence, splitSentences } from "./word-tools.mjs";
+import { extractMarkdownProse } from "../extract/markdown-prose.mjs";
+import { normalizeSentence, splitSentences } from "../word-tools.mjs";
 
-const conventionsPath = fileURLToPath(new URL("../../../../specs/conventions", import.meta.url));
+const conventionsPath = fileURLToPath(new URL("../../../../../specs/conventions", import.meta.url));
 
 export async function loadExactExamples(options, defaults) {
   const settings = options ?? {};

@@ -415,7 +415,7 @@ directives:
       - Show each match, its file, line, and suggested alternatives.
       - Tell writers that alternatives are examples, not requirements.
       - Tell writers to rewrite each sentence without the listed term.
-      - Load unapproved.json from the installed eliware-test package.
+      - Load unapproved.csv from the installed eliware-test package.
       - Ignore code, commands, identifiers, URLs, examples, and the dictionary itself.
       - Ignore exact sentences from bundled convention examples.
     donts:
