@@ -7,9 +7,11 @@ import { validateBundledDirectiveCompleteness } from "./planning/validate/bundle
 import { prepareValidationPlan } from "./planning/prepare-validation/plan.mjs";
 import { findRepositoryEntries } from "./shared/repository/find-repository-files.mjs";
 import { finalizeValidationRun } from "./check-execution/finalize-validation-run.mjs";
+import { readProfileCombinationPolicy } from "./planning/read/profile-combination-policy.mjs";
 
 export const validationDependencies = Object.freeze({
   loadValidationTarget,
+  readProfileCombinationPolicy,
   selectConventionChecks,
   discoverAllChecks,
   validateBundledDirectiveCompleteness,
@@ -26,6 +28,7 @@ export async function runValidation(root, ignoredRuleIds, options = {}) {
   const dependencies = resolveValidationDependencies(options.dependencies);
   const {
     loadValidationTarget: loadTarget,
+    readProfileCombinationPolicy: readProfileCombinationPolicyFn,
     selectConventionChecks: selectChecks,
     discoverAllChecks: discoverChecks,
     validateBundledDirectiveCompleteness: validateCompleteness,
@@ -35,6 +38,7 @@ export async function runValidation(root, ignoredRuleIds, options = {}) {
   } = dependencies;
   const plan = await prepareValidationPlan(root, ignoredRuleIds, options, {
     loadValidationTarget: loadTarget,
+    readProfileCombinationPolicy: readProfileCombinationPolicyFn,
     selectConventionChecks: selectChecks,
     discoverAllChecks: discoverChecks,
     validateBundledDirectiveCompleteness: validateCompleteness,

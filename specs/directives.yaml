@@ -16,11 +16,11 @@ directives:
       - id: E-0.0.0
         dos:
           - Parse settings and arguments before validation.
-          - Validate selected profiles against requires and conflicts in bundled convention
-            metadata.
-          - Reject selected profile sets with declared conflicts.
+          - Load specs/profile-combinations.yaml during preflight planning.
+          - Validate required and prohibited profiles before check discovery.
+          - Require every repository to select general as a separate planning invariant.
           - Validate applied profile order with ordering/eliware-apply.yaml.
-          - Match each profile pair's version, prerequisite list, and blocked-profile list.
+          - Match each profile pair's version.
           - Find profile check modules in src/checks/<profile>/ by directive ID filename.
           - Find combination check modules in src/checks/shared/ by directive ID filename.
           - Apply cross-profile rules from these harness directives.
@@ -33,6 +33,7 @@ directives:
           - Do not infer profiles from repository contents or runtime behavior.
           - Do not run validation with invalid required settings.
           - Do not accept duplicate, unknown, malformed, or misprofiled checks.
+          - Do not load profile-combination policy from a consumer repository.
           - Do not create semantic, advisory, or placeholder check modules.
           - Do not maintain generated directive copies or a second canonical check
             registry.
@@ -363,28 +364,14 @@ directives:
         dos:
           - Use package.json.eliware.apply to classify each repository.
           - Use package.json.eliware.apply to select enabled profiles.
-          - Require general for all repositories. General can be the only selected profile.
-          - Allow a repository to select general alone.
-          - Make application, library, documentation, workspace, and infrastructure
-            mutually exclusive repository types.
-          - Require application when cli, web, discord, or mcp-server applies.
-          - Allow cli, web, discord, and mcp-server to combine when application applies.
-          - Require private when workspace or infrastructure applies.
-          - Allow documentation with general and optional private only.
-          - Allow workspace with general and private only.
-          - Allow infrastructure with general and private only.
-          - Reject npm-published and ghcr-published with documentation, workspace, or
-            infrastructure.
-          - Reject npm-published with private.
-          - Allow ghcr-published with private.
-          - Allow npm-published and ghcr-published to share one publication workflow.
-          - Require reciprocal exclusion metadata for each profile pair that cannot apply together.
-          - Reject profile sets that violate these repository-type boundaries.
+          - Read required and prohibited profile combinations from
+            specs/profile-combinations.yaml.
+          - Enforce profile combinations during preflight planning before check discovery.
+          - Require every repository to select general as a separate planning invariant.
           - Put only universal repository rules and checks in general.
           - Keep each profile's rules unique from general and all profiles that can apply
             with it.
-          - Keep child-profile rules unique from general and their required parent
-            profiles.
+          - Keep child-profile rules unique from general and their parent profiles.
           - Allow equivalent rules in mutually exclusive profile branches when each branch
             needs them.
           - Put profile-specific rules and checks in that profile.
@@ -403,6 +390,7 @@ directives:
           - Do not duplicate enforcement between general and a profile or between profiles
             that can apply together.
           - Do not reject shared rules across profiles that cannot apply together.
+          - Do not copy profile-combination policy into convention profile files.
           - Do not infer profiles from repository contents or runtime behavior.
           - Do not run checks or stages for unselected profiles.
           - Do not keep profiles without unique deterministic or semantic requirements.

@@ -1,13 +1,5 @@
 version: "13.0"
 description: Lists deterministic rules for Eliware MCP server applications.
-requires:
-  - general
-  - application
-conflicts:
-  - library
-  - documentation
-  - workspace
-  - infrastructure
 directives:
   - id: E-0.1.8.1.0
     dos:

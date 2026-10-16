@@ -1,19 +1,5 @@
 version: "13.0"
 description: Lists semantic rules for documentation-only Eliware repositories.
-requires:
-  - general
-conflicts:
-  - application
-  - database
-  - cli
-  - web
-  - discord
-  - mcp-server
-  - library
-  - workspace
-  - infrastructure
-  - npm-published
-  - ghcr-published
 directives:
   - id: E-0.1.1.0.0
     dos:

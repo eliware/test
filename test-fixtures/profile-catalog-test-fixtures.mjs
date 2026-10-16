@@ -4,13 +4,11 @@ export const conventionVersion = packageMetadata.version.split(".").slice(0, 2).
 const [conventionMajor, conventionMinor] = conventionVersion.split(".");
 export const otherConventionVersion = `${conventionMajor}.${Number(conventionMinor) + 1}`;
 
-export function profileDocument(source, requires, id) {
+export function profileDocument(source, id) {
   return {
     source,
     document: {
       version: conventionVersion,
-      requires,
-      conflicts: [],
       directives: [{ id, dos: ["Do."], donts: ["Do not."] }],
     },
   };

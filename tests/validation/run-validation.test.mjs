@@ -4,6 +4,7 @@ import {
   runValidation,
   validationDependencies,
 } from "../../src/validation/run-validation.mjs";
+import { readProfileCombinationPolicy } from "../../src/validation/planning/read/profile-combination-policy.mjs";
 
 function createDependencies(overrides = {}) {
   const checks = [{ ruleId: "E-0.1", run: jest.fn() }];
@@ -16,6 +17,7 @@ function createDependencies(overrides = {}) {
     checks,
     executeValidationPlan,
     dependencies: {
+      readProfileCombinationPolicy: jest.fn(() => readProfileCombinationPolicy()),
       loadValidationTarget: jest.fn(async () => ({ eliware: { apply: ["general"] } })),
       selectConventionChecks: jest.fn(async () => checks),
       discoverAllChecks: jest.fn(async () => checks),
@@ -61,6 +63,18 @@ test("propagates plan-preparation failures without executing the plan", async ()
   });
   await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("target unavailable");
   expect(executeValidationPlan).not.toHaveBeenCalled();
+});
+
+test("rejects invalid profile combinations before discovery and execution", async () => {
+  const { dependencies } = createDependencies({
+    loadValidationTarget: jest.fn(async () => ({
+      eliware: { apply: ["general", "library", "application", "npm-published"] },
+    })),
+  });
+  await expect(runValidation("/repo", [], { dependencies })).rejects.toThrow("conflict");
+  expect(dependencies.discoverAllChecks).not.toHaveBeenCalled();
+  expect(dependencies.selectConventionChecks).not.toHaveBeenCalled();
+  expect(dependencies.executeValidationPlan).not.toHaveBeenCalled();
 });
 
 test("propagates plan execution failures when no coverage cleanup is needed", async () => {

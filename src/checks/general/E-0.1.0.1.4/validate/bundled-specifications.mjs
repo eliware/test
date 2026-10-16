@@ -4,7 +4,6 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { listSpecificationEntries } from "../list-specification-entries.mjs";
-import { validateProfileRequirements } from "./profile-requirements.mjs";
 import { validateSpecificationDocument } from "./specification/document.mjs";
 import { validateSpecificationIds } from "./specification/ids.mjs";
 import { validateDirectiveSchema } from "./directive-schema.mjs";
@@ -29,7 +28,6 @@ export async function validateBundledSpecifications({ read = readFile, readdir }
   const ids = new Map();
   for (const { path, value } of documents) {
     errors.push(...validateSpecificationDocument(value, path));
-    errors.push(...validateProfileRequirements(value, path, documents));
     const sourcePath = path.replace(/ document \d+$/u, "");
     const directives = ids.get(sourcePath) ?? [];
     if (Array.isArray(value?.directives)) directives.push(...value.directives);

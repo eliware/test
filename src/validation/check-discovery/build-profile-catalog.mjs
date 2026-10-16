@@ -1,8 +1,4 @@
 import { basename } from "node:path";
-import {
-  readProfileComposition,
-  validateProfileComposition,
-} from "./validate-profile-composition.mjs";
 function collectDirectives(directives, profile, source, catalog) {
   if (!Array.isArray(directives)) {
     throw new Error(`Bundled convention profile ${source} has no directive list.`);
@@ -70,17 +66,7 @@ export function buildProfileCatalog(documents, expectedVersion) {
       );
     }
     collectDirectives(document.directives, profile, source, catalog);
-    const { requires, conflicts } = readProfileComposition(document, source, profile);
-    const existing = catalog.profiles[profile];
-    if (
-      existing &&
-      (JSON.stringify(existing.requires) !== JSON.stringify(requires) ||
-        JSON.stringify(existing.conflicts) !== JSON.stringify(conflicts))
-    ) {
-      throw new Error(`Bundled convention profile ${profile} has mismatched composition metadata.`);
-    }
-    catalog.profiles[profile] = { profile, requires, conflicts };
+    catalog.profiles[profile] = { profile };
   }
-  validateProfileComposition(catalog.profiles);
   return catalog;
 }

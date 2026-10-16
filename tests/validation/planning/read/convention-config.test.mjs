@@ -11,16 +11,14 @@ test("requires a non-empty explicit apply list", () => {
   );
 });
 
-test("rejects unknown groups and does not infer additional profiles", () => {
+test("keeps the explicitly selected profiles for planning validation", () => {
   expect(
     readConventionConfig({ eliware: { apply: ["general", "application", "web"] } }).apply,
   ).toEqual(["general", "application", "web"]);
-  expect(() => readConventionConfig({ eliware: { apply: ["general", "web"] } })).toThrow(
-    "explicit profiles: application",
-  );
-  expect(() => readConventionConfig({ eliware: { apply: ["general", "bogus"] } })).toThrow(
-    "Unknown convention group",
-  );
+  expect(readConventionConfig({ eliware: { apply: ["general", "bogus"] } }).apply).toEqual([
+    "general",
+    "bogus",
+  ]);
 });
 
 test("accepts explicit inherited groups", () => {
@@ -33,4 +31,10 @@ test("uses only explicitly selected profiles from the bundled catalog", () => {
   expect(
     readConventionConfig({ eliware: { apply: ["general", "application", "cli"] } }).apply,
   ).toEqual(["general", "application", "cli"]);
+});
+
+test("rejects duplicate profiles before planning discovery", () => {
+  expect(() => readConventionConfig({ eliware: { apply: ["general", "general"] } })).toThrow(
+    "duplicate profile names",
+  );
 });

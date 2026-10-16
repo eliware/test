@@ -38,10 +38,10 @@ test.each(["documentation", "workspace", "infrastructure"])(
   },
 );
 
-test("rejects unknown convention profiles", async () => {
-  await expect(selectConventionChecks({ apply: ["unknown"] })).rejects.toThrow(
-    "Unknown convention group: unknown",
-  );
+test("leaves profile policy validation to preflight planning", async () => {
+  discoverChecks.mockResolvedValueOnce([]);
+  await expect(selectConventionChecks({ apply: ["unknown"] })).resolves.toEqual([]);
+  expect(discoverChecks).toHaveBeenCalledWith(["unknown", "shared"]);
 });
 
 test("filters supplied checks to the selected profile", async () => {

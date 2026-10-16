@@ -1,157 +1,95 @@
 import { expect, test } from "@jest/globals";
+import { readCanonicalOrder } from "../../../../src/validation/shared/conventions/read-canonical-order.mjs";
+import { readProfileCombinationPolicy } from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
 import { validateAppliedProfiles } from "../../../../src/validation/planning/validate/applied-profiles.mjs";
 
-const catalog = {
-  profiles: {
-    general: { requires: [], conflicts: [] },
-    application: {
-      requires: [],
-      conflicts: ["documentation", "workspace", "infrastructure", "library"],
-    },
-    database: {
-      requires: ["application"],
-      conflicts: ["library", "documentation", "workspace", "infrastructure"],
-    },
-    cli: { requires: ["application"], conflicts: [] },
-    discord: { requires: ["application"], conflicts: [] },
-    "mcp-server": { requires: ["application"], conflicts: [] },
-    web: { requires: ["application"], conflicts: [] },
-    documentation: { requires: ["private"], conflicts: ["application", "database"] },
-    workspace: { requires: ["private"], conflicts: ["application", "database"] },
-    infrastructure: { requires: ["private"], conflicts: ["application", "database"] },
-    library: { requires: ["general"], conflicts: ["application", "database"] },
-    private: { requires: [], conflicts: ["npm-published"] },
-    "npm-published": { requires: [], conflicts: ["private"] },
-    "ghcr-published": { requires: [], conflicts: ["documentation", "workspace", "infrastructure"] },
-  },
-};
+const policy = readProfileCombinationPolicy();
+const order = readCanonicalOrder("eliware-apply.yaml").profiles;
 
-test("accepts explicitly applied profiles and requires general", () => {
-  expect(validateAppliedProfiles(["general", "application"], catalog)).toBeNull();
-  expect(validateAppliedProfiles(["application"], catalog)).toContain("explicitly apply general");
+function canonical(names) {
+  return [...new Set(names)].sort((left, right) => order.indexOf(left) - order.indexOf(right));
+}
+
+function validate(apply) {
+  return validateAppliedProfiles(apply, policy, order);
+}
+
+function requiredClosure(names) {
+  const selected = new Set(names);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const profile of selected) {
+      for (const required of policy.profiles[profile]?.requires ?? []) {
+        if (!selected.has(required)) {
+          selected.add(required);
+          changed = true;
+        }
+      }
+      const alternatives = policy.profiles[profile]?.requiresAny ?? [];
+      if (alternatives.length > 0 && !alternatives.some((name) => selected.has(name))) {
+        selected.add(alternatives[0]);
+        changed = true;
+      }
+    }
+  }
+  return canonical(selected);
+}
+
+test("requires general as a separate planning invariant", () => {
+  expect(validate(["application"])).toContain("explicitly apply general");
+  expect(validate(["general"])).toBeNull();
+  expect(validateAppliedProfiles(["general"], policy)).toBeNull();
 });
 
-test("requires the canonical profile order", () => {
-  expect(validateAppliedProfiles(["general", "application", "cli"], catalog)).toBeNull();
-  expect(validateAppliedProfiles(["general", "cli", "application"], catalog)).toContain(
-    "canonical order",
-  );
+test("keeps profile order separate from profile combination policy", () => {
+  expect(validate(["general", "application", "cli"])).toBeNull();
+  expect(validate(["general", "cli", "application"])).toContain("canonical order");
 });
 
 test("rejects unknown profiles", () => {
-  expect(validateAppliedProfiles(["general", "unknown"], catalog)).toBe(
-    "Unknown convention group: unknown.",
-  );
+  expect(validate(["general", "unknown"])).toBe("Unknown convention group: unknown.");
 });
 
-test.each(["documentation", "workspace", "infrastructure"])(
-  "%s requires the private profile",
-  (profile) => {
-    expect(validateAppliedProfiles(["general", profile], catalog)).toContain("private");
-    expect(validateAppliedProfiles(["general", profile, "private"], catalog)).toBeNull();
-  },
-);
-
-test.each(["cli", "discord", "mcp-server", "web"])(
-  "%s requires an explicitly applied application profile",
-  (profile) => {
-    expect(validateAppliedProfiles(["general", profile], catalog)).toContain("application");
-    expect(validateAppliedProfiles(["general", "application", profile], catalog)).toBeNull();
-  },
-);
-
-const databaseCompositions = [
-  {
-    name: "database without interface or publication profiles",
-    profiles: ["general", "application", "database"],
-  },
-  {
-    name: "database with CLI",
-    profiles: ["general", "application", "database", "cli"],
-  },
-  {
-    name: "database with Web",
-    profiles: ["general", "application", "database", "web"],
-  },
-  {
-    name: "database with Discord",
-    profiles: ["general", "application", "database", "discord"],
-  },
-  {
-    name: "database with MCP server",
-    profiles: ["general", "application", "database", "mcp-server"],
-  },
-  {
-    name: "database with all interface profiles",
-    profiles: ["general", "application", "database", "cli", "web", "discord", "mcp-server"],
-  },
-  {
-    name: "database with npm publication",
-    profiles: ["general", "application", "database", "npm-published"],
-  },
-  {
-    name: "database with GHCR publication",
-    profiles: ["general", "application", "database", "ghcr-published"],
-  },
-  {
-    name: "database with npm and GHCR publication",
-    profiles: ["general", "application", "database", "npm-published", "ghcr-published"],
-  },
-  {
-    name: "database with GHCR publication and private",
-    profiles: ["general", "application", "database", "ghcr-published", "private"],
-  },
-];
-
-test.each(databaseCompositions)("accepts $name", ({ profiles }) => {
-  expect(validateAppliedProfiles(profiles, catalog)).toBeNull();
+test("requires every profile listed in the central policy", () => {
+  const failures = [];
+  for (const [profile, values] of Object.entries(policy.profiles)) {
+    for (const required of values.requires) {
+      const selected = requiredClosure([profile]).filter((name) => name !== required);
+      if (!validate(selected)?.includes(required)) failures.push(`${profile} requires ${required}`);
+    }
+  }
+  expect(failures).toEqual([]);
 });
 
-test.each([
-  { profile: "library", profiles: ["general", "library", "application", "database"] },
-  {
-    profile: "documentation",
-    profiles: ["general", "documentation", "application", "database", "private"],
-  },
-  {
-    profile: "workspace",
-    profiles: ["general", "workspace", "application", "database", "private"],
-  },
-  {
-    profile: "infrastructure",
-    profiles: ["general", "application", "database", "infrastructure", "private"],
-  },
-])("rejects database with $profile", ({ profiles }) => {
-  expect(validateAppliedProfiles(profiles, catalog)).toContain("conflict");
+test("requires application or library with npm-published", () => {
+  expect(validate(["general", "npm-published"])).toContain("at least one of: application, library");
+  expect(validate(["general", "application", "npm-published"])).toBeNull();
+  expect(validate(["general", "library", "npm-published"])).toBeNull();
 });
 
-test("requires application when database applies", () => {
-  expect(validateAppliedProfiles(["general", "database"], catalog)).toContain("application");
+test("rejects every prohibited profile combination", () => {
+  const failures = [];
+  for (const [profile, values] of Object.entries(policy.profiles)) {
+    for (const prohibited of values.prohibits) {
+      const selected = requiredClosure([profile, prohibited]);
+      if (!validate(selected)?.includes("conflict"))
+        failures.push(`${profile} prohibits ${prohibited}`);
+    }
+  }
+  expect(failures).toEqual([]);
 });
 
-test("rejects database with npm publication and private", () => {
+test("allows application child profiles to combine", () => {
   expect(
-    validateAppliedProfiles(
-      ["general", "application", "database", "npm-published", "private"],
-      catalog,
+    validate(
+      canonical(["general", "application", "cli", "web", "discord", "mcp-server", "database"]),
     ),
-  ).toContain("conflict");
+  ).toBeNull();
 });
 
-test("uses bundled catalog when no catalog is supplied", () => {
-  expect(validateAppliedProfiles(["general"])).toBeNull();
-});
-
-test("enforces database composition from the bundled catalog", () => {
-  expect(validateAppliedProfiles(["general", "application", "database"])).toBeNull();
-  expect(validateAppliedProfiles(["general", "database"])).toContain("application");
-  expect(validateAppliedProfiles(["general", "library", "application", "database"])).toContain(
-    "conflict",
-  );
-});
-
-test("rejects profile combinations declared as conflicts", () => {
-  expect(validateAppliedProfiles(["general", "npm-published", "private"], catalog)).toBe(
-    "Applied profiles conflict: npm-published and private.",
-  );
+test("allows GHCR publication without application and with private", () => {
+  expect(validate(["general", "ghcr-published"])).toBeNull();
+  expect(validate(["general", "ghcr-published", "private"])).toBeNull();
+  expect(validate(["general", "application", "ghcr-published", "private"])).toBeNull();
 });

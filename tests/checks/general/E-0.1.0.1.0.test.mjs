@@ -99,10 +99,9 @@ test("allows an optional repo map without an entry for the repository", async ()
 });
 
 test("reports invalid Eliware metadata", async () => {
-  const result = await run({ packageJson: { eliware: { apply: ["general", "general"] } } });
+  const result = await run({ packageJson: { eliware: { apply: ["general"], extra: true } } });
   expect(result).toMatchObject({ status: "fail" });
   expect(result.message).toContain("ordered keys");
-  expect(result.message).toContain("duplicate profile");
 });
 
 test("ignores consumer convention files when it checks bundled profiles", async () => {
@@ -110,13 +109,10 @@ test("ignores consumer convention files when it checks bundled profiles", async 
   const directory = join(root, "specs", "conventions");
   await mkdir(directory, { recursive: true });
   try {
-    await writeFile(
-      join(directory, "general-semantic.yaml"),
-      `version: '${conventionVersion}'\nrequires: []\n`,
-    );
+    await writeFile(join(directory, "general-semantic.yaml"), `version: '${conventionVersion}'\n`);
     await writeFile(
       join(directory, "general-deterministic.yaml"),
-      `version: '${conventionVersion}.1'\nrequires: [application]\n`,
+      `version: '${conventionVersion}.1'\n`,
     );
     await expect(run({ root, packageJson })).resolves.toMatchObject({ status: "pass" });
   } finally {

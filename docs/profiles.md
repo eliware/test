@@ -6,18 +6,10 @@ Eliware Test does not infer profiles from repository files.
 All repositories must apply `general`.
 Use `general` alone when no other profile fits.
 
-## Select one repository type
+## Follow profile combinations
 
-Select one profile from this group:
-
-- `documentation` for a repository that contains documentation only.
-- `workspace` for a repository that contains operational workspaces and runbooks.
-- `library` for a shared code library.
-- `application` for a runnable application.
-- `infrastructure` for infrastructure code and configuration.
-
-These repository types cannot apply together.
-Each type adds rules that do not belong in `general`.
+Read [profile-combinations.yaml](../specs/profile-combinations.yaml) for required and prohibited profiles.
+The planner rejects invalid profile lists before it discovers checks.
 
 ## Add application profiles
 
@@ -29,35 +21,28 @@ Add one or more application profiles for its interfaces:
 - `discord` for a Discord bot or application.
 - `mcp-server` for an MCP server.
 
-Each user-facing profile requires `application`.
-You can combine these four profiles with `application`.
+Read the [central policy](../specs/profile-combinations.yaml) to confirm required profiles.
+You can combine these profiles when the central policy allows them.
 
 ## Add the database profile
 
-Apply `database` with `application` when runtime code reads or writes stored data.
-You can combine it with applicable interface and publication profiles.
-Do not select it from repository files or package dependencies.
-Do not apply it for documentation, runbooks, deployment settings, or packages with no runtime code.
-Do not apply it with `library`, `documentation`, `workspace`, or `infrastructure`.
+Apply `database` when runtime code reads or writes stored data.
+Read the central policy before you combine it with other profiles.
 
 ## Add publication profiles
 
 Apply `npm-published` for npm publication rules.
 Apply `ghcr-published` when GHCR image publication rules apply.
-These profiles can apply together.
-Do not apply a publication profile to documentation, workspace, or infrastructure repositories.
-
-Do not combine `npm-published` with `private`.
-You can combine `ghcr-published` with `private`.
+Read the central policy before you combine npm-published or ghcr-published with other profiles.
 An npm package must include `specs/` in `package.json.files`.
 The package check runs only when `npm-published` applies.
 
 ## Add the private profile
 
 Apply `private` to identify a private repository.
-Workspace and infrastructure repositories must apply `private`.
+Read the [central policy](../specs/profile-combinations.yaml) to confirm when this profile is required.
 Documentation repositories can apply `private`.
-Other profile rules can limit its use.
+Read the central policy to confirm that `private` can combine with the selected profiles.
 
 ## Use canonical order
 
@@ -82,7 +67,7 @@ private
 
 Include only applicable profiles.
 Use `general` first.
-Keep each profile before its required profiles.
+List each required profile before the profile that requires it.
 
 ## Example profile lists
 
@@ -118,7 +103,7 @@ Read the semantic file for the rules that the CLI does not enforce.
 | Workspace      | [workspace-deterministic.yaml](../specs/conventions/workspace-deterministic.yaml)           | [workspace-semantic.yaml](../specs/conventions/workspace-semantic.yaml)           |
 | Library        | [library-deterministic.yaml](../specs/conventions/library-deterministic.yaml)               | [library-semantic.yaml](../specs/conventions/library-semantic.yaml)               |
 | Application    | [application-deterministic.yaml](../specs/conventions/application-deterministic.yaml)       | [application-semantic.yaml](../specs/conventions/application-semantic.yaml)       |
-| Database       | [database-deterministic.yaml](../specs/conventions/database-deterministic.yaml)             | [database-semantic.yaml](../specs/conventions/database-semantic.yaml)             |
+| Database       | None                                                                                        | [database-semantic.yaml](../specs/conventions/database-semantic.yaml)             |
 | CLI            | [cli-deterministic.yaml](../specs/conventions/cli-deterministic.yaml)                       | [cli-semantic.yaml](../specs/conventions/cli-semantic.yaml)                       |
 | Web            | [web-deterministic.yaml](../specs/conventions/web-deterministic.yaml)                       | [web-semantic.yaml](../specs/conventions/web-semantic.yaml)                       |
 | Discord        | [discord-deterministic.yaml](../specs/conventions/discord-deterministic.yaml)               | [discord-semantic.yaml](../specs/conventions/discord-semantic.yaml)               |

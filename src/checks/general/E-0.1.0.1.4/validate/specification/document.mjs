@@ -1,6 +1,6 @@
 import { validateOrderingSpecificationDocument } from "../ordering-specification-document.mjs";
 
-const documentFields = new Set(["version", "description", "requires", "conflicts", "directives"]);
+const documentFields = new Set(["version", "description", "directives"]);
 const directiveFields = new Set(["id", "dos", "donts", "examples", "children"]);
 
 export function validateSpecificationDocument(value, path, { ordering = true } = {}) {
@@ -14,16 +14,6 @@ export function validateSpecificationDocument(value, path, { ordering = true } =
   for (const field of ["version", "description"])
     if (typeof value[field] !== "string" || !value[field].trim())
       errors.push(`${path}.${field} must be a nonempty string.`);
-  for (const field of ["requires", "conflicts"]) {
-    if (
-      value[field] !== undefined &&
-      (!Array.isArray(value[field]) ||
-        value[field].some(
-          (profile) => typeof profile !== "string" || !/^[a-z0-9-]+$/u.test(profile),
-        ))
-    )
-      errors.push(`${path}.${field} must list valid profile names.`);
-  }
   validateRules(value.directives, `${path}.directives`, errors);
   return errors;
 }

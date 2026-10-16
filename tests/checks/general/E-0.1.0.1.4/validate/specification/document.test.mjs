@@ -12,7 +12,7 @@ test("accepts valid documents and reports schema violations", () => {
   expect(validateSpecificationDocument(valid, "rules.yaml")).toEqual([]);
   expect(validateSpecificationDocument(null, "rules.yaml").join(" ")).toContain("document object");
   expect(
-    validateSpecificationDocument({ ...valid, other: true, requires: [1] }, "rules.yaml").join(" "),
+    validateSpecificationDocument({ ...valid, other: true }, "rules.yaml").join(" "),
   ).toContain("unsupported document");
   expect(
     validateSpecificationDocument({ ...valid, version: "", directives: [] }, "rules.yaml").join(

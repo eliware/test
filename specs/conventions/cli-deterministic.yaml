@@ -1,13 +1,5 @@
 version: "13.0"
 description: Lists deterministic rules for Eliware command-line applications.
-requires:
-  - general
-  - application
-conflicts:
-  - library
-  - documentation
-  - workspace
-  - infrastructure
 directives:
   - id: E-0.1.5.1.0
     dos:

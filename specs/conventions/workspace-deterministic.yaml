@@ -1,20 +1,5 @@
 version: "13.0"
 description: Lists deterministic rules for Eliware workspace repositories.
-requires:
-  - general
-  - private
-conflicts:
-  - application
-  - database
-  - cli
-  - web
-  - discord
-  - mcp-server
-  - library
-  - documentation
-  - infrastructure
-  - npm-published
-  - ghcr-published
 directives:
   - id: E-0.1.2.1.0
     dos:

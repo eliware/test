@@ -1,0 +1,102 @@
+version: "13.0"
+profiles:
+  general:
+    requires: []
+    requiresAny: []
+    prohibits: []
+  library:
+    requires: [general, npm-published]
+    requiresAny: []
+    prohibits:
+      - documentation
+      - workspace
+      - infrastructure
+      - application
+      - web
+      - cli
+      - discord
+      - mcp-server
+      - database
+      - ghcr-published
+      - private
+  application:
+    requires: [general]
+    requiresAny: []
+    prohibits: [library, documentation, workspace, infrastructure]
+  cli:
+    requires: [general, application]
+    requiresAny: []
+    prohibits: [library, documentation, workspace, infrastructure]
+  web:
+    requires: [general, application]
+    requiresAny: []
+    prohibits: [library, documentation, workspace, infrastructure]
+  discord:
+    requires: [general, application]
+    requiresAny: []
+    prohibits: [library, documentation, workspace, infrastructure]
+  mcp-server:
+    requires: [general, application]
+    requiresAny: []
+    prohibits: [library, documentation, workspace, infrastructure]
+  database:
+    requires: [general, application]
+    requiresAny: []
+    prohibits: [library, documentation, workspace, infrastructure]
+  workspace:
+    requires: [general, private]
+    requiresAny: []
+    prohibits:
+      - library
+      - application
+      - cli
+      - web
+      - discord
+      - mcp-server
+      - database
+      - documentation
+      - infrastructure
+      - npm-published
+      - ghcr-published
+  documentation:
+    requires: [general]
+    requiresAny: []
+    prohibits:
+      - library
+      - application
+      - cli
+      - web
+      - discord
+      - mcp-server
+      - database
+      - workspace
+      - infrastructure
+      - npm-published
+      - ghcr-published
+  infrastructure:
+    requires: [general, private]
+    requiresAny: []
+    prohibits:
+      - library
+      - application
+      - cli
+      - web
+      - discord
+      - mcp-server
+      - database
+      - documentation
+      - workspace
+      - npm-published
+      - ghcr-published
+  npm-published:
+    requires: [general]
+    requiresAny: [application, library]
+    prohibits: [workspace, documentation, infrastructure, private, ghcr-published]
+  ghcr-published:
+    requires: [general]
+    requiresAny: []
+    prohibits: [library, workspace, documentation, infrastructure, npm-published]
+  private:
+    requires: [general]
+    requiresAny: []
+    prohibits: [npm-published]

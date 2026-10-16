@@ -1,11 +1,5 @@
 version: "13.0"
 description: Defines deterministic repository requirements for Eliware GHCR publication.
-requires:
-  - general
-conflicts:
-  - documentation
-  - workspace
-  - infrastructure
 directives:
   - id: E-0.1.11.1.0
     dos:

@@ -1,12 +1,5 @@
 version: "13.0"
 description: Lists semantic rules for Eliware database applications.
-requires:
-  - application
-conflicts:
-  - library
-  - documentation
-  - workspace
-  - infrastructure
 directives:
   - id: E-0.1.13.0.0
     dos:
