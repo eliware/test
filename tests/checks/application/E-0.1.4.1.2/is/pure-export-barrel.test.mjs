@@ -14,6 +14,7 @@ test.each([
   "",
   "export {",
   'import { unused } from "../unused.mjs"; export { value } from "../value.mjs";',
+  'import { value } from "../value.mjs"; export * from "../other.mjs"; export { value };',
   'import "../setup.mjs"; export { value } from "../value.mjs";',
   "export const value = 1;",
 ])("rejects modules that are not pure re-export barrels", (source) => {

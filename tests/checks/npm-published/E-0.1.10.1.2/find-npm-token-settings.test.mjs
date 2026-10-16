@@ -22,6 +22,9 @@ test.each([
   ["echo ${NODE_AUTH_TOKEN}"],
   ["${{ env.NPM_TOKEN }}"],
   ["${{ env . NPM_TOKEN }}"],
+  ["${{ secrets['NPM_TOKEN'] }}"],
+  ['${{ secrets["NODE_AUTH_TOKEN"] }}'],
+  ["${{ env['NPM_TOKEN'] }}"],
   ["$env:NODE_AUTH_TOKEN"],
   ["%NPM_TOKEN%"],
 ])("rejects token references in workflow strings: %s", (value) => {
