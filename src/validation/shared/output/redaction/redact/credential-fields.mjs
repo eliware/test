@@ -19,8 +19,8 @@ export function redactCredentialFields(text) {
     )
     .replace(
       new RegExp(
-        String.raw`(["']?(?:${credentialKeyPattern})["']?[ \t]+)(?:"(?:\\[\s\S]|[^"\\])*"|'[^']*'|[^\s,.}|]+)`,
-        "giu",
+        String.raw`((?:^[ \t]*|[:{,][ \t]*)["']?(?:${credentialKeyPattern})["']?[ \t]+)(?:"(?:\\[\s\S]|[^"\\])*"|'[^']*'|[^\s,.}|]+)`,
+        "gimu",
       ),
       "$1[REDACTED]",
     );

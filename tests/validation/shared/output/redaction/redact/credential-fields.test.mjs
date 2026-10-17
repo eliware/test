@@ -44,6 +44,18 @@ test("does not treat a following line as a whitespace-delimited credential value
   );
 });
 
+test("does not redact credential words in prose", () => {
+  const text = "redacts a secret ending exactly at the emitted boundary";
+  expect(redactCredentialFields(text)).toBe(text);
+});
+
+test("redacts whitespace-delimited credentials at the start of a line", () => {
+  expect(redactCredentialFields("  token secret-value")).toBe("  token [REDACTED]");
+  expect(redactCredentialFields("application log: token leaked-value")).toBe(
+    "application log: token [REDACTED]",
+  );
+});
+
 test("redacts quoted credentials that span multiple lines", () => {
   expect(redactCredentialFields('token="first line\nsecond line"')).toBe("token=[REDACTED]");
   expect(redactCredentialFields("password 'first line\nsecond line'")).toBe("password [REDACTED]");

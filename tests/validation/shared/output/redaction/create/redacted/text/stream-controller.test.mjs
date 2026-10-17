@@ -90,8 +90,8 @@ test("bounds per-chunk secret search work with many secrets", () => {
   expect(session.finish()).toBe("o".repeat(100));
 });
 
-test("handles environments with more secrets than a function call can accept", () => {
-  const secrets = Array.from({ length: 150_000 }, (_, index) => `secret-${index}`);
+test("suppresses environments with more secrets than the policy limit", () => {
+  const secrets = Array(10_001).fill("secret");
   const session = createSession(secrets, 0);
   expect(session.push("diagnostic output")).toBe("");
   expect(session.finish()).toBe("");
