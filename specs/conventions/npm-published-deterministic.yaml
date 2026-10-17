@@ -21,7 +21,8 @@ directives:
       - Include required entries from ordering/package-files.yaml.
       - Include specs/ in all npm-published repositories.
       - Include package.json, README.md, AGENTS.md, LICENSE, and specs/ in the tarball.
-      - Include each declared runtime entrypoint, export, and declaration target.
+      - "Include targets from `main`, `module`, `types`, `typings`, `bin`, `exports`,
+        `browser`, `unpkg`, `jsdelivr`, `typesVersions`, and `imports`."
       - Allow runtime files and folders at all depths unless excluded.
       - Exclude tests, test, __tests__, and test-fixtures directories at all depths.
       - Exclude .github, .knit, .git, and node_modules directories at all depths.

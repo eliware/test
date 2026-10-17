@@ -74,3 +74,39 @@ test("validates relative and bare paths from public entrypoint fields", () => {
     "bin/missing.mjs",
   );
 });
+
+const targetCases = [
+  ["main", "src/main.mjs"],
+  ["module", "src/module.mjs"],
+  ["types", "types/index.d.ts"],
+  ["typings", "types/legacy.d.ts"],
+  ["bin", { cli: "bin/cli.mjs" }],
+  ["exports", { ".": "./src/export.mjs" }],
+  ["browser", "browser/index.mjs"],
+  ["unpkg", "dist/bundle.js"],
+  ["jsdelivr", "dist/bundle.min.js"],
+  ["typesVersions", { "*": { "*": ["types/versioned/*.d.ts"] } }],
+  ["imports", { "#internal": "./src/internal.mjs" }],
+];
+
+test("requires targets from every supported package metadata field", () => {
+  const packageJson = Object.fromEntries(targetCases);
+  const packed = new Set([
+    "src/main.mjs",
+    "src/module.mjs",
+    "types/index.d.ts",
+    "types/legacy.d.ts",
+    "bin/cli.mjs",
+    "src/export.mjs",
+    "browser/index.mjs",
+    "dist/bundle.js",
+    "dist/bundle.min.js",
+    "types/versioned/current.d.ts",
+    "src/internal.mjs",
+  ]);
+  expect(validatePackedEntrypoints(packageJson, packed)).toBeNull();
+});
+
+test.each(targetCases)("rejects a missing %s target", (field, value) => {
+  expect(validatePackedEntrypoints({ [field]: value }, new Set())).not.toBeNull();
+});

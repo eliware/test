@@ -21,17 +21,27 @@ function targetExists(target, packedPaths) {
   );
 }
 
+const packageTargetFields = [
+  ["main", true],
+  ["module", true],
+  ["types", true],
+  ["typings", true],
+  ["bin", true],
+  ["exports", false],
+  ["browser", true],
+  ["unpkg", true],
+  ["jsdelivr", true],
+  ["typesVersions", true],
+  ["imports", false],
+];
+
 export function validatePackedEntrypoints(packageJson, packedPaths) {
-  const declared = [
-    packageJson?.main,
-    packageJson?.module,
-    packageJson?.types,
-    packageJson?.typings,
-    packageJson?.bin,
-    packageJson?.exports,
-  ];
   const targets = [
-    ...new Set(declared.flatMap((value, index) => collectTargets(value, [], index < 5))),
+    ...new Set(
+      packageTargetFields.flatMap(([field, allowBarePath]) =>
+        collectTargets(packageJson?.[field], [], allowBarePath),
+      ),
+    ),
   ];
   const missing = targets.filter((target) => !targetExists(target, packedPaths));
   return missing.length
