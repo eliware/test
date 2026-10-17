@@ -44,6 +44,6 @@ export function hasPublicationCommand(command) {
     /\b(?:docker|podman|buildah)\s+(?:push\b|(?:buildx\s+)?build\b[^;\r\n]*--push\b)/iu.test(
       command,
     ) ||
-    /\b(?:oras|crane)\s+push\b|\bskopeo\s+copy\b|\bghcr\.io\//iu.test(command)
+    /\b(?:oras|crane)\s+push\b|\bskopeo\s+copy\b/iu.test(command)
   );
 }

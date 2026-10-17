@@ -28,6 +28,16 @@ test("requires the shared consumer script commands", () => {
   expect(validatePackageScripts({ scripts: { test: "jest" } })).toHaveLength(5);
 });
 
+test("allows inert GHCR image references in package scripts", () => {
+  for (const command of [
+    'echo "ghcr.io/eliware/example:latest"',
+    'node scripts/validate-image.mjs "ghcr.io/eliware/example:latest"',
+  ]) {
+    const errors = validatePackageScripts({ scripts: { other: command } });
+    expect(errors).not.toContain("package.json.scripts.other must not publish packages or images.");
+  }
+});
+
 test("rejects invalid script maps, empty scripts, and publish commands", () => {
   expect(validatePackageScripts({ scripts: null })).toEqual([
     "package.json.scripts must be an object.",
@@ -44,6 +54,12 @@ test("rejects invalid script maps, empty scripts, and publish commands", () => {
     "bun publish",
     "npm --workspace app publish",
     "docker build --push image",
+    "docker push ghcr.io/eliware/example:latest",
+    "podman push ghcr.io/eliware/example:latest",
+    "buildah build --push ghcr.io/eliware/example:latest",
+    "oras push ghcr.io/eliware/example:latest",
+    "crane push image.tar ghcr.io/eliware/example:latest",
+    "skopeo copy containers-storage:image docker://ghcr.io/eliware/example:latest",
     "npx semantic-release",
     "npm exec -- release-it",
     "gh release create v1.0.0",
