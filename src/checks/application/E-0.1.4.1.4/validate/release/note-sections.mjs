@@ -1,3 +1,5 @@
+import { isMeaningfulReleaseNoteLine } from "./is-meaningful-release-note-line.mjs";
+
 const allowedSections = new Set([
   "Added",
   "Changed",
@@ -47,15 +49,7 @@ export function validateReleaseNoteSections(lines) {
   return errors;
 
   function finishSection() {
-    if (section && !content.some(isMeaningfulChangeLine))
+    if (section && !content.some(isMeaningfulReleaseNoteLine))
       errors.push(`${entry} subsection ${section} must contain user-visible change text.`);
   }
-}
-
-function isMeaningfulChangeLine(line) {
-  return (
-    !/^\s{0,3}#{1,6}(?:\s|$)/u.test(line) &&
-    !/^\s*(?:tbd|todo|n\/?a|none|no changes?)\s*\.?\s*$/iu.test(line) &&
-    /\p{L}/u.test(line)
-  );
 }

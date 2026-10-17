@@ -1,5 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
+import { validateInventoryScope } from "./validate/inventory-scope.mjs";
+import { includesScopedTestResults, includesTestResultsAt } from "./test-results-scope.mjs";
 
 const pruneDirectories = new Set([".git", "node_modules", "coverage", "dist", "build"]);
 const neverExpandDirectories = new Set([".git", "node_modules"]);
@@ -19,31 +21,18 @@ export async function findRepositoryEntries(
   } = {},
 ) {
   const entries = [];
-  const scope = scopeDirectory.replaceAll("\\", "/").replace(/^\.\//u, "").replace(/\/$/u, "");
-  if (scope === ".." || scope.startsWith("../") || scope.includes(":"))
-    throw new Error("Repository inventory scope must be inside the repository.");
-  const includesTestResultsAt = (directoryPath) => {
-    const parent = directoryPath.slice(0, directoryPath.lastIndexOf("/"));
-    return (
-      includeTestResults ||
-      includeTestResultsUnder.some((scope) => parent === scope || parent.startsWith(`${scope}/`))
-    );
-  };
-  const includesScopedTestResults = (scopePath) => {
-    let current = "";
-    for (const segment of scopePath.split("/")) {
-      current = current ? `${current}/${segment}` : segment;
-      if (segment === "test-results" && !includesTestResultsAt(current)) return false;
-    }
-    return true;
-  };
-  if (scope && !includesScopedTestResults(scope)) return entries;
+  const scope = validateInventoryScope(scopeDirectory);
+  if (scope && !includesScopedTestResults(scope, includeTestResults, includeTestResultsUnder))
+    return entries;
   async function visit(directory, depth) {
     const children = await readDirectory(directory, { withFileTypes: true });
     for (const entry of children.toSorted((left, right) => left.name.localeCompare(right.name))) {
       const relativePath = relative(root, join(directory, entry.name)).replaceAll("\\", "/");
       if (entry.isDirectory()) {
-        if (entry.name !== "test-results" || includesTestResultsAt(relativePath)) {
+        if (
+          entry.name !== "test-results" ||
+          includesTestResultsAt(relativePath, includeTestResults, includeTestResultsUnder)
+        ) {
           if (
             maxDepthFilter(relativePath) &&
             depth + 1 - (scope ? scope.split("/").length : 0) > maxDepth

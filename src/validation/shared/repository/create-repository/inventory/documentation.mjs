@@ -4,7 +4,7 @@ import { inventoryDirectory } from "../../repository-inventory/paths.mjs";
 import {
   assertDocumentationFileLimit,
   validateDocumentationTraversalLimits,
-} from "../../validate-documentation-traversal-limits.mjs";
+} from "../../validate/documentation-traversal-limits.mjs";
 
 const neverIncludePath = /(?:^|\/)(?:\.git|node_modules|test-results)(?:\/|$)/u;
 const generatedPath = /(?:^|\/)(?:coverage|dist|build)(?:\/|$)/u;

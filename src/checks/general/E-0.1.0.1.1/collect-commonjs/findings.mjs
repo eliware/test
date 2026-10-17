@@ -1,4 +1,5 @@
-import { collectCommonJsAliases, collectCommonJsExportAliases } from "./aliases.mjs";
+import { collectCommonJsAliases } from "./aliases.mjs";
+import { collectCommonJsExportAliases } from "./export-aliases.mjs";
 
 export function collectCommonJsFindings(node, findings, file) {
   if (!node || typeof node !== "object") return;

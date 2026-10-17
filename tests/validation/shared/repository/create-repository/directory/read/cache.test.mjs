@@ -2,10 +2,10 @@ import { expect, jest, test } from "@jest/globals";
 import {
   repositoryDirectoryCacheRoot as root,
   repositoryDirectoryMetadata as metadata,
-} from "../../../../../../test-fixtures/repository-directory-cache-fixtures.mjs";
-import { verifyDirectoryCacheBirthtimeRefresh } from "../../../../../../test-fixtures/verify-directory-cache-birthtime.mjs";
+} from "../../../../../../../test-fixtures/repository-directory-cache-fixtures.mjs";
+import { verifyDirectoryCacheBirthtimeRefresh } from "../../../../../../../test-fixtures/verify-directory-cache-birthtime.mjs";
 import { join } from "node:path";
-import { createRepositoryDirectoryReadCache } from "../../../../../../src/validation/shared/repository/create-repository/directory/read-cache.mjs";
+import { createRepositoryDirectoryReadCache } from "../../../../../../../src/validation/shared/repository/create-repository/directory/read/cache.mjs";
 test("deduplicates concurrent directory reads and reuses unchanged listings", async () => {
   const stat = jest.fn(async () => metadata(1n));
   const entries = [];

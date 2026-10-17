@@ -1,4 +1,6 @@
 import { resolveFocusedTestPaths } from "../resolve/focused/test-paths.mjs";
+import { validateInformationalArguments } from "./validate/informational-arguments.mjs";
+import { validateModePlacement } from "./validate/mode-placement.mjs";
 
 export function readDiagnosticOptions(args) {
   const normalizedArgs = [...args];
@@ -14,36 +16,10 @@ export function readDiagnosticOptions(args) {
   const invalid = normalizedArgs.filter((argument) => typeof argument !== "string");
   if (invalid.length > 0)
     throw new Error(`Unsupported validation argument: ${invalid.join(", ")}.`);
-  if (diagnosticFlagIndexes.length > 1 || delegatedArgs.includes("--debug-timing"))
-    throw new Error("--debug-timing may be supplied once as a wrapper argument.");
   if (wrapperArgs.some((argument) => removedFlags.includes(argument)))
     throw new Error("Legacy ignore flags are no longer supported.");
-  if (wrapperArgs.includes("--help") && wrapperArgs.includes("--version")) {
-    throw new Error("--help and --version cannot be used together.");
-  }
-  const informational = wrapperArgs.filter(
-    (argument) => argument === "--help" || argument === "--version",
-  );
-  if (informational.length > 1)
-    throw new Error("Informational commands cannot be repeated or combined.");
-  if (
-    informational.length > 0 &&
-    wrapperArgs.some((argument) => !informational.includes(argument))
-  ) {
-    throw new Error("Informational commands cannot be combined with validation arguments.");
-  }
-  if (modes.length > 1) throw new Error("Validation mode flags are mutually exclusive.");
-  if (modes.length > 0) {
-    const modeIndex = wrapperArgs.indexOf(modes[0]);
-    if (diagnosticFlagIndexes.some((index) => index > modeIndex))
-      throw new Error("--debug-timing must come before a tool mode.");
-    const unsupportedWrapperArgs = wrapperArgs
-      .slice(0, modeIndex)
-      .filter((argument) => argument !== "--debug-timing");
-    if (unsupportedWrapperArgs.length > 0) {
-      throw new Error(`Tool mode arguments must follow ${modes[0]} or the -- separator.`);
-    }
-  }
+  validateInformationalArguments(wrapperArgs);
+  validateModePlacement(wrapperArgs, delegatedArgs, modes, modeFlags, diagnosticFlagIndexes);
   resolveFocusedTestPaths(normalizedArgs, modes.length > 0);
   return {
     mode: modes[0]?.slice(2) ?? null,

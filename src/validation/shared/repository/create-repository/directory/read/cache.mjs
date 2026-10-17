@@ -1,6 +1,6 @@
 import { stat as statPath } from "node:fs/promises";
-import { inventoryPath } from "../../repository-inventory/paths.mjs";
-import { getRepositoryDirectoryVersion } from "../../get-repository-directory-version.mjs";
+import { inventoryPath } from "../../../repository-inventory/paths.mjs";
+import { getRepositoryDirectoryVersion } from "../../../get-repository-directory-version.mjs";
 
 export function createRepositoryDirectoryReadCache(
   root,

@@ -1,9 +1,9 @@
 import { stat as statPath } from "node:fs/promises";
-import { dirname, join } from "node:path";
 import { inventoryDirectory } from "../../repository-inventory/paths.mjs";
 import { createRepositoryEntryIndex } from "../entry/index.mjs";
-import { readGeneratedDirectoryRecords } from "../../read/generated-directory-records.mjs";
 import { projectRepositoryDirectoryRecords } from "../../project-repository-directory-records.mjs";
+import { projectScopedDirectoryEntries } from "./project-scoped-entries.mjs";
+import { readGeneratedDirectoryEntries } from "./read/generated-entries.mjs";
 
 export function createRepositoryDirectoryEntries({
   root,
@@ -23,15 +23,7 @@ export function createRepositoryDirectoryEntries({
       "Repository inventory directory must be inside the repository.",
     );
     if (base && !hasFullDiscovery()) {
-      const records = await entriesUnder(directory, null, traversal);
-      if (!records.some((record) => record.path === base)) {
-        throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
-          code: "ENOENT",
-        });
-      }
-      return projectRepositoryDirectoryRecords(
-        records.filter((record) => dirname(record.path).replaceAll("\\", "/") === base),
-      );
+      return projectScopedDirectoryEntries(directory, base, traversal, entriesUnder);
     }
     const records = await entries();
     if (indexedRecords !== records) {
@@ -54,16 +46,15 @@ export function createRepositoryDirectoryEntries({
       throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
         code: "ENOENT",
       });
-    let children = index.childrenByDirectory.get(base || ".") ?? [];
-    if (base && children.length === 0 && prunedDirectory) {
-      const metadata = await statDirectory(join(root, base), { bigint: true });
-      if (!metadata.isDirectory()) {
-        throw Object.assign(new Error(`ENOTDIR: not a directory, scandir '${directory}'`), {
-          code: "ENOTDIR",
-        });
-      }
-      children = await readGeneratedDirectoryRecords(base, readDirectory);
-    }
+    const children = await readGeneratedDirectoryEntries({
+      base,
+      directory,
+      prunedDirectory,
+      children: index.childrenByDirectory.get(base || ".") ?? [],
+      root,
+      statDirectory,
+      readDirectory,
+    });
     const key = base || ".";
     const cached = projectedEntries.get(key);
     if (cached?.records === children) return cached.entries;

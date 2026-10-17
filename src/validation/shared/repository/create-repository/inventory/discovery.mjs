@@ -1,5 +1,5 @@
 import { findRepositoryEntries } from "../../find-repository-files.mjs";
-import { createRepositoryDirectoryReadCache } from "../directory/read-cache.mjs";
+import { createRepositoryDirectoryReadCache } from "../directory/read/cache.mjs";
 import { createRepositoryEntryReader } from "../entry/reader.mjs";
 import { createRepositoryScopedEntryReader } from "../scoped-entry-reader.mjs";
 

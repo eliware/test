@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import {
   assertDocumentationFileLimit,
   validateDocumentationTraversalLimits,
-} from "../../../../src/validation/shared/repository/validate-documentation-traversal-limits.mjs";
+} from "../../../../../src/validation/shared/repository/validate/documentation-traversal-limits.mjs";
 
 const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
 const validate = (records, overrides = {}) =>
