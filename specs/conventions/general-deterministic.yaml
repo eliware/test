@@ -419,7 +419,10 @@ directives:
       - Use periods, question marks, and exclamation marks to mark sentence ends.
       - Limit each prose paragraph to six sentences.
       - Check human-readable JavaScript comments, strings, and JSX text.
-      - Check human-readable JSON values in documented prose fields.
+      - "Check these JSON prose fields: `description`, `title`, `purpose`, `owner`,
+        `boundaries`, `prerequisites`, `steps`, `prompt`, `message`, `help`, `summary`,
+        `note`, `notes`, and `content`."
+      - Ignore examples subtrees and all other JSON keys.
       - Check directive items, descriptive fields, and runbook text in YAML documents.
       - Exclude code blocks, code spans, and link destinations from word counts.
       - Match dictionary entries in uppercase or lowercase, at whole-word or exact-phrase

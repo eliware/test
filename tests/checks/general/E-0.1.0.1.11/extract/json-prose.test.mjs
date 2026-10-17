@@ -1,23 +1,48 @@
 import { expect, test } from "@jest/globals";
 import { extractJsonProse } from "../../../../../src/checks/general/E-0.1.0.1.11/extract/json-prose.mjs";
 
-test("extracts prose fields from nested objects and arrays", () => {
-  expect(
-    extractJsonProse(
-      JSON.stringify({
-        description: "A package description.",
-        steps: ["First action.", "Second action."],
-        nested: { prompt: "Choose a response." },
-        scripts: { test: "npm test" },
-        examples: ["Hidden sample."],
-      }),
-    ),
-  ).toEqual([
-    { text: "A package description.", line: 1, kind: "prose" },
-    { text: "First action.", line: 1, kind: "prose" },
-    { text: "Second action.", line: 1, kind: "prose" },
-    { text: "Choose a response.", line: 1, kind: "prose" },
+test("extracts every documented prose field from nested objects and arrays", () => {
+  const fields = [
+    "description",
+    "title",
+    "purpose",
+    "owner",
+    "boundaries",
+    "prerequisites",
+    "steps",
+    "prompt",
+    "message",
+    "help",
+    "summary",
+    "note",
+    "notes",
+    "content",
+  ];
+  const nested = Object.fromEntries(fields.map((field) => [field, `${field} text.`]));
+  nested.steps = ["First action.", "Second action."];
+  nested.TITLE = "Uppercase field.";
+  nested.examples = { description: "Hidden sample." };
+  nested.runner = "Inert value.";
+  const result = extractJsonProse(JSON.stringify({ nested }));
+  expect(result.map(({ text }) => text)).toEqual([
+    "description text.",
+    "title text.",
+    "purpose text.",
+    "owner text.",
+    "boundaries text.",
+    "prerequisites text.",
+    "First action.",
+    "Second action.",
+    "prompt text.",
+    "message text.",
+    "help text.",
+    "summary text.",
+    "note text.",
+    "notes text.",
+    "content text.",
+    "Uppercase field.",
   ]);
+  expect(result.every((block) => block.line === 1 && block.kind === "prose")).toBe(true);
 });
 
 test("skips invalid JSON and non-prose values", () => {
