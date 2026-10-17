@@ -56,7 +56,7 @@ test("reports invalid YAML, multiple documents, missing deployments, and command
   ).resolves.toContain(".knit/deploy.yaml must contain exactly one document.");
   await expect(
     validateKnitConfiguration(inventory("version: 1\non:\n  push:\n    deployments: {}")),
-  ).resolves.toContain(".knit/deploy.yaml must define push deployments.");
+  ).resolves.toContain(".knit/deploy.yaml push deployments must be an array.");
   await expect(
     validateKnitConfiguration(inventory("version: 1\non:\n  push:\n    deployments: []")),
   ).resolves.toContain(".knit/deploy.yaml must define commands fields.");

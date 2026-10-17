@@ -238,7 +238,8 @@ directives:
   - id: E-0.1.0.1.6
     dos:
       - "Keep exactly one YAML file in .knit/: .knit/deploy.yaml."
-      - Set timeoutMs to 300000 for each push and tag deployment.
+      - If a push or tag deployment list is set, use an array.
+      - Set timeoutMs to 300000 for each deployment in a push or tag deployments array.
       - Keep the deployment path repository-specific.
       - "Start each commands array with this exact sequence: `git pull`,
         `npm ci`, `npm test`."
