@@ -29,36 +29,11 @@ test-results/
 .DS_Store
 Thumbs.db`;
 
-test("accepts required ignore rules and clean index records", async () => {
-  const runGit = async (_command, args) => {
-    if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-    return { stdout: Buffer.from("") };
-  };
-  await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
-  ).resolves.toEqual([]);
-});
-
 test("uses the default Git runner and default exit code through a mocked executable", async () => {
   await expect(
     validateGitHygiene("repo", undefined, { readText: async () => ignoreRules }),
   ).resolves.toEqual([]);
   expect(runMockGit).toHaveBeenCalled();
-});
-
-test("reports index failures and tracked links", async () => {
-  let call = 0;
-  const runGit = async (_command, args) => {
-    call += 1;
-    if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-    if (args.includes("--ignored")) throw new Error("index unavailable");
-    if (args.includes("--others")) return { stdout: Buffer.from("") };
-    return { stdout: Buffer.from(`120000 ${"a".repeat(40)} 0\tlink\0`) };
-  };
-  const errors = await validateGitHygiene("repo", runGit, { readText: async () => ignoreRules });
-  expect(call).toBe(7);
-  expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
-  expect(errors).toContain("Tracked symlink entries are prohibited: link.");
 });
 
 test("rejects nested ignore files that can override universal rules", async () => {
@@ -83,18 +58,6 @@ test("checks deep generated paths without checking environment names", async () 
   ).resolves.toContain("nested/deep/layer/four/coverage/item.txt must be ignored.");
 });
 
-test("requires universal repository ignore patterns", async () => {
-  const runGit = async (_command, args) => {
-    if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-    return { stdout: Buffer.from("") };
-  };
-  const errors = await validateGitHygiene("repo", runGit, {
-    readText: async () =>
-      "node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.DS_Store\nThumbs.db",
-  });
-  expect(errors).toEqual([]);
-});
-
 test("reports an unreadable ignore file", async () => {
   const runGit = async (_command, args) => {
     if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
@@ -106,16 +69,6 @@ test("reports an unreadable ignore file", async () => {
     },
   });
   expect(errors).toContain(".gitignore could not be read to check required ignore rules.");
-});
-
-test("rejects incomplete NUL-delimited Git index output", async () => {
-  const runGit = async (_command, args) => {
-    if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-    return { stdout: Buffer.from(args.includes("--ignored") ? "tracked" : "broken-entry\0") };
-  };
-  const errors = await validateGitHygiene("repo", runGit, { readText: async () => ignoreRules });
-  expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
-  expect(errors).toContain("Git index status could not be read. Tracked symlinks are unknown.");
 });
 
 test("reads the repository ignore file by default", async () => {

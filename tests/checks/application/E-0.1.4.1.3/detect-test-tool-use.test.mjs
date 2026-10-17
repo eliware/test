@@ -28,6 +28,16 @@ test("detects test runner and coverage tools in executable calls", () => {
   ).toBe(true);
 });
 
+test("detects all supported module loader call forms", () => {
+  for (const source of [
+    'require("vitest");',
+    'load("vitest");',
+    'module.require("vitest");',
+    'module["require"]("vitest");',
+  ])
+    expect(detectTestToolUse(source)).toBe(true);
+});
+
 test("ignores runner names in comments and non-executable text", () => {
   expect(detectTestToolUse('// vitest run\nconst message = "jest";')).toBe(false);
   expect(detectTestToolUse("invalid {")).toBe(true);

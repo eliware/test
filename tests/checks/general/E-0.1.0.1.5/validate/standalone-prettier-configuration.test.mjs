@@ -124,6 +124,39 @@ test("does not report maintained files that Prettier does not ignore", async () 
   ).resolves.toEqual([]);
 });
 
+test("uses Git tracked paths when checking Prettier ignore rules", async () => {
+  getFileInfo.mockResolvedValue({ ignored: true });
+  const runGit = jest.fn(async () => ({ stdout: Buffer.from("src/index.mjs\0") }));
+  await expect(
+    validateStandalonePrettierConfiguration(
+      {
+        files: async () => [".gitignore", "src/index.mjs"],
+        readText: async () => "*.mjs\n",
+      },
+      "C:/repo",
+      runGit,
+    ),
+  ).resolves.toContain(".gitignore must not exclude maintained files: src/index.mjs.");
+  expect(runGit).toHaveBeenCalledWith("git", ["-C", "C:/repo", "ls-files", "--cached", "-z"], {
+    windowsHide: true,
+    encoding: "buffer",
+  });
+});
+
+test("accepts string output from the Git tracked-path adapter", async () => {
+  getFileInfo.mockResolvedValue({ ignored: true });
+  await expect(
+    validateStandalonePrettierConfiguration(
+      {
+        files: async () => [".gitignore", "src/index.mjs"],
+        readText: async () => "*.mjs\n",
+      },
+      "C:/repo",
+      async () => ({ stdout: "src/index.mjs\0" }),
+    ),
+  ).resolves.toContain(".gitignore must not exclude maintained files: src/index.mjs.");
+});
+
 test("allows an ignored, untracked YAML runtime file", async () => {
   await expect(
     validateStandalonePrettierConfiguration(

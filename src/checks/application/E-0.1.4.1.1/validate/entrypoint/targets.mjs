@@ -1,5 +1,6 @@
 import { lstat } from "node:fs/promises";
-import { isAbsolute, join, resolve, win32 } from "node:path";
+import { join, resolve } from "node:path";
+import { inspectEntrypointTarget } from "./canonical-target.mjs";
 
 export async function validateEntrypointTargets(targets, root, checkPath = lstat) {
   const errors = [];
@@ -11,19 +12,14 @@ export async function validateEntrypointTargets(targets, root, checkPath = lstat
 }
 
 async function validateEntrypointTarget(target, root, checkPath) {
-  if (
-    typeof target !== "string" ||
-    !target.trim() ||
-    isAbsolute(target) ||
-    win32.isAbsolute(target)
-  )
+  const inspection = inspectEntrypointTarget(target);
+  if (inspection.error === "relative")
     return `Entrypoint target must be a nonempty repository-relative path under bin/: ${target}.`;
-  const normalized = canonicalEntrypoint(target);
-  if (!normalized) return `Entrypoint target must use a canonical path under bin/: ${target}.`;
+  if (inspection.error) return `Entrypoint target must use a canonical path under bin/: ${target}.`;
   try {
     if ((await checkPath(resolve(root))).isSymbolicLink())
       return `Entrypoint target path must not contain a symlink: ${target}.`;
-    const segments = normalized.split("/");
+    const segments = inspection.path.split("/");
     let current = resolve(root);
     for (const [index, segment] of segments.entries()) {
       current = join(current, segment);
@@ -39,17 +35,4 @@ async function validateEntrypointTarget(target, root, checkPath) {
     return `Entrypoint target does not exist: ${target}.`;
   }
   return null;
-}
-
-function canonicalEntrypoint(target) {
-  const path = target.replaceAll("\\", "/").replace(/^\.\//u, "");
-  const segments = path.split("/");
-  if (
-    !path.startsWith("bin/") ||
-    segments.some(
-      (segment) => !segment || segment === "." || segment === ".." || segment.includes(":"),
-    )
-  )
-    return null;
-  return path;
 }

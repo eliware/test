@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import * as childProcessModule from "node:child_process";
 import { expect, jest, test } from "@jest/globals";
+import { resolveChildOutputLimit } from "../../../../../src/validation/shared/process/resolve-child-output-limit.mjs";
 const spawn = jest.fn();
 jest.unstable_mockModule("node:child_process", () => ({ ...childProcessModule, spawn }));
 const { runChild } = await import("../../../../../src/validation/shared/process/run/child.mjs");
@@ -176,4 +177,15 @@ test("stops initialized timers when close-listener setup fails", async () => {
     }),
   ).rejects.toThrow("close listener setup failed");
   expect(stop).toHaveBeenCalled();
+});
+
+test.each([
+  [25, 25],
+  [1.8, 1],
+  [2_000_000, 1_000_000],
+  [0, 100_000],
+  [Number.NaN, 100_000],
+  [Infinity, 100_000],
+])("resolves the output limit %s to %s", (requested, expected) => {
+  expect(resolveChildOutputLimit(requested)).toBe(expected);
 });
