@@ -38,6 +38,15 @@ test("loads an existing consumer with a test script and package dependency", asy
   expect(readFile).toHaveBeenNthCalledWith(3, installedPath);
 });
 
+test("rejects the source package as a smoke target", async () => {
+  mockTargetFiles({ name: "@eliware/test" });
+
+  await expect(loadSmokeTarget(target, "@eliware/test")).resolves.toEqual({
+    error: "Smoke target must not be the source package repository.",
+  });
+  expect(readFile).toHaveBeenCalledTimes(1);
+});
+
 test.each([
   [{ scripts: {} }, "Smoke target must define an npm test script."],
   [

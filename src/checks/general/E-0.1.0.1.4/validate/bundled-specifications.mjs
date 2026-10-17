@@ -11,7 +11,7 @@ const suiteRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 
 export async function validateBundledSpecifications({
   root = suiteRoot,
-  packageJson = {},
+  packageJson,
   entries,
   read = readFile,
   readdir,
@@ -25,6 +25,7 @@ export async function validateBundledSpecifications({
     );
     const discoveredEntries = entries ?? (await listSpecificationEntries(root, { list: readdir }));
     documents = await readConventionDocuments(root, discoveredEntries, read);
+    packageJson ??= JSON.parse(await read(join(root, "package.json"), "utf8"));
   } catch (error) {
     return [`Bundled specifications are missing or invalid: ${error.message}`];
   }

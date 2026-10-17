@@ -6,6 +6,8 @@ export async function loadSmokeTarget(targetRoot, packageName) {
   let targetPackage;
   try {
     targetPackage = JSON.parse(await readFile(join(targetRoot, "package.json"), "utf8"));
+    if (targetPackage?.name === packageName)
+      return { error: "Smoke target must not be the source package repository." };
     await readFile(join(targetRoot, "node_modules", ".package-lock.json"));
     await readFile(join(targetRoot, "node_modules", ...packageName.split("/"), "package.json"));
   } catch {

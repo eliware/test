@@ -34,8 +34,12 @@ test("validates the supplied suite schema and convention inventory", async () =>
   ).resolves.toEqual([]);
 });
 
-test("uses the bundled root and empty package metadata defaults", async () => {
-  readFile.mockResolvedValue(stringify(expectedDirectiveSchema));
+test("uses the bundled root and package namespace", async () => {
+  readFile.mockImplementation(async (path) =>
+    String(path).endsWith("package.json")
+      ? JSON.stringify({ eliware: { id: "E-0" } })
+      : stringify(expectedDirectiveSchema),
+  );
   readdir.mockResolvedValue([]);
   await expect(validateBundledSpecifications()).resolves.toEqual([]);
 });
