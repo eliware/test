@@ -9,7 +9,6 @@ test("reports write, network, and clock effects in one source scan", () => {
     "Date.now();",
   ].join("\n");
   expect(findTestPolicyViolations(source, "tests/effects.test.mjs")).toEqual([
-    "tests/effects.test.mjs:2 uses a test API that creates files or temporary directories: import of writeFile.",
     "tests/effects.test.mjs: must use fake timers or inject a fixed clock for date calls.",
     "tests/effects.test.mjs: must mock fetch, inject it, or use a localhost URL.",
   ]);

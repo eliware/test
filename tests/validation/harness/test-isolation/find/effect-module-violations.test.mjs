@@ -2,16 +2,13 @@ import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
 import { findEffectModuleViolations } from "../../../../../src/validation/harness/test-isolation/find/effect-module-violations.mjs";
 
-test("rejects unmocked file system and process modules, including namespace imports", () => {
-  const ast = parse(
-    'import * as fs from "node:fs"; const child = require("node:child_process"); export { fs } from "node:http"; import("node:https");',
-    { sourceType: "module" },
-  );
+test("rejects unmocked file system and process modules", () => {
+  const ast = parse('import * as fs from "node:fs"; const child = require("node:child_process");', {
+    sourceType: "module",
+  });
   expect(findEffectModuleViolations(ast)).toEqual([
     "must mock effect module node:fs or inject its dependency.",
     "must mock effect module node:child_process or inject its dependency.",
-    "must mock effect module node:http or inject its dependency.",
-    "must mock effect module node:https or inject its dependency.",
   ]);
 });
 

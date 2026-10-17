@@ -74,3 +74,36 @@ test("ignores member calls without a namespace identifier", () => {
     findTestWritePolicyViolations("this.writeFile('file', 'text');", "tests/example.test.mjs"),
   ).toEqual([]);
 });
+
+test("finds writes through injected file handles and allows explicit mocks", () => {
+  const writes =
+    "async function save(fileHandle) { await fileHandle.writeFile('data'); fileHandle.write('data'); }";
+  expect(findTestWritePolicyViolations(writes, "tests/example.test.mjs")).toEqual([
+    "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: use of writeFile.",
+    "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: use of write.",
+  ]);
+  expect(
+    findTestWritePolicyViolations(
+      "const fileHandle = { write: jest.fn() }; fileHandle.write('data');",
+      "tests/example.test.mjs",
+    ),
+  ).toEqual([]);
+  expect(
+    findTestWritePolicyViolations(
+      'jest.mock("node:fs/promises"); async function save(handle) { await handle.writeFile("data"); }',
+      "tests/example.test.mjs",
+    ),
+  ).toEqual([]);
+  expect(
+    findTestWritePolicyViolations(
+      'jest.mock("node:fs"); import { writeFile } from "node:fs";',
+      "tests/example.test.mjs",
+    ),
+  ).toEqual([]);
+  expect(
+    findTestWritePolicyViolations(
+      'jest.mock("node:fs"); const fs = await import("node:fs"); fs.writeFile("data");',
+      "tests/example.test.mjs",
+    ),
+  ).toEqual([]);
+});

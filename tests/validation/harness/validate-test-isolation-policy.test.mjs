@@ -34,7 +34,6 @@ test("returns path and line details for file creation APIs", async () => {
     'jest.mock("node:fs/promises");\nimport { writeFile } from "node:fs/promises";\nfetch("https://outside.example");',
   );
   await expect(validateTestIsolationPolicy("C:/repo")).resolves.toEqual([
-    "tests/writes.test.mjs:2 uses a test API that creates files or temporary directories: import of writeFile.",
     "tests/writes.test.mjs: must mock fetch, inject it, or use a localhost URL.",
   ]);
 });

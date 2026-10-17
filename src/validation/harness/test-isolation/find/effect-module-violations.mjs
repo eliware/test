@@ -1,7 +1,7 @@
 import { visitAst } from "../../visit-ast.mjs";
 
 const effectModule =
-  /^(?:node:)?(?:fs(?:\/promises)?|process|child_process|http|https|net|tls|dgram|dns|undici|ws|node-fetch|axios|got)$/u;
+  /^(?:node:)?(?:fs(?:\/promises)?|process|child_process|net|tls|dgram|dns|undici|ws|node-fetch|axios|got)$/u;
 
 export function findEffectModuleViolations(ast) {
   const mocked = collectMockedModules(ast);

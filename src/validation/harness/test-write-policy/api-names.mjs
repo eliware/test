@@ -24,6 +24,7 @@ export const fileMutationApis = new Set([
   "truncateSync",
   "unlink",
   "unlinkSync",
+  "write",
   "writeFile",
   "writeFileSync",
 ]);

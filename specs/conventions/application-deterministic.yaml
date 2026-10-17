@@ -84,7 +84,8 @@ directives:
     dos:
       - Run required Jest tests through eliware-test with the exact configuration shown.
       - Use mocked file-system operations in each test suite.
-      - Allow network access to localhost only.
+      - Mock file-handle write methods or inject mocked file handles.
+      - Allow network requests to localhost only.
       - Use fake timers or injected fixed clocks.
       - Mock child-command calls and other external effects.
       - Use Istanbul coverage for production .mjs files in src/.

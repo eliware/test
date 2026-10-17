@@ -2,6 +2,7 @@ import { parse } from "@babel/parser";
 import { findClockEffectViolations } from "./clock-effect-violations.mjs";
 import { findEffectModuleViolations } from "./effect-module-violations.mjs";
 import { findNetworkProcessViolations } from "./network-process-violations.mjs";
+import { findHttpClientViolations } from "./http-client/violations.mjs";
 
 export function findTestIsolationViolations(source) {
   let ast;
@@ -22,6 +23,7 @@ export function findTestIsolationViolationsInAst(ast, source) {
     ...findEffectModuleViolations(ast),
     ...findClockEffectViolations(ast),
     ...findNetworkProcessViolations(ast, source),
+    ...findHttpClientViolations(ast),
   ];
   return [...new Set(findings)];
 }
