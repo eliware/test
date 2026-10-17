@@ -56,7 +56,7 @@ test("rejects npm publication commands and token settings in package scripts", a
 });
 
 test("allows GHCR publication in a workflow for a Private repository", async () => {
-  const path = ".github/workflows/publish.yaml";
+  const path = ".github/workflows/ghcr.yaml";
   const inventory = {
     files: async () => [path],
     readText: async (file) =>
@@ -72,7 +72,7 @@ test("allows GHCR publication in a workflow for a Private repository", async () 
 test.each(["npx npm publish", "corepack pnpm publish"])(
   "rejects wrapped npm publication in workflow commands: %s",
   async (command) => {
-    const path = ".github/workflows/publish.yaml";
+    const path = ".github/workflows/npm.yaml";
     const inventory = {
       files: async () => [path],
       readText: async () => `jobs:\n  publish:\n    steps:\n      - run: ${command}\n`,

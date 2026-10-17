@@ -51,41 +51,13 @@ directives:
 
   - id: E-0.1.10.1.2
     dos:
-      - Use setup-node major v7 with Node.js 26 for the npm publisher.
-      - Use checkout major v7 before tag verification in the npm publisher.
-      - Set registry-url to https://registry.npmjs.org and package-manager-cache to false.
-      - Install npm@latest before npm ci in the npm publisher.
-      - Check that the release tag matches the canonical package version before
-        publication.
-      - Use one unconditional standalone npm publish --provenance step.
-      - Do not publish packages with other npm, pnpm, yarn, or bun commands or GitHub Actions.
-      - "Set workflow permissions to contents: read."
-      - "Set publish.permissions to contents: read and id-token: write."
-      - Keep validation job permissions read-only.
-      - Omit validation job permissions to inherit the read-only workflow permissions.
+      - Use .github/workflows/npm.yaml for npm publication.
+      - Match the file byte for byte with specs/workflows/npm.yaml.
+      - Include line endings and the final newline in each match.
     donts:
-      - Do not declare NPM_TOKEN or NODE_AUTH_TOKEN in workflow environment or setup.
+      - Do not use .github/workflows/publish.yaml for npm publication.
     examples:
-      - "uses: actions/setup-node@v7
-
-        with:
-
-        \  node-version: 26
-
-        \  registry-url: https://registry.npmjs.org
-
-        \  package-manager-cache: false"
-      - "run: npm publish --provenance"
-      - "permissions:\n  contents: read"
-      - |
-        jobs:
-          validate:
-            permissions:
-              contents: read
-          publish:
-            permissions:
-              contents: read
-              id-token: write
+      - "The canonical workflow is specs/workflows/npm.yaml."
 
   - id: E-0.1.10.1.3
     dos:

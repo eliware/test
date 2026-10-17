@@ -290,7 +290,8 @@ directives:
       - Run one standalone npm ci step, then one standalone npm test step.
       - Add workflow steps after npm test only when they do not publish npm or GHCR packages.
       - Keep ci.yaml for validation.
-      - Allow publish.yaml when npm-published or ghcr-published applies.
+      - Allow .github/workflows/npm.yaml when npm-published applies.
+      - Allow .github/workflows/ghcr.yaml when ghcr-published applies.
       - Before `npm ci`, allow approved setup actions and npm latest installation.
       - Allow `echo` or `printf` only when commands report literal text.
       - Allow shell operators as text only inside quoted arguments.
@@ -299,8 +300,7 @@ directives:
         and test steps.
       - Accept inline lists and indented YAML lists with matching values.
     donts:
-      - Do not add GitHub Actions workflow files other than ci.yaml and a required
-        publish.yaml.
+      - Do not add GitHub Actions workflow files other than ci.yaml, npm.yaml, and ghcr.yaml.
       - Do not make required validation steps conditional.
       - Do not use continue-on-error for required validation steps.
       - Do not override checkout repository or ref.

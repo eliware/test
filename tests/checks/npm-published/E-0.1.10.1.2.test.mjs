@@ -1,50 +1,15 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/npm-published/E-0.1.10.1.2.mjs";
-import { packageVersion } from "../../../test-fixtures/helpers/project-version.mjs";
+import { npmPublishWorkflow } from "../../../test-fixtures/npm-publish-workflow.mjs";
 
-const workflow = `jobs:
-  validate:
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v7
-      - run: npm -g install npm@latest
-      - run: npm ci
-      - run: npm test
-  publish:
-    needs: validate
-    permissions:
-      contents: read
-      id-token: write
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          registry-url: https://registry.npmjs.org
-          package-manager-cache: false
-      - run: npm -g install npm@latest
-      - run: npm ci
-      - run: >-
-          node -e "const version=require('./package.json').version;
-          if(!/^(0|[1-9][0-9]*)[.](0|[1-9][0-9]*)[.](0|[1-9][0-9]*)$/.test(version)||
-          process.env.GITHUB_REF_NAME!=='v'+version)process.exit(1)"
-      - run: npm publish --provenance
-on:
-  push:
-    tags: ["v[0-9]*.[0-9]*.[0-9]*"]
-permissions:
-  contents: read
-`;
-const packageJson = { version: packageVersion };
+const workflowPath = ".github/workflows/npm.yaml";
 
-function inventory(source = workflow, files = [".github/workflows/publish.yaml"]) {
-  return { files: async () => files, readText: async () => source };
+function inventory(text = npmPublishWorkflow, files = [workflowPath]) {
+  return { files: async () => files, readText: async () => text };
 }
 
-test("accepts the required npm publisher setup and command", async () => {
-  await expect(run({ repositoryInventory: inventory(), packageJson })).resolves.toEqual({
+test("accepts the canonical npm workflow byte for byte", async () => {
+  await expect(run({ repositoryInventory: inventory() })).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
@@ -52,127 +17,33 @@ test("accepts the required npm publisher setup and command", async () => {
 });
 
 test.each([
-  [
-    "workflow-level grant",
-    workflow
-      .replace(
-        "permissions:\n  contents: read",
-        "permissions:\n  contents: read\n  id-token: write",
-      )
-      .replace("    permissions:\n      contents: read\n      id-token: write\n", ""),
-    "fail",
-  ],
-  ["job-level grant", workflow, "pass"],
-  [
-    "missing grant",
-    workflow.replace("    permissions:\n      contents: read\n      id-token: write\n", ""),
-    "fail",
-  ],
-  ["read-only grant", workflow.replace("id-token: write", "id-token: read"), "fail"],
-  [
-    "job scope overrides workflow grant",
-    workflow
-      .replace(
-        "permissions:\n  contents: read",
-        "permissions:\n  contents: read\n  id-token: write",
-      )
-      .replace(
-        "    permissions:\n      contents: read\n      id-token: write\n",
-        "    permissions:\n      contents: read\n",
-      ),
-    "fail",
-  ],
-])("checks npm permission scope for %s", async (_name, source, status) => {
-  const result = await run({ repositoryInventory: inventory(source), packageJson });
-  expect(result.status).toBe(status);
-  if (status === "fail") expect(result.message).toContain("npm publish job must set");
+  ["one changed byte", `${npmPublishWorkflow} `],
+  ["different line endings", npmPublishWorkflow.replaceAll("\n", "\r\n")],
+  ["a missing final newline", npmPublishWorkflow.trimEnd()],
+])("rejects an npm workflow with %s", async (_name, text) => {
+  await expect(run({ repositoryInventory: inventory(text) })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must match specs/workflows/npm.yaml byte for byte"),
+  });
 });
 
 test.each([
-  [
-    workflow.replace(
-      "      - uses: actions/setup-node@v7\n        with:",
-      "      - uses: actions/setup-node@v6\n        with:",
-    ),
-    "setup-node v7",
-  ],
-  [
-    workflow.replace(
-      "      - uses: actions/setup-node@v7\n        with:\n          node-version: 26\n          registry-url: https://registry.npmjs.org\n          package-manager-cache: false",
-      "      - uses: actions/setup-node@v7",
-    ),
-    "setup-node v7",
-  ],
-  [workflow.replace("node-version: 26", "node-version: 20"), "setup-node v7"],
-  [workflow.replace("https://registry.npmjs.org", "https://registry.example"), "setup-node v7"],
-  [
-    workflow.replace("package-manager-cache: false", "package-manager-cache: true"),
-    "setup-node v7",
-  ],
-  [
-    workflow.replace(
-      "package-manager-cache: false",
-      "package-manager-cache: false\n          extra: true",
-    ),
-    "setup-node v7",
-  ],
-  [
-    workflow.replace(
-      "      - run: npm -g install npm@latest\n      - run: npm ci\n      - run: >-",
-      "      - run: npm ci\n      - run: npm -g install npm@latest\n      - run: >-",
-    ),
-    "install npm latest",
-  ],
-  [
-    workflow.replace("npm publish --provenance", "npm publish"),
-    "standalone npm publish --provenance",
-  ],
-  [
-    workflow.replace(
-      "- run: npm publish --provenance",
-      "- if: github.ref\n        run: npm publish --provenance",
-    ),
-    "standalone npm publish --provenance",
-  ],
-  [
-    workflow.replace(
-      "- run: npm publish --provenance",
-      "- run: npm publish --provenance\n      - run: npm publish --provenance",
-    ),
-    "standalone npm publish --provenance",
-  ],
-  [
-    workflow.replace("  publish:\n", "  publish:\n    env:\n      NODE_AUTH_TOKEN: value\n"),
-    "must not define NODE_AUTH_TOKEN",
-  ],
-])("rejects an invalid publisher workflow", async (source, message) => {
-  await expect(run({ repositoryInventory: inventory(source), packageJson })).resolves.toMatchObject(
-    {
-      ruleId,
-      status: "fail",
-      message: expect.stringContaining(message),
-    },
-  );
+  ["missing npm workflow", []],
+  ["legacy workflow name", [".github/workflows/publish.yaml"]],
+])("requires the canonical npm workflow name: %s", async (_name, files) => {
+  await expect(
+    run({ repositoryInventory: inventory(npmPublishWorkflow, files) }),
+  ).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining(`${workflowPath} is required`),
+  });
 });
 
-test("rejects missing, malformed, and unreadable publisher workflows", async () => {
-  await expect(run({ repositoryInventory: inventory(workflow, []) })).resolves.toMatchObject({
+test("reports an unavailable workflow inventory", async () => {
+  await expect(run()).resolves.toMatchObject({
+    ruleId,
     status: "fail",
-    message: expect.stringContaining("is required"),
+    message: expect.stringContaining(`${workflowPath} could not be inspected`),
   });
-  await expect(run({ repositoryInventory: inventory("jobs: [") })).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining("one valid YAML document"),
-  });
-  await expect(run()).resolves.toMatchObject({ status: "fail" });
-  await expect(
-    run({
-      repositoryInventory: {
-        files: async () => [".github/workflows/publish.yaml"],
-        readText: async () => {
-          throw new Error("denied");
-        },
-      },
-    }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("could not be inspected: denied") });
 });

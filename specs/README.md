@@ -5,3 +5,4 @@
 - [Eliware package metadata schema](eliware-schema.yaml)
 - [Runbook schema](runbook-schema.yaml)
 - [Repository profile specifications](conventions/README.md)
+- [Canonical workflows](workflows/README.md)

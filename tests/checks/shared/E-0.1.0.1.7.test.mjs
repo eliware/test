@@ -1,17 +1,26 @@
 import { expect, test } from "@jest/globals";
 import { ruleId, run } from "../../../src/checks/shared/E-0.1.0.1.7.mjs";
-import {
-  validCiWorkflow as validWorkflow,
-  validPublishWorkflow,
-} from "../../../test-fixtures/shared-ci-workflows.mjs";
+import { validCiWorkflow as validWorkflow } from "../../../test-fixtures/shared-ci-workflows.mjs";
 const inventory = {
-  files: async () => [".github/workflows/ci.yaml", ".github/workflows/publish.yaml"],
-  readText: async (path) => (path.endsWith("publish.yaml") ? validPublishWorkflow : validWorkflow),
+  files: async () => [".github/workflows/ci.yaml", ".github/workflows/npm.yaml"],
+  readText: async () => validWorkflow,
 };
 
-test("accepts the required validation workflow and applied publication workflow", async () => {
+test("accepts the validation workflow and canonical npm workflow path", async () => {
   await expect(
     run({ repositoryInventory: inventory, packageJson: { eliware: { apply: ["npm-published"] } } }),
+  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+});
+
+test("allows the canonical GHCR workflow path when the profile applies", async () => {
+  await expect(
+    run({
+      repositoryInventory: {
+        files: async () => [".github/workflows/ci.yaml", ".github/workflows/ghcr.yaml"],
+        readText: async () => validWorkflow,
+      },
+      packageJson: { eliware: { apply: ["general", "ghcr-published"] } },
+    }),
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
 

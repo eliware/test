@@ -6,126 +6,25 @@ directives:
       - Add a GHCR publication section to AGENTS.md.
       - Include the exact Usage markers shown with package-derived image identity and
         version.
-      - Append latest to supported tags only when the workflow declares that tag.
-      - Include the mutable-alias statement when latest is declared.
+      - Use only version tags because the canonical workflow does not publish latest.
     donts:
       - Do not use stale identity markers.
+      - Do not list latest as a supported tag.
     examples:
       - "## GHCR publication"
       - "Image: ghcr.io/eliware/example"
       - "Pull command: docker pull ghcr.io/eliware/example:v13.0.0"
       - "Supported tags: vMAJOR.MINOR.PATCH"
-      - "Supported tags: vMAJOR.MINOR.PATCH, latest"
       - "Deployment boundary: publication does not deploy; deploy by immutable version tag
         and recorded sha256 digest."
-      - "latest is a mutable convenience alias and is never the release or deployment
-        identity."
 
   - id: E-0.1.11.1.1
     dos:
       - Keep the Dockerfile at the repository root.
-      - Declare the repository root for the build context.
-      - Set publish.env.IMAGE_NAME to ghcr.io/${{ github.repository }}. General rules
-        match the repository name to the package name.
-      - Set the package version tag to ${{ env.IMAGE_NAME }}:${{ github.ref_name }}.
-      - Check that the release tag matches the canonical package version before image push.
-      - Set more tags with ${{ env.IMAGE_NAME }} and a valid tag.
-      - Set the publication job environment to ghcr-publish.
-      - Run the publication job on Ubuntu without `if` or `continue-on-error` fields.
-      - Use docker/build-push-action major v7 for each image push.
-      - Run each image-push step without `if` or `continue-on-error` fields.
-      - Use checkout major v7 in the GHCR publisher.
-      - "Set workflow permissions to contents: read."
-      - Keep validation job permissions read-only.
-      - Omit validation job permissions to inherit the read-only workflow permissions.
-      - Set the required write permissions on the publish job only.
+      - Use .github/workflows/ghcr.yaml for GHCR publication.
+      - Match the file byte for byte with specs/workflows/ghcr.yaml.
+      - Include line endings and the final newline in each match.
     donts:
-      - Do not declare other image owners.
-      - Do not require npm setup in jobs that do not invoke npm.
-      - Do not run kubectl commands in workflow run fields.
-      - Do not run helm upgrade or helm install commands in workflow run fields.
-      - Do not run terraform apply commands in workflow run fields.
-      - Do not run ansible-playbook commands in workflow run fields.
-      - Do not run flyctl deploy or wrangler deploy commands in workflow run fields.
-      - Do not run docker stack deploy commands in workflow run fields.
+      - Do not use .github/workflows/publish.yaml for GHCR publication.
     examples:
-      - "on:
-
-        \  push:
-
-        \    tags: [\"v[0-9]*.[0-9]*.[0-9]*\"]"
-      - "environment: ghcr-publish"
-      - "env:
-
-        \  IMAGE_NAME: ghcr.io/${{ github.repository }}"
-      - |
-        jobs:
-          publish:
-            runs-on: ubuntu-latest
-            environment: ghcr-publish
-            steps:
-              - id: image
-                uses: docker/build-push-action@v7
-      - "tags: ${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
-      - >-
-        run: node -e "const version=require(''./package.json'').version; if(
-        process.env.GITHUB_REF_NAME!==''v''+version)process.exit(1)"
-      - |
-        permissions:
-          contents: read
-      - |
-        jobs:
-          validate:
-            permissions:
-              contents: read
-          publish:
-            permissions:
-              contents: read
-              packages: write
-              id-token: write
-              attestations: write
-              artifact-metadata: write
-
-  - id: E-0.1.11.1.2
-    dos:
-      - Give push steps valid IDs that start with ASCII letters or underscores and
-        containing only letters, digits, underscores, or hyphens.
-      - Set actions/attest major v4 after each final image push.
-      - Set subject-name to the untagged package-derived image and subject-digest to its
-        push step's digest output.
-      - Set push-to-registry true.
-      - Set GH_TOKEN to ${{ github.token }} on the attestation verification step or
-        publish job.
-      - Append the exact digest identifier to GITHUB_STEP_SUMMARY with one single-line
-        echo command and >> redirection.
-      - Set unconditional post-push steps for version-to-digest verification and image and
-        attestation inspection.
-      - Use the exact command forms in the examples for all four verification steps.
-      - Run required verification after the final push, and make it the final job step.
-    donts:
-      - Do not name missing steps or a digest output from a different image push step.
-      - Do not use a mutable tag for an attestation subject digest.
-      - Do not use control operators or command substitution in the summary command.
-      - Do not declare bypass conditions on required verification steps.
-      - Do not use continue-on-error on required verification steps.
-    examples:
-      - "uses: actions/attest@v4
-
-        with:
-
-        \  subject-name: ${{ env.IMAGE_NAME }}
-
-        \  subject-digest: ${{ steps.image.outputs.digest }}
-
-        \  push-to-registry: true"
-      - 'run: test "$(docker buildx imagetools inspect "$IMAGE_NAME:$GITHUB_REF_NAME"
-        --format ''{{.Manifest.Digest}}'')" = "${{ steps.image.outputs.digest }}"'
-      - 'run: docker buildx imagetools inspect "$IMAGE_NAME@${{ steps.image.outputs.digest
-        }}"'
-      - 'echo "${{ steps.image.outputs.digest }}" >> "$GITHUB_STEP_SUMMARY"'
-      - "env:
-
-        \  GH_TOKEN: ${{ github.token }}
-
-        run: gh attestation verify \"oci://$IMAGE_NAME@${{ steps.image.outputs.digest }}\"
-        --repo \"${{ github.repository }}\""
+      - "The canonical workflow is specs/workflows/ghcr.yaml."

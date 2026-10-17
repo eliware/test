@@ -60,10 +60,9 @@ export const canonicalOrderRequirements = {
   "publication-workflow.yaml": {
     fields: {
       profiles: "text-list",
-      jobs: "text-list",
-      jobDependencies: "text-list-map",
+      workflowFiles: "text-map",
     },
-    maps: { jobDependencies: ["publish"] },
+    maps: { workflowFiles: ["npm-published", "ghcr-published"] },
   },
   "readme-sections.yaml": readmeSectionsRequirements,
   "specification-indexes.yaml": {

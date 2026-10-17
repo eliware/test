@@ -1,9 +1,5 @@
-import { readGhcrPublishWorkflow } from "../shared/read-ghcr-publish-workflow.mjs";
-
 export async function validateGhcrAgentsSection(inventory, packageJson = {}) {
   if (!inventory?.readText) return ["AGENTS.md could not be inspected."];
-  const parsed = await readGhcrPublishWorkflow(inventory);
-  if (parsed.error) return [parsed.error];
   try {
     const lines = (await inventory.readText("AGENTS.md")).split(/\r?\n/u);
     const heading = lines.indexOf("## GHCR publication");
@@ -12,32 +8,23 @@ export async function validateGhcrAgentsSection(inventory, packageJson = {}) {
     const section = lines.slice(heading, nextHeading < 0 ? undefined : nextHeading);
     const name = String(packageJson?.name ?? "").replace(/^@eliware\//u, "");
     const image = `ghcr.io/eliware/${name}`;
-    const latest = hasLatestTag(parsed.workflow, image);
     const required = [
       `Image: ${image}`,
       `Pull command: docker pull ${image}:v${packageJson?.version}`,
-      latest ? "Supported tags: vMAJOR.MINOR.PATCH, latest" : "Supported tags: vMAJOR.MINOR.PATCH",
+      "Supported tags: vMAJOR.MINOR.PATCH",
       "Deployment boundary: Publication does not deploy. Use an immutable version tag and record its SHA-256 digest.",
     ];
-    if (latest)
-      required.push(
-        "latest is a mutable convenience alias and is never the release or deployment identity.",
-      );
-    return required
+    const errors = required
       .filter((line) => !section.includes(line))
       .map((line) => `AGENTS.md must include: ${line}`);
+    if (section.some((line) => /^Supported tags:.*\blatest\b/u.test(line)))
+      errors.push(
+        "AGENTS.md must not list latest because the canonical workflow does not publish it.",
+      );
+    if (section.some((line) => line.startsWith("latest is a mutable convenience alias")))
+      errors.push("AGENTS.md must not describe latest as a published tag.");
+    return errors;
   } catch (error) {
     return [`AGENTS.md could not be inspected: ${error.message}`];
   }
-}
-
-function hasLatestTag(workflow, image) {
-  const steps = workflow?.jobs?.publish?.steps ?? [];
-  return steps.some((step) => {
-    if (step?.uses !== "docker/build-push-action@v7") return false;
-    const tags = step?.with?.tags;
-    return (Array.isArray(tags) ? tags : String(tags ?? "").split(/\r?\n/u)).some((tag) =>
-      [`${image}:latest`, "${{ env.IMAGE_NAME }}:latest"].includes(String(tag).trim()),
-    );
-  });
 }

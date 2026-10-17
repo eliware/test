@@ -14,7 +14,7 @@ const requiredFields = {
   ],
   "package-files.yaml": ["baseEntries", "profileEntries", "profileEntryOrder"],
   "package-json.yaml": ["topLevelKeys", "eliwareKeys"],
-  "publication-workflow.yaml": ["profiles", "jobs", "jobDependencies"],
+  "publication-workflow.yaml": ["profiles", "workflowFiles"],
   "readme-sections.yaml": [
     "header",
     "headerLines",

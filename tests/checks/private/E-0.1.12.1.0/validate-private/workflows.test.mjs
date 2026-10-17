@@ -35,7 +35,7 @@ test("accepts empty workflow objects", async () => {
 });
 
 test("rejects npm publication commands and token settings in any workflow", async () => {
-  const path = ".github/workflows/publish.yaml";
+  const path = ".github/workflows/npm.yaml";
   const yaml = [
     "jobs:",
     "  publish:",

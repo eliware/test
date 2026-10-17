@@ -64,7 +64,7 @@ test("allows a publish workflow for publication profiles", async () => {
   await expect(
     validateCiWorkflow(
       {
-        files: async () => [".github/workflows/ci.yaml", ".github/workflows/publish.yaml"],
+        files: async () => [".github/workflows/ci.yaml", ".github/workflows/ghcr.yaml"],
         readText: async () => workflow,
       },
       { eliware: { apply: ["ghcr-published"] } },

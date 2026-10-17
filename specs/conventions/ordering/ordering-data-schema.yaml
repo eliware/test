@@ -36,8 +36,7 @@ orders:
       - eliwareKeys
     publication-workflow.yaml:
       - profiles
-      - jobs
-      - jobDependencies
+      - workflowFiles
     readme-sections.yaml:
       - header
       - headerLines
@@ -101,8 +100,9 @@ orders:
       checkoutOptions:
         - fetch-depth
     publication-workflow.yaml:
-      jobDependencies:
-        - publish
+      workflowFiles:
+        npm-published: npm.yaml
+        ghcr-published: ghcr.yaml
     package-files.yaml:
       profileEntries:
         - application

@@ -1,12 +1,9 @@
 version: "13.0"
-description: Defines order for the shared npm and GHCR publication workflow.
+description: Defines publisher workflow names and job order.
 orders:
   profiles:
     - npm-published
     - ghcr-published
-  jobs:
-    - validate
-    - publish
-  jobDependencies:
-    publish:
-      - validate
+  workflowFiles:
+    npm-published: npm.yaml
+    ghcr-published: ghcr.yaml

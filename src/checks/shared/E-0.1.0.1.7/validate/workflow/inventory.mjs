@@ -1,5 +1,6 @@
+import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
+
 const workflowPath = ".github/workflows/ci.yaml";
-const publishPath = ".github/workflows/publish.yaml";
 
 export async function validateWorkflowInventory(inventory, packageJson = {}) {
   if (!inventory?.files) return ["GitHub workflow files could not be inspected."];
@@ -7,10 +8,12 @@ export async function validateWorkflowInventory(inventory, packageJson = {}) {
     const files = (await inventory.files("all")).filter((path) =>
       path.startsWith(".github/workflows/"),
     );
-    const published = ["npm-published", "ghcr-published"].some((profile) =>
-      packageJson?.eliware?.apply?.includes(profile),
-    );
-    const allowed = published ? [workflowPath, publishPath] : [workflowPath];
+    const workflowFiles = readCanonicalOrder("publication-workflow.yaml").workflowFiles;
+    const applied = packageJson?.eliware?.apply ?? [];
+    const publisherFiles = Object.entries(workflowFiles)
+      .filter(([profile]) => applied.includes(profile))
+      .map(([, file]) => `.github/workflows/${file}`);
+    const allowed = [workflowPath, ...publisherFiles];
     const errors = files
       .filter((file) => !allowed.includes(file))
       .map((file) => `Unexpected workflow file: ${file}.`);
