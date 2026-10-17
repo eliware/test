@@ -9,7 +9,7 @@ const requiredFiles = [
   "LICENSE",
   "specs/README.md",
 ];
-const expectedLicense = `MIT License
+export const expectedLicense = `MIT License
 
 Copyright (c) 2026 Eliware
 

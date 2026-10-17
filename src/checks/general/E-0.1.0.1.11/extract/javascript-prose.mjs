@@ -1,4 +1,6 @@
 import { parse } from "@babel/parser";
+import { expectedLicense } from "../../E-0.1.0.1.1/validate/required-package-files.mjs";
+import { windowsProcessTreeFallbackScript } from "../../../../validation/shared/process/run/windows-process-tree-fallback.mjs";
 import { countWords } from "../word-tools.mjs";
 
 const commandStart = /^(?:npm|node|git|gh|npx|yarn|pnpm|powershell|pwsh)\s/iu;
@@ -61,19 +63,31 @@ function staticTemplateText(template) {
 }
 
 function staticStringValue(expression) {
+  if (!expression || typeof expression !== "object") return undefined;
   if (expression.type === "StringLiteral") return expression.value;
   if (expression.type === "TemplateLiteral") return staticTemplateText(expression);
+  if (expression.type === "BinaryExpression" && expression.operator === "+") {
+    const left = staticStringValue(expression.left);
+    const right = staticStringValue(expression.right);
+    return left === undefined || right === undefined ? undefined : left + right;
+  }
   return undefined;
 }
 
 function isExactRequiredText(value) {
-  if (value.type !== "VariableDeclarator" || value.id?.name !== "expectedLicense") return false;
-  return true;
+  return (
+    value.type === "VariableDeclarator" &&
+    value.id?.name === "expectedLicense" &&
+    staticStringValue(value.init) === expectedLicense
+  );
 }
 
 function isPowerShellScript(value) {
-  if (value.type !== "VariableDeclarator" || value.id?.name !== "script") return false;
-  return JSON.stringify(value.init).includes("Get-CimInstance");
+  return (
+    value.type === "VariableDeclarator" &&
+    value.id?.name === "windowsProcessTreeFallbackScript" &&
+    staticStringValue(value.init) === windowsProcessTreeFallbackScript
+  );
 }
 
 function hasProse(value) {
