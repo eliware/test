@@ -22,7 +22,7 @@ export async function validateGitHygiene(
   }
   errors.push(...(await validateGitIgnoreProbes(root, runGit)));
   errors.push(...(await validateGitIgnoreFiles(root, runGit)));
-  errors.push(...(await validateTrackedSymlinks(root, runGit)));
+  errors.push(...(await validateTrackedSymlinks(root, runGit, isPathExempt)));
   errors.push(...(await validateTrackedSensitivePaths(root, runGit, isPathExempt)));
   return errors;
 }

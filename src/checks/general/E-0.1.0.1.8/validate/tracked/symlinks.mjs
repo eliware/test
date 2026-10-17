@@ -1,6 +1,6 @@
 import { parseGitIndexEntries } from "../../parse-git-index-output.mjs";
 
-export async function validateTrackedSymlinks(root, runGit) {
+export async function validateTrackedSymlinks(root, runGit, isPathExempt = () => false) {
   try {
     const { stdout } = await runGit("git", ["-C", root, "ls-files", "--cached", "--stage", "-z"], {
       windowsHide: true,
@@ -8,6 +8,7 @@ export async function validateTrackedSymlinks(root, runGit) {
     });
     const links = parseGitIndexEntries(stdout)
       .filter(({ mode }) => mode === "120000")
+      .filter(({ path }) => !isPathExempt(path))
       .map(({ path }) => path);
     return links.length ? [`Tracked symlink entries are prohibited: ${links.join(", ")}.`] : [];
   } catch {
