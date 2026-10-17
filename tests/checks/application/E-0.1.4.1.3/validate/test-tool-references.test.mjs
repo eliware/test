@@ -67,6 +67,14 @@ test("checks package scripts and YAML commands but allows inert values", () => {
     validateTestToolReferences("package.json", '{"scripts":{"test":"echo vitest"}}'),
   ).toBeNull();
   expect(validateTestToolReferences("README.md", "vitest run")).toBeNull();
+  expect(validateTestToolReferences("README.md", "Run `npx jest` to inspect tests.")).toBeNull();
+  expect(validateTestToolReferences("README.md", "```bash\nnpx jest\n```")).toContain(
+    "README.md must not import or invoke a test runner or coverage tool.",
+  );
+  expect(validateTestToolReferences("README.md", "```javascript\nrun('npx jest')\n```")).toBeNull();
+  expect(
+    validateTestToolReferences("README.md", "```bash\neliware-test --focused\n```"),
+  ).toBeNull();
   expect(validateTestToolReferences(".github/workflow.yaml", "run: vitest run")).toContain(
     ".github/workflow.yaml must not import or invoke a test runner or coverage tool.",
   );
