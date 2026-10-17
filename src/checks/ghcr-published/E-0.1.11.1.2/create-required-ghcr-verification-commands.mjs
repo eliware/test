@@ -7,14 +7,6 @@ export function createRequiredGhcrVerificationCommands(expression) {
     (run) =>
       run ===
       `gh attestation verify "oci://$IMAGE_NAME@${expression}" --repo "\${{ github.repository }}"`,
-    (run) =>
-      new RegExp(
-        `^echo\\s+["']?${escapePattern(expression)}["']?\\s+>>\\s+["']?\\$GITHUB_STEP_SUMMARY["']?$`,
-        "u",
-      ).test(run),
+    (run) => run === `echo "${expression}" >> "$GITHUB_STEP_SUMMARY"`,
   ];
-}
-
-function escapePattern(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

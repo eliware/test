@@ -100,6 +100,7 @@ directives:
         echo command and >> redirection.
       - Set unconditional post-push steps for version-to-digest verification and image and
         attestation inspection.
+      - Use the exact command forms in the examples for all four verification steps.
       - Run required verification after the final push, and make it the final job step.
     donts:
       - Do not name missing steps or a digest output from a different image push step.

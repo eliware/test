@@ -12,4 +12,6 @@ test("matches each required digest verification command exactly", () => {
   ];
   expect(commands.every((command, index) => checks[index](command))).toBe(true);
   expect(checks[0]("echo docker buildx imagetools inspect")).toBe(false);
+  expect(checks[0](commands[0].replace("test ", "[ "))).toBe(false);
+  expect(checks[3](`echo '${expression}' >> "$GITHUB_STEP_SUMMARY"`)).toBe(false);
 });
