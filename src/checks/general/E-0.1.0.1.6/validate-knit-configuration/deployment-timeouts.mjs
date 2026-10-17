@@ -6,9 +6,14 @@ export function validateDeploymentTimeouts(document) {
   else checkTimeouts(deployments, ".knit/deploy.yaml deployment", errors);
   const tagActions = document?.on?.tags;
   if (tagActions && typeof tagActions === "object")
-    for (const [tag, action] of Object.entries(tagActions))
-      if (Array.isArray(action?.deployments))
-        checkTimeouts(action.deployments, `.knit/deploy.yaml tag ${tag} deployment`, errors);
+    for (const [tag, action] of Object.entries(tagActions)) {
+      if (!action || typeof action !== "object" || !Object.hasOwn(action, "deployments")) continue;
+      if (!Array.isArray(action.deployments) || action.deployments.length === 0) {
+        errors.push(`.knit/deploy.yaml tag ${tag} must define valid deployments.`);
+        continue;
+      }
+      checkTimeouts(action.deployments, `.knit/deploy.yaml tag ${tag} deployment`, errors);
+    }
   return errors;
 }
 
