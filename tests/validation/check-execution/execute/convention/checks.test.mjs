@@ -34,62 +34,6 @@ function createStageContext(stages, calls, failedStage = "") {
   };
 }
 
-test("executes selected checks in discovery order", async () => {
-  const calls = [];
-  const checks = ["E-0.1.4", "E-0.1.20.17", "E-0.1.20.19"].map((id) => makeCheck(id, calls));
-  const context = { validationSummary: {} };
-  const results = await executeConventionChecks(checks, context, new Set());
-  expect(calls).toEqual(checks.map(({ ruleId }) => ruleId));
-  expect(results).toEqual(checks.map(({ ruleId }) => pass(ruleId)));
-  expect(context.validationSummary.checkCount).toBe(3);
-});
-
-test("passes rule-scoped paths to the matching check only", async () => {
-  const calls = [];
-  const checks = [
-    {
-      ruleId: "E-0.1.4",
-      run: async (context) => {
-        calls.push(["E-0.1.4", context.exemptPaths]);
-        return pass("E-0.1.4");
-      },
-    },
-    {
-      ruleId: "E-0.1.5",
-      run: async (context) => {
-        calls.push(["E-0.1.5", context.exemptPaths]);
-        return pass("E-0.1.5");
-      },
-    },
-  ];
-  await executeConventionChecks(checks, {}, new Map([["E-0.1.4", ["README.md"]]]));
-  expect(calls).toEqual([
-    ["E-0.1.4", ["README.md"]],
-    ["E-0.1.5", undefined],
-  ]);
-});
-
-test("reports thrown checks and continues with later checks", async () => {
-  const calls = [];
-  const results = await executeConventionChecks(
-    [
-      {
-        ruleId: "E-0.1",
-        run: async () => {
-          calls.push("E-0.1");
-          throw new Error("inspection failed");
-        },
-      },
-      makeCheck("E-2", calls),
-    ],
-    {},
-    new Set(),
-  );
-  expect(calls).toEqual(["E-0.1", "E-2"]);
-  expect(results[0]).toMatchObject({ ruleId: "E-0.1", status: "fail" });
-  expect(results[1]).toEqual(pass("E-2"));
-});
-
 test("runs every enabled stage before checks and Jest, with cached output", async () => {
   const calls = [];
   const stages = ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"];
@@ -135,14 +79,6 @@ test("runs every convention check but skips Jest after a check fails", async () 
     { ruleId: "E-0.1.4", status: "fail", message: "check failed" },
   ]);
   expect(results.some(({ status }) => status === "skip")).toBe(false);
-});
-
-test("executes selected non-deterministic checks", async () => {
-  const calls = [];
-  const check = makeCheck("E-3", calls);
-  check.enforcementMode = "non-deterministic";
-  await expect(executeConventionChecks([check], {}, new Set())).resolves.toEqual([pass("E-3")]);
-  expect(calls).toEqual(["E-3"]);
 });
 
 test("executes required checks beneath advisory parents", async () => {

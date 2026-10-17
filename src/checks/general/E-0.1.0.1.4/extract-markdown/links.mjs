@@ -1,27 +1,20 @@
+import {
+  collectMarkdownReferenceDefinitions,
+  extractMarkdownReferenceUses,
+} from "./references.mjs";
+
 const pattern =
   /(?<!!)\[[^\]]*\]\((<[^>\r\n]+>|[^)\s]+)(?:\s+[^)]*)?\)|<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>|<((?:https?|mailto):[^ >]+)>/giu;
+const referencePattern = /(?<!!)\[([^\]]+)\](?:\[([^\]]*)\])?/gu;
 
 export function extractMarkdownLinks(content) {
   const markdown = removeMarkdownCode(content);
-  const definitions = new Map();
-  for (const [, label, angle, plain] of markdown.matchAll(
-    /^ {0,3}\[([^\]]+)\]:\s*(?:<([^>\r\n]+)>|(\S+))/gimu,
-  ))
-    definitions.set(normalizeLabel(label), angle ?? plain);
+  const definitions = collectMarkdownReferenceDefinitions(markdown);
   const links = [...markdown.matchAll(pattern)].map((match) => ({
     index: match.index,
     reference: stripAngleDestination(match[1]) ?? match[2] ?? match[3],
   }));
-  const referenceText = markdown.replace(/^ {0,3}\[[^\]]+\]:[^\r\n]*/gimu, (line) =>
-    " ".repeat(line.length),
-  );
-  for (const match of referenceText.matchAll(/(?<!!)\[([^\]]+)\](?:\[([^\]]*)\])?/gu)) {
-    if (referenceText[match.index + match[0].length] === "(") continue;
-    const label = normalizeLabel(match[2] || match[1]);
-    const isReferenceSyntax = match[2] !== undefined || definitions.has(label);
-    if (isReferenceSyntax)
-      links.push({ index: match.index, reference: definitions.get(label) ?? null });
-  }
+  links.push(...extractMarkdownReferenceUses(markdown, definitions, referencePattern));
   return links
     .sort((left, right) => left.index - right.index)
     .map(({ reference }) => ({ reference }));
@@ -30,10 +23,6 @@ export function extractMarkdownLinks(content) {
 function stripAngleDestination(value) {
   if (!value) return value;
   return value.startsWith("<") && value.endsWith(">") ? value.slice(1, -1) : value;
-}
-
-function normalizeLabel(value) {
-  return value.trim().replace(/\s+/gu, " ").toLowerCase();
 }
 
 export function removeMarkdownCode(content, { preserveInlineCodeText = false } = {}) {
