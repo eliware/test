@@ -1,4 +1,5 @@
 import { validateMirroredTests } from "../mirrored-tests.mjs";
+import { validateExecutableTests } from "../executable-tests.mjs";
 import { validateApplicationLineLimits } from "./line-limits.mjs";
 import { validateTestFileLayout } from "../test-file-layout.mjs";
 import { validateInternalExportBarrels } from "../../../../shared/validate-internal-export-barrels.mjs";
@@ -15,7 +16,8 @@ export async function validateApplicationLayout(context = {}) {
       context.packageJson?.eliware?.apply ?? [],
       context.packageJson,
     ),
-    ...(await validateMirroredTests(files, read, root)),
+    ...validateMirroredTests(files),
+    ...(await validateExecutableTests(files, read, root)),
     ...(await validateApplicationLineLimits(files, read, root)),
     ...(await validateInternalExportBarrels(files, read, context.packageJson ?? {}, root)),
   ];
