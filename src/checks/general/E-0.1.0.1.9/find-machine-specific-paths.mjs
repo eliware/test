@@ -29,15 +29,12 @@ function hasMachineSpecificPath(content) {
 }
 
 function decodeText(bytes) {
+  if (bytes.includes(0)) return null;
   let text;
   try {
     text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
     return null;
-  }
-  for (const character of text) {
-    const code = character.codePointAt(0);
-    if ((code < 32 && ![9, 10, 13].includes(code)) || (code >= 127 && code <= 159)) return null;
   }
   return text;
 }

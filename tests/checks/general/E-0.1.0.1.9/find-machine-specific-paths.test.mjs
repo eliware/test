@@ -14,18 +14,18 @@ test("scans all supplied paths and ignores labels, hosts, and file URLs", async 
   ).resolves.toEqual(["path.txt"]);
 });
 
-test("skips invalid UTF-8 and binary content", async () => {
+test("skips invalid UTF-8 and NUL bytes but scans other valid UTF-8 control characters", async () => {
   const contents = new Map([
     ["invalid.txt", Buffer.from([0xff, 0xfe])],
     [
       "binary.txt",
       Buffer.concat([Buffer.from(["", "home", "eli", "project"].join("/")), Buffer.from([0])]),
     ],
-    ["control.txt", Buffer.from("\u0085", "utf8")],
+    ["control.txt", Buffer.from(`${["", "home", "eli", "project"].join("/")}\u0001`, "utf8")],
   ]);
   await expect(
     findMachineSpecificPaths([...contents.keys()], async (path) => contents.get(path)),
-  ).resolves.toEqual([]);
+  ).resolves.toEqual(["control.txt"]);
 });
 
 test("does not treat application routes as machine paths", async () => {

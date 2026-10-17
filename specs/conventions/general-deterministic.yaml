@@ -389,7 +389,7 @@ directives:
       - Reject POSIX paths rooted at /users.
       - Allow paths rooted at /srv/repository or /srv/workspace. Reject other /srv paths.
       - "Reject C: or D: paths rooted at eliware or Users/<name>/src."
-      - Skip invalid UTF-8 and binary files.
+      - Skip invalid UTF-8 files and files with a NUL byte.
       - Fail validation when repository files cannot be listed or read.
     donts:
       - Do not scan for labels, hostnames, or file URLs.
