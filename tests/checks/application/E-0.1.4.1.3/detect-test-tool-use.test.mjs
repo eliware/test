@@ -19,6 +19,9 @@ test("detects test runner and coverage tools in executable calls", () => {
   expect(detectTestToolUse('module["require"]("@jest/core");')).toBe(true);
   expect(detectTestToolUse('const runner = "vitest"; spawn(runner, ["run"]);')).toBe(true);
   expect(
+    detectTestToolUse('import { spawn } from "node:child_process"; spawn("echo", ["vitest"]);'),
+  ).toBe(false);
+  expect(
     detectTestToolUse(
       'import { spawn as launch } from "node:child_process"; launch("node", ["--test"]);',
     ),

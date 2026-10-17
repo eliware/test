@@ -36,7 +36,7 @@ export function detectTestToolUse(content, allowHarnessTools = false) {
       const command = node.arguments
         .flatMap((argument) => collectStrings(argument, strings))
         .join(" ");
-      if (isTestToolCommand(command)) return true;
+      if (isTestToolCommand(command, allowHarnessTools)) return true;
     }
     return false;
   });

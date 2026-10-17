@@ -54,6 +54,20 @@ test("allows clean sources and the supported Jest API", async () => {
   ).resolves.toEqual([]);
 });
 
+test("allows runner names in comments and inert configuration values", async () => {
+  const texts = new Map([
+    ["src/notes.mjs", '// vitest run\nconst settings = { runner: "mocha" };'],
+    ["test.config.json", '{"runner":"vitest","description":"mocha"}'],
+  ]);
+  const inventory = {
+    files: async () => [...texts.keys()],
+    readText: async (path) => texts.get(path.replaceAll("\\", "/").replace("repo/", "")),
+  };
+  await expect(
+    validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+  ).resolves.toEqual([]);
+});
+
 test("allows Istanbul ignore only in the primary library export barrel", async () => {
   const content = '/* istanbul ignore file */\nexport { value } from "../../value.mjs";';
   const inventory = { files: async () => ["src/index.mjs"], readText: async () => content };
