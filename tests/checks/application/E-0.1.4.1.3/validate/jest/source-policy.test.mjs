@@ -173,7 +173,6 @@ test.each([
   ".mocharc.yaml",
   ".nycrc.json",
   "playwright.config.ts",
-  ".babelrc",
   ".taprc",
   "uvu.config.mjs",
   "vitest.workspace.mts",
@@ -183,3 +182,13 @@ test.each([
     validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
   ).resolves.toContain(`${path} is a separate test runner or coverage configuration file.`);
 });
+
+test.each(["babel.config.js", "babel.config.json", ".babelrc", ".babelrc.json"])(
+  "allows Babel build configuration %s",
+  async (path) => {
+    const inventory = { files: async () => [path], readText: async () => "" };
+    await expect(
+      validateJestSourcePolicy({ root: "repo", repositoryInventory: inventory }),
+    ).resolves.toEqual([]);
+  },
+);
