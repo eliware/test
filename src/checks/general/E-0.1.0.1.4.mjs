@@ -1,5 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
-import { validateMarkdownLinks } from "./E-0.1.0.1.4/validate/markdown-links.mjs";
+import { validateMarkdownLinks } from "./E-0.1.0.1.4/validate/markdown/links.mjs";
 import { validateSpecificationIndexes } from "./E-0.1.0.1.4/validate/specification/indexes.mjs";
 import { validateSpecificationDirectives } from "./E-0.1.0.1.4/validate/specification/directives.mjs";
 

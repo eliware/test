@@ -53,7 +53,7 @@ directives:
     dos:
       - Mirror each src/ .mjs file with exactly one same-path tests/ .test.mjs file.
       - Keep library implementation in src/.
-      - Give each test file a matching source, executable Jest test callback, and source import.
+      - Give each test file a matching source path and an executable Jest test callback.
       - Keep unmatched fixtures, snapshots, generators, and test support in root
         test-fixtures/.
       - Keep generated test output in ignored artifacts/.

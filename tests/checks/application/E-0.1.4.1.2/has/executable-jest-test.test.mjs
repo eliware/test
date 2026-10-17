@@ -2,31 +2,21 @@ import { expect, test } from "@jest/globals";
 import { inspectJestTestModule } from "../../../../../src/checks/application/E-0.1.4.1.2/has/executable-jest-test.mjs";
 
 test("accepts direct and table-driven Jest callbacks", () => {
-  expect(
-    inspectJestTestModule('test("direct", () => {});', "tests/a.test.mjs", "src/a.mjs"),
-  ).toMatchObject({ hasExecutableTest: true, importsSource: false });
-  expect(
-    inspectJestTestModule(
-      'it.each([1])("table", (value) => value);',
-      "tests/a.test.mjs",
-      "src/a.mjs",
-    ),
-  ).toMatchObject({ hasExecutableTest: true });
+  expect(inspectJestTestModule('test("direct", () => {});')).toMatchObject({
+    hasExecutableTest: true,
+  });
+  expect(inspectJestTestModule('it.each([1])("table", (value) => value);')).toMatchObject({
+    hasExecutableTest: true,
+  });
 });
 
 test("accepts named Jest callback functions", () => {
   const source = 'function verify() {} test("named", verify);';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    true,
-  );
+  expect(inspectJestTestModule(source).hasExecutableTest).toBe(true);
   const variable = 'const verify = () => {}; test("named", verify);';
-  expect(inspectJestTestModule(variable, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    true,
-  );
+  expect(inspectJestTestModule(variable).hasExecutableTest).toBe(true);
   const nested = 'describe("suite", () => { function verify() {} test("named", verify); });';
-  expect(inspectJestTestModule(nested, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    true,
-  );
+  expect(inspectJestTestModule(nested).hasExecutableTest).toBe(true);
 });
 
 test("accepts active modifiers and imported test aliases", () => {
@@ -45,38 +35,26 @@ test("accepts active modifiers and imported test aliases", () => {
     'const { test: run } = await import("@jest/globals"); run("dynamic alias", () => {});',
     'const api = await import("@jest/globals"); api.test("dynamic namespace", () => {});',
   ])
-    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-      true,
-    );
+    expect(inspectJestTestModule(content).hasExecutableTest).toBe(true);
 });
 
 test("ignores Jest calls inside functions that are never invoked", () => {
   const source = 'function unused() { test("fake", () => {}); }';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
+  expect(inspectJestTestModule(source).hasExecutableTest).toBe(false);
 });
 
 test("rejects a test call shadowed by a module binding", () => {
   const source = 'const test = (name, callback) => callback(); test("fake", () => {});';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
+  expect(inspectJestTestModule(source).hasExecutableTest).toBe(false);
   const declaration = 'function test(name, callback) { callback(); } test("fake", () => {});';
-  expect(
-    inspectJestTestModule(declaration, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest,
-  ).toBe(false);
+  expect(inspectJestTestModule(declaration).hasExecutableTest).toBe(false);
 });
 
 test("ignores tests inside skipped Jest suites", () => {
   const source = 'describe.skip("suite", () => { test("skipped", () => {}); });';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    false,
-  );
+  expect(inspectJestTestModule(source).hasExecutableTest).toBe(false);
   const focused = 'describe.only("suite", () => { test("active", () => {}); });';
-  expect(inspectJestTestModule(focused, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-    true,
-  );
+  expect(inspectJestTestModule(focused).hasExecutableTest).toBe(true);
 });
 
 test("ignores non-test imports and inactive modifiers", () => {
@@ -88,9 +66,7 @@ test("ignores non-test imports and inactive modifiers", () => {
     'test["skip"]("computed", () => {});',
     '(1)("not a test", () => {});',
   ])
-    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-      false,
-    );
+    expect(inspectJestTestModule(content).hasExecutableTest).toBe(false);
 });
 
 test("rejects comments, strings, and table declarations without callbacks", () => {
@@ -99,26 +75,14 @@ test("rejects comments, strings, and table declarations without callbacks", () =
     'const text = "test(\\\"string\\\", () => {})";',
     "test.each([1]);",
   ])
-    expect(inspectJestTestModule(content, "tests/a.test.mjs", "src/a.mjs").hasExecutableTest).toBe(
-      false,
-    );
+    expect(inspectJestTestModule(content).hasExecutableTest).toBe(false);
   expect(
-    inspectJestTestModule(
-      'const suite = 1; describe("suite", suite);',
-      "tests/a.test.mjs",
-      "src/a.mjs",
-    ).hasExecutableTest,
+    inspectJestTestModule('const suite = 1; describe("suite", suite);').hasExecutableTest,
   ).toBe(false);
 });
 
 test("rejects invalid JavaScript", () => {
-  expect(inspectJestTestModule("test(;", "tests/a.test.mjs", "src/a.mjs")).toEqual({
+  expect(inspectJestTestModule("test(;")).toEqual({
     hasExecutableTest: false,
-    importsSource: false,
   });
-});
-
-test("includes a re-exported source module", () => {
-  const source = 'export { value } from "../src/a.mjs";';
-  expect(inspectJestTestModule(source, "tests/a.test.mjs", "src/a.mjs").importsSource).toBe(true);
 });

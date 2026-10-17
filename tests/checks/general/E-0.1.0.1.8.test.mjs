@@ -30,12 +30,6 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
   };
 }
 
-test("accepts required ignore rules and a clean Git index", async () => {
-  await expect(
-    validateGitHygiene("repo", createGitRunner(), { readText: async () => ignoreText }),
-  ).resolves.toEqual([]);
-});
-
 test("runs with injected Git and file dependencies", async () => {
   await expect(
     run({ root: "repo", runGit: createGitRunner(), readText: async () => ignoreText }),

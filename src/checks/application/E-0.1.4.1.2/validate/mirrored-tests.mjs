@@ -19,7 +19,7 @@ export async function validateMirroredTests(files, readText, root) {
     const source = `src/${path.slice("tests/".length, -".test.mjs".length)}.mjs`;
     if (!sources.includes(source)) errors.push(`${path} has no matching source file.`);
     const content = await readText(join(root, path)).catch(() => "");
-    const inspected = inspectJestTestModule(content, path, source);
+    const inspected = inspectJestTestModule(content);
     if (!inspected.hasExecutableTest) errors.push(`${path} must declare an executable Jest test.`);
   }
   return errors;

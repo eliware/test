@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { validateMirroredTests } from "../../../../../src/checks/application/E-0.1.4.1.2/validate/mirrored-tests.mjs";
 
-test("requires matching executable tests without requiring a source import", async () => {
+test("accepts any matching test with an executable Jest callback", async () => {
   const files = ["src/a.mjs", "tests/a.test.mjs"];
   const readText = async () => 'test("a", () => {});';
   await expect(validateMirroredTests(files, readText, "repo")).resolves.toEqual([]);
