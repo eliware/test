@@ -1,4 +1,4 @@
-# Eliware Test documentation
+# Eliware Test User Guide
 
 Use these guides to set up Eliware Test and validate a repository.
 

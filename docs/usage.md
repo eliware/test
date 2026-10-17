@@ -137,4 +137,23 @@ Read [Profiles](profiles.md) to select repository profiles.
 Read the profile files in [`specs/conventions/`](../specs/conventions/README.md) for exact rules.
 Read [ordering specifications](../specs/conventions/ordering/README.md) for cross-profile order rules.
 
+## Package contents and releases
+
+The `eliware-test` command runs `bin/eliware-test.mjs`.
+The package is native ESM and publishes that command through `package.json.bin`.
+
+`package.json.files` lists the files included in the npm package.
+This package includes `src/`, `bin/`, `docs/`, `specs/`, and `dictionary/`.
+It also includes `README.md`, `AGENTS.md`, `LICENSE`, and `RELEASE_NOTES.md`.
+The package check permits other runtime files.
+It rejects tests, fixtures, build output, credentials, and lock files.
+
+Set `package.json.version` to a numeric `MAJOR.MINOR.PATCH` value.
+Add a dated section for the current version to `RELEASE_NOTES.md`.
+Add a matching `v<version>` Git tag for each published release.
+Each earlier release section must match an existing Git tag.
+
+Run `npm run pack` in this checkout to check package contents.
+Run `eliware-test --pack` in a consumer repository to check its package contents.
+
 [Return to documentation](README.md).

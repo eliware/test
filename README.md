@@ -24,254 +24,69 @@ Shared deterministic repository validation for Eliware projects
 
 ## Features
 
-The CLI checks repository structure, documentation, conventions, and profiles.
-It selects validation stages from `package.json.eliware.apply`.
-Jest and coverage run when the applied profile requires them.
-Package checks run for the `npm-published` profile.
-Eliware Test owns this CLI, not the repositories that it checks.
-It does not run live operational checks.
+Eliware Test validates repositories with deterministic checks selected by `package.json.eliware.apply`.
+It runs Jest and package checks when the selected profiles require them.
 
 ## Requirements
 
 Use Node.js 26 or newer and npm 12 or newer.
-The CLI checks the npm version before validation.
-It stops when npm has an unsupported version or its version is unknown.
-`--help` and `--version` skip this check.
 
 ## Setup
 
-Install locked dependencies for development:
-
-```text
-npm ci
-```
-
-Install the public package in a consumer repository:
+Install Eliware Test as a development dependency:
 
 ```text
 npm install --save-dev @eliware/test
 ```
 
-Use Node.js 26 or newer and npm 12 or newer.
+Read the [installation guide](docs/usage.md) for setup instructions.
 
 ## Usage
 
-Run validation in a consumer repository:
+Run validation from the repository root:
 
 ```text
 eliware-test
-eliware-test --help
-eliware-test --version
-eliware-test --debug-timing
-eliware-test --lint
-eliware-test --format
-eliware-test --format-check
-eliware-test --audit
-eliware-test --pack
-eliware-test tests/example.test.mjs
 ```
 
-Package-maintainer commands require this checkout:
-
-```text
-npm test
-npm run lint
-npm run format
-npm run format:check
-npm run audit
-npm run pack
-node bin/eliware-test.mjs --pack
-```
-
-The `--pack` mode is available everywhere.
-It checks package contents only for the `npm-published` profile.
-The `npm run pack` script is required for this package and that profile.
-
-Run the opt-in smoke command from this checkout or an installed package:
-
-```text
-npm run smoke -- --target ../consumer-copy
-```
-
-- Use an existing consumer repository that you can discard after the smoke run.
-- Smoke does not create or prepare the target.
-- It packs this package, installs the tarball, runs the consumer's `npm test`, and restores changed package paths.
-- It installs in local `node_modules` without saving dependencies or changing lockfiles.
-- It restores the manifest, lockfiles, package directory, and local executable shims.
-- Other files created by consumer tests stay in the target.
-- Use a temporary copy or worktree.
-- Smoke rejects targets in this checkout, with links to this checkout.
-- If restore fails, it reports the backup path for recovery.
-- It omits only the unpublished candidate from the outdated check.
-- It does not touch system-wide links, create copies, or create worktrees.
-- Windows directory links return with the junction type.
-- Smoke rejects a captured file link before changes on Windows.
-
-The npm-published profile defines the package file allowlist.
-The general profile does not add files to that allowlist.
-Include `specs/` in each npm-published package.
-
-See [documentation](docs/README.md) and [specifications](specs/README.md).
-See [release notes](RELEASE_NOTES.md).
-
-Applications put launchers in `bin/` and code in `src/`.
-Published applications include `bin/` in the exact package allowlist.
-Libraries put public entrypoints and TypeScript declarations in `src/`.
-`package.json.version` sets this checkout's version.
-The npm badge shows the latest public version.
-
-- The CLI uses consumer Jest when available.
-- If consumer Jest is not installed, the CLI uses bundled Jest from the consumer's working directory.
-- It reads supported Jest settings from the consumer's `package.json`.
-- It rejects other Jest config files.
-
-- Each validation run creates `eliware-test.lock` in the repository root.
-- It removes the lock on exit.
-- A concurrent run stops if the lock exists.
-- Help and version commands do not create the lock.
-- If the CLI stops and leaves a stale lock, confirm no run is active, then remove it.
-- Git ignores this file.
-
-- `npm run format` and `--format` write formatted files.
-- `npm run format:check` and `--format-check` only check formatting.
-- The CLI accepts modes and focused test paths. It does not accept npm script names.
-- Legacy `--ignore-*` options are unsupported.
-- Aggregate validation enforces repository-wide coverage and module-size rules.
-- A focused run checks only the selected source module for coverage.
-- It does not report unrelated module coverage failures.
-
-- `--debug-timing` streams stage times and Jest suite times.
-- It does not write a second Jest report.
-- Programmatic callers must provide an output writer to receive timing data.
+Read the [user guide](docs/README.md) and [profile guide](docs/profiles.md) for setup and profile details.
+Read [specifications](specs/README.md) for the authoritative requirements.
+Read [release notes](RELEASE_NOTES.md) for changes by version.
 
 ## Development
 
-- Run `npm test` for aggregate validation.
-- Clean aggregate validation reports check counts, Jest suite and test counts, issue counts, and elapsed times.
-- Run `npm run lint`, `npm run format:check`, `npm run audit`, or `npm run pack` when required.
-- Use `npm run format` to change formatting.
-- Use native ESM `.mjs` modules and mirror `src/` in `tests/`.
-- Add focused regression tests for behavior changes.
-- Each mirrored test requires an executable Jest `test` or `it` declaration.
-- Import the exact source module.
-
-Aggregate validation reads tracked symlink modes from the Git index.
-It rejects tracked links to files and directories.
-It does not resolve link targets.
-Validation fails when it cannot read the Git index.
+Read the [validation guide](docs/validation.md) for focused and aggregate test instructions.
 
 ## Testing
 
-In this npm-published repository, `npm test` runs lint, format check, audit,
-outdated, pack, conventions, Jest, and coverage in that order.
-It runs typecheck for library repositories and build for web repositories.
-The web build runs without npm prebuild or postbuild scripts.
-Consumer repositories use `npm test` and select stages from their profiles.
-See [conventions](specs/conventions/) for profile requirements.
-
-- Run all enabled stages and convention checks before Jest.
-- Run Jest only when those earlier checks pass.
-- Convention checks can read completed stage results from the run cache.
-- The CLI returns the highest code when multiple stages fail.
-- Run one repository-relative `.test.*` or `.spec.*` path in `tests/`.
-- Supported extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
-- Each maintained `.mjs` source also requires one mirrored `.test.mjs` file.
-- The mirror check inventories all files in `src/` and `tests/`.
-- In libraries, a `.d.ts` file must be adjacent to a same-name `.mjs` source.
-- The typecheck script must validate that declaration.
-- Jest reporter names in `package.json` must be strings.
-- Reporter option tuples are unsupported.
-
-The supported workflow files are `.github/workflows/ci.yaml` and `.knit/deploy.yaml`.
-Add `.github/workflows/publish.yaml` when npm or GHCR publication applies.
-Do not add other GitHub Actions or Knit workflow YAML files.
-Each allowed workflow must contain one YAML document and pass its profile rules.
+Eliware Test selects validation stages from the profiles in `package.json.eliware.apply`.
+The [validation guide](docs/validation.md) explains each stage and its results.
 
 ## Troubleshooting
 
-Run the reported focused test path to find the cause of a failure.
-Then run `npm test` to check the full validation gate.
-See [Troubleshooting](docs/troubleshooting.md) for more help.
-
-The orchestration and check registry use focused ESM modules in `src/`.
-Application and library guidance applies only when their profiles are selected.
-Some profile requirements are advisory because no deterministic check can enforce them.
+Read the [troubleshooting guide](docs/troubleshooting.md) to resolve validation failures.
 
 ## Security
 
-- Keep secrets, credentials, private runtime data, and generated output out of Git.
-  The CLI redacts known secrets from child-process diagnostics when possible.
-  The CLI cannot redact all secrets from output.
-  Do not print secrets in child-process output.
+Do not share credentials, private data, or generated validation output.
+Read the [troubleshooting guide](docs/troubleshooting.md#share-safe-diagnostics) before sharing diagnostics.
 
 ## Configuration
 
-The CLI has no runtime settings, environment variables, or consumer config files.
-Profile selection is repository metadata in `package.json.eliware.apply`.
-CLI options are command arguments, not runtime configuration.
+Set repository profiles in `package.json.eliware.apply`.
+Read the [profile guide](docs/profiles.md) for profile selection and combinations.
 
 ## Operations
 
-Start the CLI with `eliware-test` or `bin/eliware-test.mjs`.
-The runner manages child-process shutdown.
-Validation runs locally or in CI.
-It does not release, publish, deploy, or make operational changes.
-Use the applicable Eliware Operations procedures for those actions.
+Eliware Test validates repositories. It does not publish packages or deploy services.
 
 ## Commands
 
-The executable is `eliware-test`.
-It runs `bin/eliware-test.mjs`.
-`--help` prints usage. `--version` prints the package version.
-Other modes are `--debug-timing`, `--lint`, `--format`, `--format-check`, `--audit`, and `--pack`.
-
-- Each tool mode has an argument allowlist.
-- Audit accepts only `--no-fund` and `--no-progress`.
-- Lint accepts only `--threads=<positive-count>`.
-- Pack and formatting modes use their own allowlists.
-- Formatting modes reject file paths and use repository scope.
-- The CLI rejects options that weaken required checks.
-- Put tool arguments after the mode or after `--`.
-- The CLI rejects arguments before the mode.
-- Arguments after `--` follow the mode allowlist.
-
-For example, `eliware-test --audit --no-fund` passes the allowed flag to npm.
-
-- To run focused tests, pass one or more existing repository-relative test paths in `tests/`.
-- Put each path before optional `--`.
-- Focused validation checks lint and format on each selected test and its matching source file.
-- It also checks application or library layout, mirrored tests, source placement, export barrels, and line limits on those files.
-- It runs other checks only when their full rules can use the selected files.
-- Clean focused validation reports convention check counts, Jest suite and test counts, issue counts, and elapsed times.
-- Only supported non-path Jest options can follow `--`.
-- The CLI rejects paths after `--`.
-- Supported extensions are `.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.mts`, and `.cts`.
-
-```text
-eliware-test tests/checks/example.test.mjs
-eliware-test tests/checks/example.test.mjs tests/cli/example.test.mjs
-```
-
-- `--format` writes files. `--format-check` does not.
-- `--pack` checks package contents. It does not publish.
-- No command authorizes a release, deployment, or external change.
-- Legacy `--ignore-*` options are unsupported.
-- Supported platforms are Windows, macOS, and Linux with Node.js 26 or newer and npm 12 or newer.
-- Development tests Windows. CI tests Ubuntu with Node.js 26.
-- macOS support is inferred from Ubuntu behavior. CI does not test macOS.
+Run `eliware-test --help` to read the supported commands.
 
 ## Exit codes
 
-- Code `0` means success. Code `1` means unclassified or configuration failure.
-- Codes `2` through `12` mean Jest, unexpected output, coverage, lint, format, audit, outdated, pack, typecheck, build, and convention failure.
-- The CLI returns the highest code when failures have different codes.
-- Invalid arguments and configuration errors return code `1`.
-- Each failed convention check reports its ID, observed failure, and full directive.
-- The directive includes examples and child rules when included.
-- The CLI does not truncate or summarize that directive.
-- Canonical profile specs live in `specs/conventions/`.
-- The CLI reads those specifications.
-- Validation does not deploy, publish, release, or change external systems.
+Read the [troubleshooting guide](docs/troubleshooting.md#read-exit-codes) for exit code meanings.
 
 ## Support
 

@@ -1,10 +1,49 @@
 # Release Notes
 
-## 13.0.0 — 2026-10-15
+## 13.0.0 — 2026-10-16
+
+### Breaking changes
+
+- Require repositories to pass the checks for their selected profiles and shared language rules.
+- Require each earlier version section to match a repository tag.
+
+### Added
+
+- Add a database profile with requirements for database access, backups, and tests.
+- Add one policy for profile combinations and check it before validation.
+- Add path-scoped exemptions with exact, `*`, and `**` path matching.
+- Match package exemptions with repository map data and validate both data sources.
+- Add shared language rules and a CSV dictionary for maintained reader-facing text.
+- Check tests for file writes, child commands, external network access, and uncontrolled timers.
+- Check every specification YAML file and set limits for file bytes, line length, and aliases.
+- Add web checks for the standard webpack build, Lighthouse scripts, and screenshot scripts.
+- Check GHCR workflows, production image digests, and GitHub attestations.
+- Reject open-ended version sections and versions without repository tags.
+- Require published npm packages to include `specs/` in the package and tarball.
+- Add database backup and test requirements and stronger YAML runbook validation.
+- Add user guides for setup, profiles, validation, smoke tests, package contents, and releases.
 
 ### Changed
 
-- Set the package and schema versions to 13.0.0.
+- Require checkout v7, setup-node v7, npm latest, and full Git history in validation workflows.
+- Require publication jobs to wait for validation and use restricted permissions.
+- Require `GH_TOKEN` for GHCR attestations and use identity-based npm provenance.
+- Use `git pull` in Knit deployments and set a five-minute deployment timeout.
+- Keep Jest coverage reports and console logs in the consumer's `coverage/` directory.
+- Run Jest in one process with open-handle checks and suite and startup time limits.
+- Group source modules with shared file-name prefixes in nested folders and mirror each move in tests.
+- Use repository-map data when available and package metadata when the map is missing.
+- Update smoke validation to check the target repository and restore changed package files.
+- Keep only convention-required content in README.md and AGENTS.md. Link to the user guides.
+- Update package dependencies to their latest releases.
+
+### Fixed
+
+- Redact sensitive Jest output without hiding short values or npm environment names.
+- Apply path exemptions to tracked links and reject unknown exemption fields.
+- Close gaps in export-barrel, secret-path, and wrapped publication-command checks.
+- Stop validation tests from writing files or calling external tools.
+- Correct profile, README, AGENTS, workflow, and package-order checks.
 
 ## 12.0.0 — 2026-10-10
 
