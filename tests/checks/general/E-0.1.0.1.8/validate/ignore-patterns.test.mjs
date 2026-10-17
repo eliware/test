@@ -53,4 +53,12 @@ test("reports missing ignore rules and accepts recursive directory patterns", ()
       "**/node_modules\n**/.git\n**/coverage\n**/dist\n**/build\n**/generated\n**/artifacts\n**/test-results\n**/.DS_Store\n**/Thumbs.db",
     ),
   ).toEqual([]);
+  expect(
+    validateRequiredIgnoreRules(
+      "**/node_modules/**\n**/.git/**\n**/coverage/**\n**/dist/**\n**/build/**\n**/generated/**\n**/artifacts/**\n**/test-results/**\n**/.DS_Store\n**/Thumbs.db",
+    ),
+  ).toEqual([]);
+  expect(validateRequiredIgnoreRules("coverage/**")[0]).toContain(
+    ".gitignore must define universal rules for",
+  );
 });

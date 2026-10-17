@@ -376,6 +376,7 @@ directives:
     dos:
       - Ignore directories named node_modules, .git, coverage, dist, build, generated,
         artifacts, and test-results at all depths.
+      - Use name, **/name, or **/name/** patterns.
       - Ignore .DS_Store and Thumbs.db.
       - Keep tracked and staged files unignored by the root .gitignore.
       - Do not include symlinks in tracked paths.

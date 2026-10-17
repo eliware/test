@@ -76,5 +76,5 @@ function findProtectedNegations(rules) {
 function isUniversalRule(rule, name) {
   if (rule.startsWith("!")) return false;
   const pattern = rule.replace(/\/$/u, "");
-  return pattern === name || pattern === `**/${name}`;
+  return pattern === name || pattern === `**/${name}` || pattern === `**/${name}/**`;
 }
