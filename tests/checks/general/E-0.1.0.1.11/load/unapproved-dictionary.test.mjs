@@ -1,8 +1,5 @@
 import { expect, test } from "@jest/globals";
-import {
-  loadUnapprovedDictionary,
-  parseUnapprovedCsv,
-} from "../../../../../src/checks/general/E-0.1.0.1.11/load/unapproved-dictionary.mjs";
+import { loadUnapprovedDictionary } from "../../../../../src/checks/general/E-0.1.0.1.11/load/unapproved-dictionary.mjs";
 
 test("loads the bundled CSV dictionary with alternatives for each word", () => {
   const dictionary = loadUnapprovedDictionary();
@@ -11,30 +8,6 @@ test("loads the bundled CSV dictionary with alternatives for each word", () => {
   expect(dictionary.port).toBe(
     "TCP, UDP, TCP-PORT, UDP-PORT, SWITCH-INTERFACE, TRANSLATE (v), MOVE (v)",
   );
-});
-
-test("parses quoted fields, commas, escaped quotes, and line breaks", () => {
-  expect(
-    parseUnapprovedCsv(
-      '"word","alternative_1","alternative_2"\r\n"term","USE, THEN","SAY ""yes""\nnow"\r\n',
-    ),
-  ).toEqual([
-    ["word", "alternative_1", "alternative_2"],
-    ["term", "USE, THEN", 'SAY "yes"\nnow'],
-  ]);
-});
-
-test("rejects an unclosed quoted field", () => {
-  expect(() => parseUnapprovedCsv('"word","alternative_1"\n"term","missing')).toThrow(
-    "unclosed quoted field",
-  );
-});
-
-test("parses a final CSV record without a line break", () => {
-  expect(parseUnapprovedCsv('"word","alternative_1"\n"term","USE"')).toEqual([
-    ["word", "alternative_1"],
-    ["term", "USE"],
-  ]);
 });
 
 test("rejects invalid headers and records", () => {

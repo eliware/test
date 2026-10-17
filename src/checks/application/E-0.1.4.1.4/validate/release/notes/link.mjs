@@ -1,7 +1,5 @@
-import {
-  extractMarkdownLinks,
-  removeMarkdownCode,
-} from "../../../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import { extractMarkdownLinks } from "../../../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import { removeMarkdownCode } from "../../../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
 
 export function validateReleaseNotesLink(readme) {
   const lines = removeMarkdownCode(readme).split(/\r?\n/u);

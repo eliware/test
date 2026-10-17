@@ -1,4 +1,4 @@
-import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
 
 const requiredMarkers = [
   "Node.js 26",

@@ -1,4 +1,4 @@
-import { removeMarkdownCode } from "./links.mjs";
+import { removeMarkdownCode } from "./remove-markdown-code.mjs";
 import {
   collectMarkdownReferenceDefinitions,
   extractMarkdownReferenceUses,

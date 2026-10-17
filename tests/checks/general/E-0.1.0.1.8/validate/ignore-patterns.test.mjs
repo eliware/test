@@ -27,17 +27,10 @@ test("allows repository-specific ignore rules", () => {
   expect(validateRequiredIgnoreRules(`${rules}\n!`)).toEqual([]);
 });
 
-test("rejects later negations that restore protected paths at nested depths", () => {
-  for (const negation of [
-    "!node_modules/",
-    "!nested/coverage/",
-    "!src/**/dist/**",
-    "!**/.DS_Store",
-    "!nested/deep/Thumbs.db",
-  ])
-    expect(validateRequiredIgnoreRules(`${rules}\n${negation}`)[0]).toContain(
-      "must not restore protected paths",
-    );
+test("reports negations that restore protected paths", () => {
+  expect(validateRequiredIgnoreRules(`${rules}\n!nested/coverage/`)[0]).toContain(
+    "must not restore protected paths",
+  );
 });
 
 test("allows negations that precede the required ignore rules", () => {

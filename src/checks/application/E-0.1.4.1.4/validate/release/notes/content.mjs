@@ -1,4 +1,4 @@
-import { removeMarkdownCode } from "../../../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import { removeMarkdownCode } from "../../../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
 import { validateReleaseNoteSections } from "../note-sections.mjs";
 import { validateReleaseVersionHistory } from "../version-history.mjs";
 

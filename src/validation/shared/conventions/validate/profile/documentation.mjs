@@ -1,4 +1,4 @@
-import { removeMarkdownCode } from "../../../../../checks/general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import { removeMarkdownCode } from "../../../../../checks/general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
 import { readCanonicalOrder } from "../../read-canonical-order.mjs";
 import { validateProfileTestGuidance } from "./test-guidance.mjs";
 

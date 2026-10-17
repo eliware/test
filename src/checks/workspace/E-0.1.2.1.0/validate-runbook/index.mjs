@@ -1,8 +1,6 @@
 import { posix } from "node:path";
-import {
-  extractMarkdownLinks,
-  removeMarkdownCode,
-} from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import { extractMarkdownLinks } from "../../../general/E-0.1.0.1.4/extract-markdown/links.mjs";
+import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
 
 export function validateRunbookIndex(content, runbooks) {
   const body = removeMarkdownCode(content);
