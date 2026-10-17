@@ -11,12 +11,8 @@ directives:
       - Do not use stale identity markers.
       - Do not list latest as a supported tag.
     examples:
-      - "## GHCR publication"
-      - "Image: ghcr.io/eliware/example"
-      - "Pull command: docker pull ghcr.io/eliware/example:v13.0.0"
-      - "Supported tags: vMAJOR.MINOR.PATCH"
-      - "Deployment boundary: publication does not deploy; deploy by immutable version tag
-        and recorded sha256 digest."
+      - /eliware/application-template/AGENTS.md
+      - /eliware/application-template/README.md
 
   - id: E-0.1.11.1.1
     dos:
@@ -27,4 +23,7 @@ directives:
     donts:
       - Do not use .github/workflows/publish.yaml for GHCR publication.
     examples:
-      - "The canonical workflow is specs/workflows/ghcr.yaml."
+      - /eliware/application-template/.github/workflows/ghcr.yaml
+      - /eliware/discord-template/.github/workflows/ghcr.yaml
+      - /eliware/mcp-server-template/.github/workflows/ghcr.yaml
+      - /eliware/web-template/.github/workflows/ghcr.yaml

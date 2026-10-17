@@ -13,8 +13,8 @@ export function parseBoundedYamlDocuments(
   { lineCharacters = yamlLimits.lineCharacters } = {},
 ) {
   if (typeof source !== "string") throw new Error("source is not a string");
-  const limitError = findYamlLimitError(source, path, lineCharacters);
-  if (limitError) throw new Error(limitError);
+  const limitErrors = findYamlLimitErrors(source, path, lineCharacters);
+  if (limitErrors.length) throw new Error(limitErrors.join("\n"));
   const documents = parseAllDocuments(source);
   for (const document of documents) {
     if (document.errors.length) continue;
@@ -40,16 +40,20 @@ export function parseBoundedYamlValue(source, path) {
   return document?.toJS({ maxAliasCount: yamlLimits.aliases });
 }
 
-function findYamlLimitError(source, path, lineCharacters) {
+function findYamlLimitErrors(source, path, lineCharacters) {
+  const errors = [];
   const bytes = Buffer.byteLength(source, "utf8");
-  if (bytes > yamlLimits.bytes) return `${path} is ${bytes} UTF-8 bytes. limit is 100000.`;
+  if (bytes > yamlLimits.bytes) errors.push(`${path} is ${bytes} UTF-8 bytes. limit is 100000.`);
   const lines = source.split(/\r\n|\n|\r/u);
   if (lines.at(-1) === "" && /(?:\r\n|\n|\r)$/u.test(source)) lines.pop();
-  if (lines.length > yamlLimits.lines) return `${path} has ${lines.length} lines. limit is 1000.`;
+  if (lines.length > yamlLimits.lines)
+    errors.push(`${path} has ${lines.length} lines. limit is 1000.`);
   for (const [index, line] of lines.entries()) {
     const characters = Array.from(line).length;
     if (characters > lineCharacters)
-      return `${path} line ${index + 1} has ${characters} characters. limit is ${lineCharacters}.`;
+      errors.push(
+        `${path} line ${index + 1} has ${characters} characters. limit is ${lineCharacters}.`,
+      );
   }
-  return null;
+  return errors;
 }

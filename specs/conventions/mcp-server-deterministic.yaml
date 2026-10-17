@@ -10,29 +10,8 @@ directives:
     donts:
       - Do not omit MCP-specific headings.
     examples:
-      - "## MCP server"
-      - "## Configuration
-
-
-        ## Operations
-
-
-        ## Tools
-
-
-        ## Resources
-
-
-        ## Prompts
-
-
-        ## Transport
-
-
-        ## Authentication
-
-
-        ## Schemas"
+      - /eliware/mcp-server-template/AGENTS.md
+      - /eliware/mcp-server-template/README.md
 
   - id: E-0.1.8.1.1
     dos:
@@ -48,5 +27,5 @@ directives:
       - Do not put tool files in subfolders of tools/ or src/tools/.
       - Do not import or execute repository handlers during validation.
     examples:
-      - "tools/echo.mjs re-exports src/tools/echo.mjs."
-      - "src/tools/echo.mjs default-exports a tool registration function."
+      - /eliware/mcp-server-template/tools/echo.mjs
+      - /eliware/mcp-server-template/src/tools/echo.mjs

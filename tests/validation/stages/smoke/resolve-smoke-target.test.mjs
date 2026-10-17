@@ -62,7 +62,6 @@ test.each([
 
 test.each([
   ["replacement", async () => ({ ...identity(), birthtimeMs: 4 })],
-  ["modification", async () => ({ ...identity(), mtimeMs: 5 })],
   [
     "disappearance",
     async () => {
@@ -73,4 +72,10 @@ test.each([
   lstat.mockResolvedValueOnce(identity()).mockImplementationOnce(changed);
   const resolved = await resolveSmokeTarget(source, target);
   await expect(resolved.assertIdentity()).rejects.toThrow("Refusing access to an untrusted target");
+});
+
+test("allows target contents to change without replacing the target directory", async () => {
+  lstat.mockResolvedValueOnce(identity()).mockResolvedValueOnce({ ...identity(), mtimeMs: 5 });
+  const resolved = await resolveSmokeTarget(source, target);
+  await expect(resolved.assertIdentity()).resolves.toBeUndefined();
 });

@@ -32,6 +32,14 @@ test("reports byte, line, and character values above each limit", () => {
   );
 });
 
+test("reports every overlong YAML line in one pass", () => {
+  const source = ["x".repeat(101), "valid: true", "y".repeat(104)].join("\n");
+  expect(() => parseBoundedYamlDocuments(source, "multiple-long-lines.yaml")).toThrow(
+    "multiple-long-lines.yaml line 1 has 101 characters. limit is 100.\n" +
+      "multiple-long-lines.yaml line 3 has 104 characters. limit is 100.",
+  );
+});
+
 test("allows caller-specific line limits and keeps the other bounds", () => {
   const source = `value: ${"x".repeat(300)}`;
   expect(

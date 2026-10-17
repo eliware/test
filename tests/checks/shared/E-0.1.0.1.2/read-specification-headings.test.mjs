@@ -46,7 +46,7 @@ test("reads declared headings from every YAML stream document", async () => {
   await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["First", "Second"]));
 });
 
-test("reports listing, read, and malformed YAML errors", async () => {
+test("reports listing and read errors but leaves malformed YAML reporting to its validator", async () => {
   readdir.mockRejectedValueOnce(new Error("blocked"));
   await expect(readSpecificationHeadings(root)).rejects.toThrow("blocked");
   readdir.mockResolvedValueOnce([file("valid.yaml")]);
@@ -54,7 +54,15 @@ test("reports listing, read, and malformed YAML errors", async () => {
   await expect(readSpecificationHeadings(root)).rejects.toThrow("read failed");
   readdir.mockResolvedValueOnce([file("invalid.yaml")]);
   readFile.mockResolvedValueOnce("directives: [\n");
-  await expect(readSpecificationHeadings(root)).rejects.toThrow();
+  await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set());
+});
+
+test("does not apply YAML line limits during heading discovery", async () => {
+  readdir.mockResolvedValueOnce([file("long.yaml"), file("valid.yaml")]);
+  readFile
+    .mockResolvedValueOnce(`metadata: ${"x".repeat(110)}\ndirectives:\n  - dos: ["## First"]\n`)
+    .mockResolvedValueOnce('directives:\n  - dos: ["## Second"]\n');
+  await expect(readSpecificationHeadings(root)).resolves.toEqual(new Set(["First", "Second"]));
 });
 
 test("ignores invalid directive fields and null YAML documents", async () => {

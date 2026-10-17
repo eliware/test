@@ -53,16 +53,15 @@ directives:
         malformed dependency maps.
       - Do not use CommonJS module syntax in maintained implementation.
     examples:
-      - >-
-        {"name":"@eliware/example","version":"13.0.0","type":"module",
-        "description":"Example repository","keywords":["example"],"private":true,
-        "publishConfig":{},"main":"src/index.mjs","bin":"bin/example.mjs","files":["src/"],
-        "scripts":{},"engines":{"node":">=26"},"dependencies":{},"devDependencies":{},
-        "jest":{},"prettier":{},"author":"Eliware <eliware@eliware.org>","license":"MIT",
-        "repository":{"type":"git","url":"git+https://github.com/eliware/example.git"},
-        "homepage":"https://github.com/eliware/example#readme",
-        "bugs":{"url":"https://github.com/eliware/example/issues"},
-        "eliware":{"id":"E-1234","apply":["general"]}}
+      - /eliware/application-template/package.json
+      - /eliware/cli-template/package.json
+      - /eliware/discord-template/package.json
+      - /eliware/documentation-template/package.json
+      - /eliware/infrastructure-template/package.json
+      - /eliware/library-template/package.json
+      - /eliware/mcp-server-template/package.json
+      - /eliware/web-template/package.json
+      - /eliware/workspace-template/package.json
 
   - id: E-0.1.0.1.2
     dos:
@@ -74,29 +73,7 @@ directives:
       - Do not omit or rename a required heading.
       - Do not create README.md in .knit/.
     examples:
-      - "# AGENTS.md
-
-
-        ## Project
-
-
-        ## Scope and boundaries
-
-
-        ## Layout
-
-
-        ## Development
-
-
-        ## Validation
-
-
-        ## Security
-
-
-        ## Changes"
-      - "The base headings appear in the required order."
+      - /eliware/documentation-template/AGENTS.md
 
   - id: E-0.1.0.1.3
     dos:
@@ -132,48 +109,10 @@ directives:
       - Do not change the package name text or add header navigation.
       - Do not use `.git` or git+https URLs in the GitHub Repo link.
     examples:
-      - "#
-        [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eT\
-        wN)"
-      - "## @eliware/<repo-name>
-        [![npm](https://img.shields.io/npm/v/@eliware/<repo-name>)](https://www.npmjs.com\
-        /package/@eliware/<repo-name>)
-        [![License](https://img.shields.io/github/license/eliware/<repo-name>)](https://g\
-        ithub.com/eliware/<repo-name>/blob/main/LICENSE)
-        [![CI](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml/badge.svg\
-        )](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml)"
-      - "For a repository without public npm publication, omit the npm badge and keep
-        License before CI."
-      - "The next header line is the exact non-empty package.json description."
-      - "## Table of Contents"
-      - "## Support
-
-
-        For help, questions, or to chat with the author and community, visit:
-
-
-        [![Discord](https://eliware.org/logos/discord_96.png)](https://discord.gg/M6aTR9e\
-        TwN)[![eliware.org](https://eliware.org/logos/eliware_96.png)](https://discord.gg\
-        /M6aTR9eTwN)
-
-
-        **[eliware.org on Discord](https://discord.gg/M6aTR9eTwN)**"
-      - "[![License](https://img.shields.io/github/license/eliware/example)](https://gith\
-        ub.com/eliware/example/blob/main/LICENSE)"
-      - "[![CI](https://github.com/eliware/example/actions/workflows/ci.yaml/badge.svg)](\
-        https://github.com/eliware/example/actions/workflows/ci.yaml)"
-      - "- [Home Page](https://eliware.org)
-
-        - [GitHub Org](https://github.com/eliware)
-
-        - [GitHub Repo](https://github.com/eliware/<repo-name>)
-
-        - [Bug Reports](https://github.com/eliware/<repo-name>/issues)
-
-        - [npm](https://www.npmjs.com/package/@eliware/<repo-name>)
-
-        - [Discord](https://discord.gg/M6aTR9eTwN)"
-      - "[MIT © Eliware](LICENSE)"
+      - /eliware/documentation-template/README.md
+      - /eliware/library-template/README.md
+      - /eliware/application-template/README.md
+      - "## Security"
 
   - id: E-0.1.0.1.4
     dos:
@@ -234,14 +173,7 @@ directives:
       - Do not inspect files under scripts/ differently from other repository files.
       - Do not parse shell wrappers or command chains to find script paths.
     examples:
-      - '{"test":"eliware-test","lint":"eliware-test --lint","audit":"eliware-test
-        --audit","format":"eliware-test --format","format:check":"eliware-test
-        --format-check"}'
-      - >-
-        {"printWidth":100,"tabWidth":2,"useTabs":false,"semi":true,"singleQuote":false,
-        "quoteProps":"as-needed","jsxSingleQuote":false,"trailingComma":"all",
-        "bracketSpacing":true,"bracketSameLine":false,"arrowParens":"always",
-        "proseWrap":"preserve","endOfLine":"lf"}
+      - /eliware/documentation-template/package.json
 
   - id: E-0.1.0.1.6
     dos:
@@ -259,30 +191,15 @@ directives:
       - Do not include npm publication or explicit GHCR image-publication commands.
       - Do not run a command after the prefix unless it uses `npm run <name>`.
     examples:
-      - "commands:
-
-        \  - git pull
-
-        \  - npm ci
-
-        \  - npm test"
-      - "on:
-
-        \  tags:
-
-        \    \"v*\":
-
-        \      deployments:
-
-        \        - timeoutMs: 300000
-
-        \          commands:
-
-        \            - git pull
-
-        \            - npm ci
-
-        \            - npm test"
+      - /eliware/application-template/.knit/deploy.yaml
+      - /eliware/cli-template/.knit/deploy.yaml
+      - /eliware/discord-template/.knit/deploy.yaml
+      - /eliware/documentation-template/.knit/deploy.yaml
+      - /eliware/infrastructure-template/.knit/deploy.yaml
+      - /eliware/library-template/.knit/deploy.yaml
+      - /eliware/mcp-server-template/.knit/deploy.yaml
+      - /eliware/web-template/.knit/deploy.yaml
+      - /eliware/workspace-template/.knit/deploy.yaml
 
   - id: E-0.1.0.1.7
     dos:
@@ -318,59 +235,15 @@ directives:
         backslashes, or embedded line breaks.
       - Do not publish npm packages or GHCR images in validation jobs.
     examples:
-      - "name: Validation
-
-        on:
-
-        \  push:
-
-        \    branches: [main]
-
-        \  pull_request:
-
-        \    branches: [main]
-
-        concurrency:
-
-        \  group: ${{ github.repository }}-${{ github.ref }}
-
-        \  cancel-in-progress: true
-
-        permissions:
-
-        \  contents: read
-
-        jobs:
-
-        \  test:
-
-        \    runs-on: ubuntu-latest
-
-        \    permissions:
-
-        \      contents: read
-
-        \    steps:
-
-        \      - uses: actions/checkout@v7
-
-        \        with:
-
-        \          fetch-depth: 0
-
-        \      - uses: actions/setup-node@v7
-
-        \        with:
-
-        \          node-version: 26
-
-        \          cache: npm
-
-        \      - run: npm -g install npm@latest
-
-        \      - run: npm ci
-
-        \      - run: npm test"
+      - /eliware/application-template/.github/workflows/ci.yaml
+      - /eliware/cli-template/.github/workflows/ci.yaml
+      - /eliware/discord-template/.github/workflows/ci.yaml
+      - /eliware/documentation-template/.github/workflows/ci.yaml
+      - /eliware/infrastructure-template/.github/workflows/ci.yaml
+      - /eliware/library-template/.github/workflows/ci.yaml
+      - /eliware/mcp-server-template/.github/workflows/ci.yaml
+      - /eliware/web-template/.github/workflows/ci.yaml
+      - /eliware/workspace-template/.github/workflows/ci.yaml
 
   - id: E-0.1.0.1.8
     dos:

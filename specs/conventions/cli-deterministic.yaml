@@ -13,7 +13,7 @@ directives:
       - Do not report a different version.
       - Do not omit informational options.
     examples:
-      - "## CLI"
-      - "## Commands\n\n## Exit codes"
-      - "example --help"
-      - "example --version"
+      - /eliware/cli-template/AGENTS.md
+      - /eliware/cli-template/README.md
+      - /eliware/cli-template/bin/eliware-cli-template.mjs
+      - /eliware/cli-template/tests/cli.test.mjs

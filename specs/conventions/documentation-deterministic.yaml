@@ -9,14 +9,5 @@ directives:
     donts:
       - Do not omit a documentation-specific section.
     examples:
-      - "## Documentation"
-      - "## Scope
-
-
-        ## Navigation
-
-
-        ## Contribution
-
-
-        ## Documentation validation"
+      - /eliware/documentation-template/AGENTS.md
+      - /eliware/documentation-template/README.md

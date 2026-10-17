@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { listSpecificationEntries } from "../../general/E-0.1.0.1.4/list-specification-entries.mjs";
+import { parseAllDocuments } from "yaml";
 
 function collectDeclaredHeadings(directives, headings) {
   if (!Array.isArray(directives)) return;
@@ -27,11 +27,14 @@ export async function readSpecificationHeadings(root, { read = readFile, readdir
     ({ path, type }) => type === "file" && /^specs\/.*\.ya?ml$/iu.test(path),
   )) {
     const file = join(root, path);
-    const documents = parseBoundedYamlDocuments(await read(file, "utf8"), path);
-    const error = documents.flatMap((document) => document.errors)[0];
-    if (error) throw error;
-    for (const document of documents)
-      collectDeclaredHeadings(document.toJSON()?.directives, headings);
+    for (const document of parseAllDocuments(await read(file, "utf8"))) {
+      if (document.errors.length) continue;
+      try {
+        collectDeclaredHeadings(document.toJSON()?.directives, headings);
+      } catch {
+        // The specification validator reports parse and alias errors.
+      }
+    }
   }
   return headings;
 }

@@ -11,9 +11,8 @@ directives:
     donts:
       - Do not replace required package validation with a script-presence check.
     examples:
-      - "## npm publication"
-      - "[![npm](https://img.shields.io/npm/v/@eliware/example)](https://www.npmjs.com/pa\
-        ckage/@eliware/example)"
+      - /eliware/library-template/AGENTS.md
+      - /eliware/library-template/README.md
 
   - id: E-0.1.10.1.1
     dos:
@@ -43,9 +42,7 @@ directives:
       - Do not maintain .npmignore or packaging lifecycle scripts prepare, prepublish,
         prepublishOnly, prepack, or postpack.
     examples:
-      - >-
-        {"files":["src/","docs/","examples/","specs/","README.md","AGENTS.md","LICENSE",
-        "RELEASE_NOTES.md","assets/","data.json"]}
+      - /eliware/library-template/package.json
       - "assets/templates/email.html is permitted but assets/tests/example.json is
         excluded."
 
@@ -57,7 +54,8 @@ directives:
     donts:
       - Do not use .github/workflows/publish.yaml for npm publication.
     examples:
-      - "The canonical workflow is specs/workflows/npm.yaml."
+      - /eliware/cli-template/.github/workflows/npm.yaml
+      - /eliware/library-template/.github/workflows/npm.yaml
 
   - id: E-0.1.10.1.3
     dos:

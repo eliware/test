@@ -7,7 +7,7 @@ directives:
       - Tell developers to run focused tests first during development.
       - Pass one or more test paths to npm test for focused testing.
       - Show valid npm test commands for one test file and multiple test files.
-      - Tell developers to prevent multiple full-suite runs during development.
+      - Tell developers to prevent repeated full-suite runs during development.
       - Require the full npm test suite for final validation before a commit, milestone,
         or release.
       - Add API, Packaging, and Examples sections to README.md.
@@ -19,19 +19,8 @@ directives:
     donts:
       - Do not require .cjs examples. Index all discovered examples.
     examples:
-      - "## Library"
-      - "Run focused tests first during development.
-
-        Run one test file with `npm test -- tests/path/to/example.test.mjs`.
-
-        Run multiple test files with `npm test -- tests/path/to/first.test.mjs
-        tests/path/to/second.test.mjs`.
-
-        Avoid repeated full-suite runs during development.
-
-        Run the full `npm test` suite for final validation before a commit, milestone,
-        or release."
-      - "## API\n\n## Packaging\n\n## Examples"
+      - /eliware/library-template/AGENTS.md
+      - /eliware/library-template/README.md
 
   - id: E-0.1.3.1.1
     dos:
@@ -47,7 +36,7 @@ directives:
       - Do not redirect typecheck.
       - Do not add internal convenience barrels.
     examples:
-      - '{"main":"./src/index.mjs","exports":"./src/index.mjs","types":"./src/index.d.ts"}'
+      - /eliware/library-template/package.json
 
   - id: E-0.1.3.1.2
     dos:
@@ -65,7 +54,8 @@ directives:
         tests/.
       - Do not count skipped, todo, or describe-only declarations in executable test totals.
     examples:
-      - "src/parser/options.mjs mirrors tests/parser/options.test.mjs."
+      - /eliware/library-template/src/create-greeting.mjs
+      - /eliware/library-template/tests/create-greeting.test.mjs
 
   - id: E-0.1.3.1.3
     dos:
@@ -97,11 +87,7 @@ directives:
       - Do not add second Jest configuration.
       - Do not ignore coverage in other production modules.
     examples:
-      - >-
-        {"testEnvironment":"node","testMatch":["**/tests/**/*.test.mjs"],
-        "collectCoverageFrom":["src/**/*.mjs"],"coverageReporters":["text","json-summary"],
-        "coverageThreshold":{"global":{"branches":100,"functions":100,"lines":100,
-        "statements":100}}}
+      - /eliware/library-template/package.json
 
   - id: E-0.1.3.1.4
     dos:
@@ -127,13 +113,4 @@ directives:
       - Do not duplicate versions.
       - Do not use malformed, empty, unsupported, or out-of-order sections.
     examples:
-      - "# Release Notes
-
-
-        ## 13.0.0 — 2026-06-01
-
-
-        ### Added
-
-
-        Initial release."
+      - /eliware/library-template/RELEASE_NOTES.md

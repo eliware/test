@@ -16,20 +16,8 @@ directives:
     donts:
       - Do not omit Discord-specific headings.
     examples:
-      - "## Discord"
-      - "## Configuration
-
-
-        ## Operations
-
-
-        ## Commands
-
-
-        ## Events
-
-
-        ## Intents and permissions"
+      - /eliware/discord-template/AGENTS.md
+      - /eliware/discord-template/README.md
 
   - id: E-0.1.7.1.2
     dos:
@@ -57,9 +45,12 @@ directives:
       - Do not require optional Discord event adapters.
       - Do not import or execute repository handlers during validation.
     examples:
-      - "commands/help.json and commands/help.mjs match src/commands/help.mjs."
-      - "events/clientReady.mjs and events/interactionCreate.mjs are required."
-      - "locales/en-US.json and every supported locale use the same keys."
-      - "Supported locale IDs: bg, cs, da, de, el, en-GB, en-US, es-419, es-ES, fi, fr,
-        hi, hr, hu, id, it, ja, ko, lt, nl, no, pl, pt-BR, ro, ru, sv-SE, th, tr, uk, vi,
-        zh-CN, zh-TW."
+      - /eliware/discord-template/commands/help.json
+      - /eliware/discord-template/commands/help.mjs
+      - /eliware/discord-template/src/commands/help.mjs
+      - /eliware/discord-template/events/clientReady.mjs
+      - /eliware/discord-template/src/events/clientReady.mjs
+      - /eliware/discord-template/events/interactionCreate.mjs
+      - /eliware/discord-template/src/events/interactionCreate.mjs
+      - /eliware/discord-template/locales/en-US.json
+      - /eliware/discord-template/src/locales/supported-locales.mjs

@@ -9,23 +9,8 @@ directives:
     donts:
       - Do not omit web-specific headings.
     examples:
-      - "## Web"
-      - "## Configuration
-
-
-        ## Routes
-
-
-        ## Assets
-
-
-        ## Development server
-
-
-        ## Build
-
-
-        ## Deployment"
+      - /eliware/web-template/AGENTS.md
+      - /eliware/web-template/README.md
 
   - id: E-0.1.6.1.1
     dos:
@@ -36,8 +21,8 @@ directives:
       - Do not set package.json.eliware.webRoot or package.json.eliware.webAssetExcludes.
       - Do not automatically run prebuild or postbuild scripts during aggregate validation.
     examples:
-      - "<repo-root>/public"
-      - "<repo-root>/dist"
+      - /eliware/web-template/public/index.html
+      - /eliware/web-template/dist/client.js
 
   - id: E-0.1.6.1.2
     dos:
@@ -50,6 +35,4 @@ directives:
       - Do not chain or redirect build or duplicate it in CI.
       - Do not run lighthouse or screenshots during validation.
     examples:
-      - >-
-        webpack --entry ./src/client-entry.mjs --output-path ./dist --output-filename client.js
-        --mode production
+      - /eliware/web-template/package.json

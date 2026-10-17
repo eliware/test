@@ -9,17 +9,5 @@ directives:
     donts:
       - Do not omit infrastructure-specific headings.
     examples:
-      - "## Infrastructure"
-      - "## Managed targets
-
-
-        ## Configuration
-
-
-        ## Desired state
-
-
-        ## Validation
-
-
-        ## Change boundaries"
+      - /eliware/infrastructure-template/AGENTS.md
+      - /eliware/infrastructure-template/README.md

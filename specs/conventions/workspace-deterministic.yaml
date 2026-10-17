@@ -12,11 +12,7 @@ directives:
     donts:
       - Do not omit workspace-specific headings.
     examples:
-      - "## Workspace"
-      - "## Runbooks
-
-
-        ## Communication
-
-
-        ## Recovery"
+      - /eliware/workspace-template/AGENTS.md
+      - /eliware/workspace-template/README.md
+      - /eliware/workspace-template/runbooks/README.md
+      - /eliware/workspace-template/runbooks/deploy-component.yaml
