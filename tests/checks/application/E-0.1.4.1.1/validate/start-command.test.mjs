@@ -34,3 +34,12 @@ test("matches equivalent path separators and rejects traversing aliases", () => 
     "standalone token",
   );
 });
+
+test.each(['node "bin/a.mjs', 'node bin/a.mjs"', "node 'bin/a.mjs", "node bin/a.mjs'"])(
+  "rejects a start command with an unmatched quote: %s",
+  (start) => {
+    expect(validateStartCommand({ scripts: { start } }, ["bin/a.mjs"])).toContain(
+      "standalone token",
+    );
+  },
+);

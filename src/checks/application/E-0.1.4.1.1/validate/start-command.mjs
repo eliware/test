@@ -3,11 +3,24 @@ export function validateStartCommand(packageJson, entrypoints) {
   const start = packageJson.scripts.start;
   if (typeof start !== "string") return "package.json start must be a command string.";
   const tokens = start.match(/(?:"[^"]*"|'[^']*'|[^\s]+)/gu) ?? [];
-  const normalized = tokens.map((token) => canonicalToken(token.replace(/^['"]|['"]$/gu, "")));
+  const normalized = tokens
+    .map(removeOptionalQuotes)
+    .filter((token) => token !== null)
+    .map(canonicalToken);
   const declared = entrypoints.filter((target) => typeof target === "string").map(canonicalToken);
   return declared.some((target) => normalized.includes(target))
     ? null
     : "package.json start must contain a standalone token for a declared entrypoint.";
+}
+
+function removeOptionalQuotes(token) {
+  const first = token[0];
+  const last = token.at(-1);
+  const startsQuoted = first === "'" || first === '"';
+  const endsQuoted = last === "'" || last === '"';
+  if (!startsQuoted && !endsQuoted) return token;
+  if (first !== last || token.length < 2) return null;
+  return token.slice(1, -1);
 }
 
 function canonicalToken(value) {
