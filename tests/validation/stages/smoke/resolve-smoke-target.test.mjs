@@ -11,7 +11,7 @@ const { resolveSmokeTarget } =
 
 const source = join("C:/", "source");
 const target = join("C:/", "consumer");
-const identity = () => ({ dev: 1, ino: 2, birthtimeMs: 3, isDirectory: () => true });
+const identity = () => ({ dev: 1, ino: 2, birthtimeMs: 3, mtimeMs: 4, isDirectory: () => true });
 
 beforeEach(() => {
   realpath.mockReset().mockImplementation(async (path) => path);
@@ -62,6 +62,7 @@ test.each([
 
 test.each([
   ["replacement", async () => ({ ...identity(), birthtimeMs: 4 })],
+  ["modification", async () => ({ ...identity(), mtimeMs: 5 })],
   [
     "disappearance",
     async () => {

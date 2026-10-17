@@ -35,7 +35,8 @@ export async function resolveSmokeTarget(root, target, inspect = lstat) {
         !current.isDirectory() ||
         current.dev !== identity.dev ||
         current.ino !== identity.ino ||
-        current.birthtimeMs !== identity.birthtimeMs
+        current.birthtimeMs !== identity.birthtimeMs ||
+        current.mtimeMs !== identity.mtimeMs
       )
         throw new Error(
           "Smoke target directory changed during validation. Refusing access to an untrusted target.",
