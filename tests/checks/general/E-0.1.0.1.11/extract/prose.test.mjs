@@ -5,6 +5,9 @@ test("selects the prose extractor by file extension", () => {
   expect(extractProse("README.md", "A sentence.")).toEqual([
     { text: "A sentence.", line: 1, kind: "paragraph" },
   ]);
+  expect(extractProse("guide.txt", "A sentence.")).toEqual([
+    { text: "A sentence.", line: 1, kind: "paragraph" },
+  ]);
   expect(extractProse("specs/rules.yaml", "description: A sentence.")).toEqual([
     { text: "A sentence.", line: 1, kind: "prose" },
   ]);

@@ -5,7 +5,7 @@ import { loadUnapprovedDictionary } from "./E-0.1.0.1.11/load/unapproved-diction
 import { loadExactExamples } from "./E-0.1.0.1.11/load/exact-examples.mjs";
 
 export const ruleId = "E-0.1.0.1.11";
-const supportedExtensions = new Set(["md", "yaml", "yml", "json", "mjs", "js", "jsx"]);
+const supportedExtensions = new Set(["md", "txt", "yaml", "yml", "json", "mjs", "js", "jsx"]);
 const internalCodePath = /^(?:tests|test-fixtures|examples)\//u;
 
 export async function run(context = {}, dependencies = {}) {

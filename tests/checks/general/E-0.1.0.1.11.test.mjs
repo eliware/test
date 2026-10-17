@@ -53,6 +53,24 @@ test("checks JSX files for human-readable prose", async () => {
   });
 });
 
+test.each([
+  ["guide.md", "An abrupt change."],
+  ["guide.txt", "An abrupt change."],
+  ["specs/rules.yaml", "description: An abrupt change."],
+  ["specs/rules.yml", "description: An abrupt change."],
+  ["metadata.json", '{"description":"An abrupt change."}'],
+  ["src/message.mjs", 'const message = "An abrupt change.";'],
+  ["src/message.js", 'const message = "An abrupt change.";'],
+  ["src/view.jsx", "const view = <p>An abrupt change.</p>;"],
+])("checks prose in supported file format %s", async (path, source) => {
+  await expect(
+    run(
+      { repositoryInventory: { files: async () => [path], readText: async () => source } },
+      { loadExactExamples: emptyExamples },
+    ),
+  ).resolves.toMatchObject({ status: "fail", message: expect.stringContaining(`${path}:1`) });
+});
+
 test("counts sentences across static template interpolations", async () => {
   const first = Array.from({ length: 13 }, (_, index) => `word${index + 1}`).join(" ");
   const second = Array.from({ length: 13 }, (_, index) => `word${index + 14}`).join(" ");
