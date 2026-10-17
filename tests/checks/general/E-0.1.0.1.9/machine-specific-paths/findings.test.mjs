@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findMachineSpecificPaths } from "../../../../src/checks/general/E-0.1.0.1.9/find-machine-specific-paths.mjs";
+import { findMachineSpecificPaths } from "../../../../../src/checks/general/E-0.1.0.1.9/machine-specific-paths/findings.mjs";
 
 test("scans all supplied paths and ignores labels, hosts, and file URLs", async () => {
   const contents = new Map([

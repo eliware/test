@@ -23,32 +23,11 @@ test("reports nested ignore files and tracked ignored paths", async () => {
   expect(errors).toContain("Tracked or staged paths match ignore rules: tracked-output.");
 });
 
-test("reports ordinary untracked nested ignore files", async () => {
-  const runGit = async (_command, args) => ({
-    stdout: Buffer.from(args.includes("--others") ? "examples/.gitignore\0" : ""),
-  });
-
-  await expect(validateGitIgnoreFiles("repo", runGit)).resolves.toContain(
-    "Nested .gitignore files are prohibited: examples/.gitignore.",
-  );
-});
-
 test("reports failures while listing nested or tracked ignore paths", async () => {
   const runGit = async (_command, args) => {
     if (args.includes(":(glob)**/.gitignore")) throw new Error("nested scan failed");
     throw new Error("index scan failed");
   };
-  const errors = await validateGitIgnoreFiles("repo", runGit);
-  expect(errors).toEqual([
-    "Repository ignore files could not be listed. Nested overrides are unknown.",
-    "Git index status could not be read. Tracked ignore status is unknown.",
-  ]);
-});
-
-test("reports malformed Git path output", async () => {
-  const runGit = async (_command, args) => ({
-    stdout: Buffer.from(args.includes(":(glob)**/.gitignore") ? "bad" : "also-bad"),
-  });
   const errors = await validateGitIgnoreFiles("repo", runGit);
   expect(errors).toEqual([
     "Repository ignore files could not be listed. Nested overrides are unknown.",

@@ -1,5 +1,5 @@
 import { fail, pass } from "../check-result.mjs";
-import { findMachineSpecificPaths } from "./E-0.1.0.1.9/find-machine-specific-paths.mjs";
+import { findMachineSpecificPaths } from "./E-0.1.0.1.9/machine-specific-paths/findings.mjs";
 
 export const ruleId = "E-0.1.0.1.9";
 

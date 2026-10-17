@@ -1,65 +1,9 @@
-import { parseGitNulPaths } from "../../../parse-git-index-output.mjs";
+import { validateNestedGitIgnoreFiles } from "./nested-gitignore-files.mjs";
+import { validateTrackedIgnoredPaths } from "./tracked-ignored-paths.mjs";
 
 export async function validateGitIgnoreFiles(root, runGit) {
-  const errors = [];
-  try {
-    const tracked = await runGit(
-      "git",
-      ["-C", root, "ls-files", "--cached", "-z", "--", ":(glob)**/.gitignore"],
-      { windowsHide: true, encoding: "buffer" },
-    );
-    const untracked = await runGit(
-      "git",
-      [
-        "-C",
-        root,
-        "ls-files",
-        "--others",
-        "--exclude-standard",
-        "-z",
-        "--",
-        ":(glob)**/.gitignore",
-      ],
-      { windowsHide: true, encoding: "buffer" },
-    );
-    const ignored = await runGit(
-      "git",
-      [
-        "-C",
-        root,
-        "ls-files",
-        "--others",
-        "--ignored",
-        "--exclude-standard",
-        "-z",
-        "--",
-        ":(glob)**/.gitignore",
-      ],
-      { windowsHide: true, encoding: "buffer" },
-    );
-    const nested = new Set(
-      [
-        ...parseGitNulPaths(tracked.stdout),
-        ...parseGitNulPaths(untracked.stdout),
-        ...parseGitNulPaths(ignored.stdout),
-      ].filter((path) => path.endsWith("/.gitignore") && path !== ".gitignore"),
-    );
-    if (nested.size)
-      errors.push(`Nested .gitignore files are prohibited: ${[...nested].join(", ")}.`);
-  } catch {
-    errors.push("Repository ignore files could not be listed. Nested overrides are unknown.");
-  }
-  try {
-    const { stdout } = await runGit(
-      "git",
-      ["-C", root, "ls-files", "--cached", "--ignored", "--exclude-standard", "-z"],
-      { windowsHide: true, encoding: "buffer" },
-    );
-    const ignored = parseGitNulPaths(stdout);
-    if (ignored.length)
-      errors.push(`Tracked or staged paths match ignore rules: ${ignored.join(", ")}.`);
-  } catch {
-    errors.push("Git index status could not be read. Tracked ignore status is unknown.");
-  }
-  return errors;
+  return [
+    ...(await validateNestedGitIgnoreFiles(root, runGit)),
+    ...(await validateTrackedIgnoredPaths(root, runGit)),
+  ];
 }
