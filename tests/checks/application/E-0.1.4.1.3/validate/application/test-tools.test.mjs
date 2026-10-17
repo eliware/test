@@ -12,6 +12,9 @@ test("accepts the harness tools and rejects alternative runners and coverage eng
       },
     }),
   ).toEqual([]);
+  expect(
+    validateApplicationTestTools({ name: "@eliware/test", scripts: { test: "jest" } }),
+  ).toContain("package.json script test must not invoke a separate test or coverage tool.");
   const errors = validateApplicationTestTools({
     name: "app",
     devDependencies: { vitest: "2", "@vitest/coverage-v8": "2" },
@@ -30,6 +33,12 @@ test("accepts the harness tools and rejects alternative runners and coverage eng
   expect(validateApplicationTestTools({ devDependencies: { "@jest/globals": "30" } })).toContain(
     "Do not declare separate test or coverage tools: @jest/globals.",
   );
+  expect(
+    validateApplicationTestTools({
+      name: "consumer",
+      devDependencies: { jest: "30", "istanbul-lib-instrument": "6" },
+    }),
+  ).toContain("Do not declare separate test or coverage tools: jest, istanbul-lib-instrument.");
 });
 
 test("accepts package metadata without optional scripts or runner fields", () => {

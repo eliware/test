@@ -87,6 +87,10 @@ directives:
   - id: E-0.1.4.1.3
     dos:
       - Run required Jest tests through eliware-test with the exact configuration shown.
+      - For @eliware/test, allow direct dependencies on @jest/globals, jest, and
+        istanbul-lib-instrument.
+      - For @eliware/test, allow istanbul-lib-instrument imports and direct Jest commands
+        outside package scripts.
       - Use mocked file-system operations in each test suite.
       - Mock file-handle write methods or inject mocked file handles.
       - Allow network requests to localhost only.
@@ -100,7 +104,8 @@ directives:
       - Do not access external network services in tests.
       - Do not launch OS commands or command-line tools in tests.
       - Do not use wall-clock waits, sleeps, or uncontrolled timers in tests.
-      - Do not directly invoke Jest, import its runner, or directly declare Jest packages.
+      - Do not invoke Jest or coverage tools directly in consumer repositories.
+      - Allow listed harness tools only in @eliware/test.
       - Do not use a different test runner.
       - Do not use a different coverage engine.
       - Do not add more Jest configuration.

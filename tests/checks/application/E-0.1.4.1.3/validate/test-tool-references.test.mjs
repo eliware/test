@@ -17,6 +17,10 @@ test("allows the supported Jest API and harness instrumentation", () => {
   expect(
     validateTestToolReferences("src/run.mjs", 'import "istanbul-lib-instrument";', true),
   ).toBeNull();
+  expect(validateTestToolReferences("scripts/run.sh", "jest --runInBand", true)).toBeNull();
+  expect(validateTestToolReferences("scripts/run.sh", "jest --runInBand", false)).toContain(
+    "must not import or invoke a test runner",
+  );
 });
 
 test("ignores comments and inert source configuration values", () => {
