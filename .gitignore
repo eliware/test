@@ -22,7 +22,7 @@ Thumbs.db
 .idea/
 *.bak
 *.dump
-restore/
+/restore/
 runtime-state/
 artifacts/
 generated/

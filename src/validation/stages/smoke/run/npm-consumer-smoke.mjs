@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { execute } from "../../../shared/process/execute-child-process.mjs";
 import { resolvePackExecutable } from "../../pack/resolve-pack-executable.mjs";
 import { captureSmokeTargetState } from "../capture-smoke/target-state.mjs";
-import { restoreSmokeTargetState } from "../restore-smoke-target-state.mjs";
+import { restoreSmokeTargetState } from "../restore/smoke-target-state.mjs";
 import { finishSmokeRun } from "../finish-smoke-run.mjs";
 import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
 import { createSmokeTempRoot } from "../create-smoke-temp-root.mjs";

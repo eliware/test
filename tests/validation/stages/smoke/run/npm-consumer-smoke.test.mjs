@@ -43,7 +43,7 @@ jest.unstable_mockModule(
   () => ({ prepareSmokeTargetContext }),
 );
 jest.unstable_mockModule(
-  "../../../../../src/validation/stages/smoke/restore-smoke-target-state.mjs",
+  "../../../../../src/validation/stages/smoke/restore/smoke-target-state.mjs",
   () => ({ restoreSmokeTargetState }),
 );
 jest.unstable_mockModule(
