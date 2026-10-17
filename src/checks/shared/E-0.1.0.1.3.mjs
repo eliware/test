@@ -6,6 +6,7 @@ import { validateReadmeStructure } from "./E-0.1.0.1.3/validate-readme/structure
 import { validateReadmeBranding } from "./E-0.1.0.1.3/validate-readme/branding.mjs";
 import { validateReadmeLinks } from "./E-0.1.0.1.3/validate-readme/links.mjs";
 import { validateReadmeCompositionOrder } from "./E-0.1.0.1.3/validate-readme/composition-order.mjs";
+import { validateReadmeSpecificationsLink } from "./E-0.1.0.1.3/validate-readme/specifications-link.mjs";
 
 export const ruleId = "E-0.1.0.1.3";
 export const ownerProfile = "general";
@@ -20,11 +21,20 @@ export async function run(context = {}, dependencies = {}) {
     return fail(ruleId, "README.md is required.");
   }
   const headings = resolveReadmeHeadings(context.packageJson);
+  const specificationsLinkError = validateReadmeSpecificationsLink(readme, headings);
   const errors = [
+    specificationsLinkError,
     validateReadmeStructure(readme, headings, context.packageJson),
     validateReadmeCompositionOrder(readme, headings),
     validateReadmeBranding(readme, context.packageJson),
     validateReadmeLinks(readme, context.packageJson),
   ].filter(Boolean);
+  if (!specificationsLinkError) {
+    try {
+      await (dependencies.read ?? readFile)(join(root, "specs/README.md"), "utf8");
+    } catch {
+      errors.push("README.md specs index link must resolve to specs/README.md.");
+    }
+  }
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }

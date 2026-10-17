@@ -28,7 +28,10 @@ function createReadme(sections = generalSections) {
   const toc = [...sections, "Support", "Links", "License"].map(
     (heading) => `- [${heading}](#${heading.toLowerCase().replaceAll(" ", "-")})`,
   );
-  const body = sections.map((heading) => `## ${heading}\n\nFixture content.`);
+  const body = sections.map(
+    (heading) =>
+      `## ${heading}\n\n${heading === "Features" ? "[Specifications](specs/README.md)" : "Fixture content."}`,
+  );
   return [
     "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)",
     "",
@@ -58,6 +61,37 @@ test("validates a README that follows the general profile structure", async () =
     ruleId,
     status: "pass",
     message: "",
+  });
+});
+
+test("requires the specs index link to resolve in a content section", async () => {
+  await expect(
+    run(
+      { root: "/repo", packageJson },
+      {
+        read: async (path) => {
+          if (path.endsWith("specs\\README.md")) throw new Error("missing target");
+          return createReadme().replace("[Specifications](specs/README.md)", "Text");
+        },
+      },
+    ),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must link specs/README.md from a content section"),
+  });
+  await expect(
+    run(
+      { root: "/repo", packageJson },
+      {
+        read: async (path) => {
+          if (path.endsWith("specs\\README.md")) throw new Error("missing target");
+          return createReadme();
+        },
+      },
+    ),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("specs index link must resolve"),
   });
 });
 
