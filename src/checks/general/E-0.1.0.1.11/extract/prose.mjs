@@ -8,6 +8,7 @@ export function extractProse(path, source) {
   if (extension === "md") return extractMarkdownProse(source);
   if (extension === "yaml" || extension === "yml") return extractYamlProse(source);
   if (extension === "json") return extractJsonProse(source);
-  if (extension === "mjs" || extension === "js") return extractJavaScriptProse(source);
+  if (extension === "mjs" || extension === "js" || extension === "jsx")
+    return extractJavaScriptProse(source);
   return [];
 }

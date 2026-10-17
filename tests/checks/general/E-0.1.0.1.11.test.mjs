@@ -36,6 +36,42 @@ test("returns pass when supported repository files contain clean prose", async (
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
 
+test("checks JSX files for human-readable prose", async () => {
+  await expect(
+    run(
+      {
+        repositoryInventory: {
+          files: async () => ["src/view.jsx"],
+          readText: async () => "const view = <p>An abrupt change.</p>;",
+        },
+      },
+      { loadExactExamples: emptyExamples },
+    ),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining('src/view.jsx:1 uses "abrupt".'),
+  });
+});
+
+test("counts sentences across static template interpolations", async () => {
+  const first = Array.from({ length: 13 }, (_, index) => `word${index + 1}`).join(" ");
+  const second = Array.from({ length: 13 }, (_, index) => `word${index + 14}`).join(" ");
+  await expect(
+    run(
+      {
+        repositoryInventory: {
+          files: async () => ["src/message.mjs"],
+          readText: async () => `const message = \`${first} \${"${second}"}\`;`,
+        },
+      },
+      { loadExactExamples: emptyExamples },
+    ),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("sentence 1 has 26 words. Limit: 25."),
+  });
+});
+
 test("uses bundled example loading when callers inject file access only", async () => {
   const list = jest.fn(async () => [
     { name: "example.yaml", isDirectory: () => false, isFile: () => true },

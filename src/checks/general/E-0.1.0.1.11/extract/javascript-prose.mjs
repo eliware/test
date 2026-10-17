@@ -29,8 +29,13 @@ function visit(value, blocks) {
   if (value.type === "StringLiteral" && hasProse(value.value)) {
     blocks.push({ text: value.value, line: value.loc.start.line, kind: "prose" });
   } else if (value.type === "TemplateLiteral") {
-    const text = value.quasis.map(({ value: part }) => part.cooked ?? part.raw).join("");
-    if (hasProse(text)) blocks.push({ text, line: value.loc.start.line, kind: "prose" });
+    const text = staticTemplateText(value);
+    if (text !== undefined) {
+      if (hasProse(text)) blocks.push({ text, line: value.loc.start.line, kind: "prose" });
+      return;
+    }
+    const quasis = value.quasis.map(({ value: part }) => part.cooked ?? part.raw).join("");
+    if (hasProse(quasis)) blocks.push({ text: quasis, line: value.loc.start.line, kind: "prose" });
   } else if (value.type === "JSXText" && hasProse(value.value)) {
     blocks.push({ text: value.value, line: value.loc.start.line, kind: "prose" });
   }
@@ -39,6 +44,26 @@ function visit(value, blocks) {
     if (Array.isArray(child)) child.forEach((item) => visit(item, blocks));
     else visit(child, blocks);
   }
+}
+
+function staticTemplateText(template) {
+  let text = "";
+  for (let index = 0; index < template.quasis.length; index += 1) {
+    const part = template.quasis[index].value;
+    text += part.cooked ?? part.raw;
+    if (index < template.expressions.length) {
+      const expression = staticStringValue(template.expressions[index]);
+      if (expression === undefined) return undefined;
+      text += expression;
+    }
+  }
+  return text;
+}
+
+function staticStringValue(expression) {
+  if (expression.type === "StringLiteral") return expression.value;
+  if (expression.type === "TemplateLiteral") return staticTemplateText(expression);
+  return undefined;
 }
 
 function isExactRequiredText(value) {
