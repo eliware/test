@@ -70,7 +70,8 @@ test("requires the specs index link to resolve in a content section", async () =
       { root: "/repo", packageJson },
       {
         read: async (path) => {
-          if (path.endsWith("specs\\README.md")) throw new Error("missing target");
+          if (path.replaceAll("\\", "/").endsWith("specs/README.md"))
+            throw new Error("missing target");
           return createReadme().replace("[Specifications](specs/README.md)", "Text");
         },
       },
@@ -84,7 +85,8 @@ test("requires the specs index link to resolve in a content section", async () =
       { root: "/repo", packageJson },
       {
         read: async (path) => {
-          if (path.endsWith("specs\\README.md")) throw new Error("missing target");
+          if (path.replaceAll("\\", "/").endsWith("specs/README.md"))
+            throw new Error("missing target");
           return createReadme();
         },
       },
