@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findLanguageViolations } from "../../../../src/checks/general/E-0.1.0.1.11/find-language-violations.mjs";
+import { findLanguageViolations } from "../../../../../src/checks/general/E-0.1.0.1.11/find/language-violations.mjs";
 
 const dictionary = { abrupt: "SUDDEN (adj)", "close to": "NEAR (prep)", "": "invalid" };
 

@@ -1,6 +1,6 @@
 import { fail, pass } from "../check-result.mjs";
 import { extractProse } from "./E-0.1.0.1.11/extract/prose.mjs";
-import { findLanguageViolations } from "./E-0.1.0.1.11/find-language-violations.mjs";
+import { findLanguageViolations } from "./E-0.1.0.1.11/find/language-violations.mjs";
 import { loadUnapprovedDictionary } from "./E-0.1.0.1.11/load/unapproved-dictionary.mjs";
 import { loadExactExamples } from "./E-0.1.0.1.11/load/exact-examples.mjs";
 
