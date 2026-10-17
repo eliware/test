@@ -24,8 +24,17 @@ export function findScriptOperands(command) {
   const runner = tokens[0]?.toLowerCase();
   if (!scriptRunners.has(runner)) return [];
   const args = tokens.slice(1);
+  const wrappedCommand = findWrappedCommand(runner, args);
+  if (wrappedCommand !== null) return findScriptOperands(wrappedCommand);
   const operand = findOperand(runner, args);
   return operand ? [operand] : [];
+}
+
+function findWrappedCommand(runner, args) {
+  if (["bash", "sh"].includes(runner) && args[0] === "-c") return args[1] ?? "";
+  if (["pwsh", "powershell"].includes(runner) && ["-c", "-Command"].includes(args[0]))
+    return args[1] ?? "";
+  return null;
 }
 
 function findOperand(runner, args) {
@@ -39,7 +48,6 @@ function findOperand(runner, args) {
       ? args.find((argument, index) => index > 0 && !argument.startsWith("-"))
       : null;
   if (["bash", "sh", "pwsh", "powershell"].includes(runner)) {
-    if (["-c", "-Command", "/c"].includes(args[0])) return null;
     if (["-File", "-file"].includes(args[0])) return args[1];
   }
   if (["python", "python3", "py"].includes(runner) && ["-c", "-m", "-"].includes(args[0]))

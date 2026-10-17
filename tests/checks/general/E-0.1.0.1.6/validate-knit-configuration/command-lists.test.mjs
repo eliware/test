@@ -48,7 +48,11 @@ test("allows other extra commands without script paths", () => {
 });
 
 test("checks only script operands in supported runner commands", () => {
-  expect(validateCommandList([...prefix, 'bash -c "node ./config"'])).toEqual([]);
+  expect(validateCommandList([...prefix, 'bash -c "node ./config"']).join(" ")).toContain(
+    "must keep secondary scripts under .knit/ and use .mjs",
+  );
+  expect(validateCommandList([...prefix, 'bash -c "node .knit/scripts/run.mjs"'])).toEqual([]);
+  expect(validateCommandList([...prefix, "bash -c 'echo ./config'"])).toEqual([]);
   expect(validateCommandList([...prefix, "python scripts/validate.py"]).join(" ")).toContain(
     "must keep secondary scripts under .knit/ and use .mjs",
   );
