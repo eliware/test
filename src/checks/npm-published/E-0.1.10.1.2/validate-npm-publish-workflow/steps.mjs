@@ -1,4 +1,5 @@
 import { hasCanonicalReleaseTagGuard } from "../../../shared/publish-workflow/validate-release-tag-guard.mjs";
+import { hasAlternateNpmPublisher } from "./contains-alternate-npm-publisher.mjs";
 import { isValidNpmSetupNodeStep } from "./setup-node-step.mjs";
 
 export function validateNpmPublishSteps(document, version) {
@@ -30,6 +31,8 @@ export function validateNpmPublishSteps(document, version) {
     errors.push(
       "npm publisher must have one unconditional standalone npm publish --provenance step.",
     );
+  if (hasAlternateNpmPublisher(steps))
+    errors.push("npm publisher must not use alternate package publishing commands or actions.");
   return errors;
 }
 

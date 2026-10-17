@@ -58,6 +58,7 @@ directives:
       - Check that the release tag matches the canonical package version before
         publication.
       - Use one unconditional standalone npm publish --provenance step.
+      - Do not publish packages with other npm, pnpm, yarn, or bun commands or GitHub Actions.
       - "Set workflow permissions to contents: read."
       - "Set publish.permissions to contents: read and id-token: write."
       - Keep validation job permissions read-only.
