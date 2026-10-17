@@ -12,3 +12,11 @@ test("combines and removes repeated effect findings", () => {
     "must mock fetch, inject it, or use a localhost URL.",
   ]);
 });
+
+test("includes HTTP client findings from the focused policy", () => {
+  expect(
+    findTestIsolationViolations(
+      'import * as http from "node:http"; http.get("https://example.com");',
+    ),
+  ).toContain("must mock HTTP client requests, inject a mock client, or use a localhost URL.");
+});

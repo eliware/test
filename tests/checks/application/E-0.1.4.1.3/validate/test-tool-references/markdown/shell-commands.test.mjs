@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { extractMarkdownShellCommands } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/markdown-shell-commands.mjs";
+import { extractMarkdownShellCommands } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/markdown/shell-commands.mjs";
 
 test("collects fenced shell commands and ignores other code fences", () => {
   expect(

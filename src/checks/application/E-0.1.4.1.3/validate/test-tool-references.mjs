@@ -1,20 +1,18 @@
 import { detectTestToolUse } from "../detect-test-tool-use.mjs";
-import { extractMarkdownShellCommands } from "./test-tool-references/markdown-shell-commands.mjs";
-import { extractPackageScriptCommands } from "./test-tool-references/package-script-commands.mjs";
-import { extractYamlCommands } from "./test-tool-references/yaml-commands.mjs";
 import { findTestToolReferencesInText } from "./find-test-tool-references-in-text.mjs";
+import { hasProhibitedMarkdownCommandReferences } from "./test-tool-references/markdown/command-references.mjs";
+import { hasProhibitedPackageScriptReferences } from "./test-tool-references/package-script/references.mjs";
+import { hasProhibitedYamlCommandReferences } from "./test-tool-references/yaml/command-references.mjs";
 
 export function validateTestToolReferences(path, content, harness = false) {
   const prohibited = isJsonFile(path)
-    ? extractPackageScriptCommands(content).some((command) =>
-        findTestToolReferencesInText(command, harness),
-      )
+    ? hasProhibitedPackageScriptReferences(content, harness)
     : isYamlFile(path)
-      ? findTestToolReferencesInText(extractYamlCommands(content), harness)
+      ? hasProhibitedYamlCommandReferences(content, harness)
       : isScriptFile(path)
         ? findTestToolReferencesInText(content, harness)
         : isMarkdownFile(path)
-          ? findTestToolReferencesInText(extractMarkdownShellCommands(content), harness)
+          ? hasProhibitedMarkdownCommandReferences(content, harness)
           : isCodeFile(path)
             ? detectTestToolUse(content, harness)
             : false;

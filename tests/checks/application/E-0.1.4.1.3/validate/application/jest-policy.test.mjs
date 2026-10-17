@@ -74,26 +74,3 @@ test.each([
     `Do not declare separate test or coverage tools: ${name}.`,
   );
 });
-
-test.each([
-  "node build.mjs",
-  "node_modules/.bin/jest",
-  "node --test",
-  "node --experimental-test-coverage --test",
-  "npx --yes jest",
-  "npm exec --package=jest -- jest",
-  "pnpm exec vitest",
-  "pnpm dlx jest",
-])("checks alternative tool script syntax: %s", async (command) => {
-  const context = {
-    packageJson: { name: "app", scripts: { test: command } },
-    repositoryInventory: { files: async () => [], readText: async () => "" },
-  };
-  const errors = await validateApplicationJestPolicy(context);
-  if (command === "node build.mjs")
-    expect(errors).not.toContain(expect.stringContaining("script test"));
-  else
-    expect(errors).toContain(
-      "package.json script test must not invoke a separate test or coverage tool.",
-    );
-});

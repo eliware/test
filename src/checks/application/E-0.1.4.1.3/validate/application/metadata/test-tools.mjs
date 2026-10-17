@@ -1,5 +1,3 @@
-import { hasAlternativeToolCommand } from "./has-alternative-tool-command.mjs";
-
 export function validateApplicationTestTools(packageJson = {}) {
   const harness = packageJson.name === "@eliware/test";
   const allowedHarnessTools = new Set(["@jest/globals", "jest", "istanbul-lib-instrument"]);
@@ -15,9 +13,6 @@ export function validateApplicationTestTools(packageJson = {}) {
   const errors = direct.length
     ? [`Do not declare separate test or coverage tools: ${direct.join(", ")}.`]
     : [];
-  for (const [name, command] of Object.entries(packageJson.scripts ?? {}))
-    if (typeof command === "string" && hasAlternativeToolCommand(command))
-      errors.push(`package.json script ${name} must not invoke a separate test or coverage tool.`);
   if (
     [
       "ava",

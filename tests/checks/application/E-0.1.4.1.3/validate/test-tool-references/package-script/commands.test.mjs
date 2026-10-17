@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { extractPackageScriptCommands } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/package-script-commands.mjs";
+import { extractPackageScriptCommands } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/package-script/commands.mjs";
 
 test("collects string script commands from a package manifest", () => {
   expect(

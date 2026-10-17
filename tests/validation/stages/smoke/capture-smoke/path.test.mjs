@@ -8,37 +8,20 @@ function missingFs() {
       throw Object.assign(new Error("missing"), { code: "ENOENT" });
     },
     readFile: async () => Buffer.from(""),
-    readlink: async () => "",
-    stat: async () => ({ isDirectory: () => false }),
   };
 }
 
-test("captures symbolic links and identifies Windows junctions", async () => {
-  const fs = {
-    ...missingFs(),
-    lstat: async () => ({ isSymbolicLink: () => true }),
-    readlink: async () => "C:/checkout/@eliware/test",
-    stat: async () => ({ isDirectory: () => true }),
-  };
-  await expect(captureSmokePath("link", "backup", fs, "win32")).resolves.toMatchObject({
-    type: "symlink",
-    target: "C:/checkout/@eliware/test",
-    linkType: "junction",
-  });
-});
-
-test("rejects file symlinks on Windows and accepts them on other platforms", async () => {
+test("routes symlink capture to the focused symlink policy", async () => {
   const fs = {
     ...missingFs(),
     lstat: async () => ({ isSymbolicLink: () => true }),
     readlink: async () => "target",
+    stat: async () => ({ isDirectory: () => true }),
   };
-  await expect(captureSmokePath("link", "backup", fs, "win32")).rejects.toThrow(
-    "Cannot safely preserve a Windows file symlink",
-  );
-  await expect(captureSmokePath("link", "backup", fs, "linux")).resolves.toMatchObject({
+  await expect(captureSmokePath("link", "backup", fs, "win32")).resolves.toMatchObject({
     type: "symlink",
-    linkType: "file",
+    target: "target",
+    linkType: "junction",
   });
 });
 

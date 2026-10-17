@@ -1,6 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { hasPackageDependency } from "./prepare-smoke/target.mjs";
+
+export function hasPackageDependency(targetPackage, packageName) {
+  return ["dependencies", "devDependencies", "optionalDependencies"].some((field) =>
+    Object.hasOwn(targetPackage[field] ?? {}, packageName),
+  );
+}
 
 export async function loadSmokeTarget(targetRoot, packageName) {
   let targetPackage;

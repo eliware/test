@@ -41,33 +41,3 @@ test("rejects malformed URLs and allows injected process calls", () => {
     "must mock fetch, inject it, or use a localhost URL.",
   ]);
 });
-
-test("checks HTTP client calls and allows localhost requests", async () => {
-  const { findTestIsolationViolations } =
-    await import("../../../../../src/validation/harness/test-isolation/find/test-isolation-violations.mjs");
-  expect(
-    findTestIsolationViolations(
-      'import * as http from "node:http"; http.get("https://example.com");',
-    ),
-  ).toContain("must mock HTTP client requests, inject a mock client, or use a localhost URL.");
-  expect(
-    findTestIsolationViolations(
-      'import { request } from "node:https"; request({ hostname: "localhost", port: 8080 });',
-    ),
-  ).toEqual([]);
-  expect(
-    findTestIsolationViolations(
-      'function check(httpClient) { httpClient.request("https://example.com"); }',
-    ),
-  ).toContain("must mock HTTP client requests, inject a mock client, or use a localhost URL.");
-  expect(
-    findTestIsolationViolations(
-      'jest.mock("node:http"); import * as http from "node:http"; http.get("https://example.com");',
-    ),
-  ).toEqual([]);
-  expect(
-    findTestIsolationViolations(
-      'function check(httpClient) { jest.spyOn(httpClient, "get"); httpClient.get("https://example.com"); }',
-    ),
-  ).toEqual([]);
-});

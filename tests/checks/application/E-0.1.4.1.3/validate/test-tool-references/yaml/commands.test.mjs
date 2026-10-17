@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { extractYamlCommands } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/yaml-commands.mjs";
+import { extractYamlCommands } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/yaml/commands.mjs";
 
 test("collects inline and literal block command fields", () => {
   expect(

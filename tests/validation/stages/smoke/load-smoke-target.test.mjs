@@ -1,12 +1,13 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
+import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 
 const readFile = jest.fn();
 const fileSystem = await import("node:fs/promises");
 
 jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, readFile }));
 
-const { loadSmokeTarget } =
+const { hasPackageDependency, loadSmokeTarget } =
   await import("../../../../src/validation/stages/smoke/load-smoke-target.mjs");
 
 const target = "C:/consumer";
@@ -19,6 +20,16 @@ const validPackage = {
 };
 
 beforeEach(() => readFile.mockReset());
+
+test.each(["dependencies", "devDependencies", "optionalDependencies"])(
+  "recognizes the package dependency in %s",
+  (field) => {
+    expect(
+      hasPackageDependency({ [field]: { "@eliware/test": packageVersion } }, "@eliware/test"),
+    ).toBe(true);
+    expect(hasPackageDependency({}, "@eliware/test")).toBe(false);
+  },
+);
 
 function mockTargetFiles(packageJson = validPackage) {
   readFile

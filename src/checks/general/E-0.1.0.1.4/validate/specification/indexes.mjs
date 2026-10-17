@@ -3,6 +3,7 @@ import { listSpecificationEntries } from "../../list-specification-entries.mjs";
 import { groupSpecificationEntries } from "../../group-specification-entries.mjs";
 import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
 import { validateSpecificationIndex } from "./index/directory.mjs";
+import { validateSpecificationTreeRequirements } from "./tree-requirements.mjs";
 
 export async function validateSpecificationIndexes(root, dependencies = {}) {
   const read = dependencies.read ?? readFile;
@@ -19,17 +20,9 @@ export async function validateSpecificationIndexes(root, dependencies = {}) {
     "specs",
     ...entries.filter((entry) => entry.type === "directory").map((entry) => entry.path),
   ];
-  const files = entries.filter((entry) => entry.type === "file");
   const { filesByDirectory, childrenByDirectory } = groupSpecificationEntries(entries);
   const indexOrder = (dependencies.readOrder ?? readCanonicalOrder)("specification-indexes.yaml");
-  const errors = [];
-  errors.push(
-    ...entries
-      .filter((entry) => entry.type === "unsupported")
-      .map(({ path }) => `${path} is an unsupported filesystem entry under specs/.`),
-  );
-  if (!files.some(({ path }) => path === "specs/directives.yaml"))
-    errors.push("specs/directives.yaml is required.");
+  const errors = validateSpecificationTreeRequirements(entries);
   for (const directory of directories)
     errors.push(
       ...(await validateSpecificationIndex(root, directory, {
