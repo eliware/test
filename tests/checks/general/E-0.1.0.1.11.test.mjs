@@ -53,6 +53,20 @@ test("checks JSX files for human-readable prose", async () => {
   });
 });
 
+test("accepts the standardized unlawful interference category", async () => {
+  await expect(
+    run(
+      {
+        repositoryInventory: {
+          files: async () => ["README.md"],
+          readText: async () => "Unlawful interference is a standardized aviation category.",
+        },
+      },
+      { loadExactExamples: emptyExamples },
+    ),
+  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+});
+
 test.each([
   ["guide.md", "An abrupt change."],
   ["guide.txt", "An abrupt change."],

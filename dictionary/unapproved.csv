@@ -539,7 +539,6 @@
 "integral","PART (n)"
 "interconnect","CONNECT (v)"
 "interfere","HIT (v)","CATCH (v)","TOUCH (v)","INTERFERENCE (TN)"
-"interference","HIT (v)","CATCH (v)","TOUCH (v)"
 "interior","INTERNALLY (adv)","INTERNAL (adj)"
 "intermediate","MIDDLE (adj)","BETWEEN (prep)"
 "interrupt","STOP (v)"

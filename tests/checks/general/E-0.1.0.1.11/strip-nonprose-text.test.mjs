@@ -14,6 +14,12 @@ describe("stripNonProseText", () => {
     );
   });
 
+  test("removes command placeholders and SVG transform values", () => {
+    expect(stripNonProseText('Usage: --port PORT <g transform="rotate(90)" />')).toBe(
+      "Usage:   <g   />",
+    );
+  });
+
   test("keeps text without code or URLs", () => {
     expect(stripNonProseText("Keep this sentence.")).toBe("Keep this sentence.");
   });

@@ -101,3 +101,21 @@ test("checks unrelated prose that contains the PowerShell command name", () => {
     kind: "prose",
   });
 });
+
+test("skips SQL statements and SVG transform attribute values", () => {
+  const source = [
+    'const query = "SELECT alignment, base, facility, fix, join, portion, real, transition, trim FROM nasr";',
+    'const icon = <svg><g transform="rotate(90) rotate(180)" /></svg>;',
+  ].join("\n");
+  expect(extractJavaScriptProse(source)).toEqual([]);
+});
+
+test("keeps ordinary prose with a SQL keyword and an SVG transform term", () => {
+  expect(
+    extractJavaScriptProse('const note = "Select a real portion of the base.";'),
+  ).toContainEqual({
+    text: "Select a real portion of the base.",
+    line: 1,
+    kind: "prose",
+  });
+});

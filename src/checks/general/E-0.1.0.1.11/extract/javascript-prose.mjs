@@ -2,6 +2,7 @@ import { parse } from "@babel/parser";
 import { expectedLicense } from "../../E-0.1.0.1.1/validate/required-package-files.mjs";
 import { windowsProcessTreeFallbackScript } from "../../../../validation/shared/process/run/windows-process-tree-fallback.mjs";
 import { countWords } from "../word-tools.mjs";
+import { isSqlStatement } from "./is-sql-statement.mjs";
 
 const commandStart = /^(?:npm|node|git|gh|npx|yarn|pnpm|powershell|pwsh)\s/iu;
 
@@ -25,9 +26,10 @@ export function extractJavaScriptProse(source, parserOptions = {}) {
   return blocks;
 }
 
-function visit(value, blocks) {
+function visit(value, blocks, parent = null) {
   if (!value || typeof value !== "object") return;
   if (isExactRequiredText(value) || isPowerShellScript(value)) return;
+  if (parent?.type === "JSXAttribute" && parent.name?.name === "transform") return;
   if (value.type === "StringLiteral" && hasProse(value.value)) {
     blocks.push({ text: value.value, line: value.loc.start.line, kind: "prose" });
   } else if (value.type === "TemplateLiteral") {
@@ -43,8 +45,8 @@ function visit(value, blocks) {
   }
   for (const [key, child] of Object.entries(value)) {
     if (["loc", "start", "end", "extra", "comments", "tokens"].includes(key)) continue;
-    if (Array.isArray(child)) child.forEach((item) => visit(item, blocks));
-    else visit(child, blocks);
+    if (Array.isArray(child)) child.forEach((item) => visit(item, blocks, value));
+    else visit(child, blocks, value);
   }
 }
 
@@ -92,5 +94,7 @@ function isPowerShellScript(value) {
 
 function hasProse(value) {
   const text = value.trim();
-  return /\s/u.test(text) && countWords(text) > 1 && !commandStart.test(text);
+  return (
+    /\s/u.test(text) && countWords(text) > 1 && !commandStart.test(text) && !isSqlStatement(text)
+  );
 }

@@ -1,12 +1,9 @@
 import { fail, pass } from "../check-result.mjs";
-import { extractProse } from "./E-0.1.0.1.11/extract/prose.mjs";
-import { findLanguageViolations } from "./E-0.1.0.1.11/find/language-violations.mjs";
 import { loadUnapprovedDictionary } from "./E-0.1.0.1.11/load/unapproved-dictionary.mjs";
 import { loadExactExamples } from "./E-0.1.0.1.11/load/exact-examples.mjs";
+import { validateRepositoryLanguageFiles } from "./E-0.1.0.1.11/validate/repository-language-files.mjs";
 
 export const ruleId = "E-0.1.0.1.11";
-const supportedExtensions = new Set(["md", "txt", "yaml", "yml", "json", "mjs", "js", "jsx"]);
-const internalCodePath = /^(?:tests|test-fixtures|examples)\//u;
 
 export async function run(context = {}, dependencies = {}) {
   const inventory = context.repositoryInventory;
@@ -18,13 +15,12 @@ export async function run(context = {}, dependencies = {}) {
       dependencies.exampleFiles,
     );
     const dictionary = loadUnapprovedDictionary();
-    const errors = [];
-    for (const path of files) {
-      if (!supportedExtensions.has(path.toLowerCase().split(".").at(-1))) continue;
-      if (internalCodePath.test(path)) continue;
-      const blocks = extractProse(path, await inventory.readText(path));
-      errors.push(...findLanguageViolations(path, blocks, dictionary, exactSentences));
-    }
+    const errors = await validateRepositoryLanguageFiles(
+      files,
+      inventory,
+      dictionary,
+      exactSentences,
+    );
     if (errors.some((error) => error.includes(". Suggested alternatives:")))
       errors.push(
         "The alternatives are examples. They are not requirements. Rewrite the text with grammatical wording that omits the listed term.",

@@ -3,8 +3,9 @@ import { loadUnapprovedDictionary } from "../../../../../src/checks/general/E-0.
 
 test("loads the bundled CSV dictionary with alternatives for each word", () => {
   const dictionary = loadUnapprovedDictionary();
-  expect(Object.keys(dictionary)).toHaveLength(1044);
+  expect(Object.keys(dictionary)).toHaveLength(1043);
   expect(dictionary.abandon).toBe("GO (v), STOP (v)");
+  expect(dictionary).not.toHaveProperty("interference");
   expect(dictionary.port).toBe(
     "TCP, UDP, TCP-PORT, UDP-PORT, SWITCH-INTERFACE, TRANSLATE (v), MOVE (v)",
   );
