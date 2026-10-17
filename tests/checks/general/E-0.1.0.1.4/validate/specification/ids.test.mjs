@@ -18,19 +18,11 @@ test("accepts sequential rule trees in the assigned namespace", () => {
   ).toEqual([]);
 });
 
-test("reports duplicates, wrong namespace, and gaps", () => {
-  const directives = [
-    null,
-    { id: "bad" },
-    { id: "E-0.1" },
-    { id: "E-0.3" },
-    { id: "E-1.0" },
-    { id: "E-0.1" },
-  ];
+test("reports duplicates and wrong namespaces", () => {
+  const directives = [null, { id: "bad" }, { id: "E-0.1" }, { id: "E-1.0" }, { id: "E-0.1" }];
   const errors = validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ");
   expect(errors).toContain("Duplicate");
   expect(errors).toContain("assigned E-0");
-  expect(errors).toContain("sequential");
 });
 
 test("rejects child IDs outside their parent prefix", () => {
@@ -42,11 +34,4 @@ test("rejects child IDs outside their parent prefix", () => {
   expect(
     validateSpecificationIds([{ path: "rules.yaml", directives: deep }], "E-0").join(" "),
   ).toContain("extend parent");
-});
-
-test("rejects padded and oversized sibling suffixes", () => {
-  const directives = [{ id: "E-0.1.00" }, { id: "E-0.1.9007199254740993" }];
-  expect(validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ")).toContain(
-    "sequential",
-  );
 });

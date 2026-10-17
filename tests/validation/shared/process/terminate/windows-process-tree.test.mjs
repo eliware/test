@@ -1,8 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import {
-  createWindowsProcessTreeKiller,
-  resolveTaskkillExecutable,
-} from "../../../../../src/validation/shared/process/terminate/windows-process-tree.mjs";
+import { createWindowsProcessTreeKiller } from "../../../../../src/validation/shared/process/terminate/windows-process-tree.mjs";
 
 function createKiller(execute, state = { running: true }) {
   return createWindowsProcessTreeKiller(
@@ -12,35 +9,6 @@ function createKiller(execute, state = { running: true }) {
     () => "C:/Program Files/PowerShell/7/pwsh.exe",
   );
 }
-
-function expectInvalidSystemRoot(env) {
-  const previousSystemRoot = process.env.SystemRoot;
-  const previousWindir = process.env.WINDIR;
-  delete process.env.SystemRoot;
-  delete process.env.WINDIR;
-  try {
-    expect(() => resolveTaskkillExecutable(env)).toThrow("absolute SystemRoot");
-  } finally {
-    if (previousSystemRoot === undefined) delete process.env.SystemRoot;
-    else process.env.SystemRoot = previousSystemRoot;
-    if (previousWindir === undefined) delete process.env.WINDIR;
-    else process.env.WINDIR = previousWindir;
-  }
-}
-
-test("resolves taskkill from an absolute Windows system root", () => {
-  expect(resolveTaskkillExecutable({ SystemRoot: "C:/Windows" })).toMatch(
-    /System32[\\/]taskkill\.exe$/iu,
-  );
-  expect(resolveTaskkillExecutable({ WINDIR: "D:/Windows" })).toMatch(
-    /System32[\\/]taskkill\.exe$/iu,
-  );
-  expectInvalidSystemRoot({ SystemRoot: "relative\\Windows" });
-  expectInvalidSystemRoot({ SystemRoot: "C:\\Windows\\..\\Temp" });
-  expectInvalidSystemRoot({ SystemRoot: "\\\\server\\share\\Windows" });
-  expectInvalidSystemRoot({ SystemRoot: "\\\\?\\C:\\Windows" });
-  expectInvalidSystemRoot({ SystemRoot: "C:\\Windows\\." });
-});
 
 test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
   const calls = [];
@@ -109,34 +77,6 @@ test("confirms taskkill termination through the default process-exit waiter", ()
     SystemRoot: "C:/Windows",
   });
   expect(execute).toHaveBeenCalledTimes(1);
-});
-
-test("uses the process environment when resolving the system root by default", () => {
-  const previous = process.env.SystemRoot;
-  process.env.SystemRoot = "C:/Windows";
-  try {
-    expect(resolveTaskkillExecutable()).toMatch(/System32[\\/]taskkill\.exe$/iu);
-  } finally {
-    if (previous === undefined) delete process.env.SystemRoot;
-    else process.env.SystemRoot = previous;
-  }
-});
-
-test("rejects a missing system root when neither supplied nor process environment has one", () => {
-  const previousSystemRoot = process.env.SystemRoot;
-  const previousWindir = process.env.WINDIR;
-  delete process.env.SystemRoot;
-  delete process.env.WINDIR;
-  try {
-    expect(() => resolveTaskkillExecutable({ SystemRoot: 42, WINDIR: "" })).toThrow(
-      "absolute SystemRoot",
-    );
-  } finally {
-    if (previousSystemRoot === undefined) delete process.env.SystemRoot;
-    else process.env.SystemRoot = previousSystemRoot;
-    if (previousWindir === undefined) delete process.env.WINDIR;
-    else process.env.WINDIR = previousWindir;
-  }
 });
 
 test("uses injected command execution when omitted from the killer call", () => {

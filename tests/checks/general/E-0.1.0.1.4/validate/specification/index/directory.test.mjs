@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateSpecificationIndex } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/index-directory.mjs";
+import { validateSpecificationIndex } from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/index/directory.mjs";
 
 const order = {
   directYamlFiles: "filename-ascending",

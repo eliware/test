@@ -1,5 +1,5 @@
 import { basename, join } from "node:path";
-import { extractMarkdownLinks } from "../../extract-markdown/links.mjs";
+import { validateSpecificationIndexContent } from "./content.mjs";
 
 export async function validateSpecificationIndex(
   root,
@@ -23,35 +23,14 @@ export async function validateSpecificationIndex(
     errors.push(`${directory}/README.md is required to index its specifications.`);
     return errors;
   }
-  if (!isNavigationOnly(index))
-    errors.push(`${directory}/README.md must be a navigation-only index.`);
   const yamlTargets = yaml.map(({ path }) => basename(path));
   const childTargets = children.map((path) => `${basename(path)}/README.md`);
   const expected =
     order.placement === "after-yaml-files"
       ? [...yamlTargets, ...childTargets]
       : [...childTargets, ...yamlTargets];
-  const actual = extractMarkdownLinks(index).map(({ reference }) => reference);
-  for (const target of expected)
-    if (!actual.includes(target)) errors.push(`${directory}/README.md must link ${target}.`);
-  for (const target of actual)
-    if (!expected.includes(target))
-      errors.push(`${directory}/README.md links to unexpected target ${target}.`);
-  if (new Set(actual).size !== actual.length)
-    errors.push(`${directory}/README.md must not duplicate index links.`);
-  if (actual.length === expected.length && JSON.stringify(actual) !== JSON.stringify(expected))
-    errors.push(`${directory}/README.md must list index links in the required order.`);
-  return errors;
-}
-
-function isNavigationOnly(content) {
-  return content
-    .split(/\r?\n/u)
-    .every(
-      (line) =>
-        !line.trim() ||
-        /^#{1,6}\s/u.test(line) ||
-        /^-\s*\[[^\]]+\](?:\([^)]+\)|\[[^\]]*\])\s*$/u.test(line) ||
-        /^ {0,3}\[[^\]]+\]:\s*(?:<[^>]+>|\S+)(?:\s+.*)?$/u.test(line),
-    );
+  return [
+    ...errors,
+    ...validateSpecificationIndexContent(index, `${directory}/README.md`, expected),
+  ];
 }

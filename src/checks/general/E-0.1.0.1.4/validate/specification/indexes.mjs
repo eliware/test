@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { listSpecificationEntries } from "../../list-specification-entries.mjs";
 import { groupSpecificationEntries } from "../../group-specification-entries.mjs";
 import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
-import { validateSpecificationIndex } from "./index-directory.mjs";
+import { validateSpecificationIndex } from "./index/directory.mjs";
 
 export async function validateSpecificationIndexes(root, dependencies = {}) {
   const read = dependencies.read ?? readFile;
