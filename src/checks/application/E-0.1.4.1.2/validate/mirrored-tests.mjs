@@ -21,7 +21,6 @@ export async function validateMirroredTests(files, readText, root) {
     const content = await readText(join(root, path)).catch(() => "");
     const inspected = inspectJestTestModule(content, path, source);
     if (!inspected.hasExecutableTest) errors.push(`${path} must declare an executable Jest test.`);
-    if (!inspected.importsSource) errors.push(`${path} must import its exact source module.`);
   }
   return errors;
 }

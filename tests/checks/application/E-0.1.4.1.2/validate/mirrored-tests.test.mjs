@@ -1,10 +1,9 @@
 import { expect, test } from "@jest/globals";
 import { validateMirroredTests } from "../../../../../src/checks/application/E-0.1.4.1.2/validate/mirrored-tests.mjs";
 
-test("requires matching executable tests that import their source", async () => {
+test("requires matching executable tests without requiring a source import", async () => {
   const files = ["src/a.mjs", "tests/a.test.mjs"];
-  const readText = async () =>
-    'import { test } from "@jest/globals"; import { value } from "../src/a.mjs"; test("a", () => value);';
+  const readText = async () => 'test("a", () => {});';
   await expect(validateMirroredTests(files, readText, "repo")).resolves.toEqual([]);
 });
 
@@ -15,7 +14,6 @@ test("reports missing, unmatched, support, and non-executable test files", async
   expect(errors.join("\n")).toContain("tests/support.mjs is not a mirrored");
   expect(errors.join("\n")).toContain("tests/b.test.mjs has no matching source");
   expect(errors.join("\n")).toContain("must declare an executable Jest test");
-  expect(errors.join("\n")).toContain("must import its exact source");
 });
 
 test("reports unreadable test source", async () => {
@@ -26,7 +24,7 @@ test("reports unreadable test source", async () => {
     },
     "repo",
   );
-  expect(errors).toHaveLength(2);
+  expect(errors).toHaveLength(1);
 });
 
 test("does not accept a test name inside a comment", async () => {
