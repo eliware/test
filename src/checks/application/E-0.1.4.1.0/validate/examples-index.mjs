@@ -9,7 +9,6 @@ export async function validateExamplesIndex(context = {}) {
     files = await context.repositoryInventory.documentationFiles({
       directory: join(root, "examples"),
       predicate: (name) => /\.(?:mjs|js)$/iu.test(name),
-      includeGenerated: true,
     });
   } catch (error) {
     if (error.code === "ENOENT") return [];

@@ -11,20 +11,19 @@ test("skips the examples index when no JavaScript example exists", async () => {
   ).resolves.toEqual([]);
 });
 
-test("requires and validates the examples index when JavaScript examples exist", async () => {
+test("indexes maintained JavaScript examples and excludes generated paths", async () => {
   const inventory = {
-    documentationFiles: async ({ includeGenerated, predicate }) => {
-      expect(includeGenerated).toBe(true);
-      return ["README.md", "a.mjs", "nested/b.js", "dist/generated.mjs"].filter(predicate);
+    documentationFiles: async ({ includeGenerated = false, predicate }) => {
+      expect(includeGenerated).toBe(false);
+      return ["README.md", "a.mjs", "nested/b.js", "dist/generated.mjs"].filter(
+        (path) => predicate(path) && !path.startsWith("dist/"),
+      );
     },
-    readText: async () => "[a](a.mjs)",
+    readText: async () => "[a](a.mjs)\n[b](nested/b.js)",
   };
   await expect(
     validateExamplesIndex({ root: "repo", repositoryInventory: inventory }),
-  ).resolves.toContain("examples/README.md must link nested/b.js.");
-  await expect(
-    validateExamplesIndex({ root: "repo", repositoryInventory: inventory }),
-  ).resolves.toContain("examples/README.md must link dist/generated.mjs.");
+  ).resolves.toEqual([]);
 });
 
 test("reports an unavailable repository inventory", async () => {

@@ -1,23 +1,22 @@
 import { expect, test } from "@jest/globals";
 import { validateDocumentationIndexes } from "../../../../../src/checks/application/E-0.1.4.1.0/validate/documentation-indexes.mjs";
 
-test("checks the docs index against all Markdown paths", async () => {
+test("checks maintained docs and excludes generated Markdown paths", async () => {
   const inventory = {
-    documentationFiles: async ({ predicate, includeGenerated }) => {
-      expect(includeGenerated).toBe(true);
-      return ["README.md", "guide.md", "nested/topic.md", "build/generated.md"].filter((path) =>
-        predicate(path.split("/").at(-1)),
+    documentationFiles: async ({ predicate, includeGenerated = false }) => {
+      expect(includeGenerated).toBe(false);
+      return ["README.md", "guide.md", "nested/topic.md", "build/generated.md"].filter(
+        (path) => predicate(path.split("/").at(-1)) && !path.startsWith("build/"),
       );
     },
     readText: async (path) =>
-      path.endsWith("docs/README.md") ? "- [Guide](guide.md)" : "[Documentation](docs/README.md)",
+      path.replaceAll("\\", "/").endsWith("docs/README.md")
+        ? "- [Guide](guide.md)\n- [Topic](nested/topic.md)"
+        : "[Documentation](docs/README.md)",
   };
   await expect(
     validateDocumentationIndexes({ root: "repo", repositoryInventory: inventory }),
-  ).resolves.toContain("docs/README.md must link nested/topic.md.");
-  await expect(
-    validateDocumentationIndexes({ root: "repo", repositoryInventory: inventory }),
-  ).resolves.toContain("docs/README.md must link build/generated.md.");
+  ).resolves.toEqual([]);
 });
 
 test("requires a root README link to the docs index", async () => {

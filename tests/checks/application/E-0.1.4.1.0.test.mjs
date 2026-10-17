@@ -41,8 +41,8 @@ Run the full \`npm test\` suite for final validation before a commit, milestone,
         if (path === "README.md") return "## Configuration\n## Operations";
         return path.includes("docs") ? index : "[Documentation](docs/README.md)";
       },
-      documentationFiles: async ({ directory, predicate, includeGenerated }) => {
-        expect(includeGenerated).toBe(true);
+      documentationFiles: async ({ directory, predicate, includeGenerated = false }) => {
+        expect(includeGenerated).toBe(false);
         const files = directory.endsWith("examples") ? [] : ["README.md", ...documents];
         return files.filter(predicate);
       },
