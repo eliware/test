@@ -71,7 +71,7 @@ orders:
     infrastructure:
       - Managed targets
       - Configuration
-      - Desired state
+      - Target configuration
       - Validation
       - Change boundaries
     workspace:

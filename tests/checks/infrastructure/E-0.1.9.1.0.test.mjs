@@ -5,7 +5,7 @@ test("requires infrastructure profile sections", async () => {
   const headings = {
     "AGENTS.md": "## Infrastructure",
     "README.md":
-      "## Managed targets\n## Configuration\n## Desired state\n## Validation\n## Change boundaries",
+      "## Managed targets\n## Configuration\n## Target configuration\n## Validation\n## Change boundaries",
   };
   const repositoryInventory = { readText: async (path) => headings[path] };
   await expect(run({ repositoryInventory })).resolves.toEqual({
