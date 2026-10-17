@@ -23,6 +23,25 @@ test("defines universal ignore rules and nested probes", () => {
 
 test("allows repository-specific ignore rules", () => {
   expect(validateRequiredIgnoreRules(`${rules}\n!local-example.txt`)).toEqual([]);
+  expect(validateRequiredIgnoreRules(`${rules}\n!package.json\n!src/generated.txt`)).toEqual([]);
+  expect(validateRequiredIgnoreRules(`${rules}\n!`)).toEqual([]);
+});
+
+test("rejects later negations that restore protected paths at nested depths", () => {
+  for (const negation of [
+    "!node_modules/",
+    "!nested/coverage/",
+    "!src/**/dist/**",
+    "!**/.DS_Store",
+    "!nested/deep/Thumbs.db",
+  ])
+    expect(validateRequiredIgnoreRules(`${rules}\n${negation}`)[0]).toContain(
+      "must not restore protected paths",
+    );
+});
+
+test("allows negations that precede the required ignore rules", () => {
+  expect(validateRequiredIgnoreRules(`!nested/node_modules/\n${rules}`)).toEqual([]);
 });
 
 test("reports missing ignore rules and accepts recursive directory patterns", () => {
