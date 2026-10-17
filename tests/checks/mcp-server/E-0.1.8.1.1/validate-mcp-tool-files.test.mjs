@@ -19,10 +19,13 @@ test("reports unmatched adapter and handler files", async () => {
   ]);
 });
 
-test("ignores nested tool modules", async () => {
+test("rejects nested tool modules", async () => {
   const inventory = createMcpToolFixture();
   inventory.fileList.push("tools/nested/other.mjs", "src/tools/nested/other.mjs");
-  await expect(validateMcpToolFiles(inventory.fileList, inventory)).resolves.toEqual([]);
+  await expect(validateMcpToolFiles(inventory.fileList, inventory)).resolves.toEqual([
+    "tools/nested/other.mjs must be directly under tools/.",
+    "src/tools/nested/other.mjs must be directly under src/tools/.",
+  ]);
 });
 
 test("requires at least one tool adapter", async () => {

@@ -38,12 +38,14 @@ directives:
     dos:
       - Put each tool adapter in tools/<name>.mjs.
       - Put each tool handler in src/tools/<name>.mjs.
+      - Keep tool adapters and handlers directly in their required folders.
       - Make each tools/ adapter re-export its matching source handler.
       - Use a default function export in each tool handler.
       - Allow each tool name when matching adapter and handler files are in the repository.
       - Provide one or more tool adapters.
     donts:
       - Do not omit a tool adapter or its matching source handler.
+      - Do not put tool files in subfolders of tools/ or src/tools/.
       - Do not import or execute repository handlers during validation.
     examples:
       - "tools/echo.mjs re-exports src/tools/echo.mjs."
