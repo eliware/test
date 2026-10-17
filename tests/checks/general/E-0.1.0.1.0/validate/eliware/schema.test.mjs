@@ -20,6 +20,12 @@ test("accepts valid timestamps, timezone offsets, dates, and null expiry", () =>
   expect(validateEliwareSchema(metadata("2026-10-16T15:30:45.123+05:30", null))).toEqual([]);
 });
 
+test("rejects undeclared exemption fields", () => {
+  const value = metadata("2026-10-16T15:30:45Z", null);
+  value.exempt[0].unexpected = true;
+  expect(validateEliwareSchema(value)).not.toEqual([]);
+});
+
 test.each([
   ["2026-99-77T99:99:99Z", null],
   ["2026-10-16T25:30:45Z", null],

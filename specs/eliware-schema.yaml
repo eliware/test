@@ -66,4 +66,5 @@ properties:
                   pattern: /$
               - not:
                   pattern: (^|/)\.{1,2}(/|$)
+      additionalProperties: false
 additionalProperties: false
