@@ -1,24 +1,8 @@
 import { posix } from "node:path";
 import { isProhibitedNpmOrGhcrPublishCommand } from "../../../shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
+import { findScriptOperands } from "./find-script-operands.mjs";
 
 const commandPrefix = ["git pull", "npm ci", "npm test"];
-const scriptRunners = new Set([
-  "node",
-  "node.exe",
-  "bun",
-  "bun.exe",
-  "deno",
-  "deno.exe",
-  "tsx",
-  "ts-node",
-  "python",
-  "python3",
-  "py",
-  "bash",
-  "sh",
-  "pwsh",
-  "powershell",
-]);
 
 export function findCommandLists(value, lists = []) {
   if (Array.isArray(value)) value.forEach((item) => findCommandLists(item, lists));
@@ -51,32 +35,11 @@ function checkCommand(command, label) {
   const errors = [];
   if (isProhibitedNpmOrGhcrPublishCommand(command))
     errors.push(`${label} must not publish npm packages or GHCR images.`);
-  for (const script of findScriptPaths(command)) {
+  for (const script of findScriptOperands(command)) {
     if (!script.toLowerCase().endsWith(".mjs") || !isKnitPath(script))
       errors.push(`${label} must keep secondary scripts under .knit/ and use .mjs: ${script}.`);
   }
   return errors;
-}
-
-function findScriptPaths(command) {
-  const tokens = [...command.matchAll(/"([^"]*)"|'([^']*)'|`([^`]*)`|([^\s"'`;&|]+)/gu)].map(
-    (match) => match.slice(1).find((value) => value !== undefined),
-  );
-  const paths = new Set();
-  for (let index = 0; index < tokens.length; index += 1) {
-    const token = tokens[index];
-    if (!token) continue;
-    const normalized = posix.normalize(token.replaceAll("\\", "/"));
-    if (
-      scriptRunners.has(token.toLowerCase()) &&
-      tokens[index + 1] &&
-      !tokens[index + 1].startsWith("-")
-    )
-      paths.add(tokens[index + 1]);
-    if (/\.(?:mjs|mts|cjs|cts|js|jsx|tsx|ts|sh|ps1|py|rb)$/iu.test(token)) paths.add(token);
-    else if (normalized.startsWith(".knit/") || normalized.startsWith("./")) paths.add(token);
-  }
-  return paths;
 }
 
 function isKnitPath(script) {

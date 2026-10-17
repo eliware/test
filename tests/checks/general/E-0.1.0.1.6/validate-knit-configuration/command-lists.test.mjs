@@ -42,6 +42,17 @@ test.each([
 
 test("allows other extra commands without script paths", () => {
   expect(validateCommandList([...prefix, "npm run validate", "codescope all"])).toEqual([]);
+  expect(
+    validateCommandList([...prefix, "custom-validator ./output ./config", "cat ./manifest.mjs"]),
+  ).toEqual([]);
+});
+
+test("checks only script operands in supported runner commands", () => {
+  expect(validateCommandList([...prefix, 'bash -c "node ./config"'])).toEqual([]);
+  expect(validateCommandList([...prefix, "python scripts/validate.py"]).join(" ")).toContain(
+    "must keep secondary scripts under .knit/ and use .mjs",
+  );
+  expect(validateCommandList([...prefix, "node .knit/scripts/validate.mjs"])).toEqual([]);
 });
 
 test("allows quoted scripts under .knit with the required extension", () => {
