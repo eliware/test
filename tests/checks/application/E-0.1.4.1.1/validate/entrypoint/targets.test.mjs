@@ -32,14 +32,17 @@ test.each([null, "", " ", "/repo/bin/tool.mjs", "C:/repo/bin/tool.mjs"])(
   },
 );
 
-test.each(["src/tool.mjs", "bin/../tool.mjs", "bin//tool.mjs", "bin/C:/tool.mjs"])(
-  "rejects noncanonical target paths: %s",
-  async (target) => {
-    await expect(validateEntrypointTargets([target], "repo", async () => file)).resolves.toEqual([
-      `Entrypoint target must use a canonical path under bin/: ${target}.`,
-    ]);
-  },
-);
+test.each([
+  "src/tool.mjs",
+  "bin/../tool.mjs",
+  "bin/./tool.mjs",
+  "bin//tool.mjs",
+  "bin/C:/tool.mjs",
+])("rejects noncanonical target paths: %s", async (target) => {
+  await expect(validateEntrypointTargets([target], "repo", async () => file)).resolves.toEqual([
+    `Entrypoint target must use a canonical path under bin/: ${target}.`,
+  ]);
+});
 
 test("rejects a symlink in any target path segment", async () => {
   await expect(

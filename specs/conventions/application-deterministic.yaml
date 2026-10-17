@@ -40,6 +40,10 @@ directives:
     dos:
       - When bin exists, make each target a nonempty repository-relative path to an
         existing file in bin/.
+      - Remove one leading ./ and convert backslash separators to forward slashes before checks.
+      - Do not use . or .. path segments.
+      - Allow one leading ./ segment.
+      - Do not use symbolic links in bin target paths.
       - Give bin object keys nonempty names containing ASCII letters, digits, underscores,
         dots, or hyphens.
       - When start exists, include a standalone token matching a declared entrypoint after
