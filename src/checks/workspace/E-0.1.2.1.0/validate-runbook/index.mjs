@@ -7,9 +7,12 @@ import {
 export function validateRunbookIndex(content, runbooks) {
   const body = removeMarkdownCode(content);
   const lines = body.split(/\r?\n/u).filter((line) => line.trim());
-  const allowedLine =
-    /^(?:\s{0,3}#{1,6}\s+\S.*|\s*(?:[-*+]\s+|\d+[.)]\s+)\[[^\]]+\]\([^)]+\)\s*)$/u;
-  const errors = lines.some((line) => !allowedLine.test(line))
+  const definitions = new Set(
+    [...body.matchAll(/^ {0,3}\[([^\]]+)\]:\s*(?:<[^>\r\n]+>|\S+)/gimu)].map((match) =>
+      normalizeLabel(match[1]),
+    ),
+  );
+  const errors = lines.some((line) => !isNavigationLine(line, definitions))
     ? ["runbooks/README.md must contain only headings and runbook links."]
     : [];
   const expected = new Set(runbooks.map((path) => path.slice("runbooks/".length)));
@@ -25,4 +28,19 @@ export function validateRunbookIndex(content, runbooks) {
   if (actual.length !== expected.size || actual.some((path) => !expected.has(path)))
     errors.push("runbooks/README.md must link every runbook.");
   return errors;
+}
+
+function isNavigationLine(line, definitions) {
+  if (/^\s{0,3}#{1,6}\s+\S.*$/u.test(line)) return true;
+  if (/^\s{0,3}\[[^\]]+\]:\s*(?:<[^>\r\n]+>|\S+)(?:\s+.*)?$/u.test(line)) return true;
+  const link = line.match(/^\s*(?:[-*+]\s+|\d+[.)]\s+)\[([^\]]+)\](.*)$/u);
+  if (!link) return false;
+  const suffix = link[2].trim();
+  if (/^\((?:<[^>\r\n]+>|[^)\r\n]+)\)$/u.test(suffix)) return true;
+  if (/^\[[^\]]*\]$/u.test(suffix)) return true;
+  return !suffix && definitions.has(normalizeLabel(link[1]));
+}
+
+function normalizeLabel(value) {
+  return value.trim().replace(/\s+/gu, " ").toLowerCase();
 }
