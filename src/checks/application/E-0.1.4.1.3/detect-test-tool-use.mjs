@@ -2,11 +2,8 @@ import { parse } from "@babel/parser";
 import { collectLauncherAliases, isLauncher } from "./collect-launcher-aliases.mjs";
 import { readStaticString } from "./read-static-string.mjs";
 import { visitAst } from "./visit-ast.mjs";
-
-const toolName =
-  /^(?:@jest\/(?!globals$)[^/]+|@vitest\/|@tapjs\/|@wdio\/|@cypress\/|@istanbuljs\/|jest(?:-|$)|vitest(?:\/|$)|mocha(?:\/|$)|ava$|tap$|tape$|uvu$|c8$|nyc$|istanbul(?:-|$)|babel-plugin-istanbul$|node:test$|playwright$|@playwright\/|cypress$|jasmine$|@bcoe\/v8-coverage$)/iu;
-const commandName =
-  /(?:^|[\s/\\])(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\s/\\]|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|\s)|\b(?:bun|deno)\s+test(?:\s|$)/iu;
+import { isModuleLoadCall } from "./is-module-load-call.mjs";
+import { isTestToolCommand, isTestToolSpecifier } from "./test-tool-patterns.mjs";
 export function detectTestToolUse(content, allowHarnessTools = false) {
   let ast;
   try {
@@ -24,20 +21,22 @@ export function detectTestToolUse(content, allowHarnessTools = false) {
     const specifier = importSpecifier(node, strings);
     if (
       specifier &&
-      toolName.test(specifier) &&
+      isTestToolSpecifier(specifier) &&
       !(allowHarnessTools && specifier === "istanbul-lib-instrument")
     )
       return true;
     if (
-      isModuleLoad(node) &&
-      node.arguments.some((argument) => toolName.test(readStaticString(argument, strings) ?? ""))
+      isModuleLoadCall(node) &&
+      node.arguments.some((argument) =>
+        isTestToolSpecifier(readStaticString(argument, strings) ?? ""),
+      )
     )
       return true;
     if (node.type === "CallExpression" && isLauncher(node.callee, launchNames)) {
       const command = node.arguments
         .flatMap((argument) => collectStrings(argument, strings))
         .join(" ");
-      if (commandName.test(command)) return true;
+      if (isTestToolCommand(command)) return true;
     }
     return false;
   });
@@ -61,18 +60,6 @@ function importSpecifier(node, strings) {
     return readStaticString(node.source, strings);
   if (node.type === "ImportExpression") return readStaticString(node.source, strings);
   return null;
-}
-
-function isModuleLoad(node) {
-  const callee = node.callee;
-  return (
-    node.type === "CallExpression" &&
-    (callee?.type === "Import" ||
-      (callee?.type === "Identifier" && ["require", "load"].includes(callee.name)) ||
-      (callee?.type === "MemberExpression" &&
-        callee.object?.name === "module" &&
-        ["require"].includes(callee.property?.name ?? callee.property?.value)))
-  );
 }
 
 function collectStrings(node, strings) {
