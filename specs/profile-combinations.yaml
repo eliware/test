@@ -99,4 +99,4 @@ profiles:
   private:
     requires: [general]
     requiresAny: []
-    prohibits: [npm-published]
+    prohibits: [library, npm-published]

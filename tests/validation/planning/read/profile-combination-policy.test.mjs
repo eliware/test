@@ -40,7 +40,8 @@ test("keeps canonical order out of the combination policy", () => {
     requiresAny: [],
     prohibits: ["library", "workspace", "documentation", "infrastructure", "npm-published"],
   });
-  expect(policy.profiles.private.prohibits).toEqual(["npm-published"]);
+  expect(policy.profiles.private.prohibits).toEqual(["library", "npm-published"]);
+  expect(policy.profiles.library.prohibits).toContain("private");
   expect(policy.profiles["ghcr-published"].prohibits).not.toContain("private");
   expect(policy.profiles["ghcr-published"].requires).not.toContain("application");
 });

@@ -85,6 +85,14 @@ test("rejects every prohibited profile combination", () => {
   expect(failures).toEqual([]);
 });
 
+test("rejects library and private in either profile order", () => {
+  const libraryFirst = ["general", "library", "private", "npm-published"];
+  const privateFirst = ["general", "private", "npm-published", "library"];
+
+  expect(validateAppliedProfiles(libraryFirst, policy, libraryFirst)).toContain("conflict");
+  expect(validateAppliedProfiles(privateFirst, policy, privateFirst)).toContain("conflict");
+});
+
 test("allows application child profiles to combine", () => {
   expect(
     validate(
