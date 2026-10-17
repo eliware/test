@@ -3,16 +3,15 @@ description: Lists semantic rules for Eliware web applications.
 directives:
   - id: E-0.1.6.0.0
     dos:
-      - Document routes, owners, assets, build settings, ports, and output paths from
+      - Document routes, owners, assets, bundle names, build settings, ports, and output paths from
         route code, configuration, and workflow files.
-      - Set webpack output to <repo-root>/dist.
       - Name browser-validation prerequisites, commands, and results shown for each
         documented browser workflow.
       - Keep public assets to files listed by route code or static asset configuration.
       - Set "Not used" for Routes, Assets, Development server, Build, or Deployment
         sections that do not apply.
-      - Compare route, asset, and build claims with maintained code, configuration, tests,
-        and browser workflow files.
+      - Compare route, asset, bundle, and build claims with maintained code, configuration,
+        tests, and browser workflow files.
     donts:
       - Do not expose private configuration.
       - Do not claim browser or deployment validation that was not performed.

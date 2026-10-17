@@ -26,13 +26,24 @@ directives:
 
   - id: E-0.1.6.1.2
     dos:
-      - Declare webpack in dependencies.
-      - Set build to the standard webpack command.
+      - Declare webpack and webpack-cli as direct package dependencies.
+      - Keep webpack.config.mjs at the repository root.
+      - Set scripts.build to `webpack --config webpack.config.mjs`.
+      - Export one default configuration object from webpack.config.mjs.
+      - Set context to the repository root.
+      - Set mode to production and target to web.
+      - Define one or more named bundles in the entry object.
+      - Set output.path to <repo-root>/dist.
+      - Set output.filename to `[name].js` and output.clean to true.
+      - Add project-specific loaders, rules, plugins, and other options when needed.
       - Run build during aggregate validation.
       - Set lighthouse and puppeteer in dependencies.
       - Define nonempty lighthouse and screenshots scripts.
     donts:
-      - Do not chain or redirect build or duplicate it in CI.
+      - Do not change the required Webpack config values.
+      - Do not add commands or shell operations to scripts.build.
+      - Do not duplicate build in CI.
       - Do not run lighthouse or screenshots during validation.
     examples:
       - /eliware/web-template/package.json
+      - /eliware/web-template/webpack.config.mjs
