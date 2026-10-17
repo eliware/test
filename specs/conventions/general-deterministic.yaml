@@ -292,6 +292,8 @@ directives:
       - Allow publish.yaml when npm-published or ghcr-published applies.
       - Before `npm ci`, allow approved setup actions and npm latest installation.
       - Allow `echo` or `printf` only when commands report literal text.
+      - Allow shell operators as text only inside quoted arguments.
+      - Use single quotes for literal dollar signs and double quotes without expansion.
       - Do not set environment, shell, or working-directory overrides on required install
         and test steps.
       - Accept inline lists and indented YAML lists with matching values.

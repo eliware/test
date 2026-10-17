@@ -82,7 +82,7 @@ test("rejects unapproved steps, step overrides, and absent validation jobs", asy
 test("accepts safe literal reporting and rejects unsafe reporting", async () => {
   const safe = validWorkflow.replace(
     "      - run: npm -g install npm@latest",
-    "      - run: echo 'Install npm latest'\n      - run: npm -g install npm@latest",
+    "      - run: echo 'Install $LATEST & check > output'\n      - run: printf \"Ready & complete\"\n      - run: npm -g install npm@latest",
   );
   await expect(
     run({
@@ -92,15 +92,21 @@ test("accepts safe literal reporting and rejects unsafe reporting", async () => 
       },
     }),
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
-  const unsafe = safe.replace("echo 'Install npm latest'", 'echo "$TOKEN"');
-  await expect(
-    run({
-      repositoryInventory: {
-        files: async () => [".github/workflows/ci.yaml"],
-        readText: async () => unsafe,
-      },
-    }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("unapproved step") });
+  for (const replacement of [
+    'echo "$TOKEN"',
+    "echo 'literal' > output",
+    "echo 'literal' && npm ci",
+  ]) {
+    const unsafe = safe.replace("echo 'Install $LATEST & check > output'", replacement);
+    await expect(
+      run({
+        repositoryInventory: {
+          files: async () => [".github/workflows/ci.yaml"],
+          readText: async () => unsafe,
+        },
+      }),
+    ).resolves.toMatchObject({ message: expect.stringContaining("unapproved step") });
+  }
 });
 
 test("rejects multiple validation jobs, job conditions, and unsafe permissions", async () => {

@@ -1,5 +1,6 @@
 import { isProhibitedNpmOrGhcrPublishCommand } from "../../../is/prohibited-npm-or-ghcr-publish-command.mjs";
 import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
+import { isSafeReportingCommand } from "./is-safe-reporting-command.mjs";
 
 export function validateWorkflowCommandRestrictions(steps) {
   const { validationSteps, stepValues } = readCanonicalOrder("ci-workflow.yaml");
@@ -53,6 +54,6 @@ function isApprovedPreInstallStep(step) {
     typeof step?.run === "string" &&
     step.uses === undefined &&
     !/[\r\n]/u.test(step.run) &&
-    /^(?:echo|printf)(?:\s+(?:'[^'\\$`;&|<>]*'|"[^"\\$`;&|<>]*"|[\w./:@=-]+))*$/u.test(step.run)
+    isSafeReportingCommand(step.run)
   );
 }
