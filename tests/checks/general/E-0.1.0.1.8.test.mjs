@@ -1,4 +1,5 @@
 import { expect, test } from "@jest/globals";
+import { requiredIgnoreCases } from "../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns.mjs";
 import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.8.mjs";
 import { validateGitHygiene } from "../../../src/checks/general/E-0.1.0.1.8/validate/git/hygiene.mjs";
 
@@ -9,12 +10,16 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
   return async (_command, args) => {
     const current = index++;
     if (current === failAt) throw Object.assign(new Error("git failed"), { code: 2 });
-    if (args.includes("check-ignore")) {
-      const path = args.at(-1);
-      const shouldIgnore = path !== "package.json";
-      if (shouldIgnore) return { code: 0, stdout: "", stderr: "" };
-      throw Object.assign(new Error("not ignored"), { code: 1 });
-    }
+    if (args.includes("check-ignore"))
+      return {
+        code: 0,
+        stdout: Buffer.from(
+          requiredIgnoreCases
+            .filter(([, shouldIgnore]) => shouldIgnore)
+            .map(([path]) => `ignore-pattern\t${path}`)
+            .join("\n"),
+        ),
+      };
     if (args.includes("--ignored"))
       return {
         stdout: Buffer.from(`${trackedIgnored.join("\0")}${trackedIgnored.length ? "\0" : ""}`),
@@ -79,11 +84,11 @@ test("reports Git status errors", async () => {
   expect(result.message).toContain("Git ignore rules could not be inspected");
   const indexResult = await run({
     root: "repo",
-    runGit: createGitRunner({ failAt: 38 }),
+    runGit: createGitRunner({ failAt: 4 }),
     readText: async () => ignoreText,
   });
   expect(indexResult.message).toContain("Git index status could not be read");
-  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 39 }), {
+  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 5 }), {
     readText: async () => ignoreText,
   });
   expect(linkIndex).toContain("Git index status could not be read. Tracked symlinks are unknown.");
@@ -113,7 +118,14 @@ test("rejects malformed Git path and index output", async () => {
 
 test("uses the current directory and checks required ignored paths", async () => {
   const runner = async (_command, args) => {
-    if (args.includes("check-ignore")) return { code: args.at(-1) === "package.json" ? 1 : 0 };
+    if (args.includes("check-ignore"))
+      return {
+        code: 0,
+        stdout: requiredIgnoreCases
+          .filter(([, shouldIgnore]) => shouldIgnore)
+          .map(([path]) => `ignore-pattern\t${path}`)
+          .join("\n"),
+      };
     return { stdout: Buffer.from("") };
   };
   await expect(run({ runGit: runner, readText: async () => ignoreText })).resolves.toMatchObject({
@@ -123,9 +135,14 @@ test("uses the current directory and checks required ignored paths", async () =>
 
 test("reports failure when Git does not ignore a required path", async () => {
   const runner = async (_command, args) => {
-    if (args.includes("check-ignore") && args.at(-1) === "nested/node_modules/item.txt")
-      return { code: 1 };
-    if (args.includes("check-ignore")) return { code: 0 };
+    if (args.includes("check-ignore"))
+      return {
+        code: 0,
+        stdout: requiredIgnoreCases
+          .filter(([path, shouldIgnore]) => shouldIgnore && path !== "nested/node_modules/item.txt")
+          .map(([path]) => `ignore-pattern\t${path}`)
+          .join("\n"),
+      };
     return { stdout: Buffer.from("") };
   };
   await expect(
@@ -135,17 +152,15 @@ test("reports failure when Git does not ignore a required path", async () => {
 
 test("handles Git ignore command codes and missing Git", async () => {
   const failedIgnore = async (_command, args) => {
-    if (args.includes("check-ignore")) {
-      if (args.at(-1) === "nested/node_modules/item.txt") return { code: 1 };
-      if (args.at(-1) === "nested/.git/item.txt")
-        throw Object.assign(new Error("missing"), { code: "ENOENT" });
-      return { code: 0 };
-    }
+    if (args.includes("check-ignore"))
+      throw Object.assign(new Error("missing"), { code: "ENOENT" });
     return { stdout: Buffer.from("") };
   };
   const errors = await validateGitHygiene("repo", failedIgnore, {
     readText: async () => ignoreText,
   });
-  expect(errors).toContain("nested/node_modules/item.txt must be ignored.");
-  expect(errors).toContain("Git ignore rules could not be inspected for nested/.git/item.txt.");
+  expect(errors).toContain("Git ignore rules could not be inspected for package.json.");
+  expect(errors).toContain(
+    "Git ignore rules could not be inspected for nested/node_modules/item.txt.",
+  );
 });
