@@ -22,6 +22,21 @@ test("allows source, launchers, tests, fixtures, and examples", () => {
   ).toEqual([]);
 });
 
+test("allows only package-script validators under scripts/", () => {
+  expect(
+    validateImplementationPlacement(
+      ["scripts/validate.mjs", "scripts/helper.mjs", "src/main.mjs"],
+      [],
+      { scripts: { validate: "node scripts/validate.mjs" } },
+    ),
+  ).toEqual(["scripts/helper.mjs is an implementation module outside its allowed root."]);
+  expect(
+    validateImplementationPlacement(["lib/validate.mjs"], [], {
+      scripts: { validate: "node lib/validate.mjs" },
+    }),
+  ).toEqual(["lib/validate.mjs is an implementation module outside its allowed root."]);
+});
+
 test("allows Discord and MCP discovery modules for their profiles", () => {
   expect(
     validateImplementationPlacement(

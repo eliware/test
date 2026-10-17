@@ -59,6 +59,7 @@ directives:
     dos:
       - Keep implementation in src/ and launchers in bin/.
       - Put implementation modules in src/. Put launchers in bin/.
+      - Allow package-script validator files under scripts/.
       - Put tests in tests/, fixtures in test-fixtures/, and examples in
         examples/.
       - Mirror each src/ .mjs file with exactly one same-path tests/ .test.mjs file.
@@ -75,6 +76,7 @@ directives:
       - Mark a barrel public only when its normalized path matches a main, bin, or
         exports target in package.json.
     donts:
+      - Do not put other implementation modules under scripts/.
       - Do not impose a line limit on bin/ launchers.
       - Do not exclude source files from mirroring or line limits for coverage exclusions.
       - Do not put generated output or unmatched tests and support files in src/ or

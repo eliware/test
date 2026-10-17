@@ -22,6 +22,19 @@ test("rejects implementation modules outside src and approved roots", async () =
   );
 });
 
+test("allows a declared local validator under scripts/", async () => {
+  const inventory = {
+    files: async (view) => (view === "all" ? ["scripts/validate.mjs"] : []),
+    readText: async () => "",
+  };
+  await expect(
+    validateApplicationLayout({
+      repositoryInventory: inventory,
+      packageJson: { scripts: { validate: "node scripts/validate.mjs" } },
+    }),
+  ).resolves.toEqual([]);
+});
+
 test("uses the default context", async () => {
   await expect(validateApplicationLayout()).rejects.toThrow();
 });

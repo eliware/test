@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { validatePackageScriptFileLocations } from "../../../../../src/checks/shared/package-scripts/validate/package-script-file-locations.mjs";
+import {
+  findPackageScriptValidatorPaths,
+  validatePackageScriptFileLocations,
+} from "../../../../../src/checks/shared/package-scripts/validate/package-script-file-locations.mjs";
 
 test.each([
   "node src/validate.mjs",
@@ -35,6 +38,7 @@ test("allows installed tools and does not parse shell-wrapped commands", () => {
 });
 
 test("does not require scripts or scan files in the scripts directory", () => {
+  expect(findPackageScriptValidatorPaths()).toEqual([]);
   expect(validatePackageScriptFileLocations({ scripts: { release: "semantic-release" } })).toEqual(
     [],
   );

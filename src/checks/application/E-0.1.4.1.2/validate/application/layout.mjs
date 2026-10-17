@@ -10,7 +10,11 @@ export async function validateApplicationLayout(context = {}) {
   const root = context.root ?? process.cwd();
   return [
     ...validateTestFileLayout(files),
-    ...validateImplementationPlacement(files, context.packageJson?.eliware?.apply ?? []),
+    ...validateImplementationPlacement(
+      files,
+      context.packageJson?.eliware?.apply ?? [],
+      context.packageJson,
+    ),
     ...(await validateMirroredTests(files, read, root)),
     ...(await validateApplicationLineLimits(files, read, root)),
     ...(await validateInternalExportBarrels(files, read, context.packageJson ?? {}, root)),
