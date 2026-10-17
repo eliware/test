@@ -34,6 +34,18 @@ test("finds writes through namespace imports and dynamic module access", () => {
   ]);
 });
 
+test("finds writes through chained namespace aliases", () => {
+  const source = [
+    'import * as fs from "node:fs";',
+    "const io = fs;",
+    "const fileSystem = io;",
+    "fileSystem.writeFileSync('file', 'text');",
+  ].join("\n");
+  expect(findTestWritePolicyViolations(source, "tests/example.test.mjs")).toEqual([
+    "tests/example.test.mjs:4 uses a test API that creates files or temporary directories: use of writeFileSync.",
+  ]);
+});
+
 test("allows read-only APIs and ignores strings and comments", () => {
   const source = [
     'import { readFile, readdir } from "node:fs/promises";',

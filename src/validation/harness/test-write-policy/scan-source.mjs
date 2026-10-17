@@ -7,6 +7,7 @@ import {
   temporaryDirectoryModules,
 } from "./api-names.mjs";
 import { visitAst } from "../visit-ast.mjs";
+import { trackNamespaceAlias } from "./track-namespace-alias.mjs";
 
 export function findTestWritePolicyViolations(source, filePath) {
   const ast = parse(source, {
@@ -24,8 +25,10 @@ export function findTestWritePolicyViolationsInAst(ast, filePath) {
       inspectImport(node, namespaceBindings, violations, filePath);
       return;
     }
-    if (node.type === "VariableDeclarator")
+    if (node.type === "VariableDeclarator") {
+      trackNamespaceAlias(node, namespaceBindings);
       inspectDynamicBinding(node, namespaceBindings, violations, filePath);
+    }
     if (node.type === "MemberExpression" || node.type === "OptionalMemberExpression")
       inspectMember(node, namespaceBindings, violations, filePath);
   });
