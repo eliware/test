@@ -8,8 +8,10 @@ const examples = new Set();
 test("skips SQL statements and syntax while reporting matching words in prose", async () => {
   const source = [
     'const query = "SELECT alignment, base, facility, fix, join, portion, real, transition, trim FROM nasr";',
+    "const JOIN_POINT = `LEFT JOIN FIX_BASE ON FIX_BASE.BASE_ID = ${procedureId}`;",
     'const usage = "Usage: radar --port PORT";',
     'const icon = <svg><g transform="rotate(90) rotate(180)" /></svg>;',
+    'rose.setAttribute("transform", `rotate(${angle})`);',
     'const message = "Alignment, base, facility, fix, join, portion, real, transition, trim, port, and rotate words.";',
   ].join("\n");
   const inventory = { readText: jest.fn(async () => source) };

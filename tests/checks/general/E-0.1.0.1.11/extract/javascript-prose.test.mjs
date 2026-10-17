@@ -110,6 +110,16 @@ test("skips SQL statements and SVG transform attribute values", () => {
   expect(extractJavaScriptProse(source)).toEqual([]);
 });
 
+test("skips dynamic SVG transform calls and retains prose", () => {
+  const source = [
+    'rose.setAttribute("transform", `rotate(${angle})`);',
+    'const label = "Rotate the compass carefully.";',
+  ].join("\n");
+  expect(extractJavaScriptProse(source)).toEqual([
+    { text: "Rotate the compass carefully.", line: 2, kind: "prose" },
+  ]);
+});
+
 test("keeps ordinary prose with a SQL keyword and an SVG transform term", () => {
   expect(
     extractJavaScriptProse('const note = "Select a real portion of the base.";'),

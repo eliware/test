@@ -1,10 +1,8 @@
 import { parse } from "@babel/parser";
 import { expectedLicense } from "../../E-0.1.0.1.1/validate/required-package-files.mjs";
 import { windowsProcessTreeFallbackScript } from "../../../../validation/shared/process/run/windows-process-tree-fallback.mjs";
-import { countWords } from "../word-tools.mjs";
-import { isSqlStatement } from "./is-sql-statement.mjs";
-
-const commandStart = /^(?:npm|node|git|gh|npx|yarn|pnpm|powershell|pwsh)\s/iu;
+import { isHumanReadableProse } from "./is/human-readable-prose.mjs";
+import { isSvgTransformValue } from "./is/svg-transform-value.mjs";
 
 export function extractJavaScriptProse(source, parserOptions = {}) {
   let ast;
@@ -29,18 +27,20 @@ export function extractJavaScriptProse(source, parserOptions = {}) {
 function visit(value, blocks, parent = null) {
   if (!value || typeof value !== "object") return;
   if (isExactRequiredText(value) || isPowerShellScript(value)) return;
-  if (parent?.type === "JSXAttribute" && parent.name?.name === "transform") return;
-  if (value.type === "StringLiteral" && hasProse(value.value)) {
+  if (isSvgTransformValue(value, parent)) return;
+  if (value.type === "StringLiteral" && isHumanReadableProse(value.value)) {
     blocks.push({ text: value.value, line: value.loc.start.line, kind: "prose" });
   } else if (value.type === "TemplateLiteral") {
     const text = staticTemplateText(value);
     if (text !== undefined) {
-      if (hasProse(text)) blocks.push({ text, line: value.loc.start.line, kind: "prose" });
+      if (isHumanReadableProse(text))
+        blocks.push({ text, line: value.loc.start.line, kind: "prose" });
       return;
     }
     const quasis = value.quasis.map(({ value: part }) => part.cooked ?? part.raw).join("");
-    if (hasProse(quasis)) blocks.push({ text: quasis, line: value.loc.start.line, kind: "prose" });
-  } else if (value.type === "JSXText" && hasProse(value.value)) {
+    if (isHumanReadableProse(quasis))
+      blocks.push({ text: quasis, line: value.loc.start.line, kind: "prose" });
+  } else if (value.type === "JSXText" && isHumanReadableProse(value.value)) {
     blocks.push({ text: value.value, line: value.loc.start.line, kind: "prose" });
   }
   for (const [key, child] of Object.entries(value)) {
@@ -89,12 +89,5 @@ function isPowerShellScript(value) {
     value.type === "VariableDeclarator" &&
     value.id?.name === "windowsProcessTreeFallbackScript" &&
     staticStringValue(value.init) === windowsProcessTreeFallbackScript
-  );
-}
-
-function hasProse(value) {
-  const text = value.trim();
-  return (
-    /\s/u.test(text) && countWords(text) > 1 && !commandStart.test(text) && !isSqlStatement(text)
   );
 }
