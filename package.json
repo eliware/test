@@ -44,16 +44,16 @@
     "node": ">=26"
   },
   "dependencies": {
-    "@babel/parser": "^8.0.6",
+    "@babel/parser": "^8.0.7",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "istanbul-lib-instrument": "6.0.3",
+    "istanbul-lib-instrument": "^6.0.3",
     "jest": "^30.5.2",
     "minimatch": "^10.2.6",
     "oxlint": "^1.88.0",
-    "prettier": "3.9.10",
+    "prettier": "^3.9.10",
     "semver": "^7.8.5",
-    "yaml": "^2.8.1"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@jest/globals": "^30.5.2"
