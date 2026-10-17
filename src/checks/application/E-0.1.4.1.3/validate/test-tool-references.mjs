@@ -1,13 +1,6 @@
 import { detectTestToolUse } from "../detect-test-tool-use.mjs";
-
-const forbiddenToolReference =
-  /["'`](@jest\/(?!globals(?:["'/]))[^"'`]+|@vitest\/[^"'`]+|@tapjs\/[^"'`]+|@wdio\/[^"'`]+|@cypress\/[^"'`]+|jest(?:-[^/"'`]+)?(?:\/[^"'`]*)?|vitest(?:\/[^"'`]*)?|mocha(?:\/[^"'`]*)?|ava|tap|tape|uvu|c8|nyc|istanbul|babel-plugin-istanbul|node:test|playwright|@playwright\/test|cypress|jasmine|@bcoe\/v8-coverage)["'`]/giu;
-const forbiddenToolCommand =
-  /(?:^|[\s/\\"'`])(?:jest|vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\\/"'`]|\s|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|[\s"'`])|\b(?:bun|deno)\s+test(?:\s|$)/iu;
-const forbiddenAlternativeReference =
-  /["'`](@vitest\/[^"'`]+|@tapjs\/[^"'`]+|@wdio\/[^"'`]+|@cypress\/[^"'`]+|vitest(?:\/[^"'`]*)?|mocha(?:\/[^"'`]*)?|ava|tap|tape|uvu|c8|nyc|istanbul|babel-plugin-istanbul|node:test|playwright|@playwright\/test|cypress|jasmine|@bcoe\/v8-coverage)["'`]/giu;
-const forbiddenAlternativeCommand =
-  /(?:^|[\s/\\"'`])(?:vitest|mocha|ava|tap|tape|uvu|c8|nyc|istanbul|playwright|cypress|karma|jasmine|qunit|wdio|nightwatch|testcafe|protractor)(?:\.cmd)?(?:[\\/"'`]|\s|$)|\bnode(?:\.exe)?\s+(?:--[\w-]+(?:=\S+)?\s+)*--test(?=$|[\s"'`])|\b(?:bun|deno)\s+test(?:\s|$)/iu;
+import { findTestToolReferencesInText } from "./find-test-tool-references-in-text.mjs";
+import { withoutJestConfiguration } from "./without-jest-configuration.mjs";
 
 export function validateTestToolReferences(path, content, harness = false) {
   const candidate = path === "package.json" ? withoutJestConfiguration(content) : content;
@@ -16,28 +9,9 @@ export function validateTestToolReferences(path, content, harness = false) {
     /\.(?:json|ya?ml|sh|ps1|py)$/iu.test(path) ||
     !/\.(?:mjs|js|cjs|jsx|ts|tsx|cts|mts|mjsx|cjsx)$/iu.test(path);
   const referencesTool = plainText
-    ? harness
-      ? forbiddenAlternativeReference.test(candidate) || forbiddenAlternativeCommand.test(candidate)
-      : forbiddenToolReference.test(candidate) || forbiddenToolCommand.test(candidate)
+    ? findTestToolReferencesInText(candidate, harness)
     : detectTestToolUse(candidate, harness);
-  for (const pattern of [
-    forbiddenToolReference,
-    forbiddenToolCommand,
-    forbiddenAlternativeReference,
-    forbiddenAlternativeCommand,
-  ])
-    pattern.lastIndex = 0;
   return referencesTool
     ? `${path} must not import or invoke a test runner or coverage tool.`
     : null;
-}
-
-function withoutJestConfiguration(content) {
-  try {
-    const manifest = JSON.parse(content);
-    delete manifest.jest;
-    return JSON.stringify(manifest);
-  } catch {
-    return content;
-  }
 }
