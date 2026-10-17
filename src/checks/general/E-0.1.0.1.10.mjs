@@ -17,7 +17,7 @@ export async function run(context = {}) {
       ...testFindings,
       ...repeatedNames.map(formatRepeatedName),
     ];
-    return findings.length ? fail(ruleId, findings.join(" ")) : pass(ruleId);
+    return findings.length ? fail(ruleId, findings.join("\n")) : pass(ruleId);
   } catch (error) {
     return fail(ruleId, `Repository files could not be inspected: ${error.message}`);
   }
