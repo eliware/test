@@ -13,6 +13,14 @@ test("accepts the canonical setup, install, guarded publish sequence", () => {
   expect(validateNpmPublishSteps(document, packageVersion)).toEqual([]);
 });
 
+test("rejects npm exec when it invokes an alternate publisher", () => {
+  const invalid = structuredClone(document);
+  invalid.jobs.publish.steps.push({ run: "npm exec -- pnpm publish" });
+  expect(validateNpmPublishSteps(invalid, packageVersion)).toContain(
+    "npm publisher must not use alternate package publishing commands or actions.",
+  );
+});
+
 test("reports a missing publish job step list", () => {
   expect(validateNpmPublishSteps({ jobs: { publish: {} } }, packageVersion)).toEqual([
     "publish.yaml publish job must define steps.",
