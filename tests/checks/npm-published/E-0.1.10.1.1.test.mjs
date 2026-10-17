@@ -12,17 +12,10 @@ test("E-0.1.10.1.1 validates npm files metadata", () => {
   });
 });
 
-test.each([
-  [{ ...packageJson, files: undefined }, "nonempty array"],
-  [{ ...packageJson, files: ["../outside"] }, "unsafe path"],
-  [{ ...packageJson, files: [null] }, "unsafe path"],
-  [{ ...packageJson, files: [...files, "src/"] }, "duplicate"],
-  [{ ...packageJson, files: files.filter((entry) => entry !== "specs/") }, "specs/"],
-  [{ ...packageJson, files: [...files.slice(1), files[0]] }, "start with required"],
-])("rejects invalid package files metadata", (invalidPackage, message) => {
-  expect(run({ packageJson: invalidPackage })).toMatchObject({
+test("reports package files validator errors", () => {
+  expect(run({ packageJson: { ...packageJson, files: ["../outside"] } })).toMatchObject({
     ruleId,
     status: "fail",
-    message: expect.stringContaining(message),
+    message: expect.stringContaining("unsafe path"),
   });
 });

@@ -1,3 +1,4 @@
+import { describe, expect, test } from "@jest/globals";
 import { stripNonProseText } from "../../../../src/checks/general/E-0.1.0.1.11/strip-nonprose-text.mjs";
 
 describe("stripNonProseText", () => {
