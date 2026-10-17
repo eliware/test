@@ -1,5 +1,4 @@
 import { afterEach, expect, jest, test } from "@jest/globals";
-import { fileURLToPath, pathToFileURL } from "node:url";
 
 const readFile = jest.fn();
 const runNpmConsumerSmoke = jest.fn();
@@ -9,8 +8,7 @@ jest.unstable_mockModule(
   () => ({ runNpmConsumerSmoke }),
 );
 
-const { runSmokeCli, runSmokeCliEntrypoint } =
-  await import("../../../../src/validation/stages/smoke/cli.mjs");
+const { runSmokeCli } = await import("../../../../src/validation/stages/smoke/cli.mjs");
 
 afterEach(() => readFile.mockReset());
 
@@ -56,43 +54,4 @@ test("reports smoke failures and package read errors", async () => {
     runSmokeCli({ args: ["--target", "consumer"], root: "missing", write }),
   ).resolves.toBe(17);
   expect(write).toHaveBeenCalledWith(expect.stringContaining("Tarball consumer smoke failed"));
-});
-
-test("executes only when the entrypoint path matches", async () => {
-  const prior = process.exitCode;
-  const cliUrl = pathToFileURL("C:/checkout/src/validation/stages/smoke/smoke-cli.mjs");
-  const run = jest.fn(async () => 18);
-  try {
-    await runSmokeCliEntrypoint({
-      moduleUrl: cliUrl.href,
-      argvPath: fileURLToPath(cliUrl),
-      args: [],
-      run,
-    });
-    expect(process.exitCode).toBe(18);
-    expect(run).toHaveBeenCalledWith({ args: [] });
-    await runSmokeCliEntrypoint({ moduleUrl: cliUrl.href, argvPath: "other.mjs", args: [], run });
-    await runSmokeCliEntrypoint({ moduleUrl: cliUrl.href, args: [], run });
-    expect(run).toHaveBeenCalledTimes(1);
-  } finally {
-    process.exitCode = prior;
-  }
-});
-
-test("decodes URL-escaped characters when matching an entrypoint path", async () => {
-  const path = "C:/checkout with spaces/smoke-cli.mjs";
-  const run = jest.fn(async () => 18);
-  const prior = process.exitCode;
-  try {
-    await runSmokeCliEntrypoint({
-      moduleUrl: pathToFileURL(path).href,
-      argvPath: path,
-      args: [],
-      run,
-    });
-    expect(process.exitCode).toBe(18);
-    expect(run).toHaveBeenCalledWith({ args: [] });
-  } finally {
-    process.exitCode = prior;
-  }
 });

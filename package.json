@@ -38,7 +38,7 @@
     "format:check": "node bin/eliware-test.mjs --format-check",
     "audit": "node bin/eliware-test.mjs --audit",
     "pack": "node bin/eliware-test.mjs --pack",
-    "smoke": "node src/validation/stages/smoke/cli.mjs"
+    "smoke": "node src/validation/stages/smoke/cli/entrypoint.mjs"
   },
   "engines": {
     "node": ">=26"

@@ -1,7 +1,7 @@
 import { validateMirroredTests } from "../mirrored-tests.mjs";
 import { validateApplicationLineLimits } from "./line-limits.mjs";
 import { validateTestFileLayout } from "../test-file-layout.mjs";
-import { validateInternalExportBarrels } from "../internal-export-barrels.mjs";
+import { validateInternalExportBarrels } from "../../../../shared/validate-internal-export-barrels.mjs";
 import { validateImplementationPlacement } from "../implementation-placement.mjs";
 
 export async function validateApplicationLayout(context = {}) {

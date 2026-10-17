@@ -1,5 +1,5 @@
 import { redactCredentialFields } from "./credential-fields.mjs";
-import { redactHttpCredentials } from "./http-credentials.mjs";
+import { redactHttpCredentials } from "./http-credentials/index.mjs";
 import { redactKnownTokenFormats } from "./known-token-formats.mjs";
 
 export function redactProcessOutput(text, secrets = []) {

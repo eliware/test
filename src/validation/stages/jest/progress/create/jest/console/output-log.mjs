@@ -1,6 +1,6 @@
 import { appendFileSync, writeFileSync } from "node:fs";
 import { redactCredentialFields } from "../../../../../../shared/output/redaction/redact/credential-fields.mjs";
-import { redactHttpCredentials } from "../../../../../../shared/output/redaction/redact/http-credentials.mjs";
+import { redactHttpCredentials } from "../../../../../../shared/output/redaction/redact/http-credentials/index.mjs";
 import { redactKnownTokenFormats } from "../../../../../../shared/output/redaction/redact/known-token-formats.mjs";
 import { redactProcessOutput } from "../../../../../../shared/output/redaction/redact/process-output.mjs";
 

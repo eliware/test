@@ -30,6 +30,7 @@ test("ignores comments and inert source configuration values", () => {
       '// vitest run\nconst settings = { runner: "mocha" };',
     ),
   ).toBeNull();
+  expect(validateTestToolReferences("config.txt", "vitest run")).toBeNull();
 });
 
 test("allows required Jest configuration in package.json", () => {

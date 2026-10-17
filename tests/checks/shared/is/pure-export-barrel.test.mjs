@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isPureExportBarrel } from "../../../../../src/checks/application/E-0.1.4.1.2/is/pure-export-barrel.mjs";
+import { isPureExportBarrel } from "../../../../src/checks/shared/is/pure-export-barrel.mjs";
 
 test.each([
   'export { value } from "../value.mjs";',

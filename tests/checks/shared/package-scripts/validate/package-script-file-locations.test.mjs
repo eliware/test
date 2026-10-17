@@ -31,7 +31,7 @@ test("allows installed tools and does not parse shell-wrapped commands", () => {
         preflight: "vyops preflight config.boot",
         validate: "netdoc --validate",
         wrapped: 'bash -c "node ./src/validate.mjs"',
-        smoke: "node src/validation/stages/smoke/cli.mjs",
+        smoke: "node src/validation/stages/smoke/cli/entrypoint.mjs",
       },
     }),
   ).toEqual([]);

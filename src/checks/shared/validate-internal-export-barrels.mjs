@@ -1,5 +1,5 @@
 import { join, posix } from "node:path";
-import { isPureExportBarrel } from "../is/pure-export-barrel.mjs";
+import { isPureExportBarrel } from "./is/pure-export-barrel.mjs";
 
 export async function validateInternalExportBarrels(
   files,

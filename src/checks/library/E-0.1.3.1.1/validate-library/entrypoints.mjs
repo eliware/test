@@ -1,6 +1,6 @@
 import { stat } from "node:fs/promises";
 import { join } from "node:path";
-import { validateInternalExportBarrels } from "../../../application/E-0.1.4.1.2/validate/internal-export-barrels.mjs";
+import { validateLibraryInternalExportBarrels } from "./internal-export-barrels.mjs";
 import { collectLibraryExportTargets } from "../collect-library-export-targets.mjs";
 
 export async function validateLibraryEntrypoints(context = {}, dependencies = {}) {
@@ -37,12 +37,11 @@ export async function validateLibraryEntrypoints(context = {}, dependencies = {}
       errors.push(...(await validateTarget(root, target, "declaration", checkFile)));
     }
     errors.push(
-      ...(await validateInternalExportBarrels(
+      ...(await validateLibraryInternalExportBarrels(
         files,
         context.repositoryInventory.readText,
         packageJson,
         root,
-        { library: true },
       )),
     );
   }
