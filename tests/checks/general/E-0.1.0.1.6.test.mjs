@@ -47,7 +47,7 @@ test("rejects missing inventory, missing files, and invalid YAML", async () => {
   ).resolves.toMatchObject({ message: expect.stringContaining("could not be parsed") });
 });
 
-test("rejects multiple YAML documents and allows additional commands", async () => {
+test("rejects multiple YAML documents and accepts declared package commands", async () => {
   await expect(
     run({
       repositoryInventory: {
@@ -60,8 +60,9 @@ test("rejects multiple YAML documents and allows additional commands", async () 
     run({
       repositoryInventory: {
         files: async () => [".knit/deploy.yaml"],
-        readText: async () => deployment("[git pull, npm ci, npm test, codescope run]"),
+        readText: async () => deployment("[git pull, npm ci, npm test, npm run validate]"),
       },
+      packageJson: { scripts: { validate: "codescope run" } },
     }),
   ).resolves.toMatchObject({ status: "pass" });
 });
@@ -88,13 +89,13 @@ test("rejects missing commands, non-string items, and publishing commands", asyn
     message: expect.stringContaining("must not publish npm packages or GHCR images"),
   });
   await expect(
-    validate(deployment("[git pull, npm ci, npm test, node scripts/helper.mjs]")),
+    validate(deployment("[git pull, npm ci, npm test, node scripts/validate.mjs]")),
   ).resolves.toMatchObject({
-    message: expect.stringContaining("keep secondary scripts under .knit/"),
+    message: expect.stringContaining("must call a declared package script with npm run <name>"),
   });
   await expect(
-    validate(deployment("[git pull, npm ci, npm test, node .knit/helper.mjs]")),
-  ).resolves.toMatchObject({ status: "pass" });
+    validate(deployment("[git pull, npm ci, npm test, npm run validate]")),
+  ).resolves.toMatchObject({ message: expect.stringContaining("must name a script declared") });
 });
 
 test("reports inventory read failures", async () => {

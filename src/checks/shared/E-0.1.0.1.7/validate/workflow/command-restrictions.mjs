@@ -1,8 +1,9 @@
 import { isProhibitedNpmOrGhcrPublishCommand } from "../../../is/prohibited-npm-or-ghcr-publish-command.mjs";
 import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
 import { isSafeReportingCommand } from "./is-safe-reporting-command.mjs";
+import { validateNpmRunCommand } from "../../../package-scripts/validate/npm-run-command.mjs";
 
-export function validateWorkflowCommandRestrictions(steps) {
+export function validateWorkflowCommandRestrictions(steps, packageJson = {}) {
   const { validationSteps, stepValues } = readCanonicalOrder("ci-workflow.yaml");
   const indexes = validationSteps.map((name, index) =>
     steps.findIndex((step) => (index < 2 ? step.uses : step.run) === stepValues[name]),
@@ -43,6 +44,19 @@ export function validateWorkflowCommandRestrictions(steps) {
       errors.push(
         "npm install, npm ci, and npm test steps must not override env, shell, or working-directory.",
       );
+  if (test >= 0)
+    for (const step of steps.slice(test + 1)) {
+      if (typeof step?.run !== "string") {
+        errors.push(
+          "ci.yaml validation step after npm test must call a declared package script with npm run <name>.",
+        );
+        continue;
+      }
+      if (isSafeReportingCommand(step.run)) continue;
+      errors.push(
+        ...validateNpmRunCommand(step.run, packageJson, "ci.yaml validation step after npm test"),
+      );
+    }
   return errors;
 }
 

@@ -13,6 +13,24 @@ test("validates Knit deployment and command configuration", async () => {
   await expect(validateKnitConfiguration(inventory(deploy()))).resolves.toEqual([]);
 });
 
+test("accepts extra validation commands through declared package scripts", async () => {
+  await expect(
+    validateKnitConfiguration(inventory(deploy([...validCommands, "npm run validate"])), {
+      scripts: { validate: "netdoc --validate" },
+    }),
+  ).resolves.toEqual([]);
+});
+
+test("rejects direct validation commands in Knit deployment configuration", async () => {
+  await expect(
+    validateKnitConfiguration(inventory(deploy([...validCommands, "codescope all"])), {
+      scripts: { validate: "netdoc --validate" },
+    }),
+  ).resolves.toContain(
+    ".knit/deploy.yaml commands field 1 command 4 must call a declared package script with npm run <name>.",
+  );
+});
+
 test("requires the canonical timeout for push and tag deployments", async () => {
   const tag = `  tags:\n    v*:\n      deployments:\n        - timeoutMs: 1\n          commands:\n${validCommands.map((item) => `            - ${item}`).join("\n")}\n`;
   await expect(validateKnitConfiguration(inventory(`${deploy()}${tag}`))).resolves.toContain(

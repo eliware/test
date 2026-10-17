@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
 import { validateWorkflowCommandRestrictions } from "../../../../../../src/checks/shared/E-0.1.0.1.7/validate/workflow/command-restrictions.mjs";
-import { packageVersion } from "../../../../../../test-fixtures/helpers/project-version.mjs";
 
 const steps = [
   { uses: "actions/checkout@v7" },
@@ -70,19 +69,27 @@ test.each([
 test.each([
   "corepack pnpm@latest test",
   "npx --yes docker push registry.example.com/eliware/app:latest",
-])("allows wrapped non-publication command %s", (run) => {
-  expect(validateWorkflowCommandRestrictions([...steps, { run }])).toEqual([]);
+])("requires npm run for a command after npm test: %s", (run) => {
+  expect(validateWorkflowCommandRestrictions([...steps, { run }])).toContain(
+    "ci.yaml validation step after npm test must call a declared package script with npm run <name>.",
+  );
 });
 
-test("allows extra non-publishing commands after npm test", () => {
+test("allows declared package scripts after npm test", () => {
   expect(
-    validateWorkflowCommandRestrictions([
-      ...steps,
-      { run: "npm run lint", if: "always()", "continue-on-error": true },
-      { run: "docker push registry.example.com/a/b:latest" },
-      { run: `gh release create v${packageVersion}` },
-    ]),
+    validateWorkflowCommandRestrictions(
+      [...steps, { run: "npm run lint" }, { run: "npm run release" }],
+      { scripts: { lint: "eliware-test --lint", release: "node scripts/release.mjs" } },
+    ),
   ).toEqual([]);
+});
+
+test("rejects action steps after npm test", () => {
+  expect(
+    validateWorkflowCommandRestrictions([...steps, { uses: "vendor/validator@v1" }]),
+  ).toContain(
+    "ci.yaml validation step after npm test must call a declared package script with npm run <name>.",
+  );
 });
 
 test("rejects conditional required steps", () => {

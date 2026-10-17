@@ -40,41 +40,27 @@ test.each([
   );
 });
 
-test("allows other extra commands without script paths", () => {
-  expect(validateCommandList([...prefix, "npm run validate", "codescope all"])).toEqual([]);
+test("allows extra Knit validation through declared package scripts", () => {
   expect(
-    validateCommandList([...prefix, "custom-validator ./output ./config", "cat ./manifest.mjs"]),
+    validateCommandList([...prefix, "npm run validate"], 0, {
+      scripts: { validate: "netdoc --validate" },
+    }),
+  ).toEqual([]);
+  expect(
+    validateCommandList([...prefix, "npm run preflight"], 0, {
+      scripts: { preflight: "vyops preflight config.boot" },
+    }),
   ).toEqual([]);
 });
 
-test("checks only script operands in supported runner commands", () => {
-  expect(validateCommandList([...prefix, 'bash -c "node ./config"']).join(" ")).toContain(
-    "must keep secondary scripts under .knit/ and use .mjs",
+test("rejects direct or undeclared Knit validation commands", () => {
+  expect(validateCommandList([...prefix, "codescope all"])).toContain(
+    ".knit/deploy.yaml commands field 1 command 4 must call a declared package script with npm run <name>.",
   );
-  expect(validateCommandList([...prefix, 'bash -c "node .knit/scripts/run.mjs"'])).toEqual([]);
-  expect(validateCommandList([...prefix, "bash -c 'echo ./config'"])).toEqual([]);
-  expect(validateCommandList([...prefix, "python scripts/validate.py"]).join(" ")).toContain(
-    "must keep secondary scripts under .knit/ and use .mjs",
+  expect(validateCommandList([...prefix, "npm run validate"], 0, { scripts: {} })).toContain(
+    ".knit/deploy.yaml commands field 1 command 4 must name a script declared in package.json.scripts.",
   );
-  expect(validateCommandList([...prefix, "node .knit/scripts/validate.mjs"])).toEqual([]);
-});
-
-test("allows quoted scripts under .knit with the required extension", () => {
-  expect(validateCommandList([...prefix, 'node ".knit/scripts/run.mjs"'])).toEqual([]);
-});
-
-test.each([
-  "node scripts/run.mjs",
-  "node .knit/../outside.mjs",
-  "node .knit/scripts/run.js",
-  "node .knit/scripts/run",
-  'node "scripts/run.mjs"',
-])("rejects invalid secondary script paths: %s", (command) => {
-  expect(validateCommandList([...prefix, command]).join(" ")).toContain(
-    "must keep secondary scripts under .knit/ and use .mjs",
+  expect(validateCommandList([...prefix, 'bash -c "node ./config"'])).toContain(
+    ".knit/deploy.yaml commands field 1 command 4 must call a declared package script with npm run <name>.",
   );
-});
-
-test("ignores an empty quoted script argument", () => {
-  expect(validateCommandList([...prefix, 'node ""'])).toEqual([]);
 });

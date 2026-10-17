@@ -42,6 +42,32 @@ test("passes for this repository's canonical scripts, formatter, and cached stag
   });
 });
 
+test("requires local validator files in scripts/", async () => {
+  await expect(
+    run({
+      packageJson: {
+        ...packageJson,
+        scripts: { ...packageJson.scripts, validate: "node src/validate.mjs" },
+      },
+      stageResults,
+    }),
+  ).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining(
+      "package.json.scripts.validate must keep local validator files under scripts/.",
+    ),
+  });
+  await expect(
+    run({
+      packageJson: {
+        ...packageJson,
+        scripts: { ...packageJson.scripts, validate: "node scripts/validate.mjs" },
+      },
+      stageResults,
+    }),
+  ).resolves.toMatchObject({ status: "pass" });
+});
+
 test("reports script, formatter, and missing stage failures", async () => {
   const result = await run({
     packageJson: { scripts: { test: "", extra: "npm publish" }, prettier: {} },

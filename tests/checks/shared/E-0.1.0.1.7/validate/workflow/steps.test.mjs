@@ -13,9 +13,21 @@ test("coordinates all policies for valid ordered workflow steps", () => {
   expect(validateWorkflowSteps(steps)).toEqual([]);
 });
 
-test("allows additional commands after npm test", () => {
-  expect(validateWorkflowSteps([...steps, { run: "npm run validate", if: "always()" }])).toEqual(
-    [],
+test("allows additional declared npm scripts after npm test", () => {
+  expect(
+    validateWorkflowSteps([...steps, { run: "npm run validate" }], {
+      scripts: { validate: "netdoc --validate" },
+    }),
+  ).toEqual([]);
+});
+
+test("allows safe reporting after npm test and rejects undeclared commands", () => {
+  expect(validateWorkflowSteps([...steps, { run: "echo 'Validation complete'" }])).toEqual([]);
+  expect(validateWorkflowSteps([...steps, { run: "codescope all" }])).toContain(
+    "ci.yaml validation step after npm test must call a declared package script with npm run <name>.",
+  );
+  expect(validateWorkflowSteps([...steps, { run: "npm run validate" }], { scripts: {} })).toContain(
+    "ci.yaml validation step after npm test must name a script declared in package.json.scripts.",
   );
 });
 

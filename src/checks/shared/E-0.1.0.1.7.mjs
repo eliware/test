@@ -8,6 +8,6 @@ export const requiredProfiles = ["general"];
 
 export async function run(context = {}) {
   const errors = await validateWorkflowInventory(context.repositoryInventory, context.packageJson);
-  errors.push(...(await validateCiWorkflow(context.repositoryInventory)));
+  errors.push(...(await validateCiWorkflow(context.repositoryInventory, context.packageJson)));
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
 }

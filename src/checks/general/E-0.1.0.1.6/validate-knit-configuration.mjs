@@ -5,7 +5,7 @@ import {
 } from "./validate-knit-configuration/command-lists.mjs";
 import { validateDeploymentTimeouts } from "./validate-knit-configuration/deployment-timeouts.mjs";
 
-export async function validateKnitConfiguration(inventory) {
+export async function validateKnitConfiguration(inventory, packageJson = {}) {
   if (!inventory?.files || !inventory.readText)
     return ["Knit configuration could not be inspected."];
   try {
@@ -28,7 +28,9 @@ export async function validateKnitConfiguration(inventory) {
     errors.push(...validateDeploymentTimeouts(document));
     const commandLists = findCommandLists(document);
     if (commandLists.length === 0) errors.push(".knit/deploy.yaml must define commands fields.");
-    commandLists.forEach((commands, index) => errors.push(...validateCommandList(commands, index)));
+    commandLists.forEach((commands, index) =>
+      errors.push(...validateCommandList(commands, index, packageJson)),
+    );
     return errors;
   } catch (error) {
     return [`Knit configuration could not be inspected: ${error.message}`];

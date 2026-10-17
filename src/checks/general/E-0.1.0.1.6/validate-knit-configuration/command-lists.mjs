@@ -1,6 +1,5 @@
-import { posix } from "node:path";
 import { isProhibitedNpmOrGhcrPublishCommand } from "../../../shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
-import { findScriptOperands } from "./find-script-operands.mjs";
+import { validateNpmRunCommand } from "../../../shared/package-scripts/validate/npm-run-command.mjs";
 
 const commandPrefix = ["git pull", "npm ci", "npm test"];
 
@@ -14,12 +13,14 @@ export function findCommandLists(value, lists = []) {
   return lists;
 }
 
-export function validateCommandList(commands, index = 0) {
+export function validateCommandList(commands, index = 0, packageJson = {}) {
   const label = `.knit/deploy.yaml commands field ${index + 1}`;
   if (!Array.isArray(commands) || commands.some((command) => typeof command !== "string"))
     return [`${label} must be an array of strings.`];
   const errors = checkCommandPrefix(commands, label);
-  for (const command of commands) errors.push(...checkCommand(command, label));
+  commands.forEach((command, position) => {
+    errors.push(...checkCommand(command, label, position, packageJson));
+  });
   return errors;
 }
 
@@ -31,17 +32,11 @@ function checkCommandPrefix(commands, label) {
     : [`${label} must begin with ${commandPrefix.join(", ")}.`];
 }
 
-function checkCommand(command, label) {
+function checkCommand(command, label, position, packageJson) {
   const errors = [];
   if (isProhibitedNpmOrGhcrPublishCommand(command))
     errors.push(`${label} must not publish npm packages or GHCR images.`);
-  for (const script of findScriptOperands(command)) {
-    if (!script.toLowerCase().endsWith(".mjs") || !isKnitPath(script))
-      errors.push(`${label} must keep secondary scripts under .knit/ and use .mjs: ${script}.`);
-  }
+  if (position >= commandPrefix.length)
+    errors.push(...validateNpmRunCommand(command, packageJson, `${label} command ${position + 1}`));
   return errors;
-}
-
-function isKnitPath(script) {
-  return posix.normalize(script.replaceAll("\\", "/")).startsWith(".knit/");
 }
