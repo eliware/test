@@ -441,7 +441,6 @@ directives:
           - Add each shared README.md section one time at its first required location.
           - Show the npm badge and package link only when npm-published applies.
           - Use one publish.yaml when npm-published or ghcr-published applies.
-          - Use one publisher when npm-published and ghcr-published apply together.
           - Publish only on canonical `vMAJOR.MINOR.PATCH` tags that match
             package.json.version.
           - Require one unconditional Ubuntu validation job before publication.
