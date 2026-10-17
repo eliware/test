@@ -16,7 +16,7 @@ directives:
       - id: E-0.0.0
         dos:
           - Parse settings and arguments before validation.
-          - Load specs/profile-combinations.yaml during preflight planning.
+          - Load specs/conventions/ordering/profile-combinations.yaml during preflight planning.
           - Validate required and prohibited profiles before check discovery.
           - Require one listed profile when a requiresAny list has values.
           - Allow an empty requiresAny list without an added requirement.
@@ -389,7 +389,7 @@ directives:
           - Use package.json.eliware.apply to classify each repository.
           - Use package.json.eliware.apply to select enabled profiles.
           - Read required and prohibited profile combinations from
-            specs/profile-combinations.yaml.
+            specs/conventions/ordering/profile-combinations.yaml.
           - Enforce profile combinations during preflight planning before check discovery.
           - Require every repository to select general as a separate planning invariant.
           - Put only universal repository rules and checks in general.

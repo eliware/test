@@ -7,7 +7,10 @@ import {
 import { parseBoundedYamlValue } from "../../shared/yaml/parse-bounded-yaml-documents.mjs";
 import { validateProfileCombinationPolicy } from "../validate/profile-combination-policy.mjs";
 
-const policyUrl = new URL("../../../../specs/profile-combinations.yaml", import.meta.url);
+const policyUrl = new URL(
+  "../../../../specs/conventions/ordering/profile-combinations.yaml",
+  import.meta.url,
+);
 
 export function readProfileCombinationPolicy({ read = readFileSync } = {}) {
   const path = fileURLToPath(policyUrl);

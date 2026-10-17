@@ -34,6 +34,15 @@ test("validates the supplied suite schema and convention inventory", async () =>
   ).resolves.toEqual([]);
 });
 
+test("leaves the profile policy to its dedicated preflight validator", async () => {
+  await expect(
+    validateBundledSpecifications({
+      ...fixture,
+      entries: [{ path: "specs/conventions/ordering/profile-combinations.yaml", type: "file" }],
+    }),
+  ).resolves.toEqual([]);
+});
+
 test("uses the bundled root and package namespace", async () => {
   readFile.mockImplementation(async (path) =>
     String(path).endsWith("package.json")

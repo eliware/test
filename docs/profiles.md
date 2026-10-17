@@ -8,7 +8,7 @@ Use `general` alone when no other profile fits.
 
 ## Follow profile combinations
 
-Read [profile-combinations.yaml](../specs/profile-combinations.yaml) for required and prohibited profiles.
+Read [profile-combinations.yaml](../specs/conventions/ordering/profile-combinations.yaml) for required and prohibited profiles.
 The planner rejects invalid profile lists before it discovers checks.
 
 ## Add application profiles
@@ -21,7 +21,7 @@ Add one or more application profiles for its interfaces:
 - `discord` for a Discord bot or application.
 - `mcp-server` for an MCP server.
 
-Read the [central policy](../specs/profile-combinations.yaml) to confirm required profiles.
+Read the [central policy](../specs/conventions/ordering/profile-combinations.yaml) to confirm required profiles.
 You can combine these profiles when the central policy allows them.
 
 ## Add the database profile
@@ -40,7 +40,7 @@ The package check runs only when `npm-published` applies.
 ## Add the private profile
 
 Apply `private` to identify a private repository.
-Read the [central policy](../specs/profile-combinations.yaml) to confirm when this profile is required.
+Read the [central policy](../specs/conventions/ordering/profile-combinations.yaml) to confirm when this profile is required.
 Documentation repositories can apply `private`.
 Read the central policy to confirm that `private` can combine with the selected profiles.
 

@@ -6,6 +6,7 @@
 - [Ordering data schema](ordering-data-schema.yaml)
 - [Package files](package-files.yaml)
 - [Package JSON keys](package-json.yaml)
+- [Profile combination policy](profile-combinations.yaml)
 - [Publication workflow](publication-workflow.yaml)
 - [README sections](readme-sections.yaml)
 - [Specification indexes](specification-indexes.yaml)

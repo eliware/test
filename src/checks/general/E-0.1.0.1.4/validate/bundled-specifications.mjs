@@ -49,7 +49,12 @@ export async function validateBundledSpecifications({
 
 async function readConventionDocuments(root, entries, read) {
   const paths = entries
-    .filter(({ path, type }) => type === "file" && /^specs\/conventions\/.*\.ya?ml$/iu.test(path))
+    .filter(
+      ({ path, type }) =>
+        type === "file" &&
+        /^specs\/conventions\/.*\.ya?ml$/iu.test(path) &&
+        path !== "specs/conventions/ordering/profile-combinations.yaml",
+    )
     .map(({ path }) => path);
   const documents = [];
   for (const path of paths) {

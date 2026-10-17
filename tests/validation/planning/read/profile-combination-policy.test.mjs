@@ -1,4 +1,6 @@
 import { expect, test } from "@jest/globals";
+import { fileURLToPath } from "node:url";
+import { stringify } from "yaml";
 import { bundledConventionVersion } from "../../../../src/validation/check-discovery/read/bundled-profile-catalog.mjs";
 import { readProfileCombinationPolicy } from "../../../../src/validation/planning/read/profile-combination-policy.mjs";
 
@@ -30,6 +32,24 @@ test("rejects an invalid policy before planning continues", () => {
       read: () => `version: '${bundledConventionVersion}'\nprofiles: {}\n`,
     }),
   ).toThrow("Profile policy omits profiles");
+});
+
+test("reads the policy from the ordering specifications folder", () => {
+  let path;
+  const contents = stringify(readProfileCombinationPolicy());
+  const read = (url) => {
+    path = fileURLToPath(url);
+    return contents;
+  };
+
+  expect(readProfileCombinationPolicy({ read }).profiles.general).toEqual({
+    requires: [],
+    requiresAny: [],
+    prohibits: [],
+  });
+  expect(path.replaceAll("\\", "/")).toMatch(
+    /\/specs\/conventions\/ordering\/profile-combinations\.yaml$/u,
+  );
 });
 
 test("keeps canonical order out of the combination policy", () => {
