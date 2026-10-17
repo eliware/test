@@ -31,6 +31,9 @@ directives:
       - Check that the release tag matches the canonical package version before image push.
       - Set more tags with ${{ env.IMAGE_NAME }} and a valid tag.
       - Set the publication job environment to ghcr-publish.
+      - Run the publication job on Ubuntu without `if` or `continue-on-error` fields.
+      - Use docker/build-push-action major v7 for each image push.
+      - Run each image-push step without `if` or `continue-on-error` fields.
       - Use checkout major v7 in the GHCR publisher.
       - "Set workflow permissions to contents: read."
       - Keep validation job permissions read-only.
@@ -55,6 +58,14 @@ directives:
       - "env:
 
         \  IMAGE_NAME: ghcr.io/${{ github.repository }}"
+      - |
+        jobs:
+          publish:
+            runs-on: ubuntu-latest
+            environment: ghcr-publish
+            steps:
+              - id: image
+                uses: docker/build-push-action@v7
       - "tags: ${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
       - >-
         run: node -e "const version=require(''./package.json'').version; if(

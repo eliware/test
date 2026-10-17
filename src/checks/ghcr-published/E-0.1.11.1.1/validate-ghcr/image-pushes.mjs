@@ -2,8 +2,8 @@ export function validateGhcrImagePushes(pushes, image) {
   const errors = [];
   if (!pushes.length) errors.push("GHCR publisher must build and push an image.");
   for (const push of pushes) {
-    if (push.uses !== "docker/build-push-action@v6")
-      errors.push("GHCR image builds must use docker/build-push-action v6.");
+    if (push.uses !== "docker/build-push-action@v7")
+      errors.push("GHCR image builds must use docker/build-push-action v7.");
     if (
       push.with?.context !== "." ||
       push.with?.file !== "./Dockerfile" ||

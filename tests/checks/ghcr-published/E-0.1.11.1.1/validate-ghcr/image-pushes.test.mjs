@@ -3,7 +3,7 @@ import { validateGhcrImagePushes } from "../../../../../src/checks/ghcr-publishe
 
 const image = "${{ env.IMAGE_NAME }}";
 const validPush = {
-  uses: "docker/build-push-action@v6",
+  uses: "docker/build-push-action@v7",
   with: {
     context: ".",
     file: "./Dockerfile",
@@ -19,10 +19,17 @@ test("accepts runtime image and release tags", () => {
 test("rejects invalid actions, build paths, publication conditions, and tags", () => {
   expect(
     validateGhcrImagePushes(
-      [{ ...validPush, uses: "docker/build-push-action@v5", if: "false", with: { tags: "wrong" } }],
+      [{ ...validPush, uses: "docker/build-push-action@v6", if: "false", with: { tags: "wrong" } }],
       image,
     ),
   ).toHaveLength(4);
+});
+
+test("rejects v6 and accepts v7", () => {
+  expect(validateGhcrImagePushes([validPush], image)).toEqual([]);
+  expect(
+    validateGhcrImagePushes([{ ...validPush, uses: "docker/build-push-action@v6" }], image),
+  ).toContain("GHCR image builds must use docker/build-push-action v7.");
 });
 
 test("requires at least one image push", () => {

@@ -34,7 +34,7 @@ export async function validateGhcrAgentsSection(inventory, packageJson = {}) {
 function hasLatestTag(workflow, image) {
   const steps = workflow?.jobs?.publish?.steps ?? [];
   return steps.some((step) => {
-    if (step?.uses !== "docker/build-push-action@v6") return false;
+    if (step?.uses !== "docker/build-push-action@v7") return false;
     const tags = step?.with?.tags;
     return (Array.isArray(tags) ? tags : String(tags ?? "").split(/\r?\n/u)).some((tag) =>
       [`${image}:latest`, "${{ env.IMAGE_NAME }}:latest"].includes(String(tag).trim()),

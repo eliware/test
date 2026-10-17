@@ -38,7 +38,7 @@ export function createGhcrWorkflow() {
           },
           {
             id: "image",
-            uses: "docker/build-push-action@v6",
+            uses: "docker/build-push-action@v7",
             with: {
               context: ".",
               file: "./Dockerfile",

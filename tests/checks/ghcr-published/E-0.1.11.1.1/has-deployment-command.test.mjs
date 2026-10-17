@@ -20,7 +20,7 @@ test.each([
 });
 
 test("accepts workflows without deployment commands", () => {
-  expect(hasDeploymentCommand([{ run: "npm test" }, { uses: "docker/build-push-action@v6" }])).toBe(
+  expect(hasDeploymentCommand([{ run: "npm test" }, { uses: "docker/build-push-action@v7" }])).toBe(
     false,
   );
 });

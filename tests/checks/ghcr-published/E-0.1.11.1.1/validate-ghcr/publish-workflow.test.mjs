@@ -64,7 +64,7 @@ test.each([
   [(flow) => flow.jobs.publish.steps.push({ uses: "actions/checkout@v7" }), "checkout v7 once"],
   [(flow) => (flow.jobs.publish.steps[2].if = "false"), "run unconditionally"],
   [(flow) => flow.jobs.publish.steps.splice(2, 1), "must build and push an image"],
-  [(flow) => (flow.jobs.publish.steps[2].uses = "docker/build-push-action@v5"), "action v6"],
+  [(flow) => (flow.jobs.publish.steps[2].uses = "docker/build-push-action@v6"), "action v7"],
   [(flow) => (flow.jobs.publish.steps[2].with.context = "src"), "root context"],
   [(flow) => (flow.jobs.publish.steps[2].with.file = "Dockerfile.dev"), "root context"],
   [(flow) => (flow.jobs.publish.steps[2].with.push = false), "root context"],
