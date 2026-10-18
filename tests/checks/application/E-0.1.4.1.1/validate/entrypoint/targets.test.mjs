@@ -5,9 +5,9 @@ import { validateEntrypointTargets } from "../../../../../../src/checks/applicat
 const file = { isFile: () => true, isDirectory: () => false, isSymbolicLink: () => false };
 const directory = { isFile: () => false, isDirectory: () => true, isSymbolicLink: () => false };
 
-test.each(["./bin/tool.mjs", "bin\\tool.mjs"])(
-  "accepts canonical target forms after path normalization: %s",
-  async (target) => {
+test("normalizes slash forms to the same canonical target", async () => {
+  const normalizedPaths = [];
+  for (const target of ["./bin/tool.mjs", "bin\\tool.mjs"]) {
     const checked = [];
     await expect(
       validateEntrypointTargets([target], "repo", async (path) => {
@@ -16,8 +16,10 @@ test.each(["./bin/tool.mjs", "bin\\tool.mjs"])(
       }),
     ).resolves.toEqual([]);
     expect(checked.at(-1)).toBe(join(resolve("repo"), "bin", "tool.mjs"));
-  },
-);
+    normalizedPaths.push(checked.at(-1));
+  }
+  expect(new Set(normalizedPaths)).toEqual(new Set([join(resolve("repo"), "bin", "tool.mjs")]));
+});
 
 test.each([null, "", " ", "/repo/bin/tool.mjs", "C:/repo/bin/tool.mjs"])(
   "rejects invalid or absolute targets: %s",

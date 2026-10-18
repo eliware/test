@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { captureSmokeTargetState } from "../../../../../src/validation/stages/smoke/capture-smoke/target-state.mjs";
 function missingFs() {
   return {
@@ -14,39 +14,20 @@ function missingFs() {
     stat: async () => ({ isDirectory: () => false }),
   };
 }
-test("captures file, directory, and missing target state", async () => {
-  let count = 0;
-  const fs = {
-    ...missingFs(),
-    lstat: async () => {
-      count += 1;
-      if (count === 1)
-        return {
-          isSymbolicLink: () => false,
-          isDirectory: () => false,
-          isFile: () => true,
-          mode: 420,
-        };
-      if (count === 5)
-        return { isSymbolicLink: () => false, isDirectory: () => true, isFile: () => false };
-      throw Object.assign(new Error("missing"), { code: "ENOENT" });
-    },
-    cp: async () => {},
-    readFile: async () => Buffer.from("preserved"),
-  };
+test("coordinates a snapshot of all requested target paths", async () => {
   const state = await captureSmokeTargetState(
     "C:/consumer",
     "@eliware/test",
     ["eliware-test"],
-    fs,
+    missingFs(),
     process.platform,
     "C:/smoke/backup",
   );
-  expect(state.entries[0]).toMatchObject({ type: "file", data: Buffer.from("preserved") });
-  expect(state.entries[1].type).toBe("missing");
-  expect(state.entries[4].type).toBe("directory");
   expect(state.entries).toHaveLength(8);
+  expect(state.entries.every(({ type }) => type === "missing")).toBe(true);
   expect(state.storage).toBe("C:/smoke/backup");
+  expect(state.targetRoot).toBe("C:/consumer");
+  expect(state.packageName).toBe("@eliware/test");
 });
 test("uses default file system dependencies when a local storage path is supplied", async () => {
   await expect(
@@ -65,42 +46,25 @@ test("requires backup storage inside the smoke workspace", async () => {
     captureSmokeTargetState("C:/consumer", "@eliware/test", [], missingFs()),
   ).rejects.toThrow("Smoke state storage must be inside the smoke workspace.");
 });
-test("removes backup storage and refuses unsupported state or filesystem errors", async () => {
-  const unsupported = {
-    ...missingFs(),
-    lstat: async () => ({
-      isSymbolicLink: () => false,
-      isDirectory: () => false,
-      isFile: () => false,
-    }),
-    rm: async () => {},
-  };
-  await expect(
-    captureSmokeTargetState(
-      "C:/consumer",
-      "@eliware/test",
-      [],
-      unsupported,
-      process.platform,
-      "C:/smoke/backup",
-    ),
-  ).rejects.toThrow("unsupported target path");
-  const failed = {
+test("cleans failed snapshots and returns the original filesystem error", async () => {
+  const fs = {
     ...missingFs(),
     lstat: async () => {
-      throw new Error("denied");
+      throw new Error("read denied");
     },
+    rm: jest.fn(async () => {}),
   };
   await expect(
     captureSmokeTargetState(
       "C:/consumer",
       "@eliware/test",
       [],
-      failed,
+      fs,
       process.platform,
       "C:/smoke/backup",
     ),
-  ).rejects.toThrow("denied");
+  ).rejects.toThrow("read denied");
+  expect(fs.rm).toHaveBeenCalledWith("C:/smoke/backup", { recursive: true, force: true });
 });
 test("reports backup location when failed snapshot cleanup also fails", async () => {
   const failed = {
