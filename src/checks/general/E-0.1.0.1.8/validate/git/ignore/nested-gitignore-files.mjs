@@ -1,6 +1,6 @@
 import { parseGitNulPaths } from "../../../parse-git-index-output.mjs";
 
-export async function validateNestedGitIgnoreFiles(root, runGit) {
+export async function validateNestedGitIgnoreFiles(root, runGit, isPathExempt = () => false) {
   try {
     const tracked = await runGit(
       "git",
@@ -41,7 +41,9 @@ export async function validateNestedGitIgnoreFiles(root, runGit) {
         ...parseGitNulPaths(tracked.stdout),
         ...parseGitNulPaths(untracked.stdout),
         ...parseGitNulPaths(ignored.stdout),
-      ].filter((path) => path.endsWith("/.gitignore") && path !== ".gitignore"),
+      ].filter(
+        (path) => path.endsWith("/.gitignore") && path !== ".gitignore" && !isPathExempt(path),
+      ),
     );
     return nested.size
       ? [`Nested .gitignore files are prohibited: ${[...nested].join(", ")}.`]

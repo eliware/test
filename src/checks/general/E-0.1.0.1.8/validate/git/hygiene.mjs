@@ -15,7 +15,7 @@ export async function validateGitHygiene(
 ) {
   const errors = await validateGitIgnoreRequiredRules(root, readText);
   errors.push(...(await validateGitIgnoreProbes(root, runGit)));
-  errors.push(...(await validateGitIgnoreFiles(root, runGit)));
+  errors.push(...(await validateGitIgnoreFiles(root, runGit, isPathExempt)));
   errors.push(...(await validateTrackedSymlinks(root, runGit, isPathExempt)));
   errors.push(...(await validateTrackedSensitivePaths(root, runGit, isPathExempt)));
   return errors;
