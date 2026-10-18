@@ -80,6 +80,14 @@ test("runs formatting and stores formatter output", async () => {
   await expect(
     noChanges.format({ root: ".", executeFormat: false, mode: null, toolArgs: [] }),
   ).resolves.toMatchObject({ code: 0, message: "" });
+  const startup = createValidationStageRunners({
+    validateFormatter: async () => {
+      throw new Error("formatter spawn");
+    },
+  });
+  await expect(
+    startup.format({ root: ".", executeFormat: true, mode: null, toolArgs: [] }),
+  ).resolves.toMatchObject({ code: 6, message: "formatter spawn" });
 });
 
 test("runs audit and stores its process report", async () => {

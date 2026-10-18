@@ -8,6 +8,7 @@ import { finishSmokeRun } from "../finish-smoke-run.mjs";
 import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
 import { createSmokeTempRoot } from "../create-smoke-temp-root.mjs";
 import { prepareSmokeTargetContext } from "../prepare-smoke/target-context.mjs";
+import { prepareSmokeState } from "../prepare-smoke/state.mjs";
 import { runSmokePackageTransaction } from "./smoke-package-transaction.mjs";
 
 export async function runNpmConsumerSmoke({
@@ -47,18 +48,18 @@ export async function runNpmConsumerSmoke({
   let state;
   let outcome;
   try {
-    await assertTargetIdentity();
-    await assertSmokePackageParents(targetRoot, packageJson.name);
-    await mkdir(backupDirectory);
-    state = await captureState(
+    state = await prepareSmokeState({
       targetRoot,
-      packageJson.name,
+      packageJson,
       binNames,
-      undefined,
-      process.platform,
+      assertTargetIdentity,
+      captureState,
+      assertPackageParents: assertSmokePackageParents,
       backupDirectory,
-    );
-    write(`Target recovery snapshot: ${state.storage}`);
+      createDirectory: mkdir,
+      write,
+      platform: process.platform,
+    });
     await mkdir(packDirectory);
     const [command, prefix] = resolveCommand(childEnv, process.platform, process.execPath, root);
     const digest = await runSmokePackageTransaction({
