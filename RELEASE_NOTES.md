@@ -1,6 +1,6 @@
 # Release Notes
 
-## 13.0.0 — 2026-10-17
+## 13.0.0 — 2026-10-18
 
 ### Breaking changes
 
@@ -39,15 +39,19 @@
 - Use the root `webpack.config.mjs` model with one or more bundles and a shared build command.
 - Use repository-map data when available and package metadata when it is unavailable.
 - Apply path exemptions to only the named rule and matching repository paths.
+- Limit JavaScript language checks to comments, JSX text, and defined outputs for users.
+- Match consumer publication workflows against bundled files without requiring duplicate consumer specs.
 - Keep only convention-required content in `README.md` and `AGENTS.md`. Link to user guides.
 - Update package dependencies to their latest available releases.
 
 ### Fixed
 
 - Exclude machine-readable syntax and required technical text from prose scans.
+- Remove valid package and repository names from the language dictionary.
 - Find SQL clauses, SVG transform values, and JavaScript User-Agent values correctly.
 - Redact sensitive Jest output without hiding short values or npm environment names.
-- Apply path exemptions to tracked links and reject unknown exemption fields.
+- Apply path exemptions to Git-index checks for ignored files and nested `.gitignore` files.
+- Redact sensitive values in package and publisher diagnostics.
 - Close gaps in export-barrel, secret-path, publisher, Knit command, and workflow checks.
 - Stop validation tests from writing files or calling external tools.
 - Restore smoke-test targets safely and find target-directory changes.
