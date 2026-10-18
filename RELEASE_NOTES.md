@@ -55,6 +55,7 @@
 - Close gaps in export-barrel, secret-path, publisher, Knit command, and workflow checks.
 - Stop validation tests from writing files or calling external tools.
 - Restore smoke-test targets safely and find target-directory changes.
+- Preserve smoke recovery data when target restoration fails.
 - Correct profile, README, AGENTS, workflow, package-order, and web build checks.
 - Split validation helpers and tests into focused modules with mirrored test files.
 
