@@ -1,49 +1,58 @@
 # Release Notes
 
-## 13.0.0 — 2026-10-16
+## 13.0.0 — 2026-10-17
 
 ### Breaking changes
 
-- Require repositories to pass the checks for their selected profiles and shared language rules.
-- Require each earlier version section to match a repository tag.
+- Release version 13.0.0 updates the harness, convention set, and specification schemas to version 13.
+- Require repositories to pass checks for their selected profiles and shared language rules.
+- Require a repository tag for every release entry before the current package version.
+- Reject open-ended release sections in application and library release notes.
 
 ### Added
 
-- Add a database profile with requirements for database access, backups, and tests.
-- Add one policy for profile combinations and check it before validation.
-- Add path-scoped exemptions with exact, `*`, and `**` path matching.
-- Match package exemptions with repository map data and validate both data sources.
-- Add shared language rules and a CSV dictionary for maintained reader-facing text.
-- Check tests for file writes, child commands, external network access, and uncontrolled timers.
-- Check every specification YAML file and set limits for file bytes, line length, and aliases.
-- Add web checks for the standard webpack build, Lighthouse scripts, and screenshot scripts.
-- Check GHCR workflows, production image digests, and GitHub attestations.
-- Reject open-ended version sections and versions without repository tags.
-- Require published npm packages to include `specs/` in the package and tarball.
-- Add database backup and test requirements and stronger YAML runbook validation.
+- Add a database profile with database access, backup, certification, and test requirements.
+- Add one profile-combination policy for profile prerequisites, exclusions, and publication limits.
+- Add exact and wildcard path exemptions for individual rules.
+- Add schema checks for exemption data and repository-map records.
+- Add a shared language rule and a CSV dictionary for maintained reader-facing text.
+- Scan prose in Markdown, source, JSON, YAML, and supported plain-text files.
+- Report suggested word alternatives once and state that they are optional examples.
+- Check consumer tests for file writes, child commands, external network access, and uncontrolled timers.
+- Parse every YAML file under `specs/` and validate directive documents against the bundled schema.
+- Limit specification YAML files to 100000 bytes, 100 characters on each line, 1000 lines, and 100 aliases.
+- Require specification indexes, valid rule IDs, and unique IDs across specification files.
+- Add web requirements for a root `webpack.config.mjs`, `npm run build`, Lighthouse, and screenshot scripts.
+- Check GHCR publication workflows, image digests, deployment commands, and attestations.
+- Require npm packages to include `specs/` in the package and packed tarball.
 - Add user guides for setup, profiles, validation, smoke tests, package contents, and releases.
 
 ### Changed
 
 - Require checkout v7, setup-node v7, npm latest, and full Git history in validation workflows.
 - Require publication jobs to wait for validation and use restricted permissions.
-- Require `GH_TOKEN` for GHCR attestations and use identity-based npm provenance.
-- Use `git pull` in Knit deployments and set a five-minute deployment timeout.
+- Require `GH_TOKEN` for GHCR attestations and identity-based npm provenance.
+- Use `git pull` in Knit deployments and set a five-minute timeout for each deployment.
 - Keep Jest coverage reports and console logs in the consumer's `coverage/` directory.
 - Run Jest in one process with open-handle checks and suite and startup time limits.
-- Group source modules with shared file-name prefixes in nested folders and mirror each move in tests.
-- Use repository-map data when available and package metadata when the map is missing.
-- Update smoke validation to check the target repository and restore changed package files.
-- Keep only convention-required content in README.md and AGENTS.md. Link to the user guides.
-- Update package dependencies to their latest releases.
+- Put related source modules in nested folders and mirror each move in tests.
+- Use the root `webpack.config.mjs` model with one or more bundles and a shared build command.
+- Use repository-map data when available and package metadata when it is unavailable.
+- Apply path exemptions to only the named rule and matching repository paths.
+- Keep only convention-required content in `README.md` and `AGENTS.md`. Link to user guides.
+- Update package dependencies to their latest available releases.
 
 ### Fixed
 
+- Exclude machine-readable syntax and required technical text from prose scans.
+- Find SQL clauses, SVG transform values, and JavaScript User-Agent values correctly.
 - Redact sensitive Jest output without hiding short values or npm environment names.
 - Apply path exemptions to tracked links and reject unknown exemption fields.
-- Close gaps in export-barrel, secret-path, and wrapped publication-command checks.
+- Close gaps in export-barrel, secret-path, publisher, Knit command, and workflow checks.
 - Stop validation tests from writing files or calling external tools.
-- Correct profile, README, AGENTS, workflow, and package-order checks.
+- Restore smoke-test targets safely and find target-directory changes.
+- Correct profile, README, AGENTS, workflow, package-order, and web build checks.
+- Split validation helpers and tests into focused modules with mirrored test files.
 
 ## 12.0.0 — 2026-10-10
 
