@@ -1,3 +1,5 @@
+import { hasPackagePublicationCommand } from "./has-package-publication-command.mjs";
+
 const consumerScripts = {
   test: "eliware-test",
   lint: "eliware-test --lint",
@@ -28,22 +30,8 @@ export function validatePackageScripts(packageJson = {}) {
     if (Object.hasOwn(required, name)) continue;
     if (typeof command !== "string" || !command.trim())
       errors.push(`package.json.scripts.${name} must be a nonempty command.`);
-    else if (hasPublicationCommand(command))
+    else if (hasPackagePublicationCommand(command))
       errors.push(`package.json.scripts.${name} must not publish packages or images.`);
   }
   return errors;
-}
-
-export function hasPublicationCommand(command) {
-  return (
-    /\b(?:semantic-release|release-it|lerna\s+publish|changesets?\s+publish)\b/iu.test(command) ||
-    /\bgh\s+release\s+(?:create|upload)\b/iu.test(command) ||
-    /\b(?:npm|pnpm|yarn|bun)\s+(?:(?:--?[^\s]+)(?:\s+[^-\s][^\s]*)?\s+)*(?:npm\s+)?publish\b/iu.test(
-      command,
-    ) ||
-    /\b(?:docker|podman|buildah)\s+(?:push\b|(?:buildx\s+)?build\b[^;\r\n]*--push\b)/iu.test(
-      command,
-    ) ||
-    /\b(?:oras|crane)\s+push\b|\bskopeo\s+copy\b/iu.test(command)
-  );
 }

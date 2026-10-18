@@ -17,16 +17,14 @@ test.each([
   "--require-pragma",
   "--plugin=custom-plugin",
   "--help",
-])("rejects wrapper-owned or coverage-changing option %s", (argument) => {
+  "--w",
+  "--w=true",
+  "--wr=true",
+  "--conf=custom.json",
+  "--pars=babel",
+])("rejects wrapper-owned or abbreviated option %s", (argument) => {
   expect(validatePrettierArguments([argument])).toContain(argument);
 });
-
-test.each(["--w", "--w=true", "--wr=true", "--conf=custom.json", "--pars=babel"])(
-  "rejects abbreviated wrapper-owned Prettier option %s",
-  (argument) => {
-    expect(validatePrettierArguments([argument])).toContain(argument);
-  },
-);
 
 test("allows harmless forwarded options and rejects path operands that can narrow coverage", () => {
   expect(validatePrettierArguments(["--log-level=debug"])).toBeNull();
