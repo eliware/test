@@ -34,6 +34,12 @@ orders:
     package-json.yaml:
       - topLevelKeys
       - eliwareKeys
+    profile-combinations.yaml:
+      - version
+      - profiles
+      - profiles.*.requires
+      - profiles.*.requiresAny
+      - profiles.*.prohibits
     publication-workflow.yaml:
       - profiles
       - workflowFiles
@@ -64,6 +70,7 @@ orders:
         - ordering-data-schema.yaml
         - package-files.yaml
         - package-json.yaml
+        - profile-combinations.yaml
         - publication-workflow.yaml
         - readme-sections.yaml
         - specification-indexes.yaml
@@ -74,6 +81,7 @@ orders:
         - package-files.yaml
         - readme-sections.yaml
       requiredTypes:
+        - profile-combinations.yaml
         - readme-sections.yaml
     agents-sections.yaml:
       profileHeadings:
@@ -148,6 +156,13 @@ orders:
       sharedSections.Commands:
         - profiles
   requiredTypes:
+    profile-combinations.yaml:
+      version: convention-version
+      profiles: profile-map
+      profiles.*.requires: profile-name-list
+      profiles.*.requiresAny: profile-name-list
+      profiles.*.prohibits: profile-name-list
+      profileKeyPattern: ^[a-z0-9-]+$
     readme-sections.yaml:
       linksSectionOrder: nonempty-text-list
       sharedSections.Commands.profiles: nonempty-text-list

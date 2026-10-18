@@ -34,6 +34,7 @@ export const canonicalOrderRequirements = {
         "ordering-data-schema.yaml",
         "package-files.yaml",
         "package-json.yaml",
+        "profile-combinations.yaml",
         "publication-workflow.yaml",
         "readme-sections.yaml",
         "specification-indexes.yaml",
@@ -45,7 +46,7 @@ export const canonicalOrderRequirements = {
         "package-files.yaml",
         "readme-sections.yaml",
       ],
-      requiredTypes: ["readme-sections.yaml"],
+      requiredTypes: ["profile-combinations.yaml", "readme-sections.yaml"],
     },
   },
   "package-files.yaml": {

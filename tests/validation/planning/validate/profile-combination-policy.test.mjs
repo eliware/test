@@ -54,6 +54,21 @@ test("rejects invalid, duplicate, unknown, and self-referencing profile lists", 
   ).toContain("unknown profiles: missing");
 });
 
+test.each(["requires", "requiresAny", "prohibits"])("rejects a non-list value for %s", (field) => {
+  const altered = {
+    version: bundledConventionVersion,
+    profiles: {
+      general: { ...profiles.general, [field]: "application" },
+      application: profiles.application,
+    },
+  };
+  expect(
+    validateProfileCombinationPolicy(altered, Object.keys(profiles), bundledConventionVersion).join(
+      " ",
+    ),
+  ).toContain(`general.${field} must be a valid profile list`);
+});
+
 test("rejects contradictory requirements and unsupported fields", () => {
   const altered = {
     version: bundledConventionVersion,

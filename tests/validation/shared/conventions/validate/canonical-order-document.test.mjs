@@ -57,6 +57,12 @@ test("requires npm-published package files and required profile headings", () =>
   );
 });
 
+test("requires profile policy fields and types in the ordering schema", () => {
+  const requirements = canonicalOrderRequirements["ordering-data-schema.yaml"];
+  expect(requirements.maps.requiredFields).toContain("profile-combinations.yaml");
+  expect(requirements.maps.requiredTypes).toContain("profile-combinations.yaml");
+});
+
 test("rejects incorrect order field types and checks required nested values", () => {
   expect(
     validateCanonicalOrderDocument({ orders: { profiles: ["general", 4] } }, "eliware-apply.yaml"),
