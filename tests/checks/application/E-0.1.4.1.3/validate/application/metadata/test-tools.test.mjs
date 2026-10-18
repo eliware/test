@@ -1,17 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { validateApplicationTestTools } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/application/metadata/test-tools.mjs";
 
-test("accepts the harness tools and rejects alternative runners and coverage engines", () => {
-  expect(
-    validateApplicationTestTools({
-      name: "@eliware/test",
-      dependencies: {
-        "@jest/globals": "30",
-        jest: "30",
-        "istanbul-lib-instrument": "6",
-      },
-    }),
-  ).toEqual([]);
+test("rejects alternative runners and coverage engines", () => {
   const errors = validateApplicationTestTools({
     name: "app",
     devDependencies: { vitest: "2", "@vitest/coverage-v8": "2" },

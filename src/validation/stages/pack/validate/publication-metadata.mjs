@@ -1,4 +1,4 @@
-import { compatibleWithNode26 } from "../../../../checks/general/E-0.1.0.1.1/validate/package/runtime.mjs";
+import { compatibleWithNode26 } from "./compatible-node-range.mjs";
 import { derivePackageFilesAllowlist } from "../derive-package-files-allowlist.mjs";
 import { validateOrderedPackageFiles } from "./ordered-package-files.mjs";
 import { validatePackageLifecycleScripts } from "./package-lifecycle-scripts.mjs";

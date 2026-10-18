@@ -11,14 +11,17 @@ test("combines configuration failures", async () => {
   );
 });
 
-test("allows Jest dependency for the Eliware Test runner itself", async () => {
+test("allows the harness test tools", async () => {
   const context = {
-    packageJson: { name: "@eliware/test", dependencies: { jest: "30" } },
+    packageJson: {
+      name: "@eliware/test",
+      dependencies: { "@jest/globals": "30", jest: "30", "istanbul-lib-instrument": "6" },
+    },
     repositoryInventory: { files: async () => [], readText: async () => "" },
   };
-  await expect(validateApplicationJestPolicy(context)).resolves.toContain(
+  await expect(validateApplicationJestPolicy(context)).resolves.toEqual([
     "package.json must define Jest configuration.",
-  );
+  ]);
 });
 
 test("rejects Jest packages, other runners, and tool scripts in consumer metadata", async () => {

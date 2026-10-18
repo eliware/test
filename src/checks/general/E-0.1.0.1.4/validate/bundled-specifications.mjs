@@ -3,9 +3,8 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { listSpecificationEntries } from "../list-specification-entries.mjs";
-import { validateSpecificationDocument } from "./specification/document.mjs";
-import { validateSpecificationIds } from "./specification/ids.mjs";
-import { validateDirectiveSchema } from "./directive-schema.mjs";
+import { validateBundledConventionDocuments } from "./bundled/convention-documents.mjs";
+import { validateBundledDirectiveSchema } from "./bundled/directive-schema.mjs";
 
 const suiteRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 
@@ -29,22 +28,10 @@ export async function validateBundledSpecifications({
   } catch (error) {
     return [`Bundled specifications are missing or invalid: ${error.message}`];
   }
-  const errors = schema.flatMap((document) => validateDirectiveSchema(document));
-  const ids = new Map();
-  for (const { path, value } of documents) {
-    errors.push(...validateSpecificationDocument(value, path));
-    const sourcePath = path.replace(/ document \d+$/u, "");
-    const directives = ids.get(sourcePath) ?? [];
-    if (Array.isArray(value?.directives)) directives.push(...value.directives);
-    ids.set(sourcePath, directives);
-  }
-  errors.push(
-    ...validateSpecificationIds(
-      [...ids].map(([path, directives]) => ({ path, directives })),
-      packageJson?.eliware?.id,
-    ),
-  );
-  return errors;
+  return [
+    ...validateBundledDirectiveSchema(schema),
+    ...validateBundledConventionDocuments(documents, packageJson?.eliware?.id),
+  ];
 }
 
 async function readConventionDocuments(root, entries, read) {
