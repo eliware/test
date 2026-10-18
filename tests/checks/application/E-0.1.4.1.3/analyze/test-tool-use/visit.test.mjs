@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
 import { visitTestToolUse } from "../../../../../../src/checks/application/E-0.1.4.1.3/analyze/test-tool-use/visit.mjs";
 import { collectStaticStrings } from "../../../../../../src/checks/application/E-0.1.4.1.3/analyze/collect/static-strings.mjs";
-import { collectLauncherAliases } from "../../../../../../src/checks/application/E-0.1.4.1.3/collect-launcher-aliases.mjs";
+import { collectLauncherAliases } from "../../../../../../src/checks/application/E-0.1.4.1.3/analyze/collect/launcher-aliases.mjs";
 
 function visit(source, allowHarnessTools = false) {
   const program = parse(source, { sourceType: "unambiguous" }).program;

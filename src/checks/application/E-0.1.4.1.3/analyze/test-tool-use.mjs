@@ -1,4 +1,4 @@
-import { collectLauncherAliases } from "../collect-launcher-aliases.mjs";
+import { collectLauncherAliases } from "./collect/launcher-aliases.mjs";
 import { collectStaticStrings } from "./collect/static-strings.mjs";
 import { visitTestToolUse } from "./test-tool-use/visit.mjs";
 

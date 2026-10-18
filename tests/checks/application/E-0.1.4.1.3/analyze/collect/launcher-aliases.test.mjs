@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { collectLauncherAliases } from "../../../../src/checks/application/E-0.1.4.1.3/collect-launcher-aliases.mjs";
+import { collectLauncherAliases } from "../../../../../../src/checks/application/E-0.1.4.1.3/analyze/collect/launcher-aliases.mjs";
 
 test("collects imported and chained child-process launcher aliases", () => {
   const ast = {

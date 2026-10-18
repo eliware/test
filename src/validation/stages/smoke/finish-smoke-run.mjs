@@ -1,4 +1,5 @@
 import { cleanupSmokeTempRoot } from "./cleanup-smoke-temp-root.mjs";
+import { attemptSmokeTargetRestoration } from "./restore/attempt-target-restoration.mjs";
 
 export async function finishSmokeRun({
   outcome,
@@ -9,25 +10,21 @@ export async function finishSmokeRun({
   tempIdentity,
   cleanup = cleanupSmokeTempRoot,
 }) {
-  let restoreError;
-  if (state && !state.error) {
-    try {
-      await assertTargetIdentity();
-      await restoreState(state);
-    } catch (error) {
-      restoreError = error.message;
-    }
-  }
+  const restoration = await attemptSmokeTargetRestoration(
+    state,
+    assertTargetIdentity,
+    restoreState,
+  );
   let cleanupMessage;
   try {
     cleanupMessage = await cleanup(tempRoot, tempIdentity, {
-      preserve: Boolean(restoreError),
+      preserve: Boolean(restoration.error),
     });
   } catch (error) {
     cleanupMessage = `Temporary smoke cleanup failed: ${error.message}.`;
   }
-  if (restoreError)
-    return `${outcome} Target restoration failed: ${restoreError}. ${cleanupMessage}`;
-  if (state && !state.error) outcome = `${outcome} Previous target package state restored.`;
+  if (restoration.error)
+    return `${outcome} Target restoration failed: ${restoration.error}. ${cleanupMessage}`;
+  if (restoration.restored) outcome = `${outcome} Previous target package state restored.`;
   return cleanupMessage ? `${outcome} ${cleanupMessage}` : outcome;
 }
