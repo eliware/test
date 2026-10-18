@@ -1,7 +1,7 @@
 import { lstat } from "node:fs/promises";
 import { loadSmokeTarget } from "../load-smoke-target.mjs";
 import { resolveSmokeTarget } from "../resolve-smoke-target.mjs";
-import { validateNpmConsumerSmokeRequest } from "../validate-npm-consumer-smoke-request.mjs";
+import { validateNpmConsumerSmokeRequest } from "../validate/npm-consumer-smoke-request.mjs";
 
 export async function prepareSmokeTargetContext({
   root,

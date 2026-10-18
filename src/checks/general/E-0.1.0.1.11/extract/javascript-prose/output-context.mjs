@@ -15,23 +15,56 @@ export function isUserFacingAttribute(name) {
 }
 
 export function isUserFacingOutputCall(callee) {
+  return (
+    isDialogOutputCall(callee) ||
+    isConsoleOutputCall(callee) ||
+    isProcessOutputCall(callee) ||
+    isReadlineOutputCall(callee) ||
+    isReplyOutputCall(callee)
+  );
+}
+
+function isDialogOutputCall(callee) {
   if (callee?.type === "Identifier") return promptMethods.has(callee.name);
-  if (callee?.type !== "MemberExpression") return false;
-  const method = memberName(callee);
-  if (callee.object?.type === "Identifier" && callee.object.name === "console")
-    return consoleMethods.has(method);
-  if (
+  return (
+    callee?.type === "MemberExpression" &&
+    callee.object?.type === "Identifier" &&
+    callee.object.name === "window" &&
+    promptMethods.has(memberName(callee))
+  );
+}
+
+function isConsoleOutputCall(callee) {
+  return (
+    callee?.type === "MemberExpression" &&
+    callee.object?.type === "Identifier" &&
+    callee.object.name === "console" &&
+    consoleMethods.has(memberName(callee))
+  );
+}
+
+function isProcessOutputCall(callee) {
+  return (
+    callee?.type === "MemberExpression" &&
     callee.object?.type === "MemberExpression" &&
     callee.object.object?.type === "Identifier" &&
     callee.object.object.name === "process" &&
-    ["stderr", "stdout"].includes(memberName(callee.object))
-  )
-    return method === "write";
-  if (callee.object?.type === "Identifier" && callee.object.name === "window")
-    return promptMethods.has(method);
-  if (callee.object?.type === "Identifier" && callee.object.name === "readline")
-    return method === "question";
-  return replyMethods.has(method);
+    ["stderr", "stdout"].includes(memberName(callee.object)) &&
+    memberName(callee) === "write"
+  );
+}
+
+function isReadlineOutputCall(callee) {
+  return (
+    callee?.type === "MemberExpression" &&
+    callee.object?.type === "Identifier" &&
+    callee.object.name === "readline" &&
+    memberName(callee) === "question"
+  );
+}
+
+function isReplyOutputCall(callee) {
+  return callee?.type === "MemberExpression" && replyMethods.has(memberName(callee));
 }
 
 export function isUserFacingOutputProperty(target) {

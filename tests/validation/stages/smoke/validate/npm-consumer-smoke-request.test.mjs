@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { resolve } from "node:path";
-import { packageJson } from "../../../../test-fixtures/helpers/smoke-package.mjs";
-import { validateNpmConsumerSmokeRequest } from "../../../../src/validation/stages/smoke/validate-npm-consumer-smoke-request.mjs";
+import { packageJson } from "../../../../../test-fixtures/helpers/smoke-package.mjs";
+import { validateNpmConsumerSmokeRequest } from "../../../../../src/validation/stages/smoke/validate/npm-consumer-smoke-request.mjs";
 
 const root = process.cwd();
 const target = resolve(root, "..", "smoke-consumer");
