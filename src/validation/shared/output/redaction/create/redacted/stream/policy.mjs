@@ -2,6 +2,7 @@ import { createSecretTextMatcher } from "../../secret-text-matcher.mjs";
 import { createBoundedSecretSearch } from "../../bounded-secret-search.mjs";
 import { createPartialSecretSuffixTrimmer } from "../../partial-secret-suffix-trimmer.mjs";
 import { normalizeRedactionPolicySecrets } from "../../../normalize-redaction-policy-secrets.mjs";
+import { createSuppressedPolicy } from "./suppressed-policy.mjs";
 
 const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
 const DEFAULT_PENDING_LENGTH = 64_000;
@@ -55,17 +56,5 @@ export function createRedactedStreamPolicy(
     findSecretEnds,
     findSafeBoundary,
     suppressed,
-  };
-}
-
-function createSuppressedPolicy(outputLimit, workLimit, maxPendingLength) {
-  return {
-    workLimit,
-    pendingLimit: Math.min(Math.max(1, Math.floor(outputLimit)), Math.max(1, maxPendingLength)),
-    values: [],
-    trimSuffix: null,
-    findSecretEnds: null,
-    findSafeBoundary: null,
-    suppressed: true,
   };
 }

@@ -30,12 +30,6 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
   };
 }
 
-test("runs with injected Git and file dependencies", async () => {
-  await expect(
-    run({ root: "repo", runGit: createGitRunner(), readText: async () => ignoreText }),
-  ).resolves.toMatchObject({ ruleId, status: "pass" });
-});
-
 test("uses injected dependencies when the check context is omitted", async () => {
   await expect(
     run(undefined, { runGit: createGitRunner(), readText: async () => ignoreText }),
@@ -110,8 +104,10 @@ test("rejects malformed Git path and index output", async () => {
   expect(errors).toContain("Git index status could not be read. Tracked symlinks are unknown.");
 });
 
-test("uses the current directory and checks required ignored paths", async () => {
+test("uses injected dependencies from the current directory to check required ignored paths", async () => {
+  const roots = [];
   const runner = async (_command, args) => {
+    roots.push(args[1]);
     if (args.includes("check-ignore"))
       return {
         code: 0,
@@ -122,9 +118,17 @@ test("uses the current directory and checks required ignored paths", async () =>
       };
     return { stdout: Buffer.from("") };
   };
-  await expect(run({ runGit: runner, readText: async () => ignoreText })).resolves.toMatchObject({
-    status: "pass",
+  const readPaths = [];
+  const result = await run({
+    runGit: runner,
+    readText: async (path) => {
+      readPaths.push(path);
+      return ignoreText;
+    },
   });
+  expect(result).toMatchObject({ ruleId, status: "pass" });
+  expect(roots.every((root) => root === process.cwd())).toBe(true);
+  expect(readPaths).toEqual([`${process.cwd()}/.gitignore`]);
 });
 
 test("reports failure when Git does not ignore a required path", async () => {
