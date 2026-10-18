@@ -2,6 +2,8 @@ import { npmCommand } from "../../shared/process/npm-command.mjs";
 import { runChild } from "../../shared/process/run/child.mjs";
 import { collectRedactionSecrets } from "../../shared/output/redaction/collect-redaction-secrets.mjs";
 import { redactProcessOutput } from "../../shared/output/redaction/redact/process-output.mjs";
+import { listOutdatedPackages } from "./list-outdated-packages.mjs";
+import { parseNpmOutdatedJson } from "./parse-npm-outdated-json.mjs";
 
 export async function runNpmOutdated(
   root,
@@ -32,7 +34,7 @@ export async function runNpmOutdated(
   }
   let dependencies;
   try {
-    dependencies = JSON.parse(output.stdout);
+    dependencies = parseNpmOutdatedJson(output.stdout);
   } catch {
     const detail = redactProcessOutput(output.stderr, collectRedactionSecrets(env)).trim();
     throw new Error(
@@ -42,9 +44,6 @@ export async function runNpmOutdated(
     );
   }
   const ignored = env.ELIWARE_TEST_SMOKE_CANDIDATE;
-  const outdated = Object.keys(dependencies)
-    .filter((name) => name !== ignored)
-    .sort()
-    .map((name) => `${name}@latest`);
+  const outdated = listOutdatedPackages(dependencies, ignored);
   return { dependencies, outdated };
 }

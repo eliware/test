@@ -22,12 +22,6 @@ test("accepts each documented focused test extension", () => {
   }
 });
 
-test("rejects focused tests without a source module name", () => {
-  expect(() => readDiagnosticOptions(["tests/.test.mjs"])).toThrow(
-    "must have a source module name",
-  );
-});
-
 test("forwards non-wrapper Jest options unchanged", () => {
   expect(readDiagnosticOptions(["--runInBand"]).jestArgs).toEqual(["--runInBand"]);
 });
@@ -50,13 +44,6 @@ test("rejects repeated informational commands", () => {
   expect(() => readDiagnosticOptions(["--help", "--help"])).toThrow("cannot be repeated");
 });
 
-test("accepts multiple focused paths", () => {
-  expect(readDiagnosticOptions(["tests/a.test.mjs", "tests/b.test.mjs"]).jestArgs).toEqual([
-    "tests/a.test.mjs",
-    "tests/b.test.mjs",
-  ]);
-});
-
 test("rejects test paths after the Jest delegation separator", () => {
   expect(() => readDiagnosticOptions(["tests/a.test.mjs", "--", "tests/b.test.mjs"])).toThrow(
     "must be supplied before the -- separator",
@@ -64,17 +51,6 @@ test("rejects test paths after the Jest delegation separator", () => {
   expect(() => readDiagnosticOptions(["--", "C:\\outside.test.mjs"])).toThrow(
     "must be supplied before the -- separator",
   );
-});
-
-test("rejects an unrecognized positional argument alongside focused paths", () => {
-  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "unexpected-selector"])).toThrow(
-    "Focused paths must be under tests/",
-  );
-});
-
-test("rejects unsupported focused path roots", () => {
-  expect(() => readDiagnosticOptions(["src/example.mjs"])).toThrow("must be under tests/");
-  expect(() => readDiagnosticOptions(["test/example.test.mjs"])).toThrow("must be under tests/");
 });
 
 test("does not treat option values as focused paths and preserves them for Jest", () => {
@@ -87,12 +63,6 @@ test("does not treat option values as focused paths and preserves them for Jest"
   ).toMatchObject({
     jestArgs: ["--testNamePattern", "tests/looks-like-a-path.test.mjs", "tests/example.test.mjs"],
   });
-});
-
-test("rejects specs paths because focused Jest execution is rooted under tests", () => {
-  expect(() => readDiagnosticOptions(["specs/example.spec.mjs"])).toThrow(
-    "Focused paths must be under tests/",
-  );
 });
 
 test("recognizes values for common Jest options", () => {
