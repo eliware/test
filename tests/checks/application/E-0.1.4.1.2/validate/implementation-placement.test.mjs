@@ -51,3 +51,10 @@ test("does not allow discovery modules without their profiles", () => {
     "commands/start.mjs is an implementation module outside its allowed root.",
   ]);
 });
+
+test("allows the root webpack configuration only for web repositories", () => {
+  expect(validateImplementationPlacement(["webpack.config.mjs"], ["web"])).toEqual([]);
+  expect(validateImplementationPlacement(["webpack.config.mjs"], ["application"])).toEqual([
+    "webpack.config.mjs is an implementation module outside its allowed root.",
+  ]);
+});

@@ -7,12 +7,14 @@ export function validateImplementationPlacement(files, profiles = [], packageJso
   const validatorPaths = new Set(findPackageScriptValidatorPaths(packageJson));
   if (profiles.includes("discord")) discoveryRoots.push("commands", "events");
   if (profiles.includes("mcp-server")) discoveryRoots.push("tools");
+  const allowedRootFiles = profiles.includes("web") ? new Set(["webpack.config.mjs"]) : new Set();
   const allowedDiscoveryPath = new RegExp(`^(?:${discoveryRoots.join("|")})/`, "u");
   return files
     .filter(
       (path) =>
         modulePath.test(path) &&
         !validatorPaths.has(path) &&
+        !allowedRootFiles.has(path) &&
         !allowedRoots.test(path) &&
         !allowedDiscoveryPath.test(path) &&
         !generatedPath.test(path),
