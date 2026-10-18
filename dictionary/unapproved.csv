@@ -568,7 +568,6 @@
 "limited","SMALL (adj)"
 "little","SMALL (adj)","SHORT (adj)","NOT SUFFICIENT","SMALL QUANTITY","ENERGIZE (v)"
 "locate","FIND (v)","ENGAGE (v)","PUT (v)"
-"log","EVENT RECORD (n)","AUDIT RECORD (n)","OUTPUT RECORD (n)","MATHEMATICAL LOGARITHM (n)","RECORD (v)","WRITE (v)","SIGN IN (v)","AUTHENTICATE (v)"
 "lose","DECREASE (v)"
 "lost","DECREASE (v)","NOT FIND"
 "lowermost","BOTTOM (adj)"
