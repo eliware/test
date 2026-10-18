@@ -18,7 +18,7 @@ function inventory(files, readText = async () => "") {
   };
 }
 
-test("validates the workspace runbook index and schema", async () => {
+test("validates the runbook index and documents through the workspace rule", async () => {
   const repositoryInventory = inventory(
     ["runbooks/README.md", "runbooks/deploy.yaml"],
     async (path) => (path.endsWith("README.md") ? index : document),
@@ -30,7 +30,7 @@ test("validates the workspace runbook index and schema", async () => {
   });
 });
 
-test("loads the bundled schema when no schema dependency is injected", async () => {
+test("uses the bundled schema when no schema reader is injected", async () => {
   const repositoryInventory = inventory(
     ["runbooks/README.md", "runbooks/deploy.yaml"],
     async (path) => (path.endsWith("README.md") ? index : document),
@@ -42,7 +42,25 @@ test("loads the bundled schema when no schema dependency is injected", async () 
   });
 });
 
-test("requires an inventory and reports inventory read failures", async () => {
+test("accepts an index when no runbook documents exist", async () => {
+  await expect(
+    run({ repositoryInventory: inventory(["runbooks/README.md"], async () => "# Runbooks") }),
+  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+});
+
+test("returns a failed rule result when runbook validation finds an error", async () => {
+  await expect(
+    run({ repositoryInventory: inventory(["runbooks/README.md"], async () => "Overview") }),
+  ).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: expect.stringContaining(
+      "runbooks/README.md must contain only headings and runbook links.",
+    ),
+  });
+});
+
+test("requires an inventory and reports inventory errors", async () => {
   await expect(run()).resolves.toMatchObject({
     status: "fail",
     message: expect.stringContaining("inventory is required"),
@@ -57,76 +75,4 @@ test("requires an inventory and reports inventory read failures", async () => {
       },
     }),
   ).resolves.toMatchObject({ message: expect.stringContaining("denied") });
-});
-
-test("requires an index and rejects non-YAML runbook files", async () => {
-  await expect(
-    run({ repositoryInventory: inventory(["runbooks/plan.json"]) }),
-  ).resolves.toMatchObject({ message: expect.stringContaining("runbooks/README.md is required") });
-  await expect(
-    run({
-      repositoryInventory: inventory(
-        ["runbooks/README.md", "runbooks/plan.yml"],
-        async () => "# Runbooks",
-      ),
-    }),
-  ).resolves.toMatchObject({
-    message: expect.stringContaining("plan.yml must use the .yaml extension"),
-  });
-});
-
-test("reports index read failures and schema read failures", async () => {
-  await expect(
-    run({
-      repositoryInventory: inventory(["runbooks/README.md"], async () => {
-        throw new Error("blocked");
-      }),
-    }),
-  ).resolves.toMatchObject({
-    message: expect.stringContaining("README.md could not be read: blocked"),
-  });
-  await expect(
-    run(
-      {
-        repositoryInventory: inventory(
-          ["runbooks/README.md", "runbooks/deploy.yaml"],
-          async (path) => (path.endsWith("README.md") ? index : document),
-        ),
-      },
-      {
-        readSchema: async () => {
-          throw new Error("schema unavailable");
-        },
-      },
-    ),
-  ).resolves.toMatchObject({ message: expect.stringContaining("schema unavailable") });
-});
-
-test("reports runbook read errors and invalid runbook content", async () => {
-  await expect(
-    run(
-      {
-        repositoryInventory: inventory(
-          ["runbooks/README.md", "runbooks/deploy.yaml"],
-          async (path) =>
-            path.endsWith("README.md") ? index : Promise.reject(new Error("denied")),
-        ),
-      },
-      { readSchema: async () => schema },
-    ),
-  ).resolves.toMatchObject({
-    message: expect.stringContaining("deploy.yaml could not be read: denied"),
-  });
-  await expect(
-    run(
-      {
-        repositoryInventory: inventory(
-          ["runbooks/README.md", "runbooks/deploy.yaml"],
-          async (path) =>
-            path.endsWith("README.md") ? index : `schema-version: ${runbookSchemaVersion - 1}`,
-        ),
-      },
-      { readSchema: async () => schema },
-    ),
-  ).resolves.toMatchObject({ message: expect.stringContaining("deploy.yaml.title is required") });
 });

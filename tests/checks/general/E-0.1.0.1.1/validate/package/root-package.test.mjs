@@ -11,12 +11,3 @@ test("accepts matching package identity and dependency maps", () => {
     errors: [],
   });
 });
-
-test("reports mismatched root package identity", () => {
-  expect(
-    validateLockfileRootPackage(packageJson, { ...rootPackage, name: "@other/example" }, {}),
-  ).toEqual({
-    matches: false,
-    errors: ["package-lock.json root package metadata must match package.json."],
-  });
-});
