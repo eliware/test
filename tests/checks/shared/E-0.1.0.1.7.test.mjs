@@ -12,6 +12,23 @@ test("accepts the validation workflow and canonical npm workflow path", async ()
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
 
+test("limits general CI validation to ci.yaml when a publisher workflow is present", async () => {
+  const readPaths = [];
+  await expect(
+    run({
+      repositoryInventory: {
+        files: async () => [".github/workflows/ci.yaml", ".github/workflows/npm.yaml"],
+        readText: async (path) => {
+          readPaths.push(path);
+          return validWorkflow;
+        },
+      },
+      packageJson: { eliware: { apply: ["general", "npm-published"] } },
+    }),
+  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+  expect(readPaths).toEqual([".github/workflows/ci.yaml"]);
+});
+
 test("allows the canonical GHCR workflow path when the profile applies", async () => {
   await expect(
     run({

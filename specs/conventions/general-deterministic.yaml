@@ -203,6 +203,7 @@ directives:
 
   - id: E-0.1.0.1.7
     dos:
+      - Apply this rule's CI job and command requirements only to ci.yaml.
       - Keep one ci.yaml document in .github/workflows/.
       - Enable push and `pull_request` events for main.
       - Set repository-and-ref concurrency with cancel-in-progress true.
@@ -219,6 +220,7 @@ directives:
       - Keep ci.yaml for validation.
       - Allow .github/workflows/npm.yaml when npm-published applies.
       - Allow .github/workflows/ghcr.yaml when ghcr-published applies.
+      - Apply npm.yaml and ghcr.yaml requirements from their publication profiles.
       - Before `npm ci`, allow approved setup actions and npm latest installation.
       - Allow `echo` or `printf` only when commands report literal text.
       - Allow shell operators as text only inside quoted arguments.
@@ -235,7 +237,7 @@ directives:
       - Do not override checkout repository or ref.
       - Do not use pre-install reporting with expansion, redirects, control operators,
         backslashes, or embedded line breaks.
-      - Do not publish npm packages or GHCR images in validation jobs.
+      - Do not publish npm packages or GHCR images from the ci.yaml validation job.
     examples:
       - /eliware/application-template/.github/workflows/ci.yaml
       - /eliware/cli-template/.github/workflows/ci.yaml
