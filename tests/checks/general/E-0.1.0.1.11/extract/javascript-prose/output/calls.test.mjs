@@ -1,20 +1,5 @@
 import { expect, test } from "@jest/globals";
-import {
-  isUserFacingAttribute,
-  isUserFacingOutputCall,
-  isUserFacingOutputProperty,
-} from "../../../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose/output/context.mjs";
-
-test.each(["alt", "aria-label", "placeholder", "title"])("accepts visible attribute %s", (name) => {
-  expect(isUserFacingAttribute(name)).toBe(true);
-});
-
-test.each(["className", "data-label", "style", undefined])(
-  "rejects non-visible attribute %s",
-  (name) => {
-    expect(isUserFacingAttribute(name)).toBe(false);
-  },
-);
+import { isUserFacingOutputCall } from "../../../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose/output/calls.mjs";
 
 test.each([
   [{ type: "Identifier", name: "alert" }, true],
@@ -34,18 +19,9 @@ test.each([
   [member("client", "send"), false],
   [member("client", "query"), false],
   [{ type: "OptionalCallExpression" }, false],
-])("classifies supported output call %j", (callee, expected) => {
+  [{ ...member("console", "log"), computed: true, property: string("log") }, true],
+])("classifies user-facing call %j", (callee, expected) => {
   expect(isUserFacingOutputCall(callee)).toBe(expected);
-});
-
-test.each([
-  [member("element", "textContent"), true],
-  [member("document", "title"), true],
-  [{ ...member("element", "ariaLabel"), computed: true, property: string("ariaLabel") }, true],
-  [member("element", "className"), false],
-  [{ type: "Identifier", name: "textContent" }, false],
-])("classifies displayed output property %j", (target, expected) => {
-  expect(isUserFacingOutputProperty(target)).toBe(expected);
 });
 
 function member(object, property) {

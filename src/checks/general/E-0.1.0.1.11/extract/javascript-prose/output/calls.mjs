@@ -1,18 +1,8 @@
-const userFacingAttributes = new Set(["alt", "aria-label", "placeholder", "title"]);
-const domTextProperties = new Set([
-  "ariaLabel",
-  "innerText",
-  "placeholder",
-  "textContent",
-  "title",
-]);
+import { memberName } from "./member-name.mjs";
+
 const consoleMethods = new Set(["error", "info", "log", "warn"]);
 const promptMethods = new Set(["alert", "confirm", "prompt"]);
 const replyMethods = new Set(["editReply", "followUp", "reply"]);
-
-export function isUserFacingAttribute(name) {
-  return userFacingAttributes.has(name);
-}
 
 export function isUserFacingOutputCall(callee) {
   return (
@@ -65,13 +55,4 @@ function isReadlineOutputCall(callee) {
 
 function isReplyOutputCall(callee) {
   return callee?.type === "MemberExpression" && replyMethods.has(memberName(callee));
-}
-
-export function isUserFacingOutputProperty(target) {
-  return target?.type === "MemberExpression" && domTextProperties.has(memberName(target));
-}
-
-function memberName(member) {
-  if (member.computed && member.property?.type === "StringLiteral") return member.property.value;
-  return member.property?.name;
 }

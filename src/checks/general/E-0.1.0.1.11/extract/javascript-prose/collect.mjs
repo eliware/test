@@ -1,9 +1,7 @@
 import { collectOutputText } from "./output/text.mjs";
-import {
-  isUserFacingAttribute,
-  isUserFacingOutputCall,
-  isUserFacingOutputProperty,
-} from "./output/context.mjs";
+import { isUserFacingAttribute } from "./output/attributes.mjs";
+import { isUserFacingOutputCall } from "./output/calls.mjs";
+import { isUserFacingOutputProperty } from "./output/properties.mjs";
 
 export function collectJavaScriptProse(root) {
   const blocks = [];

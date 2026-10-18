@@ -3,11 +3,9 @@ import { createBoundedSecretSearch } from "../../bounded-secret-search.mjs";
 import { createPartialSecretSuffixTrimmer } from "../../partial-secret-suffix-trimmer.mjs";
 import { normalizeRedactionPolicySecrets } from "../../../normalize-redaction-policy-secrets.mjs";
 import { createSuppressedPolicy } from "./suppressed-policy.mjs";
+import { MAX_SECRET_SEARCH_WORK_PER_CHUNK, resolveRedactedStreamBounds } from "./bounds.mjs";
 
-const MAX_SECRET_SEARCH_WORK_PER_CHUNK = 1_000_000;
 const DEFAULT_PENDING_LENGTH = 64_000;
-const DEFAULT_OUTPUT_LIMIT = 100_000;
-const MAX_OUTPUT_LIMIT = 1_000_000;
 export function createRedactedStreamPolicy(
   secrets,
   outputLimit,
@@ -17,23 +15,20 @@ export function createRedactedStreamPolicy(
     getSecretMatcher,
   } = {},
 ) {
-  const boundedOutputLimit = Number.isFinite(outputLimit)
-    ? Math.max(0, Math.min(Math.floor(outputLimit), MAX_OUTPUT_LIMIT))
-    : DEFAULT_OUTPUT_LIMIT;
-  const finiteWorkLimit = Number.isFinite(maxSearchWorkPerChunk)
-    ? maxSearchWorkPerChunk
-    : MAX_SECRET_SEARCH_WORK_PER_CHUNK;
-  const workLimit = Math.min(MAX_SECRET_SEARCH_WORK_PER_CHUNK, Math.max(1, finiteWorkLimit));
   const values = normalizeRedactionPolicySecrets(secrets);
+  const maximumSecretLength =
+    values?.reduce((maximum, secret) => Math.max(maximum, secret.length), 0) ?? 0;
+  const {
+    outputLimit: boundedOutputLimit,
+    workLimit,
+    pendingLimit,
+  } = resolveRedactedStreamBounds(
+    outputLimit,
+    maxSearchWorkPerChunk,
+    maxPendingLength,
+    maximumSecretLength,
+  );
   if (!values) return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
-  const maximumSecretLength = values.reduce(
-    (maximum, secret) => Math.max(maximum, secret.length),
-    0,
-  );
-  const pendingLimit = Math.min(
-    Math.max(1, boundedOutputLimit),
-    Math.max(1, Math.floor(maxPendingLength), maximumSecretLength),
-  );
   let suppressed = maximumSecretLength > boundedOutputLimit;
   const trimSuffix = suppressed ? null : createPartialSecretSuffixTrimmer(values);
   if (!trimSuffix) suppressed = true;
