@@ -17,11 +17,14 @@ directives:
   - id: E-0.1.11.1.1
     dos:
       - Keep the Dockerfile at the repository root.
-      - Use .github/workflows/ghcr.yaml for GHCR publication.
-      - Match the file byte for byte with specs/workflows/ghcr.yaml.
+      - Use .github/workflows/ghcr.yaml as the consumer publication workflow.
+      - "Match it byte for byte with the bundled Eliware Test file
+        specs/workflows/ghcr.yaml."
       - Include line endings and the final newline in each match.
+      - Keep specs/workflows/ghcr.yaml in the Eliware Test package.
     donts:
       - Do not use .github/workflows/publish.yaml for GHCR publication.
+      - Do not create specs/workflows/ in a consumer repository.
     examples:
       - /eliware/application-template/.github/workflows/ghcr.yaml
       - /eliware/discord-template/.github/workflows/ghcr.yaml

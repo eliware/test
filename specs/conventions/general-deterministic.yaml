@@ -305,7 +305,16 @@ directives:
       - Split sentences at terminal punctuation followed by whitespace or a file boundary.
       - Use periods, question marks, and exclamation marks to mark sentence ends.
       - Limit each prose paragraph to six sentences.
-      - Check human-readable JavaScript comments, strings, and JSX text.
+      - Check JavaScript comments and JSX text shown to users.
+      - Check JSX values for `alt`, `aria-label`, `placeholder`, and `title`.
+      - "Check literal strings passed directly to these output calls: `alert`, `confirm`,
+        `prompt`, `console.error`, `console.info`, `console.log`, `console.warn`,
+        `process.stdout.write`, `process.stderr.write`, `readline.question`, `reply`,
+        `followUp`, and `editReply`."
+      - "Check literal values assigned to `ariaLabel`, `innerText`, `placeholder`,
+        `textContent`, and `title`."
+      - Check values passed to `setAttribute` for `alt`, `aria-label`, `placeholder`, and `title`.
+      - Skip all other JavaScript string values and template literals.
       - "Check Markdown, plain-text, YAML, JSON, JavaScript, and JSX files with these
         extensions: `.md`, `.txt`, `.yaml`, `.yml`, `.json`, `.mjs`, `.js`, and `.jsx`."
       - Do not check other file extensions.
@@ -318,9 +327,6 @@ directives:
       - Match dictionary entries in uppercase or lowercase, at whole-word or exact-phrase
         boundaries.
       - Do not match a dictionary term in a hyphenated compound.
-      - Ignore SQL statements and SQL text in query and execute calls.
-      - Ignore HTTP and MIME header values. Ignore `content-security-policy` values.
-      - Ignore template literals that contain embedded JavaScript source.
       - Show each match, its file, line, and suggested alternatives.
       - Tell writers that alternatives are examples, not requirements.
       - Tell writers to rewrite each sentence without the listed term.

@@ -48,11 +48,14 @@ directives:
 
   - id: E-0.1.10.1.2
     dos:
-      - Use .github/workflows/npm.yaml for npm publication.
-      - Match the file byte for byte with specs/workflows/npm.yaml.
+      - Use .github/workflows/npm.yaml as the consumer publication workflow.
+      - "Match it byte for byte with the bundled Eliware Test file
+        specs/workflows/npm.yaml."
       - Include line endings and the final newline in each match.
+      - Keep specs/workflows/npm.yaml in the Eliware Test package.
     donts:
       - Do not use .github/workflows/publish.yaml for npm publication.
+      - Do not create specs/workflows/ in a consumer repository.
     examples:
       - /eliware/cli-template/.github/workflows/npm.yaml
       - /eliware/library-template/.github/workflows/npm.yaml

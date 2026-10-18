@@ -12,6 +12,7 @@ test("selects the prose extractor by file extension", () => {
     { text: "A sentence.", line: 1, kind: "prose" },
   ]);
   expect(extractProse("metadata.json", '{"description":"A sentence."}')).toHaveLength(1);
-  expect(extractProse("src/module.mjs", 'const message = "A sentence.";')).toHaveLength(1);
+  expect(extractProse("src/module.mjs", 'console.log("A sentence.");')).toHaveLength(1);
+  expect(extractProse("src/module.mjs", 'const message = "A sentence.";')).toEqual([]);
   expect(extractProse("image.png", "ignored")).toEqual([]);
 });

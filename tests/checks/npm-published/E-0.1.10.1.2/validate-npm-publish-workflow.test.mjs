@@ -10,6 +10,6 @@ test("rejects a workflow with changed bytes", async () => {
   await expect(
     validateNpmPublishWorkflow(createNpmPublishInventory("name: Changed\n")),
   ).resolves.toContain(
-    ".github/workflows/npm.yaml must match specs/workflows/npm.yaml byte for byte.",
+    ".github/workflows/npm.yaml must match the bundled Eliware Test file specs/workflows/npm.yaml byte for byte.",
   );
 });

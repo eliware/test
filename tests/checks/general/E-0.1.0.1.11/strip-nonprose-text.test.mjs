@@ -14,9 +14,9 @@ describe("stripNonProseText", () => {
     );
   });
 
-  test("removes command placeholders and SVG transform values", () => {
+  test("removes command placeholders and keeps unrelated attribute text", () => {
     expect(stripNonProseText('Usage: --port PORT <g transform="rotate(90)" />')).toBe(
-      "Usage:   <g   />",
+      'Usage:   <g transform="rotate(90)" />',
     );
   });
 

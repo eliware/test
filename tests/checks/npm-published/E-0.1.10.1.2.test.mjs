@@ -23,7 +23,9 @@ test.each([
 ])("rejects an npm workflow with %s", async (_name, text) => {
   await expect(run({ repositoryInventory: inventory(text) })).resolves.toMatchObject({
     status: "fail",
-    message: expect.stringContaining("must match specs/workflows/npm.yaml byte for byte"),
+    message: expect.stringContaining(
+      "must match the bundled Eliware Test file specs/workflows/npm.yaml byte for byte",
+    ),
   });
 });
 

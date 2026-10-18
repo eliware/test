@@ -16,7 +16,9 @@ export async function validateCanonicalPublisherWorkflow(
     if (!(await inventory.files("all")).includes(path)) return [`${path} is required.`];
     const actual = await inventory.readText(path);
     const expected = await readCanonical(new URL(file, workflowDirectory));
-    return actual === expected ? [] : [`${path} must match specs/workflows/${file} byte for byte.`];
+    return actual === expected
+      ? []
+      : [`${path} must match the bundled Eliware Test file specs/workflows/${file} byte for byte.`];
   } catch (error) {
     return [`${path} could not be inspected: ${error.message}`];
   }

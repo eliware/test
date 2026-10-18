@@ -1,164 +1,86 @@
 import { expect, test } from "@jest/globals";
-import { expectedLicense } from "../../../../../src/checks/general/E-0.1.0.1.1/validate/required-package-files.mjs";
-import { windowsProcessTreeFallbackScript } from "../../../../../src/validation/shared/process/run/windows-process-tree-fallback.mjs";
 import { extractJavaScriptProse } from "../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose.mjs";
-import { findLanguageViolations } from "../../../../../src/checks/general/E-0.1.0.1.11/find/language-violations.mjs";
 
-test("extracts comments, user-facing strings, templates, and JSX text", () => {
+test("checks comments, visible JSX text, and user-facing JSX attributes", () => {
   const source = [
-    "// Explain this behavior.",
-    'const help = "Choose one option.";',
-    'const token = "internal";',
-    'const command = "npm install package";',
-    "const output = `Validation failed for ${name}.`;",
-    "const view = <p>Public words</p>;",
-    "const label = <span>Label</span>;",
-    "const tagged = String.raw`bad \\unicode ${name}`;",
-    "const template = `single`;",
-    "const oneWord = `single ${name}`;",
+    "// Choose a valid option.",
+    '<main title="Set a clear title" aria-label="Select a record">',
+    "  <p>Show the selected record.</p>",
+    '  <input placeholder="Enter a valid name" alt="Show the image" />',
+    '  <label title={"Set an accessible title"}>Name</label>',
+    '  <span className="internal state" data-event="recordChanged">Hidden data</span>',
+    "</main>;",
   ].join("\n");
-  expect(extractJavaScriptProse(source)).toEqual([
-    { text: " Explain this behavior.", line: 1, kind: "prose" },
-    { text: "Choose one option.", line: 2, kind: "prose" },
-    { text: "Validation failed for .", line: 5, kind: "prose" },
-    { text: "Public words", line: 6, kind: "prose" },
-    { text: "bad \\unicode ", line: 8, kind: "prose" },
+  const blocks = extractJavaScriptProse(source);
+  expect(blocks.map(({ text }) => text.trim())).toEqual([
+    "Choose a valid option.",
+    "Set a clear title",
+    "Select a record",
+    "Show the selected record.",
+    "Enter a valid name",
+    "Show the image",
+    "Set an accessible title",
+    "Name",
+    "Hidden data",
+  ]);
+});
+
+test("checks supported CLI, dialog, DOM, and Discord output contexts", () => {
+  const source = [
+    'console.error("Enter a valid name.");',
+    "console.info(`Select a record for ${name}.`);",
+    'process.stdout.write("Choose a valid option.");',
+    'process.stderr.write("The request failed.");',
+    'readline.question("Enter a search term.");',
+    'window.confirm("Remove this saved item?");',
+    'interaction.reply("The request failed.");',
+    'interaction.followUp("Choose another option.");',
+    'interaction.editReply("The request is complete.");',
+    'element.textContent = "Show the current value.";',
+    'document.title = "Account settings";',
+    'element.setAttribute("aria-label", "Open account settings");',
+    'connection.query("SELECT name FROM users");',
+    'reply.header("content-security-policy", "default-src none");',
+    'element["textContent"] = "Show an accessible value.";',
+  ].join("\n");
+  expect(extractJavaScriptProse(source).map(({ text }) => text)).toEqual([
+    "Enter a valid name.",
+    "Select a record for .",
+    "Choose a valid option.",
+    "The request failed.",
+    "Enter a search term.",
+    "Remove this saved item?",
+    "The request failed.",
+    "Choose another option.",
+    "The request is complete.",
+    "Show the current value.",
+    "Account settings",
+    "Open account settings",
+    "Show an accessible value.",
+  ]);
+});
+
+test("skips machine strings, templates, regular expressions, and non-user-facing attributes", () => {
+  const source = [
+    'const css = ".item { color: red; }";',
+    'const selector = ".menu-item:hover";',
+    'const sql = "SELECT name FROM users";',
+    'const header = "content-security-policy: default-src none";',
+    'const eventName = "recordChanged";',
+    'const transform = "rotate(90) translate(2, 3)";',
+    'const source = `self.addEventListener("fetch", handler);`;',
+    "const expression = /select a value/iu;",
+    'const button = <button className="Set a label" data-label="Choose a value">Save now</button>;',
+  ].join("\n");
+  expect(extractJavaScriptProse(source).map(({ text }) => text.trim())).toEqual(["Save now"]);
+});
+
+test("checks only the user-facing portion of a dynamic template output", () => {
+  expect(extractJavaScriptProse("console.log(`Choose a value for ${name}.`);")).toEqual([
+    { text: "Choose a value for .", line: 1, kind: "prose" },
   ]);
 });
 
 test("skips invalid source because lint reports parse errors", () => {
   expect(extractJavaScriptProse("const =")).toEqual([]);
-});
-
-test("combines template sections when interpolations have static string values", () => {
-  const first = Array.from({ length: 13 }, (_, index) => `word${index + 1}`).join(" ");
-  const second = Array.from({ length: 13 }, (_, index) => `word${index + 14}`).join(" ");
-  expect(extractJavaScriptProse(`const text = \`${first} \${"${second}"}\`;`)).toContainEqual({
-    text: `${first} ${second}`,
-    line: 1,
-    kind: "prose",
-  });
-  expect(
-    extractJavaScriptProse(["const text = `before ${", "`middle words`", "} after`;"].join("")),
-  ).toContainEqual({ text: "before middle words after", line: 1, kind: "prose" });
-});
-
-test("skips exact required license text and embedded PowerShell commands", () => {
-  const source = [
-    `const expectedLicense = ${JSON.stringify(expectedLicense)};`,
-    `const windowsProcessTreeFallbackScript = ${JSON.stringify(windowsProcessTreeFallbackScript)};`,
-  ].join("\n");
-  expect(extractJavaScriptProse(source)).toEqual([]);
-});
-
-test("skips the exact approved PowerShell text when JavaScript concatenates it", () => {
-  const split = Math.floor(windowsProcessTreeFallbackScript.length / 2);
-  const source = `const windowsProcessTreeFallbackScript = ${JSON.stringify(
-    windowsProcessTreeFallbackScript.slice(0, split),
-  )} + ${JSON.stringify(windowsProcessTreeFallbackScript.slice(split))};`;
-  expect(extractJavaScriptProse(source)).toEqual([]);
-});
-
-test("checks changed text in variables that use approved names", () => {
-  const source = [
-    'const expectedLicense = "A different license description.";',
-    'const windowsProcessTreeFallbackScript = "A changed PowerShell command description.";',
-  ].join("\n");
-  expect(extractJavaScriptProse(source)).toEqual([
-    { text: "A different license description.", line: 1, kind: "prose" },
-    { text: "A changed PowerShell command description.", line: 2, kind: "prose" },
-  ]);
-});
-
-test("checks prose after a matching variable without an initializer", () => {
-  expect(
-    extractJavaScriptProse('let expectedLicense; const note = "The value is missing.";'),
-  ).toContainEqual({
-    text: "The value is missing.",
-    line: 1,
-    kind: "prose",
-  });
-});
-
-test("checks dynamic or non-concatenated values with approved variable names", () => {
-  const source = [
-    '{ let expectedLicense = "The first changed phrase" + value; }',
-    '{ let expectedLicense = value + "The second changed phrase"; }',
-    '{ let expectedLicense = "The third changed phrase" - "Another phrase"; }',
-  ].join("\n");
-  const texts = extractJavaScriptProse(source).map(({ text }) => text);
-  expect(texts).toContain("The first changed phrase");
-  expect(texts).toContain("The second changed phrase");
-  expect(texts).toContain("The third changed phrase");
-  expect(texts).toContain("Another phrase");
-});
-
-test("checks unrelated prose that contains the PowerShell command name", () => {
-  expect(
-    extractJavaScriptProse('const note = "Get-CimInstance checks each process record.";'),
-  ).toContainEqual({
-    text: "Get-CimInstance checks each process record.",
-    line: 1,
-    kind: "prose",
-  });
-});
-
-test("skips SQL statements and SVG transform attribute values", () => {
-  const source = [
-    'const query = "SELECT alignment, base, facility, fix, join, portion, real, transition, trim FROM nasr";',
-    'const icon = <svg><g transform="rotate(90) rotate(180)" /></svg>;',
-  ].join("\n");
-  expect(extractJavaScriptProse(source)).toEqual([]);
-});
-
-test("skips machine-readable User-Agent values", () => {
-  const source = [
-    'const userAgent = "EliwareRadar/13.0.0 (+https://radar.example; contact: team@example.org)";',
-    'const headers = { "user-agent": "Client/1.0 (+https://example.org; contact: team@example.org)" };',
-    'const note = "Contact the team for help.";',
-  ].join("\n");
-  expect(extractJavaScriptProse(source)).toEqual([
-    { text: "Contact the team for help.", line: 3, kind: "prose" },
-  ]);
-});
-
-test("skips dynamic SVG transform calls and retains prose", () => {
-  const source = [
-    'rose.setAttribute("transform", `rotate(${angle})`);',
-    'const label = "Rotate the compass carefully.";',
-  ].join("\n");
-  expect(extractJavaScriptProse(source)).toEqual([
-    { text: "Rotate the compass carefully.", line: 2, kind: "prose" },
-  ]);
-});
-
-test("keeps ordinary prose with a SQL keyword and an SVG transform term", () => {
-  expect(
-    extractJavaScriptProse('const note = "Select a real portion of the base.";'),
-  ).toContainEqual({
-    text: "Select a real portion of the base.",
-    line: 1,
-    kind: "prose",
-  });
-});
-
-test("skips SQL, header values, and embedded source while checking nearby prose", () => {
-  const source = [
-    'await connection.query("SELECT GET_LOCK(?, 1) AS acquired");',
-    "await db.execute(`INSERT IGNORE INTO message_attachments (disposition, part_order) VALUES (?, ?)`);",
-    'reply.header("content-disposition", `attachment; filename=${name}`);',
-    "reply.header(\"content-security-policy\", \"default-src 'none'; base-uri 'none'\");",
-    'const serviceWorkerSource = `const CACHE = "mail-shell-v1";\\nself.addEventListener("fetch", handler);`;',
-    'const note = "Get the attachment now; use the correct value.";',
-  ].join("\n");
-  const blocks = extractJavaScriptProse(source);
-  expect(blocks).toEqual([
-    { text: "Get the attachment now; use the correct value.", line: 6, kind: "prose" },
-  ]);
-  expect(
-    findLanguageViolations("source.mjs", blocks, { attachment: "ATTACH (v)" }, new Set()),
-  ).toEqual([
-    "source.mjs:6 sentence 1 uses a semicolon.",
-    'source.mjs:6 uses "attachment". Suggested alternatives: ATTACH (v).',
-  ]);
 });

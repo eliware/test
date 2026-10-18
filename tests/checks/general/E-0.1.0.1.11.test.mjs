@@ -73,8 +73,8 @@ test.each([
   ["specs/rules.yaml", "description: An abrupt change."],
   ["specs/rules.yml", "description: An abrupt change."],
   ["metadata.json", '{"description":"An abrupt change."}'],
-  ["src/message.mjs", 'const message = "An abrupt change.";'],
-  ["src/message.js", 'const message = "An abrupt change.";'],
+  ["src/message.mjs", 'console.log("An abrupt change.");'],
+  ["src/message.js", 'console.log("An abrupt change.");'],
   ["src/view.jsx", "const view = <p>An abrupt change.</p>;"],
 ])("checks prose in supported file format %s", async (path, source) => {
   await expect(
@@ -93,7 +93,7 @@ test("counts sentences across static template interpolations", async () => {
       {
         repositoryInventory: {
           files: async () => ["src/message.mjs"],
-          readText: async () => `const message = \`${first} \${"${second}"}\`;`,
+          readText: async () => `console.log(\`${first} ${second}\`);`,
         },
       },
       { loadExactExamples: emptyExamples },

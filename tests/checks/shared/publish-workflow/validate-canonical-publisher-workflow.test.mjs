@@ -20,7 +20,7 @@ test.each(["workflow\r\n", "workflow", "Workflow\n"])(
     await expect(
       validateCanonicalPublisherWorkflow(inventory({ text }), "npm-published", () => "workflow\n"),
     ).resolves.toEqual([
-      ".github/workflows/npm.yaml must match specs/workflows/npm.yaml byte for byte.",
+      ".github/workflows/npm.yaml must match the bundled Eliware Test file specs/workflows/npm.yaml byte for byte.",
     ]);
   },
 );

@@ -12,7 +12,7 @@ test.each([
   ["a missing final newline", ghcrWorkflow.trimEnd()],
 ])("rejects a GHCR workflow with %s", async (_name, workflow) => {
   await expect(validateGhcrPublishWorkflow(createGhcrInventory({ workflow }))).resolves.toEqual([
-    ".github/workflows/ghcr.yaml must match specs/workflows/ghcr.yaml byte for byte.",
+    ".github/workflows/ghcr.yaml must match the bundled Eliware Test file specs/workflows/ghcr.yaml byte for byte.",
   ]);
 });
 
@@ -28,6 +28,9 @@ test("requires the root Dockerfile and canonical workflow name", async () => {
 });
 
 test("reports inventory errors", async () => {
+  await expect(validateGhcrPublishWorkflow({})).resolves.toEqual([
+    "Repository files could not be inspected.",
+  ]);
   await expect(
     validateGhcrPublishWorkflow({
       files: async () => {
