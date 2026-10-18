@@ -1,7 +1,8 @@
-import { collectLauncherAliases, isLauncher } from "../collect-launcher-aliases.mjs";
+import { collectLauncherAliases } from "../collect-launcher-aliases.mjs";
+import { isLauncher } from "../is/launcher.mjs";
 import { readStaticString } from "../read-static-string.mjs";
 import { visitAst } from "../visit-ast.mjs";
-import { isModuleLoadCall } from "../is-module-load-call.mjs";
+import { isModuleLoadCall } from "../is/module-load-call.mjs";
 import { isTestToolCommand, isTestToolSpecifier } from "../test-tool-patterns.mjs";
 import { collectCommandStrings } from "./collect/command-strings.mjs";
 import { collectStaticStrings } from "./collect/static-strings.mjs";

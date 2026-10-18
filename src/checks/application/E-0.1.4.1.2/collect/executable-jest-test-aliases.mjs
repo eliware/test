@@ -1,4 +1,4 @@
-import { collectJestTestAliases } from "./jest-test-aliases.mjs";
+import { collectJestTestAliases } from "./jest/aliases.mjs";
 
 export function collectExecutableJestTestAliases(program, names, blockedDescribes) {
   let changed = true;

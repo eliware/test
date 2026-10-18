@@ -1,5 +1,5 @@
-import { isActiveJestTestExpression } from "../is/active-jest-test-expression.mjs";
-import { isJestGlobalsImport, isTestNamespace } from "../jest-globals-import.mjs";
+import { isActiveJestTestExpression } from "../../is/active-jest-test-expression.mjs";
+import { isJestGlobalsImport, isTestNamespace } from "../../jest-globals-import.mjs";
 
 export function collectJestTestAliases(node, names) {
   if (node.type !== "VariableDeclarator") return false;

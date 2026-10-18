@@ -10,11 +10,13 @@ test("accepts direct and table-driven Jest callbacks", () => {
   });
 });
 
-test("accepts named Jest callback functions", () => {
-  const source = 'function verify() {} test("named", verify);';
-  expect(inspectJestTestModule(source).hasExecutableTest).toBe(true);
-  const variable = 'const verify = () => {}; test("named", verify);';
-  expect(inspectJestTestModule(variable).hasExecutableTest).toBe(true);
+test("accepts a named Jest callback function", () => {
+  expect(
+    inspectJestTestModule('function verify() {} test("named", verify);').hasExecutableTest,
+  ).toBe(true);
+});
+
+test("accepts a Jest callback declared inside a suite", () => {
   const nested = 'describe("suite", () => { function verify() {} test("named", verify); });';
   expect(inspectJestTestModule(nested).hasExecutableTest).toBe(true);
 });

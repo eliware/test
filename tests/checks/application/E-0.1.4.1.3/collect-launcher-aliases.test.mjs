@@ -1,8 +1,5 @@
 import { expect, test } from "@jest/globals";
-import {
-  collectLauncherAliases,
-  isLauncher,
-} from "../../../../src/checks/application/E-0.1.4.1.3/collect-launcher-aliases.mjs";
+import { collectLauncherAliases } from "../../../../src/checks/application/E-0.1.4.1.3/collect-launcher-aliases.mjs";
 
 test("collects imported and chained child-process launcher aliases", () => {
   const ast = {
@@ -25,16 +22,10 @@ test("collects imported and chained child-process launcher aliases", () => {
   const aliases = collectLauncherAliases(ast);
   expect(aliases.has("launch")).toBe(true);
   expect(aliases.has("run")).toBe(true);
-  expect(isLauncher({ type: "Identifier", name: "run" }, aliases)).toBe(true);
 });
 
-test("recognizes launcher member aliases and rejects other callees", () => {
-  const aliases = collectLauncherAliases({ type: "Program", body: [null] });
-  expect(isLauncher({ type: "MemberExpression", property: { name: "spawnSync" } }, aliases)).toBe(
-    true,
+test("returns built-in aliases when the syntax tree is missing", () => {
+  expect(collectLauncherAliases(null)).toEqual(
+    new Set(["spawn", "spawnSync", "exec", "execSync", "execFile", "execFileSync", "fork"]),
   );
-  expect(isLauncher({ type: "Identifier", name: "custom" }, aliases)).toBe(false);
-  expect(
-    isLauncher({ type: "MemberExpression", computed: true, property: { value: "fork" } }, aliases),
-  ).toBe(true);
 });
