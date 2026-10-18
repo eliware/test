@@ -58,8 +58,3 @@ test("reports unresolved paths and root inspection failures", async () => {
     validator({ realpath: async () => Promise.reject(new Error("blocked")) })("docs/a.md", "b.md"),
   ).resolves.toContain("link does not resolve");
 });
-
-test("uses the default filesystem operations", async () => {
-  const validate = createLocalMarkdownReferenceValidator(process.cwd());
-  await expect(validate("README.md", "README.md")).resolves.toBeNull();
-});

@@ -4,24 +4,20 @@ import { validateEntrypointTargets } from "../../../../../../src/checks/applicat
 
 const file = { isFile: () => true, isDirectory: () => false, isSymbolicLink: () => false };
 const directory = { isFile: () => false, isDirectory: () => true, isSymbolicLink: () => false };
-const checkPath = async (path) => (path.endsWith(join("bin")) ? directory : file);
 
-test("accepts canonical entrypoint files and a leading dot segment", async () => {
-  await expect(validateEntrypointTargets(["./bin/tool.mjs"], "repo", checkPath)).resolves.toEqual(
-    [],
-  );
-});
-
-test("accepts Windows separators after canonical path normalization", async () => {
-  const checked = [];
-  await expect(
-    validateEntrypointTargets(["bin\\tool.mjs"], "repo", async (path) => {
-      checked.push(path);
-      return path.endsWith(join("bin", "tool.mjs")) ? file : directory;
-    }),
-  ).resolves.toEqual([]);
-  expect(checked.at(-1)).toBe(join(resolve("repo"), "bin", "tool.mjs"));
-});
+test.each(["./bin/tool.mjs", "bin\\tool.mjs"])(
+  "accepts canonical target forms after path normalization: %s",
+  async (target) => {
+    const checked = [];
+    await expect(
+      validateEntrypointTargets([target], "repo", async (path) => {
+        checked.push(path);
+        return path.endsWith(join("bin", "tool.mjs")) ? file : directory;
+      }),
+    ).resolves.toEqual([]);
+    expect(checked.at(-1)).toBe(join(resolve("repo"), "bin", "tool.mjs"));
+  },
+);
 
 test.each([null, "", " ", "/repo/bin/tool.mjs", "C:/repo/bin/tool.mjs"])(
   "rejects invalid or absolute targets: %s",

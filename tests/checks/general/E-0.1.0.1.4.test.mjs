@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.4.mjs";
+import { createLocalMarkdownReferenceValidator } from "../../../src/checks/general/E-0.1.0.1.4/create-local-markdown-reference-validator.mjs";
 
 test("validates this repository's README and specifications", async () => {
   await expect(
@@ -21,4 +22,9 @@ test("uses the current directory when context is undefined", async () => {
     status: "fail",
     message: expect.stringContaining("package.json.eliware.id"),
   });
+});
+
+test("uses default filesystem operations for a local README reference", async () => {
+  const validate = createLocalMarkdownReferenceValidator(process.cwd());
+  await expect(validate("README.md", "README.md")).resolves.toBeNull();
 });

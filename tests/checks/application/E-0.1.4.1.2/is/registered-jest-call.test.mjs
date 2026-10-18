@@ -1,6 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
 import {
+  isSkippedJestSuiteCall,
   isRegisteredJestSuiteCall,
   isRegisteredJestTestCall,
 } from "../../../../../src/checks/application/E-0.1.4.1.2/is/registered-jest-call.mjs";
@@ -80,5 +81,19 @@ test("accepts active suites with function callbacks", () => {
       new Set(),
       new Set(),
     ),
+  ).toBe(true);
+});
+
+test("accepts computed suite modifiers", () => {
+  expect(
+    isRegisteredJestSuiteCall(
+      call('describe["only"]("suite", () => {});'),
+      new Set(["describe"]),
+      new Set(),
+      new Set(),
+    ),
+  ).toBe(true);
+  expect(
+    isSkippedJestSuiteCall(call('describe["skip"]("suite", () => {});'), new Set(["describe"])),
   ).toBe(true);
 });
