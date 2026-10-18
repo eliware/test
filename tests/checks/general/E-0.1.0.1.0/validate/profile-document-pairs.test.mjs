@@ -45,8 +45,18 @@ test("reports paired version mismatches", async () => {
   ]);
 });
 
-test("ignores unmatched profiles and unrelated files", async () => {
-  readdir.mockResolvedValue(["general-semantic.yaml", "README.md"]);
+test.each(["database-semantic.yaml", "general-deterministic.yaml"])(
+  "allows a profile with one convention stream: %s",
+  async (name) => {
+    readdir.mockResolvedValue([name, "README.md"]);
+    readFile.mockResolvedValue(`version: '${version}'\n`);
+
+    await expect(validateProfileDocumentPairs({ directory: "C:/profiles" })).resolves.toEqual([]);
+  },
+);
+
+test("ignores unrelated files when all profile documents are paired", async () => {
+  readdir.mockResolvedValue(["general-semantic.yaml", "general-deterministic.yaml", "README.md"]);
   readFile.mockResolvedValue(`version: '${version}'\n`);
 
   await expect(validateProfileDocumentPairs({ directory: "C:/profiles" })).resolves.toEqual([]);
