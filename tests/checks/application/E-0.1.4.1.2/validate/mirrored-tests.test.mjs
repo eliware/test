@@ -13,3 +13,9 @@ test("reports missing, unmatched, and support test files", () => {
   expect(errors.join("\n")).toContain("tests/support.mjs is not a mirrored");
   expect(errors.join("\n")).toContain("tests/b.test.mjs has no matching source");
 });
+
+test("reports a required mirrored test for an implementation source", () => {
+  expect(validateMirroredTests(["src/app.mjs"])).toEqual([
+    "tests/app.test.mjs is required for its source.",
+  ]);
+});

@@ -11,12 +11,11 @@ test("E-0.1.4.1.2 passes an empty consistent inventory", async () => {
   });
 });
 
-test("E-0.1.4.1.2 reports missing mirrored tests", async () => {
+test("E-0.1.4.1.2 reports a layout validation failure", async () => {
   const result = await run({
     repositoryInventory: { files: async () => ["src/app.mjs"], readText: async () => "" },
   });
   expect(result).toMatchObject({ ruleId, status: "fail" });
-  expect(result.message).toContain("tests/app.test.mjs is required");
 });
 
 test("E-0.1.4.1.2 uses its default context", async () => {
