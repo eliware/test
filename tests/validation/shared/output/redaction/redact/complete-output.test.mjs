@@ -46,3 +46,15 @@ test("suppresses diagnostics when policy, search budget, or matcher rejects them
     }),
   ).toBe("");
 });
+
+test("suppresses complete diagnostics when matcher construction exceeds its budget", () => {
+  const values = ["sensitive-token"];
+  const output = redactCompleteOutput("command failed: sensitive-token", {
+    suppressed: false,
+    values,
+    workLimit: 1,
+    findSecretEnds: createSecretTextMatcher(values, { maxScanWork: 1 }),
+    trimSuffix: (text) => text,
+  });
+  expect(output).toBe("");
+});

@@ -12,6 +12,17 @@ test("rejects unmocked file system and process modules", () => {
   ]);
 });
 
+test("rejects child-process imports with and without the node prefix", () => {
+  const ast = parse(
+    'import { spawn } from "child_process"; import { execFile } from "node:child_process";',
+    { sourceType: "module" },
+  );
+  expect(findEffectModuleViolations(ast)).toEqual([
+    "must mock effect module child_process or inject its dependency.",
+    "must mock effect module node:child_process or inject its dependency.",
+  ]);
+});
+
 test("accepts explicit Jest mocks for imported effect modules", () => {
   const ast = parse(
     'jest["unstable_mockModule"]("node:fs", () => ({})); const fs = await import("node:fs");',
