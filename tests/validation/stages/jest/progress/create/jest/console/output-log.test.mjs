@@ -64,6 +64,19 @@ test("reports credential fields, HTTP credentials, and known token formats", () 
   });
 });
 
+test("reports generic Base64 credentials", () => {
+  const { files, log } = makeLog();
+  log.start();
+  log.append("stdout", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef");
+
+  expect(log.finish()).toEqual({
+    redacted: true,
+    redactionKinds: ["generic Base64 credential"],
+    writeError: false,
+  });
+  expect(JSON.parse(files.get("coverage/jest-console-output.json")).stdout).toBe("[REDACTED]");
+});
+
 test("handles an absent log path and ignores invalid streams", () => {
   const replace = jest.fn();
   const append = jest.fn();

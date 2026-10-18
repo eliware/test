@@ -1,11 +1,8 @@
 import { collectRedactionSecrets } from "../../../output/redaction/collect-redaction-secrets.mjs";
 import { createRedactedTextStream } from "../../../output/redaction/create/redacted/text/stream.mjs";
-import {
-  createOutputByteBudget,
-  truncateOutputTextToBytes,
-} from "../../../output/redaction/create/output-byte-budget.mjs";
+import { createOutputByteBudget } from "../../../output/redaction/create/output-byte-budget.mjs";
 import { createSecretTextMatcher } from "../../../output/redaction/create/secret-text-matcher.mjs";
-import { truncateRedactedOutput } from "../../../output/redaction/truncate-redacted-output.mjs";
+import { redactChildProcessDiagnostic } from "./redact-diagnostic.mjs";
 
 export function createChildProcessOutputCapture(
   options,
@@ -39,9 +36,7 @@ export function createChildProcessOutputCapture(
 
   return {
     redactDiagnostic(text) {
-      const redacted = getRedactors().stdout.redactComplete(String(text));
-      const bounded = truncateOutputTextToBytes(redacted, outputLimit);
-      return truncateRedactedOutput(redacted, bounded.text.length);
+      return redactChildProcessDiagnostic(text, getRedactors().stdout, outputLimit);
     },
     push(stream, chunk) {
       if ((stream !== "stdout" && stream !== "stderr") || budget.isFull()) return;
