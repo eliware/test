@@ -13,3 +13,10 @@ test("matches wildcard targets across nested paths", () => {
   expect(packedTargetMatches("src/features/*.mjs", new Set(["src/features/.mjs"]))).toBe(false);
   expect(packedTargetMatches("src/features/*.mjs", new Set())).toBe(false);
 });
+
+test("matches every wildcard in a packed target", () => {
+  expect(packedTargetMatches("src/*/worker-*.mjs", new Set(["src/jobs/worker-main.mjs"]))).toBe(
+    true,
+  );
+  expect(packedTargetMatches("src/*/worker-*.mjs", new Set(["src/jobs/worker.mjs"]))).toBe(false);
+});

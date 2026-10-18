@@ -1,9 +1,9 @@
 import { EventEmitter } from "node:events";
-import * as childProcessModule from "node:child_process";
 import { expect, jest, test } from "@jest/globals";
 import { resolveChildOutputLimit } from "../../../../../src/validation/shared/process/resolve-child-output-limit.mjs";
 const spawn = jest.fn();
-jest.unstable_mockModule("node:child_process", () => ({ ...childProcessModule, spawn }));
+const execFileSync = jest.fn();
+jest.unstable_mockModule("node:child_process", () => ({ spawn, execFileSync }));
 const { runChild } = await import("../../../../../src/validation/shared/process/run/child.mjs");
 
 function fakeSpawn(output = {}) {

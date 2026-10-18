@@ -5,9 +5,8 @@ import { packageJson } from "../../../../../test-fixtures/helpers/smoke-package.
 const lstat = jest.fn();
 const realpath = jest.fn();
 const readFile = jest.fn();
-const fileSystem = await import("node:fs/promises");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, realpath, readFile }));
+jest.unstable_mockModule("node:fs/promises", () => ({ lstat, realpath, readFile }));
 
 const { prepareSmokeTargetContext } =
   await import("../../../../../src/validation/stages/smoke/prepare-smoke/target-context.mjs");

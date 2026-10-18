@@ -77,6 +77,12 @@ test("recognizes values for common Jest options", () => {
   });
 });
 
+test("does not treat values for Jest options as forwarded test paths", () => {
+  expect(() =>
+    readDiagnosticOptions(["--", "--coveragePathIgnorePatterns", "tests/example.test.mjs"]),
+  ).not.toThrow();
+});
+
 test("rejects non-string arguments", () => {
   expect(() => readDiagnosticOptions([null])).toThrow("Unsupported validation argument");
 });

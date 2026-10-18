@@ -1,8 +1,7 @@
 import { EventEmitter } from "node:events";
-import * as childProcessModule from "node:child_process";
 import { expect, jest, test } from "@jest/globals";
 const spawn = jest.fn();
-jest.unstable_mockModule("node:child_process", () => ({ ...childProcessModule, spawn }));
+jest.unstable_mockModule("node:child_process", () => ({ spawn }));
 const { execute } =
   await import("../../../../src/validation/shared/process/execute-child-process.mjs");
 function childProcess() {

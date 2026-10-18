@@ -4,34 +4,30 @@ import { findFileHandleWriteViolations } from "../../../../src/validation/harnes
 
 test("finds write calls on injected file handles", () => {
   const ast = parse("async function save(fileHandle) { await fileHandle.writeFile('x'); }");
-  expect(findFileHandleWriteViolations(ast, "tests/example.test.mjs", new Set())).toEqual([
+  expect(findFileHandleWriteViolations(ast, "tests/example.test.mjs")).toEqual([
     "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: use of writeFile.",
   ]);
 });
 
-test("allows mocked file handles and mocked file system modules", () => {
+test("allows mocked file handles but not unverified injected handles", () => {
   const ast = parse(
     'const fileHandle = { write: jest.fn() }; fileHandle.write("x"); const handle = createHandle(); async function save(handle) { handle.writeFile("x"); stream.write("x"); }',
   );
-  expect(
-    findFileHandleWriteViolations(ast, "tests/example.test.mjs", new Set(["node:fs"])),
-  ).toEqual([]);
+  expect(findFileHandleWriteViolations(ast, "tests/example.test.mjs")).toEqual([
+    "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: use of writeFile.",
+  ]);
   const spy = parse('function save(handle) { jest.spyOn(handle, "write"); handle.write("x"); }');
-  expect(findFileHandleWriteViolations(spy, "tests/example.test.mjs", new Set())).toEqual([]);
+  expect(findFileHandleWriteViolations(spy, "tests/example.test.mjs")).toEqual([]);
   const ignoredSpy = parse(
     'function save(handle) { jest.spyOn(handle, "read"); handle.write("x"); }',
   );
-  expect(findFileHandleWriteViolations(ignoredSpy, "tests/example.test.mjs", new Set())).toEqual([
+  expect(findFileHandleWriteViolations(ignoredSpy, "tests/example.test.mjs")).toEqual([
     "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: use of write.",
   ]);
   const readMock = parse('const fileHandle = { read: jest.fn() }; fileHandle.write("x");');
-  expect(findFileHandleWriteViolations(readMock, "tests/example.test.mjs", new Set())).toHaveLength(
-    1,
-  );
+  expect(findFileHandleWriteViolations(readMock, "tests/example.test.mjs")).toHaveLength(1);
   const computedMock = parse('const fileHandle = { ["write"]: jest.fn() }; fileHandle.write("x");');
-  expect(findFileHandleWriteViolations(computedMock, "tests/example.test.mjs", new Set())).toEqual(
-    [],
-  );
+  expect(findFileHandleWriteViolations(computedMock, "tests/example.test.mjs")).toEqual([]);
   const pattern = parse("function save({ handle }) { return handle; }");
-  expect(findFileHandleWriteViolations(pattern, "tests/example.test.mjs", new Set())).toEqual([]);
+  expect(findFileHandleWriteViolations(pattern, "tests/example.test.mjs")).toEqual([]);
 });

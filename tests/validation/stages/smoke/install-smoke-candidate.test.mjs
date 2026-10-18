@@ -6,11 +6,10 @@ import { packageJson } from "../../../../test-fixtures/helpers/smoke-package.mjs
 const lstat = jest.fn();
 const readFile = jest.fn();
 const rm = jest.fn();
-const fileSystem = await import("node:fs/promises");
 const createRequire = jest.fn(() => ({ resolve: (specifier) => specifier }));
 const moduleApi = await import("node:module");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, readFile, rm }));
+jest.unstable_mockModule("node:fs/promises", () => ({ lstat, readFile, rm }));
 jest.unstable_mockModule("node:module", () => ({ ...moduleApi, createRequire }));
 
 const { installSmokeCandidate } =

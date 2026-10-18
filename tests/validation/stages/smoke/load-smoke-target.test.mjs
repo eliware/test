@@ -3,9 +3,8 @@ import { join } from "node:path";
 import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
 
 const readFile = jest.fn();
-const fileSystem = await import("node:fs/promises");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, readFile }));
+jest.unstable_mockModule("node:fs/promises", () => ({ readFile }));
 
 const { hasPackageDependency, loadSmokeTarget } =
   await import("../../../../src/validation/stages/smoke/load-smoke-target.mjs");

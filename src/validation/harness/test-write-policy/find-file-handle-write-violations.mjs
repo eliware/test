@@ -2,11 +2,9 @@ import { visitAst } from "../visit-ast.mjs";
 
 const writeMethods = new Set(["write", "writeFile", "writev"]);
 
-export function findFileHandleWriteViolations(ast, filePath, mockedModules) {
+export function findFileHandleWriteViolations(ast, filePath) {
   const handles = collectFileHandles(ast);
   const mocked = collectMockedHandles(ast);
-  if ([...mockedModules].some((name) => /^(?:node:)?fs(?:\/promises)?$/u.test(name)))
-    for (const handle of handles) mocked.add(handle);
   const violations = [];
   visitAst(ast, (node) => {
     if (!isMemberCall(node) || !writeMethods.has(memberName(node.callee))) return;

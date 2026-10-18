@@ -2,9 +2,8 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 const lstat = jest.fn();
 const rm = jest.fn();
-const fileSystem = await import("node:fs/promises");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, rm }));
+jest.unstable_mockModule("node:fs/promises", () => ({ lstat, rm }));
 
 const { prepareSmokeTarget } =
   await import("../../../../../src/validation/stages/smoke/prepare-smoke/target.mjs");

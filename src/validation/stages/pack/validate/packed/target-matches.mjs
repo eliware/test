@@ -1,10 +1,9 @@
 export function packedTargetMatches(target, packedPaths) {
-  const wildcard = target.indexOf("*");
-  if (wildcard < 0) return packedPaths.has(target);
-  const before = target.slice(0, wildcard);
-  const after = target.slice(wildcard + 1);
-  return [...packedPaths].some(
-    (path) =>
-      path.length > before.length + after.length && path.startsWith(before) && path.endsWith(after),
-  );
+  if (!target.includes("*")) return packedPaths.has(target);
+  const pattern = new RegExp(`^${target.split("*").map(escapeRegExp).join(".+")}$`, "u");
+  return [...packedPaths].some((path) => pattern.test(path));
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }

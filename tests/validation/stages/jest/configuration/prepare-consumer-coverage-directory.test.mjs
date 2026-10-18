@@ -5,9 +5,8 @@ const lstat = jest.fn();
 const mkdir = jest.fn();
 const readdir = jest.fn();
 const rm = jest.fn();
-const fileSystem = await import("node:fs/promises");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, lstat, mkdir, readdir, rm }));
+jest.unstable_mockModule("node:fs/promises", () => ({ lstat, mkdir, readdir, rm }));
 
 const { prepareConsumerCoverageDirectory } =
   await import("../../../../../src/validation/stages/jest/configuration/prepare-consumer-coverage-directory.mjs");

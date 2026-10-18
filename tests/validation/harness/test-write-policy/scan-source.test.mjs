@@ -93,7 +93,9 @@ test("finds writes through injected file handles and allows explicit mocks", () 
       'jest.mock("node:fs/promises"); async function save(handle) { await handle.writeFile("data"); }',
       "tests/example.test.mjs",
     ),
-  ).toEqual([]);
+  ).toEqual([
+    "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: use of writeFile.",
+  ]);
   expect(
     findTestWritePolicyViolations(
       'jest.mock("node:fs"); import { writeFile } from "node:fs";',
@@ -106,4 +108,19 @@ test("finds writes through injected file handles and allows explicit mocks", () 
       "tests/example.test.mjs",
     ),
   ).toEqual([]);
+});
+
+test("does not accept a late or actual-module mock as proof that writes are isolated", () => {
+  expect(
+    findTestWritePolicyViolations(
+      'const fs = await import("node:fs"); jest.doMock("node:fs"); fs.writeFile("data");',
+      "tests/example.test.mjs",
+    ),
+  ).toHaveLength(1);
+  expect(
+    findTestWritePolicyViolations(
+      'jest.mock("node:fs", () => jest.requireActual("node:fs")); import { writeFile } from "node:fs";',
+      "tests/example.test.mjs",
+    ),
+  ).toHaveLength(1);
 });

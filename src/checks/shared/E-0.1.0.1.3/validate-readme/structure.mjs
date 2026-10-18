@@ -1,5 +1,6 @@
 import { removeMarkdownCode } from "../../../general/E-0.1.0.1.4/extract-markdown/remove-markdown-code.mjs";
 import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+import { readTocLinks } from "./toc-links.mjs";
 
 const brand =
   "# [![eliware.org](https://eliware.org/logos/brand.png)](https://discord.gg/M6aTR9eTwN)";
@@ -42,12 +43,11 @@ export function validateReadmeStructure(readme, expected, packageJson = {}) {
     return "README.md must include every required section once and no unlisted sections.";
   const tocEnd = markdownLines.findIndex((line, index) => index > tocIndex && /^##\s+/u.test(line));
   const tocContent = markdownLines.slice(tocIndex, tocEnd).join("\n");
-  const links = [...tocContent.matchAll(/(?<!!)\[([^\]]+)\]\(#([^)]+)\)/gu)];
   const expectedLinks = expectedSections.map((heading) => [
     heading,
     heading.toLowerCase().replaceAll(" ", "-"),
   ]);
-  const actualLinks = links.map((match) => [match[1], match[2]]);
+  const actualLinks = readTocLinks(tocContent);
   return JSON.stringify(actualLinks) === JSON.stringify(expectedLinks)
     ? null
     : "README.md Table of Contents must link each content heading once in order.";

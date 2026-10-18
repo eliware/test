@@ -14,10 +14,37 @@ test("rejects unmocked file system and process modules", () => {
 
 test("accepts explicit Jest mocks for imported effect modules", () => {
   const ast = parse(
-    'jest["unstable_mockModule"]("node:fs", () => ({})); import { readFile } from "node:fs";',
+    'jest["unstable_mockModule"]("node:fs", () => ({})); const fs = await import("node:fs");',
     { sourceType: "module" },
   );
   expect(findEffectModuleViolations(ast)).toEqual([]);
+});
+
+test("requires an effective mock before a dynamic import", () => {
+  const lateMock = parse(
+    'const fs = await import("node:fs"); jest.unstable_mockModule("node:fs", () => ({}));',
+    { sourceType: "module" },
+  );
+  expect(findEffectModuleViolations(lateMock)).toEqual([
+    "must mock effect module node:fs or inject its dependency.",
+  ]);
+  const staticImport = parse(
+    'jest.unstable_mockModule("node:fs", () => ({})); import { readFile } from "node:fs";',
+    { sourceType: "module" },
+  );
+  expect(findEffectModuleViolations(staticImport)).toEqual([
+    "must mock effect module node:fs or inject its dependency.",
+  ]);
+});
+
+test("rejects a mock factory that imports the real effect module", () => {
+  const ast = parse(
+    'jest.mock("node:fs", () => jest.requireActual("node:fs")); const fs = await import("node:fs");',
+    { sourceType: "module" },
+  );
+  expect(findEffectModuleViolations(ast)).toEqual([
+    "must mock effect module node:fs or inject its dependency.",
+  ]);
 });
 
 test("ignores non-effect modules and unknown dynamic module names", () => {

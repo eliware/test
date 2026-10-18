@@ -48,6 +48,20 @@ test("reports a safe fallback when a diagnostic cannot be converted to text", ()
   expect(output).toEqual(["[test] [unprintable diagnostic]\n"]);
 });
 
+test("limits output by UTF-8 byte length", () => {
+  const output = [];
+  const report = createSafeReporterOutput("x", {
+    write: (text) => output.push(text),
+    maxOutputLength: Buffer.byteLength("[x] é\n", "utf8"),
+  });
+  report("é");
+  report("a");
+  expect(output).toEqual(["[x] é\n"]);
+  expect(Buffer.byteLength(output.join(""), "utf8")).toBeLessThanOrEqual(
+    Buffer.byteLength("[x] é\n", "utf8"),
+  );
+});
+
 test("uses stderr when no reporter writer is injected", () => {
   const previous = process.stderr.write;
   const output = [];

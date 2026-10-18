@@ -1,4 +1,3 @@
-import * as childProcessModule from "node:child_process";
 import { expect, jest, test } from "@jest/globals";
 import { requiredIgnoreCases } from "../../../../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns.mjs";
 
@@ -8,7 +7,7 @@ const runMockGit = jest.fn(async (_command, args) => {
   return { stdout: Buffer.from("") };
 });
 execFile[Symbol.for("nodejs.util.promisify.custom")] = runMockGit;
-jest.unstable_mockModule("node:child_process", () => ({ ...childProcessModule, execFile }));
+jest.unstable_mockModule("node:child_process", () => ({ execFile }));
 const { validateGitHygiene } =
   await import("../../../../../../src/checks/general/E-0.1.0.1.8/validate/git/hygiene.mjs");
 

@@ -26,11 +26,12 @@ export function createSafeReporterOutput(prefix, options = {}) {
       .replace(/[\r\n]+/gu, " ")
       .slice(0, maxLineLength);
     const line = `[${prefix}] ${safeMessage}\n`;
-    if (line.length > remaining) {
+    const lineBytes = Buffer.byteLength(line, "utf8");
+    if (lineBytes > remaining) {
       outputLength = maxOutputLength;
       return;
     }
     write(line);
-    outputLength += line.length;
+    outputLength += lineBytes;
   };
 }

@@ -2,9 +2,8 @@ import { expect, jest, test } from "@jest/globals";
 
 const readdir = jest.fn();
 const readFile = jest.fn();
-const fileSystem = await import("node:fs/promises");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, readdir, readFile }));
+jest.unstable_mockModule("node:fs/promises", () => ({ readdir, readFile }));
 
 const { scanCommonJsFiles } =
   await import("../../../../src/checks/general/E-0.1.0.1.1/scan-commonjs-files.mjs");

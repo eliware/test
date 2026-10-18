@@ -2,9 +2,9 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 
 const readdir = jest.fn();
-const fileSystem = await import("node:fs/promises");
+const readFile = jest.fn();
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, readdir }));
+jest.unstable_mockModule("node:fs/promises", () => ({ readdir, readFile }));
 
 const { discoverChecks, discoverAllChecks } =
   await import("../../../../src/validation/check-discovery/discover/checks.mjs");

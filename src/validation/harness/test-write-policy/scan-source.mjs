@@ -9,7 +9,7 @@ import {
 import { visitAst } from "../visit-ast.mjs";
 import { trackNamespaceAlias } from "./track-namespace-alias.mjs";
 import { findFileHandleWriteViolations } from "./find-file-handle-write-violations.mjs";
-import { collectMockedModules, getRestrictedModuleName } from "./collect-mocked-modules.mjs";
+import { getRestrictedModuleName, isModuleMockedForLoad } from "./collect-mocked-modules.mjs";
 
 export function findTestWritePolicyViolations(source, filePath) {
   const ast = parse(source, {
@@ -21,26 +21,25 @@ export function findTestWritePolicyViolations(source, filePath) {
 
 export function findTestWritePolicyViolationsInAst(ast, filePath) {
   const namespaceBindings = new Set();
-  const mockedModules = collectMockedModules(ast);
   const violations = [];
   visitAst(ast, (node) => {
     if (node.type === "ImportDeclaration") {
-      inspectImport(node, namespaceBindings, mockedModules, violations, filePath);
+      inspectImport(node, ast, namespaceBindings, violations, filePath);
       return;
     }
     if (node.type === "VariableDeclarator") {
       trackNamespaceAlias(node, namespaceBindings);
-      inspectDynamicBinding(node, namespaceBindings, mockedModules, violations, filePath);
+      inspectDynamicBinding(node, ast, namespaceBindings, violations, filePath);
     }
     if (node.type === "MemberExpression" || node.type === "OptionalMemberExpression")
       inspectMember(node, namespaceBindings, violations, filePath);
   });
-  return [...violations, ...findFileHandleWriteViolations(ast, filePath, mockedModules)];
+  return [...violations, ...findFileHandleWriteViolations(ast, filePath)];
 }
 
-function inspectImport(node, namespaceBindings, mockedModules, violations, filePath) {
+function inspectImport(node, ast, namespaceBindings, violations, filePath) {
   const moduleName = node.source.value;
-  if (mockedModules.has(moduleName)) return;
+  if (isModuleMockedForLoad(ast, moduleName, node)) return;
   for (const specifier of node.specifiers) {
     const importedName = specifier.imported?.name ?? specifier.imported?.value;
     if (
@@ -56,10 +55,10 @@ function inspectImport(node, namespaceBindings, mockedModules, violations, fileP
   }
 }
 
-function inspectDynamicBinding(node, namespaceBindings, mockedModules, violations, filePath) {
+function inspectDynamicBinding(node, ast, namespaceBindings, violations, filePath) {
   const init = node.init?.type === "AwaitExpression" ? node.init.argument : node.init;
   const moduleName = getRestrictedModuleName(init);
-  if (moduleName && mockedModules.has(moduleName)) return;
+  if (moduleName && isModuleMockedForLoad(ast, moduleName, init)) return;
   const dynamicImport = init?.type === "ImportExpression" && restrictedModules.has(moduleName);
   const dynamicRequire =
     init?.type === "CallExpression" &&

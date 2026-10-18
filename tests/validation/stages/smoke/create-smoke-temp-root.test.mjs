@@ -4,9 +4,8 @@ import { join } from "node:path";
 const mkdtemp = jest.fn();
 const lstat = jest.fn();
 const rmdir = jest.fn();
-const fileSystem = await import("node:fs/promises");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, mkdtemp, lstat, rmdir }));
+jest.unstable_mockModule("node:fs/promises", () => ({ mkdtemp, lstat, rmdir }));
 
 const { createSmokeTempRoot } =
   await import("../../../../src/validation/stages/smoke/create-smoke-temp-root.mjs");

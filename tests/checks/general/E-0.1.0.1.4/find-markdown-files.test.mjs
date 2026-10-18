@@ -2,9 +2,8 @@ import { beforeEach, expect, jest, test } from "@jest/globals";
 import { join } from "node:path";
 
 const readdir = jest.fn();
-const fileSystem = await import("node:fs/promises");
 
-jest.unstable_mockModule("node:fs/promises", () => ({ ...fileSystem, readdir }));
+jest.unstable_mockModule("node:fs/promises", () => ({ readdir }));
 
 const { findMarkdownFiles } =
   await import("../../../../src/checks/general/E-0.1.0.1.4/find-markdown-files.mjs");
