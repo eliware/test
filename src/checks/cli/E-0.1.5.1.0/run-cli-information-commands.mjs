@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { reportsPackageVersion } from "./reports-package-version.mjs";
 
 export async function runCliInformationCommands({
   root,
@@ -24,14 +25,6 @@ export async function runCliInformationCommands({
     }
   }
   return errors;
-}
-
-function reportsPackageVersion(output, packageVersion) {
-  if (typeof packageVersion !== "string" || !packageVersion.trim()) return false;
-  const versions = [
-    ...output.matchAll(/(?<![\w.])v?(\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?)(?![\w.+-])/gu),
-  ].map((match) => match[1]);
-  return versions.length > 0 && versions.every((version) => version === packageVersion);
 }
 
 async function executeCommand(executeEntrypoint, root, entrypoint, argument, errors) {

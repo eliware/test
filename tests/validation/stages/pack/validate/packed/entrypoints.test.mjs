@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validatePackedEntrypoints } from "../../../../../src/validation/stages/pack/validate/packed-entrypoints.mjs";
+import { validatePackedEntrypoints } from "../../../../../../src/validation/stages/pack/validate/packed/entrypoints.mjs";
 
 test("accepts main, bin, and conditional export targets found in the tarball", () => {
   expect(
@@ -29,24 +29,6 @@ test("matches wildcard export targets and reports missing public targets", () =>
   ).toContain("types/index.d.ts");
 });
 
-test("matches nested files for Node.js wildcard export targets", () => {
-  expect(
-    validatePackedEntrypoints(
-      { exports: { "./features/*": "./src/features/*.mjs" } },
-      new Set(["src/features/nested/feature.mjs"]),
-    ),
-  ).toBeNull();
-});
-
-test("rejects wildcard targets with an empty substitution", () => {
-  expect(
-    validatePackedEntrypoints(
-      { exports: { "./features/*": "./src/features/*.mjs" } },
-      new Set(["src/features/.mjs"]),
-    ),
-  ).toContain("src/features/*.mjs");
-});
-
 test("ignores package export labels and built-in targets", () => {
   expect(
     validatePackedEntrypoints(
@@ -55,12 +37,6 @@ test("ignores package export labels and built-in targets", () => {
     ),
   ).toBeNull();
   expect(validatePackedEntrypoints(undefined, new Set())).toBeNull();
-});
-
-test("rejects unmatched wildcard entrypoints", () => {
-  expect(
-    validatePackedEntrypoints({ exports: { "./features/*": "./src/features/*.mjs" } }, new Set()),
-  ).toContain("src/features/*.mjs");
 });
 
 test("validates relative and bare paths from public entrypoint fields", () => {

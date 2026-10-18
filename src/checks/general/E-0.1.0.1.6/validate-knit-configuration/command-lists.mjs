@@ -1,5 +1,4 @@
-import { isProhibitedNpmOrGhcrPublishCommand } from "../../../shared/is/prohibited-npm-or-ghcr-publish-command.mjs";
-import { validateNpmRunCommand } from "../../../shared/package-scripts/validate/npm-run-command.mjs";
+import { validateDeploymentCommand } from "./validate-deployment-command.mjs";
 
 const commandPrefix = ["git pull", "npm ci", "npm test"];
 
@@ -19,7 +18,7 @@ export function validateCommandList(commands, index = 0, packageJson = {}) {
     return [`${label} must be an array of strings.`];
   const errors = checkCommandPrefix(commands, label);
   commands.forEach((command, position) => {
-    errors.push(...checkCommand(command, label, position, packageJson));
+    errors.push(...validateDeploymentCommand(command, label, position, packageJson));
   });
   return errors;
 }
@@ -30,13 +29,4 @@ function checkCommandPrefix(commands, label) {
   return commandPrefix.every((command, position) => commands[position] === command)
     ? []
     : [`${label} must begin with ${commandPrefix.join(", ")}.`];
-}
-
-function checkCommand(command, label, position, packageJson) {
-  const errors = [];
-  if (isProhibitedNpmOrGhcrPublishCommand(command))
-    errors.push(`${label} must not publish npm packages or GHCR images.`);
-  if (position >= commandPrefix.length)
-    errors.push(...validateNpmRunCommand(command, packageJson, `${label} command ${position + 1}`));
-  return errors;
 }

@@ -10,17 +10,6 @@ function collectTargets(value, targets, allowBarePath) {
   return targets;
 }
 
-function targetExists(target, packedPaths) {
-  const wildcard = target.indexOf("*");
-  if (wildcard < 0) return packedPaths.has(target);
-  const before = target.slice(0, wildcard);
-  const after = target.slice(wildcard + 1);
-  return [...packedPaths].some(
-    (path) =>
-      path.length > before.length + after.length && path.startsWith(before) && path.endsWith(after),
-  );
-}
-
 const packageTargetFields = [
   ["main", true],
   ["module", true],
@@ -43,8 +32,9 @@ export function validatePackedEntrypoints(packageJson, packedPaths) {
       ),
     ),
   ];
-  const missing = targets.filter((target) => !targetExists(target, packedPaths));
+  const missing = targets.filter((target) => !packedTargetMatches(target, packedPaths));
   return missing.length
     ? `npm pack omitted public package entrypoints: ${missing.join(", ")}.`
     : null;
 }
+import { packedTargetMatches } from "./target-matches.mjs";

@@ -1,5 +1,5 @@
 import { readPackManifest } from "../../read-pack-manifest.mjs";
-import { validatePackedEntrypoints } from "../packed-entrypoints.mjs";
+import { validatePackedEntrypoints } from "../packed/entrypoints.mjs";
 import { validatePackManifestContent } from "./manifest-content.mjs";
 
 export function validatePackManifest(stdout, files, packageName, packageJson = {}) {
