@@ -110,6 +110,17 @@ test("skips SQL statements and SVG transform attribute values", () => {
   expect(extractJavaScriptProse(source)).toEqual([]);
 });
 
+test("skips machine-readable User-Agent values", () => {
+  const source = [
+    'const userAgent = "EliwareRadar/13.0.0 (+https://radar.example; contact: team@example.org)";',
+    'const headers = { "user-agent": "Client/1.0 (+https://example.org; contact: team@example.org)" };',
+    'const note = "Contact the team for help.";',
+  ].join("\n");
+  expect(extractJavaScriptProse(source)).toEqual([
+    { text: "Contact the team for help.", line: 3, kind: "prose" },
+  ]);
+});
+
 test("skips dynamic SVG transform calls and retains prose", () => {
   const source = [
     'rose.setAttribute("transform", `rotate(${angle})`);',

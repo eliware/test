@@ -3,6 +3,7 @@ import { expectedLicense } from "../../E-0.1.0.1.1/validate/required-package-fil
 import { windowsProcessTreeFallbackScript } from "../../../../validation/shared/process/run/windows-process-tree-fallback.mjs";
 import { isHumanReadableProse } from "./is/human-readable-prose.mjs";
 import { isSvgTransformValue } from "./is/svg-transform-value.mjs";
+import { isUserAgentValue } from "./is-user-agent-value.mjs";
 
 export function extractJavaScriptProse(source, parserOptions = {}) {
   let ast;
@@ -27,6 +28,7 @@ export function extractJavaScriptProse(source, parserOptions = {}) {
 function visit(value, blocks, parent = null) {
   if (!value || typeof value !== "object") return;
   if (isExactRequiredText(value) || isPowerShellScript(value)) return;
+  if (isUserAgentValue(value, parent)) return;
   if (isSvgTransformValue(value, parent)) return;
   if (value.type === "StringLiteral" && isHumanReadableProse(value.value)) {
     blocks.push({ text: value.value, line: value.loc.start.line, kind: "prose" });
