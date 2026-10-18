@@ -14,14 +14,17 @@ test.each([
   ]);
 });
 
-test.each(["NPM_TOKEN=value node publish.mjs", "export NODE_AUTH_TOKEN=value", "echo $NPM_TOKEN"])(
-  "rejects npm token setting %s",
-  (command) => {
-    expect(validatePrivatePackageScripts({ scripts: { release: command } })).toEqual([
-      "package.json.scripts.release must not set or reference npm publication tokens.",
-    ]);
-  },
-);
+test.each([
+  "NPM_TOKEN=value node publish.mjs",
+  "export NODE_AUTH_TOKEN=value",
+  "echo $NPM_TOKEN",
+  "node publish.mjs --token ${NPM_TOKEN:-default}",
+  "node publish.mjs --token ${NODE_AUTH_TOKEN?missing}",
+])("rejects npm token setting %s", (command) => {
+  expect(validatePrivatePackageScripts({ scripts: { release: command } })).toEqual([
+    "package.json.scripts.release must not set or reference npm publication tokens.",
+  ]);
+});
 
 test("allows ordinary scripts and GHCR publication commands", () => {
   expect(

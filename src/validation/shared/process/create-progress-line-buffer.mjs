@@ -21,7 +21,9 @@ export function createProgressLineBuffer({ onLine, onText, maxLineLength = 4096 
     pending = pendingOverflowed ? "" : nextPending;
   }
   function flush() {
-    const finalLine = pending + decoder.end();
+    const tail = decoder.end();
+    if (tail) onText?.(tail);
+    const finalLine = pending + tail;
     if (!pendingOverflowed && finalLine.length <= maxLineLength) onLine(finalLine);
     pending = "";
     pendingOverflowed = false;

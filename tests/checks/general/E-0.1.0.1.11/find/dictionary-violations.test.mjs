@@ -29,3 +29,16 @@ test("does not match a phrase when its later token differs", () => {
     ),
   ).toEqual([]);
 });
+
+test("keeps dictionary order for overlapping matches", () => {
+  expect(
+    findDictionaryViolations(
+      "README.md",
+      { text: "Close to the edge.", line: 1 },
+      { "close to": "NEAR (prep)", close: "NEARBY (adj)" },
+    ),
+  ).toEqual([
+    'README.md:1 uses "Close to". Suggested alternatives: NEAR (prep).',
+    'README.md:1 uses "Close". Suggested alternatives: NEARBY (adj).',
+  ]);
+});

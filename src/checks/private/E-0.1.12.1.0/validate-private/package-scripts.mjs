@@ -18,7 +18,7 @@ export function validatePrivatePackageScripts(packageJson = {}) {
 
 function hasTokenSetting(command, token) {
   return new RegExp(
-    `(?:^|[\\s;,.])(?:export\\s+|set\\s+)?${token}\\s*=|\\$\\{${token}\\}|\\$${token}\\b|\\$\\{\\{\\s*secrets\\.${token}\\s*\\}\\}`,
+    `(?:^|[\\s;,.])(?:export\\s+|set\\s+)?${token}\\s*=|\\$\\{${token}\\b[^}]*\\}|\\$${token}\\b|\\$\\{\\{\\s*secrets\\.${token}\\s*\\}\\}`,
     "iu",
   ).test(command);
 }

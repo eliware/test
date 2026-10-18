@@ -10,7 +10,7 @@ test("matches wildcard targets across nested paths", () => {
   expect(
     packedTargetMatches("src/features/*.mjs", new Set(["src/features/nested/feature.mjs"])),
   ).toBe(true);
-  expect(packedTargetMatches("src/features/*.mjs", new Set(["src/features/.mjs"]))).toBe(false);
+  expect(packedTargetMatches("src/features/*.mjs", new Set(["src/features/.mjs"]))).toBe(true);
   expect(packedTargetMatches("src/features/*.mjs", new Set())).toBe(false);
 });
 

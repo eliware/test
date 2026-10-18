@@ -58,6 +58,18 @@ test("reports decoded text and flushes a final line", () => {
   expect(onLine).toHaveBeenCalledWith("last");
 });
 
+test("reports replacement text when flush ends an incomplete UTF-8 sequence", () => {
+  const onText = jest.fn();
+  const onLine = jest.fn();
+  const progress = createProgressLineBuffer({ onLine, onText });
+
+  progress.push(Buffer.from([0xe2, 0x82]));
+  progress.flush();
+
+  expect(onText).toHaveBeenCalledWith("�");
+  expect(onLine).toHaveBeenCalledWith("�");
+});
+
 test("handles an empty final line and invalid callback options", () => {
   const progress = createProgressLineBuffer({ onLine: () => {} });
   expect(() => progress.push("")).not.toThrow();
