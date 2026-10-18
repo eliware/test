@@ -2,6 +2,7 @@ import { isProhibitedNpmOrGhcrPublishCommand } from "../../../is/prohibited-npm-
 import { readCanonicalOrder } from "../../../../../validation/shared/conventions/read-canonical-order.mjs";
 import { isSafeReportingCommand } from "./is-safe-reporting-command.mjs";
 import { validateNpmRunCommand } from "../../../package-scripts/validate/npm-run-command.mjs";
+import { hasDuplicateAggregateStage } from "../../has/duplicate-aggregate-stage.mjs";
 
 export function validateWorkflowCommandRestrictions(steps, packageJson = {}) {
   const { validationSteps, stepValues } = readCanonicalOrder("ci-workflow.yaml");
@@ -53,6 +54,10 @@ export function validateWorkflowCommandRestrictions(steps, packageJson = {}) {
         continue;
       }
       if (isSafeReportingCommand(step.run)) continue;
+      if (hasDuplicateAggregateStage(step.run)) {
+        errors.push("ci.yaml must not repeat an aggregate validation stage after npm test.");
+        continue;
+      }
       errors.push(
         ...validateNpmRunCommand(step.run, packageJson, "ci.yaml validation step after npm test"),
       );

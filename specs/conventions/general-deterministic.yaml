@@ -150,7 +150,7 @@ directives:
   - id: E-0.1.0.1.5
     dos:
       - For consumer repositories, use the five shared scripts from the examples.
-      - Run lint and format-check during aggregate validation.
+      - Run `npm test` for aggregate validation with lint and format checks.
       - Give other scripts nonempty commands.
       - Put local validator files called by package scripts under scripts/.
       - Name local validator entry files with validate, validator, check, preflight, verify,
@@ -212,8 +212,9 @@ directives:
       - "Set checkout fetch-depth to 0 before validation."
       - Install npm@latest before npm ci.
       - Run one standalone npm ci step, then one standalone npm test step.
-      - After npm test, run each validation step with `npm run <name>` for a declared
-        package script.
+      - After `npm test`, run optional checks only when aggregate validation does not run
+        them.
+      - Run each other validation step with `npm run <name>` for a declared package script.
       - Allow declared package scripts to call installed tools.
       - Keep ci.yaml for validation.
       - Allow .github/workflows/npm.yaml when npm-published applies.
@@ -226,7 +227,8 @@ directives:
         and test steps.
       - Accept inline lists and indented YAML lists with matching values.
     donts:
-      - Do not run a validation step after npm test unless it uses `npm run <name>`.
+      - Do not repeat an aggregate validation stage after `npm test`.
+      - Do not run a later validation step after `npm test` unless it uses `npm run <name>`.
       - Do not add GitHub Actions workflow files other than ci.yaml, npm.yaml, and ghcr.yaml.
       - Do not make required validation steps conditional.
       - Do not use continue-on-error for required validation steps.

@@ -78,11 +78,20 @@ test.each([
 test("allows declared package scripts after npm test", () => {
   expect(
     validateWorkflowCommandRestrictions(
-      [...steps, { run: "npm run lint" }, { run: "npm run release" }],
-      { scripts: { lint: "eliware-test --lint", release: "node scripts/release.mjs" } },
+      [...steps, { run: "npm run validate" }, { run: "npm run release" }],
+      { scripts: { validate: "netdoc --validate", release: "node scripts/release.mjs" } },
     ),
   ).toEqual([]);
 });
+
+test.each(["npm run lint", "npm run format:check", "eliware-test --lint", "npm audit"])(
+  "rejects duplicate aggregate stage %s after npm test",
+  (run) => {
+    expect(validateWorkflowCommandRestrictions([...steps, { run }])).toContain(
+      "ci.yaml must not repeat an aggregate validation stage after npm test.",
+    );
+  },
+);
 
 test("rejects action steps after npm test", () => {
   expect(

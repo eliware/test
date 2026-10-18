@@ -22,6 +22,8 @@ npm install
 
 Use `npm ci` in CI when the repository has a lockfile.
 Run `npm test` in CI to start aggregate validation.
+Aggregate validation includes lint and format checks.
+Do not add separate CI steps for those checks.
 
 ## Configure the repository
 
