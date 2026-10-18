@@ -64,6 +64,7 @@ directives:
         istanbul-lib-instrument.
       - For @eliware/test, allow istanbul-lib-instrument imports and direct Jest commands
         outside package scripts.
+      - Allow listed harness tools only in @eliware/test.
       - Use mocked file-system operations in each test suite.
       - Mock file-handle write methods or inject mocked file handles.
       - Allow network requests to localhost only.
@@ -81,7 +82,6 @@ directives:
       - Do not launch OS commands or command-line tools in tests.
       - Do not use wall-clock waits, sleeps, or uncontrolled timers in tests.
       - Do not invoke Jest or coverage tools directly in consumer repositories.
-      - Allow listed harness tools only in @eliware/test.
       - Do not use a second test runner.
       - Do not use a second coverage engine.
       - Do not add second Jest configuration.
