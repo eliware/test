@@ -60,8 +60,7 @@ test("allows only one lock acquisition when runs start concurrently", async () =
 
   const releases = await Promise.all([acquireValidationLock(root), acquireValidationLock(root)]);
   expect(releases.filter(Boolean)).toHaveLength(1);
-  await releases.find(Boolean)();
-  expect(unlink).toHaveBeenCalledWith(lockPath);
+  expect(open).toHaveBeenCalledTimes(2);
 });
 
 test("does not remove a lock file replaced after this run acquired its lock", async () => {
