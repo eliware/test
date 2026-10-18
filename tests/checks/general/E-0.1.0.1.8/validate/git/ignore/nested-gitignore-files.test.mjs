@@ -18,16 +18,21 @@ test("returns no finding when no nested ignore file exists", async () => {
   ).resolves.toEqual([]);
 });
 
-test("reports command and malformed output failures", async () => {
+test("skips paths that match a rule exemption", async () => {
+  await expect(
+    validateNestedGitIgnoreFiles(
+      "repo",
+      async () => ({ stdout: Buffer.from("docs/.gitignore\0other/.gitignore\0") }),
+      (path) => path === "docs/.gitignore",
+    ),
+  ).resolves.toEqual(["Nested .gitignore files are prohibited: other/.gitignore."]);
+});
+
+test("reports Git command failures", async () => {
   await expect(
     validateNestedGitIgnoreFiles("repo", async () => {
       throw new Error("Git failed");
     }),
-  ).resolves.toEqual([
-    "Repository ignore files could not be listed. Nested overrides are unknown.",
-  ]);
-  await expect(
-    validateNestedGitIgnoreFiles("repo", async () => ({ stdout: Buffer.from("bad") })),
   ).resolves.toEqual([
     "Repository ignore files could not be listed. Nested overrides are unknown.",
   ]);

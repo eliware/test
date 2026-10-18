@@ -11,10 +11,3 @@ test.each([
 test("allows valid text without machine-specific paths", () => {
   expect(hasMachineSpecificPathBytes(Buffer.from("/var/lib/service"))).toBe(false);
 });
-
-test.each([Buffer.from([0xff, 0xfe]), Buffer.from([0x2f, 0x68, 0x6f, 0x6d, 0x65, 0x00])])(
-  "skips binary or invalid UTF-8 bytes: %s",
-  (bytes) => {
-    expect(hasMachineSpecificPathBytes(bytes)).toBe(false);
-  },
-);

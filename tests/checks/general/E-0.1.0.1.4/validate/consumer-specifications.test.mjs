@@ -106,17 +106,13 @@ test("requires a valid assigned rule namespace", async () => {
   );
 });
 
-test("reports unreadable specification files", async () => {
+test("reports unreadable and unparseable specification files", async () => {
   readdir.mockResolvedValue([record("directives.yaml")]);
   readFile.mockRejectedValue(new Error("blocked"));
 
   await expect(validateConsumerSpecifications(root, "E-0")).resolves.toEqual([
     "specs/directives.yaml could not be read: blocked",
   ]);
-});
-
-test("reports parser exceptions for a specification file", async () => {
-  readdir.mockResolvedValue([record("directives.yaml")]);
   readFile.mockResolvedValue({});
 
   await expect(validateConsumerSpecifications(root, "E-0")).resolves.toEqual([
