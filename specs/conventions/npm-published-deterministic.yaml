@@ -52,6 +52,7 @@ directives:
       - "Match it byte for byte with the bundled Eliware Test file
         specs/workflows/npm.yaml."
       - Include line endings and the final newline in each match.
+      - "Grant `id-token: write` only to the publish job."
       - Keep specs/workflows/npm.yaml in the Eliware Test package.
     donts:
       - Do not use .github/workflows/publish.yaml for npm publication.

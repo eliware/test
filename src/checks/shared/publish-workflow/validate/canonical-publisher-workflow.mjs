@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
-import { readCanonicalOrder } from "../../../validation/shared/conventions/read-canonical-order.mjs";
+import { readCanonicalOrder } from "../../../../validation/shared/conventions/read-canonical-order.mjs";
+import { parseBoundedYamlValue } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
+import { validateNpmPublishPermissions } from "./npm-publish-permissions.mjs";
 
-const workflowDirectory = new URL("../../../../specs/workflows/", import.meta.url);
+const workflowDirectory = new URL("../../../../../specs/workflows/", import.meta.url);
 
 export async function validateCanonicalPublisherWorkflow(
   inventory,
@@ -16,6 +18,12 @@ export async function validateCanonicalPublisherWorkflow(
     if (!(await inventory.files("all")).includes(path)) return [`${path} is required.`];
     const actual = await inventory.readText(path);
     const expected = await readCanonical(new URL(file, workflowDirectory));
+    if (profile === "npm-published") {
+      const workflowPath = `specs/workflows/${file}`;
+      const workflow = parseBoundedYamlValue(expected, workflowPath);
+      const errors = validateNpmPublishPermissions(workflow, workflowPath);
+      if (errors.length) return errors;
+    }
     return actual === expected
       ? []
       : [`${path} must match the bundled Eliware Test file specs/workflows/${file} byte for byte.`];
