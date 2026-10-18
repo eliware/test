@@ -23,6 +23,18 @@ test("overrides the existing PATH key without changing its casing", () => {
   ).toBe("C:\\Tools\\pwsh.exe");
 });
 
+test("uses an injected PATH key with different casing from the inherited key", () => {
+  const inheritedPathKey = Object.keys(process.env).find((key) => key.toLowerCase() === "path");
+  const injectedPathKey = inheritedPathKey === "PATH" ? "Path" : "PATH";
+
+  expect(
+    resolveWindowsPowerShellCoreExecutable(
+      { [injectedPathKey]: "C:\\Injected" },
+      (candidate) => candidate === "C:\\Injected\\pwsh.exe",
+    ),
+  ).toBe("C:\\Injected\\pwsh.exe");
+});
+
 test("resolves PowerShell Core from a quoted PATH entry", () => {
   expect(
     resolveWindowsPowerShellCoreExecutable(

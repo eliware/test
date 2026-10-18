@@ -48,13 +48,14 @@ test("preserves the backup when identity verification prevents restoration", asy
   expect(cleanup).toHaveBeenCalledWith("temporary", {}, { preserve: true });
 });
 
-test("skips restoration for invalid snapshots", async () => {
+test("preserves the temporary root when the snapshot is invalid", async () => {
   const restoreState = jest.fn();
   const cleanup = jest.fn().mockResolvedValue("");
   await expect(
     finishSmokeRun({ ...base, state: { error: "snapshot failed" }, restoreState, cleanup }),
-  ).resolves.toBe("Smoke passed.");
+  ).resolves.toContain("Smoke passed. Target restoration failed: snapshot failed.");
   expect(restoreState).not.toHaveBeenCalled();
+  expect(cleanup).toHaveBeenCalledWith("temporary", {}, { preserve: true });
 });
 
 test("reports cleanup rejection as a smoke failure result", async () => {
@@ -75,7 +76,13 @@ test("appends cleanup diagnostics after a successful restore", async () => {
   );
 });
 
-test("uses the default cleanup for the verified temporary directory", async () => {
+test("returns the successful restore message when cleanup adds no diagnostics", async () => {
+  await expect(finishSmokeRun({ ...base, cleanup: async () => "" })).resolves.toBe(
+    "Smoke passed. Previous target package state restored.",
+  );
+});
+
+test("retains the default temporary directory when no snapshot exists", async () => {
   const tempRoot = "C:/temp/smoke";
   const tempIdentity = {
     dev: 1,
@@ -89,6 +96,7 @@ test("uses the default cleanup for the verified temporary directory", async () =
     tempRoot,
     tempIdentity,
   });
-  expect(result).toBe("Smoke passed.");
-  expect(rm).toHaveBeenCalledWith(tempRoot, { recursive: true, force: true });
+  expect(result).toContain("Target recovery snapshot is unavailable.");
+  expect(result).toContain(`Recovery data retained at ${tempRoot}.`);
+  expect(rm).not.toHaveBeenCalled();
 });

@@ -12,14 +12,15 @@ test("verifies target identity and restores a valid snapshot", async () => {
   expect(restoreState).toHaveBeenCalledWith(state);
 });
 
-test("skips a missing or invalid snapshot", async () => {
+test("reports missing or invalid snapshots as recovery failures", async () => {
   const restoreState = jest.fn();
   await expect(attemptSmokeTargetRestoration(undefined, jest.fn(), restoreState)).resolves.toEqual({
     restored: false,
+    error: "Target recovery snapshot is unavailable.",
   });
   await expect(
     attemptSmokeTargetRestoration({ error: "capture failed" }, jest.fn(), restoreState),
-  ).resolves.toEqual({ restored: false });
+  ).resolves.toEqual({ restored: false, error: "capture failed" });
   expect(restoreState).not.toHaveBeenCalled();
 });
 

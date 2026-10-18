@@ -25,6 +25,6 @@ export async function finishSmokeRun({
   }
   if (restoration.error)
     return `${outcome} Target restoration failed: ${restoration.error}. ${cleanupMessage}`;
-  if (restoration.restored) outcome = `${outcome} Previous target package state restored.`;
-  return cleanupMessage ? `${outcome} ${cleanupMessage}` : outcome;
+  const restoredOutcome = `${outcome} Previous target package state restored.`;
+  return cleanupMessage ? `${restoredOutcome} ${cleanupMessage}` : restoredOutcome;
 }
