@@ -1,4 +1,4 @@
-import { parseGitIndexEntries } from "../../parse-git-index-output.mjs";
+import { parseGitIndexEntries } from "../../parse-git-index/entries.mjs";
 
 export async function validateTrackedSymlinks(root, runGit, isPathExempt = () => false) {
   try {

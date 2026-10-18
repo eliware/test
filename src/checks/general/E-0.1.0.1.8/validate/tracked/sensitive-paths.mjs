@@ -1,4 +1,4 @@
-import { parseGitIndexEntries } from "../../parse-git-index-output.mjs";
+import { parseGitIndexEntries } from "../../parse-git-index/entries.mjs";
 
 const protectedNames = new Set([
   "id_rsa",

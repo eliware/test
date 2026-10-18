@@ -1,16 +1,18 @@
 import { collectCommonJsAliases } from "./aliases.mjs";
 import { collectCommonJsExportAliases } from "./export-aliases.mjs";
+import { visitCommonJsAst } from "./visit-ast.mjs";
 
 export function collectCommonJsFindings(node, findings, file) {
   if (!node || typeof node !== "object") return;
   const aliases = collectCommonJsAliases(node, "require");
   const moduleAliases = collectCommonJsAliases(node, "module");
   const exportsAliases = collectCommonJsExportAliases(node);
-  walk(node, findings, file, aliases, moduleAliases, exportsAliases);
+  visitCommonJsAst(node, (child) =>
+    collectNodeFinding(child, findings, file, aliases, moduleAliases, exportsAliases),
+  );
 }
 
-function walk(node, findings, file, requires, modules, exportAliases) {
-  if (!node || typeof node !== "object") return;
+function collectNodeFinding(node, findings, file, requires, modules, exportAliases) {
   if (
     node.type === "CallExpression" &&
     node.callee?.type === "Identifier" &&
@@ -70,11 +72,4 @@ function walk(node, findings, file, requires, modules, exportAliases) {
     node.callee.property.name === "require"
   )
     findings.push(`${file}: import.meta.require()`);
-  for (const [key, value] of Object.entries(node)) {
-    if (["loc", "start", "end"].includes(key)) continue;
-    if (Array.isArray(value))
-      value.forEach((child) => walk(child, findings, file, requires, modules, exportAliases));
-    else if (value && typeof value === "object")
-      walk(value, findings, file, requires, modules, exportAliases);
-  }
 }

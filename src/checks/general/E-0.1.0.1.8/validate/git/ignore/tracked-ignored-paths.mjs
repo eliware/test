@@ -1,4 +1,4 @@
-import { parseGitNulPaths } from "../../../parse-git-index-output.mjs";
+import { parseGitNulPaths } from "../../../parse-git-index/paths.mjs";
 
 export async function validateTrackedIgnoredPaths(root, runGit, isPathExempt = () => false) {
   try {
