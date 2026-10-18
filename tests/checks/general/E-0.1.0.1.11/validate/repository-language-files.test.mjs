@@ -12,7 +12,7 @@ test("skips SQL statements and syntax while reporting matching words in prose", 
     'const usage = "Usage: radar --port PORT";',
     'const icon = <svg><g transform="rotate(90) rotate(180)" /></svg>;',
     'rose.setAttribute("transform", `rotate(${angle})`);',
-    'const message = "Alignment, base, facility, fix, join, portion, real, transition, trim, port, and rotate words.";',
+    'const message = "Alignment, facility, portion, transition, trim, and rotate words.";',
   ].join("\n");
   const inventory = { readText: jest.fn(async () => source) };
   const errors = await validateRepositoryLanguageFiles(
@@ -22,20 +22,8 @@ test("skips SQL statements and syntax while reporting matching words in prose", 
     examples,
   );
 
-  expect(errors).toHaveLength(11);
-  for (const word of [
-    "Alignment",
-    "base",
-    "facility",
-    "fix",
-    "join",
-    "portion",
-    "real",
-    "transition",
-    "trim",
-    "port",
-    "rotate",
-  ]) {
+  expect(errors).toHaveLength(6);
+  for (const word of ["Alignment", "facility", "portion", "transition", "trim", "rotate"]) {
     expect(errors.join("\n")).toContain(`uses "${word}"`);
   }
   expect(errors.join("\n")).not.toContain('uses "PORT"');

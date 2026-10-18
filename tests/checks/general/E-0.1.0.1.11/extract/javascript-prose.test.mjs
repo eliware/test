@@ -2,6 +2,7 @@ import { expect, test } from "@jest/globals";
 import { expectedLicense } from "../../../../../src/checks/general/E-0.1.0.1.1/validate/required-package-files.mjs";
 import { windowsProcessTreeFallbackScript } from "../../../../../src/validation/shared/process/run/windows-process-tree-fallback.mjs";
 import { extractJavaScriptProse } from "../../../../../src/checks/general/E-0.1.0.1.11/extract/javascript-prose.mjs";
+import { findLanguageViolations } from "../../../../../src/checks/general/E-0.1.0.1.11/find/language-violations.mjs";
 
 test("extracts comments, user-facing strings, templates, and JSX text", () => {
   const source = [
@@ -139,4 +140,25 @@ test("keeps ordinary prose with a SQL keyword and an SVG transform term", () => 
     line: 1,
     kind: "prose",
   });
+});
+
+test("skips SQL, header values, and embedded source while checking nearby prose", () => {
+  const source = [
+    'await connection.query("SELECT GET_LOCK(?, 1) AS acquired");',
+    "await db.execute(`INSERT IGNORE INTO message_attachments (disposition, part_order) VALUES (?, ?)`);",
+    'reply.header("content-disposition", `attachment; filename=${name}`);',
+    "reply.header(\"content-security-policy\", \"default-src 'none'; base-uri 'none'\");",
+    'const serviceWorkerSource = `const CACHE = "mail-shell-v1";\\nself.addEventListener("fetch", handler);`;',
+    'const note = "Get the attachment now; use the correct value.";',
+  ].join("\n");
+  const blocks = extractJavaScriptProse(source);
+  expect(blocks).toEqual([
+    { text: "Get the attachment now; use the correct value.", line: 6, kind: "prose" },
+  ]);
+  expect(
+    findLanguageViolations("source.mjs", blocks, { attachment: "ATTACH (v)" }, new Set()),
+  ).toEqual([
+    "source.mjs:6 sentence 1 uses a semicolon.",
+    'source.mjs:6 uses "attachment". Suggested alternatives: ATTACH (v).',
+  ]);
 });

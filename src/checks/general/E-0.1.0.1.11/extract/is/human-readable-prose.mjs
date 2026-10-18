@@ -1,5 +1,5 @@
 import { countWords } from "../../word-tools.mjs";
-import { isSqlStatement } from "./sql-statement.mjs";
+import { isSqlStatement } from "./sql/statement.mjs";
 
 const commandStart = /^(?:npm|node|git|gh|npx|yarn|pnpm|powershell|pwsh)\s/iu;
 

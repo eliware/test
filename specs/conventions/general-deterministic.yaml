@@ -318,6 +318,9 @@ directives:
       - Match dictionary entries in uppercase or lowercase, at whole-word or exact-phrase
         boundaries.
       - Do not match a dictionary term in a hyphenated compound.
+      - Ignore SQL statements and SQL text in query and execute calls.
+      - Ignore HTTP and MIME header values. Ignore `content-security-policy` values.
+      - Ignore template literals that contain embedded JavaScript source.
       - Show each match, its file, line, and suggested alternatives.
       - Tell writers that alternatives are examples, not requirements.
       - Tell writers to rewrite each sentence without the listed term.
@@ -328,4 +331,5 @@ directives:
       - Do not parse malformed YAML or JSON in this check.
       - Do not derive word meanings or grammar labels from context.
       - Do not accept a dictionary term because its spelling appears in an alternative.
+      - Do not apply prose limits, dictionary checks, or semicolon checks to machine syntax.
       - Do not use semicolons in human-readable prose.

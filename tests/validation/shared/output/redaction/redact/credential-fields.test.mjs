@@ -69,3 +69,12 @@ test("preserves coverage rows whose paths contain credential-like words", () => 
     "src/app/routes/webhook | 100 | 90",
   );
 });
+
+test("preserves npm pack JSON package names that contain webhook", () => {
+  const manifest = JSON.stringify([
+    { name: "@eliware/discord-webhook", files: [{ path: "package.json" }] },
+  ]);
+  const output = redactCredentialFields(manifest);
+  expect(output).toBe(manifest);
+  expect(JSON.parse(output)).toEqual(JSON.parse(manifest));
+});

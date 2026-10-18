@@ -1,5 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { readPackManifest } from "../../../../src/validation/stages/pack/read-pack-manifest.mjs";
+import { redactCredentialFields } from "../../../../src/validation/shared/output/redaction/redact/credential-fields.mjs";
 
 const files = [{ path: "package.json" }];
 
@@ -15,6 +16,16 @@ test("reads valid array and object manifests for the requested package", () => {
     { entry: { name: "target", files } },
   );
   expect(readPackManifest(JSON.stringify({ target: { files } }))).toEqual({ entry: { files } });
+});
+
+test("reads npm pack JSON for a package name that contains webhook", () => {
+  const manifest = JSON.stringify([
+    { name: "@eliware/discord-webhook", files: [{ path: "package.json" }] },
+  ]);
+  const output = redactCredentialFields(manifest);
+  expect(readPackManifest(output, "@eliware/discord-webhook")).toEqual({
+    entry: { name: "@eliware/discord-webhook", files: [{ path: "package.json" }] },
+  });
 });
 
 test("rejects missing, mismatched, and ambiguous package entries", () => {
