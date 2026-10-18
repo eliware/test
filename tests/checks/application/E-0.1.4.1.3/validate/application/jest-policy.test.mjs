@@ -11,31 +11,14 @@ test("combines configuration failures", async () => {
   );
 });
 
-test("allows the harness test tools", async () => {
-  const context = {
-    packageJson: {
-      name: "@eliware/test",
-      dependencies: { "@jest/globals": "30", jest: "30", "istanbul-lib-instrument": "6" },
-    },
-    repositoryInventory: { files: async () => [], readText: async () => "" },
-  };
-  await expect(validateApplicationJestPolicy(context)).resolves.toEqual([
-    "package.json must define Jest configuration.",
-  ]);
-});
-
-test("rejects Jest packages, other runners, and tool scripts in consumer metadata", async () => {
+test("rejects a separate test runner command", async () => {
   const context = {
     packageJson: {
       name: "app",
-      devDependencies: { jest: "30", "@jest/globals": "30", "babel-jest": "30", vitest: "2" },
       scripts: { test: "vitest run" },
     },
     repositoryInventory: { files: async () => [], readText: async () => "" },
   };
-  await expect(validateApplicationJestPolicy(context)).resolves.toContain(
-    "Do not declare separate test or coverage tools: jest, @jest/globals, babel-jest, vitest.",
-  );
   await expect(validateApplicationJestPolicy(context)).resolves.toContain(
     "package.json script test must not invoke a separate test or coverage tool.",
   );
@@ -44,36 +27,5 @@ test("rejects Jest packages, other runners, and tool scripts in consumer metadat
 test("reports errors from the default context", async () => {
   await expect(validateApplicationJestPolicy()).resolves.toContain(
     "Jest source policy could not read the repository inventory.",
-  );
-});
-
-test.each(["nyc", "c8", "vitest", "mocha", "ava", "tape", "uvu", "testRunner"])(
-  "rejects %s runner configuration",
-  async (tool) => {
-    const context = {
-      packageJson: { name: "app", jest: { testEnvironment: "node" }, [tool]: {} },
-      repositoryInventory: { files: async () => [], readText: async () => "" },
-    };
-    await expect(validateApplicationJestPolicy(context)).resolves.toContain(
-      "package.json must not configure a separate test runner or coverage engine.",
-    );
-  },
-);
-
-test.each([
-  "@playwright/test",
-  "@vitest/coverage-v8",
-  "@vitest/runner",
-  "@tapjs/run",
-  "custom-test: npm:mocha@10",
-  "custom-cypress: npm:cypress@13",
-])("rejects alternative tools declared as %s", async (dependency) => {
-  const [name, version] = dependency.includes(":") ? dependency.split(": ") : [dependency, "1"];
-  const context = {
-    packageJson: { name: "app", devDependencies: { [name]: version } },
-    repositoryInventory: { files: async () => [], readText: async () => "" },
-  };
-  await expect(validateApplicationJestPolicy(context)).resolves.toContain(
-    `Do not declare separate test or coverage tools: ${name}.`,
   );
 });

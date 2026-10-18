@@ -24,6 +24,38 @@ test("rejects alternative runners and coverage engines", () => {
   ).toContain("Do not declare separate test or coverage tools: jest, istanbul-lib-instrument.");
 });
 
+test.each([
+  "@playwright/test",
+  "@vitest/coverage-v8",
+  "@vitest/runner",
+  "@tapjs/run",
+  "custom-test: npm:mocha@10",
+  "custom-cypress: npm:cypress@13",
+])("rejects alternative tools declared as %s", (dependency) => {
+  const [name, version] = dependency.includes(":") ? dependency.split(": ") : [dependency, "1"];
+  expect(validateApplicationTestTools({ devDependencies: { [name]: version } })).toContain(
+    `Do not declare separate test or coverage tools: ${name}.`,
+  );
+});
+
+test.each(["nyc", "c8", "vitest", "mocha", "ava", "tape", "uvu", "testRunner"])(
+  "rejects %s runner configuration",
+  (tool) => {
+    expect(validateApplicationTestTools({ [tool]: {} })).toContain(
+      "package.json must not configure a separate test runner or coverage engine.",
+    );
+  },
+);
+
+test("allows the harness test dependencies", () => {
+  expect(
+    validateApplicationTestTools({
+      name: "@eliware/test",
+      dependencies: { "@jest/globals": "30", jest: "30", "istanbul-lib-instrument": "6" },
+    }),
+  ).toEqual([]);
+});
+
 test("accepts package metadata without optional scripts or runner fields", () => {
   expect(validateApplicationTestTools({})).toEqual([]);
   expect(validateApplicationTestTools()).toEqual([]);

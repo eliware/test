@@ -9,6 +9,7 @@ import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
 import { createSmokeTempRoot } from "../create-smoke-temp-root.mjs";
 import { prepareSmokeTargetContext } from "../prepare-smoke/target-context.mjs";
 import { prepareSmokeState } from "../prepare-smoke/state.mjs";
+import { prepareSmokeWorkspace } from "../prepare-smoke/workspace.mjs";
 import { runSmokePackageTransaction } from "./smoke-package-transaction.mjs";
 
 export async function runNpmConsumerSmoke({
@@ -35,32 +36,30 @@ export async function runNpmConsumerSmoke({
   });
   if (context.error) return context.error;
   const { targetRoot, assertTargetIdentity, binNames, childEnv } = context;
-  const tempState = await createSmokeTempRoot(
+  const workspace = await prepareSmokeWorkspace({
     root,
     inspectTempRoot,
     createTempRoot,
     removeEmptyTempRoot,
-  );
-  if (tempState.error) return tempState.error;
-  const { path: tempRoot, identity: tempIdentity } = tempState;
-  const packDirectory = join(tempRoot, "pack");
-  const backupDirectory = join(tempRoot, "backup");
-  let state;
-  let outcome;
-  try {
-    state = await prepareSmokeState({
+    createTempWorkspace: createSmokeTempRoot,
+    prepareState: prepareSmokeState,
+    createDirectory: mkdir,
+    stateOptions: {
       targetRoot,
       packageJson,
       binNames,
       assertTargetIdentity,
       captureState,
       assertPackageParents: assertSmokePackageParents,
-      backupDirectory,
-      createDirectory: mkdir,
       write,
       platform: process.platform,
-    });
-    await mkdir(packDirectory);
+    },
+  });
+  if (workspace.error && !workspace.tempRoot) return workspace.error;
+  const { tempRoot, tempIdentity, packDirectory, state } = workspace;
+  let outcome;
+  try {
+    if (workspace.error) throw workspace.error;
     const [command, prefix] = resolveCommand(childEnv, process.platform, process.execPath, root);
     const digest = await runSmokePackageTransaction({
       root,

@@ -8,24 +8,11 @@ function inventory(text = npmPublishWorkflow, files = [workflowPath]) {
   return { files: async () => files, readText: async () => text };
 }
 
-test("accepts the canonical npm workflow byte for byte", async () => {
+test("wraps canonical workflow validation in the rule result", async () => {
   await expect(run({ repositoryInventory: inventory() })).resolves.toEqual({
     ruleId,
     status: "pass",
     message: "",
-  });
-});
-
-test.each([
-  ["one changed byte", `${npmPublishWorkflow} `],
-  ["different line endings", npmPublishWorkflow.replaceAll("\n", "\r\n")],
-  ["a missing final newline", npmPublishWorkflow.trimEnd()],
-])("rejects an npm workflow with %s", async (_name, text) => {
-  await expect(run({ repositoryInventory: inventory(text) })).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining(
-      "must match the bundled Eliware Test file specs/workflows/npm.yaml byte for byte",
-    ),
   });
 });
 

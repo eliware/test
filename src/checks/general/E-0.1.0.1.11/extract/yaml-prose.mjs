@@ -1,4 +1,5 @@
-import { isMap, isScalar, isSeq, parseAllDocuments } from "yaml";
+import { isScalar, parseAllDocuments } from "yaml";
+import { visitYamlScalars } from "./yaml-prose/collect.mjs";
 
 const proseFields = new Set([
   "description",
@@ -26,29 +27,16 @@ export function extractYamlProse(source) {
   const blocks = [];
   for (const document of parseAllDocuments(source)) {
     if (document.errors.length) continue;
-    visit(document.contents, [], source, blocks);
+    visitYamlScalars(document.contents, (node, path) => {
+      if (path.includes("examples")) return;
+      const field = path.at(-1);
+      if (!isScalar(node) || typeof node.value !== "string") return;
+      const directive = ["dos", "donts"].includes(field) && path.includes("directives");
+      if (!directive && !proseFields.has(field)) return;
+      const start = node.range[0];
+      const line = source.slice(0, start).split(/\r\n|\n|\r/u).length;
+      blocks.push({ text: node.value, line, kind: directive ? "directive" : "prose" });
+    });
   }
   return blocks;
-}
-
-function visit(node, path, source, blocks) {
-  if (isMap(node)) {
-    for (const item of node.items) {
-      const key = String(item.key.value).toLowerCase();
-      if (key === "examples") continue;
-      visit(item.value, [...path, key], source, blocks);
-    }
-    return;
-  }
-  if (isSeq(node)) {
-    for (const item of node.items) visit(item, path, source, blocks);
-    return;
-  }
-  if (!isScalar(node) || typeof node.value !== "string") return;
-  const field = path.at(-1);
-  const directive = ["dos", "donts"].includes(field) && path.includes("directives");
-  if (!directive && !proseFields.has(field)) return;
-  const start = node.range[0];
-  const line = source.slice(0, start).split(/\r\n|\n|\r/u).length;
-  blocks.push({ text: node.value, line, kind: directive ? "directive" : "prose" });
 }

@@ -157,6 +157,21 @@ test("returns a temporary directory error before it captures target state", asyn
   expect(finishSmokeRun).not.toHaveBeenCalled();
 });
 
+test("finalizes the temporary workspace when snapshot preparation fails", async () => {
+  captureSmokeTargetState.mockRejectedValue(new Error("snapshot failed"));
+
+  await expect(smoke()).resolves.toBe("Tarball consumer smoke failed: snapshot failed");
+  expect(runSmokePackageTransaction).not.toHaveBeenCalled();
+  expect(finishSmokeRun).toHaveBeenCalledWith(
+    expect.objectContaining({
+      outcome: "Tarball consumer smoke failed: snapshot failed",
+      state: undefined,
+      tempRoot: "temp-root",
+      tempIdentity: "temp-identity",
+    }),
+  );
+});
+
 test("reports workflow failures and passes them to finalization", async () => {
   runSmokePackageTransaction.mockRejectedValue(new Error("consumer test failed"));
   await expect(smoke()).resolves.toBe("Tarball consumer smoke failed: consumer test failed");
