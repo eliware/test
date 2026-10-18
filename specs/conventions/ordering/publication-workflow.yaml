@@ -1,5 +1,5 @@
 version: "13.0"
-description: Defines publisher workflow names and job order.
+description: Defines publication profile order and canonical workflow file names.
 orders:
   profiles:
     - npm-published

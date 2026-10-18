@@ -435,7 +435,9 @@ directives:
           - Order AGENTS.md sections by ordering/agents-sections.yaml.
           - Order specification indexes by ordering/specification-indexes.yaml.
           - Order CI validation steps by ordering/ci-workflow.yaml.
-          - Order publication profiles and jobs by ordering/publication-workflow.yaml.
+          - Order publication profiles and list canonical workflow files in
+            ordering/publication-workflow.yaml.
+          - Define publisher job order in the canonical workflow files.
           - Order package files by ordering/package-files.yaml when npm-published applies.
           - Include shared README.md or AGENTS.md sections for each profile that requires them.
           - Add each shared README.md section one time at its first required location.
