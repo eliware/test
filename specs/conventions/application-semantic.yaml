@@ -35,10 +35,12 @@ directives:
       - Allow replacement dependencies.
       - Keep launchers simple.
       - Remove superseded compatibility branches, aliases, and fallbacks.
-      - Use `@eliware/redact` for redaction and `@eliware/log` to write logs.
-      - Use `@eliware/path` for file system and import-meta utilities.
-      - Use `@eliware/errors` for failed operations and rejected promises.
-      - Use `@eliware/signals` for signal handling and orderly shutdown.
+      - When an application uses a shared function, add `@eliware/common`.
+      - Import logging, redaction, signal, error, path, and Snowflake utilities from
+        `@eliware/common`.
+      - Use functions from `@eliware/common`.
+      - Allow the `@eliware/test` repository to use direct dependencies on lower-level
+        packages because it is the dependency root.
       - Test outputs and side effects stated in documentation or workflow contracts.
       - Compare maintained code, tests, package metadata, configuration schemas, and
         package scripts for these requirements.
@@ -47,12 +49,14 @@ directives:
       - Do not omit tests for workflows listed in README.md, linked documents, or package
         metadata.
       - Do not duplicate helper assertions.
+      - Except for `@eliware/test`, do not add direct dependencies on `@eliware/log`,
+        `@eliware/redact`, `@eliware/path`, `@eliware/errors`, `@eliware/signals`, or
+        `@eliware/snowflake`.
+      - Do not require `@eliware/test` to depend on `@eliware/common`.
       - Do not preserve obsolete contracts or hide behavior through coverage exclusions.
     examples:
-      - "Redaction uses @eliware/redact and logging uses @eliware/log."
-      - "Filesystem and import-meta utilities use @eliware/path."
-      - "Exception and rejection handling uses @eliware/errors."
-      - "Signals and graceful shutdown use @eliware/signals."
+      - '`@eliware/app`: `import { redactText } from "@eliware/common";`'
+      - "`@eliware/test` may use direct dependencies because it is the dependency root."
 
   - id: E-0.1.4.0.2
     dos:

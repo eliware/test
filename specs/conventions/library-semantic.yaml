@@ -28,21 +28,22 @@ directives:
       - Allow replaceable external dependencies.
       - Keep entrypoints simple.
       - Remove superseded compatibility branches, aliases, and fallbacks.
-      - Use `@eliware/redact` for redaction and `@eliware/log` to write logs.
-      - Use `@eliware/path` for file system and import-meta utilities.
-      - Use `@eliware/errors` for failed operations and rejected promises.
-      - Use `@eliware/signals` for signal handling and orderly shutdown.
+      - Add a direct dependency for each lower-level package that provides a function the
+        library uses.
+      - Use functions from existing packages.
+      - Import each function from the package that provides it.
       - Test outputs and side effects stated in public contracts.
       - Compare package exports, package metadata, maintained code, tests, and package
         scripts for these requirements.
     donts:
+      - Do not add `@eliware/common` as a dependency.
+      - Do not use a shared function without a direct dependency on its package.
+      - Do not add a function that an existing package provides.
       - Do not duplicate helper assertions or preserve obsolete contracts for convenience.
       - Do not hide production behavior through coverage exclusions.
     examples:
-      - "Redaction uses @eliware/redact and logging uses @eliware/log."
-      - "Filesystem and import-meta utilities use @eliware/path."
-      - "Exception and rejection handling uses @eliware/errors."
-      - "Signals and graceful shutdown use @eliware/signals."
+      - '`@eliware/app`: `import { redactText } from "@eliware/common";`'
+      - '`@eliware/library`: `import { redactText } from "@eliware/redact";`'
 
   - id: E-0.1.3.0.2
     dos:
