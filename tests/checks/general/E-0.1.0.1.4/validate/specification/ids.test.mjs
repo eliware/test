@@ -25,6 +25,13 @@ test("reports duplicates and wrong namespaces", () => {
   expect(errors).toContain("assigned E-0");
 });
 
+test("requires the assigned namespace text to match exactly", () => {
+  const directives = [{ id: "E-01.0" }];
+  expect(validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ")).toContain(
+    "must use the assigned E-0 namespace",
+  );
+});
+
 test("rejects child IDs outside their parent prefix", () => {
   const directives = [{ id: "E-0.1", children: [{ id: "E-0.2.0" }] }];
   expect(validateSpecificationIds([{ path: "rules.yaml", directives }], "E-0").join(" ")).toContain(

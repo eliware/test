@@ -37,3 +37,13 @@ test("keeps the byte count accurate when UTF-8 text precedes a truncated redacti
   expect(output.outputLength).toBe(8);
   expect(output.outputLength).toBeLessThanOrEqual(10);
 });
+
+test("counts emitted UTF-8 bytes when a multibyte prefix precedes a partial marker", () => {
+  const output = createRedactedStreamOutput(7);
+  const matchEnds = Array.from({ length: 8 }, (_, index) => (index === 2 ? 8 : 0));
+
+  expect(output.append("😀secret", matchEnds)).toBe("😀");
+  expect(output.outputLength).toBe(Buffer.byteLength("😀", "utf8"));
+  expect(output.append("abc", [])).toBe("abc");
+  expect(output.outputLength).toBe(7);
+});

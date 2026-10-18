@@ -12,7 +12,7 @@ export function createRedactedStreamOutput(outputLimit) {
     const byteBounded = truncateOutputTextToBytes(redacted, remaining);
     const output = truncateRedactedOutput(redacted, byteBounded.text.length);
 
-    outputLength += byteBounded.byteLength - (byteBounded.text.length - output.length);
+    outputLength += Buffer.byteLength(output, "utf8");
     return output;
   }
 
