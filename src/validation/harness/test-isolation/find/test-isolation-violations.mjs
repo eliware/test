@@ -15,14 +15,14 @@ export function findTestIsolationViolations(source) {
   } catch {
     return ["could not parse the test module."];
   }
-  return findTestIsolationViolationsInAst(ast, source);
+  return findTestIsolationViolationsInAst(ast);
 }
 
-export function findTestIsolationViolationsInAst(ast, source) {
+export function findTestIsolationViolationsInAst(ast) {
   const findings = [
     ...findEffectModuleViolations(ast),
     ...findClockEffectViolations(ast),
-    ...findNetworkProcessViolations(ast, source),
+    ...findNetworkProcessViolations(ast),
     ...findHttpClientViolations(ast),
   ];
   return [...new Set(findings)];

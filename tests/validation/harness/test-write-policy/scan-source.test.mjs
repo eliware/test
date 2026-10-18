@@ -101,7 +101,9 @@ test("finds writes through injected file handles and allows explicit mocks", () 
       'jest.mock("node:fs"); import { writeFile } from "node:fs";',
       "tests/example.test.mjs",
     ),
-  ).toEqual([]);
+  ).toEqual([
+    "tests/example.test.mjs:1 uses a test API that creates files or temporary directories: import of writeFile.",
+  ]);
   expect(
     findTestWritePolicyViolations(
       'jest.mock("node:fs"); const fs = await import("node:fs"); fs.writeFile("data");',

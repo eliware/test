@@ -1,10 +1,11 @@
 import { visitAst } from "../../visit-ast.mjs";
 
-export function findNetworkProcessViolations(ast, source) {
+export function findNetworkProcessViolations(ast) {
   const findings = [];
   const aliases = collectAliases(ast);
+  const fetchSpies = collectFetchSpies(ast);
   visitAst(ast, (node) => {
-    if (isExternalFetch(node, source, aliases.fetch))
+    if (isExternalFetch(node, aliases.fetch, fetchSpies))
       findings.push("must mock fetch, inject it, or use a localhost URL.");
     if (isDirectProcessEffect(node, aliases.processObjects, aliases.processMethods))
       findings.push("must mock process effects or inject the process dependency.");
@@ -13,19 +14,42 @@ export function findNetworkProcessViolations(ast, source) {
 }
 
 function collectAliases(ast) {
-  const aliases = { fetch: new Set(), processObjects: new Set(), processMethods: new Set() };
+  const aliases = { fetch: new Map(), processObjects: new Set(), processMethods: new Set() };
   visitAst(ast, (node) => {
     if (node.type !== "VariableDeclarator" || node.id?.type !== "Identifier") return;
-    if (node.init?.name === "fetch") aliases.fetch.add(node.id.name);
+    if (node.init?.name === "fetch") aliases.fetch.set(node.id.name, node.start);
     if (node.init?.name === "process") aliases.processObjects.add(node.id.name);
     if (node.init?.object?.name === "process") aliases.processMethods.add(node.id.name);
   });
   return aliases;
 }
 
-function isExternalFetch(node, source, aliases) {
-  if (node.type !== "CallExpression" || !isFetchCallee(node.callee, aliases)) return false;
-  if (/jest\.spyOn\(\s*(?:globalThis|global)\s*,\s*["']fetch["']\s*\)/u.test(source)) return false;
+function collectFetchSpies(ast) {
+  const spies = [];
+  visitAst(ast, (node) => {
+    const callee = node.type === "CallExpression" ? node.callee : null;
+    if (callee?.type !== "MemberExpression" || callee.object?.name !== "jest") return;
+    const method = callee.computed ? callee.property?.value : callee.property?.name;
+    const target = node.arguments[0]?.name;
+    const property = node.arguments[1]?.value;
+    if (
+      method === "spyOn" &&
+      ["global", "globalThis", "window"].includes(target) &&
+      property === "fetch"
+    )
+      spies.push({ target, position: node.start });
+  });
+  return spies;
+}
+
+function isExternalFetch(node, aliases, fetchSpies) {
+  if (node.type !== "CallExpression") return false;
+  const target = fetchTarget(node.callee, aliases);
+  if (!target) return false;
+  const bindingPosition = aliases.get(node.callee.name);
+  const effectivePosition = bindingPosition ?? node.start;
+  if (fetchSpies.some((spy) => spy.position < effectivePosition && spyMatches(spy.target, target)))
+    return false;
   const url = node.arguments[0];
   if (url?.type !== "StringLiteral") return true;
   try {
@@ -35,13 +59,21 @@ function isExternalFetch(node, source, aliases) {
   }
 }
 
-function isFetchCallee(callee, aliases) {
-  if (callee?.name === "fetch" || aliases.has(callee?.name)) return true;
-  return (
+function fetchTarget(callee, aliases) {
+  if (callee?.name === "fetch") return "globalThis";
+  if (aliases.has(callee?.name)) return "globalThis";
+  if (
     callee?.type === "MemberExpression" &&
     ["global", "globalThis", "window"].includes(callee.object?.name) &&
     (callee.computed ? callee.property?.value : callee.property?.name) === "fetch"
-  );
+  )
+    return callee.object.name;
+  return undefined;
+}
+
+function spyMatches(spyTarget, fetchTargetName) {
+  if (fetchTargetName === "globalThis") return ["global", "globalThis"].includes(spyTarget);
+  return spyTarget === fetchTargetName;
 }
 
 function isDirectProcessEffect(node, processObjects, processMethods) {

@@ -3,8 +3,8 @@ import { findTestPolicyViolations } from "../../../src/validation/harness/scan-t
 
 test("reports write, network, and clock effects in one source scan", () => {
   const source = [
-    'jest.mock("node:fs/promises");',
-    'import { writeFile } from "node:fs/promises";',
+    'jest.unstable_mockModule("node:fs/promises", () => ({}));',
+    'const { writeFile } = await import("node:fs/promises");',
     'fetch("https://outside.example");',
     "Date.now();",
   ].join("\n");

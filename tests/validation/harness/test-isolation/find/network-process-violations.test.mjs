@@ -16,6 +16,27 @@ test("allows localhost fetch and mocked global fetch", () => {
   expect(findNetworkProcessViolations(parse(local), local)).toEqual([]);
   const mocked = 'jest.spyOn(globalThis, "fetch"); fetch("https://example.com");';
   expect(findNetworkProcessViolations(parse(mocked), mocked)).toEqual([]);
+  const lateSpy = 'fetch("https://example.com"); jest.spyOn(globalThis, "fetch");';
+  expect(findNetworkProcessViolations(parse(lateSpy), lateSpy)).toEqual([
+    "must mock fetch, inject it, or use a localhost URL.",
+  ]);
+  const capturedBeforeSpy =
+    'const request = fetch; jest.spyOn(globalThis, "fetch"); request("https://example.com");';
+  expect(findNetworkProcessViolations(parse(capturedBeforeSpy), capturedBeforeSpy)).toEqual([
+    "must mock fetch, inject it, or use a localhost URL.",
+  ]);
+  const wrongTarget = 'jest.spyOn(window, "fetch"); fetch("https://example.com");';
+  expect(findNetworkProcessViolations(parse(wrongTarget), wrongTarget)).toEqual([
+    "must mock fetch, inject it, or use a localhost URL.",
+  ]);
+  const wrongObjectSpy = 'jest.spyOn(globalThis, "fetch"); window.fetch("https://example.com");';
+  expect(findNetworkProcessViolations(parse(wrongObjectSpy), wrongObjectSpy)).toEqual([
+    "must mock fetch, inject it, or use a localhost URL.",
+  ]);
+  const matchingObjectSpy = 'jest.spyOn(window, "fetch"); window.fetch("https://example.com");';
+  expect(findNetworkProcessViolations(parse(matchingObjectSpy), matchingObjectSpy)).toEqual([]);
+  const computedSpy = 'jest["spyOn"](globalThis, "fetch"); fetch("https://example.com");';
+  expect(findNetworkProcessViolations(parse(computedSpy), computedSpy)).toEqual([]);
   const namespaced = 'globalThis.fetch("https://example.com");';
   expect(findNetworkProcessViolations(parse(namespaced), namespaced)).toEqual([
     "must mock fetch, inject it, or use a localhost URL.",

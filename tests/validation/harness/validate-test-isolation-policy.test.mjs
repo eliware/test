@@ -20,7 +20,7 @@ beforeEach(() => {
 test("checks test sources and ignores files outside test suites", async () => {
   findRepositoryFiles.mockResolvedValue(["tests/clean.test.mjs", "tests/helper.mjs", "README.md"]);
   readFile.mockResolvedValue(
-    'jest.mock("node:fs/promises"); import { readFile } from "node:fs/promises";',
+    'jest.unstable_mockModule("node:fs/promises", () => ({})); const { readFile } = await import("node:fs/promises");',
   );
   await expect(validateTestIsolationPolicy("C:/repo")).resolves.toEqual([]);
   expect(findRepositoryFiles).toHaveBeenCalledWith("C:/repo");
@@ -34,6 +34,8 @@ test("returns path and line details for file creation APIs", async () => {
     'jest.mock("node:fs/promises");\nimport { writeFile } from "node:fs/promises";\nfetch("https://outside.example");',
   );
   await expect(validateTestIsolationPolicy("C:/repo")).resolves.toEqual([
+    "tests/writes.test.mjs:2 uses a test API that creates files or temporary directories: import of writeFile.",
+    "tests/writes.test.mjs: must mock effect module node:fs/promises or inject its dependency.",
     "tests/writes.test.mjs: must mock fetch, inject it, or use a localhost URL.",
   ]);
 });

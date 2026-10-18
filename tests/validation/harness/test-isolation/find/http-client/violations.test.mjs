@@ -22,7 +22,7 @@ test("allows localhost requests and explicit HTTP mocks", () => {
     sourceType: "module",
   });
   const mock = parse(
-    'jest.mock("node:http"); import * as http from "node:http"; http.get("https://example.com");',
+    'jest.unstable_mockModule("node:http", () => ({})); const http = await import("node:http"); http.get("https://example.com");',
     { sourceType: "module" },
   );
   const spy = parse(

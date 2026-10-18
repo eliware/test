@@ -1,7 +1,15 @@
 import { join } from "node:path";
 import { captureSmokePath } from "./path.mjs";
 
-export async function captureSmokePaths(root, packageName, binNames, storage, fs, platform) {
+export async function captureSmokePaths(
+  root,
+  packageName,
+  binNames,
+  storage,
+  fs,
+  platform,
+  assertPackageParents = async () => {},
+) {
   const packagePath = join(root, "node_modules", ...packageName.split("/"));
   const paths = [
     join(root, "package.json"),
@@ -14,7 +22,9 @@ export async function captureSmokePaths(root, packageName, binNames, storage, fs
     ),
   ];
   const entries = [];
-  for (const path of new Set(paths))
+  for (const path of new Set(paths)) {
+    await assertPackageParents(root, packageName);
     entries.push(await captureSmokePath(path, storage, fs, platform));
+  }
   return entries;
 }

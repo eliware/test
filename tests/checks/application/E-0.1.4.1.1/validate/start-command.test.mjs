@@ -43,3 +43,12 @@ test.each(['node "bin/a.mjs', 'node bin/a.mjs"', "node 'bin/a.mjs", "node bin/a.
     );
   },
 );
+
+test.each(["node \"bin/a.mjs'", "node 'bin/a.mjs\""])(
+  "rejects mismatched quote delimiters around an entrypoint: %s",
+  (start) => {
+    expect(validateStartCommand({ scripts: { start } }, ["bin/a.mjs"])).toContain(
+      "standalone token",
+    );
+  },
+);

@@ -66,6 +66,33 @@ test("cleans failed snapshots and returns the original filesystem error", async 
   ).rejects.toThrow("read denied");
   expect(fs.rm).toHaveBeenCalledWith("C:/smoke/backup", { recursive: true, force: true });
 });
+
+test("rechecks package parents before each snapshot path", async () => {
+  let packageParentChecks = 0;
+  const fs = {
+    ...missingFs(),
+    lstat: async (path) => {
+      if (
+        path.replaceAll("\\", "/") === "C:/consumer/node_modules/@eliware" &&
+        ++packageParentChecks === 2
+      )
+        return { isSymbolicLink: () => true };
+      const error = new Error("missing");
+      error.code = "ENOENT";
+      throw error;
+    },
+  };
+  await expect(
+    captureSmokeTargetState(
+      "C:/consumer",
+      "@eliware/test",
+      [],
+      fs,
+      process.platform,
+      "C:/smoke/backup",
+    ),
+  ).rejects.toThrow("Cannot safely use a smoke package path through a link");
+});
 test("reports backup location when failed snapshot cleanup also fails", async () => {
   const failed = {
     ...missingFs(),

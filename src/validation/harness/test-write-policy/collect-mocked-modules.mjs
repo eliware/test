@@ -24,9 +24,7 @@ export function isModuleMockedForLoad(ast, moduleName, loadNode) {
     if (!isJestMockCall(node)) return;
     if (!sameModule(node.arguments[0]?.value, moduleName)) return;
     if (mockUsesActualModule(node)) return;
-    const method = mockMethod(node);
-    if (method === "mock" || (loadNode.type !== "ImportDeclaration" && node.start < loadNode.start))
-      mocked = true;
+    if (loadNode.type !== "ImportDeclaration" && node.start < loadNode.start) mocked = true;
   });
   return mocked;
 }

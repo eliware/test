@@ -24,7 +24,7 @@ export function findTestWritePolicyViolationsInAst(ast, filePath) {
   const violations = [];
   visitAst(ast, (node) => {
     if (node.type === "ImportDeclaration") {
-      inspectImport(node, ast, namespaceBindings, violations, filePath);
+      inspectImport(node, namespaceBindings, violations, filePath);
       return;
     }
     if (node.type === "VariableDeclarator") {
@@ -37,9 +37,8 @@ export function findTestWritePolicyViolationsInAst(ast, filePath) {
   return [...violations, ...findFileHandleWriteViolations(ast, filePath)];
 }
 
-function inspectImport(node, ast, namespaceBindings, violations, filePath) {
+function inspectImport(node, namespaceBindings, violations, filePath) {
   const moduleName = node.source.value;
-  if (isModuleMockedForLoad(ast, moduleName, node)) return;
   for (const specifier of node.specifiers) {
     const importedName = specifier.imported?.name ?? specifier.imported?.value;
     if (
