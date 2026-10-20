@@ -4,6 +4,7 @@ import { validateCanonicalPublisherWorkflow } from "../../../../../src/checks/sh
 const workflowPath = ".github/workflows/npm.yaml";
 const canonicalPath = new URL("../../../../../specs/workflows/npm.yaml", import.meta.url);
 const npmWorkflow = `jobs:\n  validate:\n    permissions:\n      contents: read\n  publish:\n    permissions:\n      contents: read\n      id-token: write\n`;
+const ghcrWorkflow = `jobs:\n  publish:\n    permissions:\n      packages: write\n    steps:\n      - uses: docker/login-action@v3\n        with:\n          registry: ghcr.io\n          username: \${{ github.actor }}\n          password: \${{ secrets.GITHUB_TOKEN }}\n      - uses: docker/build-push-action@v7\n`;
 
 function inventory({ files = [workflowPath], text = npmWorkflow } = {}) {
   return { files: async () => files, readText: async () => text };
@@ -47,14 +48,28 @@ test("resolves each canonical file from the workflow ordering document", async (
   ).resolves.toEqual([]);
   await expect(
     validateCanonicalPublisherWorkflow(
-      inventory({ files: [".github/workflows/ghcr.yaml"], text: "workflow\n" }),
+      inventory({ files: [".github/workflows/ghcr.yaml"], text: ghcrWorkflow }),
       "ghcr-published",
       (url) => {
         expect(url.pathname).toMatch(/specs\/workflows\/ghcr\.yaml$/u);
-        return "workflow\n";
+        return ghcrWorkflow;
       },
     ),
   ).resolves.toEqual([]);
+});
+
+test("rejects a GHCR canonical workflow without registry authentication", async () => {
+  const invalidWorkflow = `jobs:\n  publish:\n    permissions:\n      packages: read\n    steps: []\n`;
+  await expect(
+    validateCanonicalPublisherWorkflow(
+      inventory({ files: [".github/workflows/ghcr.yaml"], text: invalidWorkflow }),
+      "ghcr-published",
+      () => invalidWorkflow,
+    ),
+  ).resolves.toEqual([
+    "specs/workflows/ghcr.yaml publish job must grant packages: write.",
+    "specs/workflows/ghcr.yaml publish job must log in with docker/login-action@v3.",
+  ]);
 });
 
 test("reports missing files, unavailable inventories, and read errors", async () => {

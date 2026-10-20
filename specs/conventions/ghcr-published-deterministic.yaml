@@ -18,6 +18,7 @@ directives:
     dos:
       - Keep the Dockerfile at the repository root.
       - Use .github/workflows/ghcr.yaml as the consumer publication workflow.
+      - Log in to ghcr.io with github.actor and secrets.GITHUB_TOKEN before the image push.
       - "Match it byte for byte with the bundled Eliware Test file
         specs/workflows/ghcr.yaml."
       - Include line endings and the final newline in each match.
