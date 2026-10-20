@@ -67,6 +67,7 @@ directives:
     dos:
       - Start AGENTS.md with the exact title shown in the example.
       - Include all required headings shown in the example.
+      - Give each required section some text.
       - Include the literal markers Node.js 26 and native ESM and all required shared
         validation command.
     donts:
@@ -86,6 +87,7 @@ directives:
       - Use the exact brand image, badge targets, and title markers shown in the examples.
       - Include all sections resolved from package.json.eliware.apply and
         ordering/readme-sections.yaml.
+      - Give each required README section some text.
       - "Use these exact general headings: `Features`, `Requirements`, `Setup`, `Usage`,
         `Development`, `Testing`, `Troubleshooting`, and `Security`."
       - Include Support, Links, and License sections.

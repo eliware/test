@@ -6,7 +6,10 @@ export function validateAgentsStructure(content, specificationHeadings = new Set
   if (firstContentLine !== "# AGENTS.md") return ["AGENTS.md must begin with # AGENTS.md."];
   const markdown = removeMarkdownCode(content);
   const lines = markdown.split(/\r?\n/u);
-  const actual = lines.filter((line) => /^##\s+/u.test(line)).map((line) => line.slice(3).trim());
+  const sections = lines.flatMap((line, index) =>
+    /^##\s+/u.test(line) ? [{ index, heading: line.slice(3).trim() }] : [],
+  );
+  const actual = sections.map(({ heading }) => heading);
   const order = readCanonicalOrder("agents-sections.yaml");
   const baseSections = order.baseSections;
   if (baseSections.some((section, index) => actual[index] !== section))
@@ -17,6 +20,14 @@ export function validateAgentsStructure(content, specificationHeadings = new Set
     remaining.some((h) => !isKnownHeading(h, order, specificationHeadings))
   )
     return ["AGENTS.md has duplicate, undeclared, or misordered section headings."];
+  const emptySections = sections.filter(({ index }) => {
+    const nextSection = sections.find((section) => section.index > index);
+    return !lines
+      .slice(index + 1, nextSection?.index)
+      .some((line) => line.trim() && !/^#{1,6}\s/u.test(line.trim()));
+  });
+  if (emptySections.length)
+    return emptySections.map(({ heading }) => `AGENTS.md section ${heading} must contain content.`);
   return [];
 }
 

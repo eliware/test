@@ -15,6 +15,17 @@ directives:
       - Match README branding, section order, support copy, and link labels to
         the canonical deterministic examples.
       - Match each public link label to its destination and stated action.
+      - Use each required heading in `README.md` and `AGENTS.md` for its stated subject.
+      - Use matching semantic requirements for each profile-specific heading.
+      - Use `README.md` sections for features, runtime needs, setup, usage, development, tests,
+        problem solving, and safeguards.
+      - Use `Project` for the repository purpose and owner in `AGENTS.md`.
+      - Use `Scope and boundaries` for repository limits and ownership.
+      - Use `Layout` for repository paths.
+      - Use `Development` for contributor tasks.
+      - Use `Validation` for repository checks.
+      - Use `Security` for safeguards.
+      - Use `Changes` for contribution rules.
       - Keep documentation current and complete for uses described in README.md, package
         metadata, and maintained workflows.
       - Give contributors commands and steps for tasks listed in package scripts and

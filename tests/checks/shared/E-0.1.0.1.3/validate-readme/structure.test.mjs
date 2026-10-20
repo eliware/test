@@ -24,12 +24,19 @@ function createReadme(headings, metadata) {
       .slice(1)
       .map((heading) => `- [${heading}](#${heading.toLowerCase().replaceAll(" ", "-")})`),
     "",
-    ...headings.slice(1).flatMap((heading) => [`## ${heading}`, ""]),
+    ...headings.slice(1).flatMap((heading) => [`## ${heading}`, "Section text.", ""]),
   ].join("\n");
 }
 
 test("accepts canonical section and link order", () => {
   expect(validateReadmeStructure(valid, expected, packageJson)).toBeNull();
+});
+
+test("rejects blank required sections", () => {
+  const blank = valid.replace("## Features\nSection text.", "## Features\n\n### Details");
+  expect(validateReadmeStructure(blank, expected, packageJson)).toContain(
+    "README.md section Features must contain content.",
+  );
 });
 
 test("enforces Documentation headings and their Table of Contents links", () => {

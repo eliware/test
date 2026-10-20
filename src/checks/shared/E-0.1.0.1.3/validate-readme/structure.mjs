@@ -41,6 +41,17 @@ export function validateReadmeStructure(readme, expected, packageJson = {}) {
     actualSections.some((heading) => !expectedSections.includes(heading))
   )
     return "README.md must include every required section once and no unlisted sections.";
+  const contentSections = headings.filter(({ index }) => index !== tocIndex);
+  const emptySections = contentSections.filter(({ index }) => {
+    const nextSection = headings.find((section) => section.index > index);
+    return !markdownLines
+      .slice(index + 1, nextSection?.index)
+      .some((line) => line.trim() && !/^#{1,6}\s/u.test(line.trim()));
+  });
+  if (emptySections.length)
+    return emptySections
+      .map(({ heading }) => `README.md section ${heading} must contain content.`)
+      .join("\n");
   const tocEnd = markdownLines.findIndex((line, index) => index > tocIndex && /^##\s+/u.test(line));
   const tocContent = markdownLines.slice(tocIndex, tocEnd).join("\n");
   const expectedLinks = expectedSections.map((heading) => [

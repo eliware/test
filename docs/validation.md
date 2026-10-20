@@ -134,6 +134,13 @@ Keep secrets out of child command output.
 The CLI redacts known secrets when it writes diagnostics.
 That redaction cannot find all secrets.
 
+## README and AGENTS sections
+
+The general checks require content after every required level-two heading in `README.md` and
+`AGENTS.md`.
+The checks report a section when it contains only blank lines or other headings.
+The semantic conventions define the information that belongs in each section.
+
 Eliware Test runs validation only. It does not change a release or deployment system.
 
 [Return to documentation](README.md).

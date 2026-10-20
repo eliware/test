@@ -6,6 +6,9 @@ Build `@eliware/test` with Node.js 26 or newer. Use native ESM.
 
 ## Scope and boundaries
 
+The package runs deterministic checks for repositories.
+It does not run semantic reviews or publish releases.
+
 ## Layout
 
 Keep implementation in `src/`, launchers in `bin/`, and tests in `tests/`.
@@ -37,6 +40,9 @@ Prevent repeated full-suite runs during development.
 Run the full `npm test` suite for final validation before a commit, milestone, or release.
 
 ## CLI
+
+Run `eliware-test` from the consumer repository root.
+Pass focused test paths before `--`.
 
 ## npm publication
 
