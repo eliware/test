@@ -25,7 +25,6 @@ Shared deterministic repository validation for Eliware projects
 ## Features
 
 Eliware Test validates repositories with deterministic checks selected by `package.json.eliware.apply`.
-It runs Jest and package checks when the selected profiles require them.
 
 ## Requirements
 
@@ -55,12 +54,11 @@ Read [release notes](RELEASE_NOTES.md) for changes by version.
 
 ## Development
 
-Read the [validation guide](docs/validation.md) for focused and aggregate test instructions.
+Read the [validation guide](docs/validation.md) for contributor instructions.
 
 ## Testing
 
-Eliware Test selects validation stages from the profiles in `package.json.eliware.apply`.
-The [validation guide](docs/validation.md) explains each stage and its results.
+Run `npm test` to validate the repository.
 
 ## Troubleshooting
 

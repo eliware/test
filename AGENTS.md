@@ -2,7 +2,7 @@
 
 ## Project
 
-Build `@eliware/test` with Node.js 26 or newer. Use native ESM.
+Build `@eliware/test`, the Eliware repository validator, with Node.js 26 or newer and native ESM.
 
 ## Scope and boundaries
 
@@ -29,7 +29,7 @@ Do not expose credentials, secrets, or private data.
 
 ## Changes
 
-Keep user guides current. Follow the shared conventions.
+Keep user guides current when behavior changes.
 
 ## Application
 
@@ -41,8 +41,7 @@ Run the full `npm test` suite for final validation before a commit, milestone, o
 
 ## CLI
 
-Run `eliware-test` from the consumer repository root.
-Pass focused test paths before `--`.
+Use README.md and docs/ for CLI usage instructions.
 
 ## npm publication
 
