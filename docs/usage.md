@@ -50,8 +50,25 @@ List all profiles that apply in `package.json.eliware.apply`.
 Use the canonical profile order in [Profiles](profiles.md).
 The CLI does not infer profiles from files or dependencies.
 
-Set `package.json.eliware.exempt` only for an approved rule exemption.
-Each exemption requires a unique known `ruleId`, a justification, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+Set `package.json.eliware.exempt` only when Eli approves a waiver.
+Each waiver requires a unique known `ruleId`, a `cause`, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+
+Use the field names and value types shown in this example:
+
+```json
+{
+  "ruleId": "E-0.1.0.1.10",
+  "reason": "An upstream file cannot be changed.",
+  "approver": "Eli",
+  "approvalTimestamp": "2026-10-20T12:00:00Z",
+  "expiry": null,
+  "paths": ["src/generated/**"]
+}
+```
+
+Replace the example rule ID, cause, timestamp, and path with approved values.
+Use a rule ID that exists in the selected profiles.
+Use `paths` to limit the waiver to matching repository-relative paths.
 
 Add a `paths` array to skip repository-relative paths during that rule only.
 Use an exact path when it has no wildcard.
@@ -155,7 +172,7 @@ Add a dated section for the current version to `RELEASE_NOTES.md`.
 Add a matching `v<version>` Git tag for each published release.
 Each earlier release section must match an existing Git tag.
 
-Run `npm run pack` in this checkout to check package contents.
+Run `npm test -- --pack` in this checkout to check package contents.
 Run `eliware-test --pack` in a consumer repository to check its package contents.
 
 [Return to documentation](README.md).

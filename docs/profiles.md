@@ -6,6 +6,25 @@ Eliware Test does not infer profiles from repository files.
 All repositories must apply `general`.
 Use `general` alone when no other profile fits.
 
+Use this table to select profiles:
+
+| Profile          | Select it for                                                 |
+| ---------------- | ------------------------------------------------------------- |
+| `general`        | Every repository.                                             |
+| `documentation`  | A repository for documentation only.                          |
+| `workspace`      | A private repository that contains shared workspace runbooks. |
+| `library`        | A shared code library published to npm.                       |
+| `application`    | The base profile for an application repository.               |
+| `cli`            | An application with a command-line interface.                 |
+| `web`            | An application with a web interface.                          |
+| `discord`        | A Discord bot or application.                                 |
+| `mcp-server`     | An MCP server application.                                    |
+| `database`       | An application with database-specific requirements.           |
+| `infrastructure` | A private repository that defines infrastructure.             |
+| `npm-published`  | A repository that publishes an npm package.                   |
+| `ghcr-published` | A repository that publishes an image to GHCR.                 |
+| `private`        | A repository that has private visibility.                     |
+
 ## Follow profile combinations
 
 Read [profile-combinations.yaml](../specs/conventions/ordering/profile-combinations.yaml) for required and prohibited profiles.
