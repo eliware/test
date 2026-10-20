@@ -1,5 +1,13 @@
 # Release Notes
 
+## 14.0.0 — 2026-10-19
+
+### Changed
+
+- Set the harness package version to 14.0.0 and YAML convention versions to 14.0.
+- Set the runbook schema version to 14.
+- Update Oxlint to 1.89.0.
+
 ## 13.0.0 — 2026-10-18
 
 ### Breaking changes

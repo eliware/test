@@ -8,7 +8,7 @@ const nested = join(specs, "nested");
 const record = (name) => ({ name, isDirectory: () => false, isFile: () => true });
 const folder = (name) => ({ name, isDirectory: () => true, isFile: () => false });
 const directiveDocument =
-  "version: '13.0'\ndescription: Rules\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n";
+  "version: '14.0'\ndescription: Rules\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n";
 
 test("reads directive documents from nested YAML files", async () => {
   const result = await readConsumerSpecificationFiles(root, {
@@ -69,7 +69,7 @@ test("records parser exceptions and empty root directive documents", async () =>
   ]);
   const emptyDirectives = await readConsumerSpecificationFiles(root, {
     readdir: async () => [record("directives.yaml")],
-    read: async () => "version: '13.0'\ndescription: No rules\n",
+    read: async () => "version: '14.0'\ndescription: No rules\n",
   });
   expect(emptyDirectives.directivePathParsed).toBe(true);
   expect(emptyDirectives.directivePathHasDirectives).toBe(false);

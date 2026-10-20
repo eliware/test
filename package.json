@@ -1,6 +1,6 @@
 {
   "name": "@eliware/test",
-  "version": "13.0.0",
+  "version": "14.0.0",
   "type": "module",
   "description": "Shared deterministic repository validation for Eliware projects",
   "keywords": [
@@ -50,7 +50,7 @@
     "istanbul-lib-instrument": "^6.0.3",
     "jest": "^30.5.2",
     "minimatch": "^10.2.6",
-    "oxlint": "^1.88.0",
+    "oxlint": "^1.89.0",
     "prettier": "^3.9.10",
     "semver": "^7.8.5",
     "yaml": "^2.9.1"

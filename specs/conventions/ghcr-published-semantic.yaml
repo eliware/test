@@ -1,4 +1,4 @@
-version: "13.0"
+version: "14.0"
 description: Defines semantic repository requirements for Eliware container publication.
 directives:
   - id: E-0.1.11.0.0

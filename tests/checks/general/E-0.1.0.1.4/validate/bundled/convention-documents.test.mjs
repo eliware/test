@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { validateBundledConventionDocuments } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled/convention-documents.mjs";
 
 const document = {
-  version: "13.0",
+  version: "14.0",
   description: "General convention.",
   directives: [{ id: "E-0.0", dos: ["Keep rules clear."], donts: ["Do not mix rules."] }],
 };

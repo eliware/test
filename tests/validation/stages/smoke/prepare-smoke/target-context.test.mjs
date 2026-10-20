@@ -15,7 +15,7 @@ const root = resolve("/source");
 const target = resolve("/consumer");
 const targetPackage = {
   scripts: { test: "eliware-test" },
-  dependencies: { "@eliware/test": "13.0.0" },
+  dependencies: { "@eliware/test": "14.0.0" },
 };
 const identity = () => ({ dev: 1, ino: 2, birthtimeMs: 3, isDirectory: () => true });
 
@@ -25,7 +25,7 @@ function setConsumerFiles() {
   readFile
     .mockResolvedValueOnce(JSON.stringify(targetPackage))
     .mockResolvedValueOnce("installed tree lock")
-    .mockResolvedValueOnce('{"name":"@eliware/test","version":"13.0.0"}');
+    .mockResolvedValueOnce('{"name":"@eliware/test","version":"14.0.0"}');
 }
 
 beforeEach(() => {

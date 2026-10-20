@@ -18,7 +18,7 @@ test("counts hyphenated terms as one word and returns source offsets", () => {
 
 test("splits sentences at terminal punctuation and keeps decimal points", () => {
   expect(splitSentences("One. Two? Three!")).toEqual(["One.", "Two?", "Three!"]);
-  expect(splitSentences("Version 13.0 works.")).toEqual(["Version 13.0 works."]);
+  expect(splitSentences("Version 14.0 works.")).toEqual(["Version 14.0 works."]);
   expect(splitSentences("A word.next")).toEqual(["A word.next"]);
   expect(splitSentences("What?!” Next.")).toEqual(["What?!”", "Next."]);
   expect(splitSentences("A final fragment")).toEqual(["A final fragment"]);

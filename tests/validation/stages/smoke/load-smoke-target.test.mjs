@@ -15,7 +15,7 @@ const treeLockPath = join(target, "node_modules", ".package-lock.json");
 const installedPath = join(target, "node_modules", "@eliware", "test", "package.json");
 const validPackage = {
   scripts: { test: "eliware-test" },
-  dependencies: { "@eliware/test": "13.0.0" },
+  dependencies: { "@eliware/test": "14.0.0" },
 };
 
 beforeEach(() => readFile.mockReset());
@@ -34,7 +34,7 @@ function mockTargetFiles(packageJson = validPackage) {
   readFile
     .mockResolvedValueOnce(JSON.stringify(packageJson))
     .mockResolvedValueOnce("installed tree lock")
-    .mockResolvedValueOnce('{"name":"@eliware/test","version":"13.0.0"}');
+    .mockResolvedValueOnce('{"name":"@eliware/test","version":"14.0.0"}');
 }
 
 test("loads an existing consumer with a test script and package dependency", async () => {
