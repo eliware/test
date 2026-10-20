@@ -20,16 +20,8 @@ test("runs only when the entrypoint path matches", async () => {
     await runSmokeCliEntrypoint({ moduleUrl: entryUrl.href, argvPath: "other.mjs", args: [], run });
     await runSmokeCliEntrypoint({ moduleUrl: entryUrl.href, args: [], run });
     expect(run).toHaveBeenCalledTimes(1);
-  } finally {
-    process.exitCode = prior;
-  }
-});
 
-test("decodes URL-escaped characters when matching an entrypoint path", async () => {
-  const path = "C:/checkout with spaces/entrypoint.mjs";
-  const run = jest.fn(async () => 18);
-  const prior = process.exitCode;
-  try {
+    const path = "C:/checkout with spaces/entrypoint.mjs";
     await runSmokeCliEntrypoint({
       moduleUrl: pathToFileURL(path).href,
       argvPath: path,
@@ -37,7 +29,8 @@ test("decodes URL-escaped characters when matching an entrypoint path", async ()
       run,
     });
     expect(process.exitCode).toBe(18);
-    expect(run).toHaveBeenCalledWith({ args: [] });
+    expect(run).toHaveBeenCalledTimes(2);
+    expect(run).toHaveBeenLastCalledWith({ args: [] });
   } finally {
     process.exitCode = prior;
   }
