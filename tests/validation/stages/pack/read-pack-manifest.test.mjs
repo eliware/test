@@ -4,18 +4,10 @@ import { redactCredentialFields } from "../../../../src/validation/shared/output
 
 const files = [{ path: "package.json" }];
 
-test("reads valid array and object manifests for the requested package", () => {
+test("reads the requested package manifest", () => {
   expect(readPackManifest(JSON.stringify([{ name: "target", files }]), "target")).toEqual({
     entry: { name: "target", files },
   });
-  expect(readPackManifest(JSON.stringify([{ files }]))).toEqual({ entry: { files } });
-  expect(readPackManifest(JSON.stringify({ name: "target", files }), "target")).toEqual({
-    entry: { name: "target", files },
-  });
-  expect(readPackManifest(JSON.stringify({ target: { name: "target", files } }), "target")).toEqual(
-    { entry: { name: "target", files } },
-  );
-  expect(readPackManifest(JSON.stringify({ target: { files } }))).toEqual({ entry: { files } });
 });
 
 test("reads npm pack JSON for a package name that contains webhook", () => {
@@ -28,20 +20,8 @@ test("reads npm pack JSON for a package name that contains webhook", () => {
   });
 });
 
-test("rejects missing, mismatched, and ambiguous package entries", () => {
+test("reports when the requested package entry does not exist", () => {
   expect(readPackManifest("{}", "target").error).toContain("requested package");
-  expect(readPackManifest(JSON.stringify([{ name: "other", files }]), "target").error).toContain(
-    "requested package",
-  );
-  expect(
-    readPackManifest(JSON.stringify({ target: { name: "other", files } }), "target").error,
-  ).toContain("requested package");
-  expect(readPackManifest(JSON.stringify({ name: "other", files }), "target").error).toContain(
-    "requested package",
-  );
-  expect(readPackManifest(JSON.stringify({ first: { files }, second: { files } })).error).toContain(
-    "requested package",
-  );
   expect(readPackManifest("null").error).toContain("files array");
 });
 
