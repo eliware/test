@@ -39,7 +39,7 @@ Read [Usage](usage.md) for the supported extensions and examples.
 
 ### Jest reports a timeout
 
-Each suite has a five-second limit.
+Each suite has a ten-second limit.
 A 15-second watchdog also covers startup and pauses between suites.
 Use `--debug-timing` to find the slow suite.
 Jest runs in-band and checks for open handles.

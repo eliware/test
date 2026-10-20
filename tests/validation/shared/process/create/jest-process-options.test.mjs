@@ -12,7 +12,7 @@ test("assembles the Jest process configuration and forwards timeout diagnostics"
     cwd: "C:/fixture",
     progressPattern: /^\[eliware-test-progress\]/m,
     progressTimeoutMs: 15_000,
-    suiteTimeoutMs: 5_000,
+    suiteTimeoutMs: 10_000,
     env: { NODE_OPTIONS: "--no-warnings --experimental-vm-modules" },
   });
   expect(options.resetOnAnyOutput).toBeUndefined();
@@ -32,12 +32,12 @@ test("enables expanded output and forwards stderr callback in debug mode", () =>
   expect(options.onStderr).toBe(onStderr);
 });
 
-test("reports the suite that exceeds the five second limit", () => {
+test("reports the suite that exceeds the ten second limit", () => {
   const onTimeout = jest.fn();
   const options = createJestProcessOptions("C:/fixture", [], { onTimeout });
   options.onSuiteTimeout("tests/slow.test.mjs");
   expect(onTimeout).toHaveBeenCalledWith(
-    "Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.",
+    "Test suite tests/slow.test.mjs exceeded its 10 second maximum runtime.",
   );
 });
 

@@ -22,9 +22,9 @@ test("classifies timeout, failure, and success results", () => {
     classifyJestResult(
       "E-0.1.130.13",
       { code: 1, stdout: "", stderr: "" },
-      "Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.",
+      "Test suite tests/slow.test.mjs exceeded its 10 second maximum runtime.",
     ).message,
-  ).toBe("Test suite tests/slow.test.mjs exceeded its 5 second maximum runtime.");
+  ).toBe("Test suite tests/slow.test.mjs exceeded its 10 second maximum runtime.");
   expect(classifyJestResult("E-0.1.130.13", { timedOut: true }).message).toBe(
     "Jest timed out after 15 seconds without progress.",
   );

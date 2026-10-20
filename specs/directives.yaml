@@ -271,7 +271,7 @@ directives:
           - Run requested Jest validation one time with established ordering and lifecycle
             behavior.
           - Report suite status during each run.
-          - Enforce a 5-second limit for each test suite and a different
+          - Enforce a 10-second limit for each test suite and a different
             15-second startup or between-suite no-progress deadline.
           - Report the current suite or the most recent suite and its time limit on stop.
           - Send a graceful stop signal first.

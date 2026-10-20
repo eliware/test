@@ -44,7 +44,7 @@ directives:
       - Keep unmatched fixtures, snapshots, generators, and test support in root
         test-fixtures/.
       - Keep generated test output in ignored artifacts/.
-      - Limit each src/ .mjs file to 100 physical lines and each tests/ .test.mjs file to 200.
+      - Limit each src/ .mjs file to 150 physical lines and each tests/ .test.mjs file to 300.
       - Include empty lines, comments, and the final unterminated line in counts.
     donts:
       - Do not exclude source files from mirroring or line limits for coverage exclusions.

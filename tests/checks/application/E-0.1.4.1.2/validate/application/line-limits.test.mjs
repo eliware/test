@@ -2,24 +2,38 @@ import { expect, test } from "@jest/globals";
 import { validateApplicationLineLimits } from "../../../../../../src/checks/application/E-0.1.4.1.2/validate/application/line-limits.mjs";
 
 test("counts source lines and test lines, including empty files", async () => {
-  const read = async (path) => (path.endsWith("a.mjs") ? Array(102).fill("x").join("\n") : "");
+  const read = async (path) => (path.endsWith("a.mjs") ? Array(152).fill("x").join("\n") : "");
   await expect(
     validateApplicationLineLimits(["src/a.mjs", "tests/b.test.mjs"], read, "repo"),
-  ).resolves.toEqual(["src/a.mjs has 102 physical lines. The maximum is 100."]);
+  ).resolves.toEqual(["src/a.mjs has 152 physical lines. The maximum is 150."]);
 });
 
 test("accepts the maximum when the final newline is present", async () => {
-  const source = Array(100).fill("").join("\n") + "\n";
+  const source = Array(150).fill("").join("\n") + "\n";
   await expect(
     validateApplicationLineLimits(["src/a.mjs"], async () => source, "repo"),
   ).resolves.toEqual([]);
 });
 
 test("counts an extra trailing blank line", async () => {
-  const source = Array(101).fill("").join("\n") + "\n";
+  const source = Array(151).fill("").join("\n") + "\n";
   await expect(
     validateApplicationLineLimits(["src/a.mjs"], async () => source, "repo"),
-  ).resolves.toEqual(["src/a.mjs has 101 physical lines. The maximum is 100."]);
+  ).resolves.toEqual(["src/a.mjs has 151 physical lines. The maximum is 150."]);
+});
+
+test("applies the test file limit of 300 physical lines", async () => {
+  const source = Array(300).fill("").join("\n");
+  await expect(
+    validateApplicationLineLimits(["tests/a.test.mjs"], async () => source, "repo"),
+  ).resolves.toEqual([]);
+  await expect(
+    validateApplicationLineLimits(
+      ["tests/a.test.mjs"],
+      async () => `${Array(300).fill("x").join("\n")}\nx`,
+      "repo",
+    ),
+  ).resolves.toEqual(["tests/a.test.mjs has 301 physical lines. The maximum is 300."]);
 });
 
 test("fails when it cannot read a source file", async () => {

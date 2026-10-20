@@ -80,7 +80,7 @@ Jest writes coverage reports and `jest-console-output.json` to that directory.
 The CLI keeps these files after the run.
 The CLI does not use system temp or user folders for its temporary files.
 
-Each test suite has a five-second limit.
+Each test suite has a ten-second limit.
 A 15-second watchdog also covers startup and pauses between suites.
 Output does not change the limits.
 The CLI requests a graceful stop after a timeout.

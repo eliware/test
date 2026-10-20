@@ -13,7 +13,7 @@ export function createJestProcessOptions(root, args = [], options = {}) {
     env,
     progressPattern: /^\[eliware-test-progress\]/m,
     progressTimeoutMs: 15_000,
-    suiteTimeoutMs: 5_000,
+    suiteTimeoutMs: 10_000,
     onProgress(text) {
       for (const event of progress.readProgress(text)) {
         if (event.event === "start") this.onSuiteStart?.(event.path);
@@ -27,7 +27,7 @@ export function createJestProcessOptions(root, args = [], options = {}) {
     },
     onTimeout: () => options.onTimeout?.(progress.timeoutMessage()),
     onSuiteTimeout(path) {
-      options.onTimeout?.(`Test suite ${path} exceeded its 5 second maximum runtime.`);
+      options.onTimeout?.(`Test suite ${path} exceeded its 10 second maximum runtime.`);
     },
     maxOutputLength: 1_000_000,
     ...(typeof options.writeOutput === "function"

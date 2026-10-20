@@ -8,7 +8,7 @@ test("tracks one active suite and stops stale timers when the next suite starts"
   const onSuiteTimeout = jest.fn();
   const termination = { onTimeout: jest.fn() };
   const tracker = createSuiteTimeoutTracker(
-    { suiteTimeoutMs: 5_000, onSuiteTimeout },
+    { suiteTimeoutMs: 10_000, onSuiteTimeout },
     ({ onTimeout: callback }) => {
       callbacks.set(callbacks.size, callback);
       return { reset, stop };

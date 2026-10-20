@@ -96,7 +96,7 @@ test("terminates Jest when one suite exceeds its total runtime deadline", async 
     const result = runChild("ignored", [], {
       spawnProcess: () => child,
       progressTimeoutMs: 15_000,
-      suiteTimeoutMs: 5_000,
+      suiteTimeoutMs: 10_000,
       progressPattern: /^progress$/u,
       onProgress(text) {
         if (text === "progress") this.onSuiteStart("tests/slow.test.mjs");
@@ -108,7 +108,7 @@ test("terminates Jest when one suite exceeds its total runtime deadline", async 
 
     child.stderr.emit("data", "progress\n");
     child.stdout.emit("data", "test still producing output\n");
-    jest.advanceTimersByTime(6_001);
+    jest.advanceTimersByTime(11_001);
 
     await expect(result).resolves.toMatchObject({ timedOut: true });
     expect(onSuiteTimeout).toHaveBeenCalledWith("tests/slow.test.mjs");
