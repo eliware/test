@@ -23,11 +23,14 @@ beforeEach(() => {
 });
 
 test("creates a temporary root and records its identity", async () => {
-  await expect(createSmokeTempRoot(root)).resolves.toEqual({ path: tempRoot, identity });
+  await expect(createSmokeTempRoot(root)).resolves.toEqual({
+    path: resolve(tempRoot),
+    identity,
+  });
   expect(mkdtemp).toHaveBeenCalledWith(join(root, ".eliware-tarball-smoke-"));
-  expect(lstat).toHaveBeenCalledWith(tempRoot);
+  expect(lstat).toHaveBeenCalledWith(resolve(tempRoot));
   expect(realpath).toHaveBeenCalledWith(root);
-  expect(realpath).toHaveBeenCalledWith(tempRoot);
+  expect(realpath).toHaveBeenCalledWith(resolve(tempRoot));
 });
 
 test.each(["C:/outside/.eliware-tarball-smoke-123", "C:/repo/nested/.eliware-tarball-smoke-123"])(
@@ -59,7 +62,7 @@ test("rejects a temporary path that resolves outside the source checkout", async
   realpath.mockImplementation(async (path) => (path === resolvedTempRoot ? outsidePath : path));
 
   await expect(createSmokeTempRoot(root)).resolves.toEqual({
-    error: `Cannot verify temporary smoke directory. left untrusted path untouched at ${tempRoot}.`,
+    error: `Cannot verify temporary smoke directory. left untrusted path untouched at ${resolve(tempRoot)}.`,
   });
   expect(rmdir).not.toHaveBeenCalled();
 });
@@ -68,7 +71,7 @@ test("rejects a temporary path that is not a real directory", async () => {
   lstat.mockResolvedValue({ ...identity, isSymbolicLink: () => true });
 
   await expect(createSmokeTempRoot(root)).resolves.toMatchObject({
-    error: `Cannot verify temporary smoke directory. left untrusted path untouched at ${tempRoot}.`,
+    error: `Cannot verify temporary smoke directory. left untrusted path untouched at ${resolve(tempRoot)}.`,
   });
   expect(realpath).not.toHaveBeenCalled();
   expect(rmdir).not.toHaveBeenCalled();
@@ -78,18 +81,18 @@ test("removes a temporary path that is not a directory", async () => {
   lstat.mockResolvedValue({ ...identity, isDirectory: () => false });
 
   await expect(createSmokeTempRoot(root)).resolves.toEqual({
-    error: `Cannot verify temporary smoke directory. removed empty path ${tempRoot}: temporary path is not a directory`,
+    error: `Cannot verify temporary smoke directory. removed empty path ${resolve(tempRoot)}: temporary path is not a directory`,
   });
-  expect(rmdir).toHaveBeenCalledWith(tempRoot);
+  expect(rmdir).toHaveBeenCalledWith(resolve(tempRoot));
 });
 
 test("removes an unverified temporary directory", async () => {
   lstat.mockRejectedValue(new Error("inspection failed"));
 
   await expect(createSmokeTempRoot(root)).resolves.toEqual({
-    error: `Cannot verify temporary smoke directory. removed empty path ${tempRoot}: inspection failed`,
+    error: `Cannot verify temporary smoke directory. removed empty path ${resolve(tempRoot)}: inspection failed`,
   });
-  expect(rmdir).toHaveBeenCalledWith(tempRoot);
+  expect(rmdir).toHaveBeenCalledWith(resolve(tempRoot));
 });
 
 test("reports cleanup errors for an unverified temporary directory", async () => {
@@ -97,7 +100,7 @@ test("reports cleanup errors for an unverified temporary directory", async () =>
   rmdir.mockRejectedValue(new Error("access denied"));
 
   await expect(createSmokeTempRoot(root)).resolves.toEqual({
-    error: `Cannot verify temporary smoke directory. cleanup failed at ${tempRoot}: access denied`,
+    error: `Cannot verify temporary smoke directory. cleanup failed at ${resolve(tempRoot)}: access denied`,
   });
 });
 
@@ -106,7 +109,7 @@ test("does not report a missing path as a cleanup failure", async () => {
   rmdir.mockRejectedValue(Object.assign(new Error("missing"), { code: "ENOENT" }));
 
   await expect(createSmokeTempRoot(root)).resolves.toEqual({
-    error: `Cannot verify temporary smoke directory. removed empty path ${tempRoot}: inspection failed`,
+    error: `Cannot verify temporary smoke directory. removed empty path ${resolve(tempRoot)}: inspection failed`,
   });
 });
 
