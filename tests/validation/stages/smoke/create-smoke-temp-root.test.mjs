@@ -1,5 +1,5 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
-import { join } from "node:path";
+import { basename, join, resolve } from "node:path";
 
 const mkdtemp = jest.fn();
 const lstat = jest.fn();
@@ -54,9 +54,9 @@ test("rejects a temporary-root adapter that returns an invalid path", async () =
 });
 
 test("rejects a temporary path that resolves outside the source checkout", async () => {
-  realpath.mockImplementation(async (path) =>
-    path === tempRoot ? "C:/outside/.eliware-tarball-smoke-123" : path,
-  );
+  const resolvedTempRoot = resolve(tempRoot);
+  const outsidePath = resolve(root, "..", "outside", basename(tempRoot));
+  realpath.mockImplementation(async (path) => (path === resolvedTempRoot ? outsidePath : path));
 
   await expect(createSmokeTempRoot(root)).resolves.toEqual({
     error: `Cannot verify temporary smoke directory. left untrusted path untouched at ${tempRoot}.`,
