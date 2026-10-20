@@ -339,6 +339,11 @@ directives:
           - Invoke Oxlint and Prettier through harness validation stages.
           - Keep one workflow's orchestration in its coordinator.
           - Move operations with different reasons for change into focused helpers.
+          - In this harness package, allow direct dependencies on @jest/globals, jest, and
+            istanbul-lib-instrument.
+          - In this harness package, allow istanbul-lib-instrument imports and direct Jest
+            commands outside package scripts.
+          - Apply these test-tool allowances only to @eliware/test.
           - Use bounded repository inventory and content caches.
           - Keep prior cache values and byte counts when a refresh fails.
           - Remove each value one time when required.
