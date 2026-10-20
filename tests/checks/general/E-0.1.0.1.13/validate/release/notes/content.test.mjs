@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateReleaseNotesContent } from "../../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/notes/content.mjs";
+import { validateReleaseNotesContent } from "../../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/notes/content.mjs";
 import {
   packageVersion,
   previousMajorVersion,

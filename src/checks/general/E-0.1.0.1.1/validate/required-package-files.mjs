@@ -8,6 +8,8 @@ const requiredFiles = [
   "AGENTS.md",
   "LICENSE",
   "specs/README.md",
+  "docs/README.md",
+  "RELEASE_NOTES.md",
 ];
 export const expectedLicense = `MIT License
 

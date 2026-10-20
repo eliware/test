@@ -35,8 +35,8 @@ directives:
 
   - id: E-0.1.0.1.1
     dos:
-      - Keep package.json, package-lock.json, README.md, AGENTS.md, LICENSE, and
-        specs/README.md.
+      - Keep package.json, package-lock.json, README.md, AGENTS.md, LICENSE, specs/README.md,
+        docs/README.md, and RELEASE_NOTES.md.
       - Define a scoped @eliware name, nonempty description, no more than 20 unique
         nonempty keywords, and boolean private.
       - Require Node.js 26 or newer with package.json.engines.node set to ">=26".
@@ -345,3 +345,42 @@ directives:
       - Do not accept a dictionary term because its spelling appears in an alternative.
       - Do not apply prose limits, dictionary checks, or semicolon checks to machine syntax.
       - Do not use semicolons in human-readable prose.
+
+  - id: E-0.1.0.1.12
+    dos:
+      - Keep docs/README.md.
+      - Link docs/README.md from the root README.md.
+      - Index each maintained Markdown document in docs/ except its index.
+      - Exclude generated output directories from index discovery.
+    donts:
+      - Do not omit maintained Markdown documents from the docs index.
+    examples:
+      - /eliware/application-template/docs/README.md
+      - /eliware/documentation-template/docs/README.md
+
+  - id: E-0.1.0.1.13
+    dos:
+      - Keep RELEASE_NOTES.md.
+      - Link RELEASE_NOTES.md from README.md Usage.
+      - Use the exact level-one title and level-two entry formats shown.
+      - Use versioned level-two entries only.
+      - Keep one or more versioned release entries.
+      - Match the newest versioned entry with package.json.version.
+      - Require a v<version> repository tag for each prior release entry.
+      - Allow the current package.json.version without a repository tag.
+      - Make all repository tags available during validation.
+      - Use valid calendar dates, unique descending numeric SemVer versions, and
+        non-increasing dates.
+      - Give each entry one or more level-three categories from `Added`, `Changed`, `Fixed`,
+        `Breaking changes`, `Migration`, or `Security`.
+      - Give each category user-visible change text.
+      - Put all release text in a release category.
+      - Put all headings in a release entry or category.
+    donts:
+      - Do not use the word Unreleased in RELEASE_NOTES.md.
+      - Do not duplicate versions.
+      - Do not use one category more than once in one entry.
+      - Do not use malformed, empty, unsupported, or out-of-order sections.
+    examples:
+      - /eliware/application-template/RELEASE_NOTES.md
+      - /eliware/library-template/RELEASE_NOTES.md

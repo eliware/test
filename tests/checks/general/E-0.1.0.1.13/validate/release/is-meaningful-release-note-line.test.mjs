@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { isMeaningfulReleaseNoteLine } from "../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/is-meaningful-release-note-line.mjs";
+import { isMeaningfulReleaseNoteLine } from "../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/is-meaningful-release-note-line.mjs";
 
 test.each(["TBD", "TODO", "N/A", "None", "No change", "---", "1", "### Detail"])(
   "rejects non-meaningful release text: %s",

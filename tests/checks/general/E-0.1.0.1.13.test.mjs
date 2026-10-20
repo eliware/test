@@ -1,11 +1,11 @@
 import { expect, test } from "@jest/globals";
-import { ruleId, run } from "../../../src/checks/application/E-0.1.4.1.4.mjs";
+import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.13.mjs";
 import {
   nextMajorVersion,
   packageVersion,
 } from "../../../test-fixtures/helpers/project-version.mjs";
 
-test("E-0.1.4.1.4 accepts valid notes and a README link", async () => {
+test("E-0.1.0.1.13 accepts valid notes and a README link", async () => {
   const inventory = {
     readText: async (path) =>
       path.endsWith("RELEASE_NOTES.md")
@@ -17,7 +17,7 @@ test("E-0.1.4.1.4 accepts valid notes and a README link", async () => {
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
 
-test("E-0.1.4.1.4 rejects a newest release version that differs from package.json", async () => {
+test("E-0.1.0.1.13 rejects a newest release version that differs from package.json", async () => {
   await expect(
     run({
       root: "repo",
@@ -36,7 +36,7 @@ test("E-0.1.4.1.4 rejects a newest release version that differs from package.jso
   });
 });
 
-test("E-0.1.4.1.4 reports missing release notes", async () => {
+test("E-0.1.0.1.13 reports missing release notes", async () => {
   await expect(
     run({
       root: "repo",
@@ -49,7 +49,7 @@ test("E-0.1.4.1.4 reports missing release notes", async () => {
   ).resolves.toMatchObject({ ruleId, status: "fail", message: "RELEASE_NOTES.md is required." });
 });
 
-test("E-0.1.4.1.4 rejects Unreleased in application release notes", async () => {
+test("E-0.1.0.1.13 rejects Unreleased in release notes", async () => {
   await expect(
     run({
       root: "repo",
@@ -67,7 +67,7 @@ test("E-0.1.4.1.4 rejects Unreleased in application release notes", async () => 
   });
 });
 
-test("E-0.1.4.1.4 requires package metadata in its context", async () => {
+test("E-0.1.0.1.13 requires package metadata in its context", async () => {
   await expect(run(undefined)).resolves.toMatchObject({
     ruleId,
     status: "fail",

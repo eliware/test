@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateReleaseVersionHistory } from "../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/version-history.mjs";
+import { validateReleaseVersionHistory } from "../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/version-history.mjs";
 import {
   nextMinorVersion,
   packageVersion,

@@ -4,7 +4,7 @@ import { releaseEntryHeadings, validateReleaseNotesContent } from "./release/not
 import { validateReleaseNotesLink } from "./release/notes/link.mjs";
 import { validateReleaseTagVersions } from "./release/validate-release-tags.mjs";
 
-export async function validateApplicationReleaseNotes(context = {}, dependencies = {}) {
+export async function validateReleaseNotes(context = {}, dependencies = {}) {
   const root = context.root ?? process.cwd();
   let content;
   try {

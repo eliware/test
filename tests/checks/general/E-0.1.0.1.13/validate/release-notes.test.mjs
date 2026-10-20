@@ -1,10 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
-import { validateApplicationReleaseNotes } from "../../../../../src/checks/application/E-0.1.4.1.4/validate/application-release-notes.mjs";
+import { validateReleaseNotes } from "../../../../../src/checks/general/E-0.1.0.1.13/validate/release-notes.mjs";
 import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 
 test("requires readable release notes", async () => {
   await expect(
-    validateApplicationReleaseNotes({
+    validateReleaseNotes({
       repositoryInventory: { readText: async () => Promise.reject(new Error("missing")) },
     }),
   ).resolves.toEqual(["RELEASE_NOTES.md is required."]);
@@ -15,7 +15,7 @@ test("reports a missing README link after reading release notes", async () => {
     readText: async (path) => (path.endsWith("README.md") ? "" : "# Release Notes\n"),
   };
   await expect(
-    validateApplicationReleaseNotes({ root: "repo", repositoryInventory: inventory }),
+    validateReleaseNotes({ root: "repo", repositoryInventory: inventory }),
   ).resolves.toContain("README.md Usage must link RELEASE_NOTES.md.");
 });
 
@@ -27,7 +27,7 @@ test("reports an unreadable README as a missing release notes link", async () =>
     },
   };
   await expect(
-    validateApplicationReleaseNotes({ root: "repo", repositoryInventory: inventory }),
+    validateReleaseNotes({ root: "repo", repositoryInventory: inventory }),
   ).resolves.toContain("README.md Usage must link RELEASE_NOTES.md.");
 });
 
@@ -40,7 +40,7 @@ test("accepts the current release without querying historical tags", async () =>
         : "## Usage\n\n[Release notes](RELEASE_NOTES.md)",
   };
   await expect(
-    validateApplicationReleaseNotes(
+    validateReleaseNotes(
       { packageJson: { version: packageVersion }, repositoryInventory },
       { runGit },
     ),
@@ -57,7 +57,7 @@ test("uses a context Git runner when the context provides one", async () => {
         : "## Usage\n\n[Release notes](RELEASE_NOTES.md)",
   };
   await expect(
-    validateApplicationReleaseNotes({
+    validateReleaseNotes({
       packageJson: { version: packageVersion },
       repositoryInventory,
       runGit,
@@ -67,7 +67,7 @@ test("uses a context Git runner when the context provides one", async () => {
 });
 
 test("requires package metadata without a context", async () => {
-  await expect(validateApplicationReleaseNotes()).resolves.toContain(
+  await expect(validateReleaseNotes()).resolves.toContain(
     "package.json.version is required for release-note validation.",
   );
 });

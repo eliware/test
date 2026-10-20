@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateReleaseNotesLink } from "../../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/notes/link.mjs";
+import { validateReleaseNotesLink } from "../../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/notes/link.mjs";
 
 test("requires a release link in the Usage section", () => {
   expect(validateReleaseNotesLink("## Other\n\n[notes](RELEASE_NOTES.md)")).toHaveLength(1);

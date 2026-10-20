@@ -73,7 +73,7 @@ test("reports required files when the stat call fails", async () => {
       throw new Error("denied");
     },
   });
-  expect(errors).toHaveLength(7);
+  expect(errors).toHaveLength(9);
   expect(errors[4]).toContain("LICENSE is required");
-  expect(errors[6]).toContain("LICENSE could not be read");
+  expect(errors[8]).toContain("LICENSE could not be read");
 });

@@ -57,13 +57,3 @@ directives:
     examples:
       - '`@eliware/app`: `import { redactText } from "@eliware/common";`'
       - "`@eliware/test` may use direct dependencies because it is the dependency root."
-
-  - id: E-0.1.4.0.2
-    dos:
-      - Describe each user-visible change in RELEASE_NOTES.md.
-      - List each breaking change, migration step, and `security` change shown by the
-        release diff, tests, and configuration changes.
-      - Compare RELEASE_NOTES.md with the changes since the prior repository tag.
-    donts:
-      - Do not omit user-impacting changes.
-      - Do not duplicate requirements in release notes.

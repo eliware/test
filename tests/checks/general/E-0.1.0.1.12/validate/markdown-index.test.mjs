@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateMarkdownIndex } from "../../../../../src/checks/application/E-0.1.4.1.0/validate/markdown-index.mjs";
+import { validateMarkdownIndex } from "../../../../../src/checks/general/E-0.1.0.1.12/validate/markdown-index.mjs";
 
 test("accepts plain and dot-relative links", () => {
   expect(

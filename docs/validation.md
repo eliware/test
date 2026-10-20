@@ -141,6 +141,14 @@ The general checks require content after every required level-two heading in `RE
 The checks report a section when it contains only blank lines or other headings.
 The semantic conventions define the information that belongs in each section.
 
+## Documentation and release notes
+
+The General profile requires documentation and release notes in every repository.
+Keep a `docs/README.md` index and link it from the root `README.md`.
+Index each maintained Markdown file in `docs/`, except the index itself.
+Keep `RELEASE_NOTES.md` and link it from the root README `Usage` section.
+Read the General convention files for release-note format and content rules.
+
 Eliware Test runs validation only. It does not change a release or deployment system.
 
 [Return to documentation](README.md).

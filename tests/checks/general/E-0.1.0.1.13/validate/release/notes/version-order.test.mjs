@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import {
   compareReleaseVersions,
   isValidReleaseDate,
-} from "../../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/notes/version-order.mjs";
+} from "../../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/notes/version-order.mjs";
 
 test("validates calendar dates", () => {
   expect(isValidReleaseDate("2024-02-29")).toBe(true);

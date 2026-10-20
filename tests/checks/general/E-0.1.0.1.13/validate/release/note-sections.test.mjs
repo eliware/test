@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateReleaseNoteSections } from "../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/note-sections.mjs";
+import { validateReleaseNoteSections } from "../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/note-sections.mjs";
 
 test("requires release entries to contain categories and user-visible text", () => {
   expect(validateReleaseNoteSections(["# Release Notes", "## 1.0.0", "### Added", "TBD"])).toEqual([

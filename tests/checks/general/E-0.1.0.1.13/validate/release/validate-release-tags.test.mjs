@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { validateReleaseTagVersions } from "../../../../../../src/checks/application/E-0.1.4.1.4/validate/release/validate-release-tags.mjs";
+import { validateReleaseTagVersions } from "../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/validate-release-tags.mjs";
 import {
   packageVersion,
   previousMajorVersion,

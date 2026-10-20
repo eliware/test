@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateDocumentationIndexes } from "../../../../../src/checks/application/E-0.1.4.1.0/validate/documentation-indexes.mjs";
+import { validateDocumentationIndexes } from "../../../../../src/checks/general/E-0.1.0.1.12/validate/documentation-indexes.mjs";
 
 test("checks maintained docs and excludes generated Markdown paths", async () => {
   const inventory = {

@@ -38,6 +38,10 @@ directives:
       - Identify deployment settings from workflow files.
       - Compare claims about released behavior with RELEASE_NOTES.md, package.json, and
         repository tags.
+      - Describe each user-visible change in RELEASE_NOTES.md.
+      - List breaking changes, migration steps, and `Security` changes shown by repository
+        changes.
+      - Compare RELEASE_NOTES.md with changes since the prior repository tag.
       - Update each GitHub Action to its latest major version when Eli learns about a
         newer major version.
     donts:
@@ -47,6 +51,8 @@ directives:
         READMEs.
       - Do not confuse npm publishability with source-hosting visibility.
       - Do not claim that unpublished versions are available.
+      - Do not omit user-impacting changes from RELEASE_NOTES.md.
+      - Do not duplicate requirements in RELEASE_NOTES.md.
 
   - id: E-0.1.0.0.1
     dos:

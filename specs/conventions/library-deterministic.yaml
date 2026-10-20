@@ -11,10 +11,8 @@ directives:
       - Require the full npm test suite for final validation before a commit, milestone,
         or release.
       - Add API, Packaging, and Examples sections to README.md.
-      - Keep docs/README.md.
       - Keep examples/README.md.
-      - Link the two indexes from root README.md.
-      - Index all Markdown documents in docs/ other than its index.
+      - Link examples/README.md from root README.md.
       - Keep and index one or more native-ESM .mjs or .js examples in examples/.
     donts:
       - Do not require .cjs examples. Index all discovered examples.
@@ -88,29 +86,3 @@ directives:
       - Do not ignore coverage in other production modules.
     examples:
       - /eliware/library-template/package.json
-
-  - id: E-0.1.3.1.4
-    dos:
-      - Keep RELEASE_NOTES.md.
-      - Link RELEASE_NOTES.md from README.md Usage.
-      - Use the exact level-one title and level-two entry formats shown.
-      - Use versioned level-two entries only.
-      - Keep one or more versioned release entries.
-      - Match the newest versioned entry with package.json.version.
-      - Require a v<version> repository tag for each prior release entry.
-      - Allow the current package.json.version without a repository tag.
-      - Make all repository tags available during validation.
-      - Use valid calendar dates and unique descending numeric SemVer versions with
-        non-increasing dates.
-      - Give each entry one or more level-three categories from `Added`, `Changed`, `Fixed`,
-        `Breaking changes`, `Migration`, or `Security`.
-      - Give each category user-visible change text.
-      - Do not use a category more than one time in one entry.
-      - Put all release text in a release category.
-      - Put all headings in a release entry or category.
-    donts:
-      - Do not use the word Unreleased in RELEASE_NOTES.md.
-      - Do not duplicate versions.
-      - Do not use malformed, empty, unsupported, or out-of-order sections.
-    examples:
-      - /eliware/library-template/RELEASE_NOTES.md

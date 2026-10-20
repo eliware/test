@@ -5,9 +5,6 @@ directives:
     dos:
       - Add an Application section to AGENTS.md.
       - Add Configuration and Operations sections to README.md.
-      - Keep docs/README.md.
-      - Link docs/README.md from root README.md.
-      - Index all maintained Markdown documents in docs/ and omit its index.
       - When examples/ contains maintained .mjs or .js files, maintain examples/README.md
         linking each JavaScript example.
       - Exclude generated output directories from index discovery.
@@ -21,7 +18,7 @@ directives:
         or release.
     donts:
       - Do not require examples/ solely because application is selected.
-      - Do not omit maintained documentation or JavaScript examples from indexes.
+      - Do not omit maintained JavaScript examples from examples/README.md.
     examples:
       - /eliware/application-template/AGENTS.md
       - /eliware/application-template/README.md
@@ -105,29 +102,3 @@ directives:
       - Do not use production coverage exclusions or Istanbul ignore directives.
     examples:
       - /eliware/application-template/package.json
-
-  - id: E-0.1.4.1.4
-    dos:
-      - Keep RELEASE_NOTES.md.
-      - Link RELEASE_NOTES.md from README.md Usage.
-      - Use the exact level-one title and level-two entry formats shown.
-      - Use versioned level-two entries only.
-      - Keep one or more versioned release entries.
-      - Match the newest versioned entry with package.json.version.
-      - Require a v<version> repository tag for each prior release entry.
-      - Allow the current package.json.version without a repository tag.
-      - Make all repository tags available during validation.
-      - Use valid calendar dates, descending numeric SemVer versions, and
-        non-increasing dates.
-      - Give each entry one or more level-three categories from `Added`, `Changed`, `Fixed`,
-        `Breaking changes`, `Migration`, or `Security`.
-      - Give each category user-visible change text.
-      - Do not use a category two times in one entry.
-      - Put all release text in a release category.
-      - Put all headings in a release entry or category.
-    donts:
-      - Do not use the word Unreleased in RELEASE_NOTES.md.
-      - Do not duplicate versions.
-      - Do not use malformed, empty, unsupported, or out-of-order sections.
-    examples:
-      - /eliware/application-template/RELEASE_NOTES.md
