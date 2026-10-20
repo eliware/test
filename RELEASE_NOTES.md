@@ -1,12 +1,33 @@
 # Release Notes
 
-## 14.0.0 — 2026-10-19
+## 14.0.0 — 2026-10-20
+
+### Added
+
+- Require content after each required `README.md` and `AGENTS.md` heading.
+- Write stage, check, and test timings to `coverage/eliware-test.log` on every run.
+- Show elapsed timing details on the console when `--debug-timing` is set.
 
 ### Changed
 
-- Set the harness package version to 14.0.0 and YAML convention versions to 14.0.
-- Set the runbook schema version to 14.
+- Set the package version to 14.0.0 and convention schema versions to 14.0.
+- Require documentation and release notes in the General profile.
+- Increase the Jest suite timeout to 10 seconds.
+- Increase the source module limit to 150 lines and the test file limit to 300 lines.
+- Require GHCR publication workflows to use the configured token for authentication.
+- Update the smoke instructions and the package exemption guidance.
 - Update Oxlint to 1.89.0.
+
+### Fixed
+
+- Verify the smoke target before package installation and consumer tests.
+- Preserve empty Jest suites and report their results correctly.
+- Keep smoke recovery files when target restoration fails.
+- Check package entrypoints against declared package targets.
+- Use convention data for required README and AGENTS section content.
+- Resolve tracked Git paths through the shared repository inventory.
+- Keep runbook index validation in the workspace check.
+- Split validation helpers and their tests into focused modules.
 
 ## 13.0.0 — 2026-10-18
 
