@@ -15,7 +15,9 @@ export async function installSmokeCandidate({
   resolveModule,
   remove = rm,
   readInstalled = readFile,
+  assertTargetIdentity = async () => {},
 }) {
+  await assertTargetIdentity();
   await installSmokePackage({
     targetRoot,
     packageJson,
@@ -26,7 +28,9 @@ export async function installSmokeCandidate({
     env,
     inspect,
     remove,
+    assertTargetIdentity,
   });
+  await assertTargetIdentity();
   await validateInstalledSmokePackage({
     targetRoot,
     packageJson,
@@ -40,5 +44,6 @@ export async function installSmokeCandidate({
     command,
     prefix,
     env,
+    assertTargetIdentity,
   });
 }

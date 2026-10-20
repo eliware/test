@@ -54,6 +54,17 @@ test("removes the installed package before installing the tarball", async () => 
   expect(input.inspect).toHaveBeenCalled();
 });
 
+test("rejects a changed target before running npm install", async () => {
+  const input = options();
+  input.assertTargetIdentity = jest.fn(async () => {
+    throw new Error("target changed");
+  });
+
+  await expect(installSmokePackage(input)).rejects.toThrow("target changed");
+  expect(input.run).not.toHaveBeenCalled();
+  expect(input.remove).not.toHaveBeenCalled();
+});
+
 test.each([
   [{ code: 1, stderr: "install failed" }, "Tarball installation failed: install failed"],
   [{ code: 1 }, "Tarball installation failed."],

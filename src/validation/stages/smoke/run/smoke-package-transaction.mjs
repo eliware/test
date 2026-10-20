@@ -36,6 +36,7 @@ export async function runSmokePackageTransaction({
     command,
     prefix,
     env,
+    assertTargetIdentity,
   });
   return digest;
 }

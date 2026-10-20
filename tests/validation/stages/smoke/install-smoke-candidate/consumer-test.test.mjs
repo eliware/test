@@ -20,6 +20,18 @@ test("runs consumer npm test with the smoke candidate marker", async () => {
   });
 });
 
+test("rejects a changed target before running consumer npm test", async () => {
+  const run = jest.fn();
+  const assertTargetIdentity = jest.fn(async () => {
+    throw new Error("target changed");
+  });
+
+  await expect(runSmokeConsumerTest({ ...options(run), assertTargetIdentity })).rejects.toThrow(
+    "target changed",
+  );
+  expect(run).not.toHaveBeenCalled();
+});
+
 test.each([
   [{ code: 1, stdout: "test failed" }, "Consumer npm test failed: test failed"],
   [{ code: 1 }, "Consumer npm test failed."],
