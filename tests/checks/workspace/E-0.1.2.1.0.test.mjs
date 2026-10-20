@@ -48,6 +48,27 @@ test("accepts an index when no runbook documents exist", async () => {
   ).resolves.toEqual({ ruleId, status: "pass", message: "" });
 });
 
+test("requires the runbook index", async () => {
+  await expect(run({ repositoryInventory: inventory([]) })).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: "runbooks/README.md is required.",
+  });
+});
+
+test("reports when the runbook index cannot be read", async () => {
+  const repositoryInventory = inventory(["runbooks/README.md"], async (path) => {
+    if (path === "runbooks/README.md") throw new Error("blocked");
+    return "";
+  });
+
+  await expect(run({ repositoryInventory })).resolves.toMatchObject({
+    ruleId,
+    status: "fail",
+    message: "runbooks/README.md could not be read: blocked",
+  });
+});
+
 test("returns a failed rule result when runbook validation finds an error", async () => {
   await expect(
     run({ repositoryInventory: inventory(["runbooks/README.md"], async () => "Overview") }),

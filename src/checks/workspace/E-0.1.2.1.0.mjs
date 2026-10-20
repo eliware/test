@@ -1,6 +1,6 @@
 import { fail, pass } from "../check-result.mjs";
 import { collectRunbookFiles } from "./E-0.1.2.1.0/collect-runbook-files.mjs";
-import { validateRunbookIndexCheck } from "./E-0.1.2.1.0/validate-runbook/index-check.mjs";
+import { validateRunbookIndex as validateRunbookIndexContent } from "./E-0.1.2.1.0/validate-runbook/index.mjs";
 import { validateRunbookDocuments } from "./E-0.1.2.1.0/validate-runbook/document-checks.mjs";
 import { validateProfileDocumentation } from "../../validation/shared/conventions/validate/profile/documentation.mjs";
 
@@ -20,8 +20,18 @@ export async function run(context = {}, dependencies = {}) {
   }
   const { runbooks, unsupported } = collectRunbookFiles(files);
   errors.push(...unsupported);
-  errors.push(...(await validateRunbookIndexCheck(files, inventory, runbooks)));
+  errors.push(...(await validateRunbookIndex(files, inventory, runbooks)));
   if (runbooks.length)
     errors.push(...(await validateRunbookDocuments(runbooks, inventory, dependencies)));
   return errors.length ? fail(ruleId, errors.join("\n")) : pass(ruleId);
+}
+
+async function validateRunbookIndex(files, inventory, runbooks) {
+  const indexPath = "runbooks/README.md";
+  if (!files.includes(indexPath)) return [`${indexPath} is required.`];
+  try {
+    return validateRunbookIndexContent(await inventory.readText(indexPath), runbooks);
+  } catch (error) {
+    return [`${indexPath} could not be read: ${error.message}`];
+  }
 }
