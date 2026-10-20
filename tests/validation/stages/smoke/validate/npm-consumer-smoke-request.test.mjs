@@ -32,6 +32,15 @@ test("rejects missing targets and source checkout targets", () => {
   });
 });
 
+test.each([resolve(root, "nested"), resolve(root, "..")])(
+  "rejects target paths inside or above the source checkout: %s",
+  (target) => {
+    expect(request({ target })).toEqual({
+      error: "Smoke target must be a separate consumer repository.",
+    });
+  },
+);
+
 test("rejects invalid package publication metadata before smoke setup", () => {
   expect(request({ packageJson: { ...packageJson, publishConfig: {} } })).toEqual({
     error: "Public npm packages must enable npm provenance.",

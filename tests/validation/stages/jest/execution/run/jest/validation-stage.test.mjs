@@ -56,29 +56,38 @@ test("rejects a passing Jest process without a completion event", async () => {
   ).resolves.toMatchObject({
     code: 2,
     status: "fail",
-    message: "Jest completed without running at least one test in one suite.",
+    message: "Jest completed without reporting a completed test suite.",
   });
   expect(context.validationSummary.jestCounts).toBeUndefined();
 });
 
-test.each([
-  [0, 0],
-  [1, 0],
-])(
-  "rejects a passing Jest report with counts %i suites and %i tests",
-  async (testSuites, tests) => {
-    const context = {
-      root: ".",
-      jestResult: {
-        code: 0,
-        stderr: `[eliware-test-progress] ${JSON.stringify({ event: "run-complete", testSuites, tests })}`,
-      },
-    };
-    await expect(
-      runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
-    ).resolves.toMatchObject({ code: 2, status: "fail" });
-  },
-);
+test("accepts a completed suite that contains no tests", async () => {
+  const context = {
+    root: ".",
+    jestResult: {
+      code: 0,
+      stderr: '[eliware-test-progress] {"event":"run-complete","testSuites":1,"tests":0}',
+    },
+    validationSummary: {},
+  };
+  await expect(
+    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
+  ).resolves.toMatchObject({ code: 0, status: "pass" });
+  expect(context.validationSummary.jestCounts).toEqual({ testSuites: 1, tests: 0 });
+});
+
+test("rejects a passing Jest report without a completed suite", async () => {
+  const context = {
+    root: ".",
+    jestResult: {
+      code: 0,
+      stderr: '[eliware-test-progress] {"event":"run-complete","testSuites":0,"tests":0}',
+    },
+  };
+  await expect(
+    runJestValidationStage(context, async () => ({ status: "pass", message: "" })),
+  ).resolves.toMatchObject({ code: 2, status: "fail" });
+});
 
 test("fails when Jest reports unexpected test console output", async () => {
   const context = {

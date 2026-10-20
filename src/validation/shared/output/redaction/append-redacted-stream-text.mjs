@@ -32,12 +32,10 @@ export function appendRedactedStreamText({
     let { boundary, matchEnds, suppressed } = result;
     if (suppressed) return suppressStreamBuffer(pendingChunks, suppress);
 
-    const crossingStart = (matchEnds ?? []).findIndex(
-      (end, index) => index < boundary && end > boundary,
-    );
+    const crossingStart = findCrossingStart(matchEnds, boundary);
     if (crossingStart >= 0) {
       boundary = crossingStart;
-      matchEnds = matchEnds.slice(0, boundary + 1);
+      matchEnds.length = boundary + 1;
     }
     boundary = moveBoundaryBeforeSurrogate(boundary, pendingChunks, pending);
     if (boundary === 0) continue;
@@ -48,6 +46,14 @@ export function appendRedactedStreamText({
     if (!pendingChunks) pending = pending.slice(boundary);
   }
   return { output, pending };
+}
+
+function findCrossingStart(matchEnds, boundary) {
+  for (const key of Object.keys(matchEnds ?? [])) {
+    const start = Number(key);
+    if (start < boundary && matchEnds[start] > boundary) return start;
+  }
+  return -1;
 }
 
 function suppressStreamBuffer(pendingChunks, suppress) {

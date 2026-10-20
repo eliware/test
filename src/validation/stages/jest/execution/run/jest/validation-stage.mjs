@@ -23,12 +23,18 @@ export async function runJestValidationStage(context, runJest, readCoverage) {
   if (code !== 0) return result;
 
   const jestCounts = readJestCounts(outputText);
-  if (!jestCounts?.testSuites || !jestCounts.tests)
+  if (
+    !jestCounts ||
+    !Number.isSafeInteger(jestCounts.testSuites) ||
+    jestCounts.testSuites < 1 ||
+    !Number.isSafeInteger(jestCounts.tests) ||
+    jestCounts.tests < 0
+  )
     return {
       ...result,
       code: 2,
       status: "fail",
-      message: "Jest completed without running at least one test in one suite.",
+      message: "Jest completed without reporting a completed test suite.",
     };
 
   if (context.validationSummary) {

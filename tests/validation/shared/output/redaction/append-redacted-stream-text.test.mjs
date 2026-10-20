@@ -39,6 +39,30 @@ test("retains a secret that crosses the emitted safety boundary", () => {
   expect(result.pending).toBe("abcXYZtail");
 });
 
+test("checks only populated match offsets in a sparse result", () => {
+  const matchEnds = [];
+  matchEnds.length = 1_000_000;
+  Object.defineProperty(matchEnds, "999999", { value: 1_000_001, enumerable: true });
+  let reads = 0;
+  const sparseMatches = new Proxy(matchEnds, {
+    get(target, property, receiver) {
+      if (property === "999999") reads += 1;
+      return Reflect.get(target, property, receiver);
+    },
+  });
+  const result = appendRedactedStreamText(
+    options({
+      text: "a".repeat(1_000_000),
+      pendingLimit: 1_000_000,
+      bufferLimit: 1_000_000,
+      findSafeBoundary: () => ({ boundary: 1_000_000, matchEnds: sparseMatches }),
+    }),
+  );
+
+  expect(reads).toBe(1);
+  expect(result.output).toBe("a".repeat(999_999));
+});
+
 test("suppresses output when the safety search fails or the bounded buffer fills", () => {
   const suppress = jest.fn();
   expect(
