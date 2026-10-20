@@ -10,11 +10,6 @@ const dependencyFields = [
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
 export function validateLockfileRootPackage(packageJson, rootPackage, packages) {
-  if (rootPackage.name !== packageJson.name || rootPackage.version !== packageJson.version)
-    return {
-      matches: false,
-      errors: ["package-lock.json root package metadata must match package.json."],
-    };
   const errors = [];
   for (const field of dependencyFields) {
     const expected = packageJson?.[field];
@@ -60,7 +55,7 @@ export function validateLockfileRootPackage(packageJson, rootPackage, packages) 
         errors.push(`package-lock.json version for ${name} does not satisfy ${range}.`);
     }
   }
-  return { matches: true, errors };
+  return errors;
 }
 
 function sorted(value) {

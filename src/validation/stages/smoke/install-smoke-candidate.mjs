@@ -1,12 +1,7 @@
 import { lstat, readFile, rm } from "node:fs/promises";
-import { join } from "node:path";
-import { assertSmokePackageParents } from "./assert-smoke-package-parents.mjs";
-import { assertSmokeCliEntrypoint } from "./install-smoke-candidate/assert-smoke-cli-entrypoint.mjs";
-
-function commandFailure(result, label) {
-  const detail = [result?.stdout, result?.stderr].filter(Boolean).join("\n").trim();
-  return label + (detail ? ": " + detail : ".");
-}
+import { validateInstalledSmokePackage } from "./install-smoke-candidate/installed-package.mjs";
+import { installSmokePackage } from "./install-smoke-candidate/package-install.mjs";
+import { runSmokeConsumerTest } from "./install-smoke-candidate/consumer-test.mjs";
 
 export async function installSmokeCandidate({
   targetRoot,
@@ -18,45 +13,32 @@ export async function installSmokeCandidate({
   env,
   inspect = lstat,
   resolveModule,
+  remove = rm,
+  readInstalled = readFile,
 }) {
-  await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
-  await rm(join(targetRoot, "node_modules", ...packageJson.name.split("/")), {
-    recursive: true,
-    force: true,
-  });
-  await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
-  const install = await run(
-    command,
-    [
-      ...prefix,
-      "install",
-      "--ignore-scripts",
-      "--no-save",
-      "--package-lock=false",
-      "--no-audit",
-      "--no-fund",
-      tarball,
-    ],
-    { cwd: targetRoot, env },
-  );
-  if (install.code !== 0) throw new Error(commandFailure(install, "Tarball installation failed"));
-  const installedPath = join(
+  await installSmokePackage({
     targetRoot,
-    "node_modules",
-    ...packageJson.name.split("/"),
-    "package.json",
-  );
-  const installed = JSON.parse(await readFile(installedPath, "utf8"));
-  if (installed.name !== packageJson.name)
-    throw new Error(`Installed package ${installed.name} does not match ${packageJson.name}.`);
-  if (installed.version !== packageJson.version)
-    throw new Error(
-      `Installed package version ${installed.version} does not match ${packageJson.version}.`,
-    );
-  assertSmokeCliEntrypoint({ targetRoot, packageJson, resolveModule });
-  const tested = await run(command, [...prefix, "test"], {
-    cwd: targetRoot,
-    env: { ...env, ELIWARE_TEST_SMOKE_CANDIDATE: packageJson.name },
+    packageJson,
+    tarball,
+    run,
+    command,
+    prefix,
+    env,
+    inspect,
+    remove,
   });
-  if (tested.code !== 0) throw new Error(commandFailure(tested, "Consumer npm test failed"));
+  await validateInstalledSmokePackage({
+    targetRoot,
+    packageJson,
+    resolveModule,
+    read: readInstalled,
+  });
+  await runSmokeConsumerTest({
+    targetRoot,
+    packageJson,
+    run,
+    command,
+    prefix,
+    env,
+  });
 }

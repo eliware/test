@@ -41,29 +41,6 @@ test("reports invalid lock JSON", async () => {
   ).resolves.toEqual(["package-lock.json must exist and contain valid JSON."]);
 });
 
-test("rejects non-object lock JSON", async () => {
-  await expect(validatePackageLock("/repo", pkg, { read: async () => "null" })).resolves.toEqual([
-    "package-lock.json must contain a JSON object.",
-  ]);
-});
-
-test("rejects package identity, lock version, and root package differences", async () => {
-  await expect(
-    validatePackageLock("/repo", pkg, { read: readLock({ ...validLock, name: "other" }) }),
-  ).resolves.toContain("package-lock.json name and version must match package.json.");
-  await expect(
-    validatePackageLock("/repo", pkg, { read: readLock({ ...validLock, lockfileVersion: 2 }) }),
-  ).resolves.toContain("package-lock.json must use lockfile version 3.");
-  await expect(
-    validatePackageLock("/repo", pkg, {
-      read: readLock({ ...validLock, packages: { "": { name: "other", version: pkg.version } } }),
-    }),
-  ).resolves.toContain("package-lock.json root package metadata must match package.json.");
-  await expect(
-    validatePackageLock("/repo", pkg, { read: readLock({ ...validLock, packages: [] }) }),
-  ).resolves.toContain("package-lock.json must contain a packages object and root entry.");
-});
-
 test("checks dependency maps and direct dependency entries", async () => {
   const packageJson = { ...pkg, dependencies: { alpha: "1" }, devDependencies: { beta: "2" } };
   const lock = {

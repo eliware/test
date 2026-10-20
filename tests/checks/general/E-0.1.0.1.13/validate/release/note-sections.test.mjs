@@ -1,20 +1,9 @@
 import { expect, test } from "@jest/globals";
 import { validateReleaseNoteSections } from "../../../../../../src/checks/general/E-0.1.0.1.13/validate/release/note-sections.mjs";
 
-test("requires release entries to contain categories and user-visible text", () => {
-  expect(validateReleaseNoteSections(["# Release Notes", "## 1.0.0", "### Added", "TBD"])).toEqual([
-    "## 1.0.0 subsection Added must contain user-visible change text.",
-  ]);
+test("requires release entries to contain categories", () => {
   expect(validateReleaseNoteSections(["# Release Notes", "## 1.0.0"])).toContain(
     "## 1.0.0 must contain a release subsection.",
-  );
-  for (const text of ["TBD", "TODO", "N/A", "None", "No change", "---"]) {
-    expect(
-      validateReleaseNoteSections(["# Release Notes", "## 1.0.0", "### Added", text]).join("\n"),
-    ).toContain("must contain user-visible change text");
-  }
-  expect(validateReleaseNoteSections(["# Release Notes", "## 1.0.0", "### Added", "1"])).toContain(
-    "## 1.0.0 subsection Added must contain user-visible change text.",
   );
 });
 

@@ -87,3 +87,61 @@ test("accepts string output from Git commands", async () => {
     validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
   ).resolves.toEqual([]);
 });
+
+test("reports the required ignore rule that is missing from Git output", async () => {
+  const missingPath = "nested/node_modules/item.txt";
+  const runGit = async (_command, args) => {
+    if (!args.includes("check-ignore")) return { stdout: Buffer.from("") };
+    return {
+      code: 0,
+      stdout: requiredIgnoreCases
+        .filter(([path, shouldIgnore]) => shouldIgnore && path !== missingPath)
+        .map(([path]) => `ignore-pattern\t${path}`)
+        .join("\n"),
+    };
+  };
+  await expect(
+    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
+  ).resolves.toContain(`${missingPath} must be ignored.`);
+});
+
+test("reports tracked ignored paths through the Git hygiene coordinator", async () => {
+  const runGit = async (_command, args) =>
+    args.includes("check-ignore")
+      ? { stdout: ignoredPaths() }
+      : args.includes("--ignored")
+        ? { stdout: Buffer.from("ignored.txt\0") }
+        : { stdout: Buffer.from("") };
+  await expect(
+    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
+  ).resolves.toContain("Tracked or staged paths match ignore rules: ignored.txt.");
+});
+
+test("reports malformed Git index output through the Git hygiene coordinator", async () => {
+  const runGit = async (_command, args) =>
+    args.includes("--stage")
+      ? { stdout: Buffer.from("120000 invalid 0\tlink\0") }
+      : args.includes("--ignored")
+        ? { stdout: Buffer.from("/absolute/path\0") }
+        : { code: 0, stdout: "" };
+  const errors = await validateGitHygiene("repo", runGit, {
+    readText: async () => ignoreRules,
+  });
+  expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
+  expect(errors).toContain("Git index status could not be read. Tracked symlinks are unknown.");
+});
+
+test("reports missing Git through the Git hygiene coordinator", async () => {
+  const runGit = async (_command, args) => {
+    if (args.includes("check-ignore"))
+      throw Object.assign(new Error("missing"), { code: "ENOENT" });
+    return { stdout: Buffer.from("") };
+  };
+  const errors = await validateGitHygiene("repo", runGit, {
+    readText: async () => ignoreRules,
+  });
+  expect(errors).toContain("Git ignore rules could not be inspected for package.json.");
+  expect(errors).toContain(
+    "Git ignore rules could not be inspected for nested/node_modules/item.txt.",
+  );
+});

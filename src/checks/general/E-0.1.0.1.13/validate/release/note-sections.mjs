@@ -1,4 +1,4 @@
-import { isMeaningfulReleaseNoteLine } from "./is-meaningful-release-note-line.mjs";
+import { validateMeaningfulSectionContent } from "./meaningful-section-content.mjs";
 
 const allowedSections = new Set([
   "Added",
@@ -49,7 +49,6 @@ export function validateReleaseNoteSections(lines) {
   return errors;
 
   function finishSection() {
-    if (section && !content.some(isMeaningfulReleaseNoteLine))
-      errors.push(`${entry} subsection ${section} must contain user-visible change text.`);
+    if (section) errors.push(...validateMeaningfulSectionContent(entry, section, content));
   }
 }

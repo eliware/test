@@ -1,4 +1,5 @@
 import { isAlternativeTestOrCoverageTool } from "./is-alternative-test-or-coverage-tool.mjs";
+import { validateRunnerConfiguration } from "./runner-configuration.mjs";
 
 export function validateApplicationTestTools(packageJson = {}) {
   const harness = packageJson.name === "@eliware/test";
@@ -15,33 +16,6 @@ export function validateApplicationTestTools(packageJson = {}) {
   const errors = direct.length
     ? [`Do not declare separate test or coverage tools: ${direct.join(", ")}.`]
     : [];
-  if (
-    [
-      "ava",
-      "@bcoe/v8-coverage",
-      "c8",
-      "cypress",
-      "jasmine",
-      "nightwatch",
-      "protractor",
-      "karma",
-      "mocha",
-      "nyc",
-      "playwright",
-      "qunit",
-      "tap",
-      "tape",
-      "uvu",
-      "vitest",
-      "webdriverio",
-      "testcafe",
-      "istanbul",
-      "coverage",
-      "nodeTestRunner",
-      "testRunner",
-      "test-runner",
-    ].some((key) => packageJson[key] !== undefined)
-  )
-    errors.push("package.json must not configure a separate test runner or coverage engine.");
+  errors.push(...validateRunnerConfiguration(packageJson));
   return errors;
 }

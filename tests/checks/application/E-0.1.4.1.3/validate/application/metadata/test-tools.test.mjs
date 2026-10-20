@@ -5,13 +5,9 @@ test("rejects alternative runners and coverage engines", () => {
   const errors = validateApplicationTestTools({
     name: "app",
     devDependencies: { vitest: "2", "@vitest/coverage-v8": "2" },
-    testRunner: "other",
   });
   expect(errors).toContain(
     "Do not declare separate test or coverage tools: vitest, @vitest/coverage-v8.",
-  );
-  expect(errors).toContain(
-    "package.json must not configure a separate test runner or coverage engine.",
   );
   expect(validateApplicationTestTools({ devDependencies: { "@jest/globals": "30" } })).toContain(
     "Do not declare separate test or coverage tools: @jest/globals.",
@@ -37,15 +33,6 @@ test.each([
     `Do not declare separate test or coverage tools: ${name}.`,
   );
 });
-
-test.each(["nyc", "c8", "vitest", "mocha", "ava", "tape", "uvu", "testRunner"])(
-  "rejects %s runner configuration",
-  (tool) => {
-    expect(validateApplicationTestTools({ [tool]: {} })).toContain(
-      "package.json must not configure a separate test runner or coverage engine.",
-    );
-  },
-);
 
 test("allows the harness test dependencies", () => {
   expect(

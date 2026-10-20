@@ -5,9 +5,6 @@ import { validateLockfileRootPackage } from "../../../../../../src/checks/genera
 const packageJson = { name: "@eliware/example", version: packageVersion };
 const rootPackage = { ...packageJson };
 
-test("accepts matching package identity and dependency maps", () => {
-  expect(validateLockfileRootPackage(packageJson, rootPackage, { "": rootPackage })).toEqual({
-    matches: true,
-    errors: [],
-  });
+test("accepts matching dependency maps", () => {
+  expect(validateLockfileRootPackage(packageJson, rootPackage, { "": rootPackage })).toEqual([]);
 });

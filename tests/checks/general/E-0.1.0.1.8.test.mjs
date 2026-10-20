@@ -1,7 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { requiredIgnoreCases } from "../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns.mjs";
 import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.8.mjs";
-import { validateGitHygiene } from "../../../src/checks/general/E-0.1.0.1.8/validate/git/hygiene.mjs";
 
 const ignoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.DS_Store\nThumbs.db`;
 
@@ -76,32 +75,6 @@ test("reports Git status errors", async () => {
     readText: async () => ignoreText,
   });
   expect(indexResult.message).toContain("Git index status could not be read");
-  const linkIndex = await validateGitHygiene("repo", createGitRunner({ failAt: 5 }), {
-    readText: async () => ignoreText,
-  });
-  expect(linkIndex).toContain("Git index status could not be read. Tracked symlinks are unknown.");
-});
-
-test("reports a tracked ignored path", async () => {
-  await expect(
-    validateGitHygiene("repo", createGitRunner({ trackedIgnored: ["ignored.txt"] }), {
-      readText: async () => ignoreText,
-    }),
-  ).resolves.toContain("Tracked or staged paths match ignore rules: ignored.txt.");
-});
-
-test("rejects malformed Git path and index output", async () => {
-  const indexRunner = async (_command, args) =>
-    args.includes("--stage")
-      ? { stdout: Buffer.from("120000 invalid 0\tlink\0") }
-      : args.includes("--ignored")
-        ? { stdout: Buffer.from("/absolute/path\0") }
-        : { code: 0, stdout: "" };
-  const errors = await validateGitHygiene("repo", indexRunner, {
-    readText: async () => ignoreText,
-  });
-  expect(errors).toContain("Git index status could not be read. Tracked ignore status is unknown.");
-  expect(errors).toContain("Git index status could not be read. Tracked symlinks are unknown.");
 });
 
 test("uses injected dependencies from the current directory to check required ignored paths", async () => {
@@ -129,36 +102,4 @@ test("uses injected dependencies from the current directory to check required ig
   expect(result).toMatchObject({ ruleId, status: "pass" });
   expect(roots.every((root) => root === process.cwd())).toBe(true);
   expect(readPaths).toEqual([`${process.cwd()}/.gitignore`]);
-});
-
-test("reports failure when Git does not ignore a required path", async () => {
-  const runner = async (_command, args) => {
-    if (args.includes("check-ignore"))
-      return {
-        code: 0,
-        stdout: requiredIgnoreCases
-          .filter(([path, shouldIgnore]) => shouldIgnore && path !== "nested/node_modules/item.txt")
-          .map(([path]) => `ignore-pattern\t${path}`)
-          .join("\n"),
-      };
-    return { stdout: Buffer.from("") };
-  };
-  await expect(
-    validateGitHygiene("repo", runner, { readText: async () => ignoreText }),
-  ).resolves.toContain("nested/node_modules/item.txt must be ignored.");
-});
-
-test("handles Git ignore command codes and missing Git", async () => {
-  const failedIgnore = async (_command, args) => {
-    if (args.includes("check-ignore"))
-      throw Object.assign(new Error("missing"), { code: "ENOENT" });
-    return { stdout: Buffer.from("") };
-  };
-  const errors = await validateGitHygiene("repo", failedIgnore, {
-    readText: async () => ignoreText,
-  });
-  expect(errors).toContain("Git ignore rules could not be inspected for package.json.");
-  expect(errors).toContain(
-    "Git ignore rules could not be inspected for nested/node_modules/item.txt.",
-  );
 });
