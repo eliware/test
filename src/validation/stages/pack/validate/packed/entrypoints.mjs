@@ -1,13 +1,12 @@
-function collectTargets(value, targets, allowBarePath) {
-  if (typeof value === "string") {
-    if (value.startsWith("./")) targets.push(value.slice(2));
-    else if (allowBarePath && !value.startsWith("#")) targets.push(value);
-  } else if (Array.isArray(value)) {
-    value.forEach((entry) => collectTargets(entry, targets, allowBarePath));
-  } else if (value && typeof value === "object") {
-    Object.values(value).forEach((entry) => collectTargets(entry, targets, allowBarePath));
-  }
-  return targets;
+import { collectNestedStringValues } from "../../../../shared/package/collect-nested-string-values.mjs";
+import { packedTargetMatches } from "./target-matches.mjs";
+
+function collectTargets(value, allowBarePath) {
+  return collectNestedStringValues(value).flatMap((target) => {
+    if (target.startsWith("./")) return [target.slice(2)];
+    if (allowBarePath && !target.startsWith("#")) return [target];
+    return [];
+  });
 }
 
 const packageTargetFields = [
@@ -28,7 +27,7 @@ export function validatePackedEntrypoints(packageJson, packedPaths) {
   const targets = [
     ...new Set(
       packageTargetFields.flatMap(([field, allowBarePath]) =>
-        collectTargets(packageJson?.[field], [], allowBarePath),
+        collectTargets(packageJson?.[field], allowBarePath),
       ),
     ),
   ];
@@ -37,4 +36,3 @@ export function validatePackedEntrypoints(packageJson, packedPaths) {
     ? `npm pack omitted public package entrypoints: ${missing.join(", ")}.`
     : null;
 }
-import { packedTargetMatches } from "./target-matches.mjs";

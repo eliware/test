@@ -1,4 +1,5 @@
 import { visitAst } from "../../../visit-ast.mjs";
+import { collectJestSpyCalls } from "../mocks/collect-jest-spy-calls.mjs";
 
 const methods = new Set(["get", "request"]);
 const modules = new Set(["http", "https", "node:http", "node:https"]);
@@ -18,12 +19,8 @@ export function collectHttpBindings(ast) {
 
 export function collectMockedClients(ast) {
   const clients = new Set();
-  visitAst(ast, (node) => {
-    if (!isJestCall(node, "spyOn")) return;
-    const client = node.arguments[0];
-    if (client?.type === "Identifier" && methods.has(node.arguments[1]?.value))
-      clients.add(client.name);
-  });
+  for (const { target, property } of collectJestSpyCalls(ast))
+    if (target?.type === "Identifier" && methods.has(property)) clients.add(target.name);
   return clients;
 }
 
@@ -49,13 +46,4 @@ function readModuleName(node) {
   if (expression?.type === "CallExpression" && expression.callee?.name === "require")
     return expression.arguments[0]?.value;
   return undefined;
-}
-
-function isJestCall(node, method) {
-  const callee = node.type === "CallExpression" ? node.callee : null;
-  return (
-    callee?.type === "MemberExpression" &&
-    callee.object?.name === "jest" &&
-    callee.property?.name === method
-  );
 }

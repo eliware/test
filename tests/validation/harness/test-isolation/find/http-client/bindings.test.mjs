@@ -20,7 +20,9 @@ test("collects HTTP imports, namespace aliases, and destructured require binding
   ]);
 });
 
-test("collects Jest spies for HTTP methods", () => {
-  const ast = parse('jest.spyOn(client, "request"); jest.spyOn(client, "write");');
+test("collects direct and computed Jest spies for HTTP methods", () => {
+  const ast = parse(
+    'jest.spyOn(client, "request"); jest["spyOn"](client, "get"); jest.spyOn(client, "write");',
+  );
   expect([...collectMockedClients(ast)]).toEqual(["client"]);
 });

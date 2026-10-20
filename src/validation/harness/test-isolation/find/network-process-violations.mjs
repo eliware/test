@@ -1,4 +1,5 @@
 import { visitAst } from "../../visit-ast.mjs";
+import { collectJestSpyCalls } from "./mocks/collect-jest-spy-calls.mjs";
 
 export function findNetworkProcessViolations(ast) {
   const findings = [];
@@ -26,19 +27,14 @@ function collectAliases(ast) {
 
 function collectFetchSpies(ast) {
   const spies = [];
-  visitAst(ast, (node) => {
-    const callee = node.type === "CallExpression" ? node.callee : null;
-    if (callee?.type !== "MemberExpression" || callee.object?.name !== "jest") return;
-    const method = callee.computed ? callee.property?.value : callee.property?.name;
-    const target = node.arguments[0]?.name;
-    const property = node.arguments[1]?.value;
+  for (const { target, property, position } of collectJestSpyCalls(ast)) {
     if (
-      method === "spyOn" &&
-      ["global", "globalThis", "window"].includes(target) &&
+      target?.type === "Identifier" &&
+      ["global", "globalThis", "window"].includes(target.name) &&
       property === "fetch"
     )
-      spies.push({ target, position: node.start });
-  });
+      spies.push({ target: target.name, position });
+  }
   return spies;
 }
 

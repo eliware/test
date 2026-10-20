@@ -47,6 +47,13 @@ test("allows localhost fetch and mocked global fetch", () => {
   ]);
 });
 
+test("does not treat a non-identifier spy target as a mocked global", () => {
+  const source = 'jest.spyOn({}, "fetch"); fetch("https://example.com");';
+  expect(findNetworkProcessViolations(parse(source), source)).toEqual([
+    "must mock fetch, inject it, or use a localhost URL.",
+  ]);
+});
+
 test("detects aliases for global fetch and process calls", () => {
   const source =
     'const request = fetch; const runtime = process; const quit = process.exit; request("https://example.com"); runtime.kill(1); quit(1);';
