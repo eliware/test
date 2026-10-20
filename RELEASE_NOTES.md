@@ -16,6 +16,7 @@
 - Increase the source module limit to 150 lines and the test file limit to 300 lines.
 - Require GHCR publication workflows to use the configured token for authentication.
 - Update the smoke instructions and the package exemption guidance.
+- Show CLI mode options, purposes, and default behavior in help output.
 - Update Oxlint to 1.89.0.
 
 ### Fixed

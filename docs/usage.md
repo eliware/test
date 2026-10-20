@@ -109,19 +109,29 @@ Do not combine informational commands or validation modes.
 
 ## Use tool modes
 
-Use `--lint` to run lint checks.
+Use `--lint` to run Oxlint on repository files.
 Set the lint worker count with `--threads=<positive-count>`.
+Without this option, Oxlint selects its default worker count.
 
-Use `--format` to write formatted files.
-Use `--format-check` to check formatting without writing files.
-Formatting modes use the repository scope.
-They reject file paths and options that change the mode, configuration, or file scope.
+Use `--format` to write Prettier output for the repository.
+Use `--format-check` to check Prettier output without writing files.
+Both modes use repository scope and the repository configuration.
+Pass supported Prettier options after `--format` or `--format-check`.
+Do not pass paths or options that change the mode, configuration, or file scope.
 
-Use `--audit` to run the audit check by itself.
-Audit accepts only `--no-fund` and `--no-progress`.
-It rejects options that change audit scope or severity.
+Use `--audit` to run `npm audit` by itself.
+The command uses JSON output and high severity by default.
+Pass `--no-fund` to hide fund notices.
+Pass `--no-progress` to hide progress notices.
+Both notices remain enabled by default.
+The command rejects options that change audit scope or severity.
 
-Use `--pack` to check package contents.
+Use `--pack` to check package contents with `npm pack`.
+The command disables scripts, uses dry-run mode, and returns JSON by default.
+Pass npm pack options after the mode.
+Set npm pack logging with `--loglevel=<level>`.
+The command rejects options that change package selection, output location, or dry-run behavior.
+
 The check runs only when `npm-published` applies.
 It does not publish a package.
 

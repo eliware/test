@@ -8,14 +8,15 @@ test("dispatches version and help commands", () => {
   expect(output).toEqual([packageMetadata.version]);
   output.length = 0;
   expect(dispatchInformationalCommand(["--help"], (value) => output.push(value))).toBe(0);
-  expect(output[0]).toContain("Usage: eliware-test");
-  expect(output[0]).toContain("[focused-test-path ...]");
-  expect(output[0]).toContain("focused-test-path ...");
-  expect(output[0]).toContain("tests/one.test.mjs tests/two.test.mjs");
-  expect(output[0]).toContain(".js, .jsx, .ts, .tsx, .mjs, .cjs, .mts, and .cts");
-  expect(output[0]).toContain("go to Jest");
-  expect(output[0]).toContain("Mode arguments follow the mode or --");
-  expect(output[0]).toContain("--debug-timing is wrapper-only");
+  expect(output[0]).toContain("Usage:");
+  expect(output[0]).toContain("<test-path> ... [-- Jest options]");
+  expect(output[0]).toContain("Pass one or more repository-relative test paths in tests/");
+  expect(output[0]).toContain(".js, .jsx, .ts, .tsx, .mjs, .cjs, .mts, .cts");
+  expect(output[0]).toContain("Put supported Jest options after --.");
+  expect(output[0]).toContain("--debug-timing shows elapsed times for each stage and check.");
+  expect(output[0]).toContain("Both format modes use repository scope");
+  expect(output[0]).toContain("Audit accepts --no-fund and --no-progress.");
+  expect(output[0]).toContain("Pack accepts npm pack options");
   expect(output[0]).toContain("Do not put --debug-timing after --.");
 });
 

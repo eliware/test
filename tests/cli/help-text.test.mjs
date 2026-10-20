@@ -1,13 +1,31 @@
 import { expect, test } from "@jest/globals";
 import { helpText } from "../../src/cli/help-text.mjs";
 
-test("lists validation modes and focused test usage", () => {
+test("lists command syntax, options, purposes, and defaults", () => {
   expect(helpText.split("\n")).toEqual(
     expect.arrayContaining([
-      "Usage: eliware-test [--help|--version]",
-      "       eliware-test [--debug-timing] [focused-test-path ...] [-- Jest arguments]",
-      "Focused-test arguments after -- go to Jest.",
-      "Do not put --debug-timing after --.",
+      "  eliware-test [--help|--version]",
+      "  eliware-test [--debug-timing] <test-path> ... [-- Jest options]",
+      "  eliware-test [--debug-timing] --lint [--threads=<positive-count>]",
+      "  eliware-test [--debug-timing] --format [Prettier options]",
+      "  eliware-test [--debug-timing] --format-check [Prettier options]",
+      "  eliware-test [--debug-timing] --audit [--no-fund] [--no-progress]",
+      "  eliware-test [--debug-timing] --pack [npm pack options]",
+      "  No arguments run aggregate validation for the repository.",
+      "  --help shows this text and exits without validation.",
+      "  --version shows the package version and exits without validation.",
+      "  Without --threads, Oxlint selects its default worker count.",
+      "  --lint runs Oxlint on repository files. --threads=<positive-count> sets its worker count.",
+      "  --format writes Prettier output for the repository using its configuration.",
+      "  --format-check checks Prettier output without writing files.",
+      "  Both format modes use repository scope and accept supported Prettier options.",
+      "  Do not pass paths or options that change formatting mode, configuration, or file scope.",
+      "  --audit runs npm audit with JSON output and high severity as its defaults.",
+      "  Audit accepts --no-fund and --no-progress. Both npm notices are enabled by default.",
+      "  --pack runs npm pack with scripts disabled, dry-run enabled, and JSON output.",
+      "  Pack accepts npm pack options, including --loglevel=<level>.",
+      "  It rejects options that change package selection, output location, or dry-run behavior.",
+      "  Do not put --debug-timing after --.",
     ]),
   );
 });
