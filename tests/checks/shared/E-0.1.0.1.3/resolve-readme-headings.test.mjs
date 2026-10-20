@@ -28,25 +28,22 @@ test("adds selected profile sections in canonical document order without duplica
   ]);
 });
 
-test("keeps shared headings at their first profile position for Discord", () => {
-  const headings = resolveReadmeHeadings({
-    eliware: { apply: ["general", "application", "cli", "discord"] },
-  });
-  expect(headings).toContain("Operations");
-  expect(headings.filter((heading) => heading === "Operations")).toHaveLength(1);
-  expect(headings.filter((heading) => heading === "Commands")).toHaveLength(1);
+test.each([
+  ["CLI and Discord", ["general", "application", "cli", "discord"]],
+  ["Discord", ["general", "application", "discord"]],
+])("keeps shared headings in order for %s profiles", (_name, apply) => {
+  const headings = resolveReadmeHeadings({ eliware: { apply } });
   expect(headings.indexOf("Operations")).toBeLessThan(headings.indexOf("Commands"));
   expect(headings.indexOf("Commands")).toBeLessThan(headings.indexOf("Events"));
   expect(headings.indexOf("Events")).toBeLessThan(headings.indexOf("Intents and permissions"));
 });
 
-test("adds a shared heading when only a later listed profile requires it", () => {
+test("includes each shared heading once when multiple profiles require it", () => {
   const headings = resolveReadmeHeadings({
-    eliware: { apply: ["general", "application", "discord"] },
+    eliware: { apply: ["general", "application", "cli", "discord"] },
   });
-  expect(headings.indexOf("Operations")).toBeLessThan(headings.indexOf("Commands"));
-  expect(headings.indexOf("Commands")).toBeLessThan(headings.indexOf("Events"));
-  expect(headings.indexOf("Events")).toBeLessThan(headings.indexOf("Intents and permissions"));
+  expect(headings.filter((heading) => heading === "Operations")).toHaveLength(1);
+  expect(headings.filter((heading) => heading === "Commands")).toHaveLength(1);
 });
 
 test("adds Documentation headings after Security for documentation repositories", () => {

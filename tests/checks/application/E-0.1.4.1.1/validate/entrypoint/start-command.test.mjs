@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateStartCommand } from "../../../../../src/checks/application/E-0.1.4.1.1/validate/start-command.mjs";
+import { validateStartCommand } from "../../../../../../src/checks/application/E-0.1.4.1.1/validate/entrypoint/start-command.mjs";
 
 test("allows an absent start script and matches quoted or relative tokens", () => {
   expect(validateStartCommand({}, ["bin/a.mjs"])).toBeNull();

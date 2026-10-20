@@ -1,5 +1,5 @@
 import { validateJestConfiguration } from "../jest/configuration.mjs";
-import { validateJestSourcePolicy } from "../jest/source-policy.mjs";
+import { validateJestSourcePolicy } from "../jest/source/policy.mjs";
 import { validateApplicationTestTools } from "./metadata/test-tools.mjs";
 import { validateApplicationTestToolScripts } from "./commands/test-tool-scripts.mjs";
 

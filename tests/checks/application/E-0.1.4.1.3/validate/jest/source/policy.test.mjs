@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateJestSourcePolicy } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/source-policy.mjs";
+import { validateJestSourcePolicy } from "../../../../../../../src/checks/application/E-0.1.4.1.3/validate/jest/source/policy.mjs";
 
 test("rejects runner imports, coverage exclusions, and separate config files", async () => {
   const texts = new Map([

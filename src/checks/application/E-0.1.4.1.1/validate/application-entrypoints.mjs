@@ -1,5 +1,5 @@
 import { validateEntrypointMetadata } from "./entrypoint/metadata.mjs";
-import { validateStartCommand } from "./start-command.mjs";
+import { validateStartCommand } from "./entrypoint/start-command.mjs";
 import { validateEntrypointTargets } from "./entrypoint/targets.mjs";
 import { collectEntrypointTargets } from "./entrypoint/collect-entrypoint-targets.mjs";
 
