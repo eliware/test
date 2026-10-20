@@ -54,7 +54,7 @@ test("streams concise suite progress and separates it from the enclosing check l
   );
 
   expect(beginNestedOutput).toHaveBeenCalledTimes(1);
-  expect(output.join("")).toBe("Running tests/a.test.mjs... PASS - 0.212s\n");
+  expect(output.join("")).toBe("[0.000s] tests/a.test.mjs... PASS - 0.212s\n");
   expect(options.maxProgressLineLength).toBe(Number.MAX_SAFE_INTEGER);
 });
 

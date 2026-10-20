@@ -2,9 +2,9 @@ import { expect, test } from "@jest/globals";
 import { formatJestSuiteProgress } from "../../../../src/validation/stages/format/jest-suite-progress.mjs";
 
 test("writes one start line for a suite", () => {
-  expect(formatJestSuiteProgress({ event: "start", path: "tests/example.test.mjs" })).toEqual([
-    "Running tests/example.test.mjs...",
-  ]);
+  expect(
+    formatJestSuiteProgress({ event: "start", path: "tests/example.test.mjs" }, "24.503"),
+  ).toEqual(["[24.503s] tests/example.test.mjs..."]);
 });
 
 test("writes PASS and duration for a successful suite", () => {

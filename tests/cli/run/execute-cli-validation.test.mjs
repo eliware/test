@@ -1,5 +1,6 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 import {
+  createStageTimer,
   createValidationRunOptions,
   diagnosticOptions,
   formatExitCode,
@@ -27,13 +28,17 @@ test("executes validation stages and reports the validation result", async () =>
     diagnosticOptions,
     expect.objectContaining({ validationSummary: expect.any(Object) }),
     timing,
-    undefined,
+    expect.any(Function),
   );
   expect(writeValidationResults).toHaveBeenCalledWith(
     expect.objectContaining({ validationSummary: expect.any(Object), mode: "focused" }),
     write,
     false,
     expect.any(Number),
+    expect.any(Function),
   );
   expect(formatExitCode).not.toHaveBeenCalled();
+  const [, now, output] = createStageTimer.mock.calls[0];
+  expect(now()).toEqual(expect.any(Number));
+  expect(() => output("timing output")).not.toThrow();
 });

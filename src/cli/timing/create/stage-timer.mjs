@@ -1,15 +1,25 @@
-export function createStageTimer(enabled, now = () => Date.now(), write = () => {}) {
-  const startedAt = now();
+export function createStageTimer(
+  enabled,
+  now = () => Date.now(),
+  write = () => {},
+  startedAt = now(),
+) {
   let currentStartedAt = startedAt;
   let nestedOutput = false;
   let nestedLineOpen = false;
 
   return {
+    elapsed() {
+      return ((now() - startedAt) / 1000).toFixed(3);
+    },
+    stage(label) {
+      if (enabled) write(`[${this.elapsed()}s] Stage: ${label}\n`);
+    },
     start(label) {
       if (enabled) currentStartedAt = now();
       nestedOutput = false;
       nestedLineOpen = false;
-      if (enabled) write(`Running ${label}...`);
+      if (enabled) write(`[${this.elapsed()}s] ${label}...`);
     },
     end(label) {
       if (!enabled) return;
@@ -21,7 +31,8 @@ export function createStageTimer(enabled, now = () => Date.now(), write = () => 
       } else write(` completed - ${duration}s\n`);
     },
     skip(label) {
-      if (enabled) write(`Skipping ${label} because a prerequisite check failed\n`);
+      if (enabled)
+        write(`[${this.elapsed()}s] Skipping ${label} because a prerequisite check failed\n`);
     },
     beginNestedOutput() {
       if (!enabled || nestedOutput) return;

@@ -11,8 +11,10 @@ test("creates the execution options for a Jest check", () => {
     env,
     writeOutput: undefined,
     beginNestedOutput: expect.any(Function),
+    elapsed: expect.any(Function),
   });
   expect(() => options.beginNestedOutput()).not.toThrow();
+  expect(options.elapsed()).toBe("0.000");
 });
 
 test("defaults the Jest environment to the current process environment", () => {
@@ -32,7 +34,16 @@ test("passes the timing output writer into Jest progress handling", () => {
   );
   expect(options.writeOutput).toBe(writeNestedOutput);
   options.beginNestedOutput();
+  expect(options.elapsed()).toBe("0.000");
   expect(beginNestedOutput).toHaveBeenCalledTimes(1);
+});
+
+test("uses the timing elapsed value when it is available", () => {
+  const elapsed = jest.fn(() => "1.250");
+  const options = createJestCheckOptions({ timing: { elapsed } }, () => {});
+
+  expect(options.elapsed()).toBe("1.250");
+  expect(elapsed).toHaveBeenCalledTimes(1);
 });
 
 test("uses the context writer when timing helpers are unavailable", () => {

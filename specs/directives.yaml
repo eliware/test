@@ -278,7 +278,10 @@ directives:
           - Escalate after a time limit.
           - Confirm termination only after the child closes.
           - Fail after a fixed period if forced termination does not close the child.
-          - Show suite start, result, and elapsed time with --debug-timing.
+          - Write a startup timestamp and elapsed stage, check, and suite timings to
+            coverage/eliware-test.log on every validation run.
+          - Prefix each stage, check, and suite start line with elapsed seconds since startup.
+          - Show the same timing lines on the console only when --debug-timing is set.
           - Do not combine timing output with captured failure output.
           - Fail unreadable or malformed console-output reports.
           - Accept only documented inherited NODE_OPTIONS warning and ESM flags.
@@ -295,6 +298,7 @@ directives:
       - id: E-0.0.8
         dos:
           - Delete prior files in the consumer coverage directory before each Jest run.
+          - Keep the current-run timing log while clearing other prior coverage files.
           - Keep all temporary coverage directories in the consumer repository.
           - Write current coverage reports and Jest console output to the consumer
             coverage directory.
@@ -317,6 +321,7 @@ directives:
           - Do not combine harness-owned coverage reports or validation output with test
             side effects.
           - Do not delete current-run coverage reports or Jest output after Jest completes.
+          - Do not delete the current-run timing log before or after Jest runs.
           - Do not preserve or restore prior coverage output.
           - Do not create validation or smoke temporary files in system temp or user
             folders.

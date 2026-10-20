@@ -10,6 +10,14 @@ test("writes diagnostics without timing when timing is disabled", () => {
   expect(write).toHaveBeenCalledWith("diagnostic");
 });
 
+test("writes timing to the log sink when console timing is disabled", () => {
+  const write = jest.fn();
+  const timingWrite = jest.fn();
+  writeValidationResults({ diagnostics: [] }, write, false, 0, timingWrite);
+  expect(write).not.toHaveBeenCalledWith(expect.stringMatching(/^Validation time:/u));
+  expect(timingWrite).toHaveBeenCalledWith(expect.stringMatching(/^Validation time:/u));
+});
+
 test("prints an aggregate summary with check, Jest, issue, and time counts", () => {
   const write = jest.fn();
   writeValidationResults(

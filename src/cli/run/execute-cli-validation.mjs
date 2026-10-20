@@ -1,5 +1,5 @@
 import { readDiagnosticOptions } from "../read/diagnostic-options.mjs";
-import { createStageTimer } from "../timing/create-stage-timer.mjs";
+import { createStageTimer } from "../timing/create/stage-timer.mjs";
 import { runConventionStage } from "../../validation/check-execution/run-convention-stage.mjs";
 import { runValidation } from "../../validation/run-validation.mjs";
 import { createValidationRunOptions } from "../create-validation-run-options.mjs";
@@ -8,12 +8,19 @@ import { formatExitCode } from "../format-exit-code.mjs";
 import { parseFocusedArguments } from "../parse/focused-arguments.mjs";
 import { selectTimingOutput } from "../select-timing-output.mjs";
 
-export async function executeCliValidation({ args, write, root, options }) {
+export async function executeCliValidation({
+  args,
+  write,
+  root,
+  options,
+  startedAt = Date.now(),
+  timing,
+  timingOutput,
+}) {
   const diagnosticOptions = readDiagnosticOptions(args);
-  const startedAt = Date.now();
   const validationSummary = {};
-  const timingOutput = selectTimingOutput(args, write);
-  const timing = createStageTimer(args.includes("--debug-timing"), () => Date.now(), timingOutput);
+  const output = timingOutput ?? selectTimingOutput(args, write) ?? (() => {});
+  const stageTimer = timing ?? createStageTimer(true, () => Date.now(), output, startedAt);
   const executeConvention = options.runConventionStage ?? runConventionStage;
   const executeValidation = options.runValidation ?? runValidation;
   const result = await executeConvention(() =>
@@ -24,8 +31,8 @@ export async function executeCliValidation({ args, write, root, options }) {
         args,
         diagnosticOptions,
         { ...options, validationSummary },
-        timing,
-        timingOutput,
+        stageTimer,
+        output,
       ),
     ),
   );
@@ -42,6 +49,7 @@ export async function executeCliValidation({ args, write, root, options }) {
     write,
     args.includes("--debug-timing"),
     startedAt,
+    output,
   );
   if (result.code !== 0 || args.includes("--debug-timing")) write(formatExitCode(result.code));
   return result.code;

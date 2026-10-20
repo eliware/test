@@ -8,6 +8,7 @@ export async function runValidationStages(context, stages, runners) {
     const enabled = context[`execute${capitalize(stage)}`];
     if (!enabled) continue;
     if (!Object.hasOwn(context.stageResults, stage)) {
+      context.timing?.stage?.(stage);
       try {
         context.stageResults[stage] = await selectedRunners[stage](context);
       } catch (error) {

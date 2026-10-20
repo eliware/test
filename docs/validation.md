@@ -78,6 +78,8 @@ The selected profile rules define required coverage thresholds.
 Before each Jest run, the CLI clears the consumer's `coverage/` directory.
 Jest writes coverage reports and `jest-console-output.json` to that directory.
 The CLI keeps these files after the run.
+The CLI also writes stage, check, and suite timing to `coverage/eliware-test.log`.
+The CLI keeps this timing log while it clears other coverage files.
 The CLI does not use system temp or user folders for its temporary files.
 
 Each test suite has a ten-second limit.
@@ -96,8 +98,8 @@ After a clean aggregate or focused run, the CLI reports:
 - The time for checks, Jest, and the full run.
 - The exit code on the final line.
 
-Use `--debug-timing` to see stage and suite times during execution.
-The option does not create a timing report.
+Use `--debug-timing` to show stage, check, and suite timings on the console.
+The CLI writes the same timing lines to `coverage/eliware-test.log` on every run.
 
 ## README links
 

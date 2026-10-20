@@ -22,7 +22,8 @@ export function createJestProcessOptions(root, args = [], options = {}) {
           options.beginNestedOutput?.();
           nestedOutputStarted = true;
         }
-        for (const output of formatJestSuiteProgress(event)) options.writeOutput?.(output);
+        for (const output of formatJestSuiteProgress(event, options.elapsed?.()))
+          options.writeOutput?.(output);
       }
     },
     onTimeout: () => options.onTimeout?.(progress.timeoutMessage()),

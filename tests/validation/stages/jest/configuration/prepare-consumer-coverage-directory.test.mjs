@@ -40,6 +40,18 @@ test("removes old files and nested directories from consumer coverage", async ()
   });
 });
 
+test("keeps the current-run timing log when it clears prior coverage output", async () => {
+  lstat.mockResolvedValue({ isSymbolicLink: () => false, isDirectory: () => true });
+  readdir.mockResolvedValue(["eliware-test.log", "coverage-final.json"]);
+
+  await expect(prepareConsumerCoverageDirectory(root)).resolves.toBe(coverage);
+  expect(rm).toHaveBeenCalledTimes(1);
+  expect(rm).toHaveBeenCalledWith(join(coverage, "coverage-final.json"), {
+    recursive: true,
+    force: true,
+  });
+});
+
 test("rejects a coverage symbolic link", async () => {
   lstat.mockResolvedValue({ isSymbolicLink: () => true, isDirectory: () => false });
 

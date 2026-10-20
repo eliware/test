@@ -1,7 +1,7 @@
 import { expect, jest, test } from "@jest/globals";
 import { selectTimingOutput } from "../../src/cli/select-timing-output.mjs";
 
-test("disables timing output unless debug timing is enabled", () => {
+test("disables console timing output unless debug timing is enabled", () => {
   expect(selectTimingOutput([], jest.fn())).toBeUndefined();
 });
 

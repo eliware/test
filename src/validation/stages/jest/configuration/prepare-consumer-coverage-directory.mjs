@@ -18,8 +18,10 @@ export async function prepareConsumerCoverageDirectory(root, fs = {}) {
     return directory;
   }
 
-  for (const entry of await readEntries(directory))
+  for (const entry of await readEntries(directory)) {
+    if (entry === "eliware-test.log") continue;
     await removePath(join(directory, entry), { recursive: true, force: true });
+  }
 
   return directory;
 }

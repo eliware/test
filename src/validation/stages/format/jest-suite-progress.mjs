@@ -1,6 +1,6 @@
-export function formatJestSuiteProgress(event) {
+export function formatJestSuiteProgress(event, elapsed = "0.000") {
   if (event.event === "start" && typeof event.path === "string")
-    return [`Running ${event.path}...`];
+    return [`[${elapsed}s] ${event.path}...`];
   if (event.event !== "result") return [];
   const output = [];
   if (event.failed) {

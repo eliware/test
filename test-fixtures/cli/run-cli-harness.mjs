@@ -1,6 +1,7 @@
 import { jest } from "@jest/globals";
 const readDiagnosticOptions = jest.fn();
 const createStageTimer = jest.fn();
+const createTimingLog = jest.fn();
 const runConventionStage = jest.fn();
 const runValidation = jest.fn();
 const dispatchInformationalCommand = jest.fn();
@@ -13,8 +14,11 @@ const runNpmPrerequisite = jest.fn(async () => true);
 jest.unstable_mockModule("../../src/cli/read/diagnostic-options.mjs", () => ({
   readDiagnosticOptions,
 }));
-jest.unstable_mockModule("../../src/cli/timing/create-stage-timer.mjs", () => ({
+jest.unstable_mockModule("../../src/cli/timing/create/stage-timer.mjs", () => ({
   createStageTimer,
+}));
+jest.unstable_mockModule("../../src/cli/timing/create/timing-log.mjs", () => ({
+  createTimingLog,
 }));
 jest.unstable_mockModule("../../src/validation/check-execution/run-convention-stage.mjs", () => ({
   runConventionStage,
@@ -38,13 +42,17 @@ jest.unstable_mockModule("../../src/cli/run/npm-prerequisite.mjs", () => ({
   runNpmPrerequisite,
 }));
 const diagnosticOptions = { jestArgs: ["tests/sample.test.mjs"] };
-const timing = { getLines: jest.fn(() => []) };
+const timing = {
+  getLines: jest.fn(() => []),
+  stage: jest.fn(),
+};
 const validationResult = { code: 0, category: "validation", diagnostics: [] };
 function resetCli() {
   jest.resetAllMocks();
   validationResult.code = 0;
   readDiagnosticOptions.mockReturnValue(diagnosticOptions);
   createStageTimer.mockReturnValue(timing);
+  createTimingLog.mockReturnValue(jest.fn());
   runConventionStage.mockImplementation(async (runChecks) => {
     await runChecks();
     return validationResult;
@@ -61,6 +69,7 @@ function resetCli() {
 export {
   acquireValidationLock,
   createStageTimer,
+  createTimingLog,
   createValidationRunOptions,
   diagnosticOptions,
   dispatchInformationalCommand,

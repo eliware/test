@@ -5,7 +5,8 @@
 Read the full diagnostic and rule ID.
 The CLI prints the matching rule and its full directive.
 Run the failed test path by itself when the error names one test.
-Run `eliware-test --debug-timing` to see stage and suite times.
+Read `coverage/eliware-test.log` for stage, check, and suite timings.
+Run `eliware-test --debug-timing` to show those timings on the console.
 Use `eliware-test --help` to check valid commands.
 
 ## Resolve frequent errors
