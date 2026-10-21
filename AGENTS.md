@@ -16,7 +16,8 @@ Keep fixtures in `test-fixtures/`, user guides in `docs/`, and specifications in
 
 ## Development
 
-Give each source and test module one purpose. Mirror each source module with one test.
+Give each source and test module one purpose.
+Mirror each `src/` `.mjs` file with exactly one same-path `tests/` `.test.mjs` file.
 
 ## Validation
 
