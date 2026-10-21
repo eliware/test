@@ -107,6 +107,12 @@ Use `--help` for command syntax and `--version` for the CLI version.
 Use `--debug-timing` alone or before a focused path or tool mode.
 Do not combine informational commands or validation modes.
 
+Pass `--debug-timing` through the test script when you use npm:
+
+```text
+npm test -- --debug-timing
+```
+
 ## Use tool modes
 
 Use `--lint` to run Oxlint on repository files.
@@ -144,9 +150,9 @@ Do not pass npm script names to the CLI.
 Pass one or more repository-relative test paths in `tests/`:
 
 ```text
-eliware-test tests/example.test.mjs
-eliware-test tests/first.test.mjs tests/second.test.mjs
-eliware-test tests/example.test.mjs -- --testNamePattern "case name"
+npm test -- tests/example.test.mjs
+npm test -- tests/first.test.mjs tests/second.test.mjs
+npm test -- tests/example.test.mjs -- --testNamePattern "case name"
 ```
 
 Use paths with `.test.*` or `.spec.*` names.
