@@ -4,12 +4,18 @@
 
 ### Changed
 
+- Set the package version to 15.0.0 and the convention schema versions to 15.0.
 - Remove artifact attestation steps and related permissions from the canonical GHCR workflow.
 - Limit GHCR publish permissions to repository read and package write access.
+- Clarify focused `npm test` behavior in the usage guide.
+- Update locked dependency resolutions.
+- Split validation internals into focused modules with matching tests.
 
 ### Fixed
 
 - Show captured Jest failure details when suite output did not show those details.
+- Validate the GHCR login command used by the workflow.
+- Reject keys that are not declared in canonical ordering maps.
 
 ## 14.0.0 — 2026-10-20
 
