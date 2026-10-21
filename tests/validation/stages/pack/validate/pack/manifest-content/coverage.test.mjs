@@ -12,49 +12,24 @@ const required = [
   "specs/directives.yaml",
 ];
 const entries = required.map((path) => ({ path }));
-const allowlist = [
-  "src/",
-  "docs/",
-  "specs/",
-  "README.md",
-  "AGENTS.md",
-  "LICENSE",
-  "RELEASE_NOTES.md",
-];
-
-test("accepts required content covered by the allowlist", () => {
-  expect(validatePackManifestCoverage(entries, allowlist)).toBeNull();
+test("accepts required package content", () => {
+  expect(validatePackManifestCoverage(entries)).toBeNull();
 });
 
-test("reports unexpected and missing package content", () => {
-  expect(validatePackManifestCoverage([...entries, { path: "extra.txt" }], allowlist)).toContain(
-    "outside package.json.files",
-  );
-  expect(validatePackManifestCoverage([{ path: "package.json" }], allowlist)).toContain(
+test("reports missing required package content", () => {
+  expect(validatePackManifestCoverage([{ path: "package.json" }])).toContain(
     "omitted required files",
   );
 });
 
-test("requires runtime, documentation, specification trees, and matched allowlist entries", () => {
+test("requires runtime, documentation, and specification trees", () => {
   expect(
-    validatePackManifestCoverage(
-      entries.filter(({ path }) => !path.startsWith("src/")),
-      allowlist,
-    ),
+    validatePackManifestCoverage(entries.filter(({ path }) => !path.startsWith("src/"))),
   ).toContain("runtime files");
   expect(
-    validatePackManifestCoverage(
-      entries.filter(({ path }) => !path.startsWith("docs/")),
-      allowlist,
-    ),
+    validatePackManifestCoverage(entries.filter(({ path }) => !path.startsWith("docs/"))),
   ).toContain("documentation files");
   expect(
-    validatePackManifestCoverage(
-      entries.filter(({ path }) => !path.startsWith("specs/")),
-      allowlist,
-    ),
+    validatePackManifestCoverage(entries.filter(({ path }) => !path.startsWith("specs/"))),
   ).toContain("specification files");
-  expect(validatePackManifestCoverage(entries, [...allowlist, "examples/"])).toContain(
-    "do not match",
-  );
 });
