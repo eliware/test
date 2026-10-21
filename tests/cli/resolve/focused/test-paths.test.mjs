@@ -14,6 +14,15 @@ test("returns multiple supported test files in the supplied order", () => {
   ]);
 });
 
+test.each(["js", "jsx", "ts", "tsx", "mjs", "cjs", "mts", "cts"])(
+  "accepts the supported focused test extension .%s",
+  (extension) => {
+    expect(resolveFocusedTestPaths([`tests/example.spec.${extension}`], false)).toEqual([
+      `tests/example.spec.${extension}`,
+    ]);
+  },
+);
+
 test("rejects forwarded and unsupported focused paths", () => {
   expect(() => resolveFocusedTestPaths(["--", "tests/example.test.mjs"], false)).toThrow(
     "before the -- separator",

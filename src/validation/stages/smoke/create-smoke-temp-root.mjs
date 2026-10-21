@@ -1,7 +1,6 @@
 import { mkdtemp, lstat, realpath, rmdir } from "node:fs/promises";
-import { basename, isAbsolute, join, relative, resolve, sep } from "node:path";
-
-const tempPrefix = ".eliware-tarball-smoke-";
+import { join, resolve } from "node:path";
+import { isFreshSmokeTempChild, smokeTempPrefix } from "./validate/fresh-temp-root.mjs";
 
 export async function createSmokeTempRoot(
   root,
@@ -10,14 +9,14 @@ export async function createSmokeTempRoot(
   remove = rmdir,
   resolvePath = realpath,
 ) {
-  const createdPath = await createTempRoot(join(root, tempPrefix));
+  const createdPath = await createTempRoot(join(root, smokeTempPrefix));
   let path;
   try {
     path = resolve(createdPath);
   } catch {
     return { error: "Temporary smoke directory must be a fresh child of the source checkout." };
   }
-  if (!isFreshChild(resolve(root), path))
+  if (!isFreshSmokeTempChild(resolve(root), path))
     return { error: "Temporary smoke directory must be a fresh child of the source checkout." };
 
   try {
@@ -28,7 +27,7 @@ export async function createSmokeTempRoot(
       };
     if (!identity.isDirectory()) throw new Error("temporary path is not a directory");
     const [sourcePath, actualPath] = await Promise.all([resolvePath(root), resolvePath(path)]);
-    if (!isFreshChild(sourcePath, actualPath))
+    if (!isFreshSmokeTempChild(sourcePath, actualPath))
       return {
         error: `Cannot verify temporary smoke directory. left untrusted path untouched at ${path}.`,
       };
@@ -46,16 +45,4 @@ export async function createSmokeTempRoot(
       error: `Cannot verify temporary smoke directory. removed empty path ${path}: ${error.message}`,
     };
   }
-}
-
-function isFreshChild(parent, path) {
-  const relativePath = relative(parent, path);
-  return (
-    relativePath !== "" &&
-    !relativePath.includes(sep) &&
-    relativePath !== ".." &&
-    !relativePath.startsWith(`..${sep}`) &&
-    !isAbsolute(relativePath) &&
-    basename(path).startsWith(tempPrefix)
-  );
 }

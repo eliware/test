@@ -1,19 +1,16 @@
 import { expect, test } from "@jest/globals";
-import { captureSmokePath } from "../../../../../src/validation/stages/smoke/capture-smoke/path.mjs";
+import { captureSmokePath } from "../../../../../src/validation/stages/smoke/capture-smoke/entry.mjs";
 
 function missingFs() {
   return {
-    cp: async () => {},
     lstat: async () => {
       throw Object.assign(new Error("missing"), { code: "ENOENT" });
     },
-    readFile: async () => Buffer.from(""),
   };
 }
 
-test("routes symlink capture to the focused symlink policy", async () => {
+test("routes symlink capture to the symlink policy", async () => {
   const fs = {
-    ...missingFs(),
     lstat: async () => ({ isSymbolicLink: () => true }),
     readlink: async () => "target",
     stat: async () => ({ isDirectory: () => true }),
@@ -25,9 +22,16 @@ test("routes symlink capture to the focused symlink policy", async () => {
   });
 });
 
-test("captures files, directories, and missing paths", async () => {
+test("records a missing path", async () => {
+  await expect(captureSmokePath("missing", "backup", missingFs(), "linux")).resolves.toEqual({
+    path: "missing",
+    type: "missing",
+  });
+});
+
+test("dispatches file and directory paths to their handlers", async () => {
   const fs = {
-    ...missingFs(),
+    cp: async () => {},
     lstat: async (path) => ({
       isSymbolicLink: () => false,
       isDirectory: () => path === "directory",
@@ -43,14 +47,10 @@ test("captures files, directories, and missing paths", async () => {
   await expect(captureSmokePath("directory", "backup", fs, "linux")).resolves.toMatchObject({
     type: "directory",
   });
-  await expect(captureSmokePath("missing", "backup", missingFs(), "linux")).resolves.toMatchObject({
-    type: "missing",
-  });
 });
 
 test("rejects unsupported entries and preserves filesystem errors", async () => {
   const unsupported = {
-    ...missingFs(),
     lstat: async () => ({
       isSymbolicLink: () => false,
       isDirectory: () => false,
@@ -60,6 +60,6 @@ test("rejects unsupported entries and preserves filesystem errors", async () => 
   await expect(captureSmokePath("socket", "backup", unsupported, "linux")).rejects.toThrow(
     "unsupported target path",
   );
-  const failed = { ...missingFs(), lstat: async () => Promise.reject(new Error("denied")) };
+  const failed = { lstat: async () => Promise.reject(new Error("denied")) };
   await expect(captureSmokePath("path", "backup", failed, "linux")).rejects.toThrow("denied");
 });

@@ -1,5 +1,5 @@
 import { createRedactedStreamPolicy } from "../stream/policy.mjs";
-import { createRedactedTextStreamSession } from "./stream-controller.mjs";
+import { createRedactedTextStreamController } from "./stream-controller.mjs";
 import { redactCompleteOutput } from "../../../redact/complete-output.mjs";
 
 const DEFAULT_OUTPUT_LIMIT = 100_000;
@@ -14,7 +14,7 @@ export function createRedactedTextStream(
     maxPendingLength,
     getSecretMatcher,
   });
-  const session = createRedactedTextStreamSession(policy, policy.outputLimit);
+  const session = createRedactedTextStreamController(policy, policy.outputLimit);
 
   return {
     redactComplete(text) {

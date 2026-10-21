@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { createIncrementalSearch } from "../../../../../../src/validation/shared/output/redaction/create/incremental-secret-search.mjs";
-import { createSecretTextMatcher } from "../../../../../../src/validation/shared/output/redaction/create/secret-text-matcher.mjs";
+import { createIncrementalSearch } from "../../../../../../../src/validation/shared/output/redaction/create/incremental/secret-search.mjs";
+import { createSecretTextMatcher } from "../../../../../../../src/validation/shared/output/redaction/create/secret-text-matcher.mjs";
 
 test("reuses automaton state instead of rescanning the retained suffix", () => {
   const search = createIncrementalSearch(

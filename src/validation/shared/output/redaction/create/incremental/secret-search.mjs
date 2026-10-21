@@ -1,0 +1,38 @@
+import { createIncrementalSearchWindow } from "./search-window.mjs";
+import { hasValidSecretMatchResults } from "../../has-valid-secret-match-results.mjs";
+
+export function createIncrementalSearch(values, workLimit, createStream) {
+  const findNewMatches = createStream();
+  const window = createIncrementalSearchWindow(values);
+  let consumedWork = 0;
+
+  function findSafeBoundary(pending, includePendingMatches = false) {
+    const appended = window.appendedText(pending);
+    if (appended.suppressed) return { boundary: 0, matchEnds: [], suppressed: true };
+    const result = searchAppended(appended.text, pending.length, includePendingMatches);
+    if (!result.suppressed) window.rememberPending(pending, result.boundary);
+    return result;
+  }
+
+  findSafeBoundary.appendText = (text, pendingLength, includePendingMatches = false) =>
+    searchAppended(text, pendingLength, includePendingMatches);
+  return findSafeBoundary;
+
+  function searchAppended(appended, pendingLength, includePendingMatches) {
+    if (
+      typeof appended !== "string" ||
+      !Number.isSafeInteger(pendingLength) ||
+      pendingLength < appended.length
+    )
+      return { boundary: 0, matchEnds: [], suppressed: true };
+    const pendingStart = window.bufferStart;
+    const pendingEnd = pendingStart + pendingLength;
+    const found = findNewMatches(appended);
+    if (!hasValidSecretMatchResults(found, pendingStart, pendingEnd))
+      return { boundary: 0, matchEnds: [], suppressed: true };
+    consumedWork += found.work;
+    if (consumedWork > workLimit) return { boundary: 0, matchEnds: [], suppressed: true };
+
+    return window.applyMatches(found.matches, pendingLength, includePendingMatches);
+  }
+}

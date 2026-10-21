@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { captureSmokePath } from "./path.mjs";
+import { captureSmokePath } from "./entry.mjs";
 
 export async function captureSmokePaths(
   root,

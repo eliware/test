@@ -14,14 +14,6 @@ test("maps modes and preserves tool arguments for downstream policy validation",
   expect(() => readDiagnosticOptions(["--lint", "--audit"])).toThrow(/mutually exclusive/);
 });
 
-test("accepts each documented focused test extension", () => {
-  for (const extension of ["js", "jsx", "ts", "tsx", "mjs", "cjs", "mts", "cts"]) {
-    expect(readDiagnosticOptions([`tests/example.spec.${extension}`]).jestArgs).toEqual([
-      `tests/example.spec.${extension}`,
-    ]);
-  }
-});
-
 test("forwards non-wrapper Jest options unchanged", () => {
   expect(readDiagnosticOptions(["--runInBand"]).jestArgs).toEqual(["--runInBand"]);
 });

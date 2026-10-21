@@ -5,15 +5,16 @@ test("separates option values, positional arguments, and arguments after the sep
   expect(
     parseJestArguments([
       "--moduleNameMapper",
-      "tests/value.test.mjs",
-      "tests/run.test.mjs",
+      "mapping-value",
+      "mapping-value",
+      "run-target",
       "--",
-      "tests/forwarded.test.mjs",
+      "forwarded-value",
     ]),
   ).toEqual({
-    positional: ["tests/run.test.mjs"],
-    optionValues: new Set(["tests/value.test.mjs"]),
-    afterSeparator: ["tests/forwarded.test.mjs"],
+    positional: ["run-target"],
+    optionValues: new Set(["mapping-value"]),
+    afterSeparator: ["forwarded-value"],
   });
 });
 
