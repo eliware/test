@@ -1,9 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import {
-  collectHttpBindings,
-  collectMockedClients,
-} from "../../../../../../src/validation/harness/test-isolation/find/http-client/bindings.mjs";
+import { collectHttpBindings } from "../../../../../../src/validation/harness/test-isolation/find/http-client/bindings.mjs";
 
 test("collects HTTP imports, namespace aliases, and destructured require bindings", () => {
   const ast = parse(
@@ -18,11 +15,4 @@ test("collects HTTP imports, namespace aliases, and destructured require binding
     ["quotedGet", "node:https"],
     ["client", "http"],
   ]);
-});
-
-test("collects direct and computed Jest spies for HTTP methods", () => {
-  const ast = parse(
-    'jest.spyOn(client, "request"); jest["spyOn"](client, "get"); jest.spyOn(client, "write");',
-  );
-  expect([...collectMockedClients(ast)]).toEqual(["client"]);
 });

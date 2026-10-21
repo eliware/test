@@ -1,5 +1,4 @@
 import { visitAst } from "../../../visit-ast.mjs";
-import { collectJestSpyCalls } from "../mocks/collect-jest-spy-calls.mjs";
 
 const methods = new Set(["get", "request"]);
 const modules = new Set(["http", "https", "node:http", "node:https"]);
@@ -15,13 +14,6 @@ export function collectHttpBindings(ast) {
       addBindings(readModuleName(node.init), [node], bindings);
   });
   return bindings;
-}
-
-export function collectMockedClients(ast) {
-  const clients = new Set();
-  for (const { target, property } of collectJestSpyCalls(ast))
-    if (target?.type === "Identifier" && methods.has(property)) clients.add(target.name);
-  return clients;
 }
 
 function addBindings(moduleName, specifiers, bindings) {
