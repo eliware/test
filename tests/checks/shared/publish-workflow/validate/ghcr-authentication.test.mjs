@@ -23,6 +23,21 @@ test("accepts GHCR login before the image push", () => {
   expect(validateGhcrAuthentication(workflow)).toEqual([]);
 });
 
+test("validates the last GHCR login before the image push", () => {
+  expect(
+    validateGhcrAuthentication({
+      jobs: {
+        publish: {
+          permissions: { packages: "write" },
+          steps: [login, { ...login, with: { ...login.with, password: "other" } }, image],
+        },
+      },
+    }),
+  ).toContain(
+    "specs/workflows/ghcr.yaml GHCR login must use secrets.GITHUB_TOKEN as the password.",
+  );
+});
+
 test("requires package write permission", () => {
   expect(validateGhcrAuthentication({ jobs: { publish: { steps: [login, image] } } })).toContain(
     "specs/workflows/ghcr.yaml publish job must grant packages: write.",
