@@ -94,3 +94,10 @@ test("keeps the output bound finite when the supplied limit is infinite", () => 
 
   expect(captured.length).toBeLessThanOrEqual(100_000);
 });
+
+test("uses the default output limit when no limit is supplied", () => {
+  const output = createRedactedTextStream([]);
+  const captured = output.push("x".repeat(100_100)) + output.finish();
+
+  expect(captured.length).toBeLessThanOrEqual(100_000);
+});

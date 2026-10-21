@@ -11,6 +11,7 @@ test("normalizes search and pending limits and builds matcher state", () => {
     getSecretMatcher,
   });
   expect(policy).toMatchObject({
+    outputLimit: 20,
     workLimit: 1_000_000,
     pendingLimit: 20,
     values: ["secret"],
@@ -60,6 +61,7 @@ test("suppresses unsafe output when a secret is too long for the output limit", 
 test("bounds direct policy calls when the output limit is infinite", () => {
   const policy = createRedactedStreamPolicy(["s".repeat(100_001)], Number.POSITIVE_INFINITY);
 
+  expect(policy.outputLimit).toBe(100_000);
   expect(policy.pendingLimit).toBeLessThanOrEqual(100_000);
   expect(policy.suppressed).toBe(true);
 });

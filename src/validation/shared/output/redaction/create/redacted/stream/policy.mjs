@@ -26,8 +26,13 @@ export function createRedactedStreamPolicy(
     maxPendingLength,
     maximumSecretLength,
   );
-  if (!values) return createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength);
+  if (!values)
+    return {
+      ...createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength),
+      outputLimit: boundedOutputLimit,
+    };
   return {
+    outputLimit: boundedOutputLimit,
     workLimit,
     pendingLimit,
     values,
