@@ -104,6 +104,20 @@ test("reports missing order objects and malformed required maps", () => {
   );
 });
 
+test("rejects undeclared entries in canonical ordering maps", () => {
+  const agents = validDocument("agents-sections.yaml");
+  agents.orders.profileHeadings.extra = "Extra";
+  expect(validateCanonicalOrderDocument(agents, "agents-sections.yaml")).toContain(
+    "agents-sections.yaml.orders.profileHeadings.extra is not supported.",
+  );
+
+  const readme = validDocument("readme-sections.yaml");
+  readme.orders.sharedSections.Commands.extra = ["web"];
+  expect(validateCanonicalOrderDocument(readme, "readme-sections.yaml")).toContain(
+    "readme-sections.yaml.orders.sharedSections.Commands.extra is not supported.",
+  );
+});
+
 test("rejects unsupported field type declarations", () => {
   canonicalOrderRequirements["temporary.yaml"] = { fields: { value: "unsupported" } };
   expect(validateCanonicalOrderDocument({ orders: { value: "text" } }, "temporary.yaml")).toEqual([

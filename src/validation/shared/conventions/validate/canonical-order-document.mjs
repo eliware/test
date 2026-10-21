@@ -12,10 +12,15 @@ export function validateCanonicalOrderDocument(document, path) {
       continue;
     }
     if (!hasType(orders[field], type)) errors.push(`${path}.orders.${field} must be ${type}.`);
-    for (const key of contract.maps?.[field] ?? []) {
+    const requiredKeys = contract.maps?.[field] ?? [];
+    for (const key of requiredKeys) {
       if (!Object.hasOwn(orders[field] ?? {}, key))
         errors.push(`${path}.orders.${field}.${key} is required.`);
     }
+    if (contract.maps?.[field] && isObject(orders[field]))
+      for (const key of Object.keys(orders[field]))
+        if (!requiredKeys.includes(key))
+          errors.push(`${path}.orders.${field}.${key} is not supported.`);
   }
   validateNestedMaps(orders, contract.nestedMaps, contract.nestedTypes, path, errors);
   return errors;
@@ -24,14 +29,19 @@ export function validateCanonicalOrderDocument(document, path) {
 function validateNestedMaps(orders, nestedMaps = {}, nestedTypes = {}, path, errors) {
   for (const [field, entries] of Object.entries(nestedMaps)) {
     for (const [entry, required] of Object.entries(entries)) {
+      const values = orders?.[field]?.[entry];
       for (const key of required) {
-        if (!Object.hasOwn(orders?.[field]?.[entry] ?? {}, key))
+        if (!Object.hasOwn(values ?? {}, key))
           errors.push(`${path}.orders.${field}.${entry}.${key} is required.`);
-        else if (!hasType(orders[field][entry][key], nestedTypes[field]?.[entry]?.[key]))
+        else if (!hasType(values[key], nestedTypes[field]?.[entry]?.[key]))
           errors.push(
             `${path}.orders.${field}.${entry}.${key} must be ${nestedTypes[field][entry][key]}.`,
           );
       }
+      if (isObject(values))
+        for (const key of Object.keys(values))
+          if (!required.includes(key))
+            errors.push(`${path}.orders.${field}.${entry}.${key} is not supported.`);
     }
   }
 }

@@ -133,6 +133,7 @@ directives:
       - Report the file path, observed value, and required limit when a YAML limit fails.
       - Validate only YAML documents with a top-level directives key against the bundled
         directives schema.
+      - Use only declared keys in canonical ordering maps.
       - Give each specs directory a navigation-only README.md with links to its same-folder
         YAML files.
       - Index all specifications.
