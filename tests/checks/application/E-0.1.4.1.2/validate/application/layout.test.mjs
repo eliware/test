@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect, jest, test } from "@jest/globals";
 import { validateApplicationLayout } from "../../../../../../src/checks/application/E-0.1.4.1.2/validate/application/layout.mjs";
 
 test("runs layout validators against the repository inventory", async () => {
@@ -10,6 +10,18 @@ test("runs layout validators against the repository inventory", async () => {
       },
     }),
   ).resolves.toEqual([]);
+});
+
+test("reads each test file once for executable-test and line-limit checks", async () => {
+  const readText = jest.fn(async () => 'test("works", () => {});');
+  await validateApplicationLayout({
+    root: "repo",
+    repositoryInventory: {
+      files: async () => ["tests/a.test.mjs"],
+      readText,
+    },
+  });
+  expect(readText).toHaveBeenCalledTimes(1);
 });
 
 test("rejects implementation modules outside src and approved roots", async () => {

@@ -47,3 +47,15 @@ test("fails when it cannot read a source file", async () => {
     ),
   ).resolves.toEqual(["src/a.mjs could not be read for its line limit."]);
 });
+
+test("reports an unreadable test file", async () => {
+  await expect(
+    validateApplicationLineLimits(
+      ["tests/a.test.mjs"],
+      async () => {
+        throw new Error("read failed");
+      },
+      "repo",
+    ),
+  ).resolves.toEqual(["tests/a.test.mjs could not be read for its line limit."]);
+});

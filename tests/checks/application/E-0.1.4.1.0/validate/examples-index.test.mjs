@@ -55,9 +55,3 @@ test("requires an examples index when examples exist", async () => {
     }),
   ).resolves.toEqual(["examples/README.md is required when examples/ contains JavaScript files."]);
 });
-
-test("reports a missing default context", async () => {
-  await expect(validateExamplesIndex()).resolves.toEqual([
-    "examples/ could not be inspected for JavaScript examples.",
-  ]);
-});

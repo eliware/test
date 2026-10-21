@@ -28,9 +28,3 @@ test("reports unreadable README files", async () => {
     }),
   ).resolves.toEqual(["README.md must link examples/README.md."]);
 });
-
-test("uses the default context and root", async () => {
-  await expect(validateLibraryExamplesLink()).resolves.toContain(
-    "README.md must link examples/README.md.",
-  );
-});

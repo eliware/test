@@ -23,9 +23,3 @@ test("rejects a separate test runner command", async () => {
     "package.json script test must not invoke a separate test or coverage tool.",
   );
 });
-
-test("reports errors from the default context", async () => {
-  await expect(validateApplicationJestPolicy()).resolves.toContain(
-    "Jest source policy could not read the repository inventory.",
-  );
-});

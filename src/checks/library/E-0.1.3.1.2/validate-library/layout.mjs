@@ -3,7 +3,7 @@ import { validateMirroredTests } from "../../../shared/layout/mirrored-tests.mjs
 import { validateTestFileLayout } from "../../../application/E-0.1.4.1.2/validate/test-file-layout.mjs";
 import { validateLibrarySourcePlacement } from "./source-placement.mjs";
 
-export async function validateLibraryLayout(context = {}) {
+export async function validateLibraryLayout(context) {
   const inventory = context.repositoryInventory;
   if (!inventory) return ["Repository inventory is required for library layout checks."];
   const files = await inventory.files("all");

@@ -1,3 +1,5 @@
+import { normalizeRepositoryUrl } from "./normalize-repository-url.mjs";
+
 export async function validateGitOrigin(root, repositoryUrl, runGit) {
   const expected = normalizeRepositoryUrl(repositoryUrl);
   if (!expected) return ["package.json.repository.url must identify a GitHub repository."];
@@ -12,14 +14,4 @@ export async function validateGitOrigin(root, repositoryUrl, runGit) {
   } catch {
     return ["Git origin could not be read."];
   }
-}
-
-function normalizeRepositoryUrl(value) {
-  if (typeof value !== "string" || !value.trim()) return null;
-  const match =
-    /^(?:git\+)?(?:https:\/\/github\.com\/|ssh:\/\/git@github\.com\/|git@github\.com:)([^/?#]+)\/([^/?#]+?)(?:\.git)?\/?$/iu.exec(
-      value.trim(),
-    );
-  if (!match || match.slice(1).some((part) => part === "." || part === "..")) return null;
-  return `github.com/${match[1].toLowerCase()}/${match[2].toLowerCase()}`;
 }
