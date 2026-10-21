@@ -1,4 +1,4 @@
-version: "14.0"
+version: "15.0"
 description: Lists deterministic rules for Eliware infrastructure repositories.
 directives:
   - id: E-0.1.9.1.0

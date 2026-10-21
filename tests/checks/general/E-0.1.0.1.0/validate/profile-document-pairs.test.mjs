@@ -8,7 +8,7 @@ jest.unstable_mockModule("node:fs/promises", () => ({ readdir, readFile }));
 const { validateProfileDocumentPairs } =
   await import("../../../../../src/checks/general/E-0.1.0.1.0/validate/profile-document-pairs.mjs");
 
-const version = "13.0";
+const version = "15.0";
 
 beforeEach(() => {
   readdir.mockReset();

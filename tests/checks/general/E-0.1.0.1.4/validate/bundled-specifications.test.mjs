@@ -15,7 +15,7 @@ const fixture = {
   read: async () => stringify(expectedDirectiveSchema),
 };
 const convention = {
-  version: "14.0",
+  version: "15.0",
   description: "Test convention.",
   directives: [{ id: "E-0.0", dos: ["Keep tests focused."], donts: ["Do not mix test duties."] }],
 };
@@ -75,7 +75,7 @@ test("reports invalid schemas and convention documents", async () => {
         ? stringify(expectedDirectiveSchema)
         : [
             stringify(convention),
-            stringify({ version: "14.0", description: "No directives." }),
+            stringify({ version: "15.0", description: "No directives." }),
           ].join("\n---\n"),
   });
   expect(documentError.join(" ")).toContain("must be a nonempty array");

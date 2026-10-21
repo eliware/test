@@ -13,9 +13,9 @@ const root = "C:/repo";
 const specs = join(root, "specs");
 const nested = join(specs, "nested");
 const mainDocument =
-  "version: '14.0'\ndescription: Rules\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n";
+  "version: '15.0'\ndescription: Rules\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n";
 const duplicateDocument =
-  "version: '14.0'\ndescription: Duplicate\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n";
+  "version: '15.0'\ndescription: Duplicate\ndirectives:\n  - id: E-0.0\n    dos: [Do]\n    donts: [Do not]\n";
 const record = (name) => ({ name, isDirectory: () => false, isFile: () => true });
 const folder = (name) => ({ name, isDirectory: () => true, isFile: () => false });
 
@@ -45,7 +45,7 @@ test("parses every YAML file and validates directive documents recursively", asy
     if (path.endsWith("custom-schema.yaml"))
       return "type: object\nproperties: {name: {type: string}}\n";
     if (path.endsWith("extra.yml"))
-      return "version: '14.0'\ndescription: Extra\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n";
+      return "version: '15.0'\ndescription: Extra\ndirectives:\n  - id: E-0.1\n    dos: [Do]\n    donts: [Do not]\n";
     throw new Error(`Unexpected read: ${path}`);
   });
 
@@ -78,11 +78,11 @@ test("requires the root directive file and reports invalid YAML", async () => {
   );
 
   readdir.mockResolvedValue([record("directives.yaml")]);
-  readFile.mockResolvedValue("version: '14.0'\ndescription: No rules\n");
+  readFile.mockResolvedValue("version: '15.0'\ndescription: No rules\n");
   expect((await validateConsumerSpecifications(root, "E-0")).join(" ")).toContain(
     "specs/directives.yaml must contain a directive document",
   );
-  readFile.mockResolvedValue("version: '14.0'\ndescription: Invalid\ndirectives: null\n");
+  readFile.mockResolvedValue("version: '15.0'\ndescription: Invalid\ndirectives: null\n");
   expect((await validateConsumerSpecifications(root, "E-0")).join(" ")).toContain(
     "directives must be a nonempty array",
   );

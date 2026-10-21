@@ -3,7 +3,7 @@ import { extractYamlProse } from "../../../../../src/checks/general/E-0.1.0.1.11
 
 test("extracts directive and descriptive fields but skips examples and metadata", () => {
   const source = [
-    'version: "14.0"',
+    'version: "15.0"',
     'description: "A short description."',
     "directives:",
     "  - id: E-0.1.0.0.0",

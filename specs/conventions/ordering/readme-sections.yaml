@@ -1,4 +1,4 @@
-version: "14.0"
+version: "15.0"
 description: >-
   Defines README section order. Profile sections follow profileOrder. Shared sections come
   before sections of the first matching profile.

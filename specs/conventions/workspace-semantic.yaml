@@ -1,4 +1,4 @@
-version: "14.0"
+version: "15.0"
 description: Lists semantic rules for Eliware workspace repositories.
 directives:
   - id: E-0.1.2.0.0

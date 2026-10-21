@@ -1,4 +1,4 @@
-version: "14.0"
+version: "15.0"
 description: Defines order for YAML links and subdirectory indexes in specs README.md files.
 orders:
   directYamlFiles: filename-ascending

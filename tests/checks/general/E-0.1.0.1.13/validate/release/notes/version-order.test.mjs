@@ -11,7 +11,7 @@ test("validates calendar dates", () => {
 });
 
 test("compares numeric version parts", () => {
-  expect(compareReleaseVersions("14.0.0", "12.99.99")).toBe(1);
-  expect(compareReleaseVersions("12.8.0", "12.9.0")).toBe(-1);
+  expect(compareReleaseVersions("15.0.0", "9.99.99")).toBe(1);
+  expect(compareReleaseVersions("15.8.0", "15.9.0")).toBe(-1);
   expect(compareReleaseVersions("1.2.3", "1.2.3")).toBe(0);
 });

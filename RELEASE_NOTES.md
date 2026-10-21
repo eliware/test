@@ -1,5 +1,16 @@
 # Release Notes
 
+## 15.0.0 — 2026-10-21
+
+### Changed
+
+- Remove artifact attestation steps and related permissions from the canonical GHCR workflow.
+- Limit GHCR publish permissions to repository read and package write access.
+
+### Fixed
+
+- Show captured Jest failure details when suite output did not show those details.
+
 ## 14.0.0 — 2026-10-20
 
 ### Added
