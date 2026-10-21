@@ -18,22 +18,6 @@ test("preserves separator semantics for delegated option-looking arguments", () 
   );
 });
 
-test("tracks absolute POSIX, drive-qualified, and UNC paths forwarded after the separator", () => {
-  expect(
-    parseFocusedArguments([
-      "--",
-      "not-a-test",
-      "/repo/tests/example.test.mjs",
-      "C:\\repo\\tests\\example.test.mjs",
-      "\\\\server\\share\\tests\\example.test.mjs",
-    ]).forwardedTestPaths,
-  ).toEqual([
-    "/repo/tests/example.test.mjs",
-    "C:\\repo\\tests\\example.test.mjs",
-    "\\\\server\\share\\tests\\example.test.mjs",
-  ]);
-});
-
 test("treats equals-form option values as delegated values", () => {
   expect(
     parseFocusedArguments(["--testNamePattern=tests/value.test.mjs", "tests/example.test.mjs"])
@@ -54,9 +38,6 @@ test("handles empty and non-string argument values", () => {
     "tests/example.test.mjs",
   ]);
   expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).positional).toEqual([]);
-  expect(parseFocusedArguments(["--", "tests/example.test.mjs"]).forwardedTestPaths).toEqual([
-    "tests/example.test.mjs",
-  ]);
   expect(focusedPathFrom(["--", "tests/example.test.mjs"])).toBeUndefined();
   expect(
     parseFocusedArguments(["--testNamePattern", "tests/example.test.mjs", "tests/example.test.mjs"])
@@ -65,11 +46,4 @@ test("handles empty and non-string argument values", () => {
   expect(focusedPathFrom(["tests/example.test.mjs"])).toBe("tests/example.test.mjs");
   expect(focusedPathFrom(["specs/example.spec.mjs"])).toBeUndefined();
   expect(focusedPathFrom(["src/example.mjs"])).toBeUndefined();
-});
-
-test("recognizes forwarded focused test paths from parsed Jest arguments", () => {
-  expect(
-    parseFocusedArguments(["--", "tests/example.test.mjs", "C:\\repo\\file.txt"])
-      .forwardedTestPaths,
-  ).toEqual(["tests/example.test.mjs", "C:\\repo\\file.txt"]);
 });

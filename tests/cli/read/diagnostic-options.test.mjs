@@ -44,15 +44,6 @@ test("rejects repeated informational commands", () => {
   expect(() => readDiagnosticOptions(["--help", "--help"])).toThrow("cannot be repeated");
 });
 
-test("rejects test paths after the Jest delegation separator", () => {
-  expect(() => readDiagnosticOptions(["tests/a.test.mjs", "--", "tests/b.test.mjs"])).toThrow(
-    "must be supplied before the -- separator",
-  );
-  expect(() => readDiagnosticOptions(["--", "C:\\outside.test.mjs"])).toThrow(
-    "must be supplied before the -- separator",
-  );
-});
-
 test("does not treat option values as focused paths and preserves them for Jest", () => {
   expect(
     readDiagnosticOptions([

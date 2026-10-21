@@ -1,4 +1,5 @@
 import { removeMarkdownCode } from "./extract-markdown/remove-markdown-code.mjs";
+import { slugMarkdownHeading } from "./slug-markdown-heading.mjs";
 
 export function hasMarkdownFragment(content, fragment) {
   let wanted;
@@ -17,7 +18,7 @@ export function hasMarkdownFragment(content, fragment) {
     const setext = index > 0 && /^ {0,3}(?:=+|-+)\s*$/u.test(line) ? lines[index - 1] : null;
     const title = heading?.[1] ?? setext;
     if (title) {
-      const base = slugHeading(title);
+      const base = slugMarkdownHeading(title);
       const count = counts.get(base) ?? 0;
       counts.set(base, count + 1);
       anchors.add(count ? `${base}-${count}` : base);
@@ -28,15 +29,4 @@ export function hasMarkdownFragment(content, fragment) {
       anchors.add(doubleQuoted ?? singleQuoted ?? unquoted);
   }
   return anchors.has(wanted);
-}
-
-function slugHeading(value) {
-  return value
-    .replace(/!?\[([^\]]+)\]\([^)]*\)/gu, "$1")
-    .replace(/<[^>]+>/gu, "")
-    .replace(/[`*~]/gu, "")
-    .toLowerCase()
-    .replace(/[^\p{Letter}\p{Number}\s_-]/gu, "")
-    .trim()
-    .replace(/\s+/gu, "-");
 }

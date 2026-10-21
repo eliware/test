@@ -36,6 +36,7 @@ test("rejects targets that resolve through a symlink outside the repository", as
 
 test("checks Markdown fragments and ignores query strings", async () => {
   await expect(validator()("docs/index.md", "target.md?view=full#target")).resolves.toBeNull();
+  await expect(validator()("docs/index.md", "#target")).resolves.toBeNull();
   await expect(
     validator({ read: async () => "# Other\n" })("docs/index.md", "target.md#missing"),
   ).resolves.toContain("fragment does not resolve");

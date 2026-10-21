@@ -18,6 +18,19 @@ test("rejects forwarded and unsupported focused paths", () => {
   expect(() => resolveFocusedTestPaths(["--", "tests/example.test.mjs"], false)).toThrow(
     "before the -- separator",
   );
+  expect(() =>
+    resolveFocusedTestPaths(
+      [
+        "--",
+        "not-a-test",
+        "/repo/tests/example.test.mjs",
+        "C:\\repo\\tests\\example.test.mjs",
+        "\\\\server\\share\\tests\\example.test.mjs",
+        "C:\\repo\\file.txt",
+      ],
+      false,
+    ),
+  ).toThrow("before the -- separator");
   expect(() => resolveFocusedTestPaths(["--", "tests/example.test.mjs"], true)).toThrow(
     "cannot be combined with tool modes",
   );
