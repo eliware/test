@@ -19,6 +19,9 @@ directives:
       - Keep the Dockerfile at the repository root.
       - Use .github/workflows/ghcr.yaml as the consumer publication workflow.
       - Log in to ghcr.io with github.actor and secrets.GITHUB_TOKEN before the image push.
+      - "Grant `contents: read` and `packages: write` to the publish job."
+      - Compare the pushed image digest with the immutable registry digest.
+      - Inspect the image by its immutable digest and add the digest to the workflow summary.
       - "Match it byte for byte with the bundled Eliware Test file
         specs/workflows/ghcr.yaml."
       - Include line endings and the final newline in each match.
@@ -26,6 +29,8 @@ directives:
     donts:
       - Do not use .github/workflows/publish.yaml for GHCR publication.
       - Do not create specs/workflows/ in a consumer repository.
+      - "Do not run `actions/attest@v4` or `gh attestation verify`."
+      - Do not grant id-token, attestations, or artifact-metadata permissions.
     examples:
       - /eliware/application-template/.github/workflows/ghcr.yaml
       - /eliware/discord-template/.github/workflows/ghcr.yaml

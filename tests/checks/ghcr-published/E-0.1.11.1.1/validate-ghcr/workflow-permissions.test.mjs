@@ -8,9 +8,6 @@ import {
 const publisherPermissions = {
   contents: "read",
   packages: "write",
-  "id-token": "write",
-  attestations: "write",
-  "artifact-metadata": "write",
 };
 
 test("accepts the exact GHCR workflow permissions", () => {
@@ -23,6 +20,13 @@ test("accepts the exact GHCR workflow permissions", () => {
 test("rejects missing, extra, or incorrect permissions", () => {
   expect(hasGhcrPublisherPermissions({ ...publisherPermissions, packages: "read" })).toBe(false);
   expect(hasGhcrPublisherPermissions({ ...publisherPermissions, extra: "read" })).toBe(false);
+  expect(hasGhcrPublisherPermissions({ ...publisherPermissions, "id-token": "write" })).toBe(false);
+  expect(hasGhcrPublisherPermissions({ ...publisherPermissions, attestations: "write" })).toBe(
+    false,
+  );
+  expect(
+    hasGhcrPublisherPermissions({ ...publisherPermissions, "artifact-metadata": "write" }),
+  ).toBe(false);
   expect(hasGhcrWorkflowReadPermissions({ contents: "read", packages: "write" })).toBe(false);
   expect(hasGhcrValidationReadPermissions({ contents: "read", packages: "write" })).toBe(false);
 });

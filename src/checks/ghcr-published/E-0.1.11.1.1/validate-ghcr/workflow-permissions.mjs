@@ -2,9 +2,6 @@ export function hasGhcrPublisherPermissions(value) {
   const required = {
     contents: "read",
     packages: "write",
-    "id-token": "write",
-    attestations: "write",
-    "artifact-metadata": "write",
   };
   return (
     value &&

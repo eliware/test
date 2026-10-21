@@ -16,6 +16,16 @@ test.each([
   ]);
 });
 
+test.each([
+  ["actions/attest", "      - uses: actions/attest@v4\n      - run: echo"],
+  ["gh attestation verify", "      - run: gh attestation verify\n      - run: echo"],
+])("rejects a GHCR workflow that restores %s", async (_name, steps) => {
+  const workflow = ghcrWorkflow.replace("      - run: echo", steps);
+  await expect(validateGhcrPublishWorkflow(createGhcrInventory({ workflow }))).resolves.toEqual([
+    ".github/workflows/ghcr.yaml must match the bundled Eliware Test file specs/workflows/ghcr.yaml byte for byte.",
+  ]);
+});
+
 test("requires the root Dockerfile and canonical workflow name", async () => {
   await expect(
     validateGhcrPublishWorkflow(createGhcrInventory({ files: ["AGENTS.md"] })),
