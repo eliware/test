@@ -1,11 +1,5 @@
 import { selectPackManifestEntry } from "./select-pack-manifest-entry.mjs";
-
-function normalizeRedactedPackMetadata(stdout) {
-  return stdout.replace(
-    /("(?:size|unpackedSize|entryCount|mode)"\s*:\s*)(?:\d|\[REDACTED\])+/gu,
-    (_match, property) => `${property}0`,
-  );
-}
+import { normalizeRedactedPackMetadata } from "./normalize-redacted-pack-metadata.mjs";
 
 export function readPackManifest(stdout, packageName) {
   let manifest;

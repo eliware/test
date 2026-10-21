@@ -1,4 +1,4 @@
-import { isTestToolCommand } from "../test-tool-patterns.mjs";
+import { isTestToolCommand } from "../command-patterns.mjs";
 
 export function findTestToolReferencesInText(content, harness = false) {
   return content.split(/\r?\n/u).some((line) => {

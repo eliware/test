@@ -1,9 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { validateMirroredTests } from "../../../../../src/checks/application/E-0.1.4.1.2/validate/mirrored-tests.mjs";
+import { validateMirroredTests } from "../../../../src/checks/shared/layout/mirrored-tests.mjs";
 
 test("accepts a source file with its matching test file", () => {
-  const files = ["src/a.mjs", "tests/a.test.mjs"];
-  expect(validateMirroredTests(files)).toEqual([]);
+  expect(validateMirroredTests(["src/a.mjs", "tests/a.test.mjs"])).toEqual([]);
 });
 
 test("reports missing, unmatched, and support test files", () => {

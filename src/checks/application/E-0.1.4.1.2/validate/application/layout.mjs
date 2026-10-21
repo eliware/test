@@ -1,4 +1,4 @@
-import { validateMirroredTests } from "../mirrored-tests.mjs";
+import { validateMirroredTests } from "../../../../shared/layout/mirrored-tests.mjs";
 import { validateExecutableTests } from "../executable-tests.mjs";
 import { validateApplicationLineLimits } from "./line-limits.mjs";
 import { validateTestFileLayout } from "../test-file-layout.mjs";

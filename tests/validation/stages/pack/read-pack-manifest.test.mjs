@@ -25,18 +25,6 @@ test("reports when the requested package entry does not exist", () => {
   expect(readPackManifest("null").error).toContain("files array");
 });
 
-test("recovers numeric npm metadata redacted in command output", () => {
-  const output = JSON.stringify({
-    target: {
-      name: "target",
-      size: 12034,
-      files: [{ path: "package.json", size: 123, mode: 420 }],
-      entryCount: 1,
-    },
-  }).replaceAll("123", "[REDACTED]3");
-  expect(readPackManifest(output, "target")).toMatchObject({ entry: { name: "target" } });
-});
-
 test("reports invalid JSON when output cannot be recovered", () => {
   expect(readPackManifest("not json").error).toBe("npm pack returned invalid JSON manifest.");
   expect(readPackManifest('{"size":[REDACTED]2,}').error).toBe(
