@@ -6,16 +6,19 @@ import {
 
 test("accounts for a shared byte limit across output streams", () => {
   const budget = createOutputByteBudget(5);
-  budget.append("stdout", "abc");
-  budget.append("stderr", "def");
+  expect(budget.append("stdout", "abc")).toBe("abc");
+  expect(budget.remaining).toBe(2);
+  expect(budget.append("stderr", "def")).toBe("de");
 
   expect(budget.output).toEqual({ stdout: "abc", stderr: "de" });
+  expect(budget.capturedBytes).toBe(5);
+  expect(budget.remaining).toBe(0);
   expect(budget.isFull()).toBe(true);
 });
 
 test("ignores unsupported stream names", () => {
   const budget = createOutputByteBudget(10);
-  budget.append("other", "ignored");
+  expect(budget.append("other", "ignored")).toBe("");
   budget.append("stdout", "okay");
   expect(budget.output).toEqual({ stdout: "okay", stderr: "" });
 });

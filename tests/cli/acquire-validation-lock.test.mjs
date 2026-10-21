@@ -114,21 +114,43 @@ test("reports a lock that may remain when handle close and cleanup fail", async 
   expect(error.message).toContain("A stale lock can stay");
 });
 
-test("reports both lock-write and partial-lock cleanup failures", async () => {
-  const writeError = new Error("disk full");
-  const closeError = new Error("close failed");
-  const cleanupError = new Error("access denied");
+test.each([
+  {
+    name: "a partial write and cleanup",
+    writeMessage: "disk full",
+    closeMessage: "close failed",
+    cleanupMessage: "access denied",
+    expectedMessage:
+      `Could not write lock metadata and cleanup failed. The unfinished lock can stay at ${lockPath}. ` +
+      "Remove it after you confirm that no validation run is active.",
+    expectedErrors: ["write", "close", "cleanup"],
+    cause: "write",
+  },
+  {
+    name: "a handle close and cleanup",
+    closeMessage: "close failed",
+    cleanupMessage: "access denied",
+    expectedMessage: `Could not close the validation lock. A stale lock can stay at ${lockPath}.`,
+    expectedErrors: ["close", "cleanup"],
+    cause: "close",
+  },
+])("reports aggregate errors after $name fails", async (scenario) => {
+  const errors = {
+    write: scenario.writeMessage ? new Error(scenario.writeMessage) : undefined,
+    close: new Error(scenario.closeMessage),
+    cleanup: new Error(scenario.cleanupMessage),
+  };
   const handle = createHandle();
-  handle.writeFile.mockRejectedValue(writeError);
-  handle.close.mockRejectedValue(closeError);
+  if (errors.write) handle.writeFile.mockRejectedValue(errors.write);
+  handle.close.mockRejectedValue(errors.close);
   open.mockResolvedValue(handle);
-  unlink.mockRejectedValue(cleanupError);
+  unlink.mockRejectedValue(errors.cleanup);
 
   const error = await acquireValidationLock(root).catch((value) => value);
   expect(error).toBeInstanceOf(AggregateError);
-  expect(error.message).toContain("The unfinished lock can stay at " + lockPath);
-  expect(error.errors).toEqual([writeError, closeError, cleanupError]);
-  expect(error.cause).toBe(writeError);
+  expect(error.message).toBe(scenario.expectedMessage);
+  expect(error.errors).toEqual(scenario.expectedErrors.map((key) => errors[key]));
+  expect(error.cause).toBe(errors[scenario.cause]);
 });
 
 test("reports close failure when partial lock removal succeeds", async () => {

@@ -11,6 +11,7 @@ import { prepareSmokeTargetContext } from "../prepare-smoke/target-context.mjs";
 import { prepareSmokeState } from "../prepare-smoke/state.mjs";
 import { prepareSmokeWorkspace } from "../prepare-smoke/workspace.mjs";
 import { runSmokePackageTransaction } from "./smoke-package-transaction.mjs";
+import { formatSmokeOutcome } from "./format-smoke-outcome.mjs";
 
 export async function runNpmConsumerSmoke({
   root,
@@ -61,18 +62,19 @@ export async function runNpmConsumerSmoke({
   try {
     if (workspace.error) throw workspace.error;
     const [command, prefix] = resolveCommand(childEnv, process.platform, process.execPath, root);
-    const digest = await runSmokePackageTransaction({
-      root,
-      packageJson,
-      run,
-      command,
-      prefix,
-      packDirectory,
-      targetRoot,
-      assertTargetIdentity,
-      env: { ...childEnv, npm_config_cache: join(tempRoot, "npm-cache") },
-    });
-    outcome = `Smoke passed: ${packageJson.name}@${packageJson.version}. SHA-256 ${digest}.`;
+    outcome = await formatSmokeOutcome(packageJson, () =>
+      runSmokePackageTransaction({
+        root,
+        packageJson,
+        run,
+        command,
+        prefix,
+        packDirectory,
+        targetRoot,
+        assertTargetIdentity,
+        env: { ...childEnv, npm_config_cache: join(tempRoot, "npm-cache") },
+      }),
+    );
   } catch (error) {
     outcome = `Tarball consumer smoke failed: ${error.message}`;
   } finally {
