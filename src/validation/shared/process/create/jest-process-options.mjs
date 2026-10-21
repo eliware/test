@@ -22,8 +22,14 @@ export function createJestProcessOptions(root, args = [], options = {}) {
           options.beginNestedOutput?.();
           nestedOutputStarted = true;
         }
-        for (const output of formatJestSuiteProgress(event, options.elapsed?.()))
-          options.writeOutput?.(output);
+        const formattedOutput = formatJestSuiteProgress(event, options.elapsed?.());
+        for (const output of formattedOutput) options.writeOutput?.(output);
+        if (
+          typeof options.writeOutput === "function" &&
+          event.failed &&
+          (event.failures?.some(Boolean) || event.unexpectedOutput?.some(Boolean))
+        )
+          options.onFailureDetailsReported?.();
       }
     },
     onTimeout: () => options.onTimeout?.(progress.timeoutMessage()),

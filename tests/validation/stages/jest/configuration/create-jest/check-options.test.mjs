@@ -10,9 +10,11 @@ test("creates the execution options for a Jest check", () => {
     onTimeout,
     env,
     writeOutput: undefined,
+    onFailureDetailsReported: expect.any(Function),
     beginNestedOutput: expect.any(Function),
     elapsed: expect.any(Function),
   });
+  options.onFailureDetailsReported();
   expect(() => options.beginNestedOutput()).not.toThrow();
   expect(options.elapsed()).toBe("0.000");
 });

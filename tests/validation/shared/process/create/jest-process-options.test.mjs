@@ -58,6 +58,27 @@ test("streams concise suite progress and separates it from the enclosing check l
   expect(options.maxProgressLineLength).toBe(Number.MAX_SAFE_INTEGER);
 });
 
+test("reports failure details only after it writes them to the terminal", () => {
+  const output = [];
+  const onFailureDetailsReported = jest.fn();
+  const options = createJestProcessOptions("C:/fixture", [], {
+    writeOutput: (text) => output.push(text),
+    onFailureDetailsReported,
+  });
+
+  options.onProgress(
+    '[eliware-test-progress] {"event":"result","path":"tests/fail.test.mjs","duration":"0.1","failed":true,"failures":["Expected: 1\\nReceived: 2"],"unexpectedOutput":[]}\n',
+  );
+  expect(output.join("")).toContain("Expected: 1");
+  expect(onFailureDetailsReported).toHaveBeenCalledTimes(1);
+
+  onFailureDetailsReported.mockClear();
+  options.onProgress(
+    '[eliware-test-progress] {"event":"result","path":"tests/fail.test.mjs","duration":"0.1","failed":true,"failures":[],"unexpectedOutput":[]}\n',
+  );
+  expect(onFailureDetailsReported).not.toHaveBeenCalled();
+});
+
 test("passes the run-scoped console report path to Jest's reporter", () => {
   const options = createJestProcessOptions("C:/fixture", [], {
     consoleReportFile: "C:/fixture/coverage/jest-console-events.json",

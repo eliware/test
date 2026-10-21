@@ -46,7 +46,7 @@ test("skips the Jest pipeline when execution is disabled", async () => {
 });
 
 test("composes execution, context recording, and result classification", async () => {
-  const context = { executeJest: true };
+  const context = { executeJest: true, writeOutput: jest.fn() };
   const result = { code: 0, stdout: "ok", stderr: "" };
   executeJestCheck.mockResolvedValueOnce({ result, timeoutDiagnostic: "timeout detail" });
   recordJestContext.mockImplementationOnce((receivedContext, receivedResult) => {
@@ -60,6 +60,25 @@ test("composes execution, context recording, and result classification", async (
   expect(recordJestContext).toHaveBeenCalledWith(context, result);
   expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail", {
     failuresReported: false,
+  });
+});
+
+test("reports failure details only when the Jest progress handler emitted them", async () => {
+  const context = { executeJest: true, writeOutput: jest.fn() };
+  const result = { code: 1, stdout: "assertion failed", stderr: "" };
+  executeJestCheck.mockImplementationOnce(async (receivedContext) => {
+    receivedContext.jestFailureDetailsReported = true;
+    return { result };
+  });
+  recordJestContext.mockImplementationOnce((receivedContext, receivedResult) => {
+    receivedContext.jestResult = receivedResult;
+  });
+  classifyJestResult.mockReturnValueOnce({ ruleId, status: "fail", message: "" });
+
+  await run(context);
+
+  expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, undefined, {
+    failuresReported: true,
   });
 });
 
