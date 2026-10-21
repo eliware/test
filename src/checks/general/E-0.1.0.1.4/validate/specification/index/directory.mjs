@@ -1,21 +1,17 @@
 import { basename, join } from "node:path";
 import { validateSpecificationIndexContent } from "./content.mjs";
+import { inspectSpecificationIndexFiles } from "./files.mjs";
 
 export async function validateSpecificationIndex(
   root,
   directory,
   { files, children, order, read },
 ) {
-  const errors = [];
-  const yaml = files.filter(({ path }) => /\.ya?ml$/iu.test(path));
+  const { yaml, errors } = inspectSpecificationIndexFiles(directory, files);
   if (order.directYamlFiles === "filename-ascending")
     yaml.sort((left, right) => basename(left.path).localeCompare(basename(right.path)));
   if (order.subdirectoryIndexes === "directory-name-ascending")
     children.sort((left, right) => basename(left).localeCompare(basename(right)));
-  if (!yaml.length) errors.push(`${directory} must contain at least one YAML specification.`);
-  for (const { path } of files)
-    if (!/\.ya?ml$/iu.test(path) && basename(path) !== "README.md")
-      errors.push(`${path} is not an allowed specs file.`);
   let index;
   try {
     index = await read(join(root, directory, "README.md"), "utf8");

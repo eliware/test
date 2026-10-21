@@ -2,7 +2,8 @@ import { expect, test } from "@jest/globals";
 import { createSuppressedPolicy } from "../../../../../../../../src/validation/shared/output/redaction/create/redacted/stream/suppressed-policy.mjs";
 
 test("builds a bounded policy that suppresses output", () => {
-  expect(createSuppressedPolicy(0, 25, 50)).toEqual({
+  expect(createSuppressedPolicy(null, 0, 25, 50)).toEqual({
+    outputLimit: 0,
     workLimit: 25,
     pendingLimit: 1,
     values: [],
@@ -11,5 +12,6 @@ test("builds a bounded policy that suppresses output", () => {
     findSafeBoundary: null,
     suppressed: true,
   });
-  expect(createSuppressedPolicy(40, 25, 12).pendingLimit).toBe(12);
+  expect(createSuppressedPolicy(null, 40, 25, 12).pendingLimit).toBe(12);
+  expect(createSuppressedPolicy(["secret"], 40, 25, 12)).toBeNull();
 });

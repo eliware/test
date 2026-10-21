@@ -26,11 +26,13 @@ export function createRedactedStreamPolicy(
     maxPendingLength,
     maximumSecretLength,
   );
-  if (!values)
-    return {
-      ...createSuppressedPolicy(boundedOutputLimit, workLimit, maxPendingLength),
-      outputLimit: boundedOutputLimit,
-    };
+  const suppressedPolicy = createSuppressedPolicy(
+    values,
+    boundedOutputLimit,
+    workLimit,
+    maxPendingLength,
+  );
+  if (suppressedPolicy) return suppressedPolicy;
   return {
     outputLimit: boundedOutputLimit,
     workLimit,
