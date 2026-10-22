@@ -1,4 +1,4 @@
-import { executeAuditProcess } from "../../audit/execute-audit-process.mjs";
+import { AUDIT_TIMEOUT_MS, executeAuditProcess } from "../../audit/execute-audit-process.mjs";
 import { runNpmAudit } from "../../audit/run-npm-audit.mjs";
 import { runChild } from "../../../shared/process/run/child.mjs";
 import { runOxlint } from "../../lint/run-oxlint.mjs";
@@ -65,6 +65,17 @@ export function createBasicValidationStageRunners({
           toolArgs: context.toolArgs,
           env: context.env ?? process.env,
         });
+        if (value.timedOut) {
+          return {
+            ...createValidationStageResult(
+              "audit",
+              0,
+              `WARNING: Audit stage timed out after ${AUDIT_TIMEOUT_MS / 1000} seconds. Validation will continue.`,
+              value,
+            ),
+            status: "warning",
+          };
+        }
         return createValidationStageResult(
           "audit",
           value.code === 0 ? 0 : 7,

@@ -13,7 +13,11 @@ eliware-test
 ```
 
 The CLI selects checks from `package.json.eliware.apply`.
-It runs enabled work in this order:
+The audit stage has a 30-second runtime limit.
+If it reaches the limit, Eliware Test stops the process and reports a warning.
+Validation continues, and the timeout does not change the aggregate exit code.
+
+The CLI runs enabled work in this order:
 
 1. Lint.
 2. Format check.

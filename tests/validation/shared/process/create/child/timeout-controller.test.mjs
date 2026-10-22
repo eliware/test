@@ -117,6 +117,34 @@ test("terminates Jest when one suite exceeds its total runtime deadline", async 
   }
 });
 
+test("stops a child at its fixed runtime limit despite continued output", async () => {
+  const child = Object.assign(new EventEmitter(), {
+    stdout: new EventEmitter(),
+    stderr: new EventEmitter(),
+  });
+  const timers = [];
+  const result = runChild("ignored", [], {
+    spawnProcess: () => child,
+    createProgressTimeout: (options) => {
+      const timer = { ...options, reset: jest.fn(), stop: jest.fn() };
+      timers.push(timer);
+      return timer;
+    },
+    progressTimeoutMs: 0,
+    maxRuntimeMs: 10_000,
+    terminateChild: () => false,
+    terminationGraceMs: 0,
+    forceKillConfirmationMs: 0,
+  });
+
+  child.stdout.emit("data", "output keeps arriving");
+  const runtimeTimer = timers.find(({ timeoutMs }) => timeoutMs === 10_000);
+  runtimeTimer.onTimeout();
+
+  await expect(result).resolves.toMatchObject({ timedOut: true });
+  expect(runtimeTimer.reset).toHaveBeenCalledTimes(1);
+});
+
 test("settles a child error after timeout begins without waiting for close", async () => {
   const child = Object.assign(new EventEmitter(), {
     stdout: new EventEmitter(),

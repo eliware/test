@@ -8,11 +8,15 @@ export async function runConventionStage(runChecks) {
   try {
     const results = await runChecks();
     const failures = results.filter(({ status }) => status === "fail");
-    const diagnostics = failures.map((failure) =>
-      failure.stage
-        ? `${failure.stage} stage failed: ${failure.message}`
-        : formatConventionFailure(failure),
-    );
+    const warnings = results.filter(({ status }) => status === "warning");
+    const diagnostics = [
+      ...failures.map((failure) =>
+        failure.stage
+          ? `${failure.stage} stage failed: ${failure.message}`
+          : formatConventionFailure(failure),
+      ),
+      ...warnings.map(({ message }) => message),
+    ];
     return {
       code: failures.length > 0 ? Math.max(...failures.map(failureCode)) : 0,
       category: failures.some(({ stage }) => stage) ? "validation" : "conventions",

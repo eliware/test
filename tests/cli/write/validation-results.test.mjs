@@ -73,6 +73,31 @@ test("prints the same summary for focused validation", () => {
   );
 });
 
+test("prints aggregate success after a non-failing audit timeout warning", () => {
+  const write = jest.fn();
+  writeValidationResults(
+    {
+      code: 0,
+      diagnostics: ["WARNING: Audit stage timed out after 30 seconds. Validation will continue."],
+      validationSummary: {},
+    },
+    write,
+    false,
+    0,
+  );
+  expect(write).toHaveBeenNthCalledWith(
+    1,
+    "WARNING: Audit stage timed out after 30 seconds. Validation will continue.",
+  );
+  expect(write).toHaveBeenNthCalledWith(2, expect.stringContaining("Aggregate validation passed."));
+});
+
+test("prints aggregate success when the result omits diagnostics", () => {
+  const write = jest.fn();
+  writeValidationResults({ code: 0 }, write, false, 0);
+  expect(write).toHaveBeenCalledWith(expect.stringContaining("Aggregate validation passed."));
+});
+
 test.each([
   ["lint", "Lint mode passed | Exit-code: 0"],
   ["format", "Formatting completed | Exit-code: 0"],

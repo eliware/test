@@ -39,6 +39,23 @@ test("reuses cached results and returns stage failures", async () => {
   expect(runner).toHaveBeenCalledTimes(1);
 });
 
+test("returns stage warnings and continues with later stages", async () => {
+  const context = { executeAudit: true, executeOutdated: true };
+  const laterStage = jest.fn(async () => ({ stage: "outdated", status: "pass" }));
+  await expect(
+    runValidationStages(context, ["audit", "outdated"], {
+      audit: async () => ({
+        stage: "audit",
+        status: "warning",
+        code: 0,
+        message: "WARNING: Audit stage timed out after 30 seconds. Validation will continue.",
+      }),
+      outdated: laterStage,
+    }),
+  ).resolves.toMatchObject([{ stage: "audit", status: "warning", code: 0 }]);
+  expect(laterStage).toHaveBeenCalledTimes(1);
+});
+
 test("records runner errors as internal stage failures", async () => {
   const context = { executeAudit: true };
   await expect(

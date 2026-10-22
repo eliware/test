@@ -21,6 +21,24 @@ test("reports cached stage failures without convention directives", async () => 
   });
 });
 
+test("reports stage warnings while keeping the validation code clear", async () => {
+  await expect(
+    runConventionStage(async () => [
+      {
+        ruleId: "stage:audit",
+        stage: "audit",
+        code: 0,
+        status: "warning",
+        message: "WARNING: Audit stage timed out after 30 seconds. Validation will continue.",
+      },
+    ]),
+  ).resolves.toEqual({
+    code: 0,
+    category: "conventions",
+    diagnostics: ["WARNING: Audit stage timed out after 30 seconds. Validation will continue."],
+  });
+});
+
 test("includes the complete failed directive in each check diagnostic", async () => {
   const failure = { ruleId: "E-0.1.0.0.0", status: "fail", message: "missing file" };
   const result = await runConventionStage(async () => [failure]);

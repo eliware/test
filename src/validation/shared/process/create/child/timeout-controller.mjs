@@ -8,12 +8,14 @@ export function createChildTimeoutController(
 ) {
   let progressTimeout;
   let suiteTimeout;
+  let runtimeTimeout;
   return {
     timeout: {
       reset: () => progressTimeout?.reset(),
       stop() {
         progressTimeout?.stop();
         suiteTimeout?.stop();
+        runtimeTimeout?.stop();
       },
     },
     start() {
@@ -22,6 +24,13 @@ export function createChildTimeoutController(
         timeoutMs: options.progressTimeoutMs,
         onTimeout: () => getTermination().onTimeout(),
       });
+      if (options.maxRuntimeMs > 0) {
+        runtimeTimeout = createTimeout({
+          timeoutMs: options.maxRuntimeMs,
+          onTimeout: () => getTermination().onTimeout(),
+        });
+        runtimeTimeout.reset();
+      }
     },
     suiteTimeout: () => suiteTimeout,
   };

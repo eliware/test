@@ -110,6 +110,18 @@ test("runs audit and stores its process report", async () => {
   await expect(startup.audit({ root: ".", toolArgs: [] })).resolves.toMatchObject({ code: 7 });
 });
 
+test("reports an audit timeout as a warning without failing the stage", async () => {
+  const runners = createValidationStageRunners({
+    runAudit: async () => ({ code: null, timedOut: true }),
+  });
+  await expect(runners.audit({ root: ".", toolArgs: [], env: {} })).resolves.toMatchObject({
+    stage: "audit",
+    code: 0,
+    status: "warning",
+    message: "WARNING: Audit stage timed out after 30 seconds. Validation will continue.",
+  });
+});
+
 test("runs pack only for its profile and stores the pack result", async () => {
   const skip = createValidationStageRunners();
   await expect(skip.pack({ packageJson: { eliware: { apply: [] } } })).resolves.toMatchObject({

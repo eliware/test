@@ -12,7 +12,7 @@ export async function executeConventionChecks(checks, context, exemptions) {
   );
   context.validationSummary ??= {};
   const completedStages = Object.values(context.stageResults).filter(
-    (result) => result.status === "pass" && result.stage !== "jest",
+    (result) => ["pass", "warning"].includes(result.status) && result.stage !== "jest",
   ).length;
   context.timing?.stage?.("convention checks");
   const checkResults = await executeConventionRules(selected, context, exemptions);

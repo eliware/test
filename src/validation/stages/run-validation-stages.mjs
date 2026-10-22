@@ -22,7 +22,7 @@ export async function runValidationStages(context, stages, runners) {
       }
     }
     const result = context.stageResults[stage];
-    if (result.status === "fail") results.push(result);
+    if (result.status === "fail" || result.status === "warning") results.push(result);
   }
   return results;
 }

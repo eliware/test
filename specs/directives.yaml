@@ -66,10 +66,14 @@ directives:
           - Skip Jest when an earlier stage fails.
           - Report thrown checks with failure status.
           - Continue other executable checks.
+          - Continue aggregate validation after an npm audit timeout.
+          - Stop npm audit after 30 seconds and release its process lock.
+          - Report the audit timeout warning without changing the aggregate exit code.
           - Keep each completed stage result for convention checks.
           - Derive aggregate stages from selected deterministic rules.
         donts:
-          - Do not silently omit executable selected checks or turn failures into warnings.
+          - Do not omit executable selected checks or change failed checks into warnings,
+            except after the npm audit runtime limit.
           - Do not report skipped, unfinished, unknown, or inapplicable work with passing status.
           - Do not let exemptions suppress unrelated required work.
           - Do not invoke the consumer's aggregate test script during aggregate validation.
