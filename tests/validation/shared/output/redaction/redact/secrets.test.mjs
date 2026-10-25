@@ -10,26 +10,14 @@ test("redacts overlapping and separate secret ranges", () => {
   expect(redactMatchedSecrets("abcdef", [0, 0, 6], 4)).toBe("abcd");
 });
 
-test("checks only stored match positions in a sparse result", () => {
+test("redacts sparse array and map match entries", () => {
+  const text = "x".repeat(1_000_000);
   const matchEnds = [];
   matchEnds.length = 1_000_000;
   matchEnds[999_990] = 1_000_000;
-
-  expect(redactMatchedSecrets("x".repeat(1_000_000), matchEnds)).toBe(
-    `${"x".repeat(999_990)}[REDACTED]`,
-  );
-});
-
-test("redacts map entries without allocating an endpoint array", () => {
-  const text = "x".repeat(1_000_000);
   const matches = new Map([[999_990, 1_000_000]]);
+  const expected = `${"x".repeat(999_990)}[REDACTED]`;
 
-  expect(redactMatchedSecrets(text, matches)).toBe(`${"x".repeat(999_990)}[REDACTED]`);
-});
-
-test("redacts match entries without allocating an endpoint array", () => {
-  const text = "x".repeat(1_000_000);
-  const matches = new Map([[999_990, 1_000_000]]);
-
-  expect(redactMatchedSecrets(text, matches)).toBe(`${"x".repeat(999_990)}[REDACTED]`);
+  expect(redactMatchedSecrets(text, matchEnds)).toBe(expected);
+  expect(redactMatchedSecrets(text, matches)).toBe(expected);
 });
