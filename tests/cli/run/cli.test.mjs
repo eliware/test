@@ -65,7 +65,13 @@ test("releases the repository lock when validation completes", async () => {
 });
 
 test("uses default logger and options when callers omit them", async () => {
-  await expect(runCli([], undefined, "/repo")).resolves.toBe(0);
+  const output = jest.spyOn(console, "log").mockImplementation(() => {});
+  try {
+    await expect(runCli([], undefined, "/repo")).resolves.toBe(0);
+    expect(output).toHaveBeenCalledWith("Logging to ./coverage/eliware-test.log...");
+  } finally {
+    output.mockRestore();
+  }
 
   expect(createValidationRunOptions).toHaveBeenCalledWith(
     [],
@@ -80,6 +86,7 @@ test("coordinates diagnostic parsing, convention and validation stages, and resu
   const write = jest.fn();
   const options = { runOption: true };
   await expect(runCli([], write, "/repo")).resolves.toBe(0);
+  expect(write).toHaveBeenNthCalledWith(1, "Logging to ./coverage/eliware-test.log...");
   expect(readDiagnosticOptions).toHaveBeenCalledWith([]);
   expect(createTimingLog).toHaveBeenCalledWith("/repo", expect.any(Number));
   expect(createStageTimer).toHaveBeenCalledWith(

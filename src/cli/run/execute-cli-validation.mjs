@@ -30,7 +30,7 @@ export async function executeCliValidation({
       createValidationRunOptions(
         args,
         diagnosticOptions,
-        { ...options, validationSummary },
+        { ...options, validationSummary, writeCliOutput: write },
         stageTimer,
         output,
       ),

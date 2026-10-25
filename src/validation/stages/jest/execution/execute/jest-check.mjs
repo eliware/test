@@ -10,6 +10,7 @@ export async function executeJestCheck(context) {
       timeoutDiagnostic = message;
     });
     options.onStart = () => {
+      context.writeCliOutput?.("Logging to ./coverage/jest.log...");
       startedAt = Date.now();
     };
     const result = await runJest(context.root, context.jestArgs ?? [], runChild, options);

@@ -86,6 +86,10 @@ On failure, the CLI shows the failed suite and its assertion or error details.
 
 The CLI keeps these files after the run.
 The CLI also writes stage, check, and suite timing to `coverage/eliware-test.log`.
+
+When validation checks start, the CLI prints `Logging to ./coverage/eliware-test.log...`.
+When Jest is about to run, the CLI prints `Logging to ./coverage/jest.log...`.
+Jest output goes to `coverage/jest.log` when the CLI runs Jest.
 The CLI keeps this timing log while it clears other coverage files.
 The CLI does not use system temp or user folders for its temporary files.
 

@@ -11,15 +11,17 @@ const { executeJestCheck } =
   await import("../../../../../../src/validation/stages/jest/execution/execute/jest-check.mjs");
 
 test("executes Jest and records its start time", async () => {
+  const writeCliOutput = jest.fn();
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
     return { code: 0, stdout: "ok", stderr: "" };
   });
-  const result = await executeJestCheck({ root: ".", jestArgs: [] });
+  const result = await executeJestCheck({ root: ".", jestArgs: [], writeCliOutput });
   expect(result.result).toEqual(
     expect.objectContaining({ code: 0, startedAt: expect.any(Number) }),
   );
   expect(result.timeoutDiagnostic).toBeUndefined();
+  expect(writeCliOutput).toHaveBeenCalledWith("Logging to ./coverage/jest.log...");
 });
 
 test("preserves stderr diagnostics when stdout contains ordinary output", async () => {

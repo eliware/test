@@ -4,8 +4,15 @@ import { createValidationRunOptions } from "../../src/cli/create-validation-run-
 test("creates validation options from diagnostics and CLI settings", () => {
   const timing = {};
   const write = () => {};
+  const writeCliOutput = () => {};
   expect(
-    createValidationRunOptions(["--debug-timing"], { mode: null, jestArgs: [] }, {}, timing, write),
+    createValidationRunOptions(
+      ["--debug-timing"],
+      { mode: null, jestArgs: [] },
+      { writeCliOutput },
+      timing,
+      write,
+    ),
   ).toEqual(
     expect.objectContaining({
       executeJest: true,
@@ -16,6 +23,7 @@ test("creates validation options from diagnostics and CLI settings", () => {
       executeFormat: true,
       timing,
       writeOutput: write,
+      writeCliOutput,
     }),
   );
 });

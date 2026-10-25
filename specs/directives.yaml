@@ -165,11 +165,14 @@ directives:
           - Count executed convention checks and completed non-Jest stages in the checks total.
           - Report the same counts and times after clean focused validation.
           - Report only the selected mode after mode-specific success.
+          - Print `Logging to ./coverage/eliware-test.log...` when validation checks start.
+          - Print `Logging to ./coverage/jest.log...` only when Jest is about to run.
         donts:
           - Do not truncate or paraphrase matched directives.
           - Do not change public exit semantics incidentally.
           - Do not show aggregate success when diagnostics or failures occur.
-          - Do not show incidental logs or subprocess output during a clean standard run.
+          - Do not show incidental logs or subprocess output during a clean standard run,
+            except for required log destination lines.
         examples:
           - "Aggregate validation passed."
           - "Checks: 42 | Test suites: 8 | Tests: 120"

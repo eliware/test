@@ -11,6 +11,7 @@ export function createValidationRunOptions(args, diagnosticOptions, options, tim
     timing,
     validationSummary: options.validationSummary,
     writeOutput: write,
+    writeCliOutput: options.writeCliOutput,
     ...(focusedScope ? { focusedScope } : {}),
   };
 }

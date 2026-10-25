@@ -30,6 +30,7 @@ export function createValidationContext(root, packageJson, options = {}) {
     timing: options.timing,
     validationSummary: options.validationSummary ?? {},
     writeOutput: options.writeOutput,
+    writeCliOutput: options.writeCliOutput,
     repositoryInventory,
     parseAst: options.parseAst ?? repositoryInventory.parseAst,
     ...(options.repositoryFiles ? { repositoryFiles: options.repositoryFiles } : {}),

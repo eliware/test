@@ -43,6 +43,7 @@ export async function runCli(args, write = console.log, root = process.cwd(), op
       logTiming = (options.createTimingLog ?? createTimingLog)(root, startedAt);
       for (const text of queuedTiming) logTiming(text);
       queuedTiming.length = 0;
+      write("Logging to ./coverage/eliware-test.log...");
       timing.stage("validation");
       resultCode = await executeCliValidation({
         args,
