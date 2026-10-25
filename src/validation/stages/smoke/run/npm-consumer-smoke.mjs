@@ -60,10 +60,10 @@ export async function runNpmConsumerSmoke({
   const { tempRoot, tempIdentity, packDirectory, state } = workspace;
   let outcome;
   try {
-    if (workspace.error) throw workspace.error;
-    const [command, prefix] = resolveCommand(childEnv, process.platform, process.execPath, root);
-    outcome = await formatSmokeOutcome(packageJson, () =>
-      runSmokePackageTransaction({
+    outcome = await formatSmokeOutcome(packageJson, async () => {
+      if (workspace.error) throw workspace.error;
+      const [command, prefix] = resolveCommand(childEnv, process.platform, process.execPath, root);
+      return runSmokePackageTransaction({
         root,
         packageJson,
         run,
@@ -73,10 +73,8 @@ export async function runNpmConsumerSmoke({
         targetRoot,
         assertTargetIdentity,
         env: { ...childEnv, npm_config_cache: join(tempRoot, "npm-cache") },
-      }),
-    );
-  } catch (error) {
-    outcome = `Tarball consumer smoke failed: ${error.message}`;
+      });
+    });
   } finally {
     outcome = await finishSmokeRun({
       outcome,
