@@ -2,26 +2,20 @@ import { fail, pass } from "../../../../checks/check-result.mjs";
 import { parseActionableJestOutput } from "./parse/actionable-output.mjs";
 import { parseFailedJestProgressOutput } from "./parse/failed-progress-output.mjs";
 
-export function classifyJestResult(
-  ruleId,
-  result,
-  timeoutDiagnostic,
-  { failuresReported = false } = {},
-) {
+export function classifyJestResult(ruleId, result, timeoutDiagnostic) {
   if (result.outputRedacted)
     return fail(
       ruleId,
-      `Jest output contained secret material. Redaction occurred in coverage/jest-console-output.json (${result.outputRedactionKinds?.join(", ") ?? "secret rule"}).`,
+      `Jest output contained secret material. Redaction occurred in coverage/jest.log (${result.outputRedactionKinds?.join(", ") ?? "secret rule"}).`,
     );
   if (result.outputLogError)
-    return fail(ruleId, "Jest output could not be saved to coverage/jest-console-output.json.");
+    return fail(ruleId, "Jest output could not be saved to coverage/jest.log.");
   if (timeoutDiagnostic && (result.timedOut || result.code !== 0))
     return fail(ruleId, timeoutDiagnostic);
   if (result.timedOut) {
     return fail(ruleId, timeoutDiagnostic ?? "Jest timed out after 15 seconds without progress.");
   }
   if (result.code !== 0) {
-    if (failuresReported) return fail(ruleId, "Jest failed. See the inline suite failures above.");
     const detail = [result.stdout, result.stderr]
       .map(parseActionableJestOutput)
       .filter(Boolean)

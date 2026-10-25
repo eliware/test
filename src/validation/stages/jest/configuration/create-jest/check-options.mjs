@@ -6,9 +6,6 @@ export function createJestCheckOptions(context, onTimeout) {
       context.writeOutput && context.timing?.writeNestedOutput
         ? context.timing.writeNestedOutput
         : context.writeOutput,
-    onFailureDetailsReported: () => {
-      context.jestFailureDetailsReported = true;
-    },
     beginNestedOutput: () => context.timing?.beginNestedOutput?.(),
     elapsed: () => context.timing?.elapsed?.() ?? "0.000",
   };

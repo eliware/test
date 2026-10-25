@@ -58,18 +58,13 @@ test("composes execution, context recording, and result classification", async (
   expect(executeJestCheck).toHaveBeenCalledWith(context);
   expect(validateTestIsolationPolicy).toHaveBeenCalledWith(undefined);
   expect(recordJestContext).toHaveBeenCalledWith(context, result);
-  expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail", {
-    failuresReported: false,
-  });
+  expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail");
 });
 
-test("reports failure details only when the Jest progress handler emitted them", async () => {
+test("classifies failures without depending on the progress output writer", async () => {
   const context = { executeJest: true, writeOutput: jest.fn() };
   const result = { code: 1, stdout: "assertion failed", stderr: "" };
-  executeJestCheck.mockImplementationOnce(async (receivedContext) => {
-    receivedContext.jestFailureDetailsReported = true;
-    return { result };
-  });
+  executeJestCheck.mockResolvedValueOnce({ result });
   recordJestContext.mockImplementationOnce((receivedContext, receivedResult) => {
     receivedContext.jestResult = receivedResult;
   });
@@ -77,9 +72,7 @@ test("reports failure details only when the Jest progress handler emitted them",
 
   await run(context);
 
-  expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, undefined, {
-    failuresReported: true,
-  });
+  expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, undefined);
 });
 
 test("rejects test suites that use filesystem write APIs before Jest starts", async () => {

@@ -13,7 +13,7 @@ export async function runJest(root, args, execute, options) {
     options,
   );
   options?.onStart?.();
-  const outputLog = createJestConsoleOutputLog(prepared.consoleOutputFile, options?.consoleLogFs);
+  const outputLog = createJestConsoleOutputLog(prepared.jestLogFile, options?.consoleLogFs);
   let result = await runJestWithConsoleLog(
     prepared,
     execute,

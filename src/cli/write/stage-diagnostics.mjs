@@ -1,7 +1,5 @@
-export function writeStageDiagnostics(result, write, debugTiming = false) {
+export function writeStageDiagnostics(result, write) {
   for (const diagnostic of result.diagnostics ?? []) {
-    if (debugTiming && diagnostic.includes("Jest failed. See the inline suite failures above."))
-      continue;
     write(diagnostic);
   }
   if (result.output) write(result.output);

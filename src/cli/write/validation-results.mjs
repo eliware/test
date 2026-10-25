@@ -7,7 +7,7 @@ import {
 } from "./success-summary.mjs";
 
 export function writeValidationResults(result, write, debugTiming, startedAt, timingWrite) {
-  writeStageDiagnostics(result, write, debugTiming);
+  writeStageDiagnostics(result, write);
   const warningsOnly = (result.diagnostics ?? []).every((diagnostic) =>
     diagnostic.startsWith("WARNING:"),
   );

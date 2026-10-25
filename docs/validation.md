@@ -80,7 +80,10 @@ It keeps the consumer's required coverage settings.
 The selected profile rules define required coverage thresholds.
 
 Before each Jest run, the CLI clears the consumer's `coverage/` directory.
-Jest writes coverage reports and `jest-console-output.json` to that directory.
+Jest writes coverage reports and the plain-text `jest.log` file to that directory.
+The CLI keeps the redacted Jest output after the run.
+On failure, the CLI shows the failed suite and its assertion or error details.
+
 The CLI keeps these files after the run.
 The CLI also writes stage, check, and suite timing to `coverage/eliware-test.log`.
 The CLI keeps this timing log while it clears other coverage files.

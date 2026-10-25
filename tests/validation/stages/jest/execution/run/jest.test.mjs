@@ -44,7 +44,7 @@ const { runJest } =
   await import("../../../../../../src/validation/stages/jest/execution/run/jest.mjs");
 
 const prepared = {
-  consoleOutputFile: "coverage/jest-console-events.json",
+  jestLogFile: "coverage/jest.log",
   coverageDirectory: "coverage",
   options: {},
 };

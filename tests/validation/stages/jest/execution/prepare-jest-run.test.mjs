@@ -74,7 +74,7 @@ test("builds arguments and stores reports under the consumer coverage directory"
     "default",
   ]);
   expect(prepared.coverageDirectory).toBe("repo/coverage");
-  expect(prepared.consoleOutputFile).toBe(join("repo", "coverage", "jest-console-output.json"));
+  expect(prepared.jestLogFile).toBe(join("repo", "coverage", "jest.log"));
   expect(prepared.consoleReportFile).toBe(join("repo", "coverage", "jest-console-events.json"));
   expect(prepareConsumerCoverageDirectory).toHaveBeenCalledWith("repo", coverageFs);
   expect(createJestProcessOptions).toHaveBeenCalledWith("repo", [], {

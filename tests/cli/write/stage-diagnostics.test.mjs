@@ -16,17 +16,13 @@ test("handles absent diagnostics and absent or falsy output", () => {
   expect(output).toEqual([]);
 });
 
-test("omits the repeated Jest failure summary in debug timing mode", () => {
+test("keeps full Jest failure diagnostics in debug timing mode", () => {
   const output = [];
   writeStageDiagnostics(
     {
-      diagnostics: [
-        "inline details",
-        "E-0.1.130.13: Jest failed. See the inline suite failures above.",
-      ],
+      diagnostics: ["E-0.1.130.13: Jest failed: FAIL tests/bad.test.mjs\nExpected: 1"],
     },
     (message) => output.push(message),
-    true,
   );
-  expect(output).toEqual(["inline details"]);
+  expect(output).toEqual(["E-0.1.130.13: Jest failed: FAIL tests/bad.test.mjs\nExpected: 1"]);
 });

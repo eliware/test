@@ -240,7 +240,7 @@ directives:
           - Redact encrypted and unencrypted PEM private keys.
           - Redact PEM public key blocks.
           - Write buffered text before a secret reaches the output limit.
-          - Write live Jest output to `coverage/jest-console-output.json` while Jest runs.
+          - Write live Jest output to `coverage/jest.log` as plain text.
           - After Jest closes, scan the saved output with existing secret-redaction rules.
           - When a rule matches, replace matched values in the saved output promptly.
           - Fail validation when redaction occurs. Report the output path and redaction
@@ -264,6 +264,7 @@ directives:
           - Do not promise full secret detection or cleanup of all child commands.
           - Do not print matched values.
           - Do not claim live output is redacted before it reaches disk.
+          - Do not store captured Jest output in a JSON document.
 
       - id: E-0.0.7
         dos:
@@ -287,7 +288,7 @@ directives:
           - Prefix each stage, check, and suite start line with elapsed seconds since startup.
           - Show the same timing lines on the console only when --debug-timing is set.
           - Do not combine timing output with captured failure output.
-          - Fail unreadable or malformed console-output reports.
+          - Fail unreadable or malformed Jest console-event reports.
           - Accept only documented inherited NODE_OPTIONS warning and ESM flags.
         donts:
           - Do not impose a global run-duration limit.

@@ -9,13 +9,13 @@ test("classifies timeout, failure, and success results", () => {
       outputRedactionKinds: ["environment secret"],
     }).message,
   ).toBe(
-    "Jest output contained secret material. Redaction occurred in coverage/jest-console-output.json (environment secret).",
+    "Jest output contained secret material. Redaction occurred in coverage/jest.log (environment secret).",
   );
   expect(classifyJestResult("E-0.1.130.13", { code: 1, outputRedacted: true }).message).toContain(
     "(secret rule).",
   );
   expect(classifyJestResult("E-0.1.130.13", { code: 1, outputLogError: true }).message).toBe(
-    "Jest output could not be saved to coverage/jest-console-output.json.",
+    "Jest output could not be saved to coverage/jest.log.",
   );
   expect(classifyJestResult("E-0.1.130.13", { timedOut: true }, "timed out").status).toBe("fail");
   expect(
@@ -54,15 +54,14 @@ test("removes routine passing and coverage output from failure diagnostics", () 
   ).toBe("Jest failed: FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2");
 });
 
-test("omits repeated Jest failure details when inline suite output is enabled", () => {
+test("reports Jest failure details even when suite progress also reports them", () => {
   expect(
     classifyJestResult(
       "E-0.1.130.13",
-      { code: 1, stdout: "FAIL tests/bad.test.mjs\\nExpected: 1\\nReceived: 2", stderr: "" },
+      { code: 1, stdout: "FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2", stderr: "" },
       undefined,
-      { failuresReported: true },
     ).message,
-  ).toBe("Jest failed. See the inline suite failures above.");
+  ).toBe("Jest failed: FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2");
 });
 
 test("keeps one copy of Jest failures in final non-debug diagnostics", () => {

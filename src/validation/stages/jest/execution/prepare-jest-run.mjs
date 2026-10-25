@@ -13,12 +13,12 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
   const jestCli = resolveCli(root, options);
   const reporters = await resolveJestReporters(root);
   const coverageDirectory = await prepareConsumerCoverageDirectory(root, options?.coverageFs);
-  const consoleOutputFile = join(coverageDirectory, "jest-console-output.json");
+  const jestLogFile = join(coverageDirectory, "jest.log");
   const consoleReportFile = join(coverageDirectory, "jest-console-events.json");
   const processOptions = createJestProcessOptions(root, args, { ...options, consoleReportFile });
   return {
     coverageDirectory,
-    consoleOutputFile,
+    jestLogFile,
     consoleReportFile,
     command: process.execPath,
     args: [

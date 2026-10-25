@@ -5,6 +5,7 @@
 ### Fixed
 
 - Use a static License badge for private repositories and derive its value from package metadata.
+- Show Jest failure details in the CLI and save captured output as plain text.
 
 ## 15.0.0 — 2026-10-21
 

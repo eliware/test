@@ -24,12 +24,6 @@ export function createJestProcessOptions(root, args = [], options = {}) {
         }
         const formattedOutput = formatJestSuiteProgress(event, options.elapsed?.());
         for (const output of formattedOutput) options.writeOutput?.(output);
-        if (
-          typeof options.writeOutput === "function" &&
-          event.failed &&
-          (event.failures?.some(Boolean) || event.unexpectedOutput?.some(Boolean))
-        )
-          options.onFailureDetailsReported?.();
       }
     },
     onTimeout: () => options.onTimeout?.(progress.timeoutMessage()),

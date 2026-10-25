@@ -8,7 +8,6 @@ export async function runJestStage(context, ruleId) {
   if (!context.executeJest) return pass(ruleId);
   const isolationViolations = await validateTestIsolationPolicy(context.root);
   if (isolationViolations.length) return fail(ruleId, isolationViolations.join("\n"));
-  context.jestFailureDetailsReported = false;
   let execution;
   try {
     execution = await executeJestCheck(context);
@@ -20,7 +19,5 @@ export async function runJestStage(context, ruleId) {
     return fail(ruleId, `Jest could not be started: ${execution.error.message}`);
   }
   recordJestContext(context, execution.result);
-  return classifyJestResult(ruleId, context.jestResult, execution.timeoutDiagnostic, {
-    failuresReported: context.jestFailureDetailsReported,
-  });
+  return classifyJestResult(ruleId, context.jestResult, execution.timeoutDiagnostic);
 }

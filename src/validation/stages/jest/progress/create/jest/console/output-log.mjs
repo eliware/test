@@ -6,12 +6,14 @@ import { redactGenericBase64Credentials } from "../../../../../../shared/output/
 import { redactProcessOutput } from "../../../../../../shared/output/redaction/redact/process-output.mjs";
 
 const logLimit = 1_000_000;
+const truncationMarker = "\n[eliware-test: Jest output was truncated at the configured limit.]\n";
 
 export function createJestConsoleOutputLog(
   path,
   { append = appendFileSync, replace = writeFileSync, maxLength = logLimit } = {},
 ) {
   const output = { stdout: [], stderr: [] };
+  const chunks = [];
   let length = 0;
   let truncated = false;
   let writeError;
@@ -31,9 +33,10 @@ export function createJestConsoleOutputLog(
       const value = text.slice(0, remaining);
       if (value) {
         output[stream].push(value);
+        chunks.push(value);
         length += value.length;
         try {
-          append(path, `${JSON.stringify({ stream, text: value })}\n`, "utf8");
+          append(path, value, "utf8");
         } catch {
           writeError = true;
         }
@@ -47,13 +50,16 @@ export function createJestConsoleOutputLog(
           return [stream, redactProcessOutput(source, secrets)];
         }),
       );
-      const redacted = Object.entries(output).some(
-        ([stream, chunks]) => chunks.join("") !== streams[stream],
-      );
-      const redactionKinds = findRedactionKinds(output, secrets);
-      const document = JSON.stringify({ ...streams, truncated });
+      const captured = chunks.join("");
+      const safeCaptured = redactProcessOutput(captured, secrets);
+      const redacted =
+        captured !== safeCaptured ||
+        Object.entries(output).some(
+          ([stream, streamChunks]) => streamChunks.join("") !== streams[stream],
+        );
+      const redactionKinds = findRedactionKinds({ stdout: [captured] }, secrets);
       try {
-        if (path) replace(path, document, "utf8");
+        if (path) replace(path, `${safeCaptured}${truncated ? truncationMarker : ""}`, "utf8");
       } catch {
         writeError = true;
       }

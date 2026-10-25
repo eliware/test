@@ -9,7 +9,7 @@ function makeLog(options = {}) {
     files,
     append,
     replace,
-    log: createJestConsoleOutputLog("coverage/jest-console-output.json", {
+    log: createJestConsoleOutputLog("coverage/jest.log", {
       append,
       replace,
       ...options,
@@ -25,17 +25,13 @@ test("streams output while Jest runs and redacts secrets after close", () => {
   log.append("stdout", "value");
   log.append("stderr", "warning");
 
-  expect(files.get("coverage/jest-console-output.json")).toContain("token-");
+  expect(files.get("coverage/jest.log")).toBe("token-valuewarning");
   expect(log.finish(["token-value"])).toEqual({
     redacted: true,
     redactionKinds: ["environment secret"],
     writeError: false,
   });
-  expect(JSON.parse(files.get("coverage/jest-console-output.json"))).toEqual({
-    stdout: "[REDACTED]",
-    stderr: "warning",
-    truncated: false,
-  });
+  expect(files.get("coverage/jest.log")).toBe("[REDACTED]warning");
 });
 
 test("caps saved output and skips later chunks", () => {
@@ -45,11 +41,8 @@ test("caps saved output and skips later chunks", () => {
   log.append("stderr", "later");
 
   expect(log.finish()).toEqual({ redacted: false, redactionKinds: [], writeError: false });
-  expect(JSON.parse(files.get("coverage/jest-console-output.json"))).toEqual({
-    stdout: "123",
-    stderr: "",
-    truncated: true,
-  });
+  expect(files.get("coverage/jest.log")).toContain("123");
+  expect(files.get("coverage/jest.log")).toContain("output was truncated");
 });
 
 test("reports credential fields, HTTP credentials, and known token formats", () => {
@@ -74,7 +67,7 @@ test("reports generic Base64 credentials", () => {
     redactionKinds: ["generic Base64 credential"],
     writeError: false,
   });
-  expect(JSON.parse(files.get("coverage/jest-console-output.json")).stdout).toBe("[REDACTED]");
+  expect(files.get("coverage/jest.log")).toBe("[REDACTED]");
 });
 
 test("handles an absent log path and ignores invalid streams", () => {
@@ -108,7 +101,7 @@ test("reports log write failures without throwing", () => {
   expect(log.finish()).toEqual({ redacted: false, redactionKinds: [], writeError: true });
 });
 
-test("reports stream write failures and retains a safe final document", () => {
+test("reports stream write failures and retains a safe plain-text log", () => {
   const { files, log } = makeLog({
     append: () => {
       throw new Error("append blocked");
@@ -118,5 +111,5 @@ test("reports stream write failures and retains a safe final document", () => {
   log.append("stdout", "text");
 
   expect(log.finish()).toEqual({ redacted: false, redactionKinds: [], writeError: true });
-  expect(JSON.parse(files.get("coverage/jest-console-output.json")).stdout).toBe("text");
+  expect(files.get("coverage/jest.log")).toBe("text");
 });
