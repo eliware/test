@@ -2,16 +2,6 @@ import { validateDeploymentCommand } from "./validate-deployment-command.mjs";
 
 const commandPrefix = ["git pull", "npm ci", "npm test"];
 
-export function findCommandLists(value, lists = []) {
-  if (Array.isArray(value)) value.forEach((item) => findCommandLists(item, lists));
-  else if (value && typeof value === "object")
-    for (const [key, item] of Object.entries(value)) {
-      if (key === "commands") lists.push(item);
-      findCommandLists(item, lists);
-    }
-  return lists;
-}
-
 export function validateCommandList(commands, index = 0, packageJson = {}) {
   const label = `.knit/deploy.yaml commands field ${index + 1}`;
   if (!Array.isArray(commands) || commands.some((command) => typeof command !== "string"))

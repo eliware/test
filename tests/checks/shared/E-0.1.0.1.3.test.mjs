@@ -131,7 +131,7 @@ test("uses default context, dependencies, and file reader", async () => {
   });
 });
 
-test("rejects a README that omits a selected profile section", async () => {
+test("requires sections selected by the applied profile", async () => {
   const sections = [...generalSections, "Configuration", "Operations"];
   const incomplete = createReadme(sections)
     .replace("- [Configuration](#configuration)\n", "")
@@ -148,19 +148,5 @@ test("rejects a README that omits a selected profile section", async () => {
     ruleId,
     status: "fail",
     message: expect.stringContaining("every required section"),
-  });
-});
-
-test("rejects an unlisted README section", async () => {
-  const unlisted = createReadme().replace(
-    "## License",
-    "## News\n\nFixture content.\n\n## License",
-  );
-  await expect(
-    run({ root: "/repo", packageJson }, { read: async () => unlisted }),
-  ).resolves.toMatchObject({
-    ruleId,
-    status: "fail",
-    message: expect.stringContaining("unlisted sections"),
   });
 });

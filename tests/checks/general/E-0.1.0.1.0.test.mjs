@@ -1,8 +1,7 @@
 import { beforeEach, expect, jest, test } from "@jest/globals";
 
 const validateProfileDocumentPairs = jest.fn();
-const loadRepoMapRecord = jest.fn();
-const compareRepoMapRecord = jest.fn();
+const validateRepositoryMap = jest.fn();
 
 jest.unstable_mockModule(
   "../../../src/checks/general/E-0.1.0.1.0/validate/profile-document-pairs.mjs",
@@ -11,15 +10,9 @@ jest.unstable_mockModule(
   }),
 );
 jest.unstable_mockModule(
-  "../../../src/checks/general/E-0.1.0.1.0/load-repo-map/record.mjs",
+  "../../../src/checks/general/E-0.1.0.1.0/validate/repository-map.mjs",
   () => ({
-    loadRepoMapRecord,
-  }),
-);
-jest.unstable_mockModule(
-  "../../../src/checks/general/E-0.1.0.1.0/validate/compare-repo-map-record.mjs",
-  () => ({
-    compareRepoMapRecord,
+    validateRepositoryMap,
   }),
 );
 
@@ -29,8 +22,7 @@ const packageJson = { name: "@eliware/example", eliware: { id: "E-1", apply: ["g
 
 beforeEach(() => {
   validateProfileDocumentPairs.mockReset().mockResolvedValue([]);
-  loadRepoMapRecord.mockReset().mockResolvedValue({ available: false, record: null, error: null });
-  compareRepoMapRecord.mockReset().mockReturnValue([]);
+  validateRepositoryMap.mockReset().mockResolvedValue([]);
 });
 
 test("passes when metadata and optional repository data are valid", async () => {
@@ -39,22 +31,21 @@ test("passes when metadata and optional repository data are valid", async () => 
     status: "pass",
     message: "",
   });
-  expect(loadRepoMapRecord).toHaveBeenCalledWith("repo", packageJson);
+  expect(validateRepositoryMap).toHaveBeenCalledWith("repo", packageJson);
 });
 
 test("uses the current directory when context has no root", async () => {
   await run({ packageJson });
-  expect(loadRepoMapRecord).toHaveBeenCalledWith(process.cwd(), packageJson);
+  expect(validateRepositoryMap).toHaveBeenCalledWith(process.cwd(), packageJson);
 });
 
 test("uses default context values when the rule receives no argument", async () => {
   await run();
-  expect(loadRepoMapRecord).toHaveBeenCalledWith(process.cwd(), undefined);
+  expect(validateRepositoryMap).toHaveBeenCalledWith(process.cwd(), undefined);
 });
 
 test("reports invalid repository map data and comparison errors", async () => {
-  loadRepoMapRecord.mockResolvedValue({ available: true, record: null, error: "invalid map" });
-  compareRepoMapRecord.mockReturnValue(["metadata mismatch"]);
+  validateRepositoryMap.mockResolvedValue(["invalid map", "metadata mismatch"]);
   const result = await run({ root: "repo", packageJson });
   expect(result.status).toBe("fail");
   expect(result.message).toContain("invalid map");

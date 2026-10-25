@@ -76,6 +76,18 @@ test("reports source scan failures", async () => {
   expect(result.message).toContain("invalid.mjs: invalid module syntax (blocked)");
 });
 
+test("reports CommonJS package entrypoints", async () => {
+  const result = await run(
+    {
+      root: "/repo",
+      packageJson: { ...packageJson, main: "./index.cjs" },
+      repositoryFiles: [],
+    },
+    dependencies,
+  );
+  expect(result.message).toContain("package.json: CommonJS entrypoint or export");
+});
+
 test("uses the inventory file reader when no file list is supplied", async () => {
   const result = await run(
     {

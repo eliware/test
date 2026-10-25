@@ -76,6 +76,11 @@ test("rejects invalid brand, title, headings, and contents list", () => {
   );
 });
 
+test("rejects unlisted sections", () => {
+  const unlisted = valid.replace("## License", "## News\n\nSection text.\n\n## License");
+  expect(validateReadmeStructure(unlisted, expected, packageJson)).toContain("unlisted sections");
+});
+
 test("rejects invalid blank lines in the header", () => {
   expect(
     validateReadmeStructure(

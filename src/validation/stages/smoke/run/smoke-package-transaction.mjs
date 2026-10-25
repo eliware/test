@@ -1,6 +1,5 @@
 import { packSmokeCandidate } from "../pack-smoke-candidate.mjs";
 import { installSmokeCandidate } from "../install-smoke-candidate.mjs";
-import { prepareSmokeTarget } from "../prepare-smoke/target.mjs";
 
 export async function runSmokePackageTransaction({
   root,
@@ -13,7 +12,6 @@ export async function runSmokePackageTransaction({
   assertTargetIdentity,
   env,
   packCandidate = packSmokeCandidate,
-  prepareTarget = prepareSmokeTarget,
   installCandidate = installSmokeCandidate,
 }) {
   const { tarball, digest } = await packCandidate({
@@ -25,8 +23,6 @@ export async function runSmokePackageTransaction({
     packDirectory,
     env,
   });
-  await assertTargetIdentity();
-  await prepareTarget({ targetRoot, packageName: packageJson.name });
   await assertTargetIdentity();
   await installCandidate({
     targetRoot,

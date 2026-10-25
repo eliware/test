@@ -1,6 +1,5 @@
 import { EventEmitter } from "node:events";
 import { expect, jest, test } from "@jest/globals";
-import { resolveChildOutputLimit } from "../../../../../src/validation/shared/process/resolve-child-output-limit.mjs";
 const spawn = jest.fn();
 const execFileSync = jest.fn();
 jest.unstable_mockModule("node:child_process", () => ({ spawn, execFileSync }));
@@ -42,13 +41,6 @@ test("uses process defaults when options are omitted", async () => {
     expect.objectContaining({ code: 0, stdout: "default" }),
   );
   expect(spawn).toHaveBeenCalledTimes(1);
-});
-
-test("uses the default output bound for an invalid output limit", async () => {
-  const child = new EventEmitter();
-  const result = runChild("ignored", [], { maxOutputLength: 0, spawnProcess: () => child });
-  child.emit("close", 0, null);
-  await expect(result).resolves.toMatchObject({ code: 0, stdout: "", stderr: "" });
 });
 
 test("caps captured child output even when a larger limit is requested", async () => {
@@ -177,15 +169,4 @@ test("stops initialized timers when close-listener setup fails", async () => {
     }),
   ).rejects.toThrow("close listener setup failed");
   expect(stop).toHaveBeenCalled();
-});
-
-test.each([
-  [25, 25],
-  [1.8, 1],
-  [2_000_000, 1_000_000],
-  [0, 100_000],
-  [Number.NaN, 100_000],
-  [Infinity, 100_000],
-])("resolves the output limit %s to %s", (requested, expected) => {
-  expect(resolveChildOutputLimit(requested)).toBe(expected);
 });

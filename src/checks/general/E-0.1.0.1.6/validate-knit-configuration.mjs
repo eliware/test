@@ -1,8 +1,6 @@
 import { parseBoundedYamlDocuments } from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
-import {
-  findCommandLists,
-  validateCommandList,
-} from "./validate-knit-configuration/command-lists.mjs";
+import { validateCommandList } from "./validate-knit-configuration/command-lists.mjs";
+import { findCommandLists } from "./validate-knit-configuration/find-command-lists.mjs";
 import { validateDeploymentTimeouts } from "./validate-knit-configuration/deployment-timeouts.mjs";
 
 export async function validateKnitConfiguration(inventory, packageJson = {}) {

@@ -1,17 +1,7 @@
 import { expect, test } from "@jest/globals";
-import {
-  findCommandLists,
-  validateCommandList,
-} from "../../../../../src/checks/general/E-0.1.0.1.6/validate-knit-configuration/command-lists.mjs";
+import { validateCommandList } from "../../../../../src/checks/general/E-0.1.0.1.6/validate-knit-configuration/command-lists.mjs";
 
 const prefix = ["git pull", "npm ci", "npm test"];
-
-test("finds commands lists recursively", () => {
-  expect(findCommandLists({ jobs: [{ commands: prefix }], nested: { commands: [] } })).toEqual([
-    prefix,
-    [],
-  ]);
-});
 
 test("requires an array with the canonical command prefix", () => {
   expect(validateCommandList(prefix)).toEqual([]);
