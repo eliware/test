@@ -1,5 +1,5 @@
 import { visitAst } from "../../visit-ast.mjs";
-import { isModuleMockedForLoad } from "../../test-write-policy/collect-mocked-modules.mjs";
+import { isModuleMockedForLoad } from "../../test-write-policy/collect/mocked-modules.mjs";
 
 const effectModules = new Set([
   "fs",

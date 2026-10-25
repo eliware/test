@@ -1,4 +1,4 @@
-import { visitAst } from "../visit-ast.mjs";
+import { visitAst } from "../../visit-ast.mjs";
 
 export function collectMockedModules(ast) {
   const modules = new Set();

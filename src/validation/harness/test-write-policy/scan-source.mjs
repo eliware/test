@@ -9,7 +9,7 @@ import {
 import { visitAst } from "../visit-ast.mjs";
 import { trackNamespaceAlias } from "./track-namespace-alias.mjs";
 import { findFileHandleWriteViolations } from "./find-file-handle-write-violations.mjs";
-import { getRestrictedModuleName, isModuleMockedForLoad } from "./collect-mocked-modules.mjs";
+import { getRestrictedModuleName, isModuleMockedForLoad } from "./collect/mocked-modules.mjs";
 
 export function findTestWritePolicyViolations(source, filePath) {
   const ast = parse(source, {

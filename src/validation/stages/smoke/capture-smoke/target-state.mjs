@@ -1,5 +1,6 @@
 import { cp, lstat, readFile, readlink, rm, stat } from "node:fs/promises";
 import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
+import { cleanupFailedSmokeCapture } from "./cleanup-failed-capture.mjs";
 import { captureSmokePaths } from "./paths.mjs";
 
 const defaultFs = { cp, lstat, readFile, readlink, rm, stat };
@@ -26,14 +27,6 @@ export async function captureSmokeTargetState(
     );
     return { entries, storage, targetRoot: root, packageName };
   } catch (error) {
-    try {
-      await fs.rm(storage, { recursive: true, force: true });
-    } catch (cleanupError) {
-      throw new Error(
-        `Failed to capture smoke target state (${error.message}). Temporary backup may remain at ${storage}: ${cleanupError.message}`,
-        { cause: error },
-      );
-    }
-    throw error;
+    await cleanupFailedSmokeCapture(storage, fs, error);
   }
 }

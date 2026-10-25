@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import {
   canonicalPrettierConfiguration,
   validatePrettierConfiguration,
-} from "../../../../../src/checks/general/E-0.1.0.1.5/validate/prettier-configuration.mjs";
+} from "../../../../../../src/checks/general/E-0.1.0.1.5/validate/prettier/configuration.mjs";
 
 test("accepts the exact canonical configuration", () => {
   expect(

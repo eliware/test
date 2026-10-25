@@ -4,7 +4,7 @@ import {
   collectMockedModules,
   getRestrictedModuleName,
   isModuleMockedForLoad,
-} from "../../../../src/validation/harness/test-write-policy/collect-mocked-modules.mjs";
+} from "../../../../../src/validation/harness/test-write-policy/collect/mocked-modules.mjs";
 
 test("collects supported Jest module mocks", () => {
   const ast = parse(
