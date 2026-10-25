@@ -51,7 +51,7 @@ Use the canonical profile order in [Profiles](profiles.md).
 The CLI does not infer profiles from files or dependencies.
 
 Set `package.json.eliware.exempt` only when Eli approves a waiver.
-Each waiver requires a unique known `ruleId`, a `cause`, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+Each waiver requires a unique known `ruleId`, a `reason`, approver `Eli`, an approval timestamp, and an expiry date or `null`.
 
 Use the field names and value types shown in this example:
 
