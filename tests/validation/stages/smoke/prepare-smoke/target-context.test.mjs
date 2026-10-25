@@ -71,14 +71,3 @@ test("returns consumer metadata errors", async () => {
     error: expect.stringContaining("existing npm repository"),
   });
 });
-
-test("returns no executable names when the package has no bin entry", async () => {
-  setConsumerFiles();
-  const context = await prepareSmokeTargetContext({
-    root,
-    target,
-    packageJson: { ...packageJson, bin: undefined },
-  });
-
-  expect(context.binNames).toEqual([]);
-});

@@ -1,7 +1,5 @@
-import {
-  findProtectedNegations,
-  isUniversalIgnoreRule,
-} from "./ignore-patterns/protected-negations.mjs";
+import { findProtectedNegations } from "./ignore-patterns/protected-negations.mjs";
+import { isUniversalIgnoreRule } from "./ignore-patterns/is-universal-ignore-rule.mjs";
 
 const ignoredDirectories = [
   "node_modules",

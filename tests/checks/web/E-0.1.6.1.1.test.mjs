@@ -17,25 +17,16 @@ test("accepts public assets and rejects custom web asset metadata", async () => 
     status: "pass",
     message: "",
   });
-  await expect(
-    run({
-      root: "C:/repo",
-      packageJson: { eliware: { webRoot: "assets", webAssetExcludes: [] } },
-      repositoryInventory,
-    }),
-  ).resolves.toMatchObject({
+  const metadataResult = await run({
+    root: "C:/repo",
+    packageJson: { eliware: { webRoot: "assets", webAssetExcludes: [] } },
+    repositoryInventory,
+  });
+  expect(metadataResult).toMatchObject({
     status: "fail",
     message: expect.stringContaining("package.json.eliware.webRoot"),
   });
-  await expect(
-    run({
-      root: "C:/repo",
-      packageJson: { eliware: { webRoot: "assets", webAssetExcludes: [] } },
-      repositoryInventory,
-    }),
-  ).resolves.toMatchObject({
-    message: expect.stringContaining("package.json.eliware.webAssetExcludes"),
-  });
+  expect(metadataResult.message).toContain("package.json.eliware.webAssetExcludes");
 });
 
 test("rejects excluded directories at every depth", async () => {

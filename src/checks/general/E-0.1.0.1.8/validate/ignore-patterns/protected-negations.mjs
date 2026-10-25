@@ -1,4 +1,5 @@
 import { minimatch } from "minimatch";
+import { isUniversalIgnoreRule } from "./is-universal-ignore-rule.mjs";
 
 const protectedDirectories = [
   "node_modules",
@@ -41,10 +42,4 @@ export function findProtectedNegations(rules) {
       restorations.push(rule);
   });
   return restorations;
-}
-
-export function isUniversalIgnoreRule(rule, name) {
-  if (rule.startsWith("!")) return false;
-  const pattern = rule.replace(/\/$/u, "");
-  return pattern === name || pattern === `**/${name}` || pattern === `**/${name}/**`;
 }
