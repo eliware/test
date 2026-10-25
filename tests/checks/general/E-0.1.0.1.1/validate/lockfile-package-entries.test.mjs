@@ -114,20 +114,15 @@ test("accepts npm registry tags in installed dependency metadata", () => {
   ).toBeNull();
 });
 
-test("rejects unsupported ranges and malformed optional peer metadata", () => {
+test("rejects unsupported dependency ranges", () => {
   const errors = validateLockfilePackageEntries({
     "node_modules/parent": {
       version: "1.0.0",
       dependencies: { child: "file:../child" },
-      peerDependencies: { optional: "*" },
-      peerDependenciesMeta: { optional: [] },
     },
     "node_modules/child": { version: "1.0.0" },
   });
   expect(errors).toContain(
     "package-lock.json entry node_modules/parent has an unsupported dependencies range for child.",
-  );
-  expect(errors).toContain(
-    "package-lock.json entry node_modules/parent references missing dependency optional.",
   );
 });

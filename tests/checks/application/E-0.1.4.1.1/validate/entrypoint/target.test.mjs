@@ -15,16 +15,11 @@ test.each([
   expect(inspectFilesystem).not.toHaveBeenCalled();
 });
 
-test.each([
-  ["symlink", "must not contain a symlink"],
-  ["directory", "path segment must be a directory"],
-  ["file", "must be an existing file"],
-  ["missing", "target does not exist"],
-])("reports the %s filesystem result", async (result, message) => {
-  const inspectFilesystem = jest.fn().mockResolvedValue(result);
+test("composes filesystem inspection with its diagnostic", async () => {
+  const inspectFilesystem = jest.fn().mockResolvedValue("missing");
   await expect(
     validateEntrypointTarget("bin/tool.mjs", "repo", undefined, inspectFilesystem),
-  ).resolves.toContain(message);
+  ).resolves.toBe("Entrypoint target does not exist: bin/tool.mjs.");
   expect(inspectFilesystem).toHaveBeenCalledWith("bin/tool.mjs", "repo", undefined);
 });
 

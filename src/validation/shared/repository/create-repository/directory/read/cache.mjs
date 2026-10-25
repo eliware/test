@@ -1,6 +1,7 @@
 import { stat as statPath } from "node:fs/promises";
 import { inventoryPath } from "../../../repository-inventory/paths.mjs";
 import { getRepositoryDirectoryVersion } from "../../../get-repository-directory-version.mjs";
+import { hasDirectoryVersionChanged, isReusableDirectoryVersion } from "./version.mjs";
 
 export function createRepositoryDirectoryReadCache(
   root,
@@ -28,12 +29,7 @@ export function createRepositoryDirectoryReadCache(
           await stat(key, { bigint: true }),
           platform,
         );
-        if (
-          !forceRefresh &&
-          currentVersion.cacheable &&
-          previous?.version?.cacheable &&
-          previous.version.key === currentVersion.key
-        ) {
+        if (!forceRefresh && isReusableDirectoryVersion(previous?.version, currentVersion)) {
           current.version = currentVersion;
           current.entries = previous.entries;
           current.pending = false;
@@ -44,7 +40,7 @@ export function createRepositoryDirectoryReadCache(
           await stat(key, { bigint: true }),
           platform,
         );
-        if (afterReadVersion.key !== currentVersion.key) {
+        if (hasDirectoryVersionChanged(currentVersion, afterReadVersion)) {
           throw new Error(`Directory changed while reading repository entries: ${key}.`);
         }
         if (previous) revision += 1;

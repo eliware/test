@@ -1,6 +1,7 @@
 import semver from "semver";
 import { findLockfileDependencyEntry } from "./find-lockfile-dependency-entry.mjs";
 import { toSemverRange } from "./to-semver-range.mjs";
+import { isOptionalPeer } from "./optional-peer.mjs";
 
 const dependencyFields = ["dependencies", "optionalDependencies", "peerDependencies"];
 
@@ -61,15 +62,4 @@ function isRegistryTag(value) {
 
 function isValidDependencyName(name) {
   return /^(?:@[a-z0-9][a-z0-9._~-]*\/[a-z0-9][a-z0-9._~-]*|[a-z0-9][a-z0-9._~-]*)$/u.test(name);
-}
-
-function isOptionalPeer(entry, name) {
-  const metadata = entry.peerDependenciesMeta;
-  const details = metadata?.[name];
-  return (
-    details !== null &&
-    typeof details === "object" &&
-    !Array.isArray(details) &&
-    details.optional === true
-  );
 }
