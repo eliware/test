@@ -1,3 +1,5 @@
+import { repoMapExemptionsMatch } from "./exemptions.mjs";
+
 function list(value) {
   const values = Array.isArray(value)
     ? value
@@ -15,25 +17,6 @@ function sameList(actual, expected) {
     actual.length === expected.length &&
     actual.every((item, index) => item === expected[index])
   );
-}
-
-function sameValue(actual, expected) {
-  if (Array.isArray(actual) || Array.isArray(expected))
-    return (
-      Array.isArray(actual) &&
-      Array.isArray(expected) &&
-      actual.length === expected.length &&
-      actual.every((value, index) => sameValue(value, expected[index]))
-    );
-  if (actual && expected && typeof actual === "object" && typeof expected === "object") {
-    const actualKeys = Object.keys(actual).sort();
-    const expectedKeys = Object.keys(expected).sort();
-    return (
-      sameList(actualKeys, expectedKeys) &&
-      actualKeys.every((key) => sameValue(actual[key], expected[key]))
-    );
-  }
-  return actual === expected;
 }
 
 export function validateRepoMapMetadata(packageJson, record) {
@@ -59,11 +42,7 @@ export function validateRepoMapMetadata(packageJson, record) {
     errors.push("package.json.keywords must match repo-map.yaml.");
   if (!sameList(packageJson?.eliware?.apply, profiles))
     errors.push("package.json.eliware.apply must match repo-map.yaml.");
-  const packageExemptions = Object.hasOwn(packageJson?.eliware ?? {}, "exempt")
-    ? packageJson.eliware.exempt
-    : [];
-  const repoMapExemptions = Object.hasOwn(record, "exemptions") ? record.exemptions : [];
-  if (!sameValue(packageExemptions, repoMapExemptions))
+  if (!repoMapExemptionsMatch(packageJson, record))
     errors.push("The package exemption list must match repo-map.yaml.");
   return errors.length ? errors.join("\n") : null;
 }

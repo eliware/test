@@ -1,4 +1,4 @@
-import { validateRepoMapMetadata } from "./repo-map-metadata.mjs";
+import { validateRepoMapMetadata } from "./repo-map/metadata.mjs";
 
 export function compareRepoMapRecord(packageJson, map) {
   if (!map.available || !map.record) return [];

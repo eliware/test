@@ -10,11 +10,12 @@ import {
   rebalanceBalancedNumericTreeNode,
   sizeBalancedNumericTreeNode,
 } from "../balance-numeric-tree-node.mjs";
+import { assertFiniteTreeNumber } from "../validate/finite-number.mjs";
 
 export function createBalancedNumericTree() {
   let root = null;
   function insert(value) {
-    assertFiniteNumber(value, "insert");
+    assertFiniteTreeNumber(value, "insert");
     root = insertBalancedNumericTreeNode(root, value, rebalanceBalancedNumericTreeNode);
   }
   function removeMinimum() {
@@ -26,7 +27,7 @@ export function createBalancedNumericTree() {
     return node?.value;
   }
   function lowerBound(value) {
-    assertFiniteNumber(value, "lowerBound");
+    assertFiniteTreeNumber(value, "lowerBound");
     let node = root;
     let result = sizeBalancedNumericTreeNode(root);
     let offset = 0;
@@ -45,13 +46,9 @@ export function createBalancedNumericTree() {
     return collectBalancedNumericTreeValues(root);
   }
   function range(minimum, maximum) {
-    assertFiniteNumber(minimum, "range");
-    assertFiniteNumber(maximum, "range");
+    assertFiniteTreeNumber(minimum, "range");
+    assertFiniteTreeNumber(maximum, "range");
     return collectBalancedNumericTreeRange(root, minimum, maximum);
   }
   return Object.freeze({ insert, removeMinimum, minimum, lowerBound, values, range });
-}
-function assertFiniteNumber(value, operation) {
-  if (!Number.isFinite(value))
-    throw new TypeError(`Balanced numeric tree ${operation} values must be finite numbers.`);
 }

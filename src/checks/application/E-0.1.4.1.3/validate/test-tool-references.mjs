@@ -1,4 +1,4 @@
-import { hasProhibitedTestToolReference } from "./test-tool-references/dispatch.mjs";
+import { hasProhibitedTestToolReference } from "./test-tool-references/policy.mjs";
 
 export function validateTestToolReferences(path, content, harness = false) {
   const prohibited = hasProhibitedTestToolReference(path, content, harness);

@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateRepoMapMetadata } from "../../../../../src/checks/general/E-0.1.0.1.0/validate/repo-map-metadata.mjs";
+import { validateRepoMapMetadata } from "../../../../../../src/checks/general/E-0.1.0.1.0/validate/repo-map/metadata.mjs";
 
 const record = {
   id: "E-1",

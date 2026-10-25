@@ -1,3 +1,5 @@
+import { createSmokeTargetIdentityGuard } from "./identity-guard.mjs";
+
 export async function inspectSmokeTargetIdentity(targetRoot, inspect) {
   let identity;
   try {
@@ -8,26 +10,6 @@ export async function inspectSmokeTargetIdentity(targetRoot, inspect) {
     return { error: "Smoke target must resolve to an existing directory." };
   }
   return {
-    assertIdentity: async () => {
-      let current;
-      try {
-        current = await inspect(targetRoot);
-      } catch {
-        throw createUntrustedTargetError();
-      }
-      if (
-        !current.isDirectory() ||
-        current.dev !== identity.dev ||
-        current.ino !== identity.ino ||
-        current.birthtimeMs !== identity.birthtimeMs
-      )
-        throw createUntrustedTargetError();
-    },
+    assertIdentity: createSmokeTargetIdentityGuard(targetRoot, identity, inspect),
   };
-}
-
-function createUntrustedTargetError() {
-  return new Error(
-    "Smoke target directory changed during validation. Refusing access to an untrusted target.",
-  );
 }

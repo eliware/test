@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { hasProhibitedTestToolReference } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/dispatch.mjs";
+import { getTestToolReferenceChecker } from "../../../../../../src/checks/application/E-0.1.4.1.3/validate/test-tool-references/dispatch.mjs";
 
 test.each([
   ["src/run.mjs", 'import("vitest");', false, true],
@@ -13,5 +13,6 @@ test.each([
   ["scripts/run.sh", "jest --runInBand", false, true],
   ["src/run.mjs", 'import "istanbul-lib-instrument";', true, false],
 ])("routes %s content to its format policy", (path, content, harness, expected) => {
-  expect(hasProhibitedTestToolReference(path, content, harness)).toBe(expected);
+  const checker = getTestToolReferenceChecker(path);
+  expect(checker ? checker(content, harness) : false).toBe(expected);
 });
