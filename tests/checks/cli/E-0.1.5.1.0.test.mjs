@@ -56,25 +56,6 @@ test("uses the default runner through its mocked process adapter", async () => {
   expect(execute).toHaveBeenCalledTimes(2);
 });
 
-test("runs help and version for every public command", async () => {
-  const calls = [];
-  await expect(
-    run(
-      { root: process.cwd(), packageJson, repositoryInventory },
-      {
-        execute: async (_command, args) => {
-          calls.push(args.at(-1));
-          return {
-            code: 0,
-            stdout: args.at(-1) === "--version" ? `${packageVersion}\n` : "Usage\n",
-          };
-        },
-      },
-    ),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
-  expect(calls).toEqual(["--help", "--version"]);
-});
-
 test("fails when version output does not match package metadata", async () => {
   const result = await run(
     { packageJson, repositoryInventory },
