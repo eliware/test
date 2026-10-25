@@ -6,3 +6,10 @@ test("normalizes mixed separators in a nested bin target", () => {
     path: "bin/nested/tool.mjs",
   });
 });
+
+test.each(["bin/../escape.mjs", "bin//tool.mjs", "src/tool.mjs"])(
+  "rejects noncanonical target %s",
+  (target) => {
+    expect(inspectEntrypointTarget(target)).toEqual({ error: "canonical" });
+  },
+);

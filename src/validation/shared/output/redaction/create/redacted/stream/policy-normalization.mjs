@@ -1,40 +1,33 @@
-import { normalizeRedactionPolicySecrets } from "../../../normalize-redaction-policy-secrets.mjs";
 import { createSuppressedPolicy } from "./suppressed-policy.mjs";
-import { MAX_SECRET_SEARCH_WORK_PER_CHUNK, resolveRedactedStreamBounds } from "./bounds.mjs";
+import { normalizeRedactedStreamSecretBounds } from "./policy-normalization/secret-bounds.mjs";
 
 const DEFAULT_PENDING_LENGTH = 64_000;
 
 export function normalizeRedactedStreamPolicy(
   secrets,
   outputLimit,
-  {
-    maxSearchWorkPerChunk = MAX_SECRET_SEARCH_WORK_PER_CHUNK,
-    maxPendingLength = DEFAULT_PENDING_LENGTH,
-  } = {},
+  { maxSearchWorkPerChunk, maxPendingLength = DEFAULT_PENDING_LENGTH } = {},
 ) {
-  const values = normalizeRedactionPolicySecrets(secrets);
-  const maximumSecretLength =
-    values?.reduce((maximum, secret) => Math.max(maximum, secret.length), 0) ?? 0;
-  const bounds = resolveRedactedStreamBounds(
+  const normalized = normalizeRedactedStreamSecretBounds(
+    secrets,
     outputLimit,
     maxSearchWorkPerChunk,
     maxPendingLength,
-    maximumSecretLength,
   );
   const suppressedPolicy = createSuppressedPolicy(
-    values,
-    bounds.outputLimit,
-    bounds.workLimit,
+    normalized.values,
+    normalized.bounds.outputLimit,
+    normalized.bounds.workLimit,
     maxPendingLength,
   );
 
   return {
-    maximumSecretLength,
+    maximumSecretLength: normalized.maximumSecretLength,
     policy: suppressedPolicy ?? {
-      outputLimit: bounds.outputLimit,
-      workLimit: bounds.workLimit,
-      pendingLimit: bounds.pendingLimit,
-      values,
+      outputLimit: normalized.bounds.outputLimit,
+      workLimit: normalized.bounds.workLimit,
+      pendingLimit: normalized.bounds.pendingLimit,
+      values: normalized.values,
     },
   };
 }

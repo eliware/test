@@ -1,8 +1,8 @@
 import { collectRedactionSecrets } from "../../../output/redaction/collect-redaction-secrets.mjs";
-import { createRedactedTextStream } from "../../../output/redaction/create/redacted/text/stream.mjs";
 import { createOutputByteBudget } from "../../../output/redaction/create/output-byte-budget.mjs";
 import { createSecretTextMatcher } from "../../../output/redaction/create/secret-text-matcher.mjs";
 import { redactChildProcessDiagnostic } from "./redact-diagnostic.mjs";
+import { createLazyChildProcessRedactors } from "./process-output-capture/redactors.mjs";
 
 export function createChildProcessOutputCapture(
   options,
@@ -15,39 +15,29 @@ export function createChildProcessOutputCapture(
     ...(Array.isArray(suppliedSecrets) ? suppliedSecrets : []),
   ];
   const maxPendingLength = Math.max(1, Math.floor(outputLimit / 2));
-  let redactors;
-  const getSecretMatcher = (secrets, matcherOptions) => makeSecretMatcher(secrets, matcherOptions);
-  const getRedactors = () => {
-    if (!redactors) {
-      redactors = {
-        stdout: createRedactedTextStream(redactionSecrets, outputLimit, {
-          maxPendingLength,
-          getSecretMatcher,
-        }),
-        stderr: createRedactedTextStream(redactionSecrets, outputLimit, {
-          maxPendingLength,
-          getSecretMatcher,
-        }),
-      };
-    }
-    return redactors;
-  };
+  const redactors = createLazyChildProcessRedactors(
+    redactionSecrets,
+    outputLimit,
+    maxPendingLength,
+    makeSecretMatcher,
+  );
   const budget = createOutputByteBudget(outputLimit);
 
   return {
     redactDiagnostic(text) {
-      return redactChildProcessDiagnostic(text, getRedactors().stdout, outputLimit);
+      return redactChildProcessDiagnostic(text, redactors.get().stdout, outputLimit);
     },
     push(stream, chunk) {
       if ((stream !== "stdout" && stream !== "stderr") || budget.isFull()) return;
       const raw = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
       if (raw.length === 0) return;
-      budget.append(stream, getRedactors()[stream].push(raw));
+      budget.append(stream, redactors.get()[stream].push(raw));
     },
     finish() {
-      if (redactors) {
-        budget.append("stdout", redactors.stdout.finish());
-        budget.append("stderr", redactors.stderr.finish());
+      if (redactors.isInitialized()) {
+        const streams = redactors.get();
+        budget.append("stdout", streams.stdout.finish());
+        budget.append("stderr", streams.stderr.finish());
       }
       return budget.output;
     },
