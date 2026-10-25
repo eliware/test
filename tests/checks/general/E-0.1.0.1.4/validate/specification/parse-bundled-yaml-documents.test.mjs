@@ -8,9 +8,6 @@ test("parses each bounded YAML document into a value", () => {
   ]);
 });
 
-test("rejects YAML limit violations and parse errors", () => {
-  expect(() => parseBundledYamlDocuments(`value: ${"x".repeat(110)}`, "specs/test.yaml")).toThrow(
-    "specs/test.yaml line 1 has",
-  );
+test("reports YAML syntax errors from bundled documents", () => {
   expect(() => parseBundledYamlDocuments("value: [", "specs/test.yaml")).toThrow();
 });

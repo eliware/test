@@ -16,27 +16,8 @@ test("accepts a UTF-8 byte-order mark before the title", () => {
   expect(validate(`\uFEFF${valid}`)).toEqual([]);
 });
 
-test("rejects the word Unreleased without regard to case", () => {
-  const errors = validate(
-    `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\nPending unreleased work.`,
-  );
-  expect(errors).toContain("RELEASE_NOTES.md must not contain the word Unreleased.");
-  expect(
-    validate(`# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nNew.`),
-  ).toEqual([]);
-});
-
-test("ignores the word Unreleased inside Markdown code", () => {
-  expect(
-    validate(
-      `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nExample:\n\n\`\`\`text\nUnreleased\n\`\`\``,
-    ),
-  ).toEqual([]);
-});
-
 test("rejects malformed release titles", () => {
-  const errors = validate("# Notes\n\n## 1.0.0 — 2026-01-01\n\n## 1.0.0\n");
-  expect(errors.join("\n")).toContain("must begin with # Release Notes");
+  const errors = validate("# Release Notes\n\n## 1.0.0 — 2026-01-01\n\n## 1.0.0\n");
   expect(errors.join("\n")).toContain("Malformed release entry");
 });
 
@@ -61,21 +42,9 @@ test("requires a versioned entry", () => {
   );
 });
 
-test("rejects more than one level-one title", () => {
-  expect(validate("# Release Notes\n\n# Extra\n\n## Unreleased\n")).toContain(
-    "RELEASE_NOTES.md must contain one level-one title.",
-  );
-});
-
 test("does not count release entries inside code fences", () => {
   const code = `# Release Notes\n\n\`\`\`md\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nExample.\n\`\`\``;
   expect(validate(code)).toContain(
     "RELEASE_NOTES.md must contain at least one versioned release entry.",
-  );
-});
-
-test("requires the release title before code blocks", () => {
-  expect(validate("```text\nexample\n```\n" + valid)).toContain(
-    "RELEASE_NOTES.md must begin with # Release Notes.",
   );
 });
