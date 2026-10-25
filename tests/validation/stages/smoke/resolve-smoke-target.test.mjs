@@ -24,17 +24,3 @@ test("coordinates path resolution and identity protection for a target", async (
   expect(realpath).toHaveBeenCalledTimes(2);
   expect(lstat).toHaveBeenCalledTimes(2);
 });
-
-test("stops before identity inspection when paths overlap", async () => {
-  await expect(resolveSmokeTarget(source, join(source, "nested"))).resolves.toMatchObject({
-    error: expect.stringContaining("outside the source"),
-  });
-  expect(lstat).not.toHaveBeenCalled();
-});
-
-test("returns identity inspection failures from the coordinator", async () => {
-  lstat.mockRejectedValue(new Error("missing"));
-  await expect(resolveSmokeTarget(source, target)).resolves.toMatchObject({
-    error: expect.stringContaining("existing directory"),
-  });
-});

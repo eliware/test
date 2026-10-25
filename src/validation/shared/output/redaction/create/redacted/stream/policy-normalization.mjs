@@ -1,4 +1,4 @@
-import { createSuppressedPolicy } from "./suppressed-policy.mjs";
+import { createSuppressedPolicy } from "./policy-normalization/suppressed-policy.mjs";
 import { normalizeRedactedStreamSecretBounds } from "./policy-normalization/secret-bounds.mjs";
 
 const DEFAULT_PENDING_LENGTH = 64_000;
