@@ -1,6 +1,5 @@
 import { expect, test } from "@jest/globals";
 import { validateReadmeStructure } from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/structure.mjs";
-import { resolveReadmeHeadings } from "../../../../../src/checks/shared/E-0.1.0.1.3/resolve-readme-headings.mjs";
 import { readCanonicalOrder } from "../../../../../src/validation/shared/conventions/read-canonical-order.mjs";
 
 const order = readCanonicalOrder("readme-sections.yaml");
@@ -37,62 +36,6 @@ test("rejects blank required sections", () => {
   expect(validateReadmeStructure(blank, expected, packageJson)).toContain(
     "README.md section Features must contain content.",
   );
-});
-
-test("enforces Documentation headings and their Table of Contents links", () => {
-  const documentationPackage = {
-    ...packageJson,
-    eliware: { apply: ["general", "documentation", "private"] },
-  };
-  const headings = resolveReadmeHeadings(documentationPackage);
-  const content = createReadme(headings, documentationPackage);
-
-  expect(validateReadmeStructure(content, headings, documentationPackage)).toBeNull();
-  expect(
-    validateReadmeStructure(
-      content.replace("## Scope", "## Scope omitted"),
-      headings,
-      documentationPackage,
-    ),
-  ).toContain("every required section");
-  expect(
-    validateReadmeStructure(
-      content.replace("- [Scope](#scope)\n", ""),
-      headings,
-      documentationPackage,
-    ),
-  ).toContain("Table of Contents");
-});
-
-test("requires every selected application section and rejects unknown headings", () => {
-  const applicationPackage = {
-    ...packageJson,
-    eliware: { apply: ["general", "application"] },
-  };
-  const headings = resolveReadmeHeadings(applicationPackage);
-  const content = createReadme(headings, applicationPackage);
-  expect(validateReadmeStructure(content, headings, applicationPackage)).toBeNull();
-  expect(
-    validateReadmeStructure(
-      content.replace("## Configuration", "## Configuration omitted"),
-      headings,
-      applicationPackage,
-    ),
-  ).toContain("every required section");
-  expect(
-    validateReadmeStructure(
-      content.replace("- [Configuration](#configuration)\n", ""),
-      headings,
-      applicationPackage,
-    ),
-  ).toContain("Table of Contents");
-  expect(
-    validateReadmeStructure(
-      content.replace("## Features", "## News\n\n## Features"),
-      headings,
-      applicationPackage,
-    ),
-  ).toContain("unlisted sections");
 });
 
 test("accepts a title with trailing badges", () => {

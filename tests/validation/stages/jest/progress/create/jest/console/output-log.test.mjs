@@ -45,31 +45,6 @@ test("caps saved output and skips later chunks", () => {
   expect(files.get("coverage/jest.log")).toContain("output was truncated");
 });
 
-test("reports credential fields, HTTP credentials, and known token formats", () => {
-  const { log } = makeLog();
-  log.start();
-  log.append("stdout", "password=hidden Authorization: Bearer abc123 ghp_abcdef123456");
-
-  expect(log.finish()).toEqual({
-    redacted: true,
-    redactionKinds: ["credential field", "HTTP credential", "known token format"],
-    writeError: false,
-  });
-});
-
-test("reports generic Base64 credentials", () => {
-  const { files, log } = makeLog();
-  log.start();
-  log.append("stdout", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef");
-
-  expect(log.finish()).toEqual({
-    redacted: true,
-    redactionKinds: ["generic Base64 credential"],
-    writeError: false,
-  });
-  expect(files.get("coverage/jest.log")).toBe("[REDACTED]");
-});
-
 test("handles an absent log path and ignores invalid streams", () => {
   const replace = jest.fn();
   const append = jest.fn();

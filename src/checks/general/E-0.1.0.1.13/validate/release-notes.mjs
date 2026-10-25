@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { readRepositoryText } from "../../../../validation/shared/repository/read/repository-text.mjs";
-import { releaseEntryHeadings, validateReleaseNotesContent } from "./release/notes/content.mjs";
+import { validateReleaseNotesContent } from "./release/notes/content.mjs";
+import { releaseEntryHeadings } from "./release/notes/headings.mjs";
 import { validateReleaseNotesLink } from "./release/notes/link.mjs";
 import { validateReleaseTagVersions } from "./release/validate-release-tags.mjs";
 
