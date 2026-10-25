@@ -21,9 +21,11 @@ test("extracts every documented prose field from nested objects and arrays", () 
   const nested = Object.fromEntries(fields.map((field) => [field, `${field} text.`]));
   nested.steps = ["First action.", "Second action."];
   nested.TITLE = "Uppercase field.";
-  nested.examples = { description: "Hidden sample." };
+  nested.examples = { description: "Nested record text." };
   nested.runner = "Inert value.";
-  const result = extractJsonProse(JSON.stringify({ nested }));
+  const result = extractJsonProse(
+    JSON.stringify({ nested, examples: { description: "Hidden sample." } }),
+  );
   expect(result.map(({ text }) => text)).toEqual([
     "description text.",
     "title text.",
@@ -41,6 +43,7 @@ test("extracts every documented prose field from nested objects and arrays", () 
     "notes text.",
     "content text.",
     "Uppercase field.",
+    "Nested record text.",
   ]);
   expect(result.every((block) => block.line === 1 && block.kind === "prose")).toBe(true);
 });

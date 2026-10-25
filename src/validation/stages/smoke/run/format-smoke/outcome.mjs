@@ -3,6 +3,6 @@ export async function formatSmokeOutcome(packageJson, runTransaction) {
     const digest = await runTransaction();
     return `Smoke passed: ${packageJson.name}@${packageJson.version}. SHA-256 ${digest}.`;
   } catch (error) {
-    return `Tarball consumer smoke failed: ${error.message}`;
+    return `Tarball consumer smoke failed: ${error instanceof Error ? error.message : String(error)}`;
   }
 }

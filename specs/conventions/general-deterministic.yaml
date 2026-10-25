@@ -324,14 +324,14 @@ directives:
       - "Check literal values assigned to `ariaLabel`, `innerText`, `placeholder`,
         `textContent`, and `title`."
       - Check values passed to `setAttribute` for `alt`, `aria-label`, `placeholder`, and `title`.
-      - Skip all other JavaScript string values and template literals.
+      - Skip template literals with expressions and all other JavaScript string values.
       - "Check Markdown, plain-text, YAML, JSON, JavaScript, and JSX files with these
         extensions: `.md`, `.txt`, `.yaml`, `.yml`, `.json`, `.mjs`, `.js`, and `.jsx`."
       - Do not check other file extensions.
       - "Check these JSON prose fields: `description`, `title`, `purpose`, `owner`,
         `boundaries`, `prerequisites`, `steps`, `prompt`, `message`, `help`, `summary`,
         `note`, `notes`, and `content`."
-      - Ignore examples subtrees and all other JSON keys.
+      - Ignore top-level `examples` subtrees and all other JSON keys.
       - Check directive items, descriptive fields, and runbook text in YAML documents.
       - Exclude code blocks, code spans, and link destinations from word counts.
       - Match dictionary entries in uppercase or lowercase, at whole-word or exact-phrase
@@ -381,7 +381,7 @@ directives:
       - Put all release text in a release category.
       - Put all headings in a release entry or category.
     donts:
-      - Do not use the word Unreleased in RELEASE_NOTES.md.
+      - Do not use the word Unreleased in release text outside code blocks.
       - Do not duplicate versions.
       - Do not use one category more than once in one entry.
       - Do not use malformed, empty, unsupported, or out-of-order sections.

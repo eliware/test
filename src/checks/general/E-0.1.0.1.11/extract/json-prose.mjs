@@ -34,7 +34,7 @@ function collect(value, path, blocks) {
   }
   if (value && typeof value === "object") {
     for (const [key, child] of Object.entries(value)) {
-      if (key.toLowerCase() === "examples") continue;
+      if (path.length === 0 && key.toLowerCase() === "examples") continue;
       collect(child, [...path, key.toLowerCase()], blocks);
     }
     return;

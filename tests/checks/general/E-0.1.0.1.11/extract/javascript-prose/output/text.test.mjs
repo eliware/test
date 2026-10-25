@@ -5,6 +5,7 @@ test("collects direct strings, template text, and concatenated output text", () 
   expect(collectOutputText("Show the saved value.")).toEqual(["Show the saved value."]);
   expect(collectOutputText(string("Enter a valid name."))).toEqual(["Enter a valid name."]);
   expect(collectOutputText(template("Choose a value for ", ""))).toEqual(["Choose a value for "]);
+  expect(collectOutputText(template("Choose a ", " option.", { expressions: true }))).toEqual([]);
   expect(
     collectOutputText({
       ...template("Show a value"),
@@ -35,9 +36,13 @@ function string(value) {
 }
 
 function template(...values) {
+  const options = values.at(-1);
+  const expressions = options?.expressions ? [{}] : [];
+  const parts = options?.expressions ? values.slice(0, -1) : values;
   return {
     type: "TemplateLiteral",
-    quasis: values.map((value) => ({ value: { cooked: value, raw: value } })),
+    expressions,
+    quasis: parts.map((value) => ({ value: { cooked: value, raw: value } })),
   };
 }
 

@@ -11,7 +11,8 @@ import { prepareSmokeTargetContext } from "../prepare-smoke/target-context.mjs";
 import { prepareSmokeState } from "../prepare-smoke/state.mjs";
 import { prepareSmokeWorkspace } from "../prepare-smoke/workspace.mjs";
 import { runSmokePackageTransaction } from "./smoke-package-transaction.mjs";
-import { formatSmokeOutcome } from "./format-smoke-outcome.mjs";
+import { formatSmokeFinalizationFailure } from "./format-smoke/finalization-failure.mjs";
+import { formatSmokeOutcome } from "./format-smoke/outcome.mjs";
 
 export async function runNpmConsumerSmoke({
   root,
@@ -76,15 +77,19 @@ export async function runNpmConsumerSmoke({
       });
     });
   } finally {
-    outcome = await finishSmokeRun({
-      outcome,
-      state,
-      targetRoot,
-      assertTargetIdentity,
-      restoreState,
-      tempRoot,
-      tempIdentity,
-    });
+    try {
+      outcome = await finishSmokeRun({
+        outcome,
+        state,
+        targetRoot,
+        assertTargetIdentity,
+        restoreState,
+        tempRoot,
+        tempIdentity,
+      });
+    } catch (error) {
+      outcome = formatSmokeFinalizationFailure(outcome, error, tempRoot);
+    }
   }
   return outcome;
 }

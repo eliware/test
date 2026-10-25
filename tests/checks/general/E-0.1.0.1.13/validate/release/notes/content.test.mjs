@@ -26,6 +26,14 @@ test("rejects the word Unreleased without regard to case", () => {
   ).toEqual([]);
 });
 
+test("ignores the word Unreleased inside Markdown code", () => {
+  expect(
+    validate(
+      `# Release Notes\n\n## ${packageVersion} — 2026-10-15\n\n### Added\n\nExample:\n\n\`\`\`text\nUnreleased\n\`\`\``,
+    ),
+  ).toEqual([]);
+});
+
 test("rejects malformed release titles", () => {
   const errors = validate("# Notes\n\n## 1.0.0 — 2026-01-01\n\n## 1.0.0\n");
   expect(errors.join("\n")).toContain("must begin with # Release Notes");

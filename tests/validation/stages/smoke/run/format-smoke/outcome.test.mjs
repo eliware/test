@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { formatSmokeOutcome } from "../../../../../src/validation/stages/smoke/run/format-smoke-outcome.mjs";
+import { formatSmokeOutcome } from "../../../../../../src/validation/stages/smoke/run/format-smoke/outcome.mjs";
 
 const packageJson = { name: "@eliware/example", version: "1.2.3" };
 
@@ -16,4 +16,10 @@ test("formats a transaction failure", async () => {
     "Tarball consumer smoke failed: install failed",
   );
   expect(transaction).toHaveBeenCalledTimes(1);
+});
+
+test("formats non-Error transaction failures", async () => {
+  await expect(
+    formatSmokeOutcome(packageJson, async () => Promise.reject("install failed")),
+  ).resolves.toBe("Tarball consumer smoke failed: install failed");
 });

@@ -45,7 +45,6 @@ test("checks supported CLI, dialog, DOM, and Discord output contexts", () => {
   ].join("\n");
   expect(extractJavaScriptProse(source).map(({ text }) => text)).toEqual([
     "Enter a valid name.",
-    "Select a record for .",
     "Choose a valid option.",
     "The request failed.",
     "Enter a search term.",
@@ -75,10 +74,8 @@ test("skips machine strings, templates, regular expressions, and non-user-facing
   expect(extractJavaScriptProse(source).map(({ text }) => text.trim())).toEqual(["Save now"]);
 });
 
-test("checks only the user-facing portion of a dynamic template output", () => {
-  expect(extractJavaScriptProse("console.log(`Choose a value for ${name}.`);")).toEqual([
-    { text: "Choose a value for .", line: 1, kind: "prose" },
-  ]);
+test("skips dynamic template output", () => {
+  expect(extractJavaScriptProse("console.log(`Choose a value for ${name}.`);")).toEqual([]);
 });
 
 test("skips invalid source because lint reports parse errors", () => {

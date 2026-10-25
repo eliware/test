@@ -8,20 +8,26 @@ test("collects names from identifiers and nested binding patterns", () => {
       type: "ObjectPattern",
       properties: [
         { type: "ObjectProperty", value: { type: "Identifier", name: "first" } },
+        { type: "Identifier", name: "fourth" },
         { type: "RestElement", argument: { type: "Identifier", name: "rest" } },
       ],
     }),
-  ).toEqual(["first", "rest"]);
+  ).toEqual(["first", "fourth", "rest"]);
   expect(
     collectBindingNames({
       type: "ArrayPattern",
-      properties: [{ type: "AssignmentPattern", left: { type: "Identifier", name: "second" } }],
+      elements: [
+        { type: "AssignmentPattern", left: { type: "Identifier", name: "second" } },
+        null,
+        { type: "Identifier", name: "third" },
+      ],
     }),
-  ).toEqual(["second"]);
+  ).toEqual(["second", "third"]);
 });
 
 test("ignores unsupported binding forms", () => {
   expect(collectBindingNames({ type: "ThisExpression" })).toEqual([]);
+  expect(collectBindingNames({ type: "ArrayPattern" })).toEqual([]);
   expect(
     collectBindingNames({ type: "RestElement", argument: { type: "Identifier", name: "rest" } }),
   ).toEqual(["rest"]);

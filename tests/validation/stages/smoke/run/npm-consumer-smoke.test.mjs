@@ -182,3 +182,26 @@ test("reports workflow failures and passes them to finalization", async () => {
     }),
   );
 });
+
+test("preserves the smoke outcome when finalization rejects", async () => {
+  finishSmokeRun.mockRejectedValueOnce(new Error("restore diagnostic failed"));
+
+  await expect(smoke()).resolves.toBe(
+    `Smoke passed: @eliware/test@${packageVersion}. SHA-256 sha256-digest. ` +
+      "Smoke finalization failed: restore diagnostic failed. Recovery data may remain at temp-root.",
+  );
+});
+
+test("formats non-Error finalization failures", async () => {
+  finishSmokeRun.mockRejectedValueOnce("restore diagnostic failed");
+
+  await expect(smoke()).resolves.toContain(
+    "Smoke finalization failed: restore diagnostic failed. Recovery data may remain at temp-root.",
+  );
+});
+
+test("reports non-Error transaction failures", async () => {
+  runSmokePackageTransaction.mockRejectedValueOnce("transaction failure");
+
+  await expect(smoke()).resolves.toBe("Tarball consumer smoke failed: transaction failure");
+});
