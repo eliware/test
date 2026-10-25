@@ -64,14 +64,17 @@ test("rediscovers when a previously indexed directory disappears", async () => {
 });
 
 test("propagates refresh failures other than a missing directory", async () => {
-  const { reader, findEntries, readDirectoryCached } = createReaderState();
+  const { reader, findEntries, readDirectoryCached, replaceRecords } = createReaderState();
   await reader.entries();
+  replaceRecords([{ path: "after-recovery.mjs", type: "file" }]);
   readDirectoryCached.mockRejectedValueOnce(
     Object.assign(new Error("permission denied"), { code: "EACCES" }),
   );
 
   await expect(reader.entries()).rejects.toThrow("permission denied");
-  expect(findEntries).toHaveBeenCalledTimes(1);
+  await expect(reader.entries()).resolves.toEqual([{ path: "after-recovery.mjs", type: "file" }]);
+  expect(findEntries).toHaveBeenCalledTimes(2);
+  expect(readDirectoryCached.forget).toHaveBeenCalledWith("/repo");
 });
 
 test("refreshes tracked directories one at a time", async () => {

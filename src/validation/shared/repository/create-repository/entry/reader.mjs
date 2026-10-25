@@ -40,7 +40,11 @@ export function createRepositoryEntryReader({
       try {
         await readDirectoryCached(directory);
       } catch (error) {
-        if (error?.code !== "ENOENT") throw error;
+        if (error?.code !== "ENOENT") {
+          readDirectoryCached.forget?.(directory);
+          entriesPromise = undefined;
+          throw error;
+        }
         readDirectoryCached.forget?.(directory);
         directoriesExist = false;
       }

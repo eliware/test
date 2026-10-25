@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { open, readFile, unlink } from "node:fs/promises";
+import { lstat, open, readFile, unlink } from "node:fs/promises";
 import { join } from "node:path";
 
 export async function acquireValidationLock(root, operations = {}) {
@@ -8,6 +8,7 @@ export async function acquireValidationLock(root, operations = {}) {
   const openFile = operations.open ?? open;
   const readText = operations.readFile ?? readFile;
   const removeFile = operations.unlink ?? unlink;
+  const readStat = operations.lstat ?? lstat;
   let file;
   try {
     file = await openFile(lockPath, "wx");
@@ -15,10 +16,12 @@ export async function acquireValidationLock(root, operations = {}) {
     if (error.code === "EEXIST") return null;
     throw error;
   }
+  let lockIdentity;
   try {
     await file.writeFile(
       JSON.stringify({ lockId, pid: process.pid, startedAt: new Date().toISOString() }),
     );
+    lockIdentity = await file.stat();
   } catch (error) {
     const cleanupErrors = [];
     try {
@@ -64,7 +67,10 @@ export async function acquireValidationLock(root, operations = {}) {
   return async () => {
     try {
       const lock = JSON.parse(await readText(lockPath, "utf8"));
-      if (lock.lockId === lockId) await removeFile(lockPath);
+      if (lock.lockId !== lockId) return;
+      const currentIdentity = await readStat(lockPath);
+      if (currentIdentity.dev === lockIdentity.dev && currentIdentity.ino === lockIdentity.ino)
+        await removeFile(lockPath);
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
     }

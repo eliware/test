@@ -23,7 +23,7 @@ test("tracks absolute positions after emitting more than one pending prefix", ()
   expect(search("safe safe ").boundary).toBe(4);
   const result = search(" safe secret", true);
   expect(result.suppressed).toBe(false);
-  expect(result.matchEnds[6]).toBe(12);
+  expect(result.matchEnds.get(6)).toBe(12);
 });
 
 test("accepts incremental text directly and rejects invalid incremental arguments", () => {
@@ -87,9 +87,9 @@ test("materializes only newly emitted ranges and pending matches on finish", () 
     matches: [{ start: 0, end: 6 }],
     work: 1,
   }));
-  expect(Array.from(finishSearch("secret", true).matchEnds, (value) => value ?? 0)).toEqual([
-    6, 0, 0, 0, 0, 0, 0,
-  ]);
+  const finished = finishSearch("secret", true);
+  expect(finished.matchEnds).toBeInstanceOf(Map);
+  expect([...finished.matchEnds]).toEqual([[0, 6]]);
 });
 
 test("merges newly discovered intervals into retained order", () => {

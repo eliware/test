@@ -14,7 +14,11 @@ const { validateGitHygiene } =
 const ignoredPaths = (excludedPath) =>
   requiredIgnoreCases
     .filter(([path, shouldIgnore]) => shouldIgnore && path !== excludedPath)
-    .map(([path]) => `ignore-pattern\t${path}`)
+    .map(([path]) => {
+      const parts = path.split("/");
+      const pattern = parts.at(-1) === "item.txt" ? parts.at(-2) : parts.at(-1);
+      return `.gitignore:1:${pattern}\t${path}`;
+    })
     .join("\n");
 
 const ignoreRules = `node_modules/
@@ -96,7 +100,11 @@ test("reports the required ignore rule that is missing from Git output", async (
       code: 0,
       stdout: requiredIgnoreCases
         .filter(([path, shouldIgnore]) => shouldIgnore && path !== missingPath)
-        .map(([path]) => `ignore-pattern\t${path}`)
+        .map(([path]) => {
+          const parts = path.split("/");
+          const pattern = parts.at(-1) === "item.txt" ? parts.at(-2) : parts.at(-1);
+          return `.gitignore:1:${pattern}\t${path}`;
+        })
         .join("\n"),
     };
   };

@@ -3,8 +3,12 @@ export function redactMatchedSecrets(text, matchEnds, limit = text.length) {
   let cursor = 0;
   let rangeStart = -1;
   let rangeEnd = -1;
-  for (let start = 0; start < limit; start += 1) {
-    const end = matchEnds[start] ?? 0;
+  const matches =
+    matchEnds instanceof Map
+      ? matchEnds.entries()
+      : Object.keys(matchEnds ?? []).map((key) => [Number(key), matchEnds[key]]);
+  for (const [start, end] of matches) {
+    if (!Number.isSafeInteger(start) || start < 0 || start >= limit) continue;
     if (end <= start || end > limit) continue;
     if (rangeStart < 0) {
       output += text.slice(cursor, start);

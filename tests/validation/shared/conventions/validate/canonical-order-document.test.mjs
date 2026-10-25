@@ -29,6 +29,10 @@ function validDocument(name) {
       for (const key of keys) orders[field][entry][key] = ["value"];
     }
   }
+  for (const [field, entries] of Object.entries(contract.nestedValues ?? {})) {
+    orders[field] ??= {};
+    for (const [entry, values] of Object.entries(entries)) orders[field][entry] = { ...values };
+  }
   return { orders };
 }
 
@@ -61,6 +65,20 @@ test("requires profile policy fields and types in the ordering schema", () => {
   const requirements = canonicalOrderRequirements["ordering-data-schema.yaml"];
   expect(requirements.maps.requiredFields).toContain("profile-combinations.yaml");
   expect(requirements.maps.requiredTypes).toContain("profile-combinations.yaml");
+});
+
+test("requires the declared profile policy type fields and exact list schemas", () => {
+  const schema = validDocument("ordering-data-schema.yaml");
+  delete schema.orders.requiredTypes["profile-combinations.yaml"]["profiles.*.requires"];
+  schema.orders.requiredTypes["profile-combinations.yaml"].prohibits = "text";
+
+  expect(validateCanonicalOrderDocument(schema, "ordering-data-schema.yaml")).toEqual(
+    expect.arrayContaining([
+      "ordering-data-schema.yaml.orders.requiredTypes.profile-combinations.yaml.profiles.*.requires is required.",
+      "ordering-data-schema.yaml.orders.requiredTypes.profile-combinations.yaml.prohibits is not supported.",
+      "ordering-data-schema.yaml.orders.requiredTypes.profile-combinations.yaml.profiles.*.requires must equal profile-name-list.",
+    ]),
+  );
 });
 
 test("rejects incorrect order field types and checks required nested values", () => {

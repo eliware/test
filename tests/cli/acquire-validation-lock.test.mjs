@@ -4,8 +4,9 @@ import { join } from "node:path";
 const open = jest.fn();
 const readFile = jest.fn();
 const unlink = jest.fn();
+const lstat = jest.fn();
 
-jest.unstable_mockModule("node:fs/promises", () => ({ open, readFile, unlink }));
+jest.unstable_mockModule("node:fs/promises", () => ({ open, readFile, unlink, lstat }));
 
 const { acquireValidationLock } = await import("../../src/cli/acquire-validation-lock.mjs");
 
@@ -16,6 +17,7 @@ function createHandle() {
   return {
     writeFile: jest.fn().mockResolvedValue(undefined),
     close: jest.fn().mockResolvedValue(undefined),
+    stat: jest.fn().mockResolvedValue({ dev: 1, ino: 2 }),
   };
 }
 
@@ -28,6 +30,7 @@ beforeEach(() => {
   open.mockReset();
   readFile.mockReset();
   unlink.mockReset().mockResolvedValue(undefined);
+  lstat.mockReset().mockResolvedValue({ dev: 1, ino: 2 });
 });
 
 test("creates a repository lock and removes it when released", async () => {
@@ -70,6 +73,17 @@ test("does not remove a lock file replaced after this run acquired its lock", as
 
   const release = await acquireValidationLock(root);
   await release();
+  expect(unlink).not.toHaveBeenCalled();
+});
+
+test("does not remove a replacement installed after the lock read", async () => {
+  const handle = createHandle();
+  setSuccessfulOpen(handle);
+  lstat.mockResolvedValue({ dev: 3, ino: 4 });
+
+  const release = await acquireValidationLock(root);
+  await release();
+
   expect(unlink).not.toHaveBeenCalled();
 });
 

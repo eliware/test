@@ -11,6 +11,7 @@ export function isPureExportBarrel(content) {
   const imported = new Set();
   const exported = new Set();
   let hasStarExport = false;
+  let hasSourceExport = false;
   let hasLocalExport = false;
   for (const node of program.body) {
     if (node.type === "ImportDeclaration") {
@@ -20,16 +21,21 @@ export function isPureExportBarrel(content) {
     }
     if (node.type === "ExportAllDeclaration" && node.source) {
       hasStarExport = true;
+      hasSourceExport = true;
       continue;
     }
     if (node.type !== "ExportNamedDeclaration" || node.declaration) return false;
-    if (node.source) continue;
+    if (node.source) {
+      if (node.specifiers.length > 0) hasSourceExport = true;
+      continue;
+    }
     for (const specifier of node.specifiers) {
       hasLocalExport = true;
       exported.add(specifier.local.name);
     }
   }
   return (
+    (hasStarExport || hasSourceExport || hasLocalExport) &&
     !(hasStarExport && hasLocalExport) &&
     [...exported].every((name) => imported.has(name)) &&
     [...imported].every((name) => exported.has(name))

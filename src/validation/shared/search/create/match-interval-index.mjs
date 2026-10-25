@@ -40,6 +40,28 @@ export function createMatchIntervalIndex() {
   }
 
   function materialize(start, length) {
+    validateWindow(start, length);
+    const matches = [];
+    matches.length = length + 1;
+    for (const matchStart of orderedMatchStarts.range(start, start + length)) {
+      const offset = matchStart - start;
+      const end = matchEndsByStart.get(matchStart);
+      if (end !== undefined) matches[offset] = end - start;
+    }
+    return matches;
+  }
+
+  function materializeEntries(start, length) {
+    validateWindow(start, length);
+    const matches = new Map();
+    for (const matchStart of orderedMatchStarts.range(start, start + length)) {
+      const end = matchEndsByStart.get(matchStart);
+      matches.set(matchStart - start, end - start);
+    }
+    return matches;
+  }
+
+  function validateWindow(start, length) {
     if (
       !Number.isSafeInteger(start) ||
       start < 0 ||
@@ -49,15 +71,6 @@ export function createMatchIntervalIndex() {
       !Number.isSafeInteger(start + length)
     )
       throw new RangeError(`Match window must be between 0 and ${MAX_MATCH_WINDOW} characters.`);
-    const matches = [];
-    matches.length = length + 1;
-    for (const matchStart of orderedMatchStarts.range(start, start + length)) {
-      const offset = matchStart - start;
-      const end = matchEndsByStart.get(matchStart);
-      if (end === undefined) continue;
-      matches[offset] = end - start;
-    }
-    return matches;
   }
 
   function discardThrough(boundary) {
@@ -85,5 +98,5 @@ export function createMatchIntervalIndex() {
     staleEndEntryCount = 0;
   }
 
-  return Object.freeze({ add, earliestCrossing, materialize, discardThrough });
+  return Object.freeze({ add, earliestCrossing, materialize, materializeEntries, discardThrough });
 }

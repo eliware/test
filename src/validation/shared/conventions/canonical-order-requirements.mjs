@@ -48,6 +48,35 @@ export const canonicalOrderRequirements = {
       ],
       requiredTypes: ["profile-combinations.yaml", "readme-sections.yaml"],
     },
+    nestedMaps: {
+      requiredTypes: {
+        "profile-combinations.yaml": [
+          "version",
+          "profiles",
+          "profiles.*.requires",
+          "profiles.*.requiresAny",
+          "profiles.*.prohibits",
+          "profileKeyPattern",
+        ],
+        "readme-sections.yaml": ["linksSectionOrder", "sharedSections.Commands.profiles"],
+      },
+    },
+    nestedValues: {
+      requiredTypes: {
+        "profile-combinations.yaml": {
+          version: "convention-version",
+          profiles: "profile-map",
+          "profiles.*.requires": "profile-name-list",
+          "profiles.*.requiresAny": "profile-name-list",
+          "profiles.*.prohibits": "profile-name-list",
+          profileKeyPattern: "^[a-z0-9-]+$",
+        },
+        "readme-sections.yaml": {
+          linksSectionOrder: "nonempty-text-list",
+          "sharedSections.Commands.profiles": "nonempty-text-list",
+        },
+      },
+    },
   },
   "package-files.yaml": {
     fields: {

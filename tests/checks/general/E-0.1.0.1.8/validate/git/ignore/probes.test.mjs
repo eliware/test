@@ -7,7 +7,11 @@ test("checks all ignore probes in one Git call", async () => {
     stdout: Buffer.from(
       requiredIgnoreCases
         .filter(([, shouldIgnore]) => shouldIgnore)
-        .map(([path]) => `ignore-pattern\t${path}`)
+        .map(([path]) => {
+          const parts = path.split("/");
+          const name = parts.at(-1) === "item.txt" ? parts.at(-2) : parts.at(-1);
+          return `.gitignore:1:${name}\t${path}`;
+        })
         .join("\n"),
     ),
   }));
@@ -27,7 +31,7 @@ test("checks all ignore probes in one Git call", async () => {
 test("reports ignored and unignored path mismatches", async () => {
   const ignored = requiredIgnoreCases
     .filter(([path]) => path === "package.json")
-    .map(([path]) => `ignore-pattern\t${path}`)
+    .map(([path]) => `.gitignore:1:*\t${path}`)
     .join("\n");
   const errors = await validateGitIgnoreProbes("repo", async () => ({ stdout: ignored }));
 
@@ -72,11 +76,36 @@ test("uses ignored paths returned with a code-one error", async () => {
     code: 1,
     stdout: requiredIgnoreCases
       .filter(([, shouldIgnore]) => shouldIgnore)
-      .map(([path]) => `ignore-pattern\t${path}`)
+      .map(([path]) => {
+        const parts = path.split("/");
+        const name = parts.at(-1) === "item.txt" ? parts.at(-2) : parts.at(-1);
+        return `.gitignore:1:${name}\t${path}`;
+      })
       .join("\n"),
   });
 
   await expect(validateGitIgnoreProbes("repo", async () => Promise.reject(error))).resolves.toEqual(
     [],
   );
+});
+
+test("does not accept diagnostic fields or matches from another ignore source", async () => {
+  const output = requiredIgnoreCases
+    .filter(([, ignored]) => ignored)
+    .map(([path]) => `.git/info/exclude:1:coverage\t${path}`)
+    .join("\n");
+
+  const errors = await validateGitIgnoreProbes("repo", async () => ({ stdout: output }));
+
+  expect(errors).toHaveLength(requiredIgnoreCases.filter(([, ignored]) => ignored).length);
+});
+
+test("ignores malformed diagnostics and paths that were not queried", async () => {
+  const errors = await validateGitIgnoreProbes("repo", async () => ({
+    stdout:
+      "diagnostic\tpackage.json\n.gitignore:invalid:coverage\tnested/coverage/item.txt\n" +
+      ".gitignore:1:coverage\tnested/unlisted/file\n",
+  }));
+
+  expect(errors).toHaveLength(requiredIgnoreCases.filter(([, ignored]) => ignored).length);
 });

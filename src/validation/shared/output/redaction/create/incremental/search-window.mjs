@@ -23,8 +23,9 @@ export function createIncrementalSearchWindow(values) {
     const crossingStart = matchIndex.earliestCrossing(bufferStart + candidateBoundary);
     if (crossingStart !== null)
       boundary = Math.max(0, Math.min(boundary, crossingStart - bufferStart));
-    const materializedLength = includePendingMatches ? pendingLength : boundary;
-    const matchEnds = matchIndex.materialize(bufferStart, materializedLength);
+    const matchEnds = includePendingMatches
+      ? matchIndex.materializeEntries(bufferStart, pendingLength)
+      : matchIndex.materialize(bufferStart, boundary);
     matchIndex.discardThrough(bufferStart + boundary);
     bufferStart += boundary;
     return { boundary, matchEnds, suppressed: false };

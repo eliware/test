@@ -15,7 +15,11 @@ function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
         stdout: Buffer.from(
           requiredIgnoreCases
             .filter(([, shouldIgnore]) => shouldIgnore)
-            .map(([path]) => `ignore-pattern\t${path}`)
+            .map(([path]) => {
+              const parts = path.split("/");
+              const pattern = parts.at(-1) === "item.txt" ? parts.at(-2) : parts.at(-1);
+              return `.gitignore:1:${pattern}\t${path}`;
+            })
             .join("\n"),
         ),
       };
@@ -86,7 +90,11 @@ test("uses injected dependencies from the current directory to check required ig
         code: 0,
         stdout: requiredIgnoreCases
           .filter(([, shouldIgnore]) => shouldIgnore)
-          .map(([path]) => `ignore-pattern\t${path}`)
+          .map(([path]) => {
+            const parts = path.split("/");
+            const pattern = parts.at(-1) === "item.txt" ? parts.at(-2) : parts.at(-1);
+            return `.gitignore:1:${pattern}\t${path}`;
+          })
           .join("\n"),
       };
     return { stdout: Buffer.from("") };

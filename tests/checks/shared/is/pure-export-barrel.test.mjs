@@ -12,6 +12,8 @@ test.each([
 
 test.each([
   "",
+  "export {};",
+  'export { } from "../value.mjs";',
   "export {",
   'import { unused } from "../unused.mjs"; export { value } from "../value.mjs";',
   'import { value } from "../value.mjs"; export * from "../other.mjs"; export { value };',

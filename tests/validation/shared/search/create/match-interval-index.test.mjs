@@ -15,6 +15,10 @@ test("indexes match starts, selects the earliest crossing interval, and material
   ]);
 });
 
+test("materializes an empty sparse match map", () => {
+  expect(createMatchIntervalIndex().materializeEntries(0, 0)).toEqual(new Map());
+});
+
 test("updates duplicate starts and discards completed intervals without stale matches", () => {
   const index = createMatchIntervalIndex();
   index.add([
