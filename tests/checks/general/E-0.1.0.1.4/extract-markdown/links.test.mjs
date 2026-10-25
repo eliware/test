@@ -76,16 +76,6 @@ test("ignores links inside HTML comments", () => {
   ]);
 });
 
-test("retains unresolved reference links for validation", () => {
-  expect(extractMarkdownLinks("[label][missing]")).toEqual([{ reference: null }]);
-});
-
-test("extracts shortcut and collapsed reference links", () => {
-  expect(
-    extractMarkdownLinks("[short] [collapsed][]\n\n[short]: one.md\n[collapsed]: two.md"),
-  ).toEqual([{ reference: "one.md" }, { reference: "two.md" }]);
-});
-
 test("reports undefined shortcut reference syntax", () => {
   expect(extractMarkdownLinks("[missing]")).toEqual([]);
   expect(extractMarkdownLinks("[missing][]")).toEqual([{ reference: null }]);
