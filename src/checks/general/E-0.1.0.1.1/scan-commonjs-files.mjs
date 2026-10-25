@@ -1,12 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parse } from "@babel/parser";
-import {
-  moduleParserOptions,
-  repositorySourceParserOptions,
-} from "../../../validation/shared/ast/create-repository-ast/cache.mjs";
 import { findRepositoryFiles } from "../../../validation/shared/repository/find-repository-files.mjs";
-import { collectCommonJsFindings } from "./collect-commonjs/findings.mjs";
+import { scanCommonJsSourceModule } from "./scan/parse-source-module.mjs";
 
 const moduleFile = /\.(?:mjs|js|jsx|cjs|ts|tsx|cts|mts|mjsx|cjsx)$/iu;
 
@@ -18,15 +13,14 @@ export async function scanCommonJsFiles(root, files, parseAst) {
       findings.push(`${file}: CommonJS module extension`);
       continue;
     }
-    try {
-      const options = file.endsWith(".mjs") ? moduleParserOptions : repositorySourceParserOptions;
-      const ast = parseAst
-        ? await parseAst(root, file, options)
-        : parse(await readFile(join(root, file), "utf8"), options);
-      collectCommonJsFindings(ast, findings, file);
-    } catch (error) {
-      findings.push(`${file}: invalid module syntax (${error.message})`);
-    }
+    findings.push(
+      ...(await scanCommonJsSourceModule({
+        root,
+        file,
+        parseAst,
+        readSource: async (path, repositoryRoot) => readFile(join(repositoryRoot, path), "utf8"),
+      })),
+    );
   }
   return findings;
 }

@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { reportsPackageVersion } from "./reports-package-version.mjs";
+import { validateCliInformationResult } from "./validate-information-result.mjs";
 
 export async function runCliInformationCommands({
   root,
@@ -12,16 +12,9 @@ export async function runCliInformationCommands({
     for (const argument of ["--help", "--version"]) {
       const result = await executeCommand(executeEntrypoint, root, entrypoint, argument, errors);
       if (!result) continue;
-      const output = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
-      if (result.code !== 0 || result.signal != null) {
-        errors.push(`CLI entrypoint ${entrypoint} must exit 0 for ${argument}.`);
-      } else if (!output) {
-        errors.push(`CLI entrypoint ${entrypoint} must produce output for ${argument}.`);
-      } else if (argument === "--version" && !reportsPackageVersion(output, packageVersion)) {
-        errors.push(
-          `CLI entrypoint ${entrypoint} --version must report package version ${packageVersion}.`,
-        );
-      }
+      errors.push(
+        ...validateCliInformationResult({ entrypoint, argument, result, packageVersion }),
+      );
     }
   }
   return errors;
