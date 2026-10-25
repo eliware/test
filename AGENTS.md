@@ -42,7 +42,7 @@ Run the full `npm test` suite for final validation before a commit, milestone, o
 
 ## CLI
 
-Use README.md and docs/ for CLI usage instructions.
+Document command behavior in README.md.
 
 ## npm publication
 

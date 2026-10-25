@@ -38,8 +38,6 @@ Install Eliware Test as a development dependency:
 npm install --save-dev @eliware/test
 ```
 
-Read the [installation guide](docs/usage.md) for setup instructions.
-
 ## Usage
 
 Run validation from the repository root:
