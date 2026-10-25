@@ -1,3 +1,5 @@
+import { isSensitivePath } from "../../../checks/general/E-0.1.0.1.8/validate/tracked/is-sensitive-path.mjs";
+
 const prohibitedNames = new Set([
   "tests",
   "test",
@@ -26,16 +28,21 @@ const prohibitedNames = new Set([
 export function findProhibitedPackFiles(paths = []) {
   return paths.filter((path) => {
     const segments = path.toLowerCase().replaceAll("\\", "/").split("/");
-    return segments.some((segment) => {
-      if (prohibitedNames.has(segment)) return true;
-      const fileName = segment.replace(/\.[^.]+$/u, "");
-      const sourceFile = /\.(?:mjs|cjs|js|mts|cts|ts|tsx|jsx)$/u.test(segment);
-      return (
-        (!sourceFile &&
-          /^(?:secret|secrets|credential|credentials|token|tokens)$/u.test(fileName)) ||
-        /(?:private[-_.]?key|credentials?)[.](?:pem|key|p12|pfx)$/u.test(segment) ||
-        /\.(?:pem|key|p12|pfx)$/u.test(segment)
-      );
-    });
+    const nonEnvironmentSegments = segments.filter((segment) => !isEnvironmentFile(segment));
+    return (
+      segments.some((segment) => prohibitedNames.has(segment)) ||
+      isSensitivePath(nonEnvironmentSegments.join("/")) ||
+      segments.some(isPackSecretName)
+    );
   });
+}
+
+function isEnvironmentFile(segment) {
+  return /^\.env(?:$|\.)/u.test(segment) || segment === ".envrc";
+}
+
+function isPackSecretName(segment) {
+  const fileName = segment.replace(/\.[^.]+$/u, "");
+  const sourceFile = /\.(?:mjs|cjs|js|mts|cts|ts|tsx|jsx)$/u.test(segment);
+  return !sourceFile && /^(?:secret|secrets|credential|credentials|token|tokens)$/u.test(fileName);
 }

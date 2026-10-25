@@ -1,11 +1,8 @@
-import { compareReleaseVersions, isValidReleaseDate } from "./notes/version-order.mjs";
-
-const versionHeading =
-  /^## ((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)) — (\d{4}-\d{2}-\d{2})$/u;
-
-export function releaseVersionFromHeading(entry) {
-  return versionHeading.exec(entry)?.[1] ?? null;
-}
+import { compareReleaseVersions, isValidReleaseDate } from "./notes/version/order.mjs";
+import {
+  parseReleaseVersionHeading,
+  releaseVersionFromHeading,
+} from "./notes/version/from-heading.mjs";
 
 export function validateReleaseVersionHistory(entries, packageVersion) {
   const errors = [];
@@ -19,7 +16,7 @@ export function validateReleaseVersionHistory(entries, packageVersion) {
   const versions = [];
   const dates = [];
   for (const entry of entries) {
-    const match = versionHeading.exec(entry);
+    const match = parseReleaseVersionHeading(entry);
     if (!match) {
       errors.push(`Malformed release entry: ${entry}.`);
       continue;

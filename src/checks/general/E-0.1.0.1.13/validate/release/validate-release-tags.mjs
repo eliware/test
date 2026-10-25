@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { readReleaseTags } from "./read-release-tags.mjs";
-import { releaseVersionFromHeading } from "./version-history.mjs";
+import { releaseVersionFromHeading } from "./notes/version/from-heading.mjs";
 
 const executeFile = promisify(execFile);
 

@@ -1,30 +1,61 @@
-import { expect, test } from "@jest/globals";
-import { run, ruleId } from "../../../src/checks/general/E-0.1.0.1.4.mjs";
-import { createLocalMarkdownReferenceValidator } from "../../../src/checks/general/E-0.1.0.1.4/create-local-markdown-reference-validator.mjs";
+import { beforeEach, expect, jest, test } from "@jest/globals";
 
-test("validates this repository's README and specifications", async () => {
-  await expect(
-    run({ root: process.cwd(), packageJson: { eliware: { id: "E-0" } } }),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
+const validateMarkdownLinks = jest.fn();
+const validateSpecificationIndexes = jest.fn();
+const validateSpecificationDirectives = jest.fn();
+
+jest.unstable_mockModule(
+  "../../../src/checks/general/E-0.1.0.1.4/validate/markdown/links.mjs",
+  () => ({ validateMarkdownLinks }),
+);
+jest.unstable_mockModule(
+  "../../../src/checks/general/E-0.1.0.1.4/validate/specification/indexes.mjs",
+  () => ({ validateSpecificationIndexes }),
+);
+jest.unstable_mockModule(
+  "../../../src/checks/general/E-0.1.0.1.4/validate/specification/directives.mjs",
+  () => ({ validateSpecificationDirectives }),
+);
+
+const { run, ruleId } = await import("../../../src/checks/general/E-0.1.0.1.4.mjs");
+
+beforeEach(() => {
+  validateMarkdownLinks.mockReset().mockResolvedValue([]);
+  validateSpecificationIndexes.mockReset().mockResolvedValue([]);
+  validateSpecificationDirectives.mockReset().mockResolvedValue([]);
 });
 
-test("reports failures from an empty repository", async () => {
-  const result = await run({ root: "missing", packageJson: {} });
-  expect(result.ruleId).toBe(ruleId);
-  expect(result.status).toBe("fail");
-  expect(result.message).toContain("Markdown files could not be listed");
-  expect(result.message).toContain("specs/");
+test("passes when each specification validator returns no findings", async () => {
+  const context = { root: "repo", packageJson: { eliware: { id: "E-0" } } };
+  const dependencies = { read: jest.fn() };
+
+  await expect(run(context, dependencies)).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "",
+  });
+  expect(validateMarkdownLinks).toHaveBeenCalledWith("repo", context, dependencies);
+  expect(validateSpecificationIndexes).toHaveBeenCalledWith("repo", dependencies);
+  expect(validateSpecificationDirectives).toHaveBeenCalledWith(
+    "repo",
+    context.packageJson,
+    dependencies,
+  );
 });
 
-test("uses the current directory when context is undefined", async () => {
-  await expect(run(undefined, undefined)).resolves.toMatchObject({
+test("combines validator failures when the context and dependencies use defaults", async () => {
+  validateMarkdownLinks.mockResolvedValue(["Markdown issue."]);
+  validateSpecificationIndexes.mockResolvedValue(["Index issue."]);
+  validateSpecificationDirectives.mockResolvedValue(["Directive issue."]);
+
+  const result = await run(undefined, undefined);
+
+  expect(result).toEqual({
     ruleId,
     status: "fail",
-    message: expect.stringContaining("package.json.eliware.id"),
+    message: "Markdown issue.\nIndex issue.\nDirective issue.",
   });
-});
-
-test("uses default filesystem operations for a local README reference", async () => {
-  const validate = createLocalMarkdownReferenceValidator(process.cwd());
-  await expect(validate("README.md", "README.md")).resolves.toBeNull();
+  expect(validateMarkdownLinks).toHaveBeenCalledWith(process.cwd(), {}, {});
+  expect(validateSpecificationIndexes).toHaveBeenCalledWith(process.cwd(), {});
+  expect(validateSpecificationDirectives).toHaveBeenCalledWith(process.cwd(), undefined, {});
 });

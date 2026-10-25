@@ -37,7 +37,7 @@ beforeEach(() => {
   rm.mockReset().mockResolvedValue(undefined);
 });
 
-test("installs the tarball without changing a lockfile and runs consumer npm test", async () => {
+test("installs the tarball without changing a lockfile and validates the installed package", async () => {
   const calls = [];
   await installSmokeCandidate(
     options(async (_command, args, runOptions) => {
@@ -46,10 +46,13 @@ test("installs the tarball without changing a lockfile and runs consumer npm tes
     }),
   );
 
-  expect(calls.map(({ args }) => args[0])).toEqual(["install", "test"]);
+  expect(calls[0].args[0]).toBe("install");
   expect(calls[0].args).toEqual(expect.arrayContaining(["--package-lock=false", "--no-save"]));
   expect(calls[0].options.cwd).toBe(targetRoot);
-  expect(calls[1].options.env.ELIWARE_TEST_SMOKE_CANDIDATE).toBe(packageJson.name);
+  expect(readFile).toHaveBeenCalledWith(
+    join(targetRoot, "node_modules", "@eliware", "test", "package.json"),
+    "utf8",
+  );
   expect(rm).toHaveBeenCalledWith(join(targetRoot, "node_modules", "@eliware", "test"), {
     recursive: true,
     force: true,

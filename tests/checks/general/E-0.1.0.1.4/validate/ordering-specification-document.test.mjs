@@ -13,6 +13,23 @@ test("accepts valid ordering documents", () => {
   expect(validateOrderingSpecificationDocument(valid, path)).toEqual([]);
 });
 
+test("accepts supported scalar, list, and nested order values", () => {
+  expect(
+    validateOrderingSpecificationDocument(
+      {
+        ...valid,
+        orders: {
+          count: 0,
+          label: "value",
+          items: ["first", "second"],
+          nested: { child: "value" },
+        },
+      },
+      "custom.yaml",
+    ),
+  ).toEqual([]);
+});
+
 test("rejects invalid ordering document values", () => {
   expect(validateOrderingSpecificationDocument(null, path).join(" ")).toContain("ordering object");
   expect(
@@ -37,3 +54,12 @@ test("rejects invalid canonical order data", () => {
     validateOrderingSpecificationDocument({ ...valid, orders: {} }, "readme-sections.yaml"),
   ).not.toEqual([]);
 });
+
+test.each([-1, Number.NaN, " ", [" "], [1], {}, { child: " " }, null, false])(
+  "rejects unsupported order values %p",
+  (value) => {
+    expect(
+      validateOrderingSpecificationDocument({ ...valid, orders: { value } }, "custom.yaml"),
+    ).toContain("custom.yaml.orders must contain ordered values.");
+  },
+);

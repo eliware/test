@@ -14,6 +14,11 @@ function validator(overrides = {}) {
   });
 }
 
+test("uses default filesystem operations for a local README reference", async () => {
+  const validate = createLocalMarkdownReferenceValidator(process.cwd());
+  await expect(validate("README.md", "README.md")).resolves.toBeNull();
+});
+
 test("accepts local files and directories", async () => {
   const validate = validator({
     stat: async () => ({ isFile: () => false, isDirectory: () => true }),

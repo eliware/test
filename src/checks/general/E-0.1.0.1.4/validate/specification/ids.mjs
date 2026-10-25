@@ -1,4 +1,4 @@
-import { validateSiblingSequences } from "./sibling-sequences.mjs";
+import { validateSiblingSequences } from "./ids/sibling-sequences.mjs";
 
 export function validateSpecificationIds(documents, namespace) {
   const errors = [];

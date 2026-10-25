@@ -1,15 +1,12 @@
 import { spawn } from "node:child_process";
 import { createProgressTimeout } from "../../../stages/jest/progress/create/progress-timeout.mjs";
 import { createChildOutputCapture } from "../capture-child-output.mjs";
-import { createChildTerminationHandler } from "../create/child/termination-handler.mjs";
-import { wireChildOutput } from "../wire-child-output.mjs";
 import { createChildProcessErrorHandler } from "../handle-child/process-error.mjs";
 import { terminateChildAfterSetupFailure } from "../terminate/child-after-setup-failure.mjs";
 import { createChildSpawnOptions } from "../create/child/spawn-options.mjs";
-import { createChildCloseHandler } from "../handle-child/close.mjs";
 import { createChildTimeoutController } from "../create/child/timeout-controller.mjs";
 import { resolveChildOutputLimit } from "../resolve-child-output-limit.mjs";
-import { createChildProgress } from "../create-child/progress.mjs";
+import { registerChildLifecycle } from "./lifecycle.mjs";
 export function runChild(command, args, options = {}) {
   const outputLimit = resolveChildOutputLimit(options.maxOutputLength ?? 100_000);
   const spawnProcess = options.spawnProcess ?? spawn;
@@ -43,43 +40,22 @@ export function runChild(command, args, options = {}) {
       return;
     }
     try {
-      timeoutController.start();
-      termination = createChildTerminationHandler({
-        child,
+      termination = registerChildLifecycle(child, {
         options,
         environment,
         timeout,
-        output,
-        resolve,
-        isSettled: () => settled,
-        markSettled: () => {
-          settled = true;
-        },
-      });
-      const progress = createChildProgress(
-        { ...options, isSettled: () => settled },
         timeoutController,
-        timeout,
         output,
-      );
-      timeout.reset();
-      const flushOutput = wireChildOutput(child, output, progress);
-      const handleClose = createChildCloseHandler({
+        resolve,
         isSettled: () => settled,
         markSettled: () => {
           settled = true;
         },
-        flushOutput,
-        timeout,
-        termination,
-        output,
         settleError,
-        resolve,
+        setTermination: (handler) => {
+          termination = handler;
+        },
       });
-      child.on("error", (error) => {
-        settleError(error);
-      });
-      child.on("close", handleClose);
     } catch (error) {
       terminateChildAfterSetupFailure(child, options, environment);
       settleError(error);

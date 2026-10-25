@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateSiblingSequences } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/sibling-sequences.mjs";
+import { validateSiblingSequences } from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/specification/ids/sibling-sequences.mjs";
 
 test("accepts sibling suffixes that start at zero and stay sequential", () => {
   expect(

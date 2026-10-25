@@ -38,3 +38,11 @@ test("accepts valid documents and reports schema violations", () => {
     ).join(" "),
   ).toContain("unsupported fields");
 });
+
+test("uses ordering-document rules only for ordering paths when enabled", () => {
+  const orderingPath = "specs/conventions/ordering/custom.yaml";
+  expect(validateSpecificationDocument(null, orderingPath).join(" ")).toContain(
+    "must contain an ordering object",
+  );
+  expect(validateSpecificationDocument(valid, orderingPath, { ordering: false })).toEqual([]);
+});
