@@ -31,6 +31,18 @@ test("allows arbitrary fields on steps after the required npm test", () => {
   ).toEqual([]);
 });
 
+test("reports conditional fields on required steps only once", () => {
+  expect(
+    validateWorkflowStepFields([
+      { run: "npm ci", if: "always()" },
+      { run: "npm test" },
+      { run: "npm run optional", "continue-on-error": true },
+    ]),
+  ).toEqual([
+    "ci.yaml required validation steps must run unconditionally without continue-on-error.",
+  ]);
+});
+
 test.each([
   { uses: "actions/checkout@v7", with: { "fetch-depth": 0 }, name: "checkout" },
   { uses: "actions/setup-node@v7", name: "setup" },

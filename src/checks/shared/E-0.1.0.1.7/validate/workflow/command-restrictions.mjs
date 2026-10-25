@@ -32,14 +32,6 @@ export function validateWorkflowCommandRestrictions(steps, packageJson = {}) {
   for (const step of steps)
     if (isProhibitedNpmOrGhcrPublishCommand(step?.run))
       errors.push("ci.yaml validation job must not publish npm packages or GHCR images.");
-  if (
-    steps
-      .slice(0, test + 1)
-      .some((step) => step?.if !== undefined || step?.["continue-on-error"] !== undefined)
-  )
-    errors.push(
-      "ci.yaml required validation steps must run unconditionally without continue-on-error.",
-    );
   for (const step of [steps[npmInstall], steps[ci], steps[test]])
     if (["env", "shell", "working-directory"].some((key) => Object.hasOwn(step ?? {}, key)))
       errors.push(

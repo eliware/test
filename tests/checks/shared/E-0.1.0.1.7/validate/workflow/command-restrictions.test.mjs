@@ -101,15 +101,6 @@ test("rejects action steps after npm test", () => {
   );
 });
 
-test("rejects conditional required steps", () => {
-  const errors = validateWorkflowCommandRestrictions(
-    steps.map((step, index) => (index === 4 ? { ...step, if: "always()" } : step)),
-  );
-  expect(errors).toContain(
-    "ci.yaml required validation steps must run unconditionally without continue-on-error.",
-  );
-});
-
 test.each([3, 4])("rejects execution overrides on validation steps", (index) => {
   const changed = steps.map((step, stepIndex) =>
     stepIndex === index ? { ...step, shell: "bash" } : step,

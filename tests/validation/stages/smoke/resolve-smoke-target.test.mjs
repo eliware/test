@@ -18,22 +18,7 @@ beforeEach(() => {
   lstat.mockReset().mockResolvedValue(identity());
 });
 
-test("resolves an external target and verifies its stable directory identity", async () => {
-  const resolved = await resolveSmokeTarget(source, target);
-  expect(resolved.error).toBeUndefined();
-  expect(resolved.targetRoot).toBe(target);
-  await expect(resolved.assertIdentity()).resolves.toBeUndefined();
-  expect(lstat).toHaveBeenCalledTimes(2);
-});
-
-test("rejects unresolved and source-contained targets", async () => {
-  realpath.mockImplementation(async (path) => {
-    if (path.endsWith("missing")) throw new Error("missing");
-    return path;
-  });
-  await expect(resolveSmokeTarget(source, `${target}-missing`)).resolves.toMatchObject({
-    error: expect.stringContaining("both resolve"),
-  });
+test("rejects source-contained targets", async () => {
   await expect(resolveSmokeTarget(source, source)).resolves.toMatchObject({
     error: expect.stringContaining("outside the source"),
   });

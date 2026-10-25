@@ -8,6 +8,7 @@ export function redactGenericBase64Credentials(text) {
 }
 
 function isGenericBase64Credential(token) {
+  if (/^[a-z]+(?:[A-Z][a-z]+){2,}$/u.test(token)) return false;
   if (/[0-9+=]/u.test(token)) return true;
   if (token.includes("/")) return false;
   const frequencies = new Map();

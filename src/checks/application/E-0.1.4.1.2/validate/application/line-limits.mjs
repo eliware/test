@@ -1,8 +1,6 @@
 import { join } from "node:path";
-import { readApplicationTestFiles } from "./read-test-files.mjs";
 
-export async function validateApplicationLineLimits(files, readText, root, testFiles) {
-  const tests = testFiles ?? (await readApplicationTestFiles(files, readText, root));
+export async function validateApplicationLineLimits(files, readText, root, tests) {
   const targets = files.filter((path) => /^src\/.*\.mjs$/u.test(path));
   const errors = [];
   for (const path of targets) {

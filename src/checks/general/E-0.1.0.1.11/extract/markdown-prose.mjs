@@ -1,3 +1,5 @@
+import { cleanMarkdownProseLine } from "./markdown/clean-line.mjs";
+
 export function extractMarkdownProse(source) {
   const lines = source.replace(/\r\n?/gu, "\n").split("\n");
   const blocks = [];
@@ -18,25 +20,9 @@ export function extractMarkdownProse(source) {
       continue;
     }
     if (fence) continue;
-    let line = removeHtmlComments(
-      rawLine,
-      (value) => {
-        htmlComment = value;
-      },
-      () => htmlComment,
-    );
-    line = line
-      .replace(/!?\[([^\]]*)\]\([^)]*\)/gu, "$1")
-      .replace(/`+[^`]*`+/gu, " ")
-      .replace(/https?:\/\/\S+/giu, " ")
-      .replace(/<[^>]*>/gu, " ")
-      .replace(/^\s{0,3}#{1,6}\s+/u, "")
-      .replace(/^\s{0,3}>\s?/u, "")
-      .replace(/^\s*(?:[-+*]|\d+[.)])\s+/u, "")
-      .replace(/[*_~]/gu, "")
-      .replace(/\|/gu, " ")
-      .replace(/\s+/gu, " ")
-      .trim();
+    const cleaned = cleanMarkdownProseLine(rawLine, htmlComment);
+    htmlComment = cleaned.htmlComment;
+    const line = cleaned.text;
     if (!line) {
       flush();
       continue;
@@ -49,32 +35,4 @@ export function extractMarkdownProse(source) {
   }
   flush();
   return blocks;
-}
-
-function removeHtmlComments(line, setCommentState, getCommentState) {
-  let output = "";
-  let cursor = 0;
-  let inComment = getCommentState();
-  while (cursor < line.length) {
-    if (!inComment) {
-      const start = line.indexOf("<!--", cursor);
-      if (start < 0) {
-        output += line.slice(cursor);
-        break;
-      }
-      output += line.slice(cursor, start);
-      cursor = start + 4;
-      inComment = true;
-    } else {
-      const end = line.indexOf("-->", cursor);
-      if (end < 0) {
-        cursor = line.length;
-        break;
-      }
-      cursor = end + 3;
-      inComment = false;
-    }
-  }
-  setCommentState(inComment);
-  return output;
 }

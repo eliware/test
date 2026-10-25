@@ -1,10 +1,15 @@
 import { readCanonicalOrder } from "../../../../../../validation/shared/conventions/read-canonical-order.mjs";
+import { validateRequiredWorkflowStepConditions } from "./required-conditions.mjs";
 
 export function validateWorkflowStepFields(steps, workflowName = "ci.yaml") {
   const errors = [];
   const checkoutOptions = readCanonicalOrder("ci-workflow.yaml").checkoutOptions;
   const npmTest = steps.findIndex((step) => step?.run === "npm test");
   const requiredEnd = npmTest < 0 ? steps.length : npmTest;
+  const requiredConditions = validateRequiredWorkflowStepConditions(
+    steps.slice(0, requiredEnd + 1),
+    workflowName,
+  );
   for (const [index, value] of steps.entries()) {
     if (index > requiredEnd) continue;
     const step = value ?? {};
@@ -13,7 +18,7 @@ export function validateWorkflowStepFields(steps, workflowName = "ci.yaml") {
         ? ["uses", "with"]
         : step?.uses === "actions/checkout@v7"
           ? ["uses", "with"]
-          : ["run"];
+          : ["run", "if", "continue-on-error"];
     if (Object.keys(step).some((key) => !allowed.includes(key)))
       errors.push("ci.yaml steps must use only approved keys and inputs.");
     if (
@@ -22,5 +27,5 @@ export function validateWorkflowStepFields(steps, workflowName = "ci.yaml") {
     )
       errors.push(`${workflowName} checkout must set the canonical full-history options.`);
   }
-  return errors;
+  return [...errors, ...requiredConditions];
 }
