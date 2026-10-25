@@ -16,6 +16,32 @@ test("accepts canonical package badges", () => {
   expect(validateReadmeBranding(readme, pkg)).toBeNull();
 });
 
+test("uses the package license in the private repository badge", () => {
+  const privatePackage = {
+    ...pkg,
+    license: "MIT",
+    eliware: { apply: ["general", "private"] },
+  };
+  const privateLine = line
+    .replace(
+      " [![npm](https://img.shields.io/npm/v/@eliware/fixture)](https://www.npmjs.com/package/@eliware/fixture)",
+      "",
+    )
+    .replace(
+      "https://img.shields.io/github/license/eliware/fixture",
+      "https://img.shields.io/badge/license-MIT-blue",
+    );
+
+  expect(validateReadmeBranding(`${header}\n\n${privateLine}`, privatePackage)).toBeNull();
+  expect(validateReadmeBranding(readme, privatePackage)).toContain("badge row");
+  expect(
+    validateReadmeBranding(
+      `${header}\n\n${privateLine.replace("license-MIT-blue", "license-Apache-2.0-blue")}`,
+      privatePackage,
+    ),
+  ).toContain("badge row");
+});
+
 test("rejects incomplete package metadata and badge rows", () => {
   expect(validateReadmeBranding(readme, {})).toContain("package name");
   expect(validateReadmeBranding("wrong", pkg)).toContain("canonical logo header");

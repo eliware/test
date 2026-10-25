@@ -84,6 +84,9 @@ directives:
         @eliware/<repo-name>` followed by badges on the same line.
       - Use the npm, License, and CI badges in that order. Include npm only when
         package.json.eliware.apply includes npm-published.
+      - For repositories that apply the private profile, use the private License badge and
+        package.json.license as its message.
+      - For repositories without the private profile, use the public License badge.
       - Use the exact brand image, badge targets, and title markers shown in the examples.
       - Include all sections resolved from package.json.eliware.apply and
         ordering/readme-sections.yaml.

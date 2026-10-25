@@ -134,6 +134,7 @@ orders:
         - title
         - npmBadge
         - licenseBadge
+        - privateLicenseBadge
         - ciBadge
       supportBlock: text
       licenseLink: text

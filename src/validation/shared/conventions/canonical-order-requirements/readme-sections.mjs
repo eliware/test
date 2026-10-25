@@ -18,7 +18,14 @@ export const readmeSectionsRequirements = {
   },
   maps: {
     headerLines: ["brand", "title-and-badges", "description", "table-of-contents"],
-    headerTemplates: ["brand", "title", "npmBadge", "licenseBadge", "ciBadge"],
+    headerTemplates: [
+      "brand",
+      "title",
+      "npmBadge",
+      "licenseBadge",
+      "privateLicenseBadge",
+      "ciBadge",
+    ],
     profileSections: canonicalProfileOrder,
     sharedSections: ["Commands"],
   },

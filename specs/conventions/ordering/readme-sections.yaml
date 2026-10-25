@@ -106,6 +106,8 @@ orders:
       com/package/@eliware/<repo-name>)"
     licenseBadge: "[![License](https://img.shields.io/github/license/eliware/<repo-name>)](ht\
       tps://github.com/eliware/<repo-name>/blob/main/LICENSE)"
+    privateLicenseBadge: "[![License](https://img.shields.io/badge/license-<license>-blue)](ht\
+      tps://github.com/eliware/<repo-name>/blob/main/LICENSE)"
     ciBadge: "[![CI](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml/badge.s\
       vg)](https://github.com/eliware/<repo-name>/actions/workflows/ci.yaml)"
   supportBlock: "For help, questions, or to chat with the author and community, visit:

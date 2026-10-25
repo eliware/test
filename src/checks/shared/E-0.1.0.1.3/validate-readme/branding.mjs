@@ -25,8 +25,17 @@ export function validateReadmeBranding(readme, packageJson = {}) {
   const badgeNames = includeNpm
     ? order.badgeOrder
     : order.badgeOrder.filter((badge) => badge !== "npm");
+  const privateRepository = packageJson?.eliware?.apply?.includes("private");
   const badgeLine = `${template.title.replace("@eliware/<repo-name>", name)} ${badgeNames
-    .map((badge) => template[`${badge.toLowerCase()}Badge`]?.replaceAll("<repo-name>", slug))
+    .map((badge) => {
+      const key =
+        badge === "License" && privateRepository
+          ? "privateLicenseBadge"
+          : `${badge.toLowerCase()}Badge`;
+      return template[key]
+        ?.replaceAll("<repo-name>", slug)
+        .replaceAll("<license>", encodeURIComponent(packageJson?.license ?? ""));
+    })
     .join(" ")}`;
   const lines = readme.split(/\r?\n/u);
   return lines[0] === template.brand && lines[2] === badgeLine

@@ -1,5 +1,11 @@
 # Release Notes
 
+## 15.0.1 — 2026-10-25
+
+### Fixed
+
+- Use a static License badge for private repositories and derive its value from package metadata.
+
 ## 15.0.0 — 2026-10-21
 
 ### Changed
