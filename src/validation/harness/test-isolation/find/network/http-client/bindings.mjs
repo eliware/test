@@ -1,4 +1,4 @@
-import { visitAst } from "../../../visit-ast.mjs";
+import { visitAst } from "../../../../visit-ast.mjs";
 
 const methods = new Set(["get", "request"]);
 const modules = new Set(["http", "https", "node:http", "node:https"]);

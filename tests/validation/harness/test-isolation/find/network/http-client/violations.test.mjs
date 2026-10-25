@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { findHttpClientViolations } from "../../../../../../src/validation/harness/test-isolation/find/http-client/violations.mjs";
+import { findHttpClientViolations } from "../../../../../../../src/validation/harness/test-isolation/find/network/http-client/violations.mjs";
 
 test("rejects external requests from imported and injected HTTP clients", () => {
   const imported = parse('import * as http from "node:http"; http.get("https://example.com");', {

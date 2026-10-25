@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { collectHttpBindings } from "../../../../../../src/validation/harness/test-isolation/find/http-client/bindings.mjs";
+import { collectHttpBindings } from "../../../../../../../src/validation/harness/test-isolation/find/network/http-client/bindings.mjs";
 
 test("collects HTTP imports, namespace aliases, and destructured require bindings", () => {
   const ast = parse(

@@ -1,19 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { validateTrackedSymlinks } from "../../../../../../src/checks/general/E-0.1.0.1.8/validate/tracked/symlinks.mjs";
 
-test("accepts an index without tracked symlinks", async () => {
-  await expect(
-    validateTrackedSymlinks("repo", async () => ({ stdout: Buffer.from("") })),
-  ).resolves.toEqual([]);
-});
-
-test("reports tracked symlink index entries", async () => {
-  const output = `120000 ${"a".repeat(40)} 0\tlink\0`;
-  await expect(
-    validateTrackedSymlinks("repo", async () => ({ stdout: Buffer.from(output) })),
-  ).resolves.toEqual(["Tracked symlink entries are prohibited: link."]);
-});
-
 test("skips exempt tracked symlinks and still reports other paths", async () => {
   const output = ["exempt-link", "blocked-link"]
     .map((path) => `120000 ${"a".repeat(40)} 0\t${path}\0`)

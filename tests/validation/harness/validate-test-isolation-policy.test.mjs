@@ -31,11 +31,12 @@ test("checks test sources and ignores files outside test suites", async () => {
 test("returns path and line details for file creation APIs", async () => {
   findRepositoryFiles.mockResolvedValue(["tests/writes.test.mjs"]);
   readFile.mockResolvedValue(
-    'jest.mock("node:fs/promises");\nimport { writeFile } from "node:fs/promises";\nfetch("https://outside.example");',
+    'jest.mock("node:fs/promises");\nimport { writeFile } from "node:fs/promises";\nfetch("https://outside.example");\nDate.now();',
   );
   await expect(validateTestIsolationPolicy("C:/repo")).resolves.toEqual([
     "tests/writes.test.mjs:2 uses a test API that creates files or temporary directories: import of writeFile.",
     "tests/writes.test.mjs: must mock effect module node:fs/promises or inject its dependency.",
+    "tests/writes.test.mjs: must use fake timers or inject a fixed clock for date calls.",
     "tests/writes.test.mjs: must mock fetch, inject it, or use a localhost URL.",
   ]);
 });

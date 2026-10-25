@@ -3,7 +3,7 @@ import { parse } from "@babel/parser";
 import {
   isInjectedHttpClient,
   targetsLocalhost,
-} from "../../../../../../src/validation/harness/test-isolation/find/http-client/targets.mjs";
+} from "../../../../../../../src/validation/harness/test-isolation/find/network/http-client/targets.mjs";
 
 function argument(source) {
   return parse(`request(${source});`).program.body[0].expression.arguments[0];

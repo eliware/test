@@ -1,5 +1,5 @@
-import { visitAst } from "../../../visit-ast.mjs";
-import { collectMockedModules } from "../../../test-write-policy/collect/mocked-modules.mjs";
+import { visitAst } from "../../../../visit-ast.mjs";
+import { collectMockedModules } from "../../../../test-write-policy/collect/mocked-modules.mjs";
 import { collectHttpBindings } from "./bindings.mjs";
 import { collectMockedClients } from "./mocked-clients.mjs";
 import { isInjectedHttpClient, targetsLocalhost } from "./targets.mjs";

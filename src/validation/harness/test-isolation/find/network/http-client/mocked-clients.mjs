@@ -1,4 +1,4 @@
-import { collectJestSpyCalls } from "../mocks/collect-jest-spy-calls.mjs";
+import { collectJestSpyCalls } from "../../mocks/collect-jest-spy-calls.mjs";
 
 const methods = new Set(["get", "request"]);
 
