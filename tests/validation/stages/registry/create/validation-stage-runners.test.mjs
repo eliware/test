@@ -161,28 +161,3 @@ test("caches outdated package data for convention checks and uses its exit code"
   });
   expect(context.outdatedDependencies).toBe(dependencies);
 });
-
-test("runs typecheck and build only for their selected profiles", async () => {
-  const runScript = jest.fn(async () => ({ code: 1, stderr: "script failed" }));
-  const runners = createValidationStageRunners({ runScript });
-  const typecheck = {
-    root: ".",
-    packageJson: {
-      eliware: { apply: ["library"] },
-      scripts: { typecheck: "tsc --noEmit" },
-      devDependencies: { typescript: "*" },
-    },
-    env: {},
-  };
-  const build = {
-    ...typecheck,
-    packageJson: {
-      eliware: { apply: ["web"] },
-      scripts: { build: "vite build" },
-      devDependencies: { vite: "*" },
-    },
-  };
-  await expect(runners.typecheck(typecheck)).resolves.toMatchObject({ code: 10, status: "fail" });
-  await expect(runners.build(build)).resolves.toMatchObject({ code: 11, status: "fail" });
-  expect(runScript.mock.calls.map(([, name]) => name)).toEqual(["typecheck", "build"]);
-});

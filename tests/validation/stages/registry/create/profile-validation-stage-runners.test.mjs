@@ -25,21 +25,6 @@ test("runs pack only for the published profile and maps failures", async () => {
   ).resolves.toMatchObject({ code: 9 });
 });
 
-test("caches outdated dependency output and maps clean or failed results", async () => {
-  const clean = createProfileValidationStageRunners({
-    runOutdated: async () => ({ dependencies: {}, outdated: [] }),
-  });
-  const context = { root: ".", env: {} };
-  await expect(clean.outdated(context)).resolves.toMatchObject({ code: 0 });
-  expect(context.outdatedDependencies).toEqual({});
-  const failed = createProfileValidationStageRunners({
-    runOutdated: jest.fn(async () => {
-      throw new Error("registry failed");
-    }),
-  });
-  await expect(failed.outdated({ root: "." })).resolves.toMatchObject({ code: 8 });
-});
-
 test("runs typecheck and build only for valid profile scripts", async () => {
   const runScript = jest.fn(async () => ({ code: 1, stderr: "failed" }));
   const runners = createProfileValidationStageRunners({ runScript });
