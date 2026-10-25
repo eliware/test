@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findTestWritePolicyViolations } from "../../../../src/validation/harness/test-write-policy/scan-source.mjs";
+import { findTestWritePolicyViolations } from "../../../../../src/validation/harness/test-write-policy/scan/source.mjs";
 
 test("finds named write and temporary directory imports", () => {
   const source =

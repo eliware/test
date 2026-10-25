@@ -1,25 +1,15 @@
-import { parse } from "@babel/parser";
 import {
   fileMutationApis,
   filesystemModules,
   restrictedModules,
   temporaryDirectoryApis,
   temporaryDirectoryModules,
-} from "./api-names.mjs";
-import { visitAst } from "../visit-ast.mjs";
-import { trackNamespaceAlias } from "./track-namespace-alias.mjs";
-import { findFileHandleWriteViolations } from "./find-file-handle-write-violations.mjs";
-import { getRestrictedModuleName, isModuleMockedForLoad } from "./collect/mocked-modules.mjs";
+} from "../api-names.mjs";
+import { visitAst } from "../../visit-ast.mjs";
+import { trackNamespaceAlias } from "../track-namespace-alias.mjs";
+import { getRestrictedModuleName, isModuleMockedForLoad } from "../collect/mocked-modules.mjs";
 
-export function findTestWritePolicyViolations(source, filePath) {
-  const ast = parse(source, {
-    sourceType: "unambiguous",
-    plugins: ["jsx", "typescript"],
-  });
-  return findTestWritePolicyViolationsInAst(ast, filePath);
-}
-
-export function findTestWritePolicyViolationsInAst(ast, filePath) {
+export function findFilesystemApiViolations(ast, filePath) {
   const namespaceBindings = new Set();
   const violations = [];
   visitAst(ast, (node) => {
@@ -34,7 +24,7 @@ export function findTestWritePolicyViolationsInAst(ast, filePath) {
     if (node.type === "MemberExpression" || node.type === "OptionalMemberExpression")
       inspectMember(node, namespaceBindings, violations, filePath);
   });
-  return [...violations, ...findFileHandleWriteViolations(ast, filePath)];
+  return violations;
 }
 
 function inspectImport(node, namespaceBindings, violations, filePath) {
@@ -78,8 +68,8 @@ function inspectMember(node, namespaceBindings, violations, filePath) {
   const property = node.computed ? node.property.value : node.property.name;
   const namespace = rootIdentifier(node.object);
   if (
-    (namespaceBindings.has(namespace) && fileMutationApis.has(property)) ||
-    (namespaceBindings.has(namespace) && temporaryDirectoryApis.has(property))
+    namespaceBindings.has(namespace) &&
+    (fileMutationApis.has(property) || temporaryDirectoryApis.has(property))
   )
     addViolation(violations, filePath, node, `use of ${property}`);
 }

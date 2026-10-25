@@ -1,7 +1,7 @@
 import { collectRedactionSecrets } from "../output/redaction/collect-redaction-secrets.mjs";
 import { createRedactedTextStream } from "../output/redaction/create/redacted/text/stream.mjs";
 import { createChildOutputStream } from "./create-child/output-stream.mjs";
-import { truncateChildOutputText } from "./truncate-child-output-text.mjs";
+import { createChildOutputCaptureBuffer } from "./create-child/capture.mjs";
 
 export function createChildOutputCapture(
   options,
@@ -24,43 +24,15 @@ export function createChildOutputCapture(
   const stderrRedactor = createTextStream(redactionSecrets, outputLimit + 1, {
     maxPendingLength,
   });
-  const stdoutChunks = [];
-  const stderrChunks = [];
-  let capturedLength = 0;
-  let lastCapturedChunks;
-
-  const capture = (chunks, text) => {
-    if (!text) return;
-    const remaining = Math.max(0, outputLimit - capturedLength);
-    if (remaining === 0) {
-      markTruncatedOutput();
-      return;
-    }
-    const bounded =
-      text.length > remaining
-        ? `${truncateChildOutputText(text, remaining - 1)}…`
-        : truncateChildOutputText(text, remaining);
-    chunks.push(bounded);
-    lastCapturedChunks = chunks;
-    capturedLength += bounded.length;
-  };
-
-  const markTruncatedOutput = () => {
-    const lastIndex = lastCapturedChunks?.length - 1;
-    const lastChunk = lastCapturedChunks?.[lastIndex];
-    if (lastChunk && !lastChunk.endsWith("…"))
-      lastCapturedChunks[lastIndex] =
-        `${truncateChildOutputText(lastChunk, lastChunk.length - 1)}…`;
-  };
-
+  const capture = createChildOutputCaptureBuffer(outputLimit);
   const stream = createChildOutputStream({ onStdout, onStderr }, outputLimit);
   const appendStdout = (text) => {
     stream.stdout(text);
-    capture(stdoutChunks, text);
+    capture.appendStdout(text);
   };
   const appendStderr = (text) => {
     stream.stderr(text);
-    capture(stderrChunks, captureStderr?.(text) ?? text);
+    capture.appendStderr(captureStderr?.(text) ?? text);
   };
 
   return {
@@ -84,7 +56,7 @@ export function createChildOutputCapture(
       return { stdout: "", stderr };
     },
     result() {
-      return { stdout: stdoutChunks.join(""), stderr: stderrChunks.join("") };
+      return capture.result();
     },
   };
 }
