@@ -51,9 +51,20 @@ test.each([
   "specs/example.test.mjs",
   "unexpected-selector",
   "C:\\repo\\tests\\example.test.mjs",
+  "/repo/tests/example.test.mjs",
+  "\\\\server\\share\\tests\\example.test.mjs",
 ])("rejects unsupported focused path %s", (path) => {
   expect(() => resolveFocusedTestPaths([path], false)).toThrow("must be under tests/");
 });
+
+test.each(["tests/../outside.test.mjs", "tests\\..\\outside.test.mjs"])(
+  "rejects parent-directory traversal in %s",
+  (path) => {
+    expect(() => resolveFocusedTestPaths([path], false)).toThrow(
+      `Focused test path must not contain parent-directory traversal: ${path}`,
+    );
+  },
+);
 
 test("rejects a focused path without a source module name", () => {
   expect(() => resolveFocusedTestPaths(["tests/.test.mjs"], false)).toThrow(

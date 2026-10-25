@@ -64,22 +64,7 @@ test("validates a README that follows the general profile structure", async () =
   });
 });
 
-test("requires the specs index link to resolve in a content section", async () => {
-  await expect(
-    run(
-      { root: "/repo", packageJson },
-      {
-        read: async (path) => {
-          if (path.replaceAll("\\", "/").endsWith("specs/README.md"))
-            throw new Error("missing target");
-          return createReadme().replace("[Specifications](specs/README.md)", "Text");
-        },
-      },
-    ),
-  ).resolves.toMatchObject({
-    status: "fail",
-    message: expect.stringContaining("must link specs/README.md from a content section"),
-  });
+test("reports an unresolved specs index link", async () => {
   await expect(
     run(
       { root: "/repo", packageJson },
@@ -95,6 +80,20 @@ test("requires the specs index link to resolve in a content section", async () =
     status: "fail",
     message: expect.stringContaining("specs index link must resolve"),
   });
+});
+
+test("does not resolve the specs index when its link is misplaced", async () => {
+  const read = jest.fn(async (path) => {
+    if (path.replaceAll("\\", "/").endsWith("README.md"))
+      return createReadme().replace("[Specifications](specs/README.md)", "Text");
+    throw new Error("unexpected read");
+  });
+
+  await expect(run({ root: "/repo", packageJson }, { read })).resolves.toMatchObject({
+    status: "fail",
+    message: expect.stringContaining("must link specs/README.md from a content section"),
+  });
+  expect(read).toHaveBeenCalledTimes(1);
 });
 
 test("reports a missing README", async () => {

@@ -1,5 +1,6 @@
 import { runNpmConsumerSmoke } from "./run/npm-consumer-smoke.mjs";
 import { readSmokePackageJson } from "./cli/read-package-json.mjs";
+import { validateSmokeCliArguments } from "./cli/arguments.mjs";
 
 export async function runSmokeCli({
   args,
@@ -7,13 +8,14 @@ export async function runSmokeCli({
   write = console.log,
   smoke = runNpmConsumerSmoke,
 }) {
-  if (!Array.isArray(args) || args.length !== 2 || args[0] !== "--target" || !args[1]) {
-    write("Usage: npm run smoke -- --target <existing-consumer-path>");
+  const argumentsResult = validateSmokeCliArguments(args);
+  if (argumentsResult.error) {
+    write(argumentsResult.error);
     return 18;
   }
   try {
     const packageJson = await readSmokePackageJson(root);
-    const result = await smoke({ root, packageJson, target: args[1], write });
+    const result = await smoke({ root, packageJson, target: argumentsResult.target, write });
     write(result);
     return result.startsWith("Smoke passed:") ? 0 : 17;
   } catch (error) {

@@ -53,40 +53,13 @@ casePathTest("returns the canonical casing accepted by Windows", async () => {
   ]);
 });
 
-test("rejects traversal and symlinks that escape the repository", async () => {
+test("rejects symlinks that escape the repository", async () => {
   const outside = resolve("/outside", "linked.test.mjs");
   realpath.mockImplementation(async (path) =>
     path.endsWith(join("external", "linked.test.mjs")) ? outside : path,
   );
 
-  await expect(validateFocusedTestPath(root, ["tests/../../outside.test.mjs"])).rejects.toThrow(
-    "must not contain parent-directory traversal",
-  );
-  await expect(validateFocusedTestPath(root, ["tests/sub/../inside.test.mjs"])).rejects.toThrow(
-    "must not contain parent-directory traversal",
-  );
-  await expect(validateFocusedTestPath(root, ["tests\\sub\\..\\inside.test.mjs"])).rejects.toThrow(
-    "must not contain parent-directory traversal",
-  );
   await expect(validateFocusedTestPath(root, ["tests/external/linked.test.mjs"])).rejects.toThrow(
     "must resolve inside the repository",
   );
-});
-
-test("rejects POSIX, UNC, and drive-qualified absolute test paths", async () => {
-  await expect(validateFocusedTestPath(root, ["C:/repo/tests/a.test.mjs"])).rejects.toThrow(
-    "must be repository-relative",
-  );
-  await expect(validateFocusedTestPath(root, ["C:tests\\a.test.mjs"])).rejects.toThrow(
-    "must be repository-relative",
-  );
-  await expect(validateFocusedTestPath(root, ["C:\\repo\\tests\\a.test.mjs"])).rejects.toThrow(
-    "must be repository-relative",
-  );
-  await expect(validateFocusedTestPath(root, ["/repo/tests/a.test.mjs"])).rejects.toThrow(
-    "must be repository-relative",
-  );
-  await expect(
-    validateFocusedTestPath(root, ["\\\\server\\share\\repo\\tests\\a.test.mjs"]),
-  ).rejects.toThrow("must be repository-relative");
 });

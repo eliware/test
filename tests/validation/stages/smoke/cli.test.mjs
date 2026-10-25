@@ -12,7 +12,7 @@ const { runSmokeCli } = await import("../../../../src/validation/stages/smoke/cl
 
 afterEach(() => readFile.mockReset());
 
-test("validates the target argument and calls smoke with package metadata", async () => {
+test("calls smoke with package metadata and reports a successful result", async () => {
   readFile.mockResolvedValue(JSON.stringify({ name: "@eliware/test" }));
   const write = jest.fn();
   const smoke = jest.fn(async () => "Smoke passed: @eliware/test@15.0.0");
@@ -26,15 +26,24 @@ test("validates the target argument and calls smoke with package metadata", asyn
     target: "consumer",
     write,
   });
-  await expect(runSmokeCli({ args: ["consumer"], root: "repo", write })).resolves.toBe(18);
-  const defaultWrite = jest.spyOn(console, "log").mockImplementation(() => {});
+});
+
+test("reports usage without reading package metadata for invalid arguments", async () => {
+  const write = jest.fn();
+
+  await expect(runSmokeCli({ args: [], root: "repo", write })).resolves.toBe(18);
+
+  expect(readFile).not.toHaveBeenCalled();
+  expect(write).toHaveBeenCalledWith("Usage: npm run smoke -- --target <existing-consumer-path>");
+});
+
+test("uses the default output writer when arguments are invalid", async () => {
+  const write = jest.spyOn(console, "log").mockImplementation(() => {});
   try {
     await expect(runSmokeCli({ args: [] })).resolves.toBe(18);
-    expect(defaultWrite).toHaveBeenCalledWith(
-      "Usage: npm run smoke -- --target <existing-consumer-path>",
-    );
+    expect(write).toHaveBeenCalledWith("Usage: npm run smoke -- --target <existing-consumer-path>");
   } finally {
-    defaultWrite.mockRestore();
+    write.mockRestore();
   }
 });
 

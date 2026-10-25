@@ -18,6 +18,11 @@ export function resolveFocusedTestPaths(args, hasToolMode) {
   if (focused.some((argument) => !focusedTestPathPattern.test(argument))) {
     throw new Error("Focused paths must be under tests/.");
   }
+  const traversingPath = focused.find((argument) => argument.split(/[\\/]/u).includes(".."));
+  if (traversingPath)
+    throw new Error(
+      `Focused test path must not contain parent-directory traversal: ${traversingPath}`,
+    );
   if (focused.some((argument) => !hasFocusedSourceName(argument)))
     throw new Error("Focused test paths must have a source module name.");
   return focused;
