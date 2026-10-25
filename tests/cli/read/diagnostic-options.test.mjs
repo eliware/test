@@ -85,6 +85,12 @@ test("rejects focused Jest paths combined with tool modes", () => {
   );
 });
 
+test("rejects absolute paths forwarded after the separator", () => {
+  expect(() => readDiagnosticOptions(["--", "C:\\repo\\tests\\example.test.mjs"])).toThrow(
+    "before the -- separator",
+  );
+});
+
 test("rejects wrapper arguments placed before a tool mode", () => {
   expect(() => readDiagnosticOptions(["--runInBand", "--audit"])).toThrow("must follow --audit");
 });

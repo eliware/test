@@ -1,16 +1,12 @@
 import { parseFocusedArguments } from "../../parse/focused-arguments.mjs";
+import { validateForwardedTestPaths } from "./validate-forwarded-test-paths.mjs";
 
 const focusedTestPathPattern = /^tests[\\/].*\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu;
 
 export function resolveFocusedTestPaths(args, hasToolMode) {
   const parsed = parseFocusedArguments(args);
-  if (parsed.forwardedTestPaths.length > 0) {
-    throw new Error(
-      hasToolMode
-        ? "Focused test paths cannot be combined with tool modes."
-        : "Focused test paths must be supplied before the -- separator.",
-    );
-  }
+  const forwardedPathError = validateForwardedTestPaths(parsed.forwardedTestPaths, hasToolMode);
+  if (forwardedPathError) throw new Error(forwardedPathError);
   if (hasToolMode && parsed.positional.some((argument) => focusedTestPathPattern.test(argument))) {
     throw new Error("Focused test paths cannot be combined with tool modes.");
   }
