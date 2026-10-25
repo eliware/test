@@ -1,5 +1,8 @@
 import { expect, test } from "@jest/globals";
-import { readTocLinks } from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/toc-links.mjs";
+import {
+  readTocLinks,
+  validateReadmeTocLinks,
+} from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/toc-links.mjs";
 
 test("reads inline and reference-style local heading links", () => {
   expect(
@@ -29,4 +32,15 @@ test("normalizes labels and skips definitions and non-local destinations", () =>
 
 test("returns no links when the content has no links", () => {
   expect(readTocLinks("Table of contents\n\n[unlinked]: #heading")).toEqual([]);
+});
+
+test("validates the required links and their order", () => {
+  expect(
+    validateReadmeTocLinks(["## Table of Contents", "- [Features](#features)", "## Features"], 0, [
+      "Features",
+    ]),
+  ).toBeNull();
+  expect(
+    validateReadmeTocLinks(["## Table of Contents", "- [Other](#other)"], 0, ["Features"]),
+  ).toContain("must link each content heading once in order");
 });

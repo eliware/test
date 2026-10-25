@@ -1,4 +1,4 @@
-import { collectJestTestNames } from "../collect/jest/names.mjs";
+import { collectJestTestNames } from "../collect/jest/test-bindings.mjs";
 import { hasRegisteredJestTest } from "./registered-jest-test.mjs";
 import { collectJestDescribeNames } from "../collect/jest/describe-names.mjs";
 import { collectModuleShadowedNames } from "../collect/module-shadowed-jest-names.mjs";

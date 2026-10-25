@@ -1,31 +1,10 @@
 import { isDirectTestCommand } from "./command-patterns/recognize/direct.mjs";
 import { isRuntimeTestCommand } from "./command-patterns/recognize/runtime.mjs";
 import { findShellCommand, isWrappedTestCommand } from "./command-patterns/recognize/wrappers.mjs";
-
-const runners = [
-  "jest",
-  "vitest",
-  "mocha",
-  "ava",
-  "tap",
-  "tape",
-  "uvu",
-  "c8",
-  "nyc",
-  "istanbul",
-  "playwright",
-  "cypress",
-  "karma",
-  "jasmine",
-  "qunit",
-  "wdio",
-  "nightwatch",
-  "testcafe",
-  "protractor",
-];
+import { testToolRunners } from "./command-patterns/recognize/package-script.mjs";
 
 export function isTestToolCommand(value, harness = false) {
-  const names = harness ? runners.slice(1) : runners;
+  const names = harness ? testToolRunners.slice(1) : testToolRunners;
   return value.split(/&&|\|\||[;|]/u).some((part) => isCommand(part.trim(), names));
 }
 

@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
 import { parse } from "@babel/parser";
-import { collectJestTestNames } from "../../../../../../src/checks/application/E-0.1.4.1.2/collect/jest/names.mjs";
+import { collectJestTestNames } from "../../../../../../src/checks/application/E-0.1.4.1.2/collect/jest/test-bindings.mjs";
 
 test("collects global, imported, namespace, and chained test aliases", () => {
   const program = parse(
