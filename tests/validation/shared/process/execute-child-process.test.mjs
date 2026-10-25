@@ -139,3 +139,14 @@ test("passes a defensive copy of the invoking environment to child processes", a
     else process.env[key] = previous;
   }
 });
+
+test("uses a requested output limit without passing it to the child process", async () => {
+  const child = childProcess();
+  const promise = execute("tool", [], { maxOutputLength: 128 }, (_command, _args, options) => {
+    expect(options).not.toHaveProperty("maxOutputLength");
+    return child;
+  });
+  child.stdout.emit("data", "x".repeat(256));
+  child.emit("close", 0, null);
+  await expect(promise).resolves.toMatchObject({ stdout: "x".repeat(128) });
+});

@@ -7,12 +7,12 @@ const MAX_OUTPUT_LENGTH = 100_000;
 
 export function execute(command, args, options = {}, spawnProcess = spawn) {
   return new Promise((resolveResult, reject) => {
-    const { redactionSecrets: suppliedSecrets = [], ...childOptions } = options ?? {};
-    const output = createChildProcessOutputCapture(
-      childOptions,
-      suppliedSecrets,
-      MAX_OUTPUT_LENGTH,
-    );
+    const {
+      maxOutputLength = MAX_OUTPUT_LENGTH,
+      redactionSecrets: suppliedSecrets = [],
+      ...childOptions
+    } = options ?? {};
+    const output = createChildProcessOutputCapture(childOptions, suppliedSecrets, maxOutputLength);
     let settled = false;
     let child;
     const rejectOnce = (error) => {

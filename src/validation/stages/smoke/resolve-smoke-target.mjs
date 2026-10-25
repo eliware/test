@@ -1,53 +1,11 @@
 import { lstat, realpath } from "node:fs/promises";
-import { isAbsolute, relative, sep } from "node:path";
+import { inspectSmokeTargetIdentity } from "./resolve-smoke-target/identity.mjs";
+import { resolveSmokeTargetPaths } from "./resolve-smoke-target/paths.mjs";
 
-export async function resolveSmokeTarget(root, target, inspect = lstat) {
-  let sourceRoot;
-  let targetRoot;
-  try {
-    [sourceRoot, targetRoot] = await Promise.all([realpath(root), realpath(target)]);
-  } catch {
-    return { error: "Smoke source and target must both resolve to existing directories." };
-  }
-  if (containsOrMatches(sourceRoot, targetRoot) || containsOrMatches(targetRoot, sourceRoot))
-    return { error: "Smoke target must resolve outside the source checkout." };
-
-  let identity;
-  try {
-    identity = await inspect(targetRoot);
-    if (!identity.isDirectory())
-      return { error: "Smoke target must resolve to an existing directory." };
-  } catch {
-    return { error: "Smoke target must resolve to an existing directory." };
-  }
-  return {
-    targetRoot,
-    assertIdentity: async () => {
-      let current;
-      try {
-        current = await inspect(targetRoot);
-      } catch {
-        throw new Error(
-          "Smoke target directory changed during validation. Refusing access to an untrusted target.",
-        );
-      }
-      if (
-        !current.isDirectory() ||
-        current.dev !== identity.dev ||
-        current.ino !== identity.ino ||
-        current.birthtimeMs !== identity.birthtimeMs
-      )
-        throw new Error(
-          "Smoke target directory changed during validation. Refusing access to an untrusted target.",
-        );
-    },
-  };
-}
-
-function containsOrMatches(parent, path) {
-  const relativePath = relative(parent, path);
-  return (
-    relativePath === "" ||
-    (relativePath !== ".." && !relativePath.startsWith(`..${sep}`) && !isAbsolute(relativePath))
-  );
+export async function resolveSmokeTarget(root, target, inspect = lstat, resolvePath = realpath) {
+  const paths = await resolveSmokeTargetPaths(root, target, resolvePath);
+  if (paths.error) return paths;
+  const identity = await inspectSmokeTargetIdentity(paths.targetRoot, inspect);
+  if (identity.error) return identity;
+  return { targetRoot: paths.targetRoot, assertIdentity: identity.assertIdentity };
 }

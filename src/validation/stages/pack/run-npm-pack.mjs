@@ -10,5 +10,9 @@ export async function runNpmPack(
 ) {
   const argumentsList = buildPackArguments(extraArgs);
   const [command, prefix] = resolveCommand(env, process.platform, process.execPath, root);
-  return run(command, [...prefix, ...argumentsList], { cwd: root, env: { ...env } });
+  return run(command, [...prefix, ...argumentsList], {
+    cwd: root,
+    env: { ...env },
+    maxOutputLength: 1_000_000,
+  });
 }

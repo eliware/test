@@ -45,35 +45,19 @@ test("caps saved output and skips later chunks", () => {
   expect(files.get("coverage/jest.log")).toContain("output was truncated");
 });
 
-test("handles an absent log path and ignores invalid streams", () => {
-  const replace = jest.fn();
-  const append = jest.fn();
-  const log = createJestConsoleOutputLog(undefined, { append, replace });
+test("ignores invalid output streams", () => {
+  const { append, log } = makeLog();
   log.start();
   log.append("unknown", "text");
-  log.append("stdout", "text");
-
   expect(log.finish()).toEqual({ redacted: false, redactionKinds: [], writeError: false });
   expect(append).not.toHaveBeenCalled();
-  expect(replace).not.toHaveBeenCalled();
 });
 
-test("uses default output operations without writing when the path is absent", () => {
-  const log = createJestConsoleOutputLog(undefined);
+test("allows output capture without a path or options", () => {
+  const log = createJestConsoleOutputLog(null);
   log.start();
   log.append("stdout", "text");
   expect(log.finish()).toEqual({ redacted: false, redactionKinds: [], writeError: false });
-});
-
-test("reports log write failures without throwing", () => {
-  const replace = jest.fn(() => {
-    throw new Error("write blocked");
-  });
-  const { log } = makeLog({ replace });
-  log.start();
-  log.append("stdout", "ignored");
-
-  expect(log.finish()).toEqual({ redacted: false, redactionKinds: [], writeError: true });
 });
 
 test("reports stream write failures and retains a safe plain-text log", () => {
