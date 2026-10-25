@@ -1,10 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
-import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { listSpecificationEntries } from "../list-specification-entries.mjs";
 import { validateBundledConventionDocuments } from "./bundled/convention-documents.mjs";
 import { validateBundledDirectiveSchema } from "./bundled/directive-schema.mjs";
+import { parseBundledYamlDocuments } from "./specification/parse-bundled-yaml-documents.mjs";
 
 const suiteRoot = fileURLToPath(new URL("../../../../../", import.meta.url));
 
@@ -18,7 +18,7 @@ export async function validateBundledSpecifications({
   let schema;
   let documents;
   try {
-    schema = parseDocuments(
+    schema = parseBundledYamlDocuments(
       await read(join(root, "specs/directives-schema.yaml"), "utf8"),
       "specs/directives-schema.yaml",
     );
@@ -45,17 +45,10 @@ async function readConventionDocuments(root, entries, read) {
     .map(({ path }) => path);
   const documents = [];
   for (const path of paths) {
-    const values = parseDocuments(await read(join(root, path), "utf8"), path);
+    const values = parseBundledYamlDocuments(await read(join(root, path), "utf8"), path);
     values.forEach((value, index) =>
       documents.push({ path: `${path} document ${index + 1}`, value }),
     );
   }
   return documents;
-}
-
-function parseDocuments(source, path) {
-  const parsed = parseBoundedYamlDocuments(source, path);
-  const errors = parsed.flatMap((document) => document.errors);
-  if (errors.length) throw new Error(errors.map(({ message }) => message).join(". "));
-  return parsed.map((document) => document.toJSON());
 }

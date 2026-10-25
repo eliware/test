@@ -3,11 +3,11 @@ import { resolveWindowsSystemExecutable } from "../../../../../src/validation/sh
 
 test("resolves executable paths from absolute local drive roots", () => {
   expect(
-    resolveWindowsSystemExecutable({ SystemRoot: "C:/Windows" }, "System32", "taskkill.exe"),
-  ).toMatch(/System32[\\/]taskkill\.exe$/iu);
+    resolveWindowsSystemExecutable({ SystemRoot: "C:/Windows" }, "System32", "example.exe"),
+  ).toMatch(/System32[\\/]example\.exe$/iu);
   expect(
-    resolveWindowsSystemExecutable({ WINDIR: "D:/Windows" }, "System32", "taskkill.exe"),
-  ).toMatch(/D:[\\/]Windows[\\/]System32[\\/]taskkill\.exe$/iu);
+    resolveWindowsSystemExecutable({ WINDIR: "D:/Windows" }, "System32", "example.exe"),
+  ).toMatch(/D:[\\/]Windows[\\/]System32[\\/]example\.exe$/iu);
 });
 
 test.each([
@@ -37,8 +37,8 @@ test("uses the process environment when no root is passed", () => {
   const previous = process.env.SystemRoot;
   process.env.SystemRoot = "C:/Windows";
   try {
-    expect(resolveWindowsSystemExecutable(undefined, "System32", "taskkill.exe")).toMatch(
-      /System32[\\/]taskkill\.exe$/iu,
+    expect(resolveWindowsSystemExecutable(undefined, "System32", "example.exe")).toMatch(
+      /System32[\\/]example\.exe$/iu,
     );
   } finally {
     if (previous === undefined) delete process.env.SystemRoot;
@@ -50,8 +50,8 @@ test("ignores non-string roots and falls back to the process environment", () =>
   const previous = process.env.SystemRoot;
   process.env.SystemRoot = "C:/Windows";
   try {
-    expect(resolveWindowsSystemExecutable({ SystemRoot: 42 }, "System32", "taskkill.exe")).toMatch(
-      /System32[\\/]taskkill\.exe$/iu,
+    expect(resolveWindowsSystemExecutable({ SystemRoot: 42 }, "System32", "example.exe")).toMatch(
+      /System32[\\/]example\.exe$/iu,
     );
   } finally {
     if (previous === undefined) delete process.env.SystemRoot;
