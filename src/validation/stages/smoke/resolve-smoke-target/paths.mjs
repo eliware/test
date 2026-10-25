@@ -1,4 +1,4 @@
-import { isAbsolute, relative, sep } from "node:path";
+import { containsOrMatches } from "./containment.mjs";
 
 export async function resolveSmokeTargetPaths(root, target, resolvePath) {
   let sourceRoot;
@@ -11,12 +11,4 @@ export async function resolveSmokeTargetPaths(root, target, resolvePath) {
   if (containsOrMatches(sourceRoot, targetRoot) || containsOrMatches(targetRoot, sourceRoot))
     return { error: "Smoke target must resolve outside the source checkout." };
   return { targetRoot };
-}
-
-function containsOrMatches(parent, path) {
-  const relativePath = relative(parent, path);
-  return (
-    relativePath === "" ||
-    (relativePath !== ".." && !relativePath.startsWith(`..${sep}`) && !isAbsolute(relativePath))
-  );
 }

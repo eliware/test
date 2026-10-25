@@ -1,5 +1,6 @@
-import { isAbsolute, relative, resolve, sep } from "node:path";
+import { resolve } from "node:path";
 import { validatePublicationMetadata } from "../../pack/validate/publication-metadata.mjs";
+import { containsOrMatches } from "../resolve-smoke-target/containment.mjs";
 import { validateSourcePackageIdentity } from "./source-package-identity.mjs";
 
 export function validateNpmConsumerSmokeRequest({ root, target, packageJson }) {
@@ -16,12 +17,4 @@ export function validateNpmConsumerSmokeRequest({ root, target, packageJson }) {
   if (containsOrMatches(sourceRoot, targetRoot) || containsOrMatches(targetRoot, sourceRoot))
     return { error: "Smoke target must be a separate consumer repository." };
   return { targetRoot };
-}
-
-function containsOrMatches(parent, path) {
-  const relativePath = relative(parent, path);
-  return (
-    relativePath === "" ||
-    (relativePath !== ".." && !relativePath.startsWith(`..${sep}`) && !isAbsolute(relativePath))
-  );
 }

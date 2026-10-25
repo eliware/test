@@ -1,3 +1,5 @@
+import { createActiveSuiteTracker } from "./active-suite.mjs";
+
 const JEST_LINES = [
   /^(?:PASS|FAIL)\s/,
   /^Test Suites:/,
@@ -29,14 +31,11 @@ export function findUnexpectedJestLines(text) {
 export function findUnexpectedJestLineRecords(text) {
   const lines = text.split(/\r?\n/);
   const completeLines = text.endsWith("…") ? lines.slice(0, -1) : lines;
-  let activeSuite = "unknown test suite";
+  const activeSuite = createActiveSuiteTracker();
   return completeLines.flatMap((rawLine) => {
     const line = rawLine.replace(ANSI_ESCAPE, "").trim();
-    const startsSuite = line.match(/^\[eliware-test-progress\] start (.+)$/u);
-    const completesSuite = line.match(/^\[eliware-test-progress\] complete (.+?) [\d.]+s$/u);
-    const record = isUnexpectedLine(line) ? [{ line, suite: activeSuite }] : [];
-    if (startsSuite) activeSuite = startsSuite[1];
-    if (completesSuite) activeSuite = "unknown test suite";
+    const record = isUnexpectedLine(line) ? [{ line, suite: activeSuite.current() }] : [];
+    activeSuite.observe(line);
     return record;
   });
 }

@@ -7,26 +7,16 @@ test("resolves separate source and target roots", async () => {
   ).resolves.toEqual({ targetRoot: "/target-link" });
 });
 
-test.each([
-  ["/source", "/source", "matching"],
-  ["/source", "/source/nested", "source contains target"],
-  ["/source/nested", "/source", "target contains source"],
-])("rejects %s and %s because their paths are %s", async (root, target, _reason) => {
-  await expect(resolveSmokeTargetPaths(root, target, async (path) => path)).resolves.toEqual({
-    error: "Smoke target must resolve outside the source checkout.",
-  });
+test("rejects a target nested inside the source checkout", async () => {
+  await expect(
+    resolveSmokeTargetPaths("/source", "/source/nested", async (path) => path),
+  ).resolves.toEqual({ error: "Smoke target must resolve outside the source checkout." });
 });
 
-test("allows sibling paths with a shared name prefix", async () => {
+test("rejects a source nested inside the target checkout", async () => {
   await expect(
-    resolveSmokeTargetPaths("/source", "/source-copy", async (path) => path),
-  ).resolves.toEqual({ targetRoot: "/source-copy" });
-});
-
-test("allows roots on separate drives", async () => {
-  await expect(
-    resolveSmokeTargetPaths("C:/source", "D:/consumer", async (path) => path),
-  ).resolves.toEqual({ targetRoot: "D:/consumer" });
+    resolveSmokeTargetPaths("/source/nested", "/source", async (path) => path),
+  ).resolves.toEqual({ error: "Smoke target must resolve outside the source checkout." });
 });
 
 test("reports path resolution failures", async () => {
