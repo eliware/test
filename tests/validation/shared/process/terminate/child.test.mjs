@@ -1,31 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import {
-  createChildTerminator,
-  terminateChild,
-} from "../../../../../src/validation/shared/process/terminate/child.mjs";
-
-test("delegates Windows tree termination and falls back to signaling", () => {
-  const child = { pid: 42, kill: jest.fn() };
-  const killTree = jest.fn();
-  expect(terminateChild(child, "win32", process.kill, killTree)).toBe(true);
-  expect(killTree).toHaveBeenCalledWith(42, process.env);
-  expect(terminateChild({ kill: jest.fn() }, "win32")).toBe(false);
-
-  const fallbackChild = { pid: 42, kill: jest.fn() };
-  expect(
-    terminateChild(fallbackChild, "win32", process.kill, () => {
-      throw new Error("failed");
-    }),
-  ).toBe(false);
-  expect(fallbackChild.kill).toHaveBeenCalledWith("SIGTERM");
-});
-
-test("uses the configured Windows tree adapter when no call-specific adapter is supplied", () => {
-  const killTree = jest.fn();
-  const terminate = createChildTerminator(killTree);
-  expect(terminate({ pid: 24, kill: jest.fn() }, "win32")).toBe(true);
-  expect(killTree).toHaveBeenCalledWith(24, process.env);
-});
+import { terminateChild } from "../../../../../src/validation/shared/process/terminate/child.mjs";
 
 test("uses the requested signal for process-group termination", () => {
   const killProcess = jest.fn();

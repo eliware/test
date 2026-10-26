@@ -2,6 +2,7 @@ import { findInvalidJestTestAliases } from "../../find/invalid-jest-test-aliases
 import { collectModuleShadowedNames } from "../module-shadowed-jest-names.mjs";
 import { collectJestDescribeNames } from "./describe-names.mjs";
 import { collectExecutableJestTestAliases } from "../executable-jest-test-aliases.mjs";
+import { collectImportedJestTestBindings } from "./import-bindings.mjs";
 
 export function collectJestTestNames(program) {
   const names = {
@@ -9,14 +10,7 @@ export function collectJestTestNames(program) {
     namespaces: new Set(),
     namespaceAliases: new Map(),
   };
-  for (const node of program.body) {
-    if (node.type !== "ImportDeclaration" || node.source.value !== "@jest/globals") continue;
-    for (const specifier of node.specifiers)
-      if (specifier.type === "ImportSpecifier" && ["test", "it"].includes(specifier.imported.name))
-        names.callbacks.add(specifier.local.name);
-      else if (specifier.type === "ImportNamespaceSpecifier")
-        names.namespaces.add(specifier.local.name);
-  }
+  collectImportedJestTestBindings(program, names);
   names.describes = collectJestDescribeNames(program);
   const moduleBindings = collectModuleShadowedNames(program, names);
   names.shadowedGlobals = moduleBindings.shadowedGlobals;

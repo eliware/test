@@ -1,5 +1,6 @@
 import { terminateChild } from "../../terminate/child.mjs";
 import { scheduleChildTermination } from "../../schedule-child-termination.mjs";
+import { createUnconfirmedTerminationSettlement } from "./termination/settle-unconfirmed.mjs";
 
 export function createChildTerminationHandler({
   child,
@@ -14,6 +15,13 @@ export function createChildTerminationHandler({
   let timedOut = false;
   let terminationConfirmed = false;
   let cancelTermination;
+  const settleUnconfirmed = createUnconfirmedTerminationSettlement({
+    isSettled,
+    markSettled,
+    timeout,
+    output,
+    resolve,
+  });
   return {
     onTimeout(notify = true) {
       if (isSettled()) return;
@@ -51,19 +59,4 @@ export function createChildTerminationHandler({
       return terminationConfirmed;
     },
   };
-
-  function settleUnconfirmed() {
-    if (isSettled()) return;
-    markSettled();
-    timeout.stop();
-    output.flush();
-    resolve({
-      code: null,
-      signal: "SIGKILL",
-      ...output.result(),
-      timedOut: true,
-      terminationRequested: true,
-      terminationConfirmed: false,
-    });
-  }
 }

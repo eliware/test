@@ -1,10 +1,11 @@
 import { createIncrementalSearchWindow } from "./search-window.mjs";
 import { hasValidSecretMatchResults } from "../../has-valid-secret-match-results.mjs";
+import { createSecretSearchWorkBudget } from "./work-budget.mjs";
 
 export function createIncrementalSearch(values, workLimit, createStream) {
   const findNewMatches = createStream();
   const window = createIncrementalSearchWindow(values);
-  let consumedWork = 0;
+  const hasWorkBudget = createSecretSearchWorkBudget(workLimit);
 
   function findSafeBoundary(pending, includePendingMatches = false) {
     const appended = window.appendedText(pending);
@@ -30,8 +31,7 @@ export function createIncrementalSearch(values, workLimit, createStream) {
     const found = findNewMatches(appended);
     if (!hasValidSecretMatchResults(found, pendingStart, pendingEnd))
       return { boundary: 0, matchEnds: [], suppressed: true };
-    consumedWork += found.work;
-    if (consumedWork > workLimit) return { boundary: 0, matchEnds: [], suppressed: true };
+    if (!hasWorkBudget(found.work)) return { boundary: 0, matchEnds: [], suppressed: true };
 
     return window.applyMatches(found.matches, pendingLength, includePendingMatches);
   }

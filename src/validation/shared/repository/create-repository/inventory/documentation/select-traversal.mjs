@@ -4,9 +4,7 @@ import {
   assertDocumentationFileLimit,
   validateDocumentationTraversalLimits,
 } from "../../../validate/documentation-traversal-limits.mjs";
-
-const neverIncludePath = /(?:^|\/)(?:\.git|node_modules|test-results)(?:\/|$)/u;
-const generatedPath = /(?:^|\/)(?:coverage|dist|build)(?:\/|$)/u;
+import { generatedDocumentationPath, shouldSkipDocumentationPath } from "./path-policy.mjs";
 
 export function createDocumentationTraversalSelection({
   base,
@@ -21,12 +19,11 @@ export function createDocumentationTraversalSelection({
   let traversalObserved = false;
   let visitedFiles = 0;
   return {
-    maxDepthFilter: (path) =>
-      !neverIncludePath.test(path) && (includeGenerated || !generatedPath.test(path)),
+    maxDepthFilter: (path) => !shouldSkipDocumentationPath(path, includeGenerated),
     onFile(path) {
       traversalObserved = true;
       const file = path.slice(prefix.length);
-      if (neverIncludePath.test(path) || (!includeGenerated && generatedPath.test(path))) return;
+      if (shouldSkipDocumentationPath(path, includeGenerated)) return;
       visitedFiles += 1;
       assertDocumentationFileLimit(visitedFiles, maxFiles);
       if (!matchesDocumentationFilename(predicate, basename(file))) return;
@@ -36,9 +33,7 @@ export function createDocumentationTraversalSelection({
     select(records) {
       const directories = records.filter(
         ({ path, type }) =>
-          type === "directory" &&
-          !neverIncludePath.test(path) &&
-          (includeGenerated || !generatedPath.test(path)),
+          type === "directory" && !shouldSkipDocumentationPath(path, includeGenerated),
       );
       const directoryExists = base === "" || directories.some(({ path }) => path === base);
       if (!directoryExists)
@@ -52,15 +47,14 @@ export function createDocumentationTraversalSelection({
         maxFiles,
         fileCount: traversalObserved ? visitedFiles : 0,
         includeGenerated,
-        generatedPath,
+        generatedPath: generatedDocumentationPath,
       });
       const result = [];
       for (const record of records) {
         if (
           record.type !== "file" ||
           !record.path.startsWith(prefix) ||
-          neverIncludePath.test(record.path) ||
-          (!includeGenerated && generatedPath.test(record.path))
+          shouldSkipDocumentationPath(record.path, includeGenerated)
         )
           continue;
         const file = record.path.slice(prefix.length);

@@ -1,5 +1,9 @@
 import { expect, jest, test } from "@jest/globals";
 import { createWindowsProcessTreeKiller } from "../../../../../src/validation/shared/process/terminate/windows-process-tree.mjs";
+import {
+  createChildTerminator,
+  terminateChild,
+} from "../../../../../src/validation/shared/process/terminate/child.mjs";
 
 function createKiller(execute, state = { running: true }) {
   return createWindowsProcessTreeKiller(
@@ -9,6 +13,29 @@ function createKiller(execute, state = { running: true }) {
     () => "C:/Program Files/PowerShell/7/pwsh.exe",
   );
 }
+
+test("delegates Windows termination to the tree adapter and falls back to child signaling", () => {
+  const child = { pid: 42, kill: jest.fn() };
+  const killTree = jest.fn();
+  expect(terminateChild(child, "win32", jest.fn(), killTree)).toBe(true);
+  expect(killTree).toHaveBeenCalledWith(42, process.env);
+  expect(terminateChild({ kill: jest.fn() }, "win32")).toBe(false);
+
+  const fallbackChild = { pid: 42, kill: jest.fn() };
+  expect(
+    terminateChild(fallbackChild, "win32", jest.fn(), () => {
+      throw new Error("failed");
+    }),
+  ).toBe(false);
+  expect(fallbackChild.kill).toHaveBeenCalledWith("SIGTERM");
+});
+
+test("uses the configured Windows tree adapter when no call-specific adapter is supplied", () => {
+  const killTree = jest.fn();
+  const terminate = createChildTerminator(killTree);
+  expect(terminate({ pid: 24, kill: jest.fn() }, "win32")).toBe(true);
+  expect(killTree).toHaveBeenCalledWith(24, process.env);
+});
 
 test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
   const calls = [];
