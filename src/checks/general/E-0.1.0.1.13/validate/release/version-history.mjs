@@ -1,4 +1,5 @@
-import { compareReleaseVersions, isValidReleaseDate } from "./notes/version/order.mjs";
+import { compareReleaseVersions } from "./notes/version/order.mjs";
+import { validateReleaseDateHistory } from "./date-history.mjs";
 import {
   parseReleaseVersionHeading,
   releaseVersionFromHeading,
@@ -22,16 +23,15 @@ export function validateReleaseVersionHistory(entries, packageVersion) {
       continue;
     }
     const [, version, date] = match;
-    if (!isValidReleaseDate(date)) errors.push(`Release date is invalid: ${date}.`);
     versions.push(version);
     dates.push(date);
   }
+  errors.push(...validateReleaseDateHistory(dates));
   if (new Set(versions).size !== versions.length)
     errors.push("RELEASE_NOTES.md must not duplicate release versions.");
   for (let index = 1; index < versions.length; index++) {
     if (compareReleaseVersions(versions[index - 1], versions[index]) <= 0)
       errors.push("Release versions must be in strictly descending SemVer order.");
-    if (dates[index - 1] < dates[index]) errors.push("Release dates must not increase.");
   }
   return errors;
 }

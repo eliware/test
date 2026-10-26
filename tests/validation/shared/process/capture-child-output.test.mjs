@@ -112,22 +112,22 @@ test("does not split a surrogate pair in transformed stderr capture", () => {
   expect(capture.result().stderr).toBe("…");
 });
 
-test("redacts credentials split between child output chunks", () => {
+test("streams redacted text after the adapter transforms child output", () => {
   const streamed = [];
   const capture = createChildOutputCapture(100, {
-    env: { SERVICE_TOKEN: "opaque-value-123" },
     onStderr: (text) => streamed.push(text),
+    createTextStream: () => ({
+      push: (text) => text.replace("private-value", "[REDACTED]"),
+      finish: () => "",
+    }),
   });
-  expect(capture.redactComplete("opaque-value-123")).toBe("[REDACTED]");
-  capture.stderr("diagnostic opaque-value-");
-  capture.stdout("ordinary output");
-  capture.stderr("123 tail");
+  capture.stderr("diagnostic private-value tail");
   capture.flush();
   expect(capture.result()).toEqual({
-    stdout: "ordinary output",
     stderr: "diagnostic [REDACTED] tail",
+    stdout: "",
   });
-  expect(streamed.join("")).not.toContain("opaque-value-123");
+  expect(streamed.join("")).not.toContain("private-value");
 });
 
 test("suppresses complete progress output when a configured secret exceeds the capture limit", () => {

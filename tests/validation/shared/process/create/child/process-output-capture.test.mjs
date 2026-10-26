@@ -18,6 +18,22 @@ test("captures both streams and redacts diagnostics using the effective environm
   });
 });
 
+test("redacts an environment secret split across interleaved output chunks", () => {
+  const capture = createChildProcessOutputCapture(
+    { env: { SERVICE_TOKEN: "opaque-value-123" } },
+    [],
+    100,
+  );
+  capture.push("stderr", "diagnostic opaque-value-");
+  capture.push("stdout", "ordinary output");
+  capture.push("stderr", "123 tail");
+
+  expect(capture.finish()).toEqual({
+    stdout: "ordinary output",
+    stderr: "diagnostic [REDACTED] tail",
+  });
+});
+
 test("builds a separate secret matcher for each output stream", () => {
   const makeSecretMatcher = jest.fn(createSecretTextMatcher);
   const capture = createChildProcessOutputCapture(

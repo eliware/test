@@ -11,14 +11,9 @@ const targetRoot = "C:/consumer";
 const packageJson = { name: "@eliware/test", bin: "bin/eliware-test.mjs" };
 const expected = join(targetRoot, "node_modules", "@eliware", "test", "bin", "eliware-test.mjs");
 
-test.each([
-  ["string entry", "bin/eliware-test.mjs"],
-  ["mapped entry", { "eliware-test": "bin/eliware-test.mjs" }],
-])("resolves a %s", (_label, bin) => {
+test("resolves the package CLI entrypoint", () => {
   const resolveModule = jest.fn(() => expected);
-  expect(() =>
-    assertSmokeCliEntrypoint({ targetRoot, packageJson: { ...packageJson, bin }, resolveModule }),
-  ).not.toThrow();
+  expect(() => assertSmokeCliEntrypoint({ targetRoot, packageJson, resolveModule })).not.toThrow();
   expect(resolveModule).toHaveBeenCalledWith(expected, join(targetRoot, "package.json"));
 });
 

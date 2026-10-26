@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { validateCliInformationResult } from "../../../../src/checks/cli/E-0.1.5.1.0/validate-information-result.mjs";
-import { packageVersion } from "../../../../test-fixtures/helpers/project-version.mjs";
+import { validateCliInformationResult } from "../../../../../src/checks/cli/E-0.1.5.1.0/validate/information-result.mjs";
+import { packageVersion } from "../../../../../test-fixtures/helpers/project-version.mjs";
 
 const validate = (result, argument = "--help", version = packageVersion) =>
   validateCliInformationResult({

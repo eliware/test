@@ -1,13 +1,13 @@
 import { createRequire } from "node:module";
 import { join, resolve } from "node:path";
+import { selectSmokeCliBin } from "./select-smoke-cli-bin.mjs";
 
 export function assertSmokeCliEntrypoint({
   targetRoot,
   packageJson,
   resolveModule = (specifier, parent) => createRequire(parent).resolve(specifier),
 }) {
-  const binTarget =
-    typeof packageJson.bin === "string" ? packageJson.bin : Object.values(packageJson.bin ?? {})[0];
+  const binTarget = selectSmokeCliBin(packageJson);
   if (typeof binTarget !== "string") return;
   const expectedBin = join(
     targetRoot,

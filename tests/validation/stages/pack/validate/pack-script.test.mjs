@@ -1,21 +1,13 @@
 import { expect, test } from "@jest/globals";
 import { validatePackScript } from "../../../../../src/validation/stages/pack/validate/pack-script.mjs";
 
-test("accepts standard and self-hosted pack scripts in their matching modes", () => {
-  expect(validatePackScript({ scripts: { pack: "eliware-test --pack" } })).toBeNull();
-  expect(
-    validatePackScript(
-      { scripts: { pack: "node bin/eliware-test.mjs --pack" } },
-      { selfHosted: true },
-    ),
-  ).toBeNull();
-});
-
-test("rejects a pack script that does not match the selected mode", () => {
-  expect(validatePackScript({ scripts: { pack: "node bin/eliware-test.mjs --pack" } })).toContain(
-    "define pack=eliware-test --pack",
-  );
-  expect(
-    validatePackScript({ scripts: { pack: "eliware-test --pack" } }, { selfHosted: true }),
-  ).toContain("define pack=eliware-test --pack");
+test.each([
+  [{ pack: "eliware-test --pack" }, false, null],
+  [{ pack: "node bin/eliware-test.mjs --pack" }, true, null],
+  [{ pack: "node bin/eliware-test.mjs --pack" }, false, "pack=eliware-test --pack"],
+  [{ pack: "eliware-test --pack" }, true, "pack=eliware-test --pack"],
+])("validates the pack script for self-hosted mode %s", (scripts, selfHosted, result) => {
+  const error = validatePackScript({ scripts }, selfHosted);
+  if (result === null) expect(error).toBeNull();
+  else expect(error).toContain(result);
 });

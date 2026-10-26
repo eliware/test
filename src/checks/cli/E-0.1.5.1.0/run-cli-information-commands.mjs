@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { validateCliInformationResult } from "./validate-information-result.mjs";
+import { validateCliInformationResult } from "./validate/information-result.mjs";
 
 export async function runCliInformationCommands({
   root,

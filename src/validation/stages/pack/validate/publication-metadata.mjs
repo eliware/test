@@ -25,7 +25,7 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
     derivePackageFilesAllowlist(packageJson),
   );
   if (fileOrderError) return fileOrderError;
-  const packScriptError = validatePackScript(packageJson, { selfHosted });
+  const packScriptError = validatePackScript(packageJson, selfHosted);
   if (packScriptError) return packScriptError;
   return validatePackageLifecycleScripts(packageJson);
 }
