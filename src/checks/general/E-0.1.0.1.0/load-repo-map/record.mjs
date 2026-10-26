@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { parseBoundedYamlDocuments } from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import { loadRepoMapSchema } from "./schema.mjs";
 import { validateRepoMapAgainstSchema } from "../validate-repo-map-schema.mjs";
+import { findRepositoryRecord } from "./find-repository-record.mjs";
 
 export async function loadRepoMapRecord(root, packageJson, { read = readFile } = {}) {
   const repoMapPath = join(root, "..", "docs", "repo-map.yaml");
@@ -44,24 +45,5 @@ export async function loadRepoMapRecord(root, packageJson, { read = readFile } =
       record: null,
       error: "repo-map.yaml must contain a repositories array.",
     };
-  const match = /^@eliware\/([^/]+)$/u.exec(packageJson?.name ?? "");
-  if (!match)
-    return {
-      available: true,
-      record: null,
-      error: "The package name cannot identify a repo-map entry.",
-    };
-  const repository = `eliware/${match[1]}`;
-  const records = values.flatMap((document) =>
-    document.repositories.filter((candidate) => candidate?.repository === repository),
-  );
-  if (records.length > 1)
-    return {
-      available: true,
-      record: null,
-      error: `repo-map.yaml has duplicate entries for ${repository}.`,
-    };
-  return records[0]
-    ? { available: true, record: records[0], error: null }
-    : { available: true, record: null, error: null };
+  return { available: true, ...findRepositoryRecord(values, packageJson) };
 }
