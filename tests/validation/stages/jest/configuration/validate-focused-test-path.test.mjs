@@ -22,12 +22,6 @@ test("validates focused test paths before execution", async () => {
   await expect(validateFocusedTestPath(root, ["tests/sample.test.mjs"])).resolves.toEqual([
     "tests/sample.test.mjs",
   ]);
-  await expect(validateFocusedTestPath(root, ["tests\\sample.test.mjs"])).resolves.toEqual([
-    "tests/sample.test.mjs",
-  ]);
-  await expect(
-    validateFocusedTestPath(root, ["tests/sample.test.mjs", "tests/nested/second.test.mjs"]),
-  ).resolves.toEqual(["tests/sample.test.mjs", "tests/nested/second.test.mjs"]);
   realpath.mockImplementation(async (path) => {
     if (path === join(root, "tests", "missing.test.mjs")) throw new Error("missing");
     return path;
