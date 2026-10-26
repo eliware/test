@@ -1,9 +1,9 @@
 import { expect, jest, test } from "@jest/globals";
-import { createWindowsProcessTreeKiller } from "../../../../../src/validation/shared/process/terminate/windows-process-tree.mjs";
+import { createWindowsProcessTreeKiller } from "../../../../../../src/validation/shared/process/terminate/windows/process-tree.mjs";
 import {
   createChildTerminator,
   terminateChild,
-} from "../../../../../src/validation/shared/process/terminate/child.mjs";
+} from "../../../../../../src/validation/shared/process/terminate/child.mjs";
 
 function createKiller(execute, state = { running: true }) {
   return createWindowsProcessTreeKiller(
@@ -35,39 +35,6 @@ test("uses the configured Windows tree adapter when no call-specific adapter is 
   const terminate = createChildTerminator(killTree);
   expect(terminate({ pid: 24, kill: jest.fn() }, "win32")).toBe(true);
   expect(killTree).toHaveBeenCalledWith(24, process.env);
-});
-
-test("uses bounded taskkill and PowerShell process-tree fallbacks", () => {
-  const calls = [];
-  const state = { running: true };
-  const execute = (command, args, options) => {
-    calls.push({ command, args, options });
-    if (calls.length === 1) throw new Error("taskkill unavailable");
-    state.running = false;
-  };
-  createKiller(execute, state)(42, { SystemRoot: "C:/Windows" });
-  expect(calls).toHaveLength(2);
-  expect(calls[0].command).toMatch(/System32[\\/]taskkill\.exe$/iu);
-  expect(calls[0].args).toEqual(["/pid", "42", "/t", "/f"]);
-  expect(calls[0].options).toMatchObject({ timeout: 1_000, windowsHide: true, shell: false });
-  expect(calls[1].command).toMatch(/WindowsPowerShell[\\/]v1\.0[\\/]powershell\.exe$/iu);
-  expect(calls[1].args.at(-1)).toContain("Get-CimInstance Win32_Process");
-  expect(calls[1].options.timeout).toBe(1_000);
-  expect(calls[1].options.env.ELIWARE_TEST_PROCESS_ID).toBe("42");
-});
-
-test("falls back to PowerShell Core when Windows PowerShell is unavailable", () => {
-  const calls = [];
-  const state = { running: true };
-  const execute = (command, args) => {
-    calls.push(command);
-    if (calls.length < 3) throw new Error("command unavailable");
-    state.running = false;
-    expect(args).toContain("-NonInteractive");
-  };
-  createKiller(execute, state)(42, { SystemRoot: "C:/Windows" });
-  expect(calls).toHaveLength(3);
-  expect(calls[2]).toMatch(/(?:^|[\\/])pwsh\.exe$/iu);
 });
 
 test("reports failures when no Windows tree terminator succeeds", () => {

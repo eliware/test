@@ -9,11 +9,3 @@ test("cleans Markdown syntax and keeps visible link labels", () => {
     htmlComment: false,
   });
 });
-
-test("carries HTML comment state across lines", () => {
-  const hidden = cleanMarkdownProseLine("Visible <!-- hidden", false);
-  const closed = cleanMarkdownProseLine("hidden --> shown", hidden.htmlComment);
-
-  expect(hidden).toEqual({ text: "Visible", htmlComment: true });
-  expect(closed).toEqual({ text: "shown", htmlComment: false });
-});

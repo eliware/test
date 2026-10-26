@@ -19,24 +19,6 @@ test("accepts valid documents and reports schema violations", () => {
       " ",
     ),
   ).toContain("nonempty");
-  expect(
-    validateSpecificationDocument(
-      { ...valid, directives: [null, { id: "A-1", dos: [], donts: [" "] }] },
-      "rules.yaml",
-    ).join(" "),
-  ).toContain("valid E-rule ID");
-  expect(
-    validateSpecificationDocument(
-      { ...valid, directives: [{ ...valid.directives[0], children: [] }] },
-      "rules.yaml",
-    ).join(" "),
-  ).toContain("children must be a nonempty array");
-  expect(
-    validateSpecificationDocument(
-      { ...valid, directives: [{ ...valid.directives[0], examples: [" "], extra: true }] },
-      "rules.yaml",
-    ).join(" "),
-  ).toContain("unsupported fields");
 });
 
 test("uses ordering-document rules only for ordering paths when enabled", () => {

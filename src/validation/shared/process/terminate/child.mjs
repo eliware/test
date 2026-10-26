@@ -1,4 +1,4 @@
-import { killWindowsProcessTree } from "./windows-process-tree.mjs";
+import { killWindowsProcessTree } from "./windows/process-tree.mjs";
 
 export function createChildTerminator(defaultKillTree = killWindowsProcessTree) {
   return function terminateChild(
