@@ -4,12 +4,12 @@ import { collectJavaScriptOutputProse } from "../../../../../../../../src/checks
 
 test("collects prose from user-facing calls, properties, and attributes", () => {
   const ast = parse(
-    'console.log("Printed"); element.textContent = "Ready"; element.setAttribute("title", "Open"); element.className = "machine";',
+    'console.log("Printed", "More"); element.innerText = "Ready"; element.setAttribute("alt", "Image description"); element.className = "machine"; element.setAttribute("class", "machine");',
     { sourceType: "module" },
   ).program;
   const blocks = [];
 
   for (const statement of ast.body) collectJavaScriptOutputProse(statement.expression, blocks);
 
-  expect(blocks.map(({ text }) => text)).toEqual(["Printed", "Ready", "Open"]);
+  expect(blocks.map(({ text }) => text)).toEqual(["Printed", "More", "Ready", "Image description"]);
 });
