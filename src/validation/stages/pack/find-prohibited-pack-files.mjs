@@ -1,4 +1,4 @@
-import { isSensitivePath } from "../../../checks/general/E-0.1.0.1.8/validate/tracked/is-sensitive-path.mjs";
+import { isSensitivePath } from "../../../checks/general/E-0.1.0.1.8/validate/tracked/is/sensitive-path.mjs";
 
 const prohibitedNames = new Set([
   "tests",

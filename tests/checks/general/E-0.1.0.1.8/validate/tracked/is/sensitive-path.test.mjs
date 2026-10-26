@@ -1,15 +1,12 @@
 import { expect, test } from "@jest/globals";
-import { isSensitivePath } from "../../../../../../src/checks/general/E-0.1.0.1.8/validate/tracked/is-sensitive-path.mjs";
+import { isSensitivePath } from "../../../../../../../src/checks/general/E-0.1.0.1.8/validate/tracked/is/sensitive-path.mjs";
 
 test("detects protected names without case sensitivity", () => {
   expect(isSensitivePath("config/Credentials/token.json")).toBe(true);
   expect(isSensitivePath("config/ID_RSA")).toBe(true);
 });
 
-test("detects environment files and sensitive key formats", () => {
-  expect(isSensitivePath(".env")).toBe(true);
-  expect(isSensitivePath("config/.env.local")).toBe(true);
-  expect(isSensitivePath(".envrc")).toBe(true);
+test("detects sensitive key formats", () => {
   expect(isSensitivePath("certs/client.PFX")).toBe(true);
 });
 

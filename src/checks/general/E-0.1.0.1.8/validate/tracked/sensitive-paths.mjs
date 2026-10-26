@@ -1,5 +1,5 @@
 import { parseGitIndexEntries } from "../../parse-git-index/entries.mjs";
-import { isSensitivePath } from "./is-sensitive-path.mjs";
+import { isSensitivePath } from "./is/sensitive-path.mjs";
 
 export async function validateTrackedSensitivePaths(root, runGit, isPathExempt = () => false) {
   try {

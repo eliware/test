@@ -2,6 +2,7 @@ import semver from "semver";
 import { findLockfileDependencyEntry } from "./find-lockfile-dependency-entry.mjs";
 import { toSemverRange } from "./to-semver-range.mjs";
 import { isOptionalPeer } from "./optional-peer.mjs";
+import { isValidLockfileDependencyName } from "./dependency-name.mjs";
 
 const dependencyFields = ["dependencies", "optionalDependencies", "peerDependencies"];
 
@@ -24,7 +25,7 @@ export function validateLockfilePackageEntries(packages) {
         continue;
       }
       for (const name of Object.keys(entry[field])) {
-        if (!isValidDependencyName(name)) {
+        if (!isValidLockfileDependencyName(name)) {
           errors.push(
             `package-lock.json entry ${path} has an invalid ${field} package name ${name}.`,
           );
@@ -58,8 +59,4 @@ export function validateLockfilePackageEntries(packages) {
 
 function isRegistryTag(value) {
   return /^[a-z][a-z0-9._-]*$/iu.test(value);
-}
-
-function isValidDependencyName(name) {
-  return /^(?:@[a-z0-9][a-z0-9._~-]*\/[a-z0-9][a-z0-9._~-]*|[a-z0-9][a-z0-9._~-]*)$/u.test(name);
 }
