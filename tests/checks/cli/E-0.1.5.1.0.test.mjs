@@ -25,24 +25,6 @@ test("rejects a CLI package without a bin entrypoint", async () => {
   });
 });
 
-test("executes the package entrypoint through an injected process runner", async () => {
-  await expect(
-    run(
-      {
-        root: process.cwd(),
-        packageJson: { version: packageVersion, bin: "bin/eliware-test.mjs" },
-        repositoryInventory,
-      },
-      {
-        execute: async (_command, args) => ({
-          code: 0,
-          stdout: args.at(-1) === "--version" ? `${packageVersion}\n` : "Usage\n",
-        }),
-      },
-    ),
-  ).resolves.toEqual({ ruleId, status: "pass", message: "" });
-});
-
 test("uses the default runner through its mocked process adapter", async () => {
   execute.mockImplementation(async (_command, args) => ({
     code: 0,

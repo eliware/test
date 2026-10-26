@@ -1,5 +1,5 @@
-import { validateSpecificationDocument } from "../specification/document.mjs";
-import { validateSpecificationIds } from "../specification/ids.mjs";
+import { validateSpecificationDocument } from "../../specification/document.mjs";
+import { validateSpecificationIds } from "../../specification/ids.mjs";
 
 export function validateBundledConventionDocuments(documents, namespace) {
   const errors = [];

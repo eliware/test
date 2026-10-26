@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { validateBundledConventionDocuments } from "../../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled/convention-documents.mjs";
+import { validateBundledConventionDocuments } from "../../../../../../../src/checks/general/E-0.1.0.1.4/validate/bundled/convention/documents.mjs";
 
 const document = {
   version: "15.0",
