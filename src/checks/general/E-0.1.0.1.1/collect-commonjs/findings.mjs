@@ -1,6 +1,6 @@
 import { collectCommonJsAliases } from "./aliases.mjs";
 import { collectCommonJsExportAliases } from "./export-aliases.mjs";
-import { visitCommonJsAst } from "./visit-ast.mjs";
+import { visitCommonJsAst } from "./ast-visitor.mjs";
 
 export function collectCommonJsFindings(node, findings, file) {
   if (!node || typeof node !== "object") return;

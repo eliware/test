@@ -1,4 +1,4 @@
-import { validateApplicationLineLimits } from "../../../application/E-0.1.4.1.2/validate/application/line-limits.mjs";
+import { validateLayoutLineLimits } from "../../../shared/layout/line-limits.mjs";
 import { validateMirroredTests } from "../../../shared/layout/mirrored-tests.mjs";
 import { validateTestFileLayout } from "../../../application/E-0.1.4.1.2/validate/test-file-layout.mjs";
 import { validateLibrarySourcePlacement } from "./source-placement.mjs";
@@ -14,6 +14,6 @@ export async function validateLibraryLayout(context) {
   const errors = validateLibrarySourcePlacement(files);
   errors.push(...validateTestFileLayout(files));
   errors.push(...validateMirroredTests(files));
-  errors.push(...(await validateApplicationLineLimits(files, read, root, testFiles)));
+  errors.push(...(await validateLayoutLineLimits(files, read, root, testFiles)));
   return errors;
 }

@@ -26,6 +26,21 @@ test("finds dynamic namespace calls and destructured bindings", () => {
   ]);
 });
 
+test("finds writes through chained namespace aliases", () => {
+  const ast = parse(
+    [
+      'import * as fs from "node:fs";',
+      "const io = fs;",
+      "const fileSystem = io;",
+      "fileSystem.writeFileSync('file', 'text');",
+    ].join("\n"),
+    { sourceType: "unambiguous", plugins: ["jsx", "typescript"] },
+  );
+  expect(findFilesystemApiViolations(ast, "tests/example.test.mjs")).toEqual([
+    "tests/example.test.mjs:4 uses a test API that creates files or temporary directories: use of writeFileSync.",
+  ]);
+});
+
 test("allows read-only APIs and explicitly mocked modules", () => {
   const ast = parse(
     [

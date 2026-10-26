@@ -1,5 +1,5 @@
 import { expect, jest, test } from "@jest/globals";
-import { visitCommonJsAst } from "../../../../../src/checks/general/E-0.1.0.1.1/collect-commonjs/visit-ast.mjs";
+import { visitCommonJsAst } from "../../../../../src/checks/general/E-0.1.0.1.1/collect-commonjs/ast-visitor.mjs";
 
 test("visits syntax nodes recursively and skips source location metadata", () => {
   const nodes = [];
