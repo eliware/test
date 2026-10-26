@@ -17,7 +17,7 @@ export async function packSmokeCandidate({
   const packed = await run(
     command,
     [...prefix, "pack", "--ignore-scripts", "--json", "--pack-destination", packDirectory],
-    { cwd: root, env },
+    { cwd: root, env, maxOutputLength: 1_000_000 },
   );
   if (packed.code !== 0) throw new Error(smokeCommandFailure(packed, "npm pack failed"));
   const manifestText = packed.stdout ?? "";

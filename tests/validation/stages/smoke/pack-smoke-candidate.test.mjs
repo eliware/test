@@ -53,6 +53,11 @@ test("packs and validates the candidate, reporting its digest", async () => {
   expect(result.tarball).toBe(join(packDirectory, "candidate.tgz"));
   expect(result.digest).toMatch(/^[a-f0-9]{64}$/u);
   expect(readFile).toHaveBeenCalledWith(result.tarball);
+  expect(run).toHaveBeenCalledWith(
+    "npm",
+    ["pack", "--ignore-scripts", "--json", "--pack-destination", packDirectory],
+    { cwd: root, env: {}, maxOutputLength: 1_000_000 },
+  );
 });
 
 test.each([
