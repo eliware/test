@@ -62,6 +62,25 @@ test("suppresses malformed stream state and cumulative work overflow", () => {
   expect(search("different")).toMatchObject({ suppressed: true });
 });
 
+test("suppresses matcher and interval-index errors", () => {
+  const matcherFailure = createIncrementalSearch(["secret"], 100, () => () => {
+    throw new Error("matcher failed");
+  });
+  expect(matcherFailure("secret")).toMatchObject({ boundary: 0, suppressed: true });
+
+  let iteration = 0;
+  const changingMatches = [];
+  changingMatches[Symbol.iterator] = function* () {
+    iteration += 1;
+    yield iteration === 1 ? { start: 0, end: 6 } : { start: -1, end: 2 };
+  };
+  const intervalIndexFailure = createIncrementalSearch(["secret"], 100, () => () => ({
+    matches: changingMatches,
+    work: 1,
+  }));
+  expect(intervalIndexFailure("secret")).toMatchObject({ boundary: 0, suppressed: true });
+});
+
 test("keeps overlapping matches in the pending window", () => {
   const search = createIncrementalSearch(["abc"], 100, () => () => ({
     matches: [

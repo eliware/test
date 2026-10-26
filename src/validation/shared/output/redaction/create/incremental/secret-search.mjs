@@ -27,11 +27,20 @@ export function createIncrementalSearch(values, workLimit, createStream) {
       return { boundary: 0, matchEnds: [], suppressed: true };
     const pendingStart = window.bufferStart;
     const pendingEnd = pendingStart + pendingLength;
-    const found = findNewMatches(appended);
+    let found;
+    try {
+      found = findNewMatches(appended);
+    } catch {
+      return { boundary: 0, matchEnds: [], suppressed: true };
+    }
     if (!hasValidSecretMatchResults(found, pendingStart, pendingEnd))
       return { boundary: 0, matchEnds: [], suppressed: true };
     if (!hasWorkBudget(found.work)) return { boundary: 0, matchEnds: [], suppressed: true };
 
-    return window.applyMatches(found.matches, pendingLength, includePendingMatches);
+    try {
+      return window.applyMatches(found.matches, pendingLength, includePendingMatches);
+    } catch {
+      return { boundary: 0, matchEnds: [], suppressed: true };
+    }
   }
 }
