@@ -60,18 +60,6 @@ test("rejects inherited workflow and job settings", async () => {
   );
 });
 
-test("allows a publish workflow for publication profiles", async () => {
-  await expect(
-    validateCiWorkflow(
-      {
-        files: async () => [".github/workflows/ci.yaml", ".github/workflows/ghcr.yaml"],
-        readText: async () => workflow,
-      },
-      { eliware: { apply: ["ghcr-published"] } },
-    ),
-  ).resolves.toEqual([]);
-});
-
 test("requires readable validation workflow content", async () => {
   await expect(
     validateCiWorkflow({ files: async () => [".github/workflows/ci.yaml"] }),

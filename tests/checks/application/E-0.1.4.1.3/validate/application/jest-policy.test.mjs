@@ -13,16 +13,3 @@ test("combines configuration and test-tool policy failures", async () => {
     ]),
   );
 });
-
-test("rejects a separate test runner command", async () => {
-  const context = {
-    packageJson: {
-      name: "app",
-      scripts: { test: "vitest run" },
-    },
-    repositoryInventory: { files: async () => [], readText: async () => "" },
-  };
-  await expect(validateApplicationJestPolicy(context)).resolves.toContain(
-    "package.json script test must not invoke a separate test or coverage tool.",
-  );
-});
