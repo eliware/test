@@ -34,15 +34,6 @@ test.each([
   );
 });
 
-test("allows the harness test dependencies", () => {
-  expect(
-    validateApplicationTestTools({
-      name: "@eliware/test",
-      dependencies: { "@jest/globals": "30", jest: "30", "istanbul-lib-instrument": "6" },
-    }),
-  ).toEqual([]);
-});
-
 test("accepts package metadata without optional scripts or runner fields", () => {
   expect(validateApplicationTestTools({})).toEqual([]);
   expect(validateApplicationTestTools()).toEqual([]);

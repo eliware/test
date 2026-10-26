@@ -1,6 +1,7 @@
 import { createIncrementalSearchWindow } from "./search-window.mjs";
 import { hasValidSecretMatchResults } from "../../has-valid-secret-match-results.mjs";
 import { createSecretSearchWorkBudget } from "./work-budget.mjs";
+import { attachAppendTextAdapter } from "./secret-search/append-text.mjs";
 
 export function createIncrementalSearch(values, workLimit, createStream) {
   const findNewMatches = createStream();
@@ -15,9 +16,7 @@ export function createIncrementalSearch(values, workLimit, createStream) {
     return result;
   }
 
-  findSafeBoundary.appendText = (text, pendingLength, includePendingMatches = false) =>
-    searchAppended(text, pendingLength, includePendingMatches);
-  return findSafeBoundary;
+  return attachAppendTextAdapter(findSafeBoundary, searchAppended);
 
   function searchAppended(appended, pendingLength, includePendingMatches) {
     if (
