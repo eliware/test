@@ -20,6 +20,13 @@ test("appends plain text through the string-backed boundary path", () => {
   expect(appendRedactedStreamText(options())).toEqual({ output: "plain", pending: "" });
 });
 
+test("joins output from many safe boundaries in order", () => {
+  const result = appendRedactedStreamText(
+    options({ text: "x".repeat(1_000), pendingLimit: 1, bufferLimit: 1 }),
+  );
+  expect(result).toEqual({ output: "x".repeat(1_000), pending: "" });
+});
+
 test("retains text while its safety boundary cannot advance", () => {
   const result = appendRedactedStreamText(
     options({ findSafeBoundary: () => ({ boundary: 0, matchEnds: [], suppressed: false }) }),

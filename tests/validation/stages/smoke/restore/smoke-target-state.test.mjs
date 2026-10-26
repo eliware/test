@@ -36,12 +36,44 @@ test("checks package parents before restoring captured paths", async () => {
       storage: "backup",
       targetRoot: "consumer",
       packageName: "@eliware/test",
-      entries: [{ path: "package", type: "missing" }],
+      entries: [{ path: join("consumer", "node_modules", "@eliware", "test"), type: "missing" }],
     },
     fs,
   );
   expect(fs.lstat).toHaveBeenCalledWith(join("consumer", "node_modules"));
   expect(fs.rm).toHaveBeenCalledWith("backup", { recursive: true, force: true });
+});
+
+test("restores root manifests when package parents block package restoration", async () => {
+  const fs = mockFs();
+  fs.lstat.mockImplementation(async (path) => {
+    if (path === join("consumer", "node_modules"))
+      return { isSymbolicLink: () => true, isDirectory: () => false };
+    if (path === join("consumer", "package.json"))
+      return { isSymbolicLink: () => false, isDirectory: () => false };
+    throw Object.assign(new Error("missing"), { code: "ENOENT" });
+  });
+  await expect(
+    restoreSmokeTargetState(
+      {
+        storage: "backup",
+        targetRoot: "consumer",
+        packageName: "@eliware/test",
+        entries: [
+          { path: join("consumer", "package.json"), type: "file", data: "{}", mode: 420 },
+          {
+            path: join("consumer", "node_modules", "@eliware", "test"),
+            type: "directory",
+            backup: "backup/package",
+          },
+        ],
+      },
+      fs,
+    ),
+  ).rejects.toThrow("Cannot safely use a smoke package path through a link");
+  expect(fs.writeFile).toHaveBeenCalledWith(join("consumer", "package.json"), "{}");
+  expect(fs.cp).not.toHaveBeenCalled();
+  expect(fs.rm).not.toHaveBeenCalledWith("backup", expect.anything());
 });
 
 test("retains backup files and reports restoration failures", async () => {

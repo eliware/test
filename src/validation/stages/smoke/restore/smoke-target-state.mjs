@@ -1,4 +1,5 @@
 import { cp, mkdir, rm, symlink, writeFile, chmod, lstat, unlink } from "node:fs/promises";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 import { assertSmokePackageParents } from "../assert-smoke-package-parents.mjs";
 import { restoreCapturedSmokePath } from "./captured-smoke-path.mjs";
 
@@ -10,7 +11,11 @@ export async function restoreSmokeTargetState(state, fs = defaultFs) {
 
   for (const entry of [...state.entries].reverse()) {
     try {
-      if (state.targetRoot && state.packageName)
+      if (
+        state.targetRoot &&
+        state.packageName &&
+        isInsideNodeModules(state.targetRoot, entry.path)
+      )
         await assertSmokePackageParents(state.targetRoot, state.packageName, fs.lstat);
       await restoreCapturedSmokePath(entry, fs);
     } catch (error) {
@@ -22,4 +27,13 @@ export async function restoreSmokeTargetState(state, fs = defaultFs) {
       `Could not fully restore smoke target: ${failures.join("; ")}. Backups remain at ${state.storage}.`,
     );
   await fs.rm(state.storage, { recursive: true, force: true });
+}
+
+function isInsideNodeModules(targetRoot, path) {
+  const nodeModules = resolve(targetRoot, "node_modules");
+  const relativePath = relative(nodeModules, resolve(path));
+  return (
+    relativePath === "" ||
+    (relativePath !== ".." && !relativePath.startsWith(`..${sep}`) && !isAbsolute(relativePath))
+  );
 }

@@ -11,7 +11,7 @@ export function appendRedactedStreamText({
   canContinue,
   suppress,
 }) {
-  let output = "";
+  const output = [];
   for (let start = 0; start < text.length && canContinue();) {
     const pendingLength = pendingChunks ? pendingChunks.length : pending.length;
     const capacity = bufferLimit - pendingLength;
@@ -38,10 +38,10 @@ export function appendRedactedStreamText({
     const safePrefix = pendingChunks
       ? pendingChunks.takePrefix(boundary)
       : pending.slice(0, boundary);
-    output += append(safePrefix, matchEnds);
+    output.push(append(safePrefix, matchEnds));
     if (!pendingChunks) pending = pending.slice(boundary);
   }
-  return { output, pending };
+  return { output: output.join(""), pending };
 }
 
 function suppressStreamBuffer(pendingChunks, suppress) {
