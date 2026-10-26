@@ -1,4 +1,4 @@
-import { containsOrMatches } from "./containment.mjs";
+import { validateSmokeTargetBoundary } from "./target-boundary.mjs";
 
 export async function resolveSmokeTargetPaths(root, target, resolvePath) {
   let sourceRoot;
@@ -8,7 +8,7 @@ export async function resolveSmokeTargetPaths(root, target, resolvePath) {
   } catch {
     return { error: "Smoke source and target must both resolve to existing directories." };
   }
-  if (containsOrMatches(sourceRoot, targetRoot) || containsOrMatches(targetRoot, sourceRoot))
-    return { error: "Smoke target must resolve outside the source checkout." };
+  const boundaryError = validateSmokeTargetBoundary(sourceRoot, targetRoot);
+  if (boundaryError) return { error: boundaryError };
   return { targetRoot };
 }

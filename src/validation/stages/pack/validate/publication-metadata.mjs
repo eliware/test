@@ -2,6 +2,7 @@ import { compatibleWithNode26 } from "./compatible-node-range.mjs";
 import { derivePackageFilesAllowlist } from "../derive-package-files-allowlist.mjs";
 import { validateOrderedPackageFiles } from "./ordered-package-files.mjs";
 import { validatePackageLifecycleScripts } from "./package-lifecycle-scripts.mjs";
+import { validatePackScript } from "./pack-script.mjs";
 
 export function validatePublicationMetadata(packageJson, { selfHosted = false } = {}) {
   if (packageJson?.private !== false) {
@@ -24,9 +25,7 @@ export function validatePublicationMetadata(packageJson, { selfHosted = false } 
     derivePackageFilesAllowlist(packageJson),
   );
   if (fileOrderError) return fileOrderError;
-  const packScript = selfHosted ? "node bin/eliware-test.mjs --pack" : "eliware-test --pack";
-  if (packageJson?.scripts?.pack !== packScript) {
-    return "Public npm packages must define pack=eliware-test --pack.";
-  }
+  const packScriptError = validatePackScript(packageJson, { selfHosted });
+  if (packScriptError) return packScriptError;
   return validatePackageLifecycleScripts(packageJson);
 }

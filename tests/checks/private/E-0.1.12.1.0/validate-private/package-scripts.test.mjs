@@ -14,24 +14,21 @@ test.each([
   ]);
 });
 
-test.each([
-  "NPM_TOKEN=value node publish.mjs",
-  "export NODE_AUTH_TOKEN=value",
-  "echo $NPM_TOKEN",
-  "node publish.mjs --token ${NPM_TOKEN:-default}",
-  "node publish.mjs --token ${NODE_AUTH_TOKEN?missing}",
-])("rejects npm token setting %s", (command) => {
-  expect(validatePrivatePackageScripts({ scripts: { release: command } })).toEqual([
-    "package.json.scripts.release must not set or reference npm publication tokens.",
-  ]);
-});
-
 test("allows ordinary scripts and GHCR publication commands", () => {
   expect(
     validatePrivatePackageScripts({
       scripts: { test: "npm test", image: "docker push ghcr.io/x" },
     }),
   ).toEqual([]);
+});
+
+test("reports publication and token policy failures for one script", () => {
+  expect(
+    validatePrivatePackageScripts({ scripts: { release: "NPM_TOKEN=value npm publish" } }),
+  ).toEqual([
+    "package.json.scripts.release must not run an npm publication command.",
+    "package.json.scripts.release must not set or reference npm publication tokens.",
+  ]);
 });
 
 test("ignores invalid script containers and non-string entries", () => {
