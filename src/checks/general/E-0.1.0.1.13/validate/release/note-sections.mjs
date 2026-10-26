@@ -1,4 +1,5 @@
 import { validateMeaningfulSectionContent } from "./meaningful-section-content.mjs";
+import { parseReleaseNoteSections } from "./section-parser.mjs";
 
 const allowedSections = new Set([
   "Added",
@@ -10,45 +11,36 @@ const allowedSections = new Set([
 ]);
 
 export function validateReleaseNoteSections(lines) {
-  const errors = [];
-  let entry;
-  let section;
-  let content = [];
-  const seen = new Set();
-  for (const line of lines.slice(1)) {
-    if (line.startsWith("## ")) {
-      finishSection();
-      if (entry && !seen.size) errors.push(`${entry} must contain a release subsection.`);
-      entry = line;
-      section = undefined;
-      seen.clear();
-    } else if (line.startsWith("### ")) {
-      finishSection();
-      if (!entry) errors.push(`${line} must appear inside a release entry.`);
-      const name = line.slice(4);
-      if (!allowedSections.has(name))
-        errors.push(`${entry ?? "RELEASE_NOTES.md"} has an unsupported subsection: ${name}.`);
-      else if (seen.has(name)) errors.push(`${entry} must not repeat the ${name} subsection.`);
-      if (allowedSections.has(name) && !seen.has(name)) {
-        seen.add(name);
-        section = name;
-        content = [];
-      } else section = undefined;
-    } else if (/^#{1,6}\s/u.test(line)) {
-      finishSection();
-      errors.push(`RELEASE_NOTES.md contains an unsupported heading: ${line}.`);
-      section = undefined;
-    } else if (line.trim()) {
-      if (!section)
-        errors.push("RELEASE_NOTES.md must not contain text outside a release subsection.");
-      else content.push(line.trim());
-    }
+  const parsed = parseReleaseNoteSections(lines);
+  const errors = [...parsed.errors];
+  for (const section of parsed.unscopedSections) {
+    errors.push(`${section.heading} must appear inside a release entry.`);
+    validateSection(section, "RELEASE_NOTES.md", new Set(), errors);
   }
-  finishSection();
-  if (entry && !seen.size) errors.push(`${entry} must contain a release subsection.`);
+  for (const entry of parsed.entries) {
+    const seen = new Set();
+    for (const section of entry.sections) validateSection(section, entry.heading, seen, errors);
+    if (!seen.size) errors.push(`${entry.heading} must contain a release subsection.`);
+  }
   return errors;
+}
 
-  function finishSection() {
-    if (section) errors.push(...validateMeaningfulSectionContent(entry, section, content));
+function validateSection(section, entry, seen, errors) {
+  const { name, content } = section;
+  if (!allowedSections.has(name)) {
+    errors.push(`${entry} has an unsupported subsection: ${name}.`);
+    addOutsideSectionErrors(content, errors);
+  } else if (seen.has(name)) {
+    errors.push(`${entry} must not repeat the ${name} subsection.`);
+    addOutsideSectionErrors(content, errors);
+  } else {
+    seen.add(name);
+    errors.push(...validateMeaningfulSectionContent(entry, name, content));
   }
+}
+
+function addOutsideSectionErrors(content, errors) {
+  errors.push(
+    ...content.map(() => "RELEASE_NOTES.md must not contain text outside a release subsection."),
+  );
 }

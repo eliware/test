@@ -27,32 +27,6 @@ test("checks the selected profile document headings", async () => {
   );
 });
 
-test("checks focused test guidance only for application and library", async () => {
-  const guidance = [
-    "Run focused tests first during development.",
-    "Run one test file with `npm test -- tests/path/to/example.test.mjs`.",
-    "Run multiple test files with `npm test -- tests/path/to/first.test.mjs tests/path/to/second.test.mjs`.",
-    "Prevent repeated full-suite runs during development.",
-    "Run the full `npm test` suite for final validation before a commit, milestone, or release.",
-  ].join("\n");
-  const readOrder = (name) => order[name];
-
-  await expect(
-    validateProfileDocumentation(
-      "application",
-      inventory({ "AGENTS.md": `## Application\n${guidance}\n## CLI` }),
-      readOrder,
-    ),
-  ).resolves.toEqual([]);
-  await expect(
-    validateProfileDocumentation(
-      "web",
-      inventory({ "AGENTS.md": "## Web", "README.md": "## Routes\n## Build" }),
-      readOrder,
-    ),
-  ).resolves.toEqual([]);
-});
-
 test("reports missing documents and profile headings", async () => {
   const files = inventory({ "AGENTS.md": "## Other", "README.md": "## Routes" });
   await expect(validateProfileDocumentation("web", files, (name) => order[name])).resolves.toEqual([

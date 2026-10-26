@@ -1,15 +1,8 @@
 import { validateEntrypointTargetPath } from "./target-path.mjs";
-import { inspectEntrypointTargetFilesystem } from "./inspect-target-filesystem.mjs";
-import { formatEntrypointFilesystemDiagnostic } from "./filesystem-diagnostic.mjs";
+import { validateEntrypointTargetFilesystem } from "./target/filesystem.mjs";
 
-export async function validateEntrypointTarget(
-  target,
-  root,
-  checkPath,
-  inspectFilesystem = inspectEntrypointTargetFilesystem,
-) {
+export async function validateEntrypointTarget(target, root, checkPath, inspectFilesystem) {
   const path = validateEntrypointTargetPath(target);
   if (path.error) return path.error;
-  const filesystemError = await inspectFilesystem(path.path, root, checkPath);
-  return formatEntrypointFilesystemDiagnostic(filesystemError, target);
+  return validateEntrypointTargetFilesystem(path.path, target, root, checkPath, inspectFilesystem);
 }
