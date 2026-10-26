@@ -12,6 +12,19 @@ test("splits command chains and trims each command", () => {
   ]);
 });
 
+test("keeps quoted chain operators inside command arguments", () => {
+  expect(splitTestCommandChain(`echo 'safe | jest' && echo "safe || vitest"`)).toEqual([
+    "echo 'safe | jest'",
+    'echo "safe || vitest"',
+  ]);
+});
+
+test("keeps escaped separators and splits an unquoted logical OR", () => {
+  expect(
+    splitTestCommandChain(String.raw`echo safe \| jest && echo "safe \" | vitest" || jest`),
+  ).toEqual([String.raw`echo safe \| jest`, String.raw`echo "safe \" | vitest"`, "jest"]);
+});
+
 test("removes environment assignments and command prefixes", () => {
   expect(normalizeCommandPrefix("MODE=test command jest --runInBand")).toBe("jest --runInBand");
   expect(normalizeCommandPrefix("exec jest --runInBand")).toBe("jest --runInBand");
