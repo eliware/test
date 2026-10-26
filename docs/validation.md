@@ -80,17 +80,17 @@ It keeps the consumer's required coverage settings.
 The selected profile rules define required coverage thresholds.
 
 Before each Jest run, the CLI clears the consumer's `coverage/` directory.
-Jest writes coverage reports and the plain-text `jest.log` file to that directory.
-The CLI keeps the redacted Jest output after the run.
+Jest writes coverage reports to that directory.
+The CLI saves redacted Jest output as plain text in `coverage/jest.log`.
 On failure, the CLI shows the failed suite and its assertion or error details.
 
-The CLI keeps these files after the run.
-The CLI also writes stage, check, and suite timing to `coverage/eliware-test.log`.
+The CLI leaves `coverage/eliware-test.log` after each validation run.
+When Jest runs, the CLI also leaves `coverage/jest.log` and coverage reports.
+The CLI writes stage, check, and suite timing to `coverage/eliware-test.log`.
 
-When validation checks start, the CLI prints `Logging to ./coverage/eliware-test.log...`.
+When validation starts, the CLI prints `Logging to ./coverage/eliware-test.log...`.
 When Jest is about to run, the CLI prints `Logging to ./coverage/jest.log...`.
-Jest output goes to `coverage/jest.log` when the CLI runs Jest.
-The CLI keeps this timing log while it clears other coverage files.
+The CLI keeps the timing log while it clears other coverage files.
 The CLI does not use system temp or user folders for its temporary files.
 
 Each test suite has a ten-second limit.
@@ -110,7 +110,8 @@ After a clean aggregate or focused run, the CLI reports:
 - The exit code on the final line.
 
 Use `--debug-timing` to show stage, check, and suite timings on the console.
-The CLI writes the same timing lines to `coverage/eliware-test.log` on every run.
+The CLI writes timing lines to `coverage/eliware-test.log` when validation starts.
+The `--help` and `--version` commands exit before validation starts.
 
 ## README links
 
