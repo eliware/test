@@ -1,19 +1,4 @@
-const proseFields = new Set([
-  "description",
-  "title",
-  "purpose",
-  "owner",
-  "boundaries",
-  "prerequisites",
-  "steps",
-  "prompt",
-  "message",
-  "help",
-  "summary",
-  "note",
-  "notes",
-  "content",
-]);
+import { isJsonProseField } from "./json-prose/prose-fields.mjs";
 
 export function extractJsonProse(source) {
   let value;
@@ -41,6 +26,6 @@ function collect(value, path, blocks) {
   }
   if (typeof value !== "string") return;
   const field = path.at(-1);
-  if (!proseFields.has(field)) return;
+  if (!isJsonProseField(field)) return;
   blocks.push({ text: value, line: 1, kind: "prose" });
 }

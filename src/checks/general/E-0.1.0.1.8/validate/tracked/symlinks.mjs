@@ -1,12 +1,8 @@
-import { parseGitIndexEntries } from "../../parse-git-index/entries.mjs";
+import { readTrackedIndexEntries } from "./read-index-entries.mjs";
 
 export async function validateTrackedSymlinks(root, runGit, isPathExempt = () => false) {
   try {
-    const { stdout } = await runGit("git", ["-C", root, "ls-files", "--cached", "--stage", "-z"], {
-      windowsHide: true,
-      encoding: "buffer",
-    });
-    const links = parseGitIndexEntries(stdout)
+    const links = (await readTrackedIndexEntries(root, runGit))
       .filter(({ mode }) => mode === "120000")
       .filter(({ path }) => !isPathExempt(path))
       .map(({ path }) => path);
