@@ -1,11 +1,29 @@
 # Release Notes
 
-## 15.0.1 — 2026-10-25
+## 15.0.1 — 2026-10-26
+
+### Added
+
+- Show the log destination when validation starts and when Jest is about to run.
+- Save Jest output as plain text in `coverage/jest.log`.
+- Show failed Jest suites and their assertion or error details in the CLI.
+
+### Changed
+
+- Use a static License badge for private repositories. Use the package license as its badge label.
+- Keep the dynamic GitHub License badge for public repositories.
+- Refactor check, repository inventory, smoke, redaction, and validation code into focused modules.
+- Add mirrored tests for the focused modules.
+- Update `@babel/parser` to 8.0.8.
 
 ### Fixed
 
-- Use a static License badge for private repositories and derive its value from package metadata.
-- Show Jest failure details in the CLI and save captured output as plain text.
+- Stop `npm audit` after 30 seconds, report a warning, and continue validation.
+- Correct package, profile, documentation, workflow, ordering, and specification checks.
+- Keep smoke-test recovery data when restoration fails, and restore root manifests when package paths are unsafe.
+- Suppress output when incremental secret matching or interval validation fails.
+- Respect quoted and escaped shell operators when the application check scans commands.
+- Limit repeated string copying when the redaction stream joins safe output.
 
 ## 15.0.0 — 2026-10-21
 
