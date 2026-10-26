@@ -46,7 +46,7 @@ Run validation from the repository root:
 eliware-test
 ```
 
-Read the [user guide](docs/README.md) and [profile guide](docs/profiles.md) for setup and profile details.
+Read the [user guide](docs/README.md) for setup and profile details.
 Read [specifications](specs/README.md) for the authoritative requirements.
 Read [release notes](RELEASE_NOTES.md) for changes by version.
 
