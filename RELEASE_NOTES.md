@@ -18,6 +18,7 @@
 
 ### Fixed
 
+- Capture complete `npm pack --json` manifests during smoke tests for larger packages.
 - Stop `npm audit` after 30 seconds, report a warning, and continue validation.
 - Correct package, profile, documentation, workflow, ordering, and specification checks.
 - Keep smoke-test recovery data when restoration fails, and restore root manifests when package paths are unsafe.
