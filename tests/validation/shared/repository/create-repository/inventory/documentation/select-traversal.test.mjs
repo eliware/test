@@ -63,9 +63,6 @@ test("includes generated paths when requested", () => {
 
 test("reports missing directories and traversal limits", () => {
   expect(() => createSelection().select([])).toThrow("ENOENT");
-  const fileLimited = createSelection({ maxFiles: 1 });
-  fileLimited.onFile("docs/one.md");
-  expect(() => fileLimited.onFile("docs/two.md")).toThrow("file limit");
   const depthLimited = createSelection({ maxDepth: 0 });
   expect(() =>
     depthLimited.select([

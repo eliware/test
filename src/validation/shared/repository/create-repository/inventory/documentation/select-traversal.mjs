@@ -5,6 +5,7 @@ import {
   validateDocumentationTraversalLimits,
 } from "../../../validate/documentation-traversal-limits.mjs";
 import { generatedDocumentationPath, shouldSkipDocumentationPath } from "./path-policy.mjs";
+import { createDocumentationTraversalFileTracker } from "./track-traversal-files.mjs";
 
 export function createDocumentationTraversalSelection({
   base,
@@ -15,21 +16,15 @@ export function createDocumentationTraversalSelection({
   includeGenerated,
   directory,
 }) {
-  const selectedPaths = new Set();
-  let traversalObserved = false;
-  let visitedFiles = 0;
+  const tracker = createDocumentationTraversalFileTracker({
+    prefix,
+    predicate,
+    maxFiles,
+    includeGenerated,
+  });
   return {
     maxDepthFilter: (path) => !shouldSkipDocumentationPath(path, includeGenerated),
-    onFile(path) {
-      traversalObserved = true;
-      const file = path.slice(prefix.length);
-      if (shouldSkipDocumentationPath(path, includeGenerated)) return;
-      visitedFiles += 1;
-      assertDocumentationFileLimit(visitedFiles, maxFiles);
-      if (!matchesDocumentationFilename(predicate, basename(file))) return;
-      selectedPaths.add(path);
-      assertDocumentationFileLimit(selectedPaths.size, maxFiles);
-    },
+    onFile: tracker.onFile,
     select(records) {
       const directories = records.filter(
         ({ path, type }) =>
@@ -45,7 +40,7 @@ export function createDocumentationTraversalSelection({
         prefix,
         maxDepth,
         maxFiles,
-        fileCount: traversalObserved ? visitedFiles : 0,
+        fileCount: tracker.traversalObserved ? tracker.visitedFiles : 0,
         includeGenerated,
         generatedPath: generatedDocumentationPath,
       });
@@ -59,8 +54,8 @@ export function createDocumentationTraversalSelection({
           continue;
         const file = record.path.slice(prefix.length);
         if (
-          traversalObserved
-            ? !selectedPaths.has(record.path)
+          tracker.traversalObserved
+            ? !tracker.hasSelectedPath(record.path)
             : !matchesDocumentationFilename(predicate, basename(file))
         )
           continue;
