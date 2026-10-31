@@ -6,8 +6,8 @@ const stat = jest.fn();
 
 jest.unstable_mockModule("node:fs/promises", () => ({ realpath, stat }));
 
-const { resolveFocusedFormatterPaths } =
-  await import("../../../../../src/validation/stages/format/resolve/focused-formatter-paths.mjs");
+const { resolveFocusedValidationPaths } =
+  await import("../../../../src/validation/stages/shared/resolve-focused-validation-paths.mjs");
 
 const root = join("C:/", "repo");
 
@@ -17,11 +17,11 @@ beforeEach(() => {
 });
 
 test("accepts existing maintained files and rejects invalid focused scopes", async () => {
-  await expect(resolveFocusedFormatterPaths(root, { paths: ["src/example.mjs"] })).resolves.toEqual(
-    ["src/example.mjs"],
-  );
   await expect(
-    resolveFocusedFormatterPaths(root, { paths: ["src\\example.mjs"] }),
+    resolveFocusedValidationPaths(root, { paths: ["src/example.mjs"] }),
+  ).resolves.toEqual(["src/example.mjs"]);
+  await expect(
+    resolveFocusedValidationPaths(root, { paths: ["src\\example.mjs"] }),
   ).resolves.toEqual(["src/example.mjs"]);
   for (const focusedScope of [
     null,
@@ -32,14 +32,14 @@ test("accepts existing maintained files and rejects invalid focused scopes", asy
       paths: [path],
     })),
   ]) {
-    await expect(resolveFocusedFormatterPaths(root, focusedScope)).resolves.toBeNull();
+    await expect(resolveFocusedValidationPaths(root, focusedScope)).resolves.toBeNull();
   }
   realpath.mockImplementation(async (path) => {
     if (path.endsWith("missing.mjs")) throw new Error("missing");
     return path;
   });
   await expect(
-    resolveFocusedFormatterPaths(root, { paths: ["src/missing.mjs"] }),
+    resolveFocusedValidationPaths(root, { paths: ["src/missing.mjs"] }),
   ).resolves.toBeNull();
 });
 
@@ -52,16 +52,16 @@ test("rejects directories and symlinks that resolve outside the repository", asy
   );
 
   await expect(
-    resolveFocusedFormatterPaths(root, { paths: ["src/directory"] }),
+    resolveFocusedValidationPaths(root, { paths: ["src/directory"] }),
   ).resolves.toBeNull();
   await expect(
-    resolveFocusedFormatterPaths(root, { paths: ["src/linked/escape.mjs"] }),
+    resolveFocusedValidationPaths(root, { paths: ["src/linked/escape.mjs"] }),
   ).resolves.toBeNull();
 });
 
 test("accepts existing focused paths with case-variant source directory names", async () => {
   await expect(
-    resolveFocusedFormatterPaths(root, {
+    resolveFocusedValidationPaths(root, {
       paths: ["Tests/example.test.mjs", "Src/example.mjs"],
     }),
   ).resolves.toEqual(["Tests/example.test.mjs", "Src/example.mjs"]);

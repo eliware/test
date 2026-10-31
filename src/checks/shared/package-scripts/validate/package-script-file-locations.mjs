@@ -9,7 +9,7 @@ export function validatePackageScriptFileLocations(packageJson = {}) {
   return Object.entries(scripts).flatMap(([name, command]) => {
     const path = findValidatorPath(command);
     if (!path) return [];
-    if (path.startsWith("scripts/") || path.startsWith("bin/")) return [];
+    if (path.startsWith("scripts/")) return [];
     return [`package.json.scripts.${name} must keep local validator files under scripts/.`];
   });
 }

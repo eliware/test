@@ -1,6 +1,6 @@
 import { validatePrettierArguments } from "./validate-prettier-arguments.mjs";
 import { createFormatterDiagnostic } from "./create-formatter-diagnostic.mjs";
-import { resolveFocusedFormatterPaths } from "./resolve/focused-formatter-paths.mjs";
+import { resolveFocusedValidationPaths } from "../shared/resolve-focused-validation-paths.mjs";
 
 export async function executeFormatterValidation({
   root,
@@ -22,7 +22,7 @@ export async function executeFormatterValidation({
     const formatterOptions = { write: mode === "format", extraArgs: toolArgs };
     if (env !== process.env) formatterOptions.env = env;
     if (focusedScope) {
-      const paths = await resolveFocusedFormatterPaths(root, focusedScope);
+      const paths = await resolveFocusedValidationPaths(root, focusedScope);
       if (!paths) {
         return "Focused formatting requires at least one resolved path.";
       }

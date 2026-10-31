@@ -16,12 +16,17 @@ test.each([
   ]);
 });
 
-test.each([
-  "node scripts/validate.mjs",
-  "node ./scripts/validate.mjs",
-  "node bin/eliware-test.mjs",
-])("allows a local script under an approved directory: %s", (command) => {
-  expect(validatePackageScriptFileLocations({ scripts: { validate: command } })).toEqual([]);
+test.each(["node scripts/validate.mjs", "node ./scripts/validate.mjs"])(
+  "allows a local script under an approved directory: %s",
+  (command) => {
+    expect(validatePackageScriptFileLocations({ scripts: { validate: command } })).toEqual([]);
+  },
+);
+
+test("rejects local validator files under bin/", () => {
+  expect(
+    validatePackageScriptFileLocations({ scripts: { validate: "node bin/validate.mjs" } }),
+  ).toEqual(["package.json.scripts.validate must keep local validator files under scripts/."]);
 });
 
 test("allows installed tools and does not parse shell-wrapped commands", () => {

@@ -1,8 +1,8 @@
 import { expect, jest, test } from "@jest/globals";
-const resolveFocusedFormatterPaths = jest.fn();
+const resolveFocusedValidationPaths = jest.fn();
 jest.unstable_mockModule(
-  "../../../../src/validation/stages/format/resolve/focused-formatter-paths.mjs",
-  () => ({ resolveFocusedFormatterPaths }),
+  "../../../../src/validation/stages/shared/resolve-focused-validation-paths.mjs",
+  () => ({ resolveFocusedValidationPaths }),
 );
 const { executeFormatterValidation } =
   await import("../../../../src/validation/stages/format/execute-formatter-validation.mjs");
@@ -99,7 +99,7 @@ test("rejects forwarded formatter options that can change mode, config, or file 
 
 test("skips disabled or unrelated formatter stages and scopes focused paths", async () => {
   const root = "C:/repo";
-  resolveFocusedFormatterPaths.mockResolvedValue(["tests/example.test.mjs", "src/example.mjs"]);
+  resolveFocusedValidationPaths.mockResolvedValue(["tests/example.test.mjs", "src/example.mjs"]);
   const runFormatter = jest.fn(async () => ({ code: 0 }));
   await expect(
     executeFormatterValidation({
@@ -124,7 +124,7 @@ test("skips disabled or unrelated formatter stages and scopes focused paths", as
     focusedScope: { paths: ["tests/example.test.mjs", "src/example.mjs"] },
     runFormatter,
   });
-  expect(resolveFocusedFormatterPaths).toHaveBeenCalledWith(root, {
+  expect(resolveFocusedValidationPaths).toHaveBeenCalledWith(root, {
     paths: ["tests/example.test.mjs", "src/example.mjs"],
   });
   expect(runFormatter).toHaveBeenCalledWith(
@@ -135,7 +135,7 @@ test("skips disabled or unrelated formatter stages and scopes focused paths", as
 
 test("fails closed when a focused formatting path does not exist", async () => {
   const root = "C:/repo";
-  resolveFocusedFormatterPaths.mockResolvedValue(undefined);
+  resolveFocusedValidationPaths.mockResolvedValue(undefined);
   const runFormatter = jest.fn(async () => ({ code: 0 }));
   await expect(
     executeFormatterValidation({

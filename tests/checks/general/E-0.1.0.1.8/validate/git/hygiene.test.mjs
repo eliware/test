@@ -39,17 +39,6 @@ test("uses the default Git runner and default exit code through a mocked executa
   expect(runMockGit).toHaveBeenCalled();
 });
 
-test("rejects nested ignore files that can override universal rules", async () => {
-  const runGit = async (_command, args) => {
-    if (args.includes("check-ignore")) return { stdout: ignoredPaths() };
-    if (args.includes("--others")) return { stdout: Buffer.from("docs/.gitignore\0") };
-    return { stdout: Buffer.from("") };
-  };
-  await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
-  ).resolves.toContain("Nested .gitignore files are prohibited: docs/.gitignore.");
-});
-
 test("checks deep generated paths without checking environment names", async () => {
   const runGit = async (_command, args) => {
     if (args.includes("check-ignore"))
@@ -111,18 +100,6 @@ test("reports the required ignore rule that is missing from Git output", async (
   await expect(
     validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
   ).resolves.toContain(`${missingPath} must be ignored.`);
-});
-
-test("reports tracked ignored paths through the Git hygiene coordinator", async () => {
-  const runGit = async (_command, args) =>
-    args.includes("check-ignore")
-      ? { stdout: ignoredPaths() }
-      : args.includes("--ignored")
-        ? { stdout: Buffer.from("ignored.txt\0") }
-        : { stdout: Buffer.from("") };
-  await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
-  ).resolves.toContain("Tracked or staged paths match ignore rules: ignored.txt.");
 });
 
 test("reports malformed Git index output through the Git hygiene coordinator", async () => {

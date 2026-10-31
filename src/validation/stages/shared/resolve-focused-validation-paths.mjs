@@ -1,9 +1,12 @@
 import { realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, sep } from "node:path";
-import { normalizeFocusedFormatterPaths } from "../normalize-focused-formatter-paths.mjs";
 
-export async function resolveFocusedFormatterPaths(root, focusedScope) {
-  const paths = normalizeFocusedFormatterPaths(focusedScope?.paths);
+export async function resolveFocusedValidationPaths(root, focusedScope) {
+  const paths = Array.isArray(focusedScope?.paths)
+    ? focusedScope.paths.map((path) =>
+        typeof path === "string" ? path.replaceAll("\\", "/") : path,
+      )
+    : null;
   if (
     !Array.isArray(paths) ||
     paths.length === 0 ||

@@ -32,7 +32,8 @@ test("caches Jest output and maps its failures", async () => {
 
 test("runs lint and keeps its process output", async () => {
   const runLint = jest.fn(async () => ({ code: 0, stdout: "ok", stderr: "" }));
-  const runners = createValidationStageRunners({ runLint });
+  const resolveFocusedPaths = jest.fn(async (_root, scope) => scope.paths);
+  const runners = createValidationStageRunners({ runLint, resolveFocusedPaths });
   await expect(
     runners.lint({ root: ".", toolArgs: [], focusedScope: null }),
   ).resolves.toMatchObject({
@@ -40,8 +41,10 @@ test("runs lint and keeps its process output", async () => {
     output: { stdout: "ok" },
   });
   expect(runLint).toHaveBeenCalledWith(".", undefined, undefined, [], []);
+  expect(resolveFocusedPaths).not.toHaveBeenCalled();
   const failed = createValidationStageRunners({
     runLint: async () => ({ code: 1, stderr: "bad" }),
+    resolveFocusedPaths,
   });
   await expect(
     failed.lint({ root: ".", toolArgs: [], focusedScope: { paths: ["src/a.mjs"] } }),
@@ -49,6 +52,20 @@ test("runs lint and keeps its process output", async () => {
     code: 5,
     message: "bad",
   });
+  expect(resolveFocusedPaths).toHaveBeenCalledWith(".", { paths: ["src/a.mjs"] });
+  const rejectPaths = jest.fn(async () => null);
+  const rejectLint = jest.fn();
+  const rejected = createValidationStageRunners({
+    runLint: rejectLint,
+    resolveFocusedPaths: rejectPaths,
+  });
+  await expect(
+    rejected.lint({ root: ".", toolArgs: [], focusedScope: { paths: ["src/escape.mjs"] } }),
+  ).resolves.toMatchObject({
+    code: 5,
+    message: "Focused linting requires at least one resolved path.",
+  });
+  expect(rejectLint).not.toHaveBeenCalled();
   const startup = createValidationStageRunners({
     runLint: async () => {
       throw new Error("spawn");

@@ -10,12 +10,15 @@ test("defines the shared test runner names", () => {
   expect(Object.isFrozen(testToolRunners)).toBe(true);
 });
 
-test.each(["jest", "npm exec -- vitest run", "pnpm dlx mocha", "./node_modules/.bin/nyc jest"])(
-  "recognizes shared test-tool command %s",
-  (command) => {
-    expect(hasAlternativePackageScriptCommand(command)).toBe(true);
-  },
-);
+test.each([
+  "jest",
+  "npm exec -- vitest run",
+  "pnpm dlx mocha",
+  "node --test",
+  "./node_modules/.bin/nyc jest",
+])("recognizes shared test-tool command %s", (command) => {
+  expect(hasAlternativePackageScriptCommand(command)).toBe(true);
+});
 
 test.each(["node index.mjs", "echo hello", "npm test", "git status"])(
   "does not recognize unrelated command %s",

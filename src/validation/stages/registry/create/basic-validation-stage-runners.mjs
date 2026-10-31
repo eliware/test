@@ -7,6 +7,7 @@ import { runJestValidationStage } from "../../jest/execution/run/jest/validation
 import { executeFormatterValidation } from "../../format/execute-formatter-validation.mjs";
 import { runPrettier } from "../../format/run-prettier.mjs";
 import { createValidationStageResult } from "../../shared/create-validation-stage-result.mjs";
+import { resolveFocusedValidationPaths } from "../../shared/resolve-focused-validation-paths.mjs";
 
 export function createBasicValidationStageRunners({
   runJest = runJestStage,
@@ -15,17 +16,27 @@ export function createBasicValidationStageRunners({
   runAudit = runNpmAudit,
   runAuditChild = runChild,
   validateFormatter = executeFormatterValidation,
+  resolveFocusedPaths = resolveFocusedValidationPaths,
 } = {}) {
   return {
     jest: async (context) => runJestValidationStage(context, runJest),
     lint: async (context) => {
       try {
+        const focusedPaths = context.focusedScope
+          ? await resolveFocusedPaths(context.root, context.focusedScope)
+          : [];
+        if (context.focusedScope && !focusedPaths)
+          return createValidationStageResult(
+            "lint",
+            5,
+            "Focused linting requires at least one resolved path.",
+          );
         const value = await runLint(
           context.root,
           undefined,
           undefined,
           context.toolArgs,
-          context.focusedScope?.paths ?? [],
+          focusedPaths,
         );
         const message = [value.stdout, value.stderr].filter(Boolean).join("\n");
         return createValidationStageResult("lint", value.code === 0 ? 0 : 5, message, value);
