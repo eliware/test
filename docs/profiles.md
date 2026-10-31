@@ -52,6 +52,9 @@ Read the central policy before you combine it with other profiles.
 
 Apply `npm-published` for npm publication rules.
 Apply `ghcr-published` when GHCR image publication rules apply.
+
+A private repository can apply `ghcr-published`.
+
 Read the central policy before you combine npm-published or ghcr-published with other profiles.
 Apply `npm-published` with `application` or `library`.
 An npm package must include `specs/` in `package.json.files`.
