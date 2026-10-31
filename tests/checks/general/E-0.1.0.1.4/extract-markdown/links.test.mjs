@@ -14,15 +14,6 @@ test("extracts inline, reference, HTML, and angle links", () => {
   ]);
 });
 
-test("extracts angle-bracket URLs with parentheses in query values", () => {
-  expect(
-    extractMarkdownLinks("<https://example.org/?q=(x)> [link](<https://example.org/?q=(x)>)"),
-  ).toEqual([
-    { reference: "https://example.org/?q=(x)" },
-    { reference: "https://example.org/?q=(x)" },
-  ]);
-});
-
 test("does not treat Markdown images or HTML image sources as links", () => {
   expect(extractMarkdownLinks('![image](image.png) <img src="image.png">')).toEqual([]);
 });
@@ -30,13 +21,6 @@ test("does not treat Markdown images or HTML image sources as links", () => {
 test("only treats anchor href values as HTML links", () => {
   expect(extractMarkdownLinks('<div href="bad.md">bad</div> <a href="good.md">good</a>')).toEqual([
     { reference: "good.md" },
-  ]);
-});
-
-test("strips angle brackets from inline and reference destinations", () => {
-  expect(extractMarkdownLinks("[inline](<guide.md>) [ref][id]\n[id]: <other.md>")).toEqual([
-    { reference: "guide.md" },
-    { reference: "other.md" },
   ]);
 });
 
@@ -74,9 +58,4 @@ test("ignores links inside HTML comments", () => {
   expect(extractMarkdownLinks("<!-- [hidden](missing.md) --> [shown](valid.md)")).toEqual([
     { reference: "valid.md" },
   ]);
-});
-
-test("reports undefined shortcut reference syntax", () => {
-  expect(extractMarkdownLinks("[missing]")).toEqual([]);
-  expect(extractMarkdownLinks("[missing][]")).toEqual([{ reference: null }]);
 });

@@ -38,3 +38,14 @@ test("resolves image references through the same definition map", () => {
     { index: 8, reference: null },
   ]);
 });
+
+test("ignores undefined shortcut references and reports empty explicit references", () => {
+  const markdown = "[missing] [missing][]";
+  expect(
+    extractMarkdownReferenceUses(
+      markdown,
+      collectMarkdownReferenceDefinitions(markdown),
+      /(?<!!)\[([^\]]+)\](?:\[([^\]]*)\])?/gu,
+    ),
+  ).toEqual([{ index: 10, reference: null }]);
+});
