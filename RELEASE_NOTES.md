@@ -2,13 +2,30 @@
 
 ## 15.1.0 — 2026-10-31
 
+### Added
+
+- Run lint, format, npm audit, and npm outdated at the same time.
+- Run package, type, build, and convention checks at the same time after the first stages pass.
+- Use Jest worker processes by default and keep its cache in `coverage/cache` between runs.
+- Allow consumer tests to send HTTP requests to loopback hosts only.
+- Validate focused lint and format paths before the tools run.
+
 ### Changed
 
 - Set the package version to 15.1.0 and the convention schema versions to 15.1.
-- Run Jest with its default worker pool while keeping per-suite timeout checks active.
-- Keep the Jest cache in `coverage/cache` between runs.
-- Keep harness progress records out of `coverage/jest.log`.
-- Accept lockfile versions selected by valid root dependency overrides.
+- Update `@babel/parser` to 8.0.10, `minimatch` to 11.0.3, and Oxlint to 1.90.0.
+- Keep harness progress records out of the plain-text `coverage/jest.log` file.
+- Accept transitive lockfile versions selected by valid root dependency overrides.
+- Require local validator files called by package scripts to stay under `scripts/`.
+- Accept only supported Ubuntu runner labels in the CI validation job.
+- Clarify that private repositories can use the GHCR publication profile.
+- Refactor package, lockfile, README, library entrypoint, Jest, smoke, and repository validation into focused modules with mirrored tests.
+
+### Fixed
+
+- Reject unsupported Ubuntu runner labels.
+- Report a failure when a timed-out child process does not stop.
+- Keep focused lint from receiving missing or out-of-repository paths.
 
 ## 15.0.1 — 2026-10-26
 
