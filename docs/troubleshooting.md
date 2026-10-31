@@ -44,7 +44,7 @@ Each suite has a ten-second limit.
 A 15-second watchdog also covers startup and pauses between suites.
 Use `--debug-timing` to find the slow suite.
 
-Jest uses worker processes by default.
+Jest uses worker processes and the cache in `coverage/cache` by default.
 Pass `--detectOpenHandles` to find open handles. This option runs Jest in-band.
 Close timers, streams, servers, and child processes in the test that creates them.
 

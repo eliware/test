@@ -16,11 +16,10 @@ export function buildJestArguments(args = []) {
   const forwarded = args.filter(
     (argument) => !focusedPaths.includes(argument) && argument !== "--debug-timing",
   );
-  const requiredOptions = ["--no-cache"];
   return [
     "--coverage",
+    "--cache",
     ...(focusedPaths.length > 0 ? ["--runTestsByPath", ...focusedPaths] : []),
-    ...requiredOptions,
     ...forwarded,
   ];
 }

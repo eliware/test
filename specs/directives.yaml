@@ -276,7 +276,7 @@ directives:
           - Supply harness reporters and detailed coverage output without weakening
             configured requirements.
           - Allow Jest to use its default worker pool.
-          - Run Jest with --no-cache.
+          - Enable the Jest cache and store it in coverage/cache.
           - Allow --runInBand and --detectOpenHandles as optional diagnostic arguments.
           - Run requested Jest validation one time with established ordering and lifecycle
             behavior.
@@ -307,8 +307,8 @@ directives:
 
       - id: E-0.0.8
         dos:
-          - Delete prior files in the consumer coverage directory before each Jest run.
-          - Keep the current-run timing log while clearing other prior coverage files.
+          - Delete prior coverage files before each Jest run, except the cache directory.
+          - Keep the Jest cache and the current-run timing log between runs.
           - Keep all temporary coverage directories in the consumer repository.
           - Write current coverage reports and Jest console output to the consumer
             coverage directory.

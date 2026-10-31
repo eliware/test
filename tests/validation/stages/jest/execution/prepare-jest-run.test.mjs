@@ -70,6 +70,8 @@ test("builds arguments and stores reports under the consumer coverage directory"
     "--coverageReporters=text",
     "--coverageDirectory",
     "repo/coverage",
+    "--cacheDirectory",
+    join("repo", "coverage", "cache"),
     "--reporters",
     "default",
   ]);

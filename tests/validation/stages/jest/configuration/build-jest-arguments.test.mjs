@@ -7,40 +7,40 @@ import {
 test("builds focused and default Jest argument lists", () => {
   expect(focusedPathFrom()).toBeUndefined();
   expect(focusedPathFrom(["--watch", "tests/sample.test.mjs"])).toBe("tests/sample.test.mjs");
-  expect(buildJestArguments([])).toEqual(["--coverage", "--no-cache"]);
-  expect(buildJestArguments(undefined)).toEqual(["--coverage", "--no-cache"]);
+  expect(buildJestArguments([])).toEqual(["--coverage", "--cache"]);
+  expect(buildJestArguments(undefined)).toEqual(["--coverage", "--cache"]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing"])).toEqual([
     "--coverage",
+    "--cache",
     "--runTestsByPath",
     "tests/sample.test.mjs",
-    "--no-cache",
   ]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing", "--watch"])).toEqual([
     "--coverage",
+    "--cache",
     "--runTestsByPath",
     "tests/sample.test.mjs",
-    "--no-cache",
     "--watch",
   ]);
   expect(buildJestArguments(["tests/one.test.mjs", "tests/two.test.mjs"])).toEqual([
     "--coverage",
+    "--cache",
     "--runTestsByPath",
     "tests/one.test.mjs",
     "tests/two.test.mjs",
-    "--no-cache",
   ]);
 });
 
 test("allows serial execution and open-handle detection when requested", () => {
   expect(buildJestArguments(["--runInBand", "--detectOpenHandles"])).toEqual([
     "--coverage",
-    "--no-cache",
+    "--cache",
     "--runInBand",
     "--detectOpenHandles",
   ]);
   expect(buildJestArguments(["--detectOpenHandles=false"])).toEqual([
     "--coverage",
-    "--no-cache",
+    "--cache",
     "--detectOpenHandles=false",
   ]);
 });
@@ -67,8 +67,9 @@ test.each([
   ["--test-path-patterns=tests/other"],
   ["-c", "jest.config.mjs"],
   ["--find-related-tests", "src/other.mjs"],
-  ["--cache"],
   ["--no-cache"],
+  ["--cache"],
+  ["--cacheDirectory", "other"],
 ])("rejects forwarded wrapper-owned Jest options: %s", (...args) => {
   expect(() => buildJestArguments(args)).toThrow("controlled by eliware-test");
 });

@@ -75,14 +75,15 @@ Configured reporter names must be strings.
 Reporter option objects are not supported.
 
 Jest uses its default worker pool on each run.
-The CLI runs Jest with `--no-cache`.
+The CLI enables the Jest cache in `coverage/cache`.
 Pass `--detectOpenHandles` to find open handles. Jest then runs in-band.
 
 It adds a reporter and coverage reports.
 It keeps the consumer's required coverage settings.
 The selected profile rules define required coverage thresholds.
 
-Before each Jest run, the CLI clears the consumer's `coverage/` directory.
+Before each Jest run, the CLI removes earlier reports from the consumer's `coverage/` directory.
+It keeps `coverage/cache` for later runs.
 Jest writes coverage reports to that directory.
 The CLI saves redacted Jest output as plain text in `coverage/jest.log`.
 On failure, the CLI shows the failed suite and its assertion or error details.

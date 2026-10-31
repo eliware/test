@@ -16,6 +16,7 @@ const wrapperOwnedOptions = [
   "changedSince",
   "config",
   "cache",
+  "cacheDirectory",
 ];
 const wrapperOwnedOptionAliases = new Set(
   wrapperOwnedOptions.flatMap((option) => {

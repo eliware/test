@@ -30,6 +30,8 @@ export async function prepareJestRun(root, args = [], resolveCli, options) {
       "--coverageReporters=text",
       "--coverageDirectory",
       coverageDirectory,
+      "--cacheDirectory",
+      join(coverageDirectory, "cache"),
       ...reporters.flatMap((reporter) => ["--reporters", reporter]),
       ...focusedCoverage,
       ...jestArguments.slice(1),
