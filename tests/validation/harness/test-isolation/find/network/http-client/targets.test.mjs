@@ -18,6 +18,9 @@ test("allows localhost URLs and host options", () => {
 
 test("rejects external, malformed, and unknown targets", () => {
   expect(targetsLocalhost(argument('"https://example.com"'))).toBe(false);
+  expect(targetsLocalhost(argument('{ hostname: "example.com" }'))).toBe(false);
+  expect(targetsLocalhost(argument('{ hostname: "localhost.example.com" }'))).toBe(false);
+  expect(targetsLocalhost(argument('{ hostname: "127.1" }'))).toBe(false);
   expect(targetsLocalhost(argument('"localhost/path"'))).toBe(false);
   expect(targetsLocalhost(argument("target"))).toBe(false);
   expect(targetsLocalhost(argument("{ hostname: host }"))).toBe(false);

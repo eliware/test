@@ -29,8 +29,7 @@ function isLocalUrl(value) {
 
 function isLocalHost(host) {
   const normalized = host.replace(/^\[|\]$/gu, "");
-  if (localHosts.has(normalized)) return true;
-  return isLocalUrl(`http://${host}`);
+  return localHosts.has(normalized);
 }
 
 function rootName(node) {
