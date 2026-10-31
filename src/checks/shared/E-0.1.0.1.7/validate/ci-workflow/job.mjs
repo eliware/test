@@ -1,3 +1,5 @@
+import { hasUbuntuRunner } from "../../has/ubuntu-runner.mjs";
+
 export function validateCiWorkflowJob(document) {
   const errors = [];
   const jobNames = Object.keys(document.jobs ?? {});
@@ -8,8 +10,7 @@ export function validateCiWorkflowJob(document) {
   const job = jobs.find((item) => Array.isArray(item?.steps));
   if (!job) return { errors: [...errors, "ci.yaml must define a validation job with steps."] };
   rejectUnknownKeys(job, ["runs-on", "permissions", "steps"], "validation job", errors);
-  if (!/^ubuntu(?:-|$)/iu.test(String(job["runs-on"] ?? "")))
-    errors.push("ci.yaml validation job must run on Ubuntu.");
+  if (!hasUbuntuRunner(job)) errors.push("ci.yaml validation job must run on Ubuntu.");
   if (job.if !== undefined || job["continue-on-error"] !== undefined)
     errors.push("ci.yaml validation job must run unconditionally without continue-on-error.");
   return { job, errors };

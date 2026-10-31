@@ -6,6 +6,13 @@ test("selects the single supported validation job", () => {
   expect(validateCiWorkflowJob({ jobs: { test: job } })).toEqual({ job, errors: [] });
 });
 
+test("rejects unsupported Ubuntu runner labels", () => {
+  const result = validateCiWorkflowJob({
+    jobs: { test: { "runs-on": "ubuntu-nonexistent", steps: [] } },
+  });
+  expect(result.errors).toContain("ci.yaml validation job must run on Ubuntu.");
+});
+
 test("reports invalid job keys, runners, and failure overrides", () => {
   const result = validateCiWorkflowJob({
     jobs: { other: { "runs-on": "windows-latest", if: "always()", steps: [], env: {} } },
