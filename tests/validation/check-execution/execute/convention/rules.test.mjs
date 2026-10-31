@@ -18,6 +18,27 @@ test("executes selected checks in discovery order", async () => {
   expect(results).toEqual(checks.map(({ ruleId }) => pass(ruleId)));
 });
 
+test("executes selected checks in parallel and preserves result order", async () => {
+  let active = 0;
+  let maximumActive = 0;
+  const checks = ["E-first", "E-second"].map((ruleId) => ({
+    ruleId,
+    run: async () => {
+      active += 1;
+      maximumActive = Math.max(maximumActive, active);
+      await Promise.resolve();
+      active -= 1;
+      return pass(ruleId);
+    },
+  }));
+
+  await expect(executeConventionRules(checks, {}, new Set())).resolves.toEqual([
+    pass("E-first"),
+    pass("E-second"),
+  ]);
+  expect(maximumActive).toBe(2);
+});
+
 test("passes rule-scoped paths to the matching check only", async () => {
   const calls = [];
   const checks = [

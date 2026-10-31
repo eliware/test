@@ -2,35 +2,40 @@
 
 ## Project
 
-Build `@eliware/test`, the Eliware repository validator, with Node.js 26 or newer and native ESM.
+`@eliware/test` validates Eliware repositories with deterministic checks.
+Eliware owns this repository.
 
 ## Scope and boundaries
 
-The package runs deterministic checks for repositories.
-It does not run semantic reviews or publish releases.
+Run checks for the profiles in `package.json.eliware.apply`.
+Keep semantic reviews outside this package.
 
 ## Layout
 
-Keep implementation in `src/`, launchers in `bin/`, and tests in `tests/`.
-Keep fixtures in `test-fixtures/`, user guides in `docs/`, and specifications in `specs/`.
+Keep source modules in `src/`, launchers in `bin/`, tests in `tests/`, fixtures in
+`test-fixtures/`, guides in `docs/`, and specifications in `specs/`.
 
 ## Development
 
-Give each source and test module one purpose.
+Give each source and test module one cohesive purpose.
 Mirror each `src/` `.mjs` file with exactly one same-path `tests/` `.test.mjs` file.
 
 ## Validation
 
+Use Node.js 26 or newer and native ESM.
 Run `npm test` for aggregate validation.
-Run `npm run lint`, `npm run audit`, `npm run format`, and `npm run format:check` as separate checks.
+Run `npm run lint` for lint checks.
+Run `npm run audit` for dependency checks.
+Run `npm run format` to format files.
+Run `npm run format:check` to check formatting.
 
 ## Security
 
-Do not expose credentials, secrets, or private data.
+Keep credentials, secrets, private data, and runtime state out of Git.
 
 ## Changes
 
-Keep user guides current when behavior changes.
+Update user guides and `RELEASE_NOTES.md` when behavior changes.
 
 ## Application
 
@@ -42,8 +47,9 @@ Run the full `npm test` suite for final validation before a commit, milestone, o
 
 ## CLI
 
-Document command behavior in README.md.
+Document CLI commands and exit codes in `README.md` and `docs/usage.md`.
 
 ## npm publication
 
-Follow Eliware Operations procedures for release approval.
+Use `.github/workflows/npm.yaml` for package publication.
+Follow the approved release process before publication.

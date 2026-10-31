@@ -1,18 +1,23 @@
 import { expect, jest, test } from "@jest/globals";
 import { runValidationStages } from "../../../src/validation/stages/run-validation-stages.mjs";
 
-test("runs selected stages in order and stores each result for checks", async () => {
+test("runs selected stages in parallel and stores each result for checks", async () => {
   const context = { executeLint: true, executeFormat: true };
   const order = [];
+  let active = 0;
+  let maximumActive = 0;
+  const run = (stage, output) =>
+    jest.fn(async () => {
+      order.push(stage);
+      active += 1;
+      maximumActive = Math.max(maximumActive, active);
+      await Promise.resolve();
+      active -= 1;
+      return { stage, status: "pass", output };
+    });
   const runners = {
-    lint: jest.fn(async () => {
-      order.push("lint");
-      return { stage: "lint", status: "pass", output: "lint output" };
-    }),
-    format: jest.fn(async () => {
-      order.push("format");
-      return { stage: "format", status: "pass", output: "format output" };
-    }),
+    lint: run("lint", "lint output"),
+    format: run("format", "format output"),
   };
 
   await expect(runValidationStages(context, ["lint", "format"], runners)).resolves.toEqual([]);
@@ -21,6 +26,7 @@ test("runs selected stages in order and stores each result for checks", async ()
     lint: { stage: "lint", status: "pass", output: "lint output" },
     format: { stage: "format", status: "pass", output: "format output" },
   });
+  expect(maximumActive).toBe(2);
 });
 
 test("reuses cached results and returns stage failures", async () => {

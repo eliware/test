@@ -4,7 +4,8 @@ export function createStageTimer(
   write = () => {},
   startedAt = now(),
 ) {
-  let currentStartedAt = startedAt;
+  const startedAtByLabel = new Map();
+  let lastStartedLabel;
   let nestedOutput = false;
   let nestedLineOpen = false;
 
@@ -16,19 +17,24 @@ export function createStageTimer(
       if (enabled) write(`[${this.elapsed()}s] Stage: ${label}\n`);
     },
     start(label) {
-      if (enabled) currentStartedAt = now();
+      if (enabled) {
+        startedAtByLabel.set(label, now());
+        lastStartedLabel = label;
+      }
       nestedOutput = false;
       nestedLineOpen = false;
-      if (enabled) write(`[${this.elapsed()}s] ${label}...`);
+      if (enabled) write(`[${this.elapsed()}s] ${label}...\n`);
     },
     end(label) {
       if (!enabled) return;
       const current = now();
-      const duration = ((current - currentStartedAt) / 1000).toFixed(3);
+      const checkStartedAt = startedAtByLabel.get(label) ?? current;
+      const duration = ((current - checkStartedAt) / 1000).toFixed(3);
+      startedAtByLabel.delete(label);
       if (nestedOutput) {
         if (nestedLineOpen) write("\n");
-        write(`${label} completed - ${duration}s\n`);
-      } else write(` completed - ${duration}s\n`);
+        write(`[${this.elapsed()}s] ${label} completed - ${duration}s\n`);
+      } else write(`[${this.elapsed()}s] ${label} completed - ${duration}s\n`);
     },
     skip(label) {
       if (enabled)
@@ -38,16 +44,15 @@ export function createStageTimer(
       if (!enabled || nestedOutput) return;
       nestedOutput = true;
       nestedLineOpen = false;
-      write("\n");
     },
     writeNestedOutput(text) {
       if (!enabled) return;
       write(text);
       nestedLineOpen = !text.endsWith("\n");
     },
-    step() {
-      if (!enabled) return;
-      currentStartedAt = now();
+    step(label = lastStartedLabel) {
+      if (!enabled || !label) return;
+      startedAtByLabel.set(label, now());
     },
   };
 }

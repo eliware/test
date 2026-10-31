@@ -34,7 +34,7 @@ function createStageContext(stages, calls, failedStage = "") {
   };
 }
 
-test("runs every enabled stage before checks and Jest, with cached output", async () => {
+test("runs the two pre-Jest barriers and Jest with cached stage output", async () => {
   const calls = [];
   const stages = ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"];
   const context = createStageContext(stages, calls);
@@ -51,7 +51,7 @@ test("runs every enabled stage before checks and Jest, with cached output", asyn
   expect(context.validationSummary.checkCount).toBe(9);
 });
 
-test("runs all checks but skips Jest after a stage failure", async () => {
+test("stops after initial stages fail and skips checks and Jest", async () => {
   const calls = [];
   const context = createStageContext(["lint"], calls, "lint");
   const checks = [
@@ -59,10 +59,39 @@ test("runs all checks but skips Jest after a stage failure", async () => {
     { ...makeCheck("E-after", calls), run: jest.fn(makeCheck("E-after", calls).run) },
   ];
   const results = await executeConventionChecks(checks, context, new Set());
-  expect(calls).toEqual(["lint", "E-before", "E-after"]);
-  expect(checks[1].run).toHaveBeenCalled();
+  expect(calls).toEqual(["lint"]);
+  expect(checks[1].run).not.toHaveBeenCalled();
   expect(context.stageResults.jest.status).toBe("skip");
-  expect(results.map(({ status }) => status)).toEqual(["fail", "pass", "pass"]);
+  expect(results.map(({ status }) => status)).toEqual(["fail"]);
+});
+
+test("waits for all initial stages before starting remaining checks", async () => {
+  const calls = [];
+  const stages = ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"];
+  const context = createStageContext(stages, calls);
+  let releaseInitial;
+  let markInitialStarted;
+  const initialStarted = new Promise((resolve) => (markInitialStarted = resolve));
+  const initialGate = new Promise((resolve) => (releaseInitial = resolve));
+  const initialNames = new Set(["lint", "format", "audit", "outdated"]);
+  for (const stage of initialNames) {
+    context.validationStageRunners[stage] = async () => {
+      calls.push(stage);
+      if (initialNames.size === [...initialNames].filter((name) => calls.includes(name)).length)
+        markInitialStarted();
+      await initialGate;
+      return { stage, code: 0, status: "pass", message: "", output: `${stage} report` };
+    };
+  }
+
+  const validation = executeConventionChecks([makeCheck("E-rule", calls)], context, new Set());
+  await initialStarted;
+  expect(calls).toEqual([...initialNames]);
+  releaseInitial();
+  await validation;
+  expect(calls).toContain("E-rule");
+  expect(calls).toContain("pack");
+  expect(calls.at(-1)).toBe("jest");
 });
 
 test("runs every convention check but skips Jest after a check fails", async () => {

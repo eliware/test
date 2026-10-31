@@ -17,22 +17,28 @@ The audit stage has a 30-second runtime limit.
 If it reaches the limit, Eliware Test stops the process and reports a warning.
 Validation continues, and the timeout does not change the aggregate exit code.
 
-The CLI runs enabled work in this order:
+The CLI runs these stages at the same time:
 
 1. Lint.
 2. Format check.
 3. npm audit.
 4. npm outdated.
-5. Package check when `npm-published` applies.
-6. Typecheck when `library` applies.
-7. Build when `web` applies.
-8. Convention checks.
-9. Jest and coverage.
 
-The CLI skips a stage when its profile does not require it.
-It runs all earlier stages and checks before Jest.
-It skips Jest when an earlier stage fails.
-It reports all failures and returns the highest failure code.
+The CLI waits until all four stages complete.
+If any stage fails, the CLI skips the remaining checks and Jest.
+
+If all four stages pass, the CLI runs the enabled package stages and convention checks at the
+same time:
+
+1. Package check when `npm-published` applies.
+2. Typecheck when `library` applies.
+3. Build when `web` applies.
+4. All selected convention checks.
+
+The CLI waits until all stages and checks complete.
+If any stage or check fails, the CLI skips Jest.
+If all stages and checks pass, the CLI runs Jest and coverage.
+The CLI reports all failures and returns the highest failure code.
 The CLI runs Jest without the consumer's `npm test` script.
 
 ## Focused validation
