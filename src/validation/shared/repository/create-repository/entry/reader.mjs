@@ -35,20 +35,19 @@ export function createRepositoryEntryReader({
 
   async function refreshIfChanged(snapshot) {
     const records = await snapshot;
-    let directoriesExist = true;
-    for (const directory of readDirectoryCached.getTrackedDirectories()) {
-      try {
-        await readDirectoryCached(directory);
-      } catch (error) {
-        if (error?.code !== "ENOENT") {
+    const directoriesExist = await Promise.all(
+      readDirectoryCached.getTrackedDirectories().map(async (directory) => {
+        try {
+          await readDirectoryCached(directory);
+          return true;
+        } catch (error) {
           readDirectoryCached.forget?.(directory);
+          if (error?.code === "ENOENT") return false;
           entriesPromise = undefined;
           throw error;
         }
-        readDirectoryCached.forget?.(directory);
-        directoriesExist = false;
-      }
-    }
+      }),
+    ).then((results) => results.every(Boolean));
     if (directoriesExist && readDirectoryCached.getRevision() === snapshotRevision) return records;
     return discover();
   }

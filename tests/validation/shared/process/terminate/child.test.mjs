@@ -9,18 +9,18 @@ test("uses the requested signal for process-group termination", () => {
   expect(killProcess).toHaveBeenCalledWith(-7, "SIGKILL");
 });
 
-test("falls back to child signaling when no POSIX process group exists", () => {
+test("reports incomplete termination when no POSIX process group exists", () => {
   const kill = jest.fn();
-  expect(terminateChild({ kill, pid: 0 }, "linux")).toBe(true);
+  expect(terminateChild({ kill, pid: 0 }, "linux")).toBe(false);
   expect(kill).toHaveBeenCalledWith("SIGTERM");
 });
 
-test("falls back to child signaling when a POSIX process group is unavailable", () => {
+test("reports incomplete termination after direct signaling fallback", () => {
   const killProcess = jest.fn(() => {
     throw new Error("missing");
   });
   const child = { kill: jest.fn(), pid: 123 };
-  expect(terminateChild(child, "linux", killProcess)).toBe(true);
+  expect(terminateChild(child, "linux", killProcess)).toBe(false);
   expect(killProcess).toHaveBeenCalledWith(-123, "SIGTERM");
   expect(child.kill).toHaveBeenCalledWith("SIGTERM");
 });

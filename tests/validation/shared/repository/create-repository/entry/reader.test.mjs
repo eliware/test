@@ -77,7 +77,7 @@ test("propagates refresh failures other than a missing directory", async () => {
   expect(readDirectoryCached.forget).toHaveBeenCalledWith("/repo");
 });
 
-test("refreshes tracked directories one at a time", async () => {
+test("refreshes tracked directories in parallel", async () => {
   let revision = 0;
   let active = 0;
   let maximumActive = 0;
@@ -100,7 +100,7 @@ test("refreshes tracked directories one at a time", async () => {
   });
   await reader.entries();
   await reader.entries();
-  expect(maximumActive).toBe(1);
+  expect(maximumActive).toBe(3);
 });
 
 test("retries discovery after a transient refresh failure", async () => {

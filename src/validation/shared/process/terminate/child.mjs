@@ -35,10 +35,8 @@ export function createChildTerminator(defaultKillTree = killWindowsProcessTree) 
     }
     try {
       child.kill(signal);
-    } catch {
-      return false;
-    }
-    return true;
+    } catch {}
+    return false;
   };
 }
 
