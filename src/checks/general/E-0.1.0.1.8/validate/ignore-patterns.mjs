@@ -1,5 +1,5 @@
-import { findProtectedNegations } from "./ignore-patterns/protected-negations.mjs";
 import { isUniversalIgnoreRule } from "./ignore-patterns/is-universal-ignore-rule.mjs";
+import { validateProtectedIgnoreNegations } from "./ignore-patterns/validate-protected-negations.mjs";
 
 const ignoredDirectories = [
   "node_modules",
@@ -37,10 +37,7 @@ export function validateRequiredIgnoreRules(content) {
   const errors = missing.length
     ? [`.gitignore must define universal rules for: ${missing.join(", ")}.`]
     : [];
-  const restorations = findProtectedNegations(rules);
-  if (restorations.length)
-    errors.push(
-      `.gitignore must not restore protected paths with negation rules: ${restorations.join(", ")}.`,
-    );
+  const negationError = validateProtectedIgnoreNegations(rules);
+  if (negationError) errors.push(negationError);
   return errors;
 }

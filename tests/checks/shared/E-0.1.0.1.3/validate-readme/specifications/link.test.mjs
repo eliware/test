@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import { resolveReadmeHeadings } from "../../../../../src/checks/shared/E-0.1.0.1.3/resolve-readme-headings.mjs";
-import { validateReadmeSpecificationsLink } from "../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/specifications-link.mjs";
+import { resolveReadmeHeadings } from "../../../../../../src/checks/shared/E-0.1.0.1.3/resolve-readme-headings.mjs";
+import { validateReadmeSpecificationsLink } from "../../../../../../src/checks/shared/E-0.1.0.1.3/validate-readme/specifications/link.mjs";
 
 const expected = resolveReadmeHeadings({ eliware: { apply: ["general"] } });
 const valid = `# Brand\n## ${expected[0]}\n- [Features](#features)\n${expected

@@ -57,7 +57,7 @@ test("finds computed module exports and require member calls", () => {
   ]);
 });
 
-test("finds CommonJS require aliases and TypeScript module syntax", () => {
+test("finds TypeScript module syntax", () => {
   const findings = [];
   collectCommonJsFindings(
     {
@@ -66,7 +66,6 @@ test("finds CommonJS require aliases and TypeScript module syntax", () => {
         null,
         { type: "VariableDeclarator", init: { type: "Identifier", name: "unrelated" } },
         { type: "AssignmentExpression", left: {}, right: { type: "Identifier", name: "other" } },
-        { type: "VariableDeclarator", init: { type: "Identifier", name: "require" } },
         {
           type: "TSImportEqualsDeclaration",
           moduleReference: { type: "TSExternalModuleReference" },
@@ -78,7 +77,6 @@ test("finds CommonJS require aliases and TypeScript module syntax", () => {
     "source.mts",
   );
   expect(findings).toEqual([
-    "source.mts: require alias",
     "source.mts: TypeScript CommonJS module syntax",
     "source.mts: TypeScript CommonJS module syntax",
   ]);

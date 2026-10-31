@@ -1,7 +1,7 @@
-import { containsOrMatches } from "./containment.mjs";
+import { hasSmokeTargetBoundaryOverlap } from "../validate/target-boundary.mjs";
 
 export function validateSmokeTargetBoundary(sourceRoot, targetRoot) {
-  return containsOrMatches(sourceRoot, targetRoot) || containsOrMatches(targetRoot, sourceRoot)
+  return hasSmokeTargetBoundaryOverlap(sourceRoot, targetRoot)
     ? "Smoke target must resolve outside the source checkout."
     : null;
 }

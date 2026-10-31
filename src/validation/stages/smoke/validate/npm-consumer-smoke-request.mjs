@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { validatePublicationMetadata } from "../../pack/validate/publication-metadata.mjs";
-import { containsOrMatches } from "../resolve-smoke-target/containment.mjs";
 import { validateSourcePackageIdentity } from "./source-package-identity.mjs";
+import { hasSmokeTargetBoundaryOverlap } from "./target-boundary.mjs";
 
 export function validateNpmConsumerSmokeRequest({ root, target, packageJson }) {
   if (typeof target !== "string" || !target.trim())
@@ -14,7 +14,7 @@ export function validateNpmConsumerSmokeRequest({ root, target, packageJson }) {
   if (identityError) return { error: identityError };
   const targetRoot = resolve(root, target);
   const sourceRoot = resolve(root);
-  if (containsOrMatches(sourceRoot, targetRoot) || containsOrMatches(targetRoot, sourceRoot))
+  if (hasSmokeTargetBoundaryOverlap(sourceRoot, targetRoot))
     return { error: "Smoke target must be a separate consumer repository." };
   return { targetRoot };
 }
