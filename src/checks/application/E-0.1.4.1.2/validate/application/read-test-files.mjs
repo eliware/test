@@ -1,7 +1,6 @@
 import { join } from "node:path";
 
-export async function readApplicationTestFiles(files, readText, root) {
-  const testPaths = files.filter((path) => path.startsWith("tests/") && path.endsWith(".test.mjs"));
+export async function readApplicationTestFiles(testPaths, readText, root) {
   return Promise.all(
     testPaths.map(async (path) => {
       try {

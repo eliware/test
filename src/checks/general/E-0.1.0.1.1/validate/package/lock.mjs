@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { validateLockfilePackageEntries } from "../lockfile-package-entries.mjs";
+import { validateLockfilePackageEntries } from "../lockfile/package-entries.mjs";
 import { validateLockfileRootPackage } from "./root-package.mjs";
 import { validateLockfileMetadata } from "./lock-metadata.mjs";
 
