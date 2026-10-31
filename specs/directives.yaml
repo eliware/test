@@ -244,6 +244,7 @@ directives:
           - Redact PEM public key blocks.
           - Write buffered text before a secret reaches the output limit.
           - Write live Jest output to `coverage/jest.log` as plain text.
+          - Keep harness progress records out of `coverage/jest.log`.
           - After Jest closes, scan the saved output with existing secret-redaction rules.
           - When a rule matches, replace matched values in the saved output promptly.
           - Fail validation when redaction occurs. Report the output path and redaction

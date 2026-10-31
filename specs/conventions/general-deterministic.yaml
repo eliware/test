@@ -45,6 +45,10 @@ directives:
       - Set package.json.bugs.url to the matching GitHub repository issues URL.
       - Use numeric `MAJOR.MINOR.PATCH` matching the applied convention version.
       - Match lockfile metadata and dependency references to package.json.
+      - Allow an overridden transitive version outside its parent range only when the root
+        override selects that version.
+      - Require each resolved overridden version to satisfy its applicable root override.
+      - Keep parent range checks for dependencies without an applicable root override.
       - Keep each Node.js dependency at its latest available release. The outdated stage
         must report no newer release.
       - Use the MIT license text with Copyright (c) 2026 Eliware.

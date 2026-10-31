@@ -86,7 +86,12 @@ Before each Jest run, the CLI removes earlier reports from the consumer's `cover
 It keeps `coverage/cache` for later runs.
 Jest writes coverage reports to that directory.
 The CLI saves redacted Jest output as plain text in `coverage/jest.log`.
+The file does not contain harness progress records.
 On failure, the CLI shows the failed suite and its assertion or error details.
+
+The package lock check accepts a transitive version outside its parent range when a root override selects that version.
+It checks that the locked version satisfies the override.
+It keeps the parent range check when no root override applies.
 
 The CLI leaves `coverage/eliware-test.log` after each validation run.
 When Jest runs, the CLI also leaves `coverage/jest.log` and coverage reports.

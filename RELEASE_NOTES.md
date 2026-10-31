@@ -7,6 +7,8 @@
 - Set the package version to 15.1.0 and the convention schema versions to 15.1.
 - Run Jest with its default worker pool while keeping per-suite timeout checks active.
 - Keep the Jest cache in `coverage/cache` between runs.
+- Keep harness progress records out of `coverage/jest.log`.
+- Accept lockfile versions selected by valid root dependency overrides.
 
 ## 15.0.1 — 2026-10-26
 

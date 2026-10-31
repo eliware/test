@@ -3,10 +3,11 @@ import { findLockfileDependencyEntry } from "./find-lockfile-dependency-entry.mj
 import { toSemverRange } from "./to-semver-range.mjs";
 import { isOptionalPeer } from "./optional-peer.mjs";
 import { isValidLockfileDependencyName } from "./dependency-name.mjs";
+import { resolvePackageOverride } from "./resolve-package-override.mjs";
 
 const dependencyFields = ["dependencies", "optionalDependencies", "peerDependencies"];
 
-export function validateLockfilePackageEntries(packages) {
+export function validateLockfilePackageEntries(packages, overrides = {}) {
   const errors = [];
   for (const [path, entry] of Object.entries(packages)) {
     if (path === "") continue;
@@ -43,18 +44,38 @@ export function validateLockfilePackageEntries(packages) {
         if (!targetPath && field === "peerDependencies" && isOptionalPeer(entry, name)) continue;
         if (!targetPath)
           errors.push(`package-lock.json entry ${path} references missing dependency ${name}.`);
-        else if (
-          range &&
-          typeof packages[targetPath]?.version === "string" &&
-          !semver.satisfies(packages[targetPath].version, range)
-        )
-          errors.push(
-            `package-lock.json entry ${path} dependency ${name} does not satisfy its range.`,
-          );
+        else {
+          const lockedVersion = packages[targetPath]?.version;
+          const overrideSpec = resolvePackageOverride(overrides, packageName(path), name);
+          const overrideRange = toSemverRange(overrideSpec);
+          const satisfiesOverride =
+            overrideRange &&
+            typeof lockedVersion === "string" &&
+            semver.satisfies(lockedVersion, overrideRange);
+          if (overrideSpec && overrideRange && !satisfiesOverride)
+            errors.push(
+              `package-lock.json entry ${targetPath} version does not satisfy root override ${overrideSpec}.`,
+            );
+          else if (
+            range &&
+            typeof lockedVersion === "string" &&
+            !semver.satisfies(lockedVersion, range) &&
+            !satisfiesOverride
+          )
+            errors.push(
+              `package-lock.json entry ${path} dependency ${name} does not satisfy its range.`,
+            );
+        }
       }
     }
   }
   return errors.length ? errors.join("\n") : null;
+}
+
+function packageName(path) {
+  const location = path.slice(path.lastIndexOf("node_modules/") + "node_modules/".length);
+  if (location.startsWith("@")) return location.split("/").slice(0, 2).join("/");
+  return location.split("/")[0];
 }
 
 function isRegistryTag(value) {

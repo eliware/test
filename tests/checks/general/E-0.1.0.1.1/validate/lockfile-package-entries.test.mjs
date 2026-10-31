@@ -105,6 +105,53 @@ test("requires transitive locked versions to satisfy dependency ranges", () => {
   ).toContain("dependency child does not satisfy its range");
 });
 
+test("accepts a transitive package version selected by a root override", () => {
+  expect(
+    validateLockfilePackageEntries(
+      {
+        "node_modules/mailauth": {
+          version: "5.0.0",
+          dependencies: { joi: "^17.0.0" },
+        },
+        "node_modules/joi": { version: "18.0.0" },
+      },
+      { joi: "^18.0.0" },
+    ),
+  ).toBeNull();
+});
+
+test("requires the locked version to satisfy its root override", () => {
+  expect(
+    validateLockfilePackageEntries(
+      {
+        "node_modules/mailauth": {
+          version: "5.0.0",
+          dependencies: { joi: "^17.0.0" },
+        },
+        "node_modules/joi": { version: "17.13.3" },
+      },
+      { joi: "^18.0.0" },
+    ),
+  ).toContain(
+    "package-lock.json entry node_modules/joi version does not satisfy root override ^18.0.0.",
+  );
+});
+
+test("applies scoped root overrides to scoped parent packages", () => {
+  expect(
+    validateLockfilePackageEntries(
+      {
+        "node_modules/@scope/mailauth": {
+          version: "5.0.0",
+          dependencies: { joi: "^17.0.0" },
+        },
+        "node_modules/joi": { version: "18.0.0" },
+      },
+      { "@scope/mailauth": { joi: "^18.0.0" } },
+    ),
+  ).toBeNull();
+});
+
 test("accepts npm registry tags in installed dependency metadata", () => {
   expect(
     validateLockfilePackageEntries({

@@ -14,7 +14,7 @@ export async function validatePackageLock(root, packageJson, { read = readFile }
   const metadata = validateLockfileMetadata(lockfile, packageJson);
   if (metadata.errors.length) return metadata.errors;
   const errors = validateLockfileRootPackage(packageJson, metadata.rootPackage, lockfile.packages);
-  const packageErrors = validateLockfilePackageEntries(lockfile.packages);
+  const packageErrors = validateLockfilePackageEntries(lockfile.packages, packageJson?.overrides);
   if (packageErrors) errors.push(packageErrors);
   return errors;
 }

@@ -1,27 +1,39 @@
-import { expect, jest, test } from "@jest/globals";
+import { beforeEach, expect, jest, test } from "@jest/globals";
+import { join } from "node:path";
 
 const runJest = jest.fn();
+const sanitizeJestLog = jest.fn();
 jest.unstable_mockModule(
   "../../../../../../src/validation/stages/jest/execution/run/jest.mjs",
   () => ({
     runJest,
   }),
 );
+jest.unstable_mockModule(
+  "../../../../../../src/validation/stages/jest/progress/sanitize-jest-log.mjs",
+  () => ({ sanitizeJestLog }),
+);
 const { executeJestCheck } =
   await import("../../../../../../src/validation/stages/jest/execution/execute/jest-check.mjs");
 
+beforeEach(() => {
+  sanitizeJestLog.mockReset().mockResolvedValue(undefined);
+});
+
 test("executes Jest and records its start time", async () => {
   const writeCliOutput = jest.fn();
+  const sanitizeLogFs = { read: jest.fn(), write: jest.fn() };
   runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
     options.onStart();
     return { code: 0, stdout: "ok", stderr: "" };
   });
-  const result = await executeJestCheck({ root: ".", jestArgs: [], writeCliOutput });
+  const result = await executeJestCheck({ root: ".", jestArgs: [], writeCliOutput, sanitizeLogFs });
   expect(result.result).toEqual(
     expect.objectContaining({ code: 0, startedAt: expect.any(Number) }),
   );
   expect(result.timeoutDiagnostic).toBeUndefined();
   expect(writeCliOutput).toHaveBeenCalledWith("Logging to ./coverage/jest.log...");
+  expect(sanitizeJestLog).toHaveBeenCalledWith(join(".", "coverage", "jest.log"), sanitizeLogFs);
 });
 
 test("preserves stderr diagnostics when stdout contains ordinary output", async () => {
@@ -95,11 +107,12 @@ test("captures timeout diagnostics and launch errors", async () => {
   runJest.mockImplementationOnce(async (root, args, execute, options) => {
     options.onStart();
     options.onTimeout("timeout diagnostic");
-    return { code: null, timedOut: true, stdout: "", stderr: "" };
+    return { code: null, timedOut: true, terminationConfirmed: false, stdout: "", stderr: "" };
   });
   await expect(
     executeJestCheck({ root: ".", jestArgs: [], writeOutput: jest.fn() }),
   ).resolves.toEqual(expect.objectContaining({ timeoutDiagnostic: "timeout diagnostic" }));
+  expect(sanitizeJestLog).not.toHaveBeenCalled();
   runJest.mockImplementationOnce(() => {
     throw new Error("spawn failed");
   });

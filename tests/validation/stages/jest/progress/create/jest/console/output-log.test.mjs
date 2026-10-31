@@ -34,6 +34,20 @@ test("streams output while Jest runs and redacts secrets after close", () => {
   expect(files.get("coverage/jest.log")).toBe("[REDACTED]warning");
 });
 
+test("removes harness progress records from the final natural Jest log", () => {
+  const { files, log } = makeLog();
+  log.start();
+  log.append("stdout", "PASS tests/example.test.mjs\n");
+  log.append("stderr", '[eliware-test-progress] {"event":"start"}\n');
+  log.append("stdout", "Tests: 1 passed\n");
+
+  expect(files.get("coverage/jest.log")).not.toContain("eliware-test-progress");
+  log.finish();
+  log.append("stderr", '[eliware-test-progress] {"event":"run-complete"}\n');
+
+  expect(files.get("coverage/jest.log")).toBe("PASS tests/example.test.mjs\nTests: 1 passed\n");
+});
+
 test("caps saved output and skips later chunks", () => {
   const { files, log } = makeLog({ maxLength: 3 });
   log.start();

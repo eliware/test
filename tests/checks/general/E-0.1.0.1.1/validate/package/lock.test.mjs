@@ -41,6 +41,12 @@ test("reports invalid lock JSON", async () => {
   ).resolves.toEqual(["package-lock.json must exist and contain valid JSON."]);
 });
 
+test("reports package metadata that differs from the lockfile", async () => {
+  await expect(
+    validatePackageLock("/repo", pkg, { read: readLock({ ...validLock, version: "14.0.0" }) }),
+  ).resolves.toContain("package-lock.json name and version must match package.json.");
+});
+
 test("checks dependency maps and direct dependency entries", async () => {
   const packageJson = { ...pkg, dependencies: { alpha: "1" }, devDependencies: { beta: "2" } };
   const lock = {
@@ -109,6 +115,32 @@ test("requires each locked direct package version to satisfy its declared range"
     },
   );
   expect(errors).toContain("package-lock.json version for alpha does not satisfy ^2.0.0.");
+});
+
+test("accepts a mailauth transitive version selected by a joi security override", async () => {
+  const packageJson = {
+    ...pkg,
+    dependencies: { mailauth: "^5.0.0" },
+    overrides: { joi: "^18.0.0" },
+  };
+  const lockfile = {
+    ...validLock,
+    packages: {
+      "": {
+        ...validLock.packages[""],
+        dependencies: { mailauth: "^5.0.0" },
+      },
+      "node_modules/mailauth": {
+        version: "5.0.0",
+        dependencies: { joi: "^17.0.0" },
+      },
+      "node_modules/joi": { version: "18.0.0" },
+    },
+  };
+
+  await expect(
+    validatePackageLock("/repo", packageJson, { read: readLock(lockfile) }),
+  ).resolves.toEqual([]);
 });
 
 test("accepts npm alias ranges and rejects unsupported direct ranges", async () => {
