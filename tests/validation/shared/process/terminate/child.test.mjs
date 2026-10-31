@@ -55,5 +55,10 @@ test("returns false when the child is invalid or direct signaling fails", () => 
 });
 
 test("uses host defaults when platform arguments are omitted", () => {
-  expect(terminateChild({ kill: jest.fn() })).toBe(process.platform !== "win32");
+  const child = { pid: 7, kill: jest.fn() };
+  const killProcess = jest.fn();
+  const killTree = jest.fn();
+  expect(terminateChild(child, undefined, killProcess, killTree, {})).toBe(true);
+  if (process.platform === "win32") expect(killTree).toHaveBeenCalledWith(7, {});
+  else expect(killProcess).toHaveBeenCalledWith(-7, "SIGTERM");
 });
