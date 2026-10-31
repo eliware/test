@@ -43,7 +43,9 @@ Read [Usage](usage.md) for the supported extensions and examples.
 Each suite has a ten-second limit.
 A 15-second watchdog also covers startup and pauses between suites.
 Use `--debug-timing` to find the slow suite.
-Jest runs in-band and checks for open handles.
+
+Jest uses worker processes by default.
+Pass `--detectOpenHandles` to find open handles. This option runs Jest in-band.
 Close timers, streams, servers, and child processes in the test that creates them.
 
 ### The smoke command fails

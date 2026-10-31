@@ -275,7 +275,9 @@ directives:
           - Keep Jest execution rooted in the consumer repository.
           - Supply harness reporters and detailed coverage output without weakening
             configured requirements.
-          - Run Jest with --runInBand, --detectOpenHandles, and --no-cache.
+          - Allow Jest to use its default worker pool.
+          - Run Jest with --no-cache.
+          - Allow --runInBand and --detectOpenHandles as optional diagnostic arguments.
           - Run requested Jest validation one time with established ordering and lifecycle
             behavior.
           - Report suite status during each run.

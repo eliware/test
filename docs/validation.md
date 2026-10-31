@@ -74,7 +74,10 @@ It rejects Jest configuration files not in `package.json`.
 Configured reporter names must be strings.
 Reporter option objects are not supported.
 
-The CLI runs Jest with `--runInBand`, `--detectOpenHandles`, and `--no-cache` on each run.
+Jest uses its default worker pool on each run.
+The CLI runs Jest with `--no-cache`.
+Pass `--detectOpenHandles` to find open handles. Jest then runs in-band.
+
 It adds a reporter and coverage reports.
 It keeps the consumer's required coverage settings.
 The selected profile rules define required coverage thresholds.

@@ -1,17 +1,16 @@
 import { expect, jest, test } from "@jest/globals";
 import { createSuiteTimeoutTracker } from "../../../../../../src/validation/stages/jest/progress/create/suite-timeout-tracker.mjs";
 
-test("tracks one active suite and stops stale timers when the next suite starts", () => {
-  const callbacks = new Map();
-  const reset = jest.fn();
-  const stop = jest.fn();
+test("tracks each concurrent suite and stops its timeout when that suite ends", () => {
+  const timeouts = new Map();
   const onSuiteTimeout = jest.fn();
   const termination = { onTimeout: jest.fn() };
   const tracker = createSuiteTimeoutTracker(
     { suiteTimeoutMs: 10_000, onSuiteTimeout },
-    ({ onTimeout: callback }) => {
-      callbacks.set(callbacks.size, callback);
-      return { reset, stop };
+    ({ onTimeout }) => {
+      const timeout = { onTimeout, reset: jest.fn(), stop: jest.fn() };
+      timeouts.set(timeouts.size, timeout);
+      return timeout;
     },
     () => termination,
   );
@@ -19,16 +18,21 @@ test("tracks one active suite and stops stale timers when the next suite starts"
   tracker.start("fast.test.mjs");
   tracker.start("slow.test.mjs");
   tracker.end("fast.test.mjs");
-  callbacks.get(1)();
+  timeouts.get(1).onTimeout();
 
-  expect(reset).toHaveBeenCalledTimes(2);
-  expect(stop).toHaveBeenCalledTimes(1);
+  expect(timeouts.get(0).reset).toHaveBeenCalledTimes(1);
+  expect(timeouts.get(1).reset).toHaveBeenCalledTimes(1);
+  expect(timeouts.get(0).stop).toHaveBeenCalledTimes(1);
+  expect(timeouts.get(1).stop).not.toHaveBeenCalled();
   expect(onSuiteTimeout).toHaveBeenCalledWith("slow.test.mjs");
   expect(termination.onTimeout).toHaveBeenCalledWith(false);
   tracker.end("slow.test.mjs");
-  expect(stop).toHaveBeenCalledTimes(2);
+  expect(timeouts.get(1).stop).toHaveBeenCalledTimes(1);
+  tracker.start("pending.test.mjs");
   tracker.stop();
-  expect(stop).toHaveBeenCalledTimes(2);
+  expect(timeouts.get(2).stop).toHaveBeenCalledTimes(1);
+  tracker.stop();
+  expect(timeouts.get(2).stop).toHaveBeenCalledTimes(1);
 });
 
 test("does not create suite timers when the deadline is disabled", () => {

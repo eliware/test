@@ -15,8 +15,6 @@ const wrapperOwnedOptions = [
   "findRelatedTests",
   "changedSince",
   "config",
-  "runInBand",
-  "detectOpenHandles",
   "cache",
 ];
 const wrapperOwnedOptionAliases = new Set(

@@ -3,10 +3,11 @@ import { validateJestOptionPolicy } from "../../../../../src/validation/stages/j
 
 test("allows Jest options outside the wrapper-owned policy", () => {
   expect(() => validateJestOptionPolicy(["--watch", "--verbose"])).not.toThrow();
+  expect(() => validateJestOptionPolicy(["--runInBand", "--detectOpenHandles"])).not.toThrow();
   expect(() => validateJestOptionPolicy([])).not.toThrow();
 });
 
-test.each(["--coverage=false", "--no-runInBand", "-c=jest.config.mjs"])(
+test.each(["--coverage=false", "--no-coverage", "-c=jest.config.mjs"])(
   "rejects wrapper-owned Jest option %s",
   (option) => {
     expect(() => validateJestOptionPolicy([option])).toThrow("controlled by eliware-test");

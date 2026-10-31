@@ -1,30 +1,28 @@
 export function createSuiteTimeoutTracker(options, createTimeout, getTermination) {
-  let activeSuite;
-  let timeout;
+  const timeouts = new Map();
   return {
     start(path) {
       if (!options.suiteTimeoutMs) return;
-      timeout?.stop();
-      activeSuite = path;
-      timeout = createTimeout({
+      timeouts.get(path)?.stop();
+      const timeout = createTimeout({
         timeoutMs: options.suiteTimeoutMs,
         onTimeout: () => {
           options.onSuiteTimeout?.(path);
           getTermination().onTimeout(false);
         },
       });
+      timeouts.set(path, timeout);
       timeout.reset();
     },
     end(path) {
-      if (activeSuite !== path) return;
-      timeout?.stop();
-      activeSuite = undefined;
-      timeout = undefined;
+      const timeout = timeouts.get(path);
+      if (!timeout) return;
+      timeout.stop();
+      timeouts.delete(path);
     },
     stop() {
-      timeout?.stop();
-      activeSuite = undefined;
-      timeout = undefined;
+      for (const timeout of timeouts.values()) timeout.stop();
+      timeouts.clear();
     },
   };
 }

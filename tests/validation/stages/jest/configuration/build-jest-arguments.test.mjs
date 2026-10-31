@@ -7,32 +7,18 @@ import {
 test("builds focused and default Jest argument lists", () => {
   expect(focusedPathFrom()).toBeUndefined();
   expect(focusedPathFrom(["--watch", "tests/sample.test.mjs"])).toBe("tests/sample.test.mjs");
-  expect(buildJestArguments([])).toEqual([
-    "--coverage",
-    "--runInBand",
-    "--detectOpenHandles",
-    "--no-cache",
-  ]);
-  expect(buildJestArguments(undefined)).toEqual([
-    "--coverage",
-    "--runInBand",
-    "--detectOpenHandles",
-    "--no-cache",
-  ]);
+  expect(buildJestArguments([])).toEqual(["--coverage", "--no-cache"]);
+  expect(buildJestArguments(undefined)).toEqual(["--coverage", "--no-cache"]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing"])).toEqual([
     "--coverage",
     "--runTestsByPath",
     "tests/sample.test.mjs",
-    "--runInBand",
-    "--detectOpenHandles",
     "--no-cache",
   ]);
   expect(buildJestArguments(["tests/sample.test.mjs", "--debug-timing", "--watch"])).toEqual([
     "--coverage",
     "--runTestsByPath",
     "tests/sample.test.mjs",
-    "--runInBand",
-    "--detectOpenHandles",
     "--no-cache",
     "--watch",
   ]);
@@ -41,9 +27,21 @@ test("builds focused and default Jest argument lists", () => {
     "--runTestsByPath",
     "tests/one.test.mjs",
     "tests/two.test.mjs",
+    "--no-cache",
+  ]);
+});
+
+test("allows serial execution and open-handle detection when requested", () => {
+  expect(buildJestArguments(["--runInBand", "--detectOpenHandles"])).toEqual([
+    "--coverage",
+    "--no-cache",
     "--runInBand",
     "--detectOpenHandles",
+  ]);
+  expect(buildJestArguments(["--detectOpenHandles=false"])).toEqual([
+    "--coverage",
     "--no-cache",
+    "--detectOpenHandles=false",
   ]);
 });
 
@@ -69,9 +67,6 @@ test.each([
   ["--test-path-patterns=tests/other"],
   ["-c", "jest.config.mjs"],
   ["--find-related-tests", "src/other.mjs"],
-  ["--no-runInBand"],
-  ["--detectOpenHandles=false"],
-  ["--no-detectOpenHandles"],
   ["--cache"],
   ["--no-cache"],
 ])("rejects forwarded wrapper-owned Jest options: %s", (...args) => {
