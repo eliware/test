@@ -3,7 +3,7 @@ import { packageVersion } from "../../../../../test-fixtures/helpers/project-ver
 import { validateCliVersionResult } from "../../../../../src/checks/cli/E-0.1.5.1.0/validate/version-result.mjs";
 
 test("accepts repeated occurrences of the same package version", () => {
-  expect(validateCliVersionResult("bin/cli.mjs", "15.0.0 and v15.0.0", "15.0.0")).toEqual([]);
+  expect(validateCliVersionResult("bin/cli.mjs", "15.1.0 and v15.1.0", "15.1.0")).toEqual([]);
 });
 
 test("accepts output that reports only the package version", () => {

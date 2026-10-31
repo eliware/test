@@ -1,5 +1,11 @@
 # Release Notes
 
+## 15.1.0 — 2026-10-31
+
+### Changed
+
+- Set the package version to 15.1.0 and the convention schema versions to 15.1.
+
 ## 15.0.1 — 2026-10-26
 
 ### Added

@@ -4,8 +4,8 @@ import { loadBundledConventionDocuments } from "../../../../../../../src/checks/
 test("loads nested convention YAML and skips profile policy files", async () => {
   const read = jest.fn(async (path) =>
     String(path).endsWith("general-deterministic.yaml")
-      ? "version: '15.0'\ndescription: General.\ndirectives: []\n---\nversion: '15.0'\ndescription: More.\ndirectives: []"
-      : "version: '15.0'\ndescription: Application.\ndirectives: []",
+      ? "version: '15.1'\ndescription: General.\ndirectives: []\n---\nversion: '15.1'\ndescription: More.\ndirectives: []"
+      : "version: '15.1'\ndescription: Application.\ndirectives: []",
   );
   const documents = await loadBundledConventionDocuments({
     root: "/suite",

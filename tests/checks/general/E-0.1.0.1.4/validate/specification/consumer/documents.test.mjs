@@ -3,7 +3,7 @@ import { validateConsumerSpecificationDocuments } from "../../../../../../../src
 
 const path = "specs/directives.yaml document 1";
 const document = {
-  version: "15.0",
+  version: "15.1",
   description: "Rules",
   directives: [{ id: "E-0.0", dos: ["Do"], donts: ["Do not"] }],
 };

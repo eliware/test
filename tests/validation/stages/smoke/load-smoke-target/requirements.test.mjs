@@ -7,7 +7,7 @@ import {
 test.each(["dependencies", "devDependencies", "optionalDependencies"])(
   "finds dependencies in %s",
   (field) => {
-    expect(hasPackageDependency({ [field]: { "@eliware/test": "15.0.0" } }, "@eliware/test")).toBe(
+    expect(hasPackageDependency({ [field]: { "@eliware/test": "15.1.0" } }, "@eliware/test")).toBe(
       true,
     );
   },
@@ -23,7 +23,7 @@ test("requires a distinct consumer, test script, and package dependency", () => 
   );
   expect(
     validateSmokeTargetRequirements(
-      { scripts: { test: "jest" }, dependencies: { "@eliware/test": "15.0.0" } },
+      { scripts: { test: "jest" }, dependencies: { "@eliware/test": "15.1.0" } },
       "@eliware/test",
     ),
   ).toBeNull();

@@ -15,7 +15,7 @@ afterEach(() => readFile.mockReset());
 test("calls smoke with package metadata and reports a successful result", async () => {
   readFile.mockResolvedValue(JSON.stringify({ name: "@eliware/test" }));
   const write = jest.fn();
-  const smoke = jest.fn(async () => "Smoke passed: @eliware/test@15.0.0");
+  const smoke = jest.fn(async () => "Smoke passed: @eliware/test@15.1.0");
   await expect(
     runSmokeCli({ args: ["--target", "consumer"], root: "repo", write, smoke }),
   ).resolves.toBe(0);

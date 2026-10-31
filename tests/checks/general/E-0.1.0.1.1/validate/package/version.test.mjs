@@ -9,7 +9,7 @@ test("accepts the current numeric package version", () => {
   expect(validatePackageVersion({ version: packageVersion })).toEqual([]);
 });
 
-test.each([undefined, "15.0", "15.0.01", "14.0.0", "15.0.0-beta"])(
+test.each([undefined, "15.1", "15.1.01", "14.0.0", "15.1.0-beta"])(
   "rejects invalid package version %s",
   (version) => {
     expect(validatePackageVersion({ version })).toEqual([error]);

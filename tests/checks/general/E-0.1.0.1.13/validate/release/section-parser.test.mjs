@@ -5,7 +5,7 @@ test("parses entries, sections, and section content", () => {
   expect(
     parseReleaseNoteSections([
       "# Release Notes",
-      "## 15.0.0",
+      "## 15.1.0",
       "### Added",
       "A new feature.",
       "### Fixed",
@@ -14,7 +14,7 @@ test("parses entries, sections, and section content", () => {
   ).toEqual({
     entries: [
       {
-        heading: "## 15.0.0",
+        heading: "## 15.1.0",
         sections: [
           { heading: "### Added", name: "Added", content: ["A new feature."] },
           { heading: "### Fixed", name: "Fixed", content: ["A correction."] },
