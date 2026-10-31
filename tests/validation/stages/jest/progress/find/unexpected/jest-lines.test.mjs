@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import { findUnexpectedJestLines } from "../../../../../../src/validation/stages/jest/progress/find/unexpected-jest-lines.mjs";
+import { findUnexpectedJestLines } from "../../../../../../../src/validation/stages/jest/progress/find/unexpected/jest-lines.mjs";
 
 test("allows Jest summaries, assertion markers, and harness timing lines", () => {
   expect(

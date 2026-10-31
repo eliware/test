@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import {
   findJestConsoleOutput,
   isDefaultJestConsoleLine,
-} from "../../../../../../src/validation/stages/jest/progress/find/jest-console-output.mjs";
+} from "../../../../../../../src/validation/stages/jest/progress/find/jest-console/output.mjs";
 
 test("formats console output with the emitting test source", () => {
   expect(

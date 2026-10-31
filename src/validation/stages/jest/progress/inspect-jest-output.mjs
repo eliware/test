@@ -1,6 +1,6 @@
-import { findUnexpectedJestLineRecords } from "./find/unexpected-jest-lines.mjs";
-import { findJestConsoleOutput, isDefaultJestConsoleLine } from "./find/jest-console-output.mjs";
-import { redactProcessOutput } from "../../../shared/output/redaction/redact/process-output.mjs";
+import { findUnexpectedJestStdout } from "./find/unexpected/stdout.mjs";
+import { findUnexpectedJestStderr } from "./find/unexpected/stderr.mjs";
+import { findJestConsoleFindings } from "./find/jest-console/findings.mjs";
 
 export function findUnexpectedJestOutput(
   { stdout = "", stderr = "", consoleOutput, consoleReportError } = {},
@@ -8,30 +8,10 @@ export function findUnexpectedJestOutput(
   root,
 ) {
   const outputRecords = consoleOutput ?? [];
-  const findings = findUnexpectedJestLineRecords(stdout)
-    .filter(
-      (record) =>
-        record.line !== "…" &&
-        !/^\[?eliware(?:-test)?(?:-progress)?\b/u.test(record.line) &&
-        !isDefaultJestConsoleLine(record, outputRecords, root),
-    )
-    .map(({ line, suite }) => redactProcessOutput(formatUnexpected(line, suite), secrets));
-  if (consoleReportError) findings.push(redactProcessOutput(consoleReportError, secrets));
-  findings.push(...findJestConsoleOutput(consoleOutput, root, secrets));
-  findings.push(
-    ...findUnexpectedJestLineRecords(stderr)
-      .filter(
-        ({ line, suite }) =>
-          line !== "…" &&
-          !/^\[?eliware-test(?:-progress)?\b/u.test(line) &&
-          !/^E-0.1\.20(?::|\.)/.test(line) &&
-          !isDefaultJestConsoleLine({ line, suite }, outputRecords, root),
-      )
-      .map(({ line, suite }) => redactProcessOutput(formatUnexpected(line, suite), secrets)),
-  );
+  const findings = [
+    ...findUnexpectedJestStdout(stdout, outputRecords, secrets, root),
+    ...findJestConsoleFindings(consoleReportError, outputRecords, root, secrets),
+    ...findUnexpectedJestStderr(stderr, outputRecords, secrets, root),
+  ];
   return [...new Set(findings)];
-}
-
-function formatUnexpected(line, suite) {
-  return `Unexpected output from ${suite}: ${line}`;
 }

@@ -1,5 +1,6 @@
 import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
+import { validateLicenseContent } from "./license-content.mjs";
 
 const requiredFiles = [
   "package.json",
@@ -42,12 +43,6 @@ export async function validateRequiredPackageFiles(root, { getStat = stat, read 
       errors.push(`${file} is required at the repository root.`);
     }
   }
-  try {
-    const license = (await read(join(root, "LICENSE"), "utf8")).replace(/\s+/gu, " ").trim();
-    if (license !== expectedLicense.replace(/\s+/gu, " ").trim())
-      errors.push("LICENSE must contain the complete approved MIT text.");
-  } catch {
-    errors.push("LICENSE could not be read.");
-  }
+  errors.push(...(await validateLicenseContent(root, read, expectedLicense)));
   return errors;
 }

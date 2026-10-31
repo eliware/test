@@ -1,5 +1,5 @@
-import { normalizeRepositoryRelativePath } from "../../../../shared/repository/normalize-repository/relative-path.mjs";
-import { redactProcessOutput } from "../../../../shared/output/redaction/redact/process-output.mjs";
+import { normalizeRepositoryRelativePath } from "../../../../../shared/repository/normalize-repository/relative-path.mjs";
+import { redactProcessOutput } from "../../../../../shared/output/redaction/redact/process-output.mjs";
 
 export function findJestConsoleOutput(consoleOutput = [], root = process.cwd(), secrets = []) {
   const findings = [];

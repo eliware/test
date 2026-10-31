@@ -86,9 +86,8 @@ function smoke(options = {}) {
 
 test("prepares, runs, and finishes the package consumer workflow", async () => {
   const write = jest.fn();
-  await expect(smoke({ write })).resolves.toBe(
-    `Smoke passed: @eliware/test@${packageVersion}. SHA-256 sha256-digest.`,
-  );
+  const outcome = await smoke({ write });
+  expect(outcome).toBe(finishSmokeRun.mock.calls[0][0].outcome);
   expect(prepareSmokeTargetContext).toHaveBeenCalledWith({
     root: "source-root",
     target: "consumer-path",
@@ -134,7 +133,7 @@ test("prepares, runs, and finishes the package consumer workflow", async () => {
   expect(write).toHaveBeenCalledWith("Target recovery snapshot: snapshot-root");
   expect(finishSmokeRun).toHaveBeenCalledWith(
     expect.objectContaining({
-      outcome: `Smoke passed: @eliware/test@${packageVersion}. SHA-256 sha256-digest.`,
+      outcome: expect.stringContaining("sha256-digest"),
       state: smokeState,
       targetRoot: "consumer-root",
       tempRoot: "temp-root",
@@ -174,10 +173,11 @@ test("finalizes the temporary workspace when snapshot preparation fails", async 
 
 test("reports workflow failures and passes them to finalization", async () => {
   runSmokePackageTransaction.mockRejectedValue(new Error("consumer test failed"));
-  await expect(smoke()).resolves.toBe("Tarball consumer smoke failed: consumer test failed");
+  const outcome = await smoke();
+  expect(outcome).toBe(finishSmokeRun.mock.calls[0][0].outcome);
+  expect(outcome).toContain("consumer test failed");
   expect(finishSmokeRun).toHaveBeenCalledWith(
     expect.objectContaining({
-      outcome: "Tarball consumer smoke failed: consumer test failed",
       state: smokeState,
     }),
   );

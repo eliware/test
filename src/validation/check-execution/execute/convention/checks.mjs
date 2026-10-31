@@ -1,19 +1,13 @@
 import { executeConventionRules } from "./rules.mjs";
 import { filterConventionChecksForExecution } from "../../filter-convention-checks-for-execution.mjs";
 import { runValidationStages } from "../../../stages/run-validation-stages.mjs";
+import { executePackageStages } from "./package-stages.mjs";
 
 export async function executeConventionChecks(checks, context, exemptions) {
   const selected = filterConventionChecksForExecution(checks, context, exemptions);
   context.timing?.stage?.("package stages");
-  const stageFailures = await runValidationStages(
-    context,
-    ["lint", "format", "audit", "outdated", "pack", "typecheck", "build"],
-    context.validationStageRunners,
-  );
+  const { failures: stageFailures, completedStages } = await executePackageStages(context);
   context.validationSummary ??= {};
-  const completedStages = Object.values(context.stageResults).filter(
-    (result) => ["pass", "warning"].includes(result.status) && result.stage !== "jest",
-  ).length;
   context.timing?.stage?.("convention checks");
   const checkResults = await executeConventionRules(selected, context, exemptions);
   context.validationSummary.checkCount = selected.length + completedStages;

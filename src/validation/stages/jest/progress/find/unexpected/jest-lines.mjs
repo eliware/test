@@ -1,4 +1,4 @@
-import { createActiveSuiteTracker } from "./active-suite.mjs";
+import { createActiveSuiteTracker } from "../active-suite.mjs";
 
 const JEST_LINES = [
   /^(?:PASS|FAIL)\s/,
