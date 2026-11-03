@@ -1,4 +1,4 @@
-version: "15.1"
+version: "15.2"
 description: Sets rules for Eliware Test execution, checks, and public interfaces.
 directives:
   - id: E-0.0

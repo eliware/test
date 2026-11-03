@@ -1,4 +1,4 @@
-version: "15.1"
+version: "15.2"
 description: Defines package key order. Put type after version. Put unlisted keys after listed keys.
 orders:
   topLevelKeys:

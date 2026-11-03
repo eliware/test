@@ -1,4 +1,4 @@
-version: "15.1"
+version: "15.2"
 description: Lists deterministic rules for private Eliware access.
 directives:
   - id: E-0.1.12.1.0

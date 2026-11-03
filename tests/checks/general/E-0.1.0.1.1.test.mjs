@@ -13,7 +13,7 @@ const { run, ruleId } = await import("../../../src/checks/general/E-0.1.0.1.1.mj
 
 const packageJson = {
   name: "@eliware/fixture",
-  version: "15.1.0",
+  version: "15.2.0",
   type: "module",
   description: "Fixture package.",
   keywords: ["fixture"],

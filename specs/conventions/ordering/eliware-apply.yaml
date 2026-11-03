@@ -1,4 +1,4 @@
-version: "15.1"
+version: "15.2"
 description: Defines canonical order for package.json.eliware.apply.
 orders:
   profiles:

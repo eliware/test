@@ -1,4 +1,4 @@
-version: "15.1"
+version: "15.2"
 description: Defines deterministic requirements shared by Eliware repositories.
 directives:
   - id: E-0.1.0.1.0

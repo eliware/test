@@ -1,4 +1,4 @@
-version: "15.1"
+version: "15.2"
 description: Defines semantic repository requirements for Eliware container publication.
 directives:
   - id: E-0.1.11.0.0

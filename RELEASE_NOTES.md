@@ -1,5 +1,13 @@
 # Release Notes
 
+## 15.2.0 — 2026-11-03
+
+### Changed
+
+- Set the package version to 15.2.0 and the convention schema versions to 15.2.
+- Update `@babel/parser` to 8.1.0, `minimatch` to 11.0.4, Oxlint to 1.91.0, and `semver` to 7.8.6.
+- Update locked transitive dependencies.
+
 ## 15.1.0 — 2026-10-31
 
 ### Added

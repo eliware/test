@@ -1,4 +1,4 @@
-version: "15.1"
+version: "15.2"
 description: Lists semantic rules for private Eliware publication.
 directives:
   - id: E-0.1.12.0.0
