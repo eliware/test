@@ -9,3 +9,10 @@ on:
           - git pull
           - npm ci
           - npm test
+      - target: nas
+        cwd: /eliware/test
+        timeoutMs: 300000
+        commands:
+          - git pull
+          - npm ci
+          - npm test
