@@ -1,5 +1,7 @@
 import { realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, sep } from "node:path";
+import { findIgnoredRepositoryPaths } from "../../shared/repository/find-repository-files.mjs";
+import { isIgnoredRepositoryPath } from "../../shared/repository/repository-inventory/path-filters.mjs";
 
 export async function resolveFocusedValidationPaths(root, focusedScope) {
   const paths = Array.isArray(focusedScope?.paths)
@@ -10,11 +12,18 @@ export async function resolveFocusedValidationPaths(root, focusedScope) {
   if (
     !Array.isArray(paths) ||
     paths.length === 0 ||
-    !paths.every(isSupportedFocusedPath) ||
-    !(await focusedFilesExist(root, paths))
+    !paths.every((path) => typeof path === "string")
   )
     return null;
-  return paths;
+  const ignoredPaths = await findIgnoredRepositoryPaths(root);
+  const selectedPaths = paths.filter((path) => !isIgnoredRepositoryPath(path, ignoredPaths));
+  if (selectedPaths.length === 0) return [];
+  if (
+    !selectedPaths.every(isSupportedFocusedPath) ||
+    !(await focusedFilesExist(root, selectedPaths))
+  )
+    return null;
+  return selectedPaths;
 }
 
 function isSupportedFocusedPath(path) {

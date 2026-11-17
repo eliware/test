@@ -15,9 +15,34 @@ const directory = (name) => ({ name, isDirectory: () => true, isFile: () => fals
 beforeEach(() => readdir.mockReset());
 
 test("discovers repository files while excluding dependency and generated trees", async () => {
-  readdir.mockResolvedValueOnce([directory("node_modules"), file("README.md")]);
+  readdir.mockResolvedValueOnce([
+    directory("node_modules"),
+    directory("artifacts"),
+    file("README.md"),
+  ]);
 
   await expect(findRepositoryFiles(root)).resolves.toEqual(["README.md"]);
+});
+
+test("skips ignored directories at every depth and ignored files", async () => {
+  readdir.mockImplementation(async (path) => {
+    if (path === root)
+      return [
+        directory("nested"),
+        directory("ignored-local"),
+        file(".env.production.local"),
+        file(".env.example"),
+      ];
+    if (path === join(root, "nested")) return [directory("artifacts"), directory("source")];
+    if (path === join(root, "nested", "source")) return [file("entry.mjs")];
+    return [];
+  });
+
+  await expect(
+    findRepositoryEntries(root, undefined, {
+      ignoredPaths: new Set(["ignored-local", ".env.production.local"]),
+    }).then((entries) => entries.filter(({ type }) => type === "file").map(({ path }) => path)),
+  ).resolves.toEqual([".env.example", "nested/source/entry.mjs"]);
 });
 
 test("filters discovered files and reports accepted paths to the traversal observer", async () => {
@@ -43,7 +68,7 @@ test("recurses through included directories and ignores non-file entries", async
   await expect(findRepositoryFiles(root)).resolves.toEqual(["docs/guide.md"]);
 });
 
-test("returns directory depth metadata and can include test-results for documentation views", async () => {
+test("skips ignored test-results directories even when a view requests them", async () => {
   readdir.mockImplementation(async (path) => {
     if (path === root) return [directory("test-results")];
     if (path === join(root, "test-results")) return [directory("nested")];
@@ -53,14 +78,10 @@ test("returns directory depth metadata and can include test-results for document
   await expect(findRepositoryEntries(root)).resolves.toEqual([]);
   await expect(
     findRepositoryEntries(root, undefined, { includeTestResults: true }),
-  ).resolves.toEqual([
-    { path: "test-results", type: "directory", depth: 1 },
-    { path: "test-results/nested", type: "directory", depth: 2 },
-    { path: "test-results/nested/report.md", type: "file", depth: 2 },
-  ]);
+  ).resolves.toEqual([]);
 });
 
-test("includes test-results only beneath requested inventory scopes", async () => {
+test("skips ignored test-results beneath requested inventory scopes", async () => {
   readdir.mockResolvedValueOnce([directory("src"), directory("test-results")]);
   readdir.mockResolvedValueOnce([directory("test-results")]);
   readdir.mockResolvedValueOnce([directory("nested")]);
@@ -68,11 +89,7 @@ test("includes test-results only beneath requested inventory scopes", async () =
 
   await expect(
     findRepositoryEntries(root, undefined, { includeTestResultsUnder: ["src"] }),
-  ).resolves.toContainEqual({
-    path: "src/test-results/nested/report.json",
-    type: "file",
-    depth: 3,
-  });
+  ).resolves.toEqual([{ path: "src", type: "directory", depth: 1 }]);
 });
 
 test("skips a direct test-results scope when the inventory does not include it", async () => {
@@ -82,7 +99,7 @@ test("skips a direct test-results scope when the inventory does not include it",
   expect(readdir).not.toHaveBeenCalled();
 });
 
-test("walks a nested test-results scope when its parent inventory is enabled", async () => {
+test("skips a nested test-results scope even when its parent inventory is enabled", async () => {
   readdir.mockResolvedValueOnce([file("report.json")]);
 
   await expect(
@@ -90,10 +107,7 @@ test("walks a nested test-results scope when its parent inventory is enabled", a
       includeTestResultsUnder: ["src"],
       scopeDirectory: "src/test-results/nested",
     }),
-  ).resolves.toEqual([
-    { path: "src/test-results/nested", type: "directory", depth: 3 },
-    { path: "src/test-results/nested/report.json", type: "file", depth: 3 },
-  ]);
+  ).resolves.toEqual([]);
 });
 
 test("walks a requested subtree and rejects scopes outside the repository", async () => {

@@ -20,3 +20,12 @@ test("ignores malformed output, unknown paths, and other ignore sources", () => 
 
   expect(parseGitIgnoreProbeResults(output, "repo")).toEqual(new Set());
 });
+
+test("treats matching negation rules as unignored paths", () => {
+  const output = [
+    ".gitignore:3:!.env.example\t.env.example",
+    ".gitignore:4:!**/.env.example\tnested/.env.example",
+  ].join("\n");
+
+  expect(parseGitIgnoreProbeResults(output, "repo")).toEqual(new Set());
+});

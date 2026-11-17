@@ -6,6 +6,7 @@ import { getJestStageFailureCode } from "./failure-code.mjs";
 export async function runJestValidationStage(context, runJest, readCoverage) {
   const jestStartedAt = Date.now();
   const value = await runJest(context, "stage:jest");
+  if (value.skipped) return { ...value, stage: "jest", code: 0, status: "pass", output: null };
   const outputText = [context.jestResult?.stdout, context.jestResult?.stderr, value.message]
     .filter(Boolean)
     .join("\n");

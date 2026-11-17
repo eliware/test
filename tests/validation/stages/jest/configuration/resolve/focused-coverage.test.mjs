@@ -22,6 +22,8 @@ test("maps mirrored tests across root, case, and separator variants", async () =
     await expect(resolveFocusedCoverage(root, focusedPath)).resolves.toEqual([
       "--collectCoverageFrom",
       "src/sample.mjs",
+      "--coverageThreshold",
+      '{"./src/sample.mjs":{"branches":100,"functions":100,"lines":100,"statements":100}}',
     ]);
   }
   expect(access).toHaveBeenCalledWith(join(root, "src", "sample.mjs"));
@@ -35,6 +37,8 @@ test("selects coverage for each focused test source", async () => {
     "src/one.mjs",
     "--collectCoverageFrom",
     "src/nested/two.mjs",
+    "--coverageThreshold",
+    '{"./src/one.mjs":{"branches":100,"functions":100,"lines":100,"statements":100},"./src/nested/two.mjs":{"branches":100,"functions":100,"lines":100,"statements":100}}',
   ]);
 });
 
@@ -43,13 +47,15 @@ test("maps typed tests to native ESM sources and preserves other extensions", as
   await expect(resolveFocusedCoverage(root, focusedPaths)).resolves.toEqual([
     "--collectCoverageFrom",
     "src/sample.mjs",
-    "--collectCoverageFrom",
-    "src/sample.mjs",
+    "--coverageThreshold",
+    '{"./src/sample.mjs":{"branches":100,"functions":100,"lines":100,"statements":100}}',
   ]);
   for (const extension of ["js", "jsx", "ts", "tsx", "mjs", "cjs"]) {
     await expect(resolveFocusedCoverage(root, `tests/example.test.${extension}`)).resolves.toEqual([
       "--collectCoverageFrom",
       `src/example.${extension}`,
+      "--coverageThreshold",
+      `{"./src/example.${extension}":{"branches":100,"functions":100,"lines":100,"statements":100}}`,
     ]);
   }
 });

@@ -6,15 +6,17 @@ const records = [
   { path: "src/index.mjs", type: "file" },
   { path: "src/package.json", type: "file" },
   { path: "test-results/report.md", type: "file" },
+  { path: "artifacts/report.md", type: "file" },
   { path: "dist/bundle.mjs", type: "file" },
 ];
 
 test("routes supported file-view requests through the focused selectors", async () => {
   const entries = jest.fn(async () => records);
   const views = createRepositoryFileViews(entries, null);
-  await expect(views.files("all")).resolves.toContain("test-results/report.md");
+  await expect(views.files("all")).resolves.not.toContain("test-results/report.md");
+  await expect(views.files("all")).resolves.not.toContain("artifacts/report.md");
   await expect(views.files("source")).resolves.toEqual(["src/index.mjs"]);
-  await expect(views.files("documentation")).resolves.toContain("README.md");
+  await expect(views.files("documentation")).resolves.toEqual(["README.md", "src/package.json"]);
   await expect(views.files("json")).resolves.toEqual(["src/package.json"]);
   await expect(views.files()).resolves.toEqual(["README.md", "src/index.mjs", "src/package.json"]);
   await expect(views.repositoryFiles()).resolves.toBe(await views.files("repository"));
@@ -43,11 +45,16 @@ test("serves explicit focused paths without discovery and falls back to reposito
   const unscoped = createRepositoryFileViews(entries, null);
   await expect(unscoped.focusedFiles()).resolves.toContain("README.md");
   expect(entries).toHaveBeenCalledTimes(1);
+
+  const rooted = createRepositoryFileViews(entries, { paths: ["src/index.mjs"] }, "C:/repo");
+  await expect(rooted.focusedFiles()).resolves.toEqual(["src/index.mjs"]);
 });
 
 test("serves a scoped facade view without discovering unrelated repository files", async () => {
   const entries = jest.fn(async () => records);
-  const focused = createRepositoryFileViews(entries, { paths: ["tests/one.test.mjs"] });
+  const focused = createRepositoryFileViews(entries, {
+    paths: ["tests/one.test.mjs", "tests/artifacts/generated.test.mjs"],
+  });
 
   await expect(focused.focusedFiles()).resolves.toEqual(["tests/one.test.mjs"]);
   await expect(focused.files("all")).resolves.toEqual(["tests/one.test.mjs"]);

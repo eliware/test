@@ -18,6 +18,8 @@ export async function runJestStage(context, ruleId) {
     context.jestExecutionError = execution.error.message;
     return fail(ruleId, `Jest could not be started: ${execution.error.message}`);
   }
+  if (execution.skipped)
+    return { ...pass(ruleId, "All focused Jest paths are ignored."), skipped: true };
   recordJestContext(context, execution.result);
   return classifyJestResult(ruleId, context.jestResult, execution.timeoutDiagnostic);
 }

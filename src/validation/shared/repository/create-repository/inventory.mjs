@@ -36,7 +36,7 @@ export function createRepositoryInventory(root, options = {}, currentPlatform = 
     includeTestResults,
     includeTestResultsUnder,
   });
-  const views = createRepositoryFileViews(discovery.entries, focusedScope);
+  const views = createRepositoryFileViews(discovery.entries, focusedScope, root);
   const content = createRepositoryContentCache(root, read, parseSource);
   const documentationFiles = createDocumentationFileView(root, discovery.entriesUnder);
   const directoryEntries = createRepositoryDirectoryEntries({

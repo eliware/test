@@ -1,23 +1,28 @@
 import {
+  isIgnoredRepositoryPath,
   isGeneratedRepositoryPath,
   isRepositoryIgnoredPath,
 } from "../../repository-inventory/path-filters.mjs";
+import { findIgnoredRepositoryPaths } from "../../find-repository-files.mjs";
 import { selectRepositoryDocumentationView } from "../../select-repository/documentation-view.mjs";
 import { selectRepositorySourceView } from "../../select-repository/source-view.mjs";
 
-export function createRepositoryFileViews(entries, focusedScope) {
+export function createRepositoryFileViews(entries, focusedScope, root) {
   const views = new Map();
   async function files(view = "repository") {
     if (view === "focused") {
-      if (focusedScope?.paths?.length) return [...focusedScope.paths];
+      if (focusedScope?.paths?.length) return focusedPaths();
       return files("repository");
     }
-    if (view === "all" && focusedScope?.paths?.length) return [...focusedScope.paths];
+    if (view === "all" && focusedScope?.paths?.length) return focusedPaths();
     if (!views.has(view)) {
       let request;
       request = entries()
         .then((records) => {
-          const allFiles = records.filter(({ type }) => type === "file").map(({ path }) => path);
+          const allFiles = records
+            .filter(({ type }) => type === "file")
+            .map(({ path }) => path)
+            .filter((path) => !isRepositoryIgnoredPath(path));
           if (view === "all") return allFiles;
           const repository = allFiles.filter(
             (path) => !isRepositoryIgnoredPath(path) && !isGeneratedRepositoryPath(path),
@@ -36,6 +41,10 @@ export function createRepositoryFileViews(entries, focusedScope) {
       views.set(view, request);
     }
     return views.get(view);
+  }
+  async function focusedPaths() {
+    const ignoredPaths = root ? await findIgnoredRepositoryPaths(root) : new Set();
+    return focusedScope.paths.filter((path) => !isIgnoredRepositoryPath(path, ignoredPaths));
   }
   return {
     files,

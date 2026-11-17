@@ -45,6 +45,9 @@ If all stages and checks pass, the CLI runs Jest and coverage.
 The CLI reports all failures and returns the highest failure code.
 The CLI runs Jest without the consumer's `npm test` script.
 
+Repository discovery skips Git-ignored paths at every depth.
+It skips directories named `artifacts/` at every depth.
+
 ## Focused validation
 
 Pass one or more test paths to select a focused run:

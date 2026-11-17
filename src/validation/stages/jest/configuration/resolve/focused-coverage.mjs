@@ -7,7 +7,19 @@ export async function resolveFocusedCoverage(root, focusedPaths) {
   if (paths.length === 0) return [];
   const coveragePaths = [];
   for (const focusedPath of paths) coveragePaths.push(await resolveSource(root, focusedPath));
-  return coveragePaths.filter(Boolean).flatMap((path) => ["--collectCoverageFrom", path]);
+  const selectedSources = [...new Set(coveragePaths.filter(Boolean))];
+  if (selectedSources.length === 0) return [];
+  const threshold = Object.fromEntries(
+    selectedSources.map((path) => [
+      `./${path}`,
+      { branches: 100, functions: 100, lines: 100, statements: 100 },
+    ]),
+  );
+  return [
+    ...selectedSources.flatMap((path) => ["--collectCoverageFrom", path]),
+    "--coverageThreshold",
+    JSON.stringify(threshold),
+  ];
 }
 
 async function resolveSource(root, focusedPath) {

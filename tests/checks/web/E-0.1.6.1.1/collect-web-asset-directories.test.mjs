@@ -9,7 +9,8 @@ function entry(name, directory = true) {
 test("collects excluded directories from repository inventory", async () => {
   const inventory = {
     directoryEntries: async (path) => {
-      if (path === resolve("/repo/public")) return [entry("assets"), entry("node_modules")];
+      if (path === resolve("/repo/public"))
+        return [entry("assets"), entry("node_modules"), entry("artifacts")];
       if (path === resolve("/repo/public/assets"))
         return [entry("coverage"), entry("logo.svg", false)];
       return [];
@@ -27,4 +28,15 @@ test("reads directories when no repository inventory is available", async () => 
   await expect(
     collectWebAssetDirectories(resolve("/repo/public"), null, { readDirectory }),
   ).resolves.toEqual(["dist"]);
+});
+
+test("skips ignored directories during fallback discovery", async () => {
+  const readDirectory = async (path) =>
+    path === resolve("/repo/public") ? [entry("dist"), entry("local-cache")] : [];
+  await expect(
+    collectWebAssetDirectories(resolve("/repo/public"), null, {
+      readDirectory,
+      ignoredPaths: new Set(["public/dist", "public/local-cache"]),
+    }),
+  ).resolves.toEqual([]);
 });

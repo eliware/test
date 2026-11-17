@@ -35,7 +35,10 @@ test("reports ignored and unignored path mismatches", async () => {
     .join("\n");
   const errors = await validateGitIgnoreProbes("repo", async () => ({ stdout: ignored }));
 
-  expect(errors).toHaveLength(requiredIgnoreCases.length);
+  expect(errors).toHaveLength(
+    requiredIgnoreCases.filter(([path, shouldIgnore]) => shouldIgnore || path === "package.json")
+      .length,
+  );
   expect(errors.some((error) => error.includes("must be ignored."))).toBe(true);
   expect(errors.some((error) => error.includes("must not be ignored"))).toBe(true);
 });

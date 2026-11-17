@@ -61,6 +61,20 @@ test("composes execution, context recording, and result classification", async (
   expect(classifyJestResult).toHaveBeenCalledWith(ruleId, result, "timeout detail");
 });
 
+test("skips ignored focused paths without recording a Jest result", async () => {
+  const context = { executeJest: true, root: "." };
+  executeJestCheck.mockResolvedValueOnce({ skipped: true });
+
+  await expect(run(context)).resolves.toEqual({
+    ruleId,
+    status: "pass",
+    message: "All focused Jest paths are ignored.",
+    skipped: true,
+  });
+  expect(recordJestContext).not.toHaveBeenCalled();
+  expect(classifyJestResult).not.toHaveBeenCalled();
+});
+
 test("classifies failures without depending on the progress output writer", async () => {
   const context = { executeJest: true, writeOutput: jest.fn() };
   const result = { code: 1, stdout: "assertion failed", stderr: "" };

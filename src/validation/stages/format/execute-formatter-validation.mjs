@@ -26,6 +26,7 @@ export async function executeFormatterValidation({
       if (!paths) {
         return "Focused formatting requires at least one resolved path.";
       }
+      if (paths.length === 0) return "";
       formatterOptions.paths = paths;
     }
     const result = await runFormatter(root, formatterOptions);

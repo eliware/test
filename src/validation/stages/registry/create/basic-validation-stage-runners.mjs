@@ -32,6 +32,8 @@ export function createBasicValidationStageRunners({
             5,
             "Focused linting requires at least one resolved path.",
           );
+        if (context.focusedScope && focusedPaths.length === 0)
+          return createValidationStageResult("lint", 0, "");
         const value = await runLint(
           context.root,
           undefined,

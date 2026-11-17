@@ -26,6 +26,24 @@ test("passes clean Jest results and records aggregate counts", async () => {
   expect(context.validationSummary.jestTimeMs).toBeGreaterThanOrEqual(0);
 });
 
+test("passes skipped focused runs without requiring Jest test counts", async () => {
+  const context = { root: "." };
+  await expect(
+    runJestValidationStage(context, async () => ({
+      ruleId: "stage:jest",
+      status: "pass",
+      message: "All focused Jest paths are ignored.",
+      skipped: true,
+    })),
+  ).resolves.toMatchObject({
+    stage: "jest",
+    code: 0,
+    status: "pass",
+    output: null,
+    message: "All focused Jest paths are ignored.",
+  });
+});
+
 test("records Jest time when the process result has no start time", async () => {
   const context = {
     root: ".",

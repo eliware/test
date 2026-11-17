@@ -17,12 +17,31 @@ beforeEach(() => readdir.mockReset());
 test("finds Markdown files and skips generated folders", async () => {
   readdir.mockImplementation(async (path) => {
     if (path === root)
-      return [directory("docs"), directory("node_modules"), file("README.md"), file("notes.txt")];
-    if (path === join(root, "docs")) return [file("guide.MD")];
+      return [
+        directory("docs"),
+        directory("node_modules"),
+        directory("artifacts"),
+        file("README.md"),
+        file("notes.txt"),
+      ];
+    if (path === join(root, "docs")) return [file("guide.MD"), directory("artifacts")];
     throw new Error(`Unexpected directory read: ${path}`);
   });
 
   await expect(findMarkdownFiles(root)).resolves.toEqual(["README.md", "docs/guide.MD"]);
+});
+
+test("skips Git-ignored folders at nested levels", async () => {
+  readdir.mockImplementation(async (path) => {
+    if (path === root) return [directory("docs"), directory("local-output")];
+    if (path === join(root, "docs")) return [file("guide.md")];
+    if (path === join(root, "local-output")) return [file("private.md")];
+    throw new Error(`Unexpected directory read: ${path}`);
+  });
+
+  await expect(
+    findMarkdownFiles(root, root, undefined, new Set(["local-output"])),
+  ).resolves.toEqual(["docs/guide.md"]);
 });
 
 test("limits traversal depth and entry count", async () => {

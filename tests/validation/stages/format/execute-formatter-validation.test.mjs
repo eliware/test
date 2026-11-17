@@ -148,3 +148,18 @@ test("fails closed when a focused formatting path does not exist", async () => {
   ).resolves.toBe("Focused formatting requires at least one resolved path.");
   expect(runFormatter).not.toHaveBeenCalled();
 });
+
+test("skips formatting when all focused paths are ignored", async () => {
+  resolveFocusedValidationPaths.mockResolvedValue([]);
+  const runFormatter = jest.fn();
+  await expect(
+    executeFormatterValidation({
+      root: "C:/repo",
+      executeFormat: true,
+      mode: "format-check",
+      focusedScope: { paths: ["tests/artifacts/file.test.mjs"] },
+      runFormatter,
+    }),
+  ).resolves.toBe("");
+  expect(runFormatter).not.toHaveBeenCalled();
+});

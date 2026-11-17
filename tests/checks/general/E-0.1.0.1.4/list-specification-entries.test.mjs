@@ -23,6 +23,26 @@ test("lists nested specification entries in stable order", async () => {
   ]);
 });
 
+test("omits artifacts and Git-ignored specification paths", async () => {
+  const readPaths = [];
+  const list = async (path) => {
+    readPaths.push(path);
+    const normalizedPath = path.replaceAll("\\", "/");
+    if (normalizedPath.endsWith("specs")) return [directory("artifacts"), directory("nested")];
+    if (normalizedPath.endsWith("specs/nested")) return [directory("private"), file("kept.yaml")];
+    if (normalizedPath.endsWith("specs/nested/private")) return [file("ignored.yaml")];
+    return [];
+  };
+
+  await expect(
+    listSpecificationEntries("repo", { list, ignoredPaths: new Set(["specs/nested/private"]) }),
+  ).resolves.toEqual([
+    { type: "directory", path: "specs/nested" },
+    { type: "file", path: "specs/nested/kept.yaml" },
+  ]);
+  expect(readPaths).toHaveLength(2);
+});
+
 test("uses the default filesystem reader", async () => {
   await expect(listSpecificationEntries(process.cwd())).resolves.toEqual(
     expect.arrayContaining([{ type: "file", path: "specs/directives.yaml" }]),

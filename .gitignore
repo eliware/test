@@ -7,7 +7,8 @@ build/
 dist/
 .env
 .env*
-!.env*.example
+!.env.example
+!**/.env.example
 *.log
 *.tgz
 *.tsbuildinfo
@@ -24,7 +25,7 @@ Thumbs.db
 *.dump
 /restore/
 runtime-state/
-artifacts/
+**/artifacts/
 generated/
 test-results/
 /eliware-test.lock

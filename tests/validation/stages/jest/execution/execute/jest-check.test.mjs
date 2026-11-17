@@ -18,6 +18,7 @@ const { executeJestCheck } =
 
 beforeEach(() => {
   sanitizeJestLog.mockReset().mockResolvedValue(undefined);
+  runJest.mockReset();
 });
 
 test("executes Jest and records its start time", async () => {
@@ -68,6 +69,27 @@ test("defaults omitted Jest arguments to an empty list", async () => {
     expect.objectContaining({
       onTimeout: expect.any(Function),
     }),
+  );
+});
+
+test("skips Jest when every focused test path is ignored", async () => {
+  await expect(
+    executeJestCheck({ root: ".", jestArgs: ["tests/artifacts/generated.test.mjs"] }),
+  ).resolves.toMatchObject({ skipped: true, result: { code: 0 } });
+  expect(runJest).not.toHaveBeenCalled();
+});
+
+test("keeps focused test paths that are not ignored", async () => {
+  runJest.mockImplementationOnce(async (_root, _args, _execute, options) => {
+    options.onStart();
+    return { code: 0, stdout: "ok", stderr: "" };
+  });
+  await executeJestCheck({ root: process.cwd(), jestArgs: ["tests/ordinary.test.mjs"] });
+  expect(runJest).toHaveBeenCalledWith(
+    process.cwd(),
+    ["tests/ordinary.test.mjs"],
+    expect.any(Function),
+    expect.objectContaining({ onTimeout: expect.any(Function) }),
   );
 });
 

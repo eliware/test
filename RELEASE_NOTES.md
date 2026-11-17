@@ -14,6 +14,8 @@
 - Update locked transitive dependencies.
 - Show npm audit severity counts and advisory details when the audit stage fails.
 - Show Jest summaries, process exit details, and the full log path when Jest exits unsuccessfully.
+- Skip Git-ignored paths and every `artifacts/` directory during repository validation.
+- Require `.gitignore` to ignore local environment files and allow `.env.example`.
 
 ## 15.1.0 — 2026-10-31
 

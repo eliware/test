@@ -30,6 +30,12 @@ Read the full directive that the CLI prints.
 Check `package.json.eliware.apply` and the matching profile convention file.
 Use only approved exemptions in `package.json.eliware.exempt`.
 
+### A local environment file fails a path check
+
+Add `.env*`, `!.env.example`, and `!**/.env.example` to the root `.gitignore` file.
+Repository discovery skips ignored files and directories.
+Keep `.env.example` unignored so validation can inspect it.
+
 ### A focused test path fails
 
 Pass an existing `.test.*` or `.spec.*` path in `tests/`.

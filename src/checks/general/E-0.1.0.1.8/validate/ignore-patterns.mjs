@@ -15,6 +15,11 @@ const nestedRoots = ["nested", "nested/deep", "nested/deep/layer", "nested/deep/
 
 export const requiredIgnoreCases = [
   ["package.json", false],
+  [".env", true],
+  [".env.production.local", true],
+  [".env.example", false],
+  ["nested/.env.local", true],
+  ["nested/.env.example", false],
   ...nestedRoots.flatMap((root) =>
     ignoredDirectories.map((directory) => [`${root}/${directory}/item.txt`, true]),
   ),
@@ -37,6 +42,12 @@ export function validateRequiredIgnoreRules(content) {
   const errors = missing.length
     ? [`.gitignore must define universal rules for: ${missing.join(", ")}.`]
     : [];
+  if (
+    !rules.includes(".env*") ||
+    !rules.includes("!.env.example") ||
+    !rules.includes("!**/.env.example")
+  )
+    errors.push(".gitignore must include .env*, !.env.example, and !**/.env.example.");
   const negationError = validateProtectedIgnoreNegations(rules);
   if (negationError) errors.push(negationError);
   return errors;

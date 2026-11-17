@@ -30,11 +30,15 @@ generated/
 artifacts/
 test-results/
 .DS_Store
-Thumbs.db`;
+Thumbs.db
+.env*
+!.env.example
+!**/.env.example`;
+const validIgnoreRules = ignoreRules;
 
 test("uses the default Git runner and default exit code through a mocked executable", async () => {
   await expect(
-    validateGitHygiene("repo", undefined, { readText: async () => ignoreRules }),
+    validateGitHygiene("repo", undefined, { readText: async () => validIgnoreRules }),
   ).resolves.toEqual([]);
   expect(runMockGit).toHaveBeenCalled();
 });
@@ -46,7 +50,7 @@ test("checks deep generated paths without checking environment names", async () 
     return { stdout: Buffer.from("") };
   };
   await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
+    validateGitHygiene("repo", runGit, { readText: async () => validIgnoreRules }),
   ).resolves.toContain("nested/deep/layer/four/coverage/item.txt must be ignored.");
 });
 
@@ -77,7 +81,7 @@ test("accepts string output from Git commands", async () => {
     return { code: 0, stdout: "" };
   };
   await expect(
-    validateGitHygiene("repo", runGit, { readText: async () => ignoreRules }),
+    validateGitHygiene("repo", runGit, { readText: async () => validIgnoreRules }),
   ).resolves.toEqual([]);
 });
 

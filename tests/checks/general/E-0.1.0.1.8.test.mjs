@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals";
 import { requiredIgnoreCases } from "../../../src/checks/general/E-0.1.0.1.8/validate/ignore-patterns.mjs";
 import { ruleId, run } from "../../../src/checks/general/E-0.1.0.1.8.mjs";
 
-const ignoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.DS_Store\nThumbs.db`;
+const ignoreText = `node_modules/\n.git/\ncoverage/\ndist/\nbuild/\ngenerated/\nartifacts/\ntest-results/\n.DS_Store\nThumbs.db\n.env*\n!.env.example\n!**/.env.example`;
 
 function createGitRunner({ symlinks = [], trackedIgnored = [], failAt } = {}) {
   let index = 0;

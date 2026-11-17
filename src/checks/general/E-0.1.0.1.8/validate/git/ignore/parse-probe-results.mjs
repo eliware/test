@@ -10,7 +10,8 @@ function parseIgnoredPath(line, root) {
   if (separator < 0) return [];
   const match = /^(.*):[1-9]\d*:([^\t]+)$/u.exec(line.slice(0, separator));
   if (!match) return [];
-  const [, source] = match;
+  const [, source, pattern] = match;
+  if (pattern.startsWith("!")) return [];
   const sourcePath = resolve(root, source);
   const requiredSource = resolve(root, ".gitignore");
   if (relative(sourcePath, requiredSource) !== "") return [];

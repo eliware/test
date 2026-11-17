@@ -3,8 +3,9 @@ import { join } from "node:path";
 
 const realpath = jest.fn();
 const stat = jest.fn();
+const readdir = jest.fn();
 
-jest.unstable_mockModule("node:fs/promises", () => ({ realpath, stat }));
+jest.unstable_mockModule("node:fs/promises", () => ({ realpath, stat, readdir }));
 
 const { resolveFocusedValidationPaths } =
   await import("../../../../src/validation/stages/shared/resolve-focused-validation-paths.mjs");
@@ -65,4 +66,11 @@ test("accepts existing focused paths with case-variant source directory names", 
       paths: ["Tests/example.test.mjs", "Src/example.mjs"],
     }),
   ).resolves.toEqual(["Tests/example.test.mjs", "Src/example.mjs"]);
+});
+
+test("skips focused files under ignored artifacts directories", async () => {
+  await expect(
+    resolveFocusedValidationPaths(root, { paths: ["tests/artifacts/generated.test.mjs"] }),
+  ).resolves.toEqual([]);
+  expect(realpath).not.toHaveBeenCalled();
 });
