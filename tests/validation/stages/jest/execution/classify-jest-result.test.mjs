@@ -17,30 +17,40 @@ test("classifies timeout, failure, and success results", () => {
   expect(classifyJestResult("E-0.1.130.13", { code: 1, outputLogError: true }).message).toBe(
     "Jest output could not be saved to coverage/jest.log.",
   );
-  expect(classifyJestResult("E-0.1.130.13", { timedOut: true }, "timed out").status).toBe("fail");
+  expect(classifyJestResult("E-0.1.130.13", { timedOut: true }, "timed out").message).toBe(
+    "timed out\nProcess: timed out.\nFull output: coverage/jest.log.",
+  );
   expect(
     classifyJestResult(
       "E-0.1.130.13",
       { code: 1, stdout: "", stderr: "" },
       "Test suite tests/slow.test.mjs exceeded its 10 second maximum runtime.",
     ).message,
-  ).toBe("Test suite tests/slow.test.mjs exceeded its 10 second maximum runtime.");
+  ).toBe(
+    "Test suite tests/slow.test.mjs exceeded its 10 second maximum runtime.\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
+  );
   expect(classifyJestResult("E-0.1.130.13", { timedOut: true }).message).toBe(
-    "Jest timed out after 15 seconds without progress.",
+    "Jest timed out after 15 seconds without progress.\nProcess: timed out.\nFull output: coverage/jest.log.",
   );
   expect(
     classifyJestResult("E-0.1.130.13", { code: 1, stdout: "out", stderr: "err" }).message,
-  ).toBe("Jest failed: out\nerr");
+  ).toBe("Jest failed: out\nerr\nProcess: exit code 1.\nFull output: coverage/jest.log.");
   expect(classifyJestResult("E-0.1.130.13", { code: 1, stdout: "", stderr: "" }).message).toBe(
-    "Jest exited with no captured output (code 1).",
+    "Jest exited without reported test failures or actionable output.\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
   );
   expect(classifyJestResult("E-0.1.130.13", { code: 1 }).message).toBe(
-    "Jest exited with no captured output (code 1).",
+    "Jest exited without reported test failures or actionable output.\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
   );
   expect(classifyJestResult("E-0.1.130.13", { code: null, signal: "SIGKILL" }).message).toBe(
-    "Jest exited with no captured output (signal SIGKILL).",
+    "Jest exited without reported test failures or actionable output.\n" +
+      "Process: signal SIGKILL.\nFull output: coverage/jest.log.",
   );
-  expect(classifyJestResult("E-0.1.130.13", {}).message).toBe("Jest failed without diagnostics.");
+  expect(classifyJestResult("E-0.1.130.13", {}).message).toBe(
+    "Jest exited without reported test failures or actionable output.\nFull output: coverage/jest.log.",
+  );
   expect(classifyJestResult("E-0.1.130.13", { code: 0 }).status).toBe("pass");
 });
 
@@ -51,7 +61,10 @@ test("removes routine passing and coverage output from failure diagnostics", () 
       stdout: "PASS tests/quiet.test.mjs\nFAIL tests/bad.test.mjs\nTests: 1 failed\n",
       stderr: "File | % Stmts | % Branch\nsource.mjs | 100 | 100\nExpected: 1\nReceived: 2\n",
     }).message,
-  ).toBe("Jest failed: FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2");
+  ).toBe(
+    "Jest failed: FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
+  );
 });
 
 test("reports Jest failure details even when suite progress also reports them", () => {
@@ -61,7 +74,10 @@ test("reports Jest failure details even when suite progress also reports them", 
       { code: 1, stdout: "FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2", stderr: "" },
       undefined,
     ).message,
-  ).toBe("Jest failed: FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2");
+  ).toBe(
+    "Jest failed: FAIL tests/bad.test.mjs\nExpected: 1\nReceived: 2\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
+  );
 });
 
 test("keeps one copy of Jest failures in final non-debug diagnostics", () => {
@@ -72,7 +88,10 @@ test("keeps one copy of Jest failures in final non-debug diagnostics", () => {
         "FAIL tests/bad.test.mjs\nFailure details\nSummary of all failing tests\nFAIL tests/bad.test.mjs\nFailure details",
       stderr: "",
     }).message,
-  ).toBe("Jest failed: FAIL tests/bad.test.mjs\nFailure details");
+  ).toBe(
+    "Jest failed: FAIL tests/bad.test.mjs\nFailure details\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
+  );
 });
 
 test("shows failed suite details from reporter progress when Jest has no other output", () => {
@@ -80,7 +99,10 @@ test("shows failed suite details from reporter progress when Jest has no other o
     '[eliware-test-progress] {"event":"result","path":"tests/bad.test.mjs","failed":true,"failures":["expected 1 to equal 2"]}';
   expect(
     classifyJestResult("E-0.1.130.13", { code: 1, stdout: "", stderr: progress }).message,
-  ).toBe("Jest failed: tests/bad.test.mjs\nexpected 1 to equal 2");
+  ).toBe(
+    "Jest failed: tests/bad.test.mjs\nexpected 1 to equal 2\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
+  );
 });
 
 test("ignores passing and malformed reporter progress records", () => {
@@ -91,6 +113,55 @@ test("ignores passing and malformed reporter progress records", () => {
     "[eliware-test-progress] {malformed}",
   ].join("\n");
   expect(classifyJestResult("E-0.1.130.13", { code: 1, stdout }).message).toBe(
-    "Jest failed: tests/fail.test.mjs",
+    "Jest failed: tests/fail.test.mjs\nProcess: exit code 1.\nFull output: coverage/jest.log.",
+  );
+});
+
+test("explains passing test summaries with unsuccessful process exits", () => {
+  const summary = [
+    "PASS tests/consumer.test.mjs",
+    "Test Suites: 1 passed, 1 total",
+    "Tests: 2 passed, 2 total",
+    "Snapshots: 0 total",
+    "Time: 0.5 s",
+  ].join("\n");
+  expect(
+    classifyJestResult("E-0.1.130.13", { code: 1, stdout: `${summary}\nRan all test suites.` })
+      .message,
+  ).toBe(
+    `Jest reported passing tests but exited unsuccessfully.\n${summary}\nRan all test suites.\n` +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
+  );
+});
+
+test("reports failure summaries and termination outcomes", () => {
+  expect(
+    classifyJestResult("E-0.1.130.13", {
+      code: 1,
+      stdout: "Test Suites: 1 failed, 1 passed, 2 total",
+      terminationConfirmed: true,
+    }).message,
+  ).toBe(
+    "Jest exited with a failure summary:\nTest Suites: 1 failed, 1 passed, 2 total\n" +
+      "Process: exit code 1, termination confirmed.\nFull output: coverage/jest.log.",
+  );
+  expect(
+    classifyJestResult("E-0.1.130.13", {
+      code: null,
+      signal: "SIGTERM",
+      timedOut: true,
+      terminationConfirmed: false,
+      stdout: "",
+    }).message,
+  ).toBe(
+    "Jest timed out after 15 seconds without progress.\n" +
+      "Process: signal SIGTERM, timed out, termination not confirmed.\nFull output: coverage/jest.log.",
+  );
+});
+
+test("shows captured summary lines without pass or failure counts", () => {
+  expect(classifyJestResult("E-0.1.130.13", { code: 1, stdout: "Time: 0.5 s" }).message).toBe(
+    "Jest exited with no reported test failures. Captured summary:\nTime: 0.5 s\n" +
+      "Process: exit code 1.\nFull output: coverage/jest.log.",
   );
 });

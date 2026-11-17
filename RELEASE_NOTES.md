@@ -13,6 +13,7 @@
 - Update `@babel/parser` to 8.1.2, `minimatch` to 11.0.9, Oxlint to 1.94.0, and Prettier to 3.10.1.
 - Update locked transitive dependencies.
 - Show npm audit severity counts and advisory details when the audit stage fails.
+- Show Jest summaries, process exit details, and the full log path when Jest exits unsuccessfully.
 
 ## 15.1.0 — 2026-10-31
 

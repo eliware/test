@@ -48,6 +48,12 @@ Jest uses worker processes and the cache in `coverage/cache` by default.
 Pass `--detectOpenHandles` to find open handles. This option runs Jest in-band.
 Close timers, streams, servers, and child processes in the test that creates them.
 
+### Jest exits with passing tests
+
+Check the captured Jest summary and process details in the CLI error.
+Read `coverage/jest.log` for the full Jest output.
+Check tests and setup files for code that leaves `process.exitCode` set.
+
 ### The smoke command fails
 
 Use an existing disposable consumer with dependencies installed.
