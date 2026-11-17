@@ -14,9 +14,11 @@ directives:
       - Validate ../docs/repo-map.yaml with ../docs/repo-map-schema.yaml when that file exists.
       - When no repository entry exists, validate package metadata through the general
         package rules.
-      - Give exemptions unique known check IDs, nonempty reasons, approver Eli, valid
-        approvalTimestamp, and valid expiry or null.
+      - Give convention exemptions unique known check IDs, nonempty reasons, approver Eli,
+        valid approvalTimestamp, and valid expiry or null.
+      - Allow stage:audit exemptions with unique GitHub Advisory IDs and a valid expiry.
       - Allow an optional unique paths array of repository-relative paths in each exemption.
+      - Allow advisory IDs only for stage:audit exemptions.
       - Match a path exactly when it has no wildcard.
       - Let * match in one path segment.
       - Let ** match zero or more path segments.

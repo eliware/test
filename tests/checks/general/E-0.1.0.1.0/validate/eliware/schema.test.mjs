@@ -20,10 +20,27 @@ test("accepts valid timestamps, timezone offsets, dates, and null expiry", () =>
   expect(validateEliwareSchema(metadata("2026-10-16T15:30:45.123+05:30", null))).toEqual([]);
 });
 
+test("accepts an audit exemption with a GitHub Advisory ID", () => {
+  const value = metadata("2026-10-16T15:30:45Z", "2026-10-31");
+  value.exempt[0].ruleId = "stage:audit";
+  value.exempt[0].advisories = ["GHSA-fc5q-39xc-vjpf"];
+  expect(validateEliwareSchema(value)).toEqual([]);
+});
+
+test("rejects malformed GitHub Advisory IDs", () => {
+  const value = metadata("2026-10-16T15:30:45Z", "2026-10-31");
+  value.exempt[0].advisories = ["CVE-2026-1234"];
+  expect(validateEliwareSchema(value)).not.toEqual([]);
+});
+
 test("rejects undeclared exemption fields", () => {
   const value = metadata("2026-10-16T15:30:45Z", null);
   value.exempt[0].unexpected = true;
   expect(validateEliwareSchema(value)).not.toEqual([]);
+});
+
+test("formats schema errors that point to the metadata root", () => {
+  expect(validateEliwareSchema(null)).not.toEqual([]);
 });
 
 test.each([

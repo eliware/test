@@ -1,12 +1,18 @@
 # Release Notes
 
-## 15.2.0 — 2026-11-03
+## 15.2.0 — 2026-11-17
+
+### Added
+
+- Allow advisory-scoped, expiring npm audit exemptions in `package.json.eliware.exempt`.
+- Add a temporary exemption for `GHSA-fc5q-39xc-vjpf` while picomatch has no patched release.
 
 ### Changed
 
 - Set the package version to 15.2.0 and the convention schema versions to 15.2.
-- Update `@babel/parser` to 8.1.0, `minimatch` to 11.0.4, Oxlint to 1.91.0, and `semver` to 7.8.6.
+- Update `@babel/parser` to 8.1.2, `minimatch` to 11.0.9, Oxlint to 1.94.0, and Prettier to 3.10.1.
 - Update locked transitive dependencies.
+- Show npm audit severity counts and advisory details when the audit stage fails.
 
 ## 15.1.0 — 2026-10-31
 

@@ -13,6 +13,21 @@ test("accepts a known deterministic rule exemption", () => {
   expect(validateEliwareExemptions({ exempt: [valid] })).toEqual([]);
 });
 
+test("accepts an advisory-scoped audit exemption", () => {
+  expect(
+    validateEliwareExemptions({
+      exempt: [
+        {
+          ...valid,
+          ruleId: "stage:audit",
+          expiry: "2099-01-01",
+          advisories: ["GHSA-fc5q-39xc-vjpf"],
+        },
+      ],
+    }),
+  ).toEqual([]);
+});
+
 test.each([undefined, null, "bad"])("rejects malformed exemption data %p", (exempt) => {
   expect(validateEliwareExemptions({ exempt })).toContainEqual(
     expect.stringContaining("Every exemption"),

@@ -114,10 +114,68 @@ test("runs audit and stores its process report", async () => {
     code: 0,
     output: { stdout: "report" },
   });
-  const invalid = createValidationStageRunners({ runAudit: async () => ({ code: 1 }) });
+  const invalid = createValidationStageRunners({
+    runAudit: async () => ({
+      code: 1,
+      stdout: JSON.stringify({
+        metadata: {
+          vulnerabilities: { info: 0, low: 0, moderate: 1, high: 1, critical: 0, total: 2 },
+        },
+        vulnerabilities: {
+          picomatch: {
+            name: "picomatch",
+            severity: "high",
+            via: [
+              {
+                source: 123,
+                title: "Regular expression denial of service",
+                severity: "high",
+                range: "<=4.0.7",
+                url: "https://example.test/advisory",
+              },
+            ],
+          },
+        },
+      }),
+    }),
+  });
   await expect(invalid.audit({ root: ".", toolArgs: [] })).resolves.toMatchObject({
     code: 7,
-    message: "npm audit failed.",
+    message:
+      "npm audit failed.\nnpm audit found 2 vulnerabilities (1 moderate, 1 high).\nhigh: Regular expression denial of service. Affected versions: <=4.0.7. Affected packages: picomatch. https://example.test/advisory",
+  });
+  const exempt = createValidationStageRunners({
+    runAudit: async () => ({
+      code: 1,
+      stdout: JSON.stringify({
+        vulnerabilities: {
+          picomatch: {
+            severity: "high",
+            via: [
+              {
+                severity: "high",
+                url: "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+              },
+            ],
+          },
+        },
+      }),
+    }),
+  });
+  await expect(
+    exempt.audit({
+      root: ".",
+      toolArgs: [],
+      packageJson: {
+        eliware: {
+          exempt: [{ ruleId: "stage:audit", advisories: ["GHSA-fc5q-39xc-vjpf"] }],
+        },
+      },
+    }),
+  ).resolves.toMatchObject({
+    code: 0,
+    status: "warning",
+    message: "WARNING: npm audit findings covered by an approved exemption: GHSA-fc5q-39xc-vjpf.",
   });
   const startup = createValidationStageRunners({
     runAudit: async () => {

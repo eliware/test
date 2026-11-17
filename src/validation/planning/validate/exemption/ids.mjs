@@ -1,5 +1,5 @@
 export function validateExemptionIds(packageJson, checks, ignoredRuleIds = []) {
-  const knownIds = new Set(checks.map(({ ruleId }) => ruleId));
+  const knownIds = new Set([...checks.map(({ ruleId }) => ruleId), "stage:audit"]);
   const requested = [
     ...(packageJson?.eliware?.exempt ?? []).map(({ ruleId }) => ruleId),
     ...ignoredRuleIds,

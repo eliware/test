@@ -1,5 +1,6 @@
 import { AUDIT_TIMEOUT_MS, executeAuditProcess } from "../../audit/execute-audit-process.mjs";
 import { runNpmAudit } from "../../audit/run-npm-audit.mjs";
+import { auditFailureIsExempt, formatAuditFailure } from "../../audit/format-audit-failure.mjs";
 import { runChild } from "../../../shared/process/run/child.mjs";
 import { runOxlint } from "../../lint/run-oxlint.mjs";
 import { runJestStage } from "../../jest/execution/run/jest/stage.mjs";
@@ -87,10 +88,28 @@ export function createBasicValidationStageRunners({
             status: "warning",
           };
         }
+        const auditExemption = (context.packageJson?.eliware?.exempt ?? []).find(
+          (entry) => entry.ruleId === "stage:audit",
+        );
+        if (
+          value.code !== 0 &&
+          auditExemption &&
+          auditFailureIsExempt(value, auditExemption.advisories)
+        ) {
+          return {
+            ...createValidationStageResult(
+              "audit",
+              0,
+              `WARNING: npm audit findings covered by an approved exemption: ${auditExemption.advisories.join(", ")}.`,
+              value,
+            ),
+            status: "warning",
+          };
+        }
         return createValidationStageResult(
           "audit",
           value.code === 0 ? 0 : 7,
-          value.code === 0 ? "" : "npm audit failed.",
+          value.code === 0 ? "" : `npm audit failed.\n${formatAuditFailure(value)}`,
           value,
         );
       } catch (error) {

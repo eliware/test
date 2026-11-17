@@ -66,5 +66,27 @@ properties:
                   pattern: /$
               - not:
                   pattern: (^|/)\.{1,2}(/|$)
+        advisories:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            pattern: ^GHSA-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}$
+      allOf:
+        - if:
+            properties:
+              ruleId:
+                const: stage:audit
+          then:
+            required:
+              - advisories
+            not:
+              required:
+                - paths
+          else:
+            not:
+              required:
+                - advisories
       additionalProperties: false
 additionalProperties: false

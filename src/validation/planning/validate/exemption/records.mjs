@@ -18,7 +18,8 @@ export function validateExemptionRecords(records, knownRuleIds) {
         (entry.paths !== undefined &&
           (!Array.isArray(entry.paths) ||
             entry.paths.some((path) => !isValidRepositoryPath(path)) ||
-            new Set(entry.paths).size !== entry.paths.length))
+            new Set(entry.paths).size !== entry.paths.length)) ||
+        !isValidAdvisoryExemption(entry)
       );
     })
   ) {
@@ -31,6 +32,19 @@ export function validateExemptionRecords(records, knownRuleIds) {
     throw new Error("Convention exemption rule IDs must be unique.");
   if (knownRuleIds && ids.some((id) => !knownRuleIds.includes(id)))
     throw new Error("Every convention exemption must identify a known rule ID.");
+}
+
+function isValidAdvisoryExemption(entry) {
+  if (entry.ruleId !== "stage:audit") return entry.advisories === undefined;
+  return (
+    Array.isArray(entry.advisories) &&
+    entry.advisories.length > 0 &&
+    entry.advisories.every((advisory) =>
+      /^GHSA-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}$/u.test(advisory),
+    ) &&
+    new Set(entry.advisories).size === entry.advisories.length &&
+    entry.paths === undefined
+  );
 }
 
 function isValidRepositoryPath(value) {

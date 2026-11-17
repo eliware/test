@@ -8,6 +8,15 @@ test("accepts exemptions for discovered checks", () => {
   ).not.toThrow();
 });
 
+test("accepts the audit stage exemption ID", () => {
+  expect(() =>
+    validateExemptionIds(
+      { eliware: { exempt: [{ ruleId: "stage:audit", advisories: ["GHSA-fc5q-39xc-vjpf"] }] } },
+      [{ ruleId: "E-0.1" }],
+    ),
+  ).not.toThrow();
+});
+
 test("rejects exemptions for unknown checks", () => {
   expect(() =>
     validateExemptionIds({ eliware: { exempt: [{ ruleId: "E-9" }] } }, [{ ruleId: "E-0.1" }]),

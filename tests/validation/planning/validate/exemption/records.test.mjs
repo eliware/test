@@ -54,6 +54,10 @@ test("rejects duplicate exemption rule IDs", () => {
   ).toThrow("must be unique");
 });
 
+test("rejects unknown rule IDs when the caller supplies known IDs", () => {
+  expect(() => validateExemptionRecords([record()], ["E-0.1"])).toThrow("known rule ID");
+});
+
 test.each(["random-user", "eli", "Eliware", ""])("rejects non-Eli approver %j", (approver) => {
   expect(() => validateExemptionRecords([record({ approver })])).toThrow();
 });
@@ -73,6 +77,33 @@ test("accepts exact and wildcard repository-relative path exemptions", () => {
       record({ paths: ["docs/vendor/file.yaml", "secrets/**", "infrastructure/**/secrets/*"] }),
     ]),
   ).not.toThrow();
+});
+
+test("accepts advisory-scoped audit exemptions", () => {
+  expect(() =>
+    validateExemptionRecords([
+      record({
+        ruleId: "stage:audit",
+        advisories: ["GHSA-fc5q-39xc-vjpf"],
+      }),
+    ]),
+  ).not.toThrow();
+});
+
+test.each([
+  {},
+  { advisories: [] },
+  { advisories: ["CVE-2026-1234"] },
+  { advisories: ["GHSA-fc5q-39xc-vjpf", "GHSA-fc5q-39xc-vjpf"] },
+  { advisories: ["GHSA-fc5q-39xc-vjpf"], paths: ["src/**"] },
+])("rejects invalid audit exemptions %j", (extra) => {
+  expect(() => validateExemptionRecords([record({ ruleId: "stage:audit", ...extra })])).toThrow();
+});
+
+test("rejects audit advisory IDs on convention exemptions", () => {
+  expect(() =>
+    validateExemptionRecords([record({ advisories: ["GHSA-fc5q-39xc-vjpf"] })]),
+  ).toThrow();
 });
 
 test.each([

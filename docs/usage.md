@@ -51,7 +51,9 @@ Use the canonical profile order in [Profiles](profiles.md).
 The CLI does not infer profiles from files or dependencies.
 
 Set `package.json.eliware.exempt` only when Eli approves a waiver.
-Each waiver requires a unique known `ruleId`, a `reason`, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+Each waiver requires a unique `ruleId`, a `reason`, approver `Eli`, an approval timestamp, and an expiry date or `null`.
+Use a known convention rule ID for convention waivers.
+Use `stage:audit` with an `advisories` list for npm audit waivers.
 
 Use the field names and value types shown in this example:
 
@@ -69,6 +71,24 @@ Use the field names and value types shown in this example:
 Replace the example rule ID, cause, timestamp, and path with approved values.
 Use a rule ID that exists in the selected profiles.
 Use `paths` to limit the waiver to matching repository-relative paths.
+
+Use this record to waive one npm advisory until its expiry date:
+
+```json
+{
+  "ruleId": "stage:audit",
+  "reason": "The upstream advisory has no patched release.",
+  "approver": "Eli",
+  "approvalTimestamp": "2026-11-17T00:00:00Z",
+  "expiry": "2026-12-17",
+  "advisories": ["GHSA-fc5q-39xc-vjpf"]
+}
+```
+
+For an audit waiver, list exact GitHub Advisory IDs in `advisories`.
+Set an expiry date so the waiver ends after a short period.
+The waiver covers only listed advisories at or above high severity.
+The audit rejects any unlisted issue at or above high severity.
 
 Add a `paths` array to skip repository-relative paths during that rule only.
 Use an exact path when it has no wildcard.

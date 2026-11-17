@@ -4,10 +4,10 @@ import { validateExemptionRecords } from "../../../../../validation/planning/val
 export function validateEliwareExemptions(eliware) {
   if (!eliware || !Object.hasOwn(eliware, "exempt")) return [];
   try {
-    validateExemptionRecords(
-      eliware.exempt,
-      Object.keys(readBundledProfileCatalog().deterministicDirectives),
-    );
+    validateExemptionRecords(eliware.exempt, [
+      ...Object.keys(readBundledProfileCatalog().deterministicDirectives),
+      "stage:audit",
+    ]);
     return [];
   } catch (error) {
     return [error.message];

@@ -16,6 +16,10 @@ The CLI selects checks from `package.json.eliware.apply`.
 The audit stage has a 30-second runtime limit.
 If it reaches the limit, Eliware Test stops the process and reports a warning.
 Validation continues, and the timeout does not change the aggregate exit code.
+If npm audit fails, the CLI reports severity counts and advisory details from npm's JSON report.
+Use an approved `stage:audit` exemption to allow listed advisory IDs until its expiry date.
+
+The audit rejects any unlisted issue at or above high severity.
 
 The CLI runs these stages at the same time:
 
