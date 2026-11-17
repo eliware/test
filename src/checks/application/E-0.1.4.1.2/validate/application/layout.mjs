@@ -1,6 +1,7 @@
 import { validateInternalExportBarrels } from "../../../../shared/validate-internal-export-barrels.mjs";
 import { validateImplementationPlacement } from "../implementation-placement.mjs";
 import { validateApplicationTests } from "./tests.mjs";
+import { validateSingleDefaultMethods } from "../../../../shared/single-default-methods.mjs";
 
 export async function validateApplicationLayout(context = {}) {
   const files = await context.repositoryInventory.files("all");
@@ -14,5 +15,6 @@ export async function validateApplicationLayout(context = {}) {
       context.packageJson,
     ),
     ...(await validateInternalExportBarrels(files, read, context.packageJson ?? {}, root)),
+    ...(await validateSingleDefaultMethods(files, read, context.packageJson ?? {}, root)),
   ];
 }

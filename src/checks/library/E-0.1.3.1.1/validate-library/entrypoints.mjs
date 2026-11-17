@@ -3,6 +3,7 @@ import { collectLibraryExportTargets } from "../collect-library-export-targets.m
 import { validateLibraryRuntimeEntrypoints } from "./runtime-entrypoints.mjs";
 import { validateLibraryDeclarationEntrypoints } from "./declaration-entrypoints.mjs";
 import { stat } from "node:fs/promises";
+import { validateSingleDefaultMethods } from "../../../shared/single-default-methods.mjs";
 
 export async function validateLibraryEntrypoints(context = {}, dependencies = {}) {
   const packageJson = context.packageJson ?? {};
@@ -33,6 +34,15 @@ export async function validateLibraryEntrypoints(context = {}, dependencies = {}
         context.repositoryInventory.readText,
         packageJson,
         root,
+      )),
+    );
+    errors.push(
+      ...(await validateSingleDefaultMethods(
+        files,
+        context.repositoryInventory.readText,
+        packageJson,
+        root,
+        { library: true },
       )),
     );
   }

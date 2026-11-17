@@ -34,6 +34,19 @@ test("rejects implementation modules outside src and approved roots", async () =
   );
 });
 
+test("enforces the default method export rule for source modules", async () => {
+  await expect(
+    validateApplicationLayout({
+      root: "repo",
+      packageJson: {},
+      repositoryInventory: {
+        files: async (view) => (view === "all" ? ["src/run.mjs"] : []),
+        readText: async () => "export function run() {}",
+      },
+    }),
+  ).resolves.toContain("src/run.mjs must use a default export for its method.");
+});
+
 test("allows a declared local validator under scripts/", async () => {
   const inventory = {
     files: async (view) => (view === "all" ? ["scripts/validate.mjs"] : []),

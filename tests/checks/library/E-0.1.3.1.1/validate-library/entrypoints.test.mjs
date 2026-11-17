@@ -51,6 +51,23 @@ test("checks declared and discovered declarations and internal barrels", async (
   ]);
 });
 
+test("enforces the default method export rule for source modules", async () => {
+  const inventory = {
+    files: async () => ["src/worker.mjs"],
+    readText: async () => "export function run() {}",
+  };
+  const stat = async () => ({ isFile: () => true });
+  await expect(
+    validateLibraryEntrypoints(
+      {
+        packageJson: { main: "./src/index.mjs" },
+        repositoryInventory: inventory,
+      },
+      { stat },
+    ),
+  ).resolves.toContain("src/worker.mjs must use a default export for its method.");
+});
+
 test("uses defaults when no repository context is supplied", async () => {
   await expect(validateLibraryEntrypoints()).resolves.toEqual(
     expect.arrayContaining(["Libraries must declare a runtime main under src/."]),
