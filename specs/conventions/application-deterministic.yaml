@@ -50,6 +50,13 @@ directives:
       - Put tests in tests/, fixtures in test-fixtures/, and examples in
         examples/.
       - Mirror each src/ .mjs file with exactly one same-path tests/ .test.mjs file.
+      - Export no more than one method from each implementation module.
+      - Use a default export for that method.
+      - Keep helper methods private to the implementation module.
+      - Do not apply the single-method limit to public pure export barrels and re-export modules.
+      - Normalize barrel paths before matching package.json targets.
+      - Mark barrels public only when their paths match package.json targets.
+      - Limit public barrel paths to main, bin, or exports targets.
       - Give each test file a matching source path and an executable Jest test callback.
       - Keep unmatched fixtures, snapshots, generators, and test support in root
         test-fixtures/.

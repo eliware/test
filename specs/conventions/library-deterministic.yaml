@@ -40,6 +40,12 @@ directives:
     dos:
       - Mirror each src/ .mjs file with exactly one same-path tests/ .test.mjs file.
       - Keep library implementation in src/.
+      - Export no more than one method from each implementation module.
+      - Use a default export for that method.
+      - Keep helper methods private to the implementation module.
+      - Do not apply the single-method limit to public pure export barrels and re-export modules.
+      - Do not apply the single-method limit to the library main export module.
+      - Allow pure export barrels only for primary public entrypoints or indexes.
       - Give each test file a matching source path and an executable Jest test callback.
       - Keep unmatched fixtures, snapshots, generators, and test support in root
         test-fixtures/.
