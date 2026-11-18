@@ -66,3 +66,18 @@ test("delegates text and parsed reads to the run inventory", async () => {
   expect(repositoryInventory.readText).toHaveBeenCalledWith("README.md");
   expect(repositoryInventory.readParsed).toHaveBeenCalledWith("record.json", "json", JSON.parse);
 });
+test("uses inventory parsed reads and inventory text before parsing", async () => {
+  const parsed = { value: true };
+  const readParsed = jest.fn(async () => parsed);
+  const parse = jest.fn((text) => ({ text }));
+  await expect(
+    readRepositoryParsed({ repositoryInventory: { readParsed } }, "README.md", "markdown", parse),
+  ).resolves.toBe(parsed);
+  expect(readParsed).toHaveBeenCalledWith("README.md", "markdown", parse);
+  expect(parse).not.toHaveBeenCalled();
+  const readText = jest.fn(() => "plain text");
+  await expect(
+    readRepositoryParsed({ repositoryInventory: { readText } }, "README.md", "markdown", parse),
+  ).resolves.toEqual({ text: "plain text" });
+  expect(readText).toHaveBeenCalledWith("README.md");
+});

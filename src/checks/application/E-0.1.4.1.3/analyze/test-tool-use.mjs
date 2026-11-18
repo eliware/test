@@ -1,6 +1,4 @@
-import visitTestToolUse from "./test-tool-use/visit.mjs";
-import prepareTestToolUse from "./prepare-test-tool-use.mjs";
+import analyzeTestToolUseProgram from "./test-tool-use/analyze.mjs";
 export default function analyzeTestToolUse(program, allowHarnessTools = false) {
-  const prepared = prepareTestToolUse(program);
-  return visitTestToolUse(program, prepared.strings, prepared.launchNames, allowHarnessTools);
+  return analyzeTestToolUseProgram(program, allowHarnessTools);
 }

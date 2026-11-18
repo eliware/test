@@ -1,23 +1,6 @@
-import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-const readsByContext = new WeakMap();
+import readRepositoryText from "../repository-text.mjs";
 const parsedByContext = new WeakMap();
-function readRepositoryText(context, filePath) {
-  if (context?.repositoryInventory?.readText) return context.repositoryInventory.readText(filePath);
-  if (!context || typeof context !== "object") return readFile(filePath, "utf8");
-  let reads = readsByContext.get(context);
-  if (!reads) {
-    reads = new Map();
-    readsByContext.set(context, reads);
-  }
-  const key = resolve(filePath);
-  let pending = reads.get(key);
-  if (!pending) {
-    pending = readFile(filePath, "utf8");
-    reads.set(key, pending);
-  }
-  return pending;
-}
 async function readRepositoryParsed(context, filePath, cacheKey, parse) {
   if (context?.repositoryInventory?.readParsed)
     return context.repositoryInventory.readParsed(filePath, cacheKey, parse);
