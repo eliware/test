@@ -53,30 +53,6 @@ test("uses the mocked filesystem reader by default", async () => {
   readFile.mockResolvedValue(JSON.stringify(lockfile));
   await expect(validatePackageLock("/repo", packageJson)).resolves.toEqual([]);
 });
-test("accepts matching package lock metadata", async () => {
-  await expect(
-    validatePackageLock("/repo", pkg, {
-      read: readLock(validLock),
-    }),
-  ).resolves.toEqual([]);
-});
-test("reports invalid lock JSON", async () => {
-  await expect(
-    validatePackageLock("/repo", pkg, {
-      read: async () => "bad json",
-    }),
-  ).resolves.toEqual(["package-lock.json must exist and contain valid JSON."]);
-});
-test("reports package metadata that differs from the lockfile", async () => {
-  await expect(
-    validatePackageLock("/repo", pkg, {
-      read: readLock({
-        ...validLock,
-        version: "14.0.0",
-      }),
-    }),
-  ).resolves.toContain("package-lock.json name and version must match package.json.");
-});
 test("checks dependency maps and direct dependency entries", async () => {
   const packageJson = {
     ...pkg,

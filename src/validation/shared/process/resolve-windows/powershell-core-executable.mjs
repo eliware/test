@@ -1,13 +1,8 @@
 import { existsSync } from "node:fs";
 import { win32 } from "node:path";
+import resolveWindowsEnvironment from "./environment.mjs";
 export default function resolveWindowsPowerShellCoreExecutable(env, fileExists = existsSync) {
-  const environmentEntries = new Map(
-    Object.entries(process.env).map(([key, value]) => [key.toLowerCase(), [key, value]]),
-  );
-  for (const [key, value] of Object.entries(env)) {
-    environmentEntries.set(key.toLowerCase(), [key, value]);
-  }
-  const currentEnvironment = Object.fromEntries(environmentEntries.values());
+  const currentEnvironment = resolveWindowsEnvironment(env);
   const pathKey = Object.keys(currentEnvironment).find((key) => key.toLowerCase() === "path");
   const pathEntries = (
     pathKey && typeof currentEnvironment[pathKey] === "string"

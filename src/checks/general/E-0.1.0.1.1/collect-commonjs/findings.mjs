@@ -1,11 +1,12 @@
 import collectCommonJsAliases from "./aliases.mjs";
-import collectCommonJsExportAliases from "./export-aliases.mjs";
 import visitCommonJsAst from "./ast-visitor.mjs";
 export default function collectCommonJsFindings(node, findings, file) {
   if (!node || typeof node !== "object") return;
-  const aliases = collectCommonJsAliases(node, "require");
-  const moduleAliases = collectCommonJsAliases(node, "module");
-  const exportsAliases = collectCommonJsExportAliases(node);
+  const {
+    require: aliases,
+    module: moduleAliases,
+    exports: exportsAliases,
+  } = collectCommonJsAliases(node);
   visitCommonJsAst(node, (child) =>
     collectNodeFinding(child, findings, file, aliases, moduleAliases, exportsAliases),
   );

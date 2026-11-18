@@ -2,10 +2,8 @@ import { readFile, readdir, stat as statPath } from "node:fs/promises";
 import { posix, win32 } from "node:path";
 import findRepositoryEntries from "../find-repository-files.mjs";
 import createRepositoryDiscovery from "./inventory/discovery.mjs";
-import createRepositoryFileViews from "./inventory/views.mjs";
+import createRepositoryInventoryCapabilities from "./inventory/capabilities.mjs";
 import createRepositoryContentCache from "./inventory/content.mjs";
-import createDocumentationFileView from "./inventory/documentation.mjs";
-import createRepositoryDirectoryEntries from "./directory/entries.mjs";
 export default function createRepositoryInventory(
   root,
   options = {},
@@ -38,25 +36,19 @@ export default function createRepositoryInventory(
     includeTestResults,
     includeTestResultsUnder,
   });
-  const views = createRepositoryFileViews(discovery.entries, focusedScope, root);
-  const content = createRepositoryContentCache(root, read, parseSource);
-  const documentationFiles = createDocumentationFileView(root, discovery.entriesUnder);
-  const directoryEntries = createRepositoryDirectoryEntries({
+  const capabilities = createRepositoryInventoryCapabilities({
     root,
-    entries: discovery.entries,
-    entriesUnder: discovery.entriesUnder,
-    readDirectory: discovery.readDirectoryCached,
+    discovery,
+    focusedScope,
     statDirectory,
-    hasFullDiscovery: discovery.hasFullDiscovery,
   });
+  const content = createRepositoryContentCache(root, read, parseSource);
   return Object.freeze({
     root,
     focusedScope,
     entries: discovery.entries,
     entriesUnder: discovery.entriesUnder,
-    directoryEntries,
-    ...views,
-    documentationFiles,
+    ...capabilities,
     ...content,
   });
 }
