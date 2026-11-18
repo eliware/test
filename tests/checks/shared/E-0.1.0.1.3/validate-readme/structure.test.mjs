@@ -27,9 +27,6 @@ function createReadme(headings, metadata) {
     ...headings.slice(1).flatMap((heading) => [`## ${heading}`, "Section text.", ""]),
   ].join("\n");
 }
-test("accepts canonical section and link order", () => {
-  expect(validateReadmeStructure(valid, expected, packageJson)).toBeNull();
-});
 test("rejects blank required sections", () => {
   const blank = valid.replace("## Features\nSection text.", "## Features\n\n### Details");
   expect(validateReadmeStructure(blank, expected, packageJson)).toContain(

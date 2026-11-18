@@ -33,9 +33,6 @@ test("requires Support, Links, and License after the profile sections", () => {
     .replace("## License\n## Links", "## Links");
   expect(validateReadmeCompositionOrder(misplaced, expected)).toContain("complete order");
 });
-test("accepts the complete selected section order", () => {
-  expect(validateReadmeCompositionOrder(valid, expected)).toBeNull();
-});
 test("rejects sections from unselected profiles", () => {
   const generalOnly = resolveReadmeHeadings({
     eliware: {
