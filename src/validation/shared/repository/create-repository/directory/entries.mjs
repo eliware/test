@@ -4,6 +4,7 @@ import createRepositoryEntryIndex from "../entry/index.mjs";
 import projectRepositoryDirectoryRecords from "../../project-repository-directory-records.mjs";
 import projectScopedDirectoryEntries from "./project-scoped-entries.mjs";
 import readGeneratedDirectoryEntries from "./read/generated-entries.mjs";
+import findPrunedAncestor from "./find-pruned-ancestor.mjs";
 export default function createRepositoryDirectoryEntries({
   root,
   entries,
@@ -31,16 +32,7 @@ export default function createRepositoryDirectoryEntries({
       projectedEntries = new Map();
     }
     const knownDirectory = index.knownDirectories.has(base);
-    const baseParts = base ? base.split("/") : [];
-    let prunedDirectory;
-    let candidate = "";
-    for (const part of baseParts) {
-      candidate = candidate ? `${candidate}/${part}` : part;
-      if (index.prunedDirectories.has(candidate)) {
-        prunedDirectory = candidate;
-        break;
-      }
-    }
+    const prunedDirectory = findPrunedAncestor(base, index.prunedDirectories);
     if (base && !knownDirectory && !prunedDirectory)
       throw Object.assign(new Error(`ENOENT: no such directory, scandir '${directory}'`), {
         code: "ENOENT",

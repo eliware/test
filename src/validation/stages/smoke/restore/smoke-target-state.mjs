@@ -1,7 +1,7 @@
 import { cp, mkdir, rm, symlink, writeFile, chmod, lstat, unlink } from "node:fs/promises";
-import { isAbsolute, relative, resolve, sep } from "node:path";
 import assertSmokePackageParents from "../assert-smoke-package-parents.mjs";
 import restoreCapturedSmokePath from "./captured-smoke-path.mjs";
+import isInsideNodeModules from "./is-inside-node-modules.mjs";
 const defaultFs = {
   cp,
   mkdir,
@@ -36,12 +36,4 @@ export default async function restoreSmokeTargetState(state, fs = defaultFs) {
     recursive: true,
     force: true,
   });
-}
-function isInsideNodeModules(targetRoot, path) {
-  const nodeModules = resolve(targetRoot, "node_modules");
-  const relativePath = relative(nodeModules, resolve(path));
-  return (
-    relativePath === "" ||
-    (relativePath !== ".." && !relativePath.startsWith(`..${sep}`) && !isAbsolute(relativePath))
-  );
 }

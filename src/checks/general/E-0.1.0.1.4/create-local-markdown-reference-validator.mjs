@@ -1,7 +1,7 @@
 import { readFile, realpath, stat } from "node:fs/promises";
-import hasMarkdownFragment from "./resolve-markdown-fragment.mjs";
 import isPathOutsideRoot from "./resolve/local-reference/is-path-outside-root.mjs";
 import resolveLocalMarkdownReference from "./resolve/local-reference.mjs";
+import hasMarkdownFragmentTarget from "./resolve/markdown-fragment-target.mjs";
 export default function createLocalMarkdownReferenceValidator(root, dependencies = {}) {
   const read = dependencies.read ?? readFile;
   const inspect = dependencies.stat ?? stat;
@@ -19,8 +19,7 @@ export default function createLocalMarkdownReferenceValidator(root, dependencies
         return `Documentation link escapes the repository: ${reference} in ${file}.`;
       const info = await inspect(target);
       if (fragment && target.toLowerCase().endsWith(".md")) {
-        const targetText = await read(target, "utf8");
-        if (!hasMarkdownFragment(targetText, fragment))
+        if (!(await hasMarkdownFragmentTarget(read, target, fragment)))
           return `Documentation fragment does not resolve: ${reference} in ${file}.`;
       } else if (!info.isFile() && !info.isDirectory()) {
         return `Documentation link does not resolve: ${reference} in ${file}.`;

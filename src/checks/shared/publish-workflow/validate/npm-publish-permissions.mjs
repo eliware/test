@@ -1,4 +1,6 @@
+import parseBoundedYamlValue from "../../../../validation/shared/yaml/parse-bounded-yaml-documents/parse-bounded-yaml-value.mjs";
 export default function validateNpmPublishPermissions(workflow, path = "specs/workflows/npm.yaml") {
+  if (typeof workflow === "string") workflow = parseBoundedYamlValue(workflow, path);
   const errors = [];
   const jobs = workflow?.jobs;
   if (workflow?.permissions?.["id-token"] === "write") {

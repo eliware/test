@@ -24,6 +24,14 @@ const workflow = {
 test("accepts GHCR login before the image push", () => {
   expect(validateGhcrAuthentication(workflow)).toEqual([]);
 });
+test("parses workflow text before applying authentication policy", () => {
+  expect(
+    validateGhcrAuthentication(
+      "jobs: { publish: { permissions: { packages: write }, steps: [] } }",
+      "workflow.yaml",
+    ),
+  ).toContain("workflow.yaml publish job must log in with docker/login-action@v3.");
+});
 test("validates the last GHCR login before the image push", () => {
   expect(
     validateGhcrAuthentication({

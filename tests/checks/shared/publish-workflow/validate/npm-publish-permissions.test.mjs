@@ -18,6 +18,14 @@ const validWorkflow = {
 test("accepts OIDC permission on the publish job only", () => {
   expect(validateNpmPublishPermissions(validWorkflow)).toEqual([]);
 });
+test("parses workflow text before applying permission policy", () => {
+  expect(
+    validateNpmPublishPermissions(
+      "jobs: { publish: { permissions: { id-token: write } } }",
+      "workflow.yaml",
+    ),
+  ).toEqual([]);
+});
 test("requires OIDC permission on the publish job", () => {
   expect(
     validateNpmPublishPermissions({

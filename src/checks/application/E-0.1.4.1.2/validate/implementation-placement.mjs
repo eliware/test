@@ -1,14 +1,10 @@
-import findPackageScriptValidatorPaths from "../../../shared/package-scripts/validate/package-script-file-locations/find-package-script-validator-paths.mjs";
+import resolveAllowedImplementationRoots from "./implementation-placement/allowed-roots.mjs";
 const modulePath = /\.(?:mjs|js|mts|ts|jsx|tsx|cjs|cts)$/iu;
 const allowedRoots = /^(?:src|bin|tests|test-fixtures|examples)\//u;
 const generatedPath = /(?:^|\/)(?:\.git|node_modules|coverage|dist|build)(?:\/|$)/u;
 export default function validateImplementationPlacement(files, profiles = [], packageJson = {}) {
-  const discoveryRoots = [];
-  const validatorPaths = new Set(findPackageScriptValidatorPaths(packageJson));
-  if (profiles.includes("discord")) discoveryRoots.push("commands", "events");
-  if (profiles.includes("mcp-server")) discoveryRoots.push("tools");
-  const allowedRootFiles = profiles.includes("web") ? new Set(["webpack.config.mjs"]) : new Set();
-  const allowedDiscoveryPath = new RegExp(`^(?:${discoveryRoots.join("|")})/`, "u");
+  const { validatorPaths, allowedRootFiles, allowedDiscoveryPath } =
+    resolveAllowedImplementationRoots(profiles, packageJson);
   return files
     .filter(
       (path) =>

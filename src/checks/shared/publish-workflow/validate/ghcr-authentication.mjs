@@ -1,6 +1,7 @@
 const loginAction = "docker/login-action@v3";
 const imageAction = "docker/build-push-action@v7";
 export default function validateGhcrAuthentication(workflow, path = "specs/workflows/ghcr.yaml") {
+  if (typeof workflow === "string") workflow = parseBoundedYamlValue(workflow, path);
   const errors = [];
   const publish = workflow?.jobs?.publish;
   const steps = publish?.steps ?? [];
@@ -33,3 +34,4 @@ export default function validateGhcrAuthentication(workflow, path = "specs/workf
   }
   return errors;
 }
+import parseBoundedYamlValue from "../../../../validation/shared/yaml/parse-bounded-yaml-documents/parse-bounded-yaml-value.mjs";
