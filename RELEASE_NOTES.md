@@ -1,28 +1,37 @@
 # Release Notes
 
-## 15.2.0 — 2026-11-17
+## 15.2.0 — 2026-11-18
 
 ### Added
 
-- Allow advisory-scoped, expiring npm audit exemptions in `package.json.eliware.exempt`.
+- Add expiring npm audit exemptions for approved GitHub Advisory IDs.
 - Add a temporary exemption for `GHSA-fc5q-39xc-vjpf` while picomatch has no patched release.
+- Show npm audit severity counts and advisory details when the audit stage fails.
 
 ### Changed
 
-- Split general package metadata and files, lockfile consistency, and native ESM checks into separate rules.
-- Set the package version to 15.2.0 and the convention schema versions to 15.2.
-- Require application and library implementation modules to export at most one method as the default export, with documented barrel and library entrypoint exceptions.
-- Update `@babel/parser` to 8.1.2, `minimatch` to 11.0.9, Oxlint to 1.94.0, and Prettier to 3.10.1.
+- Set the package version and convention schema versions to 15.2.0 and 15.2.
+- Update `@babel/parser` to 8.1.2, `minimatch` to 11.0.9, Oxlint to 1.94.0, Prettier to 3.10.1, and SemVer to 7.8.6.
 - Update locked transitive dependencies.
-- Show npm audit severity counts and advisory details when the audit stage fails.
-- Omit development dependencies from npm audit checks.
-- Apply approved npm audit exemptions without printing a warning.
-- Show Jest summaries, process exit details, and the full log path when Jest exits unsuccessfully.
-- Show both exemption lists when package metadata does not match the repository map.
-- Include the repository map path and SHA-256 hash in exemption mismatch diagnostics.
-- Give Jest a 4096 MB heap limit when `--detectOpenHandles` enables in-band diagnostics.
-- Skip Git-ignored paths and every `artifacts/` directory during repository validation.
-- Require `.gitignore` to ignore local environment files and allow `.env.example`.
+- Split package metadata, lockfile consistency, and native ESM validation into separate rules.
+- Exclude development dependencies from npm audit and apply approved audit exemptions without warnings.
+- Report Jest summaries, process details, and the full log path after test failures.
+- Use a 4096 MB heap when `--detectOpenHandles` runs Jest in-band.
+- Include exemption lists, the repository map path, and its SHA-256 hash in mismatch diagnostics.
+- Skip Git-ignored paths and `artifacts/` directories at every depth.
+- Require `.gitignore` to ignore local environment files while allowing `.env.example`.
+- Refactor validation internals into focused modules with mirrored tests.
+- Expand user guides for audit exemptions, ignored paths, Jest failures, and local environment files.
+- Add a NAS deployment validation job.
+
+### Fixed
+
+- Find file ancestors before reading generated-directory descendants.
+- Reject documentation index links to the index itself.
+- Report smoke workspace creation failures and invalid smoke results directly.
+- Require the exact `engines.node` value `>=26`.
+- Find `var` declarations that shadow Jest test names.
+- Check nested YAML example fields as maintained prose without top-level examples.
 
 ## 15.1.0 — 2026-10-31
 
