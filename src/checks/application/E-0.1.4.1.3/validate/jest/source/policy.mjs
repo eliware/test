@@ -1,20 +1,12 @@
-import collectJestPolicyFiles from "../collect-policy-files.mjs";
-import validateJestSourceFilePolicy from "./file-policy.mjs";
-import isPrimaryLibraryBarrel from "./is-primary-library-barrel.mjs";
+import collectJestPolicyFiles from "./collect-files.mjs";
+import validateJestPolicyFiles from "./validate-files.mjs";
 import findSeparateTestRunnerConfigErrors from "./separate-config-errors.mjs";
 export default async function validateJestSourcePolicy(context = {}) {
   const root = context.root ?? process.cwd();
   const inventory = context.repositoryInventory;
   const harness = context.packageJson?.name === "@eliware/test";
   const { errors, files, paths } = await collectJestPolicyFiles(inventory, root);
-  for (const { path, content } of files) {
-    errors.push(
-      ...validateJestSourceFilePolicy(path, content, {
-        harness,
-        allowLibraryBarrel: isPrimaryLibraryBarrel(context.packageJson, path),
-      }),
-    );
-  }
+  validateJestPolicyFiles(files, errors, context.packageJson, harness);
   errors.push(...findSeparateTestRunnerConfigErrors(paths ?? []));
   return errors;
 }

@@ -1,6 +1,6 @@
 import { expect, test } from "@jest/globals";
-import validatePackedManifestPaths from "../../../../../../../src/validation/stages/pack/validate/pack/manifest-content/packed-paths/validate-packed-manifest-paths.mjs";
-import validatePackedManifestShape from "../../../../../../../src/validation/stages/pack/validate/pack/manifest-content/packed-paths.mjs";
+import validatePackedManifestPaths from "../../../../../../../../src/validation/stages/pack/validate/pack/manifest-content/packed-paths/validate-packed-manifest-paths.mjs";
+import validatePackedManifestShape from "../../../../../../../../src/validation/stages/pack/validate/pack/manifest-content/packed/paths.mjs";
 test("accepts safe packed paths", () => {
   expect(
     validatePackedManifestShape([
