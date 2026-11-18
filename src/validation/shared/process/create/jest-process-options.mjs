@@ -4,7 +4,7 @@ import formatJestSuiteProgress from "../../../stages/format/jest-suite-progress.
 export default function createJestProcessOptions(root, args = [], options = {}) {
   const invokingEnvironment = options.env ?? process.env;
   const progress = createJestProgressTracker();
-  const env = createJestEnvironment(invokingEnvironment);
+  const env = createJestEnvironment(invokingEnvironment, args);
   let nestedOutputStarted = false;
   if (options.consoleReportFile) env.ELIWARE_TEST_JEST_CONSOLE_REPORT = options.consoleReportFile;
   return {

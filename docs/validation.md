@@ -92,7 +92,7 @@ Reporter option objects are not supported.
 
 Jest uses its default worker pool on each run.
 The CLI enables the Jest cache in `coverage/cache`.
-Pass `--detectOpenHandles` to find open handles. Jest then runs in-band.
+Pass `--detectOpenHandles` to find open handles. Jest then runs in-band with a 4096 MB heap limit.
 
 It adds a reporter and coverage reports.
 It keeps the consumer's required coverage settings.

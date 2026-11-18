@@ -33,6 +33,15 @@ test("enables expanded output and forwards stderr callback in debug mode", () =>
   expect(options.maxOutputLength).toBe(1_000_000);
   expect(options.onStderr).toBe(onStderr);
 });
+test("raises the Jest heap limit when open handle diagnostics are requested", () => {
+  const env = { NODE_OPTIONS: "--no-warnings" };
+  const diagnosticOptions = createJestProcessOptions("C:/fixture", ["--detectOpenHandles"], {
+    env,
+  });
+  const normalOptions = createJestProcessOptions("C:/fixture", [], { env });
+  expect(diagnosticOptions.env.NODE_OPTIONS).toContain("--max-old-space-size=4096");
+  expect(normalOptions.env.NODE_OPTIONS).not.toContain("--max-old-space-size");
+});
 test("reports the suite that exceeds the ten second limit", () => {
   const onTimeout = jest.fn();
   const options = createJestProcessOptions("C:/fixture", [], {

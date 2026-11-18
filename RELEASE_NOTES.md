@@ -17,6 +17,7 @@
 - Omit development dependencies from npm audit checks.
 - Apply approved npm audit exemptions without printing a warning.
 - Show Jest summaries, process exit details, and the full log path when Jest exits unsuccessfully.
+- Give Jest a 4096 MB heap limit when `--detectOpenHandles` enables in-band diagnostics.
 - Skip Git-ignored paths and every `artifacts/` directory during repository validation.
 - Require `.gitignore` to ignore local environment files and allow `.env.example`.
 

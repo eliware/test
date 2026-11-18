@@ -15,6 +15,17 @@ test("adds the required Jest Node options while preserving supported warning set
     "--trace-warnings=false --experimental-vm-modules",
   );
   expect(createJestNodeOptions("--no-warnings")).toBe("--no-warnings --experimental-vm-modules");
+  expect(createJestNodeOptions("--max-old-space-size=2048")).toBe(
+    "--max-old-space-size=2048 --experimental-vm-modules --no-warnings",
+  );
+});
+test("raises the heap limit for open handle diagnostics", () => {
+  expect(createJestNodeOptions("", { detectOpenHandles: true })).toBe(
+    "--experimental-vm-modules --no-warnings --max-old-space-size=4096",
+  );
+  expect(createJestNodeOptions("", { detectOpenHandles: false })).toBe(
+    "--experimental-vm-modules --no-warnings",
+  );
 });
 test("rejects inherited Node options that could alter or preload Jest execution", () => {
   for (const option of [
@@ -26,6 +37,8 @@ test("rejects inherited Node options that could alter or preload Jest execution"
     "--trace-warnings --require ./inject.mjs",
     '--trace-warnings="--import=./inject.mjs"',
     "--experimental-vm-modules\\",
+    "--max-old-space-size=invalid",
+    "--max-old-space-size=0",
   ]) {
     expect(() => createJestNodeOptions(option)).toThrow(
       "Unsupported inherited NODE_OPTIONS for the Jest validation process.",

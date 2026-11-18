@@ -40,3 +40,11 @@ test("rejects unsupported inherited Node options for Jest", () => {
     }),
   ).toThrow("Unsupported inherited NODE_OPTIONS for the Jest validation process.");
 });
+test("raises the heap limit only when open handle diagnostics are enabled", () => {
+  expect(createJestEnvironment({}, ["--detectOpenHandles"]).NODE_OPTIONS).toContain(
+    "--max-old-space-size=4096",
+  );
+  expect(createJestEnvironment({}, ["--detectOpenHandles=false"]).NODE_OPTIONS).not.toContain(
+    "--max-old-space-size",
+  );
+});
