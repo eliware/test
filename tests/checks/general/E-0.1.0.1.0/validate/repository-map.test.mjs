@@ -48,6 +48,7 @@ test("returns repository map comparison errors", async () => {
 });
 test("adds the loaded map hash to exemption mismatch diagnostics", async () => {
   loadRepoMapRecord.mockResolvedValue({
+    sourcePath: "/var/eliware/docs/repo-map.yaml",
     sourceHash: "a".repeat(64),
   });
   compareRepoMapRecord.mockReturnValue([
@@ -55,6 +56,7 @@ test("adds the loaded map hash to exemption mismatch diagnostics", async () => {
   ]);
   await expect(validateRepositoryMap("repo", {})).resolves.toEqual([
     "The package exemption list must match repo-map.yaml.\npackage list\nmap list",
+    "repo-map.yaml path: /var/eliware/docs/repo-map.yaml",
     `repo-map.yaml SHA-256: ${"a".repeat(64)}`,
   ]);
 });

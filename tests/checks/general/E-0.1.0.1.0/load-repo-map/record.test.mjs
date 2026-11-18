@@ -200,6 +200,7 @@ test("reports invalid package names and allows missing map entries", async () =>
     available: true,
     record: null,
     error: null,
+    sourcePath: expect.stringMatching(/repo-map\.yaml$/u),
     sourceHash: expect.stringMatching(/^[a-f\d]{64}$/u),
   });
 });
@@ -251,6 +252,7 @@ test("uses matching records after optional schema validation", async () => {
       repository: "eliware/example",
     },
     error: null,
+    sourcePath: expect.stringMatching(/repo-map\.yaml$/u),
     sourceHash: expect.stringMatching(/^[a-f\d]{64}$/u),
   });
 });

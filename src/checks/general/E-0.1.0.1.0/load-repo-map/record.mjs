@@ -65,6 +65,7 @@ export default async function loadRepoMapRecord(root, packageJson, { read = read
     };
   return {
     available: true,
+    sourcePath: repoMapPath,
     sourceHash,
     ...findRepositoryRecord(values, packageJson),
   };
