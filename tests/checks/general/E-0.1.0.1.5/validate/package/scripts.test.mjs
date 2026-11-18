@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import validatePackageScripts from "../../../../../src/checks/general/E-0.1.0.1.5/validate/package-scripts.mjs";
+import validatePackageScripts from "../../../../../../src/checks/general/E-0.1.0.1.5/validate/package/scripts.mjs";
 test("accepts canonical self-hosted scripts and nonempty extra scripts", () => {
   expect(
     validatePackageScripts({

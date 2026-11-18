@@ -3,7 +3,7 @@ import runJest from "../run/jest.mjs";
 import runChild from "../../../../shared/process/run/child.mjs";
 import createJestCheckOptions from "../../configuration/create-jest/check-options.mjs";
 import sanitizeJestLog from "../../progress/sanitize-jest-log.mjs";
-import focusedPathsFrom from "../../../../../cli/parse/focused-arguments/focused/paths-from.mjs";
+import focusedPathsFrom from "../../../../../cli/parse/focused/paths-from.mjs";
 import findIgnoredRepositoryPaths from "../../../../shared/repository/find-repository-files/find/ignored-repository-paths.mjs";
 import isIgnoredRepositoryPath from "../../../../shared/repository/repository-inventory/path-filters/is/ignored-repository-path.mjs";
 export default async function executeJestCheck(context) {

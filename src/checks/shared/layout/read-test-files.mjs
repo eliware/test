@@ -1,5 +1,5 @@
 import { join } from "node:path";
-export default async function readApplicationTestFiles(testPaths, readText, root) {
+export default async function readTestFiles(testPaths, readText, root) {
   return Promise.all(
     testPaths.map(async (path) => {
       try {

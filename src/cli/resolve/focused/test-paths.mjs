@@ -1,4 +1,4 @@
-import parseFocusedArguments from "../../parse/focused-arguments.mjs";
+import parseFocusedArguments from "../../parse/focused/arguments.mjs";
 import validateForwardedTestPaths from "./validate-forwarded-test-paths.mjs";
 const focusedTestPathPattern = /^tests[\\/].*\.(?:test|spec)\.(?:js|jsx|ts|tsx|mjs|cjs|mts|cts)$/iu;
 export default function resolveFocusedTestPaths(args, hasToolMode) {

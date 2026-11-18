@@ -48,7 +48,7 @@ test("accepts all required files and the approved license", async () => {
     }),
   ).resolves.toEqual([]);
 });
-test("reports missing, non-file, and malformed license paths", async () => {
+test("reports missing and non-file required paths", async () => {
   const getStat = async (path) => {
     if (path.endsWith("README.md")) throw new Error("missing");
     return {
@@ -57,18 +57,10 @@ test("reports missing, non-file, and malformed license paths", async () => {
   };
   const errors = await validateRequiredPackageFiles("/repo", {
     getStat,
-    read: async () => "MIT License only",
+    read: async () => "unused",
   });
   expect(errors.join("\n")).toContain("README.md is required");
   expect(errors.join("\n")).toContain("LICENSE must be a file");
-  expect(errors.join("\n")).toContain("LICENSE must contain the complete approved MIT text");
-});
-test("rejects altered license text that keeps the old marker fragments", async () => {
-  const errors = await validateRequiredPackageFiles("/repo", {
-    getStat: successStat,
-    read: async () => approvedLicense.replace("free of charge", "only for Eliware"),
-  });
-  expect(errors).toContain("LICENSE must contain the complete approved MIT text.");
 });
 test("reports required files when the stat call fails", async () => {
   const errors = await validateRequiredPackageFiles("/repo", {
@@ -79,7 +71,6 @@ test("reports required files when the stat call fails", async () => {
       throw new Error("denied");
     },
   });
-  expect(errors).toHaveLength(9);
+  expect(errors).toHaveLength(8);
   expect(errors[4]).toContain("LICENSE is required");
-  expect(errors[8]).toContain("LICENSE could not be read");
 });

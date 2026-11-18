@@ -1,5 +1,6 @@
-const definitionPattern = /^ {0,3}\[([^\]]+)\]:\s*(?:<([^>\r\n]+)>|(\S+))/gimu;
+import createMarkdownReferencePolicy from "./policy.mjs";
 function extractMarkdownReferenceUses(markdown, definitions, pattern) {
+  const { definitionPattern, normalizeLabel } = createMarkdownReferencePolicy();
   const referenceText = markdown.replace(definitionPattern, (line) => " ".repeat(line.length));
   const references = [];
   for (const match of referenceText.matchAll(pattern)) {
@@ -13,8 +14,5 @@ function extractMarkdownReferenceUses(markdown, definitions, pattern) {
       });
   }
   return references;
-}
-function normalizeLabel(value) {
-  return value.trim().replace(/\s+/gu, " ").toLowerCase();
 }
 export default extractMarkdownReferenceUses;

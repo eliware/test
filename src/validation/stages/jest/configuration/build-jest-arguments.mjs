@@ -1,6 +1,6 @@
-import focusedPathFrom from "../../../../cli/parse/focused-arguments/focused/path-from.mjs";
-import focusedPathsFrom from "../../../../cli/parse/focused-arguments/focused/paths-from.mjs";
-import parseFocusedArguments from "../../../../cli/parse/focused-arguments.mjs";
+import focusedPathFrom from "../../../../cli/parse/focused/path-from.mjs";
+import focusedPathsFrom from "../../../../cli/parse/focused/paths-from.mjs";
+import parseFocusedArguments from "../../../../cli/parse/focused/arguments.mjs";
 import validateJestOptionPolicy from "./jest-option-policy.mjs";
 export { focusedPathFrom };
 export default function buildJestArguments(args = []) {

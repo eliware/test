@@ -1,4 +1,4 @@
-import parseFocusedArguments from "../parse/focused-arguments.mjs";
+import parseFocusedArguments from "../parse/focused/arguments.mjs";
 const modeRuleIds = Object.freeze({
   lint: "E-0.1.4",
   format: "E-0.1.20.17",

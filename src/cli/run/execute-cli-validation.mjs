@@ -5,7 +5,7 @@ import runValidation from "../../validation/run-validation/run-validation.mjs";
 import createValidationRunOptions from "../create-validation-run-options.mjs";
 import writeValidationResults from "../write/validation-results.mjs";
 import formatExitCode from "../format-exit-code.mjs";
-import parseFocusedArguments from "../parse/focused-arguments.mjs";
+import parseFocusedArguments from "../parse/focused/arguments.mjs";
 import selectTimingOutput from "../select-timing-output.mjs";
 export default async function executeCliValidation({
   args,

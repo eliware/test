@@ -1,5 +1,6 @@
 import runSmokeCommand from "./cli/command.mjs";
 import validateSmokeCliArguments from "./cli/arguments.mjs";
+import writeSmokeCliResult from "./cli/result.mjs";
 export default async function runSmokeCli({
   args,
   root = process.cwd(),
@@ -18,10 +19,8 @@ export default async function runSmokeCli({
       write,
       smoke,
     });
-    write(result);
-    return result.startsWith("Smoke passed:") ? 0 : 17;
+    return writeSmokeCliResult(result, write);
   } catch (error) {
-    write(`Tarball consumer smoke failed: ${error.message}`);
-    return 17;
+    return writeSmokeCliResult(error, write);
   }
 }

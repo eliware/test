@@ -1,4 +1,4 @@
-import hasPackagePublicationCommand from "./has-package-publication-command.mjs";
+import hasPackagePublicationCommand from "../has-package-publication-command.mjs";
 const consumerScripts = {
   test: "eliware-test",
   lint: "eliware-test --lint",

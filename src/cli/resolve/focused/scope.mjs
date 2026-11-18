@@ -1,4 +1,4 @@
-import focusedPathsFrom from "../../parse/focused-arguments/focused/paths-from.mjs";
+import focusedPathsFrom from "../../parse/focused/paths-from.mjs";
 export default function resolveFocusedScope(args = []) {
   const testPaths = focusedPathsFrom(args).map((path) =>
     path.replaceAll("\\", "/").replace(/^\.\//u, ""),
