@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import createDocumentationTraversalSelection from "../../../../../../../src/validation/shared/repository/create-repository/inventory/documentation/select-traversal.mjs";
+import createDocumentationTraversalSelection from "../../../../../../../../src/validation/shared/repository/create-repository/inventory/documentation/select/traversal.mjs";
 function createSelection(overrides = {}) {
   return createDocumentationTraversalSelection({
     base: "docs",

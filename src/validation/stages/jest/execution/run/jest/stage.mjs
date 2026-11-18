@@ -2,7 +2,7 @@ import fail from "../../../../../../checks/check-result/fail.mjs";
 import pass from "../../../../../../checks/check-result.mjs";
 import executeJestCheck from "../../execute/jest-check.mjs";
 import recordJestContext from "../../record-jest-context.mjs";
-import classifyJestResult from "../../classify-jest-result.mjs";
+import classifyJestResult from "../../classify/jest-result.mjs";
 import validateTestIsolationPolicy from "../../../../../harness/validate-test-isolation-policy.mjs";
 export default async function runJestStage(context, ruleId) {
   if (!context.executeJest) return pass(ruleId);

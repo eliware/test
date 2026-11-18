@@ -46,18 +46,12 @@ directives:
         metadata shown in the example.
       - Set package.json.bugs.url to the matching GitHub repository issues URL.
       - Use numeric `MAJOR.MINOR.PATCH` matching the applied convention version.
-      - Match lockfile metadata and dependency references to package.json.
-      - Allow an overridden transitive version outside its parent range only when the root
-        override selects that version.
-      - Require each resolved overridden version to satisfy its applicable root override.
-      - Keep parent range checks for dependencies without an applicable root override.
       - Keep each Node.js dependency at its latest available release. The outdated stage
         must report no newer release.
       - Use the MIT license text with Copyright (c) 2026 Eliware.
     donts:
       - Do not use prerelease or build suffixes, alternative identity metadata, or
         malformed dependency maps.
-      - Do not use CommonJS module syntax in maintained implementation.
     examples:
       - /eliware/application-template/package.json
       - /eliware/cli-template/package.json
@@ -67,6 +61,22 @@ directives:
       - /eliware/library-template/package.json
       - /eliware/mcp-server-template/package.json
       - /eliware/web-template/package.json
+
+  - id: E-0.1.0.1.14
+    dos:
+      - Match lockfile metadata and dependency references to package.json.
+      - Allow an overridden transitive version outside its parent range only when the root
+        override selects that version.
+      - Require each resolved overridden version to satisfy its applicable root override.
+      - Keep parent range checks for dependencies without an applicable root override.
+    donts:
+      - Do not allow an unlocked dependency or mismatched package identity.
+
+  - id: E-0.1.0.1.15
+    dos:
+      - Do not use CommonJS module syntax in maintained implementation.
+    donts:
+      - Do not use CommonJS package entrypoints or exports.
       - /eliware/workspace-template/package.json
 
   - id: E-0.1.0.1.2

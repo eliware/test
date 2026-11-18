@@ -85,47 +85,6 @@ test("reports package metadata and required file failures together", async () =>
   expect(result.message).toContain("scoped @eliware");
   expect(result.message).toContain("package-lock.json is required");
 });
-test("reports source scan failures", async () => {
-  const result = await run(
-    {
-      root: "/repo",
-      packageJson: {},
-      repositoryFiles: ["invalid.mjs"],
-      parseAst: async () => {
-        throw new Error("blocked");
-      },
-    },
-    dependencies,
-  );
-  expect(result.message).toContain("invalid.mjs: invalid module syntax (blocked)");
-});
-test("reports CommonJS package entrypoints", async () => {
-  const result = await run(
-    {
-      root: "/repo",
-      packageJson: {
-        ...packageJson,
-        main: "./index.cjs",
-      },
-      repositoryFiles: [],
-    },
-    dependencies,
-  );
-  expect(result.message).toContain("package.json: CommonJS entrypoint or export");
-});
-test("uses the inventory file reader when no file list is supplied", async () => {
-  const result = await run(
-    {
-      root: "/repo",
-      packageJson,
-      repositoryInventory: {
-        repositoryFiles: async () => [],
-      },
-    },
-    dependencies,
-  );
-  expect(result.status).toBe("pass");
-});
 test("uses default arguments", async () => {
   stat.mockResolvedValue({
     isFile: () => true,

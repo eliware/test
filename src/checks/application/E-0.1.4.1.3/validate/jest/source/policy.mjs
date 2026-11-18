@@ -1,7 +1,7 @@
-import findSeparateTestRunnerConfigs from "../../../find-separate-test-runner-configs.mjs";
 import collectJestPolicyFiles from "../collect-policy-files.mjs";
 import validateJestSourceFilePolicy from "./file-policy.mjs";
 import isPrimaryLibraryBarrel from "./is-primary-library-barrel.mjs";
+import findSeparateTestRunnerConfigErrors from "./separate-config-errors.mjs";
 export default async function validateJestSourcePolicy(context = {}) {
   const root = context.root ?? process.cwd();
   const inventory = context.repositoryInventory;
@@ -15,7 +15,6 @@ export default async function validateJestSourcePolicy(context = {}) {
       }),
     );
   }
-  for (const path of findSeparateTestRunnerConfigs(paths ?? []))
-    errors.push(`${path} is a separate test runner or coverage configuration file.`);
+  errors.push(...findSeparateTestRunnerConfigErrors(paths ?? []));
   return errors;
 }

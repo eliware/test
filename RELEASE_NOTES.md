@@ -9,6 +9,7 @@
 
 ### Changed
 
+- Split general package metadata and files, lockfile consistency, and native ESM checks into separate rules.
 - Set the package version to 15.2.0 and the convention schema versions to 15.2.
 - Require application and library implementation modules to export at most one method as the default export, with documented barrel and library entrypoint exceptions.
 - Update `@babel/parser` to 8.1.2, `minimatch` to 11.0.9, Oxlint to 1.94.0, and Prettier to 3.10.1.

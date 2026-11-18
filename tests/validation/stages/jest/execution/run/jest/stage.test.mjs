@@ -18,7 +18,7 @@ jest.unstable_mockModule(
   }),
 );
 jest.unstable_mockModule(
-  "../../../../../../../src/validation/stages/jest/execution/classify-jest-result.mjs",
+  "../../../../../../../src/validation/stages/jest/execution/classify/jest-result.mjs",
   () => ({
     classifyJestResult,
     default: classifyJestResult,

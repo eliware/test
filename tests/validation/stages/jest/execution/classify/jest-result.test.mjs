@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import classifyJestResult from "../../../../../src/validation/stages/jest/execution/classify-jest-result.mjs";
+import classifyJestResult from "../../../../../../src/validation/stages/jest/execution/classify/jest-result.mjs";
 test("classifies timeout, failure, and success results", () => {
   expect(
     classifyJestResult("E-0.1.130.13", {
