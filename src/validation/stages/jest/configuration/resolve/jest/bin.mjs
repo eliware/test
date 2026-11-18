@@ -1,53 +1,22 @@
-import { readFileSync, realpathSync, statSync } from "node:fs";
-import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
+import { realpathSync } from "node:fs";
+import { dirname } from "node:path";
+import isJestPackageInstalled from "./resolve/package.mjs";
+import resolveMetadataJestBin from "./resolve/metadata-bin.mjs";
+import validateJestExecutable from "./validate-executable.mjs";
 export default function resolveJestBin(
   requireFromConsumer,
   packageName,
   resolveRealPath = realpathSync,
 ) {
-  try {
-    requireFromConsumer.resolve(packageName);
-  } catch (error) {
-    if (error?.code === "MODULE_NOT_FOUND" && error.message.includes(`'${packageName}'`))
-      return undefined;
-    throw error;
-  }
+  if (!isJestPackageInstalled(requireFromConsumer, packageName)) return undefined;
   try {
     const resolved = requireFromConsumer.resolve(`${packageName}/bin/jest`);
     const packagePath = requireFromConsumer.resolve(`${packageName}/package.json`);
     const packageDirectory = resolveRealPath(dirname(packagePath));
-    const actualPath = resolveRealPath(resolved);
-    if (!isPathInside(packageDirectory, actualPath))
-      throw new Error(`Installed ${packageName} Jest executable escapes its package directory.`);
-    if (statSync(actualPath).isFile()) return resolved;
+    if (validateJestExecutable(packageDirectory, resolved, resolveRealPath, packageName))
+      return resolved;
   } catch (error) {
     if (error?.message?.includes("escapes its package directory")) throw error;
   }
-  const packagePath = requireFromConsumer.resolve(`${packageName}/package.json`);
-  const metadata = JSON.parse(readFileSync(packagePath, "utf8"));
-  const bin = typeof metadata.bin === "string" ? metadata.bin : metadata.bin?.jest;
-  if (typeof bin !== "string" || bin.length === 0)
-    throw new Error(`Installed ${packageName} package does not declare a Jest executable.`);
-  const packageDirectory = resolveRealPath(dirname(packagePath));
-  const resolved = resolve(packageDirectory, bin);
-  if (!isPathInside(packageDirectory, resolved))
-    throw new Error(`Installed ${packageName} Jest executable escapes its package directory.`);
-  let isFile = false;
-  try {
-    if (!isPathInside(packageDirectory, resolveRealPath(resolved)))
-      throw new Error(`Installed ${packageName} Jest executable escapes its package directory.`);
-    isFile = statSync(resolved).isFile();
-  } catch (error) {
-    if (error.message.includes("escapes its package directory")) throw error;
-  }
-  if (!isFile)
-    throw new Error(`Installed ${packageName} Jest executable does not exist: ${resolved}`);
-  return resolved;
-}
-function isPathInside(directory, target) {
-  const relativePath = relative(directory, target);
-  return (
-    relativePath === "" ||
-    (!isAbsolute(relativePath) && relativePath !== ".." && !relativePath.startsWith(`..${sep}`))
-  );
+  return resolveMetadataJestBin(requireFromConsumer, packageName, resolveRealPath);
 }
