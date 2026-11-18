@@ -7,22 +7,26 @@ Eliware owns this repository.
 
 ## Scope and boundaries
 
-Run checks for the profiles in `package.json.eliware.apply`.
+Run checks for profiles in `package.json.eliware.apply`.
 Keep semantic reviews outside this package.
 
 ## Layout
 
-Keep source modules in `src/`, launchers in `bin/`, tests in `tests/`, fixtures in
-`test-fixtures/`, guides in `docs/`, and specifications in `specs/`.
+Keep source modules in `src/`.
+Keep launchers in `bin/`.
+Keep tests in `tests/`.
+Keep fixtures in `test-fixtures/`.
+Keep guides in `docs/`.
+Keep specifications in `specs/`.
 
 ## Development
 
+Use Node.js 26 or newer and native ESM.
 Give each source and test module one cohesive purpose.
-Mirror each `src/` `.mjs` file with exactly one same-path `tests/` `.test.mjs` file.
+Mirror each `src/` `.mjs` file with one same-path `tests/` `.test.mjs` file.
 
 ## Validation
 
-Use Node.js 26 or newer and native ESM.
 Run `npm test` for aggregate validation.
 Run `npm run lint` for lint checks.
 Run `npm run audit` for dependency checks.
@@ -35,7 +39,7 @@ Keep credentials, secrets, private data, and runtime state out of Git.
 
 ## Changes
 
-Update user guides and `RELEASE_NOTES.md` when behavior changes.
+Describe every user-visible change in `RELEASE_NOTES.md`.
 
 ## Application
 
@@ -47,7 +51,7 @@ Run the full `npm test` suite for final validation before a commit, milestone, o
 
 ## CLI
 
-Document CLI commands and exit codes in `README.md` and `docs/usage.md`.
+Document CLI commands and exit codes in `README.md` and [the usage guide](docs/usage.md).
 
 ## npm publication
 
