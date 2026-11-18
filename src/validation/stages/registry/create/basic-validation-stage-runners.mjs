@@ -1,8 +1,6 @@
-import { AUDIT_TIMEOUT_MS } from "../../audit/execute-audit-process.mjs";
 import executeAuditProcess from "../../audit/execute-audit-process.mjs";
 import runNpmAudit from "../../audit/run-npm-audit.mjs";
-import auditFailureIsExempt from "../../audit/format-audit-failure.mjs";
-import formatAuditFailure from "../../audit/format-audit-failure/format-audit-failure.mjs";
+import createAuditStageResult from "./audit-result.mjs";
 import runChild from "../../../shared/process/run/child.mjs";
 import runOxlint from "../../lint/run-oxlint.mjs";
 import runJestStage from "../../jest/execution/run/jest/stage.mjs";
@@ -80,33 +78,7 @@ export default function createBasicValidationStageRunners({
           toolArgs: context.toolArgs,
           env: context.env ?? process.env,
         });
-        if (value.timedOut) {
-          return {
-            ...createValidationStageResult(
-              "audit",
-              0,
-              `WARNING: Audit stage timed out after ${AUDIT_TIMEOUT_MS / 1000} seconds. Validation will continue.`,
-              value,
-            ),
-            status: "warning",
-          };
-        }
-        const auditExemption = (context.packageJson?.eliware?.exempt ?? []).find(
-          (entry) => entry.ruleId === "stage:audit",
-        );
-        if (
-          value.code !== 0 &&
-          auditExemption &&
-          auditFailureIsExempt(value, auditExemption.advisories)
-        ) {
-          return createValidationStageResult("audit", 0, "", value);
-        }
-        return createValidationStageResult(
-          "audit",
-          value.code === 0 ? 0 : 7,
-          value.code === 0 ? "" : `npm audit failed.\n${formatAuditFailure(value)}`,
-          value,
-        );
+        return createAuditStageResult(value, context.packageJson);
       } catch (error) {
         return createValidationStageResult("audit", 7, error.message);
       }

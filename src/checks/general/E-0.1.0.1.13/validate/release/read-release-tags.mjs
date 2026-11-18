@@ -1,3 +1,4 @@
+import parseReleaseTags from "./parse-release-tags.mjs";
 export default async function readReleaseTags(root, runGit) {
   try {
     const history = await runGit("git", ["-C", root, "rev-parse", "--is-shallow-repository"], {
@@ -12,9 +13,7 @@ export default async function readReleaseTags(root, runGit) {
       encoding: "utf8",
       windowsHide: true,
     });
-    return {
-      tags: new Set(String(stdout).split(/\r?\n/u)),
-    };
+    return { tags: parseReleaseTags(stdout) };
   } catch {
     return {
       error: "Repository tags could not be read for release-note validation.",

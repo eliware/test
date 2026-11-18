@@ -1,6 +1,4 @@
-import { lstat, rm } from "node:fs/promises";
-import { join } from "node:path";
-import assertSmokePackageParents from "../assert-smoke-package-parents.mjs";
+import removeInstalledPackage from "./remove-installed-package.mjs";
 import smokeCommandFailure from "./command-failure.mjs";
 export default async function installSmokePackage({
   targetRoot,
@@ -10,20 +8,17 @@ export default async function installSmokePackage({
   command,
   prefix,
   env,
-  inspect = lstat,
-  remove = rm,
+  inspect,
+  remove,
   assertTargetIdentity = async () => {},
 }) {
-  await assertTargetIdentity();
-  await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
-  await assertTargetIdentity();
-  await remove(join(targetRoot, "node_modules", ...packageJson.name.split("/")), {
-    recursive: true,
-    force: true,
+  await removeInstalledPackage({
+    targetRoot,
+    packageJson,
+    inspect,
+    remove,
+    assertTargetIdentity,
   });
-  await assertTargetIdentity();
-  await assertSmokePackageParents(targetRoot, packageJson.name, inspect);
-  await assertTargetIdentity();
   const result = await run(
     command,
     [
