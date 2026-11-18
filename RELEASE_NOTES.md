@@ -18,6 +18,7 @@
 - Apply approved npm audit exemptions without printing a warning.
 - Show Jest summaries, process exit details, and the full log path when Jest exits unsuccessfully.
 - Show both exemption lists when package metadata does not match the repository map.
+- Include the repository map SHA-256 hash in exemption mismatch diagnostics.
 - Give Jest a 4096 MB heap limit when `--detectOpenHandles` enables in-band diagnostics.
 - Skip Git-ignored paths and every `artifacts/` directory during repository validation.
 - Require `.gitignore` to ignore local environment files and allow `.env.example`.

@@ -46,6 +46,25 @@ test("returns repository map comparison errors", async () => {
   compareRepoMapRecord.mockReturnValue(["metadata mismatch"]);
   await expect(validateRepositoryMap("repo", {})).resolves.toEqual(["metadata mismatch"]);
 });
+test("adds the loaded map hash to exemption mismatch diagnostics", async () => {
+  loadRepoMapRecord.mockResolvedValue({
+    sourceHash: "a".repeat(64),
+  });
+  compareRepoMapRecord.mockReturnValue([
+    "The package exemption list must match repo-map.yaml.\npackage list\nmap list",
+  ]);
+  await expect(validateRepositoryMap("repo", {})).resolves.toEqual([
+    "The package exemption list must match repo-map.yaml.\npackage list\nmap list",
+    `repo-map.yaml SHA-256: ${"a".repeat(64)}`,
+  ]);
+});
+test("does not add the map hash to other validation errors", async () => {
+  loadRepoMapRecord.mockResolvedValue({
+    sourceHash: "a".repeat(64),
+  });
+  compareRepoMapRecord.mockReturnValue(["metadata mismatch"]);
+  await expect(validateRepositoryMap("repo", {})).resolves.toEqual(["metadata mismatch"]);
+});
 test("accepts an unavailable repository map", async () => {
   loadRepoMapRecord.mockResolvedValue({
     available: false,

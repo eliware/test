@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import parseBoundedYamlDocuments from "../../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
@@ -22,6 +23,7 @@ export default async function loadRepoMapRecord(root, packageJson, { read = read
       error: `repo-map.yaml could not be read: ${error.message}`,
     };
   }
+  const sourceHash = createHash("sha256").update(source).digest("hex");
   let documents;
   try {
     documents = parseBoundedYamlDocuments(source, repoMapPath, {
@@ -63,6 +65,7 @@ export default async function loadRepoMapRecord(root, packageJson, { read = read
     };
   return {
     available: true,
+    sourceHash,
     ...findRepositoryRecord(values, packageJson),
   };
 }

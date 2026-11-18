@@ -196,10 +196,11 @@ test("reports invalid package names and allows missing map entries", async () =>
         read,
       },
     ),
-  ).toEqual({
+  ).toMatchObject({
     available: true,
     record: null,
     error: null,
+    sourceHash: expect.stringMatching(/^[a-f\d]{64}$/u),
   });
 });
 test("reports missing package metadata when a repository map exists", async () => {
@@ -244,12 +245,13 @@ test("uses matching records after optional schema validation", async () => {
       read: schemaReader("repositories:\n  - repository: eliware/example\n", schema),
     },
   );
-  expect(result).toEqual({
+  expect(result).toMatchObject({
     available: true,
     record: {
       repository: "eliware/example",
     },
     error: null,
+    sourceHash: expect.stringMatching(/^[a-f\d]{64}$/u),
   });
 });
 test("rejects an invalid adjacent schema before record lookup", async () => {

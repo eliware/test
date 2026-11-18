@@ -160,6 +160,8 @@ Read the profile rules for the full `specs/` layout.
 The general check reads `../docs/repo-map.yaml` when that file exists.
 When it finds a matching entry, it compares the repository ID, description, keywords, and profiles.
 When package exemptions do not match the repository map, the check prints both lists.
+The failure also includes the SHA-256 hash of the repository map file it read.
+
 Without a map, the package metadata supplies the repository description and rule ID namespace.
 The CLI checks local README links and fragments without network access.
 It does not check if an external website responds.
