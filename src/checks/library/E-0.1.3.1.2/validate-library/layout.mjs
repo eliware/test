@@ -1,6 +1,6 @@
 import validateLayoutLineLimits from "../../../shared/layout/line-limits.mjs";
 import validateMirroredTests from "../../../shared/layout/mirrored-tests.mjs";
-import validateTestFileLayout from "../../../application/E-0.1.4.1.2/validate/test-file-layout.mjs";
+import validateTestFileLayout from "../../../shared/layout/test-file-layout.mjs";
 import validateLibrarySourcePlacement from "./source-placement.mjs";
 import findTestPaths from "../../../shared/layout/find-test-paths.mjs";
 import readTestFiles from "../../../shared/layout/read-test-files.mjs";

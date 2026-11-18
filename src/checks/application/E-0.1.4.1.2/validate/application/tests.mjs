@@ -1,7 +1,7 @@
 import validateMirroredTests from "../../../../shared/layout/mirrored-tests.mjs";
 import validateExecutableTests from "../executable-tests.mjs";
 import validateLayoutLineLimits from "../../../../shared/layout/line-limits.mjs";
-import validateTestFileLayout from "../test-file-layout.mjs";
+import validateTestFileLayout from "../../../../shared/layout/test-file-layout.mjs";
 import findTestPaths from "../../../../shared/layout/find-test-paths.mjs";
 import readTestFiles from "../../../../shared/layout/read-test-files.mjs";
 export default async function validateApplicationTests(files, readText, root) {

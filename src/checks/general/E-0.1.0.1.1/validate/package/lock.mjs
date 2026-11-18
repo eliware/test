@@ -3,6 +3,7 @@ import { join } from "node:path";
 import validateLockfilePackageEntries from "../lockfile/package-entries.mjs";
 import validateLockfileRootPackage from "./root-package.mjs";
 import validateLockfileMetadata from "./lock-metadata.mjs";
+import validateLockfileDependencyReferences from "../lockfile/dependency-references.mjs";
 export default async function validatePackageLock(root, packageJson, { read = readFile } = {}) {
   let lockfile;
   try {
@@ -12,7 +13,16 @@ export default async function validatePackageLock(root, packageJson, { read = re
   }
   const metadata = validateLockfileMetadata(lockfile, packageJson);
   if (metadata.errors.length) return metadata.errors;
-  const errors = validateLockfileRootPackage(packageJson, metadata.rootPackage, lockfile.packages);
+  const errors = validateLockfileRootPackage(packageJson, metadata.rootPackage);
+  errors.push(
+    ...validateLockfileDependencyReferences(
+      "",
+      metadata.rootPackage,
+      lockfile.packages,
+      packageJson?.overrides,
+      ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"],
+    ),
+  );
   const packageErrors = validateLockfilePackageEntries(lockfile.packages, packageJson?.overrides);
   if (packageErrors) errors.push(packageErrors);
   return errors;

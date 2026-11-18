@@ -1,10 +1,7 @@
-import { readFile, realpath, stat } from "node:fs/promises";
-import isPathOutsideRoot from "./resolve/local-reference/is-path-outside-root.mjs";
+import { realpath } from "node:fs/promises";
 import resolveLocalMarkdownReference from "./resolve/local-reference.mjs";
-import hasMarkdownFragmentTarget from "./resolve/markdown-fragment-target.mjs";
+import validateMarkdownLocalTarget from "./resolve/local-reference/validate-target.mjs";
 export default function createLocalMarkdownReferenceValidator(root, dependencies = {}) {
-  const read = dependencies.read ?? readFile;
-  const inspect = dependencies.stat ?? stat;
   const resolveRealpath = dependencies.realpath ?? realpath;
   let realRoot;
   return async (file, reference) => {
@@ -14,16 +11,13 @@ export default function createLocalMarkdownReferenceValidator(root, dependencies
       return `Documentation link escapes the repository: ${reference} in ${file}.`;
     try {
       realRoot ??= await resolveRealpath(root);
-      const realTarget = await resolveRealpath(target);
-      if (isPathOutsideRoot(realRoot, realTarget))
+      const result = await validateMarkdownLocalTarget(realRoot, target, fragment, dependencies);
+      if (result === "outside")
         return `Documentation link escapes the repository: ${reference} in ${file}.`;
-      const info = await inspect(target);
-      if (fragment && target.toLowerCase().endsWith(".md")) {
-        if (!(await hasMarkdownFragmentTarget(read, target, fragment)))
-          return `Documentation fragment does not resolve: ${reference} in ${file}.`;
-      } else if (!info.isFile() && !info.isDirectory()) {
+      if (result === "fragment")
+        return `Documentation fragment does not resolve: ${reference} in ${file}.`;
+      if (result === "missing")
         return `Documentation link does not resolve: ${reference} in ${file}.`;
-      }
     } catch {
       return `Documentation link does not resolve: ${reference} in ${file}.`;
     }

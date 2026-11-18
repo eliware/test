@@ -1,5 +1,5 @@
 import { expect, test } from "@jest/globals";
-import validateTestFileLayout from "../../../../../src/checks/application/E-0.1.4.1.2/validate/test-file-layout.mjs";
+import validateTestFileLayout from "../../../../src/checks/shared/layout/test-file-layout.mjs";
 test("reports generated test output outside artifacts", () => {
   expect(validateTestFileLayout(["tests/a.test.mjs", "tests/__snapshots__/a.snap"])).toEqual([
     "tests/__snapshots__/a.snap is generated test output. store output in ignored artifacts/.",

@@ -15,3 +15,23 @@ test("accepts matching dependency maps", () => {
     }),
   ).toEqual([]);
 });
+test("rejects malformed dependency maps and ranges", () => {
+  expect(
+    validateLockfileRootPackage({ ...packageJson, dependencies: null }, rootPackage),
+  ).toContain("package.json dependencies must be an object.");
+  expect(validateLockfileRootPackage(packageJson, { ...rootPackage, dependencies: [] })).toContain(
+    "package-lock.json root dependencies must be an object.",
+  );
+  expect(
+    validateLockfileRootPackage(
+      { ...packageJson, dependencies: { alpha: " " } },
+      { ...rootPackage, dependencies: { beta: " " } },
+    ),
+  ).toEqual(
+    expect.arrayContaining([
+      "package.json dependencies has an invalid dependency range for alpha.",
+      "package-lock.json root dependencies has an invalid dependency range for beta.",
+      "package-lock.json root dependencies must match package.json.",
+    ]),
+  );
+});

@@ -10,9 +10,10 @@ export default function validateLockfileDependencyReferences(
   entry,
   packages,
   overrides = {},
+  fields = dependencyFields,
 ) {
   const errors = [];
-  for (const field of dependencyFields) {
+  for (const field of fields) {
     if (entry[field] === undefined) continue;
     if (!entry[field] || typeof entry[field] !== "object" || Array.isArray(entry[field])) {
       errors.push(`package-lock.json entry ${path} has invalid ${field}.`);
