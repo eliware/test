@@ -6,7 +6,7 @@ export default function collectBlockShadowedJestNames(block, names, callbackName
     describes: new Set(),
   };
   for (const statement of block.body) {
-    if (statement.type === "VariableDeclaration" && statement.kind !== "var")
+    if (statement.type === "VariableDeclaration")
       for (const declaration of statement.declarations)
         for (const name of collectBindingNames(declaration.id))
           addShadow(name, shadowed, names, callbackNames, isFunction(declaration.init));

@@ -44,6 +44,22 @@ test("collects block-local Jest and callback shadows", () => {
     describes: new Set(),
   });
 });
+test("collects var declarations that shadow Jest names", () => {
+  const shadowed = collectBlockShadowedJestNames(
+    {
+      body: [
+        {
+          type: "VariableDeclaration",
+          kind: "var",
+          declarations: [{ id: { type: "Identifier", name: "test" }, init: null }],
+        },
+      ],
+    },
+    { callbacks: new Set(["test"]), namespaces: new Set(), describes: new Set() },
+    new Set(),
+  );
+  expect(shadowed.tests).toEqual(new Set(["test"]));
+});
 test("collects block function and class shadows", () => {
   const block = {
     body: [

@@ -1,3 +1,3 @@
 export default function isYamlExamplePath(path) {
-  return path.includes("examples");
+  return path[0] === "examples";
 }

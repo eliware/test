@@ -24,9 +24,24 @@ test("maps configured YAML scalars to prose blocks with source lines", () => {
       kind: "prose",
     },
     {
+      text: "Hidden example.",
+      line: 7,
+      kind: "prose",
+    },
+    {
       text: "A repository description.",
       line: 8,
       kind: "prose",
     },
+  ]);
+});
+test("ignores prose inside top-level example trees", () => {
+  const source = [
+    "examples:",
+    "  - description: Example prose.",
+    "description: Maintained prose.",
+  ].join("\n");
+  expect(collectYamlProse(source, parseDocument(source).contents)).toEqual([
+    { text: "Maintained prose.", line: 3, kind: "prose" },
   ]);
 });
