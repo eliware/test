@@ -1,10 +1,10 @@
 import { readFile, readdir } from "node:fs/promises";
-import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isMap, isSeq, isScalar, parseAllDocuments } from "yaml";
 import extractMarkdownProse from "../extract/markdown-prose.mjs";
 import normalizeSentence from "../word-tools/normalize-sentence.mjs";
 import splitSentences from "../word-tools/split-sentences.mjs";
+import findYamlExampleFiles from "./example-files.mjs";
 const conventionsPath = fileURLToPath(new URL("../../../../../specs/conventions", import.meta.url));
 export default async function loadExactExamples(options, defaults) {
   const settings = options ?? {};
@@ -16,7 +16,7 @@ export default async function loadExactExamples(options, defaults) {
   const directory = settings.root ?? fallback.root;
   const list = settings.list ?? fallback.list;
   const read = settings.read ?? fallback.read;
-  const files = await findYamlFiles(directory, list);
+  const files = await findYamlExampleFiles(directory, list);
   const exact = new Set();
   for (const path of files) {
     let documents;
@@ -31,16 +31,6 @@ export default async function loadExactExamples(options, defaults) {
     }
   }
   return exact;
-}
-async function findYamlFiles(directory, list, files = []) {
-  for (const entry of await list(directory, {
-    withFileTypes: true,
-  })) {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) await findYamlFiles(path, list, files);
-    else if (entry.isFile() && /\.ya?ml$/iu.test(entry.name)) files.push(path);
-  }
-  return files;
 }
 function collectExamples(node, exact) {
   if (isMap(node)) {
