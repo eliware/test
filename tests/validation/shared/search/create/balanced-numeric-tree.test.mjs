@@ -20,6 +20,11 @@ test("returns the tree size when a lower bound exceeds every value", () => {
   [2, 5, 8, 11, 14, 17].forEach(tree.insert);
   expect(tree.lowerBound(20)).toBe(tree.values().length);
 });
+test("finds the first qualifying index after a lower-valued right ancestor", () => {
+  const tree = createBalancedNumericTree();
+  [2, 4, 6].forEach(tree.insert);
+  expect(tree.lowerBound(5)).toBe(2);
+});
 test("inserts large ordered input without recursive insertion", () => {
   const tree = createBalancedNumericTree();
   for (let value = 0; value < 20_000; value += 1) tree.insert(value);

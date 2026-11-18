@@ -14,3 +14,10 @@ test("reports a command error with the smoke failure code", () => {
   expect(writeSmokeCliResult(new Error("install failed"), write)).toBe(17);
   expect(write).toHaveBeenCalledWith("Tarball consumer smoke failed: install failed");
 });
+test("reports non-string smoke results with the smoke failure code", () => {
+  const write = jest.fn();
+  expect(writeSmokeCliResult(undefined, write)).toBe(17);
+  expect(write).toHaveBeenCalledWith(
+    "Tarball consumer smoke failed: smoke returned a non-string result.",
+  );
+});

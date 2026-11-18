@@ -50,3 +50,15 @@ test("rejects links with incorrect path casing and unresolved references", () =>
     "docs/README.md links to unexpected target a missing target.",
   ]);
 });
+test("does not require an index to link to itself", () => {
+  expect(
+    validateMarkdownIndex("[Guide](guide.md)", ["README.md", "guide.md"], "docs/README.md"),
+  ).toEqual([]);
+  expect(
+    validateMarkdownIndex(
+      "[Index](README.md) [Guide](guide.md)",
+      ["README.md", "guide.md"],
+      "docs/README.md",
+    ),
+  ).toEqual(["docs/README.md links to unexpected target README.md."]);
+});

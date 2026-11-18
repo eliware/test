@@ -213,6 +213,27 @@ test("stats file paths beneath a generated directory and rejects before readdir"
   });
   expect(readDirectory).not.toHaveBeenCalled();
 });
+test("rejects descendants beneath a file in a pruned generated tree", async () => {
+  const readDirectory = jest.fn();
+  const statDirectory = jest.fn(async (path) => ({
+    isDirectory: () => path !== join("/repo", "dist", "file.js"),
+  }));
+  const directoryEntries = createRepositoryDirectoryEntries({
+    root: "/repo",
+    entries: jest.fn(async () => [{ path: "dist", type: "directory" }]),
+    entriesUnder: jest.fn(),
+    readDirectory,
+    statDirectory,
+    hasFullDiscovery: () => true,
+  });
+  await expect(directoryEntries("/repo/dist/file.js/child")).rejects.toMatchObject({
+    code: "ENOTDIR",
+  });
+  expect(statDirectory).toHaveBeenCalledWith(join("/repo", "dist", "file.js"), {
+    bigint: true,
+  });
+  expect(readDirectory).not.toHaveBeenCalled();
+});
 test("rejects unknown and external directory paths", async () => {
   const directoryEntries = createRepositoryDirectoryEntries({
     root: "/repo",
