@@ -1,4 +1,5 @@
 import { parse } from "@babel/parser";
+import extractJavaScriptComments from "./javascript-prose/comments.mjs";
 import collectJavaScriptProse from "./javascript-prose/collect.mjs";
 export default function extractJavaScriptProse(source, parserOptions = {}) {
   let ast;
@@ -11,10 +12,6 @@ export default function extractJavaScriptProse(source, parserOptions = {}) {
   } catch {
     return [];
   }
-  const comments = ast.comments.map((comment) => ({
-    text: comment.value,
-    line: comment.loc.start.line,
-    kind: "prose",
-  }));
+  const comments = extractJavaScriptComments(ast.comments);
   return [...comments, ...collectJavaScriptProse(ast.program)];
 }

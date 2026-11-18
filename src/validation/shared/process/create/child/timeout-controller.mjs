@@ -1,24 +1,24 @@
-import createSuiteTimeoutTracker from "../../../../stages/jest/progress/create/suite-timeout-tracker.mjs";
+import createSuiteTimeouts from "./timeout-controller/suites.mjs";
 export default function createChildTimeoutController(
   options,
   createTimeout,
   getTermination,
-  createSuiteTracker = createSuiteTimeoutTracker,
+  createSuiteTracker,
 ) {
   let progressTimeout;
-  let suiteTimeout;
   let runtimeTimeout;
+  const suites = createSuiteTimeouts(options, createTimeout, getTermination, createSuiteTracker);
   return {
     timeout: {
       reset: () => progressTimeout?.reset(),
       stop() {
         progressTimeout?.stop();
-        suiteTimeout?.stop();
+        suites.stop();
         runtimeTimeout?.stop();
       },
     },
     start() {
-      suiteTimeout = createSuiteTracker(options, createTimeout, getTermination);
+      suites.start();
       progressTimeout = createTimeout({
         timeoutMs: options.progressTimeoutMs,
         onTimeout: () => getTermination().onTimeout(),
@@ -31,6 +31,6 @@ export default function createChildTimeoutController(
         runtimeTimeout.reset();
       }
     },
-    suiteTimeout: () => suiteTimeout,
+    suiteTimeout: () => suites.get(),
   };
 }

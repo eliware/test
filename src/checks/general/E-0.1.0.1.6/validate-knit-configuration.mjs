@@ -1,7 +1,7 @@
 import parseBoundedYamlDocuments from "../../../validation/shared/yaml/parse-bounded-yaml-documents.mjs";
 import validateCommandList from "./validate-knit-configuration/command-lists.mjs";
 import findCommandLists from "./validate-knit-configuration/find-command-lists.mjs";
-import validateDeploymentTimeouts from "./validate-knit-configuration/deployment-timeouts.mjs";
+import validateDeploymentTimeouts from "./validate-knit-configuration/timeouts.mjs";
 export default async function validateKnitConfiguration(inventory, packageJson = {}) {
   if (!inventory?.files || !inventory.readText)
     return ["Knit configuration could not be inspected."];
